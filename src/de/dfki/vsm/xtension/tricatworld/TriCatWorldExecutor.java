@@ -478,6 +478,18 @@ public final class TriCatWorldExecutor extends ActivityExecutor implements Expor
                 if (activity_actor.equalsIgnoreCase("player")) {
                     triCatWorldAct.resetActionCmd(activity_actor + "_" + triCatWorldAct.getActionCmd());
                 }
+            }  else if (activity_name.equalsIgnoreCase("FieldOfView") && activity_actor.equalsIgnoreCase("player")) { // this is action player only activity_name
+                triCatWorldAct = mActionLoader.loadTWorldAnimation(activity_name,
+                        activity.get("value"), activity.get("time"));
+                if (activity_actor.equalsIgnoreCase("player")) {
+                    triCatWorldAct.resetActionCmd(activity_actor + "_" + triCatWorldAct.getActionCmd());
+                }
+            }  else if (activity_name.equalsIgnoreCase("ResetFieldOfView") && activity_actor.equalsIgnoreCase("player")) { // this is action player only activity_name
+                triCatWorldAct = mActionLoader.loadTWorldAnimation(activity_name,
+                        activity.get("value"), activity.get("time"));
+                if (activity_actor.equalsIgnoreCase("player")) {
+                    triCatWorldAct.resetActionCmd(activity_actor + "_" + triCatWorldAct.getActionCmd());
+                }
             } else if (activity_name.equalsIgnoreCase("DefaultFocalLength") && activity_actor.equalsIgnoreCase("player")) { // this is action player only activity_name
                 triCatWorldAct = mActionLoader.loadTWorldAnimation(activity_name, activity.get("viewtarget"));
                 if (activity_actor.equalsIgnoreCase("player")) {
