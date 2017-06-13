@@ -10,7 +10,7 @@ import de.dfki.vsm.util.extensions.ExportableProperties;
 import de.dfki.vsm.util.extensions.ProjectProperty;
 import de.dfki.vsm.util.extensions.value.ProjectValueProperty;
 import de.dfki.vsm.xtension.remote.client.factories.ClientsFactory;
-import de.dfki.vsm.xtension.remote.client.factories.remoteagent.AgentFactory;
+import de.dfki.vsm.xtension.remote.client.factories.remoteagent.RemoteAgentAbstractFactory;
 import de.dfki.vsm.xtension.remote.client.properties.RemoteSenderProjectProperty;
 import de.dfki.vsm.xtension.remote.client.sender.Clientable;
 import de.dfki.vsm.xtension.remote.client.sender.DataSendable;
@@ -81,7 +81,7 @@ public class RemoteSenderExecutor extends ActivityExecutor implements Exportable
 
     private DataSendable buildSendable(AbstractActivity activity) {
         AgentConfig agentConfiguration = mProject.getAgentConfig(activity.getActor());
-        return AgentFactory.createRemoteAgent(agentConfiguration, activity).getSendable();
+        return RemoteAgentAbstractFactory.createRemoteAgent(agentConfiguration, activity).getSendable();
     }
 
     private void exectureSpeechActivity(SpeechActivity activity) {
