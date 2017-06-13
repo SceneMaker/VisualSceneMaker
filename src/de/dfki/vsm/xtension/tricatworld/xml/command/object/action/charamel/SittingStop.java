@@ -7,7 +7,6 @@ package de.dfki.vsm.xtension.tricatworld.xml.command.object.action.charamel;
 
 import de.dfki.iui.libcharamel.v4235.AnimationTrack;
 import de.dfki.iui.libcharamel.v4235.ComplexAnimationGenerator;
-import de.dfki.iui.libcharamel.v4235.Motion;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
 import de.dfki.vsm.util.xml.XMLParseError;
@@ -22,19 +21,19 @@ import org.w3c.dom.Element;
  * @author Patrick Gebhard
  *
  */
-public class No extends TriCatWorldActObject implements XMLParseable, XMLWriteable {
+public class SittingStop extends TriCatWorldActObject implements XMLParseable, XMLWriteable {
 
     private String mCharameAvatarId = "1";
     // The logger instance
     private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
 
     // TODO cai_request sub element String mValue = "";
-    public No(String aid) {
+    public SittingStop(String aid) {
         mName = "caixml";
         mCharameAvatarId = aid;
     }
 
-    public No() {
+    public SittingStop() {
         mName = "caixml";
     }
 
@@ -46,7 +45,7 @@ public class No extends TriCatWorldActObject implements XMLParseable, XMLWriteab
         ca.getCommand().setId(mId); // set the same id in the Charamel command that has been used in the Tworld command
         ca.getCommand().setAid(Integer.parseInt(mCharameAvatarId));
         AnimationTrack track1 = ca.addTrack();
-        track1.addMotion(Integer.parseInt(mCharameAvatarId), Motion.NO03);
+        track1.addSittingStop(Integer.parseInt(mCharameAvatarId));
         out.push().println(ca.getCaiXML());
         out.pop().pop().println("</Action>");
     }

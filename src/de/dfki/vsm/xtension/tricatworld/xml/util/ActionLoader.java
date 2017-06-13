@@ -122,7 +122,7 @@ public class ActionLoader {
         return a;
     }
 
-    public TriCatWorldActObject loadAnimation(String cmd, String value1, String value2) {
+    public TriCatWorldActObject loadTWorldAnimation(String cmd, String value1, String value2) {
         TriCatWorldActObject a = null;
 
         String cp = getTWorldCommandClasspath(cmd);
@@ -141,6 +141,34 @@ public class ActionLoader {
             }
         } catch (ClassNotFoundException | NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
             mLogger.failure("No Class for TWorld Action " + cmd + " and value " + value1);
+        }
+
+        if (a != null) {
+            a.setId(getNextID());
+        }
+
+        return a;
+    }
+    
+        public TriCatWorldActObject loadTWorldAnimation(String cmd, String value1, String value2, String value3) {
+        TriCatWorldActObject a = null;
+
+        String cp = getTWorldCommandClasspath(cmd);
+
+        try {
+            Class c = Class.forName(cp);
+            Constructor[] constructors = c.getConstructors();
+            for (Constructor con : constructors) {
+                Class[] params = con.getParameterTypes();
+                if (params.length == 3) {
+                    if (params[0].getSimpleName().equalsIgnoreCase("string") && params[1].getSimpleName().equalsIgnoreCase("string") && params[2].getSimpleName().equalsIgnoreCase("string")) {
+                        a = (TriCatWorldActObject) c.getDeclaredConstructor(params).newInstance(value1, value2, value3);
+                    }
+                }
+
+            }
+        } catch (ClassNotFoundException | NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+            mLogger.failure("No Class for TWorld Action " + cmd + " and values " + value1 + ", " + value2 + ", " + value3);
         }
 
         if (a != null) {
@@ -209,8 +237,6 @@ public class ActionLoader {
     public TriCatWorldActObject loadCharamelAnimation(String cmd, LinkedList value1, String value2, String value3) {
         TriCatWorldActObject a = null;
         
-        
-
         String cp = getTWorldCharamelCommandClasspath(cmd);
 
         try {
@@ -227,34 +253,6 @@ public class ActionLoader {
             }
         } catch (ClassNotFoundException | NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
             mLogger.failure("No Class for TWorld Charamel Action " + cmd + " and value " + value1 + " and avatar id " + value3);
-        }
-
-        if (a != null) {
-            a.setId(getNextID());
-        }
-
-        return a;
-    }
-
-    public TriCatWorldActObject loadAnimation(String cmd, String value1, String value2, String value3) {
-        TriCatWorldActObject a = null;
-
-        String cp = getTWorldCommandClasspath(cmd);
-
-        try {
-            Class c = Class.forName(cp);
-            Constructor[] constructors = c.getConstructors();
-            for (Constructor con : constructors) {
-                Class[] params = con.getParameterTypes();
-                if (params.length == 3) {
-                    if (params[0].getSimpleName().equalsIgnoreCase("string") && params[1].getSimpleName().equalsIgnoreCase("string") && params[2].getSimpleName().equalsIgnoreCase("string")) {
-                        a = (TriCatWorldActObject) c.getDeclaredConstructor(params).newInstance(value1, value2, value3);
-                    }
-                }
-
-            }
-        } catch (ClassNotFoundException | NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-            mLogger.failure("No Class for TWorld Action " + cmd + " and values " + value1 + ", " + value2 + ", " + value3);
         }
 
         if (a != null) {
