@@ -335,8 +335,13 @@ public final class TriCatWorldExecutor extends ActivityExecutor implements Expor
                                 activity_actor).getProperty(activity.get("value"));
                 url = url.replace("\\", "/");
                 triCatWorldAct = mActionLoader.loadTWorldAnimation(activity_name, url);
-            } else if (activity_name.equalsIgnoreCase("RotateCharacter")) {
-                triCatWorldAct = mActionLoader.loadTWorldAnimation(activity_name, activity.get("degree"));
+            } else if (activity_name.equalsIgnoreCase("Rotate")) {
+                if (activity_actor.equalsIgnoreCase("player")) {
+                    triCatWorldAct = mActionLoader.loadTWorldAnimation(activity_name, activity.get("hdegree"), activity.get("vdegree"));
+                    triCatWorldAct.resetActionCmd(activity_actor + "_" + triCatWorldAct.getActionCmd());
+                } else {
+                    triCatWorldAct = mActionLoader.loadTWorldAnimation(activity_name, activity.get("degree"));
+                }
             } else if (activity_name.equalsIgnoreCase("LookAt")) {
                 triCatWorldAct = mActionLoader.loadTWorldAnimation(activity_name, activity.get("viewtarget"));
                 if (activity_actor.equalsIgnoreCase("player")) {
@@ -351,15 +356,15 @@ public final class TriCatWorldExecutor extends ActivityExecutor implements Expor
 //                        + File.separator + mProject.getAgentConfig(
 //                                activity_actor).getProperty(activity.get("value"));
 //                url = url.replace("\\", "/");
-                String url = activity.get("value" );
-                triCatWorldAct = mActionLoader.loadAnimation(activity_name, url, activity.get("2d"));
+                String url = activity.get("value");
+                triCatWorldAct = mActionLoader.loadTWorldAnimation(activity_name, url, activity.get("2d"));
             } else if (activity_name.equalsIgnoreCase("PlayStream")) { // added pg 23.3.2017
                 // Ugly: activity_actor has to be: DebriefingScreen
                 if (!activity_actor.equalsIgnoreCase("debriefing")) {
                     mLogger.warning("Action PlayStream not processed - agent(name) is not debriefing");
                     return;
                 }
-                triCatWorldAct = mActionLoader.loadAnimation(activity_name,
+                triCatWorldAct = mActionLoader.loadTWorldAnimation(activity_name,
                         activity.get("file"), activity.get("start"), activity.get("end"));
             } else if (activity_name.equalsIgnoreCase("PlayTopic")) { // added pg 27.4.2017
                 // Ugly: activity_actor has to be: DebriefingScreen
@@ -369,7 +374,7 @@ public final class TriCatWorldExecutor extends ActivityExecutor implements Expor
                 }
                 String playquestion = (activity.get("playquestion") != null) ? activity.get("playquestion") : "0";
                 String playanswer = (activity.get("playanswer") != null) ? activity.get("playanswer") : "0";
-                triCatWorldAct = mActionLoader.loadAnimation(activity_name,
+                triCatWorldAct = mActionLoader.loadTWorldAnimation(activity_name,
                         activity.get("topicid"), playquestion, playanswer);
             } else if (activity_name.equalsIgnoreCase("LoadDebriefing")) { // added pg 27.4.2017
                 // Ugly: activity_actor has to be: DebriefingScreen
@@ -377,7 +382,7 @@ public final class TriCatWorldExecutor extends ActivityExecutor implements Expor
                     mLogger.warning("Action LoadDebriefing not processed - agent(name) is not debriefing");
                     return;
                 }
-                triCatWorldAct = mActionLoader.loadAnimation(activity_name,
+                triCatWorldAct = mActionLoader.loadTWorldAnimation(activity_name,
                         activity.get("eventlog"), activity.get("screenvideo"), activity.get("cameravideo"));
             } else if (activity_name.equalsIgnoreCase("HideBriefingInfo")) { // added pg 4.5.2017
                 // Ugly: activity_actor has to be: debriefing
@@ -429,7 +434,7 @@ public final class TriCatWorldExecutor extends ActivityExecutor implements Expor
                 url = url.replace("\\", "/");
                 triCatWorldAct = mActionLoader.loadTWorldAnimation(activity_name, url);
             } else if (activity_name.equalsIgnoreCase("Color")) {
-                triCatWorldAct = mActionLoader.loadAnimation(activity_name,
+                triCatWorldAct = mActionLoader.loadTWorldAnimation(activity_name,
                         activity.get("r"), activity.get("g"), activity.get("b"));
             } else if (activity_name.equalsIgnoreCase("SitDown")) {
                 triCatWorldAct = mActionLoader.loadTWorldAnimation(activity_name, activity.get("chairname"));
@@ -441,7 +446,7 @@ public final class TriCatWorldExecutor extends ActivityExecutor implements Expor
             } else if (activity_name.equalsIgnoreCase("Warp")) {
                 String target = activity.get("viewtarget");
                 if (target != null) {
-                    triCatWorldAct = mActionLoader.loadAnimation(activity_name, activity.get("location"), target);
+                    triCatWorldAct = mActionLoader.loadTWorldAnimation(activity_name, activity.get("location"), target);
                 } else {
                     triCatWorldAct = mActionLoader.loadTWorldAnimation(activity_name, activity.get("location"));
                 }
@@ -449,25 +454,25 @@ public final class TriCatWorldExecutor extends ActivityExecutor implements Expor
                     triCatWorldAct.resetActionCmd(activity_actor + "_" + triCatWorldAct.getActionCmd());
                 }
             } else if (activity_name.equalsIgnoreCase("WorldPosition")) {
-                triCatWorldAct = mActionLoader.loadAnimation(activity_name,
+                triCatWorldAct = mActionLoader.loadTWorldAnimation(activity_name,
                         activity.get("x"), activity.get("y"), activity.get("z"));
                 if (activity_actor.equalsIgnoreCase("player")) {
                     triCatWorldAct.resetActionCmd(activity_actor + "_" + triCatWorldAct.getActionCmd());
                 }
             } else if (activity_name.equalsIgnoreCase("MoveToWorldPosition")) { // added pg 5.5.2017
-                triCatWorldAct = mActionLoader.loadAnimation(activity_name,
+                triCatWorldAct = mActionLoader.loadTWorldAnimation(activity_name,
                         activity.get("x"), activity.get("y"), activity.get("z"));
                 if (activity_actor.equalsIgnoreCase("player")) {
                     triCatWorldAct.resetActionCmd(activity_actor + "_" + triCatWorldAct.getActionCmd());
                 }
             } else if (activity_name.equalsIgnoreCase("Camera") && activity_actor.equalsIgnoreCase("player")) { // this is action player only activity_name
-                triCatWorldAct = mActionLoader.loadAnimation(activity_name,
+                triCatWorldAct = mActionLoader.loadTWorldAnimation(activity_name,
                         activity.get("x"), activity.get("y"));
                 if (activity_actor.equalsIgnoreCase("player")) {
                     triCatWorldAct.resetActionCmd(activity_actor + "_" + triCatWorldAct.getActionCmd());
                 }
             } else if (activity_name.equalsIgnoreCase("FocalLength") && activity_actor.equalsIgnoreCase("player")) { // this is action player only activity_name
-                triCatWorldAct = mActionLoader.loadAnimation(activity_name,
+                triCatWorldAct = mActionLoader.loadTWorldAnimation(activity_name,
                         activity.get("value"), activity.get("time"));
                 if (activity_actor.equalsIgnoreCase("player")) {
                     triCatWorldAct.resetActionCmd(activity_actor + "_" + triCatWorldAct.getActionCmd());
@@ -478,7 +483,7 @@ public final class TriCatWorldExecutor extends ActivityExecutor implements Expor
                     triCatWorldAct.resetActionCmd(activity_actor + "_" + triCatWorldAct.getActionCmd());
                 }
             } else if (activity_name.equalsIgnoreCase("CameraOffset") && activity_actor.equalsIgnoreCase("player")) { // this is action player only activity_name
-                triCatWorldAct = mActionLoader.loadAnimation(activity_name,
+                triCatWorldAct = mActionLoader.loadTWorldAnimation(activity_name,
                         activity.get("x"), activity.get("y"), activity.get("z"));
                 if (activity_actor.equalsIgnoreCase("player")) {
                     triCatWorldAct.resetActionCmd(activity_actor + "_" + triCatWorldAct.getActionCmd());
