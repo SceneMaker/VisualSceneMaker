@@ -28,6 +28,7 @@ import java.net.Socket;
 import java.util.HashMap;
 import java.util.LinkedList;
 
+import de.dfki.vsm.xtension.stickman.util.property.StickmanProjectProperty;
 import de.dfki.vsm.xtension.stickmantts.util.property.StickmanTTSProjectProperty;
 import java.io.File;
 import javafx.scene.paint.Color;
@@ -50,7 +51,7 @@ public class StickmanExecutor extends ActivityExecutor implements ExportableProp
     private StageRoom stickmanStageC;
     private StickmanRepository stickmanFactory;
     public static HashMap<String, Stickman3D> stickmanContainer = new HashMap<>();
-    private ExportableProperties exportableProperties = new StickmanTTSProjectProperty();
+    private ExportableProperties exportableProperties = new StickmanProjectProperty();
 
     // Construct the executor
     public StickmanExecutor(final PluginConfig config, final RunTimeProject project) {
