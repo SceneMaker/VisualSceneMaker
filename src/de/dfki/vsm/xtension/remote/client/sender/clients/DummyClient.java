@@ -24,4 +24,9 @@ public class DummyClient implements Clientable {
 
     }
 
+    @Override
+    public boolean isConnected() {
+        return false;
+    }
+
 }

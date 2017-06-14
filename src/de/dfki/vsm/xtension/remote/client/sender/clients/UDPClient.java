@@ -23,4 +23,9 @@ public class UDPClient implements Clientable{
     public void send() throws IOException {
 
     }
+
+    @Override
+    public boolean isConnected() {
+        return false;
+    }
 }

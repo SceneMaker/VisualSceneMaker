@@ -1,7 +1,6 @@
 package de.dfki.vsm.xtension.remote.server.commands;
 
 import de.dfki.vsm.runtime.project.RunTimeProject;
-import de.dfki.vsm.xtension.remote.server.notifications.NotifiableCommand;
 
 /**
  * Created by alvaro on 6/13/17.

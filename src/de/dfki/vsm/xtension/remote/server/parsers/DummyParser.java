@@ -3,8 +3,7 @@ package de.dfki.vsm.xtension.remote.server.parsers;
 
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.xtension.remote.server.commands.SetVariableCommand;
-import de.dfki.vsm.xtension.remote.server.notifications.NotifiableCommand;
-import de.dfki.vsm.xtension.remote.server.parsers.Parser;
+import de.dfki.vsm.xtension.remote.server.commands.NotifiableCommand;
 
 /**
  * Created by alvaro on 4/30/17.

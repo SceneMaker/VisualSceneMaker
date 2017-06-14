@@ -1,4 +1,4 @@
-package de.dfki.vsm.xtension.remote.server.notifications;
+package de.dfki.vsm.xtension.remote.server.commands;
 
 /**
  * Created by alvaro on 5/10/17.

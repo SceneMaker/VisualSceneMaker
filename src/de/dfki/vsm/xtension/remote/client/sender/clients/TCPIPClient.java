@@ -43,7 +43,18 @@ public class TCPIPClient implements Clientable {
 
     @Override
     public void send() throws IOException {
+        if(!isConnected()){
+            System.out.println("Client not connected to server.. Not sending");
+            return;
+        }
         String dataToSend = dataCreator.buildDataToSent();
         os.writeBytes(dataToSend);
+
+
+    }
+
+    @Override
+    public boolean isConnected() {
+        return client != null && client.isConnected();
     }
 }
