@@ -8,6 +8,8 @@ import de.dfki.vsm.xtension.remote.server.factories.VariableSetterParser;
 import de.dfki.vsm.xtension.remote.server.receiver.DataReceiver;
 import de.dfki.vsm.xtension.remote.server.socketserver.ServerController;
 
+import java.io.IOException;
+
 
 /**
  * Created by alvaro on 5/11/17.
@@ -16,8 +18,8 @@ public class RemoteReceiverPlugin extends RunTimePlugin {
 
     private final String variableName;
     private final int port;
-    private ServerController serverController;
     private DataReceiver receiver;
+    private ServerThread serverThread;
 
     public RemoteReceiverPlugin(PluginConfig config, RunTimeProject project) {
         super(config, project);
@@ -32,12 +34,30 @@ public class RemoteReceiverPlugin extends RunTimePlugin {
         initServer();
     }
     private void initServer() {
-        Thread thread = new Thread(() -> serverController = new ServerController(receiver, port));
-        thread.start();
+        serverThread = new ServerThread();
+        serverThread.start();
+
     }
 
     @Override
     public void unload() {
+        serverThread.closeConnection();
+    }
+
+    private class ServerThread extends Thread{
+        private ServerController serverController;
+
+        public void run(){
+            serverController = new ServerController(receiver, port);
+        }
+
+        public void closeConnection(){
+            try {
+                serverController.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
 
     }
 }

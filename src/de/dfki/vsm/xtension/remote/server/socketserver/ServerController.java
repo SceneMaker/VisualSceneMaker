@@ -40,6 +40,9 @@ public class ServerController {
 
     public void close() throws IOException {
         server.close();
+        for (Socket client: clients ) {
+            client.close();
+        }
     }
 
     private void listen(){
