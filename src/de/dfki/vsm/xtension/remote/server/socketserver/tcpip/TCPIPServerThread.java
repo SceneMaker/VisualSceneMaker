@@ -41,8 +41,9 @@ public class TCPIPServerThread extends ServerLoop {
         keepReadingData();
     }
 
-    @Override
-    public void closeConnection() throws IOException {
+
+
+    protected void close() throws IOException {
         socket.close();
         cleanup();
     }

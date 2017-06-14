@@ -31,7 +31,10 @@ public class UDPServerThread extends ServerLoop{
         receiver.receive(line);
     }
 
-    public void closeConnection(){
+
+
+    @Override
+    protected void close() throws IOException {
         sock.close();
     }
 
