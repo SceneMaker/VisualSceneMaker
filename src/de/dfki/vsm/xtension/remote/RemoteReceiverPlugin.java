@@ -6,7 +6,9 @@ import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.xtension.remote.server.factories.ParserFactory;
 import de.dfki.vsm.xtension.remote.server.factories.VariableSetterParser;
 import de.dfki.vsm.xtension.remote.server.receiver.DataReceiver;
-import de.dfki.vsm.xtension.remote.server.socketserver.ServerController;
+import de.dfki.vsm.xtension.remote.server.socketserver.Servable;
+import de.dfki.vsm.xtension.remote.server.socketserver.tcpip.TCPIPServerController;
+import de.dfki.vsm.xtension.remote.server.socketserver.udp.UDPServer;
 
 import java.io.IOException;
 
@@ -44,14 +46,20 @@ public class RemoteReceiverPlugin extends RunTimePlugin {
         serverThread.closeConnection();
     }
 
-    private class ServerThread extends Thread{
-        private ServerController serverController;
 
-        public void run(){
-            serverController = new ServerController(receiver, port);
+
+    class ServerThread extends Thread{
+        private Servable serverController = null;
+        ServerThread(){
+            serverController = new UDPServer(receiver, port);
+            //serverController = new TCPIPServerController(receiver, port);
         }
 
-        public void closeConnection(){
+        public void run(){
+            serverController.startServer();
+        }
+
+        void closeConnection(){
             try {
                 serverController.close();
             } catch (IOException e) {
