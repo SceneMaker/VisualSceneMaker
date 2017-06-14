@@ -1,9 +1,10 @@
-package de.dfki.vsm.xtension.remote.server.socketserver;
+package de.dfki.vsm.xtension.remote.server.socketserver.tcpip;
 
 
 
 
 import de.dfki.vsm.xtension.remote.server.receiver.Receiver;
+import de.dfki.vsm.xtension.remote.server.socketserver.ServerLoop;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -14,14 +15,14 @@ import java.net.Socket;
 /**
  * Created by alvaro on 4/30/17.
  */
-public class ServerThread extends Thread {
+public class TCPIPServerThread extends ServerLoop {
     private final Socket socket;
     private String line = "";
     private BufferedReader is = null;
     private PrintWriter os = null;
     private Receiver receiver;
 
-    public ServerThread(Socket socket, Receiver receiver) throws IOException {
+    public TCPIPServerThread(Socket socket, Receiver receiver) throws IOException {
         this.socket = socket;
         this.receiver = receiver;
         init(socket);
@@ -33,18 +34,21 @@ public class ServerThread extends Thread {
         os = new PrintWriter(socket.getOutputStream());
     }
 
-    public void run() {
-        try {
-            line = is.readLine();
-            keepReadingData();
-        } catch (IOException e) {
-            reportError();
-        } finally {
-            cleanup();
-        }
+
+    @Override
+    protected void receive() throws IOException {
+        line = is.readLine();
+        keepReadingData();
     }
 
-    private void cleanup() {
+    @Override
+    public void closeConnection() throws IOException {
+        socket.close();
+        cleanup();
+    }
+
+    @Override
+    protected void cleanup() {
         try {
             os.close();
             is.close();
@@ -53,23 +57,11 @@ public class ServerThread extends Thread {
         }
     }
 
-    private void reportError() {
-        line = this.getName(); //reused String line for getting thread name
-        System.out.println("IO Error/ Client " + line + " terminated abruptly");
-    }
-
     private void keepReadingData() throws IOException {
         while (notQuitCommand()) {
             receiver.receive(line.trim());
-            System.out.println("Response to Client  :  " + line);
+            System.out.println("TCP Message from Client  :  " + line);
             line = is.readLine();
-        }
-    }
-    public void interrupt(){
-        try {
-            socket.close();
-        } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 
