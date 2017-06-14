@@ -52,7 +52,7 @@ public final class SSITupleData extends SSIEventData implements XMLParseable, XM
             final String string = tuple.getAttribute("string").toLowerCase();
             final String value = String.format(Locale.US, "%.6f",
                     Float.valueOf(tuple.getAttribute("value").toLowerCase()));
-            System.err.println(string +"->"+value);
+            // Removed by PG, 14.6.2017: System.err.println(string +"->"+value);
             // Append The Tuple
             mTupleMap.put(string, value);
         }
