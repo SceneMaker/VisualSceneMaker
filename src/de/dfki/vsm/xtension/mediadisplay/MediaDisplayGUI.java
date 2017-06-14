@@ -65,9 +65,11 @@ public class MediaDisplayGUI {
 
     public void setImage(String name) {
         if (mDisplayValues.containsKey(name)) {
-            mImageResource = "file:///" + mDisplayValues.get("path") + File.separator + mDisplayValues.get(name);
+            mImageResource = "file:///" + mDisplayValues.get("path") + File.separator + mDisplayValues.get(name);            
             mImageResource = mImageResource.replace("\\", "/").replace(" ", "%20");
 
+            System.out.println(">>>> image ressource " + mImageResource);
+                        
             mController.canvas.setStyle("-fx-background-image: url('" + mImageResource + "'); "
                     + "-fx-background-position: center center; "
                     + "-fx-background-repeat: no-repeat no-repeat;"
