@@ -3,6 +3,7 @@ package de.dfki.vsm.xtension.remote;
 import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.runtime.plugin.RunTimePlugin;
 import de.dfki.vsm.runtime.project.RunTimeProject;
+import de.dfki.vsm.xtension.remote.server.ServerThread;
 import de.dfki.vsm.xtension.remote.server.factories.ParserFactory;
 import de.dfki.vsm.xtension.remote.server.factories.VariableSetterParser;
 import de.dfki.vsm.xtension.remote.server.receiver.DataReceiver;
@@ -36,9 +37,8 @@ public class RemoteReceiverPlugin extends RunTimePlugin {
         initServer();
     }
     private void initServer() {
-        serverThread = new ServerThread();
+        serverThread = new ServerThread(mConfig, receiver, port);
         serverThread.start();
-
     }
 
     @Override
@@ -47,25 +47,4 @@ public class RemoteReceiverPlugin extends RunTimePlugin {
     }
 
 
-
-    class ServerThread extends Thread{
-        private Servable serverController = null;
-        ServerThread(){
-            serverController = new UDPServer(receiver, port);
-            //serverController = new TCPIPServerController(receiver, port);
-        }
-
-        public void run(){
-            serverController.startServer();
-        }
-
-        void closeConnection(){
-            try {
-                serverController.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-    }
 }

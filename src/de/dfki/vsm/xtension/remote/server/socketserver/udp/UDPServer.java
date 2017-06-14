@@ -21,7 +21,7 @@ public class UDPServer implements Servable {
 
     @Override
     public void close() throws IOException {
-
+        socket.close();
     }
 
     @Override
