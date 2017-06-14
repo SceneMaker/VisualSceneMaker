@@ -13,7 +13,6 @@ import de.dfki.vsm.xtension.ssi.SSIRunTimePlugin;
 import de.dfki.vsm.xtension.ssi.event.SSIEventEntry;
 import de.dfki.vsm.xtension.ssi.event.data.SSIEventData;
 import de.dfki.vsm.xtension.ssi.event.data.SSIStringData;
-import de.dfki.vsm.xtension.ssi.event.data.SSITupleData;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
@@ -117,6 +116,7 @@ public final class TriCatWorldSSIPlugin extends SSIRunTimePlugin {
     @Override
     public void handle(final SSIEventArray array) {
         // Print some information 
+        //mLogger.message("Handling SSI event array:\n " + array.toString());
         for (final SSIEventEntry event : array.list()) {
             final SSIEventData data = event.getData();
             if (!mUseSuperEvent) {
@@ -173,16 +173,6 @@ public final class TriCatWorldSSIPlugin extends SSIRunTimePlugin {
                             //
                         }
                     }
-                } else if (event.getSender().equalsIgnoreCase("nova")
-                        && event.getEvent().equalsIgnoreCase("body_properties_MNV")) { // added by PG 14.6.2017 (based on the nova event pipe)
-
-                    SSITupleData tupleData = (SSITupleData) data;
-            
-                    mProject.setVariable("UserHeadOrientation", Float.parseFloat(tupleData.get("headorientation")));
-                    mProject.setVariable("UserHeadTilt", Float.parseFloat(tupleData.get("headtilt")));
-                    mProject.setVariable("UserHeadNod", Float.parseFloat(tupleData.get("headnod")));
-                    mProject.setVariable("UserLeanPosture", Float.parseFloat(tupleData.get("leanposture")));
-
                 } else if (event.getSender().equalsIgnoreCase("shore")
                         && event.getEvent().equalsIgnoreCase("head")) {
                     final String content = ((SSIStringData) data).toString();
@@ -200,7 +190,26 @@ public final class TriCatWorldSSIPlugin extends SSIRunTimePlugin {
                             // Do nothing
                         }
                     }
-                } else if (event.getSender().equalsIgnoreCase("face")
+                } else if (event.getSender().equalsIgnoreCase("shore")
+                        && event.getEvent().equalsIgnoreCase("smile")) {
+                    if (event.getState().equalsIgnoreCase("completed")) {
+                        //mLogger.message("User stopped smiling (Shore)");
+                        if (mUseJPL) {
+                            // TODO 
+                        } else {
+                            // Set variable
+                            mProject.setVariable("UserSmilingShore", false);
+                        }
+                    } else if (event.getState().equalsIgnoreCase("continued")) {
+                        //mLogger.message("User started smiling (Shore)");
+                        if (mUseJPL) {
+                            // TODO 
+                        } else {
+                            // Set variable
+                            mProject.setVariable("UserSmilingShore", true);
+                        }
+                    }
+                } else if (event.getSender().equalsIgnoreCase("kinect")
                         && event.getEvent().equalsIgnoreCase("smile")) {
                     if (event.getState().equalsIgnoreCase("completed")) {
                         //mLogger.message("User stopped smiling (Kinect)");
@@ -208,7 +217,7 @@ public final class TriCatWorldSSIPlugin extends SSIRunTimePlugin {
                             // TODO 
                         } else {
                             // Set speaking variable
-                            mProject.setVariable("UserSmiling", false);
+                            mProject.setVariable("UserSmilingKinect", false);
                         }
                     } else if (event.getState().equalsIgnoreCase("continued")) {
                         //mLogger.message("User started smiling (Kinect)");
@@ -217,7 +226,7 @@ public final class TriCatWorldSSIPlugin extends SSIRunTimePlugin {
                             // TODO 
                         } else {
                             // Set speaking variable
-                            mProject.setVariable("UserSmiling", true);
+                            mProject.setVariable("UserSmilingKinect", true);
                         }
                     }
                 } else if (event.getSender().equalsIgnoreCase("audio")
@@ -293,7 +302,7 @@ public final class TriCatWorldSSIPlugin extends SSIRunTimePlugin {
                                     list.add(new StringValue(keyword));
                                     mProject.setVariable("KeywordList", listValue);
                                 } else {
-                                    mLogger.failure("No internal list available");
+                                     mLogger.failure("No internal list available");
                                 }
                             } else {
                                 mLogger.failure("No keyword list variable");
