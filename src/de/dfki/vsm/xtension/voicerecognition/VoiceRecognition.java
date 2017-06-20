@@ -8,24 +8,23 @@ package de.dfki.vsm.xtension.voicerecognition;
 import de.dfki.stickman3D.Stickman3D;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.xtension.stickman.StickmanExecutor;
+import de.dfki.vsm.xtension.voicerecognition.observers.Observer;
 import edu.cmu.sphinx.frontend.util.Microphone;
 import edu.cmu.sphinx.recognizer.Recognizer;
 import edu.cmu.sphinx.result.Result;
 import edu.cmu.sphinx.util.props.ConfigurationManager;
-import edu.cmu.sphinx.util.props.PropertyException;
-import java.io.IOException;
+import javafx.scene.layout.HBox;
+
 import java.net.URL;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javafx.scene.layout.HBox;
-import javafx.scene.paint.Color;
 
 /**
  *
  * @author EmpaT
  */
-public class VoiceRecognition extends Thread {
+public class VoiceRecognition implements VoiceRecognizer{
 
     RunTimeProject mProject;
     URL url;
@@ -51,6 +50,32 @@ public class VoiceRecognition extends Thread {
 
     @Override
     public void run() {
+        startRecording();
+    }
+
+    private void switchBackground(String background) {
+        HBox stickmanBox = null;
+        for (Map.Entry<String, Stickman3D> e : StickmanExecutor.stickmanContainer.entrySet()) {
+            String stageID = e.getValue().getStageController().getStageIdentifier();
+            try {
+                stickmanBox = e.getValue().getStageController().getStickmanStage()
+                        .getStickmanBox(stageID);
+            } catch (Exception ex) {
+                Logger.getLogger(VoiceRecognition.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+
+        if (background.equalsIgnoreCase("zero")) {
+            stickmanBox.setStyle("-fx-background-color: white");
+        } else {
+            String pathTobackground = getClass().getClassLoader().getResource("res/img/background/" + background + ".jpg").toExternalForm();
+            stickmanBox.setStyle("-fx-background-image: url('" + pathTobackground + "'); "
+                    + "-fx-background-position: center center; " + "-fx-background-repeat: stretch;");
+        }
+    }
+
+    @Override
+    public void startRecording() {
         if (microphone.startRecording()) {
             System.out.println("Recording started. Start speaking");
         }
@@ -64,6 +89,10 @@ public class VoiceRecognition extends Thread {
                 System.out.println(resultText);
                 String[] splitResultText = resultText.split(" ");
                 String name = splitResultText[0];
+
+                if (resultText.contains("glass")){
+                    mProject.setVariable("action", "Glass");
+                }
 
                 if (resultText.contains("engri")
                         || resultText.contains("angry")
@@ -173,25 +202,23 @@ public class VoiceRecognition extends Thread {
         }
     }
 
-    private void switchBackground(String background) {
-        HBox stickmanBox = null;
-        for (Map.Entry<String, Stickman3D> e : StickmanExecutor.stickmanContainer.entrySet()) {
-            String stageID = e.getValue().getStageController().getStageIdentifier();
-            try {
-                stickmanBox = e.getValue().getStageController().getStickmanStage()
-                        .getStickmanBox(stageID);
-            } catch (Exception ex) {
-                Logger.getLogger(VoiceRecognition.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
-
-        if (background.equalsIgnoreCase("zero")) {
-            stickmanBox.setStyle("-fx-background-color: white");
-        } else {
-            String pathTobackground = getClass().getClassLoader().getResource("res/img/background/" + background + ".jpg").toExternalForm();
-            stickmanBox.setStyle("-fx-background-image: url('" + pathTobackground + "'); "
-                    + "-fx-background-position: center center; " + "-fx-background-repeat: stretch;");
-        }
+    @Override
+    public void stopRecording() {
+        stopVoiceRecognition = false;
     }
 
+    @Override
+    public void register(Observer observer) {
+
+    }
+
+    @Override
+    public void unregister(Observer observer) {
+
+    }
+
+    @Override
+    public void notifyAll(String message) {
+
+    }
 }

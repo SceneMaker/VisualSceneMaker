@@ -5,8 +5,8 @@
       <Feature key="smhost" val="127.0.0.1"/>
       <Feature key="smport" val="8009"/>
       <Feature key="showstickmanname" val="true"/>
-      <Feature key="stickman" val="Stickman2D"/>
-      <Feature key="" val=""/>
+      <Feature key="stickman" val="Pinocchio"/>
+      <Feature key="fullscreen" val="true"/>
     </Plugin>
   </Plugins>
   <Agents>
