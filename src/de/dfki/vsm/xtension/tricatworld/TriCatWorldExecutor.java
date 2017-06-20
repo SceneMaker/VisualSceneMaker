@@ -16,7 +16,7 @@ import de.dfki.vsm.util.extensions.ProjectProperty;
 import de.dfki.vsm.util.extensions.value.ProjectValueProperty;
 import de.dfki.vsm.util.jpl.JPLEngine;
 import de.dfki.vsm.util.xml.XMLUtilities;
-import de.dfki.vsm.xtension.tricatworld.util.property.EmpatProjectProperty;
+import de.dfki.vsm.xtension.tricatworld.util.property.TricatWorldtProjectProperty;
 import de.dfki.vsm.xtension.tricatworld.xml.command.TriCatWorldCommand;
 import de.dfki.vsm.xtension.tricatworld.xml.command.object.TriCatWorldCmdObject;
 import de.dfki.vsm.xtension.tricatworld.xml.command.object.action.TriCatWorldActObject;
@@ -54,7 +54,7 @@ public final class TriCatWorldExecutor extends ActivityExecutor implements Expor
     private final boolean mUseJPL;
     // The flag for executables
     private final boolean mUseExe;
-    private ExportableProperties exportableProperties = new EmpatProjectProperty();
+    private ExportableProperties exportableProperties = new TricatWorldtProjectProperty();
 
     // Construct the executor
     public TriCatWorldExecutor(
@@ -228,7 +228,11 @@ public final class TriCatWorldExecutor extends ActivityExecutor implements Expor
             // Get the unique actor id
             final String aid = mProject.getAgentConfig(activity_actor).getProperty("aid");
             // Check the activity name
-            if (activity_name.equalsIgnoreCase("StopSpeaking")) {
+            if (activity_name.equalsIgnoreCase("SittingStart")) {
+                triCatWorldAct = mActionLoader.loadCharamelAnimation(activity_name, aid);
+            } else if (activity_name.equalsIgnoreCase("SittingSop")) {
+                triCatWorldAct = mActionLoader.loadCharamelAnimation(activity_name, aid);
+            } else if (activity_name.equalsIgnoreCase("StopSpeaking")) {
                 triCatWorldAct = mActionLoader.loadCharamelAnimation(activity_name, aid);
             } else if (activity_name.equalsIgnoreCase("Reject")) {
                 triCatWorldAct = mActionLoader.loadCharamelAnimation(activity_name, aid);
@@ -479,19 +483,17 @@ public final class TriCatWorldExecutor extends ActivityExecutor implements Expor
                     triCatWorldAct.resetActionCmd(activity_actor + "_" + triCatWorldAct.getActionCmd());
                 }
             }  else if (activity_name.equalsIgnoreCase("FieldOfView") && activity_actor.equalsIgnoreCase("player")) { // this is action player only activity_name
-                triCatWorldAct = mActionLoader.loadTWorldAnimation(activity_name,
-                        activity.get("value"), activity.get("time"));
+                triCatWorldAct = mActionLoader.loadTWorldAnimation(activity_name, activity.get("value"), activity.get("time"));
                 if (activity_actor.equalsIgnoreCase("player")) {
                     triCatWorldAct.resetActionCmd(activity_actor + "_" + triCatWorldAct.getActionCmd());
                 }
             }  else if (activity_name.equalsIgnoreCase("ResetFieldOfView") && activity_actor.equalsIgnoreCase("player")) { // this is action player only activity_name
-                triCatWorldAct = mActionLoader.loadTWorldAnimation(activity_name,
-                        activity.get("value"), activity.get("time"));
+                triCatWorldAct = mActionLoader.loadTWorldAnimation(activity_name, activity.get("time"));
                 if (activity_actor.equalsIgnoreCase("player")) {
                     triCatWorldAct.resetActionCmd(activity_actor + "_" + triCatWorldAct.getActionCmd());
                 }
             } else if (activity_name.equalsIgnoreCase("DefaultFocalLength") && activity_actor.equalsIgnoreCase("player")) { // this is action player only activity_name
-                triCatWorldAct = mActionLoader.loadTWorldAnimation(activity_name, activity.get("viewtarget"));
+                triCatWorldAct = mActionLoader.loadTWorldAnimation(activity_name, activity.get("time"));
                 if (activity_actor.equalsIgnoreCase("player")) {
                     triCatWorldAct.resetActionCmd(activity_actor + "_" + triCatWorldAct.getActionCmd());
                 }
