@@ -5,7 +5,11 @@ import de.dfki.vsm.runtime.activity.AbstractActivity;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
 import de.dfki.vsm.runtime.interpreter.value.StringValue;
 import de.dfki.vsm.runtime.project.RunTimeProject;
+import de.dfki.vsm.util.extensions.ExportableProperties;
+import de.dfki.vsm.util.extensions.ProjectProperty;
+import de.dfki.vsm.util.extensions.value.ProjectValueProperty;
 import de.dfki.vsm.xtension.ssi.logger.SSILoggerMessage;
+import de.dfki.vsm.xtension.ssi.util.property.SSIProjectProperty;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -14,12 +18,13 @@ import java.net.InetSocketAddress;
 import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
 import java.util.Enumeration;
+import java.util.HashMap;
 
 /**
  * @author Patrick Gebhard
  * @author Gregor Mehlmann
  */
-public final class SSICmdExecutor extends ActivityExecutor {
+public final class SSICmdExecutor extends ActivityExecutor implements ExportableProperties {
 
     // The SSI receiver data
     private final String mLogHost;
@@ -30,7 +35,8 @@ public final class SSICmdExecutor extends ActivityExecutor {
     private final boolean mListenToStudyMaster; // 9.6.17 add by PG
     private final String mStudyMasterPort;  // 9.6.17 add by PG
     private final String[] mSSIPipe;
-    private StudyMasterReceiverThread mSMReceiver;
+    private StudyMasterReceiverThread mSMReceiver; // 9.6.17 add by PG
+    private ExportableProperties exportableProperties = new SSIProjectProperty();
 
     // Construct executor
     public SSICmdExecutor(
@@ -40,11 +46,11 @@ public final class SSICmdExecutor extends ActivityExecutor {
         mLogVar = mConfig.getProperty("logvar");
         mLogHost = mConfig.getProperty("loghost");
         mLogPort = mConfig.getProperty("logport");
+        mSSIPipe = mConfig.getProperty("pipes").split(",");
         mBroadcasting = Boolean.valueOf(mConfig.getProperty("broadcast")); // 9.6.17 add by PG
         mBroadCastPort = mConfig.getProperty("broadcastport"); // 9.6.17 add by PG
         mListenToStudyMaster = Boolean.valueOf(mConfig.getProperty("listentostudymaster")); // 9.6.17 add by PG
         mStudyMasterPort = mConfig.getProperty("studymasterport"); // 9.6.17 add by PG
-        mSSIPipe = mConfig.getProperty("pipes").split(",");
     }
 
     // Get marker syntax
@@ -186,7 +192,7 @@ public final class SSICmdExecutor extends ActivityExecutor {
 
     private void broadcast(final String message) {
         DatagramSocket c;
-        // Find the server using UDP broadcast
+
         try {
             //Open a random port to send the package
             c = new DatagramSocket();
@@ -196,14 +202,6 @@ public final class SSICmdExecutor extends ActivityExecutor {
 
             byte[] sendData = (message.toString()).getBytes("UTF8");
 
-//            //Try the 255.255.255.255 first
-//            try {
-//                DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, InetAddress.getByName("255.255.255.255"), mPort);
-//                c.send(sendPacket);
-//               // mLogger.message(">>> Request packet sent to: 255.255.255.255 (DEFAULT)");
-//            } catch (Exception e) {
-//            }
-            // Broadcast the message over all the network interfaces
             String hosts = "";
 
             Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
@@ -237,20 +235,7 @@ public final class SSICmdExecutor extends ActivityExecutor {
                     }
                 }
             }
-
-//            mLogger.message("Waiting for a reply ...");
-//
-//            //Wait for a response(s) - This should be in a thread since it could be that there are more than one receiver.
-//            byte[] recvBuf = new byte[15000];
-//            DatagramPacket receivePacket = new DatagramPacket(recvBuf, recvBuf.length);
-//            c.receive(receivePacket);
-//
-//            //Check if the message is correct
-//            String message = new String(receivePacket.getData()).trim();
-//            if (message.equals("VSMMessage#Received")) {
-//                mProject.setVariable(mSceneflowVar, new StringValue("Message successfully delivered"));
-//            }
-            //Close the port!
+            
             c.close();
         } catch (IOException ex) {
             mLogger.message(ex.toString());
@@ -264,5 +249,15 @@ public final class SSICmdExecutor extends ActivityExecutor {
     public void setSceneFlowVariable(String var, String value) {
         mLogger.message("Assigning sceneflow variable " + var + " with value " + value);
         mProject.setVariable(var, new StringValue(value));
+    }
+
+    @Override
+    public HashMap<ProjectProperty, ProjectValueProperty> getExportableProperties() {
+        return exportableProperties.getExportableProperties();
+    }
+
+    @Override
+    public HashMap<ProjectProperty, ProjectValueProperty> getExportableAgentProperties() {
+        return exportableProperties.getExportableAgentProperties();
     }
 }

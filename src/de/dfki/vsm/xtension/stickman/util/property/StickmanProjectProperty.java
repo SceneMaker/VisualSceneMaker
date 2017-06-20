@@ -32,19 +32,16 @@ public class StickmanProjectProperty implements ExportableProperties {
                 8000,
                 new IntegerRenderer());
 
-
         ProjectProperty showstickmanname = new ProjectProperty("showstickmanname",
                 "Show the name of the stickman under it.");
         ProjectValueProperty showStickmanNameVP = new ProjectValueProperty(ValueTYPE.BOOLEAN,
                 true,
                 new BooleanRenderer());
 
-
         ProjectProperty fullscreen = new ProjectProperty("fullscreen","If activated, displays the stage at fullscreen");
         ProjectValueProperty fullscreeVP = new ProjectValueProperty(ValueTYPE.BOOLEAN,
                 false,
                 new BooleanRenderer());
-
 
         ProjectProperty character = new ProjectProperty("stickman");
         ProjectValueProperty characterVP = new ProjectValueProperty(ValueTYPE.LIST,
@@ -57,10 +54,6 @@ public class StickmanProjectProperty implements ExportableProperties {
         ProjectProperty yStage = new ProjectProperty("yStage" , "Initial position of the stage");
         ProjectValueProperty yStageVP = new ProjectValueProperty(ValueTYPE.NUMERIC, 0, new IntegerRenderer());
 
-
-
-
-
         exportableProperties.put(smhost, smhostVP);
         exportableProperties.put(smport, smportVP);
         exportableProperties.put(showstickmanname, showStickmanNameVP);
@@ -68,8 +61,6 @@ public class StickmanProjectProperty implements ExportableProperties {
         exportableProperties.put(character, characterVP);
         exportableProperties.put(xStage, xStageVP);
         exportableProperties.put(yStage, yStageVP);
-
-
     }
 
     public HashMap<ProjectProperty, ProjectValueProperty> getExportableProperties() {

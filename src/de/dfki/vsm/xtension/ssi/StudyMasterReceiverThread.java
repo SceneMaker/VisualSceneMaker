@@ -66,8 +66,8 @@ public class StudyMasterReceiverThread extends Thread {
                         String msg = msgParts[1];
                         String timestamp = "";
                         String timeinfo = "";
-
-                        if (msg.equalsIgnoreCase("ASSIGN")) {
+                        
+                        if ((msg.equalsIgnoreCase("START")) || (msg.equalsIgnoreCase("ASSIGN"))) {
                             String var = msgParts[2];
                             String value = msgParts[3];
 
