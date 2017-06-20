@@ -23,14 +23,16 @@ import java.awt.dnd.DropTargetEvent;
 import java.awt.dnd.DropTargetListener;
 import java.awt.dnd.InvalidDnDOperationException;
 
+import java.awt.event.ActionEvent;
 import java.io.IOException;
 
-import javax.swing.BorderFactory;
-import javax.swing.InputVerifier;
-import javax.swing.JComponent;
-import javax.swing.JEditorPane;
+import javax.swing.*;
+import javax.swing.event.UndoableEditEvent;
+import javax.swing.event.UndoableEditListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import javax.swing.undo.CannotUndoException;
+import javax.swing.undo.UndoManager;
 
 /**
  * @author Gregor Mehlmann
@@ -54,6 +56,9 @@ public class ScriptEditorPane extends JEditorPane implements EventListener {
     //
     private final EditorProject mEditorProject;
     private final EditorConfig mEditorConfig;
+
+    private final UndoManager undo = new UndoManager();
+    private boolean isInitialInsert = false;
 
     // Construct scenescript editor pane
     public ScriptEditorPane(final EditorProject project) {
@@ -83,6 +88,18 @@ public class ScriptEditorPane extends JEditorPane implements EventListener {
             }
         });
 
+        Document doc = getDocument();
+
+        // Listen for undo and redo events
+        doc.addUndoableEditListener(new UndoableEditListener() {
+            public void undoableEditHappened(UndoableEditEvent evt) {
+                if(!isInitialInsert)
+                    undo.addEdit(evt.getEdit());
+            }
+        });
+
+        setUpUndoRedo();
+
         // Register Document Actions
         // registerKeyboardAction(getDocument().getUndoAction(), KeyStroke.getKeyStroke(
         // KeyEvent.VK_Z, InputEvent.CTRL_MASK), JComponent.WHEN_FOCUSED);
@@ -90,6 +107,49 @@ public class ScriptEditorPane extends JEditorPane implements EventListener {
         // KeyEvent.VK_Y, InputEvent.CTRL_MASK), JComponent.WHEN_FOCUSED);
         // Register As Event Listener
         mEventCaster.register(this);
+    }
+
+    private void setUpUndoRedo() {
+        addUndoRedoListeners();
+
+        registerUndoAction();
+
+        registerRedoAction();
+    }
+
+    private void registerRedoAction() {
+        getActionMap().put("Redo",
+                new AbstractAction("Redo") {
+                    public void actionPerformed(ActionEvent evt) {
+                        try {
+                            if (undo.canRedo()) {
+                                undo.redo();
+                            }
+                        } catch (CannotUndoException e) {
+                            System.out.println("Cannot Redo");
+                        }
+                    }
+                });
+    }
+
+    private void registerUndoAction() {
+        getActionMap().put("Undo",
+                new AbstractAction("Undo") {
+                    public void actionPerformed(ActionEvent evt) {
+                        try {
+                            if (undo.canUndo()) {
+                                undo.undo();
+                            }
+                        } catch (CannotUndoException e) {
+                            System.out.println("Cannot Undo");
+                        }
+                    }
+                });
+    }
+
+    private void addUndoRedoListeners() {
+        getInputMap().put(KeyStroke.getKeyStroke("control Z"), "Undo");
+        getInputMap().put(KeyStroke.getKeyStroke("control shift Z"), "Redo");
     }
 
     // Init Drag & Drop Support
@@ -266,6 +326,14 @@ public class ScriptEditorPane extends JEditorPane implements EventListener {
         }
     }
 
+    public void insertMassiveTextOn() {
+        this.isInitialInsert = true;
+    }
+
+    public void insertMassiveTextOff() {
+        this.isInitialInsert = false;
+    }
+
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
@@ -295,5 +363,7 @@ public class ScriptEditorPane extends JEditorPane implements EventListener {
         public int getHeight() {
             return mRect.height;
         }
+
+
     }
 }
