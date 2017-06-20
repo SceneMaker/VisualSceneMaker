@@ -6,67 +6,71 @@
 package de.dfki.vsm.xtension.kinect;
 
 import de.dfki.stickman3D.animationlogic.Animation3D;
-import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.runtime.project.RunTimeProject;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
+
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.net.Socket;
 import java.net.SocketException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
- * @author EmpaT
+ * @author Beka Aptsiauri
  */
 public class SmileReceiver extends Thread
 {
-    DatagramSocket receiverSocket;
-    byte[] receiveData = new byte[1024];
-    
-    RunTimeProject mProject;
-    
+    private static int smileCounter = 0;
+    private DatagramSocket receiverSocket;
+    private byte[] receiveData = new byte[1024];
+
+    private RunTimeProject mProject;
+
     public static boolean go = true;
     String action = "";
-    
-    public SmileReceiver(RunTimeProject project) 
+
+    public SmileReceiver(RunTimeProject project)
     {
         this.mProject = project;
-        try 
+        try
         {
             receiverSocket = new DatagramSocket(1234);
-        } 
-        catch (SocketException ex) 
+        } catch (SocketException ex)
         {
             Logger.getLogger(SmileReceiver.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
+
     @Override
     public void run()
     {
-	while(go)
-	{
+        while (go)
+        {
             try
             {
                 DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
                 receiverSocket.receive(receivePacket);
-		this.action = new String(receivePacket.getData()).trim();
-		if(action.equalsIgnoreCase("smile"))
-		{
-                    if(!Animation3D.isSmileInAction)
+                this.action = new String(receivePacket.getData()).trim();
+                if (action.equalsIgnoreCase("smile"))
+                {
+                    smileCounter++;
+                    if (!Animation3D.isSmileInAction)
                     {
-			mProject.setVariable("smileAction", "smile");
+                        if (smileCounter > 10)
+                        {
+                            mProject.setVariable("smileAction", "smile");
+                            smileCounter = 0;
+                        }
+                    } else
+                    {
+                        smileCounter = 0;
                     }
-                    
-		}
-            }
-            catch(Exception e)
+
+
+                }
+            } catch (Exception e)
             {
                 e.printStackTrace();
             }
-	}
+        }
     }
 }
