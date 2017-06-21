@@ -125,8 +125,6 @@ public class StickmanTtsExecutor extends ActivityExecutor implements ExportableP
         }else{
             executeSpeech(activity, actor, sa);
         }
-
-
     }
 
     private void executeSpeech(AbstractActivity activity, String actor, SpeechActivity sa) {
@@ -398,7 +396,7 @@ public class StickmanTtsExecutor extends ActivityExecutor implements ExportableP
     }
 
     public void scheduleSpeech(String id){
-        SpeakerActivity speakerActivity = (SpeakerActivity) speechActivities.remove(id);
+        SpeakerActivity speakerActivity = speechActivities.remove(id);
         SpeechActivity activity = speakerActivity.getSpeechActivity();
         final WordTimeMarkSequence wts = wtsMap.remove(id);
         final String actor = activity.getActor();

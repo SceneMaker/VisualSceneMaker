@@ -13,7 +13,7 @@ import java.util.HashMap;
 public abstract class StickmanAbstractFactory {
     protected PluginConfig config;
     protected StageRoom stickmanStageC;
-    protected abstract StageRoom getStickman();
+    public abstract StageRoom getStickman();
 
     public abstract Animation getAnimation(String actor);
     public abstract Animation loadEventAnimation(Stickman sm, String name, int duration, boolean block);

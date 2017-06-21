@@ -26,7 +26,7 @@ public class VoiceRecognitionExecutor extends RunTimePlugin
     @Override
     public void launch() 
     {
-        vr = new GoogleVoiceRecognition(mProject);
+        vr = new GoogleVoiceRecognition(mConfig);
         Thread voiceThread = new Thread(vr);
         voiceThread.start();
     }

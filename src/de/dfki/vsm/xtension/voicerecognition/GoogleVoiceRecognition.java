@@ -4,11 +4,13 @@ import com.darkprograms.speech.microphone.Microphone;
 import com.darkprograms.speech.recognizer.GSpeechDuplex;
 import com.darkprograms.speech.recognizer.GSpeechResponseListener;
 import com.darkprograms.speech.recognizer.GoogleResponse;
+import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.evt.EventDispatcher;
-import de.dfki.vsm.xtension.voicerecognition.observers.Observer;
-import de.dfki.vsm.xtension.voicerecognition.observers.VoiceObersverNotifier;
-import de.dfki.vsm.xtension.voicerecognition.observers.VoiceRecognitionEvent;
+import de.dfki.vsm.util.xtensions.observers.Observer;
+import de.dfki.vsm.util.xtensions.observers.VoiceObersverNotifier;
+import de.dfki.vsm.util.xtensions.observers.VoiceRecognitionEvent;
+import de.dfki.vsm.xtension.voicerecognition.plugins.factories.VRPluginFactory;
 import net.sourceforge.javaflacencoder.FLACFileWriter;
 
 import javax.sound.sampled.LineUnavailableException;
@@ -23,11 +25,17 @@ public class GoogleVoiceRecognition  implements VoiceRecognizer{
     private Microphone mic;
     private boolean isRecording;
     private VoiceObersverNotifier notifier;
+    private final VRPluginFactory pluginFactory;
 
-    public GoogleVoiceRecognition(RunTimeProject mProject) {
+    public GoogleVoiceRecognition(PluginConfig mProject) {
         notifier = new VoiceObersverNotifier();
+        pluginFactory = new VRPluginFactory(mProject);
+        startPlugins();
     }
 
+    private void startPlugins() {
+        pluginFactory.startPlugins();
+    }
 
     public void init(){
         mic = new Microphone(FLACFileWriter.FLAC);
@@ -51,9 +59,7 @@ public class GoogleVoiceRecognition  implements VoiceRecognizer{
         try {
             startRecording();
             isRecording = true;
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (LineUnavailableException e) {
+        } catch (IOException | LineUnavailableException e) {
             e.printStackTrace();
         }
     }
@@ -61,23 +67,8 @@ public class GoogleVoiceRecognition  implements VoiceRecognizer{
     public void stopRecording(){
         mic.close();
         isRecording = false;
+        pluginFactory.stopPlugins();
     }
-
-    @Override
-    public void register(Observer observer) {
-        notifier.register(observer);
-    }
-
-    @Override
-    public void unregister(Observer observer) {
-        notifier.unregister(observer);
-    }
-
-    @Override
-    public void notifyAll(String message) {
-        notifier.notifyAll(message);
-    }
-
 
     private class CustomGoogleResponse implements GSpeechResponseListener{
         private EventDispatcher dispatcher = EventDispatcher.getInstance();

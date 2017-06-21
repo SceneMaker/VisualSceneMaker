@@ -29,7 +29,7 @@ public class ReetiFactory extends StickmanAbstractFactory
     }
 
     @Override
-    protected StageRoom getStickman()
+    public StageRoom getStickman()
     {
         final String host = config.getProperty("smhost");
         final String port = config.getProperty("smport");
