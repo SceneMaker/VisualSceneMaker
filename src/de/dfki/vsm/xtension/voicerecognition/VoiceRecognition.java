@@ -58,9 +58,9 @@ public class VoiceRecognition implements VoiceRecognizer{
     private void switchBackground(String background) {
         HBox stickmanBox = null;
         for (Map.Entry<String, Stickman3D> e : StickmanExecutor.stickmanContainer.entrySet()) {
-            String stageID = e.getValue().getStickmanStageController().getStageIdentifier();
+            String stageID = e.getValue().getStageController().getStageIdentifier();
             try {
-                stickmanBox = e.getValue().getStickmanStageController().getStickmanStage()
+                stickmanBox = e.getValue().getStageController().getStickmanStage()
                         .getStickmanBox(stageID);
             } catch (Exception ex) {
                 Logger.getLogger(VoiceRecognition.class.getName()).log(Level.SEVERE, null, ex);
