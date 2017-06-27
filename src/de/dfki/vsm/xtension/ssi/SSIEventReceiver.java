@@ -84,6 +84,9 @@ final class SSIEventReceiver extends Thread {
         while (!mDone) {
             // Receive a new message
             final String message = recvString();
+            
+            // Useful for check which sender/event: mLogger.message("Received message: "  + message);
+            
             //mLogger.failure(message);
             // Check message content
             if (message != null) {
@@ -95,7 +98,7 @@ final class SSIEventReceiver extends Thread {
                     // Create an sequence object
                     final SSIEventArray sequence = new SSIEventArray();
                     if (XMLUtilities.parseFromXMLStream(sequence, stream)) {
-                        // Delegate sequence handling            
+                        // Delegate sequence handling   
                         mHandler.handle(sequence);
                     } else {
                         mLogger.message("Cannot parse the SSI events ...");

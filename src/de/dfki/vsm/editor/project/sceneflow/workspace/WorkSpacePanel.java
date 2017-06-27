@@ -1745,6 +1745,9 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
         }
 
         deselectAllNodes();
+        if(!hasFocus()){
+            requestFocus();
+        }
 
         // enable global context menu for clipbaord actions
         if ((event.getButton() == MouseEvent.BUTTON3) && (event.getClickCount() == 1)) {

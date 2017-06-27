@@ -109,6 +109,13 @@ public class ConfigElement implements ModelObject {
         return null;
     }
 
+    public final String getProperty(final String key, String defaultValue) {
+        String value = getProperty(key);
+        if(value == null)
+            value = defaultValue;
+        return  value;
+    }
+
     // Set A Property Of A Given Key 
     public final void setProperty(final String key, final String value) {
         if (containsKey(key)) {

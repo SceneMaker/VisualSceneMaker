@@ -8,6 +8,7 @@ import de.dfki.stickmanFX.animationlogic.AnimationLoaderFX;
 import de.dfki.stickmanFX.decorators.StageRoomNetworkFXDecorator;
 import de.dfki.stickmanFX.stage.StageRoomFX;
 import de.dfki.vsm.model.project.PluginConfig;
+import java.io.File;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -71,11 +72,30 @@ public class StickmanFxFactory extends StickmanAbstractFactory {
     @Override
     public Animation loadAnimation(Stickman sm, String name, int duration, boolean block, HashMap<String, String> extraParams) {
         Animation a = AnimationLoaderFX.getInstance().loadAnimation(sm, name, duration, false);
-        String paranater="";
+        String paranater = "";
         for (Map.Entry<String, String> entry : extraParams.entrySet()) {
-            paranater = entry.getValue();
+            if (!entry.getValue().isEmpty()) {
+                if (isFloat(entry.getValue())) {
+                    a.setParameter(entry.getValue().replace("'", ""));
+                } else if (entry.getValue().contains(".")) {
+                    String filepath = "res" + File.separator + "background";
+                    String fileAbsolutePath = new File(filepath).getAbsolutePath();
+                    String sfileAbsolutePath = fileAbsolutePath + File.separator + entry.getValue().replace("'", "");
+                    a.setParameter(sfileAbsolutePath);
+                } else {
+                    a.setParameter(entry.getValue().replace("'", ""));
+                }
+            }
         }
-        a.setParameter(paranater);
         return a;
+    }
+
+    private boolean isFloat(String input) {
+        try {
+            Float.parseFloat(input);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 }

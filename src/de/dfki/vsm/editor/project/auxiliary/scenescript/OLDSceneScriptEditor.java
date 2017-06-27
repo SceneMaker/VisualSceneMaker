@@ -202,9 +202,12 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
 
         //
         try {
+            mEditorPane.insertMassiveTextOn();
             mEditorPane.getDocument().insertString(0, mSceneScript.getText(), null);
         } catch (BadLocationException exc) {
             exc.printStackTrace();
+        }finally {
+            mEditorPane.insertMassiveTextOff();
         }
 
         searchOffsets = new ArrayList<Integer>();

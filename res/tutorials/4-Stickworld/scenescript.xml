@@ -76,42 +76,42 @@
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="388" upper="465" language="en" identifier="BackgroundChangeoffice">
-    <SceneTurn lower="420" upper="465" speaker="susanne">
-      <SceneUttr lower="429" upper="465" punct=".">
+  <SceneObject lower="388" upper="471" language="en" identifier="BackgroundChangeoffice">
+    <SceneTurn lower="420" upper="471" speaker="susanne">
+      <SceneUttr lower="429" upper="471" punct=".">
         <SceneWord lower="429" upper="435" text="Office"/>
         <ActionObject lower="437" upper="450" actor="" name="SetBackground">
-          <ActionFeature lower="451" upper="463" key="value" val="office"/>
+          <ActionFeature lower="451" upper="469" key="value" val="'office.jpg'"/>
         </ActionObject>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="467" upper="553" language="en" identifier="BackgroundChangegrassland">
-    <SceneTurn lower="502" upper="553" speaker="susanne">
-      <SceneUttr lower="511" upper="553" punct=".">
-        <SceneWord lower="511" upper="520" text="Grassland"/>
-        <ActionObject lower="522" upper="535" actor="" name="SetBackground">
-          <ActionFeature lower="536" upper="551" key="value" val="grassland"/>
+  <SceneObject lower="473" upper="565" language="en" identifier="BackgroundChangegrassland">
+    <SceneTurn lower="508" upper="565" speaker="susanne">
+      <SceneUttr lower="517" upper="565" punct=".">
+        <SceneWord lower="517" upper="526" text="Grassland"/>
+        <ActionObject lower="528" upper="541" actor="" name="SetBackground">
+          <ActionFeature lower="542" upper="563" key="value" val="'grassland.jpg'"/>
         </ActionObject>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="555" upper="623" language="en" identifier="BackgroundChangeRed">
-    <SceneTurn lower="584" upper="623" speaker="susanne">
-      <SceneUttr lower="593" upper="623" punct=".">
-        <SceneWord lower="593" upper="596" text="Red"/>
-        <ActionObject lower="598" upper="611" actor="" name="SetBackground">
-          <ActionFeature lower="612" upper="621" key="value" val="red"/>
+  <SceneObject lower="567" upper="635" language="en" identifier="BackgroundChangeRed">
+    <SceneTurn lower="596" upper="635" speaker="susanne">
+      <SceneUttr lower="605" upper="635" punct=".">
+        <SceneWord lower="605" upper="608" text="Red"/>
+        <ActionObject lower="610" upper="623" actor="" name="SetBackground">
+          <ActionFeature lower="624" upper="633" key="value" val="red"/>
         </ActionObject>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="625" upper="699" language="en" identifier="BackgroundChangeWhite">
-    <SceneTurn lower="656" upper="699" speaker="susanne">
-      <SceneUttr lower="665" upper="699" punct=".">
-        <SceneWord lower="665" upper="670" text="white"/>
-        <ActionObject lower="672" upper="685" actor="" name="SetBackground">
-          <ActionFeature lower="686" upper="697" key="value" val="white"/>
+  <SceneObject lower="637" upper="711" language="en" identifier="BackgroundChangeWhite">
+    <SceneTurn lower="668" upper="711" speaker="susanne">
+      <SceneUttr lower="677" upper="711" punct=".">
+        <SceneWord lower="677" upper="682" text="white"/>
+        <ActionObject lower="684" upper="697" actor="" name="SetBackground">
+          <ActionFeature lower="698" upper="709" key="value" val="white"/>
         </ActionObject>
       </SceneUttr>
     </SceneTurn>
