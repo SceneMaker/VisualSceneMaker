@@ -66,15 +66,18 @@ distmorethan(A, B, D) :-
 
 /* Temporal Ordering Relations */
 follows(A, B) :-
-    val('mode', MA, A), val('mode', MB, B),
+    val('mode', MA, A),
+    val('mode', MB, B),
     MA == MB, after(A, B).
 
 followed(A, B) :-
-    val('mode', MA, A), val('mode', MB, B),
+    val('mode', MA, A),
+    val('mode', MB, B),
     MA == MB, before(A, B).
 
 between(E, A, B) :-
-    follows(E, A), followed(E, B).
+    follows(E, A),
+    followed(E, B).
 
 followers(E, L) :-
     bagof(T, (fsr(T), follows(T, E)), L).
