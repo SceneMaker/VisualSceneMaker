@@ -30,7 +30,7 @@ expired(Name) :-
   
 timeout(Name, _) :-
   timer(Name, Time), !,
-  out('Evaluating Timer '), out(Name), nl,
+  %out('Evaluating Timer '), out(Name), nl,
   now(Now), Now > Time,
   out('Retracting Timer '), out(Name), nl,
   retractall(timer(Name, Time)).
