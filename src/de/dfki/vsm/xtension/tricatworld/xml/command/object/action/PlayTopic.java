@@ -23,11 +23,11 @@ public class PlayTopic extends TriCatWorldActObject implements XMLParseable, XML
     private String mPlayQuestion = "";
     private String mPlayAnswer = "";
 
-    public PlayTopic(String topicId, boolean playQuestion, boolean playAnswer) {
+    public PlayTopic(String topicId, String playQuestion, String playAnswer) {
         mName = "playtopic";
         mTopicId = topicId;
-        mPlayQuestion = (playQuestion) ? "1" : "0";
-        mPlayAnswer = (playAnswer) ? "1" : "0";
+        mPlayQuestion = playQuestion;
+        mPlayAnswer = playAnswer;
     }
 
     @Override

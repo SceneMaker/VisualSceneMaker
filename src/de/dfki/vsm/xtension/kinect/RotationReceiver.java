@@ -6,85 +6,79 @@
 package de.dfki.vsm.xtension.kinect;
 
 import de.dfki.stickman3D.animationlogic.Animation3D;
-import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.runtime.project.RunTimeProject;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
+
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.net.Socket;
 import java.net.SocketException;
 import java.text.NumberFormat;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
- * @author EmpaT
+ * @author Beka Aptsiauri
  */
 public class RotationReceiver extends Thread
 {
     DatagramSocket receiverSocket;
     byte[] receiveData = new byte[1024];
-    
+
     RunTimeProject mProject;
-    
+
     public static boolean go = true;
     String action = "";
-    
+
     NumberFormat nf;
-    
-    public RotationReceiver(RunTimeProject project) 
+
+    public RotationReceiver(RunTimeProject project)
     {
         this.mProject = project;
         nf = NumberFormat.getInstance();
-        try 
+        try
         {
             receiverSocket = new DatagramSocket(1235);
-        } 
-        catch (SocketException ex) 
+        } catch (SocketException ex)
         {
             Logger.getLogger(RotationReceiver.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
+
     @Override
     public void run()
     {
-	while(go)
-	{
+        while (go)
+        {
             try
             {
                 DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
-		receiverSocket.receive(receivePacket);
-		this.action = new String(receivePacket.getData()).trim();
-		
-                if(!action.equalsIgnoreCase("smile"))
+                receiverSocket.receive(receivePacket);
+                this.action = new String(receivePacket.getData()).trim();
+
+                if (!action.equalsIgnoreCase("smile"))
                 {
                     String[] splitArray = action.split(",");
                     int x = (int) Float.parseFloat(splitArray[0]);
                     int y = (int) Float.parseFloat(splitArray[1]);
                     int z = (int) Float.parseFloat(splitArray[2]);
-                    
-                    if(!Animation3D.isHeadTiltInAction)
+
+                    if (!Animation3D.isHeadTiltInAction)
                     {
-                        if(x<-5)
-                           mProject.setVariable("headTilt", "down"); 
-                        if(z>15)
+                        if (x < -5)
+                            mProject.setVariable("headTilt", "down");
+                        if (z > 15)
                             mProject.setVariable("headTilt", "left");
-                        if(z<-15)
+                        if (z < -15)
                             mProject.setVariable("headTilt", "right");
                     }
-    //		mStickmanFX.mHeadFX.mXRotation = -x;
-    //		mStickmanFX.mHeadFX.mYRotation = y;
-    //		mStickmanFX.mHeadFX.mZRotation = -z;
-    //		mStickmanFX.mHeadFX.calculate(0);
+                    //		mStickmanFX.mHeadFX.mXRotation = -x;
+                    //		mStickmanFX.mHeadFX.mYRotation = y;
+                    //		mStickmanFX.mHeadFX.mZRotation = -z;
+                    //		mStickmanFX.mHeadFX.calculate(0);
                 }
-            }
-            catch(Exception e)
+            } catch (Exception e)
             {
                 e.printStackTrace();
             }
-	}
+        }
     }
 }

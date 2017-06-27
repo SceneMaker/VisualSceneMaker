@@ -20,6 +20,8 @@ import de.dfki.vsm.runtime.player.RunTimePlayer;
 import de.dfki.vsm.runtime.plugin.RunTimePlugin;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 import de.dfki.vsm.util.xml.XMLUtilities;
+import org.jetbrains.annotations.Nullable;
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -36,6 +38,7 @@ import java.util.Iterator;
  */
 public class RunTimeProject {
 
+    protected  boolean isNewProject = false;
     // The singelton logger instance
     protected final LOGDefaultLogger mLogger
             = LOGDefaultLogger.getInstance();
@@ -72,6 +75,10 @@ public class RunTimeProject {
         mProjectPath = file.getPath();
         // Call the local parsing method
         parse(mProjectPath);
+    }
+
+    public boolean isNewProject() {
+        return isNewProject;
     }
 
     // Get the path of the project (added PG 11.4.2016)
@@ -153,7 +160,6 @@ public class RunTimeProject {
         }
         // Return NULL at failure
         return null;
-
     }
 
     public boolean parse(final String file) {
@@ -288,6 +294,10 @@ public class RunTimeProject {
     // Launch the runtime objects of the project
     public final boolean launch() {
         // Launch the scene player
+        if(isNewProject()){
+            loadRunTimePlugins();
+            isNewProject = false;
+        }
         createRuntimePlayerIfNeeded();
         mRunTimePlayer.launch();
         // Launch all plugins
