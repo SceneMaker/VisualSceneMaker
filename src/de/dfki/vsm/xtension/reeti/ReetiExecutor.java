@@ -22,12 +22,12 @@ import java.util.LinkedList;
 /**
  * @author Gregor Mehlmann
  */
-public final class ReetiExecutor extends ActivityExecutor implements ExportableProperties {
+public class ReetiExecutor extends ActivityExecutor implements ExportableProperties {
 
     // The unique command id counter
     private volatile long mCmdId = 0;
     // The singelton logger instance
-    private final LOGConsoleLogger mLogger
+    protected final LOGConsoleLogger mLogger
             = LOGConsoleLogger.getInstance();
     // The map of activity workers
     private final HashMap<String, ActivityWorker> mWorkerMap
@@ -110,7 +110,7 @@ public final class ReetiExecutor extends ActivityExecutor implements ExportableP
     }
 
     @Override
-    public final void execute(final AbstractActivity activity) {
+    public void execute(final AbstractActivity activity) {
         // Get the current worker
         final ActivityWorker worker = (ActivityWorker) Thread.currentThread();
         // Get activity information
