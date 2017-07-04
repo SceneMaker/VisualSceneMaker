@@ -96,7 +96,8 @@ dell(Feature, [Feature:_|Input], Output) :-
     dell(Feature, Input, Output), !.
 dell(Feature, [H|Input], [H|Output]) :-
     dell(Feature, Input, Output), !.
-dell(_, Value, Value) :- fvalterm(Value).
+dell(_, [], _) :- !, fail.
+dell(_, Value, Value) :- !, fvalterm(Value).
 
 /* Change A Feature Value */
 set(Path, Value, Input, Output) :-
@@ -109,7 +110,7 @@ del(Record) :-
   out('Retracting:\n'), out(Record).
   
 jel(Record) :-
-  retract(fsr(Record)), jvw(Record, String)%,
+  retract(fsr(Record))%, jvw(Record, String),
   %concat('Retracting:\n', String, Output), jog(Output)
   .
   
@@ -121,7 +122,7 @@ add(Record) :-
   out('Cannot Assert:\n'), out(Record).
 
 jdd(Record) :-
-  assertz(fsr(Record)), jvw(Record, String),
+  assertz(fsr(Record)), %jvw(Record, String),
   %concat('Asserting:\n', String, Output), jog(Output),
   !.
 jdd(Record) :-

@@ -96,7 +96,7 @@ dell(Feature, [Feature:_|Input], Output) :-
     dell(Feature, Input, Output), !.
 dell(Feature, [H|Input], [H|Output]) :-
     dell(Feature, Input, Output), !.
-dell(_, Value, Value) :- fvalterm(Value).
+dell(_, Value, Value) :- !, fvalterm(Value).
 
 /* Change A Feature Value */
 set(Path, Value, Input, Output) :-
