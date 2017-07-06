@@ -8,6 +8,7 @@ import de.dfki.vsm.util.xtensions.observers.VoiceRecognitionEvent;
 import de.dfki.vsm.xtension.remote.client.factories.ClientsFactory;
 import de.dfki.vsm.xtension.remote.client.sender.Clientable;
 import de.dfki.vsm.xtension.remote.client.sender.DataSendable;
+import de.dfki.vsm.xtension.voicerecognition.plugins.VRPlugin;
 
 import java.io.IOException;
 
@@ -23,7 +24,6 @@ public class VRSender implements EventListener, VRPlugin {
 
     public VRSender(PluginConfig mConfig){
         this.mConfig = mConfig;
-        this.startPlugin();
     }
 
     @Override
@@ -55,6 +55,11 @@ public class VRSender implements EventListener, VRPlugin {
         dispatcher.register(this);
         ClientsFactory clientsFactory = new ClientsFactory(mConfig);
         client = clientsFactory.buildClient();
+        try {
+            client.connect();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override

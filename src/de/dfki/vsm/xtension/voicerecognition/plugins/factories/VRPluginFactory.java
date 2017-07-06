@@ -2,8 +2,9 @@ package de.dfki.vsm.xtension.voicerecognition.plugins.factories;
 
 import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.runtime.project.RunTimeProject;
-import de.dfki.vsm.xtension.voicerecognition.plugins.sender.VRPlugin;
+import de.dfki.vsm.xtension.voicerecognition.plugins.VRPlugin;
 import de.dfki.vsm.xtension.voicerecognition.plugins.sender.VRSender;
+import de.dfki.vsm.xtension.voicerecognition.plugins.variablesetter.VADPlugin;
 
 import java.util.LinkedList;
 
@@ -13,18 +14,38 @@ import java.util.LinkedList;
 public class VRPluginFactory {
     private final PluginConfig mConfig;
     private final LinkedList<VRPlugin> plugins = new LinkedList<>();
+    private final RunTimeProject project;
+    private String[] pluginsNames;
 
-    public VRPluginFactory(PluginConfig mConfig) {
+    public VRPluginFactory(PluginConfig mConfig, RunTimeProject project) {
+
+        this.project = project;
         this.mConfig = mConfig;
     }
 
     public void startPlugins() {
-        String pluginName = mConfig.getProperty("pluginName");
-        if(pluginName.equalsIgnoreCase("VRSender")){
-             VRPlugin plugin = new VRSender(mConfig);
-             plugin.startPlugin();
-             plugins.add(plugin);
+        readPlugins();
+        for (String pluginName: pluginsNames ) {
+            VRPlugin plugin = startPlugin(pluginName);
+            plugin.startPlugin();
+            plugins.add(plugin);
         }
+
+    }
+
+    private VRPlugin startPlugin(String pluginName) {
+        VRPlugin plugin = new DummyPlugin();
+        if (pluginName.equalsIgnoreCase("VRSender"))
+            plugin = new VRSender(mConfig);
+        else if (pluginName.equalsIgnoreCase("VADPlugin"))
+            plugin = new VADPlugin(project);
+
+        return plugin;
+
+    }
+    private void readPlugins() {
+        String pluginsConf = mConfig.getProperty("plugins");
+        pluginsNames = pluginsConf.split(",");
     }
 
     public void stopPlugins() {
@@ -32,4 +53,22 @@ public class VRPluginFactory {
             plugin.stopPlugin();
         }
     }
+
+    private class DummyPlugin implements VRPlugin{
+
+        @Override
+        public void startPlugin() {
+
+        }
+
+        @Override
+        public void stopPlugin() {
+
+        }
+    }
 }
+
+
+
+
+

@@ -18,6 +18,7 @@ public class VRSendable implements DataSendable {
 
     @Override
     public String buildDataToSent() {
+        prepareData();
         return xmlBuilder.toString();
     }
 

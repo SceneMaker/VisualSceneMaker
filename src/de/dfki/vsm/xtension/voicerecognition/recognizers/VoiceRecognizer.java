@@ -1,4 +1,4 @@
-package de.dfki.vsm.xtension.voicerecognition;
+package de.dfki.vsm.xtension.voicerecognition.recognizers;
 
 import de.dfki.vsm.util.xtensions.observers.Observable;
 

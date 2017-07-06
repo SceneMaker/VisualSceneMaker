@@ -3,12 +3,11 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.dfki.vsm.xtension.voicerecognition;
+package de.dfki.vsm.xtension.voicerecognition.recognizers;
 
 import de.dfki.stickman3D.Stickman3D;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.xtension.stickman.StickmanExecutor;
-import de.dfki.vsm.util.xtensions.observers.Observer;
 import edu.cmu.sphinx.frontend.util.Microphone;
 import edu.cmu.sphinx.recognizer.Recognizer;
 import edu.cmu.sphinx.result.Result;
@@ -24,7 +23,7 @@ import java.util.logging.Logger;
  *
  * @author EmpaT
  */
-public class VoiceRecognition implements VoiceRecognizer{
+public class SphinxVoiceRecognition implements VoiceRecognizer {
 
     RunTimeProject mProject;
     URL url;
@@ -34,7 +33,7 @@ public class VoiceRecognition implements VoiceRecognizer{
 
     boolean stopVoiceRecognition = false;
 
-    public VoiceRecognition(RunTimeProject project) {
+    public SphinxVoiceRecognition(RunTimeProject project) {
         this.mProject = project;
         try {
             System.out.println("Recording loaded...");
@@ -61,7 +60,7 @@ public class VoiceRecognition implements VoiceRecognizer{
                 stickmanBox = e.getValue().getStageController().getStickmanStage()
                         .getStickmanBox(stageID);
             } catch (Exception ex) {
-                Logger.getLogger(VoiceRecognition.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(SphinxVoiceRecognition.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
 
