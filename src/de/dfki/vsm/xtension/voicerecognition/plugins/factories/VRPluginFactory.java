@@ -4,7 +4,7 @@ import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.xtension.voicerecognition.plugins.VRPlugin;
 import de.dfki.vsm.xtension.voicerecognition.plugins.sender.VRSender;
-import de.dfki.vsm.xtension.voicerecognition.plugins.variablesetter.VADPlugin;
+import de.dfki.vsm.xtension.voicerecognition.plugins.variablesetter.VariablePlugin;
 
 import java.util.LinkedList;
 
@@ -37,8 +37,8 @@ public class VRPluginFactory {
         VRPlugin plugin = new DummyPlugin();
         if (pluginName.equalsIgnoreCase("VRSender"))
             plugin = new VRSender(mConfig);
-        else if (pluginName.equalsIgnoreCase("VADPlugin"))
-            plugin = new VADPlugin(project);
+        else if (pluginName.equalsIgnoreCase("VariablePlugin"))
+            plugin = new VariablePlugin(project);
 
         return plugin;
 

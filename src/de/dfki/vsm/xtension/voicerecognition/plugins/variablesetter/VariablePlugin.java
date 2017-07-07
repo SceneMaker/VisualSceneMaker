@@ -11,12 +11,12 @@ import de.dfki.vsm.xtension.voicerecognition.plugins.VRPlugin;
 /**
  * Created by alvaro on 6/21/17.
  */
-public class VADPlugin implements VRPlugin, EventListener {
+public class VariablePlugin implements VRPlugin, EventListener {
 
     private final RunTimeProject project;
-    private String variableName = "speaking";
+    private String variableName = "spokenText";
     private final EventDispatcher dispatcher = EventDispatcher.getInstance();
-    public VADPlugin(RunTimeProject project){
+    public VariablePlugin(RunTimeProject project){
         this.project = project;
     }
 
@@ -35,7 +35,8 @@ public class VADPlugin implements VRPlugin, EventListener {
     public void update(EventObject event) {
         if(event instanceof VoiceRecognitionEvent){
             if(project.hasVariable(variableName)){
-                project.setVariable(variableName, true);
+                String spokenText = ((VoiceRecognitionEvent)event).getText();
+                project.setVariable(variableName, spokenText);
             }
         }
     }
