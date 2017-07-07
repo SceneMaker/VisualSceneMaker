@@ -66,15 +66,18 @@ distmorethan(A, B, D) :-
 
 /* Temporal Ordering Relations */
 follows(A, B) :-
-    val('mode', MA, A), val('mode', MB, B),
+    val('mode', MA, A),
+    val('mode', MB, B),
     MA == MB, after(A, B).
 
 followed(A, B) :-
-    val('mode', MA, A), val('mode', MB, B),
+    val('mode', MA, A),
+    val('mode', MB, B),
     MA == MB, before(A, B).
 
 between(E, A, B) :-
-    follows(E, A), followed(E, B).
+    follows(E, A),
+    followed(E, B).
 
 followers(E, L) :-
     bagof(T, (fsr(T), follows(T, E)), L).
@@ -98,14 +101,12 @@ framed(E, A, B) :-
 newest_of_list(R, [R]):- !.
 newest_of_list(R, [H|T]) :-
   newest_of_list(L, T),
-    ( after(L, H), !, R = L
-    ; after(H, L), !, R = H ).
+  ( after(L, H), !, R = L ; after(H, L), !, R = H ).
 
 oldest_of_list(R, [R]):- !.
 oldest_of_list(R, [H|T]) :-
   oldest_of_list(L, T),
-    ( before(L, H), !, R = L
-    ; before(H, L), !, R = H ).
+  ( before(L, H), !, R = L ; before(H, L), !, R = H ).
 
 oldest(T, C, N) :-
   bagof(T, C, L), oldest_of_list(N, L).

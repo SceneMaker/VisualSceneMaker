@@ -129,3 +129,37 @@ ancestors([mode:2, time:8000,dist:100,life:100], L2), out(L2),
 interims([mode:2, time:8000,dist:100,life:100], [mode:2, time:2000,dist:100,life:100], L3), out(L3).
 
 
+test_beach :-
+add([type:event,name:user,mode:gaze, time:0,
+     data:[type:photo,scene:forest,name:2]]),
+add([type:event,name:user,mode:gaze, time:0,
+     data:[type:photo,scene:forest,name:2]]),
+add([type:event,name:user,mode:gaze, time:0,
+     data:[type:photo,scene:forest,name:2]]),
+add([type:event,name:user,mode:gaze, time:0,
+     data:[type:photo,scene:forest,name:2]]),
+add([type:event,name:user,mode:gaze, time:0,
+     data:[type:photo,scene:forest,name:2]]),
+add([type:event,name:user,mode:gaze, time:0,
+     data:[type:photo,scene:forest,name:2]]),
+add([type:event,name:user,mode:gaze, time:0,
+     data:[type:photo,scene:forest,name:2]]),
+     
+add([type:event,name:user,mode:gaze, time:0,
+     data:[type:photo,scene:beach,name:1]]),
+add([type:event,name:user,mode:gaze, time:0,
+     data:[type:photo,scene:beach,name:1]]),
+add([type:event,name:user,mode:gaze, time:0,
+     data:[type:photo,scene:beach,name:1]]),
+     
+add([type:event,name:user,mode:gaze, time:0,
+     data:[type:photo,scene:beach,name:3]]),
+add([type:event,name:user,mode:gaze, time:0,
+     data:[type:photo,scene:beach,name:3]]),
+add([type:event,name:user,mode:gaze, time:0,
+     data:[type:photo,scene:beach,name:3]]),
+add([type:event,name:user,mode:gaze, time:0,
+     data:[type:photo,scene:beach,name:3]]),
+add([type:event,name:user,mode:gaze, time:0,
+     data:[type:photo,scene:beach,name:3]]).
+     
