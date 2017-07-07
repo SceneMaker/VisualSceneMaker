@@ -8,9 +8,9 @@ import main.voiceactivitydetector.observer.VoiceNotifiable;
  */
 public class VADNotifiable implements VoiceNotifiable {
 
+    public static final int SILENCE_THRESHOLD_MILLISECONDS = 1500;
     private final RunTimeProject project;
     private final String variableName;
-    private boolean currentStatus = false;
     private Ticker ticker;
     public VADNotifiable(RunTimeProject project, String variableName){
         this.project = project;
@@ -23,20 +23,27 @@ public class VADNotifiable implements VoiceNotifiable {
     @Override
     public void handleSpeakingActivity(boolean speaking) {
         if(project.hasVariable(variableName)){
-            if(!speaking){
-                if(ticker.tick() >= 1500){
-                    ticker.markStartTick();
-                    currentStatus = false;
-                    project.setVariable(variableName, false);
-                }
-            }
-
-            if(speaking){
-                project.setVariable(variableName, true);
-                currentStatus = true;
-                ticker.markStartTick();
-            }
-
+            setVariable(speaking);
         }
+    }
+
+    private void setVariable(boolean speaking) {
+        if(!speaking){
+            setNotSpeaking();
+        }else{
+            setSpeaking();
+        }
+    }
+
+    private void setNotSpeaking() {
+        if(ticker.tick() >= SILENCE_THRESHOLD_MILLISECONDS){
+            ticker.markStartTick();
+            project.setVariable(variableName, false);
+        }
+    }
+
+    private void setSpeaking() {
+        project.setVariable(variableName, true);
+        ticker.markStartTick();
     }
 }

@@ -3,12 +3,11 @@ package de.dfki.vsm.xtension.voicerecognition.vad;
 /**
  * Created by alvaro on 7/7/17.
  */
-public class Ticker {
+class Ticker {
     private long silenceStart = System.currentTimeMillis();
     private long silenceEnd = System.currentTimeMillis();
-    private long tDelta;
 
-    public  void markStartTick(){
+    void markStartTick(){
         silenceStart = System.currentTimeMillis();
     }
 
@@ -16,9 +15,9 @@ public class Ticker {
         silenceEnd = System.currentTimeMillis();
     }
 
-    public long tick(){
+    long tick(){
         markEndTick();
-        tDelta = silenceEnd - silenceStart;
+        long tDelta = silenceEnd - silenceStart;
         return tDelta;
     }
 }
