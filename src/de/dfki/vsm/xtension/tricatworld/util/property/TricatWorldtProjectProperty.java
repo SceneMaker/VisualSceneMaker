@@ -14,10 +14,10 @@ import java.util.HashMap;
 /**
  * Created by alvaro on 4/26/17.
  */
-public class EmpatProjectProperty implements ExportableProperties {
+public class TricatWorldtProjectProperty implements ExportableProperties {
     HashMap<ProjectProperty, ProjectValueProperty> exportableProperties = new HashMap<>();
 
-    public EmpatProjectProperty(){
+    public TricatWorldtProjectProperty(){
         ProjectProperty usejpl = new ProjectProperty("usejpl");
         ProjectValueProperty usejplVP = new ProjectValueProperty(ValueTYPE.BOOLEAN,
                 false,
