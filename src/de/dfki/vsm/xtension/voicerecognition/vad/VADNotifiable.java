@@ -8,7 +8,7 @@ import vad.observer.VoiceNotifiable;
  */
 public class VADNotifiable implements VoiceNotifiable {
 
-    public static final int SILENCE_THRESHOLD_MILLISECONDS = 1500;
+    public static final int SILENCE_THRESHOLD_MILLISECONDS = 1000;
     private final RunTimeProject project;
     private final String variableName;
     private Ticker ticker;
