@@ -1,7 +1,7 @@
 package de.dfki.vsm.xtension.voicerecognition.vad;
 
 import de.dfki.vsm.runtime.project.RunTimeProject;
-import main.voiceactivitydetector.observer.VoiceNotifiable;
+import vad.observer.VoiceNotifiable;
 
 /**
  * Created by alvaro on 7/7/17.
