@@ -20,23 +20,13 @@ public class GenericMicrophone implements Audible {
         mic = new Microphone(FLACFileWriter.FLAC);
     }
 
-    @Override
-    public AudioInputStream getAudioStream() {
-        return null;
-    }
 
     @Override
     public void stopListening() {
         mic.close();
     }
 
-    @Override
-    public TargetDataLine getDataLine() {
-        return mic.getTargetDataLine();
-    }
 
-    @Override
-    public AudioFormat getAudioFormat() {
-        return mic.getAudioFormat();
-    }
+
+
 }

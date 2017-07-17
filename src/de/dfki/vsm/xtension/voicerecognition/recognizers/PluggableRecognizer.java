@@ -31,7 +31,7 @@ public abstract class PluggableRecognizer implements VoiceRecognizer {
     }
 
     public void stopRecording(){
-        mic.stopListening();
+        //mic.stopListening();
         isRecording = false;
         pluginFactory.stopPlugins();
     }
