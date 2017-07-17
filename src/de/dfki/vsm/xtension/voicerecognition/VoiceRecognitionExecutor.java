@@ -8,9 +8,10 @@ package de.dfki.vsm.xtension.voicerecognition;
 import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.runtime.plugin.RunTimePlugin;
 import de.dfki.vsm.runtime.project.RunTimeProject;
-
-import javax.sound.sampled.LineUnavailableException;
-import java.io.IOException;
+import de.dfki.vsm.xtension.voicerecognition.recognizers.OnlineVoiceRecognition;
+import de.dfki.vsm.xtension.voicerecognition.recognizers.SphinxVoiceRecognition;
+import de.dfki.vsm.xtension.voicerecognition.recognizers.VoiceRecognizer;
+import org.jetbrains.annotations.NotNull;
 
 /**
  *
@@ -29,9 +30,25 @@ public class VoiceRecognitionExecutor extends RunTimePlugin
     @Override
     public void launch() 
     {
-        vr = new GoogleVoiceRecognition(mProject);
+        vr =getVoiceRecognizer();
         Thread voiceThread = new Thread(vr);
         voiceThread.start();
+    }
+
+    private VoiceRecognizer getVoiceRecognizer(){
+        if(mConfig.getProperty("recognizer") == null)
+            return getDefaultVoiceRecognition();
+        if(mConfig.getProperty("recognizer").equalsIgnoreCase("watson")){
+            return new OnlineVoiceRecognition(mConfig, mProject, "watson");
+        }else if(mConfig.getProperty("recognizer").equalsIgnoreCase("google")){
+            return new OnlineVoiceRecognition(mConfig, mProject, "google");
+        }
+        return getDefaultVoiceRecognition();
+    }
+
+    @NotNull
+    private VoiceRecognizer getDefaultVoiceRecognition() {
+        return new SphinxVoiceRecognition(mProject);
     }
 
     @Override
