@@ -14,6 +14,7 @@ import de.dfki.vsm.xtesting.NewPropertyManager.model.tableView.PluginTableConfig
 import de.dfki.vsm.xtesting.NewPropertyManager.model.tableView.TableConfig;
 import de.dfki.vsm.xtesting.NewPropertyManager.util.*;
 import de.dfki.vsm.xtesting.NewPropertyManager.util.events.*;
+import java.io.File;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -115,6 +116,20 @@ public class PropertyManagerController implements Initializable, TreeObserver {
             plugins.put(p.getPluginName(), p);
         }
 
+    }
+
+    public void ReNameProject(String s) {
+        mProject.setProjectName(s);
+        saveConfig();
+//        File dir = new File(mProject.getProjectPath());
+//        File newDir = new File(dir.getParent() + File.separator + s);
+//        boolean isFileRenamed = dir.renameTo(newDir);
+//        if (isFileRenamed) {
+//            System.out.println("ReNameProject successful!");
+//            mProject.setProjectPath(newDir.getAbsolutePath());
+//        } else {
+//            System.out.println("ReNameProject failed!");
+//        }
     }
 
     @Override
@@ -660,6 +675,14 @@ public class PropertyManagerController implements Initializable, TreeObserver {
         }
         if (entry instanceof EntryAgent) {
             changeAgentName((EntryAgent) entry, oldValue, newValue);
+        }
+
+        if (entry instanceof EntryRoot) {
+            ReNameProject(newValue);
+        }
+
+        if (entry instanceof EntryDevice) {
+            ;
         }
     }
 
