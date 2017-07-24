@@ -86,6 +86,10 @@ public class RunTimeProject {
         return mProjectPath;
     }
 
+    public void setProjectPath(String s) {
+        mProjectPath = s;
+    }
+    
     // Get the name of the project's configuration
     public final String getProjectName() {
         return mProjectConfig.getProjectName();

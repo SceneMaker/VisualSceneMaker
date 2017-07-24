@@ -104,7 +104,7 @@ public class ContextTreeItem extends AbstractTreeItem implements TreeObservable 
 
         if (config.getProperty("stickman") != null && config.getProperty("stickman").equals("StickmanLegacy")) {
             throw new UnsupportedOperationException("StickmanLegacy config is not defined.");
-            
+
         } else if (config.getProperty("stickman") != null && config.getProperty("stickman").equals("Pinocchio")) {
             StageRoom stickmanStage = new StageRoom3D(0, 0, false);
             for (EntryAgent agent : plugin.getAgents()) {
@@ -114,7 +114,7 @@ public class ContextTreeItem extends AbstractTreeItem implements TreeObservable 
                 }
             }
             stickmanStage.launchConfiguration(filepath);
-            
+
         } else {
             StageRoom stickmanStage = new StageRoomFX(0, 0, false);
             for (EntryAgent agent : plugin.getAgents()) {
