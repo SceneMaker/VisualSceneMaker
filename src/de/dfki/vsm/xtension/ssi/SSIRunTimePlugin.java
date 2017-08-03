@@ -61,4 +61,8 @@ public abstract class SSIRunTimePlugin extends RunTimePlugin implements SSIEvent
             mLogger.failure(exc.toString());
         }
     }
+    //get mSender to comjunicate with SSI;
+    public SSIEventSender getSender(){
+        return mSender;
+    }
 }
