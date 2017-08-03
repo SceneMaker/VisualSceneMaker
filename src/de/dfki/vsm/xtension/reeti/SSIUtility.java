@@ -24,6 +24,7 @@ public class SSIUtility extends SSIRunTimePlugin {
     private final boolean mUseSSI;
     // The flag for executables
 //    private final boolean mUseExe;
+    private static SSIUtility sInstance = null;
 
     public SSIUtility(
             final PluginConfig config,
@@ -34,6 +35,7 @@ public class SSIUtility extends SSIRunTimePlugin {
 //        mUseJPL = Boolean.parseBoolean(
 //                mConfig.getProperty("usejpl"));
         mUseSSI = useSSI;
+        sInstance = this;
         // Get the executable flag value
 //        mUseExe = Boolean.parseBoolean(
 //                mConfig.getProperty("useexe"));
@@ -152,5 +154,10 @@ public class SSIUtility extends SSIRunTimePlugin {
                 // This should not happen
             }
         }
+    }
+    public static void switchGrammar(String gtammar) {
+        if(sInstance.getSender() != null){
+            sInstance.getSender().sendString(gtammar + '\000');
+        };
     }
 }
