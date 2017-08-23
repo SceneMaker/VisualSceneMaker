@@ -29,7 +29,7 @@
 package de.dfki.vsm.util.tts.marytts;
 
 
-import de.dfki.common.Gender;
+import de.dfki.common.enums.Gender;
 import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
 import de.dfki.vsm.util.tts.SpeechClient;

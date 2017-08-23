@@ -5,7 +5,7 @@
  */
 package de.dfki.vsm.xtension.kinect;
 
-import de.dfki.stickman3D.animationlogic.Animation3D;
+import de.dfki.stickman3D.animationlogic.AnimationStickman3D;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 
 import java.net.DatagramPacket;
@@ -61,7 +61,7 @@ public class RotationReceiver extends Thread
                     int y = (int) Float.parseFloat(splitArray[1]);
                     int z = (int) Float.parseFloat(splitArray[2]);
 
-                    if (!Animation3D.isHeadTiltInAction)
+                    if (!AnimationStickman3D.isHeadTiltInAction)
                     {
                         if (x < -5)
                             mProject.setVariable("headTilt", "down");

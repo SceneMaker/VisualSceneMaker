@@ -4,7 +4,7 @@ import de.dfki.action.sequence.TimeMark;
 import de.dfki.action.sequence.Word;
 import de.dfki.action.sequence.WordTimeMarkSequence;
 
-import de.dfki.common.interfaces.Animation;
+import de.dfki.common.animationlogic.IAnimation;
 import de.dfki.common.interfaces.StageRoom;
 import de.dfki.stickman3D.Stickman3D;
 import de.dfki.util.ios.IOSIndentWriter;
@@ -87,7 +87,7 @@ public class StickmanExecutor extends ActivityExecutor implements ExportableProp
         final String name = activity.getName();
         final LinkedList<ActionFeature> features = activity.getFeatures();
 
-        Animation stickmanAnimation;
+        IAnimation stickmanAnimation;
 
         if (activity instanceof SpeechActivity) {
             SpeechActivity sa = (SpeechActivity) activity;
@@ -114,12 +114,12 @@ public class StickmanExecutor extends ActivityExecutor implements ExportableProp
                 // schedule Mouth_open and Mouth closed activities
                 mScheduler.schedule(20, null, new ActionActivity(actor, /*"face",*/ "Mouth_O", null, null, null), mProject.getAgentDevice(actor));
                 mScheduler.schedule(200, null, new ActionActivity(actor, /*"face",*/ "Mouth_Default", null, null, null), mProject.getAgentDevice(actor));
-                stickmanAnimation = stickmanFactory.loadEventAnimation(stickmanStageC.getStickman(actor), "Speaking", 3000, false);
+                stickmanAnimation = stickmanFactory.loadEventAnimation(stickmanStageC.getAgent(actor), "Speaking", 3000, false);
                 stickmanAnimation.setParameter(wts);
                 executeAnimationAndWait(activity, stickmanAnimation);
             }
         } else if (activity instanceof ActionActivity) {
-            stickmanAnimation = stickmanFactory.loadAnimation(stickmanStageC.getStickman(actor), name, 500, false); // TODO: with regard to get a "good" timing, consult the gesticon
+            stickmanAnimation = stickmanFactory.loadAnimation(stickmanStageC.getAgent(actor), name, 500, false); // TODO: with regard to get a "good" timing, consult the gesticon
             if (stickmanAnimation != null) {
                 if (features != null && !(features.isEmpty())) {
                     for (final ActionFeature feature : features) {
@@ -152,7 +152,7 @@ public class StickmanExecutor extends ActivityExecutor implements ExportableProp
         }
     }
 
-    private void executeAnimation(Animation stickmanAnimation) {
+    private void executeAnimation(IAnimation stickmanAnimation) {
         // executeAnimation command to platform
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         IOSIndentWriter iosw = new IOSIndentWriter(out);
@@ -160,7 +160,7 @@ public class StickmanExecutor extends ActivityExecutor implements ExportableProp
         broadcast(out.toString().replace("\n", " "));
     }
 
-    private void executeAnimationAndWait(AbstractActivity activity, Animation stickmanAnimation) {
+    private void executeAnimationAndWait(AbstractActivity activity, IAnimation stickmanAnimation) {
         // executeAnimation command to platform
         synchronized (mActivityWorkerMap) {
             // executeAnimation command to platform
@@ -171,10 +171,10 @@ public class StickmanExecutor extends ActivityExecutor implements ExportableProp
 
             // organize wait for feedback
             ActivityWorker cAW = (ActivityWorker) Thread.currentThread();
-            mActivityWorkerMap.put(stickmanAnimation.getmID(), cAW);
+            mActivityWorkerMap.put(stickmanAnimation.getID(), cAW);
 
             // wait until we got feedback
-            mLogger.message("ActivityWorker " + stickmanAnimation.getmID() + " waiting ....");
+            mLogger.message("ActivityWorker " + stickmanAnimation.getID() + " waiting ....");
             while (mActivityWorkerMap.containsValue(cAW)) {
                 try {
                     mActivityWorkerMap.wait();
@@ -182,7 +182,7 @@ public class StickmanExecutor extends ActivityExecutor implements ExportableProp
                     mLogger.failure(exc.toString());
                 }
             }
-            mLogger.message("ActivityWorker " + stickmanAnimation.getmID() + "  done ....");
+            mLogger.message("ActivityWorker " + stickmanAnimation.getID() + "  done ....");
         }
     }
 
@@ -206,7 +206,7 @@ public class StickmanExecutor extends ActivityExecutor implements ExportableProp
         for (String name : mProject.getAgentNames()) {
 //            AgentConfig ac = mProject.getAgentConfig(name);
 //            if (ac.getDeviceName().equalsIgnoreCase("stickman")) {
-            stickmanStageC.addStickman(name);
+            stickmanStageC.addAgent(name);
 //            }
         }
 

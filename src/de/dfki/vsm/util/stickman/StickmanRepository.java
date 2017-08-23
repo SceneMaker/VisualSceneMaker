@@ -1,8 +1,8 @@
 package de.dfki.vsm.util.stickman;
 
-import de.dfki.common.interfaces.Animation;
+import de.dfki.common.agent.IAgent;
+import de.dfki.common.animationlogic.IAnimation;
 import de.dfki.common.interfaces.StageRoom;
-import de.dfki.common.interfaces.Stickman;
 import de.dfki.vsm.model.project.PluginConfig;
 
 import java.util.HashMap;
@@ -27,19 +27,19 @@ public class StickmanRepository {
         return factory.getStickman();
     }
 
-    public Animation getAnimation(String actor){
+    public IAnimation getAnimation(String actor){
         return factory.getAnimation(actor);
     }
 
-    public Animation loadEventAnimation(Stickman sm, String name, int duration, boolean block){
+    public IAnimation loadEventAnimation(IAgent sm, String name, int duration, boolean block){
         return factory.loadEventAnimation(sm, name, duration, block);
     }
-    public Animation loadAnimation(Stickman sm, String name, int duration, boolean block){
+    public IAnimation loadAnimation(IAgent sm, String name, int duration, boolean block){
         return factory.loadAnimation(sm, name, duration, block);
     }
 
 
-    public Animation loadAnimation(Stickman stickman, String name, int duration, boolean block, HashMap<String, String> extraParams) {
+    public IAnimation loadAnimation(IAgent stickman, String name, int duration, boolean block, HashMap<String, String> extraParams) {
         return factory.loadAnimation(stickman, name, duration, block, extraParams);
     }
 }

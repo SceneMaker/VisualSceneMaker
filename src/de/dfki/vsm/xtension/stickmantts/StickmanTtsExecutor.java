@@ -6,9 +6,9 @@
 package de.dfki.vsm.xtension.stickmantts;
 
 import de.dfki.action.sequence.WordTimeMarkSequence;
-import de.dfki.common.interfaces.Animation;
+import de.dfki.common.animationlogic.IAnimation;
 import de.dfki.common.interfaces.StageRoom;
-import de.dfki.common.interfaces.StickmanStage;
+import de.dfki.stickman.StickmanStage;
 import de.dfki.util.ios.IOSIndentWriter;
 import de.dfki.util.xml.XMLUtilities;
 import de.dfki.vsm.editor.dialog.WaitingDialog;
@@ -141,8 +141,8 @@ public class StickmanTtsExecutor extends ActivityExecutor implements ExportableP
         //We will use these two later
         speechActivities.put(executionId, speakerActivity);
         wtsMap.put(executionId, wts);
-        Animation stickmanAnimation;
-        stickmanAnimation = stickmanFactory.loadEventAnimation(stickmanStageC.getStickman(actor), "Speaking", 3000, false);
+        IAnimation stickmanAnimation;
+        stickmanAnimation = stickmanFactory.loadEventAnimation(stickmanStageC.getAgent(actor), "Speaking", 3000, false);
         stickmanAnimation.setParameter(wts);
         executeAnimation(stickmanAnimation);
         executeSpeachAndWait(executionId);
@@ -161,7 +161,7 @@ public class StickmanTtsExecutor extends ActivityExecutor implements ExportableP
     private void actionLoadAnimation(AbstractActivity activity) {
         final String actor = activity.getActor();
         final String name = activity.getName();
-        Animation stickmanAnimation;
+        IAnimation stickmanAnimation;
         int duration = 500;
         if (activity instanceof ActionMouthActivity) {
             duration = ((ActionMouthActivity) activity).getDuration();
@@ -175,8 +175,8 @@ public class StickmanTtsExecutor extends ActivityExecutor implements ExportableP
         }
     }
 
-    private Animation loadAnimation(String actor, String name, int duration, AbstractActivity activity) {
-        Animation stickmanAnimation;
+    private IAnimation loadAnimation(String actor, String name, int duration, AbstractActivity activity) {
+        IAnimation stickmanAnimation;
         HashMap<String, String> extraParams = new HashMap<>();
         if (activity.getFeatures() != null) {
             for (ActionFeature feat : activity.getFeatures()) {
@@ -194,9 +194,9 @@ public class StickmanTtsExecutor extends ActivityExecutor implements ExportableP
         }
 
         if (extraParams.size() > 0) {
-            stickmanAnimation = stickmanFactory.loadAnimation(stickmanStageC.getStickman(actor), name, duration, true, extraParams);
+            stickmanAnimation = stickmanFactory.loadAnimation(stickmanStageC.getAgent(actor), name, duration, true, extraParams);
         } else {
-            stickmanAnimation = stickmanFactory.loadAnimation(stickmanStageC.getStickman(actor), name, duration, false); // TODO: with regard to get a "good" timing, consult the gesticon
+            stickmanAnimation = stickmanFactory.loadAnimation(stickmanStageC.getAgent(actor), name, duration, false); // TODO: with regard to get a "good" timing, consult the gesticon
         }
         return stickmanAnimation;
     }
@@ -228,7 +228,7 @@ public class StickmanTtsExecutor extends ActivityExecutor implements ExportableP
         return langVoince;
     }
 
-    protected void executeAnimation(Animation stickmanAnimation) {
+    protected void executeAnimation(IAnimation stickmanAnimation) {
         // executeAnimation command to platform
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         IOSIndentWriter iosw = new IOSIndentWriter(out);
@@ -320,7 +320,7 @@ public class StickmanTtsExecutor extends ActivityExecutor implements ExportableP
         stickmanLaunchThread = new Thread() {
             public void run() {
                 try {
-                    stickmanStageC.launchStickmanStage(true);
+                    stickmanStageC.launchAgentStage(true);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -364,7 +364,7 @@ public class StickmanTtsExecutor extends ActivityExecutor implements ExportableP
         for (String name : mProject.getAgentNames()) {
             AgentConfig ac = mProject.getAgentConfig(name);
             if (ac.getDeviceName().equalsIgnoreCase(mDeviceName)) {
-                stickmanStageC.addStickman(name);
+                stickmanStageC.addAgent(name);
             }
         }
     }

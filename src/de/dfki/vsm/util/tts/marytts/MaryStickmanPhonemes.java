@@ -1,7 +1,7 @@
 package de.dfki.vsm.util.tts.marytts;
 
 import de.dfki.action.sequence.Word;
-import de.dfki.common.Gender;
+import de.dfki.common.enums.Gender;
 import de.dfki.vsm.runtime.activity.SpeechActivity;
 import de.dfki.vsm.util.tts.VoiceName;
 import de.dfki.vsm.xtension.stickmantts.util.tts.sequence.Phoneme;

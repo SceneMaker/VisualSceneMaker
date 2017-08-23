@@ -1,9 +1,9 @@
 package de.dfki.vsm.util.stickman;
 
+import de.dfki.common.agent.IAgent;
+import de.dfki.common.animationlogic.IAnimation;
 import de.dfki.common.decorators.StageRoomFullScreenDecorator;
-import de.dfki.common.interfaces.Animation;
 import de.dfki.common.interfaces.StageRoom;
-import de.dfki.common.interfaces.Stickman;
 import de.dfki.stickman3D.animationlogic.AnimationLoader3D;
 import de.dfki.stickman3D.decorators.StageRoomNetwork3DDecorator;
 import de.dfki.stickman3D.stage.StageRoom3D;
@@ -52,22 +52,22 @@ public class Stickman3DFactory extends StickmanAbstractFactory {
     }
 
     @Override
-    public Animation getAnimation(String actor) {
-        return (Animation) AnimationLoader3D.getInstance();
+    public IAnimation getAnimation(String actor) {
+        return (IAnimation) AnimationLoader3D.getInstance();
     }
 
     @Override
-    public Animation loadEventAnimation(Stickman sm, String name, int duration, boolean block) {
+    public IAnimation loadEventAnimation(IAgent sm, String name, int duration, boolean block) {
         return AnimationLoader3D.getInstance().loadEventAnimation(sm, name, duration, false);
     }
 
     @Override
-    public Animation loadAnimation(Stickman sm, String name, int duration, boolean block) {
+    public IAnimation loadAnimation(IAgent sm, String name, int duration, boolean block) {
         return AnimationLoader3D.getInstance().loadAnimation(sm, name, duration, false); // TODO: with regard to get a "good" timing, consult the gesticon
     }
 
     @Override
-    public Animation loadAnimation(Stickman sm, String name, int duration, boolean block, HashMap<String, String> extraParams) {
+    public IAnimation loadAnimation(IAgent sm, String name, int duration, boolean block, HashMap<String, String> extraParams) {
         return AnimationLoader3D.getInstance().loadAnimation(sm, name, duration, block, extraParams);
     }
 }

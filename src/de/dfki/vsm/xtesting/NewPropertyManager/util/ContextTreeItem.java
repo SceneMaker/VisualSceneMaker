@@ -3,7 +3,6 @@ package de.dfki.vsm.xtesting.NewPropertyManager.util;
 import de.dfki.common.interfaces.StageRoom;
 import de.dfki.stickman3D.stage.StageRoom3D;
 import de.dfki.stickmanFX.stage.StageRoomFX;
-import de.dfki.stickmanSwing.stage.StageRoomSwing;
 
 import de.dfki.vsm.model.project.AgentConfig;
 import de.dfki.vsm.model.project.PluginConfig;
@@ -110,7 +109,7 @@ public class ContextTreeItem extends AbstractTreeItem implements TreeObservable 
             for (EntryAgent agent : plugin.getAgents()) {
                 AgentConfig ac = agent.getAgentConfig();
                 if (ac.getDeviceName().equalsIgnoreCase(mDeviceName)) {
-                    stickmanStage.addStickman(ac.getAgentName());
+                    stickmanStage.addAgent(ac.getAgentName());
                 }
             }
             stickmanStage.launchConfiguration(filepath);
@@ -120,7 +119,7 @@ public class ContextTreeItem extends AbstractTreeItem implements TreeObservable 
             for (EntryAgent agent : plugin.getAgents()) {
                 AgentConfig ac = agent.getAgentConfig();
                 if (ac.getDeviceName().equalsIgnoreCase(mDeviceName)) {
-                    stickmanStage.addStickman(ac.getAgentName());
+                    stickmanStage.addAgent(ac.getAgentName());
                 }
             }
             stickmanStage.launchConfiguration(filepath);

@@ -5,7 +5,7 @@
  */
 package de.dfki.vsm.xtension.kinect;
 
-import de.dfki.stickman3D.animationlogic.Animation3D;
+import de.dfki.stickman3D.animationlogic.AnimationStickman3D;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 
 import java.net.DatagramPacket;
@@ -53,7 +53,7 @@ public class SmileReceiver extends Thread
                 if (action.equalsIgnoreCase("smile"))
                 {
                     smileCounter++;
-                    if (!Animation3D.isSmileInAction)
+                    if (!AnimationStickman3D.isSmileInAction)
                     {
                         if (smileCounter > 10)
                         {

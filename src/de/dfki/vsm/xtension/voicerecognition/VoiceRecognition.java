@@ -176,10 +176,10 @@ public class VoiceRecognition extends Thread {
     private void switchBackground(String background) {
         HBox stickmanBox = null;
         for (Map.Entry<String, Stickman3D> e : StickmanExecutor.stickmanContainer.entrySet()) {
-            String stageID = e.getValue().getStageController().getStageIdentifier();
+            String stageID = e.getValue().getStageRoom().getStageIdentifier();
             try {
-                stickmanBox = e.getValue().getStageController().getStickmanStage()
-                        .getStickmanBox(stageID);
+                stickmanBox = e.getValue().getStageRoom().getAgentStage()
+                        .getAgentBox(stageID);
             } catch (Exception ex) {
                 Logger.getLogger(VoiceRecognition.class.getName()).log(Level.SEVERE, null, ex);
             }

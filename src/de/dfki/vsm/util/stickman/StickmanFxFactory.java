@@ -1,9 +1,9 @@
 package de.dfki.vsm.util.stickman;
 
+import de.dfki.common.agent.IAgent;
+import de.dfki.common.animationlogic.IAnimation;
 import de.dfki.common.decorators.StageRoomFullScreenDecorator;
-import de.dfki.common.interfaces.Animation;
 import de.dfki.common.interfaces.StageRoom;
-import de.dfki.common.interfaces.Stickman;
 import de.dfki.stickmanFX.animationlogic.AnimationLoaderFX;
 import de.dfki.stickmanFX.decorators.StageRoomNetworkFXDecorator;
 import de.dfki.stickmanFX.stage.StageRoomFX;
@@ -55,23 +55,23 @@ public class StickmanFxFactory extends StickmanAbstractFactory {
     }
 
     @Override
-    public Animation getAnimation(String actor) {
-        return (Animation) AnimationLoaderFX.getInstance();
+    public IAnimation getAnimation(String actor) {
+        return (IAnimation) AnimationLoaderFX.getInstance();
     }
 
     @Override
-    public Animation loadEventAnimation(Stickman sm, String name, int duration, boolean block) {
+    public IAnimation loadEventAnimation(IAgent sm, String name, int duration, boolean block) {
         return AnimationLoaderFX.getInstance().loadEventAnimation(sm, name, duration, false);
     }
 
     @Override
-    public Animation loadAnimation(Stickman sm, String name, int duration, boolean block) {
+    public IAnimation loadAnimation(IAgent sm, String name, int duration, boolean block) {
         return AnimationLoaderFX.getInstance().loadAnimation(sm, name, duration, false); // TODO: with regard to get a "good" timing, consult the gesticon
     }
 
     @Override
-    public Animation loadAnimation(Stickman sm, String name, int duration, boolean block, HashMap<String, String> extraParams) {
-        Animation a = AnimationLoaderFX.getInstance().loadAnimation(sm, name, duration, false);
+    public IAnimation loadAnimation(IAgent sm, String name, int duration, boolean block, HashMap<String, String> extraParams) {
+        IAnimation a = AnimationLoaderFX.getInstance().loadAnimation(sm, name, duration, false);
         String paranater = "";
         for (Map.Entry<String, String> entry : extraParams.entrySet()) {
             if (!entry.getValue().isEmpty()) {

@@ -5,10 +5,10 @@
  */
 package de.dfki.vsm.util.stickman;
 
+import de.dfki.common.agent.IAgent;
+import de.dfki.common.animationlogic.IAnimation;
 import de.dfki.common.decorators.StageRoomFullScreenDecorator;
-import de.dfki.common.interfaces.Animation;
 import de.dfki.common.interfaces.StageRoom;
-import de.dfki.common.interfaces.Stickman;
 import de.dfki.reeti.animationlogic.AnimationLoaderReeti;
 import de.dfki.reeti.decorators.StageRoomNetwork3DDecorator;
 import de.dfki.reeti.stage.StageRoomReeti;
@@ -62,22 +62,22 @@ public class ReetiFactory extends StickmanAbstractFactory
     }
 
     @Override
-    public Animation getAnimation(String actor) {
-        return (Animation) AnimationLoaderReeti.getInstance();
+    public IAnimation getAnimation(String actor) {
+        return (IAnimation) AnimationLoaderReeti.getInstance();
     }
 
     @Override
-    public Animation loadEventAnimation(Stickman sm, String name, int duration, boolean block) {
+    public IAnimation loadEventAnimation(IAgent sm, String name, int duration, boolean block) {
         return AnimationLoaderReeti.getInstance().loadEventAnimation(sm, name, duration, false);
     }
 
     @Override
-    public Animation loadAnimation(Stickman sm, String name, int duration, boolean block) {
+    public IAnimation loadAnimation(IAgent sm, String name, int duration, boolean block) {
         return AnimationLoaderReeti.getInstance().loadAnimation(sm, name, duration, false); // TODO: with regard to get a "good" timing, consult the gesticon
     }
 
     @Override
-    public Animation loadAnimation(Stickman sm, String name, int duration, boolean block, HashMap<String, String> extraParams) {
+    public IAnimation loadAnimation(IAgent sm, String name, int duration, boolean block, HashMap<String, String> extraParams) {
         return AnimationLoaderReeti.getInstance().loadAnimation(sm, name, duration, block, extraParams);
     }
     
