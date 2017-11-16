@@ -346,24 +346,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
         chooser.setFileFilter(new FileFilter() {
             @Override
             public boolean accept(File f) {
-                if (f.isDirectory()) {
-
-                    File configFile = new File(f.getPath() + System.getProperty("file.separator") + "project.xml");
-
-                    if (configFile.exists()) {
-                        return true;
-                    }
-
-                    File[] listOfFiles = f.listFiles();
-
-                    for (File listOfFile : listOfFiles) {
-                        if (listOfFile.isDirectory()) {
-                            return true;
-                        }
-                    }
-                }
-
-                return false;
+                return OpenProjectView.isAcceptedFile(f);
             }
 
             @Override
