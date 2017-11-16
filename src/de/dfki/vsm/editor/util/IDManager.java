@@ -29,6 +29,8 @@ import java.util.Set;
  * @author Patrick Gebhard
  */
 public class IDManager {
+
+    //TODO: Improve IDManager with Unique Data Structure
     private List<Integer> mSuperNodeIDs = new LinkedList<Integer>();
     private List<Integer> mNodeIDs      = new LinkedList<Integer>();
 
