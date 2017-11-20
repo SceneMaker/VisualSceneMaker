@@ -30,7 +30,8 @@ public final class OpenProjectView extends FileView {
         if(OpenProjectView.isVSMProject(f)){
             RunTimeProject project = new RunTimeProject();
             project.parseForInformation(f.getPath());
-            return f.getName() + " (" + project.getProjectName() + ")";
+            //return f.getName() + " (" + project.getProjectName() + ")";
+            return project.getProjectName() + " (Dir: " + f.getName() + ")";
         }
         return f.getName();
 
