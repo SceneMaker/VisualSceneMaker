@@ -316,13 +316,13 @@ public class ScriptEditorPane extends JEditorPane implements EventListener {
     @Override
     public void update(final EventObject event) {
 
+        mFont = new Font(mEditorConfig.sSCRIPT_FONT_TYPE, Font.PLAIN, mEditorConfig.sSCRIPT_FONT_SIZE);
+        setFont(mFont);
         if(event instanceof SceneSelectedEvent){
             SceneSelectedEvent clickedEvent = (SceneSelectedEvent)event;
             highlightScene(clickedEvent);
         }
-        // Do Nothing
-        mFont = new Font(mEditorConfig.sSCRIPT_FONT_TYPE, Font.PLAIN, mEditorConfig.sSCRIPT_FONT_SIZE);
-        setFont(mFont);
+
     }
 
     private void highlightScene(SceneSelectedEvent clickedEvent) {
