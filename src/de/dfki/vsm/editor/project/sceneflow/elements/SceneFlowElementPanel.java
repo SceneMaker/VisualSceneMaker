@@ -120,6 +120,7 @@ class ElementTree extends JTree implements ActionListener, TreeSelectionListener
     private DragGestureListener mDragGestureListener;
     private DragSourceListener mDragSourceListener;
     private int mAcceptableDnDActions;
+    private TreeEntry mSceneEntryRoot;
 
     public void updateFunctions() {
         mFunctionsEntry.removeAllChildren();
@@ -189,13 +190,6 @@ class ElementTree extends JTree implements ActionListener, TreeSelectionListener
 
                 launchFunctionSelectedEvent(selectedDef);
             } 
-//            else if (parentPath.getLastPathComponent().equals(mDialogActsEntry)) {
-//                //mScriptEditorPanel.getTabPane().setSelectedIndex(2);
-//
-//                DialogAct selectedDA = (DialogAct) ((TreeEntry) path.getLastPathComponent()).getData();
-//
-//                launchDASelectedEvent(selectedDA);
-//            } 
             else if (lastPathComponent.getData()!=null){
                 
                 if (lastPathComponent.getData().getClass().equals(de.dfki.vsm.model.scenescript.SceneGroup.class)) {
@@ -208,6 +202,7 @@ class ElementTree extends JTree implements ActionListener, TreeSelectionListener
                 }
             }
         }
+
     }
 
     /**
@@ -268,31 +263,9 @@ class ElementTree extends JTree implements ActionListener, TreeSelectionListener
      */
     private void initComponents() {
 
-        // Add basic element entries
-        // COMMENTED BY M. FALLAS ON 03-2015
-
-        /*        mBasicEntry.add(mSuperNodeEntry);
-         mBasicEntry.add(mBasicNodeEntry);
-         mBasicEntry.add(mEEdgeEntry);
-         mBasicEntry.add(mTEdgeEntry);
-         mBasicEntry.add(mPEdgeEntry);
-         mBasicEntry.add(mCEdgeEntry);
-         mBasicEntry.add(mIEdgeEntry);
-         mBasicEntry.add(mFEdgeEntry);
-         mBasicEntry.add(mCommentEntry);
-         //
-         mRootEntry.add(mBasicEntry);
-         mRootEntry.add(mSceneEntry);*/
-//      TreeEntry mSceneEntry = new TreeEntry("Scenes", null, null);
-//      mSceneListEntry.add(mSceneEntry);
-//      for(int i = 0; i < mSceneListEntry.size(); i++) {
-//          mRootEntry.add(mSceneListEntry.get(i));
-//      }
         mElementTree.add(mSceneFlowEntry);
         mElementTree.add(mFunctionsEntry);
-//        mElementTree.add(mDialogActsEntry);
-        
-        //
+
         ((DefaultTreeModel) getModel()).setRoot(mElementTree);
         functionsAdd.addActionListener(this);
         functionModify.addActionListener(this);
@@ -365,6 +338,7 @@ class ElementTree extends JTree implements ActionListener, TreeSelectionListener
                                 sceneEntry.add(new TreeEntry(scene.getName(),  null, group));    // PG: added a space before the number cnt of scenes in scenegroup for better readability
                             } else {
                                 sceneEntry = new TreeEntry("Scenes (" + scene.getLanguage() + ")", null, null);
+                                mSceneEntryRoot = sceneEntry;
                                 sceneEntry.add(new TreeEntry(scene.getName(), null, group));
                                 if (sceneEntry.getChildCount() >0 )
                                 {
@@ -385,8 +359,9 @@ class ElementTree extends JTree implements ActionListener, TreeSelectionListener
 
                             // Add new scene language to the root entry
                             if (sceneEntry == null) {
-                                sceneEntry = new TreeEntry("Scenes (" + scene.getLanguage() + ")", null, null);
                                 sceneEntry.add(new TreeEntry(scene.getName(), null, group));
+                                sceneEntry = new TreeEntry("Scenes (" + scene.getLanguage() + ")", null, null);
+                                mSceneEntryRoot = sceneEntry;
                                 mSceneEntryList.add(sceneEntry);
                                 mSceneFlowEntry.add(sceneEntry);
                             } else {
@@ -409,6 +384,7 @@ class ElementTree extends JTree implements ActionListener, TreeSelectionListener
             @Override
             public void mousePressed(MouseEvent e) {
                 TreePath path = tree.getPathForLocation(e.getX(), e.getY());
+
 
                 if (path == null) {
                     return;
@@ -452,15 +428,15 @@ class ElementTree extends JTree implements ActionListener, TreeSelectionListener
 
                             modifyFunctionAction(entry);
                         }
-                    } 
-//                    else if (parentPath.getLastPathComponent().equals(mDialogActsEntry)) {
-//                        if (e.isPopupTrigger()) {
-//                        } else if ((e.getClickCount() == 2) && !e.isConsumed()) {
-//                            TreeEntry entry = (TreeEntry) path.getLastPathComponent();
-//
-//                            modifyDialogAct(entry);
-//                        }
-//                    }
+                    }
+                }else if(pathCount == 4 && e.getClickCount() >= 2){
+                    TreePath parentPath = path.getParentPath();
+                    if(parentPath.getLastPathComponent().equals(mSceneEntryRoot)){
+                        String sceneLanguageSelect = ((TreeEntry) parentPath.getLastPathComponent()).getText();
+                        SceneGroup selectedScene = (SceneGroup) ((TreeEntry) path.getLastPathComponent()).getData();
+                        launchSceneSelectedEvent(selectedScene, sceneLanguageSelect);
+                    }
+
                 }
 
                 if (showPopup) {
@@ -480,13 +456,7 @@ class ElementTree extends JTree implements ActionListener, TreeSelectionListener
                 mEventCaster.convey(ev);
             }
 
-//            private void modifyDialogAct(TreeEntry entry) {
-//                if (entry != null) {
-//                    DialogActAttributes daAttributeDialog = new DialogActAttributes(mDialogAct, entry.getText());
-//
-//                    daAttributeDialog.run();
-//                }
-//            }
+
         };
     }
 

@@ -1,6 +1,8 @@
 package de.dfki.vsm.editor.project.auxiliary.scenescript;
 
+import de.dfki.vsm.editor.event.SceneSelectedEvent;
 import de.dfki.vsm.editor.project.EditorProject;
+import de.dfki.vsm.editor.util.SceneHighlighter;
 import de.dfki.vsm.editor.util.VisualisationTask;
 import de.dfki.vsm.model.acticon.ActiconAction;
 import de.dfki.vsm.model.project.EditorConfig;
@@ -30,6 +32,7 @@ import javax.swing.*;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultHighlighter;
 import javax.swing.text.Document;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoManager;
@@ -313,10 +316,32 @@ public class ScriptEditorPane extends JEditorPane implements EventListener {
     @Override
     public void update(final EventObject event) {
 
+        if(event instanceof SceneSelectedEvent){
+            SceneSelectedEvent clickedEvent = (SceneSelectedEvent)event;
+            highlightScene(clickedEvent);
+        }
         // Do Nothing
         mFont = new Font(mEditorConfig.sSCRIPT_FONT_TYPE, Font.PLAIN, mEditorConfig.sSCRIPT_FONT_SIZE);
         setFont(mFont);
     }
+
+    private void highlightScene(SceneSelectedEvent clickedEvent) {
+        SceneHighlighter sceneHighlighter = new SceneHighlighter(
+                getDocument(),
+                clickedEvent.getGroup().getName(),
+                clickedEvent.getLanguage(),
+                getHighlighter()
+                );
+        try {
+            sceneHighlighter.highlightAndScrollToScene(this);
+
+        } catch (BadLocationException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+
 
     public void append(String s) {
         try {
