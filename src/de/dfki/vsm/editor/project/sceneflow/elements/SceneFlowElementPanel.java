@@ -429,7 +429,7 @@ class ElementTree extends JTree implements ActionListener, TreeSelectionListener
                             modifyFunctionAction(entry);
                         }
                     }
-                }else if(pathCount == 4 && e.getClickCount() >= 2){
+                }else if(pathCount == 4 && e.getClickCount() >= 1){
                     TreePath parentPath = path.getParentPath();
                     if(parentPath.getLastPathComponent().equals(mSceneEntryRoot)){
                         String sceneLanguageSelect = ((TreeEntry) parentPath.getLastPathComponent()).getText();

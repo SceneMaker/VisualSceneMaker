@@ -29,9 +29,14 @@ public class SceneHighlighter {
 
     public void highlightAndScrollToScene(JEditorPane editorPane) throws BadLocationException {
         int foundPosition = findAndHightLightScene();
+        if(foundPosition < 0){
+            return;
+        }
         Rectangle rView = editorPane.modelToView(foundPosition-1);
         rView.setSize((int)rView.getWidth(),(int)rView.getHeight() + 100);
         editorPane.scrollRectToVisible(rView);
+        highlight(foundPosition);
+
     }
 
 
@@ -40,7 +45,6 @@ public class SceneHighlighter {
         for (int index = 0; index + sceneName.length() < document.getLength(); index++) {
             int foundIndex = find(index);
             if(foundIndex > 0){
-                highlight(foundIndex);
                 return foundIndex;
             }
         }
@@ -58,7 +62,7 @@ public class SceneHighlighter {
     private void highlight(int index) throws BadLocationException {
 
         highlightPainter = new DefaultHighlighter.DefaultHighlightPainter(Color.red);
-        highlighter.addHighlight(index, index + sceneName.length(), highlightPainter); //TODO improve selection
+        highlighter.addHighlight(index, index + sceneName.length(), highlightPainter);
     }
 
     private boolean isScene(int index) throws BadLocationException {
