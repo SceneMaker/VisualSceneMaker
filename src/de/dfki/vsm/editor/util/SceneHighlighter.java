@@ -32,13 +32,15 @@ public class SceneHighlighter {
         if(foundPosition < 0){
             return;
         }
+        highlight(foundPosition);
+        scrollToScene(editorPane, foundPosition);
+    }
+
+    private void scrollToScene(JEditorPane editorPane, int foundPosition) throws BadLocationException {
         Rectangle rView = editorPane.modelToView(foundPosition-1);
         rView.setSize((int)rView.getWidth(),(int)rView.getHeight() + 100);
         editorPane.scrollRectToVisible(rView);
-        highlight(foundPosition);
-
     }
-
 
 
     private int findAndHightLightScene() throws BadLocationException {
