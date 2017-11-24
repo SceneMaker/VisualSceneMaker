@@ -29,11 +29,15 @@ public class SceneHighlighter {
 
     public void highlightAndScrollToScene(JEditorPane editorPane) throws BadLocationException {
         int foundPosition = findAndHightLightScene();
-        if(foundPosition < 0){
+        if(matchNotFound(foundPosition)){
             return;
         }
         highlight(foundPosition);
         scrollToScene(editorPane, foundPosition);
+    }
+
+    private boolean matchNotFound(int foundPosition) {
+        return foundPosition < 0;
     }
 
     private void scrollToScene(JEditorPane editorPane, int foundPosition) throws BadLocationException {
