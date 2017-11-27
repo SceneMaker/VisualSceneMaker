@@ -67,7 +67,7 @@ public class SceneHighlighter {
 
     private void highlight(int index) throws BadLocationException {
 
-        highlightPainter = new DefaultHighlighter.DefaultHighlightPainter(Color.red);
+        highlightPainter = new DefaultHighlighter.DefaultHighlightPainter(new Color(56, 216, 120));
         highlighter.addHighlight(index, index + sceneName.length(), highlightPainter);
     }
 
