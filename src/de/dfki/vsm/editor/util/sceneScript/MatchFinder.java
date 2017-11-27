@@ -6,14 +6,15 @@ import de.dfki.vsm.editor.util.sceneScript.interfaces.BackwardsIterator;
 import javax.swing.text.BadLocationException;
 import java.util.LinkedList;
 
-abstract public class MatchFinder implements BackwardsIterator{
+abstract public class MatchFinder implements BackwardsIterator {
     protected final HighlightInformation documentInformation;
     private LinkedList<Integer> matches;
     private int currentHighlightedItem = 0;
+    private boolean started = false;
 
-    public MatchFinder(HighlightInformation documentInformation){
-       matches = new LinkedList<>();
-       this.documentInformation = documentInformation;
+    public MatchFinder(HighlightInformation documentInformation) {
+        matches = new LinkedList<>();
+        this.documentInformation = documentInformation;
     }
 
 
@@ -25,9 +26,24 @@ abstract public class MatchFinder implements BackwardsIterator{
     @Override
     public Integer next() {
         if (!hasNext()) throw new IndexOutOfBoundsException();
+        startFinderIfNeeded();
         int item = getCurrentItem();
         updateNextPosition();
         return item;
+    }
+
+    public void startFinderIfNeeded() {
+        if (!started) {
+            init();
+        }
+    }
+
+    private void init() {
+        try {
+            find();
+        } catch (BadLocationException e) {
+            e.printStackTrace();
+        }
     }
 
     private Integer getCurrentItem() {
@@ -53,7 +69,7 @@ abstract public class MatchFinder implements BackwardsIterator{
     @Override
     public Integer previous() {
         if (!hasPrevious()) throw new IndexOutOfBoundsException();
-
+        startFinderIfNeeded();
         int item = getCurrentItem();
         updatePreviousPosition();
         return item;
@@ -83,12 +99,14 @@ abstract public class MatchFinder implements BackwardsIterator{
         }
     }
 
-    protected boolean matchWord(String match){
+    protected boolean matchWord(String match) {
         return documentInformation.wordToFind.equals(match);
     }
 
-    protected abstract boolean isMatch(String match, int index) ;
+    protected abstract boolean isMatch(String match, int index);
 
 
-
+    public int getTotalMatches() {
+        return matches.size();
+    }
 }

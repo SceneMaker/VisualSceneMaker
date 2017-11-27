@@ -30,9 +30,33 @@ public class DocumentHighlighter {
     public void highlight() throws BadLocationException {
         finder.find();
         while (finder.hasNext()){
-            int itemToHighlight = finder.next();
-            highlightItem(itemToHighlight);
+            highlightNext();
         }
+    }
+
+    public void next() throws BadLocationException {
+        highlightNext();
+    }
+
+    public void previous() throws BadLocationException {
+        int itemToHighlight = finder.previous();
+        highlightItem(itemToHighlight);
+    }
+
+    public void all() throws BadLocationException {
+        finder.find();
+        while (finder.hasNext()){
+            highlightNext();
+        }
+    }
+
+    private void highlightNext() throws BadLocationException {
+        int itemToHighlight = finder.next();
+        highlightItem(itemToHighlight);
+    }
+
+    public int totalMatches(){
+        return finder.getTotalMatches();
     }
 
     private void highlightItem(int startMatchIndex) throws BadLocationException {
