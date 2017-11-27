@@ -9,6 +9,7 @@ import java.awt.*;
 
 public class SceneHighlighter {
 
+    public static final Color SCENE_HIGHLIGHT_COLOR = new Color(56, 216, 120);
     private final Document document;
     private final String sceneName;
     private final String sceneLanguage;
@@ -67,7 +68,7 @@ public class SceneHighlighter {
 
     private void highlight(int index) throws BadLocationException {
 
-        highlightPainter = new DefaultHighlighter.DefaultHighlightPainter(new Color(56, 216, 120));
+        highlightPainter = new DefaultHighlighter.DefaultHighlightPainter(SCENE_HIGHLIGHT_COLOR);
         highlighter.addHighlight(index, index + sceneName.length(), highlightPainter);
     }
 
