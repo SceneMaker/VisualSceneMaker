@@ -28,10 +28,7 @@ public class DocumentHighlighter {
     }
 
     public void highlight() throws BadLocationException {
-        finder.find();
-        while (finder.hasNext()){
-            highlightNext();
-        }
+        all();
     }
 
     public void next() throws BadLocationException {
@@ -66,7 +63,7 @@ public class DocumentHighlighter {
 
     private void highlightMatch(int startMatchIndex) throws BadLocationException {
         DefaultHighlighter.DefaultHighlightPainter highlighterPainter
-                = new DefaultHighlighter.DefaultHighlightPainter(color);
+                = new DefaultHighlighter.DefaultHighlightPainter(finder.getColor());
         int endMatchIndex = startMatchIndex + documentInformation.wordLength;
         documentInformation.highlighter.addHighlight(startMatchIndex, endMatchIndex, highlighterPainter);
     }

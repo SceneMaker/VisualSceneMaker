@@ -4,6 +4,7 @@ import de.dfki.vsm.editor.util.sceneScript.document.beans.HighlightInformation;
 import de.dfki.vsm.editor.util.sceneScript.interfaces.BackwardsIterator;
 
 import javax.swing.text.BadLocationException;
+import java.awt.*;
 import java.util.LinkedList;
 
 abstract public class MatchFinder implements BackwardsIterator {
@@ -84,6 +85,7 @@ abstract public class MatchFinder implements BackwardsIterator {
 
     public void find() throws BadLocationException {
         reset();
+        started = true;
         for (int index = 0;
              index + documentInformation.wordLength < documentInformation.documentLength;
              index++) {
@@ -104,6 +106,8 @@ abstract public class MatchFinder implements BackwardsIterator {
     }
 
     protected abstract boolean isMatch(String match, int index);
+
+    public abstract Color getColor();
 
 
     public int getTotalMatches() {
