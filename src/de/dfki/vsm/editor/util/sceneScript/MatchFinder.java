@@ -9,7 +9,7 @@ import java.util.LinkedList;
 abstract public class MatchFinder implements BackwardsIterator{
     protected final HighlightInformation documentInformation;
     private LinkedList<Integer> matches;
-    private int currentHighlightedItem = -1;
+    private int currentHighlightedItem = 0;
 
     public MatchFinder(HighlightInformation documentInformation){
        matches = new LinkedList<>();
@@ -25,8 +25,9 @@ abstract public class MatchFinder implements BackwardsIterator{
     @Override
     public Integer next() {
         if (!hasNext()) throw new IndexOutOfBoundsException();
+        int item = getCurrentItem();
         updateNextPosition();
-        return getCurrentItem();
+        return item;
     }
 
     private Integer getCurrentItem() {
@@ -40,7 +41,7 @@ abstract public class MatchFinder implements BackwardsIterator{
     }
 
     public void reset() {
-        currentHighlightedItem = -1;
+        currentHighlightedItem = 0;
         matches.clear();
     }
 
@@ -52,8 +53,10 @@ abstract public class MatchFinder implements BackwardsIterator{
     @Override
     public Integer previous() {
         if (!hasPrevious()) throw new IndexOutOfBoundsException();
+
+        int item = getCurrentItem();
         updatePreviousPosition();
-        return getCurrentItem();
+        return item;
     }
 
     private void updatePreviousPosition() {
