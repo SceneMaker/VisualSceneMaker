@@ -2,7 +2,7 @@ package de.dfki.vsm.editor.project.auxiliary.scenescript;
 
 import de.dfki.vsm.editor.event.SceneSelectedEvent;
 import de.dfki.vsm.editor.project.EditorProject;
-import de.dfki.vsm.editor.util.sceneScript.SceneHighlighter;
+import de.dfki.vsm.editor.util.sceneScript.SceneFinder;
 import de.dfki.vsm.editor.util.VisualisationTask;
 import de.dfki.vsm.editor.util.sceneScript.document.DocumentHighlighter;
 import de.dfki.vsm.editor.util.sceneScript.document.beans.HighlightInformation;
@@ -334,7 +334,7 @@ public class ScriptEditorPane extends JEditorPane implements EventListener {
                 this
                 );
         DocumentHighlighter sceneHighlighter = new DocumentHighlighter(highlightInformation,
-                new SceneHighlighter(highlightInformation));
+                new SceneFinder(highlightInformation));
         try {
             sceneHighlighter.highlight();
 

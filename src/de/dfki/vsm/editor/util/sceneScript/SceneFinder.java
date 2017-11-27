@@ -5,11 +5,11 @@ import de.dfki.vsm.editor.util.sceneScript.document.beans.HighlightInformation;
 import javax.swing.text.BadLocationException;
 import java.awt.*;
 
-public class SceneHighlighter extends MatchFinder{
+public class SceneFinder extends MatchFinder{
 
     public static final Color SCENE_HIGHLIGHT_COLOR = new Color(56, 216, 120);
 
-    public SceneHighlighter(HighlightInformation documentInformation) {
+    public SceneFinder(HighlightInformation documentInformation) {
         super(documentInformation);
     }
 
