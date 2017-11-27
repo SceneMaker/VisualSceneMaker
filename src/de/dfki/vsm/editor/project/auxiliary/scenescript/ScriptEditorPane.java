@@ -4,6 +4,8 @@ import de.dfki.vsm.editor.event.SceneSelectedEvent;
 import de.dfki.vsm.editor.project.EditorProject;
 import de.dfki.vsm.editor.util.sceneScript.SceneHighlighter;
 import de.dfki.vsm.editor.util.VisualisationTask;
+import de.dfki.vsm.editor.util.sceneScript.document.DocumentHighlighter;
+import de.dfki.vsm.editor.util.sceneScript.document.beans.HighlightInformation;
 import de.dfki.vsm.model.acticon.ActiconAction;
 import de.dfki.vsm.model.project.EditorConfig;
 import de.dfki.vsm.model.gesticon.GesticonGesture;
@@ -325,14 +327,16 @@ public class ScriptEditorPane extends JEditorPane implements EventListener {
     }
 
     private void highlightScene(SceneSelectedEvent clickedEvent) {
-        SceneHighlighter sceneHighlighter = new SceneHighlighter(
+        HighlightInformation highlightInformation = new HighlightInformation(
                 getDocument(),
                 clickedEvent.getGroup().getName(),
-                clickedEvent.getLanguage(),
-                getHighlighter()
+                getHighlighter(),
+                this
                 );
+        DocumentHighlighter sceneHighlighter = new DocumentHighlighter(highlightInformation,
+                new SceneHighlighter(highlightInformation));
         try {
-            sceneHighlighter.highlightAndScrollToScene(this);
+            sceneHighlighter.highlight();
 
         } catch (BadLocationException e) {
             e.printStackTrace();

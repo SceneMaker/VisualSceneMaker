@@ -1,4 +1,4 @@
-package de.dfki.vsm.editor.util.sceneScript.beans;
+package de.dfki.vsm.editor.util.sceneScript.document.beans;
 
 import javax.swing.*;
 import javax.swing.text.Document;
