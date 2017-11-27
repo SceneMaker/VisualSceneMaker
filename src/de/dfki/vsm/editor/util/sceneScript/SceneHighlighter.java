@@ -1,4 +1,4 @@
-package de.dfki.vsm.editor.util;
+package de.dfki.vsm.editor.util.sceneScript;
 
 import javax.swing.*;
 import javax.swing.text.BadLocationException;
