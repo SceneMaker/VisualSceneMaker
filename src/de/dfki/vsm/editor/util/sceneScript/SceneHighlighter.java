@@ -1,6 +1,6 @@
 package de.dfki.vsm.editor.util.sceneScript;
 
-import de.dfki.vsm.editor.util.sceneScript.beans.HighlightInformation;
+import de.dfki.vsm.editor.util.sceneScript.document.beans.HighlightInformation;
 
 import javax.swing.text.BadLocationException;
 import java.awt.*;

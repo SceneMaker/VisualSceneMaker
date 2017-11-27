@@ -1,13 +1,14 @@
 package de.dfki.vsm.editor.util.sceneScript;
 
-import de.dfki.vsm.editor.util.sceneScript.beans.HighlightInformation;
+import de.dfki.vsm.editor.util.sceneScript.document.DocumentHighlighter;
+import de.dfki.vsm.editor.util.sceneScript.document.beans.HighlightInformation;
 
 import javax.swing.text.BadLocationException;
 import java.util.LinkedList;
 
 public class ScriptHighlighter {
 
-    private final LinkedList<Integer> matches;
+   /* private final LinkedList<Integer> matches;
     private final HighlightInformation documentInformation;
     private final MatchFinder finder;
 
@@ -16,8 +17,6 @@ public class ScriptHighlighter {
         this.documentInformation = documentInformation;
         this.finder = finder;
     }
-
-
 
 
     public void next() throws BadLocationException {
@@ -42,5 +41,5 @@ public class ScriptHighlighter {
 
     public int totalOccurences() {
         return matches.size();
-    }
+    }*/
 }
