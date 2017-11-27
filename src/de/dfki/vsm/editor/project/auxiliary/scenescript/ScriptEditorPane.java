@@ -2,7 +2,7 @@ package de.dfki.vsm.editor.project.auxiliary.scenescript;
 
 import de.dfki.vsm.editor.event.SceneSelectedEvent;
 import de.dfki.vsm.editor.project.EditorProject;
-import de.dfki.vsm.editor.util.SceneHighlighter;
+import de.dfki.vsm.editor.util.sceneScript.SceneHighlighter;
 import de.dfki.vsm.editor.util.VisualisationTask;
 import de.dfki.vsm.model.acticon.ActiconAction;
 import de.dfki.vsm.model.project.EditorConfig;
@@ -32,7 +32,6 @@ import javax.swing.*;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.DefaultHighlighter;
 import javax.swing.text.Document;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoManager;
