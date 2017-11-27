@@ -17,13 +17,14 @@
     <!-- Define Source Directory -->
     <property name="srcdir" value="${basedir}${file.separator}src"/>
     <!-- Define Temporary Directory -->
-    <property name="tmpdir" value="${basedir}${file.separator}tmp"/>    
+    <property name="tmpdir" value="${basedir}${file.separator}tmp"/>
     <!-- Define Build Jar-File Name -->
     <property name="jarfile" value="${blddir}${file.separator}${ant.project.name}.jar"/>
     <!-- Define Build Properties-File -->
-    <property name="prpfile" value="${prjdir}${file.separator}build.properties"/>    
+    <property name="prpfile" value="${prjdir}${file.separator}build.properties"/>
     <!-- Define Destination Directory For Parser -->
-    <property name="scngendir" value="${basedir}${file.separator}src${file.separator}de${file.separator}dfki${file.separator}vsm${file.separator}model${file.separator}scenescript"/>
+    <property name="scngendir"
+              value="${basedir}${file.separator}src${file.separator}de${file.separator}dfki${file.separator}vsm${file.separator}model${file.separator}scenescript"/>
     <!-- Define Script Lex File -->
     <property name="scnlexfile" value="${scngendir}${file.separator}lexxer.jflex"/>
     <!-- Define Script Cup File -->
@@ -33,9 +34,10 @@
     <!-- Define Script Token File -->
     <property name="scntknfile" value="${scngendir}${file.separator}ScriptFields.java"/>
     <!-- Define Script Parser File -->
-    <property name="scnprsfile" value="${scngendir}${file.separator}ScriptParser.java"/>    
+    <property name="scnprsfile" value="${scngendir}${file.separator}ScriptParser.java"/>
     <!-- Define Destination Directory For Parser -->
-    <property name="sflgendir" value="${basedir}${file.separator}src${file.separator}de${file.separator}dfki${file.separator}vsm${file.separator}model${file.separator}sceneflow${file.separator}glue"/>
+    <property name="sflgendir"
+              value="${basedir}${file.separator}src${file.separator}de${file.separator}dfki${file.separator}vsm${file.separator}model${file.separator}sceneflow${file.separator}glue"/>
     <!-- Define Scenes Lex File -->
     <property name="sfllexfile" value="${sflgendir}${file.separator}lexxer.jflex"/>
     <!-- Define Scenes Cup File -->
@@ -45,24 +47,24 @@
     <!-- Define Scenes Scanner File -->
     <property name="sflscnfile" value="${sflgendir}${file.separator}GlueLexxer.java"/>
     <!-- Define Scenes Token File -->
-    <property name="sfltknfile" value="${sflgendir}${file.separator}GlueFields.java"/>    
+    <property name="sfltknfile" value="${sflgendir}${file.separator}GlueFields.java"/>
     <!-- Define Library Path -->
     <path id="libpath">
         <fileset dir="${libdir}">
             <include name="*.jar"/>
         </fileset>
-    </path>    
+    </path>
     <!-- Define Build Path -->
     <path id="bldpath">
         <fileset dir="${blddir}">
             <include name="*.jar"/>
         </fileset>
-    </path>    
+    </path>
     <!-- Define Classpath -->
     <path id="clspath">
         <path refid="libpath"/>
         <path refid="bldpath"/>
-    </path>    
+    </path>
     <!-- Info Target -->
     <target name="infos">
         <echo message="================= System Info ===================================="/>
@@ -92,11 +94,12 @@
         <echo message="================= Classpath Info ================================="/>
         <pathconvert property="clspath" refid="clspath" pathsep="${line.separator}" targetos="windows"/>
         <echo message="${clspath}"/>
-    </target>      
+    </target>
     <!-- Build Project -->
     <target name="build" depends="clean,infos,-lexxer,-parser,version">
         <!-- Compile Project -->
-        <javac srcdir="${srcdir}" destdir="${tmpdir}" debug="on" includes="de/**/*.java" encoding="utf-8" includeantruntime="false" fork="true">
+        <javac srcdir="${srcdir}" destdir="${tmpdir}" debug="on" includes="de/**/*.java" encoding="utf-8"
+               includeantruntime="false" fork="true">
             <classpath refid="clspath"/>
         </javac>
         <!-- Copy JavaDocs -->
@@ -128,7 +131,7 @@
                 <attribute name="Main-Class" value="de.dfki.vsm.SceneMaker3"/>
             </manifest>
         </jar>
-    </target>  
+    </target>
     <!-- Profile Project -->
     <target name="profile" depends="build" description="Profile SceneMaker">
         <fail unless="netbeans.home">
@@ -152,11 +155,11 @@
     <target name="debug">
 
         <java classname="de.dfki.vsm.SceneMaker3" fork="true">
-            <jvmarg line="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005" />
+            <jvmarg line="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005"/>
             <classpath refid="clspath"/>
         </java>
     </target>
-    
+
     <!-- Execute to Welcome Screen -->
     <target name="test-ssi-plugin">
         <java classname="de.dfki.vsm.xtesting.TestSSIPlugin" fork="true">
@@ -170,8 +173,8 @@
             <classpath refid="clspath"/>
         </java>
     </target>
-    
-    
+
+
     <target name="test-swi-bfql">
         <java classname="de.dfki.vsm.xtesting.jpl.JPLTestSuite" fork="true">
             <arg line="src/de/dfki/vsm/xtesting/jpl/featuresadd.test.pl"/>
@@ -195,11 +198,11 @@
         <java classname="de.dfki.vsm.xtesting.TestFXGui" fork="true">
             <!-- <arg line="runtime res/prj/test"/> -->
             <!-- <arg line="editor res/prj/test"/> -->
-            <jvmarg line="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005" />
+            <jvmarg line="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005"/>
             <classpath refid="clspath"/>
         </java>
     </target>
-    
+
     <!-- Scanner Generation -->
     <target name="-lexxer">
         <!-- <echo message="Generating '${scnscnfile}' ${line.separator}      from '${scnlexfile}'"/> -->
@@ -212,8 +215,8 @@
             <arg file="${sfllexfile}"/>
             <classpath refid="clspath"/>
         </java>
-    </target> 
-	
+    </target>
+
     <!-- Parser Generation -->
     <target name="-parser">
         <!-- <echo message="Generating '${scnprsfile}' ${line.separator}      from '${scncupfile}'"/> -->
@@ -228,10 +231,10 @@
             <arg file="${sflcupfile}"/>
             <classpath refid="clspath"/>
         </java>
-    </target>  
-	
+    </target>
+
     <!-- Scanner Generation -->
-    <target name="generate" depends="clean,-lexxer,-parser">  
+    <target name="generate" depends="clean,-lexxer,-parser">
     </target>
     <!--- Version -->
     <target name="version">
@@ -242,7 +245,7 @@
             <entry key="build.date" type="date" value="now" pattern="dd.MM.yyyy"/>
         </propertyfile>
     </target>
-	
+
     <!-- Clean Project -->
     <target name="clean">
         <echo message="Cleaning '${tmpdir}'"/>
@@ -277,7 +280,7 @@
             <fileset dir="${logdir}">
                 <exclude name="*.log"/>
                 <include name="**/*"/>
-            </fileset>            
+            </fileset>
         </delete>
         <echo message="Cleaning '${scngendir}'"/>
         <delete file="${scnprsfile}"/>
@@ -291,21 +294,21 @@
     <!-- Generate Java Documentation -->
     <target name="jdocs">
         <javadoc
-            classpathref="clspath"
-            packagenames="de"
-            access="private"
-            destdir="${docdir}"
-            author="true"
-            version="true"
-            use="true"
-            windowtitle="Documentation"
-            doctitle="Documentation"
-            bottom="Documentation"
-            header="Documentation"
-            footer="Documentation">
+                classpathref="clspath"
+                packagenames="de"
+                access="private"
+                destdir="${docdir}"
+                author="true"
+                version="true"
+                use="true"
+                windowtitle="Documentation"
+                doctitle="Documentation"
+                bottom="Documentation"
+                header="Documentation"
+                footer="Documentation">
             <fileset dir="${srcdir}" defaultexcludes="yes">
                 <include name="**/*.java"/>
             </fileset>
         </javadoc>
-    </target>    
+    </target>
 </project>
