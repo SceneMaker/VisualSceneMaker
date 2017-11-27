@@ -24,6 +24,11 @@ public class SceneFinder extends MatchFinder{
 
     }
 
+    @Override
+    public Color getColor() {
+        return SCENE_HIGHLIGHT_COLOR;
+    }
+
 
     private boolean isScene(int index) throws BadLocationException {
         return documentInformation.document.getText(index + documentInformation.wordLength, 1).equals("\n");
