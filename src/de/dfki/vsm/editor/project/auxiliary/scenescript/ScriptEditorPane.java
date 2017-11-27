@@ -335,7 +335,7 @@ public class ScriptEditorPane extends JEditorPane implements EventListener {
                 this
                 );
         DocumentHighlighter sceneHighlighter = new DocumentHighlighter(highlightInformation,
-                new InsideScriptFinder(highlightInformation));
+                new SceneFinder(highlightInformation));
         try {
             sceneHighlighter.highlight();
 
