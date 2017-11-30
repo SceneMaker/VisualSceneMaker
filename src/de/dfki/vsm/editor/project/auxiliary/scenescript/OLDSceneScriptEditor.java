@@ -87,6 +87,8 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
     private final ImageIcon ICON_PIN_ROLLOVER = ResourceLoader.loadImageIcon("/res/img/pin_blue.png");
     //PIN status
     private boolean pinPricked = false;
+    
+    private SearchFunctionInScene search_function_in_scene;
 
     // The current project data
     private final EditorProject mEditorProject;
@@ -166,8 +168,13 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
 
         addTab("Scenes        ", mScriptTabPanel);
         addTab("Functions     ", mFunctionEditor);
+        
 //        addTab("DialogAct [Experimental]", mDialogActEditor);
 
+        // Add search function
+        search_function_in_scene = new SearchFunctionInScene();
+        search_function_in_scene.createSearchBox(this);
+        
         // Initialize The Components
         setLayout(new OverlayLayout(this));
         setBorder(BorderFactory.createEmptyBorder());
