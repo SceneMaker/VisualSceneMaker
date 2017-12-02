@@ -32,25 +32,33 @@ public class DocumentHighlighter {
     }
 
     public void next() throws BadLocationException {
-        highlightNext();
+        try {
+            int itemToHighlight = finder.next();
+            highlightItem(itemToHighlight);
+        }catch (IndexOutOfBoundsException exception){
+            System.out.println("No next");
+        }
+
     }
 
     public void previous() throws BadLocationException {
-        int itemToHighlight = finder.previous();
-        highlightItem(itemToHighlight);
+        try {
+            int itemToHighlight = finder.previous();
+            highlightItem(itemToHighlight);
+        }catch (IndexOutOfBoundsException exception){
+            System.out.println("No previous");
+        }
+
     }
 
     public void all() throws BadLocationException {
         finder.find();
         while (finder.hasNext()){
-            highlightNext();
+            next();
         }
     }
 
-    private void highlightNext() throws BadLocationException {
-        int itemToHighlight = finder.next();
-        highlightItem(itemToHighlight);
-    }
+
 
     public int totalMatches(){
         return finder.getTotalMatches();

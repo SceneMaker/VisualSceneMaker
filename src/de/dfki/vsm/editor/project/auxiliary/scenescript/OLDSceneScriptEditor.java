@@ -22,24 +22,9 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Rectangle;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.util.ArrayList;
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JEditorPane;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
-import javax.swing.JTabbedPane;
-import javax.swing.OverlayLayout;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.event.DocumentEvent;
@@ -172,9 +157,11 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
 //        addTab("DialogAct [Experimental]", mDialogActEditor);
 
         // Add search function
-        search_function_in_scene = new SearchFunctionInScene();
+        search_function_in_scene = new SearchFunctionInScene(mEditorPane);
         search_function_in_scene.createSearchBox(this);
-        
+        registerKeyBindingsForSearch();
+
+
         // Initialize The Components
         setLayout(new OverlayLayout(this));
         setBorder(BorderFactory.createEmptyBorder());
@@ -226,6 +213,21 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
         mEditorPane.setHighlighter(highlighter);
         painter = new DefaultHighlighter.DefaultHighlightPainter(Preferences.sHIGHLIGHT_SCENE_COLOR);
 
+    }
+
+    private void registerKeyBindingsForSearch() {
+        registerKeyboardAction(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                search_function_in_scene.showSearchBox();
+            }
+        }, KeyStroke.getKeyStroke(KeyEvent.VK_F, InputEvent.CTRL_DOWN_MASK, true), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+
+
+        registerKeyboardAction(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                search_function_in_scene.hideSearchBox();
+            }
+        }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0, true), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
     }
 
     // Set the pin pricked flag

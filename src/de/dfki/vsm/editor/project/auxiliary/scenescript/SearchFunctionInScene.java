@@ -4,6 +4,12 @@
  */
 package de.dfki.vsm.editor.project.auxiliary.scenescript;
 
+import de.dfki.vsm.editor.util.sceneScript.InsideScriptFinder;
+import de.dfki.vsm.editor.util.sceneScript.MatchFinder;
+import de.dfki.vsm.editor.util.sceneScript.SceneFinder;
+import de.dfki.vsm.editor.util.sceneScript.document.DocumentHighlighter;
+import de.dfki.vsm.editor.util.sceneScript.document.beans.HighlightInformation;
+
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -15,6 +21,7 @@ import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JTextField;
+import javax.swing.text.BadLocationException;
 
 /**
  *
@@ -22,6 +29,8 @@ import javax.swing.JTextField;
  */
 public class SearchFunctionInScene {
 
+    private HighlightInformation highlightInformation;
+    private final ScriptEditorPane editorPane;
     Box vSearchBox;
     Box hSearchBox1;
     JTextField textField_FindInput;
@@ -38,8 +47,11 @@ public class SearchFunctionInScene {
     JButton button_EmptytextField;
 
     JButton button_appearanceControl;
+    private DocumentHighlighter sceneHighlighter;
 
-    public SearchFunctionInScene() {
+    public SearchFunctionInScene(ScriptEditorPane mEditorPane) {
+        this.editorPane = mEditorPane;
+
 
     }
 
@@ -57,12 +69,18 @@ public class SearchFunctionInScene {
         button_FindPrev = new JButton("<");
         button_FindNext = new JButton(">");
         checkBox_SearchControl = new JCheckBox("Search Only Scenegroup Name");
-        hSearchBox1.add(button_appearanceControl);
+        checkBox_SearchControl.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                sceneHighlighter = null;
+            }
+        });
+        //hSearchBox1.add(button_appearanceControl);
         hSearchBox1.add(textField_FindInput);
         hSearchBox1.add(button_Find);
         hSearchBox1.add(button_FindPrev);
         hSearchBox1.add(button_FindNext);
-        hSearchBox1.add(checkBox_SearchControl);
+       // hSearchBox1.add(checkBox_SearchControl);
         //hSearchBox1.add(button_appearanceControl);
         hSearchBox1.add(Box.createHorizontalGlue());
 
@@ -81,7 +99,7 @@ public class SearchFunctionInScene {
         hSearchBox2.add(Box.createHorizontalGlue());
 
         vSearchBox.add(hSearchBox1);
-        vSearchBox.add(hSearchBox2);
+        //vSearchBox.add(hSearchBox2);
         vSearchBox.add(Box.createVerticalGlue());
         SceneScriptEditor.add(vSearchBox, BorderLayout.NORTH);
         hideSearchBox();
@@ -163,7 +181,7 @@ public class SearchFunctionInScene {
         textField_ReplaceInput.setText("");
     }
     
-    private void hideSearchBox() {
+    public void hideSearchBox() {
         textField_FindInput.setVisible(false);
         button_Find.setVisible(false);
         button_FindPrev.setVisible(false);
@@ -176,7 +194,7 @@ public class SearchFunctionInScene {
         button_EmptytextField.setVisible(false);
     }
 
-    private void showSearchBox() {
+    public void showSearchBox() {
         textField_FindInput.setVisible(true);
         button_Find.setVisible(true);
         button_FindPrev.setVisible(true);
@@ -190,53 +208,59 @@ public class SearchFunctionInScene {
     }
 
     public void find(String findInput) {
-        if (!findInput.equals("")) {   // input is not empty
-            if (search_Scene_Name_Symbol == true) { // if Search Only Scenegroup Name button selected
-
-            } else {
-
-            }
+        try {
+            getScriptHighlighter(findInput).all();
+        } catch (BadLocationException e) {
+            e.printStackTrace();
         }
 
     }
 
-    public void findPrev(String findInput) {
-        if (!findInput.equals("")) {   // input is not empty
-            if (search_Scene_Name_Symbol == true) { // if Search Only Scenegroup Name button selected
-
-            } else {
-
-            }
+    private void findPrev(String findInput) {
+        try {
+            getScriptHighlighter(findInput).previous();
+        } catch (BadLocationException e) {
+            e.printStackTrace();
         }
     }
 
-    public void findNext(String findInput) {
-        if (!findInput.equals("")) {   // input is not empty
-            if (search_Scene_Name_Symbol == true) { // if Search Only Scenegroup Name button selected
-
-            } else {
-
-            }
+    private DocumentHighlighter getScriptHighlighter(String findInput){
+        if(sceneHighlighter == null){
+            sceneHighlighter = createSceneHighlighter(findInput);
         }
+        highlightInformation.setWordToFind(findInput);
+        return  sceneHighlighter;
+    }
+
+    private void findNext(String findInput) {
+        try {
+            getScriptHighlighter(findInput).next();
+        } catch (BadLocationException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private DocumentHighlighter createSceneHighlighter(String findInput) {
+         highlightInformation = new HighlightInformation(
+                editorPane.getDocument(),
+                findInput,
+                editorPane.getHighlighter(),
+                editorPane
+        );
+        MatchFinder finder = new InsideScriptFinder(highlightInformation);
+        if(checkBox_SearchControl.isSelected()){
+             finder = new SceneFinder(highlightInformation);
+         }
+
+
+        return new DocumentHighlighter(highlightInformation, finder);
     }
 
     public void replace(String findInput, String replaceInput) {
-        if (!(findInput.equals("") || (replaceInput.equals("")))) {   // input is not empty
-            if (search_Scene_Name_Symbol == true) { // if Search Only Scenegroup Name button selected
 
-            } else {
-
-            }
-        }
     }
 
     public void replaceAll(String findInput, String replaceInput) {
-        if (!(findInput.equals("") || (replaceInput.equals("")))) {   // input is not empty
-            if (search_Scene_Name_Symbol == true) { // if Search Only Scenegroup Name button selected
 
-            } else {
-
-            }
-        }
     }
 }
