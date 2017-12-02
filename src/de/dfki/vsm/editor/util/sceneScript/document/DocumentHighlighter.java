@@ -77,6 +77,7 @@ public class DocumentHighlighter {
         while (finder.hasNext()){
             nextWithoutRemoval();
         }
+        finder.resetOnlyCounter();
     }
 
 

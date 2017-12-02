@@ -136,4 +136,8 @@ abstract public class MatchFinder implements BackwardsIterator {
     public int getTotalMatches() {
         return matches.size();
     }
+
+    public void resetOnlyCounter() {
+        currentHighlightedItem = 0;
+    }
 }
