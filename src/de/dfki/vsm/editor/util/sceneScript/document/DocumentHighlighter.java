@@ -33,7 +33,17 @@ public class DocumentHighlighter {
 
     public void next() throws BadLocationException {
         try {
+            nextWithtRemoval();
+        }catch (IndexOutOfBoundsException exception){
+            System.out.println("No next");
+        }
+
+    }
+
+    private void nextWithtRemoval() throws BadLocationException {
+        try{
             int itemToHighlight = finder.next();
+            finder.removeOldHighlights();
             highlightItem(itemToHighlight);
         }catch (IndexOutOfBoundsException exception){
             System.out.println("No next");
@@ -41,9 +51,20 @@ public class DocumentHighlighter {
 
     }
 
+    private void nextWithoutRemoval() throws BadLocationException {
+        try{
+            int itemToHighlight = finder.next();
+            highlightItem(itemToHighlight);
+        }catch (IndexOutOfBoundsException exception){
+            System.out.println("No next");
+        }
+    }
+
+
     public void previous() throws BadLocationException {
         try {
             int itemToHighlight = finder.previous();
+            finder.removeOldHighlights();
             highlightItem(itemToHighlight);
         }catch (IndexOutOfBoundsException exception){
             System.out.println("No previous");
@@ -54,7 +75,7 @@ public class DocumentHighlighter {
     public void all() throws BadLocationException {
         finder.find();
         while (finder.hasNext()){
-            next();
+            nextWithoutRemoval();
         }
     }
 
