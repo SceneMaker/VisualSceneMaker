@@ -12,6 +12,9 @@ abstract public class MatchFinder implements BackwardsIterator {
     private LinkedList<Integer> matches;
     private int currentHighlightedItem = 0;
     private boolean started = false;
+    private String foundWord;
+    private boolean nextWasCalled = false;
+    private boolean previousWasCalled = false;
 
     public MatchFinder(HighlightInformation documentInformation) {
         matches = new LinkedList<>();
@@ -26,15 +29,20 @@ abstract public class MatchFinder implements BackwardsIterator {
 
     @Override
     public Integer next() {
-        if (!hasNext()) throw new IndexOutOfBoundsException();
         startFinderIfNeeded();
+        if (!hasNext()) throw new IndexOutOfBoundsException();
         int item = getCurrentItem();
         updateNextPosition();
+        removeOldHighlights();
         return item;
     }
 
+    private void removeOldHighlights() {
+        documentInformation.highlighter.removeAllHighlights();
+    }
+
     public void startFinderIfNeeded() {
-        if (!started) {
+        if (!started || !documentInformation.wordToFind.equals(foundWord)) {
             init();
         }
     }
@@ -52,12 +60,20 @@ abstract public class MatchFinder implements BackwardsIterator {
     }
 
     private void updateNextPosition() {
-        if (hasNext()) {
-            currentHighlightedItem++;
+
+        nextWasCalled = true;
+        previousWasCalled = false;
+        currentHighlightedItem++;
+    }
+
+    private void positionBeforeNext() {
+        if(previousWasCalled){
+            currentHighlightedItem ++;
         }
     }
 
     public void reset() {
+        removeOldHighlights();
         currentHighlightedItem = 0;
         matches.clear();
     }
@@ -69,23 +85,29 @@ abstract public class MatchFinder implements BackwardsIterator {
 
     @Override
     public Integer previous() {
-        if (!hasPrevious()) throw new IndexOutOfBoundsException();
         startFinderIfNeeded();
-        int item = getCurrentItem();
+        if (!hasPrevious()) throw new IndexOutOfBoundsException();
         updatePreviousPosition();
+        int item = getCurrentItem();
+        removeOldHighlights();
         return item;
     }
 
     private void updatePreviousPosition() {
-        if (hasPrevious()) {
-            currentHighlightedItem--;
+        if(nextWasCalled){
+            currentHighlightedItem --;
         }
+        nextWasCalled = false;
+        previousWasCalled = true;
+
+        currentHighlightedItem--;
     }
 
 
     public void find() throws BadLocationException {
         reset();
         started = true;
+        foundWord = documentInformation.wordToFind;
         for (int index = 0;
              index + documentInformation.wordLength < documentInformation.documentLength;
              index++) {

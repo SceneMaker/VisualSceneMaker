@@ -8,12 +8,12 @@ import java.util.LinkedList;
 public class HighlightInformation {
 
     public final Document document;
-    public final String wordToFind;
+    public String wordToFind;
     public final Highlighter highlighter;
     public final LinkedList<Integer> matches;
     public final JEditorPane editorPane;
     public final int documentLength;
-    public final int wordLength;
+    public int wordLength;
 
     public HighlightInformation(Document document, String wordToFind, Highlighter highlighter, JEditorPane editorPane){
         this.document = document;
@@ -24,5 +24,10 @@ public class HighlightInformation {
         this.documentLength = document.getLength();
         this.wordLength = wordToFind.length();
 
+    }
+
+    public void setWordToFind(String wordToFind){
+        this.wordToFind = wordToFind;
+        this.wordLength = wordToFind.length();
     }
 }
