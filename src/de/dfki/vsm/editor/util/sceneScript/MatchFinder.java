@@ -31,13 +31,13 @@ abstract public class MatchFinder implements BackwardsIterator {
     public Integer next() {
         startFinderIfNeeded();
         if (!hasNext()) throw new IndexOutOfBoundsException();
+        positionBeforeNext();
         int item = getCurrentItem();
         updateNextPosition();
-        removeOldHighlights();
         return item;
     }
 
-    private void removeOldHighlights() {
+    public void removeOldHighlights() {
         documentInformation.highlighter.removeAllHighlights();
     }
 
@@ -61,9 +61,10 @@ abstract public class MatchFinder implements BackwardsIterator {
 
     private void updateNextPosition() {
 
+
+        currentHighlightedItem++;
         nextWasCalled = true;
         previousWasCalled = false;
-        currentHighlightedItem++;
     }
 
     private void positionBeforeNext() {
