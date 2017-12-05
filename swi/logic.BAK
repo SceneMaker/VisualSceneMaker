@@ -10,6 +10,7 @@
 :- reexport('tempr').
 :- reexport('timer').
 :- reexport('clean').
+:- reexport('signal').
 
 
 data(E, D) :- fsr(E), val(data, D, E).
@@ -26,53 +27,6 @@ add([type:event, mode:gesture, data:target, time:6209,dist:0,life:100]).
 
 set(Var, Val) :-
   var(Var), nonvar(Val), Var = Val.
-
-/* Signal Production and Consumption */
-signal(Mode) :-
-  forall((fsr(Record),
-    val('type', 'signal', Record),
-    val('mode', Mode, Record)),
-  del(Record)), now(Time),
-  add(['type':'signal',
-       'mode':Mode, 'time':Time]).
-       
-signal(Mode, Name) :-
-  forall((fsr(Record),
-    val('type', 'signal', Record),
-    val('mode', Mode, Record),
-    val('name', Name, Record)),
-  del(Record)), now(Time),
-  add(['type':'signal', 'mode':Mode,
-       'name':Name, 'time':Time]).
-       
-signal(Mode, Name, Data) :-
-  forall((fsr(Record),
-    val('type', 'signal', Record),
-    val('mode', Mode, Record),
-    val('name', Name, Record)),
-  del(Record)), now(Time),
-  add(['type':'signal', 'mode':Mode, 'name':Name, 'data':Data, 'time':Time]).
-
-detect(Mode) :-
-  fsr(Record),
-  val('type', 'signal', Record),
-  val('mode', Mode, Record),
-  del(Record).
-  
-detect(Mode, Name) :-
-  fsr(Record),
-  val('type', 'signal', Record),
-  val('mode', Mode, Record),
-  val('name', Name, Record),
-  del(Record).
-  
-detect(Mode, Name, Data) :-
-  fsr(Record),
-  val('type', 'signal', Record),
-  val('mode', Mode, Record),
-  val('name', Name, Record),
-  val('data', Data, Record),
-  del(Record).
 
 /* Modality-Specific Data Extraction */
 state(Name, Data) :-

@@ -66,7 +66,7 @@ import org.jpl7.Term;
 /**
  * @author Gregor Mehlmann
  */
-public class Evaluator {
+public final class Evaluator {
 
     // The singelton logger instance 
     private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();

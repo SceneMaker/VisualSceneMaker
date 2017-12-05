@@ -91,7 +91,7 @@ forlargest(Template, Generator, Condition, Scope) :-
     collect(Template, Generator, Range), % Get the quantifier range
     findall(X, bagof(Template, (Generator, Condition), X), Scopes),
     findall(X, max_size_list(Scopes, X), Candidates), out(Range), nl,
-    sort(Candidates, Sorted), % Get a sorted list of largest scopes
+    sort(Candidates, Sorted), out(Sorted), nl,% Get a sorted list of largest scopes
     collect(Template, (Generator, Condition), Scope), out(Scope), nl,
     member(Scope, Sorted). % And check for each scope if it is maximal
 

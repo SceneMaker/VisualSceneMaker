@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<SceneFlow id="TestSuite" name="TestSuite" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Di, 25 Apr 2017 13:40:59" start="N5;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
+<SceneFlow id="TestSuite" name="TestSuite" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Mi, 26 Jul 2017 15:25:21" start="N8;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
   <Define>
   </Define>
   <Declare>
@@ -436,6 +436,55 @@
     </EEdge>
     <Graphics>
       <Position xPos="303" yPos="373"/>
+    </Graphics>
+  </Node>
+  <Node id="N8" name="N8" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <CEdge target="N10" start="">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="373" yPos="548" ctrlXPos="425" ctrlYPos="548"/>
+          <ControlPoint xPos="513" yPos="548" ctrlXPos="460" ctrlYPos="548"/>
+        </Connection>
+      </Graphics>
+      <PrologQuery>
+      <StringLiteral><![CDATA[timeout(test, 5000)]]></StringLiteral>
+      </PrologQuery>
+    </CEdge>
+    <EEdge target="N8" start ="">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="347" yPos="514" ctrlXPos="365" ctrlYPos="446"/>
+        <ControlPoint xPos="368" yPos="530" ctrlXPos="428" ctrlYPos="494"/>
+      </Connection>
+    </Graphics>
+    </EEdge>
+    <Graphics>
+      <Position xPos="303" yPos="513"/>
+    </Graphics>
+  </Node>
+  <Node id="N10" name="N10" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <EEdge target="N8" start ="">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="514" yPos="557" ctrlXPos="463" ctrlYPos="570"/>
+        <ControlPoint xPos="372" yPos="557" ctrlXPos="423" ctrlYPos="570"/>
+      </Connection>
+    </Graphics>
+    </EEdge>
+    <Graphics>
+      <Position xPos="513" yPos="513"/>
     </Graphics>
   </Node>
   <SuperNode id="S1" name="Log;Some;Events" comment="" hideLocalVar="false" hideGlobalVar="false" start="S2;">

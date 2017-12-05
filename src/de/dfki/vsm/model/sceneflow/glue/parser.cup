@@ -115,14 +115,15 @@ parser code {:
 terminal String
     PlayAction, StopAction, PlayDialogAct, PlayScene, InState, Random, Contains,
     UnblockSceneGroup, UnblockSceneScript, HistoryClearFlat, HistoryClearDeep, 
-    HistoryContains, HistoryValueOf, HistorySetDepth, HistoryRunTimeOf, Timeout;
+    HistoryContains, HistoryValueOf, HistorySetDepth, HistoryRunTimeOf, Timeout,
+    List, Struct, Fun, Class;
 // Operators And Reserved Words
 terminal String
     NEW, EQUALEQUAL, NOTEQUAL, NOTMINUS, QSTMINUS, LESS, GREATER, LESSEQUAL, 
     GREATEREQUAL, ANDAND, OROR, AND, OR, XOR, PLUS, MINUS, TIMES, DIV, MOD, 
     ARROW, LNOT, NOT, INC, DEC, LPAREN, RPAREN, LBRACK, RBRACK, LBRACE, RBRACE, 
     COMMA, DOT, QUESTION, COLON, EQUAL, INT, SHORT, LONG, FLOAT, DOUBLE, BOOL, 
-    CHAR, STRING, VAR, FUN, CLASS, OBJECT, NOTTILDE;
+    CHAR, STRING, VAR, OBJECT, NOTTILDE;
 // Literal Values
 terminal String     IDENTIFIER;
 terminal Float      FLOAT_LITERAL; 
@@ -141,7 +142,7 @@ non terminal Expression expression;
 non terminal Command definition;
 non terminal FunctionDefinition function_definition;
 non terminal VariableDefinition variable_definition;
-non terminal ArgumentDefinition argument_definition;
+non terminal ArgumentDefinition parameter_definition;
 non terminal DataTypeDefinition datatype_definition;
 non terminal Definition classpath_definition;
 // Datatype Definitions
@@ -166,7 +167,7 @@ non terminal ArrayList assignment_list_opt;
 non terminal ArrayList expression_list;
 non terminal ArrayList expression_list_opt;
 non terminal ArrayList member_definition_list;
-non terminal ArrayList argument_definition_list;
+non terminal ArrayList parameter_definition_list;
 // Other Non Terminals
 non terminal String primitive_type;
 non terminal String type_identifier;
@@ -209,13 +210,13 @@ datatype_definition ::=
 | struct_type_definition:x      {: RESULT = x; :}
 ;
 list_type_definition ::=
-  IDENTIFIER:x COLON LPAREN primitive_type:y RPAREN
+  IDENTIFIER:x COLON List LPAREN primitive_type:y RPAREN
     {: 
         RESULT = new ListTypeDefinition(x, y); 
     :} 
 ;
 struct_type_definition ::=
-  IDENTIFIER:x COLON LPAREN member_definition_list:y RPAREN                     
+  IDENTIFIER:x COLON Struct LPAREN member_definition_list:y RPAREN                     
     {: 
         RESULT = new StructTypeDefinition(x, y); 
     :} 
@@ -254,23 +255,23 @@ type_identifier::=
 ;
 // Function Definitions
 function_definition ::=
-  IDENTIFIER:x COLON LPAREN class_qualifier:y COMMA IDENTIFIER:z RPAREN         
+  IDENTIFIER:x COLON Fun LPAREN class_qualifier:y COMMA IDENTIFIER:z RPAREN         
     {: 
         RESULT = new FunctionDefinition(x, y, z); 
     :} 
-| IDENTIFIER:x COLON LPAREN class_qualifier:y COMMA IDENTIFIER:z COMMA argument_definition_list:l RPAREN                                    
+| IDENTIFIER:x COLON Fun LPAREN class_qualifier:y COMMA IDENTIFIER:z COMMA parameter_definition_list:l RPAREN                                    
     {: 
         RESULT = new FunctionDefinition(x, y, z, l); 
     :} 
 ;
 // Argument Definition
-argument_definition_list ::=
-  argument_definition:x                                                        
+parameter_definition_list ::=
+  parameter_definition:x                                                        
     {: RESULT = new ArrayList(); RESULT.add(x); :}
-| argument_definition_list:x COMMA argument_definition:y                        
+| parameter_definition_list:x COMMA parameter_definition:y                        
     {: RESULT = x; RESULT.add(y); :}
 ;
-argument_definition ::=
+parameter_definition ::=
   IDENTIFIER:x COLON class_qualifier:y                                          
     {: 
         RESULT = new ArgumentDefinition(x, y); 
@@ -284,8 +285,8 @@ class_qualifier ::=
 ;
 // Classpath Definitions
 classpath_definition ::=
-  IDENTIFIER:x COLON CLASS LPAREN class_qualifier:y RPAREN                      
-    {: System.err.println("CLASS Path Definition '" + y + "'"); RESULT = null; :} 
+  IDENTIFIER:x COLON Class LPAREN class_qualifier:y RPAREN                      
+    {: System.err.println("Class Path Definition '" + y + "'"); RESULT = null; :} 
 ;
 // Variable Assignments
 assignment ::=
