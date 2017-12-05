@@ -86,10 +86,13 @@ object      = (null)
 "char"                  { return new Symbol(GlueFields.CHAR); }
 "string"                { return new Symbol(GlueFields.STRING); }
 "var"                   { return new Symbol(GlueFields.VAR); }
-"fun"                   { return new Symbol(GlueFields.FUN); }
-"class"                 { return new Symbol(GlueFields.CLASS); }
 "object"                { return new Symbol(GlueFields.OBJECT); }
 "new"                   { return new Symbol(GlueFields.NEW); }
+
+"list"                  { return new Symbol(GlueFields.List); }
+"struct"                { return new Symbol(GlueFields.Struct); }
+"fun"                   { return new Symbol(GlueFields.Fun); }
+"class"                 { return new Symbol(GlueFields.Class); }
 
 {object}                { return new Symbol(GlueFields.OBJECT_LITERAL, null); }
 {boolean}               { return new Symbol(GlueFields.BOOLEAN_LITERAL, Boolean.valueOf(yytext())); }
