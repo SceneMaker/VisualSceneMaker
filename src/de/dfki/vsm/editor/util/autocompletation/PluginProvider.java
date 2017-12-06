@@ -4,13 +4,15 @@ import org.fife.ui.autocomplete.BasicCompletion;
 import org.fife.ui.autocomplete.CompletionProvider;
 import org.fife.ui.autocomplete.DefaultCompletionProvider;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
 public class PluginProvider {
+    //Todo make close to register
 
     private static PluginProvider instance;
-    private HashMap<String, CompletionProvider> pluginProviders;
+    private HashMap<String, ArrayList> pluginProviders;
 
     private PluginProvider(){
         pluginProviders = new HashMap<>();
@@ -23,45 +25,20 @@ public class PluginProvider {
         return instance;
     }
 
-    public void registerProvider(String pluginName, CompletionProvider provider){
-        pluginProviders.put(pluginName, provider);
+    public void registerProvider(String characterName, ArrayList<String> availableCompletions){
+        pluginProviders.put(characterName, availableCompletions);
     }
 
-    public void unregisterProvider(String pluginName){
-        if(pluginProviders.containsKey(pluginName)){
-            pluginProviders.remove(pluginName);
+    public void unregisterProvider(String characterName){
+        if(pluginProviders.containsKey(characterName)){
+            pluginProviders.remove(characterName);
         }
     }
 
-    public CompletionProvider getProviderForPlugin(String pluginName){
-        if(pluginProviders.containsKey(pluginName)){
-            return pluginProviders.get(pluginName);
-        }
-        return getDefaultProvider();
-    }
 
-    public static CompletionProvider createProviderForAgentFromList(String characterName, HashMap<String, String> replacements){
-        PluginCompletionProvider provider = new PluginCompletionProvider(characterName);
-        for(Map.Entry<String, String> entry : replacements.entrySet()) {
-            String replacement = entry.getKey();
-            String dataType = entry.getValue();
-            provider.addCompletion(new BasicCompletion(provider, replacement));
-
-        }
-        return provider;
-    }
-
-    public static void createPluginProviderAndRegisterIt(
-            String pluginName
-            , String characterName
-            , HashMap<String, String> replacements){
-
-        CompletionProvider provider = createProviderForAgentFromList(characterName, replacements);
-        getInstance().registerProvider(pluginName, provider);
+    public static CompletionProvider getProvider(){
+        return new PluginCompletionProvider(getInstance().pluginProviders);
     }
 
 
-    private CompletionProvider getDefaultProvider() {
-        return new DefaultCompletionProvider();
-    }
 }

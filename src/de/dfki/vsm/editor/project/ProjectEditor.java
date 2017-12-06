@@ -6,10 +6,13 @@ import de.dfki.vsm.editor.event.NodeSelectedEvent;
 import de.dfki.vsm.editor.event.TreeEntrySelectedEvent;
 import de.dfki.vsm.editor.project.auxiliary.scenescript.OLDSceneScriptEditor;
 import de.dfki.vsm.Preferences;
+import de.dfki.vsm.editor.util.autocompletation.AutoCompletionPluginDiscover;
 import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
+import org.fife.ui.autocomplete.AutoCompletion;
+
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.ComponentEvent;
@@ -50,6 +53,8 @@ public final class ProjectEditor extends JSplitPane implements EventListener {
         mEditorProject = project;
         // Initialize the sceneflow editor
         mSceneFlowEditor = new SceneFlowEditor(mEditorProject);
+        AutoCompletionPluginDiscover pluginDiscover = new AutoCompletionPluginDiscover(project);
+        pluginDiscover.discover();
         // Initialize the auxuliary editor
         mAuxiliaryEditor = new OLDSceneScriptEditor(mEditorProject);
         //mAuxiliaryEditor = new AuxiliaryEditor(mEditorProject);
