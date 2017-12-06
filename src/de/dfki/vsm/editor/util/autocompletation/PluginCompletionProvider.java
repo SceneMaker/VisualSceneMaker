@@ -56,36 +56,17 @@ public class PluginCompletionProvider extends DefaultCompletionProvider {
     }
 
     private String findCharacterName(JTextComponent jTextComponent) {
-        CharacterFinder characterFinder = new CharacterFinder();
-        return characterFinder.getCharacterName(jTextComponent);
+        CharacterFinder characterFinder = new CharacterFinder(jTextComponent);
+        return characterFinder.getCharacterName();
     }
 
     private boolean isValid(){
-        CharacterFinder characterFinder = new CharacterFinder();
-        Document document = editor.getDocument();
-        int caretPosition = editor.getCaretPosition();
-        characterFinder.setDocument(document);
-        int lineStartPos = characterFinder.getLineStartPosition(caretPosition);
-        int currentPos = caretPosition;
-        boolean isValid = false;
-        String currentChar = "";
-        while (currentPos > lineStartPos  && !isValid){
-            try {
-                currentChar = document.getText(currentPos, 1);
-                if(currentChar.equals("[")){
-                    isValid = true;
-                }else if (currentChar.equals("]")){
-                    isValid = false;
-                    break;
-                }
-
-                currentPos--;
-            } catch (BadLocationException e) {
-                return false;
-            }
-
-        }
-        return isValid;
+        DocumentCharFinder characterFinder = new DocumentCharFinder(editor);
+        characterFinder.updatePositionToCurrentCaret();
+        int openBracketsPos = characterFinder.findBackward("[");
+        characterFinder.updatePositionToCurrentCaret();
+        int closedBracketPos = characterFinder.findBackward("]");
+        return (openBracketsPos > closedBracketPos);
     }
 
 
