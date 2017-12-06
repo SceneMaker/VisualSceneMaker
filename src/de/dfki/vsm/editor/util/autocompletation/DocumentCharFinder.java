@@ -11,20 +11,20 @@ public class DocumentCharFinder {
     private int currentPosition;
 
 
-    public DocumentCharFinder(JTextComponent jTextComponent){
+    public DocumentCharFinder(JTextComponent jTextComponent) {
         this.document = jTextComponent.getDocument();
         this.component = jTextComponent;
     }
 
-    public void updatePositionToCurrentCaret(){
+    public void updatePositionToCurrentCaret() {
         this.currentPosition = this.getCurrentCaretPosition();
     }
 
-    public void setCurrentPosition(int newPosition){
+    public void setCurrentPosition(int newPosition) {
         currentPosition = newPosition;
     }
 
-    public int findForward(String charToFind){
+    public int findForward(String charToFind) {
         try {
             return tryToFindCharForward(charToFind);
         } catch (BadLocationException e) {
@@ -35,14 +35,14 @@ public class DocumentCharFinder {
     private int tryToFindCharBackward(String charToFind) throws BadLocationException {
         int charPosition = this.currentPosition;
         String currentChar = "";
-        while (!currentChar.equals(charToFind)){
+        while (!currentChar.equals(charToFind)) {
             currentChar = document.getText(charPosition, 1);
             charPosition--;
         }
         return charPosition + 1;
     }
 
-    public int findBackward(String charToFind){
+    public int findBackward(String charToFind) {
         try {
             return tryToFindCharBackward(charToFind);
         } catch (BadLocationException e) {
@@ -54,7 +54,7 @@ public class DocumentCharFinder {
     private int tryToFindCharForward(String charToFind) throws BadLocationException {
         int charPosition = this.currentPosition;
         String currentChar = "";
-        while (!currentChar.equals(charToFind)){
+        while (!currentChar.equals(charToFind)) {
             currentChar = document.getText(charPosition, 1);
             charPosition++;
         }
@@ -69,8 +69,8 @@ public class DocumentCharFinder {
         return elem.getStartOffset();
     }
 
-    public  int getCurrentCaretPosition() {
-        return  component.getCaretPosition();
+    public int getCurrentCaretPosition() {
+        return component.getCaretPosition();
 
     }
 }

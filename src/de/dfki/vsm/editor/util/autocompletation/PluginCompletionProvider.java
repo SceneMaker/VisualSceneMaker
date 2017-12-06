@@ -1,22 +1,18 @@
 package de.dfki.vsm.editor.util.autocompletation;
 
 import de.dfki.vsm.editor.project.auxiliary.scenescript.ScriptEditorPane;
-import org.fife.ui.autocomplete.*;
+import org.fife.ui.autocomplete.BasicCompletion;
+import org.fife.ui.autocomplete.DefaultCompletionProvider;
 
-import javax.swing.text.*;
-import java.awt.*;
+import javax.swing.text.JTextComponent;
+import javax.swing.text.Segment;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 public class PluginCompletionProvider extends DefaultCompletionProvider {
     private final HashMap<String, ArrayList> replacements;
     private final ScriptEditorPane editor;
-    protected Segment seg;
-    private String lastCompletionsAtText;
-    private List<Completion> lastParameterizedCompletionsAt;
     private String currentCharacter = "";
-
 
 
     public PluginCompletionProvider(HashMap<String, ArrayList> replacements, ScriptEditorPane mEditorPane) {
@@ -29,9 +25,9 @@ public class PluginCompletionProvider extends DefaultCompletionProvider {
 
     @Override
     public String getAlreadyEnteredText(JTextComponent jTextComponent) {
-        if(!isValid()){
+        if (!isValid()) {
             this.completions = new ArrayList();
-        }else{
+        } else {
 
             addCompletionForCharacter(jTextComponent);
         }
@@ -40,16 +36,16 @@ public class PluginCompletionProvider extends DefaultCompletionProvider {
 
     private void addCompletionForCharacter(JTextComponent jTextComponent) {
         String characterName = findCharacterName(jTextComponent);
-        if(!currentCharacter.equals(characterName) || completions.isEmpty()){
+        if (!currentCharacter.equals(characterName) || completions.isEmpty()) {
             addCompletionToProvider(characterName);
             currentCharacter = characterName;
         }
     }
 
     private void addCompletionToProvider(String characterName) {
-        if(!characterName.equals("") && replacements.containsKey(characterName)){
+        if (!characterName.equals("") && replacements.containsKey(characterName)) {
             ArrayList<String> characterReplacements = replacements.get(characterName);
-            for (String replacement: characterReplacements) {
+            for (String replacement : characterReplacements) {
                 addCompletion(new BasicCompletion(this, replacement));
             }
         }
@@ -60,7 +56,7 @@ public class PluginCompletionProvider extends DefaultCompletionProvider {
         return characterFinder.getCharacterName();
     }
 
-    private boolean isValid(){
+    private boolean isValid() {
         DocumentCharFinder characterFinder = new DocumentCharFinder(editor);
         characterFinder.updatePositionToCurrentCaret();
         int openBracketsPos = characterFinder.findBackward("[");
@@ -68,8 +64,6 @@ public class PluginCompletionProvider extends DefaultCompletionProvider {
         int closedBracketPos = characterFinder.findBackward("]");
         return (openBracketsPos > closedBracketPos);
     }
-
-
 
 
 }
