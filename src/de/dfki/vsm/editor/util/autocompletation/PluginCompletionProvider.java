@@ -10,13 +10,13 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ActionCompletionProvider extends AbstractCompletionProvider {
+public class PluginCompletionProvider extends AbstractCompletionProvider {
     protected Segment seg;
     private String lastCompletionsAtText;
     private List<Completion> lastParameterizedCompletionsAt;
 
 
-    public ActionCompletionProvider() {
+    public PluginCompletionProvider(String characterName) {
         seg = new Segment();
         this.completions = new ArrayList();
     }

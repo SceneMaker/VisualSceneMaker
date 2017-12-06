@@ -4,39 +4,64 @@ import org.fife.ui.autocomplete.BasicCompletion;
 import org.fife.ui.autocomplete.CompletionProvider;
 import org.fife.ui.autocomplete.DefaultCompletionProvider;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class PluginProvider {
 
     private static PluginProvider instance;
+    private HashMap<String, CompletionProvider> pluginProviders;
 
     private PluginProvider(){
-
+        pluginProviders = new HashMap<>();
     }
 
     public static PluginProvider getInstance(){
-        return null;
+        if(instance == null){
+            instance = new PluginProvider();
+        }
+        return instance;
     }
 
-    public static CompletionProvider getProvider(){
-        ActionCompletionProvider provider = new ActionCompletionProvider();
+    public void registerProvider(String pluginName, CompletionProvider provider){
+        pluginProviders.put(pluginName, provider);
+    }
 
-        // Add completions for all Java keywords. A BasicCompletion is just
-        // a straightforward word completion.
-        provider.addCompletion(new BasicCompletion(provider, "abstract"));
-        provider.addCompletion(new BasicCompletion(provider, "assert"));
-        provider.addCompletion(new BasicCompletion(provider, "break"));
-        provider.addCompletion(new BasicCompletion(provider, "case"));
-        // ... etc ...
-        provider.addCompletion(new BasicCompletion(provider, "transient"));
-        provider.addCompletion(new BasicCompletion(provider, "try"));
-        provider.addCompletion(new BasicCompletion(provider, "void"));
-        provider.addCompletion(new BasicCompletion(provider, "volatile"));
-        provider.addCompletion(new BasicCompletion(provider, "while"));
+    public void unregisterProvider(String pluginName){
+        if(pluginProviders.containsKey(pluginName)){
+            pluginProviders.remove(pluginName);
+        }
+    }
 
+    public CompletionProvider getProviderForPlugin(String pluginName){
+        if(pluginProviders.containsKey(pluginName)){
+            return pluginProviders.get(pluginName);
+        }
+        return getDefaultProvider();
+    }
 
+    public static CompletionProvider createProviderForAgentFromList(String characterName, HashMap<String, String> replacements){
+        PluginCompletionProvider provider = new PluginCompletionProvider(characterName);
+        for(Map.Entry<String, String> entry : replacements.entrySet()) {
+            String replacement = entry.getKey();
+            String dataType = entry.getValue();
+            provider.addCompletion(new BasicCompletion(provider, replacement));
 
+        }
         return provider;
     }
 
+    public static void createPluginProviderAndRegisterIt(
+            String pluginName
+            , String characterName
+            , HashMap<String, String> replacements){
+
+        CompletionProvider provider = createProviderForAgentFromList(characterName, replacements);
+        getInstance().registerProvider(pluginName, provider);
+    }
 
 
+    private CompletionProvider getDefaultProvider() {
+        return new DefaultCompletionProvider();
+    }
 }
