@@ -9,23 +9,23 @@ public class CharacterFinder {
     private Document document;
     private DocumentCharFinder charFinder;
 
-    public CharacterFinder(JTextComponent component){
+    public CharacterFinder(JTextComponent component) {
         this.document = component.getDocument();
         this.charFinder = new DocumentCharFinder(component);
     }
 
-    public String getCharacterName(){
+    public String getCharacterName() {
         charFinder.updatePositionToCurrentCaret();
         int charPosition = charFinder.getLineStartPosition();
         charFinder.setCurrentPosition(charPosition);
-        int colonPosition = charFinder.findForward(":") ;
-        int length = colonPosition  - charPosition ;
+        int colonPosition = charFinder.findForward(":");
+        int length = colonPosition - charPosition;
         return findCharacterName(charPosition, length);
     }
 
     private String findCharacterName(int charPosition, int length) {
         try {
-            return document.getText(charPosition  , length  );
+            return document.getText(charPosition, length);
         } catch (BadLocationException e) {
             return "";
         }

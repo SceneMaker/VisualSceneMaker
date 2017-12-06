@@ -1,13 +1,10 @@
 package de.dfki.vsm.editor.util.autocompletation;
 
 import de.dfki.vsm.editor.project.auxiliary.scenescript.ScriptEditorPane;
-import org.fife.ui.autocomplete.BasicCompletion;
 import org.fife.ui.autocomplete.CompletionProvider;
-import org.fife.ui.autocomplete.DefaultCompletionProvider;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 
 public class PluginProvider {
     //Todo make close to register
@@ -26,6 +23,10 @@ public class PluginProvider {
         return instance;
     }
 
+    public static CompletionProvider getProvider(ScriptEditorPane mEditorPane){
+        return new PluginCompletionProvider(getInstance().pluginProviders, mEditorPane);
+    }
+
     public void registerProvider(String characterName, ArrayList<String> availableCompletions){
         pluginProviders.put(characterName, availableCompletions);
     }
@@ -34,11 +35,6 @@ public class PluginProvider {
         if(pluginProviders.containsKey(characterName)){
             pluginProviders.remove(characterName);
         }
-    }
-
-
-    public static CompletionProvider getProvider(ScriptEditorPane mEditorPane){
-        return new PluginCompletionProvider(getInstance().pluginProviders, mEditorPane);
     }
 
 
