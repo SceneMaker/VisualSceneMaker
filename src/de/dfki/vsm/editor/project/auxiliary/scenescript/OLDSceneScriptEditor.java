@@ -216,7 +216,7 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
         mEditorPane.setHighlighter(highlighter);
         painter = new DefaultHighlighter.DefaultHighlightPainter(Preferences.sHIGHLIGHT_SCENE_COLOR);
 
-        CompletionProvider provider = PluginProvider.getProvider();
+        CompletionProvider provider = PluginProvider.getProvider(mEditorPane);
         AutoCompletion ac = new AutoCompletion(provider);
         ac.install(mEditorPane);
 

@@ -1,5 +1,6 @@
 package de.dfki.vsm.editor.util.autocompletation;
 
+import de.dfki.vsm.editor.project.auxiliary.scenescript.ScriptEditorPane;
 import org.fife.ui.autocomplete.BasicCompletion;
 import org.fife.ui.autocomplete.CompletionProvider;
 import org.fife.ui.autocomplete.DefaultCompletionProvider;
@@ -36,8 +37,8 @@ public class PluginProvider {
     }
 
 
-    public static CompletionProvider getProvider(){
-        return new PluginCompletionProvider(getInstance().pluginProviders);
+    public static CompletionProvider getProvider(ScriptEditorPane mEditorPane){
+        return new PluginCompletionProvider(getInstance().pluginProviders, mEditorPane);
     }
 
 
