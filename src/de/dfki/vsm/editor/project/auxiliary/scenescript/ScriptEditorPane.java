@@ -2,6 +2,7 @@ package de.dfki.vsm.editor.project.auxiliary.scenescript;
 
 import de.dfki.vsm.editor.event.SceneSelectedEvent;
 import de.dfki.vsm.editor.project.EditorProject;
+import de.dfki.vsm.editor.util.autocompletation.ActionCompletionProvider;
 import de.dfki.vsm.editor.util.sceneScript.InsideScriptFinder;
 import de.dfki.vsm.editor.util.sceneScript.SceneFinder;
 import de.dfki.vsm.editor.util.VisualisationTask;
@@ -15,6 +16,9 @@ import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
+import org.fife.ui.autocomplete.AutoCompletion;
+import org.fife.ui.autocomplete.CompletionProvider;
+
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Rectangle;
@@ -105,12 +109,9 @@ public class ScriptEditorPane extends JEditorPane implements EventListener {
 
         setUpUndoRedo();
 
-        // Register Document Actions
-        // registerKeyboardAction(getDocument().getUndoAction(), KeyStroke.getKeyStroke(
-        // KeyEvent.VK_Z, InputEvent.CTRL_MASK), JComponent.WHEN_FOCUSED);
-        // registerKeyboardAction(getDocument().getRedoAction(), KeyStroke.getKeyStroke(
-        // KeyEvent.VK_Y, InputEvent.CTRL_MASK), JComponent.WHEN_FOCUSED);
-        // Register As Event Listener
+
+
+
         mEventCaster.register(this);
     }
 
