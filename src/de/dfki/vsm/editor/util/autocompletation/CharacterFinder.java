@@ -8,6 +8,9 @@ import javax.swing.text.JTextComponent;
 public class CharacterFinder {
 
     private Document document;
+    public void setDocument(Document document){
+        this.document = document;
+    }
 
     public String getCharacterName(JTextComponent jTextComponent){
         int charPosition = getCurrentCharacterPosition(jTextComponent);
@@ -17,7 +20,7 @@ public class CharacterFinder {
     private String findCharacterName(int charPosition) {
 
         try {
-            int colonPosition = goBackwardsToFindChr(charPosition, ":") ;
+            int colonPosition = goForwardsToFindCar(charPosition, ":") ;
             int length = colonPosition  - charPosition ;
             return document.getText(charPosition  , length  );
         } catch (BadLocationException ble) {
@@ -27,7 +30,7 @@ public class CharacterFinder {
         return "";
     }
 
-    private int goBackwardsToFindChr(int charPosition, String charToFind) throws BadLocationException {
+    private int goForwardsToFindCar(int charPosition, String charToFind) throws BadLocationException {
         String currentChar = "";
         while (!currentChar.equals(charToFind)){
             currentChar = document.getText(charPosition, 1);
@@ -39,6 +42,10 @@ public class CharacterFinder {
     private  int getCurrentCharacterPosition(JTextComponent jTextComponent) {
         document = jTextComponent.getDocument();
         int dot = jTextComponent.getCaretPosition();
+        return getLineStartPosition(dot);
+    }
+
+    public int getLineStartPosition(int dot) {
         Element root = document.getDefaultRootElement();
         int index = root.getElementIndex(dot);
         Element elem = root.getElement(index);
