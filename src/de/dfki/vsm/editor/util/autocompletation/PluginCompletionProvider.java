@@ -16,6 +16,7 @@ public class PluginCompletionProvider extends AbstractCompletionProvider {
     protected Segment seg;
     private String lastCompletionsAtText;
     private List<Completion> lastParameterizedCompletionsAt;
+    private String currentCharacter = "";
 
 
 
@@ -57,6 +58,13 @@ public class PluginCompletionProvider extends AbstractCompletionProvider {
 
     private void addCompletionForCharacter(JTextComponent jTextComponent) {
         String characterName = findCharacterName(jTextComponent);
+        if(!currentCharacter.equals(characterName)){
+            addCompletionToProvider(characterName);
+            currentCharacter = characterName;
+        }
+    }
+
+    private void addCompletionToProvider(String characterName) {
         if(!characterName.equals("") && replacements.containsKey(characterName)){
             ArrayList<String> characterReplacements = replacements.get(characterName);
             for (String replacement: characterReplacements) {
@@ -76,7 +84,6 @@ public class PluginCompletionProvider extends AbstractCompletionProvider {
 
     @Override
     public List getCompletionsAt(JTextComponent tc, Point p) {
-        String characterName = findCharacterName(tc);
         int offset = tc.viewToModel(p);
         if (offset<0 || offset>=tc.getDocument().getLength()) {
             lastCompletionsAtText = null;
