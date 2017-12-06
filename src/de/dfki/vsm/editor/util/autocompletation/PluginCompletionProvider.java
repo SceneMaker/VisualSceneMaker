@@ -1,28 +1,34 @@
 package de.dfki.vsm.editor.util.autocompletation;
 
 import org.fife.ui.autocomplete.AbstractCompletionProvider;
+import org.fife.ui.autocomplete.BasicCompletion;
 import org.fife.ui.autocomplete.Completion;
-import org.fife.ui.autocomplete.CompletionProvider;
 import org.fife.ui.autocomplete.ParameterizedCompletion;
 
 import javax.swing.text.*;
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class PluginCompletionProvider extends AbstractCompletionProvider {
+    private final HashMap<String, ArrayList> replacements;
     protected Segment seg;
     private String lastCompletionsAtText;
     private List<Completion> lastParameterizedCompletionsAt;
 
 
-    public PluginCompletionProvider(String characterName) {
+
+    public PluginCompletionProvider(HashMap<String, ArrayList> replacements) {
         seg = new Segment();
         this.completions = new ArrayList();
+        this.replacements = replacements;
+
     }
 
     @Override
     public String getAlreadyEnteredText(JTextComponent jTextComponent) {
+        addCompletionForCharacter(jTextComponent);
         Document doc = jTextComponent.getDocument();
 
         int dot = jTextComponent.getCaretPosition();
@@ -49,12 +55,28 @@ public class PluginCompletionProvider extends AbstractCompletionProvider {
         return len==0 ? EMPTY_STRING : new String(seg.array, start, len);
     }
 
+    private void addCompletionForCharacter(JTextComponent jTextComponent) {
+        String characterName = findCharacterName(jTextComponent);
+        if(!characterName.equals("") && replacements.containsKey(characterName)){
+            ArrayList<String> characterReplacements = replacements.get(characterName);
+            for (String replacement: characterReplacements) {
+                addCompletion(new BasicCompletion(this, replacement));
+            }
+        }
+    }
+
+    private String findCharacterName(JTextComponent jTextComponent) {
+        CharacterFinder characterFinder = new CharacterFinder();
+        return characterFinder.getCharacterName(jTextComponent);
+    }
+
     private boolean isValidChar(char ch) {
         return Character.isLetterOrDigit(ch) || ch=='_';
     }
 
     @Override
     public List getCompletionsAt(JTextComponent tc, Point p) {
+        String characterName = findCharacterName(tc);
         int offset = tc.viewToModel(p);
         if (offset<0 || offset>=tc.getDocument().getLength()) {
             lastCompletionsAtText = null;
