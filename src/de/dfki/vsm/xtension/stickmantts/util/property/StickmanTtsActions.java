@@ -8,11 +8,9 @@ import de.dfki.vsm.util.stickman.StickmanRepository;
 import java.util.ArrayList;
 
 public class StickmanTtsActions implements ExportableCompletion{
-    private final PluginConfig config;
     private final StickmanRepository stickmanFactory;
 
-    public StickmanTtsActions(PluginConfig config, StickmanRepository stickmanFactory) {
-        this.config = config;
+    public StickmanTtsActions(StickmanRepository stickmanFactory) {
         this.stickmanFactory = stickmanFactory;
     }
 
