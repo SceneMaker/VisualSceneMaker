@@ -82,7 +82,7 @@ public class StickmanTtsExecutor extends ActivityExecutor implements ExportableP
         maryId = 0;
         languageAgentMap = new HashMap<>();
         stickmanFactory = new StickmanRepository(config);
-        exportableActions = new StickmanTtsActions(config, stickmanFactory);
+        exportableActions = new StickmanTtsActions(stickmanFactory);
 
     }
 
