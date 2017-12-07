@@ -25,13 +25,16 @@ public class PluginCompletionProvider extends DefaultCompletionProvider {
 
     @Override
     public String getAlreadyEnteredText(JTextComponent jTextComponent) {
-        if (!isValid()) {
+        updateCompletions(jTextComponent);
+        return super.getAlreadyEnteredText(jTextComponent);
+    }
+
+    private void updateCompletions(JTextComponent jTextComponent) {
+        if (!isCaretInsideActionBlock()) {
             this.completions = new ArrayList();
         } else {
-
             addCompletionForCharacter(jTextComponent);
         }
-        return super.getAlreadyEnteredText(jTextComponent);
     }
 
     private void addCompletionForCharacter(JTextComponent jTextComponent) {
@@ -56,7 +59,7 @@ public class PluginCompletionProvider extends DefaultCompletionProvider {
         return characterFinder.getCharacterName();
     }
 
-    private boolean isValid() {
+    private boolean isCaretInsideActionBlock() {
         DocumentCharFinder characterFinder = new DocumentCharFinder(editor);
         characterFinder.updatePositionToCurrentCaret();
         int openBracketsPos = characterFinder.findBackward("[");
