@@ -71,7 +71,7 @@ public class StickmanTtsExecutor extends ActivityExecutor implements ExportableP
     // The word mapping properties
     Properties mWordMapping = new Properties();
     private ExportableProperties exportableProperties = new StickmanTTSProjectProperty();
-    private ExportableCompletion exportableActions = new StickmanTtsActions();
+    private ExportableCompletion exportableActions ;
 
     private int maryId;
 
@@ -82,6 +82,7 @@ public class StickmanTtsExecutor extends ActivityExecutor implements ExportableP
         maryId = 0;
         languageAgentMap = new HashMap<>();
         stickmanFactory = new StickmanRepository(config);
+        exportableActions = new StickmanTtsActions(config, stickmanFactory);
 
     }
 
