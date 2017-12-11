@@ -17,6 +17,7 @@ import de.dfki.vsm.runtime.activity.SpeechActivity;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
 import de.dfki.vsm.runtime.activity.scheduler.ActivityWorker;
 import de.dfki.vsm.runtime.project.RunTimeProject;
+import de.dfki.vsm.util.extensions.ExportableCompletion;
 import de.dfki.vsm.util.extensions.ExportableProperties;
 import de.dfki.vsm.util.extensions.ProjectProperty;
 import de.dfki.vsm.util.extensions.value.ProjectValueProperty;
@@ -25,22 +26,26 @@ import de.dfki.vsm.util.stickman.StickmanRepository;
 
 import java.io.ByteArrayOutputStream;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 
 import de.dfki.vsm.xtension.stickman.util.property.StickmanProjectProperty;
 import de.dfki.vsm.xtension.stickmantts.util.property.StickmanTTSProjectProperty;
 import java.io.File;
+
+import de.dfki.vsm.xtension.stickmantts.util.property.StickmanTtsActions;
 import javafx.scene.paint.Color;
 
 /**
  *
  * @author Patrick Gebhard
  */
-public class StickmanExecutor extends ActivityExecutor implements ExportableProperties {
+public class StickmanExecutor extends ActivityExecutor implements ExportableProperties, ExportableCompletion {
 
     // The singelton logger instance
     private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
+    private final StickmanTtsActions exportableActions;
     // The tworld listener
     private StickmanListener mListener;
     // The client thread list
@@ -58,6 +63,7 @@ public class StickmanExecutor extends ActivityExecutor implements ExportableProp
         // Initialize the plugin
         super(config, project);
         stickmanFactory = new StickmanRepository(config);
+        exportableActions = new StickmanTtsActions(stickmanFactory);
 
     }
 
@@ -306,5 +312,10 @@ public class StickmanExecutor extends ActivityExecutor implements ExportableProp
     @Override
     public HashMap<ProjectProperty, ProjectValueProperty> getExportableAgentProperties() {
         return exportableProperties.getExportableAgentProperties();
+    }
+
+    @Override
+    public ArrayList<String> getExportableActions() {
+        return exportableActions.getExportableActions();
     }
 }

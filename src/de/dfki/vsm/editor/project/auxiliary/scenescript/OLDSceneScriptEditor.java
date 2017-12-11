@@ -8,6 +8,7 @@ import de.dfki.vsm.editor.SceneElementDisplay;
 import de.dfki.vsm.editor.event.SceneSelectedEvent;
 import de.dfki.vsm.editor.event.TreeEntrySelectedEvent;
 import de.dfki.vsm.Preferences;
+import de.dfki.vsm.editor.util.autocompletation.PluginProvider;
 import de.dfki.vsm.model.project.EditorConfig;
 import de.dfki.vsm.model.scenescript.SceneScript;
 import de.dfki.vsm.util.evt.EventDispatcher;
@@ -17,6 +18,8 @@ import de.dfki.vsm.util.ios.ResourceLoader;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 import de.dfki.vsm.util.syn.SyntaxDocument;
 import org.apache.commons.lang.StringUtils;
+import org.fife.ui.autocomplete.AutoCompletion;
+import org.fife.ui.autocomplete.CompletionProvider;
 import org.ujmp.core.collections.ArrayIndexList;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -212,6 +215,10 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
 
         mEditorPane.setHighlighter(highlighter);
         painter = new DefaultHighlighter.DefaultHighlightPainter(Preferences.sHIGHLIGHT_SCENE_COLOR);
+
+        CompletionProvider provider = PluginProvider.getProvider(mEditorPane);
+        AutoCompletion ac = new AutoCompletion(provider);
+        ac.install(mEditorPane);
 
     }
 
