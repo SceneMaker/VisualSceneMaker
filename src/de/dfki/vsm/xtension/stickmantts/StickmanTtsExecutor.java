@@ -22,6 +22,7 @@ import de.dfki.vsm.runtime.activity.SpeechActivity;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
 import de.dfki.vsm.runtime.activity.scheduler.ActivityWorker;
 import de.dfki.vsm.runtime.project.RunTimeProject;
+import de.dfki.vsm.util.extensions.ExportableCompletion;
 import de.dfki.vsm.util.extensions.ExportableProperties;
 import de.dfki.vsm.util.extensions.ProjectProperty;
 import de.dfki.vsm.util.extensions.value.ProjectValueProperty;
@@ -33,11 +34,13 @@ import de.dfki.vsm.util.tts.VoiceName;
 import de.dfki.vsm.util.tts.marytts.MaryTTsProcess;
 import de.dfki.vsm.xtension.stickmantts.action.ActionMouthActivity;
 import de.dfki.vsm.xtension.stickmantts.util.property.StickmanTTSProjectProperty;
+import de.dfki.vsm.xtension.stickmantts.util.property.StickmanTtsActions;
 import de.dfki.vsm.xtension.stickmantts.util.tts.SpeakerActivity;
 import de.dfki.vsm.xtension.stickmantts.util.tts.sequence.Phoneme;
 
 import java.io.*;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Properties;
@@ -48,7 +51,7 @@ import java.util.logging.Logger;
  *
  * @author Patrick Gebhard
  */
-public class StickmanTtsExecutor extends ActivityExecutor implements ExportableProperties {
+public class StickmanTtsExecutor extends ActivityExecutor implements ExportableProperties, ExportableCompletion {
 
     // The singelton logger instance
     private static StickmanStage mStickmanStage;
@@ -68,6 +71,7 @@ public class StickmanTtsExecutor extends ActivityExecutor implements ExportableP
     // The word mapping properties
     Properties mWordMapping = new Properties();
     private ExportableProperties exportableProperties = new StickmanTTSProjectProperty();
+    private ExportableCompletion exportableActions ;
 
     private int maryId;
 
@@ -78,6 +82,7 @@ public class StickmanTtsExecutor extends ActivityExecutor implements ExportableP
         maryId = 0;
         languageAgentMap = new HashMap<>();
         stickmanFactory = new StickmanRepository(config);
+        exportableActions = new StickmanTtsActions(stickmanFactory);
 
     }
 
@@ -503,5 +508,10 @@ public class StickmanTtsExecutor extends ActivityExecutor implements ExportableP
     @Override
     public HashMap<ProjectProperty, ProjectValueProperty> getExportableAgentProperties() {
         return exportableProperties.getExportableAgentProperties();
+    }
+
+    @Override
+    public ArrayList<String> getExportableActions() {
+        return exportableActions.getExportableActions();
     }
 }
