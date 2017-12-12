@@ -240,6 +240,12 @@ public final class TriCatWorldExecutor extends ActivityExecutor implements Expor
             } else if (activity_name.equalsIgnoreCase("Challenge")) {
                 triCatWorldAct = mActionLoader.loadCharamelAnimation(activity_name, aid);
                 activity.setType(activity_type.parallel);
+            } else if (activity_name.equalsIgnoreCase("SittingStart")) {
+                triCatWorldAct = mActionLoader.loadCharamelAnimation(activity_name, aid);
+                activity.setType(activity_type.parallel);
+            } else if (activity_name.equalsIgnoreCase("SittingStop")) {
+                triCatWorldAct = mActionLoader.loadCharamelAnimation(activity_name, aid);
+                activity.setType(activity_type.parallel);
             } else if (activity_name.equalsIgnoreCase("ShowPalms")) {
                 triCatWorldAct = mActionLoader.loadCharamelAnimation(activity_name, aid);
                 activity.setType(activity_type.parallel);
@@ -307,6 +313,11 @@ public final class TriCatWorldExecutor extends ActivityExecutor implements Expor
                 triCatWorldAct = mActionLoader.loadCharamelAnimation(activity_name, intensity, aid);
                 activity.setType(activity_type.parallel);
             } else if (activity_name.equalsIgnoreCase("Happy")) {
+                String intensity = activity.get("intensity");
+                intensity = (intensity == null) ? "1.0" : intensity;
+                triCatWorldAct = mActionLoader.loadCharamelAnimation(activity_name, intensity, aid);
+                activity.setType(activity_type.parallel);
+            } else if (activity_name.equalsIgnoreCase("HeadTiltRight")) {
                 String intensity = activity.get("intensity");
                 intensity = (intensity == null) ? "1.0" : intensity;
                 triCatWorldAct = mActionLoader.loadCharamelAnimation(activity_name, intensity, aid);
@@ -508,7 +519,10 @@ public final class TriCatWorldExecutor extends ActivityExecutor implements Expor
                 if (activity_actor.equalsIgnoreCase("player")) {
                     triCatWorldAct.resetActionCmd(activity_actor + "_" + triCatWorldAct.getActionCmd());
                 }
-            } else {
+            } else if (activity_name.equalsIgnoreCase("SittingAdjustment")) { // added pg 5.5.2017
+                triCatWorldAct = mActionLoader.loadTWorldAnimation(activity_name,
+                        activity.get("x"), activity.get("y"), activity.get("z"));
+            }else {
                 // Unknown activity_name
             }
         }
