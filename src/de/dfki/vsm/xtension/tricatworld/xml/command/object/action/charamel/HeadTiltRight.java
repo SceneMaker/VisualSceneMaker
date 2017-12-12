@@ -24,21 +24,21 @@ import org.w3c.dom.Element;
  */
 public class HeadTiltRight extends TriCatWorldActObject implements XMLParseable, XMLWriteable {
 
-    private String mIntentsity;
+    private String mDegree;
     private String mCharameAvatarId = "1";
     // The logger instance
     private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
 
     // TODO cai_request sub element String mValue = "";
-    public HeadTiltRight(String intensity, String aid) {
+    public HeadTiltRight(String degree, String aid) {
         mName = "caixml";
-        mIntentsity = intensity;
+        mDegree = degree;
         mCharameAvatarId = aid;
     }
 
     public HeadTiltRight() {
         mName = "caixml";
-        mIntentsity = "1.0";
+        mDegree = "1.0";
     }
 
     @Override
@@ -56,27 +56,40 @@ public class HeadTiltRight extends TriCatWorldActObject implements XMLParseable,
         
         System.out.println(ca.getCaiXML());  */
         
-        //float deg = MAX_TILT_DEGREE * Float.parseFloat(mIntentsity);
-        float orientation_x = 200;
-        float orientation_y = 200;
-        float orientation_z = -200;
+//        //float deg = MAX_TILT_DEGREE * Float.parseFloat(mDegree);
+//        float orientation_x = 200;
+//        float orientation_y = 200;
+//        float orientation_z = -200;
         
         String xml = "<cai_request version=\"1.0\">"
-                + "<cai_command id=\"" + mId + "\">RenderXML<animation_track>"
-                + "<pause aid=\"" + Integer.parseInt(mCharameAvatarId) + "\">0</pause>"
-                + "<event aid=\"" + Integer.parseInt(mCharameAvatarId) + "\">AddAnimationChannelXML<event_param><![CDATA[<cai_command>AddAnimationChannelXML<channel>JOINT_ORIENTATION_EULER<joint>HEAD</joint></channel></cai_command>]]></event_param>"
-                + "</event>"
-                + "<event aid=\"" + Integer.parseInt(mCharameAvatarId) + "\">SetAnimationChannelFactorXML<event_param><![CDATA[<cai_command>SetAnimationChannelFactorXML<interpolation>500</interpolation><channel>MOTION_CHANNEL<joint "
-                + "factor=\"1.0\">HEAD</joint></channel><channel>JOINT_ORIENTATION_EULER<joint "
-                + "factor=\"1.0\">HEAD</joint></channel></cai_command>]]></event_param>"
-                + "</event>"
-                + "<event aid=\"" + Integer.parseInt(mCharameAvatarId) + "\">SetAnimationChannelValuesXML<event_param><![CDATA[<cai_command>SetAnimationChannelValuesXML<interpolation>1000</interpolation><channel>JOINT_ORIENTATION_EULER<joint "
-                + "orientation_x=\"" + orientation_x + "\" orientation_y=\"" + orientation_y + "\""
-                + "orientation_z=\"" + orientation_z + "\">HEAD</joint></channel></cai_command>]]></event_param>"
-                + "</event>"
-                + "</animation_track>"
-                + "</cai_command>"
-                + "</cai_request>";
+                + "<cai_command id=\"" + mId + "\" aid=\"" + Integer.parseInt(mCharameAvatarId) + "\">AddAnimationChannelXML"
+                + "<channel>JOINT_ORIENTATION_EULER<joint>HEAD</joint></channel>"
+                + "</cai_command></cai_request>\n\n"
+                + "<cai_request version=\"1.0\">"
+                + "<cai_command id=\"" + mId + "\" aid=\"" + Integer.parseInt(mCharameAvatarId) + "\">SetAnimationChannelFactorXML"
+                + "<interpolation>500</interpolation>"
+                + "<channel>MOTION_CHANNEL<joint factor='1.0'>HEAD</joint></channel>"
+                + "<channel>JOINT_ORIENTATION_EULER<joint factor='1.0'>HEAD</joint></channel>"
+                + "</cai_command></cai_request>\n\n"
+                + "<cai_request version=\"1.0\">"
+                + "<cai_command id=\"" + mId + "\" aid=\"" + Integer.parseInt(mCharameAvatarId) + "\">SetAnimationChannelValuesXML"
+                + "<interpolation>1000</interpolation>"
+                + "<channel>JOINT_ORIENTATION_EULER<joint orientation_x='0.0' orientation_y='0.0' orientation_z='"+ Float.parseFloat(mDegree) + "'>HEAD</joint></channel>"
+                + "</cai_command></cai_request>";      
+//        String xml = "<cai_request version=\"1.0\">"
+//                + "<cai_command id=\"" + mId + "\" aid=\"" + Integer.parseInt(mCharameAvatarId) + "\">AddAnimationChannelXML<event_param><![CDATA[<cai_command>AddAnimationChannelXML<channel>JOINT_ORIENTATION_EULER<joint>HEAD</joint></channel></cai_command>]]></event_param>"
+//                + "</event>"
+//                + "<event aid=\"" + Integer.parseInt(mCharameAvatarId) + "\">SetAnimationChannelFactorXML<event_param><![CDATA[<cai_command>SetAnimationChannelFactorXML<interpolation>500</interpolation><channel>MOTION_CHANNEL<joint "
+//                + "factor=\"1.0\">HEAD</joint></channel><channel>JOINT_ORIENTATION_EULER<joint "
+//                + "factor=\"1.0\">HEAD</joint></channel></cai_command>]]></event_param>"
+//                + "</event>"
+//                + "<event aid=\"" + Integer.parseInt(mCharameAvatarId) + "\">SetAnimationChannelValuesXML<event_param><![CDATA[<cai_command>SetAnimationChannelValuesXML<interpolation>1000</interpolation><channel>JOINT_ORIENTATION_EULER<joint "
+//                + "orientation_x=\"" + orientation_x + "\" orientation_y=\"" + orientation_y + "\""
+//                + "orientation_z=\"" + orientation_z + "\">HEAD</joint></channel></cai_command>]]></event_param>"
+//                + "</event>"
+//                + "</animation_track>"
+//                + "</cai_command>"
+//                + "</cai_request>";
         out.push().println(xml);
         //out.println(xml);
         out.pop().pop().println("</Action>");
