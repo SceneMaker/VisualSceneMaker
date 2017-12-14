@@ -49,7 +49,7 @@ public class InitJointAnimation extends TriCatWorldActObject implements XMLParse
         String xml = "<cai_request version=\"1.0\">"
                 + "<cai_command id=\"" + mId + "\" aid=\"" + Integer.parseInt(mCharameAvatarId) + "\">AddAnimationChannelXML"
                 + "<channel>JOINT_ORIENTATION_EULER<joint>"+ mJointName + "</joint></channel>"
-                + "</cai_command></cai_request>\n\n";
+                + "</cai_command></cai_request>";
         out.push().println(xml);
         //out.println(xml);
         out.pop().pop().println("</Action>");

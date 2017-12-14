@@ -56,7 +56,9 @@ public class OrientJoint extends TriCatWorldActObject implements XMLParseable, X
         String xml = "<cai_request version=\"1.0\">"
                 + "<cai_command id=\"" + mId + "\" aid=\"" + Integer.parseInt(mCharameAvatarId) + "\">SetAnimationChannelValuesXML"
                 + "<interpolation>"+ mInterpolation + "</interpolation>"
-                + "<channel>JOINT_ORIENTATION_EULER<joint orientation_x='"+Float.parseFloat(mXDegree)+"' orientation_y='"+Float.parseFloat(mYDegree)+"' orientation_z='"+ Float.parseFloat(mZDegree) + "'>"+mJoint+"</joint></channel>"
+                + "<channel>JOINT_ORIENTATION_EULER<joint orientation_x='"+Float.parseFloat(mXDegree)+"' orientation_y='"+Float.parseFloat(mYDegree)+"' orientation_z='"+ Float.parseFloat(mZDegree) + "'>"
+                + mJoint
+                + "</joint></channel>"
                 + "</cai_command></cai_request>";      
 
         out.push().println(xml);

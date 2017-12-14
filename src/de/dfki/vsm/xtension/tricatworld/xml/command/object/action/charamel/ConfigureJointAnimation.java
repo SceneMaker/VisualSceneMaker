@@ -49,7 +49,8 @@ public class ConfigureJointAnimation extends TriCatWorldActObject implements XML
     public void writeXML(IOSIndentWriter out) throws XMLWriteError {
         out.push().println("<Action name=\"" + mName + "\" id=\"" + mId + "\">").push();
 
-        String xml = "<cai_command id=\"" + mId + "\" aid=\"" + Integer.parseInt(mCharameAvatarId) + "\">SetAnimationChannelFactorXML"
+        String xml = "<cai_request version=\"1.0\">" 
+                + "<cai_command id=\"" + mId + "\" aid=\"" + Integer.parseInt(mCharameAvatarId) + "\">SetAnimationChannelFactorXML"
                 + "<interpolation>"+ mInterpolation + "</interpolation>"
                 + "<channel>MOTION_CHANNEL<joint factor='" + mFactor + "'>" + mJointName + "</joint></channel>"
                 + "<channel>JOINT_ORIENTATION_EULER<joint factor='" + mFactor + "'>" + mJointName + "</joint></channel>"
