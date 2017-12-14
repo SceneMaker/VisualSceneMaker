@@ -224,7 +224,68 @@ public class ActionLoader {
 
             }
         } catch (ClassNotFoundException | NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-            mLogger.failure("No Class for TWorld Charamel Action " + cmd + " and value " + value1 + " and avatar id " + value2);
+            mLogger.failure("No Class for TWorld Charamel Action " + cmd + " and value " + value1 + ", " + value2);
+        }
+
+        if (a != null) {
+            a.setId(getNextID());
+        }
+
+        return a;
+    }
+    
+    public TriCatWorldActObject loadCharamelAnimation(String cmd, String value1, String value2, String value3, String value4) {
+        TriCatWorldActObject a = null;
+
+        String cp = getTWorldCharamelCommandClasspath(cmd);
+
+        try {
+            Class c = Class.forName(cp);
+            Constructor[] constructors = c.getConstructors();
+            for (Constructor con : constructors) {
+                Class[] params = con.getParameterTypes();
+                if (params.length == 4) {
+                    if (params[0].getSimpleName().equalsIgnoreCase("string") && params[1].getSimpleName().equalsIgnoreCase("string") && params[2].getSimpleName().equalsIgnoreCase("string") && params[3].getSimpleName().equalsIgnoreCase("string")) {
+                        a = (TriCatWorldActObject) c.getDeclaredConstructor(params).newInstance(value1, value2, value3, value4);
+                    }
+                }
+
+            }
+        } catch (ClassNotFoundException | NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+            mLogger.failure("No Class for TWorld Charamel Action " + cmd + " and value " + value1 + " , " + value2 + " , " + value3 + " , " + value4);
+        }
+
+        if (a != null) {
+            a.setId(getNextID());
+        }
+
+        return a;
+    }
+    
+        public TriCatWorldActObject loadCharamelAnimation(String cmd, String value1, String value2, String value3, String value4, String value5, String value6) {
+        TriCatWorldActObject a = null;
+
+        String cp = getTWorldCharamelCommandClasspath(cmd);
+
+        try {
+            Class c = Class.forName(cp);
+            Constructor[] constructors = c.getConstructors();
+            for (Constructor con : constructors) {
+                Class[] params = con.getParameterTypes();
+                if (params.length == 6) {
+                    if (params[0].getSimpleName().equalsIgnoreCase("string") && 
+                        params[1].getSimpleName().equalsIgnoreCase("string") &&
+                        params[2].getSimpleName().equalsIgnoreCase("string") &&
+                        params[3].getSimpleName().equalsIgnoreCase("string") &&
+                        params[4].getSimpleName().equalsIgnoreCase("string") &&                            
+                        params[5].getSimpleName().equalsIgnoreCase("string")) {
+                        a = (TriCatWorldActObject) c.getDeclaredConstructor(params).newInstance(value1, value2, value3, value4, value5, value6);
+                    }
+                }
+
+            }
+        } catch (ClassNotFoundException | NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+            mLogger.failure("No Class for TWorld Charamel Action " + cmd + " and value " + value1 + " , " + value2 + " , " + value3 + " , " + value4 + " , " + value5 + " , " + value6);
         }
 
         if (a != null) {

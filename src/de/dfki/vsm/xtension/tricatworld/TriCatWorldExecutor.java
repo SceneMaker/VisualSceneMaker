@@ -322,7 +322,33 @@ public final class TriCatWorldExecutor extends ActivityExecutor implements Expor
                 degree = (degree == null) ? "0.0" : degree;
                 triCatWorldAct = mActionLoader.loadCharamelAnimation(activity_name, degree, aid);
                 activity.setType(activity_type.parallel);
-            } else if (activity_name.equalsIgnoreCase("CancelMoveTo")) {
+            } else if (activity_name.equalsIgnoreCase("InitJointAnimation")) {
+                String joint = activity.get("joint");
+                joint = (joint == null) ? "" : joint;
+                triCatWorldAct = mActionLoader.loadCharamelAnimation(activity_name, joint, aid);
+                activity.setType(activity_type.parallel);
+            } else if (activity_name.equalsIgnoreCase("ConfigureJointAnimation")) {
+                String joint = activity.get("joint");
+                joint = (joint == null) ? "" : joint;
+                String factor = activity.get("factor");
+                factor = (factor == null) ? "0.0" : factor;
+                String interpolation = activity.get("interpolation");
+                interpolation = (interpolation == null) ? "" : interpolation;                
+                triCatWorldAct = mActionLoader.loadCharamelAnimation(activity_name, joint, factor, interpolation, aid);
+                activity.setType(activity_type.parallel);
+            } else if (activity_name.equalsIgnoreCase("OrientJoint")) {
+                String joint = activity.get("joint");
+                joint = (joint == null) ? "" : joint;
+                String interpolation = activity.get("interpolation");
+                String xdegree = activity.get("x");
+                xdegree = (xdegree == null) ? "0.0" : xdegree;
+                String ydegree = activity.get("y");
+                ydegree = (ydegree == null) ? "0.0" : ydegree;
+                String zdegree = activity.get("z");
+                zdegree = (zdegree == null) ? "0.0" : zdegree;                
+                triCatWorldAct = mActionLoader.loadCharamelAnimation(activity_name, joint, interpolation, xdegree, ydegree, zdegree, aid);
+                activity.setType(activity_type.parallel);
+            }  else if (activity_name.equalsIgnoreCase("CancelMoveTo")) {
                 triCatWorldAct = mActionLoader.loadTWorldAnimation(activity_name);
             } else if (activity_name.equalsIgnoreCase("Play")) {
                 triCatWorldAct = mActionLoader.loadTWorldAnimation(activity_name);
