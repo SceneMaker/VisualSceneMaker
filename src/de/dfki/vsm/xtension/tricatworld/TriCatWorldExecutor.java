@@ -321,7 +321,7 @@ public final class TriCatWorldExecutor extends ActivityExecutor implements Expor
                 String joint = activity.get("joint");
                 joint = (joint == null) ? "" : joint;
                 triCatWorldAct = mActionLoader.loadCharamelAnimation(activity_name, joint, aid);
-                activity.setType(activity_type.parallel);
+                //activity.setType(activity_type.parallel);
             } else if (activity_name.equalsIgnoreCase("ConfigureJointAnimation")) {
                 String joint = activity.get("joint");
                 joint = (joint == null) ? "" : joint;
@@ -330,7 +330,7 @@ public final class TriCatWorldExecutor extends ActivityExecutor implements Expor
                 String interpolation = activity.get("interpolation");
                 interpolation = (interpolation == null) ? "" : interpolation;                
                 triCatWorldAct = mActionLoader.loadCharamelAnimation(activity_name, joint, factor, interpolation, aid);
-                activity.setType(activity_type.parallel);
+                //activity.setType(activity_type.parallel);
             } else if (activity_name.equalsIgnoreCase("OrientJoint")) {
                 String joint = activity.get("joint");
                 joint = (joint == null) ? "" : joint;
