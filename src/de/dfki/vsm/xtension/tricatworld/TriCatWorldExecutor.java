@@ -317,11 +317,6 @@ public final class TriCatWorldExecutor extends ActivityExecutor implements Expor
                 intensity = (intensity == null) ? "1.0" : intensity;
                 triCatWorldAct = mActionLoader.loadCharamelAnimation(activity_name, intensity, aid);
                 activity.setType(activity_type.parallel);
-            } else if (activity_name.equalsIgnoreCase("HeadTiltRight")) {
-                String degree = activity.get("degree");
-                degree = (degree == null) ? "0.0" : degree;
-                triCatWorldAct = mActionLoader.loadCharamelAnimation(activity_name, degree, aid);
-                activity.setType(activity_type.parallel);
             } else if (activity_name.equalsIgnoreCase("InitJointAnimation")) {
                 String joint = activity.get("joint");
                 joint = (joint == null) ? "" : joint;
