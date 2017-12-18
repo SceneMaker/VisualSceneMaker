@@ -175,7 +175,6 @@ public final class TriCatWorldSSIPlugin extends SSIRunTimePlugin {
                     }
                 } else if (event.getSender().equalsIgnoreCase("nova")
                         && event.getEvent().equalsIgnoreCase("body_properties_MNV")) { // added by PG 14.6.2017 (based on the nova event pipe)
-
                     SSITupleData tupleData = (SSITupleData) data;
             
                     mProject.setVariable("UserHeadOrientation", Float.parseFloat(tupleData.get("headorientation")));
