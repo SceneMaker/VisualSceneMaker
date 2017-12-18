@@ -75,6 +75,16 @@ public class StudyMasterReceiverThread extends Thread {
                                 mExecutor.setSceneFlowVariable(var, value);
                             }
                         }
+                        
+                        if ((msg.equalsIgnoreCase("MESSAGE"))) {
+                            String value = msgParts[2];
+
+                            if ((value.equalsIgnoreCase("Go"))) {
+                                if (mExecutor.hasProjectVar(mExecutor.mLogVar)) {
+                                    mExecutor.setSceneFlowVariable(mExecutor.mLogVar, value);
+                                }
+                            }
+                        }
                     }
                 }
             }

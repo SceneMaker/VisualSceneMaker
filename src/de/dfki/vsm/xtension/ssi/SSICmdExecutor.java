@@ -29,7 +29,7 @@ public final class SSICmdExecutor extends ActivityExecutor implements Exportable
     // The SSI receiver data
     private final String mLogHost;
     private final String mLogPort;
-    private final String mLogVar;
+    public final String mLogVar;
     private final boolean mBroadcasting; // 9.6.17 add by PG
     private final String mBroadCastPort;  // 9.6.17 add by PG
     private final boolean mListenToStudyMaster; // 9.6.17 add by PG

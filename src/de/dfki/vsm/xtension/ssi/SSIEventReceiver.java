@@ -84,7 +84,6 @@ final class SSIEventReceiver extends Thread {
         while (!mDone) {
             // Receive a new message
             final String message = recvString();
-            
             // Useful for check which sender/event: mLogger.message("Received message: "  + message);
             
             //mLogger.failure(message);
