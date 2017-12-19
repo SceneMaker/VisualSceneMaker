@@ -31,7 +31,7 @@ public final class SSICmdExecutor extends ActivityExecutor implements Exportable
     private final String mLogPort;
     public final String mLogVar;
     private final boolean mBroadcasting; // 9.6.17 add by PG
-    private final String mBroadCastPort;  // 9.6.17 add by PG
+    public final String mBroadCastPort;  // 9.6.17 add by PG
     private final boolean mListenToStudyMaster; // 9.6.17 add by PG
     private final String mStudyMasterPort;  // 9.6.17 add by PG
     private final String[] mSSIPipe;
@@ -190,7 +190,7 @@ public final class SSICmdExecutor extends ActivityExecutor implements Exportable
         }
     }
 
-    private void broadcast(final String message) {
+    public void broadcast(final String message) {
         DatagramSocket c;
 
         try {
