@@ -7,6 +7,7 @@ package de.dfki.vsm.xtension.ssi;
 
 import de.dfki.vsm.util.log.LOGConsoleLogger;
 import de.dfki.vsm.xtension.ssi.SSICmdExecutor;
+import de.dfki.vsm.xtension.ssi.logger.SSILoggerMessage;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -57,7 +58,6 @@ public class StudyMasterReceiverThread extends Thread {
                 String message = new String(packet.getData(), "UTF-8").trim();
                 mLogger.message("Message received " + message + " from " + packet.getAddress().getHostAddress());
                 if (message.startsWith("VSM")) {
-
                     // parse message
                     String[] msgParts = message.split("#");
 
@@ -66,22 +66,34 @@ public class StudyMasterReceiverThread extends Thread {
                         String msg = msgParts[1];
                         String timestamp = "";
                         String timeinfo = "";
-                        
-                        if ((msg.equalsIgnoreCase("START")) || (msg.equalsIgnoreCase("ASSIGN"))) {
-                            String var = msgParts[2];
-                            String value = msgParts[3];
 
-                            if (mExecutor.hasProjectVar(var)) {
-                                mExecutor.setSceneFlowVariable(var, value);
+                        if (msg.equalsIgnoreCase("RUALIVE")) {
+                            SSILoggerMessage amsg = new SSILoggerMessage("vsmalive", "SceneMaker", "event", "state", "completed", "0","0");
+                            mLogger.warning("Broadcasting '" + amsg.toString() + ":" + mExecutor.mBroadCastPort);
+                            mExecutor.broadcast(amsg.toString());
+                        } else {
+                            if ((msg.equalsIgnoreCase("START")) || (msg.equalsIgnoreCase("ASSIGN"))) {
+                                String var = msgParts[2];
+                                String value = msgParts[3];
+
+                                // added backwards compability
+                                if (var.equalsIgnoreCase("none") && value.equalsIgnoreCase("Start")) {
+                                    if (mExecutor.hasProjectVar(mExecutor.mLogVar)) {
+                                        mExecutor.setSceneFlowVariable(mExecutor.mLogVar, "Go");
+                                    }
+                                } else if (mExecutor.hasProjectVar(var)) {
+                                    mExecutor.setSceneFlowVariable(var, value);
+                                }
                             }
-                        }
-                        
-                        if ((msg.equalsIgnoreCase("MESSAGE"))) {
-                            String value = msgParts[2];
 
-                            if ((value.equalsIgnoreCase("Go"))) {
-                                if (mExecutor.hasProjectVar(mExecutor.mLogVar)) {
-                                    mExecutor.setSceneFlowVariable(mExecutor.mLogVar, value);
+                            // added backwards compability                        
+                            if ((msg.equalsIgnoreCase("MESSAGE"))) {
+                                String value = msgParts[2];
+
+                                if ((value.equalsIgnoreCase("Go"))) {
+                                    if (mExecutor.hasProjectVar(mExecutor.mLogVar)) {
+                                        mExecutor.setSceneFlowVariable(mExecutor.mLogVar, value);
+                                    }
                                 }
                             }
                         }
