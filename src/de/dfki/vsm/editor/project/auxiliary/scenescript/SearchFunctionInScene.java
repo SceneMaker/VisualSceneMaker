@@ -55,12 +55,12 @@ public class SearchFunctionInScene {
 
     }
 
-    public void createSearchBox(OLDSceneScriptEditor SceneScriptEditor) {
+    public void createSearchBox(Box SceneScriptEditor) {
         vSearchBox = Box.createVerticalBox();
 
         // first level search function
         hSearchBox1 = Box.createHorizontalBox();
-        hSearchBox1.setBorder(BorderFactory.createEmptyBorder(0, 300, 0, 0));
+        hSearchBox1.setBorder(BorderFactory.createEmptyBorder(5, 15, 0, 0));
         button_appearanceControl = new JButton("Find...");
         //button_appearanceControl.setBorder(BorderFactory.createEmptyBorder(0, 200, 0, 0));
         textField_FindInput = new JTextField("", 15);
@@ -75,7 +75,7 @@ public class SearchFunctionInScene {
                 sceneHighlighter = null;
             }
         });
-        //hSearchBox1.add(button_appearanceControl);
+        hSearchBox1.add(button_appearanceControl);
         hSearchBox1.add(textField_FindInput);
         hSearchBox1.add(button_Find);
         hSearchBox1.add(button_FindPrev);
@@ -205,6 +205,11 @@ public class SearchFunctionInScene {
         button_Replace.setVisible(true);
         button_ReplaceAll.setVisible(true);
         button_EmptytextField.setVisible(true);
+    }
+    
+    // change the button to show or hide the search function
+    public void set_button_appearanceControl(String s) {
+        button_appearanceControl.setText(s);
     }
 
     public void find(String findInput) {

@@ -133,7 +133,13 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
         //
         Box bxTop = Box.createHorizontalBox();
         bxTop.add(mGesticonButton);
-        bxTop.add(Box.createHorizontalGlue());
+        //bxTop.add(Box.createHorizontalGlue());
+        
+        // Add search function
+        search_function_in_scene = new SearchFunctionInScene(mEditorPane);
+        search_function_in_scene.createSearchBox(bxTop);
+        registerKeyBindingsForSearch();
+        
         //
         scriptSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
         scriptSplitPane.setDividerSize(2);
@@ -160,9 +166,9 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
 //        addTab("DialogAct [Experimental]", mDialogActEditor);
 
         // Add search function
-        search_function_in_scene = new SearchFunctionInScene(mEditorPane);
-        search_function_in_scene.createSearchBox(this);
-        registerKeyBindingsForSearch();
+//        search_function_in_scene = new SearchFunctionInScene(mEditorPane);
+//        search_function_in_scene.createSearchBox(this);
+//        registerKeyBindingsForSearch();
 
 
         // Initialize The Components
@@ -225,6 +231,7 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
     private void registerKeyBindingsForSearch() {
         registerKeyboardAction(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+                search_function_in_scene.set_button_appearanceControl("Hide");
                 search_function_in_scene.showSearchBox();
             }
         }, KeyStroke.getKeyStroke(KeyEvent.VK_F, InputEvent.CTRL_DOWN_MASK, true), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
@@ -232,6 +239,7 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
 
         registerKeyboardAction(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+                search_function_in_scene.set_button_appearanceControl("Find...");
                 search_function_in_scene.hideSearchBox();
             }
         }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0, true), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
