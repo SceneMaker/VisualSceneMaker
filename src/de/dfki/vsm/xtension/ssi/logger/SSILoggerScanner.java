@@ -8,6 +8,7 @@ import de.dfki.vsm.xtension.ssi.event.data.SSIStringData;
 import de.dfki.vsm.xtension.ssi.event.data.SSITupleData;
 import java.io.File;
 import java.util.NavigableSet;
+import java.util.TreeSet;
 
 /**
  * @author Gregor Mehlmann
@@ -39,12 +40,31 @@ public final class SSILoggerScanner {
             final String context,
             final int id) {
         // Get all relevant the events 
-        final NavigableSet<SSIEventEntry> set = findEventRangeInEventRecord(context, String.valueOf(id));
+        //sLogger.message("Looking for event " + event + " in context " + context + " with id " + id );
+        
+        final NavigableSet<SSIEventEntry> set = new TreeSet<SSIEventEntry>();
+        
+        for (final SSIEventEntry entry : sEventArray.getTreeSet()) {
+            //sLogger.message("entry data " + entry.getData().toString());
+            if (entry.getData() instanceof SSIStringData) {
+                if (entry.getData().toString().equalsIgnoreCase(id + "")
+                        && entry.getEvent().equalsIgnoreCase(event)) {
+                    set.add(entry);
+                }
+            }
+        }
+        
+        //final NavigableSet<SSIEventEntry> set;// = findEventRangeInEventRecord(event, String.valueOf(id));
+        
+        //sLogger.message("Total number of events " + set.size() + " looking for event " + event + " in context " + context + " with id " + id );
+        
         // Count the number of events
         int number = 0;
         if (set != null) {
             // Increment the number of head nod events
             for (final SSIEventEntry entry : set) {
+                sLogger.message("Checking entry " + entry.getEvent() + " with state " + entry.getState());
+                
                 if (entry.getEvent().equalsIgnoreCase(event)
                         && entry.getState().equalsIgnoreCase("continued")) {
                     number++;
@@ -52,6 +72,40 @@ public final class SSILoggerScanner {
             }
         }
         return number;
+    }
+
+    public static int getEventTimeInContext(
+            final String event,
+            final String context,
+            final int pos,
+            final int id) {
+        // Get all relevant the events 
+        final NavigableSet<SSIEventEntry> set = new TreeSet<SSIEventEntry>();
+        
+        for (final SSIEventEntry entry : sEventArray.getTreeSet()) {
+            sLogger.message("entry data " + entry.getData().toString());
+            if (entry.getData() instanceof SSIStringData) {
+                if (entry.getData().toString().equalsIgnoreCase(id + "")
+                        && entry.getEvent().equalsIgnoreCase(event)) {
+                    set.add(entry);
+                }
+            }
+        }
+ 
+        int cnt = 0;
+        SSIEventEntry result = null;
+        if (set != null) {
+            // Increment the number of head nod events
+            for (final SSIEventEntry entry : set) {
+                if (cnt == pos) {
+                    result = entry;
+                }
+
+                cnt++;                
+            }
+        }
+
+        return Integer.parseInt(result.getFrom());
     }
 
     public static int getDurationOfEventInContext(

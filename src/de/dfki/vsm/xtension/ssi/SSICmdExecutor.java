@@ -224,14 +224,14 @@ public final class SSICmdExecutor extends ActivityExecutor implements Exportable
                         DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, broadcast, Integer.valueOf(mBroadCastPort));
                         c.send(sendPacket);
                         hosts = hosts + broadcast.getHostAddress() + ", ";
-                        mLogger.message(message + " sent to " + broadcast.getHostAddress() + " on interface " + networkInterface.getDisplayName());
+                        // disabled due to saving logging space PG 11.17 mLogger.message(message + " sent to " + broadcast.getHostAddress() + " on interface " + networkInterface.getDisplayName());
                         packetSend = true;
                     } catch (Exception e) {
                         packetSend = false;
                     }
 
                     if (packetSend) {
-                        mLogger.message("Message successfully send");
+                        // disabled due to saving logging space PG 11.17 mLogger.message("Message successfully send");
                     }
                 }
             }
