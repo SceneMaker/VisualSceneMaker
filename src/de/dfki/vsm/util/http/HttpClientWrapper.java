@@ -1,18 +1,15 @@
 package de.dfki.vsm.util.http;
 
 import java.io.IOException;
-import java.io.InputStream;
+import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLConnection;
-import java.util.Arrays;
-import java.util.Scanner;
 
 public class HttpClientWrapper {
 
     private  String url;
     private final String charset;
-    private String response;
-    private InputStream responseStream;
+    private HttpURLConnection connection;
+    private  HttpResponse response;
 
     public HttpClientWrapper(){
 
@@ -24,40 +21,39 @@ public class HttpClientWrapper {
         this.charset = charset;
     }
 
+    public HttpClientWrapper openUrl(String url) {
+        this.url = url;
+        tryToOpenConnection();
+        return this;
+    }
 
-    private InputStream tryToOpenConnection()  {
+    public HttpClientWrapper get() throws IOException {
+        connection.setRequestMethod("GET");
+        this.response = new HttpResponse(this.connection);
+        response.collectResponse();
+        return this;
+    }
+
+    public String getResponse() {
+        return response.getResponse();
+    }
+
+    private void tryToOpenConnection()  {
         try {
-            return openConnection();
+             openConnection();
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return null;
     }
 
-    private void collectResponse() {
-        try (Scanner scanner = new Scanner(responseStream)) {
-            response = scanner.useDelimiter("\\A").next();
-        }
-    }
-
-    private InputStream openConnection() throws IOException {
-        URLConnection connection = new URL(url ).openConnection();
+    private void openConnection() throws IOException {
+        connection = (HttpURLConnection) new URL(url).openConnection();
         connection.setRequestProperty("Accept-Charset", charset);
-        return connection.getInputStream();
+
     }
 
 
-    public String getResponse() {
-        return response;
-    }
-
-    public void openUrl(String url) {
-        this.url = url;
-        responseStream = tryToOpenConnection();
-    }
-
-    public String read() {
-        collectResponse();
-        return  response;
+    public boolean wasRequestSuccessful() {
+        return response.wasRequestOk();
     }
 }
