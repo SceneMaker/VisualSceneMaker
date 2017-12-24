@@ -6,8 +6,8 @@ import java.net.URL;
 
 public class HttpClientWrapper {
 
-    private  String url;
     private final String charset;
+    private  String url;
     private HttpURLConnection connection;
     private  HttpResponse response;
 
@@ -34,10 +34,6 @@ public class HttpClientWrapper {
         return this;
     }
 
-    public String getResponse() {
-        return response.getResponse();
-    }
-
     private void tryToOpenConnection()  {
         try {
              openConnection();
@@ -49,11 +45,26 @@ public class HttpClientWrapper {
     private void openConnection() throws IOException {
         connection = (HttpURLConnection) new URL(url).openConnection();
         connection.setRequestProperty("Accept-Charset", charset);
-
     }
 
 
+    private void waitForResponse() throws InterruptedException {
+        while (!response.isDone()) {
+            Thread.sleep(100);
+        }
+    }
+
     public boolean wasRequestSuccessful() {
         return response.wasRequestOk();
+    }
+
+    public HttpClientWrapper read() throws InterruptedException {
+        waitForResponse();
+        connection.disconnect();
+        return this;
+    }
+
+    public String getResponse() {
+        return response.getResponse();
     }
 }

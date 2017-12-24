@@ -11,6 +11,7 @@ public class HttpResponse {
     private final HttpURLConnection connection;
     private StringBuffer responseBuilder;
     private int status = -1;
+    private boolean isDone = false;
 
     public HttpResponse(HttpURLConnection httpURLConnection) throws IOException {
         this.connection = httpURLConnection;
@@ -22,6 +23,7 @@ public class HttpResponse {
         fetchStatusFromConnection();
         appendLinesFromStream();
         inputStream.close();
+        isDone = true;
     }
 
     public int getStatus(){
@@ -29,6 +31,10 @@ public class HttpResponse {
             fetchStatusFromConnection();
         }
         return  this.status;
+    }
+
+    public boolean isDone(){
+        return isDone;
     }
 
     public boolean wasRequestOk(){
