@@ -7,4 +7,9 @@ public class SpeechCommand extends DecadCommand {
     public SpeechCommand(AbstractActivity activity) {
         super(activity);
     }
+
+    @Override
+    public void execute() {
+
+    }
 }

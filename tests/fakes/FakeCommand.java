@@ -7,4 +7,9 @@ public class FakeCommand extends DecadCommand {
     public FakeCommand(AbstractActivity activity) {
         super(activity);
     }
+
+    @Override
+    public void execute() {
+
+    }
 }

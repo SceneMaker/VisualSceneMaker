@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-public class HttpClientWrapper {
+public class HttpClientWrapper implements HttpClient {
 
     private final String charset;
     private  String url;
@@ -27,7 +27,7 @@ public class HttpClientWrapper {
         return this;
     }
 
-    public HttpClientWrapper get() throws IOException {
+    public HttpClient get() throws IOException {
         connection.setRequestMethod("GET");
         this.response = new HttpResponse(this.connection);
         response.collectResponse();
@@ -58,7 +58,7 @@ public class HttpClientWrapper {
         return response.wasRequestOk();
     }
 
-    public HttpClientWrapper read() throws InterruptedException {
+    public HttpClient read() throws InterruptedException {
         waitForResponse();
         connection.disconnect();
         return this;

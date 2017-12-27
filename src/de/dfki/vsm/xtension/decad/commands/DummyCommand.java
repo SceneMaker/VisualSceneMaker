@@ -6,4 +6,9 @@ public class DummyCommand extends DecadCommand {
     public DummyCommand(AbstractActivity activity) {
         super(activity);
     }
+
+    @Override
+    public void execute() {
+
+    }
 }
