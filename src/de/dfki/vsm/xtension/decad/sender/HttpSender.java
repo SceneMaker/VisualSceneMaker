@@ -1,11 +1,11 @@
 package de.dfki.vsm.xtension.decad.sender;
 
 public class HttpSender {
-    public static final String SERVER_HOST = "http://localhost:5005";
-    public static final String UTF_8 = "UTF-8";
-    private String host;
+    private static final String SERVER_HOST = "http://localhost:5005";
+    private static final String UTF_8 = "UTF-8";
+    private final String host;
 
-    public HttpSender(){
+    HttpSender() {
         host = SERVER_HOST;
     }
 
@@ -13,9 +13,7 @@ public class HttpSender {
         return host;
     }
 
-    public void get(String url) {
 
-    }
 
     public String getCharSet() {
         return UTF_8;

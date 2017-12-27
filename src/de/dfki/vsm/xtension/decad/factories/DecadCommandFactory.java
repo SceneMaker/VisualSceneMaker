@@ -10,7 +10,7 @@ import de.dfki.vsm.xtension.decad.commands.SpeechCommand;
 
 public class DecadCommandFactory {
     public DecadCommand getCommand(AbstractActivity activity) {
-        DecadCommand command = null;
+        DecadCommand command;
         if (activity instanceof SpeechActivity) {
             command = new SpeechCommand(activity);
         } else if (activity instanceof ActionActivity) {

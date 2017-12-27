@@ -27,12 +27,12 @@ public class SpeechCommand extends DecadCommand {
     private String buildSpeechUrl() {
         SpeechBuilder builder = new SpeechBuilder();
         return builder
-                .speak(this.getSpokeText())
+                .speak(this.getSpokenText())
                 .build();
     }
 
     @NotNull
-    private String getSpokeText() {
+    private String getSpokenText() {
         return getSpeechActivity().getTextOnly("$");
     }
 

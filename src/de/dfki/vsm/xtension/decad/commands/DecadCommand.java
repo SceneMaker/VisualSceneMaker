@@ -6,8 +6,8 @@ import de.dfki.vsm.util.http.HttpClient;
 import java.io.IOException;
 
 public abstract class DecadCommand {
-    protected final AbstractActivity activity;
-    protected HttpClient httpClient;
+    final AbstractActivity activity;
+    HttpClient httpClient;
 
     public DecadCommand(AbstractActivity activity) {
         this.activity = activity;
