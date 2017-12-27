@@ -1,9 +1,10 @@
 package de.dfki.vsm.xtension.decad.builders;
 
 import static de.dfki.vsm.xtension.decad.Constants.URL;
+import static de.dfki.vsm.xtension.decad.Constants.URL_PATH_SEPARATOR;
 
 public class AnimationBuilder {
-    public static final String URL_PATH_SEPARATOR = "/";
+
     public static final String ANIMATE_PATH = "animate";
     public static final String ANIMATION_PATH = "animation";
     private String url;

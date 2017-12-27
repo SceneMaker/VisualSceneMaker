@@ -4,6 +4,7 @@ import de.dfki.vsm.runtime.activity.ActionActivity;
 import fakes.FakeHttpClient;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
 
@@ -11,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class AnimationCommandTest {
     @Test
-    void shouldExecuteAnimationGETRequest() {
+    void shouldExecuteAnimationGETRequest() throws IOException, InterruptedException {
         AnimationCommand command = new AnimationCommand(new ActionActivity("test", "Waving", "Wave",
                 new LinkedList<>(), new HashMap<>()));
         FakeHttpClient client = new FakeHttpClient();

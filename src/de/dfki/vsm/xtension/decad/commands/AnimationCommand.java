@@ -14,15 +14,13 @@ public class AnimationCommand extends DecadCommand {
     }
 
     @Override
-    public void execute() {
-        try {
-            httpClient.openUrl(buildAnimationUrl())
-                    .get()
-                    .read();
-        } catch (InterruptedException | IOException e) {
-            e.printStackTrace();
-        }
+    public void execute() throws IOException, InterruptedException {
+        httpClient.openUrl(buildAnimationUrl())
+                .get()
+                .read();
     }
+
+
 
     private String buildAnimationUrl() {
         AnimationBuilder builder = new AnimationBuilder();
