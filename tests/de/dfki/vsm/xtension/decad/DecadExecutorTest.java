@@ -4,6 +4,7 @@ import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.runtime.activity.SpeechActivity;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
 import de.dfki.vsm.runtime.project.RunTimeProject;
+import fakes.FakeCommand;
 import fakes.FakeDecadExecutor;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
@@ -35,6 +36,8 @@ class DecadExecutorTest {
     void shouldExecuteCommand() {
         executor = makeDefaultExecutor();
         executor.execute(new SpeechActivity("Test", new LinkedList(), "."));
+        FakeCommand command = (FakeCommand) ((FakeDecadExecutor) executor).getExecutedCommand();
+        assertTrue(command.executed);
 
     }
 

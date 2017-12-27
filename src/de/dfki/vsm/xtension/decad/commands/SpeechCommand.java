@@ -2,10 +2,12 @@ package de.dfki.vsm.xtension.decad.commands;
 
 import de.dfki.vsm.runtime.activity.AbstractActivity;
 import de.dfki.vsm.runtime.activity.SpeechActivity;
+import de.dfki.vsm.xtension.decad.builders.SpeechBuilder;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 
-import static de.dfki.vsm.xtension.decad.Constants.URL;
 
 public class SpeechCommand extends DecadCommand {
 
@@ -23,6 +25,20 @@ public class SpeechCommand extends DecadCommand {
     }
 
     private String buildSpeechUrl() {
-        return URL + "/speak/" + ((SpeechActivity) activity).getTextOnly("$");
+        SpeechBuilder builder = new SpeechBuilder();
+        return builder
+                .speak(this.getSpokeText())
+                .build();
+    }
+
+    @NotNull
+    private String getSpokeText() {
+        return getSpeechActivity().getTextOnly("$");
+    }
+
+    @Contract(pure = true)
+    @NotNull
+    private SpeechActivity getSpeechActivity() {
+        return (SpeechActivity) activity;
     }
 }

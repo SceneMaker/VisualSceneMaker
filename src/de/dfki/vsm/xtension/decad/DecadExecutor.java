@@ -4,7 +4,10 @@ import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
 import de.dfki.vsm.runtime.project.RunTimeProject;
+import de.dfki.vsm.xtension.decad.commands.DecadCommand;
 import de.dfki.vsm.xtension.decad.factories.DecadCommandFactory;
+
+import java.io.IOException;
 
 
 public class DecadExecutor extends ActivityExecutor{
@@ -18,7 +21,6 @@ public class DecadExecutor extends ActivityExecutor{
     }
 
 
-
     @Override
     public String marker(long id) {
         return DECAD_MARKER_SEPARATOR + id + DECAD_MARKER_SEPARATOR;
@@ -26,7 +28,16 @@ public class DecadExecutor extends ActivityExecutor{
 
     @Override
     public void execute(AbstractActivity activity) {
+        try {
+            executeCommand(activity);
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
 
+    private void executeCommand(AbstractActivity activity) throws IOException, InterruptedException {
+        DecadCommand command = factory.getCommand(activity);
+        command.execute();
     }
 
     @Override
@@ -38,5 +49,6 @@ public class DecadExecutor extends ActivityExecutor{
     public void unload() {
 
     }
+
 
 }
