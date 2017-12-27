@@ -6,6 +6,4 @@ public class SpeechBuilder extends AbstractBuilder {
         this.add(text);
         return this;
     }
-
-
 }
