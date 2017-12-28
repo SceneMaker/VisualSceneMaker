@@ -1,9 +1,8 @@
 package de.dfki.vsm.xtension.decad.sender;
 
 import org.junit.jupiter.api.Test;
-import sun.net.www.http.HttpClient;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class HttpSenderTest {
 
@@ -25,10 +24,5 @@ class HttpSenderTest {
         sender = new HttpSender();
     }
 
-    @Test
-    void sendGetRequestWithoutWaiting() {
-        makeDefaultSender();
-        sender.get("/animate/Waving");
 
-    }
 }

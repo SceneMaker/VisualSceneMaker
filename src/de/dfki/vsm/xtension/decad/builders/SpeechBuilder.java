@@ -9,4 +9,9 @@ public class SpeechBuilder extends AbstractBuilder {
         this.add(text);
         return this;
     }
+
+    public SpeechBuilder speak() {
+        this.add(SPEAK_PATH);
+        return this;
+    }
 }

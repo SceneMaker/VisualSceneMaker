@@ -12,7 +12,7 @@ import java.io.IOException;
 
 public class DecadExecutor extends ActivityExecutor{
 
-    private static final String DECAD_MARKER_SEPARATOR = "#";
+    private static final String DECAD_MARKER_SEPARATOR = "$";
     protected DecadCommandFactory factory;
 
     public DecadExecutor(PluginConfig config, RunTimeProject project) {
@@ -23,7 +23,7 @@ public class DecadExecutor extends ActivityExecutor{
 
     @Override
     public String marker(long id) {
-        return DECAD_MARKER_SEPARATOR + id + DECAD_MARKER_SEPARATOR;
+        return DECAD_MARKER_SEPARATOR + id;
     }
 
     @Override

@@ -2,6 +2,7 @@ package de.dfki.vsm.xtension.decad.commands;
 
 import de.dfki.vsm.runtime.activity.AbstractActivity;
 import de.dfki.vsm.runtime.activity.SpeechActivity;
+import de.dfki.vsm.util.http.PostParametersBuilder;
 import de.dfki.vsm.xtension.decad.builders.SpeechBuilder;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -19,15 +20,26 @@ public class SpeechCommand extends DecadCommand {
 
     @Override
     public void execute() throws IOException, InterruptedException {
+        if (this.getSpokenText().isEmpty()) {
+            return;
+        }
+        PostParametersBuilder parameters = createPostParameters();
         httpClient.openUrl(buildSpeechUrl())
-                .get()
+                .post(parameters)
                 .read();
+    }
+
+    @NotNull
+    private PostParametersBuilder createPostParameters() {
+        PostParametersBuilder parameters = new PostParametersBuilder();
+        parameters.addParameter("text", this.getSpokenText());
+        return parameters;
     }
 
     private String buildSpeechUrl() {
         SpeechBuilder builder = new SpeechBuilder();
         return builder
-                .speak(this.getSpokenText())
+                .speak()
                 .build();
     }
 

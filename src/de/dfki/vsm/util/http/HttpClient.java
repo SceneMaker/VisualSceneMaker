@@ -14,4 +14,5 @@ public interface HttpClient {
     String getResponse();
 
 
+    HttpClient post(PostParametersBuilder parameters) throws IOException;
 }
