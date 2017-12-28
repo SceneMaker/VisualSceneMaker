@@ -19,6 +19,6 @@ class SpeechCommandTest {
         FakeHttpClient client = new FakeHttpClient();
         command.setHttpClient(client);
         command.execute();
-        assertEquals("http://localhost:5005/speak/hello world.", client.getUrl());
+        assertEquals("http://localhost:5005/speak", client.getUrl());
     }
 }

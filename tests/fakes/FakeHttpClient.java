@@ -1,6 +1,7 @@
 package fakes;
 
 import de.dfki.vsm.util.http.HttpClient;
+import de.dfki.vsm.util.http.PostParametersBuilder;
 
 public class FakeHttpClient implements HttpClient {
     private String customUrl;
@@ -29,6 +30,11 @@ public class FakeHttpClient implements HttpClient {
     @Override
     public String getResponse() {
         return null;
+    }
+
+    @Override
+    public HttpClient post(PostParametersBuilder parameters) {
+        return this;
     }
 
     public String getUrl() {

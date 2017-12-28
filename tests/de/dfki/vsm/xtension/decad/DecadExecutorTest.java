@@ -29,7 +29,7 @@ class DecadExecutorTest {
     void shouldReturnNewMarker() {
         executor = makeDefaultExecutor();
         String markerResult = executor.marker(3);
-        assertEquals("#3#", markerResult);
+        assertEquals("$3", markerResult);
     }
 
     @Test

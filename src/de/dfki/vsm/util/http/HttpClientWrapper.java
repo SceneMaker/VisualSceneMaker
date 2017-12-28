@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+import static de.dfki.vsm.xtension.decad.Constants.UTF_8;
+
 public class HttpClientWrapper implements HttpClient {
 
     private final String charset;
@@ -13,7 +15,7 @@ public class HttpClientWrapper implements HttpClient {
 
     public HttpClientWrapper(){
 
-        charset = "UTF-8";
+        charset = UTF_8;
     }
 
     public HttpClientWrapper(String charset){
@@ -29,8 +31,7 @@ public class HttpClientWrapper implements HttpClient {
 
     public HttpClient get() throws IOException {
         connection.setRequestMethod("GET");
-        this.response = new HttpResponse(this.connection);
-        response.collectResponse();
+        makeRequest();
         return this;
     }
 
@@ -66,5 +67,22 @@ public class HttpClientWrapper implements HttpClient {
 
     public String getResponse() {
         return response.getResponse();
+    }
+
+    @Override
+    public HttpClient post(PostParametersBuilder parameters) throws IOException {
+        connection.setRequestMethod("POST");
+        byte[] postDataBytes = parameters.build(charset);
+        connection.setRequestProperty("Content-Length", String.valueOf(postDataBytes.length));
+        connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+        connection.setDoOutput(true);
+        connection.getOutputStream().write(postDataBytes);
+        makeRequest();
+        return this;
+    }
+
+    private void makeRequest() throws IOException {
+        this.response = new HttpResponse(this.connection);
+        response.collectResponse();
     }
 }
