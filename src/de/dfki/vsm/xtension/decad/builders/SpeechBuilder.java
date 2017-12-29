@@ -4,9 +4,9 @@ public class SpeechBuilder extends AbstractBuilder {
 
     private static final String SPEAK_PATH = "speak";
 
-    public SpeechBuilder speak(String text) {
+    public SpeechBuilder speak(String textToSpeak) {
         this.add(SPEAK_PATH);
-        this.add(text);
+        this.add(textToSpeak);
         return this;
     }
 

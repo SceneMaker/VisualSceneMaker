@@ -5,8 +5,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 
-public class HttpResponse {
-    public static final int OK_STATUS = 200;
+class HttpResponse {
+    private static final int OK_STATUS = 200;
     private final BufferedReader inputStream;
     private final HttpURLConnection connection;
     private StringBuffer responseBuilder;
@@ -26,7 +26,7 @@ public class HttpResponse {
         isDone = true;
     }
 
-    public int getStatus(){
+    int getStatus() {
         if(this.status <= 0){
             fetchStatusFromConnection();
         }
