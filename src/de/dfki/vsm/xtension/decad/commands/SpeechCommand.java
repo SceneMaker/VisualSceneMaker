@@ -23,6 +23,10 @@ public class SpeechCommand extends DecadCommand {
         if (this.getSpokenText().isEmpty()) {
             return;
         }
+        speak();
+    }
+
+    private void speak() throws InterruptedException, IOException {
         PostParametersBuilder parameters = createPostParameters();
         httpClient.openUrl(buildSpeechUrl())
                 .post(parameters)

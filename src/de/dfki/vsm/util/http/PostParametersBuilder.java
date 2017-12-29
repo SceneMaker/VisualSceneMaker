@@ -8,9 +8,8 @@ import java.util.Map;
 import static de.dfki.vsm.xtension.decad.Constants.UTF_8;
 
 public class PostParametersBuilder {
-    public static final String QUERY_SEPARATOR = "?";
     private static final String EQUAL_SEPARATOR = "=";
-    private HashMap<String, String> parameters = new HashMap<>();
+    private final HashMap<String, String> parameters = new HashMap<>();
     private StringBuilder parametersBuilder;
 
     public PostParametersBuilder addParameter(String key, String value) {
