@@ -2,6 +2,7 @@ package de.dfki.vsm.xtension.decad.sender;
 
 import de.dfki.vsm.util.http.HttpClientWrapper;
 import de.dfki.vsm.util.http.PostParametersBuilder;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -12,6 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class HTTPClientTest {
 
     @Test
+    @Disabled
     public void testSendToLocalhost() throws InterruptedException, IOException {
 
         HttpClientWrapper client = new HttpClientWrapper();
@@ -25,6 +27,7 @@ public class HTTPClientTest {
 
 
     @Test
+    @Disabled
     public void testSpeakToLocalhost() throws InterruptedException, IOException {
 
         HttpClientWrapper client = new HttpClientWrapper();

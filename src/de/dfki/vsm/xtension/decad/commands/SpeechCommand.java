@@ -3,7 +3,7 @@ package de.dfki.vsm.xtension.decad.commands;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
 import de.dfki.vsm.runtime.activity.SpeechActivity;
 import de.dfki.vsm.util.http.PostParametersBuilder;
-import de.dfki.vsm.xtension.decad.builders.SpeechBuilder;
+import de.dfki.vsm.xtension.decad.url.builders.SpeechBuilder;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
