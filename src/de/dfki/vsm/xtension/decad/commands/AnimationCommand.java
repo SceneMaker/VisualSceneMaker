@@ -1,7 +1,7 @@
 package de.dfki.vsm.xtension.decad.commands;
 
 import de.dfki.vsm.runtime.activity.AbstractActivity;
-import de.dfki.vsm.xtension.decad.builders.AnimationBuilder;
+import de.dfki.vsm.xtension.decad.url.builders.AnimationBuilder;
 
 import java.io.IOException;
 

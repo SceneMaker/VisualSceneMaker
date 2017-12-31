@@ -1,4 +1,4 @@
-package de.dfki.vsm.xtension.decad.builders;
+package de.dfki.vsm.xtension.decad.url.builders;
 
 public class SpeechBuilder extends AbstractBuilder {
 
