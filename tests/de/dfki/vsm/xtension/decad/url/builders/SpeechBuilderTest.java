@@ -12,6 +12,6 @@ class SpeechBuilderTest {
         String urlToSpeak = builder
                 .speak(text)
                 .build();
-        assertEquals("http://localhost:5005/speak/hello world", urlToSpeak);
+        assertEquals("http://localhost:5005/speech/speak/hello world", urlToSpeak);
     }
 }
