@@ -39,4 +39,8 @@ public abstract class DecadCommand {
     public void setHttpClient(HttpClient httpClient) {
         this.httpClient = httpClient;
     }
+
+    public String getResponse() {
+        return httpClient.getResponse();
+    }
 }
