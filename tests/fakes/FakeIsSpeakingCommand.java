@@ -3,19 +3,18 @@ package fakes;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
 import de.dfki.vsm.xtension.decad.commands.DecadCommand;
 
-public class FakeCommand extends DecadCommand {
-    public boolean executed = false;
-    public FakeCommand(AbstractActivity activity) {
+public class FakeIsSpeakingCommand extends DecadCommand {
+    public FakeIsSpeakingCommand(AbstractActivity activity) {
         super(activity);
     }
 
     @Override
     protected String buildUrl() {
-        return "";
+        return null;
     }
 
     @Override
     public void execute() {
-        executed = true;
+
     }
 }
