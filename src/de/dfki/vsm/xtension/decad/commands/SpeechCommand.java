@@ -18,6 +18,7 @@ public class SpeechCommand extends DecadCommand {
         super(activity);
     }
 
+
     @Override
     public void execute() throws IOException, InterruptedException {
         if (this.getSpokenText().isEmpty()) {
@@ -28,9 +29,7 @@ public class SpeechCommand extends DecadCommand {
 
     private void speak() throws InterruptedException, IOException {
         PostParametersBuilder parameters = createPostParameters();
-        httpClient.openUrl(buildSpeechUrl())
-                .post(parameters)
-                .read();
+        post(parameters);
     }
 
     @NotNull
@@ -40,9 +39,10 @@ public class SpeechCommand extends DecadCommand {
         return parameters;
     }
 
-    private String buildSpeechUrl() {
+    protected String buildUrl() {
         SpeechBuilder builder = new SpeechBuilder();
         return builder
+                .speech()
                 .speak()
                 .build();
     }
