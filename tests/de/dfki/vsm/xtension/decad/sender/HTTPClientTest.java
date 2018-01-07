@@ -34,7 +34,7 @@ public class HTTPClientTest {
         PostParametersBuilder parameters = new PostParametersBuilder();
         parameters.addParameter("text", "Hello world");
         client
-                .openUrl("http://localhost:5005/speak")
+                .openUrl("http://localhost:5005/speech/speak")
                 .post(parameters)
                 .read();
         assertEquals("Speaking...", client.getResponse());
