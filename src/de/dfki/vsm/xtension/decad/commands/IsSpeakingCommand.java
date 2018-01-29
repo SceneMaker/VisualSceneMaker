@@ -1,16 +1,12 @@
 package de.dfki.vsm.xtension.decad.commands;
 
-import de.dfki.vsm.runtime.activity.AbstractActivity;
 import de.dfki.vsm.xtension.decad.url.builders.SpeechBuilder;
 
 import java.io.IOException;
 
 public class IsSpeakingCommand extends DecadCommand {
-    public IsSpeakingCommand(AbstractActivity activity) {
-        super(activity);
-    }
 
-    public IsSpeakingCommand() {
+    IsSpeakingCommand() {
         super();
     }
 
@@ -25,7 +21,7 @@ public class IsSpeakingCommand extends DecadCommand {
 
     @Override
     public void execute() throws IOException, InterruptedException {
-        get();
+        super.get();
     }
 
 

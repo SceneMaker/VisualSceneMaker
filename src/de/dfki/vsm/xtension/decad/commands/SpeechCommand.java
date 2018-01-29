@@ -29,7 +29,7 @@ public class SpeechCommand extends DecadCommand {
 
     private void speak() throws InterruptedException, IOException {
         PostParametersBuilder parameters = createPostParameters();
-        post(parameters);
+        super.post(parameters);
     }
 
     @NotNull
