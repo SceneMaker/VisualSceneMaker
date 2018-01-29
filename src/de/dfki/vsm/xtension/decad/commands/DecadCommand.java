@@ -9,7 +9,7 @@ import java.io.IOException;
 
 public abstract class DecadCommand {
     AbstractActivity activity;
-    HttpClient httpClient;
+    private HttpClient httpClient;
 
     public DecadCommand(AbstractActivity activity) {
         this.activity = activity;
@@ -26,7 +26,7 @@ public abstract class DecadCommand {
                 .read();
     }
 
-    protected void post(PostParametersBuilder parameters) throws IOException, InterruptedException {
+    void post(PostParametersBuilder parameters) throws IOException, InterruptedException {
         httpClient.openUrl(buildUrl())
                 .post(parameters)
                 .read();
@@ -40,7 +40,4 @@ public abstract class DecadCommand {
         this.httpClient = httpClient;
     }
 
-    public String getResponse() {
-        return httpClient.getResponse();
-    }
 }

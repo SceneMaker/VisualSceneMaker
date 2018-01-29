@@ -24,7 +24,7 @@ public class AnimationCommand extends DecadCommand {
 
     @Override
     public void execute() throws IOException, InterruptedException {
-        get();
+        super.get();
     }
 
 

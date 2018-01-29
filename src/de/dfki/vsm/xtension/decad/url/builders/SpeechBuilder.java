@@ -13,17 +13,17 @@ public class SpeechBuilder extends AbstractBuilder {
     }
 
     public SpeechBuilder speak() {
-        this.add(SPEAK_PATH);
+        super.add(SPEAK_PATH);
         return this;
     }
 
     public SpeechBuilder speech() {
-        this.add(SPEECH_PATH);
+        super.add(SPEECH_PATH);
         return this;
     }
 
     public SpeechBuilder isSpeaking() {
-        this.add(IS_SPEAKING_PATH);
+        super.add(IS_SPEAKING_PATH);
         return this;
     }
 }

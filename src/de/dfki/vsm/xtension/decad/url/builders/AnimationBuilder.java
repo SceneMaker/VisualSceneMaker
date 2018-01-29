@@ -8,13 +8,13 @@ public class AnimationBuilder extends AbstractBuilder {
 
 
     public AnimationBuilder animation() {
-        this.add(ANIMATION_PATH);
+        super.add(ANIMATION_PATH);
         return this;
     }
 
     public AnimationBuilder animate(String animationName) {
-        this.add(ANIMATE_PATH);
-        this.add(animationName);
+        super.add(ANIMATE_PATH);
+        super.add(animationName);
         return this;
     }
 
