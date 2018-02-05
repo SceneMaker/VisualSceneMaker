@@ -17,6 +17,11 @@ public class DummyCommand extends DecadCommand {
     }
 
     @Override
+    public boolean isBlocking() {
+        return false;
+    }
+
+    @Override
     public void execute() {
         Logger.getLogger("VSM").log(new LogRecord(Level.INFO, "Executing dummy"));
     }

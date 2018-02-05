@@ -20,6 +20,11 @@ public class IsSpeakingCommand extends DecadCommand {
     }
 
     @Override
+    public boolean isBlocking() {
+        return false;
+    }
+
+    @Override
     public void execute() throws IOException, InterruptedException {
         super.get();
     }

@@ -34,6 +34,8 @@ public abstract class DecadCommand {
 
     protected abstract String buildUrl();
 
+    public abstract boolean isBlocking();
+
     public abstract void execute() throws IOException, InterruptedException;
 
     public void setHttpClient(HttpClient httpClient) {
