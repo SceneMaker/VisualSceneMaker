@@ -47,6 +47,11 @@ public class SpeechCommand extends DecadCommand {
                 .build();
     }
 
+    @Override
+    public boolean isBlocking() {
+        return true;
+    }
+
     @NotNull
     private String getSpokenText() {
         return getSpeechActivity().getTextOnly("$");
