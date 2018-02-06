@@ -20,14 +20,14 @@ public abstract class DecadCommand {
         this.httpClient = new HttpClientWrapper();
     }
 
-    protected void get() throws IOException, InterruptedException {
-        httpClient.openUrl(buildUrl())
+    protected HttpClient get() throws IOException, InterruptedException {
+        return httpClient.openUrl(buildUrl())
                 .get()
                 .read();
     }
 
-    void post(PostParametersBuilder parameters) throws IOException, InterruptedException {
-        httpClient.openUrl(buildUrl())
+    HttpClient post(PostParametersBuilder parameters) throws IOException, InterruptedException {
+        return httpClient.openUrl(buildUrl())
                 .post(parameters)
                 .read();
     }
