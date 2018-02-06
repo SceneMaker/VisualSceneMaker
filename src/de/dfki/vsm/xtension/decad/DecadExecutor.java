@@ -2,29 +2,25 @@ package de.dfki.vsm.xtension.decad;
 
 import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
-import de.dfki.vsm.runtime.activity.SpeechActivity;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.xtension.decad.commands.DecadCommand;
 import de.dfki.vsm.xtension.decad.factories.DecadCommandFactory;
-import de.dfki.vsm.xtension.decad.utils.DECADLongPoller;
+import de.dfki.vsm.xtension.decad.utils.SpeechSynchronizer;
 
 import java.io.IOException;
-import java.util.concurrent.Semaphore;
 
 
-public class DecadExecutor extends ActivityExecutor{
+public class DecadExecutor extends ActivityExecutor {
 
     private static final String DECAD_MARKER_SEPARATOR = "$";
+    private final SpeechSynchronizer speechSynchronizer;
     protected DecadCommandFactory factory;
-    protected final Semaphore speechSemaphore;
-    private final DECADLongPoller poller;
 
     public DecadExecutor(PluginConfig config, RunTimeProject project) {
         super(config, project);
         factory = new DecadCommandFactory();
-        speechSemaphore = new Semaphore(1);
-        poller = new DECADLongPoller();
+        speechSynchronizer = new SpeechSynchronizer();
     }
 
 
@@ -38,31 +34,25 @@ public class DecadExecutor extends ActivityExecutor{
         try {
             executeCommandFor(activity);
         } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
+            mLogger.failure(e.getMessage());
         }
     }
 
     private void executeCommandFor(AbstractActivity activity) throws IOException, InterruptedException {
-        if (activity instanceof SpeechActivity) {
-            speechSemaphore.acquire();
-            poller.pollIsSpeaking(this);
-        }
+        speechSynchronizer.snchronizeSpeech(activity);
         DecadCommand command = factory.getCommand(activity);
         command.execute();
     }
 
     @Override
     public void launch() {
-
+        //Make in the class BrowserOpener.openBrowserAt to wait until the webpage is loaded
     }
+
 
     @Override
     public void unload() {
-
-    }
-
-    public void handle() {
-        speechSemaphore.release();
+        //Cannot close it cause it is now handled by the OS
     }
 
 

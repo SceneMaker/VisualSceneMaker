@@ -1,49 +1,45 @@
 package de.dfki.vsm.xtension.decad.utils;
 
 
-import de.dfki.vsm.xtension.decad.DecadExecutor;
 import de.dfki.vsm.xtension.decad.commands.IsSpeakingCommand;
 
 import java.io.IOException;
 
 public class DECADLongPoller {
+    private static final String IS_SPEAKING = "1";
     private boolean isCharacterSpeaking;
 
-    public DECADLongPoller() {
-
+    public void pollIsSpeaking(CommandResponseHandler handler) throws IOException, InterruptedException {
+        IsSpeakingCommand isSpeakingCommand = new IsSpeakingCommand();
+        poll(handler, isSpeakingCommand);
     }
 
-    public boolean pollIsSpeaking(DecadExecutor executor) {
-        IsSpeakingCommand isSpeaking = new IsSpeakingCommand();
-        try {
-            return poll(executor, isSpeaking);
-        } catch (IOException | InterruptedException e) {
-            return true;
+    private void poll(CommandResponseHandler handler, IsSpeakingCommand isSpeaking) throws IOException, InterruptedException {
+        waitUntilStartsSpeaking(isSpeaking);
+        waitUntilStopsSpeaking(isSpeaking);
+        handler.handle();
+        Thread.sleep(100);
+    }
+
+    private void waitUntilStopsSpeaking(IsSpeakingCommand isSpeakingCommand) throws IOException, InterruptedException {
+        while (isCharacterSpeaking) {
+            pollIsSpeaking(isSpeakingCommand);
+            Thread.sleep(20);
         }
     }
 
-    private boolean poll(DecadExecutor executor, IsSpeakingCommand isSpeaking) throws IOException, InterruptedException {
+    private void pollIsSpeaking(IsSpeakingCommand isSpeaking) throws IOException, InterruptedException {
+        isSpeaking.execute();
+        String response = isSpeaking.getResponse();
+        isCharacterSpeaking = response.equals(IS_SPEAKING);
+    }
+
+    private void waitUntilStartsSpeaking(IsSpeakingCommand isSpeakingCommand) throws IOException, InterruptedException {
         int counter = 0;
         while (!isCharacterSpeaking && counter <= 4) {
-            isSpeaking.execute();
-            String response = isSpeaking.getResponse();
-            if (response.equals("1")) {
-                isCharacterSpeaking = true;
-            }
+            pollIsSpeaking(isSpeakingCommand);
             Thread.sleep(20);
             counter++;
         }
-        while (isCharacterSpeaking) {
-            isSpeaking.execute();
-            String response = isSpeaking.getResponse();
-            if (!response.equals("1")) {
-                isCharacterSpeaking = false;
-
-            }
-            Thread.sleep(20);
-        }
-        executor.handle();
-        Thread.sleep(100);
-        return true;
     }
 }
