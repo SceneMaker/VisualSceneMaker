@@ -1,12 +1,15 @@
 package de.dfki.vsm.xtension.decad.commands;
 
+import de.dfki.vsm.util.http.HttpClient;
 import de.dfki.vsm.xtension.decad.url.builders.SpeechBuilder;
 
 import java.io.IOException;
 
 public class IsSpeakingCommand extends DecadCommand {
 
-    IsSpeakingCommand() {
+    private String response;
+
+    public IsSpeakingCommand() {
         super();
     }
 
@@ -26,8 +29,12 @@ public class IsSpeakingCommand extends DecadCommand {
 
     @Override
     public void execute() throws IOException, InterruptedException {
-        super.get();
+        HttpClient client = super.get();
+        this.response = client.getResponse();
     }
 
+    public String getResponse() {
+        return this.response;
+    }
 
 }
