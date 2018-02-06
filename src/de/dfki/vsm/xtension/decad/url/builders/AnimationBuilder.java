@@ -5,6 +5,7 @@ public class AnimationBuilder extends AbstractBuilder {
 
     private static final String ANIMATE_PATH = "animate";
     private static final String ANIMATION_PATH = "animation";
+    private static final String LIST = "list";
 
 
     public AnimationBuilder animation() {
@@ -19,4 +20,8 @@ public class AnimationBuilder extends AbstractBuilder {
     }
 
 
+    public AnimationBuilder list() {
+        super.add(LIST);
+        return this;
+    }
 }

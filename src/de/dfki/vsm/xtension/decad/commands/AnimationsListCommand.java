@@ -1,23 +1,16 @@
 package de.dfki.vsm.xtension.decad.commands;
 
-import de.dfki.vsm.xtension.decad.url.builders.SpeechBuilder;
+import de.dfki.vsm.xtension.decad.url.builders.AnimationBuilder;
 
 import java.io.IOException;
 
-public class IsSpeakingCommand extends DecadCommand {
-
-
-
-    public IsSpeakingCommand() {
-        super();
-    }
-
+public class AnimationsListCommand extends DecadCommand {
     @Override
     protected String buildUrl() {
-        SpeechBuilder builder = new SpeechBuilder();
+        AnimationBuilder builder = new AnimationBuilder();
         return builder
-                .speech()
-                .isSpeaking()
+                .animation()
+                .list()
                 .build();
     }
 
@@ -31,6 +24,4 @@ public class IsSpeakingCommand extends DecadCommand {
         super.get();
 
     }
-
-
 }
