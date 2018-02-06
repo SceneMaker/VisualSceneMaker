@@ -15,4 +15,14 @@ class AnimationBuilderTest {
                 .build();
         assertEquals("http://localhost:5005/animation/animate/Waving", urlToWaving);
     }
+
+    @Test
+    void shouldReturnAnimationList() {
+        AnimationBuilder builder = new AnimationBuilder();
+        String urlToWaving = builder
+                .animation()
+                .list()
+                .build();
+        assertEquals("http://localhost:5005/animation/list", urlToWaving);
+    }
 }

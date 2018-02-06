@@ -17,8 +17,9 @@ public class DECADLongPoller {
     private void poll(CommandResponseHandler handler, IsSpeakingCommand isSpeaking) throws IOException, InterruptedException {
         waitUntilStartsSpeaking(isSpeaking);
         waitUntilStopsSpeaking(isSpeaking);
-        handler.handle();
         Thread.sleep(100);
+        handler.handle();
+
     }
 
     private void waitUntilStopsSpeaking(IsSpeakingCommand isSpeakingCommand) throws IOException, InterruptedException {
