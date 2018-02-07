@@ -14,8 +14,7 @@ public class HttpSender {
     }
 
 
-
-    public String getCharSet() {
+    String getCharSet() {
         return UTF_8;
     }
 }

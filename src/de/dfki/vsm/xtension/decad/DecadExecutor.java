@@ -23,9 +23,9 @@ public class DecadExecutor extends ActivityExecutor implements ExportablePropert
 
     private static final String DECAD_MARKER_SEPARATOR = "$";
     private final SpeechSynchronizer speechSynchronizer;
+    private final ExportAnimations animationsToExport;
+    private final ExportProperties exportProperties;
     protected DecadCommandFactory factory;
-    private ExportAnimations animationsToExport;
-    private ExportProperties exportProperties;
 
     public DecadExecutor(PluginConfig config, RunTimeProject project) {
         super(config, project);

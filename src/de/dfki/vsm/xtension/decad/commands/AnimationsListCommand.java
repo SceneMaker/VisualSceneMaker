@@ -5,6 +5,10 @@ import de.dfki.vsm.xtension.decad.url.builders.AnimationBuilder;
 import java.io.IOException;
 
 public class AnimationsListCommand extends DecadCommand {
+    public AnimationsListCommand() {
+        super();
+    }
+
     @Override
     protected String buildUrl() {
         AnimationBuilder builder = new AnimationBuilder();
@@ -12,11 +16,6 @@ public class AnimationsListCommand extends DecadCommand {
                 .animation()
                 .list()
                 .build();
-    }
-
-    @Override
-    public boolean isBlocking() {
-        return false;
     }
 
     @Override

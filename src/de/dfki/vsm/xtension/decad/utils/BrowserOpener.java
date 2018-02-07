@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-public class BrowserOpener {
+class BrowserOpener {
 
     private static final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
 

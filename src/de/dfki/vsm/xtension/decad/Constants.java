@@ -6,7 +6,7 @@ public class Constants {
     public static final String URL_PATH_SEPARATOR = "/";
     public static final String UTF_8 = "UTF-8";
 
-    public static final String getURL() {
+    public static String getURL() {
         return URL;
     }
 
@@ -14,12 +14,11 @@ public class Constants {
         URL = baseUrl;
     }
 
-    static String buildURL(String host, String port) {
+    static void buildURL(String host, String port) {
         if (host == null || port == null || host.isEmpty() || port.isEmpty()) {
-            return URL;
+            return;
         }
         URL = host + HOST_PORT_SEPARATOR + port;
-        return URL;
     }
 
 }
