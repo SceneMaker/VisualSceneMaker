@@ -17,27 +17,24 @@ public abstract class DecadCommand {
         this.httpClient = new HttpClientWrapper();
     }
 
-    public DecadCommand() {
+    DecadCommand() {
         this.httpClient = new HttpClientWrapper();
     }
 
-    protected HttpClient get() throws IOException, InterruptedException {
+    void get() throws IOException, InterruptedException {
         HttpClient client = httpClient.openUrl(buildUrl())
                 .get()
                 .read();
         this.response = client.getResponse();
-        return client;
     }
 
-    HttpClient post(PostParametersBuilder parameters) throws IOException, InterruptedException {
-        return httpClient.openUrl(buildUrl())
+    void post(PostParametersBuilder parameters) throws IOException, InterruptedException {
+        httpClient.openUrl(buildUrl())
                 .post(parameters)
                 .read();
     }
 
     protected abstract String buildUrl();
-
-    public abstract boolean isBlocking();
 
     public abstract void execute() throws IOException, InterruptedException;
 

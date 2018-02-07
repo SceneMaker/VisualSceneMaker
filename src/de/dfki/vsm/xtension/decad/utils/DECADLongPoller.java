@@ -5,11 +5,11 @@ import de.dfki.vsm.xtension.decad.commands.IsSpeakingCommand;
 
 import java.io.IOException;
 
-public class DECADLongPoller {
+class DECADLongPoller {
     private static final String IS_SPEAKING = "1";
     private boolean isCharacterSpeaking;
 
-    public void pollIsSpeaking(CommandResponseHandler handler) throws IOException, InterruptedException {
+    void pollIsSpeaking(CommandResponseHandler handler) throws IOException, InterruptedException {
         IsSpeakingCommand isSpeakingCommand = new IsSpeakingCommand();
         poll(handler, isSpeakingCommand);
     }

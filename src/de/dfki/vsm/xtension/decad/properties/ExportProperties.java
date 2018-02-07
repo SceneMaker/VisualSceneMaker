@@ -10,7 +10,7 @@ import de.dfki.vsm.util.extensions.value.ValueTYPE;
 import java.util.HashMap;
 
 public class ExportProperties implements ExportableProperties {
-    HashMap<ProjectProperty, ProjectValueProperty> exportableProperties = new HashMap<>();
+    private final HashMap<ProjectProperty, ProjectValueProperty> exportableProperties = new HashMap<>();
 
     @Override
     public HashMap<ProjectProperty, ProjectValueProperty> getExportableProperties() {

@@ -1,5 +1,5 @@
 package de.dfki.vsm.xtension.decad.utils;
 
-public interface CommandResponseHandler {
+interface CommandResponseHandler {
     void handle();
 }
