@@ -3,7 +3,6 @@ package de.dfki.vsm.xtension.stickman;
 import de.dfki.action.sequence.TimeMark;
 import de.dfki.action.sequence.Word;
 import de.dfki.action.sequence.WordTimeMarkSequence;
-
 import de.dfki.common.interfaces.Animation;
 import de.dfki.common.interfaces.StageRoom;
 import de.dfki.stickman3D.Stickman3D;
@@ -23,19 +22,16 @@ import de.dfki.vsm.util.extensions.ProjectProperty;
 import de.dfki.vsm.util.extensions.value.ProjectValueProperty;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
 import de.dfki.vsm.util.stickman.StickmanRepository;
+import de.dfki.vsm.xtension.stickman.util.property.StickmanProjectProperty;
+import de.dfki.vsm.xtension.stickmantts.util.property.StickmanTtsActions;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.net.Socket;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
-
-import de.dfki.vsm.xtension.stickman.util.property.StickmanProjectProperty;
-import de.dfki.vsm.xtension.stickmantts.util.property.StickmanTTSProjectProperty;
-import java.io.File;
-
-import de.dfki.vsm.xtension.stickmantts.util.property.StickmanTtsActions;
-import javafx.scene.paint.Color;
+import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -203,7 +199,7 @@ public class StickmanExecutor extends ActivityExecutor implements ExportableProp
         // Start the connection
         mListener.start();
 
-        final boolean showStickmanNames = mConfig.containsKey("showstickmanname") ? mConfig.getProperty("showstickmanname").equalsIgnoreCase("true") : true;
+        final boolean showStickmanNames = !mConfig.containsKey("showstickmanname") || mConfig.getProperty("showstickmanname").equalsIgnoreCase("true");
 
         // Start the StickmanStage client application
         mLogger.message("Starting StickmanStage Client Application ...");
@@ -280,9 +276,7 @@ public class StickmanExecutor extends ActivityExecutor implements ExportableProp
                 int start = message.lastIndexOf("#") + 1;
                 String animId = message.substring(start);
 
-                if (mActivityWorkerMap.containsKey(animId)) {
-                    mActivityWorkerMap.remove(animId);
-                }
+                mActivityWorkerMap.remove(animId);
                 // wake me up ..
                 mActivityWorkerMap.notifyAll();
             } else if (message.contains("$")) {
@@ -305,17 +299,17 @@ public class StickmanExecutor extends ActivityExecutor implements ExportableProp
     }
 
     @Override
-    public HashMap<ProjectProperty, ProjectValueProperty> getExportableProperties() {
+    public Map<ProjectProperty, ProjectValueProperty> getExportableProperties() {
         return exportableProperties.getExportableProperties();
     }
 
     @Override
-    public HashMap<ProjectProperty, ProjectValueProperty> getExportableAgentProperties() {
+    public Map<ProjectProperty, ProjectValueProperty> getExportableAgentProperties() {
         return exportableProperties.getExportableAgentProperties();
     }
 
     @Override
-    public ArrayList<String> getExportableActions() {
+    public List<String> getExportableActions() {
         return exportableActions.getExportableActions();
     }
 }

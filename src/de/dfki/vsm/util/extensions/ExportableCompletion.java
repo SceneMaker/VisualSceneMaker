@@ -1,7 +1,7 @@
 package de.dfki.vsm.util.extensions;
 
-import java.util.ArrayList;
+import java.util.List;
 
 public interface ExportableCompletion {
-    ArrayList<String> getExportableActions();
+    List<String> getExportableActions();
 }

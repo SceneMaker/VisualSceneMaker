@@ -11,6 +11,7 @@ import de.dfki.vsm.util.extensions.value.ValueTYPE;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by alvaro on 5/2/17.
@@ -45,12 +46,12 @@ public class RemoteSenderProjectProperty implements ExportableProperties{
 
     }
     @Override
-    public HashMap<ProjectProperty, ProjectValueProperty> getExportableProperties() {
+    public Map<ProjectProperty, ProjectValueProperty> getExportableProperties() {
         return exportableProperties;
     }
 
     @Override
-    public HashMap<ProjectProperty, ProjectValueProperty> getExportableAgentProperties() {
+    public Map<ProjectProperty, ProjectValueProperty> getExportableAgentProperties() {
         return null;
     }
 }

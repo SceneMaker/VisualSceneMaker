@@ -1,9 +1,9 @@
 package de.dfki.vsm.xtension.tricatworld;
 
-import de.dfki.vsm.runtime.activity.AbstractActivity.Type;
 import de.dfki.vsm.editor.dialog.WaitingDialog;
 import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
+import de.dfki.vsm.runtime.activity.AbstractActivity.Type;
 import de.dfki.vsm.runtime.activity.SpeechActivity;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
 import de.dfki.vsm.runtime.activity.scheduler.ActivityWorker;
@@ -22,6 +22,7 @@ import de.dfki.vsm.xtension.tricatworld.xml.command.object.TriCatWorldCmdObject;
 import de.dfki.vsm.xtension.tricatworld.xml.command.object.action.TriCatWorldActObject;
 import de.dfki.vsm.xtension.tricatworld.xml.feedback.TriCatWorldFeedback;
 import de.dfki.vsm.xtension.tricatworld.xml.util.ActionLoader;
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileReader;
@@ -29,6 +30,7 @@ import java.io.IOException;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 
@@ -190,7 +192,7 @@ public final class TriCatWorldExecutor extends ActivityExecutor implements Expor
         // Initialize the command        
         TriCatWorldActObject triCatWorldAct = null;
         // set all activities blocking
-        activity.setType(activity_type.blocking);
+        activity.setType(Type.blocking);
 
         // Check the activity type
         if (activity instanceof SpeechActivity) {
@@ -236,87 +238,87 @@ public final class TriCatWorldExecutor extends ActivityExecutor implements Expor
                 triCatWorldAct = mActionLoader.loadCharamelAnimation(activity_name, aid);
             } else if (activity_name.equalsIgnoreCase("Reject")) {
                 triCatWorldAct = mActionLoader.loadCharamelAnimation(activity_name, aid);
-                activity.setType(activity_type.parallel);
+                activity.setType(Type.parallel);
             } else if (activity_name.equalsIgnoreCase("Challenge")) {
                 triCatWorldAct = mActionLoader.loadCharamelAnimation(activity_name, aid);
-                activity.setType(activity_type.parallel);
+                activity.setType(Type.parallel);
             } else if (activity_name.equalsIgnoreCase("SittingStart")) {
                 triCatWorldAct = mActionLoader.loadCharamelAnimation(activity_name, aid);
-                activity.setType(activity_type.parallel);
+                activity.setType(Type.parallel);
             } else if (activity_name.equalsIgnoreCase("SittingStop")) {
                 triCatWorldAct = mActionLoader.loadCharamelAnimation(activity_name, aid);
-                activity.setType(activity_type.parallel);
+                activity.setType(Type.parallel);
             } else if (activity_name.equalsIgnoreCase("ShowPalms")) {
                 triCatWorldAct = mActionLoader.loadCharamelAnimation(activity_name, aid);
-                activity.setType(activity_type.parallel);
+                activity.setType(Type.parallel);
             } else if (activity_name.equalsIgnoreCase("OpenArms")) {
                 triCatWorldAct = mActionLoader.loadCharamelAnimation(activity_name, aid);
-                activity.setType(activity_type.parallel);
+                activity.setType(Type.parallel);
             } else if (activity_name.equalsIgnoreCase("LookLeft")) {
                 triCatWorldAct = mActionLoader.loadCharamelAnimation(activity_name, aid);
-                activity.setType(activity_type.parallel);
+                activity.setType(Type.parallel);
             } else if (activity_name.equalsIgnoreCase("LookRight")) {
                 triCatWorldAct = mActionLoader.loadCharamelAnimation(activity_name, aid);
-                activity.setType(activity_type.parallel);
+                activity.setType(Type.parallel);
             } else if (activity_name.equalsIgnoreCase("No")) {
                 triCatWorldAct = mActionLoader.loadCharamelAnimation(activity_name, aid);
-                activity.setType(activity_type.parallel);
+                activity.setType(Type.parallel);
             } else if (activity_name.equalsIgnoreCase("StrongNo")) {
                 triCatWorldAct = mActionLoader.loadCharamelAnimation(activity_name, aid);
-                activity.setType(activity_type.parallel);
+                activity.setType(Type.parallel);
             } else if (activity_name.equalsIgnoreCase("PointLeft")) {
                 triCatWorldAct = mActionLoader.loadCharamelAnimation(activity_name, aid);
-                activity.setType(activity_type.parallel);
+                activity.setType(Type.parallel);
             } else if (activity_name.equalsIgnoreCase("PointRight")) {
                 triCatWorldAct = mActionLoader.loadCharamelAnimation(activity_name, aid);
-                activity.setType(activity_type.parallel);
+                activity.setType(Type.parallel);
             } else if (activity_name.equalsIgnoreCase("PresentLeft")) {
                 triCatWorldAct = mActionLoader.loadCharamelAnimation(activity_name, aid);
-                activity.setType(activity_type.parallel);
+                activity.setType(Type.parallel);
             } else if (activity_name.equalsIgnoreCase("PresentRight")) {
                 triCatWorldAct = mActionLoader.loadCharamelAnimation(activity_name, aid);
-                activity.setType(activity_type.parallel);
+                activity.setType(Type.parallel);
             } else if (activity_name.equalsIgnoreCase("Welcome")) {
                 triCatWorldAct = mActionLoader.loadCharamelAnimation(activity_name, aid);
-                activity.setType(activity_type.parallel);
+                activity.setType(Type.parallel);
             } else if (activity_name.equalsIgnoreCase("Yes")) {
                 triCatWorldAct = mActionLoader.loadCharamelAnimation(activity_name, aid);
-                activity.setType(activity_type.parallel);
+                activity.setType(Type.parallel);
             } else if (activity_name.equalsIgnoreCase("StrongYes")) {
                 triCatWorldAct = mActionLoader.loadCharamelAnimation(activity_name, aid);
-                activity.setType(activity_type.parallel);
+                activity.setType(Type.parallel);
             } else if (activity_name.equalsIgnoreCase("Angry")) {
                 String intensity = activity.get("intensity");
                 intensity = (intensity == null) ? "1.0" : intensity;
                 triCatWorldAct = mActionLoader.loadCharamelAnimation(activity_name, intensity, aid);
-                activity.setType(activity_type.parallel);
+                activity.setType(Type.parallel);
             } else if (activity_name.equalsIgnoreCase("Demanding")) {
                 String intensity = activity.get("intensity");
                 intensity = (intensity == null) ? "1.0" : intensity;
                 triCatWorldAct = mActionLoader.loadCharamelAnimation(activity_name, intensity, aid);
-                activity.setType(activity_type.parallel);
+                activity.setType(Type.parallel);
             } else if (activity_name.equalsIgnoreCase("Disgust")) {
                 String intensity = activity.get("intensity");
                 intensity = (intensity == null) ? "1.0" : intensity;
                 triCatWorldAct = mActionLoader.loadCharamelAnimation(activity_name, intensity, aid);
-                activity.setType(activity_type.parallel);
+                activity.setType(Type.parallel);
             } else if (activity_name.equalsIgnoreCase("Neutral")) {
                 triCatWorldAct = mActionLoader.loadCharamelAnimation(activity_name, "1.0", aid);
             } else if (activity_name.equalsIgnoreCase("Sad")) {
                 String intensity = activity.get("intensity");
                 intensity = (intensity == null) ? "1.0" : intensity;
                 triCatWorldAct = mActionLoader.loadCharamelAnimation(activity_name, intensity, aid);
-                activity.setType(activity_type.parallel);
+                activity.setType(Type.parallel);
             } else if (activity_name.equalsIgnoreCase("Smile")) {
                 String intensity = activity.get("intensity");
                 intensity = (intensity == null) ? "1.0" : intensity;
                 triCatWorldAct = mActionLoader.loadCharamelAnimation(activity_name, intensity, aid);
-                activity.setType(activity_type.parallel);
+                activity.setType(Type.parallel);
             } else if (activity_name.equalsIgnoreCase("Happy")) {
                 String intensity = activity.get("intensity");
                 intensity = (intensity == null) ? "1.0" : intensity;
                 triCatWorldAct = mActionLoader.loadCharamelAnimation(activity_name, intensity, aid);
-                activity.setType(activity_type.parallel);
+                activity.setType(Type.parallel);
             } else if (activity_name.equalsIgnoreCase("InitJointAnimation")) {
                 String joint = activity.get("joint");
                 joint = (joint == null) ? "" : joint;
@@ -342,7 +344,7 @@ public final class TriCatWorldExecutor extends ActivityExecutor implements Expor
                 String zdegree = activity.get("z");
                 zdegree = (zdegree == null) ? "0.0" : zdegree;                
                 triCatWorldAct = mActionLoader.loadCharamelAnimation(activity_name, joint, interpolation, xdegree, ydegree, zdegree, aid);
-                activity.setType(activity_type.parallel);
+                activity.setType(Type.parallel);
             }  else if (activity_name.equalsIgnoreCase("CancelMoveTo")) {
                 triCatWorldAct = mActionLoader.loadTWorldAnimation(activity_name);
             } else if (activity_name.equalsIgnoreCase("Play")) {
@@ -563,7 +565,7 @@ public final class TriCatWorldExecutor extends ActivityExecutor implements Expor
             ActivityWorker cAW = (ActivityWorker) Thread.currentThread();
             mActivityWorkerMap.put(triCatWorldAct.getId(), cAW);
 
-            if (activity.getType() == activity_type.blocking) { // Wait only if activity is blocking
+            if (activity.getType() == Type.blocking) { // Wait only if activity is blocking
                 // wait until we got feedback
                 //mLogger.message("ActivityWorker " + tworld_cmd_action.getId() + " waiting ...");
 
@@ -733,19 +735,16 @@ public final class TriCatWorldExecutor extends ActivityExecutor implements Expor
     // Check if action file exists
     private boolean exists(final String path) {
         final File file = new File(path);
-        if (file.exists() && file.isDirectory()) {
-            return true;
-        }
-        return false;
+        return file.exists() && file.isDirectory();
     }
 
     @Override
-    public HashMap<ProjectProperty, ProjectValueProperty> getExportableProperties() {
+    public Map<ProjectProperty, ProjectValueProperty> getExportableProperties() {
         return exportableProperties.getExportableProperties();
     }
 
     @Override
-    public HashMap<ProjectProperty, ProjectValueProperty> getExportableAgentProperties() {
+    public Map<ProjectProperty, ProjectValueProperty> getExportableAgentProperties() {
         return null;
     }
 }

@@ -16,8 +16,10 @@ import de.dfki.vsm.util.log.LOGConsoleLogger;
 import de.dfki.vsm.xtension.reeti.util.property.ReetiProjectProperty;
 import de.hcm.robots.messaging.CommandMessage;
 import de.hcm.robots.messaging.StatusMessage;
+
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map;
 
 /**
  * @author Gregor Mehlmann
@@ -246,12 +248,12 @@ public class ReetiExecutor extends ActivityExecutor implements ExportablePropert
     }
 
     @Override
-    public HashMap<ProjectProperty, ProjectValueProperty> getExportableProperties() {
+    public Map<ProjectProperty, ProjectValueProperty> getExportableProperties() {
         return reetiProjectProperty.getExportableProperties();
     }
 
     @Override
-    public HashMap<ProjectProperty, ProjectValueProperty> getExportableAgentProperties() {
+    public Map<ProjectProperty, ProjectValueProperty> getExportableAgentProperties() {
         return reetiProjectProperty.getExportableAgentProperties();
     }
 }

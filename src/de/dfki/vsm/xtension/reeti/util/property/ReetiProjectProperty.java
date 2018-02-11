@@ -9,6 +9,7 @@ import de.dfki.vsm.util.extensions.value.ProjectValueProperty;
 import de.dfki.vsm.util.extensions.value.ValueTYPE;
 
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by alvaro on 4/24/17.
@@ -56,12 +57,12 @@ public class ReetiProjectProperty implements ExportableProperties {
     }
 
     @Override
-    public HashMap<ProjectProperty, ProjectValueProperty> getExportableProperties() {
+    public Map<ProjectProperty, ProjectValueProperty> getExportableProperties() {
         return exportableProperties;
     }
 
     @Override
-    public HashMap<ProjectProperty, ProjectValueProperty> getExportableAgentProperties() {
+    public Map<ProjectProperty, ProjectValueProperty> getExportableAgentProperties() {
         return null;
     }
 }

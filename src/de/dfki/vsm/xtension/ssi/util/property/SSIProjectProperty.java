@@ -2,10 +2,14 @@ package de.dfki.vsm.xtension.ssi.util.property;
 
 import de.dfki.vsm.util.extensions.ExportableProperties;
 import de.dfki.vsm.util.extensions.ProjectProperty;
-import de.dfki.vsm.util.extensions.renderers.*;
+import de.dfki.vsm.util.extensions.renderers.BooleanRenderer;
+import de.dfki.vsm.util.extensions.renderers.IntegerRenderer;
+import de.dfki.vsm.util.extensions.renderers.StringRender;
 import de.dfki.vsm.util.extensions.value.ProjectValueProperty;
 import de.dfki.vsm.util.extensions.value.ValueTYPE;
+
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Patrick Gebhard
@@ -77,12 +81,12 @@ public class SSIProjectProperty implements ExportableProperties {
         exportableProperties.put(studymasterport, studymasterportVP);
     }
 
-    public HashMap<ProjectProperty, ProjectValueProperty> getExportableProperties() {
+    public Map<ProjectProperty, ProjectValueProperty> getExportableProperties() {
         return exportableProperties;
     }
 
     @Override
-    public HashMap<ProjectProperty, ProjectValueProperty> getExportableAgentProperties() {
+    public Map<ProjectProperty, ProjectValueProperty> getExportableAgentProperties() {
         //TODO: Implement
         return null;
 

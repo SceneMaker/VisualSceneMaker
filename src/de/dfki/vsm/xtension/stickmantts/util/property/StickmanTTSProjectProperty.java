@@ -9,6 +9,7 @@ import de.dfki.vsm.util.extensions.value.ValueTYPE;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by alvaro on 4/20/17.
@@ -100,12 +101,12 @@ public class StickmanTTSProjectProperty implements ExportableProperties {
 
     }
 
-    public HashMap<ProjectProperty, ProjectValueProperty> getExportableProperties() {
+    public Map<ProjectProperty, ProjectValueProperty> getExportableProperties() {
         return exportableProperties;
     }
 
     @Override
-    public HashMap<ProjectProperty, ProjectValueProperty> getExportableAgentProperties() {
+    public Map<ProjectProperty, ProjectValueProperty> getExportableAgentProperties() {
         //TODO: Implement
         return null;
 

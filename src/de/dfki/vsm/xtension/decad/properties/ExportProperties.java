@@ -8,12 +8,13 @@ import de.dfki.vsm.util.extensions.value.ProjectValueProperty;
 import de.dfki.vsm.util.extensions.value.ValueTYPE;
 
 import java.util.HashMap;
+import java.util.Map;
 
 public class ExportProperties implements ExportableProperties {
     private final HashMap<ProjectProperty, ProjectValueProperty> exportableProperties = new HashMap<>();
 
     @Override
-    public HashMap<ProjectProperty, ProjectValueProperty> getExportableProperties() {
+    public Map<ProjectProperty, ProjectValueProperty> getExportableProperties() {
         ProjectProperty url = new ProjectProperty("url", true,
                 "Url to connect VSM with DECAD.\n ");
         ProjectValueProperty urlVP = new ProjectValueProperty(ValueTYPE.STRING,
@@ -33,7 +34,7 @@ public class ExportProperties implements ExportableProperties {
     }
 
     @Override
-    public HashMap<ProjectProperty, ProjectValueProperty> getExportableAgentProperties() {
+    public Map<ProjectProperty, ProjectValueProperty> getExportableAgentProperties() {
         return new HashMap<>();
     }
 }

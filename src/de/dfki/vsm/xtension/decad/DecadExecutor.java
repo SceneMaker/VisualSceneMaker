@@ -15,8 +15,8 @@ import de.dfki.vsm.xtension.decad.properties.ExportProperties;
 import de.dfki.vsm.xtension.decad.utils.SpeechSynchronizer;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 
 public class DecadExecutor extends ActivityExecutor implements ExportableProperties, ExportableCompletion {
@@ -71,17 +71,17 @@ public class DecadExecutor extends ActivityExecutor implements ExportablePropert
 
 
     @Override
-    public ArrayList<String> getExportableActions() {
+    public List<String> getExportableActions() {
         return animationsToExport.getExportableActions();
     }
 
     @Override
-    public HashMap<ProjectProperty, ProjectValueProperty> getExportableProperties() {
+    public Map<ProjectProperty, ProjectValueProperty> getExportableProperties() {
         return exportProperties.getExportableProperties();
     }
 
     @Override
-    public HashMap<ProjectProperty, ProjectValueProperty> getExportableAgentProperties() {
+    public Map<ProjectProperty, ProjectValueProperty> getExportableAgentProperties() {
         return exportProperties.getExportableAgentProperties();
     }
 }
