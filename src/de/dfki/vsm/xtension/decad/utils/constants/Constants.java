@@ -17,7 +17,7 @@ public class Constants {
         URL = baseUrl;
     }
 
-    static void buildURL(String host, String port) {
+    public static void buildURL(String host, String port) {
         if (host == null || port == null || host.isEmpty() || port.isEmpty()) {
             return;
         }
