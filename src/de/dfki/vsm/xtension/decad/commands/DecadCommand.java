@@ -38,7 +38,7 @@ public abstract class DecadCommand {
 
     public abstract void execute() throws IOException, InterruptedException;
 
-    public void setHttpClient(HttpClient httpClient) {
+    void setHttpClient(HttpClient httpClient) {
         this.httpClient = httpClient;
     }
 
