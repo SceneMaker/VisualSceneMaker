@@ -53,7 +53,7 @@ public class DecadExecutor extends ActivityExecutor implements ExportablePropert
     }
 
     private void executeCommandFor(AbstractActivity activity) throws IOException, InterruptedException {
-        speechSynchronizer.snchronizeSpeech(activity);
+        speechSynchronizer.synchronizeSpeech(activity);
         DecadCommand command = factory.getCommand(activity);
         command.execute();
     }
