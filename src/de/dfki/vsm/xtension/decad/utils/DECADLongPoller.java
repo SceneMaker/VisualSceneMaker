@@ -7,6 +7,8 @@ import java.io.IOException;
 
 class DECADLongPoller {
     private static final String IS_SPEAKING = "1";
+    private static final int PAUSE_BEFORE_SPEAKING = 100;
+    private static final int PAUSE_AFTER_POLLING = 20;
     private boolean isCharacterSpeaking;
 
     void pollIsSpeaking(CommandResponseHandler handler) throws IOException, InterruptedException {
@@ -17,7 +19,7 @@ class DECADLongPoller {
     private void poll(CommandResponseHandler handler, IsSpeakingCommand isSpeaking) throws IOException, InterruptedException {
         waitUntilStartsSpeaking(isSpeaking);
         waitUntilStopsSpeaking(isSpeaking);
-        Thread.sleep(100);
+        Thread.sleep(PAUSE_BEFORE_SPEAKING);
         handler.handle();
 
     }
@@ -25,7 +27,7 @@ class DECADLongPoller {
     private void waitUntilStopsSpeaking(IsSpeakingCommand isSpeakingCommand) throws IOException, InterruptedException {
         while (isCharacterSpeaking) {
             pollIsSpeaking(isSpeakingCommand);
-            Thread.sleep(20);
+            Thread.sleep(PAUSE_AFTER_POLLING);
         }
     }
 
@@ -39,7 +41,7 @@ class DECADLongPoller {
         int counter = 0;
         while (!isCharacterSpeaking && counter <= 4) {
             pollIsSpeaking(isSpeakingCommand);
-            Thread.sleep(20);
+            Thread.sleep(PAUSE_AFTER_POLLING);
             counter++;
         }
     }
