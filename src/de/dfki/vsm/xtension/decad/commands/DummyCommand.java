@@ -1,6 +1,7 @@
 package de.dfki.vsm.xtension.decad.commands;
 
 import de.dfki.vsm.runtime.activity.AbstractActivity;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -11,6 +12,7 @@ public class DummyCommand extends DecadCommand {
         super(activity);
     }
 
+    @NotNull
     @Override
     protected String buildUrl() {
         return "";
