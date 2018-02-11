@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-import static de.dfki.vsm.xtension.decad.Constants.UTF_8;
+import static de.dfki.vsm.xtension.decad.utils.constants.Constants.UTF_8;
 
 public class HttpClientWrapper implements HttpClient {
 

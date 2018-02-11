@@ -1,4 +1,4 @@
-package de.dfki.vsm.xtension.decad;
+package de.dfki.vsm.xtension.decad.utils.constants;
 
 public class Constants {
     private static final String HOST_PORT_SEPARATOR = ":";

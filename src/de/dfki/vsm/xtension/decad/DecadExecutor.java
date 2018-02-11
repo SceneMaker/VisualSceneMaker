@@ -13,6 +13,7 @@ import de.dfki.vsm.xtension.decad.factories.DecadCommandFactory;
 import de.dfki.vsm.xtension.decad.properties.ExportAnimations;
 import de.dfki.vsm.xtension.decad.properties.ExportProperties;
 import de.dfki.vsm.xtension.decad.utils.SpeechSynchronizer;
+import de.dfki.vsm.xtension.decad.utils.constants.Constants;
 
 import java.io.IOException;
 import java.util.List;
