@@ -9,12 +9,13 @@ import org.json.JSONArray;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 public class ExportAnimations implements ExportableCompletion {
     private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
 
     @Override
-    public ArrayList<String> getExportableActions() {
+    public List<String> getExportableActions() {
         try {
             return getAnimationListFromServer();
         } catch (InterruptedException | IOException e) {

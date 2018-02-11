@@ -40,10 +40,7 @@ import de.dfki.vsm.xtension.stickmantts.util.tts.sequence.Phoneme;
 
 import java.io.*;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Properties;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -315,7 +312,7 @@ public class StickmanTtsExecutor extends ActivityExecutor implements ExportableP
         for (ConfigFeature cf : mConfig.getEntryList()) {
             mLogger.message("Stickman Plugin Config: " + cf.getKey() + " = " + cf.getValue());
         }
-        final boolean showStickmanNames = mConfig.containsKey("showstickmanname") ? mConfig.getProperty("showstickmanname").equalsIgnoreCase("true") : true;
+        final boolean showStickmanNames = !mConfig.containsKey("showstickmanname") || mConfig.getProperty("showstickmanname").equalsIgnoreCase("true");
         mDeviceName = mConfig.getPluginName();
         addStickmansToStage();
         launchStage();
@@ -346,7 +343,7 @@ public class StickmanTtsExecutor extends ActivityExecutor implements ExportableP
         }
     }
 
-    private void launchMaryTTSAndDialog() throws Exception {
+    private void launchMaryTTSAndDialog() {
         WaitingDialog InfoDialog = new WaitingDialog("Loading MaryTTS...");
         marySelfServer = MaryTTsProcess.getsInstance(mConfig.getProperty("mary.base"));
         marySelfServer.registerObserver(InfoDialog);
@@ -412,7 +409,7 @@ public class StickmanTtsExecutor extends ActivityExecutor implements ExportableP
     }
 
     public void scheduleSpeech(String id) {
-        SpeakerActivity speakerActivity = (SpeakerActivity) speechActivities.remove(id);
+        SpeakerActivity speakerActivity = speechActivities.remove(id);
         SpeechActivity activity = speakerActivity.getSpeechActivity();
         final WordTimeMarkSequence wts = wtsMap.remove(id);
         final String actor = activity.getActor();
@@ -486,9 +483,7 @@ public class StickmanTtsExecutor extends ActivityExecutor implements ExportableP
         synchronized (mActivityWorkerMap) {
             int start = message.lastIndexOf("#") + 1;
             String animId = message.substring(start);
-            if (mActivityWorkerMap.containsKey(animId)) {
-                mActivityWorkerMap.remove(animId);
-            }
+            mActivityWorkerMap.remove(animId);
             mActivityWorkerMap.notifyAll();
         }
     }
@@ -501,17 +496,17 @@ public class StickmanTtsExecutor extends ActivityExecutor implements ExportableP
     }
 
     @Override
-    public HashMap<ProjectProperty, ProjectValueProperty> getExportableProperties() {
+    public Map<ProjectProperty, ProjectValueProperty> getExportableProperties() {
         return exportableProperties.getExportableProperties();
     }
 
     @Override
-    public HashMap<ProjectProperty, ProjectValueProperty> getExportableAgentProperties() {
+    public Map<ProjectProperty, ProjectValueProperty> getExportableAgentProperties() {
         return exportableProperties.getExportableAgentProperties();
     }
 
     @Override
-    public ArrayList<String> getExportableActions() {
+    public List<String> getExportableActions() {
         return exportableActions.getExportableActions();
     }
 }

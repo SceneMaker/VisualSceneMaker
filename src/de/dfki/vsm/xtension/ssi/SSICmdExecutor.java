@@ -10,15 +10,11 @@ import de.dfki.vsm.util.extensions.ProjectProperty;
 import de.dfki.vsm.util.extensions.value.ProjectValueProperty;
 import de.dfki.vsm.xtension.ssi.logger.SSILoggerMessage;
 import de.dfki.vsm.xtension.ssi.util.property.SSIProjectProperty;
+
 import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.InterfaceAddress;
-import java.net.NetworkInterface;
+import java.net.*;
 import java.util.Enumeration;
-import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Patrick Gebhard
@@ -200,7 +196,7 @@ public final class SSICmdExecutor extends ActivityExecutor implements Exportable
 
             long timestamp = System.currentTimeMillis();
 
-            byte[] sendData = (message.toString()).getBytes("UTF8");
+            byte[] sendData = (message).getBytes("UTF8");
 
             String hosts = "";
 
@@ -252,12 +248,12 @@ public final class SSICmdExecutor extends ActivityExecutor implements Exportable
     }
 
     @Override
-    public HashMap<ProjectProperty, ProjectValueProperty> getExportableProperties() {
+    public Map<ProjectProperty, ProjectValueProperty> getExportableProperties() {
         return exportableProperties.getExportableProperties();
     }
 
     @Override
-    public HashMap<ProjectProperty, ProjectValueProperty> getExportableAgentProperties() {
+    public Map<ProjectProperty, ProjectValueProperty> getExportableAgentProperties() {
         return exportableProperties.getExportableAgentProperties();
     }
 }

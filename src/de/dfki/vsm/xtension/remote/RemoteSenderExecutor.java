@@ -16,8 +16,8 @@ import de.dfki.vsm.xtension.remote.client.sender.Clientable;
 import de.dfki.vsm.xtension.remote.client.sender.DataSendable;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map;
 
 /**
  * Created by alvaro on 5/2/17.
@@ -102,12 +102,12 @@ public class RemoteSenderExecutor extends ActivityExecutor implements Exportable
     }
 
     @Override
-    public HashMap<ProjectProperty, ProjectValueProperty> getExportableProperties() {
+    public Map<ProjectProperty, ProjectValueProperty> getExportableProperties() {
         return exportableProperties.getExportableProperties();
     }
 
     @Override
-    public HashMap<ProjectProperty, ProjectValueProperty> getExportableAgentProperties() {
+    public Map<ProjectProperty, ProjectValueProperty> getExportableAgentProperties() {
         return null;
     }
 }
