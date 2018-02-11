@@ -15,7 +15,7 @@ public class SpeechSynchronizer implements CommandResponseHandler {
         speechPoller = new DECADLongPoller();
     }
 
-    public void snchronizeSpeech(AbstractActivity activity) throws InterruptedException, IOException {
+    public void synchronizeSpeech(AbstractActivity activity) throws InterruptedException, IOException {
         if (activity instanceof SpeechActivity) {
             speechSemaphore.acquire();
             speechPoller.pollIsSpeaking(this);
