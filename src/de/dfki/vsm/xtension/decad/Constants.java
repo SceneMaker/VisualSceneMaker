@@ -6,6 +6,9 @@ public class Constants {
     public static final String URL_PATH_SEPARATOR = "/";
     public static final String UTF_8 = "UTF-8";
 
+    private Constants() {
+    }
+
     public static String getURL() {
         return URL;
     }
