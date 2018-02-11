@@ -5,7 +5,7 @@ import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Map;
 
-import static de.dfki.vsm.xtension.decad.Constants.UTF_8;
+import static de.dfki.vsm.xtension.decad.utils.constants.Constants.UTF_8;
 
 public class PostParametersBuilder {
     private static final String EQUAL_SEPARATOR = "=";
