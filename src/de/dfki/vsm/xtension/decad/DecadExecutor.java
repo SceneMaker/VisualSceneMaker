@@ -61,7 +61,7 @@ public class DecadExecutor extends ActivityExecutor implements ExportablePropert
 
     @Override
     public void launch() {
-        //Make in the class BrowserOpener.openBrowserAt to wait until the webpage is loaded
+        //Make in the class BrowserOpener.openBrowserAt to wait until the web page is loaded
     }
 
 
