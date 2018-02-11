@@ -14,7 +14,6 @@ import de.dfki.vsm.xtesting.NewPropertyManager.model.tableView.PluginTableConfig
 import de.dfki.vsm.xtesting.NewPropertyManager.model.tableView.TableConfig;
 import de.dfki.vsm.xtesting.NewPropertyManager.util.*;
 import de.dfki.vsm.xtesting.NewPropertyManager.util.events.*;
-import java.io.File;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -36,7 +35,10 @@ import javafx.util.Callback;
 
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
 /**
@@ -434,12 +436,12 @@ public class PropertyManagerController implements Initializable, TreeObserver {
         }
     }
 
-    private void buildBasicPropertyBar(EntryPlugin entryPlugin) throws ClassNotFoundException, NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException, NotExportableInterface {
+    private void buildBasicPropertyBar(EntryPlugin entryPlugin) throws ClassNotFoundException, NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException {
         exportableClassInitializer = new ExportableClassInitializer(mProject, entryPlugin.getPluginConfig());
         enableBasicBar();
         try {
             exportableClassInitializer.initializeClass();
-            exportableProperties = exportableClassInitializer.getAsExportablePropertyClass().getExportableProperties();
+            exportableProperties = (HashMap<ProjectProperty, ProjectValueProperty>) exportableClassInitializer.getAsExportablePropertyClass().getExportableProperties();
             addExportableItemsToBasicBar();
         } catch (NotExportableInterface exception) {
             disableBasicBar();
@@ -574,8 +576,8 @@ public class PropertyManagerController implements Initializable, TreeObserver {
                     removeOldProperty(dataConfig, t.getOldValue());
                 }
 
-                ((TableConfig) t.getTableView().getItems().get(
-                        t.getTablePosition().getRow())).setKey(t.getNewValue());
+                t.getTableView().getItems().get(
+                        t.getTablePosition().getRow()).setKey(t.getNewValue());
 
                 saveEditedTableEntry(dataConfig);
 
@@ -591,8 +593,8 @@ public class PropertyManagerController implements Initializable, TreeObserver {
                 new EventHandler<TableColumn.CellEditEvent<TableConfig, String>>() {
             @Override
             public void handle(TableColumn.CellEditEvent<TableConfig, String> t) {
-                ((TableConfig) t.getTableView().getItems().get(
-                        t.getTablePosition().getRow())).setValue(t.getNewValue());
+                t.getTableView().getItems().get(
+                        t.getTablePosition().getRow()).setValue(t.getNewValue());
                 TableConfig dataConfig = t.getRowValue();
                 saveEditedTableEntry(dataConfig);
             }
@@ -666,9 +668,9 @@ public class PropertyManagerController implements Initializable, TreeObserver {
     }
 
     private void changeItemName(CellEvent event) {
-        String oldValue = ((CellEvent) event).getOldValue();
-        String newValue = ((CellEvent) event).getNewValue();
-        AbstractTreeEntry entry = ((CellEvent) event).getTreeEntry();
+        String oldValue = event.getOldValue();
+        String newValue = event.getNewValue();
+        AbstractTreeEntry entry = event.getTreeEntry();
         if (entry instanceof EntryPlugin) {
             changePluginName((EntryPlugin) entry, oldValue, newValue);
 
@@ -682,7 +684,6 @@ public class PropertyManagerController implements Initializable, TreeObserver {
         }
 
         if (entry instanceof EntryDevice) {
-            ;
         }
     }
 
