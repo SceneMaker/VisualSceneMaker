@@ -6,24 +6,29 @@ import javax.swing.text.JTextComponent;
 
 class AgentFinder {
 
-    private Document document;
-    private DocumentCharFinder charFinder;
+    private final Document document;
+    private final DocumentCharFinder charFinder;
 
     AgentFinder(JTextComponent component) {
         this.document = component.getDocument();
         this.charFinder = new DocumentCharFinder(component);
     }
 
-    String getCharacterName() {
+    String getAgentName() {
+        int lineStartPosition = positionCharFinderAtBeginningOfTheLine();
+        int colonPosition = charFinder.findForward(":");
+        int length = colonPosition - lineStartPosition;
+        return findAgentName(lineStartPosition, length);
+    }
+
+    private int positionCharFinderAtBeginningOfTheLine() {
         charFinder.updatePositionToCurrentCaret();
         int lineStartPosition = charFinder.getLineStartPosition();
         charFinder.setCurrentPosition(lineStartPosition);
-        int colonPosition = charFinder.findForward(":");
-        int length = colonPosition - lineStartPosition;
-        return findCharacterName(lineStartPosition, length);
+        return lineStartPosition;
     }
 
-    private String findCharacterName(int charPosition, int length) {
+    private String findAgentName(int charPosition, int length) {
         try {
             return document.getText(charPosition, length);
         } catch (BadLocationException e) {

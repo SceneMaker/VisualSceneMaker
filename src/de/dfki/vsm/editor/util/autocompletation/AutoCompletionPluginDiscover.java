@@ -14,8 +14,8 @@ public class AutoCompletionPluginDiscover {
         this.project = project;
     }
 
-    public void discover(){
-        for (AgentConfig agent: project.getProjectConfig().getAgentConfigList()) {
+    public void discover() {
+        for (AgentConfig agent : project.getProjectConfig().getAgentConfigList()) {
             String agentName = agent.getAgentName();
             ArrayList<String> actions = getActionsForAgent(agent);
             PluginProvider.getInstance().registerProvider(agentName, actions);
@@ -25,7 +25,7 @@ public class AutoCompletionPluginDiscover {
     private ArrayList<String> getActionsForAgent(AgentConfig agent) {
         ArrayList<String> actions = new ArrayList<>();
         ActivityExecutor device = project.getAgentDevice(agent.getAgentName());
-        if(device instanceof ExportableCompletion){ //TODO: Try to remove this! It isn't clean
+        if (device instanceof ExportableCompletion) { //TODO: Try to remove this! It isn't clean
             actions = (ArrayList<String>) ((ExportableCompletion) device).getExportableActions();
         }
         return actions;
