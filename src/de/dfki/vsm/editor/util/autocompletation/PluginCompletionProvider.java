@@ -55,8 +55,8 @@ public class PluginCompletionProvider extends DefaultCompletionProvider {
     }
 
     private String findCharacterName(JTextComponent jTextComponent) {
-        CharacterFinder characterFinder = new CharacterFinder(jTextComponent);
-        return characterFinder.getCharacterName();
+        AgentFinder agentFinder = new AgentFinder(jTextComponent);
+        return agentFinder.getCharacterName();
     }
 
     private boolean isCaretInsideActionBlock() {
