@@ -4,23 +4,23 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 
-public class CharacterFinder {
+class AgentFinder {
 
     private Document document;
     private DocumentCharFinder charFinder;
 
-    public CharacterFinder(JTextComponent component) {
+    AgentFinder(JTextComponent component) {
         this.document = component.getDocument();
         this.charFinder = new DocumentCharFinder(component);
     }
 
-    public String getCharacterName() {
+    String getCharacterName() {
         charFinder.updatePositionToCurrentCaret();
-        int charPosition = charFinder.getLineStartPosition();
-        charFinder.setCurrentPosition(charPosition);
+        int lineStartPosition = charFinder.getLineStartPosition();
+        charFinder.setCurrentPosition(lineStartPosition);
         int colonPosition = charFinder.findForward(":");
-        int length = colonPosition - charPosition;
-        return findCharacterName(charPosition, length);
+        int length = colonPosition - lineStartPosition;
+        return findCharacterName(lineStartPosition, length);
     }
 
     private String findCharacterName(int charPosition, int length) {
