@@ -49,7 +49,7 @@ public class PluginCompletionProvider extends DefaultCompletionProvider {
         if (!characterName.equals("") && replacements.containsKey(characterName)) {
             ArrayList<String> characterReplacements = replacements.get(characterName);
             for (String replacement : characterReplacements) {
-                addCompletion(new BasicCompletion(this, replacement));
+                super.addCompletion(new BasicCompletion(this, replacement));
             }
         }
     }
