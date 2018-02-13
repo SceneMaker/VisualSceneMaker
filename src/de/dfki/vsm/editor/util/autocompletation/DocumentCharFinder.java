@@ -70,7 +70,7 @@ public class DocumentCharFinder {
     }
 
     public int getCurrentCaretPosition() {
-        return component.getCaretPosition();
+        return component.getCaretPosition() - 1;
 
     }
 }

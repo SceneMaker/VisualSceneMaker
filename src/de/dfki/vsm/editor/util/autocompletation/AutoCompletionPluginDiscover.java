@@ -17,12 +17,12 @@ public class AutoCompletionPluginDiscover {
     public void discover() {
         for (AgentConfig agent : project.getProjectConfig().getAgentConfigList()) {
             String agentName = agent.getAgentName();
-            ArrayList<String> actions = getActionsForAgent(agent);
+            ArrayList<String> actions = getActionsFor(agent);
             PluginProvider.getInstance().registerProvider(agentName, actions);
         }
     }
 
-    private ArrayList<String> getActionsForAgent(AgentConfig agent) {
+    private ArrayList<String> getActionsFor(AgentConfig agent) {
         ArrayList<String> actions = new ArrayList<>();
         ActivityExecutor device = project.getAgentDevice(agent.getAgentName());
         if (device instanceof ExportableCompletion) { //TODO: Try to remove this! It isn't clean
