@@ -14,13 +14,14 @@ import vad.observer.VoiceActivityObserver;
 public class VoiceActivityDetectorExecutor extends RunTimePlugin {
 
     final Audible voiceActivityDetector;
-    private String variableName = "speaking";
+    private String variableName;
     private VADNotifiable notifiable;
 
 
     public VoiceActivityDetectorExecutor(PluginConfig config, RunTimeProject project) {
         super(config, project);
         voiceActivityDetector = new VAD();
+        variableName = config.getProperty("variable");
     }
 
     @Override
