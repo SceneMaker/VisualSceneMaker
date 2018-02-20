@@ -22,10 +22,14 @@
       <root url="jar://$PROJECT_DIR$/lib/ujmp-complete-0.2.5.jar!/" />
       <root url="jar://$PROJECT_DIR$/lib/WSJ_8gau_13dCep_16k_40mel_130Hz_6800Hz.jar!/" />
       <root url="jar://$PROJECT_DIR$/lib/json-20171018.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/JARVIS-API.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/java-flac-encoder-0.3.7.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/watson.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES>
       <root url="jar://$PROJECT_DIR$/lib/affect.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/watson.jar!/" />
     </SOURCES>
   </library>
 </component>
