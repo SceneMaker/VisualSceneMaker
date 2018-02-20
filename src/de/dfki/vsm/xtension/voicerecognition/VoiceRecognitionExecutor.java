@@ -18,12 +18,10 @@ import org.jetbrains.annotations.NotNull;
  */
 public class VoiceRecognitionExecutor extends RunTimePlugin {
 
-    RunTimeProject mProject;
     VoiceRecognizer vr;
 
     public VoiceRecognitionExecutor(PluginConfig config, RunTimeProject project) {
         super(config, project);
-        this.mProject = project;
     }
 
     @Override
