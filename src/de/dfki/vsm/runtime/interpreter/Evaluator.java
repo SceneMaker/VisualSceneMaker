@@ -38,6 +38,8 @@ import de.dfki.vsm.model.sceneflow.glue.command.expression.ParenExpression;
 import de.dfki.vsm.model.sceneflow.glue.command.expression.invocation.ContainsList;
 import de.dfki.vsm.model.sceneflow.glue.command.invocation.PlayDialogAction;
 import de.dfki.vsm.runtime.interpreter.error.InterpreterError;
+import de.dfki.vsm.runtime.interpreter.error.SceneDoesNotExists;
+import de.dfki.vsm.runtime.interpreter.event.TerminationEvent;
 import de.dfki.vsm.runtime.interpreter.value.AbstractValue;
 import de.dfki.vsm.runtime.interpreter.value.BooleanValue;
 import de.dfki.vsm.runtime.interpreter.value.DoubleValue;
@@ -48,6 +50,7 @@ import de.dfki.vsm.runtime.interpreter.value.LongValue;
 import de.dfki.vsm.runtime.interpreter.value.ObjectValue;
 import de.dfki.vsm.runtime.interpreter.value.StringValue;
 import de.dfki.vsm.runtime.interpreter.value.StructValue;
+import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.jpl.JPLEngine;
 import de.dfki.vsm.util.jpl.JPLResult;
 import de.dfki.vsm.util.jpl.JPLUtility;
@@ -149,7 +152,10 @@ public final class Evaluator {
                     mInterpreter.unlock();
                     // Execute the activity
                     mInterpreter.getScenePlayer().playScene(((StringValue) value).getValue(), list);
-                } finally {
+                }catch (SceneDoesNotExists missingScene){
+                    EventDispatcher.getInstance().convey(new TerminationEvent(new Object(), missingScene));
+                }
+                finally {
                     // Lock interpreter again
                     mInterpreter.lock();
                 }
