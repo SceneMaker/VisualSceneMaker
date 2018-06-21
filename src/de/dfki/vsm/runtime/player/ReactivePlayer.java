@@ -15,6 +15,7 @@ import de.dfki.vsm.runtime.activity.ActionActivity;
 import de.dfki.vsm.runtime.activity.SpeechActivity;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
 import de.dfki.vsm.runtime.activity.scheduler.ActivityWorker;
+import de.dfki.vsm.runtime.interpreter.error.SceneDoesNotExists;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.runtime.interpreter.value.AbstractValue;
 import de.dfki.vsm.runtime.interpreter.value.StructValue;
@@ -149,7 +150,7 @@ public final class ReactivePlayer extends RunTimePlayer {
     // Call the play scene group method
     @Override
 
-    public final void playScene(final String name, final LinkedList args) {
+    public final void playScene(final String name, final LinkedList args) throws SceneDoesNotExists {
         // Get the current process
         final Process process = (Process) Thread.currentThread();
         // Make unique worker name
@@ -168,6 +169,9 @@ public final class ReactivePlayer extends RunTimePlayer {
                 slang = str;
                 break;
             }
+        }
+        if(slang == null){
+            throw new SceneDoesNotExists(name);
         }
         final SceneGroup group = script.getSceneGroup(slang, name);
         final SceneObject scene = group.select();
