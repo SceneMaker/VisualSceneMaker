@@ -53,7 +53,7 @@ public class Speak extends CharamelActObject implements XMLParseable, XMLWriteab
 
     @Override
     public void writeXML(IOSIndentWriter out) throws XMLWriteError {
-        out.println("<Action name=\"" + mName + "\" id=\"" + mId + "\">").push();
+        //out.println("<Action name=\"" + mName + "\" id=\"" + mId + "\">").push();
         // CDATA STUFF
         String xml = "<cai_request version=\"1.0\">"
                 + "<cai_command aid=\"" + Integer.parseInt(mCharameAvatarId) + "\" id=\"" + mId + "\">"
@@ -77,7 +77,7 @@ public class Speak extends CharamelActObject implements XMLParseable, XMLWriteab
         track.addSpeakText(Integer.parseInt(mCharameAvatarId), buildUtterance());
         out.push().println(generator.getCaiXML());
          */
-        out.pop().println("</Action>");
+        //out.pop().println("</Action>");
 
     }
 
