@@ -93,7 +93,7 @@ public class CharamelHandler extends Thread {
             mOutStream.newLine();
             mOutStream.flush();
             // Print some information
-            //mLogger.success("Sending '" + string + "'");
+            mLogger.success("Sending '" + string + "'");
             // Return true at success
             return true;
         } catch (final IOException exc) {

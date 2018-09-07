@@ -188,8 +188,7 @@ public final class CharamelExecutor extends ActivityExecutor implements Exportab
                     return;
                 }
             } else {
-                 mLogger.message("SpeechActivity 1");
-                // load wordmapping database
+                 // load wordmapping database
                 try {
                     String wmf = mProject.getProjectPath() + File.separator + mProject.getAgentConfig(activity_actor).getProperty("wordmapping");
                     wmf = wmf.replace("\\", "/");
@@ -197,27 +196,12 @@ public final class CharamelExecutor extends ActivityExecutor implements Exportab
                 } catch (IOException ex) {
                     mLogger.failure("Wordmapping file (" + mProject.getAgentConfig(activity_actor).getProperty("wordmapping") + ") not found!");
                 }
-                 mLogger.message("SpeechActivity 2");
-                // do the pronounciation mapping
+                 // do the pronounciation mapping
                 speech_activity.doPronounciationMapping(mWordMapping);
-                 mLogger.message("SpeechActivity 3");
                 // get the charamel avatar id
                 String aid = mProject.getAgentConfig(activity_actor).getProperty("aid");
-                 mLogger.message("SpeechActivity 4");
-                 mLogger.message("SpeechActivity Blocks " + speech_activity.getBlocks());
-                 mLogger.message("SpeechActivity Punctuation " + speech_activity.getPunct());
-                 
-                 if (mActionLoader != null) {
-                   mLogger.message("CharamelActionLoader active. Using action classpath " + mActionLoader.sCHARAMELCMDPATH);
-                 }
-                 
                 // build action
-                try {
                 charamelAct = mActionLoader.buildCharamelAnimation("Speak", speech_activity.getBlocks(), speech_activity.getPunct(), aid);
-                } catch(Exception e) {
-                    mLogger.message("Exception loading action " + e.getMessage());
-                }
-                mLogger.message("XML: " + XMLUtilities.xmlStringToPrettyXMLString(charamelAct.toString()));
             }
         } else {
             System.err.println("Activity Name: '" + activity_name + "'");

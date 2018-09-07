@@ -6,6 +6,7 @@
 package de.dfki.vsm.xtension.charamel.xml.util;
 
 import de.dfki.vsm.util.log.LOGConsoleLogger;
+import de.dfki.vsm.util.xml.XMLUtilities;
 import de.dfki.vsm.xtension.charamel.xml.command.object.action.CharamelActObject;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -111,13 +112,9 @@ public class CharamelActionLoader {
     }
 
     public CharamelActObject buildCharamelAnimation(String cmd, LinkedList value1, String value2, String value3) {
-        mLogger.message("------------------------------1");
-        CharamelActObject a = null;
+         CharamelActObject a = null;
 
         String cp = getCharamelCommandClasspath(cmd);
-
-        mLogger.message("------------------------------2");
-        mLogger.message("Classpath " + cp);
 
         try {
             Class c = Class.forName(cp);
@@ -131,7 +128,7 @@ public class CharamelActionLoader {
                 }
 
             }
-        } catch (ClassNotFoundException | NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+        } catch (ClassCastException | ClassNotFoundException | NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
             mLogger.failure("No Class for Charamel Action " + cmd + " and value " + value1 + " and avatar id " + value3);
         }
 
