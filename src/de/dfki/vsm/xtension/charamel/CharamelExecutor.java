@@ -19,7 +19,7 @@ import de.dfki.vsm.util.xml.XMLUtilities;
 import de.dfki.vsm.xtension.charamel.util.property.CharamelProjectProperty;
 import de.dfki.vsm.xtension.charamel.xml.command.object.action.CharamelActObject;
 import de.dfki.vsm.xtension.charamel.xml.feedback.CharamelFeedback;
-import de.dfki.vsm.xtension.charamel.xml.util.ActionLoader;
+import de.dfki.vsm.xtension.charamel.xml.util.CharamelActionLoader;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -47,7 +47,7 @@ public final class CharamelExecutor extends ActivityExecutor implements Exportab
     // The map of activity worker
     private final HashMap<String, ActivityWorker> mActivityWorkerMap = new HashMap();
     // The Charamel Action loader 
-    private final ActionLoader mActionLoader = ActionLoader.getInstance();
+    private final CharamelActionLoader mActionLoader = CharamelActionLoader.getInstance();
     // The word mapping properties
     private final Properties mWordMapping = new Properties();
     // The flag if we use the JPL
@@ -94,16 +94,28 @@ public final class CharamelExecutor extends ActivityExecutor implements Exportab
             }
         }
         // Create the connection
-        mListener = new CharamelListener(8000, this);
+        mListener = new CharamelListener(4000, this);
         // Start the connection
         mListener.start();
-        
-        
     }
 
     // Unload the executor 
     @Override
     public final void unload() {
+        // Abort the client threads
+        for (final CharamelHandler client : mClientMap.values()) {
+            client.abort();
+            // Join the client thread
+            try {
+                client.join();
+            } catch (final InterruptedException exc) {
+                mLogger.failure(exc.toString());
+                // Print some information 
+                mLogger.message("Joining client thread");
+            }
+        }
+        // Clear the map of clients 
+        mClientMap.clear();
         // Abort the server thread
         try {
             mListener.abort();
@@ -143,7 +155,7 @@ public final class CharamelExecutor extends ActivityExecutor implements Exportab
 
     @Override
     public final synchronized String marker(final long id) {
-        // TWorld style bookmarks
+        // Bracket style bookmarks
         return "$(" + id + ")";
     }
 
@@ -160,7 +172,7 @@ public final class CharamelExecutor extends ActivityExecutor implements Exportab
         CharamelActObject charamelAct = null;
         // set all activities blocking
         activity.setType(Type.blocking);
-
+        
         // Check the activity type
         if (activity instanceof SpeechActivity) {
             final SpeechActivity speech_activity = (SpeechActivity) activity;
@@ -176,6 +188,7 @@ public final class CharamelExecutor extends ActivityExecutor implements Exportab
                     return;
                 }
             } else {
+                 mLogger.message("SpeechActivity 1");
                 // load wordmapping database
                 try {
                     String wmf = mProject.getProjectPath() + File.separator + mProject.getAgentConfig(activity_actor).getProperty("wordmapping");
@@ -184,13 +197,27 @@ public final class CharamelExecutor extends ActivityExecutor implements Exportab
                 } catch (IOException ex) {
                     mLogger.failure("Wordmapping file (" + mProject.getAgentConfig(activity_actor).getProperty("wordmapping") + ") not found!");
                 }
+                 mLogger.message("SpeechActivity 2");
                 // do the pronounciation mapping
                 speech_activity.doPronounciationMapping(mWordMapping);
+                 mLogger.message("SpeechActivity 3");
                 // get the charamel avatar id
                 String aid = mProject.getAgentConfig(activity_actor).getProperty("aid");
+                 mLogger.message("SpeechActivity 4");
+                 mLogger.message("SpeechActivity Blocks " + speech_activity.getBlocks());
+                 mLogger.message("SpeechActivity Punctuation " + speech_activity.getPunct());
+                 
+                 if (mActionLoader != null) {
+                   mLogger.message("CharamelActionLoader active. Using action classpath " + mActionLoader.sCHARAMELCMDPATH);
+                 }
+                 
                 // build action
-                charamelAct = mActionLoader.loadCharamelAnimation("Speak", speech_activity.getBlocks(), speech_activity.getPunct(), aid);
-
+                try {
+                charamelAct = mActionLoader.buildCharamelAnimation("Speak", speech_activity.getBlocks(), speech_activity.getPunct(), aid);
+                } catch(Exception e) {
+                    mLogger.message("Exception loading action " + e.getMessage());
+                }
+                mLogger.message("XML: " + XMLUtilities.xmlStringToPrettyXMLString(charamelAct.toString()));
             }
         } else {
             System.err.println("Activity Name: '" + activity_name + "'");
@@ -382,9 +409,9 @@ public final class CharamelExecutor extends ActivityExecutor implements Exportab
         mLogger.message("\033[1;35mHandling new message:\n" + message + "\033[0m");
         // Check and notify the relevant threads
         synchronized (mActivityWorkerMap) {
-            final CharamelFeedback triCatFeedBack = new CharamelFeedback();
+            final CharamelFeedback charamelFeedback = new CharamelFeedback();
             try {
-                XMLUtilities.parseFromXMLStream(triCatFeedBack,
+                XMLUtilities.parseFromXMLStream(charamelFeedback,
                         new ByteArrayInputStream(message.getBytes("UTF-8")));
             } catch (final Exception exc) {
                 mLogger.failure(exc.toString());
@@ -392,9 +419,9 @@ public final class CharamelExecutor extends ActivityExecutor implements Exportab
             }
 
             // Handle action feedback
-            if (triCatFeedBack.hasActionFeedback()) {
+            if (charamelFeedback.hasActionFeedback()) {
                 // added pg 24.3.2017 - process multiple actions in feedback 
-                for (de.dfki.vsm.xtension.tricatworld.xml.feedback.action.Action action : triCatFeedBack.mFeedbackActions) {
+                for (de.dfki.vsm.xtension.charamel.xml.feedback.action.Action action : charamelFeedback.mFeedbackActions) {
                     // handling every /*ambient_setup*/ feedback
                     if (action.mActionFeedback.mName.equalsIgnoreCase("action_finished")) {
                         // check if the acitivy action feedback was speech feedback
@@ -464,9 +491,9 @@ public final class CharamelExecutor extends ActivityExecutor implements Exportab
             }
 
             // Handle action feedback
-            if (triCatFeedBack.hasObjectFeedback()) {
+            if (charamelFeedback.hasObjectFeedback()) {
                 // added pg 24.3.2017 - process multiple objects in feedback 
-                for (de.dfki.vsm.xtension.tricatworld.xml.feedback.object.Object object : triCatFeedBack.mFeedbackObjects) {
+                for (de.dfki.vsm.xtension.charamel.xml.feedback.object.Object object : charamelFeedback.mFeedbackObjects) {
                     HashMap<String, AbstractValue> values = new HashMap<>();
                     values.put("type", new StringValue(object.mObjectFeedback.mName));
                     values.put("elicitor", new StringValue(object.mObjectFeedback.mTriggerObject));
