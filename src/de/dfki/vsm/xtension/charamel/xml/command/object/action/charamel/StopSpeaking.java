@@ -5,17 +5,14 @@
  */
 package de.dfki.vsm.xtension.charamel.xml.command.object.action.charamel;
 
-import de.dfki.vsm.xtension.tricatworld.xml.command.object.action.charamel.*;
-import de.dfki.iui.libcharamel.v4235.AnimationTrack;
 import de.dfki.iui.libcharamel.v4235.ComplexAnimationGenerator;
-import de.dfki.iui.libcharamel.v4235.Motion;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLParseable;
 import de.dfki.vsm.util.xml.XMLWriteError;
 import de.dfki.vsm.util.xml.XMLWriteable;
-import de.dfki.vsm.xtension.tricatworld.xml.command.object.action.TriCatWorldActObject;
+import de.dfki.vsm.xtension.charamel.xml.command.object.action.CharamelActObject;
 import org.w3c.dom.Element;
 
 /**
@@ -23,7 +20,7 @@ import org.w3c.dom.Element;
  * @author Patrick Gebhard
  *
  */
-public class StopSpeaking extends TriCatWorldActObject implements XMLParseable, XMLWriteable {
+public class StopSpeaking extends CharamelActObject implements XMLParseable, XMLWriteable {
 
     private String mCharameAvatarId = "1";
     // The logger instance

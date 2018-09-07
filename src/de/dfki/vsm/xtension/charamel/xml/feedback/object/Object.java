@@ -5,7 +5,6 @@
  */
 package de.dfki.vsm.xtension.charamel.xml.feedback.object;
 
-import de.dfki.vsm.xtension.tricatworld.xml.feedback.object.*;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
 import de.dfki.vsm.util.xml.XMLParseAction;

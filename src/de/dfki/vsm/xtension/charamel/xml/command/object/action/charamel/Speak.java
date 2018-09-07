@@ -1,20 +1,19 @@
 package de.dfki.vsm.xtension.charamel.xml.command.object.action.charamel;
 
-import de.dfki.vsm.xtension.tricatworld.xml.command.object.action.charamel.*;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLParseable;
 import de.dfki.vsm.util.xml.XMLWriteError;
 import de.dfki.vsm.util.xml.XMLWriteable;
-import de.dfki.vsm.xtension.tricatworld.xml.command.object.action.TriCatWorldActObject;
+import de.dfki.vsm.xtension.charamel.xml.command.object.action.CharamelActObject;
 import java.util.LinkedList;
 import org.w3c.dom.Element;
 
 /**
  * @author Patrick Gebhard
  */
-public class Speak extends TriCatWorldActObject implements XMLParseable, XMLWriteable {
+public class Speak extends CharamelActObject implements XMLParseable, XMLWriteable {
 
     private LinkedList mTextBlocks;
     private String mPunctuation;
