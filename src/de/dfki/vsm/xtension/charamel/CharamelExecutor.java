@@ -31,6 +31,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @author Gregor Mehlmann
@@ -54,12 +56,12 @@ public final class CharamelExecutor extends ActivityExecutor implements Exportab
     private final boolean mUseJPL;
     // The flag for executables
     private final boolean mUseExe;
-    private ExportableProperties exportableProperties = new CharamelProjectProperty();
+    private final ExportableProperties exportableProperties = new CharamelProjectProperty();
+    // The TCP socket connection 
+    private Socket mSocket;
 
     // Construct the executor
-    public CharamelExecutor(
-            final PluginConfig config,
-            final RunTimeProject project) {
+    public CharamelExecutor(final PluginConfig config, final RunTimeProject project) {
         // Initialize the plugin
         super(config, project);
         // Get the JPL flag value
@@ -93,15 +95,40 @@ public final class CharamelExecutor extends ActivityExecutor implements Exportab
                 mLogger.failure(exc.toString());
             }
         }
+
         // Create the connection
-        mListener = new CharamelListener(4000, this);
-        // Start the connection
-        mListener.start();
+        mLogger.message("Connecting to Charamel server ...");
+
+        while (mSocket == null) {
+            try {
+                // Create the socket
+                mSocket = new Socket("localhost", 4000);
+            } catch (final IOException exc) {
+                mLogger.failure(exc.toString());
+            }
+
+            mLogger.message("Wait a bit ...");
+
+            try {
+                // Wait a bit ...
+                Thread.sleep(1000);
+            } catch (final InterruptedException exc) {
+                mLogger.failure(exc.toString());
+            }
+        }
+
+        connectToCharamel(mSocket);
     }
 
     // Unload the executor 
     @Override
     public final void unload() {
+        try {
+            mSocket.close();
+        } catch (IOException e) {
+            mLogger.failure(e.toString());
+        }
+        
         // Abort the client threads
         for (final CharamelHandler client : mClientMap.values()) {
             client.abort();
@@ -117,15 +144,15 @@ public final class CharamelExecutor extends ActivityExecutor implements Exportab
         // Clear the map of clients 
         mClientMap.clear();
         // Abort the server thread
-        try {
-            mListener.abort();
-            // Join the client thread
-            mListener.join();
-            // Print some information 
-            mLogger.message("Joining server thread");
-        } catch (final InterruptedException exc) {
-            mLogger.failure(exc.toString());
-        }
+//        try {
+//            mListener.abort();
+//            // Join the client thread
+//            mListener.join();
+//            // Print some information 
+//            mLogger.message("Joining server thread");
+//        } catch (final InterruptedException exc) {
+//            mLogger.failure(exc.toString());
+//        }
 
         if (mUseExe) {
             // Wait for pawned processes
@@ -172,7 +199,7 @@ public final class CharamelExecutor extends ActivityExecutor implements Exportab
         CharamelActObject charamelAct = null;
         // set all activities blocking
         activity.setType(Type.blocking);
-        
+
         // Check the activity type
         if (activity instanceof SpeechActivity) {
             final SpeechActivity speech_activity = (SpeechActivity) activity;
@@ -188,7 +215,7 @@ public final class CharamelExecutor extends ActivityExecutor implements Exportab
                     return;
                 }
             } else {
-                 // load wordmapping database
+                // load wordmapping database
                 try {
                     String wmf = mProject.getProjectPath() + File.separator + mProject.getAgentConfig(activity_actor).getProperty("wordmapping");
                     wmf = wmf.replace("\\", "/");
@@ -196,7 +223,7 @@ public final class CharamelExecutor extends ActivityExecutor implements Exportab
                 } catch (IOException ex) {
                     mLogger.failure("Wordmapping file (" + mProject.getAgentConfig(activity_actor).getProperty("wordmapping") + ") not found!");
                 }
-                 // do the pronounciation mapping
+                // do the pronounciation mapping
                 speech_activity.doPronounciationMapping(mWordMapping);
                 // get the charamel avatar id
                 String aid = mProject.getAgentConfig(activity_actor).getProperty("aid");
@@ -308,7 +335,7 @@ public final class CharamelExecutor extends ActivityExecutor implements Exportab
                 String factor = activity.get("factor");
                 factor = (factor == null) ? "0.0" : factor;
                 String interpolation = activity.get("interpolation");
-                interpolation = (interpolation == null) ? "" : interpolation;                
+                interpolation = (interpolation == null) ? "" : interpolation;
                 charamelAct = mActionLoader.loadCharamelAnimation(activity_name, joint, factor, interpolation, aid);
                 //activity.setType(activity_type.parallel);
             } else if (activity_name.equalsIgnoreCase("OrientJoint")) {
@@ -320,7 +347,7 @@ public final class CharamelExecutor extends ActivityExecutor implements Exportab
                 String ydegree = activity.get("y");
                 ydegree = (ydegree == null) ? "0.0" : ydegree;
                 String zdegree = activity.get("z");
-                zdegree = (zdegree == null) ? "0.0" : zdegree;                
+                zdegree = (zdegree == null) ? "0.0" : zdegree;
                 charamelAct = mActionLoader.loadCharamelAnimation(activity_name, joint, interpolation, xdegree, ydegree, zdegree, aid);
                 activity.setType(Type.parallel);
             } else {
@@ -371,9 +398,9 @@ public final class CharamelExecutor extends ActivityExecutor implements Exportab
         }
         // Return when terminated
     }
-    // Accept some connection
 
-    public final void accept(final Socket socket) {
+    // Start some connection
+    public final void connectToCharamel(final Socket socket) {
         // Make new client thread 
         final CharamelHandler client = new CharamelHandler(socket, this);
         // Add the client to list
@@ -381,7 +408,7 @@ public final class CharamelExecutor extends ActivityExecutor implements Exportab
         // Start the client thread
         client.start();
         // Print some information
-        //mLogger.message("Accepting " + client.getName() + "");
+        mLogger.warning("Handling connection " + client.getName() + "");
     }
 
     // Handle some message
@@ -495,14 +522,13 @@ public final class CharamelExecutor extends ActivityExecutor implements Exportab
             }
         }
     }
-    
-        // Broadcast some message
+
+    // Broadcast some message
     private void broadcast(final String message) {
         for (final CharamelHandler client : mClientMap.values()) {
             client.send(message);
         }
     }
-
 
     // Show action waiting dialog
     private void dialog(final String message) {

@@ -1,9 +1,7 @@
 package de.dfki.vsm.xtension.charamel;
 
-import de.dfki.vsm.xtension.tricatworld.*;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
 import java.io.IOException;
-import java.net.ServerSocket;
 import java.net.Socket;
 
 /**
@@ -19,7 +17,7 @@ public class CharamelListener extends Thread {
     // The local socket port 
     private final int mPort;
     // The TCP socket connection 
-    private ServerSocket mSocket;
+    private Socket mSocket;
     // The thread termination flag
     private boolean mDone = false;
 
@@ -35,9 +33,7 @@ public class CharamelListener extends Thread {
     public final void start() {
         try {
             // Create the server socket
-            mSocket = new ServerSocket(mPort);
-            // Start the server thread
-            super.start();
+            mSocket = new Socket("localhost", mPort);
         } catch (final IOException exc) {
             mLogger.failure(exc.toString());
         }
@@ -62,16 +58,8 @@ public class CharamelListener extends Thread {
     // Execute the server thread
     @Override
     public final void run() {
-        // Accept and manage clients
-        while (!mDone) {
-            try {
-                // Accept a client socket
-                final Socket socket = mSocket.accept();
-                // Accept the new socket
-                mExecutor.accept(socket);
-            } catch (final IOException exc) {
-                mLogger.failure(exc.toString());
-            }
-        }
+
+     mLogger.message("Ready for accepting socket connections ...");
+     mExecutor.connectToCharamel(mSocket);
     }
 }
