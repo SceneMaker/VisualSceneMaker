@@ -1,11 +1,10 @@
 package de.dfki.vsm.xtension.charamel;
 
+import de.dfki.vsm.util.bin.BINUtilities;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 import java.net.Socket;
 
 /**
@@ -21,8 +20,8 @@ public class CharamelHandler extends Thread {
     // The client socket
     private final Socket mSocket;
     // The socket streams
-    private BufferedReader mInStream;
-    private BufferedWriter mOutStream;
+    private DataInputStream mInStream;
+    private DataOutputStream mOutStream;
     // The termination flag
     private boolean mDone = false;
 
@@ -37,17 +36,26 @@ public class CharamelHandler extends Thread {
     // Start the client thread
     @Override
     public void start() {
+        
         try {
-            // Get the socket streams
-            mInStream = new BufferedReader(
-                    new InputStreamReader(
-                            mSocket.getInputStream(), "UTF-8"));
-            mOutStream = new BufferedWriter(
-                    new OutputStreamWriter(
-                            mSocket.getOutputStream(), "UTF-8"));
+            mOutStream = new DataOutputStream(mSocket.getOutputStream());
+            mOutStream.flush();
+            mInStream = new DataInputStream(mSocket.getInputStream());
         } catch (final IOException exc) {
             mLogger.failure(exc.toString());
         }
+
+//        try {
+//            // Get the socket streams
+//            mInStream = new BufferedReader(
+//                    new InputStreamReader(
+//                            mSocket.getInputStream(), "UTF-8"));
+//            mOutStream = new BufferedWriter(
+//                    new OutputStreamWriter(
+//                            mSocket.getOutputStream(), "UTF-8"));
+//        } catch (final IOException exc) {
+//            mLogger.failure(exc.toString());
+//        }
         // Start the thread
         super.start();
     }
@@ -71,10 +79,22 @@ public class CharamelHandler extends Thread {
     // Receive some message
     public final String recv() {
         try {
+            // wait and get response
+                byte[] respArr;
+                synchronized (mSocket.getInputStream()) {
+                    byte[] header = new byte[12];
+                    mInStream.readFully(header);
+                    int msgSize = BINUtilities.BytesLEToInt(header);
+                    // read the message
+                    respArr = new byte[msgSize];
+                    mInStream.readFully(respArr);
+                }
+                final String message = new String(respArr, "UTF-8").trim();
+            
             // Receive The Next Line
-            final String message = mInStream.readLine();
+            //final String message = mInStream.readLine();
             // Debug Some Information
-            //mLogger.success("Receiving '" + message + "'");
+            mLogger.success("Received '" + message + "'");
             // Return Received Data
             return message;
         } catch (final IOException exc) {
@@ -88,12 +108,16 @@ public class CharamelHandler extends Thread {
     // Send some message 
     public final boolean send(final String string) {
         try {
-            // Send the next message
-            mOutStream.write(string);
-            mOutStream.newLine();
-            mOutStream.flush();
+            // Construct The Message
+            final byte[] bytes = string.getBytes("UTF-8");
+            // And Then Send Message 
+            mOutStream.write(BINUtilities.IntToBytesLE(100));
+            mOutStream.write(BINUtilities.IntToBytesLE(0));
+            mOutStream.write(BINUtilities.IntToBytesLE(bytes.length));
+            mOutStream.write(bytes);
+
             // Print some information
-            mLogger.success("Sending '" + string + "'");
+            mLogger.success("Sended '" + string + "'");
             // Return true at success
             return true;
         } catch (final IOException exc) {
