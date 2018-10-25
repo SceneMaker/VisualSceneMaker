@@ -7,9 +7,6 @@ import de.dfki.vsm.runtime.activity.AbstractActivity.Type;
 import de.dfki.vsm.runtime.activity.SpeechActivity;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
 import de.dfki.vsm.runtime.activity.scheduler.ActivityWorker;
-import de.dfki.vsm.runtime.interpreter.value.AbstractValue;
-import de.dfki.vsm.runtime.interpreter.value.StringValue;
-import de.dfki.vsm.runtime.interpreter.value.StructValue;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.extensions.ExportableProperties;
 import de.dfki.vsm.util.extensions.ProjectProperty;
@@ -18,7 +15,14 @@ import de.dfki.vsm.util.jpl.JPLEngine;
 import de.dfki.vsm.util.xml.XMLUtilities;
 import de.dfki.vsm.xtension.charamel.util.property.CharamelProjectProperty;
 import de.dfki.vsm.xtension.charamel.xml.command.object.action.CharamelActObject;
-import de.dfki.vsm.xtension.charamel.xml.feedback.CharamelFeedback;
+import de.dfki.vsm.xtension.charamel.xml.feedback.action.Action;
+import de.dfki.vsm.xtension.charamel.xml.feedback.action.CaiCommand;
+import de.dfki.vsm.xtension.charamel.xml.feedback.action.CaiEvent;
+import de.dfki.vsm.xtension.charamel.xml.feedback.action.CaiResponse;
+import de.dfki.vsm.xtension.charamel.xml.feedback.action.CharaXMLElement;
+import de.dfki.vsm.xtension.charamel.xml.feedback.action.Feedback;
+import de.dfki.vsm.xtension.charamel.xml.feedback.action.Status;
+import de.dfki.vsm.xtension.charamel.xml.feedback.action.Tts;
 import de.dfki.vsm.xtension.charamel.xml.util.CharamelActionLoader;
 
 import java.io.ByteArrayInputStream;
@@ -31,8 +35,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * @author Gregor Mehlmann
@@ -128,7 +130,7 @@ public final class CharamelExecutor extends ActivityExecutor implements Exportab
         } catch (IOException e) {
             mLogger.failure(e.toString());
         }
-        
+
         // Abort the client threads
         for (final CharamelHandler client : mClientMap.values()) {
             client.abort();
@@ -414,79 +416,29 @@ public final class CharamelExecutor extends ActivityExecutor implements Exportab
     // Handle some message
     public final void handle(final String input, final CharamelHandler client) {
         // Sanitize the message
+        mLogger.message("\033 Executor recieverd input:\n" + input + "\033[0m");
         final String message = XMLUtilities.xmlStringToPrettyXMLString(
                 input.replaceAll("..xml\\s+version........", ""));
         // Print some information
         mLogger.message("\033[1;35mHandling new message:\n" + message + "\033[0m");
         // Check and notify the relevant threads
-        synchronized (mActivityWorkerMap) {
-            final CharamelFeedback charamelFeedback = new CharamelFeedback();
-            try {
-                XMLUtilities.parseFromXMLStream(charamelFeedback,
-                        new ByteArrayInputStream(message.getBytes("UTF-8")));
-            } catch (final Exception exc) {
-                mLogger.failure(exc.toString());
-                return;
-            }
+        // still necessary? synchronized (mActivityWorkerMap) {
+        Feedback charamelFeedback = new Feedback();
+        try {
+            XMLUtilities.parseFromXMLStream(charamelFeedback,
+                    new ByteArrayInputStream(message.getBytes("UTF-8")));
+            mLogger.message("parsing done");
+        } catch (final Exception exc) {
+            mLogger.failure("Error: " + exc.toString());
+            exc.printStackTrace();
+            return;
+        }
 
-            // Handle action feedback
-            if (charamelFeedback.hasActionFeedback()) {
-                // added pg 24.3.2017 - process multiple actions in feedback 
-                for (de.dfki.vsm.xtension.charamel.xml.feedback.action.Action action : charamelFeedback.mFeedbackActions) {
-                    // handling every /*ambient_setup*/ feedback
-                    if (action.mActionFeedback.mName.equalsIgnoreCase("action_finished")) {
-                        // check if the acitivy action feedback was speech feedback
-                        if (action.mActionFeedback.hasCaiEvent()) {
-                            if (action.mActionFeedback.mCaiEvent.hasTTSStatus()) {
-                                if (action.mActionFeedback.mCaiEvent.mTts.mStatus.equalsIgnoreCase("start")) {
-                                    // TODO - get id - for now there is none                          
-                                    mLogger.message("\033[1;34mAgent starts speaking" + "\033[0m");
-                                    // Set character voice activity variable
-                                    if (mUseJPL) {
-                                        JPLEngine.query("now(Time), "
-                                                + "jdd(["
-                                                + "type:" + "event" + ","
-                                                + "name:" + "agent" + ","
-                                                + "mode:" + "voice" + ","
-                                                + "data:" + "start" + ","
-                                                + "time:" + "Time" + ","
-                                                + "from:" + "0" + ","
-                                                + "life:" + "0" + ","
-                                                + "conf:" + "1.0"
-                                                + "]).");
-                                    } else {
-                                        mProject.setVariable("AgentIsSpeaking", true);
-                                    }
-                                }
-                                if (action.mActionFeedback.mCaiEvent.mTts.mStatus.equalsIgnoreCase("text_maker")) {
-                                    //mLogger.message("Handling Charamel Marker " + tworld_final_feedback.mFeedbackAction.mActionFeedback.mCaiEvent.mTts.mMarker);
-                                    mProject.getRunTimePlayer().getActivityScheduler().handle(action.mActionFeedback.mCaiEvent.mTts.mMarker);
-                                }
-                                if (action.mActionFeedback.mCaiEvent.mTts.mStatus.equalsIgnoreCase("end")) {
-                                    // TODO - get id - for now there is none
-                                    // Set character voice activity variable
-                                    mLogger.message("\033[1;34mAgent finishes speaking" + "\033[0m");
-                                    if (mUseJPL) {
-                                        JPLEngine.query("now(Time), "
-                                                + "jdd(["
-                                                + "type:" + "event" + ","
-                                                + "name:" + "agent" + ","
-                                                + "mode:" + "voice" + ","
-                                                + "data:" + "stop" + ","
-                                                + "time:" + "Time" + ","
-                                                + "from:" + "0" + ","
-                                                + "life:" + "0" + ","
-                                                + "conf:" + "1.0"
-                                                + "]).");
-                                    } else {
-                                        mProject.setVariable("AgentIsSpeaking", false);
-                                    }
-                                    // wake me up ..
-                                    mActivityWorkerMap.notifyAll();
-                                }
-                                // TODO marker!
-                            }
-                        } else {
+        // Handle action feedback
+        handle(charamelFeedback);
+        mLogger.message("handling done");
+        // TODO marker!
+        /* else {
                             // there is no cai_event - hence no tts notification.
                             // since it is an action_finished message, remove the activity in any case
                             if (mActivityWorkerMap.containsKey(action.mId)) {
@@ -498,8 +450,6 @@ public final class CharamelExecutor extends ActivityExecutor implements Exportab
                             mActivityWorkerMap.notifyAll();
                         }
                     }
-                }
-            }
 
             // Handle action feedback
             if (charamelFeedback.hasObjectFeedback()) {
@@ -519,15 +469,15 @@ public final class CharamelExecutor extends ActivityExecutor implements Exportab
                         // System.out.println("not running");
                     }
                 }
-            }
-        }
+            }*/
+
     }
 
     // Broadcast some message
     private void broadcast(final String message) {
-        for (final CharamelHandler client : mClientMap.values()) {
+        mClientMap.values().stream().forEach((client) -> {
             client.send(message);
-        }
+        });
     }
 
     // Show action waiting dialog
@@ -551,5 +501,91 @@ public final class CharamelExecutor extends ActivityExecutor implements Exportab
     @Override
     public Map<ProjectProperty, ProjectValueProperty> getExportableAgentProperties() {
         return null;
+    }
+
+    public void handle(Feedback feedback) {
+        handleChildren(feedback);
+    }
+
+    public void handle(Tts tts) {
+        synchronized (mActivityWorkerMap) {
+            switch (tts.mStatus) {
+                case "start":
+                    mLogger.message("\033[1;34mAgent starts speaking" + "\033[0m");
+                    // Set character voice activity variable
+                    if (mUseJPL) {
+                        JPLEngine.query("now(Time), "
+                                + "jdd(["
+                                + "type:" + "event" + ","
+                                + "name:" + "agent" + ","
+                                + "mode:" + "voice" + ","
+                                + "data:" + "start" + ","
+                                + "time:" + "Time" + ","
+                                + "from:" + "0" + ","
+                                + "life:" + "0" + ","
+                                + "conf:" + "1.0"
+                                + "]).");
+                    } else {
+                        mProject.setVariable("AgentIsSpeaking", true);
+                    }
+                    break;
+
+                case "text_maker":
+                    mLogger.message("tts text_maker");
+                    mProject.getRunTimePlayer().getActivityScheduler().handle(tts.mMarker);
+                    break;
+
+                case "end":
+                    // TODO - get id - for now there is none
+                    // Set character voice activity variable
+                    mLogger.message("\033[1;34mAgent finishes speaking" + "\033[0m");
+                    if (mUseJPL) {
+                        JPLEngine.query("now(Time), "
+                                + "jdd(["
+                                + "type:" + "event" + ","
+                                + "name:" + "agent" + ","
+                                + "mode:" + "voice" + ","
+                                + "data:" + "stop" + ","
+                                + "time:" + "Time" + ","
+                                + "from:" + "0" + ","
+                                + "life:" + "0" + ","
+                                + "conf:" + "1.0"
+                                + "]).");
+                    } else {
+                        mProject.setVariable("AgentIsSpeaking", false);
+                    }
+                    // wake me up ..
+                    mActivityWorkerMap.notifyAll();
+                    break;
+            }
+
+            handleChildren(tts);
+        }
+    }
+
+    public void handle(Action action) {
+        handleChildren(action);
+    }
+
+    public void handle(CaiEvent caiEvent) {
+        handleChildren(caiEvent);
+    }
+
+    private void handleChildren(CharaXMLElement charaXMLElement) {
+        charaXMLElement.getChildren().stream().forEach((child) -> {
+            child.handle(this);
+        });
+    }
+
+    public void handle(CaiCommand caiCmd) {
+        handleChildren(caiCmd);
+    }
+
+    public void handle(CaiResponse caiRsp) {
+        handleChildren(caiRsp);
+    }
+
+    public void handle(Status status) {
+        handleChildren(status);
     }
 }

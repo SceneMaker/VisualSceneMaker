@@ -1,44 +1,55 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package de.dfki.vsm.xtension.charamel.xml.feedback.action;
 
-import de.dfki.vsm.xtension.tricatworld.xml.feedback.action.*;
+import de.dfki.vsm.xtension.charamel.xml.feedback.object.Object;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
-import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLParseable;
 import de.dfki.vsm.util.xml.XMLWriteError;
 import de.dfki.vsm.util.xml.XMLWriteable;
+import de.dfki.vsm.xtension.charamel.CharamelExecutor;
+import java.util.ArrayList;
 import org.w3c.dom.Element;
 
 /**
  *
- * @author Patrick Gebhard
+ * @author Patrick Gebhard, Manuel Anglet
  *
  */
-public class Feedback implements XMLParseable, XMLWriteable {
+public class Feedback extends CharaXMLElement implements XMLParseable, XMLWriteable {
 
-    public String mName = "";
-    public String mValue = "";
-    public CaiEvent mCaiEvent = null;
+    public ArrayList<Action> mFeedbackActions = null;
+    public ArrayList<Object> mFeedbackObjects = null;
+    public ArrayList<Tts> mFeedbackTts = null;
 
     // Logger
-    static final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
+    static final LOGConsoleLogger sLogger = LOGConsoleLogger.getInstance();
 
     public Feedback() {
+        mFeedbackActions = new ArrayList<>();
+        mFeedbackObjects = new ArrayList<>();
+        mFeedbackTts = new ArrayList<>();
     }
 
-    public boolean hasCaiEvent() {
-        return (mCaiEvent != null);
+    Feedback(CharaXMLElement parent) {
+        this.parent = parent;
     }
 
+    public boolean hasActionFeedback() {
+        return (mFeedbackActions != null) && !mFeedbackActions.isEmpty();
+    }
+
+    public boolean hasObjectFeedback() {
+        return (mFeedbackObjects != null) && !mFeedbackObjects.isEmpty();
+    }
+
+    public boolean hasTtsFeedback() {
+        return (mFeedbackTts != null) && !mFeedbackTts.isEmpty();
+    }
+        
     @Override
     public void writeXML(IOSIndentWriter out) throws XMLWriteError {
-        out.println("<feedback>").push();
+        out.println("<TWorldFeedback>").push();
 
 //        mObjects.stream().forEach((o) -> {
 //            try {
@@ -47,30 +58,64 @@ public class Feedback implements XMLParseable, XMLWriteable {
 //                mLogger.failure(ex.getMessage());
 //            }
 //        });
-        out.pop().println("</feedback>");
+
+        out.pop().println("</TWorldFeedback>");
     }
 
     @Override
     public void parseXML(final Element element) throws XMLParseError {
-        mName = element.getAttribute("name");
-        mValue = element.getAttribute("value");
-
-        // Process The Child Nodes
+       this.parseChildren(element);
+        /*
+        
+        String tag = element.getTagName();
+        
+        switch (tag) {
+            case "cai_event":
+                CaiEvent ce = new CaiEvent(this);
+                ce.parseXML(element);
+                
+            
+            case "action":
+                Action fa = new Action(this);
+                fa.parseXML(element);
+                mFeedbackActions.add(fa);
+                break;
+                
+            case "tts":
+                Tts tts = mew Tts(this);
+        }
+        
+         legacy solution jumped over cai-event 
         XMLParseAction.processChildNodes(element, new XMLParseAction() {
             @Override
             public void run(final Element element) throws XMLParseError {
 
                 final String name = element.getTagName();
+                System.out.println("###Tag:" + name);
+                if (name.equalsIgnoreCase("action")) {
+                    Action fa = new Action();
 
-                if (name.equalsIgnoreCase("cai_event")) {
+                    fa.parseXML(element);
+                    mFeedbackActions.add(fa);
+                }
 
-                    CaiEvent ce = new CaiEvent();
+                if (name.equalsIgnoreCase("object")) {
+                    Object fo = new Object();
 
-                    ce.parseXML(element);
+                    fo.parseXML(element);
+                    mFeedbackObjects.add(fo);
+                }
+                
+                if (name.equalsIgnoreCase("tts")) {
+                    Tts ft = new Tts();
 
-                    mCaiEvent = ce;
+                    ft.parseXML(element);
+                    mFeedbackTts.add(ft);
                 }
             }
         });
+        */
     }
+    @Override
+    public void handle(CharamelExecutor executor) {executor.handle(this);}
 }

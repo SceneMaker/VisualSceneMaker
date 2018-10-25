@@ -19,34 +19,24 @@ import org.w3c.dom.Element;
  * @author Patrick Gebhard, Manuel Anglet
  *
  */
-public class Action extends CharaXMLElement implements XMLParseable, XMLWriteable {
+public class CaiResponse extends CharaXMLElement implements XMLParseable, XMLWriteable {
 
-    public String mName = "";
-    public String mId = "";
 
     // Logger
     static final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
-
-    public Action(String name, String id) {
-        mName = name;
-       mId = id;
-    }
-
-    public Action() {
-    }
+    
+    public CaiResponse() {}
     
     /**
      *
      * @param parent
      */
-    public Action(CharaXMLElement parent){
+    public CaiResponse(CharaXMLElement parent){
         this.parent = parent;
     }
 
     @Override
     public void parseXML(final Element element) throws XMLParseError {
-        mName = element.getAttribute("name");
-        mId = element.getAttribute("id");
         this.parseChildren(element);
     }
 

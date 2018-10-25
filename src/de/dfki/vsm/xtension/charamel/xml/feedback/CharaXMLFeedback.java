@@ -3,8 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.dfki.vsm.xtension.charamel.xml.feedback.object;
+package de.dfki.vsm.xtension.charamel.xml.feedback;
 
+import de.dfki.vsm.xtension.tricatworld.xml.feedback.action.*;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
 import de.dfki.vsm.util.xml.XMLParseAction;
@@ -12,7 +13,6 @@ import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLParseable;
 import de.dfki.vsm.util.xml.XMLWriteError;
 import de.dfki.vsm.util.xml.XMLWriteable;
-import de.dfki.vsm.xtension.charamel.xml.feedback.CharaXMLFeedback;
 import org.w3c.dom.Element;
 
 /**
@@ -20,47 +20,57 @@ import org.w3c.dom.Element;
  * @author Patrick Gebhard
  *
  */
-public class Object implements XMLParseable, XMLWriteable {
+public class CharaXMLFeedback implements XMLParseable, XMLWriteable {
 
     public String mName = "";
-    public String mId = "";
-    public CharaXMLFeedback mObjectFeedback;
+    public String mValue = "";
+    public CaiEvent mCaiEvent = null;
 
     // Logger
     static final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
 
-    public Object(String name, String id) {
-        mName = name;
-        mId = id;
+    public CharaXMLFeedback() {
     }
-    
-    public Object() {
-    }
-    
 
+    public boolean hasCaiEvent() {
+        return (mCaiEvent != null);
+    }
+
+    @Override
+    public void writeXML(IOSIndentWriter out) throws XMLWriteError {
+        out.println("<feedback>").push();
+
+//        mObjects.stream().forEach((o) -> {
+//            try {
+//                o.writeXML(out);
+//            } catch (XMLWriteError ex) {
+//                mLogger.failure(ex.getMessage());
+//            }
+//        });
+        out.pop().println("</feedback>");
+    }
 
     @Override
     public void parseXML(final Element element) throws XMLParseError {
         mName = element.getAttribute("name");
-        mId = element.getAttribute("id");
+        mValue = element.getAttribute("value");
 
         // Process The Child Nodes
         XMLParseAction.processChildNodes(element, new XMLParseAction() {
             @Override
             public void run(final Element element) throws XMLParseError {
+
                 final String name = element.getTagName();
 
-                if (name.equalsIgnoreCase("feedback")) {
-                    mObjectFeedback = new CharaXMLFeedback();
-                    mObjectFeedback.parseXML(element);
+                if (name.equalsIgnoreCase("cai_event")) {
 
+                    CaiEvent ce = new CaiEvent();
+
+                    ce.parseXML(element);
+
+                    mCaiEvent = ce;
                 }
             }
         });
-    }
-
-    @Override
-    public void writeXML(IOSIndentWriter writer) throws XMLWriteError {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }
