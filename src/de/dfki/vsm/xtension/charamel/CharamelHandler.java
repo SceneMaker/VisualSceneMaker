@@ -71,13 +71,17 @@ public class CharamelHandler extends Thread {
     // Set the termination flag
         mDone = true;
         // Eventually close the socket
-        if (mSocket != null && !mSocket.isClosed()) {
+        if (mSocket != null){
+            if( !mSocket.isClosed()) {
             try {
                 mSocket.close();
             } catch (final IOException exc) {
                 mLogger.failure(exc.toString());
             }
-       }
+            }
+            mSocket= null;
+        }
+       
 
         // Interrupt if sleeping
         interrupt();

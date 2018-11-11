@@ -9,6 +9,8 @@ import de.dfki.vsm.util.xml.XMLWriteError;
 import de.dfki.vsm.util.xml.XMLWriteable;
 import de.dfki.vsm.xtension.charamel.CharamelExecutor;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.w3c.dom.Element;
 
 /**
@@ -23,7 +25,7 @@ public class Feedback extends CharaXMLElement implements XMLParseable, XMLWritea
     public ArrayList<Tts> mFeedbackTts = null;
 
     // Logger
-    static final LOGConsoleLogger sLogger = LOGConsoleLogger.getInstance();
+    static final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
 
     public Feedback() {
         mFeedbackActions = new ArrayList<>();
@@ -64,57 +66,69 @@ public class Feedback extends CharaXMLElement implements XMLParseable, XMLWritea
 
     @Override
     public void parseXML(final Element element) throws XMLParseError {
-       this.parseChildren(element);
-        /*
-        
-        String tag = element.getTagName();
-        
-        switch (tag) {
-            case "cai_event":
-                CaiEvent ce = new CaiEvent(this);
-                ce.parseXML(element);
-                
-            
-            case "action":
-                Action fa = new Action(this);
-                fa.parseXML(element);
-                mFeedbackActions.add(fa);
-                break;
-                
-            case "tts":
-                Tts tts = mew Tts(this);
-        }
-        
-         legacy solution jumped over cai-event 
-        XMLParseAction.processChildNodes(element, new XMLParseAction() {
-            @Override
-            public void run(final Element element) throws XMLParseError {
-
-                final String name = element.getTagName();
-                System.out.println("###Tag:" + name);
-                if (name.equalsIgnoreCase("action")) {
-                    Action fa = new Action();
-
-                    fa.parseXML(element);
-                    mFeedbackActions.add(fa);
-                }
-
-                if (name.equalsIgnoreCase("object")) {
-                    Object fo = new Object();
-
-                    fo.parseXML(element);
-                    mFeedbackObjects.add(fo);
-                }
-                
-                if (name.equalsIgnoreCase("tts")) {
-                    Tts ft = new Tts();
-
-                    ft.parseXML(element);
-                    mFeedbackTts.add(ft);
-                }
+       
+       String name = element.getTagName();
+       mLogger.message("parsing charamel feedback with tag "+ name);
+       CharaXMLElement child;
+       switch (name){
+                case "cai_event":
+                    child = new CaiEvent(this);           
+                    try {
+                        ((CaiEvent)child).parseXML(element);
+                    } catch (XMLParseError ex) {
+                        Logger.getLogger(CharaXMLElement.class.getName()).log(Level.SEVERE, "error parsing cai_event", ex);
+                    }
+                    children.add(child);
+                    break;
+                case "tts":
+                    child = new Tts(this);           
+                    try {
+                        ((Tts)child).parseXML(element);
+                    } catch (XMLParseError ex) {
+                        Logger.getLogger(CharaXMLElement.class.getName()).log(Level.SEVERE, "error parsing tts", ex);
+                    }
+                    children.add(child);
+                    break;
+                case "action":
+                    child = new Action(this);           
+                    try {
+                        ((Action)child).parseXML(element);
+                    } catch (XMLParseError ex) {
+                        Logger.getLogger(CharaXMLElement.class.getName()).log(Level.SEVERE, "error parsing action", ex);
+                    }
+                    children.add(child);
+                    break;
+                case "status":
+                    child = new Status(this);           
+                    try {
+                        ((Status)child).parseXML(element);
+                    } catch (XMLParseError ex) {
+                        Logger.getLogger(CharaXMLElement.class.getName()).log(Level.SEVERE, "error parsing action", ex);
+                    }
+                    children.add(child);
+                    break;
+                case "cai_command":
+                    child = new CaiCommand(this);           
+                    try {
+                        ((CaiCommand)child).parseXML(element);
+                    } catch (XMLParseError ex) {
+                        Logger.getLogger(CharaXMLElement.class.getName()).log(Level.SEVERE, "error parsing action", ex);
+                    }
+                    children.add(child);
+                    break;   
+                case "cai_response":
+                    child = new CaiResponse(this);           
+                    try {
+                        ((CaiResponse)child).parseXML(element);
+                    } catch (XMLParseError ex) {
+                        Logger.getLogger(CharaXMLElement.class.getName()).log(Level.SEVERE, "error parsing action", ex);
+                    }
+                    children.add(child);
+                    break;    
+                    
+                default:
+                    Logger.getLogger(CharaXMLElement.class.getName()).log(Level.SEVERE, "Could not parse XML tag:{0}", name);
             }
-        });
-        */
     }
     @Override
     public void handle(CharamelExecutor executor) {executor.handle(this);}

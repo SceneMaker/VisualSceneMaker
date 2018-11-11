@@ -127,6 +127,7 @@ public final class CharamelExecutor extends ActivityExecutor implements Exportab
     public final void unload() {
         try {
             mSocket.close();
+            mSocket = null;
         } catch (IOException e) {
             mLogger.failure(e.toString());
         }
@@ -534,6 +535,11 @@ public final class CharamelExecutor extends ActivityExecutor implements Exportab
                     mLogger.message("tts text_maker");
                     mProject.getRunTimePlayer().getActivityScheduler().handle(tts.mMarker);
                     break;
+                    
+                case "text_marker":
+                    mLogger.message("tts text_marker");
+                    mProject.getRunTimePlayer().getActivityScheduler().handle(tts.mMarker);
+                    break;
 
                 case "end":
                     // TODO - get id - for now there is none
@@ -568,6 +574,7 @@ public final class CharamelExecutor extends ActivityExecutor implements Exportab
     }
 
     public void handle(CaiEvent caiEvent) {
+
         handleChildren(caiEvent);
     }
 
@@ -582,6 +589,26 @@ public final class CharamelExecutor extends ActivityExecutor implements Exportab
     }
 
     public void handle(CaiResponse caiRsp) {
+        List<CharaXMLElement> children = caiRsp.getChildren();
+        String status = "";
+        String actionID = "";
+        for(CharaXMLElement child:children){
+            if(child instanceof Status) status = child.getText();
+            if(child instanceof CaiCommand) actionID = ((CaiCommand) child).getMId();
+        }
+        mLogger.message("found status,actionID: " + status + ", "+ actionID);
+        if ((status.equalsIgnoreCase("success") || status.equalsIgnoreCase("failure")) && !actionID.equals("")){
+            synchronized (mActivityWorkerMap) {
+                if (mActivityWorkerMap.containsKey(actionID)) {
+                         mActivityWorkerMap.remove(actionID);
+                    } 
+                else {
+                        mLogger.failure("Activityworker for " + actionID + " has been stopped before ...");
+                    }
+                // wake me up ..
+                mActivityWorkerMap.notifyAll();
+            }
+        }
         handleChildren(caiRsp);
     }
 

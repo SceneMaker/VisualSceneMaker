@@ -61,7 +61,7 @@ public class CaiEvent extends CharaXMLElement implements XMLParseable, XMLWritea
         this.parseChildren(element);        
     }
     
-        public String getId() {
+    public String getId() {
         return id;
     }
 

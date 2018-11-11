@@ -23,7 +23,8 @@ public class CaiResponse extends CharaXMLElement implements XMLParseable, XMLWri
 
 
     // Logger
-    static final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
+    private final LOGConsoleLogger mLogger
+            = LOGConsoleLogger.getInstance();
     
     public CaiResponse() {}
     
@@ -37,6 +38,7 @@ public class CaiResponse extends CharaXMLElement implements XMLParseable, XMLWri
 
     @Override
     public void parseXML(final Element element) throws XMLParseError {
+        mLogger.message("caiResponse parsing children");
         this.parseChildren(element);
     }
 
@@ -45,6 +47,8 @@ public class CaiResponse extends CharaXMLElement implements XMLParseable, XMLWri
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     @Override
-    public void handle(CharamelExecutor executor) {executor.handle(this);}
+    public void handle(CharamelExecutor executor) {
+        mLogger.message("caiResponse calling Executor");
+        executor.handle(this);}
 
 }
