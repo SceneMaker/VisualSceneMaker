@@ -54,4 +54,7 @@ public class CaiCommand extends CharaXMLElement implements XMLParseable, XMLWrit
     @Override
     public void handle(CharamelExecutor executor) {executor.handle(this);}
 
+    public String getMId(){
+        return mId;
+    }
 }

@@ -5,6 +5,7 @@
  */
 package de.dfki.vsm.xtension.charamel.xml.feedback.action;
 
+import de.dfki.vsm.util.log.LOGConsoleLogger;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.xtension.charamel.CharamelExecutor;
 import java.util.ArrayList;
@@ -24,6 +25,8 @@ public abstract class CharaXMLElement {
     List<CharaXMLElement> children = new ArrayList();
     CharaXMLElement parent;
     String text;
+    private final LOGConsoleLogger mLogger
+            = LOGConsoleLogger.getInstance();
     
     CharaXMLElement(){}
     
@@ -60,6 +63,7 @@ public abstract class CharaXMLElement {
         CharaXMLElement child;
         for (Element childElement : childElementList){
             String name = childElement.getTagName();
+            mLogger.message("found child "+name);
             switch (name){
                 case "cai_event":
                     child = new CaiEvent(this);           
@@ -134,6 +138,10 @@ public abstract class CharaXMLElement {
     }
 
     public void handle(CharamelExecutor executor) {}
+    
+    public String getText(){
+        return this.text;
+    }
     
     
 }
