@@ -7,6 +7,8 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.Socket;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 /**
  * @author Gregor Mehlmann
@@ -136,7 +138,7 @@ public class CharamelHandler extends Thread {
             msgTag = nextLeInt();
             statusTag = nextLeInt();
             msgLen = nextLeInt();
-            mLogger.message("new Msg(tag: "+msgTag+",satus: "+statusTag+", msgLen:"+msgLen+")");
+            mLogger.message("new Msg (tag: "+msgTag+" status: "+statusTag+" Length: "+msgLen+")");
             byte[] msg = new byte[msgLen];
             dInStream.readFully(msg);
             return new String(msg,"UTF-8");
@@ -150,11 +152,10 @@ public class CharamelHandler extends Thread {
         byte[] b = new byte[4];
         dInStream.readFully(b);
         StringBuilder ib = new StringBuilder();
-        ib.append(b[3]);
-        ib.append(b[2]);
-        ib.append(b[1]);
-        ib.append(b[0]);
-        return Integer.parseInt(ib.toString());
+        
+        ByteBuffer bb = ByteBuffer.wrap(b);
+        bb.order(ByteOrder.LITTLE_ENDIAN);
+        return bb.getInt();
     }
 
     
