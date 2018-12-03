@@ -11,21 +11,26 @@ import de.dfki.vsm.runtime.activity.SpeechActivity;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
+import java.io.File;
+import java.nio.file.Files;
 import java.util.LinkedList;
 import javafx.application.Platform;
 
 /**
  *
- * @author stoma
+ * @author Manuel
  */
 public class VideoPlayerExecutor extends ActivityExecutor{
     
     VideoPlayer mVideoPlayer = null;
     private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
+    String path,fending;
     Thread mVideoPlayerThread = null;
+    
     
     public VideoPlayerExecutor(PluginConfig config, RunTimeProject project) {
         super(config, project);
+        mLogger.message("video player initialised ");
     }
     
     @Override
@@ -35,6 +40,7 @@ public class VideoPlayerExecutor extends ActivityExecutor{
 
     @Override
     public void execute(AbstractActivity activity) {
+        mLogger.message("checking activities for Video player");
         if (activity instanceof SpeechActivity) {
             SpeechActivity sa = (SpeechActivity) activity;
             String text = sa.getTextOnly("$(").trim();
@@ -51,8 +57,9 @@ public class VideoPlayerExecutor extends ActivityExecutor{
             final String name = activity.getName();
             
             if (name.equalsIgnoreCase("playVideo")) {
-                String video = mProject.getAgentConfig(activity.getActor()).getProperty("show");
-                Platform.runLater(() -> mVideoPlayer.playVideo(video));
+                String video = activity.getFeatures().element().getVal();
+                mLogger.message("found play video with path "+ path + "\\" +video+fending);
+                mVideoPlayer.playVideo(path+"\\"+video+fending);
             }
         }
     }
@@ -61,6 +68,9 @@ public class VideoPlayerExecutor extends ActivityExecutor{
     @Override
     public void launch(){
         mLogger.message("Lauching VideoPlayer ...");
+        
+        path = mConfig.getProperty("path");
+        fending = mConfig.getProperty("fileending");
         mVideoPlayer = new VideoPlayer();
         mVideoPlayer.setVideoPlayerExecutor(this);
         mVideoPlayerThread = new Thread(mVideoPlayer);

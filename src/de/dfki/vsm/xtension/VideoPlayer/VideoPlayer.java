@@ -5,6 +5,15 @@
  */
 package de.dfki.vsm.xtension.VideoPlayer;
 
+import de.dfki.vsm.util.log.LOGConsoleLogger;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.net.Socket;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
  *
  * @author stoma
@@ -12,6 +21,10 @@ package de.dfki.vsm.xtension.VideoPlayer;
 public class VideoPlayer implements Runnable {
 
     private VideoPlayerExecutor mVideoPLayerExecutor;
+    Socket mSocket; 
+    PrintStream out;
+    private final LOGConsoleLogger mLogger
+            = LOGConsoleLogger.getInstance();
     
     public VideoPlayer(){
     }
@@ -20,7 +33,7 @@ public class VideoPlayer implements Runnable {
     @Override
     public void run(){
         setUpSocket();
-        listen();
+        //listen();
     }
 
     void setVideoPlayerExecutor(VideoPlayerExecutor vpExec) {
@@ -28,7 +41,12 @@ public class VideoPlayer implements Runnable {
     }
 
     private void setUpSocket() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        try {
+            mSocket = new Socket("localhost",9000);
+            out = new PrintStream(mSocket.getOutputStream());
+        } catch (IOException ex) {
+            Logger.getLogger(VideoPlayer.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     private void listen() {
@@ -36,7 +54,7 @@ public class VideoPlayer implements Runnable {
     }
 
     void playVideo(String video) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        out.println(video);
     }
         
 }
