@@ -33,6 +33,9 @@ dependencies {
     compile group: 'net.sourceforge.javaflacencoder', name: 'java-flac-encoder', version: '0.3.7'
     // https://mvnrepository.com/artifact/org.json/json
     compile group: 'org.json', name: 'json', version: '20171018'
+    // https://mvnrepository.com/artifact/javax.xml.bind/jaxb-api
+    compile group: 'javax.xml.bind', name: 'jaxb-api', version: '2.4.0-b180830.0359'
+
 }
 
 jar {
