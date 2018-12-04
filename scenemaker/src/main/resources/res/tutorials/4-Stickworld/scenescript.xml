@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SceneScript lower="0" upper="0">
+  <SceneObject lower="0" upper="68" language="en" identifier="Hello">
+    <SceneTurn lower="15" upper="68" speaker="susanne">
+      <SceneUttr lower="24" upper="38" punct=",">
+        <SceneWord lower="24" upper="29" text="Hello"/>
+        <ActionObject lower="31" upper="36" actor="" name="Smile">
+        </ActionObject>
+      </SceneUttr>
+      <SceneUttr lower="39" upper="68" punct=".">
+        <SceneWord lower="39" upper="46" text="welcome"/>
+        <SceneWord lower="47" upper="49" text="to"/>
+        <SceneWord lower="50" upper="52" text="be"/>
+        <SceneWord lower="53" upper="57" text="here"/>
+        <ActionObject lower="59" upper="66" actor="" name="Excited">
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="70" upper="119" language="en" identifier="ZoomIO">
+    <SceneTurn lower="86" upper="119" speaker="susanne">
+      <SceneUttr lower="95" upper="119" punct=".">
+        <SceneWord lower="95" upper="101" text="ZoomIn"/>
+        <ActionObject lower="103" upper="109" actor="" name="ZoomIO">
+          <ActionFeature lower="110" upper="117" key="value" val="4"/>
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="121" upper="168" language="en" identifier="ZoomBack">
+    <SceneTurn lower="139" upper="168" speaker="susanne">
+      <SceneUttr lower="148" upper="168" punct=".">
+        <SceneWord lower="148" upper="156" text="ZoomBack"/>
+        <ActionObject lower="158" upper="166" actor="" name="ZoomBack">
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="170" upper="225" language="en" identifier="MoveLR1">
+    <SceneTurn lower="187" upper="225" speaker="susanne">
+      <SceneUttr lower="196" upper="225" punct=".">
+        <SceneWord lower="196" upper="206" text="MoveLRight"/>
+        <ActionObject lower="208" upper="214" actor="" name="MoveLR">
+          <ActionFeature lower="215" upper="223" key="value" val="50"/>
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="227" upper="280" language="en" identifier="MoveUD1">
+    <SceneTurn lower="244" upper="280" speaker="susanne">
+      <SceneUttr lower="253" upper="280" punct=".">
+        <SceneWord lower="253" upper="261" text="MoveDown"/>
+        <ActionObject lower="263" upper="269" actor="" name="MoveUD">
+          <ActionFeature lower="270" upper="278" key="value" val="50"/>
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="282" upper="333" language="en" identifier="MoveLR">
+    <SceneTurn lower="298" upper="333" speaker="susanne">
+      <SceneUttr lower="307" upper="333" punct=".">
+        <SceneWord lower="307" upper="315" text="MoveBack"/>
+        <ActionObject lower="317" upper="323" actor="" name="MoveLR">
+          <ActionFeature lower="324" upper="331" key="value" val="0"/>
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="335" upper="386" language="en" identifier="MoveUD">
+    <SceneTurn lower="351" upper="386" speaker="susanne">
+      <SceneUttr lower="360" upper="386" punct=".">
+        <SceneWord lower="360" upper="368" text="MoveBack"/>
+        <ActionObject lower="370" upper="376" actor="" name="MoveUD">
+          <ActionFeature lower="377" upper="384" key="value" val="0"/>
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="388" upper="471" language="en" identifier="BackgroundChangeoffice">
+    <SceneTurn lower="420" upper="471" speaker="susanne">
+      <SceneUttr lower="429" upper="471" punct=".">
+        <SceneWord lower="429" upper="435" text="Office"/>
+        <ActionObject lower="437" upper="450" actor="" name="SetBackground">
+          <ActionFeature lower="451" upper="469" key="value" val="'office.jpg'"/>
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="473" upper="565" language="en" identifier="BackgroundChangegrassland">
+    <SceneTurn lower="508" upper="565" speaker="susanne">
+      <SceneUttr lower="517" upper="565" punct=".">
+        <SceneWord lower="517" upper="526" text="Grassland"/>
+        <ActionObject lower="528" upper="541" actor="" name="SetBackground">
+          <ActionFeature lower="542" upper="563" key="value" val="'grassland.jpg'"/>
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="567" upper="635" language="en" identifier="BackgroundChangeRed">
+    <SceneTurn lower="596" upper="635" speaker="susanne">
+      <SceneUttr lower="605" upper="635" punct=".">
+        <SceneWord lower="605" upper="608" text="Red"/>
+        <ActionObject lower="610" upper="623" actor="" name="SetBackground">
+          <ActionFeature lower="624" upper="633" key="value" val="red"/>
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="637" upper="711" language="en" identifier="BackgroundChangeWhite">
+    <SceneTurn lower="668" upper="711" speaker="susanne">
+      <SceneUttr lower="677" upper="711" punct=".">
+        <SceneWord lower="677" upper="682" text="white"/>
+        <ActionObject lower="684" upper="697" actor="" name="SetBackground">
+          <ActionFeature lower="698" upper="709" key="value" val="white"/>
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+</SceneScript>

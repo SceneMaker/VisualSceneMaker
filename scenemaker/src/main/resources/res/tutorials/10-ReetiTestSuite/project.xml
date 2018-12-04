@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Project name="ReetiTestSuite">
+  <Plugins>
+    <Plugin type="device" name="reeti" class="de.dfki.vsm.xtension.reeti.ReetiExecutor" load="true">
+      <Feature key="lhost" val="127.0.0.1"/>
+      <Feature key="lport" val="1421"/>
+      <Feature key="rhost" val="127.0.0.1"/>
+      <Feature key="rport" val="1241"/>
+    </Plugin>
+  </Plugins>
+  <Agents>
+    <Agent name="reeti" device="reeti">
+      <Feature key="language" val="en"/>
+      <Feature key="voice" val="Simon"/>
+    </Agent>
+  </Agents>
+  <Player>
+  </Player>
+</Project>
