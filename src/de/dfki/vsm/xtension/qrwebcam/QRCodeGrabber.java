@@ -31,12 +31,12 @@ public final class QRCodeGrabber extends ActivityExecutor {
     public final void launch() {
         mLogger.message("Launching QRCodeGrabber ...");
         mWebcamwindow = WebCamFrame.getInstance();
-         mWebcamwindow.setVisible(true);
     }
 
     @Override
     public final void unload() {
-        mWebcamwindow.setVisible(false);
+        mLogger.message("Stopping QRCodeGrabber ...");
+        mWebcamwindow.shutdown ();
     }
 
     @Override
