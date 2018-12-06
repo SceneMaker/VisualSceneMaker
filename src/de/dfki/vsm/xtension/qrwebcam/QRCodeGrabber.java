@@ -4,20 +4,20 @@ import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
 import de.dfki.vsm.runtime.project.RunTimeProject;
-import java.util.concurrent.ConcurrentHashMap;
+import de.dfki.vsm.util.log.LOGConsoleLogger;
 
 /**
  * @author Patrick Gebhard
  */
 public final class QRCodeGrabber extends ActivityExecutor {
 
-    private final ConcurrentHashMap<String, Long> mTimerMap
-            = new ConcurrentHashMap<>();
-
+    private static WebCamFrame mWebcamwindow = null;
+        // The singelton logger instance
+    private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
+    
+    
     // Construct executor
-    public QRCodeGrabber(
-            final PluginConfig config,
-            final RunTimeProject project) {
+    public QRCodeGrabber(final PluginConfig config, final RunTimeProject project) {
         super(config, project);
     }
 
@@ -29,40 +29,25 @@ public final class QRCodeGrabber extends ActivityExecutor {
 
     @Override
     public final void launch() {
+        mLogger.message("Launching QRCodeGrabber ...");
+        mWebcamwindow = WebCamFrame.getInstance();
+         mWebcamwindow.setVisible(true);
     }
 
     @Override
     public final void unload() {
+        mWebcamwindow.setVisible(false);
     }
 
     @Override
     public void execute(final AbstractActivity activity) {
-        
-        //activity.setType(AbstractActivity.Type.blocking);
 
+        //activity.setType(AbstractActivity.Type.blocking);
         // Get log message features
         final String name = activity.getName();
-        if (name.equalsIgnoreCase("clear")) {
-            clear();
-        } else if (name.equalsIgnoreCase("init")) {
-            init(activity.get("id"));
-        } else if (name.equalsIgnoreCase("time")) {
-            time(activity.get("id"), activity.get("var"));
-        }
-    }
-
-    private void clear() {
-        mTimerMap.clear();
-    }
-
-    private void init(final String id) {
-        mTimerMap.put(id, System.currentTimeMillis());
-    }
-
-    private void time(final String id, final String var) {
-        if (mTimerMap.containsKey(id) && mProject.hasVariable(var)) {
-            mProject.setVariable(var, Math.toIntExact(
-                    System.currentTimeMillis() - mTimerMap.get(id)));
+        if (name.equalsIgnoreCase("grab")) {
+            String code = (mWebcamwindow!= null) ? mWebcamwindow.getQRCode(): "";
+            mProject.setVariable("code", code);
         }
     }
 }
