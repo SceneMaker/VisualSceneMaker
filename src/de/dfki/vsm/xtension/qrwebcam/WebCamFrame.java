@@ -14,8 +14,6 @@ import de.dfki.vsm.util.log.LOGConsoleLogger;
 import java.awt.FlowLayout;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
@@ -26,11 +24,13 @@ import javax.swing.SwingUtilities;
 public class WebCamFrame extends JFrame {
 
     private static Webcam sWebcam = null;
-        // The singelton logger instance
+    // The singelton logger instance
     private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
-    private static final WebCamFrame sInstance = new WebCamFrame();
+    private static WebCamFrame sInstance = new WebCamFrame();
+    private WebcamPanel mPanel = null;
 
     public static WebCamFrame getInstance() {
+        sInstance = (sInstance != null) ? sInstance : new WebCamFrame();
         return sInstance;
     }
 
@@ -39,8 +39,8 @@ public class WebCamFrame extends JFrame {
 
         sWebcam = Webcam.getDefault();
         sWebcam.setViewSize(WebcamResolution.VGA.getSize());
-        WebcamPanel panel = new WebcamPanel(sWebcam, false);
-        add(panel);
+        mPanel = new WebcamPanel(sWebcam, false);
+        add(mPanel);
 
         setTitle("Cam");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -50,9 +50,21 @@ public class WebCamFrame extends JFrame {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                panel.start();
+                mPanel.start();
             }
         });
+
+    }
+
+    public void shutdown() {
+        sWebcam.removeWebcamListener(mPanel);
+        if (sWebcam.isOpen()) {
+            sWebcam.close();
+        }
+        mPanel.stop();
+        dispose();
+        sWebcam = null;
+        sInstance = null;
     }
 
     public String getQRCode() {
