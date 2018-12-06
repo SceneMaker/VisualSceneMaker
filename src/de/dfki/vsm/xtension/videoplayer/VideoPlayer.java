@@ -21,7 +21,6 @@ public class VideoPlayer implements Runnable {
     public VideoPlayer(){
     }
     
-    
     @Override
     public void run(){
         setUpSocket();
