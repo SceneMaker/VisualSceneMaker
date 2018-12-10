@@ -1,0 +1,24 @@
+#JSGF V1.0;
+
+/**
+ * JSGF Grammar for Hello World example
+ */
+
+grammar voice;
+public <basicCmd> = <startPolite> <command> <endPolite>;
+
+<command> = <action>;
+ <action> =             angry|engri|aengri|angri|engry|
+                        smail|smaili|smaily|smile|
+                        sad|saad|saed|sed|seed|
+                        fear|feear|fea|feea|feer|
+                        contempt|cintempt|kontempt|kintempt|
+                        Disgusted|Disgasted|
+                        embarrassed|embarrassd|embaresd|embaresed|embauresd|embaurest|embaraset|embaaresd|
+                        excited|excaited|exited|exaited|eksaited|eksited|eqsaited|eqsited|
+                        happy|hapy|hapi|heppy|hepy|hepi|happyy|happii|hapii|heppyy|heppii|hafy|haffy|haffyy|hafi|faffii|heffii|hefii|
+                        Hello|Hi|hello|hallo|hellou|hallou|helou|halou|helo|halo|
+                        joy|joi|
+                        background|beground;
+<startPolite> = [bob];
+<endPolite> = /1/ please|/2/ one|/10/ two|/9/ three|/5/ four|/3/ five|/8/ zero;

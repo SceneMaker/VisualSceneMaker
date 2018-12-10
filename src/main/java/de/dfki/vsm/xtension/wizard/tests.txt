@@ -1,0 +1,4 @@
+[type:event, mode:gaze, name:claudia, data:first, time:34550, dist:20, life:200]
+[type:event, mode:gaze, name:claudia, data:charly, time:34850, dist:20, life:200]
+[type:event, mode:move, name:claudia, data:start, time:34850, dist:20, life:200]
+[type:event, mode:voice, name:claudia, data:start, time:34850, dist:20, life:200]

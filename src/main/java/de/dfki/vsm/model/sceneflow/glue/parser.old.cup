@@ -1,0 +1,505 @@
+package de.dfki.vsm.model.sceneflow.glue;
+
+//import java_cup.runtime.*;
+//import java.io.StringReader;
+//import de.dfki.vsm.model.sceneflow.*;
+
+// Different Commands
+import de.dfki.vsm.model.sceneflow.glue.command.Command;
+import de.dfki.vsm.model.sceneflow.glue.command.Definition;
+import de.dfki.vsm.model.sceneflow.glue.command.Assignment;
+import de.dfki.vsm.model.sceneflow.glue.command.Invocation;
+import de.dfki.vsm.model.sceneflow.glue.command.Expression;
+// Definition Commands
+//import de.dfki.vsm.model.sceneflow.glue.command.definition.FunctionDefinition;
+import de.dfki.vsm.model.sceneflow.glue.command.definition.VariableDefinition;
+import de.dfki.vsm.model.sceneflow.glue.command.definition.ArgumentDefinition;
+import de.dfki.vsm.model.sceneflow.glue.command.definition.DataTypeDefinition;
+// Datatype Definitions
+import de.dfki.vsm.model.sceneflow.glue.command.definition.datatype.ListTypeDefinition;
+import de.dfki.vsm.model.sceneflow.glue.command.definition.datatype.StructTypeDefinition;
+import de.dfki.vsm.model.sceneflow.glue.command.definition.datatype.MemberDefinition;
+// Invocation Commands
+import de.dfki.vsm.model.sceneflow.glue.command.invocation.HistorySetDepth;
+import de.dfki.vsm.model.sceneflow.glue.command.invocation.HistoryClearFlat;
+import de.dfki.vsm.model.sceneflow.glue.command.invocation.HistoryClearDeep;
+import de.dfki.vsm.model.sceneflow.glue.command.invocation.PlayDialogAction;
+import de.dfki.vsm.model.sceneflow.glue.command.invocation.PlaySceneGroup;
+import de.dfki.vsm.model.sceneflow.glue.command.invocation.FreeOneSceneGroup;
+import de.dfki.vsm.model.sceneflow.glue.command.invocation.FreeAllSceneGroups;
+// Different Expressions
+import de.dfki.vsm.model.sceneflow.glue.command.expression.UnaryExpression;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.BinaryExpression;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.TernaryExpression;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.JavaCallExpression;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.JavaNewExpression;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.VariableExpression;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.LiteralExpression;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.ParenExpression;
+// Literal Expressions
+import de.dfki.vsm.model.sceneflow.glue.command.expression.literal.NullLiteral;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.literal.IntLiteral;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.literal.FloatLiteral;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.literal.BoolLiteral;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.literal.StringLiteral;
+// Record Expressions
+import de.dfki.vsm.model.sceneflow.glue.command.expression.record.ListRecord;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.record.StructRecord;
+// Variable Expressions
+import de.dfki.vsm.model.sceneflow.glue.command.expression.variable.SimpleVariable;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.variable.MemberVariable;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.variable.ArrayVariable;
+// Function Expressions
+import de.dfki.vsm.model.sceneflow.glue.command.expression.invocation.HistoryContains;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.invocation.HistoryRunTime;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.invocation.HistoryValueOf;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.invocation.InStateCond;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.invocation.PrologQuery;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.invocation.TimeoutCond;
+// Other Imports
+import java.util.ArrayList;
+import java.io.StringReader;
+
+parser code {:
+  public static Command cmdResult;
+  public static Expression expResult;
+  public static /*de.dfki.vsm.model.sceneflow.command.expression.condition.Condition*/Expression cndResult;
+  public static /*de.dfki.vsm.model.sceneflow.command.expression.condition.logical.LogicalCond*/Expression logResult;
+ 
+  public static final short CMD = 0;
+  public static final short EXP = 1;
+  public static final short CND = 2;
+  public static final short LOG = 3;
+  //public static final short CONST = 4;
+
+  public static short parseResultType = 0;
+  public static boolean errorFlag = false;
+
+  public static String trimString(String value) {
+    
+    return value.substring(1, value.length()-1);
+  }
+
+  public static void run(String arg) throws Exception {
+    cmdResult=null;
+    expResult=null;
+    cndResult=null;
+    logResult=null;
+    //constResult=null;
+
+    String inputString = new String(arg);
+    StringReader stringReader = new java.io.StringReader(inputString);
+    new ChartParser(new ChartLexxer(stringReader)).parse();
+	}
+:};
+
+terminal 
+    INC, DEC, ANDAND, OROR, EQUALEQUAL, NOTEQUAL, LESS, GREATER, LESSEQUAL, GREATEREQUAL, 
+    ARROW, PLUS, MINUS, TIMES, DIV, MOD, LNOT, NOT, AND, XOR, OR,
+    LPAREN, RPAREN, LBRACK, RBRACK, LBRACE, RBRACE, COMMA, DOT, QUESTION, COLON, EQUAL; 
+
+//terminal GET, REMOVE, ADDFIRST, ADDLAST, RANDOM, REMOVEFIRST, REMOVELAST, FIRST, LAST, CLEAR, SIZE, CONTAINS, DEFAULT, IN, EMPTY;
+
+terminal 
+    PlayDialogAct, 
+    PlaySceneGroup,  
+    FreeOneSceneGroup, 
+    FreeAllSceneGroups, 
+    PlayActionCommand, 
+    PlayActionSequential, 
+    PlayActionConcurrent;
+terminal 
+    HistoryClearFlat, 
+    HistoryClearDeep, 
+    HistoryContains, 
+    HistoryValueOf, 
+    HistorySetDepth, 
+    HistoryRunTimeOf;
+terminal Query;
+terminal Timeout; 
+terminal JavaNew;
+terminal java.lang.String Identifier;
+terminal java.lang.Integer Integer; 
+terminal java.lang.Float Floating; 
+terminal java.lang.Boolean Boolean;
+terminal java.lang.String DQString;
+terminal java.lang.Object JavaNull;
+
+
+////////////////////////////////////////////////////////////////////////////////
+// Commands
+non terminal Command command;
+non terminal Invocation invocation;
+non terminal Assignment assignment;
+non terminal Expression expression;
+////////////////////////////////////////////////////////////////////////////////
+// Definitions
+non terminal Command definition;
+non terminal FunctionDefinition function_definition;
+non terminal VariableDefinition variable_definition;
+non terminal ParameterDefinition parameter_definition;
+non terminal DatatypeDefinition datatype_definition;
+non terminal Definition classpath_definition;
+////////////////////////////////////////////////////////////////////////////////
+// Datatype Definitions
+non terminal ListTypeDefinition list_type_definition;
+non terminal StructTypeDefinition struct_type_definition;
+non terminal MemberDefinition member_definition;
+////////////////////////////////////////////////////////////////////////////////
+// Expressions
+non terminal UnaryExpression unary_expression;
+non terminal BinaryExpression binary_expression;
+non terminal TernaryExpression conditional_expression;
+non terminal Expression reflection_expression;
+non terminal LiteralExpression literal_expression;
+non terminal VariableExpression variable_expression;
+non terminal ParenExpression paren_expression;
+non terminal JavaNewExpression new_expression;
+non terminal JavaCallExpression call_expression;
+
+non terminal Expression record_expression;
+non terminal Expression invocation_expression;
+////////////////////////////////////////////////////////////////////////////////
+// Lists
+non terminal ArrayList assignment_list;
+non terminal ArrayList assignment_list_opt;
+non terminal ArrayList expression_list;
+non terminal ArrayList expression_list_opt;
+non terminal ArrayList member_definition_list;
+non terminal ArrayList parameter_definition_list;
+////////////////////////////////////////////////////////////////////////////////
+// Other Non Terminals
+non terminal String primitive_type;
+non terminal String type_identifier;
+non terminal String class_qualifier;
+
+/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ * Operator Precedences
+ *++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+precedence right EQUAL;
+precedence right COLON, QUESTION;
+precedence left OROR;
+precedence left ANDAND;
+precedence left OR;
+precedence left XOR;
+precedence left AND;
+precedence left EQUALEQUAL, NOTEQUAL;
+precedence left LESS, LESSEQUAL, GREATER, GREATEREQUAL;
+precedence left PLUS, MINUS;
+precedence left TIMES, DIV, MOD;
+precedence right JavaNew;
+precedence right NOT, LNOT, INC, DEC;
+precedence left DOT;
+
+
+
+/*
+non terminal NullLiteral null_constant;
+non terminal IntLiteral integer_constant;
+non terminal FloatLiteral float_constant;
+non terminal BoolLiteral bool_constant;
+non terminal StringLiteral string_constant;
+non terminal de.dfki.vsm.model.sceneflow.command.expression.condition.constant.ListRecord list_constant;
+non terminal de.dfki.vsm.model.sceneflow.command.expression.condition.constant.StructRecord struct_constant;
+non terminal de.dfki.vsm.model.sceneflow.command.expression.condition.constant.LiteralExpression constant;
+non terminal de.dfki.vsm.model.sceneflow.command.expression.condition.lexpression.LExpression lexpression;
+non terminal de.dfki.vsm.model.sceneflow.command.expression.condition.logical.DefaultCond default_condition;
+non terminal de.dfki.vsm.model.sceneflow.command.expression.condition.logical.InStateCond instate_condition;
+non terminal de.dfki.vsm.model.sceneflow.command.expression.condition.logical.PrologQuery prolog_condition;
+non terminal de.dfki.vsm.model.sceneflow.command.expression.condition.logical.UnaryCond unary_condition;
+non terminal de.dfki.vsm.model.sceneflow.command.expression.condition.logical.BinaryCond binary_condition;
+non terminal de.dfki.vsm.model.sceneflow.command.expression.condition.logical.ComparisionCond comparision_condition;
+non terminal de.dfki.vsm.model.sceneflow.command.expression.condition.logical.LogicalCond logical_condition;
+non terminal de.dfki.vsm.model.sceneflow.command.expression.condition.temporal.TemporalCond temporal_condition;
+non terminal de.dfki.vsm.model.sceneflow.command.expression.condition.temporal.TimeoutCond timeout_condition;
+non terminal de.dfki.vsm.model.sceneflow.command.expression.condition.EmptyCond empty_condition;
+non terminal de.dfki.vsm.model.sceneflow.command.expression.condition.ContainsCond contains_condition;
+non terminal de.dfki.vsm.model.sceneflow.command.expression.condition.Condition condition;
+non terminal BinaryExpression binary_expression;
+non terminal de.dfki.vsm.model.sceneflow.command.expression.ConditionalExp conditional_expression;
+non terminal de.dfki.vsm.model.sceneflow.command.expression.UnaryExp unary_expression;
+non terminal de.dfki.vsm.model.sceneflow.command.expression.HistoryValueOf history_value_of;
+non terminal de.dfki.vsm.model.sceneflow.command.expression.HistoryRunTimeOf history_runtime_of;
+non terminal de.dfki.vsm.model.sceneflow.command.expression.UsrCmd usrcmd_expression;
+non terminal de.dfki.vsm.model.sceneflow.command.expression.Constructor constructor;
+
+non terminal java.util.ArrayList expression_list_opt;
+non terminal java.util.ArrayList assignment_list;
+non terminal java.util.ArrayList expression_list;
+// Operator Precedences
+precedence right EQUAL;
+precedence left OR;
+precedence left AND;
+precedence left EQUALEQUAL, NOTEQUAL;
+precedence left LESS, LESSEQUAL, GREATER, GREATEREQUAL;
+precedence left PLUS, MINUS;
+precedence left TIMES, DIV;
+precedence right NOT;
+precedence left DOT;
+*/
+
+
+/*
+ * COMMAND
+ */
+command ::=
+  expression:x                                                                  {: RESULT = x; if(ChartParser.parseResultType == ChartParser.CMD) { ChartParser.cmdResult = RESULT; ChartParser.errorFlag = false; } :}
+| assignment:x                                                                  {: RESULT = x; if(ChartParser.parseResultType == ChartParser.CMD) { ChartParser.cmdResult = RESULT; ChartParser.errorFlag = false; } else {System.out.println("We do not want to parse such a command"); ChartParser.errorFlag = true; } :}
+| PlayActionSequential LPAREN expression:x RPAREN                                         {: RESULT = new de.dfki.vsm.model.sceneflow.command.PlayActionSequential(x); if(ChartParser.parseResultType == ChartParser.CMD) { ChartParser.cmdResult = RESULT; ChartParser.errorFlag = false; } else {System.out.println("We do not want to parse such a command"); ChartParser.errorFlag = true; } :}
+| PlayActionSequential LPAREN expression:x COMMA expression_list:y RPAREN       {: RESULT = new de.dfki.vsm.model.sceneflow.command.PlayActionSequential(x,y); if(ChartParser.parseResultType == ChartParser.CMD) { ChartParser.cmdResult = RESULT; ChartParser.errorFlag = false; } else {System.out.println("We do not want to parse such a command"); ChartParser.errorFlag = true; } :}
+| PlayActionConcurrent LPAREN expression:x RPAREN                                         {: RESULT = new de.dfki.vsm.model.sceneflow.command.PlayActionConcurrent(x); if(ChartParser.parseResultType == ChartParser.CMD) { ChartParser.cmdResult = RESULT; ChartParser.errorFlag = false; } else {System.out.println("We do not want to parse such a command"); ChartParser.errorFlag = true; } :}
+| PlayActionConcurrent LPAREN expression:x COMMA expression_list:y RPAREN         {: RESULT = new de.dfki.vsm.model.sceneflow.command.PlayActionConcurrent(x,y); if(ChartParser.parseResultType == ChartParser.CMD) { ChartParser.cmdResult = RESULT; ChartParser.errorFlag = false; } else {System.out.println("We do not want to parse such a command"); ChartParser.errorFlag = true; } :}
+| PlayActionCommand LPAREN expression:x RPAREN                                               {: RESULT = new de.dfki.vsm.model.sceneflow.command.PlayActionCommand(x); if(ChartParser.parseResultType == ChartParser.CMD) { ChartParser.cmdResult = RESULT; ChartParser.errorFlag = false; } else {System.out.println("We do not want to parse such a command"); ChartParser.errorFlag = true; } :}
+| PlayActionCommand LPAREN expression:x COMMA expression_list:y RPAREN             {: RESULT = new de.dfki.vsm.model.sceneflow.command.PlayActionCommand(x,y); if(ChartParser.parseResultType == ChartParser.CMD) { ChartParser.cmdResult = RESULT; ChartParser.errorFlag = false; } else {System.out.println("We do not want to parse such a command"); ChartParser.errorFlag = true; } :}
+| PlaySceneGroup LPAREN expression:x RPAREN                                                {: RESULT = new de.dfki.vsm.model.sceneflow.command.PlaySceneGroup(x); if(ChartParser.parseResultType == ChartParser.CMD) { ChartParser.cmdResult = RESULT; ChartParser.errorFlag = false; } else {System.out.println("We do not want to parse such a command"); ChartParser.errorFlag = true; } :}
+| PlaySceneGroup LPAREN expression:x COMMA expression_list:y RPAREN              {: RESULT = new de.dfki.vsm.model.sceneflow.command.PlaySceneGroup(x,y); if(ChartParser.parseResultType == ChartParser.CMD) { ChartParser.cmdResult = RESULT; ChartParser.errorFlag = false; } else {System.out.println("We do not want to parse such a command"); ChartParser.errorFlag = true; } :}
+| PlayDialogAct LPAREN expression:x RPAREN                                                {: RESULT = new de.dfki.vsm.model.sceneflow.command.PlayDialogAction(x); if(ChartParser.parseResultType == ChartParser.CMD) { ChartParser.cmdResult = RESULT; ChartParser.errorFlag = false; } else {System.out.println("We do not want to parse such a command"); ChartParser.errorFlag = true; } :}
+| PlayDialogAct LPAREN expression:x COMMA expression_list:y RPAREN              {: RESULT = new de.dfki.vsm.model.sceneflow.command.PlayDialogAction(x,y); if(ChartParser.parseResultType == ChartParser.CMD) { ChartParser.cmdResult = RESULT; ChartParser.errorFlag = false; } else {System.out.println("We do not want to parse such a command"); ChartParser.errorFlag = true; } :}
+| FreeOneSceneGroup LPAREN expression:x RPAREN                                                {: RESULT = new de.dfki.vsm.model.sceneflow.command.FreeOneSceneGroup(x); if(ChartParser.parseResultType == ChartParser.CMD) { ChartParser.cmdResult = RESULT; ChartParser.errorFlag = false; } else {System.out.println("We do not want to parse such a command"); ChartParser.errorFlag = true; } :}
+| FreeAllSceneGroups LPAREN Boolean:x RPAREN                                                  {: RESULT = new de.dfki.vsm.model.sceneflow.command.FreeAllSceneGroups(x); if(ChartParser.parseResultType == ChartParser.CMD) { ChartParser.cmdResult = RESULT; ChartParser.errorFlag = false; } else {System.out.println("We do not want to parse such a command"); ChartParser.errorFlag = true; } :}
+| HistoryClearFlat LPAREN Identifier:x RPAREN                                         {: RESULT = new de.dfki.vsm.model.sceneflow.command.HistoryClearFlat(x); if(ChartParser.parseResultType == ChartParser.CMD) { ChartParser.cmdResult = RESULT; ChartParser.errorFlag = false; } else {System.out.println("We do not want to parse such a command"); ChartParser.errorFlag = true; } :}
+| HistoryClearDeep LPAREN Identifier:x RPAREN                                     {: RESULT = new de.dfki.vsm.model.sceneflow.command.HistoryClearDeep(x); if(ChartParser.parseResultType == ChartParser.CMD) { ChartParser.cmdResult = RESULT; ChartParser.errorFlag = false; } else {System.out.println("We do not want to parse such a command"); ChartParser.errorFlag = true; } :}
+| HistorySetDepth LPAREN Identifier:x COMMA Integer:y RPAREN                      {: RESULT = new de.dfki.vsm.model.sceneflow.command.HistorySetDepth(x,y); if(ChartParser.parseResultType == ChartParser.CMD) { ChartParser.cmdResult = RESULT; ChartParser.errorFlag = false; } else {System.out.println("We do not want to parse such a command"); ChartParser.errorFlag = true; } :};
+
+
+
+/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ * Variable Assignments
+ *++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+assignment ::=
+  variable_expression:x EQUAL expression:y                                      {: RESULT = new Assignment(x, y); :}
+;
+/*
+// ASSIGNMENT
+assignment ::=
+  lexpression:x EQUAL expression:y                                              {: RESULT = new de.dfki.vsm.model.sceneflow.command.Assignment(x, y); :};
+*/
+
+
+/*
+ * ASSIGNMENT LIST
+ */
+assignment_list ::=
+                                                                                {: java.util.ArrayList<de.dfki.vsm.model.sceneflow.command.Assignment> vec = new java.util.ArrayList<de.dfki.vsm.model.sceneflow.command.Assignment>(); RESULT = vec; :}
+| assignment:x                                                                  {: java.util.ArrayList<de.dfki.vsm.model.sceneflow.command.Assignment> vec = new java.util.ArrayList<de.dfki.vsm.model.sceneflow.command.Assignment>(); vec.add(x); RESULT = vec; :}
+| assignment_list:x COMMA assignment:y                                           {: java.util.ArrayList<de.dfki.vsm.model.sceneflow.command.Assignment> vec = x; vec.add(y); RESULT = x; :};
+
+
+expression_list ::=
+  expression:x                                                                  {: java.util.ArrayList<de.dfki.vsm.model.sceneflow.command.expression.Expression> vec = new java.util.ArrayList<de.dfki.vsm.model.sceneflow.command.expression.Expression>(); vec.add(x); RESULT = vec; :}
+| expression_list:x COMMA expression:y                                          {: java.util.ArrayList<de.dfki.vsm.model.sceneflow.command.expression.Expression> vec = x; vec.add(y); RESULT = x; :};
+
+expression_list_opt ::= 
+                                                                                {: java.util.ArrayList<de.dfki.vsm.model.sceneflow.command.expression.Expression> vec = new java.util.ArrayList<de.dfki.vsm.model.sceneflow.command.expression.Expression>(); RESULT = vec; :}
+| expression_list:x                                                             {: java.util.ArrayList<de.dfki.vsm.model.sceneflow.command.expression.Expression> vec = x; RESULT = x; :}
+;
+
+
+
+
+/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ * Expressions
+ +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+expression ::=
+  condition:x                                                                   {: RESULT = x; if(ChartParser.parseResultType == ChartParser.EXP) { ChartParser.expResult = RESULT; ChartParser.errorFlag = false; } :}
+| conditional_expression:x                                                      {: RESULT = x; if(ChartParser.parseResultType == ChartParser.EXP) { ChartParser.expResult = RESULT; ChartParser.errorFlag = false; } else {System.out.println("We do not want to parse such an expression"); ChartParser.errorFlag = true; } :}
+| binary_expression:x                                                           {: RESULT = x; if(ChartParser.parseResultType == ChartParser.EXP) { ChartParser.expResult = RESULT; ChartParser.errorFlag = false; } else {System.out.println("We do not want to parse such an expression"); ChartParser.errorFlag = true; } :}
+| LPAREN binary_expression:x RPAREN                                             {: RESULT = x; if(ChartParser.parseResultType == ChartParser.EXP) { ChartParser.expResult = RESULT; ChartParser.errorFlag = false; } else {System.out.println("We do not want to parse such an expression"); ChartParser.errorFlag = true; } :}
+| unary_expression:x                                                            {: RESULT = x; if(ChartParser.parseResultType == ChartParser.EXP) { ChartParser.expResult = RESULT; ChartParser.errorFlag = false; } else {System.out.println("We do not want to parse such an expression"); ChartParser.errorFlag = true; } :}
+| usrcmd_expression:x                                                           {: RESULT = x; if(ChartParser.parseResultType == ChartParser.EXP) { ChartParser.expResult = RESULT; ChartParser.errorFlag = false; } else {System.out.println("We do not want to parse such an expression"); ChartParser.errorFlag = true; } :}
+| history_value_of:x                                                            {: RESULT = x; if(ChartParser.parseResultType == ChartParser.EXP) { ChartParser.expResult = RESULT; ChartParser.errorFlag = false; } else {System.out.println("We do not want to parse such an expression"); ChartParser.errorFlag = true; } :}
+| history_runtime_of:x                                                          {: RESULT = x; if(ChartParser.parseResultType == ChartParser.EXP) { ChartParser.expResult = RESULT; ChartParser.errorFlag = false; } else {System.out.println("We do not want to parse such an expression"); ChartParser.errorFlag = true; } :}
+| constructor:x                                                                 {: RESULT = x; if(ChartParser.parseResultType == ChartParser.EXP) { ChartParser.expResult = RESULT; ChartParser.errorFlag = false; } else {System.out.println("We do not want to parse such an expression"); ChartParser.errorFlag = true; } :};
+
+
+constructor ::=
+  JavaNew Identifier:x LPAREN expression_list_opt:y RPAREN                          {: RESULT = new de.dfki.vsm.model.sceneflow.command.expression.Constructor(x, y); :};
+
+
+/*
+ * USER COMMAND EXPRESSION
+ */
+usrcmd_expression ::=
+  Identifier:x LPAREN expression_list_opt:y RPAREN                                    {: RESULT = new de.dfki.vsm.model.sceneflow.command.expression.UsrCmd(x, y); :};
+
+/*
+ * HISTORY VALUE EXPRESSION
+ */
+history_value_of ::=
+  HistoryValueOf LPAREN Identifier:x COMMA Identifier:y COMMA Integer:z RPAREN      {: RESULT = new de.dfki.vsm.model.sceneflow.command.expression.HistoryValueOf(x, y, z); :}
+| HistoryValueOf LPAREN Identifier:x COMMA Identifier:y RPAREN                      {: RESULT = new de.dfki.vsm.model.sceneflow.command.expression.HistoryValueOf(x, y); :};
+
+/*
+ * HISTORY RUNTIME EXPRESSION
+ */
+history_runtime_of ::=
+  HistoryRunTimeOf LPAREN Identifier:x COMMA Integer:y RPAREN                     {: RESULT = new de.dfki.vsm.model.sceneflow.command.expression.HistoryRunTimeOf(x, y); :}
+| HistoryRunTimeOf LPAREN Identifier:x RPAREN                                     {: RESULT = new de.dfki.vsm.model.sceneflow.command.expression.HistoryRunTimeOf(x); :};
+
+/*
+ * CONDITIONAL EXPRESSION
+ */
+conditional_expression ::=
+  LPAREN condition:x QUESTION expression:y COLON expression:z RPAREN            {: RESULT = new de.dfki.vsm.model.sceneflow.command.expression.ConditionalExp(x, y, z); :};
+
+/*
+ * BINARY EXPRESSION
+ */
+binary_expression ::=
+  expression:x PLUS expression:y                                                {: RESULT = new BinaryExpression(x, BinaryExpression.Operator.Add, y); :}
+| expression:x MINUS expression:y                                               {: RESULT = new BinaryExpression(x, BinaryExpression.Operator.Sub, y); :}
+| expression:x TIMES expression:y                                               {: RESULT = new BinaryExpression(x, BinaryExpression.Operator.Mul, y); :}
+| expression:x DIV expression:y                                                 {: RESULT = new BinaryExpression(x, BinaryExpression.Operator.Div, y); :}
+| GET LPAREN expression:x COMMA expression:y RPAREN                             {: RESULT = new BinaryExpression(x, BinaryExpression.Operator.Get, y); :}
+| REMOVE LPAREN expression:x COMMA expression:y RPAREN                          {: RESULT = new BinaryExpression(x, BinaryExpression.Operator.Remove, y); :}
+| ADDFIRST LPAREN expression:x COMMA expression:y RPAREN                        {: RESULT = new BinaryExpression(x, BinaryExpression.Operator.AddFirst, y); :}
+| ADDLAST LPAREN expression:x COMMA expression:y RPAREN                         {: RESULT = new BinaryExpression(x, BinaryExpression.Operator.AddLast, y); :};
+
+/*
+ * UNARY EXPRESSION
+ */
+unary_expression ::=
+  RANDOM LPAREN expression:x RPAREN                                             {: RESULT = new de.dfki.vsm.model.sceneflow.command.expression.UnaryExp(x, de.dfki.vsm.model.sceneflow.command.expression.UnaryExp.Operator.Random); :}
+| REMOVEFIRST LPAREN expression:x RPAREN                                        {: RESULT = new de.dfki.vsm.model.sceneflow.command.expression.UnaryExp(x, de.dfki.vsm.model.sceneflow.command.expression.UnaryExp.Operator.RemoveFirst); :}
+| REMOVELAST LPAREN expression:x RPAREN                                         {: RESULT = new de.dfki.vsm.model.sceneflow.command.expression.UnaryExp(x, de.dfki.vsm.model.sceneflow.command.expression.UnaryExp.Operator.RemoveLast); :}
+| FIRST LPAREN expression:x RPAREN                                              {: RESULT = new de.dfki.vsm.model.sceneflow.command.expression.UnaryExp(x, de.dfki.vsm.model.sceneflow.command.expression.UnaryExp.Operator.First); :}
+| LAST LPAREN expression:x RPAREN                                               {: RESULT = new de.dfki.vsm.model.sceneflow.command.expression.UnaryExp(x, de.dfki.vsm.model.sceneflow.command.expression.UnaryExp.Operator.Last); :}
+| CLEAR LPAREN expression:x RPAREN                                              {: RESULT = new de.dfki.vsm.model.sceneflow.command.expression.UnaryExp(x, de.dfki.vsm.model.sceneflow.command.expression.UnaryExp.Operator.Clear); :}
+| SIZE LPAREN expression:x RPAREN                                               {: RESULT = new de.dfki.vsm.model.sceneflow.command.expression.UnaryExp(x, de.dfki.vsm.model.sceneflow.command.expression.UnaryExp.Operator.Size); :}
+| MINUS expression:x                                                            {: RESULT = new de.dfki.vsm.model.sceneflow.command.expression.UnaryExp(x, de.dfki.vsm.model.sceneflow.command.expression.UnaryExp.Operator.Neg); :};
+
+/*
+ * LEXPRESSION
+ */
+lexpression ::=
+  Identifier:x                                                                    {: RESULT = new de.dfki.vsm.model.sceneflow.command.expression.condition.lexpression.VarExp(x); :}
+| Identifier:x LBRACK expression:y RBRACK                                         {: RESULT = new de.dfki.vsm.model.sceneflow.command.expression.condition.lexpression.ArrVarExp(x, y); :}
+| Identifier:x DOT Identifier:y                                                     {: RESULT = new de.dfki.vsm.model.sceneflow.command.expression.condition.lexpression.MemVarExp(x, y); :};
+//TODO Identifier->expression vorne
+/*
+ * CONDITION
+ */
+condition::=
+  logical_condition:x                                                           {: RESULT = x; if(ChartParser.parseResultType == ChartParser.CND) { ChartParser.cndResult = RESULT; ChartParser.errorFlag = false; } :}
+| constant:x                                                                    {: RESULT = x; if(ChartParser.parseResultType == ChartParser.CND) { ChartParser.cndResult = RESULT; ChartParser.errorFlag = false; } else {System.out.println("We do not want to parse such a condition"); ChartParser.errorFlag = true; } :}
+| empty_condition:x                                                             {: RESULT = x; if(ChartParser.parseResultType == ChartParser.CND) { ChartParser.cndResult = RESULT; ChartParser.errorFlag = false; } else {System.out.println("We do not want to parse such a condition"); ChartParser.errorFlag = true; } :}
+| contains_condition:x                                                          {: RESULT = x; if(ChartParser.parseResultType == ChartParser.CND) { ChartParser.cndResult = RESULT; ChartParser.errorFlag = false; } else {System.out.println("We do not want to parse such a condition"); ChartParser.errorFlag = true; } :}
+| temporal_condition:x                                                          {: RESULT = x; if(ChartParser.parseResultType == ChartParser.CND) { ChartParser.cndResult = RESULT; ChartParser.errorFlag = false; } else {System.out.println("We do not want to parse such a condition"); ChartParser.errorFlag = true; } :}
+| lexpression:x                                                                 {: RESULT = x; if(ChartParser.parseResultType == ChartParser.CND) { ChartParser.cndResult = RESULT; ChartParser.errorFlag = false; } else {System.out.println("We do not want to parse such a condition"); ChartParser.errorFlag = true; } :};
+
+/*
+ * CONSTANT
+ */
+constant ::=
+  integer_constant:x                                                            {: RESULT = x; :}
+| float_constant:x                                                              {: RESULT = x; :}
+| bool_constant:x                                                               {: RESULT = x; :}
+| string_constant:x                                                             {: RESULT = x; :}
+| list_constant:x                                                               {: RESULT = x; :}
+| struct_constant:x                                                             {: RESULT = x; :}
+| null_constant:x                                                               {: RESULT = x; :};
+
+integer_constant ::= 
+  Integer:x                                                                     {: RESULT = new de.dfki.vsm.model.sceneflow.command.expression.condition.constant.Int(x); :};
+float_constant ::= 
+  Floating:x                                                                       {: RESULT = new de.dfki.vsm.model.sceneflow.command.expression.condition.constant.Float(x); :};
+bool_constant ::= 
+  Boolean:x                                                                     {: RESULT = new de.dfki.vsm.model.sceneflow.command.expression.condition.constant.Bool(x); :};
+string_constant ::= 
+  DQString:x                                                                      {: RESULT = new de.dfki.vsm.model.sceneflow.command.expression.condition.constant.StringLiteral(ChartParser.trimString(x)); :};
+null_constant ::=
+  JavaNull                                                                          {: RESULT = new de.dfki.vsm.model.sceneflow.command.expression.condition.constant.Object(); :};
+list_constant ::= 
+  LBRACK expression_list_opt:y RBRACK                                               {: RESULT = new de.dfki.vsm.model.sceneflow.command.expression.condition.constant.ListRecord(/*x,*/ y); :};
+struct_constant ::= 
+  LBRACE assignment_list:y RBRACE                                               {: RESULT = new de.dfki.vsm.model.sceneflow.command.expression.condition.constant.StructRecord(/*x,*/ y); :};
+
+/*
+ * EMPTY CONDITION
+ */
+empty_condition ::=
+  EMPTY LPAREN expression:x RPAREN                                              {: RESULT = new de.dfki.vsm.model.sceneflow.command.expression.condition.EmptyCond(x); :};
+
+/*
+ * CONTAINS CONDITION
+ */
+contains_condition ::=
+  CONTAINS LPAREN expression:x COMMA expression:y RPAREN                        {: RESULT = new de.dfki.vsm.model.sceneflow.command.expression.condition.ContainsCond(x,y); :};
+
+/*
+ * LOGICAL CONDITION
+ */
+logical_condition ::=
+  default_condition:x                                                           {: RESULT = x; if(ChartParser.parseResultType == ChartParser.LOG) {ChartParser.logResult = RESULT; ChartParser.errorFlag = false; } :}
+| instate_condition:x                                                           {: RESULT = x; if(ChartParser.parseResultType == ChartParser.LOG) {ChartParser.logResult = RESULT; ChartParser.errorFlag = false; } :}
+| unary_condition:x                                                             {: RESULT = x; if(ChartParser.parseResultType == ChartParser.LOG) {ChartParser.logResult = RESULT; ChartParser.errorFlag = false; } :}
+| binary_condition:x                                                            {: RESULT = x; if(ChartParser.parseResultType == ChartParser.LOG) {ChartParser.logResult = RESULT; ChartParser.errorFlag = false; } :}
+| comparision_condition:x                                                       {: RESULT = x; if(ChartParser.parseResultType == ChartParser.LOG) {ChartParser.logResult = RESULT; ChartParser.errorFlag = false; } :}
+| HistoryContains LPAREN Identifier:x COMMA Identifier:y RPAREN                {: RESULT = new de.dfki.vsm.model.sceneflow.command.expression.condition.logical.HistoryContainsState(x,y); if(ChartParser.parseResultType == ChartParser.LOG) {ChartParser.logResult = RESULT; ChartParser.errorFlag = false; } :}
+| HistoryContains LPAREN Identifier:x COMMA Identifier:y COMMA Integer:z RPAREN {: RESULT = new de.dfki.vsm.model.sceneflow.command.expression.condition.logical.HistoryContainsState(x,y,z); if(ChartParser.parseResultType == ChartParser.LOG) {ChartParser.logResult = RESULT; ChartParser.errorFlag = false; } :}
+| prolog_condition:x                                                            {: RESULT = x; if(ChartParser.parseResultType == ChartParser.LOG) {ChartParser.logResult = RESULT; ChartParser.errorFlag = false; } :}
+;
+
+/*
+ * INSTATE CONDITION
+ */
+instate_condition ::=
+  IN LPAREN Identifier:x RPAREN                                                   {: RESULT = new de.dfki.vsm.model.sceneflow.command.expression.condition.logical.InStateCond(x); :};
+
+
+// Query expression
+prolog_condition ::=
+  Query expression:x DOT                                                        {: RESULT = new de.dfki.vsm.model.sceneflow.command.expression.condition.logical.PrologQuery(x); :};
+
+/*
+ * DEFAULT CONDITION
+ */
+default_condition ::=
+  DEFAULT LPAREN condition:x RPAREN                                             {: RESULT = new de.dfki.vsm.model.sceneflow.command.expression.condition.logical.DefaultCond(x); :};
+
+/*
+ * UNARY CONDITION
+ */
+unary_condition ::=
+  NOT condition:x                                                               {: RESULT = new de.dfki.vsm.model.sceneflow.command.expression.condition.logical.UnaryCond(x, de.dfki.vsm.model.sceneflow.command.expression.condition.logical.UnaryCond.Operator.Not); :};
+
+/*
+ * BINARY CONDITION
+ */
+binary_condition ::=  
+  condition:x AND condition:y                                                   {: RESULT = new de.dfki.vsm.model.sceneflow.command.expression.condition.logical.BinaryCond(x, y, de.dfki.vsm.model.sceneflow.command.expression.condition.logical.BinaryCond.Operator.And); :}
+| condition:x OR condition:y                                                    {: RESULT = new de.dfki.vsm.model.sceneflow.command.expression.condition.logical.BinaryCond(x, y, de.dfki.vsm.model.sceneflow.command.expression.condition.logical.BinaryCond.Operator.Or); :};
+
+/*
+ * COMPARISION CONDITION
+ */
+comparision_condition ::=
+  LPAREN expression:x LESS expression:y RPAREN                                  {: RESULT = new de.dfki.vsm.model.sceneflow.command.expression.condition.logical.ComparisionCond(x, y, de.dfki.vsm.model.sceneflow.command.expression.condition.logical.ComparisionCond.Operator.Lt); :}
+| LPAREN expression:x GREATER expression:y RPAREN                               {: RESULT = new de.dfki.vsm.model.sceneflow.command.expression.condition.logical.ComparisionCond(x, y, de.dfki.vsm.model.sceneflow.command.expression.condition.logical.ComparisionCond.Operator.Gt); :}
+| LPAREN expression:x LESSEQUAL expression:y RPAREN                             {: RESULT = new de.dfki.vsm.model.sceneflow.command.expression.condition.logical.ComparisionCond(x, y, de.dfki.vsm.model.sceneflow.command.expression.condition.logical.ComparisionCond.Operator.Le); :}
+| LPAREN expression:x GREATEREQUAL expression:y RPAREN                          {: RESULT = new de.dfki.vsm.model.sceneflow.command.expression.condition.logical.ComparisionCond(x, y, de.dfki.vsm.model.sceneflow.command.expression.condition.logical.ComparisionCond.Operator.Ge); :}
+| LPAREN expression:x EQUALEQUAL expression:y RPAREN                            {: RESULT = new de.dfki.vsm.model.sceneflow.command.expression.condition.logical.ComparisionCond(x, y, de.dfki.vsm.model.sceneflow.command.expression.condition.logical.ComparisionCond.Operator.Eq); :}
+| LPAREN expression:x NOTEQUAL expression:y RPAREN                              {: RESULT = new de.dfki.vsm.model.sceneflow.command.expression.condition.logical.ComparisionCond(x, y, de.dfki.vsm.model.sceneflow.command.expression.condition.logical.ComparisionCond.Operator.Neq); :};
+
+
+/*
+ * TEMPORAL CONDITION
+ */
+temporal_condition ::= timeout_condition:x                                      {: RESULT = x; :};
+timeout_condition ::= Timeout LPAREN expression:x RPAREN                        {: RESULT = new de.dfki.vsm.model.sceneflow.command.expression.condition.temporal.TimeoutCond(x); :};
+
+
+
+
+
+
+/*
+expression_list ::=
+  expression:x                                                                  {: java.util.ArrayList<de.dfki.vsm.model.sceneflow.command.expression.Expression> vec = new java.util.ArrayList<de.dfki.vsm.model.sceneflow.command.expression.Expression>(); vec.add(x); RESULT = vec; :}
+| expression_list_opt:x COMMA expression:y                                          {: java.util.ArrayList<de.dfki.vsm.model.sceneflow.command.expression.Expression> vec = x; vec.add(y); RESULT = x; :};
+
+expression_list_opt ::= 
+                                                                                {: java.util.ArrayList<de.dfki.vsm.model.sceneflow.command.expression.Expression> vec = new java.util.ArrayList<de.dfki.vsm.model.sceneflow.command.expression.Expression>(); RESULT = vec; :}
+| expression:x                                                                  {: java.util.ArrayList<de.dfki.vsm.model.sceneflow.command.expression.Expression> vec = new java.util.ArrayList<de.dfki.vsm.model.sceneflow.command.expression.Expression>(); vec.add(x); RESULT = vec; :}
+| expression_list_opt:x COMMA expression:y                                          {: java.util.ArrayList<de.dfki.vsm.model.sceneflow.command.expression.Expression> vec = x; vec.add(y); RESULT = x; :};
+*/
