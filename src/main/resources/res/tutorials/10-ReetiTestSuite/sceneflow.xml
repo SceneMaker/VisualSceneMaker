@@ -1,0 +1,308 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SceneFlow id="" name="default" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Do, 20 Apr 2017 12:16:23" start="N1;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
+  <Define>
+  </Define>
+  <Declare>
+  </Declare>
+  <Commands>
+  </Commands>
+  <LocalVariableBadge>
+    <Position xPos="10" yPos="10"/>
+  </LocalVariableBadge>
+  <GlobalVariableBadge>
+    <Position xPos="10" yPos="10"/>
+  </GlobalVariableBadge>
+  <Node id="N1" name="N1" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <PlayScene>
+        <StringLiteral><![CDATA[Hello]]></StringLiteral>
+      </PlayScene>
+    </Commands>
+    <TEdge target="N2" start="" timeout="2000">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="300" yPos="75" ctrlXPos="367" ctrlYPos="75"/>
+        <ControlPoint xPos="480" yPos="75" ctrlXPos="412" ctrlYPos="75"/>
+      </Connection>
+    </Graphics>
+    </TEdge>
+    <Graphics>
+      <Position xPos="210" yPos="30"/>
+    </Graphics>
+  </Node>
+  <Node id="N2" name="N2" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <PlayScene>
+        <StringLiteral><![CDATA[LookLeft]]></StringLiteral>
+      </PlayScene>
+    </Commands>
+    <TEdge target="N4" start="" timeout="1000">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="570" yPos="75" ctrlXPos="637" ctrlYPos="75"/>
+        <ControlPoint xPos="750" yPos="75" ctrlXPos="682" ctrlYPos="75"/>
+      </Connection>
+    </Graphics>
+    </TEdge>
+    <Graphics>
+      <Position xPos="480" yPos="30"/>
+    </Graphics>
+  </Node>
+  <Node id="N3" name="N3" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <PlayScene>
+        <StringLiteral><![CDATA[Neutral]]></StringLiteral>
+      </PlayScene>
+    </Commands>
+    <TEdge target="N6" start="" timeout="1000">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="750" yPos="255" ctrlXPos="682" ctrlYPos="255"/>
+        <ControlPoint xPos="570" yPos="255" ctrlXPos="637" ctrlYPos="255"/>
+      </Connection>
+    </Graphics>
+    </TEdge>
+    <Graphics>
+      <Position xPos="750" yPos="210"/>
+    </Graphics>
+  </Node>
+  <Node id="N4" name="N4" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <PlayScene>
+        <StringLiteral><![CDATA[LookLeftMove]]></StringLiteral>
+      </PlayScene>
+    </Commands>
+    <TEdge target="N3" start="" timeout="1000">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="795" yPos="120" ctrlXPos="795" ctrlYPos="187"/>
+        <ControlPoint xPos="795" yPos="210" ctrlXPos="795" ctrlYPos="142"/>
+      </Connection>
+    </Graphics>
+    </TEdge>
+    <Graphics>
+      <Position xPos="750" yPos="30"/>
+    </Graphics>
+  </Node>
+  <Node id="N6" name="N6" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <PlayScene>
+        <StringLiteral><![CDATA[LookRight]]></StringLiteral>
+      </PlayScene>
+    </Commands>
+    <TEdge target="N7" start="" timeout="1000">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="480" yPos="255" ctrlXPos="412" ctrlYPos="255"/>
+        <ControlPoint xPos="300" yPos="255" ctrlXPos="367" ctrlYPos="255"/>
+      </Connection>
+    </Graphics>
+    </TEdge>
+    <Graphics>
+      <Position xPos="480" yPos="210"/>
+    </Graphics>
+  </Node>
+  <Node id="N7" name="N7" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <PlayScene>
+        <StringLiteral><![CDATA[LookRightMove]]></StringLiteral>
+      </PlayScene>
+    </Commands>
+    <TEdge target="N8" start="" timeout="1000">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="255" yPos="300" ctrlXPos="255" ctrlYPos="322"/>
+        <ControlPoint xPos="255" yPos="390" ctrlXPos="255" ctrlYPos="367"/>
+      </Connection>
+    </Graphics>
+    </TEdge>
+    <Graphics>
+      <Position xPos="210" yPos="210"/>
+    </Graphics>
+  </Node>
+  <Node id="N8" name="N8" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <PlayScene>
+        <StringLiteral><![CDATA[Neutral]]></StringLiteral>
+      </PlayScene>
+    </Commands>
+    <Graphics>
+      <Position xPos="210" yPos="390"/>
+    </Graphics>
+  </Node>
+  <SuperNode id="S1" name="MotorExample" comment="" hideLocalVar="false" hideGlobalVar="false" start="N24;N19;">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <Graphics>
+      <Position xPos="930" yPos="30"/>
+    </Graphics>
+    <LocalVariableBadge>
+      <Position xPos="10" yPos="10"/>
+    </LocalVariableBadge>
+    <GlobalVariableBadge>
+      <Position xPos="10" yPos="10"/>
+    </GlobalVariableBadge>
+    <Node id="N9" name="History" history="true">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+      </Commands>
+      <Graphics>
+        <Position xPos="30" yPos="30"/>
+      </Graphics>
+    </Node>
+    <Node id="N19" name="N19" history="false">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+        <PlayScene>
+          <StringLiteral><![CDATA[neckPan_middle]]></StringLiteral>
+        </PlayScene>
+      </Commands>
+      <TEdge target="N20" start="" timeout="1000">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="210" yPos="165" ctrlXPos="277" ctrlYPos="165"/>
+          <ControlPoint xPos="300" yPos="165" ctrlXPos="232" ctrlYPos="165"/>
+        </Connection>
+      </Graphics>
+      </TEdge>
+      <Graphics>
+        <Position xPos="120" yPos="120"/>
+      </Graphics>
+    </Node>
+    <Node id="N20" name="N20" history="false">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+        <PlayScene>
+          <StringLiteral><![CDATA[neckPan_left]]></StringLiteral>
+        </PlayScene>
+      </Commands>
+      <TEdge target="N22" start="" timeout="1000">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="390" yPos="165" ctrlXPos="457" ctrlYPos="165"/>
+          <ControlPoint xPos="480" yPos="165" ctrlXPos="412" ctrlYPos="165"/>
+        </Connection>
+      </Graphics>
+      </TEdge>
+      <Graphics>
+        <Position xPos="300" yPos="120"/>
+      </Graphics>
+    </Node>
+    <Node id="N21" name="N21" history="false">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+        <PlayScene>
+          <StringLiteral><![CDATA[neckPan_right]]></StringLiteral>
+        </PlayScene>
+      </Commands>
+      <TEdge target="N23" start="" timeout="1000">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="750" yPos="165" ctrlXPos="772" ctrlYPos="165"/>
+          <ControlPoint xPos="840" yPos="165" ctrlXPos="817" ctrlYPos="165"/>
+        </Connection>
+      </Graphics>
+      </TEdge>
+      <Graphics>
+        <Position xPos="660" yPos="120"/>
+      </Graphics>
+    </Node>
+    <Node id="N22" name="N22" history="false">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+        <PlayScene>
+          <StringLiteral><![CDATA[neckPan_middle]]></StringLiteral>
+        </PlayScene>
+      </Commands>
+      <TEdge target="N21" start="" timeout="1000">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="570" yPos="165" ctrlXPos="592" ctrlYPos="165"/>
+          <ControlPoint xPos="660" yPos="165" ctrlXPos="637" ctrlYPos="165"/>
+        </Connection>
+      </Graphics>
+      </TEdge>
+      <Graphics>
+        <Position xPos="480" yPos="120"/>
+      </Graphics>
+    </Node>
+    <Node id="N23" name="N23" history="false">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+        <PlayScene>
+          <StringLiteral><![CDATA[neckPan_middle]]></StringLiteral>
+        </PlayScene>
+      </Commands>
+      <Graphics>
+        <Position xPos="840" yPos="120"/>
+      </Graphics>
+    </Node>
+    <Node id="N24" name="N24" history="false">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+        <PlayScene>
+          <StringLiteral><![CDATA[Talking_About_Sun]]></StringLiteral>
+        </PlayScene>
+      </Commands>
+      <Graphics>
+        <Position xPos="120" yPos="300"/>
+      </Graphics>
+    </Node>
+  </SuperNode>
+  <ClassPath>
+  </ClassPath>
+  <InitContext></InitContext>
+</SceneFlow>

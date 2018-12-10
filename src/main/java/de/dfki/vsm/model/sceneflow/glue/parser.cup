@@ -1,0 +1,672 @@
+package de.dfki.vsm.model.sceneflow.glue;
+
+// Java System Imports
+import java_cup.runtime.*;
+import java.util.ArrayList;
+import java.io.StringReader;
+import de.dfki.vsm.util.log.*;
+// Different Commands
+import de.dfki.vsm.model.sceneflow.glue.command.Command;
+import de.dfki.vsm.model.sceneflow.glue.command.Definition;
+import de.dfki.vsm.model.sceneflow.glue.command.Assignment;
+import de.dfki.vsm.model.sceneflow.glue.command.Invocation;
+import de.dfki.vsm.model.sceneflow.glue.command.Expression;
+// Definition Commands
+import de.dfki.vsm.model.sceneflow.glue.command.definition.FunctionDefinition;
+import de.dfki.vsm.model.sceneflow.glue.command.definition.VariableDefinition;
+import de.dfki.vsm.model.sceneflow.glue.command.definition.ArgumentDefinition;
+import de.dfki.vsm.model.sceneflow.glue.command.definition.DataTypeDefinition;
+// Datatype Definitions
+import de.dfki.vsm.model.sceneflow.glue.command.definition.datatype.ListTypeDefinition;
+import de.dfki.vsm.model.sceneflow.glue.command.definition.datatype.StructTypeDefinition;
+import de.dfki.vsm.model.sceneflow.glue.command.definition.datatype.MemberDefinition;
+// Invocation Commands
+import de.dfki.vsm.model.sceneflow.glue.command.invocation.HistorySetDepth;
+import de.dfki.vsm.model.sceneflow.glue.command.invocation.HistoryClearFlat;
+import de.dfki.vsm.model.sceneflow.glue.command.invocation.HistoryClearDeep;
+import de.dfki.vsm.model.sceneflow.glue.command.invocation.PlayDialogAction;
+import de.dfki.vsm.model.sceneflow.glue.command.invocation.PlayScenesActivity;
+import de.dfki.vsm.model.sceneflow.glue.command.invocation.PlayActionActivity;
+import de.dfki.vsm.model.sceneflow.glue.command.invocation.StopActionActivity;
+import de.dfki.vsm.model.sceneflow.glue.command.invocation.UnblockSceneGroup;
+import de.dfki.vsm.model.sceneflow.glue.command.invocation.UnblockSceneScript;
+// Different Expressions
+import de.dfki.vsm.model.sceneflow.glue.command.expression.UnaryExpression;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.BinaryExpression;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.TernaryExpression;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.CallingExpression;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.ConstructExpression;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.VariableExpression;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.LiteralExpression;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.ParenExpression;
+// Literal Expressions
+import de.dfki.vsm.model.sceneflow.glue.command.expression.literal.NullLiteral;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.literal.IntLiteral;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.literal.FloatLiteral;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.literal.BoolLiteral;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.literal.StringLiteral;
+// Record Expressions
+import de.dfki.vsm.model.sceneflow.glue.command.expression.record.ArrayExpression;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.record.StructExpression;
+// Variable Expressions
+import de.dfki.vsm.model.sceneflow.glue.command.expression.variable.SimpleVariable;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.variable.MemberVariable;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.variable.ArrayVariable;
+// Function Expressions
+import de.dfki.vsm.model.sceneflow.glue.command.expression.invocation.HistoryContains;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.invocation.HistoryRunTimeOf;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.invocation.HistoryValueOf;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.invocation.InStateQuery;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.invocation.PrologQuery;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.invocation.TimeoutQuery;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.invocation.RandomQuery;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.invocation.ContainsList;
+// Enumeration Imports
+import de.dfki.vsm.model.sceneflow.glue.command.invocation.PlayActionActivity.PlayMode;
+import de.dfki.vsm.model.sceneflow.glue.command.invocation.StopActionActivity.StopMode;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.UnaryExpression.UnaryOp;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.BinaryExpression.BinaryOp;
+
+// Action Code 
+action code {:
+    // Trim the quotes
+    public static String trim(final String value) {    
+        return value.substring(1, value.length() - 1);
+    }
+:};
+
+// Parser Code 
+parser code {:    
+     // The System Logger
+    private final static LOGDefaultLogger mLogger 
+      = LOGDefaultLogger.getInstance();
+    // Run the parser 
+    public final static Command run(final String input) throws Exception {
+        mLogger.message("Parsing Input String '" + input + "'");
+        try {
+            // Create A String Reader
+            final StringReader reader = new StringReader(input);
+            // Create A Glue Lexxer
+            final GlueLexxer lexxer = new GlueLexxer(reader);
+            // Create A Glue Parser
+            final GlueParser parser = new GlueParser(lexxer);
+            // Parse Input Content
+            final Symbol symbol = parser.parse();
+            // Cast The Symbol Down
+            if(symbol != null) {
+                mLogger.success("Parsing Success:\n" + symbol.value);  
+                // Return command at success
+                return (Command)symbol.value;
+            } else {
+                mLogger.failure("Parsing Failure: Invalid Parsing Result");  
+                // Return NULL at failure
+                return null;
+            }
+        } catch(final Exception exc) {
+            mLogger.failure("Parsing Failure:\n" + exc.toString()); 
+            // Return NULL at failure 
+            return null;
+        }
+    }
+:};
+
+// Terminal Definitions ////////////////////////////////////////////////////////
+// Reserved Function Identifiers
+terminal String
+    PlayAction, StopAction, PlayDialogAct, PlayScene, InState, Random, Contains,
+    UnblockSceneGroup, UnblockSceneScript, HistoryClearFlat, HistoryClearDeep, 
+    HistoryContains, HistoryValueOf, HistorySetDepth, HistoryRunTimeOf, Timeout,
+    List, Struct, Fun, Class;
+// Operators And Reserved Words
+terminal String
+    NEW, EQUALEQUAL, NOTEQUAL, NOTMINUS, QSTMINUS, LESS, GREATER, LESSEQUAL, 
+    GREATEREQUAL, ANDAND, OROR, AND, OR, XOR, PLUS, MINUS, TIMES, DIV, MOD, 
+    ARROW, LNOT, NOT, INC, DEC, LPAREN, RPAREN, LBRACK, RBRACK, LBRACE, RBRACE, 
+    COMMA, DOT, QUESTION, COLON, EQUAL, INT, SHORT, LONG, FLOAT, DOUBLE, BOOL, 
+    CHAR, STRING, VAR, OBJECT, NOTTILDE;
+// Literal Values
+terminal String     IDENTIFIER;
+terminal Float      FLOAT_LITERAL; 
+terminal String     STRING_LITERAL;
+terminal Integer    INTEGER_LITERAL; 
+terminal Boolean    BOOLEAN_LITERAL;
+terminal Object     OBJECT_LITERAL;  
+
+// Non-Terminal Definitions ////////////////////////////////////////////////////
+// Commands
+non terminal Command command;
+non terminal Invocation invocation;
+non terminal Assignment assignment;
+non terminal Expression expression;
+// Definitions
+non terminal Command definition;
+non terminal FunctionDefinition function_definition;
+non terminal VariableDefinition variable_definition;
+non terminal ArgumentDefinition parameter_definition;
+non terminal DataTypeDefinition datatype_definition;
+non terminal Definition classpath_definition;
+// Datatype Definitions
+non terminal ListTypeDefinition list_type_definition;
+non terminal StructTypeDefinition struct_type_definition;
+non terminal MemberDefinition member_definition;
+// Different Expressions
+non terminal UnaryExpression unary_expression;
+non terminal BinaryExpression binary_expression;
+non terminal TernaryExpression ternary_expression;
+non terminal Expression reflection_expression;
+non terminal LiteralExpression literal_expression;
+non terminal VariableExpression variable_expression;
+non terminal ParenExpression paren_expression;
+non terminal ConstructExpression construct_expression;
+non terminal CallingExpression calling_expression;
+non terminal Expression record_expression;
+non terminal Expression invocation_expression;
+// Different Lists
+non terminal ArrayList assignment_list;
+non terminal ArrayList assignment_list_opt;
+non terminal ArrayList expression_list;
+non terminal ArrayList expression_list_opt;
+non terminal ArrayList member_definition_list;
+non terminal ArrayList parameter_definition_list;
+// Other Non Terminals
+non terminal String primitive_type;
+non terminal String type_identifier;
+non terminal String class_qualifier;
+
+// Operator Precedences ////////////////////////////////////////////////////////
+precedence right EQUAL;
+precedence right COLON, QUESTION;
+precedence left OROR;
+precedence left ANDAND;
+precedence left OR;
+precedence left XOR;
+precedence left AND;
+precedence left EQUALEQUAL, NOTEQUAL;
+precedence left LESS, LESSEQUAL, GREATER, GREATEREQUAL;
+precedence left PLUS, MINUS;
+precedence left TIMES, DIV, MOD;
+precedence right NEW;
+precedence right NOT, LNOT, INC, DEC;
+precedence left DOT;
+
+// Grammar Rule Definitions ////////////////////////////////////////////////////
+// Command Definitions
+command ::=
+  definition:x                  {: RESULT = x; :}
+| assignment:x                  {: RESULT = x; :}
+| invocation:x                  {: RESULT = x; :}
+| expression:x                  {: RESULT = x; :}
+;
+// Different Definitions
+definition ::=
+  datatype_definition:x         {: RESULT = x; :}                                     
+| variable_definition:x         {: RESULT = x; :}   
+| function_definition:x         {: RESULT = x; :} 
+| classpath_definition:x        {: RESULT = x; :} 
+;
+// Datatype Definitions
+datatype_definition ::=
+  list_type_definition:x        {: RESULT = x; :}
+| struct_type_definition:x      {: RESULT = x; :}
+;
+list_type_definition ::=
+  IDENTIFIER:x COLON List LPAREN primitive_type:y RPAREN
+    {: 
+        RESULT = new ListTypeDefinition(x, y); 
+    :} 
+;
+struct_type_definition ::=
+  IDENTIFIER:x COLON Struct LPAREN member_definition_list:y RPAREN                     
+    {: 
+        RESULT = new StructTypeDefinition(x, y); 
+    :} 
+;
+member_definition ::=
+  IDENTIFIER:x COLON primitive_type:y                                           
+    {: 
+        RESULT = new MemberDefinition(x, y); 
+    :} 
+;
+member_definition_list::=
+                                                                                {: ArrayList vec = new ArrayList(); RESULT = vec; :}
+| member_definition:x                                                           {: ArrayList vec = new ArrayList(); vec.add(x); RESULT = vec; :}
+| member_definition_list:x COMMA member_definition:y                            {: ArrayList vec = x; vec.add(y); RESULT = x; :}
+;
+primitive_type ::=
+  INT:x                         {: RESULT = x; :}
+| SHORT:x                       {: RESULT = x; :}
+| LONG:x                        {: RESULT = x; :}
+| FLOAT:x                       {: RESULT = x; :}
+| DOUBLE:x                      {: RESULT = x; :}
+| BOOL:x                        {: RESULT = x; :}
+| CHAR:x                        {: RESULT = x; :}
+| STRING:x                      {: RESULT = x; :}
+;
+// Variable Definitions
+variable_definition ::=
+  type_identifier:x IDENTIFIER:y EQUAL expression:z                             
+    {: 
+        RESULT = new VariableDefinition(x, y, z); 
+    :}
+;
+type_identifier::=
+  primitive_type:x              {: RESULT = x; :}
+| IDENTIFIER:x                  {: RESULT = x; :}
+;
+// Function Definitions
+function_definition ::=
+  IDENTIFIER:x COLON Fun LPAREN class_qualifier:y COMMA IDENTIFIER:z RPAREN         
+    {: 
+        RESULT = new FunctionDefinition(x, y, z); 
+    :} 
+| IDENTIFIER:x COLON Fun LPAREN class_qualifier:y COMMA IDENTIFIER:z COMMA parameter_definition_list:l RPAREN                                    
+    {: 
+        RESULT = new FunctionDefinition(x, y, z, l); 
+    :} 
+;
+// Argument Definition
+parameter_definition_list ::=
+  parameter_definition:x                                                        
+    {: RESULT = new ArrayList(); RESULT.add(x); :}
+| parameter_definition_list:x COMMA parameter_definition:y                        
+    {: RESULT = x; RESULT.add(y); :}
+;
+parameter_definition ::=
+  IDENTIFIER:x COLON class_qualifier:y                                          
+    {: 
+        RESULT = new ArgumentDefinition(x, y); 
+    :} 
+;
+class_qualifier ::=
+  IDENTIFIER:x                          
+    {: RESULT = x; :}
+| class_qualifier:x DOT IDENTIFIER:y    
+     {: RESULT = x + "." + y; :}
+;
+// Classpath Definitions
+classpath_definition ::=
+  IDENTIFIER:x COLON Class LPAREN class_qualifier:y RPAREN                      
+    {: System.err.println("Class Path Definition '" + y + "'"); RESULT = null; :} 
+;
+// Variable Assignments
+assignment ::=
+  variable_expression:x EQUAL expression:y                                      
+    {: 
+        RESULT = new Assignment(x, y); 
+    :}
+;
+// Assignment Lists
+assignment_list_opt ::=
+                                {: RESULT = new ArrayList(); :}
+| assignment_list:x             {: RESULT = x; :}
+;
+assignment_list ::=
+  assignment:x                                                                      
+    {: RESULT = new ArrayList(); RESULT.add(x); :}
+| assignment_list:x COMMA assignment:y                                              
+    {: RESULT = x; RESULT.add(y); :}
+;
+// Invocation Commands
+invocation ::=
+  NOTEQUAL expression:x DOT                                           
+    {: 
+        RESULT = new PlayActionActivity(x, PlayMode.Concurrent);  
+    :}
+| NOTEQUAL expression:x COMMA expression_list:y DOT                   
+    {:
+        RESULT = new PlayActionActivity(x,y, PlayMode.Concurrent);  
+    :}
+| NOTMINUS expression:x DOT                                           
+    {: 
+        RESULT = new PlayActionActivity(x, PlayMode.Sequential); 
+    :}
+| NOTMINUS expression:x COMMA expression_list:y DOT                  
+    {: 
+        RESULT = new PlayActionActivity(x, y, PlayMode.Sequential); 
+    :}
+| PlayAction LPAREN expression:x RPAREN                                       
+    {: 
+        RESULT = new PlayActionActivity(x, PlayMode.Default);  
+    :}
+| PlayAction LPAREN expression:x COMMA expression_list:y RPAREN               
+    {: 
+        RESULT = new PlayActionActivity(x, y, PlayMode.Default);  
+    :}
+| NOTTILDE expression:x DOT                                           
+    {: 
+        RESULT = new StopActionActivity(x, StopMode.Operator); 
+    :}
+| NOTTILDE expression:x COMMA expression_list:y DOT                  
+    {: 
+        RESULT = new StopActionActivity(x, y, StopMode.Operator); 
+    :}
+| StopAction LPAREN expression:x RPAREN                                       
+    {: 
+        RESULT = new StopActionActivity(x, StopMode.Default);  
+    :}
+| StopAction LPAREN expression:x COMMA expression_list:y RPAREN               
+    {: 
+        RESULT = new StopActionActivity(x, y, StopMode.Default);  
+    :}
+| PlayDialogAct LPAREN expression:x RPAREN                                      
+    {: 
+        RESULT = new PlayDialogAction(x);  
+    :}
+| PlayDialogAct LPAREN expression:x COMMA expression_list:y RPAREN             
+    {: 
+        RESULT = new PlayDialogAction(x,y);  
+    :}
+| PlayScene LPAREN expression:x RPAREN                                     
+    {: 
+        RESULT = new PlayScenesActivity(x);  
+    :}
+| PlayScene LPAREN expression:x COMMA expression_list:y RPAREN             
+    {: 
+        RESULT = new PlayScenesActivity(x,y);  
+    :}
+| UnblockSceneGroup LPAREN expression:x RPAREN                                  
+    {: 
+        RESULT = new UnblockSceneGroup(x);  
+    :}
+| UnblockSceneScript LPAREN BOOLEAN_LITERAL:x RPAREN                                   
+    {: 
+        RESULT = new UnblockSceneScript(x);  
+    :}
+| HistoryClearFlat LPAREN IDENTIFIER:x RPAREN                                  
+    {: 
+        RESULT = new HistoryClearFlat(x);  
+    :}
+| HistoryClearDeep LPAREN IDENTIFIER:x RPAREN                                   
+    {: 
+        RESULT = new HistoryClearDeep(x);  
+    :}
+| HistorySetDepth LPAREN IDENTIFIER:x COMMA INTEGER_LITERAL:y RPAREN                   
+    {: 
+        RESULT = new HistorySetDepth(x,y);  
+    :}
+;
+// Expression Lists
+expression_list_opt ::= 
+                                
+    {: 
+        RESULT = new ArrayList(); 
+    :}
+| expression_list:x             
+    {: 
+        RESULT = x; 
+    :}
+;
+expression_list ::=
+  expression:x              
+    {: 
+        RESULT = new ArrayList(); RESULT.add(x); 
+    :}
+| expression_list:x COMMA expression:y                                          
+    {: 
+        RESULT = x; RESULT.add(y); 
+    :}
+;
+// Different Expressions
+expression ::=
+  unary_expression:x 
+    {: 
+        RESULT = x; 
+    :}
+| binary_expression:x 
+    {: 
+        RESULT = x; 
+    :}
+| ternary_expression:x 
+    {: 
+        RESULT = x; 
+    :}
+| invocation_expression:x                                
+    {: 
+        RESULT = x; 
+    :}
+| reflection_expression:x                              
+    {: 
+        RESULT = x; 
+    :}
+| variable_expression:x 
+    {: 
+        RESULT = x; 
+    :}
+| record_expression:x
+    {: 
+        RESULT = x; 
+    :}
+| literal_expression:x
+    {: 
+        RESULT = x; 
+    :}
+| paren_expression:x
+    {: 
+        RESULT = x; 
+    :}
+;
+// Unary Expressions
+unary_expression ::=
+  NOT expression:x                                                              
+    {: 
+        RESULT = new UnaryExpression(x, UnaryOp.Not); 
+    :}
+| MINUS expression:x                                                            
+    {: 
+        RESULT = new UnaryExpression(x, UnaryOp.Neg); 
+    :}
+| LNOT expression:x                                                             
+    {: 
+        RESULT = new UnaryExpression(x, UnaryOp.Lnot); 
+    :}
+| INC variable_expression:x//expression:x                                                              
+    {: 
+        RESULT = new UnaryExpression(x, UnaryOp.Inc); 
+    :}
+| DEC variable_expression:x//expression:x                                                              
+    {: 
+        RESULT = new UnaryExpression(x, UnaryOp.Dec); 
+    :}
+;  
+// Binary Expressions
+binary_expression ::=
+  expression:x AND expression:y                                                 
+    {: 
+        RESULT = new BinaryExpression(x, BinaryOp.And, y); 
+    :}
+| expression:x OR expression:y                                                  
+    {: 
+        RESULT = new BinaryExpression(x, BinaryOp.Or, y); 
+    :}
+| expression:x XOR expression:y                                                 
+    {: 
+        RESULT = new BinaryExpression(x, BinaryOp.Xor, y); 
+    :}
+| expression:x ANDAND expression:y                                              
+    {: 
+        RESULT = new BinaryExpression(x, BinaryOp.AndAnd, y); 
+    :}
+| expression:x OROR expression:y                                                
+    {: 
+        RESULT = new BinaryExpression(x, BinaryOp.OrOr, y); 
+    :}
+| expression:x LESS expression:y                                                
+    {: 
+        RESULT = new BinaryExpression(x, BinaryOp.Lt, y); 
+    :}
+| expression:x GREATER expression:y                                             
+    {: 
+        RESULT = new BinaryExpression(x, BinaryOp.Gt, y); 
+    :}
+| expression:x LESSEQUAL expression:y                                           
+    {: 
+        RESULT = new BinaryExpression(x, BinaryOp.Le, y); 
+    :}
+| expression:x GREATEREQUAL expression:y                                        
+    {: 
+        RESULT = new BinaryExpression(x, BinaryOp.Ge, y); 
+    :}
+| expression:x EQUALEQUAL expression:y                                          
+    {: 
+        RESULT = new BinaryExpression(x, BinaryOp.Eq, y); 
+    :}
+| expression:x NOTEQUAL expression:y                                            
+    {: 
+        RESULT = new BinaryExpression(x, BinaryOp.Neq, y); 
+    :}
+| expression:x PLUS expression:y                                                
+    {: 
+        RESULT = new BinaryExpression(x, BinaryOp.Add, y); 
+    :}
+| expression:x MINUS expression:y                                               
+    {: 
+        RESULT = new BinaryExpression(x, BinaryOp.Sub, y); 
+    :}
+| expression:x TIMES expression:y    
+    {: 
+        RESULT = new BinaryExpression(x, BinaryOp.Mul, y); 
+    :}
+| expression:x DIV expression:y                                                 
+    {: 
+        RESULT = new BinaryExpression(x, BinaryOp.Div, y); 
+    :}
+| expression:x MOD expression:y                                                 
+    {: 
+        RESULT = new BinaryExpression(x, BinaryOp.Mod, y); 
+    :}
+;
+// Termany Expression
+ternary_expression ::=
+  LPAREN expression:x QUESTION expression:y COLON expression:z RPAREN           
+    {: 
+        RESULT = new TernaryExpression(x, y, z); 
+    :}
+;
+// Reflection Expression
+reflection_expression ::=
+  calling_expression:x          
+    {: 
+        RESULT = x; 
+    :}
+| construct_expression:x        
+    {: 
+        RESULT = x; 
+    :}
+;
+// Construct Expression
+construct_expression ::=
+  NEW IDENTIFIER:x LPAREN expression_list_opt:y RPAREN                              
+    {: 
+        RESULT = new ConstructExpression(x, y); 
+    :}
+;
+// Calling Expression
+calling_expression ::=
+  IDENTIFIER:x LPAREN expression_list_opt:y RPAREN                                  
+    {: 
+        RESULT = new CallingExpression(x, y); 
+    :}
+;
+// Variable Expression
+variable_expression ::=
+  IDENTIFIER:x                                                                  
+    {: 
+        RESULT = new SimpleVariable(x); 
+    :}
+| IDENTIFIER:x LBRACK expression:y RBRACK                                       
+    {: 
+        RESULT = new ArrayVariable(x, y); 
+    :}
+| IDENTIFIER:x DOT IDENTIFIER:y                                                 
+    {: 
+        RESULT = new MemberVariable(x, y); 
+    :}
+;
+// Invocation Expressions
+invocation_expression ::=
+  QSTMINUS expression:x DOT                                           
+    {: 
+        RESULT = new PrologQuery(x); 
+    :}
+| Random LPAREN expression:x RPAREN                                             
+    {: 
+        RESULT = new RandomQuery(x); 
+    :}
+| InState LPAREN IDENTIFIER:x RPAREN                                            
+    {: 
+        RESULT = new InStateQuery(x); 
+    :}
+| Contains LPAREN expression:x COMMA expression:y RPAREN                                             
+    {: 
+        RESULT = new ContainsList(x, y); 
+    :}
+| Timeout LPAREN expression:x RPAREN                                                
+    {: 
+        RESULT = new TimeoutQuery(x); 
+    :}
+| HistoryContains LPAREN IDENTIFIER:x COMMA IDENTIFIER:y RPAREN                             
+    {: 
+        RESULT = new HistoryContains(x, y); 
+    :}
+| HistoryContains LPAREN IDENTIFIER:x COMMA IDENTIFIER:y COMMA INTEGER_LITERAL:z RPAREN 
+    {: 
+        RESULT = new HistoryContains(x, y, z); 
+    :}
+| HistoryValueOf LPAREN IDENTIFIER:x COMMA IDENTIFIER:y COMMA INTEGER_LITERAL:z RPAREN  
+    {: 
+        RESULT = new HistoryValueOf(x, y, z); 
+    :}
+| HistoryValueOf LPAREN IDENTIFIER:x COMMA IDENTIFIER:y RPAREN                  
+    {: 
+        RESULT = new HistoryValueOf(x, y); 
+    :}
+| HistoryRunTimeOf LPAREN IDENTIFIER:x COMMA INTEGER_LITERAL:y RPAREN           
+    {: 
+        RESULT = new HistoryRunTimeOf(x, y); 
+    :}
+| HistoryRunTimeOf LPAREN IDENTIFIER:x RPAREN                                   
+    {: 
+        RESULT = new HistoryRunTimeOf(x); 
+    :}
+;
+// Record Expressions
+record_expression ::=
+  LBRACK expression_list_opt:x RBRACK                                           
+    {: 
+        RESULT = new ArrayExpression(x); 
+    :}
+| LBRACE assignment_list_opt:x RBRACE                                           
+    {: 
+        RESULT = new StructExpression(x); 
+    :}
+;
+// Literal Expressions
+literal_expression ::=
+  OBJECT_LITERAL:x                                                              
+    {: 
+        RESULT = new NullLiteral(); 
+    :}
+| BOOLEAN_LITERAL:x                                                             
+    {: 
+        RESULT = new BoolLiteral(x); 
+    :}
+| INTEGER_LITERAL:x                                                             
+    {: 
+        RESULT = new IntLiteral(x); 
+    :}
+| FLOAT_LITERAL:x                                                               
+    {: 
+        RESULT = new FloatLiteral(x); 
+    :}
+| STRING_LITERAL:x                                                              
+    {: 
+        RESULT = new StringLiteral(trim(x)); 
+    :}
+;
+// Bracketed Expression
+paren_expression ::=
+  LPAREN expression:x RPAREN                                                    
+    {: 
+        RESULT = new ParenExpression(x); 
+    :}
+;

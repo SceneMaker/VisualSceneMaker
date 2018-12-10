@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.text.*?>
+<?import javafx.geometry.*?>
+<?import java.lang.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane blendMode="MULTIPLY" depthTest="ENABLE" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" pickOnBounds="false" prefHeight="748.0" prefWidth="1112.0" style="-fx-background-color: #00000000" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
+   <children>
+      <SplitPane dividerPositions="0.23423423423423423" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+        <items>
+          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="726.0" prefWidth="269.0">
+               <children>
+                  <TreeView id="treeView" fx:id="treeView" layoutY="7.0" onMouseClicked="#selectConfig" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+               </children>
+            </AnchorPane>
+          <AnchorPane fx:id="contentPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="0.0" minWidth="0.0" prefHeight="722.0" prefWidth="715.0">
+               <children>
+                  <Pane fx:id="addDevice" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="472.0" prefWidth="558.0" visible="false">
+                     <children>
+                        <HBox prefHeight="190.0" prefWidth="558.0" spacing="10.0">
+                           <children>
+                              <TextField fx:id="txtDeviceName" promptText="Device name">
+                                 <HBox.margin>
+                                    <Insets left="10.0" />
+                                 </HBox.margin>
+                              </TextField>
+                              <ComboBox fx:id="cmbExecutor" prefWidth="150.0">
+                                 <HBox.margin>
+                                    <Insets left="10.0" />
+                                 </HBox.margin>
+                              </ComboBox>
+                              <Button fx:id="btnAddDevice" mnemonicParsing="false" onAction="#addDevice" text="Add Device">
+                                 <HBox.margin>
+                                    <Insets left="10.0" />
+                                 </HBox.margin>
+                              </Button>
+                           </children>
+                           <padding>
+                              <Insets top="10.0" />
+                           </padding>
+                        </HBox>
+                     </children>
+                  </Pane>
+                  <AnchorPane fx:id="editDevice" layoutY="108.0" maxHeight="-Infinity" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="618.0" prefWidth="558.0" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="108.0">
+                     <children>
+                        <HBox fx:id="advanceBar" layoutY="565.0" prefWidth="600.0" AnchorPane.bottomAnchor="55.0" AnchorPane.leftAnchor="0.0">
+                           <children>
+                              <TextField fx:id="txtKey" prefHeight="29.0" prefWidth="213.0" promptText="Key">
+                                 <HBox.margin>
+                                    <Insets left="10.0" />
+                                 </HBox.margin>
+                              </TextField>
+                              <TextField fx:id="txtValue" prefHeight="29.0" prefWidth="215.0" promptText="Value">
+                                 <HBox.margin>
+                                    <Insets left="10.0" />
+                                 </HBox.margin>
+                              </TextField>
+                              <Button fx:id="btnAddEntry" mnemonicParsing="false" onAction="#addNewItemToTableEvent" text="Add">
+                                 <HBox.margin>
+                                    <Insets left="10.0" />
+                                 </HBox.margin>
+                              </Button>
+                           </children>
+                        </HBox>
+                        <HBox layoutX="14.0" layoutY="532.0" prefHeight="22.0" prefWidth="228.0" AnchorPane.bottomAnchor="90.0">
+                           <children>
+                              <Label text="Add new Entry" />
+                           </children>
+                        </HBox>
+                        <HBox layoutY="25.0" prefHeight="46.0" prefWidth="590.0" />
+                        <TableView fx:id="pluginsTable" fixedCellSize="0.0" layoutX="6.0" layoutY="-45.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="555.0" prefWidth="558.0" AnchorPane.bottomAnchor="127.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="-45.0">
+                           <columns>
+                              <TableColumn fx:id="keyColumn" maxWidth="200.0" minWidth="200.0" prefWidth="200.0" text="Key" />
+                              <TableColumn fx:id="valueColumn" maxWidth="1.7976931348623157E308" prefWidth="358.0" text="Value" />
+                           </columns>
+                           <columnResizePolicy>
+                              <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                           </columnResizePolicy>
+                        </TableView>
+                        <HBox fx:id="basicBar" layoutX="10.0" layoutY="575.0" prefHeight="82.0" prefWidth="730.0" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="10.0">
+                           <children>
+                              <ChoiceBox fx:id="propertiesChooser" minWidth="150.0" prefWidth="150.0" />
+                              <Button fx:id="btnAddAdvanced" minWidth="45.0" mnemonicParsing="false" onAction="#addNewItemToTableEvent" text="Add">
+                                 <HBox.margin>
+                                    <Insets left="10.0" />
+                                 </HBox.margin>
+                              </Button>
+                              <Label fx:id="descriptionLabel" prefWidth="400.0" text="Description" wrapText="true">
+                                 <font>
+                                    <Font size="14.0" />
+                                 </font>
+                                 <HBox.margin>
+                                    <Insets left="10.0" top="5.0" />
+                                 </HBox.margin>
+                              </Label>
+                           </children>
+                        </HBox>
+                        <Button fx:id="advancedButton" layoutX="754.0" layoutY="523.0" mnemonicParsing="false" text="Advanced" AnchorPane.bottomAnchor="90.0" AnchorPane.rightAnchor="20.0" />
+                        <Button fx:id="deleteButton" layoutX="649.0" layoutY="523.0" mnemonicParsing="false" text="Delete" AnchorPane.bottomAnchor="90.0" AnchorPane.rightAnchor="120.0" />
+                     </children>
+                  </AnchorPane>
+                  <VBox fx:id="InfoVBox" prefHeight="62.0" prefWidth="558.0" AnchorPane.bottomAnchor="684.0" AnchorPane.topAnchor="0.0">
+                     <children>
+                        <Label fx:id="lblClassName" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="16.0" minWidth="500.0" prefHeight="29.0" prefWidth="574.0" text="Class: ">
+                           <padding>
+                              <Insets left="10.0" />
+                           </padding>
+                        </Label>
+                        <CheckBox fx:id="chkLoadPlugin" mnemonicParsing="false" onAction="#handleLoadPluginCheckbox" text="Load Plugin">
+                           <padding>
+                              <Insets left="10.0" />
+                           </padding>
+                        </CheckBox>
+                     </children>
+                  </VBox>
+               </children></AnchorPane>
+        </items>
+      </SplitPane>
+   </children>
+</AnchorPane>

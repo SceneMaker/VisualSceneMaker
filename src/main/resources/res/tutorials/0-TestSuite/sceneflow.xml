@@ -1,0 +1,792 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SceneFlow id="TestSuite" name="TestSuite" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Mi, 26 Jul 2017 15:25:21" start="N8;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
+  <Define>
+  </Define>
+  <Declare>
+    <VariableDefinition type="Int" name ="DurationOfTopicOne">
+      <IntLiteral value="0"/>
+    </VariableDefinition>
+    <VariableDefinition type="Int" name ="DurationOfQuestionOne">
+      <IntLiteral value="0"/>
+    </VariableDefinition>
+    <VariableDefinition type="Int" name ="DurationOfAnswerOne">
+      <IntLiteral value="0"/>
+    </VariableDefinition>
+    <VariableDefinition type="Int" name ="DurationOfTopicTwo">
+      <IntLiteral value="0"/>
+    </VariableDefinition>
+    <VariableDefinition type="Int" name ="DurationOfQuestionTwo">
+      <IntLiteral value="0"/>
+    </VariableDefinition>
+    <VariableDefinition type="Int" name ="DurationOfAnswerTwo">
+      <IntLiteral value="0"/>
+    </VariableDefinition>
+    <VariableDefinition type="Bool" name ="EventRecordLoaded">
+      <BoolLiteral value="false"/>
+    </VariableDefinition>
+    <VariableDefinition type="Int" name ="NumberOfHeadNodsInTopicOne">
+      <IntLiteral value="0"/>
+    </VariableDefinition>
+    <VariableDefinition type="Int" name ="DurationOfHeadNodsInTopicOne">
+      <IntLiteral value="0"/>
+    </VariableDefinition>
+    <VariableDefinition type="Int" name ="NumberOfHeadShakesInTopicOne">
+      <IntLiteral value="0"/>
+    </VariableDefinition>
+    <VariableDefinition type="Int" name ="DurationOfHeadShakesInTopicOne">
+      <IntLiteral value="0"/>
+    </VariableDefinition>
+    <VariableDefinition type="Int" name ="NumberOfVoiceInTopicOne">
+      <IntLiteral value="0"/>
+    </VariableDefinition>
+    <VariableDefinition type="Int" name ="DurationOfVoiceInTopicOne">
+      <IntLiteral value="0"/>
+    </VariableDefinition>
+    <VariableDefinition type="Int" name ="NumberOfHeadNodsInTopicTwo">
+      <IntLiteral value="0"/>
+    </VariableDefinition>
+    <VariableDefinition type="Int" name ="DurationOfHeadNodsInTopicTwo">
+      <IntLiteral value="0"/>
+    </VariableDefinition>
+    <VariableDefinition type="Int" name ="NumberOfHeadShakesInTopicTwo">
+      <IntLiteral value="0"/>
+    </VariableDefinition>
+    <VariableDefinition type="Int" name ="DurationOfHeadShakesInTopicTwo">
+      <IntLiteral value="0"/>
+    </VariableDefinition>
+    <VariableDefinition type="Int" name ="NumberOfVoiceInTopicTwo">
+      <IntLiteral value="0"/>
+    </VariableDefinition>
+    <VariableDefinition type="Int" name ="DurationOfVoiceInTopicTwo">
+      <IntLiteral value="0"/>
+    </VariableDefinition>
+    <VariableDefinition type="String" name ="LoggerMessage">
+      <StringLiteral><![CDATA[]]></StringLiteral>
+    </VariableDefinition>
+    <VariableDefinition type="Int" name ="TopicDuration">
+      <IntLiteral value="0"/>
+    </VariableDefinition>
+    <VariableDefinition type="Int" name ="QuestionDuration">
+      <IntLiteral value="0"/>
+    </VariableDefinition>
+    <VariableDefinition type="Int" name ="AnswerDuration">
+      <IntLiteral value="0"/>
+    </VariableDefinition>
+    <VariableDefinition type="String" name ="TopicIdentifier">
+      <IntLiteral value="0"/>
+    </VariableDefinition>
+    <VariableDefinition type="Float" name ="MaximumWithdrawalInTopicOne">
+      <FloatLiteral value="0.0"/>
+    </VariableDefinition>
+    <VariableDefinition type="Float" name ="MaximumAvoidanceInTopicOne">
+      <FloatLiteral value="0.0"/>
+    </VariableDefinition>
+    <VariableDefinition type="Float" name ="MaximumAttackOtherInTopicOne">
+      <FloatLiteral value="0.0"/>
+    </VariableDefinition>
+  </Declare>
+  <Commands>
+  </Commands>
+  <LocalVariableBadge>
+    <Position xPos="8" yPos="16"/>
+  </LocalVariableBadge>
+  <GlobalVariableBadge>
+    <Position xPos="10" yPos="10"/>
+  </GlobalVariableBadge>
+  <Node id="N1" name="Load;Event;Record" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <Assignment>
+        <SimpleVariable name="EventRecordLoaded"/>
+        <Expression>
+          <CallingExpression name="load">
+            <StringLiteral><![CDATA[./debriefing.events]]></StringLiteral>
+          </CallingExpression>
+        </Expression>
+      </Assignment>
+    </Commands>
+    <CEdge target="N2" start="">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="583" yPos="198" ctrlXPos="775" ctrlYPos="198"/>
+          <ControlPoint xPos="1003" yPos="198" ctrlXPos="810" ctrlYPos="198"/>
+        </Connection>
+      </Graphics>
+      <SimpleVariable name="EventRecordLoaded"/>
+    </CEdge>
+    <Graphics>
+      <Position xPos="513" yPos="163"/>
+    </Graphics>
+  </Node>
+  <Node id="N2" name="Print;Statistics;Data" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <Assignment>
+        <SimpleVariable name="NumberOfHeadNodsInTopicOne"/>
+        <Expression>
+          <CallingExpression name="getNumberOfEventInContext">
+            <StringLiteral><![CDATA[nod]]></StringLiteral>
+            <StringLiteral><![CDATA[topic]]></StringLiteral>
+            <IntLiteral value="1"/>
+          </CallingExpression>
+        </Expression>
+      </Assignment>
+      <Assignment>
+        <SimpleVariable name="DurationOfHeadNodsInTopicOne"/>
+        <Expression>
+          <CallingExpression name="getDurationOfEventInContext">
+            <StringLiteral><![CDATA[nod]]></StringLiteral>
+            <StringLiteral><![CDATA[topic]]></StringLiteral>
+            <IntLiteral value="1"/>
+          </CallingExpression>
+        </Expression>
+      </Assignment>
+      <Assignment>
+        <SimpleVariable name="NumberOfHeadShakesInTopicOne"/>
+        <Expression>
+          <CallingExpression name="getNumberOfEventInContext">
+            <StringLiteral><![CDATA[shake]]></StringLiteral>
+            <StringLiteral><![CDATA[topic]]></StringLiteral>
+            <IntLiteral value="1"/>
+          </CallingExpression>
+        </Expression>
+      </Assignment>
+      <Assignment>
+        <SimpleVariable name="DurationOfHeadShakesInTopicOne"/>
+        <Expression>
+          <CallingExpression name="getDurationOfEventInContext">
+            <StringLiteral><![CDATA[shake]]></StringLiteral>
+            <StringLiteral><![CDATA[topic]]></StringLiteral>
+            <IntLiteral value="1"/>
+          </CallingExpression>
+        </Expression>
+      </Assignment>
+      <Assignment>
+        <SimpleVariable name="NumberOfHeadNodsInTopicTwo"/>
+        <Expression>
+          <CallingExpression name="getNumberOfEventInContext">
+            <StringLiteral><![CDATA[nod]]></StringLiteral>
+            <StringLiteral><![CDATA[topic]]></StringLiteral>
+            <IntLiteral value="2"/>
+          </CallingExpression>
+        </Expression>
+      </Assignment>
+      <Assignment>
+        <SimpleVariable name="DurationOfHeadNodsInTopicTwo"/>
+        <Expression>
+          <CallingExpression name="getDurationOfEventInContext">
+            <StringLiteral><![CDATA[nod]]></StringLiteral>
+            <StringLiteral><![CDATA[topic]]></StringLiteral>
+            <IntLiteral value="2"/>
+          </CallingExpression>
+        </Expression>
+      </Assignment>
+      <Assignment>
+        <SimpleVariable name="NumberOfHeadShakesInTopicTwo"/>
+        <Expression>
+          <CallingExpression name="getNumberOfEventInContext">
+            <StringLiteral><![CDATA[shake]]></StringLiteral>
+            <StringLiteral><![CDATA[topic]]></StringLiteral>
+            <IntLiteral value="2"/>
+          </CallingExpression>
+        </Expression>
+      </Assignment>
+      <Assignment>
+        <SimpleVariable name="DurationOfHeadShakesInTopicTwo"/>
+        <Expression>
+          <CallingExpression name="getDurationOfEventInContext">
+            <StringLiteral><![CDATA[shake]]></StringLiteral>
+            <StringLiteral><![CDATA[topic]]></StringLiteral>
+            <IntLiteral value="2"/>
+          </CallingExpression>
+        </Expression>
+      </Assignment>
+      <Assignment>
+        <SimpleVariable name="NumberOfVoiceInTopicOne"/>
+        <Expression>
+          <CallingExpression name="getNumberOfEventInContext">
+            <StringLiteral><![CDATA[vad]]></StringLiteral>
+            <StringLiteral><![CDATA[topic]]></StringLiteral>
+            <IntLiteral value="1"/>
+          </CallingExpression>
+        </Expression>
+      </Assignment>
+      <Assignment>
+        <SimpleVariable name="DurationOfVoiceInTopicOne"/>
+        <Expression>
+          <CallingExpression name="getDurationOfEventInContext">
+            <StringLiteral><![CDATA[vad]]></StringLiteral>
+            <StringLiteral><![CDATA[topic]]></StringLiteral>
+            <IntLiteral value="1"/>
+          </CallingExpression>
+        </Expression>
+      </Assignment>
+      <Assignment>
+        <SimpleVariable name="NumberOfVoiceInTopicTwo"/>
+        <Expression>
+          <CallingExpression name="getNumberOfEventInContext">
+            <StringLiteral><![CDATA[vad]]></StringLiteral>
+            <StringLiteral><![CDATA[topic]]></StringLiteral>
+            <IntLiteral value="2"/>
+          </CallingExpression>
+        </Expression>
+      </Assignment>
+      <Assignment>
+        <SimpleVariable name="DurationOfVoiceInTopicTwo"/>
+        <Expression>
+          <CallingExpression name="getDurationOfEventInContext">
+            <StringLiteral><![CDATA[vad]]></StringLiteral>
+            <StringLiteral><![CDATA[topic]]></StringLiteral>
+            <IntLiteral value="2"/>
+          </CallingExpression>
+        </Expression>
+      </Assignment>
+      <Assignment>
+        <SimpleVariable name="DurationOfTopicOne"/>
+        <Expression>
+          <CallingExpression name="getDurationOfContext">
+            <StringLiteral><![CDATA[topic]]></StringLiteral>
+            <IntLiteral value="1"/>
+          </CallingExpression>
+        </Expression>
+      </Assignment>
+      <Assignment>
+        <SimpleVariable name="DurationOfQuestionOne"/>
+        <Expression>
+          <CallingExpression name="getDurationOfContext">
+            <StringLiteral><![CDATA[question]]></StringLiteral>
+            <IntLiteral value="1"/>
+          </CallingExpression>
+        </Expression>
+      </Assignment>
+      <Assignment>
+        <SimpleVariable name="DurationOfAnswerOne"/>
+        <Expression>
+          <CallingExpression name="getDurationOfContext">
+            <StringLiteral><![CDATA[answer]]></StringLiteral>
+            <IntLiteral value="1"/>
+          </CallingExpression>
+        </Expression>
+      </Assignment>
+      <Assignment>
+        <SimpleVariable name="DurationOfTopicTwo"/>
+        <Expression>
+          <CallingExpression name="getDurationOfContext">
+            <StringLiteral><![CDATA[topic]]></StringLiteral>
+            <IntLiteral value="2"/>
+          </CallingExpression>
+        </Expression>
+      </Assignment>
+      <Assignment>
+        <SimpleVariable name="DurationOfQuestionTwo"/>
+        <Expression>
+          <CallingExpression name="getDurationOfContext">
+            <StringLiteral><![CDATA[question]]></StringLiteral>
+            <IntLiteral value="2"/>
+          </CallingExpression>
+        </Expression>
+      </Assignment>
+      <Assignment>
+        <SimpleVariable name="DurationOfAnswerTwo"/>
+        <Expression>
+          <CallingExpression name="getDurationOfContext">
+            <StringLiteral><![CDATA[answer]]></StringLiteral>
+            <IntLiteral value="2"/>
+          </CallingExpression>
+        </Expression>
+      </Assignment>
+      <Assignment>
+        <SimpleVariable name="MaximumWithdrawalInTopicOne"/>
+        <Expression>
+          <CallingExpression name="getMaximumOfEventValueInContext">
+            <StringLiteral><![CDATA[regulation]]></StringLiteral>
+            <StringLiteral><![CDATA[withdrawal]]></StringLiteral>
+            <StringLiteral><![CDATA[topic]]></StringLiteral>
+            <IntLiteral value="1"/>
+          </CallingExpression>
+        </Expression>
+      </Assignment>
+      <Assignment>
+        <SimpleVariable name="MaximumAvoidanceInTopicOne"/>
+        <Expression>
+          <CallingExpression name="getMaximumOfEventValueInContext">
+            <StringLiteral><![CDATA[regulation]]></StringLiteral>
+            <StringLiteral><![CDATA[avoidance]]></StringLiteral>
+            <StringLiteral><![CDATA[topic]]></StringLiteral>
+            <IntLiteral value="1"/>
+          </CallingExpression>
+        </Expression>
+      </Assignment>
+      <Assignment>
+        <SimpleVariable name="MaximumAttackOtherInTopicOne"/>
+        <Expression>
+          <CallingExpression name="getMaximumOfEventValueInContext">
+            <StringLiteral><![CDATA[regulation]]></StringLiteral>
+            <StringLiteral><![CDATA[attack_other]]></StringLiteral>
+            <StringLiteral><![CDATA[topic]]></StringLiteral>
+            <IntLiteral value="1"/>
+          </CallingExpression>
+        </Expression>
+      </Assignment>
+    </Commands>
+    <Graphics>
+      <Position xPos="1003" yPos="163"/>
+    </Graphics>
+  </Node>
+  <Node id="N3" name="Start;Interview;Pipe" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <PlayAction mode="Sequential">
+        <StringLiteral><![CDATA[[ssi start pipe=interview]]]></StringLiteral>
+      </PlayAction>
+    </Commands>
+    <EEdge target="S1" start ="">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="583" yPos="58" ctrlXPos="635" ctrlYPos="58"/>
+        <ControlPoint xPos="723" yPos="58" ctrlXPos="670" ctrlYPos="58"/>
+      </Connection>
+    </Graphics>
+    </EEdge>
+    <Graphics>
+      <Position xPos="513" yPos="23"/>
+    </Graphics>
+  </Node>
+  <Node id="N6" name="Stop;Interview;Pipe" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <PlayAction mode="Sequential">
+        <StringLiteral><![CDATA[[ssi stop pipe=interview]]]></StringLiteral>
+      </PlayAction>
+    </Commands>
+    <Graphics>
+      <Position xPos="1003" yPos="23"/>
+    </Graphics>
+  </Node>
+  <Node id="N9" name="Wait;Some;Time" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <TEdge target="N3" start="" timeout="3000">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="373" yPos="58" ctrlXPos="425" ctrlYPos="58"/>
+        <ControlPoint xPos="513" yPos="58" ctrlXPos="460" ctrlYPos="58"/>
+      </Connection>
+    </Graphics>
+    </TEdge>
+    <Graphics>
+      <Position xPos="303" yPos="23"/>
+    </Graphics>
+  </Node>
+  <Node id="N4" name="N4" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <PrologQuery>
+      <StringLiteral><![CDATA[now(LoggerMessage).]]></StringLiteral>
+      </PrologQuery>
+    </Commands>
+    <EEdge target="N4" start ="">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="487" yPos="374" ctrlXPos="505" ctrlYPos="306"/>
+        <ControlPoint xPos="508" yPos="390" ctrlXPos="568" ctrlYPos="354"/>
+      </Connection>
+    </Graphics>
+    </EEdge>
+    <Graphics>
+      <Position xPos="443" yPos="373"/>
+    </Graphics>
+  </Node>
+  <Node id="N5" name="N5" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <PrologQuery>
+      <StringLiteral><![CDATA[clean.]]></StringLiteral>
+      </PrologQuery>
+    </Commands>
+    <EEdge target="N4" start ="">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="373" yPos="408" ctrlXPos="390" ctrlYPos="408"/>
+        <ControlPoint xPos="443" yPos="408" ctrlXPos="425" ctrlYPos="408"/>
+      </Connection>
+    </Graphics>
+    </EEdge>
+    <Graphics>
+      <Position xPos="303" yPos="373"/>
+    </Graphics>
+  </Node>
+  <Node id="N8" name="N8" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <CEdge target="N10" start="">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="373" yPos="548" ctrlXPos="425" ctrlYPos="548"/>
+          <ControlPoint xPos="513" yPos="548" ctrlXPos="460" ctrlYPos="548"/>
+        </Connection>
+      </Graphics>
+      <PrologQuery>
+      <StringLiteral><![CDATA[timeout(test, 5000)]]></StringLiteral>
+      </PrologQuery>
+    </CEdge>
+    <EEdge target="N8" start ="">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="347" yPos="514" ctrlXPos="365" ctrlYPos="446"/>
+        <ControlPoint xPos="368" yPos="530" ctrlXPos="428" ctrlYPos="494"/>
+      </Connection>
+    </Graphics>
+    </EEdge>
+    <Graphics>
+      <Position xPos="303" yPos="513"/>
+    </Graphics>
+  </Node>
+  <Node id="N10" name="N10" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <EEdge target="N8" start ="">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="514" yPos="557" ctrlXPos="463" ctrlYPos="570"/>
+        <ControlPoint xPos="372" yPos="557" ctrlXPos="423" ctrlYPos="570"/>
+      </Connection>
+    </Graphics>
+    </EEdge>
+    <Graphics>
+      <Position xPos="513" yPos="513"/>
+    </Graphics>
+  </Node>
+  <SuperNode id="S1" name="Log;Some;Events" comment="" hideLocalVar="false" hideGlobalVar="false" start="S2;">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <IEdge target="N6" start="">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="793" yPos="58" ctrlXPos="880" ctrlYPos="58"/>
+          <ControlPoint xPos="1003" yPos="58" ctrlXPos="915" ctrlYPos="58"/>
+        </Connection>
+      </Graphics>
+      <TimeoutQuery>
+      <IntLiteral value="30000"/>
+      </TimeoutQuery>
+    </IEdge>
+    <Graphics>
+      <Position xPos="723" yPos="23"/>
+    </Graphics>
+    <LocalVariableBadge>
+      <Position xPos="10" yPos="10"/>
+    </LocalVariableBadge>
+    <GlobalVariableBadge>
+      <Position xPos="10" yPos="10"/>
+    </GlobalVariableBadge>
+    <Node id="N7" name="History" history="true">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+      </Commands>
+      <Graphics>
+        <Position xPos="303" yPos="93"/>
+      </Graphics>
+    </Node>
+    <SuperNode id="S2" name="Test;Logger" comment="" hideLocalVar="false" hideGlobalVar="false" start="N16;">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+      </Commands>
+      <Graphics>
+        <Position xPos="443" yPos="93"/>
+      </Graphics>
+      <LocalVariableBadge>
+        <Position xPos="404" yPos="31"/>
+      </LocalVariableBadge>
+      <GlobalVariableBadge>
+        <Position xPos="10" yPos="10"/>
+      </GlobalVariableBadge>
+      <Node id="N15" name="History" history="true">
+        <Define>
+        </Define>
+        <Declare>
+        </Declare>
+        <Commands>
+        </Commands>
+        <Graphics>
+          <Position xPos="583" yPos="163"/>
+        </Graphics>
+      </Node>
+      <Node id="N16" name="Init;Topic;Timer" history="false">
+        <Define>
+        </Define>
+        <Declare>
+        </Declare>
+        <Commands>
+          <PlayAction mode="Sequential">
+            <StringLiteral><![CDATA[[timer init id=topic]]]></StringLiteral>
+          </PlayAction>
+          <PlayAction mode="Sequential">
+            <Add>
+              <Add>
+                <StringLiteral><![CDATA[[ssi log sender=context event=topic state=continued content=]]></StringLiteral>
+                <SimpleVariable name="TopicIdentifier"/>
+              </Add>
+              <StringLiteral><![CDATA[]]]></StringLiteral>
+            </Add>
+          </PlayAction>
+        </Commands>
+        <TEdge target="N18" start="" timeout="1000">
+        <Graphics>
+          <Connection>
+            <ControlPoint xPos="478" yPos="93" ctrlXPos="478" ctrlYPos="110"/>
+            <ControlPoint xPos="478" yPos="233" ctrlXPos="478" ctrlYPos="215"/>
+          </Connection>
+        </Graphics>
+        </TEdge>
+        <Graphics>
+          <Position xPos="443" yPos="23"/>
+        </Graphics>
+      </Node>
+      <Node id="N17" name="Init;Answer;Timer" history="false">
+        <Define>
+        </Define>
+        <Declare>
+        </Declare>
+        <Commands>
+          <PlayAction mode="Sequential">
+            <StringLiteral><![CDATA[[timer init id=answer]]]></StringLiteral>
+          </PlayAction>
+          <PlayAction mode="Sequential">
+            <Add>
+              <Add>
+                <StringLiteral><![CDATA[[ssi log sender=context event=answer state=continued content=]]></StringLiteral>
+                <SimpleVariable name="TopicIdentifier"/>
+              </Add>
+              <StringLiteral><![CDATA[]]]></StringLiteral>
+            </Add>
+          </PlayAction>
+        </Commands>
+        <TEdge target="N19" start="" timeout="1000">
+        <Graphics>
+          <Connection>
+            <ControlPoint xPos="1038" yPos="443" ctrlXPos="1038" ctrlYPos="425"/>
+            <ControlPoint xPos="1038" yPos="373" ctrlXPos="1038" ctrlYPos="390"/>
+          </Connection>
+        </Graphics>
+        </TEdge>
+        <Graphics>
+          <Position xPos="1003" yPos="443"/>
+        </Graphics>
+      </Node>
+      <Node id="N18" name="Init;Question;Timer" history="false">
+        <Define>
+        </Define>
+        <Declare>
+        </Declare>
+        <Commands>
+          <PlayAction mode="Sequential">
+            <StringLiteral><![CDATA[[timer init id=question]]]></StringLiteral>
+          </PlayAction>
+          <PlayAction mode="Sequential">
+            <Add>
+              <Add>
+                <StringLiteral><![CDATA[[ssi log sender=context event=question state=continued content=]]></StringLiteral>
+                <SimpleVariable name="TopicIdentifier"/>
+              </Add>
+              <StringLiteral><![CDATA[]]]></StringLiteral>
+            </Add>
+          </PlayAction>
+        </Commands>
+        <TEdge target="N20" start="" timeout="1000">
+        <Graphics>
+          <Connection>
+            <ControlPoint xPos="478" yPos="303" ctrlXPos="478" ctrlYPos="320"/>
+            <ControlPoint xPos="478" yPos="443" ctrlXPos="478" ctrlYPos="425"/>
+          </Connection>
+        </Graphics>
+        </TEdge>
+        <Graphics>
+          <Position xPos="443" yPos="233"/>
+        </Graphics>
+      </Node>
+      <Node id="N19" name="Get;Answer;Time" history="false">
+        <Define>
+        </Define>
+        <Declare>
+        </Declare>
+        <Commands>
+          <PlayAction mode="Sequential">
+            <StringLiteral><![CDATA[[timer time id=answer var=AnswerDuration]]]></StringLiteral>
+          </PlayAction>
+          <PlayAction mode="Sequential">
+            <Add>
+              <Add>
+                <Add>
+                  <Add>
+                    <StringLiteral><![CDATA[[ssi log sender=context event=answer state=completed duration=]]></StringLiteral>
+                    <SimpleVariable name="AnswerDuration"/>
+                  </Add>
+                  <StringLiteral><![CDATA[ content=]]></StringLiteral>
+                </Add>
+                <SimpleVariable name="TopicIdentifier"/>
+              </Add>
+              <StringLiteral><![CDATA[]]]></StringLiteral>
+            </Add>
+          </PlayAction>
+        </Commands>
+        <TEdge target="N21" start="" timeout="1000">
+        <Graphics>
+          <Connection>
+            <ControlPoint xPos="1038" yPos="303" ctrlXPos="1038" ctrlYPos="285"/>
+            <ControlPoint xPos="1038" yPos="93" ctrlXPos="1038" ctrlYPos="110"/>
+          </Connection>
+        </Graphics>
+        </TEdge>
+        <Graphics>
+          <Position xPos="1003" yPos="303"/>
+        </Graphics>
+      </Node>
+      <Node id="N20" name="Get;Question;Time" history="false">
+        <Define>
+        </Define>
+        <Declare>
+        </Declare>
+        <Commands>
+          <PlayAction mode="Sequential">
+            <StringLiteral><![CDATA[[timer time id=question var=QuestionDuration]]]></StringLiteral>
+          </PlayAction>
+          <PlayAction mode="Sequential">
+            <Add>
+              <Add>
+                <Add>
+                  <Add>
+                    <StringLiteral><![CDATA[[ssi log sender=context event=question state=completed duration=]]></StringLiteral>
+                    <SimpleVariable name="QuestionDuration"/>
+                  </Add>
+                  <StringLiteral><![CDATA[ content=]]></StringLiteral>
+                </Add>
+                <SimpleVariable name="TopicIdentifier"/>
+              </Add>
+              <StringLiteral><![CDATA[]]]></StringLiteral>
+            </Add>
+          </PlayAction>
+        </Commands>
+        <TEdge target="N17" start="" timeout="1000">
+        <Graphics>
+          <Connection>
+            <ControlPoint xPos="513" yPos="478" ctrlXPos="600" ctrlYPos="478"/>
+            <ControlPoint xPos="1003" yPos="478" ctrlXPos="915" ctrlYPos="478"/>
+          </Connection>
+        </Graphics>
+        </TEdge>
+        <Graphics>
+          <Position xPos="443" yPos="443"/>
+        </Graphics>
+      </Node>
+      <Node id="N21" name="Get;Topic;Timer" history="false">
+        <Define>
+        </Define>
+        <Declare>
+        </Declare>
+        <Commands>
+          <PlayAction mode="Sequential">
+            <StringLiteral><![CDATA[[timer time id=topic var=TopicDuration]]]></StringLiteral>
+          </PlayAction>
+          <PlayAction mode="Sequential">
+            <Add>
+              <Add>
+                <Add>
+                  <Add>
+                    <StringLiteral><![CDATA[[ssi log sender=context event=topic state=completed duration=]]></StringLiteral>
+                    <SimpleVariable name="TopicDuration"/>
+                  </Add>
+                  <StringLiteral><![CDATA[ content=]]></StringLiteral>
+                </Add>
+                <SimpleVariable name="TopicIdentifier"/>
+              </Add>
+              <StringLiteral><![CDATA[]]]></StringLiteral>
+            </Add>
+          </PlayAction>
+        </Commands>
+        <TEdge target="N16" start="" timeout="1000">
+        <Graphics>
+          <Connection>
+            <ControlPoint xPos="1003" yPos="58" ctrlXPos="915" ctrlYPos="58"/>
+            <ControlPoint xPos="513" yPos="58" ctrlXPos="600" ctrlYPos="58"/>
+          </Connection>
+        </Graphics>
+        </TEdge>
+        <Graphics>
+          <Position xPos="1003" yPos="23"/>
+        </Graphics>
+      </Node>
+    </SuperNode>
+  </SuperNode>
+  <UserCommands>
+    <UserCommand name="print" classname ="java.lang.System.out" method="println">
+      <ArgumentDefinition name="text" type="java.lang.String"/>
+    </UserCommand>
+    <UserCommand name="getNumberOfEventInContext" classname ="de.dfki.vsm.xtension.ssi.logger.SSILoggerScanner" method="getNumberOfEventInContext">
+      <ArgumentDefinition name="Arg0" type="java.lang.String"/>
+      <ArgumentDefinition name="Arg1" type="java.lang.String"/>
+      <ArgumentDefinition name="Arg2" type="int"/>
+    </UserCommand>
+    <UserCommand name="load" classname ="de.dfki.vsm.xtension.ssi.logger.SSILoggerScanner" method="load">
+      <ArgumentDefinition name="Arg0" type="java.lang.String"/>
+    </UserCommand>
+    <UserCommand name="getMaximumOfEventValueInContext" classname ="de.dfki.vsm.xtension.ssi.logger.SSILoggerScanner" method="getMaximumOfEventInContext">
+      <ArgumentDefinition name="Arg0" type="java.lang.String"/>
+      <ArgumentDefinition name="Arg1" type="java.lang.String"/>
+      <ArgumentDefinition name="Arg2" type="java.lang.String"/>
+      <ArgumentDefinition name="Arg3" type="int"/>
+    </UserCommand>
+    <UserCommand name="getDurationOfContext" classname ="de.dfki.vsm.xtension.ssi.logger.SSILoggerScanner" method="getDurationOfContext">
+      <ArgumentDefinition name="Arg0" type="java.lang.String"/>
+      <ArgumentDefinition name="Arg1" type="int"/>
+    </UserCommand>
+    <UserCommand name="getDurationOfEventInContext" classname ="de.dfki.vsm.xtension.ssi.logger.SSILoggerScanner" method="getDurationOfEventInContext">
+      <ArgumentDefinition name="Arg0" type="java.lang.String"/>
+      <ArgumentDefinition name="Arg1" type="java.lang.String"/>
+      <ArgumentDefinition name="Arg2" type="int"/>
+    </UserCommand>
+  </UserCommands>
+  <ClassPath>
+  </ClassPath>
+  <InitContext></InitContext>
+</SceneFlow>

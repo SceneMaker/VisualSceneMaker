@@ -1,0 +1,598 @@
+package de.dfki.vsm.model.scenescript;
+
+// Java System Imports
+import java.io.*;
+import java.util.*;
+import java_cup.runtime.*;
+import de.dfki.vsm.util.log.*;
+import de.dfki.vsm.util.syn.*;
+
+// Action Code
+action code
+{:
+    // The Singelton Logger
+    private final LOGDefaultLogger mLogger = 
+      LOGDefaultLogger.getInstance();
+    // The Debugging Flag
+    //private boolean mDebugFlag = false;
+    // Set Debugging Flag
+    //public final void debug(final boolean flag) {
+    //    mDebugFlag = flag;
+    //}
+    // Create a Java Class From A String
+    private final Class clazz(final String name) {
+        Class clazz = null;
+        try {
+            // Try To Create The Class Object
+            clazz = Class.forName(name);
+        } catch (Exception e) {
+            mLogger.failure(e.toString());
+        } finally {
+            // Finally Return The Class Object
+            return clazz;
+        }
+    }
+    // Print A Debug Message
+    //private final void debug(final String message) {
+    //    if(mDebugFlag) {
+    //        mLogger.message(message);
+    //    }
+    //}
+:};
+
+// Initial Code 
+init with {:
+    // Switch On/Off Debug Mode
+    //action_obj.debug(mDebugFlag);
+:};
+
+// Parser Code 
+parser code {:
+    // The System Logger
+    private final static LOGDefaultLogger mLogger 
+      = LOGDefaultLogger.getInstance();
+
+    // The Debugging Flag
+    private boolean mDebugFlag = false;
+
+    // Handle An Error 
+    @Override
+    public final void syntax_error(final Symbol symbol) {
+      final Object object = symbol.value;
+      if(object instanceof SyntaxDocToken) {
+        SyntaxDocToken token = (SyntaxDocToken)object;
+        mLogger.failure("Error: Syntax Error With Token\n'" + token + "'");
+      } 
+      // Propagate Error
+      super.done_parsing();
+    }
+    // Handle An Error  
+    @Override
+    public final void unrecovered_syntax_error(final Symbol symbol) throws Exception {
+      final Object object = symbol.value;
+      if(object instanceof SyntaxDocToken) {
+        final SyntaxDocToken token = (SyntaxDocToken)object;
+        mLogger.failure("Error: Unrecovered Syntax Error\n'" + token + "'");
+      } 
+      // Propagate Error
+      super.done_parsing();
+    }
+    // Construct The Token Parser
+    public ScriptParser(final ScriptLexxer lexer, final boolean debug) {
+        // Create The Parser
+        super(lexer);
+        // Init Debug Flag
+        mDebugFlag = debug;
+    }
+    // Parse A Scene Script From  String
+    public final static Object run(
+        final String input,
+        final boolean action,
+        final boolean debug, 
+        final boolean comment, 
+        final boolean newline,
+        final boolean whitespace) {
+        //
+        final String string = (action ? "[" + input + "]" : input);
+        //
+        //mLogger.message("Parsing Input String '" + string + "'");
+        try {
+            // Create A String Reader
+            final StringReader reader = new StringReader(string);
+             // Create A Script Lexxer
+            final ScriptLexxer lexxer = new ScriptLexxer(
+                reader, comment, newline, whitespace);
+            // Create A Script Parser
+            final ScriptParser parser = new ScriptParser(lexxer, debug);
+            // Parse Input Content
+            final Symbol symbol = parser.parse();
+             // Cast The Symbol Down
+            if(symbol != null) {
+                if(action && symbol.value instanceof ActionObject) {
+                    mLogger.success("Parsing Success: Parsing\n" + symbol.value);  
+                    // Return result at success
+                    return symbol.value;
+                } else if(!action && symbol.value instanceof SceneScript) {
+                    //mLogger.success("Parsing Success: Parsing\n" + symbol.value);  
+                    // Return result at success
+                    return symbol.value;
+                } else {
+                    mLogger.warning("Parsing Warning: Result Is No Script Entity");  
+                    // Return NULL at failure
+                    return null;
+                }
+            } else {
+                mLogger.failure("Parsing Failure: Invalid Parsing Result");  
+                // Return NULL at failure
+                return null;
+            }
+        } catch(final Exception exc) {
+            mLogger.failure("Parsing Failure:\n" + exc.toString()); 
+            // Return NULL at failure 
+            return null;
+        }
+    }
+:};
+
+// Terminal Definitions ////////////////////////////////////////////////////////
+terminal SyntaxDocToken SIMPLEWORD;     // Simple Words
+terminal SyntaxDocToken ABBREVIATION;   // Abbreviations
+terminal SyntaxDocToken VARIABLE;       // Variables
+terminal SyntaxDocToken PUNCTUATION;    // Punctuation
+terminal SyntaxDocToken ACTIONHEAD;     // Action Header
+terminal SyntaxDocToken ACTIONFOOT;     // Action Footer
+terminal SyntaxDocToken PLACEHOLDER;    // Placeholder
+terminal SyntaxDocToken BOOLEAN;        // Boolean Values
+terminal SyntaxDocToken INTEGER;        // Integer Values
+terminal SyntaxDocToken FLOATING;       // Floating Values
+terminal SyntaxDocToken SQSTRING;       // String Sequences
+terminal SyntaxDocToken COLONMARK;      // Colon Seperator
+terminal SyntaxDocToken UNDERLINE;      // Underline Sign
+terminal SyntaxDocToken LANGUAGE;       // Language Suffix
+terminal SyntaxDocToken COMMENT;        // Comments
+terminal SyntaxDocToken IDENTIFIER;     // Identifiers
+terminal SyntaxDocToken NEWLINE;        // Newlines
+terminal SyntaxDocToken WHITESPACE;     // Whitespaces
+terminal SyntaxDocToken ASSIGNMENT;     // Assignments
+terminal SyntaxDocToken SCENEWORD;    // Scene Header
+terminal SyntaxDocToken ERRORSTATE;     // Error Symbols
+
+// Non-Terminal Definitions ////////////////////////////////////////////////////
+// Nonterminal Arrays
+non terminal LinkedList turn_list;
+non terminal LinkedList utterance_element_list;
+non terminal LinkedList scene_script_entity_list;
+non terminal LinkedList scene_script_entity_list_opt;
+non terminal LinkedList feature_list;
+non terminal LinkedList turn_element_list;
+non terminal LinkedList feature_list_opt;
+// Nonterminal Objects
+non terminal SceneScript scene_script_definition;
+non terminal ScriptEntity scene_script_entity;
+non terminal SceneObject scene_definition;
+non terminal SceneComment script_comment;
+non terminal SceneTurn turn;
+non terminal SceneUttr turn_element;
+non terminal SceneUttr utterance_definition;
+non terminal UttrElement utterance_element;
+//
+non terminal SceneWord utterance_word;
+non terminal SceneParam utterance_variable;
+non terminal SceneAbbrev utterance_abbreviation;
+//
+non terminal ActionObject nested_action;
+non terminal ActionObject action_definition;
+non terminal ActionFeature action_feature;
+non terminal ActionFeature simple_feature;
+non terminal ActionParam action_param;
+//
+non terminal SyntaxDocToken action_name;
+non terminal SyntaxDocToken action_actor;
+non terminal SyntaxDocToken feature_name;
+non terminal SyntaxDocToken feature_value;
+non terminal SyntaxDocToken parameter;
+non terminal SyntaxDocToken identifier;
+non terminal SyntaxDocToken boolean;
+non terminal SyntaxDocToken integer;
+non terminal SyntaxDocToken floating;
+non terminal SyntaxDocToken sqstring;
+non terminal SyntaxDocToken punctuation;
+non terminal SyntaxDocToken whitespaces;
+//
+non terminal ScriptEntity script_entity;
+// Start Symbol Script
+//start with scene_script_definition;
+
+// Grammar Rule Definitions ////////////////////////////////////////////////////
+script_entity ::=
+  scene_script_definition:x
+    {:
+        RESULT = x;
+    :}
+| action_definition:x
+    {:
+        RESULT =x;
+    :}
+;
+
+// Scene Script Definition 
+scene_script_definition ::=
+    scene_script_entity_list_opt:l
+    {:
+        RESULT = new SceneScript(0, 0, l);
+    :}
+;
+// Scene Script Entity List 
+scene_script_entity_list_opt ::=
+
+    {:
+        RESULT = new LinkedList<ScriptEntity>();
+    :}
+  | scene_script_entity_list:l
+    {:
+        RESULT = l;
+    :}
+;
+scene_script_entity_list ::=
+    scene_script_entity_list:l scene_script_entity:x
+    {:
+        RESULT = l;
+        RESULT.add(x);
+    :}
+  | scene_script_entity:x
+    {:
+        RESULT = new LinkedList<ScriptEntity>();
+        RESULT.add(x);
+    :}
+;
+// Scene Script Entity
+scene_script_entity ::=
+    scene_definition:x
+    {:
+          RESULT = x;
+    :}  
+  | script_comment:x 
+    {:
+          RESULT = x;
+    :}  
+;
+// Script Comment
+script_comment ::=
+    COMMENT:x 
+    {:
+          RESULT = new SceneComment( 
+                x.getLower(), x.getUpper(), x.getValue());
+    :}  
+;
+// Scene Definition 
+scene_definition ::=
+    SCENEWORD:x 
+    //UNDERLINE
+    LANGUAGE:language 
+    IDENTIFIER:identifier 
+    //COLONMARK 
+    turn_list:list
+    {:
+        // Get The Last Turn Object
+        final SceneTurn lastturn = (SceneTurn)list.getLast();
+        // Construct Scene Object
+        RESULT = new SceneObject(
+            x.getLower(), 
+            lastturn.getUpper(), 
+            language.getValue(), 
+            identifier.getValue(), 
+            list);
+    :}  
+;
+
+////////////////////////////////////////////////////////////////////////////////
+// Turn Sequence ///////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+turn_list ::=
+    turn_list:l turn:turn
+    {:
+        RESULT = l;
+        RESULT.add(turn);
+    :}
+  | turn:turn
+    {:
+        RESULT = new LinkedList<SceneTurn>();
+        RESULT.add(turn);
+    :}
+;
+////////////////////////////////////////////////////////////////////////////////
+// Turn Definitions 
+////////////////////////////////////////////////////////////////////////////////
+turn ::=
+    IDENTIFIER:x COLONMARK turn_element_list:l
+    {:
+        // Get The Last Turn Object
+        final SceneUttr lastuttr = (SceneUttr)l.getLast();
+        // Construct The Turn Object
+        RESULT = new SceneTurn(
+            x.getLower(), 
+            lastuttr.getUpper(), 
+            x.getValue(), 
+            l);
+    :}
+;
+
+////////////////////////////////////////////////////////////////////////////////
+// Turn Element List 
+////////////////////////////////////////////////////////////////////////////////
+turn_element_list ::=
+    turn_element_list:l turn_element:x
+    {:
+        RESULT = l;
+        RESULT.add(x);
+    :}
+  | turn_element:x
+    {:
+        RESULT = new LinkedList<SceneUttr>();
+        RESULT.add(x);
+    :} 
+;
+
+turn_element ::=
+    utterance_definition:x
+    {:
+        RESULT = x;
+    :}
+;
+
+////////////////////////////////////////////////////////////////////////////////
+// Utterance Definitions 
+////////////////////////////////////////////////////////////////////////////////
+utterance_definition ::=
+    utterance_element_list:l punctuation:p
+    {:
+        // Get The First Word In List
+        UttrElement firstelement = (UttrElement)l.getFirst();
+        // Construct A New Utterance
+        RESULT = new SceneUttr(
+            firstelement.getLower(), p.getUpper(), l, p.getValue());
+    :}
+;
+// Punctuation Marks
+punctuation ::=
+    PUNCTUATION:x
+    {:
+        RESULT = x;
+    :}
+;
+// Utterance Element List
+utterance_element_list ::=
+    utterance_element_list:l utterance_element:x
+    {:
+        RESULT = l;
+        RESULT.add(x);
+    :}
+  | utterance_element:x
+    {:
+        RESULT = new LinkedList<UttrElement>();
+        RESULT.add(x);
+    :}
+;
+// Utterance Element
+utterance_element ::=
+    utterance_word:x
+    {:
+        RESULT = x;
+    :}
+  | nested_action:x
+    {:
+        RESULT = x;
+    :}
+  | utterance_variable:x
+    {:
+        RESULT = x;
+    :}
+  | utterance_abbreviation:x
+    {:
+        RESULT = x;
+    :}
+;
+// Utterance Word
+utterance_word ::=
+    SIMPLEWORD:x
+    {:
+        RESULT = new SceneWord(
+            x.getLower(), x.getUpper(), x.getValue());
+    :}
+;
+// Utterance Variable
+utterance_variable ::=
+    PLACEHOLDER:x VARIABLE:y
+    {:
+        RESULT = new SceneParam(
+            x.getLower(), y.getUpper(), y.getValue());
+    :}
+;
+// Utterance Abbreviation
+utterance_abbreviation ::=
+     SIMPLEWORD:x ABBREVIATION SIMPLEWORD:y
+    {:
+        RESULT = new SceneAbbrev(
+            x.getLower(), y.getUpper(), 
+            x.getValue(), y.getValue());
+    :}
+;
+// Nested Action
+nested_action ::=
+    ACTIONHEAD:h action_definition:x ACTIONFOOT:f
+    {:
+        RESULT = x;
+    :}
+;
+// Action Definition
+action_definition ::= 
+    action_name:y feature_list_opt:l
+    {:
+        RESULT = new ActionObject(
+                y.getLower(), y.getUpper(),
+                null, y.getValue(), l);
+    :}
+  | action_actor:x action_name:y feature_list_opt:l
+    {:
+        RESULT = new ActionObject(
+                x.getLower(), y.getUpper(),
+                x.getValue(), y.getValue(), l);
+    :}
+;
+// Action Actor
+action_actor ::=
+    IDENTIFIER:x COLONMARK
+    {:
+        RESULT = x;
+    :}
+;
+// Action Name
+action_name ::= 
+    IDENTIFIER:x
+    {:
+        RESULT = x;
+    :}
+;
+// Feature List 
+feature_list_opt ::=
+
+    {:
+        RESULT = new LinkedList<ActionFeature>();
+    :}
+  | feature_list:l
+    {:
+        RESULT = l;
+    :}
+;
+feature_list ::=
+    feature_list:l action_feature:x
+    {:
+        RESULT = l;
+        RESULT.add(x);
+    :}
+  | action_feature:x
+    {:
+        RESULT = new LinkedList<ActionFeature>();
+        RESULT.add(x);
+    :}
+;
+
+action_feature ::=
+    simple_feature:x
+    {:
+        RESULT = x;
+    :}
+  | action_param:x
+    {:
+        RESULT = x;
+    :}
+;
+
+action_param ::=
+    feature_name:x ASSIGNMENT PLACEHOLDER VARIABLE:y
+    {:
+        RESULT = new ActionParam(
+            x.getLower(), y.getUpper(), 
+            x.getValue(), y.getValue());
+    :}
+;
+
+simple_feature ::=
+    feature_name:x ASSIGNMENT feature_value:y
+    {:
+        RESULT = new ActionFeature(
+            x.getLower(), y.getUpper(), 
+            x.getValue(), y.getValue());
+    :}
+//    feature_name:x ASSIGNMENT IDENTIFIER:y
+//    {:
+//        RESULT = new ActionParam(
+//            x.getLower(), y.getUpper(), 
+//            x.getValue(), y.getValue());
+//    :}
+;
+// Feature Name
+feature_name ::= 
+    IDENTIFIER:x 
+    {:
+        RESULT = x;
+    :}
+;
+// Feature Value 
+feature_value ::= 
+    identifier:x
+    {:
+        RESULT = x;
+    :}
+  | boolean:x
+    {:
+        RESULT = x;
+    :}    
+  | integer:x
+    {:
+        RESULT = x;
+    :}    
+  | floating:x
+    {:
+        RESULT = x;
+    :}    
+  | sqstring:x
+    {:
+        RESULT = x;
+    :}
+;
+// Identifier
+identifier ::= 
+    IDENTIFIER:x 
+    {:
+        RESULT = x;
+    :}
+;
+// Parameter
+//parameter ::= 
+//    PLACEHOLDER VARIABLE:x 
+//    {:
+//        RESULT = x;
+//    :}
+//;
+// Boolean Value
+boolean ::= 
+    BOOLEAN:x 
+    {:
+        RESULT = x;
+    :}
+;
+// Integer Number
+integer ::= 
+    INTEGER:x 
+    {:
+        RESULT = x;
+    :}
+;
+// Floating Point Number
+floating ::= 
+    FLOATING:x 
+    {:
+        RESULT = x;
+    :}
+;
+// Single Quote String
+sqstring ::= 
+    SQSTRING:x 
+    {:
+        RESULT = x;
+    :}
+;
+
+/*
+whitespaces ::=
+    whitespaces:l WHITESPACE:x
+    {:
+        RESULT = x;
+    :}
+  | WHITESPACE:x
+    {:
+        RESULT = x;
+    :}
+;
+*/
