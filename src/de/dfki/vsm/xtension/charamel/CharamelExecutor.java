@@ -238,7 +238,11 @@ public final class CharamelExecutor extends ActivityExecutor implements Exportab
             // Get the unique actor id
             final String aid = mProject.getAgentConfig(activity_actor).getProperty("aid");
             // Check the activity name
-            if (activity_name.equalsIgnoreCase("SittingStart")) {
+            if (activity_name.equalsIgnoreCase("SetCamera")) {
+                charamelAct = mActionLoader.loadCharamelAnimation(activity_name, aid);
+            } else if (activity_name.equalsIgnoreCase("HideAvatar")) {
+                charamelAct = mActionLoader.loadCharamelAnimation(activity_name, aid);
+            } else if (activity_name.equalsIgnoreCase("SittingStart")) {
                 charamelAct = mActionLoader.loadCharamelAnimation(activity_name, aid);
             } else if (activity_name.equalsIgnoreCase("SittingSop")) {
                 charamelAct = mActionLoader.loadCharamelAnimation(activity_name, aid);
