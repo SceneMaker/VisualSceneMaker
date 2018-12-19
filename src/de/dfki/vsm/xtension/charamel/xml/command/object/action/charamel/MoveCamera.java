@@ -7,8 +7,7 @@ package de.dfki.vsm.xtension.charamel.xml.command.object.action.charamel;
 
 import de.dfki.iui.libcharamel.v4235.AnimationTrack;
 import de.dfki.iui.libcharamel.v4235.ComplexAnimationGenerator;
-import de.dfki.iui.libcharamel.v4235.Camera;
-import de.dfki.iui.libcharamel.v4235.CaiCommand;
+import de.dfki.iui.libcharamel.v4235.Morph;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
 import de.dfki.vsm.util.xml.XMLParseError;
@@ -23,31 +22,49 @@ import org.w3c.dom.Element;
  * @author Patrick Gebhard
  *
  */
-public class HideAvatar extends CharamelActObject implements XMLParseable, XMLWriteable {
+public class MoveCamera extends CharamelActObject implements XMLParseable, XMLWriteable {
 
+    private String posX,posY,posZ,lookX,lookZ,lookY,upX,upY,upZ;
     private String mCharameAvatarId = "1";
     // The logger instance
     private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
 
     // TODO cai_request sub element String mValue = "";
-    public HideAvatar(String aid) {
+    public MoveCamera(String posX,String posY, String posZ, String lookX, String lookY, String lookZ, String upX,String upY, String upZ, String aid) {
         mName = "caixml";
+        this.posX = posX;
+        this.posY = posY;
+        this.posZ = posZ;
+        this.lookX = lookX;
+        this.lookY = lookY;
+        this.lookZ = lookZ;
+        this.upX = upX;
+        this.upY = upY;
+        this.upZ = upZ;
         mCharameAvatarId = aid;
     }
 
-    public HideAvatar() {
+    public MoveCamera() {
         mName = "caixml";
+        posX="0";
+        posY="0";
+        posZ = "0";
     }
 
     @Override
     public void writeXML(IOSIndentWriter out) throws XMLWriteError {
         out.push().println("<Action name=\"" + mName + "\" id=\"" + mId + "\">").push();
-        ComplexAnimationGenerator ca = new ComplexAnimationGenerator();
-        ca.getCommand().setId(mId); // set the same id in the Charamel command that has been used in the Tworld command
-        ca.getCommand().setAid(Integer.parseInt(mCharameAvatarId));
-        ca.getCommand().setEventToHideAvatar(Integer.parseInt(mCharameAvatarId));
+
         
-        out.push().println(ca.getCaiXML());
+        String xml = "<cai_request version=\"1.0\">"
+                + "<cai_command id=\"" + mId + "\">SetCameraXML"
+                + "<position x=\"" + posX + "\" y=\"" + posY + "\" z=\"" + posZ + "\"></position>"
+                + "<look_at x=\"" + lookX + "\" y=\"" + lookY + "\" z=\"" + lookZ + "\"></look_at>"
+                + "<up_vector x=\"" + upX + "\" y=\"" + upY + "\" z=\"" + upZ + "\"></up_vector>"
+                + "</cai_command></cai_request>";
+        // + "<name mode=\"set\">VSMCamera</name> "
+        out.push().println(xml);
+        //out.println(xml);
         out.pop().pop().println("</Action>");
     }
 

@@ -242,6 +242,8 @@ public final class CharamelExecutor extends ActivityExecutor implements Exportab
                 charamelAct = mActionLoader.loadCharamelAnimation(activity_name, aid);
             } else if (activity_name.equalsIgnoreCase("HideAvatar")) {
                 charamelAct = mActionLoader.loadCharamelAnimation(activity_name, aid);
+            } else if (activity_name.equalsIgnoreCase("GetCamera")) {
+                charamelAct = mActionLoader.loadCharamelAnimation(activity_name, aid);
             } else if (activity_name.equalsIgnoreCase("SittingStart")) {
                 charamelAct = mActionLoader.loadCharamelAnimation(activity_name, aid);
             } else if (activity_name.equalsIgnoreCase("SittingSop")) {
@@ -357,7 +359,29 @@ public final class CharamelExecutor extends ActivityExecutor implements Exportab
                 zdegree = (zdegree == null) ? "0.0" : zdegree;
                 charamelAct = mActionLoader.loadCharamelAnimation(activity_name, joint, interpolation, xdegree, ydegree, zdegree, aid);
                 activity.setType(Type.parallel);
-            } else {
+            }else if (activity_name.equalsIgnoreCase("MoveCamera")) {
+                String posX = activity.get("posX");
+                posX = (posX == null) ? "0.0" : posX;
+                String posY = activity.get("posY");
+                posY = (posY == null) ? "0.0" : posY;
+                String posZ = activity.get("posZ");
+                posZ = (posZ == null) ? "0.0" : posZ;
+                String lookX = activity.get("lookX");
+                lookX = (lookX == null) ? "0.0" : lookX;
+                String lookY = activity.get("lookY");
+                lookY = (lookY == null) ? "0.0" : lookY;
+                String lookZ = activity.get("lookZ");
+                lookZ = (lookZ == null) ? "0.0" : lookZ;
+                String upX = activity.get("upX");
+                upX = (upX == null) ? "0.0" : upX;
+                String upY = activity.get("upY");
+                upY = (upY == null) ? "0.0" : upY;
+                String upZ = activity.get("upZ");
+                upZ = (upZ == null) ? "0.0" : upZ;
+                charamelAct = mActionLoader.loadCharamelAnimation(activity_name, posX, posY, posZ,lookX,lookY,lookZ,upX,upY,upZ, aid);
+                activity.setType(Type.parallel); 
+            }else {
+                System.out.println("unknowns charamel activity");
                 // Unknown activity_name
             }
         }

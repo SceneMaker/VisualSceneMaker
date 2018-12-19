@@ -9,6 +9,7 @@ import de.dfki.iui.libcharamel.v4235.AnimationTrack;
 import de.dfki.iui.libcharamel.v4235.ComplexAnimationGenerator;
 import de.dfki.iui.libcharamel.v4235.Camera;
 import de.dfki.iui.libcharamel.v4235.CaiCommand;
+import de.dfki.iui.libcharamel.v4235.Motion;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
 import de.dfki.vsm.util.xml.XMLParseError;
@@ -23,31 +24,29 @@ import org.w3c.dom.Element;
  * @author Patrick Gebhard
  *
  */
-public class HideAvatar extends CharamelActObject implements XMLParseable, XMLWriteable {
+public class GetCamera extends CharamelActObject implements XMLParseable, XMLWriteable {
 
     private String mCharameAvatarId = "1";
     // The logger instance
     private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
 
     // TODO cai_request sub element String mValue = "";
-    public HideAvatar(String aid) {
+    public GetCamera(String aid) {
         mName = "caixml";
         mCharameAvatarId = aid;
     }
 
-    public HideAvatar() {
+    public GetCamera() {
         mName = "caixml";
     }
 
     @Override
     public void writeXML(IOSIndentWriter out) throws XMLWriteError {
         out.push().println("<Action name=\"" + mName + "\" id=\"" + mId + "\">").push();
-        ComplexAnimationGenerator ca = new ComplexAnimationGenerator();
-        ca.getCommand().setId(mId); // set the same id in the Charamel command that has been used in the Tworld command
-        ca.getCommand().setAid(Integer.parseInt(mCharameAvatarId));
-        ca.getCommand().setEventToHideAvatar(Integer.parseInt(mCharameAvatarId));
-        
-        out.push().println(ca.getCaiXML());
+                String xml = "<cai_request version=\"1.0\">"
+                + "<cai_command id=\"" + mId + "\">GetCameraXML"
+                + "</cai_command></cai_request>";
+        out.push().println(xml);
         out.pop().pop().println("</Action>");
     }
 
