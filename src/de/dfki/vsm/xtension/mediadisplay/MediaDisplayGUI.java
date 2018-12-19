@@ -28,7 +28,7 @@ public class MediaDisplayGUI {
 
     private FXMLDocumentController mController;
     private Region mRootRegion;
-    private Double mScaleFactor = 1.5d;
+    private Double mScaleFactor = 1.0d;
 
     private JFrame mFrame;
     private MediaDisplayExecutor mExecutor;
