@@ -1,7 +1,7 @@
 package de.dfki.vsm.editor.project.sceneflow.attributes;
 
 //~--- non-JDK imports --------------------------------------------------------
-import com.sun.java.swing.plaf.windows.WindowsScrollBarUI;
+//import com.sun.java.swing.plaf.windows.WindowsScrollBarUI;
 import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.action.RedoAction;
 import de.dfki.vsm.editor.action.UndoAction;
@@ -555,7 +555,7 @@ public class ElementEditor extends JScrollPane implements EventListener {
         setMinimumSize(new Dimension(260, 500));
         setBorder(BorderFactory.createEtchedBorder());
         setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        getVerticalScrollBar().setUI(new WindowsScrollBarUI());
+        //getVerticalScrollBar().setUI(new WindowsScrollBarUI());
         getViewport().setOpaque(false);
         setOpaque(false);
 

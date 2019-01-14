@@ -1,6 +1,6 @@
 package de.dfki.vsm.editor;
 
-import com.sun.java.swing.plaf.windows.WindowsScrollBarUI;
+//import com.sun.java.swing.plaf.windows.WindowsScrollBarUI;
 import de.dfki.common.Gender;
 import de.dfki.stickmanSwing.StickmanSwing;
 import de.dfki.vsm.Preferences;
@@ -499,7 +499,7 @@ public class EditorStarter extends JPanel {
 		mScrollPanel.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
 		mScrollPanel.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		mScrollPanel.setViewportView(tutorialProjPanel);
-		mScrollPanel.getVerticalScrollBar().setUI(new WindowsScrollBarUI());
+		//mScrollPanel.getVerticalScrollBar().setUI(new WindowsScrollBarUI());
 		mScrollPanel.setViewportBorder(new EmptyBorder(0, 0, 0, 0));
 		mScrollPanel.setOpaque(false);
 		mScrollPanel.getViewport().setOpaque(false);
@@ -648,7 +648,7 @@ public class EditorStarter extends JPanel {
 		mScrollPanel.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
 		mScrollPanel.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		mScrollPanel.setViewportView(sampleProjPanel);
-		mScrollPanel.getVerticalScrollBar().setUI(new WindowsScrollBarUI());
+		//mScrollPanel.getVerticalScrollBar().setUI(new WindowsScrollBarUI());
 		mScrollPanel.setViewportBorder(new EmptyBorder(0, 0, 0, 0));
 		mScrollPanel.setOpaque(false);
 		mScrollPanel.getViewport().setOpaque(false);

@@ -1,6 +1,6 @@
 package de.dfki.vsm.editor;
 
-import com.sun.java.swing.plaf.windows.WindowsScrollBarUI;
+//import com.sun.java.swing.plaf.windows.WindowsScrollBarUI;
 import de.dfki.vsm.Preferences;
 import de.dfki.vsm.editor.dialog.*;
 import de.dfki.vsm.editor.event.SceneStoppedEvent;
@@ -232,7 +232,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
         UIManager.put("EditorPane.background", Color.WHITE);
         UIManager.put("ScrollPane.background", Color.WHITE);
         UIManager.put("Viewport.background", Color.WHITE);
-        UIManager.put("ScrollBarUI", WindowsScrollBarUI.class.getName());
+        //UIManager.put("ScrollBarUI", WindowsScrollBarUI.class.getName());
         UIManager.put("ScrollBar.background", Color.GRAY);
         UIManager.put("ScrollBar.thumb", Color.LIGHT_GRAY);
     }

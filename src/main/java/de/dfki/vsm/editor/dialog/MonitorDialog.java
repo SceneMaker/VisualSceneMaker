@@ -1,6 +1,6 @@
 package de.dfki.vsm.editor.dialog;
 
-import com.sun.java.swing.plaf.windows.WindowsScrollBarUI;
+//import com.sun.java.swing.plaf.windows.WindowsScrollBarUI;
 import de.dfki.vsm.editor.CancelButton;
 import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.project.EditorProject;
@@ -109,7 +109,7 @@ public class MonitorDialog extends JDialog implements EventListener {
         varBox.add(mLocalVariableTable);
 
         mVariableScrollPane = new JScrollPane(varBox);
-        mVariableScrollPane.getVerticalScrollBar().setUI(new WindowsScrollBarUI());
+        //mVariableScrollPane.getVerticalScrollBar().setUI(new WindowsScrollBarUI());
         mVariableScrollPane.setBounds(20, 10, 360, 300);
         mWorkPanel.add(mVariableScrollPane);
 

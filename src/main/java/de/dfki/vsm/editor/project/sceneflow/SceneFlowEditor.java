@@ -1,7 +1,7 @@
 package de.dfki.vsm.editor.project.sceneflow;
 
 //~--- non-JDK imports --------------------------------------------------------
-import com.sun.java.swing.plaf.windows.WindowsScrollBarUI;
+//import com.sun.java.swing.plaf.windows.WindowsScrollBarUI;
 import de.dfki.vsm.editor.event.NodeExecutedEvent;
 import de.dfki.vsm.editor.project.EditorProject;
 import de.dfki.vsm.editor.project.sceneflow.attributes.ElementEditor;
@@ -175,8 +175,8 @@ public final class SceneFlowEditor extends JPanel implements EventListener
         mWorkSpacePanel.setTransferHandler(new SceneFlowImage());
 
         mWorkSpaceScrollPane = new JScrollPane(mWorkSpacePanel);
-        mWorkSpaceScrollPane.getVerticalScrollBar().setUI(new WindowsScrollBarUI());
-        mWorkSpaceScrollPane.getHorizontalScrollBar().setUI(new WindowsScrollBarUI());
+        //mWorkSpaceScrollPane.getVerticalScrollBar().setUI(new WindowsScrollBarUI());
+        //mWorkSpaceScrollPane.getHorizontalScrollBar().setUI(new WindowsScrollBarUI());
         mWorkSpaceScrollPane.setBorder(BorderFactory.createEtchedBorder());
 
         // The west component is the workbar
