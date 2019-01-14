@@ -2,7 +2,7 @@ package de.dfki.vsm.editor.dialog;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import com.sun.java.swing.plaf.windows.WindowsScrollBarUI;
+//import com.sun.java.swing.plaf.windows.WindowsScrollBarUI;
 import de.dfki.vsm.editor.AddButton;
 import de.dfki.vsm.editor.CancelButton;
 import de.dfki.vsm.editor.EditButton;
@@ -214,7 +214,7 @@ public class ModifyTEdgeDialog extends Dialog {
         // Init alternative start node list
         mAltStartNodeList       = new JList(new DefaultListModel());
         mAltStartNodeScrollPane = new JScrollPane(mAltStartNodeList);
-        mAltStartNodeScrollPane.getVerticalScrollBar().setUI(new WindowsScrollBarUI());
+        //mAltStartNodeScrollPane.getVerticalScrollBar().setUI(new WindowsScrollBarUI());
         Dimension tfSize = new Dimension(200, 110);
         mAltStartNodeScrollPane.setPreferredSize(tfSize);
         mAltStartNodeScrollPane.setMinimumSize(tfSize);

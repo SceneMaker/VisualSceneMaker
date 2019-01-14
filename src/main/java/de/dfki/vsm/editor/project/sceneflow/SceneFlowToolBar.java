@@ -1,6 +1,6 @@
 package de.dfki.vsm.editor.project.sceneflow;
 
-import com.sun.java.swing.plaf.windows.WindowsScrollBarUI;
+//import com.sun.java.swing.plaf.windows.WindowsScrollBarUI;
 import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.action.RedoAction;
 import de.dfki.vsm.editor.action.UndoAction;
@@ -665,7 +665,7 @@ public class SceneFlowToolBar extends JToolBar implements EventListener {
         mPathScrollPane.setBorder(BorderFactory.createEmptyBorder());
         mPathScrollBar = new JScrollBar(JScrollBar.HORIZONTAL);
         mPathScrollBar.setPreferredSize(new Dimension(300, 10));
-        mPathScrollBar.setUI(new WindowsScrollBarUI());
+        //mPathScrollBar.setUI(new WindowsScrollBarUI());
         mPathScrollBar.setOpaque(false);
         mPathScrollBar.setBorder(BorderFactory.createEmptyBorder());
         mPathScrollPane.setHorizontalScrollBar(mPathScrollBar);

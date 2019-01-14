@@ -1,6 +1,6 @@
 package de.dfki.vsm.editor.project.auxiliary.functions;
 
-import com.sun.java.swing.plaf.windows.WindowsScrollBarUI;
+//import com.sun.java.swing.plaf.windows.WindowsScrollBarUI;
 import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.action.RedoAction;
 import de.dfki.vsm.editor.action.UndoAction;
@@ -74,7 +74,7 @@ public class FunctionsEditor extends JPanel implements EventListener
         refreshFunctionsContainerPanel();
 
         mMainScrollPanel = new JScrollPane(mFunctionsContainerPanel);
-        mMainScrollPanel.getVerticalScrollBar().setUI(new WindowsScrollBarUI());
+        //mMainScrollPanel.getVerticalScrollBar().setUI(new WindowsScrollBarUI());
         mMainScrollPanel.setOpaque(false);
         mMainScrollPanel.getViewport().setOpaque(false);
         mMainScrollPanel.setMinimumSize(new Dimension(2000, 200));
