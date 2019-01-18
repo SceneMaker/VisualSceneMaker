@@ -37,10 +37,12 @@ public final class TimerExecutor extends ActivityExecutor {
 
     @Override
     public void execute(final AbstractActivity activity) {
-        
+
         //activity.setType(AbstractActivity.Type.blocking);
 
         // Get log message features
+
+        mLogger.message("TimerExecutor, processing action " + activity.getName());
         final String name = activity.getName();
         if (name.equalsIgnoreCase("clear")) {
             clear();
@@ -48,6 +50,14 @@ public final class TimerExecutor extends ActivityExecutor {
             init(activity.get("id"));
         } else if (name.equalsIgnoreCase("time")) {
             time(activity.get("id"), activity.get("var"));
+        } else if (name.equalsIgnoreCase("systime")) {
+            mProject.setVariable(activity.get("var"), Long.toString(System.currentTimeMillis()));
+        } else if (name.equalsIgnoreCase("timediff")) {
+            Long lasttime = Long.parseLong(activity.get("lasttime"));
+            Long currenttime = System.currentTimeMillis();
+            Long diff = currenttime-lasttime;
+
+            mProject.setVariable(activity.get("var"), diff.intValue());
         }
     }
 
