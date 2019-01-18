@@ -1,6 +1,7 @@
 plugins {
     id 'java'
     id 'org.openjfx.javafxplugin' version '0.0.5'
+    id 'net.nemerosa.versioning' version '2.8.2'
 }
 
 group 'de.dfki'
@@ -63,7 +64,9 @@ jar {
     }
     manifest {
         attributes(
-                'Main-Class': 'de.dfki.vsm.SceneMaker3'
+                'Main-Class': 'de.dfki.vsm.SceneMaker3',
+                'build' : versioning.info.build,
+                'Build-Revision': versioning.info.commit
         )
     }
 }
