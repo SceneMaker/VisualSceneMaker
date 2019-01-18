@@ -19,7 +19,7 @@ public class IntValue extends AbstractValue {
     }
 
     public String getAbstractSyntax() {
-        return "IntValue(" + Integer.toString(mValue) + ")";
+        return "IntValue(" + mValue + ")";
     }
 
     public String getConcreteSyntax() {
@@ -27,11 +27,11 @@ public class IntValue extends AbstractValue {
     }
 
     public String getFormattedSyntax() {
-        return "#c#" + Integer.toString(mValue);
+        return "#c#" + mValue;
     }
 
     public Integer getValue() {
-        return Integer.valueOf(mValue);
+        return mValue;
     }
 
     public IntValue getCopy() {

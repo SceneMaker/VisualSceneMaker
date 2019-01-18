@@ -5,9 +5,7 @@
  */
 package de.dfki.vsm.xtension.tricatworld.xml.command.object.action.charamel;
 
-import de.dfki.iui.libcharamel.v4235.AnimationTrack;
 import de.dfki.iui.libcharamel.v4235.ComplexAnimationGenerator;
-import de.dfki.iui.libcharamel.v4235.Motion;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
 import de.dfki.vsm.util.xml.XMLParseError;

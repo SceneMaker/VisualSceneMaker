@@ -12,8 +12,6 @@ import de.dfki.vsm.editor.dialog.ModifyTEdgeDialog;
 import de.dfki.vsm.model.sceneflow.chart.edge.EpsilonEdge;
 import de.dfki.vsm.model.sceneflow.chart.edge.ForkingEdge;
 import de.dfki.vsm.model.sceneflow.chart.edge.RandomEdge;
-import de.dfki.vsm.model.sceneflow.glue.command.Command;
-import java.util.Vector;
 
 //~--- JDK imports ------------------------------------------------------------
 

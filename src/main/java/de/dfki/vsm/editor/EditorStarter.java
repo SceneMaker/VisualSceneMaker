@@ -180,7 +180,7 @@ public class EditorStarter extends JPanel {
 		}
 
 		mParentFrame = null;
-		Window windows[] = Window.getWindows();
+        Window[] windows = Window.getWindows();
 		for (Window w : windows) {
 			if (w instanceof EditorInstance) {
 				// There is only one, so ...
@@ -505,7 +505,7 @@ public class EditorStarter extends JPanel {
 		mScrollPanel.getViewport().setOpaque(false);
 		mScrollPanel.setAlignmentX(LEFT_ALIGNMENT);
 
-		File listDirs[] = TutorialsProjFolder.listFiles();
+        File[] listDirs = TutorialsProjFolder.listFiles();
 
 		for (final File tutorialDir : listDirs) {
 
@@ -590,7 +590,7 @@ public class EditorStarter extends JPanel {
 		// *********************************************************************
 
 		CodeSource src = SceneMaker3.class.getProtectionDomain().getCodeSource();
-		List<String> listDirs = new ArrayList<String>();
+		List<String> listDirs = new ArrayList<>();
 		String path = "res/prj";
 		if (src != null) {
 			URL jar = src.getLocation();

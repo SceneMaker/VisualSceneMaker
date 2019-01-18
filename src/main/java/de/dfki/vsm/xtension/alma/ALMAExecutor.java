@@ -119,9 +119,7 @@ public class ALMAExecutor extends ActivityExecutor implements AffectUpdateListen
         AffectOutputDocument aod = event.getUpdate();
 
         try {
-            for (Iterator<AffectOutputDocument.AffectOutput.CharacterAffect> it = aod.getAffectOutput().getCharacterAffectList().iterator(); it.hasNext();) {
-                AffectOutputDocument.AffectOutput.CharacterAffect character = it.next();
-
+            for (AffectOutputDocument.AffectOutput.CharacterAffect character : aod.getAffectOutput().getCharacterAffectList()) {
                 // access cached data or create new cache
                 String name = character.getName();
                 String emotion = character.getDominantEmotion().getName().toString();

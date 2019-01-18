@@ -57,32 +57,16 @@ public class NumberTextField extends TextField {
     private void initHandlers() {
 
         // try to parse when focus is lost or RETURN is hit
-        setOnAction(new EventHandler<ActionEvent>() {
+        setOnAction(arg0 -> parseAndFormatInput());
 
-            @Override
-            public void handle(ActionEvent arg0) {
+        focusedProperty().addListener((observable, oldValue, newValue) -> {
+            if (!newValue) {
                 parseAndFormatInput();
             }
         });
 
-        focusedProperty().addListener(new ChangeListener<Boolean>() {
-
-            @Override
-            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
-                if (!newValue.booleanValue()) {
-                    parseAndFormatInput();
-                }
-            }
-        });
-
         // Set text in field if BigDecimal property is changed from outside.
-        numberProperty().addListener(new ChangeListener<BigDecimal>() {
-
-            @Override
-            public void changed(ObservableValue<? extends BigDecimal> obserable, BigDecimal oldValue, BigDecimal newValue) {
-                setText(nf.format(newValue));
-            }
-        });
+        numberProperty().addListener((obserable, oldValue, newValue) -> setText(nf.format(newValue)));
     }
 
     /**

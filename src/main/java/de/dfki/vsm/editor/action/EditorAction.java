@@ -12,10 +12,6 @@ public abstract class EditorAction {
     protected abstract void run();
 
     public ActionListener getActionListener() {
-        return new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                run();
-            }
-        };
+        return event -> run();
     }
 }

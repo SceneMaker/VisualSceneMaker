@@ -19,8 +19,8 @@ import javax.swing.undo.CannotUndoException;
  * @author Gregor Mehlmann
  */
 public class ModifyPEdgeAction extends ModifyEdgeAction {
-    private ArrayList<Integer> mOldProbList = new ArrayList<Integer>();
-    private ArrayList<Integer> mNewProbList = new ArrayList<Integer>();
+    private ArrayList<Integer> mOldProbList = new ArrayList<>();
+    private ArrayList<Integer> mNewProbList = new ArrayList<>();
 
     public ModifyPEdgeAction(Edge edge, WorkSpacePanel workSpace) {
         super(edge, workSpace);

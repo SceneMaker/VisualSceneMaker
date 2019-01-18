@@ -1,12 +1,10 @@
 package de.dfki.vsm.util.extensions.renderers;
 
-import de.dfki.vsm.util.extensions.value.ValueRenderable;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.ComboBox;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 
 /**
  * Created by alvaro on 4/20/17.

@@ -19,8 +19,8 @@ import javax.swing.undo.CannotUndoException;
  * @author Patrick Gebhard
  */
 public class CutNodesAction extends EditorAction {
-    Set<Node>             mNodes             = new HashSet<Node>();
-    Set<RemoveNodeAction> mRemoveNodeActions = new HashSet<RemoveNodeAction>();
+    Set<Node>             mNodes             = new HashSet<>();
+    Set<RemoveNodeAction> mRemoveNodeActions = new HashSet<>();
     CopyNodesAction       mCopyNodesAction   = null;
     WorkSpacePanel             mWorkSpace         = null;
     SceneFlowEditor       mSceneFlowEditor;

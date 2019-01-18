@@ -54,8 +54,8 @@ public class EdgeArrow implements ModelObject {
     @Override
     public final void writeXML(final IOSIndentWriter out) {
         out.println("<Connection>").push();
-        for (int i = 0; i < mPointList.size(); i++) {
-            mPointList.get(i).writeXML(out);
+        for (EdgePoint edgePoint : mPointList) {
+            edgePoint.writeXML(out);
         }
         out.pop().println("</Connection>");
     }

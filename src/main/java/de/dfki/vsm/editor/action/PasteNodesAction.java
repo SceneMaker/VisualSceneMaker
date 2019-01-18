@@ -12,7 +12,6 @@ import de.dfki.vsm.model.sceneflow.chart.BasicNode;
 import de.dfki.vsm.editor.project.sceneflow.SceneFlowEditor;
 import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
 import de.dfki.vsm.editor.util.IDManager;
-import de.dfki.vsm.model.sceneflow.*;
 
 import java.util.*;
 
@@ -26,13 +25,13 @@ import javax.swing.undo.CannotUndoException;
  * @author Patrick Gebhard
  */
 public class PasteNodesAction extends EditorAction {
-    Set<CreateNodeAction>          mCreateNodeActions = new HashSet<CreateNodeAction>();
+    Set<CreateNodeAction>          mCreateNodeActions = new HashSet<>();
     WorkSpacePanel                      mWorkSpace         = null;
-    Hashtable<BasicNode, ArrayList<GuargedEdge>> mNodesCEdges       = new Hashtable<BasicNode, ArrayList<GuargedEdge>>();
-    Hashtable<BasicNode, ArrayList<RandomEdge>> mNodesPEdges       = new Hashtable<BasicNode, ArrayList<RandomEdge>>();
-    Hashtable<BasicNode, ArrayList<ForkingEdge>> mNodesFEdges       = new Hashtable<BasicNode, ArrayList<ForkingEdge>>();
-    Hashtable<BasicNode, ArrayList<InterruptEdge>> mNodesIEdges       = new Hashtable<BasicNode, ArrayList<InterruptEdge>>();
-    Hashtable<BasicNode, AbstractEdge>          mNodesDefaultEdge  = new Hashtable<BasicNode, AbstractEdge>();
+    Hashtable<BasicNode, ArrayList<GuargedEdge>> mNodesCEdges       = new Hashtable<>();
+    Hashtable<BasicNode, ArrayList<RandomEdge>> mNodesPEdges       = new Hashtable<>();
+    Hashtable<BasicNode, ArrayList<ForkingEdge>> mNodesFEdges       = new Hashtable<>();
+    Hashtable<BasicNode, ArrayList<InterruptEdge>> mNodesIEdges       = new Hashtable<>();
+    Hashtable<BasicNode, AbstractEdge>          mNodesDefaultEdge  = new Hashtable<>();
     SceneFlowEditor                mSceneFlowEditor;
 
     public PasteNodesAction(WorkSpacePanel workSpace) {
@@ -48,7 +47,7 @@ public class PasteNodesAction extends EditorAction {
         IDManager im = mWorkSpace.getSceneFlowManager().getIDManager();
 
         // make a copy
-        Set<BasicNode> nodes = new HashSet<BasicNode>();
+        Set<BasicNode> nodes = new HashSet<>();
 
         for (BasicNode node : mWorkSpace.getClipBoard()) {
             nodes.add(node.getCopy());

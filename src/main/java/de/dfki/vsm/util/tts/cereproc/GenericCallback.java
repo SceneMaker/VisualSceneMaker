@@ -32,12 +32,12 @@ public class GenericCallback extends TtsEngineCallback {
 
     public GenericCallback(SourceDataLine line) {
         this.line = line;
-        phonemes = new HashMap<Integer, LinkedList<Phoneme>>();
+        phonemes = new HashMap<>();
     }
 
     public GenericCallback(SourceDataLine line, String pExecutionId, PhrasePhonemeCache cache, String phrase, String audioDevice) {
         this.line = line;
-        phonemes = new HashMap<Integer, LinkedList<Phoneme>>();
+        phonemes = new HashMap<>();
         executionId = pExecutionId;
         phraseCache = cache;
         toSpeakPhrase = phrase;

@@ -12,7 +12,6 @@ import de.dfki.vsm.util.xml.XMLParseable;
 import de.dfki.vsm.util.xml.XMLWriteError;
 import de.dfki.vsm.util.xml.XMLWriteable;
 import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
 
 /**
  *

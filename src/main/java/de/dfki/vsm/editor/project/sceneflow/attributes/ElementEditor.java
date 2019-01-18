@@ -914,7 +914,7 @@ class NodeEditor extends JPanel implements EventListener {
  */
 class ProbabilityEditor extends JPanel implements EventListener {
 
-    private final HashMap<RandomEdge, JTextField> mPEdgeMap = new HashMap<RandomEdge, JTextField>();
+    private final HashMap<RandomEdge, JTextField> mPEdgeMap = new HashMap<>();
     private RandomEdge mDataPEdge;
     private ModifyPEdgeDialog mPEdgeDialog;
     private JPanel mButtonPanel;

@@ -26,13 +26,12 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * @author Gregor Mehlmann
@@ -423,7 +422,7 @@ public final class CharamelExecutor extends ActivityExecutor implements Exportab
             final CharamelFeedback charamelFeedback = new CharamelFeedback();
             try {
                 XMLUtilities.parseFromXMLStream(charamelFeedback,
-                        new ByteArrayInputStream(message.getBytes("UTF-8")));
+                        new ByteArrayInputStream(message.getBytes(StandardCharsets.UTF_8)));
             } catch (final Exception exc) {
                 mLogger.failure(exc.toString());
                 return;

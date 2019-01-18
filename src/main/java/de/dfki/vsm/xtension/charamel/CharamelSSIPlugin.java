@@ -1,6 +1,5 @@
 package de.dfki.vsm.xtension.charamel;
 
-import de.dfki.vsm.xtension.tricatworld.*;
 import de.dfki.vsm.xtension.ssi.event.SSIEventArray;
 import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.runtime.interpreter.value.AbstractValue;

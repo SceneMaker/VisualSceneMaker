@@ -1,7 +1,6 @@
 package de.dfki.vsm.util.extensions.renderers;
 
 import de.dfki.vsm.util.extensions.renderers.customcontrollers.numbertext.NumberSpinner;
-import de.dfki.vsm.util.extensions.value.ValueRenderable;
 
 import java.math.BigDecimal;
 

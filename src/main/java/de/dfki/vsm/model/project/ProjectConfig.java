@@ -5,10 +5,8 @@ import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
-import de.dfki.vsm.util.xml.XMLUtilities;
 import de.dfki.vsm.util.xml.XMLWriteError;
 import java.io.ByteArrayOutputStream;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import org.w3c.dom.Element;
 
@@ -154,33 +152,37 @@ public final class ProjectConfig implements ModelObject {
                     // Get The Tag Name
                     final String tag = element.getTagName();
                     // Check The Tag Name
-                    if (tag.equals("Plugins")) {
-                        XMLParseAction.processChildNodes(element, "Plugin", new XMLParseAction() {
-                            @Override
-                            public void run(Element element) throws XMLParseError {
-                                // Create A New Project Plugin
-                                final PluginConfig plugin = new PluginConfig();
-                                // And Parse The Project Plugin 
-                                plugin.parseXML(element);
-                                // And Add It To The Plugin List
-                                mPluginList.add(plugin);
-                            }
-                        });
-                    } else if (tag.equals("Agents")) {
-                        XMLParseAction.processChildNodes(element, "Agent", new XMLParseAction() {
-                            @Override
-                            public void run(Element element) throws XMLParseError {
-                                // Create A New Project Player
-                                final AgentConfig agent = new AgentConfig();
-                                // And Parse The Project Player 
-                                agent.parseXML(element);
-                                // And Add It To The Player List
-                                mAgentList.add(agent);
-                            }
-                        });
-                    } else if (tag.equals("Player")) {
-                        // Parse the player configuration
-                        mPlayerConfig.parseXML(element);
+                    switch (tag) {
+                        case "Plugins":
+                            XMLParseAction.processChildNodes(element, "Plugin", new XMLParseAction() {
+                                @Override
+                                public void run(Element element) throws XMLParseError {
+                                    // Create A New Project Plugin
+                                    final PluginConfig plugin = new PluginConfig();
+                                    // And Parse The Project Plugin
+                                    plugin.parseXML(element);
+                                    // And Add It To The Plugin List
+                                    mPluginList.add(plugin);
+                                }
+                            });
+                            break;
+                        case "Agents":
+                            XMLParseAction.processChildNodes(element, "Agent", new XMLParseAction() {
+                                @Override
+                                public void run(Element element) throws XMLParseError {
+                                    // Create A New Project Player
+                                    final AgentConfig agent = new AgentConfig();
+                                    // And Parse The Project Player
+                                    agent.parseXML(element);
+                                    // And Add It To The Player List
+                                    mAgentList.add(agent);
+                                }
+                            });
+                            break;
+                        case "Player":
+                            // Parse the player configuration
+                            mPlayerConfig.parseXML(element);
+                            break;
                     }
                 }
             });

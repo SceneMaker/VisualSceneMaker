@@ -17,7 +17,8 @@ public final class StopActionActivity extends Invocation {
     public enum StopMode {
         Default,
         Operator
-    };
+    }
+
     private StopMode mMode;
     private Expression mCommand;
     private ArrayList<Expression> mArgList;
@@ -71,12 +72,12 @@ public final class StopActionActivity extends Invocation {
 
     @Override
     public final String getAbstractSyntax() {
-        String desc = "StopAction(";
-        desc += ((mCommand != null)
+        StringBuilder desc = new StringBuilder("StopAction(");
+        desc.append((mCommand != null)
                 ? mCommand.getAbstractSyntax()
                 : "");
-        for (int i = 0; i < mArgList.size(); i++) {
-            desc += ", " + mArgList.get(i).getAbstractSyntax();
+        for (Expression expression : mArgList) {
+            desc.append(", ").append(expression.getAbstractSyntax());
         }
         return desc + ")";
     }
@@ -84,12 +85,12 @@ public final class StopActionActivity extends Invocation {
     @Override
     public final String getConcreteSyntax() {
 
-        String desc = (mMode == StopMode.Default ? "StopAction(" : "!~");
-        desc += ((mCommand != null)
+        StringBuilder desc = new StringBuilder((mMode == StopMode.Default ? "StopAction(" : "!~"));
+        desc.append((mCommand != null)
                 ? mCommand.getConcreteSyntax()
                 : "");
-        for (int i = 0; i < mArgList.size(); i++) {
-            desc += ", " + mArgList.get(i).getConcreteSyntax();
+        for (Expression expression : mArgList) {
+            desc.append(", ").append(expression.getConcreteSyntax());
         }
         return desc + (mMode == StopMode.Default ? ")" : ".");
     }
@@ -97,12 +98,12 @@ public final class StopActionActivity extends Invocation {
     // TODO: Check the mode for syntax here
     @Override
     public final String getFormattedSyntax() {
-        String desc = "#p#" + (mMode == StopMode.Default ? "StopAction ( " : "!~ ");
-        desc += ((mCommand != null)
+        StringBuilder desc = new StringBuilder("#p#" + (mMode == StopMode.Default ? "StopAction ( " : "!~ "));
+        desc.append((mCommand != null)
                 ? mCommand.getFormattedSyntax()
                 : "");
-        for (int i = 0; i < mArgList.size(); i++) {
-            desc += " , " + mArgList.get(i).getFormattedSyntax();
+        for (Expression expression : mArgList) {
+            desc.append(" , ").append(expression.getFormattedSyntax());
         }
         return desc + (mMode == StopMode.Default ? " ) " : " .");
     }
@@ -118,8 +119,8 @@ public final class StopActionActivity extends Invocation {
         if (mCommand != null) {
             mCommand.writeXML(out);
         }
-        for (int i = 0; i < mArgList.size(); i++) {
-            mArgList.get(i).writeXML(out);
+        for (Expression expression : mArgList) {
+            expression.writeXML(out);
         }
         out.pop().println("</StopAction>");
     }

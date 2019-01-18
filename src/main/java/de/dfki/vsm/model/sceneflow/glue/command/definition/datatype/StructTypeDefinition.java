@@ -84,8 +84,8 @@ public final class StructTypeDefinition extends DataTypeDefinition {
     @Override
     public final void writeXML(final IOSIndentWriter out) {
         out.println("<StructTypeDefinition name=\"" + mName + "\">").push();
-        for (int i = 0; i < mMemberList.size(); i++) {
-            mMemberList.get(i).writeXML(out);
+        for (MemberDefinition memberDefinition : mMemberList) {
+            memberDefinition.writeXML(out);
         }
         out.pop().println("</StructTypeDefinition>");
     }

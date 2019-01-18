@@ -32,7 +32,7 @@ import java.util.TimerTask;
 public class TimeoutManager {
 
     private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
-    private final HashMap<TimeoutQuery, TPLTuple<Boolean, TimerTask>> mTimeoutCondList = new HashMap<TimeoutQuery, TPLTuple<Boolean, TimerTask>>();
+    private final HashMap<TimeoutQuery, TPLTuple<Boolean, TimerTask>> mTimeoutCondList = new HashMap<>();
     private final Timer mTimer = new Timer("Timeout-Manager-Timer");
     private Interpreter mInterpreter;
 
@@ -95,7 +95,7 @@ public class TimeoutManager {
             }
         };
 
-        mTimeoutCondList.put(cond, new TPLTuple<Boolean, TimerTask>(false, task));
+        mTimeoutCondList.put(cond, new TPLTuple<>(false, task));
         mTimer.schedule(task, timeout);
     }
 

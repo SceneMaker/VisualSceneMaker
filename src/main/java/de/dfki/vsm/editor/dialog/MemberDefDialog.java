@@ -101,20 +101,16 @@ public class MemberDefDialog extends Dialog {
         errorMsg.setMinimumSize(labelSize);
         
         //Key listener need to gain focus on the text field
-        KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(new KeyEventDispatcher() {
-
-            @Override
-            public boolean dispatchKeyEvent(KeyEvent ke) {
-                //boolean keyHandled = false;
-                if (ke.getID() == KeyEvent.KEY_PRESSED) {
-                    if(!mNameTextField.hasFocus())
-                    {
-                        mNameTextField.setText(mNameTextField.getText()+ke.getKeyChar());
-                        mNameTextField.requestFocus();
-                    }
+        KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(ke -> {
+            //boolean keyHandled = false;
+            if (ke.getID() == KeyEvent.KEY_PRESSED) {
+                if(!mNameTextField.hasFocus())
+                {
+                    mNameTextField.setText(mNameTextField.getText()+ke.getKeyChar());
+                    mNameTextField.requestFocus();
                 }
-                return false;
             }
+            return false;
         });
         Box finalBox = Box.createVerticalBox();
         finalBox.add(nameBox);

@@ -112,18 +112,15 @@ public class ButtonGUI extends Application {
             button.setFont(Font.font(Font.getDefault().getName(), bv.mSize));
             button.setTranslateX(bv.mX);
             button.setTranslateY(bv.mY);
-            button.setOnAction(new EventHandler<ActionEvent>() {
-                @Override
-                public void handle(ActionEvent arg0) {
-                    // set SceneMaker variable
-                    if (mExecutor != null) {
-                        mExecutor.setVSmVar(bv.mVSMVar, bv.mValue);
-                    }
-                    // hide only if option hide on pressed is set true
-                    if (mHideOnPressed) {
-                        mButtonDialog.close();
-                        mButtonDialog = null;
-                    }
+            button.setOnAction(arg0 -> {
+                // set SceneMaker variable
+                if (mExecutor != null) {
+                    mExecutor.setVSmVar(bv.mVSMVar, bv.mValue);
+                }
+                // hide only if option hide on pressed is set true
+                if (mHideOnPressed) {
+                    mButtonDialog.close();
+                    mButtonDialog = null;
                 }
             });
 

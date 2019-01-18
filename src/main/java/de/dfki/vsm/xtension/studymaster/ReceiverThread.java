@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 /**
@@ -70,7 +71,7 @@ public class ReceiverThread extends Thread {
                 }
                 lastReceivedData = data;
 
-                String message = new String(packet.getData(), "UTF-8").trim();
+                String message = new String(packet.getData(), StandardCharsets.UTF_8).trim();
                 mLogger.message("Message received " + message + " from " + packet.getAddress().getHostAddress());
                 if (message.startsWith(SenderExecutor.sMSG_HEADER)) {
 

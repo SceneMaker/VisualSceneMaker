@@ -25,9 +25,9 @@ import java.util.Set;
 public class DockingManager {
     private Node                       mGUINode              = null;
     private Node.Type                  mNodeType             = null;    // The type defines the location of the dock points
-    private ArrayList<DockPoint>          mDockPoints           = new ArrayList<DockPoint>();
-    private Hashtable<Edge, DockPoint> mEdgeDockPoints       = new Hashtable<Edge, DockPoint>();
-    private Hashtable<Edge, DockPoint> mEdgeSecondDockPoints = new Hashtable<Edge, DockPoint>();
+    private ArrayList<DockPoint>          mDockPoints           = new ArrayList<>();
+    private Hashtable<Edge, DockPoint> mEdgeDockPoints       = new Hashtable<>();
+    private Hashtable<Edge, DockPoint> mEdgeSecondDockPoints = new Hashtable<>();
     private final LOGDefaultLogger     mLogger               = LOGDefaultLogger.getInstance();
     private EditorConfig         mEditorConfig;
 
@@ -64,7 +64,7 @@ public class DockingManager {
     }
 
     public ArrayList<Point> getFreeDockPoints() {
-        ArrayList<Point> points = new ArrayList<Point>();
+        ArrayList<Point> points = new ArrayList<>();
 
         for (DockPoint dp : mDockPoints) {
             if (!dp.mOccupied) {
@@ -76,7 +76,7 @@ public class DockingManager {
     }
 
     public ArrayList<Point> getOccupiedDockPoints() {
-        ArrayList<Point> points = new ArrayList<Point>();
+        ArrayList<Point> points = new ArrayList<>();
 
         for (DockPoint dp : mDockPoints) {
             if (dp.mOccupied) {

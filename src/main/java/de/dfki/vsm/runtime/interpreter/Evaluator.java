@@ -536,28 +536,38 @@ public final class Evaluator {
             final ArgumentDefinition argument = definition.getParamList().get(i);
             final String paramType = argument.getType();
             Class paramClass = null;
-            if (paramType.equals("boolean")) {
-                paramClass = boolean.class;
-            } else if (paramType.equals("char")) {
-                paramClass = char.class;
-            } else if (paramType.equals("short")) {
-                paramClass = short.class;
-            } else if (paramType.equals("int")) {
-                paramClass = int.class;
-            } else if (paramType.equals("long")) {
-                paramClass = long.class;
-            } else if (paramType.equals("float")) {
-                paramClass = float.class;
-            } else if (paramType.equals("double")) {
-                paramClass = double.class;
-            } else if (paramType.equals("byte")) {
-                paramClass = byte.class;
-            } else {
-                try {
-                    paramClass = Class.forName(paramType);
-                } catch (final ClassNotFoundException exc) {
-                    exc.printStackTrace();
-                }
+            switch (paramType) {
+                case "boolean":
+                    paramClass = boolean.class;
+                    break;
+                case "char":
+                    paramClass = char.class;
+                    break;
+                case "short":
+                    paramClass = short.class;
+                    break;
+                case "int":
+                    paramClass = int.class;
+                    break;
+                case "long":
+                    paramClass = long.class;
+                    break;
+                case "float":
+                    paramClass = float.class;
+                    break;
+                case "double":
+                    paramClass = double.class;
+                    break;
+                case "byte":
+                    paramClass = byte.class;
+                    break;
+                default:
+                    try {
+                        paramClass = Class.forName(paramType);
+                    } catch (final ClassNotFoundException exc) {
+                        exc.printStackTrace();
+                    }
+                    break;
             }
             paramClassList[i] = paramClass;
         }

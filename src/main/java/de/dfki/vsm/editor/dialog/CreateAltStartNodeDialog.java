@@ -46,11 +46,7 @@ public class CreateAltStartNodeDialog extends Dialog {
     private void initComponents() {
         mStartNodeLabel    = new JLabel("Start Node:");
         mStartNodeComboBox = new JComboBox(new DefaultComboBoxModel());
-        mStartNodeComboBox.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                select();
-            }
-        });
+        mStartNodeComboBox.addActionListener(e -> select());
         mAltStartNodeLabel    = new JLabel("Alternative:");
         mAltStartNodeComboBox = new JComboBox(new DefaultComboBoxModel());
 

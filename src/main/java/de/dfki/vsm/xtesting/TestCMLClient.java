@@ -12,6 +12,7 @@ import java.io.DataOutputStream;
 
 import java.net.Socket;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Scanner;
 import java.util.regex.Matcher;
@@ -37,7 +38,7 @@ public class TestCMLClient {
     // The Client Socket
     private static Socket sSocket;
 
-    public static void main(String args[]) {
+    public static void main(String[] args) {
 
         // Print Some Information
         sLogger.message("Host: " + args[1]);
@@ -160,7 +161,7 @@ public class TestCMLClient {
                     reader.readFully(ackn);
 
                     //
-                    final String data = new String(ackn, "UTF-8");
+                    final String data = new String(ackn, StandardCharsets.UTF_8);
 
                     sLogger.message("CMLClient Connector Receiving '" + data + "'");
 

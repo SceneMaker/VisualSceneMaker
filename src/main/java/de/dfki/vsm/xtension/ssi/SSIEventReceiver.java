@@ -11,6 +11,7 @@ import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.net.SocketException;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 /**
@@ -91,19 +92,15 @@ final class SSIEventReceiver extends Thread {
             if (message != null) {
                 // Start time measure
                 //mTimeCounter = System.nanoTime();
-                try {
-                    final ByteArrayInputStream stream = new ByteArrayInputStream(
-                            message.getBytes("UTF-8"));
-                    // Create an sequence object
-                    final SSIEventArray sequence = new SSIEventArray();
-                    if (XMLUtilities.parseFromXMLStream(sequence, stream)) {
-                        // Delegate sequence handling   
-                        mHandler.handle(sequence);
-                    } else {
-                        mLogger.message("Cannot parse the SSI events ...");
-                    }
-                } catch (final UnsupportedEncodingException exc) {
-                    mLogger.failure(exc.toString());
+                final ByteArrayInputStream stream = new ByteArrayInputStream(
+                        message.getBytes(StandardCharsets.UTF_8));
+                // Create an sequence object
+                final SSIEventArray sequence = new SSIEventArray();
+                if (XMLUtilities.parseFromXMLStream(sequence, stream)) {
+                    // Delegate sequence handling
+                    mHandler.handle(sequence);
+                } else {
+                    mLogger.message("Cannot parse the SSI events ...");
                 }
             }
         }
@@ -113,7 +110,7 @@ final class SSIEventReceiver extends Thread {
     public final boolean sendString(final String string) {
         try {
             // Create the byte buffer
-            final byte[] buffer = string.getBytes("UTF-8");
+            final byte[] buffer = string.getBytes(StandardCharsets.UTF_8);
             // Create the UDP packet
             final DatagramPacket packet
                     = new DatagramPacket(buffer, buffer.length);
@@ -151,22 +148,17 @@ final class SSIEventReceiver extends Thread {
 
     // Receive a string from socket
     private String recvString() {
-        try {
-            // Receive a byte buffer
-            final byte[] buffer = recvBytes();
-            // Check the buffer content
-            if (buffer != null) {
-                // Construct a message
-                final String message
-                        = new String(buffer, 0, buffer.length, "UTF-8");
-                // And return message
-                return message;
-            }
-        } catch (final UnsupportedEncodingException exc) {
-            // Print some information
-            mLogger.failure(exc.toString());
+        // Receive a byte buffer
+        final byte[] buffer = recvBytes();
+        // Check the buffer content
+        if (buffer != null) {
+            // Construct a message
+            final String message
+                    = new String(buffer, 0, buffer.length, StandardCharsets.UTF_8);
+            // And return message
+            return message;
         }
-        // Return null at failure 
+        // Return null at failure
         return null;
     }
 }

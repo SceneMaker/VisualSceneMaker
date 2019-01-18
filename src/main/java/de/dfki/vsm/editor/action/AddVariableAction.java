@@ -27,7 +27,7 @@ public class AddVariableAction extends EditorAction {
     private WorkSpacePanel                             mWorkSpace   = null;
     public AddVariableAction(WorkSpacePanel  workSpace) {
         mWorkSpace = workSpace;
-        mCurrentSuperNode = workSpace.getSceneFlowManager().getCurrentActiveSuperNode();;
+        mCurrentSuperNode = workSpace.getSceneFlowManager().getCurrentActiveSuperNode();
         mUndoManager = mWorkSpace.getSceneFlowEditor().getUndoManager();
         varDefsList = new LinkedList<>();
 

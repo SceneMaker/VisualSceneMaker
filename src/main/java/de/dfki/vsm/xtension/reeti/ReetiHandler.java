@@ -8,6 +8,7 @@ import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.net.SocketException;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 /**
@@ -117,7 +118,7 @@ public final class ReetiHandler extends Thread {
     public final boolean sendString(final String string) {
         try {
             // Create the byte buffer
-            final byte[] buffer = string.getBytes("UTF-8");
+            final byte[] buffer = string.getBytes(StandardCharsets.UTF_8);
             // Create the UDP packet
             final DatagramPacket packet
                     = new DatagramPacket(buffer, buffer.length);
@@ -158,24 +159,19 @@ public final class ReetiHandler extends Thread {
 
     // Receive some string via the socket
     public final String recvString() {
-        try {
-            // Receive a byte buffer
-            final byte[] buffer = recvBytes(4096);
-            // Check the buffer content
-            if (buffer != null) {
-                // Construct a message
-                final String message
-                        = new String(buffer, 0, buffer.length, "UTF-8");
-                // Print some information
-                mLogger.message("Reeti Handler Receiving '" + message + "'");
-                // And return message
-                return message;
-            }
-        } catch (final UnsupportedEncodingException exc) {
+        // Receive a byte buffer
+        final byte[] buffer = recvBytes(4096);
+        // Check the buffer content
+        if (buffer != null) {
+            // Construct a message
+            final String message
+                    = new String(buffer, 0, buffer.length, StandardCharsets.UTF_8);
             // Print some information
-            mLogger.failure(exc.toString());
+            mLogger.message("Reeti Handler Receiving '" + message + "'");
+            // And return message
+            return message;
         }
-        // Return null at failure 
+        // Return null at failure
         return null;
     }
 }

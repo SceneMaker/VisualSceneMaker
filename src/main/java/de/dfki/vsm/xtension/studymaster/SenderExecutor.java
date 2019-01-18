@@ -19,6 +19,7 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
+import java.nio.charset.StandardCharsets;
 import java.util.Enumeration;
 import java.util.LinkedList;
 
@@ -93,12 +94,12 @@ public class SenderExecutor extends ActivityExecutor {
 
             long timestamp = System.currentTimeMillis();
 
-            byte[] sendData = (sMSG_HEADER + "None" + sMSG_SEPARATOR + timestamp).getBytes("UTF8");
+            byte[] sendData = (sMSG_HEADER + "None" + sMSG_SEPARATOR + timestamp).getBytes(StandardCharsets.UTF_8);
 
             if (!mMessage.equalsIgnoreCase("REQUEST")) {
-                sendData = (sMSG_HEADER + mMessage + sMSG_SEPARATOR + timestamp + ((!mMessageTimeInfo.isEmpty()) ? sMSG_SEPARATOR + mMessageTimeInfo : "")).getBytes("UTF8");
+                sendData = (sMSG_HEADER + mMessage + sMSG_SEPARATOR + timestamp + ((!mMessageTimeInfo.isEmpty()) ? sMSG_SEPARATOR + mMessageTimeInfo : "")).getBytes(StandardCharsets.UTF_8);
             } else if (mMessage.equalsIgnoreCase("REQUEST") && (!mMessageRequestVar.isEmpty()) && (!mMessageRequestValues.isEmpty())) {
-                sendData = (sMSG_HEADER + mMessage + sMSG_SEPARATOR + timestamp + sMSG_SEPARATOR + mMessageRequestVar + sMSG_SEPARATOR + mMessageRequestValues.replace("'", "")).getBytes("UTF8");
+                sendData = (sMSG_HEADER + mMessage + sMSG_SEPARATOR + timestamp + sMSG_SEPARATOR + mMessageRequestVar + sMSG_SEPARATOR + mMessageRequestValues.replace("'", "")).getBytes(StandardCharsets.UTF_8);
             }
 
 //            //Try the 255.255.255.255 first
@@ -109,7 +110,7 @@ public class SenderExecutor extends ActivityExecutor {
 //            } catch (Exception e) {
 //            }
             // Broadcast the message over all the network interfaces
-            String hosts = "";
+            StringBuilder hosts = new StringBuilder();
 
             Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
             while (interfaces.hasMoreElements()) {
@@ -130,7 +131,7 @@ public class SenderExecutor extends ActivityExecutor {
                     try {
                         DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, broadcast, mPort);
                         c.send(sendPacket);
-                        hosts = hosts + broadcast.getHostAddress() + ", ";
+                        hosts.append(broadcast.getHostAddress()).append(", ");
                         mLogger.message(mMessage + " sent to " + broadcast.getHostAddress() + " on interface " + networkInterface.getDisplayName());
                         packetSend = true;
                     } catch (Exception e) {

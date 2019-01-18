@@ -29,14 +29,12 @@ public class ShortestEdgeAction {
     }
 
     public ActionListener getActionListener() {
-        return new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                mGUIEdge.rebuildEdgeNicely();
+        return event -> {
+            mGUIEdge.rebuildEdgeNicely();
 
-                // renew graphical representation on work space
-                mWorkSpace.revalidate();
-                mWorkSpace.repaint(100);
-            }
+            // renew graphical representation on work space
+            mWorkSpace.revalidate();
+            mWorkSpace.repaint(100);
         };
     }
 }

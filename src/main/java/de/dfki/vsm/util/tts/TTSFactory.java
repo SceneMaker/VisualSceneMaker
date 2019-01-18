@@ -5,7 +5,6 @@ import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.runtime.activity.SpeechActivity;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.tts.cereproc.CereProgTTsSpeaker;
-import de.dfki.vsm.util.tts.cereproc.Cereproc;
 import de.dfki.vsm.util.tts.cereproc.util.CereprocLibPath;
 import de.dfki.vsm.util.tts.marytts.MaryTTsSpeaker;
 

@@ -1,6 +1,5 @@
 package de.dfki.vsm.util.extensions.renderers;
 
-import de.dfki.vsm.util.extensions.value.ValueRenderable;
 import javafx.scene.control.TextField;
 
 /**

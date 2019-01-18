@@ -75,18 +75,18 @@ public final class SceneObject extends ScriptEntity {
 
     @Override
     public final String getText() {
-        String result = "scene" + " " + mSceneLang + " " + mSceneName + "\n";
+        StringBuilder result = new StringBuilder("scene" + " " + mSceneLang + " " + mSceneName + "\n");
         if (mTurnList != null) {
             for (int i = 0; i < mTurnList.size(); i++) {
-                result += mTurnList.get(i).getText();
+                result.append(mTurnList.get(i).getText());
 
                 if (i < mTurnList.size() - 1) {
-                    result += "\n";
+                    result.append("\n");
                 }
             }
         }
 
-        return result;
+        return result.toString();
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -94,18 +94,18 @@ public final class SceneObject extends ScriptEntity {
     ////////////////////////////////////////////////////////////////////////////
     @Override
     public final String getText(final HashMap<String, String> args) {
-        String result = "scene" + " " + mSceneLang + " " + mSceneName + "\n";
+        StringBuilder result = new StringBuilder("scene" + " " + mSceneLang + " " + mSceneName + "\n");
         if (mTurnList != null) {
             for (int i = 0; i < mTurnList.size(); i++) {
-                result += mTurnList.get(i).getText(args);
+                result.append(mTurnList.get(i).getText(args));
 
                 if (i < mTurnList.size() - 1) {
-                    result += "\n";
+                    result.append("\n");
                 }
             }
         }
 
-        return result;
+        return result.toString();
     }
 
     @Override

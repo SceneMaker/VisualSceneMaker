@@ -18,8 +18,8 @@ import java.util.LinkedList;
  * @author Gregor Mehlmann
  */
 public class SystemHistory {
-    private final HashMap<String, Stack> mHistoryStackMap = new HashMap<String, Stack>();
-    private final HashMap<String, Entry> mHistoryEntryMap = new HashMap<String, Entry>();
+    private final HashMap<String, Stack> mHistoryStackMap = new HashMap<>();
+    private final HashMap<String, Entry> mHistoryEntryMap = new HashMap<>();
 
     public void push(BasicNode node, Entry entry) {
         if (mHistoryStackMap.get(node.getId()) == null) {
@@ -99,8 +99,8 @@ public class SystemHistory {
 
 //  ////////////////
     public static class Entry implements Copyable {
-        private final HashMap<String, BasicNode> mChildNodeMap = new HashMap<String, BasicNode>();
-        private final ArrayList<Command>       mCommandList  = new ArrayList<Command>();
+        private final HashMap<String, BasicNode> mChildNodeMap = new HashMap<>();
+        private final ArrayList<Command>       mCommandList  = new ArrayList<>();
         private final BasicNode                  mNode;
         private SymbolTable                 mSymbolTable;
         private final long                  mStartTime;
@@ -146,7 +146,7 @@ public class SystemHistory {
 
 
     public class Stack {
-        private final LinkedList<Entry> mHistoryStack = new LinkedList<Entry>();
+        private final LinkedList<Entry> mHistoryStack = new LinkedList<>();
         int                             mDepth        = 1;
         private final BasicNode              mNode;
 

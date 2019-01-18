@@ -23,7 +23,7 @@ public abstract class DataTypeDefinition extends Definition {
 
     public enum Flavour {
         List, Struct
-    };
+    }
 
     public abstract Flavour getFlavour();
 

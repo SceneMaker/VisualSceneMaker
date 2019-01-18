@@ -74,9 +74,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
 
                 currentCB.clear();
 
-                for (BasicNode node : previousCB) {
-                    currentCB.add(node);
-                }
+                currentCB.addAll(previousCB);
             }
 
             previousCB = projectEditor.getSceneFlowEditor().getWorkSpace().getClipBoard();
@@ -253,16 +251,15 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
         GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
         GraphicsDevice[] gs = ge.getScreenDevices();
 
-        for (int j = 0; j < gs.length; j++) {
-            GraphicsDevice gd = gs[j];
+        for (GraphicsDevice gd : gs) {
             GraphicsConfiguration[] gc = gd.getConfigurations();
 
-            for (int i = 0; i < gc.length; i++) {
+            for (GraphicsConfiguration graphicsConfiguration : gc) {
 
                 // check position
-                if (((editorPosition.x > gc[i].getBounds().x) && (gc[i].getBounds().width > editorSize.width))
-                        && ((editorPosition.y > gc[i].getBounds().y)
-                        && (gc[i].getBounds().height > editorSize.height))) {
+                if (((editorPosition.x > graphicsConfiguration.getBounds().x) && (graphicsConfiguration.getBounds().width > editorSize.width))
+                        && ((editorPosition.y > graphicsConfiguration.getBounds().y)
+                        && (graphicsConfiguration.getBounds().height > editorSize.height))) {
 
                     // component can be place there
                     finalPos = new Point(editorPosition.x, editorPosition.y);
@@ -479,7 +476,6 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
         JEditorPane ep = new JEditorPane();
         ep.setEditable(false);
         mProjectEditors.addTab(null, new JScrollPane(ep));
-        ;
 
         JLabel tabLabel = new JLabel(tabName);
 
@@ -688,13 +684,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
 
     //ESCAPE LISTENER- Closes dialog with escape key
     public static void addEscapeListener(final JDialog dialog) {
-        ActionListener escListner = new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent ae) {
-                dialog.dispose();
-            }
-        };
+        ActionListener escListner = ae -> dialog.dispose();
         dialog.getRootPane().registerKeyboardAction(escListner, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_IN_FOCUSED_WINDOW);
     }
     /*

@@ -28,6 +28,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -618,7 +619,7 @@ public final class TriCatWorldExecutor extends ActivityExecutor implements Expor
             final TriCatWorldFeedback triCatFeedBack = new TriCatWorldFeedback();
             try {
                 XMLUtilities.parseFromXMLStream(triCatFeedBack,
-                        new ByteArrayInputStream(message.getBytes("UTF-8")));
+                        new ByteArrayInputStream(message.getBytes(StandardCharsets.UTF_8)));
             } catch (final Exception exc) {
                 mLogger.failure(exc.toString());
                 return;

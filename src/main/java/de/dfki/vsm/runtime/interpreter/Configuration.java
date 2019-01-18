@@ -21,16 +21,14 @@ import java.util.LinkedList;
  * @author Gregor Mehlmann
  */
 public class Configuration {
-    private final HashMap<BasicNode, LinkedList<State>> mConfiguration = new HashMap<BasicNode, LinkedList<State>>();
+    private final HashMap<BasicNode, LinkedList<State>> mConfiguration = new HashMap<>();
 
     public void clear() {
         mConfiguration.clear();
     }
 
     public void enterState(State state) {
-        if (mConfiguration.get(state.getNode()) == null) {
-            mConfiguration.put(state.getNode(), new LinkedList<State>());
-        }
+        mConfiguration.computeIfAbsent(state.getNode(), k -> new LinkedList<>());
 
         mConfiguration.get(state.getNode()).addLast(state);
     }
@@ -41,7 +39,7 @@ public class Configuration {
                                        "Configuration Error: There is no thread currently executing node " + state);
         }
 
-        ArrayList<State> removableStateList = new ArrayList<State>();
+        ArrayList<State> removableStateList = new ArrayList<>();
 
         for (State configState : mConfiguration.get(state)) {
             if (configState.getThread().equals(thread)) {
@@ -102,12 +100,10 @@ public class Configuration {
     public Object[] getOrderedStates() {
 
         // Make a list with all config states
-        ArrayList<State> configStateList = new ArrayList<State>();
+        ArrayList<State> configStateList = new ArrayList<>();
 
         for (LinkedList<State> stateVec : mConfiguration.values()) {
-            for (State state : stateVec) {
-                configStateList.add(state);
-            }
+            configStateList.addAll(stateVec);
         }
 
         // Make a sorted list of config states
@@ -154,13 +150,7 @@ public class Configuration {
         public int compareTo(Object obj) {
             State configState = (State) obj;
 
-            if (mThread.getLevel() > configState.mThread.getLevel()) {
-                return 1;
-            } else if (mThread.getLevel() < configState.mThread.getLevel()) {
-                return -1;
-            } else {
-                return 0;
-            }
+            return Integer.compare(mThread.getLevel(), configState.mThread.getLevel());
         }
 
         @Override

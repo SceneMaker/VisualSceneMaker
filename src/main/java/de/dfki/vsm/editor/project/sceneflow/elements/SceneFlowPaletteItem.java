@@ -4,7 +4,6 @@ import de.dfki.vsm.Preferences;
 import java.awt.Cursor;
 import java.awt.Image;
 import java.awt.Point;
-import java.awt.Robot;
 import java.awt.Toolkit;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
@@ -17,16 +16,12 @@ import java.awt.dnd.DragSourceDragEvent;
 import java.awt.dnd.DragSourceDropEvent;
 import java.awt.dnd.DragSourceEvent;
 import java.awt.dnd.DragSourceListener;
-import java.awt.event.InputEvent;
 import java.awt.event.MouseAdapter;
 
 import java.io.IOException;
 
-import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import javax.swing.JButton;
 import javax.swing.JLabel;
-import javax.swing.SwingConstants;
 import javax.swing.TransferHandler;
 
 public final class SceneFlowPaletteItem extends JLabel implements Transferable {

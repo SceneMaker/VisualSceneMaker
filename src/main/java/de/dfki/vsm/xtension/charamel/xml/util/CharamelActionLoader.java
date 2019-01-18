@@ -6,7 +6,6 @@
 package de.dfki.vsm.xtension.charamel.xml.util;
 
 import de.dfki.vsm.util.log.LOGConsoleLogger;
-import de.dfki.vsm.util.xml.XMLUtilities;
 import de.dfki.vsm.xtension.charamel.xml.command.object.action.CharamelActObject;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;

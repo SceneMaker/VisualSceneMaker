@@ -16,7 +16,7 @@ public final class RegularExpressions {
     public static ArrayList<String> getMatches(String input, String regexp, int num) {
         Pattern pattern = Pattern.compile(regexp);
         Matcher matcher = pattern.matcher(input);
-        ArrayList<String> match = new ArrayList<String>();
+        ArrayList<String> match = new ArrayList<>();
 
         while (matcher.find()) {
             for (int i = 0; i < num; i++) {

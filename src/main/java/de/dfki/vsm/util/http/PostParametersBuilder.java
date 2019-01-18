@@ -2,6 +2,7 @@ package de.dfki.vsm.util.http;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -36,9 +37,9 @@ public class PostParametersBuilder {
     }
 
     private void addKeyValuePair(Map.Entry<String, String> parameter) throws UnsupportedEncodingException {
-        parametersBuilder.append(URLEncoder.encode(parameter.getKey(), UTF_8));
+        parametersBuilder.append(URLEncoder.encode(parameter.getKey(), StandardCharsets.UTF_8));
         parametersBuilder.append(EQUAL_SEPARATOR);
-        parametersBuilder.append(URLEncoder.encode(String.valueOf(parameter.getValue()), UTF_8));
+        parametersBuilder.append(URLEncoder.encode(String.valueOf(parameter.getValue()), StandardCharsets.UTF_8));
     }
 
     private void addAmpersandSeparatorIfNecessary() {

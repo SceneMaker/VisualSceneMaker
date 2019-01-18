@@ -37,10 +37,8 @@ public class FileAttributes {
 
     public static boolean compare(File one, File two) throws IOException {
         if (one.length() == two.length()) {
-            FileInputStream fis1 = new FileInputStream(one);
-            FileInputStream fis2 = new FileInputStream(two);
 
-            try {
+            try (FileInputStream fis1 = new FileInputStream(one); FileInputStream fis2 = new FileInputStream(two)) {
                 int temp = 0;
 
                 while ((temp = fis1.read()) != -1) {
@@ -50,9 +48,6 @@ public class FileAttributes {
                 }
 
                 return true;
-            } finally {
-                fis1.close();
-                fis2.close();
             }
         }
 

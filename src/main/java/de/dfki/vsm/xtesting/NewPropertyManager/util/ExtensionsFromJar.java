@@ -4,9 +4,9 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.LinkedList;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -51,7 +51,7 @@ public class ExtensionsFromJar {
     public  void getClassNamesFromPackage(String packageName) throws IOException {
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         URL packageURL;
-        ArrayList<String> names = new ArrayList<String>();
+        ArrayList<String> names = new ArrayList<>();
         packageName = packageName.replace(".", "/");
         packageURL = classLoader.getResource(packageName);
         if (packageURL.getProtocol().equals("jar")) {
@@ -68,7 +68,7 @@ public class ExtensionsFromJar {
     private void packageIsJar(URL packageURL) throws UnsupportedEncodingException {
         String jarFileName;
         // build jar file name, then loop through zipped entries
-        jarFileName = URLDecoder.decode(packageURL.getFile(), "UTF-8");
+        jarFileName = URLDecoder.decode(packageURL.getFile(), StandardCharsets.UTF_8);
         jarFileName = jarFileName.substring(5, jarFileName.indexOf("!"));
         System.out.println(">" + jarFileName);
         parseJar(jarFileName);

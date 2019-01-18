@@ -131,16 +131,15 @@ public abstract class AbstractEdge implements ModelObject {
 
     // TODO: This is not yet a deep copy
     public HashMap<TPLTuple<String, BasicNode>, TPLTuple<String, BasicNode>> getCopyOfAltStartNodeMap() {
-        HashMap<TPLTuple<String, BasicNode>, TPLTuple<String, BasicNode>> copy = new HashMap<TPLTuple<String, BasicNode>, TPLTuple<String, BasicNode>>();
-        Iterator it = mAltMap.entrySet().iterator();
+        HashMap<TPLTuple<String, BasicNode>, TPLTuple<String, BasicNode>> copy = new HashMap<>();
 
-        while (it.hasNext()) {
-            Map.Entry pairs = (Map.Entry) it.next();
+        for (Map.Entry<TPLTuple<String, BasicNode>, TPLTuple<String, BasicNode>> tplTupleTPLTupleEntry : mAltMap.entrySet()) {
+            Map.Entry pairs = (Map.Entry) tplTupleTPLTupleEntry;
             TPLTuple<String, BasicNode> startNodePair = (TPLTuple<String, BasicNode>) pairs.getKey();
             TPLTuple<String, BasicNode> altStartNodePair = (TPLTuple<String, BasicNode>) pairs.getValue();
-            TPLTuple<String, BasicNode> startNodePairCopy = new TPLTuple<String, BasicNode>(startNodePair.getFirst(),
+            TPLTuple<String, BasicNode> startNodePairCopy = new TPLTuple<>(startNodePair.getFirst(),
                     startNodePair.getSecond());
-            TPLTuple<String, BasicNode> altStartNodePairCopy = new TPLTuple<String, BasicNode>(altStartNodePair.getFirst(),
+            TPLTuple<String, BasicNode> altStartNodePairCopy = new TPLTuple<>(altStartNodePair.getFirst(),
                     altStartNodePair.getSecond());
 
             copy.put(startNodePairCopy, altStartNodePairCopy);
@@ -151,18 +150,17 @@ public abstract class AbstractEdge implements ModelObject {
 
     // TODO: do this over the list of strings
     public String getAltStartNodesAsString() {
-        String result = "";
-        Iterator it = mAltMap.entrySet().iterator();
+        StringBuilder result = new StringBuilder();
 
-        while (it.hasNext()) {
-            Map.Entry pairs = (Map.Entry) it.next();
+        for (Map.Entry<TPLTuple<String, BasicNode>, TPLTuple<String, BasicNode>> tplTupleTPLTupleEntry : mAltMap.entrySet()) {
+            Map.Entry pairs = (Map.Entry) tplTupleTPLTupleEntry;
             TPLTuple<String, BasicNode> start = (TPLTuple<String, BasicNode>) pairs.getKey();
             TPLTuple<String, BasicNode> alt = (TPLTuple<String, BasicNode>) pairs.getValue();
 
-            result += start.getFirst() + "/" + alt.getFirst() + ";";
+            result.append(start.getFirst()).append("/").append(alt.getFirst()).append(";");
         }
 
-        return result;
+        return result.toString();
     }
 
     public abstract EdgeType getEdgeType();

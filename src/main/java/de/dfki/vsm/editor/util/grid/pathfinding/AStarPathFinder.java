@@ -495,13 +495,7 @@ public class AStarPathFinder implements PathFinder, PathFindingContext {
             float f  = heuristic + cost;
             float of = o.heuristic + o.cost;
 
-            if (f < of) {
-                return -1;
-            } else if (f > of) {
-                return 1;
-            } else {
-                return 0;
-            }
+            return Float.compare(f, of);
         }
 
         /**
@@ -637,15 +631,15 @@ public class AStarPathFinder implements PathFinder, PathFindingContext {
         }
 
         public String toString() {
-            String temp = "{";
+            StringBuilder temp = new StringBuilder("{");
 
             for (int i = 0; i < size(); i++) {
-                temp += list.get(i).toString() + ",";
+                temp.append(list.get(i).toString()).append(",");
             }
 
-            temp += "}";
+            temp.append("}");
 
-            return temp;
+            return temp.toString();
         }
     }
 }

@@ -23,14 +23,12 @@ public class StraightenEdgeAction {
     }
 
     public ActionListener getActionListener() {
-        return new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                mGUIEdge.straightenEdge();
+        return event -> {
+            mGUIEdge.straightenEdge();
 
-                // renew graphical representation on work space
-                mWorkSpace.revalidate();
-                mWorkSpace.repaint(100);
-            }
+            // renew graphical representation on work space
+            mWorkSpace.revalidate();
+            mWorkSpace.repaint(100);
         };
     }
 }

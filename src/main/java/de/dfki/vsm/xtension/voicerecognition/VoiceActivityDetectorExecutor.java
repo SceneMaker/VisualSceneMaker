@@ -28,12 +28,7 @@ public class VoiceActivityDetectorExecutor extends RunTimePlugin {
     public void launch() {
         notifiable = new VADNotifiable(mProject, variableName);
         getAsObserver().register(notifiable);
-        Thread thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                voiceActivityDetector.startListening();
-            }
-        });
+        Thread thread = new Thread(() -> voiceActivityDetector.startListening());
         thread.start();
     }
 

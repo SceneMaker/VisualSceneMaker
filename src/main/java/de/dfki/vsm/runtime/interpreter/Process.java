@@ -43,8 +43,8 @@ public class Process extends java.lang.Thread {
 	private AbstractEdge mInterruptEdge = null;
 	private AbstractEdge mNextEdge = null;
 	private AbstractEdge mIncomingEdge = null;
-	private final ArrayList<Process> mChildThreadList = new ArrayList<Process>();
-	private final ArrayList<Process> mAddChildThreadList = new ArrayList<Process>();
+	private final ArrayList<Process> mChildThreadList = new ArrayList<>();
+	private final ArrayList<Process> mAddChildThreadList = new ArrayList<>();
 	private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
 	private final Configuration mConfiguration;
 	private final SystemHistory mSystemHistory;
@@ -672,7 +672,7 @@ public class Process extends java.lang.Thread {
 					mInterpreter.lock();
 					checkStatus();
 
-					ArrayList<Process> forkThreadList = new ArrayList<Process>();
+					ArrayList<Process> forkThreadList = new ArrayList<>();
 
 					for (AbstractEdge edge : nextEdgeList) {
 						Environment env = mParentThread.mEnvironment.getCopy();
@@ -827,7 +827,7 @@ public class Process extends java.lang.Thread {
 		/**
 		 * Create a list with already dead childs
 		 */
-		ArrayList<Process> deadChildList = new ArrayList<Process>();
+		ArrayList<Process> deadChildList = new ArrayList<>();
 
 		for (Process thread : mChildThreadList) {
 			if (!thread.isAlive()) {
@@ -863,7 +863,7 @@ public class Process extends java.lang.Thread {
 
 		/**
 		 */
-		ArrayList<BasicNode> startNodeList = new ArrayList<BasicNode>();
+		ArrayList<BasicNode> startNodeList = new ArrayList<>();
 
 		/**
 		 * Get the history node of the current node
@@ -906,9 +906,7 @@ public class Process extends java.lang.Thread {
 		/**
 		 * Fill the next start node list with these start nodes
 		 */
-		for (BasicNode node : commonStartNodeList) {
-			startNodeList.add(node);
-		}
+        startNodeList.addAll(commonStartNodeList);
 
 		/**
 		 * Check if there exist any alternative start nodes. In this case

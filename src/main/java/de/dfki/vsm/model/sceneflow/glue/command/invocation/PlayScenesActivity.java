@@ -58,36 +58,36 @@ public final class PlayScenesActivity extends Invocation {
 
     @Override
     public final String getAbstractSyntax() {
-        String desc = "PlayScene(";
-        desc += ((mArgument != null)
+        StringBuilder desc = new StringBuilder("PlayScene(");
+        desc.append((mArgument != null)
                 ? mArgument.getAbstractSyntax()
                 : "");
-        for (int i = 0; i < mArgList.size(); i++) {
-            desc += ", " + mArgList.get(i).getAbstractSyntax();
+        for (Expression expression : mArgList) {
+            desc.append(", ").append(expression.getAbstractSyntax());
         }
         return desc + ")";
     }
 
     @Override
     public final String getConcreteSyntax() {
-        String desc = "PlayScene(";
-        desc += ((mArgument != null)
+        StringBuilder desc = new StringBuilder("PlayScene(");
+        desc.append((mArgument != null)
                 ? mArgument.getConcreteSyntax()
                 : "");
-        for (int i = 0; i < mArgList.size(); i++) {
-            desc += ", " + mArgList.get(i).getConcreteSyntax();
+        for (Expression expression : mArgList) {
+            desc.append(", ").append(expression.getConcreteSyntax());
         }
         return desc + ")";
     }
 
     @Override
     public final String getFormattedSyntax() {
-        String desc = "#p#PlayScene ( ";
-        desc += ((mArgument != null)
+        StringBuilder desc = new StringBuilder("#p#PlayScene ( ");
+        desc.append((mArgument != null)
                 ? mArgument.getFormattedSyntax()
                 : "");
-        for (int i = 0; i < mArgList.size(); i++) {
-            desc += " , " + mArgList.get(i).getFormattedSyntax();
+        for (Expression expression : mArgList) {
+            desc.append(" , ").append(expression.getFormattedSyntax());
         }
         return desc + " ) ";
     }
@@ -103,8 +103,8 @@ public final class PlayScenesActivity extends Invocation {
         if (mArgument != null) {
             mArgument.writeXML(out);
         }
-        for (int i = 0; i < mArgList.size(); i++) {
-            mArgList.get(i).writeXML(out);
+        for (Expression expression : mArgList) {
+            expression.writeXML(out);
         }
         out.pop().println("</PlayScene>");
     }

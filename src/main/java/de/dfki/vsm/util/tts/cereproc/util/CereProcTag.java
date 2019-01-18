@@ -12,7 +12,7 @@ import java.util.HashMap;
  * @author Robbie
  */
 public class CereProcTag {
-    public static final HashMap<String, String> vocalGesture = new HashMap<String, String>();
+    public static final HashMap<String, String> vocalGesture = new HashMap<>();
     static {
         vocalGesture.put("tutGesture", "<spurt audio=\"g0001_001\">tut</spurt>");        // kiss
         vocalGesture.put("tuttutGesture", "<spurt audio=\"g0001_002\">tut tut</spurt>"); // kiss 2 times

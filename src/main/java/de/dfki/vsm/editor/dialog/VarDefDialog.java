@@ -113,11 +113,7 @@ public class VarDefDialog extends Dialog {
         mAddExpButton.setOpaque(false);
         mAddExpButton.setContentAreaFilled(false);
         mAddExpButton.setFocusable(false);
-        mAddExpButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                selectExp();
-            }
-        });
+        mAddExpButton.addActionListener(e -> selectExp());
         sanitizeComponent(mExpLabel, labelSize);
         sanitizeComponent(mExpTextField, new Dimension(200, 30));
         //Exp box
@@ -128,41 +124,36 @@ public class VarDefDialog extends Dialog {
         expBox.add(Box.createHorizontalStrut(20));
         expBox.add(mAddExpButton);
 
-        mTypeDefComboBox.addItemListener(new ItemListener() {
+        mTypeDefComboBox.addItemListener(e -> {
 
-            @Override
-            @SuppressWarnings("empty-statement")
-            public void itemStateChanged(ItemEvent e) {
-
-                switch ((String) e.getItem()) {
-                    case "Int":
-                        mVarDef = new VariableDefinition("NewVar", "Int", new IntLiteral(0));
-                        break;
-                    case "Bool":
-                        mVarDef = new VariableDefinition("NewVar", "Bool", new BoolLiteral(true));
-                        break;
-                    case "Float":
-                        mVarDef = new VariableDefinition("NewVar", "Float", new de.dfki.vsm.model.sceneflow.glue.command.expression.literal.FloatLiteral(0));
-                        break;
-                    case "String":
-                        mVarDef = new VariableDefinition("NewVar", "String", new de.dfki.vsm.model.sceneflow.glue.command.expression.literal.StringLiteral(""));
-                        break;
-                    default:
-                        String a = "";
-                        // Look in the definition list for the data type
-                        for (DataTypeDefinition def : mNode.getTypeDefList()) {
-                            if (def.getName().equals((String) e.getItem())) {
-                                if (def instanceof ListTypeDefinition) {
-                                    mVarDef = new VariableDefinition("NewVar", "List", new de.dfki.vsm.model.sceneflow.glue.command.expression.record.ArrayExpression());
-                                } else if (def instanceof StructTypeDefinition) {
-                                    mVarDef = new VariableDefinition("NewVar", "Struct", new de.dfki.vsm.model.sceneflow.glue.command.expression.record.StructExpression());
-                                }
+            switch ((String) e.getItem()) {
+                case "Int":
+                    mVarDef = new VariableDefinition("NewVar", "Int", new IntLiteral(0));
+                    break;
+                case "Bool":
+                    mVarDef = new VariableDefinition("NewVar", "Bool", new BoolLiteral(true));
+                    break;
+                case "Float":
+                    mVarDef = new VariableDefinition("NewVar", "Float", new de.dfki.vsm.model.sceneflow.glue.command.expression.literal.FloatLiteral(0));
+                    break;
+                case "String":
+                    mVarDef = new VariableDefinition("NewVar", "String", new de.dfki.vsm.model.sceneflow.glue.command.expression.literal.StringLiteral(""));
+                    break;
+                default:
+                    String a = "";
+                    // Look in the definition list for the data type
+                    for (DataTypeDefinition def : mNode.getTypeDefList()) {
+                        if (def.getName().equals((String) e.getItem())) {
+                            if (def instanceof ListTypeDefinition) {
+                                mVarDef = new VariableDefinition("NewVar", "List", new de.dfki.vsm.model.sceneflow.glue.command.expression.record.ArrayExpression());
+                            } else if (def instanceof StructTypeDefinition) {
+                                mVarDef = new VariableDefinition("NewVar", "Struct", new de.dfki.vsm.model.sceneflow.glue.command.expression.record.StructExpression());
                             }
                         }
-                        break;
-                }
-                mExpTextField.setText(mVarDef.getExp().getAbstractSyntax());
+                    }
+                    break;
             }
+            mExpTextField.setText(mVarDef.getExp().getAbstractSyntax());
         });
 
         //
@@ -198,19 +189,15 @@ public class VarDefDialog extends Dialog {
         erroBox.add(errorMsg);
 
         //Key listener need to gain focus on the text field
-        KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(new KeyEventDispatcher() {
-
-            @Override
-            public boolean dispatchKeyEvent(KeyEvent ke) {
-                //boolean keyHandled = false;
-                if (ke.getID() == KeyEvent.KEY_PRESSED) {
-                    if (!mNameTextField.hasFocus()) {
-                        //mNameTextField.setText(mNameTextField.getText()+ke.getKeyChar());
-                        mNameTextField.requestFocus();
-                    }
+        KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(ke -> {
+            //boolean keyHandled = false;
+            if (ke.getID() == KeyEvent.KEY_PRESSED) {
+                if (!mNameTextField.hasFocus()) {
+                    //mNameTextField.setText(mNameTextField.getText()+ke.getKeyChar());
+                    mNameTextField.requestFocus();
                 }
-                return false;
             }
+            return false;
         });
         //FINAL BOX
         Box finalBox = Box.createVerticalBox();

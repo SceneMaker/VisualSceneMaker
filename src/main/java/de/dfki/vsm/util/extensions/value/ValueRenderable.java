@@ -1,7 +1,6 @@
 package de.dfki.vsm.util.extensions.value;
 
 import javafx.scene.Node;
-import javafx.scene.control.Control;
 
 /**
  * Created by alvaro on 4/20/17.

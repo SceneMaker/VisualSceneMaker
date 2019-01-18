@@ -83,18 +83,12 @@ public class SceneActionDialog extends JDialog {
         mButtonsPanel = new JPanel();
         mButtonsPanel.setLayout(new BoxLayout(mButtonsPanel, BoxLayout.X_AXIS));
         mOkButton = new JButton("Ok");
-        mOkButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                saveActions();
-                dispose();
-            }
+        mOkButton.addActionListener(evt -> {
+            saveActions();
+            dispose();
         });
         mCancelButton = new JButton("Cancel");
-        mCancelButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                dispose();
-            }
-        });
+        mCancelButton.addActionListener(evt -> dispose());
         mButtonsPanel.add(Box.createHorizontalGlue());
         mButtonsPanel.add(mCancelButton);
         mButtonsPanel.add(mOkButton);
@@ -202,20 +196,18 @@ public class SceneActionDialog extends JDialog {
         removeButton.setPreferredSize(new Dimension(20, 20));
         removeButton.setOpaque(false);
         removeButton.setBorder(BorderFactory.createEmptyBorder());
-        removeButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+        removeButton.addActionListener(e -> {
 
-                // System.out.println("removing argument");
-                int index = mList.getSelectedIndex();
+            // System.out.println("removing argument");
+            int index = mList.getSelectedIndex();
 
-                if (index != -1) {
-                    mListModel.removeElementAt(index);
-                }
-
-                mPreviewLabel.setText("[" + mActionName.getText() + ((mListModel.isEmpty())
-                        ? "]"
-                        : " ...]"));
+            if (index != -1) {
+                mListModel.removeElementAt(index);
             }
+
+            mPreviewLabel.setText("[" + mActionName.getText() + ((mListModel.isEmpty())
+                    ? "]"
+                    : " ...]"));
         });
 
         JButton editButton = new JButton(Preferences.ICON_EDIT_STANDARD);
@@ -225,11 +217,9 @@ public class SceneActionDialog extends JDialog {
         editButton.setPreferredSize(new Dimension(20, 20));
         editButton.setOpaque(false);
         editButton.setBorder(BorderFactory.createEmptyBorder());
-        editButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+        editButton.addActionListener(e -> {
 
-                // System.out.println("Edit Argument()");
-            }
+            // System.out.println("Edit Argument()");
         });
         argCmdPanel.add(removeButton);
         argCmdPanel.add(editButton);
@@ -246,14 +236,12 @@ public class SceneActionDialog extends JDialog {
         addButton.setPreferredSize(new Dimension(20, 20));
         addButton.setOpaque(false);
         addButton.setBorder(BorderFactory.createEmptyBorder());
-        addButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                mListModel.addElement(mArgument.getText());
-                mArgument.setText("");
-                mPreviewLabel.setText("[" + mActionName.getText() + ((mListModel.isEmpty())
-                        ? "]"
-                        : " ...]"));
-            }
+        addButton.addActionListener(e -> {
+            mListModel.addElement(mArgument.getText());
+            mArgument.setText("");
+            mPreviewLabel.setText("[" + mActionName.getText() + ((mListModel.isEmpty())
+                    ? "]"
+                    : " ...]"));
         });
         argAddPanel.add(Box.createRigidArea(new Dimension(3, 0)));
         mArgument = new HintTextField("Enter Argument");
@@ -329,7 +317,7 @@ public class SceneActionDialog extends JDialog {
 
     private void saveActions() {
         ActiconConfig            asd  = EditorInstance.getInstance().getSelectedProjectEditor().getEditorProject().getActicon();
-        ArrayList<ActionFeature> args = new ArrayList<ActionFeature>();
+        ArrayList<ActionFeature> args = new ArrayList<>();
 
         for (Object o : mListModel.toArray()) {
             String argString = (String) o;

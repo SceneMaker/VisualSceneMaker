@@ -185,12 +185,7 @@ public class SingleFunctionContainer extends JPanel {
         sanitizeComponent(mMethodLabel, labelSize);
         sanitizeComponent(mMethodComboBox, textFielSize);
         mMethodComboBox.setModel(new DefaultComboBoxModel());
-        mMethodComboBox.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent evt) {
-                methodComboBoxActionPerformed(evt);
-            }
-        });
+        mMethodComboBox.addActionListener(evt -> methodComboBoxActionPerformed(evt));
 
         mArgLabel = new JLabel("Arguments:");
         mArgList = new JList();
@@ -440,36 +435,33 @@ public class SingleFunctionContainer extends JPanel {
             }
         });
 
-        getMethodBox().addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent evt) {
-                if (getIsValidClass()) {
+        getMethodBox().addActionListener(evt -> {
+            if (getIsValidClass()) {
 
-                    if (getMethodBox().getSelectedItem() != null) {
-                        setSelectedMethod(
-                                getmMethodMap().get((String) getMethodBox().getSelectedItem()));
+                if (getMethodBox().getSelectedItem() != null) {
+                    setSelectedMethod(
+                            getmMethodMap().get((String) getMethodBox().getSelectedItem()));
+                }
+
+                if (getSelectedMethod() != null) {
+
+                    // updateFunDef(mFunDef, mFunDefDialog);
+                    String newSelectedMethodName = getSelectedMethod().getName().trim();
+
+                    mFunDef.setMethod(newSelectedMethodName);
+                    getFunDef().setMethod(newSelectedMethodName);
+                    methodComboBoxActionPerformed(evt);
+                    mFunDef.getParamList().clear();
+
+                    Enumeration args = ((DefaultListModel) getArgList().getModel()).elements();
+
+                    while (args.hasMoreElements()) {
+                        String argString = (String) args.nextElement();
+
+                        mFunDef.addParam(new ArgumentDefinition(getNameMap().get(argString), getTypeMap().get(argString)));
                     }
 
-                    if (getSelectedMethod() != null) {
-
-                        // updateFunDef(mFunDef, mFunDefDialog);
-                        String newSelectedMethodName = getSelectedMethod().getName().trim();
-
-                        mFunDef.setMethod(newSelectedMethodName);
-                        getFunDef().setMethod(newSelectedMethodName);
-                        methodComboBoxActionPerformed(evt);
-                        mFunDef.getParamList().clear();
-
-                        Enumeration args = ((DefaultListModel) getArgList().getModel()).elements();
-
-                        while (args.hasMoreElements()) {
-                            String argString = (String) args.nextElement();
-
-                            mFunDef.addParam(new ArgumentDefinition(getNameMap().get(argString), getTypeMap().get(argString)));
-                        }
-
-                        EditorInstance.getInstance().refresh();
-                    }
+                    EditorInstance.getInstance().refresh();
                 }
             }
         });
@@ -797,17 +789,17 @@ public class SingleFunctionContainer extends JPanel {
     ////////////////////////////////////////////////////////////////////////////
     //  Helper Methods
     private String methodToString(Method method) {
-        String name = method.getName() + "(";
+        StringBuilder name = new StringBuilder(method.getName() + "(");
 
         for (int i = 0; i < method.getParameterTypes().length; i++) {
-            name += method.getParameterTypes()[i].getSimpleName();
+            name.append(method.getParameterTypes()[i].getSimpleName());
 
             if (i != method.getParameterTypes().length - 1) {
-                name += ",";
+                name.append(",");
             }
         }
 
-        return name += ")";
+        return name.append(")").toString();
     }
 
     private String methodToString() {

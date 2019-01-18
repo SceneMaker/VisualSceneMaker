@@ -23,14 +23,14 @@ public class FunctionDefinition extends Definition implements  Comparable<Functi
         mName = new String();
         mClassName = new String();
         mMethod = new String();
-        mParamList = new ArrayList<ArgumentDefinition>();
+        mParamList = new ArrayList<>();
     }
 
     public FunctionDefinition(String name, String className, String method) {
         mName = name;
         mClassName = className;
         mMethod = method;
-        mParamList = new ArrayList<ArgumentDefinition>();
+        mParamList = new ArrayList<>();
     }
 
     public FunctionDefinition(String name, String className, String method, ArrayList<ArgumentDefinition> paramList) {
@@ -85,7 +85,7 @@ public class FunctionDefinition extends Definition implements  Comparable<Functi
     }
 
     public ArrayList<ArgumentDefinition> getCopyOfParamList() {
-        ArrayList<ArgumentDefinition> copy = new ArrayList<ArgumentDefinition>();
+        ArrayList<ArgumentDefinition> copy = new ArrayList<>();
 
         for (ArgumentDefinition param : mParamList) {
             copy.add(param.getCopy());
@@ -104,13 +104,13 @@ public class FunctionDefinition extends Definition implements  Comparable<Functi
 
     @Override
     public String getAbstractSyntax() {
-        String desc = "";
+        StringBuilder desc = new StringBuilder();
 
         for (int i = 0; i < mParamList.size(); i++) {
-            desc += mParamList.get(i).getAbstractSyntax();
+            desc.append(mParamList.get(i).getAbstractSyntax());
 
             if (i != mParamList.size() - 1) {
-                desc += ",";
+                desc.append(",");
             }
         }
 
@@ -119,13 +119,13 @@ public class FunctionDefinition extends Definition implements  Comparable<Functi
 
     @Override
     public String getConcreteSyntax() {
-        String desc = "";
+        StringBuilder desc = new StringBuilder();
 
         for (int i = 0; i < mParamList.size(); i++) {
-            desc += mParamList.get(i).getConcreteSyntax();
+            desc.append(mParamList.get(i).getConcreteSyntax());
 
             if (i != mParamList.size() - 1) {
-                desc += ",";
+                desc.append(",");
             }
         }
 
@@ -147,8 +147,8 @@ public class FunctionDefinition extends Definition implements  Comparable<Functi
         out.println("<UserCommand name=\"" + mName + "\" classname =\"" + mClassName + "\" method=\"" + mMethod
                 + "\">").push();
 
-        for (int i = 0; i < mParamList.size(); i++) {
-            mParamList.get(i).writeXML(out);
+        for (ArgumentDefinition argumentDefinition : mParamList) {
+            argumentDefinition.writeXML(out);
         }
 
         out.pop().println("</UserCommand>");
@@ -170,13 +170,13 @@ public class FunctionDefinition extends Definition implements  Comparable<Functi
     }
 
     public String getParamPrettyPrint() {
-        String desc = "(";
+        StringBuilder desc = new StringBuilder("(");
 
         for (int i = 0; i < mParamList.size(); i++) {
-            desc += mParamList.get(i).getPrettyType();
+            desc.append(mParamList.get(i).getPrettyType());
 
             if (i != mParamList.size() - 1) {
-                desc += ", ";
+                desc.append(", ");
             }
         }
 
@@ -200,11 +200,7 @@ public class FunctionDefinition extends Definition implements  Comparable<Functi
             Class parentClass = Class.forName(parentName);
             Field javaField = parentClass.getField(memberName);
             Class javaClass = javaField.getType();
-        } catch (ClassNotFoundException ex) {
-            isObject = false;
-        } catch (NoSuchFieldException ex) {
-            isObject = false;
-        } catch (StringIndexOutOfBoundsException ex) {
+        } catch (ClassNotFoundException | StringIndexOutOfBoundsException | NoSuchFieldException ex) {
             isObject = false;
         }
 

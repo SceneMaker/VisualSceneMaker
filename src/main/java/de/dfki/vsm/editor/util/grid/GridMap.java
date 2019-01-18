@@ -13,7 +13,6 @@ import de.dfki.vsm.editor.util.grid.pathfinding.TileBasedMap;
 
 //~--- JDK imports ------------------------------------------------------------
 
-import java.awt.Graphics2D;
 
 /**
  *

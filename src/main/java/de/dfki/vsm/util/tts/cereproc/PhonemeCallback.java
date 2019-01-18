@@ -21,7 +21,7 @@ public class PhonemeCallback extends TtsEngineCallback {
     private HashMap<Integer, LinkedList<Phoneme>> phonemes;
     public PhonemeCallback(SourceDataLine line) {
         this.line = line;
-        phonemes = new HashMap<Integer, LinkedList<Phoneme>>();
+        phonemes = new HashMap<>();
     }
 
     public void Callback(SWIGTYPE_p_CPRC_abuf abuf) {

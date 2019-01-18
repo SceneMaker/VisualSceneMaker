@@ -6,6 +6,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Scanner;
 
 /**
@@ -13,7 +14,7 @@ import java.util.Scanner;
  */
 public class JPLTestSuite {
 
-    public static void main(final String args[]) throws IOException {
+    public static void main(final String[] args) throws IOException {
         if (args.length == 2) {
             final File in = new File(args[0]);
             final File out = new File(args[1]);
@@ -29,7 +30,7 @@ public class JPLTestSuite {
                 try {
                     System.out.println("JPL TestSuite File: " + in.getAbsolutePath());
                     // Scann the input in
-                    final Scanner sScanner = new Scanner(in, "UTF-8");
+                    final Scanner sScanner = new Scanner(in, StandardCharsets.UTF_8);
                     int counter = 0;
                     while (sScanner.hasNextLine()) {
                         final String line = sScanner.nextLine();

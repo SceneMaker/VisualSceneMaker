@@ -16,9 +16,8 @@ public abstract class SpeechClient {
     public String getPhrase() {
         synchronized(wordQueue){
             if(finalWord.length() <=0){
-                Iterator it = wordQueue.iterator();
-                while (it.hasNext()) {
-                    String word = (String) it.next();
+                for (Object o : wordQueue) {
+                    String word = (String) o;
                     finalWord += word + " ";
                 }
             }

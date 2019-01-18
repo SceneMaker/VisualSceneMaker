@@ -13,6 +13,7 @@ import org.w3c.dom.Element;
 //~--- JDK imports ------------------------------------------------------------
 
 import java.io.ByteArrayOutputStream;
+import java.nio.charset.StandardCharsets;
 
 /**
  * @author Gregor Mehlmann
@@ -174,7 +175,7 @@ public class SyntaxDocToken implements ModelObject {
 
         // Return String Representation
         try {
-            return buffer.toString("UTF-8");
+            return buffer.toString(StandardCharsets.UTF_8);
         } catch (Exception exc) {
             return buffer.toString();
         }

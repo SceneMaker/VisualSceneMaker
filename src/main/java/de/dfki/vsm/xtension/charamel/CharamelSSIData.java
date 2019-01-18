@@ -1,9 +1,9 @@
 package de.dfki.vsm.xtension.charamel;
 
-import de.dfki.vsm.xtension.tricatworld.*;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -27,7 +27,7 @@ public final class CharamelSSIData {
     public CharamelSSIData(final String xml) {
         try {
             final ByteArrayInputStream stream = new ByteArrayInputStream(
-                    xml.getBytes("UTF-8"));
+                    xml.getBytes(StandardCharsets.UTF_8));
             // Construct the XML document parser
             final DocumentBuilder parser
                     = DocumentBuilderFactory.newInstance().newDocumentBuilder();

@@ -36,7 +36,7 @@ import javax.swing.JPopupMenu;
 public class VarBadgeGlobal extends JComponent implements EventListener, ActionListener, Observer {
 
     //
-    private final ArrayList<VariableEntry> mEntryList = new ArrayList<VariableEntry>();
+    private final ArrayList<VariableEntry> mEntryList = new ArrayList<>();
 
     // TODO: Make format of variable badge as global preferences
     private final int mPositionOffset = 10;

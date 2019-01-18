@@ -96,11 +96,9 @@ public class ScriptEditorPane extends JEditorPane implements EventListener {
         Document doc = getDocument();
 
         // Listen for undo and redo events
-        doc.addUndoableEditListener(new UndoableEditListener() {
-            public void undoableEditHappened(UndoableEditEvent evt) {
-                if(!isInitialInsert)
-                    undo.addEdit(evt.getEdit());
-            }
+        doc.addUndoableEditListener(evt -> {
+            if(!isInitialInsert)
+                undo.addEdit(evt.getEdit());
         });
 
         setUpUndoRedo();

@@ -4,7 +4,6 @@ import de.dfki.vsm.util.log.LOGDefaultLogger;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.CopyOnWriteArrayList;
-import javax.swing.SwingUtilities;
 
 /**
  * @author Gregor Mehlmann

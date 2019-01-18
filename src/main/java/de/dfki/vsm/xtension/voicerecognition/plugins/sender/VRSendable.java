@@ -24,8 +24,7 @@ public class VRSendable implements DataSendable {
 
     @Override
     public void prepareData() {
-        xmlBuilder.append("<messages>")
-                .append("<message type=\"voice_recognition\" id=\"" + messageId + "\">")
+        xmlBuilder.append("<messages>").append("<message type=\"voice_recognition\" id=\"").append(messageId).append("\">")
                 .append(spokenText)
                 .append("</message>")
                 .append("</messages>")

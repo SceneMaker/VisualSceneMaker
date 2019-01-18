@@ -151,70 +151,55 @@ public class PropertyManagerController implements Initializable, TreeObserver {
         fillComboWithActivityExecutors();
         advanceBar.setVisible(false);
 
-        treeView.setCellFactory(new Callback<TreeView<AbstractTreeEntry>, TreeCell<AbstractTreeEntry>>() {
-            @Override
-            public TreeCell<AbstractTreeEntry> call(TreeView<AbstractTreeEntry> param) {
-                TreeCellImpl treeCell = new TreeCellImpl();
-                treeCell.registerObserver(controller);
-                return treeCell;
+        treeView.setCellFactory(param -> {
+            TreeCellImpl treeCell = new TreeCellImpl();
+            treeCell.registerObserver(controller);
+            return treeCell;
+        });
+
+        advancedButton.setOnAction(event -> {
+            if (!advancedBottonMark) {
+                advancedBottonMark = true;
+                advancedButton.setText("Basic");
+                advanceBar.setVisible(true);
+                basicBar.setVisible(false);
+
+            } else {
+                advancedBottonMark = false;
+                advancedButton.setText("Advanced");
+                advanceBar.setVisible(false);
+                basicBar.setVisible(true);
             }
         });
 
-        advancedButton.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent event) {
-                if (!advancedBottonMark) {
-                    advancedBottonMark = true;
-                    advancedButton.setText("Basic");
-                    advanceBar.setVisible(true);
-                    basicBar.setVisible(false);
+        btnAddAdvanced.setOnAction(event -> {
+            ProjectProperty property = (ProjectProperty) propertiesChooser.getSelectionModel().getSelectedItem();
+            if (!hasProperty(property)) {
+                return;
+            }
+            ProjectValueProperty value = exportableProperties.get(property);
+            addNewItemToTable(property.getName(), value.getValue());
+        });
 
-                } else {
-                    advancedBottonMark = false;
-                    advancedButton.setText("Advanced");
-                    advanceBar.setVisible(false);
-                    basicBar.setVisible(true);
-                }
+        deleteButton.setOnAction(event -> {
+            int selectedIndex = pluginsTable.getSelectionModel().getSelectedIndex();
+            if (selectedIndex >= 0) {
+                TableConfig dataConfig1 = (TableConfig) pluginsTable.getSelectionModel().getSelectedItem();
+                removeOldProperty(dataConfig1, dataConfig1.getKey());
+                pluginsTable.getItems().remove(selectedIndex);
+                saveConfig();
+            } else {
+                // Nothing selected.
             }
         });
 
-        btnAddAdvanced.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent event) {
-                ProjectProperty property = (ProjectProperty) propertiesChooser.getSelectionModel().getSelectedItem();
-                if (!hasProperty(property)) {
-                    return;
-                }
-                ProjectValueProperty value = exportableProperties.get(property);
-                addNewItemToTable(property.getName(), value.getValue());
+        propertiesChooser.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            ProjectProperty property = (ProjectProperty) newValue;
+            if (!hasProperty(property)) {
+                return;
             }
-        });
+            replaceControlInBasicBar(property);
 
-        deleteButton.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent event) {
-                int selectedIndex = pluginsTable.getSelectionModel().getSelectedIndex();
-                if (selectedIndex >= 0) {
-                    TableConfig dataConfig1 = (TableConfig) pluginsTable.getSelectionModel().getSelectedItem();
-                    removeOldProperty(dataConfig1, dataConfig1.getKey());
-                    pluginsTable.getItems().remove(selectedIndex);
-                    saveConfig();
-                } else {
-                    // Nothing selected.
-                }
-            }
-        });
-
-        propertiesChooser.getSelectionModel().selectedItemProperty().addListener(new ChangeListener() {
-            @Override
-            public void changed(ObservableValue observable, Object oldValue, Object newValue) {
-                ProjectProperty property = (ProjectProperty) newValue;
-                if (!hasProperty(property)) {
-                    return;
-                }
-                replaceControlInBasicBar(property);
-
-            }
         });
 
         // Listen for selection changes and show the person details when changed.
@@ -461,7 +446,7 @@ public class PropertyManagerController implements Initializable, TreeObserver {
     }
 
     private void addExportableItemsToBasicBar() {
-        ArrayList<ProjectProperty> propertyNames = new ArrayList<ProjectProperty>(exportableProperties.keySet());
+        ArrayList<ProjectProperty> propertyNames = new ArrayList<>(exportableProperties.keySet());
         ObservableList obList = FXCollections.observableList(propertyNames);
         propertiesChooser.getItems().clear();
         propertiesChooser.setItems(obList);
@@ -568,21 +553,18 @@ public class PropertyManagerController implements Initializable, TreeObserver {
         keyColumn.setCellFactory(TextFieldTableCell.forTableColumn());
 
         keyColumn.setOnEditCommit(
-                new EventHandler<TableColumn.CellEditEvent<TableConfig, String>>() {
-            @Override
-            public void handle(TableColumn.CellEditEvent<TableConfig, String> t) {
-                TableConfig dataConfig = t.getRowValue();
-                if (t.getOldValue() != t.getNewValue()) {
-                    removeOldProperty(dataConfig, t.getOldValue());
+                (EventHandler<TableColumn.CellEditEvent<TableConfig, String>>) t -> {
+                    TableConfig dataConfig = t.getRowValue();
+                    if (t.getOldValue() != t.getNewValue()) {
+                        removeOldProperty(dataConfig, t.getOldValue());
+                    }
+
+                    t.getTableView().getItems().get(
+                            t.getTablePosition().getRow()).setKey(t.getNewValue());
+
+                    saveEditedTableEntry(dataConfig);
+
                 }
-
-                t.getTableView().getItems().get(
-                        t.getTablePosition().getRow()).setKey(t.getNewValue());
-
-                saveEditedTableEntry(dataConfig);
-
-            }
-        }
         );
         keyColumn.setCellValueFactory(new PropertyValueFactory("key"));
     }
@@ -590,15 +572,12 @@ public class PropertyManagerController implements Initializable, TreeObserver {
     private void setEditableValueCell(String pluginName) {
         valueColumn.setCellFactory(TextFieldTableCell.forTableColumn());
         valueColumn.setOnEditCommit(
-                new EventHandler<TableColumn.CellEditEvent<TableConfig, String>>() {
-            @Override
-            public void handle(TableColumn.CellEditEvent<TableConfig, String> t) {
-                t.getTableView().getItems().get(
-                        t.getTablePosition().getRow()).setValue(t.getNewValue());
-                TableConfig dataConfig = t.getRowValue();
-                saveEditedTableEntry(dataConfig);
-            }
-        }
+                (EventHandler<TableColumn.CellEditEvent<TableConfig, String>>) t -> {
+                    t.getTableView().getItems().get(
+                            t.getTablePosition().getRow()).setValue(t.getNewValue());
+                    TableConfig dataConfig = t.getRowValue();
+                    saveEditedTableEntry(dataConfig);
+                }
         );
         valueColumn.setCellValueFactory(new PropertyValueFactory("value"));
     }

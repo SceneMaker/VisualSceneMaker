@@ -1,6 +1,5 @@
 package de.dfki.vsm.xtesting.NewPropertyManager.util.events;
 
-import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.xtesting.NewPropertyManager.model.AbstractTreeEntry;
 
 /**

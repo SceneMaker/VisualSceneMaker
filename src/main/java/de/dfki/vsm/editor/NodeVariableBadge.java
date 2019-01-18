@@ -36,8 +36,7 @@ public class NodeVariableBadge extends JComponent {
     ArrayList<TPLTuple<String, AttributedString>> mGlobalVarDefList  = null;
     ArrayList<TPLTuple<String, AttributedString>> mLocalTypeDefList  = null;
     ArrayList<TPLTuple<String, AttributedString>> mGlobalTypeDefList = null;
-    ArrayList<TPLTuple<String, AttributedString>> mCompleteList      = new ArrayList<TPLTuple<String,
-                                                                           AttributedString>>();
+    ArrayList<TPLTuple<String, AttributedString>> mCompleteList      = new ArrayList<>();
     int                                           mPositionOffset    = 10;
     int                                           mBeautyXOffSet     = 0;
     int                                           mBeautyYOffSet     = 0;
@@ -45,7 +44,6 @@ public class NodeVariableBadge extends JComponent {
 
     static enum LocationType { TOP, BOTTOM, LEFT, RIGHT }
 
-    ;
     public NodeVariableBadge(Node node, WorkSpacePanel workSpace, ArrayList<String> localVarDefList,
                              ArrayList<String> globalVarDefList, ArrayList<String> localTypeDefList,
                              ArrayList<String> globalTypeDefList) {
@@ -114,9 +112,9 @@ public class NodeVariableBadge extends JComponent {
         int width  = 0,
             height = 0;
 
-        for (int i = 0; i < mCompleteList.size(); i++) {
-            TextLayout textLayout = new TextLayout(mCompleteList.get(i).getSecond().getIterator(),
-                                        graphics.getFontRenderContext());
+        for (TPLTuple<String, AttributedString> stringAttributedStringTPLTuple : mCompleteList) {
+            TextLayout textLayout = new TextLayout(stringAttributedStringTPLTuple.getSecond().getIterator(),
+                    graphics.getFontRenderContext());
             int advance = (int) textLayout.getVisibleAdvance();
 
             if (advance > width) {

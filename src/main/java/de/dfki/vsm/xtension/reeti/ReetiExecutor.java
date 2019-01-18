@@ -123,7 +123,7 @@ public class ReetiExecutor extends ActivityExecutor implements ExportablePropert
         final String text = activity.getText();
         final LinkedList<ActionFeature> features = activity.getFeatures();
         // Create new command id
-        final String cmid = activity + ":" + String.valueOf(newCmdId());
+        final String cmid = activity + ":" + newCmdId();
         // Create the new command 
         CommandMessage command = null;
         

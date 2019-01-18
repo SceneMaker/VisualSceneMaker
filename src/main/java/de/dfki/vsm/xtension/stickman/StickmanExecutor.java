@@ -212,15 +212,13 @@ public class StickmanExecutor extends ActivityExecutor implements ExportableProp
 //            }
         }
 
-        stickmanLaunchThread = new Thread() {
-            public void run() {
-                try {
-                    stickmanStageC.launchStage(true, mProject.getProjectPath());
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+        stickmanLaunchThread = new Thread(() -> {
+            try {
+                stickmanStageC.launchStage(true, mProject.getProjectPath());
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-        };
+        });
 
         stickmanLaunchThread.start();
 

@@ -2,9 +2,7 @@ package de.dfki.vsm.util.extensions.renderers;
 
 import de.dfki.vsm.util.extensions.value.ProjectValueProperty;
 import de.dfki.vsm.util.extensions.value.ValueRenderable;
-import javafx.geometry.Insets;
 import javafx.scene.Node;
-import javafx.scene.control.Control;
 
 /**
  * Created by alvaro on 4/23/17.

@@ -65,12 +65,9 @@ abstract class AttributeEditor extends JPanel implements EventListener {
         mAddButton.setContentAreaFilled(false);
         mAddButton.setFocusable(false);
         mAddButton.setBorder(BorderFactory.createEmptyBorder());
-        mAddButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                add();
-                EditorInstance.getInstance().refresh();
-            }
+        mAddButton.addActionListener(e -> {
+            add();
+            EditorInstance.getInstance().refresh();
         });
 
         //
@@ -84,12 +81,9 @@ abstract class AttributeEditor extends JPanel implements EventListener {
         mRemoveButton.setContentAreaFilled(false);
         mRemoveButton.setFocusable(false);
         mRemoveButton.setBorder(BorderFactory.createEmptyBorder());
-        mRemoveButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                remove();
-                EditorInstance.getInstance().refresh();
-            }
+        mRemoveButton.addActionListener(e -> {
+            remove();
+            EditorInstance.getInstance().refresh();
         });
 
         //
@@ -102,12 +96,9 @@ abstract class AttributeEditor extends JPanel implements EventListener {
         mEditButton.setContentAreaFilled(false);
         mEditButton.setFocusable(false);
         mEditButton.setBorder(BorderFactory.createEmptyBorder());
-        mEditButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                edit();
-                EditorInstance.getInstance().refresh();
-            }
+        mEditButton.addActionListener(e -> {
+            edit();
+            EditorInstance.getInstance().refresh();
         });
 
         //
@@ -121,12 +112,9 @@ abstract class AttributeEditor extends JPanel implements EventListener {
         mUpButton.setContentAreaFilled(false);
         mUpButton.setFocusable(false);
         mUpButton.setBorder(BorderFactory.createEmptyBorder());
-        mUpButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                up();
-                EditorInstance.getInstance().refresh();
-            }
+        mUpButton.addActionListener(e -> {
+            up();
+            EditorInstance.getInstance().refresh();
         });
 
         //
@@ -140,12 +128,9 @@ abstract class AttributeEditor extends JPanel implements EventListener {
         mDownButton.setContentAreaFilled(false);
         mDownButton.setFocusable(false);
         mDownButton.setBorder(BorderFactory.createEmptyBorder());
-        mDownButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                down();
-                EditorInstance.getInstance().refresh();
-            }
+        mDownButton.addActionListener(e -> {
+            down();
+            EditorInstance.getInstance().refresh();
         });
 
         //

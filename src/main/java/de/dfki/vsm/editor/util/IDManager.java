@@ -31,14 +31,14 @@ import java.util.Set;
 public class IDManager {
 
     //TODO: Improve IDManager with Unique Data Structure
-    private List<Integer> mSuperNodeIDs = new LinkedList<Integer>();
-    private List<Integer> mNodeIDs      = new LinkedList<Integer>();
+    private List<Integer> mSuperNodeIDs = new LinkedList<>();
+    private List<Integer> mNodeIDs      = new LinkedList<>();
 
     public IDManager() {}
 
     public IDManager(SuperNode superNode) {
         if (superNode != null) {
-            ArrayList<SuperNode> sns = new ArrayList<SuperNode>();
+            ArrayList<SuperNode> sns = new ArrayList<>();
 
             sns.add(superNode);
             getAllIDs(sns);
@@ -101,15 +101,15 @@ public class IDManager {
     public String getNextFreeSuperNodeID() {
         int freeID = 1;
 
-        for (int i = 0; i < mSuperNodeIDs.size(); i++) {
-            if (freeID == mSuperNodeIDs.get(i)) {
+        for (Integer mSuperNodeID : mSuperNodeIDs) {
+            if (freeID == mSuperNodeID) {
                 freeID++;
             } else {
                 break;
             }
         }
 
-        mSuperNodeIDs.add(new Integer(freeID));
+        mSuperNodeIDs.add(freeID);
         Collections.sort(mSuperNodeIDs);
 
         return "S" + freeID;
@@ -118,15 +118,15 @@ public class IDManager {
     public String getNextFreeNodeID() {
         int freeID = 1;
 
-        for (int i = 0; i < mNodeIDs.size(); i++) {
-            if (freeID == mNodeIDs.get(i)) {
+        for (Integer mNodeID : mNodeIDs) {
+            if (freeID == mNodeID) {
                 freeID++;
             } else {
                 break;
             }
         }
 
-        mNodeIDs.add(new Integer(freeID));
+        mNodeIDs.add(freeID);
         Collections.sort(mNodeIDs);
 
         return "N" + freeID;
@@ -151,12 +151,9 @@ public class IDManager {
     public void reassignAllIDs(Set<BasicNode> nodes) {
 
         // DEBUG System.out.println("reassignAllIDs");
-        Hashtable<String, String> relationOldNewIDs = new Hashtable<String, String>();
-        ArrayList<BasicNode>              nodesVector       = new ArrayList<BasicNode>();
+        Hashtable<String, String> relationOldNewIDs = new Hashtable<>();
 
-        for (BasicNode n : nodes) {
-            nodesVector.add(n);
-        }
+        ArrayList<BasicNode> nodesVector = new ArrayList<>(nodes);
 
         relationOldNewIDs = reassignNodesID(nodesVector, relationOldNewIDs);
         reassignEdgesID(nodesVector, relationOldNewIDs);
@@ -199,7 +196,7 @@ public class IDManager {
     private void reassignSubSuperNodeStartNodeIDs(SuperNode sn, Hashtable<String, String> relationOldNewIDRef) {
         System.out.println("Checking start node IDs of sub super node " + sn.getId());
 
-        HashMap<String, BasicNode> newSNM = new HashMap<String, BasicNode>();
+        HashMap<String, BasicNode> newSNM = new HashMap<>();
         HashMap<String, BasicNode> snm    = sn.getStartNodeMap();
 
         for (String key : snm.keySet()) {
@@ -220,13 +217,13 @@ public class IDManager {
     }
 
     private void reassignStartNodeIDs(ArrayList<BasicNode> nodes, Hashtable<String, String> relationOldNewIDRef) {
-        ArrayList<BasicNode> subNodes = new ArrayList<BasicNode>();
+        ArrayList<BasicNode> subNodes = new ArrayList<>();
 
         for (BasicNode node : nodes) {
             if (node instanceof SuperNode) {
 
                 // System.out.println("Checking start node IDs of super node " + node.getId());
-                HashMap<String, BasicNode> newSNM = new HashMap<String, BasicNode>();
+                HashMap<String, BasicNode> newSNM = new HashMap<>();
                 SuperNode             sn     = (SuperNode) node;
                 HashMap<String, BasicNode> snm    = sn.getStartNodeMap();
 
@@ -266,7 +263,7 @@ public class IDManager {
                 switch (node.getFlavour()) {
                 case CNODE :
                     ArrayList<GuargedEdge> cEdgeList        = node.getCEdgeList();
-                    ArrayList<GuargedEdge> invalidCEdgeList = new ArrayList<GuargedEdge>();
+                    ArrayList<GuargedEdge> invalidCEdgeList = new ArrayList<>();
 
                     for (GuargedEdge c : cEdgeList) {
                         String newID = relationOldNewIDRef.get(c.getTargetUnid());
@@ -295,7 +292,7 @@ public class IDManager {
 
                     // DEBUG System.out.println("pedge(s)");
                     ArrayList<RandomEdge> pes           = node.getPEdgeList();
-                    ArrayList<RandomEdge> unvalidPEdges = new ArrayList<RandomEdge>();
+                    ArrayList<RandomEdge> unvalidPEdges = new ArrayList<>();
 
                     for (RandomEdge p : pes) {
                         String newID = relationOldNewIDRef.get(p.getTargetUnid());
@@ -321,7 +318,7 @@ public class IDManager {
 
                     // DEBUG System.out.println("fedge(s)");
                     ArrayList<ForkingEdge> fes           = node.getFEdgeList();
-                    ArrayList<ForkingEdge> unvalidFEdges = new ArrayList<ForkingEdge>();
+                    ArrayList<ForkingEdge> unvalidFEdges = new ArrayList<>();
 
                     for (ForkingEdge f : fes) {
                         String newID = relationOldNewIDRef.get(f.getTargetUnid());
@@ -347,7 +344,7 @@ public class IDManager {
 
                     // DEBUG System.out.println("iedge(s)");
                     ArrayList<InterruptEdge> ies           = node.getIEdgeList();
-                    ArrayList<InterruptEdge> unvalidIEdges = new ArrayList<InterruptEdge>();
+                    ArrayList<InterruptEdge> unvalidIEdges = new ArrayList<>();
 
                     for (InterruptEdge i : ies) {
                         String newID = relationOldNewIDRef.get(i.getTargetUnid());

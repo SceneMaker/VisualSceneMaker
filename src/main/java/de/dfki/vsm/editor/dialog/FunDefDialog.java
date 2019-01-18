@@ -53,10 +53,10 @@ import javax.swing.text.PlainDocument;
 public class FunDefDialog extends Dialog {
 
     //
-    private Vector<String> mArgNameList = new Vector<String>();
-    private HashMap<String, String> mNameMap = new HashMap<String, String>();
-    private HashMap<String, String> mTypeMap = new HashMap<String, String>();
-    private HashMap<String, Method> mMethodMap = new HashMap<String, Method>();
+    private Vector<String> mArgNameList = new Vector<>();
+    private HashMap<String, String> mNameMap = new HashMap<>();
+    private HashMap<String, String> mTypeMap = new HashMap<>();
+    private HashMap<String, Method> mMethodMap = new HashMap<>();
     private final Document mNameDocument = new PlainDocument() {
         @Override
         public void insertString(int offs, String str, AttributeSet attr) throws BadLocationException {
@@ -159,12 +159,7 @@ public class FunDefDialog extends Dialog {
         sanitizeComponent(mMethodLabel, labelSize);
         sanitizeComponent(mMethodComboBox, textFielSize);
         mMethodComboBox.setModel(new DefaultComboBoxModel());
-        mMethodComboBox.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent evt) {
-                methodComboBoxActionPerformed(evt);
-            }
-        });
+        mMethodComboBox.addActionListener(evt -> methodComboBoxActionPerformed(evt));
         //Method box
         Box methodBox = Box.createHorizontalBox();
         methodBox.add(mMethodLabel);
@@ -525,17 +520,17 @@ public class FunDefDialog extends Dialog {
     ////////////////////////////////////////////////////////////////////////////////
 //  Helper Methods
     private String methodToString(Method method) {
-        String name = method.getName() + "(";
+        StringBuilder name = new StringBuilder(method.getName() + "(");
 
         for (int i = 0; i < method.getParameterTypes().length; i++) {
-            name += method.getParameterTypes()[i].getSimpleName();
+            name.append(method.getParameterTypes()[i].getSimpleName());
 
             if (i != method.getParameterTypes().length - 1) {
-                name += ",";
+                name.append(",");
             }
         }
 
-        return name += ")";
+        return name.append(")").toString();
     }
 
     private String methodToString() {

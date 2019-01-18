@@ -73,19 +73,15 @@ public class CreateExpDialog extends Dialog {
         errorMsg.setMinimumSize(new Dimension(300, 30));
 
         //Key listener need to gain focus on the text field
-        KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(new KeyEventDispatcher() {
-
-            @Override
-            public boolean dispatchKeyEvent(KeyEvent ke) {
-                //boolean keyHandled = false;
-                if (ke.getID() == KeyEvent.KEY_PRESSED) {
-                    if (!mInputTextField.hasFocus()) {
-                        mInputTextField.setText(mInputTextField.getText() + ke.getKeyChar());
-                        mInputTextField.requestFocus();
-                    }
+        KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(ke -> {
+            //boolean keyHandled = false;
+            if (ke.getID() == KeyEvent.KEY_PRESSED) {
+                if (!mInputTextField.hasFocus()) {
+                    mInputTextField.setText(mInputTextField.getText() + ke.getKeyChar());
+                    mInputTextField.requestFocus();
                 }
-                return false;
             }
+            return false;
         });
 
         Box finalBox = Box.createVerticalBox();

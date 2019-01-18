@@ -30,10 +30,10 @@ import java.util.Map;
  */
 public class SuperNode extends BasicNode {
 
-    protected ArrayList<CommentBadge> mCommentList = new ArrayList<CommentBadge>();
-    protected ArrayList<BasicNode> mNodeList = new ArrayList<BasicNode>();
-    protected ArrayList<SuperNode> mSuperNodeList = new ArrayList<SuperNode>();
-    protected HashMap<String, BasicNode> mStartNodeMap = new HashMap<String, BasicNode>();
+    protected ArrayList<CommentBadge> mCommentList = new ArrayList<>();
+    protected ArrayList<BasicNode> mNodeList = new ArrayList<>();
+    protected ArrayList<SuperNode> mSuperNodeList = new ArrayList<>();
+    protected HashMap<String, BasicNode> mStartNodeMap = new HashMap<>();
     protected BasicNode mHistoryNode = null;
     protected boolean mHideLocalVarBadge = false;
     protected boolean mHideGlobalVarBadge = false;
@@ -114,11 +114,10 @@ public class SuperNode extends BasicNode {
 
     // TODO: this is not a deep copy
     public HashMap<String, BasicNode> getCopyOfStartNodeMap() {
-        HashMap<String, BasicNode> copy = new HashMap<String, BasicNode>();
-        Iterator it = mStartNodeMap.entrySet().iterator();
+        HashMap<String, BasicNode> copy = new HashMap<>();
 
-        while (it.hasNext()) {
-            Map.Entry pairs = (Map.Entry) it.next();
+        for (Map.Entry<String, BasicNode> stringBasicNodeEntry : mStartNodeMap.entrySet()) {
+            Map.Entry pairs = (Map.Entry) stringBasicNodeEntry;
             String nodeId = (String) pairs.getKey();
             BasicNode nodeData = (BasicNode) pairs.getValue();
 
@@ -145,7 +144,7 @@ public class SuperNode extends BasicNode {
     }
 
     public ArrayList<SuperNode> getCopyOfSuperNodeList() {
-        ArrayList<SuperNode> copy = new ArrayList<SuperNode>();
+        ArrayList<SuperNode> copy = new ArrayList<>();
 
         for (SuperNode node : mSuperNodeList) {
             copy.add(node.getCopy());
@@ -171,7 +170,7 @@ public class SuperNode extends BasicNode {
     }
 
     public ArrayList<BasicNode> getCopyOfNodeList() {
-        ArrayList<BasicNode> copy = new ArrayList<BasicNode>();
+        ArrayList<BasicNode> copy = new ArrayList<>();
 
         for (BasicNode node : mNodeList) {
             copy.add(node.getCopy());
@@ -181,21 +180,17 @@ public class SuperNode extends BasicNode {
     }
 
     public ArrayList<BasicNode> getNodeAndSuperNodeList() {
-        ArrayList<BasicNode> list = new ArrayList<BasicNode>();
+        ArrayList<BasicNode> list = new ArrayList<>();
 
-        for (BasicNode n : mNodeList) {
-            list.add(n);
-        }
+        list.addAll(mNodeList);
 
-        for (SuperNode sn : mSuperNodeList) {
-            list.add(sn);
-        }
+        list.addAll(mSuperNodeList);
 
         return list;
     }
 
     public ArrayList<BasicNode> getCopyOfNodeAndSuperNodeList() {
-        ArrayList<BasicNode> copy = new ArrayList<BasicNode>();
+        ArrayList<BasicNode> copy = new ArrayList<>();
 
         for (BasicNode n : mNodeList) {
             copy.add(n.getCopy());
@@ -286,10 +281,10 @@ public class SuperNode extends BasicNode {
 
     @Override
     public void writeXML(IOSIndentWriter out) throws XMLWriteError {
-        String start = "";
+        StringBuilder start = new StringBuilder();
 
         for (String id : mStartNodeMap.keySet()) {
-            start += id + ";";
+            start.append(id).append(";");
         }
 
         out.println("<SuperNode id=\"" + mNodeId + "\" name=\"" + mNodeName + "\" comment=\"" + mComment + "\" hideLocalVar=\"" + mHideLocalVarBadge
@@ -388,110 +383,137 @@ public class SuperNode extends BasicNode {
             public void run(Element element) throws XMLParseError {
                 java.lang.String tag = element.getTagName();
 
-                if (tag.equals("Define")) {
-                    XMLParseAction.processChildNodes(element, new XMLParseAction() {
-                        public void run(Element element) throws XMLParseError {
-                            mTypeDefList.add(DataTypeDefinition.parse(element));
-                        }
-                    });
-                } else if (tag.equals("Declare")) {
-                    XMLParseAction.processChildNodes(element, new XMLParseAction() {
-                        public void run(Element element) throws XMLParseError {
-                            VariableDefinition def = new VariableDefinition();
-                            def.parseXML(element);
-                            mVarDefList.add(def);
-                        }
-                    });
-                } else if (tag.equals("Commands")) {
-                    XMLParseAction.processChildNodes(element, new XMLParseAction() {
-                        public void run(Element element) throws XMLParseError {
-                            mCmdList.add(Command.parse(element));
-                        }
-                    });
-                } else if (tag.equals("LocalVariableBadge")) {
-                    VariableBadge varBadge = new VariableBadge("LocalVariableBadge");
+                switch (tag) {
+                    case "Define":
+                        XMLParseAction.processChildNodes(element, new XMLParseAction() {
+                            public void run(Element element) throws XMLParseError {
+                                mTypeDefList.add(DataTypeDefinition.parse(element));
+                            }
+                        });
+                        break;
+                    case "Declare":
+                        XMLParseAction.processChildNodes(element, new XMLParseAction() {
+                            public void run(Element element) throws XMLParseError {
+                                VariableDefinition def = new VariableDefinition();
+                                def.parseXML(element);
+                                mVarDefList.add(def);
+                            }
+                        });
+                        break;
+                    case "Commands":
+                        XMLParseAction.processChildNodes(element, new XMLParseAction() {
+                            public void run(Element element) throws XMLParseError {
+                                mCmdList.add(Command.parse(element));
+                            }
+                        });
+                        break;
+                    case "LocalVariableBadge": {
+                        VariableBadge varBadge = new VariableBadge("LocalVariableBadge");
 
-                    varBadge.parseXML(element);
-                    mLocalVariableBadge = varBadge;
-                } else if (tag.equals("GlobalVariableBadge")) {
-                    VariableBadge varBadge = new VariableBadge("GlobalVariableBadge");
-
-                    varBadge.parseXML(element);
-                    mGlobalVariableBadge = varBadge;
-                } else if (tag.equals("VariableBadge")) {
-
-                    // do nothing (left for old project's compatibility)
-                } else if (tag.equals("Comment")) {
-                    CommentBadge comment = new CommentBadge();
-
-                    comment.parseXML(element);
-                    comment.setParentNode(superNode);
-                    mCommentList.add(comment);
-                } else if (tag.equals("Node")) {
-                    BasicNode node = new BasicNode();
-
-                    node.parseXML(element);
-                    node.setParentNode(superNode);
-                    mNodeList.add(node);
-
-                    if (node.isHistoryNode()) {
-                        mHistoryNode = node;
+                        varBadge.parseXML(element);
+                        mLocalVariableBadge = varBadge;
+                        break;
                     }
-                } else if (tag.equals("SuperNode")) {
-                    SuperNode node = new SuperNode();
+                    case "GlobalVariableBadge": {
+                        VariableBadge varBadge = new VariableBadge("GlobalVariableBadge");
 
-                    node.parseXML(element);
-                    node.setParentNode(superNode);
-                    mSuperNodeList.add(node);
-                } else if (tag.equals("Graphics")) {
-                    mGraphics = new NodeGraphics();
-                    mGraphics.parseXML(element);
-                } else if (tag.equals("CEdge")) {
-                    GuargedEdge edge = new GuargedEdge();
+                        varBadge.parseXML(element);
+                        mGlobalVariableBadge = varBadge;
+                        break;
+                    }
+                    case "VariableBadge":
 
-                    edge.parseXML(element);
-                    edge.setSourceNode(superNode);
-                    edge.setSourceUnid(superNode.getId());
-                    mCEdgeList.add(edge);
-                } else if (tag.equals("PEdge")) {
-                    RandomEdge edge = new RandomEdge();
+                        // do nothing (left for old project's compatibility)
+                        break;
+                    case "Comment":
+                        CommentBadge comment = new CommentBadge();
 
-                    edge.parseXML(element);
-                    edge.setSourceNode(superNode);
-                    edge.setSourceUnid(superNode.getId());
-                    mPEdgeList.add(edge);
-                } else if (tag.equals("FEdge")) {
-                    ForkingEdge edge = new ForkingEdge();
+                        comment.parseXML(element);
+                        comment.setParentNode(superNode);
+                        mCommentList.add(comment);
+                        break;
+                    case "Node": {
+                        BasicNode node = new BasicNode();
 
-                    edge.parseXML(element);
-                    edge.setSourceNode(superNode);
-                    edge.setSourceUnid(superNode.getId());
-                    mFEdgeList.add(edge);
-                } else if (tag.equals("IEdge")) {
-                    InterruptEdge edge = new InterruptEdge();
+                        node.parseXML(element);
+                        node.setParentNode(superNode);
+                        mNodeList.add(node);
 
-                    edge.parseXML(element);
-                    edge.setSourceNode(superNode);
-                    edge.setSourceUnid(superNode.getId());
-                    mIEdgeList.add(edge);
-                } else if (tag.equals("EEdge")) {
-                    EpsilonEdge edge = new EpsilonEdge();
+                        if (node.isHistoryNode()) {
+                            mHistoryNode = node;
+                        }
+                        break;
+                    }
+                    case "SuperNode": {
+                        SuperNode node = new SuperNode();
 
-                    edge.parseXML(element);
-                    edge.setSourceNode(superNode);
-                    edge.setSourceUnid(superNode.getId());
-                    mDEdge = edge;
-                } else if (tag.equals("TEdge")) {
-                    TimeoutEdge edge = new TimeoutEdge();
+                        node.parseXML(element);
+                        node.setParentNode(superNode);
+                        mSuperNodeList.add(node);
+                        break;
+                    }
+                    case "Graphics":
+                        mGraphics = new NodeGraphics();
+                        mGraphics.parseXML(element);
+                        break;
+                    case "CEdge": {
+                        GuargedEdge edge = new GuargedEdge();
 
-                    edge.parseXML(element);
-                    edge.setSourceNode(superNode);
-                    edge.setSourceUnid(superNode.getId());
-                    mDEdge = edge;
-                } else {
-                    throw new XMLParseError(null,
-                            "Cannot parse the element with the tag \"" + tag
-                            + "\" into a supernode child!");
+                        edge.parseXML(element);
+                        edge.setSourceNode(superNode);
+                        edge.setSourceUnid(superNode.getId());
+                        mCEdgeList.add(edge);
+                        break;
+                    }
+                    case "PEdge": {
+                        RandomEdge edge = new RandomEdge();
+
+                        edge.parseXML(element);
+                        edge.setSourceNode(superNode);
+                        edge.setSourceUnid(superNode.getId());
+                        mPEdgeList.add(edge);
+                        break;
+                    }
+                    case "FEdge": {
+                        ForkingEdge edge = new ForkingEdge();
+
+                        edge.parseXML(element);
+                        edge.setSourceNode(superNode);
+                        edge.setSourceUnid(superNode.getId());
+                        mFEdgeList.add(edge);
+                        break;
+                    }
+                    case "IEdge": {
+                        InterruptEdge edge = new InterruptEdge();
+
+                        edge.parseXML(element);
+                        edge.setSourceNode(superNode);
+                        edge.setSourceUnid(superNode.getId());
+                        mIEdgeList.add(edge);
+                        break;
+                    }
+                    case "EEdge": {
+                        EpsilonEdge edge = new EpsilonEdge();
+
+                        edge.parseXML(element);
+                        edge.setSourceNode(superNode);
+                        edge.setSourceUnid(superNode.getId());
+                        mDEdge = edge;
+                        break;
+                    }
+                    case "TEdge": {
+                        TimeoutEdge edge = new TimeoutEdge();
+
+                        edge.parseXML(element);
+                        edge.setSourceNode(superNode);
+                        edge.setSourceUnid(superNode.getId());
+                        mDEdge = edge;
+                        break;
+                    }
+                    default:
+                        throw new XMLParseError(null,
+                                "Cannot parse the element with the tag \"" + tag
+                                        + "\" into a supernode child!");
                 }
             }
         });
@@ -559,12 +581,12 @@ public class SuperNode extends BasicNode {
         }
 
         // Add hash of all Fork Edges
-        for (int cntEdge = 0; cntEdge < mFEdgeList.size(); cntEdge++) {
+        for (ForkingEdge forkingEdge : mFEdgeList) {
 
-            hashCode += mFEdgeList.get(cntEdge).hashCode()
-                    + mFEdgeList.get(cntEdge).getGraphics().getHashCode()
-                    + mFEdgeList.get(cntEdge).getSourceUnid().hashCode()
-                    + mFEdgeList.get(cntEdge).getTargetUnid().hashCode();
+            hashCode += forkingEdge.hashCode()
+                    + forkingEdge.getGraphics().getHashCode()
+                    + forkingEdge.getSourceUnid().hashCode()
+                    + forkingEdge.getTargetUnid().hashCode();
         }
 
         // Add hash of all Interruptive Edges

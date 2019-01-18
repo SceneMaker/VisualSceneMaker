@@ -13,6 +13,7 @@ import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Scanner;
 import java.util.regex.Pattern;
 
@@ -39,11 +40,11 @@ public class TestSM3Query {
     // The Reader Scanner
     private static Scanner sScanner;
 
-    public static void main(String args[]) {
+    public static void main(String[] args) {
         try {
 
             // Initialize The Scanner
-            sScanner = new Scanner(new FileInputStream(args[0]), "UTF-8");
+            sScanner = new Scanner(new FileInputStream(args[0]), StandardCharsets.UTF_8);
 
             // Initialize The Adresses
             sLAddr = new InetSocketAddress(args[1], Integer.parseInt(args[2]));

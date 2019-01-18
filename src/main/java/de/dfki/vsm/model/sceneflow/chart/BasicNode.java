@@ -49,7 +49,7 @@ public class BasicNode implements ModelObject {
     public enum FLAVOUR {
 
         NONE, ENODE, TNODE, CNODE, PNODE, INODE, FNODE
-    };
+    }
 
     public BasicNode() {
     }
@@ -278,7 +278,7 @@ public class BasicNode implements ModelObject {
     }
 
     public ArrayList<VariableDefinition> getCopyOfVarDefList() {
-        ArrayList<VariableDefinition> copy = new ArrayList<VariableDefinition>();
+        ArrayList<VariableDefinition> copy = new ArrayList<>();
         for (VariableDefinition varDef : mVarDefList) {
             copy.add(varDef.getCopy());
         }
@@ -314,7 +314,7 @@ public class BasicNode implements ModelObject {
     }
 
     public ArrayList<Command> getCopyOfCmdList() {
-        ArrayList<Command> copy = new ArrayList<Command>();
+        ArrayList<Command> copy = new ArrayList<>();
 
         for (Command cmd : mCmdList) {
             copy.add(cmd.getCopy());
@@ -373,7 +373,7 @@ public class BasicNode implements ModelObject {
     }
 
     public void removeAllCEdges() {
-        mCEdgeList = new ArrayList<GuargedEdge>();
+        mCEdgeList = new ArrayList<>();
     }
 
     public int getSizeOfCEdgeList() {
@@ -385,7 +385,7 @@ public class BasicNode implements ModelObject {
     }
 
     public ArrayList<GuargedEdge> getCopyOfCEdgeList() {
-        ArrayList<GuargedEdge> copy = new ArrayList<GuargedEdge>();
+        ArrayList<GuargedEdge> copy = new ArrayList<>();
 
         for (GuargedEdge edge : mCEdgeList) {
             copy.add(edge.getCopy());
@@ -403,7 +403,7 @@ public class BasicNode implements ModelObject {
     }
 
     public void removeAllFEdges() {
-        mFEdgeList = new ArrayList<ForkingEdge>();
+        mFEdgeList = new ArrayList<>();
     }
 
     public ArrayList<ForkingEdge> getFEdgeList() {
@@ -423,7 +423,7 @@ public class BasicNode implements ModelObject {
     }
 
     public void removeAllPEdges() {
-        mPEdgeList = new ArrayList<RandomEdge>();
+        mPEdgeList = new ArrayList<>();
     }
 
     public int getSizeOfPEdgeList() {
@@ -435,7 +435,7 @@ public class BasicNode implements ModelObject {
     }
 
     public ArrayList<RandomEdge> getCopyOfPEdgeList() {
-        ArrayList<RandomEdge> copy = new ArrayList<RandomEdge>();
+        ArrayList<RandomEdge> copy = new ArrayList<>();
 
         for (RandomEdge edge : mPEdgeList) {
             copy.add(edge.getCopy());
@@ -457,7 +457,7 @@ public class BasicNode implements ModelObject {
     }
 
     public void removeAllIEdges() {
-        mIEdgeList = new ArrayList<InterruptEdge>();
+        mIEdgeList = new ArrayList<>();
     }
 
     public int getSizeOfIEdgeList() {
@@ -469,7 +469,7 @@ public class BasicNode implements ModelObject {
     }
 
     public ArrayList<InterruptEdge> getCopyOfIEdgeList() {
-        ArrayList<InterruptEdge> copy = new ArrayList<InterruptEdge>();
+        ArrayList<InterruptEdge> copy = new ArrayList<>();
 
         for (InterruptEdge edge : mIEdgeList) {
             copy.add(edge.getCopy());
@@ -479,23 +479,15 @@ public class BasicNode implements ModelObject {
     }
 
     public ArrayList<AbstractEdge> getEdgeList() {
-        ArrayList<AbstractEdge> edgeList = new ArrayList<AbstractEdge>();
+        ArrayList<AbstractEdge> edgeList = new ArrayList<>();
 
-        for (GuargedEdge edge : mCEdgeList) {
-            edgeList.add(edge);
-        }
+        edgeList.addAll(mCEdgeList);
 
-        for (InterruptEdge edge : mIEdgeList) {
-            edgeList.add(edge);
-        }
+        edgeList.addAll(mIEdgeList);
 
-        for (RandomEdge edge : mPEdgeList) {
-            edgeList.add(edge);
-        }
+        edgeList.addAll(mPEdgeList);
 
-        for (ForkingEdge edge : mFEdgeList) {
-            edgeList.add(edge);
-        }
+        edgeList.addAll(mFEdgeList);
 
         if (mDEdge != null) {
             edgeList.add(mDEdge);
@@ -511,7 +503,7 @@ public class BasicNode implements ModelObject {
     }
 
     public ArrayList<BasicNode> getReachableNodeList() {
-        ArrayList<BasicNode> reachableNodeList = new ArrayList<BasicNode>();
+        ArrayList<BasicNode> reachableNodeList = new ArrayList<>();
 
         reachableNodeList.add(this);
         fillReachableNodeList(reachableNodeList);
@@ -611,78 +603,95 @@ public class BasicNode implements ModelObject {
             public void run(Element element) throws XMLParseError {
                 String tag = element.getTagName();
 
-                if (tag.equals("Define")) {
-                    XMLParseAction.processChildNodes(element, new XMLParseAction() {
-                        public void run(Element element) throws XMLParseError {
-                            mTypeDefList.add(DataTypeDefinition.parse(element));
-                        }
-                    });
-                } else if (tag.equals("Declare")) {
-                    XMLParseAction.processChildNodes(element, new XMLParseAction() {
-                        @Override
-                        public void run(Element element) throws XMLParseError {
-                            VariableDefinition def = new VariableDefinition();
+                switch (tag) {
+                    case "Define":
+                        XMLParseAction.processChildNodes(element, new XMLParseAction() {
+                            public void run(Element element) throws XMLParseError {
+                                mTypeDefList.add(DataTypeDefinition.parse(element));
+                            }
+                        });
+                        break;
+                    case "Declare":
+                        XMLParseAction.processChildNodes(element, new XMLParseAction() {
+                            @Override
+                            public void run(Element element) throws XMLParseError {
+                                VariableDefinition def = new VariableDefinition();
 
-                            def.parseXML(element);
-                            mVarDefList.add(def);
-                            
-                        }
-                    });
-                } else if (tag.equals("Commands")) {
-                    XMLParseAction.processChildNodes(element, new XMLParseAction() {
-                        @Override
-                        public void run(Element element) throws XMLParseError {
-                            mCmdList.add(Command.parse(element));
-                        }
-                    });
-                } else if (tag.equals("Graphics")) {
-                    mGraphics = new NodeGraphics();
-                    mGraphics.parseXML(element);
-                } else if (tag.equals("CEdge")) {
-                    GuargedEdge edge = new GuargedEdge();
+                                def.parseXML(element);
+                                mVarDefList.add(def);
 
-                    edge.parseXML(element);
-                    edge.setSourceNode(node);
-                    edge.setSourceUnid(node.getId());
-                    mCEdgeList.add(edge);
-                } else if (tag.equals("PEdge")) {
-                    RandomEdge edge = new RandomEdge();
+                            }
+                        });
+                        break;
+                    case "Commands":
+                        XMLParseAction.processChildNodes(element, new XMLParseAction() {
+                            @Override
+                            public void run(Element element) throws XMLParseError {
+                                mCmdList.add(Command.parse(element));
+                            }
+                        });
+                        break;
+                    case "Graphics":
+                        mGraphics = new NodeGraphics();
+                        mGraphics.parseXML(element);
+                        break;
+                    case "CEdge": {
+                        GuargedEdge edge = new GuargedEdge();
 
-                    edge.parseXML(element);
-                    edge.setSourceNode(node);
-                    edge.setSourceUnid(node.getId());
-                    mPEdgeList.add(edge);
-                } else if (tag.equals("FEdge")) {
-                    ForkingEdge edge = new ForkingEdge();
+                        edge.parseXML(element);
+                        edge.setSourceNode(node);
+                        edge.setSourceUnid(node.getId());
+                        mCEdgeList.add(edge);
+                        break;
+                    }
+                    case "PEdge": {
+                        RandomEdge edge = new RandomEdge();
 
-                    edge.parseXML(element);
-                    edge.setSourceNode(node);
-                    edge.setSourceUnid(node.getId());
-                    mFEdgeList.add(edge);
-                } else if (tag.equals("IEdge")) {
-                    InterruptEdge edge = new InterruptEdge();
+                        edge.parseXML(element);
+                        edge.setSourceNode(node);
+                        edge.setSourceUnid(node.getId());
+                        mPEdgeList.add(edge);
+                        break;
+                    }
+                    case "FEdge": {
+                        ForkingEdge edge = new ForkingEdge();
 
-                    edge.parseXML(element);
-                    edge.setSourceNode(node);
-                    edge.setSourceUnid(node.getId());
-                    mIEdgeList.add(edge);
-                } else if (tag.equals("EEdge")) {
-                    EpsilonEdge edge = new EpsilonEdge();
+                        edge.parseXML(element);
+                        edge.setSourceNode(node);
+                        edge.setSourceUnid(node.getId());
+                        mFEdgeList.add(edge);
+                        break;
+                    }
+                    case "IEdge": {
+                        InterruptEdge edge = new InterruptEdge();
 
-                    edge.parseXML(element);
-                    edge.setSourceNode(node);
-                    edge.setSourceUnid(node.getId());
-                    mDEdge = edge;
-                } else if (tag.equals("TEdge")) {
-                    TimeoutEdge edge = new TimeoutEdge();
+                        edge.parseXML(element);
+                        edge.setSourceNode(node);
+                        edge.setSourceUnid(node.getId());
+                        mIEdgeList.add(edge);
+                        break;
+                    }
+                    case "EEdge": {
+                        EpsilonEdge edge = new EpsilonEdge();
 
-                    edge.parseXML(element);
-                    edge.setSourceNode(node);
-                    edge.setSourceUnid(node.getId());
-                    mDEdge = edge;
-                } else {
-                    throw new XMLParseError(null,
-                            "Cannot parse the element with the tag \"" + tag + "\" into a node child!");
+                        edge.parseXML(element);
+                        edge.setSourceNode(node);
+                        edge.setSourceUnid(node.getId());
+                        mDEdge = edge;
+                        break;
+                    }
+                    case "TEdge": {
+                        TimeoutEdge edge = new TimeoutEdge();
+
+                        edge.parseXML(element);
+                        edge.setSourceNode(node);
+                        edge.setSourceUnid(node.getId());
+                        mDEdge = edge;
+                        break;
+                    }
+                    default:
+                        throw new XMLParseError(null,
+                                "Cannot parse the element with the tag \"" + tag + "\" into a node child!");
                 }
             }
         });
@@ -700,25 +709,25 @@ public class BasicNode implements ModelObject {
                 : mGraphics.getPosition().hashCode());
 
         // Add hash of all commands inside BasicNode
-        for (int cntCommand = 0; cntCommand < mCmdList.size(); cntCommand++) {
-            hashCode += mCmdList.get(cntCommand).hashCode();
+        for (Command command : mCmdList) {
+            hashCode += command.hashCode();
         }
 
         // Add hash of all TypeDef inside BasicNode
-        for (int cntType = 0; cntType < mTypeDefList.size(); cntType++) {
-            hashCode += mTypeDefList.get(cntType).hashCode() + mTypeDefList.get(cntType).getName().hashCode()
-                    + mTypeDefList.get(cntType).toString().hashCode();
+        for (DataTypeDefinition dataTypeDefinition : mTypeDefList) {
+            hashCode += dataTypeDefinition.hashCode() + dataTypeDefinition.getName().hashCode()
+                    + dataTypeDefinition.toString().hashCode();
         }
 
         // Add hash of all Vars inside BasicNode
-        for (int cntVar = 0; cntVar < mVarDefList.size(); cntVar++) {
-            hashCode += ((mVarDefList.get(cntVar).getName() == null)
+        for (VariableDefinition variableDefinition : mVarDefList) {
+            hashCode += ((variableDefinition.getName() == null)
                     ? 0
-                    : mVarDefList.get(cntVar).getName().hashCode()) + ((mVarDefList.get(cntVar).getType() == null)
+                    : variableDefinition.getName().hashCode()) + ((variableDefinition.getType() == null)
                     ? 0
-                    : mVarDefList.get(cntVar).getType().hashCode()) + ((mVarDefList.get(cntVar).toString() == null)
+                    : variableDefinition.getType().hashCode()) + ((variableDefinition.toString() == null)
                     ? 0
-                    : mVarDefList.get(cntVar).toString().hashCode());
+                    : variableDefinition.toString().hashCode());
         }
 
         // Epsilon and Time Edges
@@ -748,9 +757,9 @@ public class BasicNode implements ModelObject {
         }
 
         // Add hash of all Fork Edges
-        for (int cntEdge = 0; cntEdge < mFEdgeList.size(); cntEdge++) {
-            hashCode += mFEdgeList.get(cntEdge).hashCode() + mFEdgeList.get(cntEdge).getGraphics().getHashCode()
-                    + mFEdgeList.get(cntEdge).getSourceUnid().hashCode() + mFEdgeList.get(cntEdge).getTargetUnid().hashCode();
+        for (ForkingEdge forkingEdge : mFEdgeList) {
+            hashCode += forkingEdge.hashCode() + forkingEdge.getGraphics().getHashCode()
+                    + forkingEdge.getSourceUnid().hashCode() + forkingEdge.getTargetUnid().hashCode();
         }
 
         return hashCode;

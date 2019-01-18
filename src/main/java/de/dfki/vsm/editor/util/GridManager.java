@@ -7,13 +7,11 @@ package de.dfki.vsm.editor.util;
 //~--- non-JDK imports --------------------------------------------------------
 
 import de.dfki.vsm.editor.Edge;
-import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.Node;
 import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
 import de.dfki.vsm.editor.util.grid.GridConstants;
 import de.dfki.vsm.editor.util.grid.GridRectangle;
 import de.dfki.vsm.model.project.EditorConfig;
-import de.dfki.vsm.model.sceneflow.chart.BasicNode;
 import de.dfki.vsm.model.sceneflow.chart.SuperNode;
 import de.dfki.vsm.model.sceneflow.chart.graphics.workspace.WorkAreaSize;
 import de.dfki.vsm.model.sceneflow.chart.graphics.workspace.WorkSpaceInitNodeSize;
@@ -290,11 +288,11 @@ public class GridManager {
         }
 
         if (isDockingView) {
-            for (int i = 0; i < this.dockingPoints.size(); i++) {
+            for (Point2D dockingPoint : this.dockingPoints) {
                 g2d.setColor(new Color(0, 0, 255, 255));
                 g2d.setBackground(new Color(0, 0, 255, 255));
-                g2d.drawOval((int) Math.round(this.dockingPoints.get(i).getX() - 10),
-                             (int) Math.round(this.dockingPoints.get(i).getY() - 10), 20, 20);
+                g2d.drawOval((int) Math.round(dockingPoint.getX() - 10),
+                        (int) Math.round(dockingPoint.getY() - 10), 20, 20);
             }
         }
     }

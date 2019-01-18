@@ -51,18 +51,10 @@ public abstract class Dialog extends JDialog {
     protected void packComponents() {
 
         // Register key listener for ESCAPE
-        getRootPane().registerKeyboardAction(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                cancelActionPerformed();
-            }
-        }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0, true), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        getRootPane().registerKeyboardAction(e -> cancelActionPerformed(), KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0, true), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
 
         // Register key listener for ENTER
-        getRootPane().registerKeyboardAction(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                okActionPerformed();
-            }
-        }, KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0, true), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        getRootPane().registerKeyboardAction(e -> okActionPerformed(), KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0, true), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
 
         // Pack components
         mMainPanel.setBackground(Color.white);
@@ -79,18 +71,10 @@ public abstract class Dialog extends JDialog {
     protected void packComponents(int width, int height) {
 
         // Register key listener for ESCAPE
-        getRootPane().registerKeyboardAction(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                cancelActionPerformed();
-            }
-        }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0, true), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        getRootPane().registerKeyboardAction(e -> cancelActionPerformed(), KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0, true), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
 
         // Register key listener for ENTER
-        getRootPane().registerKeyboardAction(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                okActionPerformed();
-            }
-        }, KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0, true), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        getRootPane().registerKeyboardAction(e -> okActionPerformed(), KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0, true), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
 
         // Pack components
         mMainPanel.setBackground(Color.white);

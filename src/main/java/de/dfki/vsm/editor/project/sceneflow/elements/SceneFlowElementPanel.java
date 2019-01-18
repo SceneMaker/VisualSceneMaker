@@ -33,9 +33,7 @@ import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.JMenuItem;
@@ -91,7 +89,7 @@ public final class SceneFlowElementPanel extends JScrollPane {
  */
 class ElementTree extends JTree implements ActionListener, TreeSelectionListener {
     //List of scene elements
-    private final ArrayList<TreeEntry> mSceneEntryList = new ArrayList<TreeEntry>();
+    private final ArrayList<TreeEntry> mSceneEntryList = new ArrayList<>();
     //Tree entry for scenes
     private final TreeEntry mSceneFlowEntry = new TreeEntry("Scenes", null, null);
     //Tree entry for functions
@@ -125,7 +123,7 @@ class ElementTree extends JTree implements ActionListener, TreeSelectionListener
     public void updateFunctions() {
         mFunctionsEntry.removeAllChildren();
 
-        List<FunctionDefinition> functionDefinitions = new ArrayList<FunctionDefinition>(mSceneFlow.getUsrCmdDefMap().values());
+        List<FunctionDefinition> functionDefinitions = new ArrayList<>(mSceneFlow.getUsrCmdDefMap().values());
 
         Collections.sort(functionDefinitions);
 
@@ -302,12 +300,12 @@ class ElementTree extends JTree implements ActionListener, TreeSelectionListener
      */
     private void updateSceneList() {
         // System.out.println("Updating Scenes");
-        for (int i = 0; i < mSceneEntryList.size(); i++) {
-            mSceneEntryList.get(i).removeAllChildren();
+        for (TreeEntry treeEntry : mSceneEntryList) {
+            treeEntry.removeAllChildren();
 
-            if (mSceneEntryList.get(i).isNodeChild(mSceneFlowEntry)) {
+            if (treeEntry.isNodeChild(mSceneFlowEntry)) {
 
-                mSceneFlowEntry.remove(mSceneEntryList.get(i));
+                mSceneFlowEntry.remove(treeEntry);
             }
         }
         
@@ -319,7 +317,7 @@ class ElementTree extends JTree implements ActionListener, TreeSelectionListener
                 for (SceneGroup group : sceneScript.getOrderedGroupSet().descendingSet()) {
                     ArrayList<SceneObject> whiteList = group.getWhiteList();
                     ArrayList<SceneObject> blackList = group.getBlackList();
-                    ArrayList<String> languageList = new ArrayList<String>();
+                    ArrayList<String> languageList = new ArrayList<>();
 
 //                    if (mSceneFlowEntry.isNodeDescendant(mSceneListEntry)) {
 //                        mSceneFlowEntry.remove(mSceneListEntry);
@@ -563,16 +561,13 @@ class ElementTree extends JTree implements ActionListener, TreeSelectionListener
         };
 
         // Install the drag gesture listener
-        mDragGestureListener = new DragGestureListener() {
-            @Override
-            public void dragGestureRecognized(DragGestureEvent event) {
+        mDragGestureListener = event -> {
 
-                // TODO: NULLPOINTEREXCEPTION abfangen
+            // TODO: NULLPOINTEREXCEPTION abfangen
 
-                TreeEntry selectedEntry = (TreeEntry) getSelectionPath().getLastPathComponent();
+            TreeEntry selectedEntry = (TreeEntry) getSelectionPath().getLastPathComponent();
 
-                mDragSource.startDrag(event, DragSource.DefaultCopyDrop, selectedEntry, mDragSourceListener);
-            }
+            mDragSource.startDrag(event, DragSource.DefaultCopyDrop, selectedEntry, mDragSourceListener);
         };
 
         // Set the acceptable actions
@@ -585,8 +580,8 @@ class ElementTree extends JTree implements ActionListener, TreeSelectionListener
     public boolean isSceneLanguageAlreadyExist(String language) {
         boolean isLang = false;
 
-        for (int i = 0; i < mSceneEntryList.size(); i++) {
-            if (mSceneEntryList.get(i).getText().equals("Scenes (" + language + ")")) {
+        for (TreeEntry treeEntry : mSceneEntryList) {
+            if (treeEntry.getText().equals("Scenes (" + language + ")")) {
                 isLang = true;
             }
         }
@@ -595,12 +590,12 @@ class ElementTree extends JTree implements ActionListener, TreeSelectionListener
     }
 
     public TreeEntry getSceneEntry(String language) {
-        for (int i = 0; i < mSceneEntryList.size(); i++) {
+        for (TreeEntry treeEntry : mSceneEntryList) {
 
-//          System.out.println("Compare: " + mSceneListEntry.get(i).getText() + 
+//          System.out.println("Compare: " + mSceneListEntry.get(i).getText() +
 //                  " with " + "Scenes (" + language + ")");
-            if (mSceneEntryList.get(i).getText().equals("Scenes (" + language + ")")) {
-                return mSceneEntryList.get(i);
+            if (treeEntry.getText().equals("Scenes (" + language + ")")) {
+                return treeEntry;
             }
         }
 

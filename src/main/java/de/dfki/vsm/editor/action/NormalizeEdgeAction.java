@@ -8,8 +8,6 @@ package de.dfki.vsm.editor.action;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.editor.Edge;
-import de.dfki.vsm.editor.Node;
 import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
 import de.dfki.vsm.editor.util.grid.AStarEdgeFinder;
 import de.dfki.vsm.editor.util.grid.BezierFit;
@@ -51,16 +49,14 @@ public class NormalizeEdgeAction {
     }
 
     public ActionListener getActionListener() {
-        return new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                recalculateWeight();
-                setEdgePath();
+        return event -> {
+            recalculateWeight();
+            setEdgePath();
 
-                // mGUIEdge.straightenEdge();
-                // renew graphical representation on work space
-                mWorkSpace.revalidate();
-                mWorkSpace.repaint(100);
-            }
+            // mGUIEdge.straightenEdge();
+            // renew graphical representation on work space
+            mWorkSpace.revalidate();
+            mWorkSpace.repaint(100);
         };
     }
 
@@ -187,7 +183,7 @@ public class NormalizeEdgeAction {
 //          aStarPath.printPath(gridSource.getColumnIndex(), gridSource.getRowIndex(), 
 //                  gridDestination.getColumnIndex(), gridDestination.getRowIndex());
             // Calculate the control point of the bezier curve that should be made
-            ArrayList<BezierPoint> pathPoints       = new ArrayList<BezierPoint>();
+            ArrayList<BezierPoint> pathPoints       = new ArrayList<>();
             int                    deviationSourceX = 0;
             int                    deviationSourceY = 0;
             int                    deviationTargetX = 0;

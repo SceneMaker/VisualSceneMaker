@@ -12,7 +12,6 @@ import de.dfki.vsm.Preferences;
 import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.event.ElementEditorToggledEvent;
 import de.dfki.vsm.editor.event.NodeSelectedEvent;
-import de.dfki.vsm.editor.project.ProjectEditor;
 import de.dfki.vsm.editor.util.SceneFlowManager;
 import de.dfki.vsm.model.sceneflow.chart.SceneFlow;
 import de.dfki.vsm.model.sceneflow.chart.SuperNode;
@@ -27,7 +26,6 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.Polygon;
@@ -231,17 +229,12 @@ public final class SceneFlowEditor extends JPanel implements EventListener
         }
         add(mSplitPane, BorderLayout.CENTER);
 
-        mSplitPane.addPropertyChangeListener(JSplitPane.DIVIDER_LOCATION_PROPERTY, new PropertyChangeListener()
-        {
-            @Override
-            public void propertyChange(PropertyChangeEvent pce)
-            {
+        mSplitPane.addPropertyChangeListener(JSplitPane.DIVIDER_LOCATION_PROPERTY, pce -> {
 
-                // solve issue here
-                if (Preferences.getProperty("showelementproperties").equals("true"))
-                {
-                    mEditorProject.getEditorConfig().setProperty("propertiesdividerlocation", "" + mSplitPane.getDividerLocation());
-                }
+            // solve issue here
+            if (Preferences.getProperty("showelementproperties").equals("true"))
+            {
+                mEditorProject.getEditorConfig().setProperty("propertiesdividerlocation", "" + mSplitPane.getDividerLocation());
             }
         });
 
@@ -468,10 +461,10 @@ public final class SceneFlowEditor extends JPanel implements EventListener
     class SceneFlowImage extends TransferHandler implements Transferable
     {
 
-        private final DataFlavor flavors[] =
-        {
-            DataFlavor.imageFlavor
-        };
+        private final DataFlavor[] flavors =
+                {
+                        DataFlavor.imageFlavor
+                };
         private JPanel source;
         private Image image;
 
@@ -482,19 +475,16 @@ public final class SceneFlowEditor extends JPanel implements EventListener
         }
 
         @Override
-        public boolean canImport(JComponent comp, DataFlavor flavor[])
+        public boolean canImport(JComponent comp, DataFlavor[] flavor)
         {
             if (!(comp instanceof JPanel))
             {
                 return false;
             }
 
-            for (int i = 0, n = flavor.length; i < n; i++)
-            {
-                for (int j = 0, m = flavors.length; j < m; j++)
-                {
-                    if (flavor[i].equals(flavors[j]))
-                    {
+            for (DataFlavor dataFlavor : flavor) {
+                for (DataFlavor flavor1 : flavors) {
+                    if (dataFlavor.equals(flavor1)) {
                         return true;
                     }
                 }
@@ -541,9 +531,7 @@ public final class SceneFlowEditor extends JPanel implements EventListener
                         panel.paint(image.getGraphics());
 
                         return true;
-                    } catch (UnsupportedFlavorException ignored)
-                    {
-                    } catch (IOException ignored)
+                    } catch (UnsupportedFlavorException | IOException ignored)
                     {
                     }
                 }

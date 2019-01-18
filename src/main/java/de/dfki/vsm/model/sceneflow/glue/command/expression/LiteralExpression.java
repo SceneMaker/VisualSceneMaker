@@ -20,23 +20,30 @@ public abstract class LiteralExpression extends Expression {
     public static LiteralExpression parse(final Element element) throws XMLParseError {
         LiteralExpression literal;
         final String tag = element.getTagName();
-        if (tag.equals("IntLiteral")) {
-            literal = new IntLiteral();
-            literal.parseXML(element);
-        } else if (tag.equals("FloatLiteral")) {
-            literal = new FloatLiteral();
-            literal.parseXML(element);
-        } else if (tag.equals("BoolLiteral")) {
-            literal = new BoolLiteral();
-            literal.parseXML(element);
-        } else if (tag.equals("StringLiteral")) {
-            literal = new StringLiteral();
-            literal.parseXML(element);
-        } else if (tag.equals("NullLiteral")) {
-            literal = new NullLiteral();
-            literal.parseXML(element);
-        } else {
-            literal = null;
+        switch (tag) {
+            case "IntLiteral":
+                literal = new IntLiteral();
+                literal.parseXML(element);
+                break;
+            case "FloatLiteral":
+                literal = new FloatLiteral();
+                literal.parseXML(element);
+                break;
+            case "BoolLiteral":
+                literal = new BoolLiteral();
+                literal.parseXML(element);
+                break;
+            case "StringLiteral":
+                literal = new StringLiteral();
+                literal.parseXML(element);
+                break;
+            case "NullLiteral":
+                literal = new NullLiteral();
+                literal.parseXML(element);
+                break;
+            default:
+                literal = null;
+                break;
         }
         return literal;
     }

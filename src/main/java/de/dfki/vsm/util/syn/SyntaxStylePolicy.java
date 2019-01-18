@@ -21,10 +21,7 @@ import java.net.URL;
 
 import java.util.HashMap;
 
-import javax.swing.text.AttributeSet;
 import javax.swing.text.Segment;
-import javax.swing.text.SimpleAttributeSet;
-import javax.swing.text.StyleConstants;
 import javax.swing.text.TabExpander;
 import javax.swing.text.Utilities;
 

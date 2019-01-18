@@ -6,30 +6,14 @@ import de.dfki.vsm.runtime.activity.AbstractActivity;
 import de.dfki.vsm.runtime.activity.SpeechActivity;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
 import de.dfki.vsm.runtime.activity.scheduler.ActivityWorker;
-import de.dfki.vsm.runtime.interpreter.value.AbstractValue;
 import de.dfki.vsm.runtime.interpreter.value.StringValue;
-import de.dfki.vsm.runtime.interpreter.value.StructValue;
 import de.dfki.vsm.runtime.project.RunTimeProject;
-import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
-import de.dfki.vsm.util.xml.XMLUtilities;
-import de.dfki.vsm.xtension.tricatworld.xml.command.TriCatWorldCommand;
-import de.dfki.vsm.xtension.tricatworld.xml.command.object.TriCatWorldCmdObject;
-import de.dfki.vsm.xtension.tricatworld.xml.command.object.action.TriCatWorldActObject;
-import de.dfki.vsm.xtension.tricatworld.xml.feedback.TriCatWorldFeedback;
-import de.dfki.vsm.xtension.tricatworld.xml.util.ActionLoader;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
+
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map.Entry;
-import java.util.Properties;
 
 /**
  * @author Gregor Mehlmann, Patrick Gebhard

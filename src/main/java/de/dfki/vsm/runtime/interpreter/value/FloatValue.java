@@ -19,7 +19,7 @@ public class FloatValue extends AbstractValue {
     }
 
     public String getAbstractSyntax() {
-        return "FloatValue(" + Float.toString(mValue) + ")";
+        return "FloatValue(" + mValue + ")";
     }
 
     // TODO: format character
@@ -29,11 +29,11 @@ public class FloatValue extends AbstractValue {
 
     // TODO: format character
     public String getFormattedSyntax() {
-        return "#c#" + Float.toString(mValue);
+        return "#c#" + mValue;
     }
 
     public Float getValue() {
-        return Float.valueOf(mValue);
+        return mValue;
     }
 
     public FloatValue getCopy() {

@@ -39,7 +39,7 @@ public final class FloatLiteral extends LiteralExpression {
 
     @Override
     public final String getFormattedSyntax() {
-        return "#c#" + Float.toString(mValue);
+        return "#c#" + mValue;
     }
 
     @Override

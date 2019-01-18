@@ -38,16 +38,16 @@ public final class ScriptLexxer extends SyntaxDocLexxer {
   public static final int YY_ERROR_STATE = 26;
   public static final int YY_VARIABLE = 22;
 
-  /**
-   * ZZ_LEXSTATE[l] is the state in the DFA for the lexical state l
-   * ZZ_LEXSTATE[l+1] is the state in the DFA for the lexical state l
-   *                  at the beginning of a line
-   * l is of the form l = 2*k, k a non negative integer
-   */
-  private static final int ZZ_LEXSTATE[] = { 
-     0,  0,  1,  1,  2,  2,  3,  3,  4,  4,  5,  5,  6,  6,  7,  7, 
-     8,  8,  9,  9, 10, 10, 11, 11, 12, 12, 13, 13, 14, 14, 15, 15
-  };
+    /**
+     * ZZ_LEXSTATE[l] is the state in the DFA for the lexical state l
+     * ZZ_LEXSTATE[l+1] is the state in the DFA for the lexical state l
+     * at the beginning of a line
+     * l is of the form l = 2*k, k a non negative integer
+     */
+    private static final int[] ZZ_LEXSTATE = {
+            0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7,
+            8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13, 14, 14, 15, 15
+    };
 
   /** 
    * Translates characters to character classes
@@ -262,12 +262,12 @@ public final class ScriptLexxer extends SyntaxDocLexxer {
   private static final int ZZ_NO_MATCH = 1;
   private static final int ZZ_PUSHBACK_2BIG = 2;
 
-  /* error messages for the codes above */
-  private static final String ZZ_ERROR_MSG[] = {
-    "Unkown internal scanner error",
-    "Error: could not match input",
-    "Error: pushback value was too large"
-  };
+    /* error messages for the codes above */
+    private static final String[] ZZ_ERROR_MSG = {
+            "Unkown internal scanner error",
+            "Error: could not match input",
+            "Error: pushback value was too large"
+    };
 
   /**
    * ZZ_ATTRIBUTE[aState] contains the attributes of state <code>aState</code>
@@ -310,9 +310,11 @@ public final class ScriptLexxer extends SyntaxDocLexxer {
   /** the current lexical state */
   private int zzLexicalState = YYINITIAL;
 
-  /** this buffer contains the current text to be matched and is
-      the source of the yytext() string */
-  private char zzBuffer[] = new char[ZZ_BUFFERSIZE];
+    /**
+     * this buffer contains the current text to be matched and is
+     * the source of the yytext() string
+     */
+    private char[] zzBuffer = new char[ZZ_BUFFERSIZE];
 
   /** the textposition at the last accepting state */
   private int zzMarkedPos;
@@ -495,7 +497,7 @@ public final class ScriptLexxer extends SyntaxDocLexxer {
     /* is the buffer big enough? */
     if (zzCurrentPos >= zzBuffer.length) {
       /* if not: blow it up */
-      char newBuffer[] = new char[zzCurrentPos*2];
+        char[] newBuffer = new char[zzCurrentPos * 2];
       System.arraycopy(zzBuffer, 0, newBuffer, 0, zzBuffer.length);
       zzBuffer = newBuffer;
     }

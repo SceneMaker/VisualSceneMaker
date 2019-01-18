@@ -14,6 +14,7 @@ import java.io.OutputStream;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -196,7 +197,7 @@ public final class XMLUtilities {
     public final static boolean writeToXMLStream(final Properties properties, final OutputStream stream) {
         try {
             // Write the java properties to the stream
-            properties.storeToXML(stream, "", "UTF-8");
+            properties.storeToXML(stream, "", StandardCharsets.UTF_8);
             // Flush and close the stream and the file
             stream.flush();
             stream.close();
@@ -269,7 +270,7 @@ public final class XMLUtilities {
             //mLogger.warning("Pretty Printing '" + string + "'");
             // Get the string input stream
             final ByteArrayInputStream stream = new ByteArrayInputStream(
-                    string.replaceAll(">\\s*<", "><").getBytes("UTF-8"));
+                    string.replaceAll(">\\s*<", "><").getBytes(StandardCharsets.UTF_8));
             // Construct the XML pipeline
             final DocumentBuilder parser
                     = DocumentBuilderFactory.newInstance().newDocumentBuilder();

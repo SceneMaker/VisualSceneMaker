@@ -25,10 +25,10 @@ public class TextFormat {
      *
      */
     public static ArrayList<TPLTuple<String, AttributedString>> getPairList(ArrayList<String> formattedStringList) {
-        ArrayList<TPLTuple<String, AttributedString>> pairList = new ArrayList<TPLTuple<String, AttributedString>>();
+        ArrayList<TPLTuple<String, AttributedString>> pairList = new ArrayList<>();
 
-        for (int i = 0; i < formattedStringList.size(); i++) {
-            TPLTuple<String, AttributedString> pair = fillWithAttributes(formattedStringList.get(i));
+        for (String s : formattedStringList) {
+            TPLTuple<String, AttributedString> pair = fillWithAttributes(s);
 
             pairList.add(pair);
         }
@@ -81,9 +81,9 @@ public class TextFormat {
 
             //
             TPLTuple<Integer, Integer> position
-                    = new TPLTuple<Integer, Integer>(
-                            unformattedString.length() + preString.length(),
-                            unformattedString.length() + preString.length() + subString.length());
+                    = new TPLTuple<>(
+                    unformattedString.length() + preString.length(),
+                    unformattedString.length() + preString.length() + subString.length());
 
             if (c == 'b') {
                 // Highlight with bold weight
@@ -170,21 +170,20 @@ public class TextFormat {
         }
 
         // Fill the attributed string with attributes
-        Iterator it = attributeMap.entrySet().iterator();
 
-        while (it.hasNext()) {
-            Map.Entry entry = (Map.Entry) it.next();
+        for (Map.Entry<TPLTuple<TextAttribute, Object>, TPLTuple<Integer, Integer>> tplTupleTPLTupleEntry : attributeMap.entrySet()) {
+            Map.Entry entry = (Map.Entry) tplTupleTPLTupleEntry;
             TPLTuple<TextAttribute, Object> key = (TPLTuple<TextAttribute, Object>) entry.getKey();
             TPLTuple<Integer, Integer> value = (TPLTuple<Integer, Integer>) entry.getValue();
 
             attributedString.addAttribute(key.getFirst(), key.getSecond(), value.getFirst(), value.getSecond());
         }
 
-        return new TPLTuple<String, AttributedString>(unformattedString, attributedString);
+        return new TPLTuple<>(unformattedString, attributedString);
     }
 
     public static String formatConstantStringLiteral(String valueString) {
-        ArrayList<Character> charList = new ArrayList<Character>();
+        ArrayList<Character> charList = new ArrayList<>();
         char[] charArray = valueString.toCharArray();
 
         for (int i = 0; i < charArray.length; i++) {

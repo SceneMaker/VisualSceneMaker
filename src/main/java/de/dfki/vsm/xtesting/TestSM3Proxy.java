@@ -14,6 +14,7 @@ import java.io.OutputStreamWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+import java.nio.charset.StandardCharsets;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -37,7 +38,7 @@ public class TestSM3Proxy {
     private static Socket sSocket;
 
     // Start H3D Proxy
-    public static void main(String args[]) {
+    public static void main(String[] args) {
         try {
 
             // Initialize The Server Socket
@@ -84,9 +85,9 @@ public class TestSM3Proxy {
 
                     // Establish IO Channels
                     final BufferedReader reader = new BufferedReader(new InputStreamReader(sSocket.getInputStream(),
-                                                      "UTF-8"));
+                            StandardCharsets.UTF_8));
                     final BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(sSocket.getOutputStream(),
-                                                      "UTF-8"));
+                            StandardCharsets.UTF_8));
 
                     // Print Some Information
                     sLogger.message("Executing H3DProxy Connection");

@@ -13,6 +13,7 @@ import de.dfki.vsm.xtension.ssi.util.property.SSIProjectProperty;
 
 import java.io.IOException;
 import java.net.*;
+import java.nio.charset.StandardCharsets;
 import java.util.Enumeration;
 import java.util.Map;
 
@@ -144,7 +145,7 @@ public final class SSICmdExecutor extends ActivityExecutor implements Exportable
                 try {
                     final DatagramSocket socket = new DatagramSocket();
                     // Receive the datagram packet
-                    final byte[] buffer = line.getBytes("UTF-8");
+                    final byte[] buffer = line.getBytes(StandardCharsets.UTF_8);
                     // Create the UDP packet
                     final DatagramPacket packet
                             = new DatagramPacket(buffer, buffer.length,
@@ -173,7 +174,7 @@ public final class SSICmdExecutor extends ActivityExecutor implements Exportable
         try {
             final DatagramSocket socket = new DatagramSocket();
             // Receive the datagram packet
-            final byte[] buffer = line.getBytes("UTF-8");
+            final byte[] buffer = line.getBytes(StandardCharsets.UTF_8);
             // Create the UDP packet
             final DatagramPacket packet
                     = new DatagramPacket(buffer, buffer.length,
@@ -196,9 +197,9 @@ public final class SSICmdExecutor extends ActivityExecutor implements Exportable
 
             long timestamp = System.currentTimeMillis();
 
-            byte[] sendData = (message).getBytes("UTF8");
+            byte[] sendData = (message).getBytes(StandardCharsets.UTF_8);
 
-            String hosts = "";
+            StringBuilder hosts = new StringBuilder();
 
             Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
             while (interfaces.hasMoreElements()) {
@@ -219,7 +220,7 @@ public final class SSICmdExecutor extends ActivityExecutor implements Exportable
                     try {
                         DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, broadcast, Integer.valueOf(mBroadCastPort));
                         c.send(sendPacket);
-                        hosts = hosts + broadcast.getHostAddress() + ", ";
+                        hosts.append(broadcast.getHostAddress()).append(", ");
                         // disabled due to saving logging space PG 11.17 mLogger.message(message + " sent to " + broadcast.getHostAddress() + " on interface " + networkInterface.getDisplayName());
                         packetSend = true;
                     } catch (Exception e) {

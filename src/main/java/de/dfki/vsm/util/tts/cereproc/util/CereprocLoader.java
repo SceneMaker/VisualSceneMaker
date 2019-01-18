@@ -46,7 +46,7 @@ public class CereprocLoader {
 
         final String rate_str = cerevoice_eng.CPRCEN_channel_get_voice_info(eng, chan_handle, "SAMPLE_RATE");
         final Float rate = new Float(rate_str);
-        return new Audioline(rate.floatValue());
+        return new Audioline(rate);
     }
 
     private void openDefaultChannel() {

@@ -1,6 +1,5 @@
 package de.dfki.vsm.xtension.charamel.xml.command;
 
-import de.dfki.vsm.xtension.tricatworld.xml.command.*;
 import de.dfki.vsm.xtension.tricatworld.xml.command.object.TriCatWorldCmdObject;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.log.LOGConsoleLogger;

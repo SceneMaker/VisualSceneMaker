@@ -7,11 +7,6 @@ import de.dfki.vsm.xtension.remote.server.ServerThread;
 import de.dfki.vsm.xtension.remote.server.factories.ParserFactory;
 import de.dfki.vsm.xtension.remote.server.factories.VariableSetterParser;
 import de.dfki.vsm.xtension.remote.server.receiver.DataReceiver;
-import de.dfki.vsm.xtension.remote.server.socketserver.Servable;
-import de.dfki.vsm.xtension.remote.server.socketserver.tcpip.TCPIPServerController;
-import de.dfki.vsm.xtension.remote.server.socketserver.udp.UDPServer;
-
-import java.io.IOException;
 
 
 /**

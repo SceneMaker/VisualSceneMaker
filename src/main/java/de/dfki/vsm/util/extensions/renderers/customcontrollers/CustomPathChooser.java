@@ -1,7 +1,6 @@
 package de.dfki.vsm.util.extensions.renderers.customcontrollers;
 
 import de.dfki.vsm.util.extensions.renderers.customcontrollers.pathchoosers.*;
-import de.dfki.vsm.util.extensions.renderers.customcontrollers.pathchoosers.CustomDirectoryChooser;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Node;
@@ -31,15 +30,12 @@ public class CustomPathChooser {
         labelSelectedDirectory = new TextField();
         Button btnOpenDirectoryChooser = new Button();
         btnOpenDirectoryChooser.setText("...");
-        btnOpenDirectoryChooser.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent event) {
-                File selectedDirectory = pathChooser.showDialog();
-                if(selectedDirectory == null){
-                    labelSelectedDirectory.setText("No Directory selected");
-                }else{
-                    labelSelectedDirectory.setText(selectedDirectory.getAbsolutePath());
-                }
+        btnOpenDirectoryChooser.setOnAction(event -> {
+            File selectedDirectory = pathChooser.showDialog();
+            if(selectedDirectory == null){
+                labelSelectedDirectory.setText("No Directory selected");
+            }else{
+                labelSelectedDirectory.setText(selectedDirectory.getAbsolutePath());
             }
         });
 

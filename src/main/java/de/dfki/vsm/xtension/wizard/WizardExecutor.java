@@ -257,17 +257,13 @@ public final class WizardExecutor extends ActivityExecutor {
     private void initComponents() {
         // Create the user status panel ////////////////////////////////////////
         mUserStateButton = new JButton();
-        mUserStateButton.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                //final String userState = (String) mRunTime.getValueOf(mProject, "UserState").getValue();
-                //if (userState.equals("present")) {
-                //    mPlayer.event("state", "user", "leave");
-                //} else {
-                //    mPlayer.event("state", "user", "enter");
-                //}
-            }
+        mUserStateButton.addActionListener(e -> {
+            //final String userState = (String) mRunTime.getValueOf(mProject, "UserState").getValue();
+            //if (userState.equals("present")) {
+            //    mPlayer.event("state", "user", "leave");
+            //} else {
+            //    mPlayer.event("state", "user", "enter");
+            //}
         });
         mUserActLabel = new JLabel("Action:");
         mUserRoleLabel = new JLabel("Role:");
@@ -282,52 +278,28 @@ public final class WizardExecutor extends ActivityExecutor {
 
         // Create the user signal panel ////////////////////////////////////////
         mUserRequestButton = new JButton("Request");
-        mUserRequestButton.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                //mPlayer.event("turn", "user", "request");
-            }
+        mUserRequestButton.addActionListener(e -> {
+            //mPlayer.event("turn", "user", "request");
         });
         mUserAcceptButton = new JButton("Accept");
-        mUserAcceptButton.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                //mPlayer.event("turn", "user", "accept");
-            }
+        mUserAcceptButton.addActionListener(e -> {
+            //mPlayer.event("turn", "user", "accept");
         });
         mUserRejectButton = new JButton("Reject");
-        mUserRejectButton.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                //mPlayer.event("turn", "user", "reject");
-            }
+        mUserRejectButton.addActionListener(e -> {
+            //mPlayer.event("turn", "user", "reject");
         });
         mUserOfferButton = new JButton("Offer");
-        mUserOfferButton.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                //mPlayer.event("turn", "user", "offer");
-            }
+        mUserOfferButton.addActionListener(e -> {
+            //mPlayer.event("turn", "user", "offer");
         });
         mUserLeaveButton = new JButton("Leave");
-        mUserLeaveButton.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                //mPlayer.event("turn", "user", "leave");
-            }
+        mUserLeaveButton.addActionListener(e -> {
+            //mPlayer.event("turn", "user", "leave");
         });
         mUserClaimButton = new JButton("Claim");
-        mUserClaimButton.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                //mPlayer.event("turn", "user", "claim");
-            }
+        mUserClaimButton.addActionListener(e -> {
+            //mPlayer.event("turn", "user", "claim");
         });
         mUserSignalPanel = new JPanel();
         mUserSignalPanel.setLayout(new GridLayout(2, 3));
@@ -344,17 +316,13 @@ public final class WizardExecutor extends ActivityExecutor {
         mUserVoiceLabel.setBounds(5, 30, 100, 25);
         mUserVoiceLabel.setBorder(BorderFactory.createEmptyBorder());
         mUserVoiceButton = new JButton();
-        mUserVoiceButton.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                //final String userVoice = (String) mRunTime.getValueOf(mProject, "UserVoice").getValue();
-                //if (userVoice.equals("speaking")) {
-                //    mPlayer.event("voice", "user", "stop");
-                //} else {
-                //    mPlayer.event("voice", "user", "start");
-                //}
-            }
+        mUserVoiceButton.addActionListener(e -> {
+            //final String userVoice = (String) mRunTime.getValueOf(mProject, "UserVoice").getValue();
+            //if (userVoice.equals("speaking")) {
+            //    mPlayer.event("voice", "user", "stop");
+            //} else {
+            //    mPlayer.event("voice", "user", "start");
+            //}
         });
         mUserVerbalPanel = new JPanel();
         mUserVerbalPanel.setLayout(new GridLayout());
@@ -370,28 +338,20 @@ public final class WizardExecutor extends ActivityExecutor {
         mExpressionCombo.setBackground(Color.WHITE);
         mExpressionCombo.setBounds(250, 65, 100, 25);
         mExpressionCombo.setBorder(BorderFactory.createEtchedBorder());
-        mExpressionCombo.addItemListener(new ItemListener() {
-
-            @Override
-            public void itemStateChanged(final ItemEvent event) {
-                //if (event.getStateChange() == ItemEvent.SELECTED) {
-                //    mPlayer.event("facs", "user", ((String) event.getItem()));
-                //}
-            }
+        mExpressionCombo.addItemListener(event -> {
+            //if (event.getStateChange() == ItemEvent.SELECTED) {
+            //    mPlayer.event("facs", "user", ((String) event.getItem()));
+            //}
         });
         mEyegazeLabel = new JLabel("Eyegaze:");
         mEyegazeLabel.setBorder(BorderFactory.createEmptyBorder());
         mEyegazeCombo = new JComboBox(mObjectModel);
         mEyegazeCombo.setBackground(Color.WHITE);
         mEyegazeCombo.setBorder(BorderFactory.createEtchedBorder());
-        mEyegazeCombo.addItemListener(new ItemListener() {
-
-            @Override
-            public void itemStateChanged(final ItemEvent event) {
-                //if (event.getStateChange() == ItemEvent.SELECTED) {
-                //    mPlayer.event("gaze", "user", ((String) event.getItem()));
-                //}
-            }
+        mEyegazeCombo.addItemListener(event -> {
+            //if (event.getStateChange() == ItemEvent.SELECTED) {
+            //    mPlayer.event("gaze", "user", ((String) event.getItem()));
+            //}
         });
 
         mUserElicitLabel = new JLabel("Feedback:");
@@ -399,12 +359,8 @@ public final class WizardExecutor extends ActivityExecutor {
         mUserElicitButton = new JButton("Elicit:");
         mUserElicitButton.setBackground(Color.WHITE);
         mUserElicitButton.setBorder(BorderFactory.createEmptyBorder());
-        mUserElicitButton.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                // mPlayer.event("feedback", "user", "elicit");
-            }
+        mUserElicitButton.addActionListener(e -> {
+            // mPlayer.event("feedback", "user", "elicit");
         });
 
         mAffectLabel = new JLabel("Activity:");
@@ -412,14 +368,10 @@ public final class WizardExecutor extends ActivityExecutor {
         mAffectSlider = new JSlider(JSlider.HORIZONTAL);
         mAffectSlider.setBackground(Color.WHITE);
         mAffectSlider.setBorder(BorderFactory.createEmptyBorder());
-        mAffectSlider.addChangeListener(new ChangeListener() {
-
-            @Override
-            public void stateChanged(final ChangeEvent event) {
-                //if (!mAffectSlider.getValueIsAdjusting()) {
-                //    mPlayer.event("mood", "user", String.valueOf(mAffectSlider.getValue()));
-                //}
-            }
+        mAffectSlider.addChangeListener(event -> {
+            //if (!mAffectSlider.getValueIsAdjusting()) {
+            //    mPlayer.event("mood", "user", String.valueOf(mAffectSlider.getValue()));
+            //}
         });
         mUserNonverbPanel = new JPanel();
         mUserNonverbPanel.setLayout(new GridLayout(4, 3));
@@ -442,18 +394,14 @@ public final class WizardExecutor extends ActivityExecutor {
 
         // Create the agent status panel ///////////////////////////////////////
         mAgentStateButton = new JButton();
-        mAgentStateButton.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                //final String agentState = (String) mRunTime.getValueOf(mProject, "AgentState").getValue();
-                // TODO: get variable values from interpreter
-                //if (agentState.equals("present")) {
-                //    mPlayer.event("state", "agent", "leave");
-                //} else {
-                //    mPlayer.event("state", "agent", "enter");
-                //}
-            }
+        mAgentStateButton.addActionListener(e -> {
+            //final String agentState = (String) mRunTime.getValueOf(mProject, "AgentState").getValue();
+            // TODO: get variable values from interpreter
+            //if (agentState.equals("present")) {
+            //    mPlayer.event("state", "agent", "leave");
+            //} else {
+            //    mPlayer.event("state", "agent", "enter");
+            //}
         });
         mAgentActLabel = new JLabel("Action:");
         mAgentRoleLabel = new JLabel("Role:");
@@ -468,52 +416,28 @@ public final class WizardExecutor extends ActivityExecutor {
 
         // Create the agent signal panel ///////////////////////////////////////
         mAgentRequestButton = new JButton("Request");
-        mAgentRequestButton.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                //mPlayer.event("turn", "agent", "request");
-            }
+        mAgentRequestButton.addActionListener(e -> {
+            //mPlayer.event("turn", "agent", "request");
         });
         mAgentAcceptButton = new JButton("Accept");
-        mAgentAcceptButton.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                //mPlayer.event("turn", "agent", "accept");
-            }
+        mAgentAcceptButton.addActionListener(e -> {
+            //mPlayer.event("turn", "agent", "accept");
         });
         mAgentRejectButton = new JButton("Reject");
-        mAgentRejectButton.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                // mPlayer.event("turn", "agent", "reject");
-            }
+        mAgentRejectButton.addActionListener(e -> {
+            // mPlayer.event("turn", "agent", "reject");
         });
         mAgentOfferButton = new JButton("Offer");
-        mAgentOfferButton.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                //mPlayer.event("turn", "agent", "offer");
-            }
+        mAgentOfferButton.addActionListener(e -> {
+            //mPlayer.event("turn", "agent", "offer");
         });
         mAgentLeaveButton = new JButton("Leave");
-        mAgentLeaveButton.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                //mPlayer.event("turn", "agent", "leave");
-            }
+        mAgentLeaveButton.addActionListener(e -> {
+            //mPlayer.event("turn", "agent", "leave");
         });
         mAgentClaimButton = new JButton("Claim");
-        mAgentClaimButton.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                //mPlayer.event("turn", "agent", "claim");
-            }
+        mAgentClaimButton.addActionListener(e -> {
+            //mPlayer.event("turn", "agent", "claim");
         });
         mAgentSignalPanel = new JPanel();
         mAgentSignalPanel.setLayout(new GridLayout(2, 3));
@@ -531,15 +455,11 @@ public final class WizardExecutor extends ActivityExecutor {
         mScriptCombo = new JComboBox(mScriptModel);
         mScriptCombo.setBackground(Color.WHITE);
         mScriptCombo.setBorder(BorderFactory.createEtchedBorder());
-        mScriptCombo.addItemListener(new ItemListener() {
-
-            @Override
-            public void itemStateChanged(final ItemEvent event) {
-                if (event.getStateChange() == ItemEvent.SELECTED) {
-                    //mPlayer.event("contrib", "agent", (String) event.getItem());
-                }
-
+        mScriptCombo.addItemListener(event -> {
+            if (event.getStateChange() == ItemEvent.SELECTED) {
+                //mPlayer.event("contrib", "agent", (String) event.getItem());
             }
+
         });
         mAgentInputPanel = new JPanel();
         mAgentInputPanel.setLayout(new GridLayout(3, 2));

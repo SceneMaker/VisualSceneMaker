@@ -51,12 +51,7 @@ public abstract class Phoneme  {
     }
 
     public String getLipPosition(String phoneme){
-        if(lipMap.containsKey(phoneme)){
-            return lipMap.get(phoneme);
-        }
-        else{
-            return "Default";
-        }
+        return lipMap.getOrDefault(phoneme, "Default");
     }
 
     public String getLipPosition(){

@@ -1,6 +1,5 @@
 package de.dfki.vsm.xtension.charamel.util.property;
 
-import de.dfki.vsm.xtension.tricatworld.util.property.*;
 import de.dfki.vsm.util.extensions.ExportableProperties;
 import de.dfki.vsm.util.extensions.ProjectProperty;
 import de.dfki.vsm.util.extensions.renderers.BooleanRenderer;
