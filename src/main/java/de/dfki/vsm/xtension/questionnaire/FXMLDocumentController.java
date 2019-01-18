@@ -122,13 +122,7 @@ public class FXMLDocumentController implements Initializable {
         mValues.put("weakness5", "nein");
         mValues.put("weakness6", "nein");
 
-        Platform.runLater(new Runnable() {
-            @Override
-            public void run() {
-                
-                nextbutton.setDisable(true);
-            }
-        });
+        Platform.runLater(() -> nextbutton.setDisable(true));
 
     }
     

@@ -6,7 +6,6 @@ import de.dfki.vsm.util.xml.XMLParseable;
 import de.dfki.vsm.util.xml.XMLWriteError;
 import de.dfki.vsm.util.xml.XMLWriteable;
 import java.io.ByteArrayOutputStream;
-import java.io.UnsupportedEncodingException;
 
 /**
  * @author Gregor Mehlmann

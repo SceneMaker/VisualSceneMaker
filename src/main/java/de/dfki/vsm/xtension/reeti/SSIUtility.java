@@ -158,6 +158,6 @@ public class SSIUtility extends SSIRunTimePlugin {
     public static void switchGrammar(String gtammar) {
         if(sInstance.getSender() != null){
             sInstance.getSender().sendString(gtammar + '\000');
-        };
+        }
     }
 }

@@ -19,7 +19,7 @@ public class DoubleValue extends AbstractValue {
     }
 
     public String getAbstractSyntax() {
-        return "DoubleValue(" + Double.toString(mValue) + ")";
+        return "DoubleValue(" + mValue + ")";
     }
 
     // TODO: format character
@@ -29,11 +29,11 @@ public class DoubleValue extends AbstractValue {
 
     // TODO: format character
     public String getFormattedSyntax() {
-        return "#c#" + Double.toString(mValue);
+        return "#c#" + mValue;
     }
 
     public Double getValue() {
-        return Double.valueOf(mValue);
+        return mValue;
     }
 
     public DoubleValue getCopy() {

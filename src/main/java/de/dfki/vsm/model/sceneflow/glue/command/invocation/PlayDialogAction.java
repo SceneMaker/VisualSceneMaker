@@ -67,14 +67,14 @@ public class PlayDialogAction extends Invocation {
     // Get The Abstract Syntax
     @Override
     public final String getAbstractSyntax() {
-        String desc = "PlayDialogAction(";
+        StringBuilder desc = new StringBuilder("PlayDialogAction(");
 
-        desc += ((mDialogueAct != null)
+        desc.append((mDialogueAct != null)
                 ? mDialogueAct.getAbstractSyntax()
                 : "");
 
-        for (int i = 0; i < mFeatureList.size(); i++) {
-            desc += ", " + mFeatureList.get(i).getAbstractSyntax();
+        for (Expression expression : mFeatureList) {
+            desc.append(", ").append(expression.getAbstractSyntax());
         }
 
         return desc + ")";
@@ -83,14 +83,14 @@ public class PlayDialogAction extends Invocation {
     // Get The Concrete Syntax
     @Override
     public final String getConcreteSyntax() {
-        String desc = "PlayDialogueAct(";
+        StringBuilder desc = new StringBuilder("PlayDialogueAct(");
 
-        desc += ((mDialogueAct != null)
+        desc.append((mDialogueAct != null)
                 ? mDialogueAct.getConcreteSyntax()
                 : "");
 
-        for (int i = 0; i < mFeatureList.size(); i++) {
-            desc += ", " + mFeatureList.get(i).getConcreteSyntax();
+        for (Expression expression : mFeatureList) {
+            desc.append(", ").append(expression.getConcreteSyntax());
         }
 
         return desc + ")";
@@ -99,14 +99,14 @@ public class PlayDialogAction extends Invocation {
     // Get The Formatted Syntax
     @Override
     public final String getFormattedSyntax() {
-        String desc = "#p#PlayDialogAction ( ";
+        StringBuilder desc = new StringBuilder("#p#PlayDialogAction ( ");
 
-        desc += ((mDialogueAct != null)
+        desc.append((mDialogueAct != null)
                 ? mDialogueAct.getFormattedSyntax()
                 : "");
 
-        for (int i = 0; i < mFeatureList.size(); i++) {
-            desc += " , " + mFeatureList.get(i).getFormattedSyntax();
+        for (Expression expression : mFeatureList) {
+            desc.append(" , ").append(expression.getFormattedSyntax());
         }
 
         return desc + " ) ";
@@ -125,8 +125,8 @@ public class PlayDialogAction extends Invocation {
         if (mDialogueAct != null) {
             mDialogueAct.writeXML(out);
         }
-        for (int i = 0; i < mFeatureList.size(); i++) {
-            mFeatureList.get(i).writeXML(out);
+        for (Expression expression : mFeatureList) {
+            expression.writeXML(out);
         }
         out.pop().println("</PlayDialogAction>");
     }

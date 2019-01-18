@@ -93,18 +93,18 @@ public final class ActionObject extends UttrElement {
         //String mode = (mMode == null || mMode.isEmpty()) ? "" : mMode;
         String name = (mName == null || mName.isEmpty()) ? "" : mName;
 
-        String result = "[" + actor + name;
+        StringBuilder result = new StringBuilder("[" + actor + name);
         if (!mFeatureList.isEmpty()) {
-            result += " ";
+            result.append(" ");
 
             for (int i = 0; i < mFeatureList.size(); i++) {
 
                 // Append The Member String
-                result += mFeatureList.get(i).getText();
+                result.append(mFeatureList.get(i).getText());
 
                 // Append A Whitespace Now
                 if (i < mFeatureList.size() - 1) {
-                    result += " ";
+                    result.append(" ");
                 }
             }
         }
@@ -120,19 +120,19 @@ public final class ActionObject extends UttrElement {
        // String mode = (mMode == null || mMode.isEmpty()) ? "" : mMode;
         String name = (mName == null || mName.isEmpty()) ? "" : mName;
 
-        String result = "[" + actor + name;
+        StringBuilder result = new StringBuilder("[" + actor + name);
         if (!mFeatureList.isEmpty()) {
-            result += " ";
+            result.append(" ");
 
             for (int i = 0; i < mFeatureList.size(); i++) {
 
                 // Append The Member String
                 //System.err.println("GETTING TEXT FOR ACTION FEATURE " + mFeatureList.get(i) + " : " + mFeatureList.get(i).getText(args));
-                result += mFeatureList.get(i).getText(args);
+                result.append(mFeatureList.get(i).getText(args));
 
                 // Append A Whitespace Now
                 if (i < mFeatureList.size() - 1) {
-                    result += " ";
+                    result.append(" ");
                 }
             }
         }

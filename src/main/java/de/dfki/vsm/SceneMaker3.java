@@ -22,49 +22,46 @@ public final class SceneMaker3 {
     // Start SceneMaker3 in a specific mode
     public static void main(final String[] args) {
         // Let Java Swing do the work for us
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public final void run() {
-                // Check if we have at least one argument
-                if (args.length > 0) {
-                    // Read the first command line argument
-                    final String mode = args[0];
-                    // Check the options from this agument
-                    if (mode.equals("runtime")) {
-                        // In runtime mode we need a project file
-                        if (args.length == 2) {
-                            // Get the project file name agrument
-                            final String name = args[1];
-                            // Create the project configuration 
-                            final File file = new File(name);
-                            if (file.exists()) {
-                                runtime(file);
-                            } else {
-                                error(file);
-                            }
+        SwingUtilities.invokeLater(() -> {
+            // Check if we have at least one argument
+            if (args.length > 0) {
+                // Read the first command line argument
+                final String mode = args[0];
+                // Check the options from this agument
+                if (mode.equals("runtime")) {
+                    // In runtime mode we need a project file
+                    if (args.length == 2) {
+                        // Get the project file name agrument
+                        final String name = args[1];
+                        // Create the project configuration
+                        final File file = new File(name);
+                        if (file.exists()) {
+                            runtime(file);
                         } else {
-                            usage();
+                            error(file);
                         }
-                    } else if (mode.equalsIgnoreCase("editor")) {
-                        if (args.length == 2) {
-                            // Get the project file name agrument
-                            final String name = args[1];
-                            // Create the project configuration 
-                            final File file = new File(name);
-                            if (file.exists()) {
-                                editor(file);
-                            } else {
-                                error(file);
-                            }
+                    } else {
+                        usage();
+                    }
+                } else if (mode.equalsIgnoreCase("editor")) {
+                    if (args.length == 2) {
+                        // Get the project file name agrument
+                        final String name = args[1];
+                        // Create the project configuration
+                        final File file = new File(name);
+                        if (file.exists()) {
+                            editor(file);
                         } else {
-                            usage();
+                            error(file);
                         }
                     } else {
                         usage();
                     }
                 } else {
-                    editor();
+                    usage();
                 }
+            } else {
+                editor();
             }
         });
     }

@@ -19,7 +19,7 @@ public class BooleanValue extends AbstractValue {
     }
 
     public String getAbstractSyntax() {
-        return "BoolValue(" + Boolean.toString(mValue) + ")";
+        return "BoolValue(" + mValue + ")";
     }
 
     public String getConcreteSyntax() {
@@ -27,11 +27,11 @@ public class BooleanValue extends AbstractValue {
     }
 
     public String getFormattedSyntax() {
-        return "#c#" + Boolean.toString(mValue);
+        return "#c#" + mValue;
     }
 
     public Boolean getValue() {
-        return Boolean.valueOf(mValue);
+        return mValue;
     }
 
     public BooleanValue getCopy() {

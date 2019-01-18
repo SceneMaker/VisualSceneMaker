@@ -80,17 +80,9 @@ public class ErrorDialog extends JDialog {
         mButtonsPanel = new JPanel();
         mButtonsPanel.setLayout(new BoxLayout(mButtonsPanel, BoxLayout.X_AXIS));
         mOkButton = new JButton("Ok");
-        mOkButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                dispose();
-            }
-        });
+        mOkButton.addActionListener(evt -> dispose());
         mClearButton = new JButton("Clear");
-        mClearButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                ((DefaultListModel) mList.getModel()).clear();
-            }
-        });
+        mClearButton.addActionListener(evt -> ((DefaultListModel) mList.getModel()).clear());
         mButtonsPanel.add(Box.createHorizontalGlue());
         mButtonsPanel.add(mOkButton);
         mButtonsPanel.add(mClearButton);

@@ -164,8 +164,8 @@ public final class Preferences {
     //////////////////////////////////////////////////////////////////////////////
     // FONT DATA
     //////////////////////////////////////////////////////////////////////////////
-    public static final String sFONT_FAMILY_LIST[]          = GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
-    public static final Integer sFONT_SIZE_LIST[]           = {6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30};
+    public static final String[] sFONT_FAMILY_LIST = GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
+    public static final Integer[] sFONT_SIZE_LIST = {6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30};
     //////////////////////////////////////////////////////////////////////////////
     // DATE FORMAT
     //////////////////////////////////////////////////////////////////////////////

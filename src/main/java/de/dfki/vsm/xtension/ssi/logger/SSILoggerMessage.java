@@ -81,15 +81,14 @@ public final class SSILoggerMessage {
 
     @Override
     public final String toString() {
-        final StringBuilder builder = new StringBuilder();
-        builder.append(DEFAULT_SENDER_ID)
-                .append(DEFAULT_SEPERATOR).append(mName)
-                .append(DEFAULT_SEPERATOR).append(mSender)
-                .append(DEFAULT_SEPERATOR).append(mEvent)
-                .append(DEFAULT_SEPERATOR).append(mState)
-                .append(DEFAULT_SEPERATOR).append(mTime)
-                .append(DEFAULT_SEPERATOR).append(mDuration)
-                .append(DEFAULT_SEPERATOR).append(mContent);
-        return builder.toString();
+        String builder = DEFAULT_SENDER_ID +
+                DEFAULT_SEPERATOR + mName +
+                DEFAULT_SEPERATOR + mSender +
+                DEFAULT_SEPERATOR + mEvent +
+                DEFAULT_SEPERATOR + mState +
+                DEFAULT_SEPERATOR + mTime +
+                DEFAULT_SEPERATOR + mDuration +
+                DEFAULT_SEPERATOR + mContent;
+        return builder;
     }
 }

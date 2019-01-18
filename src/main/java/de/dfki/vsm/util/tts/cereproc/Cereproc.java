@@ -15,7 +15,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
-import java.nio.file.Files;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.LinkedList;
 
@@ -62,8 +62,8 @@ public class Cereproc extends SpeechClient {
             Field field = ClassLoader.class.getDeclaredField("usr_paths");
             field.setAccessible(true);
             String[] paths = (String[])field.get(null);
-            for (int i = 0; i < paths.length; i++) {
-                if (s.equals(paths[i])) {
+            for (String path : paths) {
+                if (s.equals(path)) {
                     return;
                 }
             }
@@ -148,8 +148,8 @@ public class Cereproc extends SpeechClient {
     }
 
     private HashMap<Integer, LinkedList<Phoneme>> tryGetPhonemes(Audioline au) throws UnsupportedEncodingException {
-            HashMap<Integer, LinkedList<Phoneme>> phonemes = new HashMap<Integer, LinkedList<Phoneme>>();
-            utf8bytes = finalWord.getBytes("UTF-8");
+            HashMap<Integer, LinkedList<Phoneme>> phonemes = new HashMap<>();
+            utf8bytes = finalWord.getBytes(StandardCharsets.UTF_8);
             cerevoice_eng.CPRCEN_engine_channel_speak(eng, chan_handle, finalWord + "\n", utf8bytes.length + 1, 0); // Stream data to engine
             cerevoice_eng.CPRCEN_engine_channel_speak(eng, chan_handle, "", 0, 1); // Flush engine
             au.flush();
@@ -168,9 +168,9 @@ public class Cereproc extends SpeechClient {
     }
 
     private void speak(final Audioline au) throws Exception {
-        HashMap<Integer, LinkedList<Phoneme>> phonemes = new HashMap<Integer, LinkedList<Phoneme>>();
+        HashMap<Integer, LinkedList<Phoneme>> phonemes = new HashMap<>();
         isTextNonEmpty();
-        utf8bytes = finalWord.getBytes("UTF-8");
+        utf8bytes = finalWord.getBytes(StandardCharsets.UTF_8);
         cerevoice_eng.CPRCEN_engine_channel_speak(eng, chan_handle, finalWord + "\n", utf8bytes.length + 1, 0);// Stream data to engine
         cerevoice_eng.CPRCEN_engine_channel_speak(eng, chan_handle, "", 0, 1);// Flush engine
         au.flush();

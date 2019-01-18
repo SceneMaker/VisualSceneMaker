@@ -3,7 +3,6 @@ package de.dfki.vsm.xtesting.NewPropertyManager.util;
 import de.dfki.common.interfaces.StageRoom;
 import de.dfki.stickman3D.stage.StageRoom3D;
 import de.dfki.stickmanFX.stage.StageRoomFX;
-import de.dfki.stickmanSwing.stage.StageRoomSwing;
 
 import de.dfki.vsm.model.project.AgentConfig;
 import de.dfki.vsm.model.project.PluginConfig;
@@ -78,21 +77,18 @@ public class ContextTreeItem extends AbstractTreeItem implements TreeObservable 
 
     private MenuItem getEditStickmanItem(EntryPlugin plugin) {
         MenuItem editStickman = new MenuItem("Edit Stickman");
-        editStickman.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent event) {
-                Thread stickmanLaunchThread = new Thread() {
-                    public void run() {
-                        try {
-                            launchStickmanConfiguration(plugin);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
+        editStickman.setOnAction(event -> {
+            Thread stickmanLaunchThread = new Thread() {
+                public void run() {
+                    try {
+                        launchStickmanConfiguration(plugin);
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
-                };
+                }
+            };
 
-                stickmanLaunchThread.start();
-            }
+            stickmanLaunchThread.start();
         });
         return editStickman;
     }
@@ -137,30 +133,26 @@ public class ContextTreeItem extends AbstractTreeItem implements TreeObservable 
 
     private MenuItem getAddNewAgentItem() {
         MenuItem addNewAgent = new MenuItem("Add new agent");
-        addNewAgent.setOnAction(new EventHandler() {
-            public void handle(Event t) {
-                EntryAgent agent = new EntryAgent(getContextValueName());
-                AbstractTreeItem newBox = new ContextTreeItem(agent, filepath);
-                agent.setContextTreeItem(newBox);
-                getChildren().add(newBox);
-                agentCounter++;
-                notifyObserver(agent);
-                newBox.getParent().setExpanded(true);
-            }
+        addNewAgent.setOnAction((EventHandler) t -> {
+            EntryAgent agent = new EntryAgent(getContextValueName());
+            AbstractTreeItem newBox = new ContextTreeItem(agent, filepath);
+            agent.setContextTreeItem(newBox);
+            getChildren().add(newBox);
+            agentCounter++;
+            notifyObserver(agent);
+            newBox.getParent().setExpanded(true);
         });
         return addNewAgent;
     }
 
     private MenuItem getDeleteItem() {
         MenuItem deleteItem = new MenuItem("Delete " + entryItem.getName());
-        deleteItem.setOnAction(new EventHandler() {
-            public void handle(Event t) {
-                AbstractTreeEntry item = getEntryItem();
-                if (item instanceof EntryAgent) {
-                    notifyObserverOnDeleteAgent(item);
-                } else if (item instanceof EntryPlugin) {
-                    notifyObserverOnDeletePlugin(item);
-                }
+        deleteItem.setOnAction((EventHandler) t -> {
+            AbstractTreeEntry item = getEntryItem();
+            if (item instanceof EntryAgent) {
+                notifyObserverOnDeleteAgent(item);
+            } else if (item instanceof EntryPlugin) {
+                notifyObserverOnDeletePlugin(item);
             }
         });
         return deleteItem;

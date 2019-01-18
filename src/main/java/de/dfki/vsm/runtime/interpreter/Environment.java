@@ -18,7 +18,7 @@ public class Environment implements Copyable {
     private final LinkedList<SymbolTable> mSymbolTableList;
 
     public Environment() {
-        mSymbolTableList = new LinkedList<SymbolTable>();
+        mSymbolTableList = new LinkedList<>();
     }
 
     public Environment(LinkedList<SymbolTable> symbolTableList) {
@@ -26,11 +26,9 @@ public class Environment implements Copyable {
     }
 
     public LinkedList<SymbolTable> getCopyOfSymbolTableList() {
-        LinkedList<SymbolTable> copy = new LinkedList<SymbolTable>();
+        LinkedList<SymbolTable> copy = new LinkedList<>();
 
-        for (SymbolTable table : mSymbolTableList) {
-            copy.add(table);
-        }
+        copy.addAll(mSymbolTableList);
 
         return copy;
     }

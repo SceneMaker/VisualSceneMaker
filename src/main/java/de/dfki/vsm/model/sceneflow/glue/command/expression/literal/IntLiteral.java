@@ -39,7 +39,7 @@ public final class IntLiteral extends LiteralExpression {
 
     @Override
     public final String getFormattedSyntax() {
-        return "#c#" + Integer.toString(mValue);
+        return "#c#" + mValue;
     }
 
     @Override

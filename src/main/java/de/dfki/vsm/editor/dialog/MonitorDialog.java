@@ -135,12 +135,7 @@ public class MonitorDialog extends JDialog implements EventListener {
             }
         });
 
-        mInputTextField.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                okActionPerformed();
-            }
-        });
+        mInputTextField.addActionListener(e -> okActionPerformed());
 
         //Key listener need to gain focus on the text field
         //KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(new KeyEventDispatcher() {
@@ -167,12 +162,7 @@ public class MonitorDialog extends JDialog implements EventListener {
                 //
             }
         });
-        mQueryTextField.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                okActionPerformed();
-            }
-        });
+        mQueryTextField.addActionListener(e -> okActionPerformed());
         //KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(new KeyEventDispatcher() {
 
         //  @Override
@@ -333,7 +323,7 @@ public class MonitorDialog extends JDialog implements EventListener {
 
     private void initGlobalVariableList() {
         mGlobalVarDefListData = mEditorProject.getSceneFlow().getCopyOfVarDefList();
-        java.lang.String listofGlobalVars[][] = new java.lang.String[mGlobalVarDefListData.size()][2];
+        java.lang.String[][] listofGlobalVars = new java.lang.String[mGlobalVarDefListData.size()][2];
         java.lang.String[] listOfColumns
                 = {
                     "Variable", "Value"
@@ -367,7 +357,7 @@ public class MonitorDialog extends JDialog implements EventListener {
 
     private void initLocalVariableList() {
         mLocalVarDefListData = EditorInstance.getInstance().getSelectedProjectEditor().getSceneFlowEditor().getSceneFlowManager().getCurrentActiveSuperNode().getCopyOfVarDefList();
-        java.lang.String listofVars[][] = new java.lang.String[mLocalVarDefListData.size()][2];
+        java.lang.String[][] listofVars = new java.lang.String[mLocalVarDefListData.size()][2];
         java.lang.String[] listOfColumns
                 = {
                     "Variable", "Value"

@@ -47,9 +47,7 @@ public class ClipPlayer implements Audioplayer {
         byte [] header = wavHeader(size*2);
         byte[] audioBuffer = new byte[header.length + size * 2];
         short s;
-        for (int j = 0; j< header.length; j++){
-            audioBuffer[j] = header[j];
-        }
+        System.arraycopy(header, 0, audioBuffer, 0, header.length);
         for(i = 0; i < size; i++) {
             // Sample at position i, a short
             s = cerevoice_eng.CPRC_abuf_wav(cereprocAudioBuffer, i);

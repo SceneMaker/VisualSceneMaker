@@ -19,10 +19,7 @@ import math.geom2d.spline.CubicBezierCurve2D;
 
 import java.awt.Rectangle;
 
-import java.util.ArrayList;
 import java.util.Collection;
-
-import static java.lang.Math.pow;
 
 /**
  *

@@ -2,7 +2,6 @@ package de.dfki.vsm.model.sceneflow.glue.command.expression.invocation;
 
 import de.dfki.vsm.model.sceneflow.glue.command.Expression;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
-import java.util.ArrayList;
 import org.w3c.dom.Element;
 
 /**

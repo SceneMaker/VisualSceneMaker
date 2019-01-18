@@ -85,7 +85,7 @@ public class TypeDefDialog extends Dialog {
             } else {
 
                 // Create the default struct type def
-                ArrayList<MemberDefinition> memberDefList = new ArrayList<MemberDefinition>();
+                ArrayList<MemberDefinition> memberDefList = new ArrayList<>();
 
                 memberDefList.add(new MemberDefinition("someMember", "Bool"));
                 mStructTypeDef = new StructTypeDefinition("SomeStruct", memberDefList);
@@ -99,7 +99,7 @@ public class TypeDefDialog extends Dialog {
             mListTypeDef = new ListTypeDefinition("IntList", "Int");
 
             // Create the default struct type def
-            ArrayList<MemberDefinition> memberDefList = new ArrayList<MemberDefinition>();
+            ArrayList<MemberDefinition> memberDefList = new ArrayList<>();
 
             memberDefList.add(new MemberDefinition("someMember", "Bool"));
             mStructTypeDef = new StructTypeDefinition("SomeStruct", memberDefList);
@@ -117,24 +117,22 @@ public class TypeDefDialog extends Dialog {
         //
         mFlavourLabel    = new JLabel("Flavour:");
         mFlavourComboBox = new JComboBox(new Object[] { "List", "Struct" });
-        mFlavourComboBox.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                String selectedFlavour = (String) mFlavourComboBox.getSelectedItem();
+        mFlavourComboBox.addActionListener(e -> {
+            String selectedFlavour = (String) mFlavourComboBox.getSelectedItem();
 
-                if (selectedFlavour.equals("List")) {
-                    setListTypeComponentsVisible(true);
-                    setStructTypeComponentsVisible(false);
+            if (selectedFlavour.equals("List")) {
+                setListTypeComponentsVisible(true);
+                setStructTypeComponentsVisible(false);
 
-                    //
-                    mTypeDef = mListTypeDef;
-                } else if (selectedFlavour.equals("Struct")) {
-                    setListTypeComponentsVisible(false);
-                    setStructTypeComponentsVisible(true);
+                //
+                mTypeDef = mListTypeDef;
+            } else if (selectedFlavour.equals("Struct")) {
+                setListTypeComponentsVisible(false);
+                setStructTypeComponentsVisible(true);
 
-                    //
-                    mTypeDef = mStructTypeDef;
-                } else { /* Error */
-                }
+                //
+                mTypeDef = mStructTypeDef;
+            } else { /* Error */
             }
         });
         sanitizeComponent(mFlavourLabel, labelSize);

@@ -20,7 +20,6 @@ import de.dfki.vsm.runtime.player.RunTimePlayer;
 import de.dfki.vsm.runtime.plugin.RunTimePlugin;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 import de.dfki.vsm.util.xml.XMLUtilities;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -987,13 +986,7 @@ public class RunTimeProject {
     }
 
     private void deleteRelatedAgents(PluginConfig plugin) {
-        Iterator<AgentConfig> iterator = getProjectConfig().getAgentConfigList().iterator();
-        while (iterator.hasNext()) {
-            AgentConfig agent = iterator.next();
-            if (agent.getDeviceName().equals(plugin.getPluginName())) {
-                iterator.remove();
-            }
-        }
+        getProjectConfig().getAgentConfigList().removeIf(agent -> agent.getDeviceName().equals(plugin.getPluginName()));
     }
 
     public void deleteAgent(AgentConfig agent) {

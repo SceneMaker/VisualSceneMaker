@@ -32,9 +32,9 @@ public final class JPLResult extends LinkedList<Map<String, Term>> {
         for (int i = 0; i < size(); i++) {
             final Object[] bindings = get(i).entrySet().toArray();
             final Map<Variable, Variable> substitutions = new HashMap();
-            for (int j = 0; j < bindings.length; j++) {
+            for (Object binding2 : bindings) {
                 final Entry<String, Term> binding
-                        = (Entry<String, Term>) bindings[j];
+                        = (Entry<String, Term>) binding2;
                 final Term term = binding.getValue();
                 if (term instanceof Variable) {
                     final Variable variable = (Variable) term;
@@ -48,10 +48,10 @@ public final class JPLResult extends LinkedList<Map<String, Term>> {
             }
 
             // Now clean the terms
-            final Map<String, Term> cleans = new HashMap<String, Term>();
-            for (int k = 0; k < bindings.length; k++) {
+            final Map<String, Term> cleans = new HashMap<>();
+            for (Object binding1 : bindings) {
                 final Entry<String, Term> binding
-                        = (Entry<String, Term>) bindings[k];
+                        = (Entry<String, Term>) binding1;
                 final String var = binding.getKey();
                 final Term term = binding.getValue();
                 // Replace the substitutions
@@ -126,11 +126,11 @@ public final class JPLResult extends LinkedList<Map<String, Term>> {
     public final Map<Variable, Variable> getDTMs() {
         // Get the DTM variable var_substs first
         final Map<Variable, Variable> substitutions = new HashMap();
-        for (int i = 0; i < size(); i++) {
-            final Object[] bindings = get(i).entrySet().toArray();
-            for (int j = 0; j < bindings.length; j++) {
+        for (Map<String, Term> stringTermMap : this) {
+            final Object[] bindings = stringTermMap.entrySet().toArray();
+            for (Object binding1 : bindings) {
                 final Entry<String, Term> binding
-                        = (Entry<String, Term>) bindings[j];
+                        = (Entry<String, Term>) binding1;
                 final Term term = binding.getValue();
                 // Replace the DTM variable
                 if (term instanceof Variable) {

@@ -45,8 +45,6 @@ public class CereProgTTsSpeaker extends SpeakerTts {
             if (phonemes.containsKey(index)) {
                 wordPhonemes = phonemes.get(index);
             }
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -69,12 +69,7 @@ public class SearchFunctionInScene {
         button_FindPrev = new JButton("<");
         button_FindNext = new JButton(">");
         checkBox_SearchControl = new JCheckBox("Search Only Scenegroup Name");
-        checkBox_SearchControl.addItemListener(new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                sceneHighlighter = null;
-            }
-        });
+        checkBox_SearchControl.addItemListener(e -> sceneHighlighter = null);
         hSearchBox1.add(button_appearanceControl);
         hSearchBox1.add(textField_FindInput);
         hSearchBox1.add(button_Find);
@@ -110,70 +105,35 @@ public class SearchFunctionInScene {
 
     private void add_listener() {
         
-        button_appearanceControl.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if(button_appearanceControl.getText()=="Find..."){
-                    button_appearanceControl.setText("Hide");
-                    showSearchBox();
-                }else{
-                    button_appearanceControl.setText("Find...");
-                    hideSearchBox();
-                }
+        button_appearanceControl.addActionListener(e -> {
+            if(button_appearanceControl.getText()=="Find..."){
+                button_appearanceControl.setText("Hide");
+                showSearchBox();
+            }else{
+                button_appearanceControl.setText("Find...");
+                hideSearchBox();
             }
         });
                 
-        button_Find.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                find(textField_FindInput.getText());
+        button_Find.addActionListener(e -> find(textField_FindInput.getText()));
+
+        button_FindPrev.addActionListener(e -> findPrev(textField_FindInput.getText()));
+
+        button_FindNext.addActionListener(e -> findNext(textField_FindInput.getText()));
+
+        button_Replace.addActionListener(e -> replace(textField_FindInput.getText(), textField_ReplaceInput.getText()));
+
+        button_ReplaceAll.addActionListener(e -> replaceAll(textField_FindInput.getText(), textField_ReplaceInput.getText()));
+
+        checkBox_SearchControl.addItemListener(e -> {
+            if (e.getStateChange() == 1) {
+                search_Scene_Name_Symbol = true;
+            } else {
+                search_Scene_Name_Symbol = false;
             }
         });
 
-        button_FindPrev.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                findPrev(textField_FindInput.getText());
-            }
-        });
-
-        button_FindNext.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                findNext(textField_FindInput.getText());
-            }
-        });
-
-        button_Replace.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                replace(textField_FindInput.getText(), textField_ReplaceInput.getText());
-            }
-        });
-
-        button_ReplaceAll.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                replaceAll(textField_FindInput.getText(), textField_ReplaceInput.getText());
-            }
-        });
-
-        checkBox_SearchControl.addItemListener(new ItemListener() {
-            public void itemStateChanged(ItemEvent e) {
-                if (e.getStateChange() == 1) {
-                    search_Scene_Name_Symbol = true;
-                } else {
-                    search_Scene_Name_Symbol = false;
-                }
-            }
-        });
-
-        button_EmptytextField.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                emptytextField();
-            }
-        });
+        button_EmptytextField.addActionListener(e -> emptytextField());
     }
     
     private void emptytextField() {

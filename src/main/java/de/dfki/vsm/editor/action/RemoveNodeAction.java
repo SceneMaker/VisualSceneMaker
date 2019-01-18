@@ -13,7 +13,7 @@ import javax.swing.undo.CannotUndoException;
  * @author Gregor Mehlmann
  */
 public class RemoveNodeAction extends NodeAction {
-    ArrayList<RemoveEdgeAction> mRemoveEdgeActionList = new ArrayList<RemoveEdgeAction>();
+    ArrayList<RemoveEdgeAction> mRemoveEdgeActionList = new ArrayList<>();
 
     public RemoveNodeAction(WorkSpacePanel workSpace, Node node) {
         mWorkSpace        = workSpace;

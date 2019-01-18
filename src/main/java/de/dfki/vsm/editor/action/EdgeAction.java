@@ -22,7 +22,6 @@ import de.dfki.vsm.model.sceneflow.chart.edge.InterruptEdge;
 import de.dfki.vsm.model.sceneflow.chart.edge.RandomEdge;
 import de.dfki.vsm.model.sceneflow.chart.edge.TimeoutEdge;
 
-import static de.dfki.vsm.Preferences.sBASIC_NODE_COLOR;
 import static de.dfki.vsm.editor.Edge.TYPE.CEDGE;
 import static de.dfki.vsm.editor.Edge.TYPE.EEDGE;
 import static de.dfki.vsm.editor.Edge.TYPE.IEDGE;
@@ -188,7 +187,7 @@ public abstract class EdgeAction extends EditorAction {
 //          aStarPath.printPath(gridSource.getColumnIndex(), gridSource.getRowIndex(), 
 //                  gridDestination.getColumnIndex(), gridDestination.getRowIndex());
             // Calculate the control point of the bezier curve that should be made
-            ArrayList<BezierPoint> pathPoints       = new ArrayList<BezierPoint>();
+            ArrayList<BezierPoint> pathPoints       = new ArrayList<>();
             int                    deviationSourceX = 0;
             int                    deviationSourceY = 0;
             int                    deviationTargetX = 0;

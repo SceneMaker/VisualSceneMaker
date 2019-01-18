@@ -117,11 +117,7 @@ public final class EditorMenuBar extends JMenuBar {
 
                     recentFileMenuItem.setAccelerator(KeyStroke.getKeyStroke(Preferences.sDYNAMIC_KEYS.get(i),
                             Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-                    recentFileMenuItem.addActionListener(new ActionListener() {
-                        public void actionPerformed(ActionEvent e) {
-                            mEditorInstance.openProject(projectDir.getPath());
-                        }
-                    });
+                    recentFileMenuItem.addActionListener(e -> mEditorInstance.openProject(projectDir.getPath()));
                     mOpenRecentFileMenu.add(recentFileMenuItem);
                 }
             }
@@ -142,46 +138,35 @@ public final class EditorMenuBar extends JMenuBar {
         // mCreateFileMenuItem.setIcon(new ImageIcon("data/img/new.png"));
         mCreateFileMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N,
                 Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-        mCreateFileMenuItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                new NewProjectDialog();
-            }
-        });
+        mCreateFileMenuItem.addActionListener(e -> new NewProjectDialog());
         mOpenFileMenuItem = new JMenuItem("Open Project...");
 
         // mOpenFileMenuItem.setIcon(new ImageIcon("data/img/open.png"));
         mOpenFileMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O,
                 Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-        mOpenFileMenuItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                mEditorInstance.openProject();
-                Preferences.save();
-                refreshRecentFileMenu();
-            }
+        mOpenFileMenuItem.addActionListener(e -> {
+            mEditorInstance.openProject();
+            Preferences.save();
+            refreshRecentFileMenu();
         });
         mOpenRecentFileMenu = new JMenu("Open Recent Project");
 
         // mOpenRecentFileMenu.setIcon(new ImageIcon("data/img/recent.png"));
         mClearRecentFileMenuItem = new JMenuItem("Clear List");
-        mClearRecentFileMenuItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                for (int i = 0; i <= Preferences.sMAX_RECENT_FILE_COUNT; i++) {
-                    String projectDirName = Preferences.getProperty("recentproject." + i + ".path");
-                    String projectName = Preferences.getProperty("recentproject." + i + ".name");
+        mClearRecentFileMenuItem.addActionListener(e -> {
+            for (int i = 0; i <= Preferences.sMAX_RECENT_FILE_COUNT; i++) {
+                String projectDirName = Preferences.getProperty("recentproject." + i + ".path");
+                String projectName = Preferences.getProperty("recentproject." + i + ".name");
 
-                    if (projectDirName != null) {
-                        Preferences.removeProperty("recentproject." + i + ".path");
-                        Preferences.removeProperty("recentproject." + i + ".date");
-                        Preferences.removeProperty("recentproject." + i + ".name");
-                    }
+                if (projectDirName != null) {
+                    Preferences.removeProperty("recentproject." + i + ".path");
+                    Preferences.removeProperty("recentproject." + i + ".date");
+                    Preferences.removeProperty("recentproject." + i + ".name");
                 }
-                mEditorInstance.clearRecentProjects();
-                Preferences.save();
-                refreshRecentFileMenu();
             }
+            mEditorInstance.clearRecentProjects();
+            Preferences.save();
+            refreshRecentFileMenu();
         });
         refreshRecentFileMenu();
 
@@ -189,12 +174,7 @@ public final class EditorMenuBar extends JMenuBar {
 //      mCloseFileMenuItem.setIcon(new ImageIcon("data/img/close.png"));
         mCloseFileMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_W,
                 Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-        mCloseFileMenuItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                mEditorInstance.close(QuitDialog.CLOSE_PROJ_DIALOG);
-            }
-        });
+        mCloseFileMenuItem.addActionListener(e -> mEditorInstance.close(QuitDialog.CLOSE_PROJ_DIALOG));
 
         ////////////////////////////////////////////////////////////////////////
         ////////////////////////////////////////////////////////////////////////
@@ -203,48 +183,31 @@ public final class EditorMenuBar extends JMenuBar {
         // mSaveFileMenuItem.setIcon(new ImageIcon("data/img/save.png"));
         mSaveFileMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S,
                 Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-        mSaveFileMenuItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                // Save the current editor project
-                mEditorInstance.save();
-            }
+        mSaveFileMenuItem.addActionListener(e -> {
+            // Save the current editor project
+            mEditorInstance.save();
         });
         mSaveAsMenuItem = new JMenuItem("Save As");
         mSaveAsMenuItem.setIcon(new ImageIcon("data/img/saveas.png"));
         mSaveAsMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S,
                 (java.awt.event.InputEvent.SHIFT_MASK | (Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()))));
-        mSaveAsMenuItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                mEditorInstance.saveAs();
-            }
-
-            // TODO Check if Projekt is new Project, then update recent file menu list.
-        });
+        // TODO Check if Projekt is new Project, then update recent file menu list.
+        mSaveAsMenuItem.addActionListener(e -> mEditorInstance.saveAs());
         mSaveAllMenuItem = new JMenuItem("Save All");
         mSaveAllMenuItem.setIcon(new ImageIcon("data/img/saveall.png"));
         mSaveAllMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S,
                 (java.awt.event.InputEvent.ALT_MASK | (Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()))));
-        mSaveAllMenuItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                mEditorInstance.saveAll();
-            }
-        });
+        mSaveAllMenuItem.addActionListener(e -> mEditorInstance.saveAll());
         mExitEditorMenuItem = new JMenuItem("Quit");
 
 //      mExitEditorMenuItem.setIcon(new ImageIcon("data/img/exit.png"));
         mExitEditorMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Q,
                 Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-        mExitEditorMenuItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                // Close all project editors
-                mEditorInstance.closeAll();
-                // And finally exit the system
-                //System.exit(0);
-            }
+        mExitEditorMenuItem.addActionListener(e -> {
+            // Close all project editors
+            mEditorInstance.closeAll();
+            // And finally exit the system
+            //System.exit(0);
         });
         mFileMenu.add(mCreateFileMenuItem);
         mFileMenu.add(mOpenFileMenuItem);
@@ -255,7 +218,7 @@ public final class EditorMenuBar extends JMenuBar {
         mFileMenu.add(mSaveAsMenuItem);
         mFileMenu.add(mSaveAllMenuItem);
 
-        if (System.getProperty("os.name").toLowerCase().indexOf("windows") != -1) {
+        if (System.getProperty("os.name").toLowerCase().contains("windows")) {
             mFileMenu.add(new JSeparator());
             mFileMenu.add(mExitEditorMenuItem);
         }
@@ -270,32 +233,17 @@ public final class EditorMenuBar extends JMenuBar {
         mCopyMenuItem = new JMenuItem("Copy");
         mCopyMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C,
                 Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-        mCopyMenuItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                mEditorInstance.getSelectedProjectEditor().getSceneFlowEditor().getWorkSpace().copyNodes();
-            }
-        });
+        mCopyMenuItem.addActionListener(e -> mEditorInstance.getSelectedProjectEditor().getSceneFlowEditor().getWorkSpace().copyNodes());
         //TODO CUT ACTION NOT IMPLEMENTED
         mCutMenuItem = new JMenuItem("Cut");
         mCutMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_X,
                 Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-        mCutMenuItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                mEditorInstance.getSelectedProjectEditor().getSceneFlowEditor().getWorkSpace().cutNodes();
-            }
-        });
+        mCutMenuItem.addActionListener(e -> mEditorInstance.getSelectedProjectEditor().getSceneFlowEditor().getWorkSpace().cutNodes());
         //TODO PASTE ACTION NOT IMPLEMENTED
         mPasteMenuItem = new JMenuItem("Paste");
         mPasteMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_V,
                 Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-        mPasteMenuItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                mEditorInstance.getSelectedProjectEditor().getSceneFlowEditor().getWorkSpace().pasteNodes();
-            }
-        });
+        mPasteMenuItem.addActionListener(e -> mEditorInstance.getSelectedProjectEditor().getSceneFlowEditor().getWorkSpace().pasteNodes());
         //TODO DELETE ACTIONS
         mDeleteMenuItem = new JMenuItem("Delete");
         mDeleteMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0));
@@ -304,32 +252,18 @@ public final class EditorMenuBar extends JMenuBar {
         mNormalizeMenuItem = new JMenuItem("Normalize all Edges");
         mNormalizeMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N,
                 (java.awt.event.InputEvent.ALT_MASK | Toolkit.getDefaultToolkit().getMenuShortcutKeyMask())));
-        mNormalizeMenuItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                mEditorInstance.getSelectedProjectEditor().getSceneFlowEditor().getWorkSpace().normalizeAllEdges();
-            }
-        });
+        mNormalizeMenuItem.addActionListener(e -> mEditorInstance.getSelectedProjectEditor().getSceneFlowEditor().getWorkSpace().normalizeAllEdges());
         //STRAIGHTEN EDGES
         mStraightenMenuItem = new JMenuItem("Straighen all Edges");
         mStraightenMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_B,
                 (java.awt.event.InputEvent.ALT_MASK | Toolkit.getDefaultToolkit().getMenuShortcutKeyMask())));
-        mStraightenMenuItem.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                mEditorInstance.getSelectedProjectEditor().getSceneFlowEditor().getWorkSpace().straightenAllEdges();
-            }
-        });
+        mStraightenMenuItem.addActionListener(e -> mEditorInstance.getSelectedProjectEditor().getSceneFlowEditor().getWorkSpace().straightenAllEdges());
         
         //***************************************OPTIONS********************************************************************
         mOptionsMenuItem = new JMenuItem("Options");
         mOptionsMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_COMMA,
                 (Toolkit.getDefaultToolkit().getMenuShortcutKeyMask())));
-        mOptionsMenuItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                mEditorInstance.showOptions();
-            }
-        });
+        mOptionsMenuItem.addActionListener(e -> mEditorInstance.showOptions());
 
         Action undoAction = UndoAction.getInstance();
 
@@ -362,23 +296,13 @@ public final class EditorMenuBar extends JMenuBar {
         // mQuestionMenuItem.setIcon(new ImageIcon("data/img/help.png"));
         mQuestionMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_H,
                 Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-        mQuestionMenuItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                mEditorInstance.showHelp();
-            }
-        });
+        mQuestionMenuItem.addActionListener(e -> mEditorInstance.showHelp());
         mInfoMenuItem = new JMenuItem("About");
 
         // mInfoMenuItem.setIcon(new ImageIcon("data/img/about.png"));
         mInfoMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_I,
                 Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-        mInfoMenuItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                mEditorInstance.showAbout();
-            }
-        });
+        mInfoMenuItem.addActionListener(e -> mEditorInstance.showAbout());
         mHelpMenu.add(mQuestionMenuItem);
         mHelpMenu.add(new JSeparator());
         mHelpMenu.add(mInfoMenuItem);

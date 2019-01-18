@@ -90,7 +90,7 @@ public class MaryTTsProcess extends Observable{
             command.add("/C");
             command.add(cmd);
         }
-        return (String[]) command.toArray(new String[command.size()]);
+        return (String[]) command.toArray(new String[0]);
     }
 
     private boolean isMaryTTSInstalled(){
@@ -109,7 +109,7 @@ public class MaryTTsProcess extends Observable{
     }
 
     private synchronized boolean isInstanceRunning(){
-        Integer localPort = Integer.getInteger("server.port", 59125).intValue();
+        Integer localPort = Integer.getInteger("server.port", 59125);
         try {
             ServerSocket serverSocket = new ServerSocket(localPort);
             serverSocket.close();
@@ -161,15 +161,15 @@ public class MaryTTsProcess extends Observable{
     }
 
     private boolean isWindows() {
-        return (OS.indexOf("win") >= 0);
+        return (OS.contains("win"));
     }
 
     private boolean isMac() {
-        return (OS.indexOf("mac") >= 0);
+        return (OS.contains("mac"));
     }
 
     private boolean isUnix() {
-        return (OS.indexOf("nix") >= 0 || OS.indexOf("nux") >= 0 || OS.indexOf("aix") > 0);
+        return (OS.contains("nix") || OS.contains("nux") || OS.indexOf("aix") > 0);
     }
 
     public void registerObserver(Observer observer){

@@ -7,7 +7,6 @@ import de.dfki.vsm.util.xml.XMLParseable;
 import de.dfki.vsm.util.xml.XMLWriteError;
 import de.dfki.vsm.util.xml.XMLWriteable;
 import java.io.ByteArrayOutputStream;
-import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Locale;
 import org.w3c.dom.Element;

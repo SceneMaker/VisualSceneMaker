@@ -12,11 +12,10 @@ import de.dfki.vsm.util.log.LOGConsoleLogger;
 import de.dfki.vsm.xtension.unity.commands.Command;
 import de.dfki.vsm.xtension.unity.commands.RaiseHandCommand;
 import de.dfki.vsm.xtension.unity.commands.SpeechCommand;
-import java.io.File;
+
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.Map.Entry;
 
 /**
  * @author J.-L. Himbert <s9jehimb@stud.uni-saarland.de>
@@ -281,7 +280,7 @@ public final class UnityConnectionExecutor extends ActivityExecutor {
 
     // Broadcast some message
     private void broadcast(final Command command) {
-        _clients.values().stream().forEach((client) -> { client.send(command); });
+        _clients.values().stream().forEach((client) -> client.send(command));
     }
     
 }

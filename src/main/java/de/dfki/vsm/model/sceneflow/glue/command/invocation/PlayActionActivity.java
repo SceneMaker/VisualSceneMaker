@@ -18,7 +18,8 @@ public final class PlayActionActivity extends Invocation {
         Default,
         Concurrent,
         Sequential
-    };
+    }
+
     private PlayMode mMode;
     private Expression mCommand;
     private ArrayList<Expression> mArgList;
@@ -72,12 +73,12 @@ public final class PlayActionActivity extends Invocation {
 
     @Override
     public final String getAbstractSyntax() {
-        String desc = "PlayAction(";
-        desc += ((mCommand != null)
+        StringBuilder desc = new StringBuilder("PlayAction(");
+        desc.append((mCommand != null)
                 ? mCommand.getAbstractSyntax()
                 : "");
-        for (int i = 0; i < mArgList.size(); i++) {
-            desc += ", " + mArgList.get(i).getAbstractSyntax();
+        for (Expression expression : mArgList) {
+            desc.append(", ").append(expression.getAbstractSyntax());
         }
         return desc + ")";
     }
@@ -85,13 +86,13 @@ public final class PlayActionActivity extends Invocation {
     @Override
     public final String getConcreteSyntax() {
 
-        String desc = (mMode == PlayMode.Default ? "PlayAction("
-                : (mMode == PlayMode.Sequential ? "!-" : "!="));
-        desc += ((mCommand != null)
+        StringBuilder desc = new StringBuilder((mMode == PlayMode.Default ? "PlayAction("
+                : (mMode == PlayMode.Sequential ? "!-" : "!=")));
+        desc.append((mCommand != null)
                 ? mCommand.getConcreteSyntax()
                 : "");
-        for (int i = 0; i < mArgList.size(); i++) {
-            desc += ", " + mArgList.get(i).getConcreteSyntax();
+        for (Expression expression : mArgList) {
+            desc.append(", ").append(expression.getConcreteSyntax());
         }
          return desc + (mMode == PlayMode.Default ? ")"
                 : (mMode == PlayMode.Sequential ? "." : "."));
@@ -100,13 +101,13 @@ public final class PlayActionActivity extends Invocation {
     // TODO: Check the mode for syntax here
     @Override
     public final String getFormattedSyntax() {
-        String desc = "#p#" + (mMode == PlayMode.Default ? "PlayAction ( "
-                : (mMode == PlayMode.Sequential ? "!- " : "!= "));
-        desc += ((mCommand != null)
+        StringBuilder desc = new StringBuilder("#p#" + (mMode == PlayMode.Default ? "PlayAction ( "
+                : (mMode == PlayMode.Sequential ? "!- " : "!= ")));
+        desc.append((mCommand != null)
                 ? mCommand.getFormattedSyntax()
                 : "");
-        for (int i = 0; i < mArgList.size(); i++) {
-            desc += " , " + mArgList.get(i).getFormattedSyntax();
+        for (Expression expression : mArgList) {
+            desc.append(" , ").append(expression.getFormattedSyntax());
         }
         return desc + (mMode == PlayMode.Default ? " ) "
                 : (mMode == PlayMode.Sequential ? " ." : " ."));
@@ -123,8 +124,8 @@ public final class PlayActionActivity extends Invocation {
         if (mCommand != null) {
             mCommand.writeXML(out);
         }
-        for (int i = 0; i < mArgList.size(); i++) {
-            mArgList.get(i).writeXML(out);
+        for (Expression expression : mArgList) {
+            expression.writeXML(out);
         }
         out.pop().println("</PlayAction>");
     }

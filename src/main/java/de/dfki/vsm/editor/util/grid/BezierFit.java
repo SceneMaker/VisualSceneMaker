@@ -119,7 +119,7 @@ public class BezierFit {
 
     /** Computes the percentage of path length at each point. Can directly be used as t-indices into the bezier curve. */
     private double[] normalizedPathLengths(ArrayList<BezierPoint> points) {
-        double pathLength[] = new double[points.size()];
+        double[] pathLength = new double[points.size()];
 
         pathLength[0] = 0;
 

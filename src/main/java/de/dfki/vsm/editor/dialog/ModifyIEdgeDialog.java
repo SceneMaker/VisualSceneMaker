@@ -8,7 +8,6 @@ import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.OKButton;
 import de.dfki.vsm.editor.RemoveButton;
 import de.dfki.vsm.editor.dialog.Dialog.Button;
-import de.dfki.vsm.editor.event.CEdgeDialogModifiedEvent;
 import de.dfki.vsm.editor.event.IEdgeDialogModifiedEvent;
 import de.dfki.vsm.editor.util.AltStartNodeManager;
 import de.dfki.vsm.editor.util.HintTextField;
@@ -112,18 +111,14 @@ public class ModifyIEdgeDialog extends Dialog implements EventListener {
         errorMsg.setMinimumSize(labelSize);
 
         //Key listener need to gain focus on the text field
-        KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(new KeyEventDispatcher() {
-
-            @Override
-            public boolean dispatchKeyEvent(KeyEvent ke) {
-                //boolean keyHandled = false;
-                if (ke.getID() == KeyEvent.KEY_PRESSED) {
-                    if (!mInputTextField.hasFocus()) {
-                        mInputTextField.requestFocus();
-                    }
+        KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(ke -> {
+            //boolean keyHandled = false;
+            if (ke.getID() == KeyEvent.KEY_PRESSED) {
+                if (!mInputTextField.hasFocus()) {
+                    mInputTextField.requestFocus();
                 }
-                return false;
             }
+            return false;
         });
         //FINAL BOX
         Box finalBox = Box.createVerticalBox();
@@ -307,9 +302,8 @@ public class ModifyIEdgeDialog extends Dialog implements EventListener {
         mAltStartNodeManager.loadAltStartNodeMap();
 
         if (mIEdge.getTargetNode() instanceof SuperNode) {
-            Iterator it = mAltStartNodeManager.mAltStartNodeMap.entrySet().iterator();
-            while (it.hasNext()) {
-                Map.Entry pairs = (Map.Entry) it.next();
+            for (Map.Entry<TPLTuple<String, BasicNode>, TPLTuple<String, BasicNode>> tplTupleTPLTupleEntry : mAltStartNodeManager.mAltStartNodeMap.entrySet()) {
+                Map.Entry pairs = (Map.Entry) tplTupleTPLTupleEntry;
                 TPLTuple<String, BasicNode> startNodePair = (TPLTuple<String, BasicNode>) pairs.getKey();
                 TPLTuple<String, BasicNode> altStartNodePair = (TPLTuple<String, BasicNode>) pairs.getValue();
                 ((DefaultListModel) mAltStartNodeList.getModel()).addElement(
@@ -336,9 +330,8 @@ public class ModifyIEdgeDialog extends Dialog implements EventListener {
 
         // /
         ((DefaultListModel) mAltStartNodeList.getModel()).clear();
-        Iterator it = mAltStartNodeManager.mAltStartNodeMap.entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry pairs = (Map.Entry) it.next();
+        for (Map.Entry<TPLTuple<String, BasicNode>, TPLTuple<String, BasicNode>> tplTupleTPLTupleEntry : mAltStartNodeManager.mAltStartNodeMap.entrySet()) {
+            Map.Entry pairs = (Map.Entry) tplTupleTPLTupleEntry;
             TPLTuple<String, BasicNode> startNodePair = (TPLTuple<String, BasicNode>) pairs.getKey();
             TPLTuple<String, BasicNode> altStartNodePair = (TPLTuple<String, BasicNode>) pairs.getValue();
 
@@ -384,12 +377,7 @@ public class ModifyIEdgeDialog extends Dialog implements EventListener {
     @Override
     public void update(EventObject event) {
         if(event instanceof IEdgeDialogModifiedEvent && event.getSource() != this){
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    changeDuplicatedInputFieldText((IEdgeDialogModifiedEvent) event);
-                }
-            });
+            SwingUtilities.invokeLater(() -> changeDuplicatedInputFieldText((IEdgeDialogModifiedEvent) event));
 
         }
     }

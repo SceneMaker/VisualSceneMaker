@@ -47,12 +47,7 @@ public class WebCamFrame extends JFrame {
         pack();
         setVisible(true);
 
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                mPanel.start();
-            }
-        });
+        SwingUtilities.invokeLater(() -> mPanel.start());
 
     }
 

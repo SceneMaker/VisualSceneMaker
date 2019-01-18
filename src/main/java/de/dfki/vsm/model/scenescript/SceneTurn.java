@@ -89,21 +89,21 @@ public final class SceneTurn extends ScriptEntity {
 	////////////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////
 	public final String getCleanText() {
-		String result = "";
+		StringBuilder result = new StringBuilder();
 
 		for (SceneUttr utt : mUttrList) {
 
 			for (UttrElement word : utt.getWordList()) {
 				if (word instanceof SceneWord) {
-					result += ((SceneWord) word).getText() + " ";
+					result.append(((SceneWord) word).getText()).append(" ");
 				}
 			}
-			result = result.trim() + utt.getPunctuationMark() + " ";
+			result = new StringBuilder(result.toString().trim() + utt.getPunctuationMark() + " ");
 		}
 
-		result = result.trim();
+		result = new StringBuilder(result.toString().trim());
 
-		return result;
+		return result.toString();
 	}
 
     ////////////////////////////////////////////////////////////////////////////
@@ -111,13 +111,13 @@ public final class SceneTurn extends ScriptEntity {
 	////////////////////////////////////////////////////////////////////////////
 	@Override
 	public final String getText() {
-		String result = mSpeaker + ":";
+		StringBuilder result = new StringBuilder(mSpeaker + ":");
 
 		for (SceneUttr utt : mUttrList) {
-			result += utt.getText();
+			result.append(utt.getText());
 		}
 
-		return result;
+		return result.toString();
 	}
 
     ////////////////////////////////////////////////////////////////////////////
@@ -126,13 +126,13 @@ public final class SceneTurn extends ScriptEntity {
 	@Override
 	public final String getText(final HashMap<String, String> args
 	) {
-		String result = mSpeaker + ":";
+		StringBuilder result = new StringBuilder(mSpeaker + ":");
 
 		for (SceneUttr utt : mUttrList) {
-			result += utt.getText(args);
+			result.append(utt.getText(args));
 		}
 
-		return result;
+		return result.toString();
 	}
 
     ////////////////////////////////////////////////////////////////////////////

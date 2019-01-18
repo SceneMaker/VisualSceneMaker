@@ -211,11 +211,9 @@ public final class SceneElementDisplay extends JScrollPane implements EventListe
             JPopupMenu pop = new JPopupMenu();
             JMenuItem item = new JMenuItem("Add");
 
-            item.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent event) {
-                    SceneActionDialog.getInstance().prepareNewAction();
-                    SceneActionDialog.getInstance().setVisible(true);
-                }
+            item.addActionListener(event -> {
+                SceneActionDialog.getInstance().prepareNewAction();
+                SceneActionDialog.getInstance().setVisible(true);
             });
             pop.add(item);
             pop.show(this, e.getX(), e.getY());
@@ -225,55 +223,47 @@ public final class SceneElementDisplay extends JScrollPane implements EventListe
             JPopupMenu pop = new JPopupMenu();
             JMenuItem item = new JMenuItem("Copy");
 
-            item.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent event) {
+            item.addActionListener(event -> {
 
-                    // Entry node = (Entry) getLastSelectedPathComponent();
-                    // SM3SceneAction aToCopy = (SM3SceneAction) node.getData();
-                    // SM3SceneAction copyedAction = (SM3SceneAction) aToCopy.getCopy();
-                    // copyedAction.setActionName(copyedAction.getActionName() + " (copy)");
-                    // SM3SceneActicon asd = Editor.getInstance().getSelectedProjectEditor().getProject().getSceneActions();
-                    // asd.addAction(copyedAction);
-                    // showSceneAction(Editor.getInstance().getSelectedProjectEditor().getProject());
-                }
+                // Entry node = (Entry) getLastSelectedPathComponent();
+                // SM3SceneAction aToCopy = (SM3SceneAction) node.getData();
+                // SM3SceneAction copyedAction = (SM3SceneAction) aToCopy.getCopy();
+                // copyedAction.setActionName(copyedAction.getActionName() + " (copy)");
+                // SM3SceneActicon asd = Editor.getInstance().getSelectedProjectEditor().getProject().getSceneActions();
+                // asd.addAction(copyedAction);
+                // showSceneAction(Editor.getInstance().getSelectedProjectEditor().getProject());
             });
             pop.add(item);
             item = new JMenuItem("Edit");
-            item.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent event) {
-                    TreeEntry node = (TreeEntry) getLastSelectedPathComponent();
-                    int pos = 0;
-                    ActiconAction a = (ActiconAction) node.getData();
+            item.addActionListener(event -> {
+                TreeEntry node = (TreeEntry) getLastSelectedPathComponent();
+                int pos = 0;
+                ActiconAction a = (ActiconAction) node.getData();
 
-                    // remove it
-                    SceneActionDialog.getInstance().editAction(a, pos);
-                    SceneActionDialog.getInstance().setVisible(true);
-                    node.removeFromParent();
+                // remove it
+                SceneActionDialog.getInstance().editAction(a, pos);
+                SceneActionDialog.getInstance().setVisible(true);
+                node.removeFromParent();
 
-                    ActiconConfig asd = EditorInstance.getInstance().getSelectedProjectEditor().getEditorProject().getActicon();
+                ActiconConfig asd = EditorInstance.getInstance().getSelectedProjectEditor().getEditorProject().getActicon();
 
-                    asd.remove(a);
-                }
+                asd.remove(a);
             });
             pop.add(item);
             pop.addSeparator();
             item = new JMenuItem("Delete");
-            item.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent event) {
-                    TreeEntry node = (TreeEntry) getLastSelectedPathComponent();
-                    ActiconAction aToDel = (ActiconAction) node.getData();
+            item.addActionListener(event -> {
+                TreeEntry node = (TreeEntry) getLastSelectedPathComponent();
+                ActiconAction aToDel = (ActiconAction) node.getData();
 
-                    node.removeFromParent();
+                node.removeFromParent();
 
-                    ActiconConfig asd = EditorInstance.getInstance().getSelectedProjectEditor().getEditorProject().getActicon();
+                ActiconConfig asd = EditorInstance.getInstance().getSelectedProjectEditor().getEditorProject().getActicon();
 
-                    asd.remove(aToDel);
-                    // TODO: Why do we save the acticon here, that is bullshit
-                    //Editor.getInstance().getSelectedProjectEditor().getProject().saveActicon();
-                    //showSceneAction(Editor.getInstance().getSelectedProjectEditor().getProject());
-                }
+                asd.remove(aToDel);
+                // TODO: Why do we save the acticon here, that is bullshit
+                //Editor.getInstance().getSelectedProjectEditor().getProject().saveActicon();
+                //showSceneAction(Editor.getInstance().getSelectedProjectEditor().getProject());
             });
             pop.add(item);
             pop.show(this, e.getX(), e.getY());
@@ -357,15 +347,12 @@ public final class SceneElementDisplay extends JScrollPane implements EventListe
             };
 
             // Install the drag gesture listener
-            mDragGestureListener = new DragGestureListener() {
-                @Override
-                public void dragGestureRecognized(DragGestureEvent event) {
+            mDragGestureListener = event -> {
 
-                    // TODO: NULLPOINTEREXCEPTION abfangen
-                    TreeEntry selectedEntry = (TreeEntry) getSelectionPath().getLastPathComponent();
+                // TODO: NULLPOINTEREXCEPTION abfangen
+                TreeEntry selectedEntry = (TreeEntry) getSelectionPath().getLastPathComponent();
 
-                    mDragSource.startDrag(event, DragSource.DefaultCopyDrop, selectedEntry, mDragSourceListener);
-                }
+                mDragSource.startDrag(event, DragSource.DefaultCopyDrop, selectedEntry, mDragSourceListener);
             };
 
             // Set the acceptable actions

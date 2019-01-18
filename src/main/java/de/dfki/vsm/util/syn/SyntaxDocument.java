@@ -142,7 +142,7 @@ public class SyntaxDocument extends PlainDocument implements UndoableEditListene
     public final int[] getPosition(final int offset) {
 
         // Get The Line and Column For An offset
-        int data[] = { 1, 1 };
+        int[] data = {1, 1};
 
         try {
             for (int i = 0; i < offset; i++) {
@@ -162,7 +162,7 @@ public class SyntaxDocument extends PlainDocument implements UndoableEditListene
 
     // Get The Line and Column For Position
     public final int[] getLineOf(final int position) {
-        int data[] = { 1, 1 };
+        int[] data = {1, 1};
 
         try {
             for (int i = 0; i < position; i++) {

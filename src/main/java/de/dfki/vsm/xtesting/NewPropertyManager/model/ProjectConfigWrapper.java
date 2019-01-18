@@ -19,6 +19,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import java.util.LinkedList;
 
@@ -184,11 +185,8 @@ public class ProjectConfigWrapper {
             e.printStackTrace();
         }
         try {
-            doc = docBuilder.parse(new InputSource(new ByteArrayInputStream(xml.getBytes("utf-8"))));
-        } catch (SAXException e) {
-            e.printStackTrace();
-            return xml;
-        } catch (IOException e) {
+            doc = docBuilder.parse(new InputSource(new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8))));
+        } catch (SAXException | IOException e) {
             e.printStackTrace();
             return xml;
         }

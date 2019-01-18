@@ -40,6 +40,7 @@ import de.dfki.vsm.xtension.stickmantts.util.tts.sequence.Phoneme;
 
 import java.io.*;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -236,7 +237,7 @@ public class StickmanTtsExecutor extends ActivityExecutor implements ExportableP
         IOSIndentWriter iosw = new IOSIndentWriter(out);
         boolean r = XMLUtilities.writeToXMLWriter(stickmanAnimation, iosw);
         try {
-            broadcast(new String(out.toByteArray(), "UTF-8").replace("\n", " "));
+            broadcast(new String(out.toByteArray(), StandardCharsets.UTF_8).replace("\n", " "));
             out.close();
         } catch (UnsupportedEncodingException exc) {
             mLogger.warning(exc.getMessage());
@@ -270,12 +271,10 @@ public class StickmanTtsExecutor extends ActivityExecutor implements ExportableP
     }
 
     private Thread getSpeakThread(final String executionId) {
-        return new Thread() {
-            public void run() {
-                System.out.println("ExecutionID: " + executionId);
-                intentToSpeak(executionId);
-            }
-        };
+        return new Thread(() -> {
+            System.out.println("ExecutionID: " + executionId);
+            intentToSpeak(executionId);
+        });
     }
 
     public String intentToSpeak(String executionId) {
@@ -319,15 +318,13 @@ public class StickmanTtsExecutor extends ActivityExecutor implements ExportableP
     }
 
     private void launchStage() {
-        stickmanLaunchThread = new Thread() {
-            public void run() {
-                try {
-                    stickmanStageC.launchStickmanStage(true);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+        stickmanLaunchThread = new Thread(() -> {
+            try {
+                stickmanStageC.launchStickmanStage(true);
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-        };
+        });
 
         stickmanLaunchThread.start();
     }
@@ -347,15 +344,13 @@ public class StickmanTtsExecutor extends ActivityExecutor implements ExportableP
         WaitingDialog InfoDialog = new WaitingDialog("Loading MaryTTS...");
         marySelfServer = MaryTTsProcess.getsInstance(mConfig.getProperty("mary.base"));
         marySelfServer.registerObserver(InfoDialog);
-        Thread tDialog = new Thread() {
-            public void run() {
-                try {
-                    marySelfServer.startMaryServer(); //TODO: Show info dialog of loading....
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+        Thread tDialog = new Thread(() -> {
+            try {
+                marySelfServer.startMaryServer(); //TODO: Show info dialog of loading....
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-        };
+        });
         tDialog.start();
         InfoDialog.setModal(true);
         InfoDialog.setVisible(true);

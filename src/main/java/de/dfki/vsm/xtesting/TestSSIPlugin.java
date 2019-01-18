@@ -7,13 +7,14 @@ import de.dfki.vsm.xtension.tricatworld.TriCatWorldSSIData;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 
 /**
  * @author Gregor Mehlmann
  */
 public class TestSSIPlugin {
 
-    public static void main(String args[]) {
+    public static void main(String[] args) {
 
         final String xmldata = "\n"
                 + "<ssi>\n"
@@ -108,19 +109,15 @@ public class TestSSIPlugin {
                 + "</events>\n";
 
         final SSIEventArray array = new SSIEventArray();
-        try {
-            //
-            final ByteArrayInputStream in = new ByteArrayInputStream(
-                    ssievents.getBytes("UTF-8"));
-            final ByteArrayOutputStream out = new ByteArrayOutputStream();
-            //
-            XMLUtilities.parseFromXMLStream(array, in);
-            XMLUtilities.writeToXMLStream(array, out);
-            //
-            //System.out.print(out.toString());
-        } catch (final UnsupportedEncodingException exc) {
-            exc.printStackTrace();
-        }
+        //
+        final ByteArrayInputStream in = new ByteArrayInputStream(
+                ssievents.getBytes(StandardCharsets.UTF_8));
+        final ByteArrayOutputStream out = new ByteArrayOutputStream();
+        //
+        XMLUtilities.parseFromXMLStream(array, in);
+        XMLUtilities.writeToXMLStream(array, out);
+        //
+        //System.out.print(out.toString());
 
         final TriCatWorldSSIData mSSIData = new TriCatWorldSSIData(
                 ((SSIStringData) array.list().get(0).getData()).toString());

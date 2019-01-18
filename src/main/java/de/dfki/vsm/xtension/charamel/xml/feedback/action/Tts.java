@@ -5,7 +5,6 @@
  */
 package de.dfki.vsm.xtension.charamel.xml.feedback.action;
 
-import de.dfki.vsm.xtension.tricatworld.xml.feedback.action.*;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
 import de.dfki.vsm.util.xml.XMLParseError;
@@ -13,7 +12,6 @@ import de.dfki.vsm.util.xml.XMLParseable;
 import de.dfki.vsm.util.xml.XMLWriteError;
 import de.dfki.vsm.util.xml.XMLWriteable;
 import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
 
 /**
  *

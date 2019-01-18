@@ -79,12 +79,7 @@ public class MediaDisplayGUI {
     }
 
     public void setVisible(boolean visible) {
-        Platform.runLater(new Runnable() {
-            @Override
-            public void run() {
-                mFrame.setVisible(visible);
-            }
-        });
+        Platform.runLater(() -> mFrame.setVisible(visible));
 
     }
 

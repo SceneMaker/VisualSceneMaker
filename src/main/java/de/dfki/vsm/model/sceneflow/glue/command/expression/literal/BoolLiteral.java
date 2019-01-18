@@ -39,7 +39,7 @@ public final class BoolLiteral extends LiteralExpression {
 
     @Override
     public final String getFormattedSyntax() {
-        return "#c#" + Boolean.toString(mValue);
+        return "#c#" + mValue;
     }
 
     @Override

@@ -107,36 +107,36 @@ public class SceneUttr extends ScriptEntity {
 	////////////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////
 	public final String getCleanTextOnly() {
-		String result = "";
+		StringBuilder result = new StringBuilder();
 
 		// TODO variables
 		for (UttrElement word : mWordList) {
 			if (word instanceof SceneWord) {
-				result += ((SceneWord) word).getText() + " ";
+				result.append(((SceneWord) word).getText()).append(" ");
 			}
 		}
-		result = result.trim();
+		result = new StringBuilder(result.toString().trim());
 
-		return result;
+		return result.toString();
 	}
 
 	    ////////////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////
 	public final String getCleanText() {
-		String result = "";
+		StringBuilder result = new StringBuilder();
 
 		// TODO variables
 		for (UttrElement word : mWordList) {
 			if (word instanceof SceneWord) {
-				result += ((SceneWord) word).getText() + " ";
+				result.append(((SceneWord) word).getText()).append(" ");
 			}
 		}
-		result = result.trim() + getPunctuationMark() + " ";
+		result = new StringBuilder(result.toString().trim() + getPunctuationMark() + " ");
 
-		result = result.trim();
+		result = new StringBuilder(result.toString().trim());
 
-		return result;
+		return result.toString();
 	}
 
     ////////////////////////////////////////////////////////////////////////////
@@ -144,11 +144,11 @@ public class SceneUttr extends ScriptEntity {
 	////////////////////////////////////////////////////////////////////////////
 	@Override
 	public final String getText() {
-		String result = "";
+		StringBuilder result = new StringBuilder();
 
-		for (int i = 0; i < mWordList.size(); i++) {
-			result += " " + mWordList.get(i).getText();
-		}
+        for (UttrElement uttrElement : mWordList) {
+            result.append(" ").append(uttrElement.getText());
+        }
 
 		return result + mPunct;
 	}
@@ -158,11 +158,11 @@ public class SceneUttr extends ScriptEntity {
 	////////////////////////////////////////////////////////////////////////////
 	@Override
 	public final String getText(final HashMap<String, String> args) {
-		String result = "";
+		StringBuilder result = new StringBuilder();
 
-		for (int i = 0; i < mWordList.size(); i++) {
-			result += " " + mWordList.get(i).getText(args);
-		}
+        for (UttrElement uttrElement : mWordList) {
+            result.append(" ").append(uttrElement.getText(args));
+        }
 
 		return result + mPunct;
 	}
@@ -211,50 +211,60 @@ public class SceneUttr extends ScriptEntity {
 				final String name = element.getTagName();
 
 				// Check The Child Tag Name
-				if (name.equals("SceneWord")) {
+                switch (name) {
+                    case "SceneWord": {
 
-					// Create A New Simple Word
-					final SceneWord word = new SceneWord();
+                        // Create A New Simple Word
+                        final SceneWord word = new SceneWord();
 
-					// Parse The NewSimple Word
-					word.parseXML(element);
+                        // Parse The NewSimple Word
+                        word.parseXML(element);
 
-					// Add The New Simple Word
-					mWordList.add(word);
-				} else if (name.equals("SceneAbbrev")) {
+                        // Add The New Simple Word
+                        mWordList.add(word);
+                        break;
+                    }
+                    case "SceneAbbrev": {
 
-					// Create A New Simple Word
-					final SceneAbbrev word = new SceneAbbrev();
+                        // Create A New Simple Word
+                        final SceneAbbrev word = new SceneAbbrev();
 
-					// Parse The NewSimple Word
-					word.parseXML(element);
+                        // Parse The NewSimple Word
+                        word.parseXML(element);
 
-					// Add The New Simple Word
-					mWordList.add(word);
-				} else if (name.equals("SceneParam")) {
+                        // Add The New Simple Word
+                        mWordList.add(word);
+                        break;
+                    }
+                    case "SceneParam": {
 
-					// Create A New Simple Word
-					final SceneParam word = new SceneParam();
+                        // Create A New Simple Word
+                        final SceneParam word = new SceneParam();
 
-					// Parse The NewSimple Word
-					word.parseXML(element);
+                        // Parse The NewSimple Word
+                        word.parseXML(element);
 
-					// Add The New Simple Word
-					mWordList.add(word);
-				} else if (name.equals("ActionObject")) {
+                        // Add The New Simple Word
+                        mWordList.add(word);
+                        break;
+                    }
+                    case "ActionObject": {
 
-					// Create A New Simple Word
-					final ActionObject word = new ActionObject();
+                        // Create A New Simple Word
+                        final ActionObject word = new ActionObject();
 
-					// Parse The NewSimple Word
-					word.parseXML(element);
+                        // Parse The NewSimple Word
+                        word.parseXML(element);
 
-					// Add The New Simple Word
-					mWordList.add(word);
-				} else {
+                        // Add The New Simple Word
+                        mWordList.add(word);
+                        break;
+                    }
+                    default:
 
-					// Do Nothing
-				}
+                        // Do Nothing
+                        break;
+                }
 			}
 		});
 	}

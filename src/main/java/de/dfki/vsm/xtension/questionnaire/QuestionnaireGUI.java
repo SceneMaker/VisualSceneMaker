@@ -56,7 +56,7 @@ public class QuestionnaireGUI {
         mFrame.setLocationRelativeTo(null);
         mFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         
-        Platform.runLater(() -> initFX());
+        Platform.runLater(this::initFX);
     }
     
     public void setVisible(boolean visible) {

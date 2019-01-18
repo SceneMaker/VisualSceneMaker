@@ -97,7 +97,7 @@ public class UnityConnectionHandler extends Thread {
                 }
                 default: {
                     // Invalid command
-                    _logger.failure("Received an invalid command: " + Byte.toString(header[0]));
+                    _logger.failure("Received an invalid command: " + header[0]);
                     return null;
                 }
             }

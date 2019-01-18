@@ -302,7 +302,7 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
         // Update the font and the font metrics that have to be
         // recomputed if the node's font size has changed
         // TODO: Move attributes to preferences and make editable
-        Map<TextAttribute, Object> map = new Hashtable<TextAttribute, Object>();
+        Map<TextAttribute, Object> map = new Hashtable<>();
 
         map.put(TextAttribute.KERNING, TextAttribute.KERNING_ON);
         map.put(TextAttribute.FAMILY, Font.SANS_SERIF);

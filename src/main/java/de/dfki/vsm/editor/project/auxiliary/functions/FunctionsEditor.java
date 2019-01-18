@@ -49,7 +49,6 @@ public class FunctionsEditor extends JPanel implements EventListener
     protected UndoManager mUndoManager = null;
 
     private ArrayList<SingleFunctionContainer> mFunctionContainerList = new ArrayList<>();
-    ;
 
     private final SceneFlow mSceneFlow;
     private String defaulFuncName = "newCommand";

@@ -13,6 +13,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 
 /**
@@ -26,7 +27,7 @@ public class XMLReader {
     private LinkedList<String> valuesOfTag = new LinkedList<>();
 
     public XMLReader(String data) throws IOException, ParserConfigurationException, SAXException {
-        this.byteData = new ByteArrayInputStream(data.getBytes("UTF-8"));
+        this.byteData = new ByteArrayInputStream(data.getBytes(StandardCharsets.UTF_8));
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         builder = factory.newDocumentBuilder();
         read();

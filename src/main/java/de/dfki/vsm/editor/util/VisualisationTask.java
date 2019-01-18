@@ -27,7 +27,6 @@ public class VisualisationTask extends TimerTask {
 
     public enum Type { Highlight, Normal }
 
-    ;
     public VisualisationTask(int steps, JComponent c) {
         mSteps       = steps;
         mCurrentStep = mSteps;

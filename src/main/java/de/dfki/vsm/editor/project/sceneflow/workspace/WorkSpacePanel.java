@@ -57,7 +57,6 @@ import de.dfki.vsm.model.sceneflow.glue.command.expression.CallingExpression;
 import de.dfki.vsm.model.sceneflow.glue.command.definition.FunctionDefinition;
 import de.dfki.vsm.model.sceneflow.glue.command.definition.VariableDefinition;
 import de.dfki.vsm.model.sceneflow.glue.command.definition.DataTypeDefinition;
-import de.dfki.vsm.model.sceneflow.chart.graphics.node.NodePosition;
 import de.dfki.vsm.model.scenescript.SceneGroup;
 import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.evt.EventListener;
@@ -162,7 +161,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
 
     //
     private final LinkedList<VarBadgeLocal> mVarBadgeStack = new LinkedList<>();
-    private ArrayList<CmdBadge> mCmdBadgeList = new ArrayList<CmdBadge>();
+    private ArrayList<CmdBadge> mCmdBadgeList = new ArrayList<>();
 
     // Drag & Drop support
     private DropTarget mDropTarget;

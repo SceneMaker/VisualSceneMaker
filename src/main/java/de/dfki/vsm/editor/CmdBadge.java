@@ -144,8 +144,8 @@ public class CmdBadge extends JComponent implements EventListener, Observer {
         int width = 0,
                 height = 0;
 
-        for (int i = 0; i < mStringList.size(); i++) {
-            TextLayout textLayout = new TextLayout(mStringList.get(i).getSecond().getIterator(),
+        for (TPLTuple<String, AttributedString> stringAttributedStringTPLTuple : mStringList) {
+            TextLayout textLayout = new TextLayout(stringAttributedStringTPLTuple.getSecond().getIterator(),
                     graphics.getFontRenderContext());
             int advance = (int) textLayout.getVisibleAdvance();
 

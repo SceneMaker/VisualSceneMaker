@@ -23,35 +23,46 @@ public abstract class Invocation extends Command {
     public static Invocation parse(final Element element) throws XMLParseError {
         Invocation invocation;
         final String tag = element.getTagName();
-        if (tag.equals("StopAction")) {
-            invocation = new StopActionActivity();
-            invocation.parseXML(element);
-        } else if (tag.equals("PlayAction")) {
-            invocation = new PlayActionActivity();
-            invocation.parseXML(element);
-        } else if (tag.equals("PlayScene")) {
-            invocation = new PlayScenesActivity();
-            invocation.parseXML(element);
-        } else if (tag.equals("PlayDialogAct")) {
-            invocation = new PlayDialogAction();
-            invocation.parseXML(element);
-        }  else if (tag.equals("FreeOneSceneGroup")) {
-            invocation = new UnblockSceneGroup();
-            invocation.parseXML(element);
-        } else if (tag.equals("FreeAllSceneGroups")) {
-            invocation = new UnblockSceneScript();
-            invocation.parseXML(element);
-        } else if (tag.equals("HistoryClearFlat")) {
-            invocation = new HistoryClearFlat();
-            invocation.parseXML(element);
-        } else if (tag.equals("HistoryClearDeep")) {
-            invocation = new HistoryClearDeep();
-            invocation.parseXML(element);
-        } else if (tag.equals("HistorySetDepth")) {
-            invocation = new HistorySetDepth();
-            invocation.parseXML(element);
-        } else {
-            invocation = null;
+        switch (tag) {
+            case "StopAction":
+                invocation = new StopActionActivity();
+                invocation.parseXML(element);
+                break;
+            case "PlayAction":
+                invocation = new PlayActionActivity();
+                invocation.parseXML(element);
+                break;
+            case "PlayScene":
+                invocation = new PlayScenesActivity();
+                invocation.parseXML(element);
+                break;
+            case "PlayDialogAct":
+                invocation = new PlayDialogAction();
+                invocation.parseXML(element);
+                break;
+            case "FreeOneSceneGroup":
+                invocation = new UnblockSceneGroup();
+                invocation.parseXML(element);
+                break;
+            case "FreeAllSceneGroups":
+                invocation = new UnblockSceneScript();
+                invocation.parseXML(element);
+                break;
+            case "HistoryClearFlat":
+                invocation = new HistoryClearFlat();
+                invocation.parseXML(element);
+                break;
+            case "HistoryClearDeep":
+                invocation = new HistoryClearDeep();
+                invocation.parseXML(element);
+                break;
+            case "HistorySetDepth":
+                invocation = new HistorySetDepth();
+                invocation.parseXML(element);
+                break;
+            default:
+                invocation = null;
+                break;
         }
         return invocation;
     }

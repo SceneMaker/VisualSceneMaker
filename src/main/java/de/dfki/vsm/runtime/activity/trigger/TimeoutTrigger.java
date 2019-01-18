@@ -22,12 +22,6 @@ public final class TimeoutTrigger implements ActivityTrigger, Comparable<Timeout
 
     @Override
     public final int compareTo(final TimeoutTrigger trigger) {
-        if (trigger.getTimeout() < mTimeout) {
-            return 1;
-        } else if (trigger.getTimeout() > mTimeout) {
-            return -1;
-        } else {
-            return 0;
-        }
+        return Long.compare(mTimeout, trigger.getTimeout());
     }
 }

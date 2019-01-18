@@ -6,6 +6,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 
 /**
  * @author Gregor Mehlmann
@@ -89,7 +90,7 @@ public class CharamelHandler extends Thread {
                     respArr = new byte[msgSize];
                     mInStream.readFully(respArr);
                 }
-                final String message = new String(respArr, "UTF-8").trim();
+                final String message = new String(respArr, StandardCharsets.UTF_8).trim();
             
             // Receive The Next Line
             //final String message = mInStream.readLine();
@@ -109,7 +110,7 @@ public class CharamelHandler extends Thread {
     public final boolean send(final String string) {
         try {
             // Construct The Message
-            final byte[] bytes = string.getBytes("UTF-8");
+            final byte[] bytes = string.getBytes(StandardCharsets.UTF_8);
             // And Then Send Message 
             mOutStream.write(BINUtilities.IntToBytesLE(100));
             mOutStream.write(BINUtilities.IntToBytesLE(0));

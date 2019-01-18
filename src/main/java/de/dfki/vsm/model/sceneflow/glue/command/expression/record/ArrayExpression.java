@@ -16,7 +16,7 @@ public final class ArrayExpression extends Expression {
     final private ArrayList<Expression> mExpList;
 
     public ArrayExpression() {
-        mExpList = new ArrayList<Expression>();
+        mExpList = new ArrayList<>();
     }
 
     public ArrayExpression(final ArrayList expList) {
@@ -41,12 +41,12 @@ public final class ArrayExpression extends Expression {
 
     @Override
     public final String getAbstractSyntax() {
-        String desc = "";
+        StringBuilder desc = new StringBuilder();
         for (int i = 0; i < mExpList.size(); i++) {
-            desc += mExpList.get(i).getConcreteSyntax();
+            desc.append(mExpList.get(i).getConcreteSyntax());
 
             if (i != mExpList.size() - 1) {
-                desc += " , ";
+                desc.append(" , ");
             }
         }
         return "List(" + desc + ")";
@@ -54,12 +54,12 @@ public final class ArrayExpression extends Expression {
 
     @Override
     public final String getConcreteSyntax() {
-        String desc = /* mType + */ "[ ";
+        StringBuilder desc = /* mType + */ new StringBuilder("[ ");
         for (int i = 0; i < mExpList.size(); i++) {
-            desc += mExpList.get(i).getConcreteSyntax();
+            desc.append(mExpList.get(i).getConcreteSyntax());
 
             if (i != mExpList.size() - 1) {
-                desc += " , ";
+                desc.append(" , ");
             }
         }
         return desc + " ]";
@@ -67,12 +67,12 @@ public final class ArrayExpression extends Expression {
 
     @Override
     public final String getFormattedSyntax() {
-        String desc = /* mType + */ "[ ";
+        StringBuilder desc = /* mType + */ new StringBuilder("[ ");
         for (int i = 0; i < mExpList.size(); i++) {
-            desc += mExpList.get(i).getFormattedSyntax();
+            desc.append(mExpList.get(i).getFormattedSyntax());
 
             if (i != mExpList.size() - 1) {
-                desc += " , ";
+                desc.append(" , ");
             }
         }
         return desc + " ]";
@@ -86,8 +86,8 @@ public final class ArrayExpression extends Expression {
     @Override
     public final void writeXML(final IOSIndentWriter out) throws XMLWriteError {
         out.println("<ArrayExpression>").push();
-        for (int i = 0; i < mExpList.size(); i++) {
-            mExpList.get(i).writeXML(out);
+        for (Expression expression : mExpList) {
+            expression.writeXML(out);
         }
         out.pop().println("</ArrayExpression>");
     }

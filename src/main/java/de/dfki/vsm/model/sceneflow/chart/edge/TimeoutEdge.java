@@ -88,15 +88,14 @@ public class TimeoutEdge extends AbstractEdge {
     }
 
     public void writeXML(de.dfki.vsm.util.ios.IOSIndentWriter out) throws XMLWriteError {
-        String   start = "";
-        Iterator it    = mAltMap.entrySet().iterator();
+        StringBuilder start = new StringBuilder();
 
-        while (it.hasNext()) {
-            Map.Entry              pairs            = (Map.Entry) it.next();
-            TPLTuple<String, BasicNode> startNodeData    = (TPLTuple<String, BasicNode>) pairs.getKey();
+        for (Map.Entry<TPLTuple<String, BasicNode>, TPLTuple<String, BasicNode>> tplTupleTPLTupleEntry : mAltMap.entrySet()) {
+            Map.Entry pairs = (Map.Entry) tplTupleTPLTupleEntry;
+            TPLTuple<String, BasicNode> startNodeData = (TPLTuple<String, BasicNode>) pairs.getKey();
             TPLTuple<String, BasicNode> altStartNodeData = (TPLTuple<String, BasicNode>) pairs.getValue();
 
-            start += startNodeData.getFirst() + "/" + altStartNodeData.getFirst() + ";";
+            start.append(startNodeData.getFirst()).append("/").append(altStartNodeData.getFirst()).append(";");
         }
 
         out.println("<TEdge target=\"" + mTargetUnid + "\" start=\"" + start + "\" timeout=\"" + mTimeout + "\">");
@@ -108,8 +107,8 @@ public class TimeoutEdge extends AbstractEdge {
         if (!mCmdList.isEmpty()) {
             out.println("<Commands>").push();
 
-            for (int i = 0; i < mCmdList.size(); i++) {
-                mCmdList.get(i).writeXML(out);
+            for (Command command : mCmdList) {
+                command.writeXML(out);
             }
 
             out.pop().println("</Commands>");
@@ -129,8 +128,8 @@ public class TimeoutEdge extends AbstractEdge {
                 String[]               ids          = idPair.split("/");
                 String                 startId      = ids[0];
                 String                 altStartId   = ids[1];
-                TPLTuple<String, BasicNode> startPair    = new TPLTuple<String, BasicNode>(startId, null);
-                TPLTuple<String, BasicNode> altStartPair = new TPLTuple<String, BasicNode>(altStartId, null);
+                TPLTuple<String, BasicNode> startPair    = new TPLTuple<>(startId, null);
+                TPLTuple<String, BasicNode> altStartPair = new TPLTuple<>(altStartId, null);
 
                 mAltMap.put(startPair, altStartPair);
             }

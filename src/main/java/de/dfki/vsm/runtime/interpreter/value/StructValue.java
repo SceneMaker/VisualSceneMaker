@@ -21,13 +21,12 @@ public class StructValue extends AbstractValue {
     }
 
     public HashMap<java.lang.String, AbstractValue> getCopyOfValueMap() {
-        HashMap<java.lang.String, AbstractValue> valueMapCopy = new HashMap<java.lang.String, AbstractValue>();
-        Iterator                                 it           = mValueMap.entrySet().iterator();
+        HashMap<java.lang.String, AbstractValue> valueMapCopy = new HashMap<>();
 
-        while (it.hasNext()) {
-            Map.Entry        pairs = (Map.Entry) it.next();
-            java.lang.String name  = (java.lang.String) pairs.getKey();
-            AbstractValue    value = (AbstractValue) pairs.getValue();
+        for (Map.Entry<String, AbstractValue> stringAbstractValueEntry : mValueMap.entrySet()) {
+            Map.Entry pairs = (Map.Entry) stringAbstractValueEntry;
+            String name = (String) pairs.getKey();
+            AbstractValue value = (AbstractValue) pairs.getValue();
 
             valueMapCopy.put(name, (AbstractValue) value.getCopy());
         }
@@ -40,22 +39,21 @@ public class StructValue extends AbstractValue {
     }
 
     public String getAbstractSyntax() {
-        java.lang.String result = "StructValue(";
-        Iterator         it     = mValueMap.entrySet().iterator();
+        StringBuilder result = new StringBuilder("StructValue(");
 
-        while (it.hasNext()) {
-            Map.Entry        pairs = (Map.Entry) it.next();
-            java.lang.String name  = (java.lang.String) pairs.getKey();
-            AbstractValue    value = (AbstractValue) pairs.getValue();
+        for (Map.Entry<String, AbstractValue> stringAbstractValueEntry : mValueMap.entrySet()) {
+            Map.Entry pairs = (Map.Entry) stringAbstractValueEntry;
+            String name = (String) pairs.getKey();
+            AbstractValue value = (AbstractValue) pairs.getValue();
 
-            result += "(" + name + "," + value.getAbstractSyntax() + ")";
+            result.append("(").append(name).append(",").append(value.getAbstractSyntax()).append(")");
         }
 
         return result + ")";
     }
 
     public String getConcreteSyntax() {
-        java.lang.String result = "{";
+        StringBuilder result = new StringBuilder("{");
         Iterator         it     = mValueMap.entrySet().iterator();
 
         while (it.hasNext()) {
@@ -63,10 +61,10 @@ public class StructValue extends AbstractValue {
             java.lang.String name  = (java.lang.String) pairs.getKey();
             AbstractValue    value = (AbstractValue) pairs.getValue();
 
-            result += name + "=" + value.getConcreteSyntax();
+            result.append(name).append("=").append(value.getConcreteSyntax());
 
             if (it.hasNext()) {
-                result += " , ";
+                result.append(" , ");
             }
         }
 
@@ -74,7 +72,7 @@ public class StructValue extends AbstractValue {
     }
 
     public String getFormattedSyntax() {
-        java.lang.String result = "{ ";
+        StringBuilder result = new StringBuilder("{ ");
         Iterator         it     = mValueMap.entrySet().iterator();
 
         while (it.hasNext()) {
@@ -82,10 +80,10 @@ public class StructValue extends AbstractValue {
             java.lang.String name  = (java.lang.String) pairs.getKey();
             AbstractValue    value = (AbstractValue) pairs.getValue();
 
-            result += name + " = " + value.getFormattedSyntax();
+            result.append(name).append(" = ").append(value.getFormattedSyntax());
 
             if (it.hasNext()) {
-                result += " , ";
+                result.append(" , ");
             }
         }
 

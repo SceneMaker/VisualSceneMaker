@@ -38,12 +38,12 @@ public final class StructExpression extends Expression {
 
     @Override
     public final String getAbstractSyntax() {
-        String desc = "";
+        StringBuilder desc = new StringBuilder();
         for (int i = 0; i < mExpList.size(); i++) {
-            desc += mExpList.get(i).getConcreteSyntax();
+            desc.append(mExpList.get(i).getConcreteSyntax());
 
             if (i != mExpList.size() - 1) {
-                desc += " , ";
+                desc.append(" , ");
             }
         }
         return "Struct(" + desc + ")";
@@ -51,12 +51,12 @@ public final class StructExpression extends Expression {
 
     @Override
     public final String getConcreteSyntax() {
-        String desc = "{ ";
+        StringBuilder desc = new StringBuilder("{ ");
         for (int i = 0; i < mExpList.size(); i++) {
-            desc += mExpList.get(i).getConcreteSyntax();
+            desc.append(mExpList.get(i).getConcreteSyntax());
 
             if (i != mExpList.size() - 1) {
-                desc += " , ";
+                desc.append(" , ");
             }
         }
         return desc + " }";
@@ -64,12 +64,12 @@ public final class StructExpression extends Expression {
 
     @Override
     public final String getFormattedSyntax() {
-        String desc = "{ ";
+        StringBuilder desc = new StringBuilder("{ ");
         for (int i = 0; i < mExpList.size(); i++) {
-            desc += mExpList.get(i).getFormattedSyntax();
+            desc.append(mExpList.get(i).getFormattedSyntax());
 
             if (i != mExpList.size() - 1) {
-                desc += " , ";
+                desc.append(" , ");
             }
         }
         return desc + " }";
@@ -83,8 +83,8 @@ public final class StructExpression extends Expression {
     @Override
     public final void writeXML(final IOSIndentWriter out) throws XMLWriteError {
         out.println("<StructExpression>").push();
-        for (int i = 0; i < mExpList.size(); i++) {
-            mExpList.get(i).writeXML(out);
+        for (Assignment assignment : mExpList) {
+            assignment.writeXML(out);
         }
         out.pop().println("</StructExpression>");
     }

@@ -22,7 +22,7 @@ public class ListValue extends AbstractValue {
     }
 
     public LinkedList<AbstractValue> getCopyOfValueList() {
-        LinkedList<AbstractValue> valueListCopy = new LinkedList<AbstractValue>();
+        LinkedList<AbstractValue> valueListCopy = new LinkedList<>();
 
         for (AbstractValue value : mValueList) {
             valueListCopy.add((AbstractValue) value.getCopy());
@@ -38,13 +38,13 @@ public class ListValue extends AbstractValue {
 
     @Override
     public String getAbstractSyntax() {
-        java.lang.String result = "ListValue(";
+        StringBuilder result = new StringBuilder("ListValue(");
 
         for (int i = 0; i < mValueList.size(); i++) {
-            result += mValueList.get(i).getAbstractSyntax();
+            result.append(mValueList.get(i).getAbstractSyntax());
 
             if (i < mValueList.size() - 1) {
-                result += ",";
+                result.append(",");
             }
         }
 
@@ -53,13 +53,13 @@ public class ListValue extends AbstractValue {
 
     @Override
     public String getConcreteSyntax() {
-        java.lang.String result = "[";
+        StringBuilder result = new StringBuilder("[");
 
         for (int i = 0; i < mValueList.size(); i++) {
-            result += mValueList.get(i).getConcreteSyntax();
+            result.append(mValueList.get(i).getConcreteSyntax());
 
             if (i < mValueList.size() - 1) {
-                result += ",";
+                result.append(",");
             }
         }
 
@@ -68,13 +68,13 @@ public class ListValue extends AbstractValue {
 
     @Override
     public String getFormattedSyntax() {
-        java.lang.String result = "[ ";
+        StringBuilder result = new StringBuilder("[ ");
 
         for (int i = 0; i < mValueList.size(); i++) {
-            result += mValueList.get(i).getFormattedSyntax();
+            result.append(mValueList.get(i).getFormattedSyntax());
 
             if (i < mValueList.size() - 1) {
-                result += " , ";
+                result.append(" , ");
             }
         }
 

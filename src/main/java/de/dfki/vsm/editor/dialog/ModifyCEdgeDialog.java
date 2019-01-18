@@ -26,8 +26,6 @@ import java.awt.Color;
 
 import java.awt.Dimension;
 
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -118,18 +116,14 @@ public class ModifyCEdgeDialog extends Dialog implements EventListener{
         errorMsg.setMinimumSize(labelSize);
         //Key listener need to gain focus on the text field
 
-        KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(new KeyEventDispatcher() {
-
-            @Override
-            public boolean dispatchKeyEvent(KeyEvent ke) {
-                if (ke.getID() == KeyEvent.KEY_PRESSED) {
-                    if(!mInputTextField.hasFocus())
-                    {
-                        mInputTextField.requestFocus();
-                    }
+        KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(ke -> {
+            if (ke.getID() == KeyEvent.KEY_PRESSED) {
+                if(!mInputTextField.hasFocus())
+                {
+                    mInputTextField.requestFocus();
                 }
-                return false;
             }
+            return false;
         });
         // Init main panel
         Box finalBox = Box.createVerticalBox();
@@ -324,11 +318,10 @@ public class ModifyCEdgeDialog extends Dialog implements EventListener{
         mAltStartNodeManager.loadAltStartNodeMap();
 
         if (mCEdge.getTargetNode() instanceof SuperNode) {
-            Iterator it = mAltStartNodeManager.mAltStartNodeMap.entrySet().iterator();
 
-            while (it.hasNext()) {
-                Map.Entry              pairs            = (Map.Entry) it.next();
-                TPLTuple<String, BasicNode> startNodePair    = (TPLTuple<String, BasicNode>) pairs.getKey();
+            for (Map.Entry<TPLTuple<String, BasicNode>, TPLTuple<String, BasicNode>> tplTupleTPLTupleEntry : mAltStartNodeManager.mAltStartNodeMap.entrySet()) {
+                Map.Entry pairs = (Map.Entry) tplTupleTPLTupleEntry;
+                TPLTuple<String, BasicNode> startNodePair = (TPLTuple<String, BasicNode>) pairs.getKey();
                 TPLTuple<String, BasicNode> altStartNodePair = (TPLTuple<String, BasicNode>) pairs.getValue();
 
                 ((DefaultListModel) mAltStartNodeList.getModel()).addElement(startNodePair.getFirst() + "/"
@@ -358,11 +351,9 @@ public class ModifyCEdgeDialog extends Dialog implements EventListener{
         // /
         ((DefaultListModel) mAltStartNodeList.getModel()).clear();
 
-        Iterator it = mAltStartNodeManager.mAltStartNodeMap.entrySet().iterator();
-
-        while (it.hasNext()) {
-            Map.Entry              pairs            = (Map.Entry) it.next();
-            TPLTuple<String, BasicNode> startNodePair    = (TPLTuple<String, BasicNode>) pairs.getKey();
+        for (Map.Entry<TPLTuple<String, BasicNode>, TPLTuple<String, BasicNode>> tplTupleTPLTupleEntry : mAltStartNodeManager.mAltStartNodeMap.entrySet()) {
+            Map.Entry pairs = (Map.Entry) tplTupleTPLTupleEntry;
+            TPLTuple<String, BasicNode> startNodePair = (TPLTuple<String, BasicNode>) pairs.getKey();
             TPLTuple<String, BasicNode> altStartNodePair = (TPLTuple<String, BasicNode>) pairs.getValue();
 
             ((DefaultListModel) mAltStartNodeList.getModel()).addElement(startNodePair.getFirst() + "/"
@@ -405,12 +396,7 @@ public class ModifyCEdgeDialog extends Dialog implements EventListener{
     @Override
     public void update(EventObject event) {
         if(event instanceof CEdgeDialogModifiedEvent && event.getSource() != this){
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    changeDuplicatedInputFieldText((CEdgeDialogModifiedEvent) event);
-                }
-            });
+            SwingUtilities.invokeLater(() -> changeDuplicatedInputFieldText((CEdgeDialogModifiedEvent) event));
 
         }
     }

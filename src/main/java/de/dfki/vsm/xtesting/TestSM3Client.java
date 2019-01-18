@@ -14,6 +14,7 @@ import java.io.OutputStreamWriter;
 
 import java.net.Socket;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -37,11 +38,11 @@ public class TestSM3Client {
     // The Client Socket
     private static Socket sSocket;
 
-    public static void main(String args[]) {
+    public static void main(String[] args) {
         try {
 
             // Initialize The Scanner
-            sScanner = new Scanner(new FileInputStream(args[0]), "UTF-8");
+            sScanner = new Scanner(new FileInputStream(args[0]), StandardCharsets.UTF_8);
 
             // Initialize The Socket
             sSocket = new Socket(args[1], Integer.parseInt(args[2]));
@@ -66,9 +67,9 @@ public class TestSM3Client {
 
                 // Establish IO Channels
                 final BufferedReader reader = new BufferedReader(new InputStreamReader(sSocket.getInputStream(),
-                                                  "UTF-8"));
+                        StandardCharsets.UTF_8));
                 final BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(sSocket.getOutputStream(),
-                                                  "UTF-8"));
+                        StandardCharsets.UTF_8));
 
                 // Print Some Information
                 sLogger.message("Executing H3DClient Connector");

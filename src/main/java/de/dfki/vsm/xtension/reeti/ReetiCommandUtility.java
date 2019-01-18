@@ -3,7 +3,6 @@ package de.dfki.vsm.xtension.reeti;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.net.SocketException;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -23,7 +22,7 @@ import java.util.logging.Logger;
 public class ReetiCommandUtility {
 
     // used to adjust the value of command.
-    private static HashMap<String, String> valRecord = new HashMap<String, String>();
+    private static HashMap<String, String> valRecord = new HashMap<>();
 
     // Receive the feedback from opencv to adjust the action of reeti
     private static DatagramSocket serverSocket;

@@ -23,7 +23,7 @@ import javax.swing.undo.UndoManager;
  * @author Patrick Gebhard
  */
 public class RemoveCommentAction extends EditorAction {
-    ArrayList<RemoveEdgeAction>                    mRemoveEdgeActionList = new ArrayList<RemoveEdgeAction>();
+    ArrayList<RemoveEdgeAction>                    mRemoveEdgeActionList = new ArrayList<>();
     private WorkSpacePanel                           mWorkSpace;
     private SceneFlowEditor                     mSceneFlowPane;
     private SceneFlowManager                    mSceneFlowManager;

@@ -74,11 +74,7 @@ public class VoiceOverExecutor extends ActivityExecutor implements EventListener
 
 
     private Thread getSpeakThread(final AbstractActivity activity, final String executionId) {
-        return new Thread(){
-            public void run(){
-                intentToSpeak(executionId, activity);
-            }
-        };
+        return new Thread(() -> intentToSpeak(executionId, activity));
     }
 
     public String intentToSpeak(String  executionId, AbstractActivity activity){

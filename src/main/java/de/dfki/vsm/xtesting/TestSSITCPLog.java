@@ -18,6 +18,7 @@ import java.io.OutputStreamWriter;
 
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -38,7 +39,7 @@ public class TestSSITCPLog {
     private static Socket sSocket;
 
     // Start SSI Logger
-    public static void main(String args[]) {
+    public static void main(String[] args) {
         try {
 
             // Initialize The Server Socket
@@ -85,9 +86,9 @@ public class TestSSITCPLog {
 
                     // Establish IO Channels
                     final BufferedReader reader = new BufferedReader(new InputStreamReader(sSocket.getInputStream(),
-                                                      "UTF-8"));
+                            StandardCharsets.UTF_8));
                     final BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(sSocket.getOutputStream(),
-                                                      "UTF-8"));
+                            StandardCharsets.UTF_8));
 
                     // Print Some Information
                     sLogger.message("Executing SSI Logger Connection");
@@ -108,7 +109,7 @@ public class TestSSITCPLog {
 
                             // Translate The SSI Speech Recognition Result Into
                             // An Adequate Document Object Model Representation.
-                            final ByteArrayInputStream   stream   = new ByteArrayInputStream(line.getBytes("UTF-8"));
+                            final ByteArrayInputStream   stream   = new ByteArrayInputStream(line.getBytes(StandardCharsets.UTF_8));
                             final DocumentBuilderFactory factory  = DocumentBuilderFactory.newInstance();
                             final DocumentBuilder        builder  = factory.newDocumentBuilder();
                             final Document               document = builder.parse(stream);

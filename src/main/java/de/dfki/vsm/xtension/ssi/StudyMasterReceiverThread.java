@@ -11,9 +11,8 @@ import de.dfki.vsm.xtension.ssi.logger.SSILoggerMessage;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.MulticastSocket;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 /**
@@ -55,7 +54,7 @@ public class StudyMasterReceiverThread extends Thread {
                 // Read Packet
                 byte[] data = Arrays.copyOf(packet.getData(), packet.getLength());
 
-                String message = new String(packet.getData(), "UTF-8").trim();
+                String message = new String(packet.getData(), StandardCharsets.UTF_8).trim();
                 mLogger.message("Message received " + message + " from " + packet.getAddress().getHostAddress());
                 if (message.startsWith("VSM")) {
                     // parse message

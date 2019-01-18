@@ -182,12 +182,7 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
         mPinButton.setContentAreaFilled(false);
         //mPinButton.setMargin(new Insets(0, 10, 20, 10));
         mPinButton.setFocusable(false);
-        mPinButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                setPin(!pinPricked);
-            }
-        });
+        mPinButton.addActionListener(e -> setPin(!pinPricked));
         sanitizeTinyButton(mPinButton);
         Box VpinBox = Box.createVerticalBox();
         Box HpinBox = Box.createHorizontalBox();
@@ -213,7 +208,7 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
             mEditorPane.insertMassiveTextOff();
         }
 
-        searchOffsets = new ArrayList<Integer>();
+        searchOffsets = new ArrayList<>();
         lastSearchedScene = "";
         lastIndex = 0;
 
@@ -229,19 +224,15 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
     }
 
     private void registerKeyBindingsForSearch() {
-        registerKeyboardAction(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                search_function_in_scene.set_button_appearanceControl("Hide");
-                search_function_in_scene.showSearchBox();
-            }
+        registerKeyboardAction(e -> {
+            search_function_in_scene.set_button_appearanceControl("Hide");
+            search_function_in_scene.showSearchBox();
         }, KeyStroke.getKeyStroke(KeyEvent.VK_F, InputEvent.CTRL_DOWN_MASK, true), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
 
 
-        registerKeyboardAction(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                search_function_in_scene.set_button_appearanceControl("Find...");
-                search_function_in_scene.hideSearchBox();
-            }
+        registerKeyboardAction(e -> {
+            search_function_in_scene.set_button_appearanceControl("Find...");
+            search_function_in_scene.hideSearchBox();
         }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0, true), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
     }
 
@@ -400,16 +391,14 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
     public void search(String word, String language, JTextComponent comp, Highlighter.HighlightPainter painter) {
         this.lastIndex = 0;
         this.lastSearchedScene = "scene_" + language + " " + word;
-        this.searchOffsets = new ArrayIndexList<Integer>();
+        this.searchOffsets = new ArrayIndexList<>();
 
         Highlighter highlighter = comp.getHighlighter();
 
         // Remove any existing highlights for last word
         Highlighter.Highlight[] highlights = highlighter.getHighlights();
 
-        for (int i = 0; i < highlights.length; i++) {
-            Highlighter.Highlight h = highlights[i];
-
+        for (Highlighter.Highlight h : highlights) {
             if (h.getPainter() instanceof DefaultHighlighter.DefaultHighlightPainter) {
                 highlighter.removeHighlight(h);
             }
@@ -561,24 +550,21 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
         }
 
         protected void displaySelectionInfo(final int dot, final int mark) {
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    if (dot == mark) {
-                        try {
-                            Rectangle caretCoords = mEditorPane.modelToView(dot);
+            SwingUtilities.invokeLater(() -> {
+                if (dot == mark) {
+                    try {
+                        Rectangle caretCoords = mEditorPane.modelToView(dot);
 
-                            if (caretCoords != null) {
-                                setText(dot + " : [" + caretCoords.x + ", " + caretCoords.y + "]" + "\r\n");
-                            }
-                        } catch (BadLocationException ble) {
-                            setText(dot + "\r\n");
+                        if (caretCoords != null) {
+                            setText(dot + " : [" + caretCoords.x + ", " + caretCoords.y + "]" + "\r\n");
                         }
-                    } else if (dot < mark) {
-                        setText("[" + dot + " - " + mark + "]" + "\r\n");
-                    } else {
-                        setText("[" + mark + " - " + dot + "]" + "\r\n");
+                    } catch (BadLocationException ble) {
+                        setText(dot + "\r\n");
                     }
+                } else if (dot < mark) {
+                    setText("[" + dot + " - " + mark + "]" + "\r\n");
+                } else {
+                    setText("[" + mark + " - " + dot + "]" + "\r\n");
                 }
             });
         }

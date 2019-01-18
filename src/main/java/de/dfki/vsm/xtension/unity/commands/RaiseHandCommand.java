@@ -1,7 +1,5 @@
 package de.dfki.vsm.xtension.unity.commands;
 
-import de.dfki.vsm.runtime.activity.SpeechActivity;
-
 public final class RaiseHandCommand extends Command {
     private final String _actor;
     

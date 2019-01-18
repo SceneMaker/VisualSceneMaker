@@ -52,7 +52,7 @@ import javax.swing.text.PlainDocument;
 public class ModifyPEdgeDialog extends Dialog {
 
     //
-    private HashMap<RandomEdge, JTextField> mPEdgeMap = new HashMap<RandomEdge, JTextField>();
+    private HashMap<RandomEdge, JTextField> mPEdgeMap = new HashMap<>();
     private final Dimension buttonSize = new Dimension(150, 30);
     private final Dimension smallButtonSize = new Dimension(30, 30);
     // Data model components
@@ -281,19 +281,17 @@ public class ModifyPEdgeDialog extends Dialog {
             probField.setMinimumSize(new Dimension(40, 25));
             probField.setPreferredSize(new Dimension(40, 25));
             probField.setMaximumSize(new Dimension(40, 25));
-            probField.addCaretListener(new CaretListener() {
-                public void caretUpdate(CaretEvent e) {
-                    int sum = 0;
-                    for (JTextField textField : mPEdgeMap.values()) {
-                        try {
-                            sum += Integer.valueOf(textField.getText().trim()).intValue();
-                        }
-                        catch (NumberFormatException es) {
-                        }
+            probField.addCaretListener(e -> {
+                int sum = 0;
+                for (JTextField textField : mPEdgeMap.values()) {
+                    try {
+                        sum += Integer.valueOf(textField.getText().trim());
                     }
-                    // Set the rest to the rest text field
-                    mRestField.setText(Integer.valueOf(100 - sum).toString());
+                    catch (NumberFormatException es) {
+                    }
                 }
+                // Set the rest to the rest text field
+                mRestField.setText(Integer.valueOf(100 - sum).toString());
             });
             
             // Add the text field to the mapping
@@ -473,10 +471,9 @@ public class ModifyPEdgeDialog extends Dialog {
         }
 
         // Save the probabilities
-        Iterator it = mPEdgeMap.entrySet().iterator();
 
-        while (it.hasNext()) {
-            Map.Entry entry = (Map.Entry) it.next();
+        for (Map.Entry<RandomEdge, JTextField> randomEdgeJTextFieldEntry : mPEdgeMap.entrySet()) {
+            Map.Entry entry = (Map.Entry) randomEdgeJTextFieldEntry;
             RandomEdge edge = (RandomEdge) entry.getKey();
             JTextField field = (JTextField) entry.getValue();
 
@@ -494,7 +491,7 @@ public class ModifyPEdgeDialog extends Dialog {
                     errorMsg.setForeground(Color.red);
                     return false;
                 }
-                sum += Integer.valueOf(textField.getText().trim()).intValue();
+                sum += Integer.valueOf(textField.getText().trim());
             } catch (NumberFormatException e) {
                 return false;
             }
@@ -570,10 +567,9 @@ public class ModifyPEdgeDialog extends Dialog {
         mAltStartNodeManager.loadAltStartNodeMap();
 
         if (mPEdge.getTargetNode() instanceof SuperNode) {
-            Iterator it = mAltStartNodeManager.mAltStartNodeMap.entrySet().iterator();
 
-            while (it.hasNext()) {
-                Map.Entry pairs = (Map.Entry) it.next();
+            for (Map.Entry<TPLTuple<String, BasicNode>, TPLTuple<String, BasicNode>> tplTupleTPLTupleEntry : mAltStartNodeManager.mAltStartNodeMap.entrySet()) {
+                Map.Entry pairs = (Map.Entry) tplTupleTPLTupleEntry;
                 TPLTuple<String, BasicNode> startNodePair = (TPLTuple<String, BasicNode>) pairs.getKey();
                 TPLTuple<String, BasicNode> altStartNodePair = (TPLTuple<String, BasicNode>) pairs.getValue();
 
@@ -604,10 +600,8 @@ public class ModifyPEdgeDialog extends Dialog {
         // /
         ((DefaultListModel) mAltStartNodeList.getModel()).clear();
 
-        Iterator it = mAltStartNodeManager.mAltStartNodeMap.entrySet().iterator();
-
-        while (it.hasNext()) {
-            Map.Entry pairs = (Map.Entry) it.next();
+        for (Map.Entry<TPLTuple<String, BasicNode>, TPLTuple<String, BasicNode>> tplTupleTPLTupleEntry : mAltStartNodeManager.mAltStartNodeMap.entrySet()) {
+            Map.Entry pairs = (Map.Entry) tplTupleTPLTupleEntry;
             TPLTuple<String, BasicNode> startNodePair = (TPLTuple<String, BasicNode>) pairs.getKey();
             TPLTuple<String, BasicNode> altStartNodePair = (TPLTuple<String, BasicNode>) pairs.getValue();
 

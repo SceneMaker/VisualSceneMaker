@@ -42,7 +42,7 @@ public final class SSILoggerScanner {
         // Get all relevant the events 
         //sLogger.message("Looking for event " + event + " in context " + context + " with id " + id );
         
-        final NavigableSet<SSIEventEntry> set = new TreeSet<SSIEventEntry>();
+        final NavigableSet<SSIEventEntry> set = new TreeSet<>();
         
         for (final SSIEventEntry entry : sEventArray.getTreeSet()) {
             //sLogger.message("entry data " + entry.getData().toString());
@@ -80,7 +80,7 @@ public final class SSILoggerScanner {
             final int pos,
             final int id) {
         // Get all relevant the events 
-        final NavigableSet<SSIEventEntry> set = new TreeSet<SSIEventEntry>();
+        final NavigableSet<SSIEventEntry> set = new TreeSet<>();
         
         for (final SSIEventEntry entry : sEventArray.getTreeSet()) {
             sLogger.message("entry data " + entry.getData().toString());

@@ -101,7 +101,7 @@ public class I4GMaryClient extends SpeechClient {
 
     private I4GMaryClient() throws IOException{
         
-        this(System.getProperty("server.host", "localhost"), Integer.getInteger("server.port", 59125).intValue());
+        this(System.getProperty("server.host", "localhost"), Integer.getInteger("server.port", 59125));
        // wordQueue = new LinkedList<>();
         wordQueue =  Collections.synchronizedList(new LinkedList());
         finalWord = "";
@@ -192,17 +192,16 @@ public class I4GMaryClient extends SpeechClient {
     }
 
     public String getRawMaryXml(String speaker, String text, Language lang) {
-        StringBuffer buffer = new StringBuffer();
-        buffer.append("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n");
-        buffer.append("<maryxml version=\"0.5\"\n");
-        buffer.append("\txmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n");
-        buffer.append("\txmlns=\"http://mary.dfki.de/2002/MaryXML\"\n");
-        buffer.append("\txml:lang=\"");
-        buffer.append(lang.toString());
-        buffer.append("\">\n");
-        buffer.append(text);
-        buffer.append("\n</maryxml>");
-        return buffer.toString();
+        String buffer = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n" +
+                "<maryxml version=\"0.5\"\n" +
+                "\txmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +
+                "\txmlns=\"http://mary.dfki.de/2002/MaryXML\"\n" +
+                "\txml:lang=\"" +
+                lang.toString() +
+                "\">\n" +
+                text +
+                "\n</maryxml>";
+        return buffer;
 
     }
 
@@ -334,7 +333,7 @@ public class I4GMaryClient extends SpeechClient {
         long startTime = 0 ;
         for(int i =0; i< nodes.getLength(); i++){
             long endT = 0;
-            String endTime = nodes.item(i).getAttributes().getNamedItem("end").getNodeValue();;
+            String endTime = nodes.item(i).getAttributes().getNamedItem("end").getNodeValue();
             if(!endTime.equals("")){
                 float end = Float.parseFloat(endTime);
                 end*= 1000;
@@ -398,11 +397,7 @@ public class I4GMaryClient extends SpeechClient {
         String endTime = null;
         try {
             endTime = parseAcoustParams(stream);
-        } catch (ParserConfigurationException e) {
-            e.printStackTrace();
-        } catch (SAXException e) {
-            e.printStackTrace();
-        } catch (XPathExpressionException e) {
+        } catch (ParserConfigurationException | XPathExpressionException | SAXException e) {
             e.printStackTrace();
         }
         if(!endTime.equals("")){
@@ -420,11 +415,7 @@ public class I4GMaryClient extends SpeechClient {
         LinkedList<Phoneme> phonemes = new LinkedList<>();
         try {
             phonemes = parseAcoustPhonems(stream);
-        } catch (ParserConfigurationException e) {
-            e.printStackTrace();
-        } catch (SAXException e) {
-            e.printStackTrace();
-        } catch (XPathExpressionException e) {
+        } catch (ParserConfigurationException | XPathExpressionException | SAXException e) {
             e.printStackTrace();
         }
         return phonemes;

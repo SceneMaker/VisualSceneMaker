@@ -20,7 +20,7 @@ public class LongValue extends AbstractValue {
     }
 
     public String getAbstractSyntax() {
-        return "LongValue(" + Long.toString(mValue) + ")";
+        return "LongValue(" + mValue + ")";
     }
 
     public String getConcreteSyntax() {
@@ -28,11 +28,11 @@ public class LongValue extends AbstractValue {
     }
 
     public String getFormattedSyntax() {
-        return "#c#" + Long.toString(mValue);
+        return "#c#" + mValue;
     }
 
     public Long getValue() {
-        return Long.valueOf(mValue);
+        return mValue;
     }
 
     public LongValue getCopy() {

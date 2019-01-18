@@ -9,6 +9,7 @@ import de.dfki.vsm.xtension.stickmantts.util.tts.events.LineStop;
 
 import java.io.*;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 
 /**
  * @author Alvaro Cepero
@@ -45,10 +46,10 @@ public class StickmanTtsHandler extends Thread implements EventListener {
             // Get the socket streams
             mInStream = new BufferedReader(
                     new InputStreamReader(
-                            mSocket.getInputStream(), "UTF-8"));
+                            mSocket.getInputStream(), StandardCharsets.UTF_8));
             mOutStream = new BufferedWriter(
                     new OutputStreamWriter(
-                            mSocket.getOutputStream(), "UTF-8"));
+                            mSocket.getOutputStream(), StandardCharsets.UTF_8));
         } catch (final IOException exc) {
             mLogger.failure(exc.toString());
         }

@@ -7,7 +7,7 @@ import de.dfki.vsm.editor.OKButton;
 import de.dfki.vsm.editor.util.HintTextField;
 import de.dfki.vsm.model.sceneflow.glue.command.Command;
 import de.dfki.vsm.model.sceneflow.glue.GlueParser;
-import de.dfki.vsm.model.sceneflow.glue.command.Expression;
+
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.KeyEventDispatcher;
@@ -75,19 +75,15 @@ public class CmdDialog extends Dialog {
         errorMsg.setMinimumSize(new Dimension(300, 30));
 
         //Key listener need to gain focus on the text field
-        KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(new KeyEventDispatcher() {
-
-            @Override
-            public boolean dispatchKeyEvent(KeyEvent ke) {
-                //boolean keyHandled = false;
-                if (ke.getID() == KeyEvent.KEY_PRESSED) {
-                    if (!mInputTextField.hasFocus()) {
-                        mInputTextField.setText(mInputTextField.getText() + ke.getKeyChar());
-                        mInputTextField.requestFocus();
-                    }
+        KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(ke -> {
+            //boolean keyHandled = false;
+            if (ke.getID() == KeyEvent.KEY_PRESSED) {
+                if (!mInputTextField.hasFocus()) {
+                    mInputTextField.setText(mInputTextField.getText() + ke.getKeyChar());
+                    mInputTextField.requestFocus();
                 }
-                return false;
             }
+            return false;
         });
 
         Box finalBox = Box.createVerticalBox();

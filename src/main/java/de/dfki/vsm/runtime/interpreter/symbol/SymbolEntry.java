@@ -59,7 +59,7 @@ public final class SymbolEntry implements Copyable {
 
                     //
                     EventDispatcher.getInstance().convey(new VariableChangedEvent(this,
-                            new TPLTuple<String, String>(mSymbol /* .getName() */, mValue.getFormattedSyntax())));
+                            new TPLTuple<>(mSymbol /* .getName() */, mValue.getFormattedSyntax())));
 
                     //
                     return mValue;
@@ -90,7 +90,7 @@ public final class SymbolEntry implements Copyable {
 
                         //
                         EventDispatcher.getInstance().convey(new VariableChangedEvent(this,
-                                new TPLTuple<String, String>(mSymbol /* .getName() */, mValue.getFormattedSyntax())));
+                                new TPLTuple<>(mSymbol /* .getName() */, mValue.getFormattedSyntax())));
 
                         //
                         return mValue;

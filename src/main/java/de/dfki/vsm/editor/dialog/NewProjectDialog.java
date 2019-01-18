@@ -60,12 +60,7 @@ public class NewProjectDialog extends JDialog {
         mNameTextField.setMinimumSize(tSize);
         mNameTextField.setPreferredSize(tSize);
 
-        mNameTextField.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                okActionPerformed();
-            }
-        });
+        mNameTextField.addActionListener(e -> okActionPerformed());
 
         mNameTextField.addKeyListener(new KeyAdapter() {
             @Override
@@ -136,20 +131,16 @@ public class NewProjectDialog extends JDialog {
         mMainPanel.add(mButtonsPanel);
         mMainPanel.add(Box.createRigidArea(new Dimension(0, 20)));
         //Key listener need to gain focus on the text field
-        KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(new KeyEventDispatcher() {
-
-            @Override
-            public boolean dispatchKeyEvent(KeyEvent ke) {
-                //boolean keyHandled = false;
-                if (ke.getID() == KeyEvent.KEY_PRESSED) {
-                    if(!mNameTextField.hasFocus())
-                    {
-                        mNameTextField.setText(mNameTextField.getText()+ke.getKeyChar());
-                        mNameTextField.requestFocus();
-                    }
+        KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(ke -> {
+            //boolean keyHandled = false;
+            if (ke.getID() == KeyEvent.KEY_PRESSED) {
+                if(!mNameTextField.hasFocus())
+                {
+                    mNameTextField.setText(mNameTextField.getText()+ke.getKeyChar());
+                    mNameTextField.requestFocus();
                 }
-                return false;
             }
+            return false;
         });
 //        addKeyListener(new KeyAdapter() {
 //

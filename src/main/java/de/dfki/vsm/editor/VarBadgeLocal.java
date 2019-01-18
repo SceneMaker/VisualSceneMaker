@@ -38,7 +38,7 @@ public class VarBadgeLocal extends JComponent implements EventListener, ActionLi
 
     public static final int FONT_SIZE = 11;
     public static final int PADDING_BETWEEN_LINE = 3;
-    private final ArrayList<VariableEntry> mEntryList = new ArrayList<VariableEntry>();
+    private final ArrayList<VariableEntry> mEntryList = new ArrayList<>();
 
     // TODO: Make format of variable badge as global preferences
     private final int mPositionOffset = 10;

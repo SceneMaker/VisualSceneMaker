@@ -70,9 +70,7 @@ public final class SceneScript extends ScriptEntity {
             final String name = scene.getName();
             final String lang = scene.getLanguage();
             // Add Scene To Group
-            if (mLangMap.get(lang) == null) {
-                mLangMap.put(lang, new HashMap());
-            }
+            mLangMap.computeIfAbsent(lang, k -> new HashMap());
 
             if (mLangMap.get(lang).get(name) == null) {
                 mLangMap.get(lang).put(name, new SceneGroup(name));
@@ -183,32 +181,32 @@ public final class SceneScript extends ScriptEntity {
 
     @Override
     public final String getText() {
-        String result = "";
+        StringBuilder result = new StringBuilder();
 
         for (int i = 0; i < mEntityList.size(); i++) {
-            result += mEntityList.get(i).getText();
+            result.append(mEntityList.get(i).getText());
 
             if (i < mEntityList.size() - 1) {
-                result += "\n\n";
+                result.append("\n\n");
             }
         }
 
-        return result;
+        return result.toString();
     }
 
     @Override
     public final String getText(final HashMap<String, String> args) {
-        String result = "";
+        StringBuilder result = new StringBuilder();
 
         for (int i = 0; i < mEntityList.size(); i++) {
-            result += mEntityList.get(i).getText(args);
+            result.append(mEntityList.get(i).getText(args));
 
             if (i < mEntityList.size() - 1) {
-                result += "\n\n";
+                result.append("\n\n");
             }
         }
 
-        return result;
+        return result.toString();
     }
 
     @Override

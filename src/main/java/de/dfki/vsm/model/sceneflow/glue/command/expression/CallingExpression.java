@@ -52,7 +52,7 @@ public final class CallingExpression extends Expression {
     }
 
     public final ArrayList<Expression> getCopyOfArgList() {
-        ArrayList<Expression> copy = new ArrayList<Expression>();
+        ArrayList<Expression> copy = new ArrayList<>();
 
         for (Expression exp : mArgList) {
             copy.add(exp.getCopy());
@@ -71,12 +71,12 @@ public final class CallingExpression extends Expression {
 
     @Override
     public final String getAbstractSyntax() {
-        String desc = "CallingExpression( " + mName + "( ";
+        StringBuilder desc = new StringBuilder("CallingExpression( " + mName + "( ");
         for (int i = 0; i < mArgList.size(); i++) {
-            desc += mArgList.get(i).getAbstractSyntax();
+            desc.append(mArgList.get(i).getAbstractSyntax());
 
             if (i != mArgList.size() - 1) {
-                desc += " , ";
+                desc.append(" , ");
             }
         }
         return desc + " ) )";
@@ -84,12 +84,12 @@ public final class CallingExpression extends Expression {
 
     @Override
     public final String getConcreteSyntax() {
-        String desc = mName + " ( ";
+        StringBuilder desc = new StringBuilder(mName + " ( ");
         for (int i = 0; i < mArgList.size(); i++) {
-            desc += mArgList.get(i).getConcreteSyntax();
+            desc.append(mArgList.get(i).getConcreteSyntax());
 
             if (i != mArgList.size() - 1) {
-                desc += " , ";
+                desc.append(" , ");
             }
         }
         return desc + " )";
@@ -97,12 +97,12 @@ public final class CallingExpression extends Expression {
 
     @Override
     public final String getFormattedSyntax() {
-        String desc = "#b#" + mName + " ( ";
+        StringBuilder desc = new StringBuilder("#b#" + mName + " ( ");
         for (int i = 0; i < mArgList.size(); i++) {
-            desc += mArgList.get(i).getFormattedSyntax();
+            desc.append(mArgList.get(i).getFormattedSyntax());
 
             if (i != mArgList.size() - 1) {
-                desc += " , ";
+                desc.append(" , ");
             }
         }
         return desc + " ) ";
@@ -116,8 +116,8 @@ public final class CallingExpression extends Expression {
     @Override
     public final void writeXML(final IOSIndentWriter out) throws XMLWriteError {
         out.println("<CallingExpression name=\"" + mName + "\">").push();
-        for (int i = 0; i < mArgList.size(); i++) {
-            mArgList.get(i).writeXML(out);
+        for (Expression expression : mArgList) {
+            expression.writeXML(out);
         }
         out.pop().println("</CallingExpression>");
     }

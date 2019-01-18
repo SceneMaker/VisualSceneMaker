@@ -7,7 +7,7 @@ package de.dfki.vsm.xtension.tricatworld.xml.util;
 
 import de.dfki.vsm.util.log.LOGConsoleLogger;
 import de.dfki.vsm.xtension.tricatworld.xml.command.object.action.TriCatWorldActObject;
-import de.dfki.vsm.xtension.tricatworld.xml.command.object.action.charamel.Speak;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.LinkedList;

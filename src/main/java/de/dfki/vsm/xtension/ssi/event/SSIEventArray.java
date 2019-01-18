@@ -53,9 +53,7 @@ public final class SSIEventArray extends SSIEventObject {
     // Get ordered event sequence
     public final TreeSet<SSIEventEntry> getTreeSet() {
         final TreeSet<SSIEventEntry> set = new TreeSet();
-        for (final SSIEventEntry entry : mList) {
-            set.add(entry);
-        }
+        set.addAll(mList);
         mLogger.warning("Tree set size is '" + set.size() + "' while list size is '" + mList.size() + "'");
         return set;
     }

@@ -5,6 +5,7 @@ import org.jpl7.JPL;
 import org.jpl7.Query;
 import org.jpl7.Term;
 
+import java.util.Arrays;
 import java.util.Map;
 
 /**
@@ -38,18 +39,18 @@ public final class JPLEngine {
     public static synchronized String string() {
         if (sActive) {
             String[] arg = JPL.getActualInitArgs();
-            String argstr = JPL.version_string();
+            StringBuilder argstr = new StringBuilder(JPL.version_string());
 
-            argstr += ",[";
+            argstr.append(",[");
 
             for (int i = 0; i < arg.length; i++) {
-                argstr += arg[i];
+                argstr.append(arg[i]);
 
                 if (i < arg.length - 1) {
-                    argstr += ",";
+                    argstr.append(",");
                 }
             }
-            argstr += "]";
+            argstr.append("]");
 
             return "JPLEngine(" + argstr + ")";
         }
@@ -85,13 +86,10 @@ public final class JPLEngine {
             final Map<String, Term>[] solutions = query.allSolutions();
             // Print Debug Information
             //sLogger.message("Query '" + querystr+ "' has '" + solutions.length + "' solutions");
-            for (int i = 0; i < solutions.length; i++) {
-                final Map<String, Term> solution = solutions[i];
-                // Print the solution bindings
-                //System.out.println(Util.toString(solution));
-                // Add the solution to result
-                result.add(solution);
-            }
+            // Print the solution bindings
+            //System.out.println(Util.toString(solution));
+            // Add the solution to result
+            result.addAll(Arrays.asList(solutions));
         } catch (final Exception exc) {
             sLogger.failure(exc.toString());
         } finally {

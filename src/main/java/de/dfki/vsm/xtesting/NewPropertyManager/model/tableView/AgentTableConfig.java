@@ -2,7 +2,6 @@ package de.dfki.vsm.xtesting.NewPropertyManager.model.tableView;
 
 import de.dfki.vsm.model.config.ConfigFeature;
 import de.dfki.vsm.model.project.AgentConfig;
-import de.dfki.vsm.xtesting.NewPropertyManager.model.EntryAgent;
 
 import java.util.Iterator;
 

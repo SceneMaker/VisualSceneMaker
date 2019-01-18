@@ -8,6 +8,7 @@ import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.net.SocketException;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 /**
@@ -108,7 +109,7 @@ public final class SSIEventSender extends Thread {
                 // Get the datagram's string 
                 final String message = new String(
                         packet.getData(), 0,
-                        packet.getLength(), "UTF-8");
+                        packet.getLength(), StandardCharsets.UTF_8);
                 // Debug some information
                 //mLogger.warning("SSI event sender receiving '" + message + "'");
                 // Return received data
@@ -129,7 +130,7 @@ public final class SSIEventSender extends Thread {
     public final boolean sendString(final String string) {
         try {
             // Create the byte buffer
-            final byte[] buffer = string.getBytes("UTF-8");
+            final byte[] buffer = string.getBytes(StandardCharsets.UTF_8);
             // Create the UDP packet
             final DatagramPacket packet
                     = new DatagramPacket(buffer, buffer.length);
@@ -169,22 +170,17 @@ public final class SSIEventSender extends Thread {
 
     // Receive a string 
     private String recvString() {
-        try {
-            // Receive a byte buffer
-            final byte[] buffer = recvBytes();
-            // Check the buffer content
-            if (buffer != null) {
-                // Construct a message
-                final String message
-                        = new String(buffer, 0, buffer.length, "UTF-8");
-                // And return message
-                return message;
-            }
-        } catch (final UnsupportedEncodingException exc) {
-            // Print some information
-            mLogger.failure(exc.toString());
+        // Receive a byte buffer
+        final byte[] buffer = recvBytes();
+        // Check the buffer content
+        if (buffer != null) {
+            // Construct a message
+            final String message
+                    = new String(buffer, 0, buffer.length, StandardCharsets.UTF_8);
+            // And return message
+            return message;
         }
-        // Return null at failure 
+        // Return null at failure
         return null;
     }
 }

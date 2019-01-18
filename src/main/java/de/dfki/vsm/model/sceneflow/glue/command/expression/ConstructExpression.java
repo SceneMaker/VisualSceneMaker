@@ -69,11 +69,11 @@ public final class ConstructExpression extends Expression {
 
     @Override
     public final String getAbstractSyntax() {
-        String desc = "ConstructExpression( " + mName + "( ";
+        StringBuilder desc = new StringBuilder("ConstructExpression( " + mName + "( ");
         for (int i = 0; i < mArgList.size(); i++) {
-            desc += mArgList.get(i).getAbstractSyntax();
+            desc.append(mArgList.get(i).getAbstractSyntax());
             if (i != mArgList.size() - 1) {
-                desc += ", ";
+                desc.append(", ");
             }
         }
         return desc + "))";
@@ -81,11 +81,11 @@ public final class ConstructExpression extends Expression {
 
     @Override
     public final String getConcreteSyntax() {
-        String desc = "new " + mName + " ( ";
+        StringBuilder desc = new StringBuilder("new " + mName + " ( ");
         for (int i = 0; i < mArgList.size(); i++) {
-            desc += mArgList.get(i).getConcreteSyntax();
+            desc.append(mArgList.get(i).getConcreteSyntax());
             if (i != mArgList.size() - 1) {
-                desc += " , ";
+                desc.append(" , ");
             }
         }
         return desc + " )";
@@ -93,11 +93,11 @@ public final class ConstructExpression extends Expression {
 
     @Override
     public final String getFormattedSyntax() {
-        String desc = "#r#new " + "#b#" + mName + " ( ";
+        StringBuilder desc = new StringBuilder("#r#new " + "#b#" + mName + " ( ");
         for (int i = 0; i < mArgList.size(); i++) {
-            desc += mArgList.get(i).getFormattedSyntax();
+            desc.append(mArgList.get(i).getFormattedSyntax());
             if (i != mArgList.size() - 1) {
-                desc += " , ";
+                desc.append(" , ");
             }
         }
         return desc + " ) ";
@@ -111,8 +111,8 @@ public final class ConstructExpression extends Expression {
     @Override
     public final void writeXML(final IOSIndentWriter out) throws XMLWriteError {
         out.println("<ConstructExpression name=\"" + mName + "\">").push();
-        for (int i = 0; i < mArgList.size(); i++) {
-            mArgList.get(i).writeXML(out);
+        for (Expression expression : mArgList) {
+            expression.writeXML(out);
         }
         out.pop().println("</ConstructExpression>");
     }
