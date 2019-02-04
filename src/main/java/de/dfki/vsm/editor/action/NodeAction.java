@@ -86,7 +86,6 @@ public abstract class NodeAction extends EditorAction {
                 } else {
                     for (de.dfki.vsm.model.sceneflow.chart.BasicNode n : mParentDataNode.getNodeList()) {
                         if (n.isHistoryNode()) {
-                            continue;
                         } else {
                             mParentDataNode.getStartNodeMap().put(n.getId(), n);
                         }
@@ -140,7 +139,7 @@ public abstract class NodeAction extends EditorAction {
         if (mGUINodeType == BasicNode) {
             mParentDataNode.addNode(mDataNode);
         } else if (mGUINodeType == SuperNode) {
-            if(!mParentDataNode.getSuperNodeList().contains((SuperNode)mDataNode)){
+            if(!mParentDataNode.getSuperNodeList().contains(mDataNode)){
                 mParentDataNode.addSuperNode((SuperNode) mDataNode);
             }
         }

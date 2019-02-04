@@ -102,7 +102,7 @@ public final class SceneFlow extends SuperNode {
         HashMap<String, FunctionDefinition> copy = new HashMap<>();
 
         for (Map.Entry<String, FunctionDefinition> stringFunctionDefinitionEntry : mUserCmdDefMap.entrySet()) {
-            Map.Entry pairs = (Map.Entry) stringFunctionDefinitionEntry;
+            Map.Entry pairs = stringFunctionDefinitionEntry;
             String userCommandName = (String) pairs.getKey();
             FunctionDefinition userCommand = (FunctionDefinition) pairs.getValue();
             FunctionDefinition userCommandCopy = userCommand.getCopy();
@@ -213,7 +213,7 @@ public final class SceneFlow extends SuperNode {
             out.println("<UserCommands>").push();
 
             for (Map.Entry<String, FunctionDefinition> stringFunctionDefinitionEntry : mUserCmdDefMap.entrySet()) {
-                Map.Entry pairs = (Map.Entry) stringFunctionDefinitionEntry;
+                Map.Entry pairs = stringFunctionDefinitionEntry;
                 FunctionDefinition def = (FunctionDefinition) pairs.getValue();
                 if (def.isActive()) {
                     def.writeXML(out);
@@ -383,15 +383,15 @@ public final class SceneFlow extends SuperNode {
                 ? 0
                 : mHistoryNode.hashCode()) + ((mStartNodeMap == null)
                 ? 0
-                : mStartNodeMap.hashCode()) + ((mIsHistoryNode == true)
+                : mStartNodeMap.hashCode()) + ((mIsHistoryNode)
                 ? 1
                 : 0) + ((mLocalVariableBadge == null)
                 ? 0
                 : mLocalVariableBadge.hashCode()) + ((mGlobalVariableBadge == null)
                 ? 0
-                : mGlobalVariableBadge.hashCode()) + ((mHideLocalVarBadge == true)
+                : mGlobalVariableBadge.hashCode()) + ((mHideLocalVarBadge)
                 ? 1
-                : 0) + ((mHideGlobalVarBadge == true)
+                : 0) + ((mHideGlobalVarBadge)
                 ? 1
                 : 0);
 

@@ -473,7 +473,7 @@ public class ModifyPEdgeDialog extends Dialog {
         // Save the probabilities
 
         for (Map.Entry<RandomEdge, JTextField> randomEdgeJTextFieldEntry : mPEdgeMap.entrySet()) {
-            Map.Entry entry = (Map.Entry) randomEdgeJTextFieldEntry;
+            Map.Entry entry = randomEdgeJTextFieldEntry;
             RandomEdge edge = (RandomEdge) entry.getKey();
             JTextField field = (JTextField) entry.getValue();
 
@@ -569,7 +569,7 @@ public class ModifyPEdgeDialog extends Dialog {
         if (mPEdge.getTargetNode() instanceof SuperNode) {
 
             for (Map.Entry<TPLTuple<String, BasicNode>, TPLTuple<String, BasicNode>> tplTupleTPLTupleEntry : mAltStartNodeManager.mAltStartNodeMap.entrySet()) {
-                Map.Entry pairs = (Map.Entry) tplTupleTPLTupleEntry;
+                Map.Entry pairs = tplTupleTPLTupleEntry;
                 TPLTuple<String, BasicNode> startNodePair = (TPLTuple<String, BasicNode>) pairs.getKey();
                 TPLTuple<String, BasicNode> altStartNodePair = (TPLTuple<String, BasicNode>) pairs.getValue();
 
@@ -601,7 +601,7 @@ public class ModifyPEdgeDialog extends Dialog {
         ((DefaultListModel) mAltStartNodeList.getModel()).clear();
 
         for (Map.Entry<TPLTuple<String, BasicNode>, TPLTuple<String, BasicNode>> tplTupleTPLTupleEntry : mAltStartNodeManager.mAltStartNodeMap.entrySet()) {
-            Map.Entry pairs = (Map.Entry) tplTupleTPLTupleEntry;
+            Map.Entry pairs = tplTupleTPLTupleEntry;
             TPLTuple<String, BasicNode> startNodePair = (TPLTuple<String, BasicNode>) pairs.getKey();
             TPLTuple<String, BasicNode> altStartNodePair = (TPLTuple<String, BasicNode>) pairs.getValue();
 

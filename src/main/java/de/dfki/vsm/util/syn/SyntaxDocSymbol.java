@@ -67,7 +67,7 @@ public class SyntaxDocSymbol extends Symbol implements ModelObject {
     public SyntaxDocSymbol getCopy() {
 
         // Recursively Get A Deep Copy
-        return new SyntaxDocSymbol(sym, left, right, (SyntaxDocToken) ((SyntaxDocToken) value).getCopy());
+        return new SyntaxDocSymbol(sym, left, right, ((SyntaxDocToken) value).getCopy());
     }
 
     ////////////////////////////////////////////////////////////////////////////

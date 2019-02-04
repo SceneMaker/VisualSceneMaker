@@ -369,10 +369,10 @@ public class TypeDefDialog extends Dialog {
             DataTypeDefinition.Flavour flavour = DataTypeDefinition.Flavour.valueOf((String) mFlavourComboBox.getSelectedItem());
             //
             if (flavour == DataTypeDefinition.Flavour.List) {
-                ((ListTypeDefinition) mTypeDef).setName(mNameTextField.getText().trim());
+                mTypeDef.setName(mNameTextField.getText().trim());
                 ((ListTypeDefinition) mTypeDef).setType((String) mListTypeComboBox.getSelectedItem());
             } else {
-                ((StructTypeDefinition) mTypeDef).setName(mNameTextField.getText().trim());
+                mTypeDef.setName(mNameTextField.getText().trim());
             }
             //
             dispose(Button.OK);

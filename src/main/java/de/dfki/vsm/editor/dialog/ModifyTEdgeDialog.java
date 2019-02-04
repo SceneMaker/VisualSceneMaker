@@ -310,7 +310,7 @@ public class ModifyTEdgeDialog extends Dialog {
         if (mTEdge.getTargetNode() instanceof SuperNode) {
 
             for (Map.Entry<TPLTuple<String, BasicNode>, TPLTuple<String, BasicNode>> tplTupleTPLTupleEntry : mAltStartNodeManager.mAltStartNodeMap.entrySet()) {
-                Map.Entry pairs = (Map.Entry) tplTupleTPLTupleEntry;
+                Map.Entry pairs = tplTupleTPLTupleEntry;
                 TPLTuple<String, BasicNode> startNodePair = (TPLTuple<String, BasicNode>) pairs.getKey();
                 TPLTuple<String, BasicNode> altStartNodePair = (TPLTuple<String, BasicNode>) pairs.getValue();
 
@@ -342,7 +342,7 @@ public class ModifyTEdgeDialog extends Dialog {
         ((DefaultListModel) mAltStartNodeList.getModel()).clear();
 
         for (Map.Entry<TPLTuple<String, BasicNode>, TPLTuple<String, BasicNode>> tplTupleTPLTupleEntry : mAltStartNodeManager.mAltStartNodeMap.entrySet()) {
-            Map.Entry pairs = (Map.Entry) tplTupleTPLTupleEntry;
+            Map.Entry pairs = tplTupleTPLTupleEntry;
             TPLTuple<String, BasicNode> startNodePair = (TPLTuple<String, BasicNode>) pairs.getKey();
             TPLTuple<String, BasicNode> altStartNodePair = (TPLTuple<String, BasicNode>) pairs.getValue();
 

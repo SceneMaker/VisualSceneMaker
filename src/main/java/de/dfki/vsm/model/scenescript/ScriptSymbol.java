@@ -97,6 +97,6 @@ public final class ScriptSymbol extends SyntaxDocSymbol implements ScriptFields 
     public final ScriptSymbol getCopy() {
 
         // Recursively Get A Deep Copy
-        return new ScriptSymbol(sym, left, right, (SyntaxDocToken) ((SyntaxDocToken) value).getCopy());
+        return new ScriptSymbol(sym, left, right, ((SyntaxDocToken) value).getCopy());
     }
 }

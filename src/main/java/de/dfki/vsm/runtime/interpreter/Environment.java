@@ -26,9 +26,8 @@ public class Environment implements Copyable {
     }
 
     public LinkedList<SymbolTable> getCopyOfSymbolTableList() {
-        LinkedList<SymbolTable> copy = new LinkedList<>();
 
-        copy.addAll(mSymbolTableList);
+        LinkedList<SymbolTable> copy = new LinkedList<>(mSymbolTableList);
 
         return copy;
     }

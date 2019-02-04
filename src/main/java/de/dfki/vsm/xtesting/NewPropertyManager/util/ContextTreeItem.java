@@ -78,15 +78,13 @@ public class ContextTreeItem extends AbstractTreeItem implements TreeObservable 
     private MenuItem getEditStickmanItem(EntryPlugin plugin) {
         MenuItem editStickman = new MenuItem("Edit Stickman");
         editStickman.setOnAction(event -> {
-            Thread stickmanLaunchThread = new Thread() {
-                public void run() {
-                    try {
-                        launchStickmanConfiguration(plugin);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
+            Thread stickmanLaunchThread = new Thread(() -> {
+                try {
+                    launchStickmanConfiguration(plugin);
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
-            };
+            });
 
             stickmanLaunchThread.start();
         });

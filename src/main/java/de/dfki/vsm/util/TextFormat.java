@@ -172,7 +172,7 @@ public class TextFormat {
         // Fill the attributed string with attributes
 
         for (Map.Entry<TPLTuple<TextAttribute, Object>, TPLTuple<Integer, Integer>> tplTupleTPLTupleEntry : attributeMap.entrySet()) {
-            Map.Entry entry = (Map.Entry) tplTupleTPLTupleEntry;
+            Map.Entry entry = tplTupleTPLTupleEntry;
             TPLTuple<TextAttribute, Object> key = (TPLTuple<TextAttribute, Object>) entry.getKey();
             TPLTuple<Integer, Integer> value = (TPLTuple<Integer, Integer>) entry.getValue();
 

@@ -183,7 +183,7 @@ public class QuestionnaireGUI {
         mController.addListener(mExecutor);
         
         try {
-            mRootRegion = (Region) fxmlLoader.load();
+            mRootRegion = fxmlLoader.load();
         } catch (IOException exception) {
             throw new RuntimeException(exception);
         }

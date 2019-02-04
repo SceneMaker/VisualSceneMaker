@@ -204,11 +204,7 @@ public class FunctionDefinition extends Definition implements  Comparable<Functi
             isObject = false;
         }
 
-        if (isClass || isObject) {
-            return true;
-        } else {
-            return false;
-        }
+        return isClass || isObject;
     }
 
     @Override

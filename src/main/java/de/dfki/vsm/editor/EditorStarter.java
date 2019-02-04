@@ -161,9 +161,9 @@ public class EditorStarter extends JPanel {
 				vProp = new Properties();
 				vProp.load(versionInfo);
 			}
-			String vStr = (String) vProp.getProperty("build.version");
-			String bStr = (String) vProp.getProperty("build.number");
-			String dStr = (String) vProp.getProperty("build.date");
+			String vStr = vProp.getProperty("build.version");
+			String bStr = vProp.getProperty("build.number");
+			String dStr = vProp.getProperty("build.date");
 
 			JLabel versionLabel = new JLabel("Version: " + vStr + "  Build Number: " + bStr + "  Build Date: " + dStr);
 			versionLabel.setHorizontalAlignment(SwingConstants.LEFT);

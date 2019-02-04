@@ -479,23 +479,23 @@ public class OptionsDialog extends JDialog {
             if (key.startsWith("recentfile")) {
                 ((DefaultListModel) mRecentFileList.getModel()).addElement(mEditorConfig.getProperty(key));
             } else if (key.equals("node_width")) {
-                ((SpinnerNumberModel) mNodeSizeSpinner.getModel()).setValue(
+                mNodeSizeSpinner.getModel().setValue(
                         Integer.valueOf(mEditorConfig.getProperty(key)));
             } else if (key.equals("node_height")) {
-                ((SpinnerNumberModel) mNodeSizeSpinner.getModel()).setValue(
+                mNodeSizeSpinner.getModel().setValue(
                         Integer.valueOf(mEditorConfig.getProperty(key)));
             } else if (key.equals("grid_x")) {
-                ((SpinnerNumberModel) mGridScaleSpinner.getModel()).setValue(
+                mGridScaleSpinner.getModel().setValue(
                         Integer.valueOf(mEditorConfig.getProperty(key)));
             } else if (key.equals("grid_y")) {
-                ((SpinnerNumberModel) mGridScaleSpinner.getModel()).setValue(
+                mGridScaleSpinner.getModel().setValue(
                         Integer.valueOf(mEditorConfig.getProperty(key)));
             } else if (key.equals("grid")) {
                 mGridCheckBox.setSelected(Boolean.valueOf(mEditorConfig.getProperty(key)));
             } else if (key.equals("scriptfontype")) {
                 mVisualizationCheckBox.setSelected(Boolean.valueOf(mEditorConfig.getProperty(key)));
             } else if (key.equals("scriptfonsize")) {
-                ((SpinnerNumberModel) mScriptFontSizeSpinner.getModel()).setValue(
+                mScriptFontSizeSpinner.getModel().setValue(
                         Integer.valueOf(mEditorConfig.getProperty(key)));
             } else if (key.equals("scriptfonttype")) {
                 mScriptFontComboBox.setSelectedItem(mEditorConfig.getProperty(key));
@@ -510,7 +510,7 @@ public class OptionsDialog extends JDialog {
             } else if (key.equals("showsmartpathcalculations")) {
                 mShowSmartPathDebugCheckBox.setSelected(Boolean.valueOf(mEditorConfig.getProperty(key)));
             } else if (key.equals("workspace_fontsize")) {
-                ((SpinnerNumberModel) mWorkspaceFontSizeSpinner.getModel()).setValue(
+                mWorkspaceFontSizeSpinner.getModel().setValue(
                         Integer.valueOf(mEditorConfig.getProperty(key)));
             }
 

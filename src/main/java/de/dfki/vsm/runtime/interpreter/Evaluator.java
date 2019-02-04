@@ -518,9 +518,9 @@ public final class Evaluator {
             final Environment env) throws InterpreterError, Exception {
 
         // Get the name of the command
-        final String command = ((CallingExpression) cmd).getName();
+        final String command = cmd.getName();
         // Evaluate the argument list
-        final LinkedList<AbstractValue> list = evaluateExpList(((CallingExpression) cmd).getArgList(), env);
+        final LinkedList<AbstractValue> list = evaluateExpList(cmd.getArgList(), env);
         // Get the user command definition 
         final FunctionDefinition definition = mInterpreter.getSceneFlow().getUsrCmdDefMap().get(command);
         // Check if definition does exist

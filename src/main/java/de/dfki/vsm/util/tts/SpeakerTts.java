@@ -49,7 +49,6 @@ public abstract class SpeakerTts {
                     Word w = new Word(str);
                     speechClient.addWord(str);
                 } catch (UnsupportedOperationException e) {
-                    continue;
                 }
 //                Word w = new Word(item.toString());
 //                speechClient.addWord(item.toString());

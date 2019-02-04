@@ -81,11 +81,11 @@ public final class JPLResult extends LinkedList<Map<String, Term>> {
             if (replacements.containsKey(term)) {
                 //sLogger.message("Performing replacement [" + term.name() + "/"
                 //        + ((Term) replacements.get((Variable) term)).name() + "]");
-                result = (Term) replacements.get((Variable) term);
+                result = (Term) replacements.get(term);
             }
         } else if (term instanceof Compound) {
-            final String name = ((Compound) term).name();
-            final Term[] args = ((Compound) term).args();
+            final String name = term.name();
+            final Term[] args = term.args();
             //
             for (int i = 0; i < args.length; i++) {
                 args[i] = cleanup(args[i], replacements);
@@ -105,13 +105,13 @@ public final class JPLResult extends LinkedList<Map<String, Term>> {
             //sLogger.message("Performing replacement [" + term.name() + "/"
             //        + ((Term) replacements.get((Variable) term)).name() + "]");
             if (replacements.containsKey(term)) {
-                return (Term) replacements.get((Variable) term);
+                return (Term) replacements.get(term);
             } else {
                 return term;
             }
         } else if (term instanceof Compound) {
-            final String name = ((Compound) term).name();
-            final Term[] args = ((Compound) term).args();
+            final String name = term.name();
+            final Term[] args = term.args();
             //
             for (int i = 0; i < args.length; i++) {
                 args[i] = cleanup(args[i], replacements);

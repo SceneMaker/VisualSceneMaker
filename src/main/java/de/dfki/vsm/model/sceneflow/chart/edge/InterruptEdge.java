@@ -73,7 +73,7 @@ public class InterruptEdge extends AbstractEdge {
         StringBuilder start = new StringBuilder();
 
         for (Map.Entry<TPLTuple<String, BasicNode>, TPLTuple<String, BasicNode>> tplTupleTPLTupleEntry : mAltMap.entrySet()) {
-            Map.Entry pairs = (Map.Entry) tplTupleTPLTupleEntry;
+            Map.Entry pairs = tplTupleTPLTupleEntry;
             TPLTuple<String, BasicNode> startNodeData = (TPLTuple<String, BasicNode>) pairs.getKey();
             TPLTuple<String, BasicNode> altStartNodeData = (TPLTuple<String, BasicNode>) pairs.getValue();
 

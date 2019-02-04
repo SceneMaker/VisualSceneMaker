@@ -184,7 +184,6 @@ public class TimeoutManager {
                 startTimeoutHandler(arg, env);
             }
         } else {
-            return;
         }
     }
 }

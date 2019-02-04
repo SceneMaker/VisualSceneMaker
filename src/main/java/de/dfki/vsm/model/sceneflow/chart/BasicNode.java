@@ -1,24 +1,19 @@
 package de.dfki.vsm.model.sceneflow.chart;
 
-import de.dfki.vsm.model.sceneflow.chart.edge.RandomEdge;
-import de.dfki.vsm.model.sceneflow.chart.edge.TimeoutEdge;
-import de.dfki.vsm.model.sceneflow.chart.edge.ForkingEdge;
-import de.dfki.vsm.model.sceneflow.chart.edge.AbstractEdge;
-import de.dfki.vsm.model.sceneflow.chart.edge.EpsilonEdge;
-import de.dfki.vsm.model.sceneflow.chart.edge.GuargedEdge;
-import de.dfki.vsm.model.sceneflow.chart.edge.InterruptEdge;
 import de.dfki.vsm.model.ModelObject;
-import de.dfki.vsm.model.sceneflow.glue.command.Command;
-import de.dfki.vsm.model.sceneflow.glue.command.definition.VariableDefinition;
-import de.dfki.vsm.model.sceneflow.glue.command.definition.DataTypeDefinition;
+import de.dfki.vsm.model.sceneflow.chart.edge.*;
 import de.dfki.vsm.model.sceneflow.chart.graphics.node.NodeGraphics;
+import de.dfki.vsm.model.sceneflow.glue.command.Command;
+import de.dfki.vsm.model.sceneflow.glue.command.definition.DataTypeDefinition;
+import de.dfki.vsm.model.sceneflow.glue.command.definition.VariableDefinition;
 import de.dfki.vsm.util.cpy.CopyTool;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLWriteError;
-import java.util.ArrayList;
 import org.w3c.dom.Element;
+
+import java.util.ArrayList;
 
 /**
  * @author Gregor Mehlmann
@@ -127,11 +122,7 @@ public class BasicNode implements ModelObject {
             return false;
         }
 
-        if (mComment.length() == 0) {
-            return false;
-        }
-
-        return true;
+        return mComment.length() != 0;
     }
 
     public boolean hasEdge() {
@@ -159,9 +150,7 @@ public class BasicNode implements ModelObject {
         }
 
         if (mIEdgeList != null) {
-            if (mIEdgeList.size() > 0) {
-                return true;
-            }
+            return mIEdgeList.size() > 0;
         }
         return false;
     }

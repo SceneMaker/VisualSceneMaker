@@ -102,7 +102,7 @@ public class TreeCellImpl<AbstractTreeEntry> extends TreeCell<AbstractTreeEntry>
         } else if (this.getTreeItem() instanceof ContextTreeItem) {
             entry = (AbstractTreeEntry) ((ContextTreeItem) this.getTreeItem()).getEntryItem();
         } else {
-            entry = (AbstractTreeEntry) this.getTreeItem().getValue();
+            entry = this.getTreeItem().getValue();
         }
         return entry;
     }

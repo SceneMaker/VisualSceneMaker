@@ -373,74 +373,50 @@ public final class EdgeGraphics
             return true;
         }
 
-        if (controlPoint2HandlerContainsPoint(point, threshold))
-        {
-            return true;
-        }
+        return controlPoint2HandlerContainsPoint(point, threshold);
 
-        return false;
     }
 
     public boolean controlPoint1HandlerContainsPoint(Point point, int threshold)
     {
 
         // Debug //System.out.println("is point " + point + " in (e 5) " + mEg.mCCrtl1.x + ", " + mEg.mCCrtl1.y);
-        if ((((int) mCCrtl1.x - threshold) < point.x) && (((int) mCCrtl1.x + threshold) > point.x)
-            && (((int) mCCrtl1.y - threshold) < point.y) && (((int) mCCrtl1.y + threshold) > point.y))
-        {
+        // Debug //System.out.println("\tyes!");
+        return (((int) mCCrtl1.x - threshold) < point.x) && (((int) mCCrtl1.x + threshold) > point.x)
+                && (((int) mCCrtl1.y - threshold) < point.y) && (((int) mCCrtl1.y + threshold) > point.y);
 
-            // Debug //System.out.println("\tyes!");
-            return true;
-        }
-
-        return false;
     }
 
     public boolean controlPoint2HandlerContainsPoint(Point point, int threshold)
     {
 
         // Debug //System.out.println("is point " + point + " in (e 5) " + mEg.mCCrtl2.x + ", " + mEg.mCCrtl2.y);
-        if ((((int) mCCrtl2.x - threshold) < point.x) && (((int) mCCrtl2.x + threshold) > point.x)
-            && (((int) mCCrtl2.y - threshold) < point.y) && (((int) mCCrtl2.y + threshold) > point.y))
-        {
+        // Debug //System.out.println("\tyes!");
+        return (((int) mCCrtl2.x - threshold) < point.x) && (((int) mCCrtl2.x + threshold) > point.x)
+                && (((int) mCCrtl2.y - threshold) < point.y) && (((int) mCCrtl2.y + threshold) > point.y);
 
-            // Debug //System.out.println("\tyes!");
-            return true;
-        }
-
-        return false;
     }
 
     public boolean curveStartPointContainsPoint(Point point, int threshold)
     {
 
         // Debug //System.out.println("cep check is point " + point + " in (e 5) " + mEg.mAbsoluteStartPos.x + ", " + mEg.mAbsoluteStartPos.y);
-        if ((((int) mAbsoluteStartPos.x - threshold) < point.x) && (((int) mAbsoluteStartPos.x + threshold) > point.x)
-            && (((int) mAbsoluteStartPos.y - threshold) < point.y)
-            && (((int) mAbsoluteStartPos.y + threshold) > point.y))
-        {
+        // Debug //System.out.println("\tyes!");
+        return (((int) mAbsoluteStartPos.x - threshold) < point.x) && (((int) mAbsoluteStartPos.x + threshold) > point.x)
+                && (((int) mAbsoluteStartPos.y - threshold) < point.y)
+                && (((int) mAbsoluteStartPos.y + threshold) > point.y);
 
-            // Debug //System.out.println("\tyes!");
-            return true;
-        }
-
-        return false;
     }
 
     public boolean curveEndPointContainsPoint(Point point, int threshold)
     {
 
         // Debug //System.out.println("csp check is point " + point + " in (e 5) " + mEg.mAbsoluteEndPos.x + ", " + mEg.mAbsoluteEndPos.y);
-        if ((((int) mAbsoluteEndPos.x - threshold) < point.x) && (((int) mAbsoluteEndPos.x + threshold) > point.x)
-            && (((int) mAbsoluteEndPos.y - threshold) < point.y)
-            && (((int) mAbsoluteEndPos.y + threshold) > point.y))
-        {
+        // Debug //System.out.println("\tyes!");
+        return (((int) mAbsoluteEndPos.x - threshold) < point.x) && (((int) mAbsoluteEndPos.x + threshold) > point.x)
+                && (((int) mAbsoluteEndPos.y - threshold) < point.y)
+                && (((int) mAbsoluteEndPos.y + threshold) > point.y);
 
-            // Debug //System.out.println("\tyes!");
-            return true;
-        }
-
-        return false;
     }
 
     public boolean curveContainsPoint(Point point)

@@ -1076,7 +1076,7 @@ class CUP$GlueParser$actions {
               LiteralExpression RESULT =null;
 		int xleft = ((java_cup.runtime.Symbol)CUP$GlueParser$stack.peek()).left;
 		int xright = ((java_cup.runtime.Symbol)CUP$GlueParser$stack.peek()).right;
-		Object x = (Object)((java_cup.runtime.Symbol) CUP$GlueParser$stack.peek()).value;
+		Object x = ((Symbol) CUP$GlueParser$stack.peek()).value;
 		 
         RESULT = new NullLiteral(); 
     

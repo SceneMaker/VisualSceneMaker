@@ -120,7 +120,7 @@ public class TestSSIPlugin {
         //System.out.print(out.toString());
 
         final TriCatWorldSSIData mSSIData = new TriCatWorldSSIData(
-                ((SSIStringData) array.list().get(0).getData()).toString());
+                array.list().get(0).getData().toString());
 
         System.out.println(mSSIData.get("voice.activity"));
         System.out.println(mSSIData.get("voice.keyword"));

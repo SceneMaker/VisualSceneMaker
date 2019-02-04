@@ -101,7 +101,6 @@ public class ExtensionsFromJar {
                 addActivityExecutor(entryName);
             }
         } catch (ClassNotFoundException e) {
-            return;
 
         }
 

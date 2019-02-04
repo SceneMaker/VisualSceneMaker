@@ -185,7 +185,7 @@ public class SingleFunctionContainer extends JPanel {
         sanitizeComponent(mMethodLabel, labelSize);
         sanitizeComponent(mMethodComboBox, textFielSize);
         mMethodComboBox.setModel(new DefaultComboBoxModel());
-        mMethodComboBox.addActionListener(evt -> methodComboBoxActionPerformed(evt));
+        mMethodComboBox.addActionListener(this::methodComboBoxActionPerformed);
 
         mArgLabel = new JLabel("Arguments:");
         mArgList = new JList();
@@ -440,7 +440,7 @@ public class SingleFunctionContainer extends JPanel {
 
                 if (getMethodBox().getSelectedItem() != null) {
                     setSelectedMethod(
-                            getmMethodMap().get((String) getMethodBox().getSelectedItem()));
+                            getmMethodMap().get(getMethodBox().getSelectedItem()));
                 }
 
                 if (getSelectedMethod() != null) {
@@ -535,7 +535,7 @@ public class SingleFunctionContainer extends JPanel {
     private void initMethodComboBox(String className) {
 
         // TODO - CHECK
-        Object selectedMethod = ((DefaultComboBoxModel) mMethodComboBox.getModel()).getSelectedItem();
+        Object selectedMethod = mMethodComboBox.getModel().getSelectedItem();
         String selectedMethodStr = null;
 
         if (selectedMethod != null) {
@@ -560,7 +560,7 @@ public class SingleFunctionContainer extends JPanel {
 
                     // select the method if it was previously selected
                     if (methodStr.equalsIgnoreCase(selectedMethodStr)) {
-                        ((DefaultComboBoxModel) mMethodComboBox.getModel()).setSelectedItem(selectedMethod);
+                        mMethodComboBox.getModel().setSelectedItem(selectedMethod);
                     }
                 }
             }
@@ -597,7 +597,7 @@ public class SingleFunctionContainer extends JPanel {
             // Get the selected method and resize/fill the argument list
             mIsValidClass = true;
 
-            mSelectedMethod = mMethodMap.get((String) mMethodComboBox.getSelectedItem());
+            mSelectedMethod = mMethodMap.get(mMethodComboBox.getSelectedItem());
 
             mMethodComboBox.setToolTipText("");
 
@@ -631,7 +631,7 @@ public class SingleFunctionContainer extends JPanel {
 
                 // select the method if it was previously selected
                 if (methodStr.equalsIgnoreCase(selectedMethodStr)) {
-                    ((DefaultComboBoxModel) mMethodComboBox.getModel()).setSelectedItem(selectedMethod);
+                    mMethodComboBox.getModel().setSelectedItem(selectedMethod);
                 }
             }
         }
@@ -709,7 +709,7 @@ public class SingleFunctionContainer extends JPanel {
     public void methodComboBoxActionPerformed(ActionEvent evt) {
 
         // Get the selected method and resize/fill the argument list
-        mSelectedMethod = mMethodMap.get((String) mMethodComboBox.getSelectedItem());
+        mSelectedMethod = mMethodMap.get(mMethodComboBox.getSelectedItem());
         resizeArgNameList();
         updateArgList();
     }
@@ -732,7 +732,7 @@ public class SingleFunctionContainer extends JPanel {
                 int index = mArgList.getSelectedIndex();
                 String result = (String) JOptionPane.showInputDialog(this, "Rename Parameter:", "Rename Parameter",
                         JOptionPane.PLAIN_MESSAGE, null, null,
-                        mNameMap.get((String) mArgList.getSelectedValue()));
+                        mNameMap.get(mArgList.getSelectedValue()));
 
                 mArgNameList.set(index, result);
                 updateArgList();

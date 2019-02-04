@@ -72,7 +72,7 @@ public class GridManager {
         mNodeAreas  = new ArrayList<>();
 
         if ((w / mEditorConfig.sGRID_XSPACE) > 0 && (h / mEditorConfig.sGRID_YSPACE) > 0
-                && (isSubgridEstablished == false)) {
+                && (!isSubgridEstablished)) {
             mTransitionArea =
                 new GridRectangle[((w / mEditorConfig.sGRID_XSPACE) + 1) * 2][((h / mEditorConfig.sGRID_YSPACE) + 1) * 2];
         }
@@ -94,7 +94,7 @@ public class GridManager {
 
                 // Initiates subgrids.
                 if ((w / mEditorConfig.sGRID_XSPACE) > 0 && (h / mEditorConfig.sGRID_YSPACE) > 0
-                        && (isSubgridEstablished == false)) {
+                        && (!isSubgridEstablished)) {
                     GridRectangle s = new GridRectangle(mEditorConfig.sXOFFSET + (i * mEditorConfig.sGRID_XSPACE) + 2,
                                           mEditorConfig.sYOFFSET + (j * mEditorConfig.sGRID_YSPACE) + 2,
                                           halfNodeSize - 4, halfNodeSize - 4);
@@ -205,7 +205,7 @@ public class GridManager {
         }
 
         if ((w / mEditorConfig.sGRID_XSPACE) > 0 && (h / mEditorConfig.sGRID_YSPACE) > 0
-                && (isSubgridEstablished == false)) {
+                && (!isSubgridEstablished)) {
             isSubgridEstablished = true;
             height               = h / mEditorConfig.sGRID_YSPACE;
             width                = w / mEditorConfig.sGRID_XSPACE;
@@ -437,7 +437,7 @@ public class GridManager {
                     }
                 }
 
-                if (isGridInteresected == false) {
+                if (!isGridInteresected) {
                     gridRectangle.setWeight(GridConstants.INITIAL_WEIGHT);
                 }
 

@@ -143,7 +143,7 @@ public class VarDefDialog extends Dialog {
                     String a = "";
                     // Look in the definition list for the data type
                     for (DataTypeDefinition def : mNode.getTypeDefList()) {
-                        if (def.getName().equals((String) e.getItem())) {
+                        if (def.getName().equals(e.getItem())) {
                             if (def instanceof ListTypeDefinition) {
                                 mVarDef = new VariableDefinition("NewVar", "List", new de.dfki.vsm.model.sceneflow.glue.command.expression.record.ArrayExpression());
                             } else if (def instanceof StructTypeDefinition) {

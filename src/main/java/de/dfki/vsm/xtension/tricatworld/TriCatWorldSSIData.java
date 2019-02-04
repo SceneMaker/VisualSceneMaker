@@ -56,7 +56,7 @@ public final class TriCatWorldSSIData {
             // We have a leaf element
             final NodeList list = root.getElementsByTagName(path);
             if (list.getLength() == 1) {
-                return ((Element) list.item(0)).getTextContent();
+                return list.item(0).getTextContent();
             } else {
                 return null;
             }

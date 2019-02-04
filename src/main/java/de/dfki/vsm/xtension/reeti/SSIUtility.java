@@ -112,7 +112,7 @@ public class SSIUtility extends SSIRunTimePlugin {
                 }
             } else if (event.getSender().equalsIgnoreCase("speech")
                     && event.getEvent().equalsIgnoreCase("act")) {
-                final String keyword = ((SSIStringData) data).toString().trim();
+                final String keyword = data.toString().trim();
                 // User started speaking
                 mLogger.message("User said '" + keyword + "'");
                 if (mUseSSI) {
@@ -134,7 +134,7 @@ public class SSIUtility extends SSIRunTimePlugin {
                 // This condition is used to receive structure sent by SSI
             } else if (event.getSender().equalsIgnoreCase("audio")
                     && event.getEvent().equalsIgnoreCase("speech")) {
-                final String structure = ((SSIStringData) data).toString().trim();
+                final String structure = data.toString().trim();
                 // User started speaking
                 mLogger.message("User said '" + structure + "'");
                 if (mUseSSI) {

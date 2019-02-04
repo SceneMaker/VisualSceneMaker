@@ -2,18 +2,20 @@ package de.dfki.vsm.editor.action;
 
 import de.dfki.vsm.editor.CmdBadge;
 import de.dfki.vsm.editor.Node.Type;
+import de.dfki.vsm.editor.event.NodeSelectedEvent;
 import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
 import de.dfki.vsm.model.sceneflow.chart.BasicNode;
 import de.dfki.vsm.model.sceneflow.chart.SuperNode;
 import de.dfki.vsm.model.sceneflow.chart.graphics.node.NodeGraphics;
-import static de.dfki.vsm.editor.Node.Type.BasicNode;
-import static de.dfki.vsm.editor.Node.Type.SuperNode;
-import de.dfki.vsm.editor.event.NodeSelectedEvent;
 import de.dfki.vsm.util.evt.EventDispatcher;
-import java.awt.Point;
+
 import javax.swing.undo.AbstractUndoableEdit;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
+import java.awt.*;
+
+import static de.dfki.vsm.editor.Node.Type.BasicNode;
+import static de.dfki.vsm.editor.Node.Type.SuperNode;
 
 /**
  * @author Gregor Mehlmann
@@ -28,7 +30,7 @@ public class CreateNodeAction extends NodeAction {
         mWorkSpace        = workSpace;
         mCoordinate       = new Point(node.getGraphics().getPosition().getXPos(),
                                       node.getGraphics().getPosition().getYPos());
-        mGUINodeType      = (SuperNode.class.isInstance(node))
+        mGUINodeType      = (node instanceof SuperNode)
                             ? de.dfki.vsm.editor.Node.Type.SuperNode
                             : de.dfki.vsm.editor.Node.Type.BasicNode;
         mSceneFlowPane    = mWorkSpace.getSceneFlowEditor();

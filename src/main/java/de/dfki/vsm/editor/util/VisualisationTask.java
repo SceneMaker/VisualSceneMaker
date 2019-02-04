@@ -70,9 +70,7 @@ public class VisualisationTask extends TimerTask {
     }
 
     public synchronized boolean isHighLight() {
-        return (mType == VisualisationTask.Type.Highlight)
-               ? true
-               : false;
+        return mType == Type.Highlight;
     }
 
     public void run() {

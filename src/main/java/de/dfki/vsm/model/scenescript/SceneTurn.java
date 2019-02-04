@@ -95,7 +95,7 @@ public final class SceneTurn extends ScriptEntity {
 
 			for (UttrElement word : utt.getWordList()) {
 				if (word instanceof SceneWord) {
-					result.append(((SceneWord) word).getText()).append(" ");
+					result.append(word.getText()).append(" ");
 				}
 			}
 			result = new StringBuilder(result.toString().trim() + utt.getPunctuationMark() + " ");
