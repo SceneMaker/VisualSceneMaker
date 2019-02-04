@@ -464,10 +464,10 @@ public final class Preferences {
             if (isMac()) {
                 final Class appClass = Class.forName("com.apple.eawt.Application");
                 // Get the application and the method to set the dock icon
-                final Object app = appClass.getMethod("getApplication", new Class[]{}).invoke(null, new Object[]{});
-                final Method setDockIconImage = appClass.getMethod("setDockIconImage", new Class[]{Image.class});
+                final Object app = appClass.getMethod("getApplication", new Class[]{}).invoke(null);
+                final Method setDockIconImage = appClass.getMethod("setDockIconImage", Image.class);
                 // Set the dock icon to the logo of Visual Scene Maker 3  
-                setDockIconImage.invoke(app, new Object[]{Preferences.ICON_SCENEMAKER_DOC.getImage()});
+                setDockIconImage.invoke(app, Preferences.ICON_SCENEMAKER_DOC.getImage());
             }
         } catch (final ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException | NoSuchMethodException | SecurityException | IllegalArgumentException | InvocationTargetException exc) {
             LOGDefaultLogger.getInstance().failure("Error: " + exc.getMessage());

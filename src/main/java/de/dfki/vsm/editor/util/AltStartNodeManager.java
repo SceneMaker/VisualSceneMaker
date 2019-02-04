@@ -99,7 +99,7 @@ public class AltStartNodeManager {
                 boolean  valid = true;
 
                 for (Map.Entry<BasicNode, ArrayList<BasicNode>> basicNodeArrayListEntry : reachableNodeMap.entrySet()) {
-                    Map.Entry pairs = (Map.Entry) basicNodeArrayListEntry;
+                    Map.Entry pairs = basicNodeArrayListEntry;
                     BasicNode n = (BasicNode) pairs.getKey();
                     ArrayList<BasicNode> v = (ArrayList<BasicNode>) pairs.getValue();
 
@@ -123,7 +123,7 @@ public class AltStartNodeManager {
                 ////
 
                 for (Map.Entry<TPLTuple<String, BasicNode>, TPLTuple<String, BasicNode>> tplTupleTPLTupleEntry : mAltStartNodeMap.entrySet()) {
-                    Map.Entry pairs = (Map.Entry) tplTupleTPLTupleEntry;
+                    Map.Entry pairs = tplTupleTPLTupleEntry;
                     TPLTuple<String, BasicNode> p1 = (TPLTuple<String, BasicNode>) pairs.getKey();
                     TPLTuple<String, BasicNode> p2 = (TPLTuple<String, BasicNode>) pairs.getValue();
 

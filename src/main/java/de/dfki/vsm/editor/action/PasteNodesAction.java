@@ -195,7 +195,7 @@ public class PasteNodesAction extends EditorAction {
                 AbstractEdge             e   = mNodesDefaultEdge.get(node);
                 CreateEdgeAction cea = null;
 
-                if (TimeoutEdge.class.isInstance(e)) {
+                if (e instanceof TimeoutEdge) {
                     cea = new CreateEdgeAction(mWorkSpace, mWorkSpace.getNode(node.getId()),
                                                mWorkSpace.getNode(e.getTargetUnid()), e,
                                                de.dfki.vsm.editor.Edge.TYPE.TEDGE);

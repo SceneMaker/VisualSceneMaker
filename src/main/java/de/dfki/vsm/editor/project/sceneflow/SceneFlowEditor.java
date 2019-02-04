@@ -2,16 +2,16 @@ package de.dfki.vsm.editor.project.sceneflow;
 
 //~--- non-JDK imports --------------------------------------------------------
 //import com.sun.java.swing.plaf.windows.WindowsScrollBarUI;
+import de.dfki.vsm.Preferences;
+import de.dfki.vsm.editor.EditorInstance;
+import de.dfki.vsm.editor.event.ElementEditorToggledEvent;
 import de.dfki.vsm.editor.event.NodeExecutedEvent;
+import de.dfki.vsm.editor.event.NodeSelectedEvent;
 import de.dfki.vsm.editor.project.EditorProject;
 import de.dfki.vsm.editor.project.sceneflow.attributes.ElementEditor;
 import de.dfki.vsm.editor.project.sceneflow.elements.SceneFlowElementPanel;
 import de.dfki.vsm.editor.project.sceneflow.elements.SceneFlowPalettePanel;
 import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
-import de.dfki.vsm.Preferences;
-import de.dfki.vsm.editor.EditorInstance;
-import de.dfki.vsm.editor.event.ElementEditorToggledEvent;
-import de.dfki.vsm.editor.event.NodeSelectedEvent;
 import de.dfki.vsm.editor.util.SceneFlowManager;
 import de.dfki.vsm.model.sceneflow.chart.SceneFlow;
 import de.dfki.vsm.model.sceneflow.chart.SuperNode;
@@ -20,44 +20,22 @@ import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 
-//~--- JDK imports ------------------------------------------------------------
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Image;
-import java.awt.Point;
-import java.awt.Polygon;
-import java.awt.Rectangle;
-import java.awt.RenderingHints;
+import javax.swing.*;
+import javax.swing.border.Border;
+import javax.swing.plaf.basic.BasicSplitPaneDivider;
+import javax.swing.plaf.basic.BasicSplitPaneUI;
+import javax.swing.undo.UndoManager;
+import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
-
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-
 import java.io.IOException;
-
 import java.util.Timer;
 import java.util.TimerTask;
 
-import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
-import javax.swing.TransferHandler;
-import javax.swing.UIManager;
-import javax.swing.border.Border;
-import javax.swing.plaf.basic.BasicSplitPaneDivider;
-import javax.swing.plaf.basic.BasicSplitPaneUI;
-import javax.swing.undo.UndoManager;
+//~--- JDK imports ------------------------------------------------------------
 
 /**
  * @author Gregor Mehlmann
@@ -199,12 +177,8 @@ public final class SceneFlowEditor extends JPanel implements EventListener
 
         // PG 17.12.13 - FUTURE FEATURE! mNewElementDisplay.add(new EdgeTypeSelection(), BorderLayout.NORTH);
         add(mNewElementDisplay, BorderLayout.WEST);
-        mNewElementDisplay.setVisible(Boolean.valueOf(Preferences.getProperty("showelements"))
-                ? true
-                : false);
-        mElementEditor.setVisible(Boolean.valueOf(Preferences.getProperty("showelementproperties"))
-                ? true
-                : false);
+        mNewElementDisplay.setVisible(Boolean.valueOf(Preferences.getProperty("showelements")));
+        mElementEditor.setVisible(Boolean.valueOf(Preferences.getProperty("showelementproperties")));
 
         //INITIALIZE THE SPLIT PANEL WITH WORK SPACE AND ELEMENTEDITOR
         mWorkSpaceScrollPane.setMinimumSize(new Dimension(10, 10));
@@ -217,7 +191,7 @@ public final class SceneFlowEditor extends JPanel implements EventListener
         if (Boolean.valueOf(Preferences.getProperty("showelementproperties")))
         {
 
-            mSplitPane.setDividerLocation((int) (EditorInstance.getInstance().getWidth() - 520));
+            mSplitPane.setDividerLocation((EditorInstance.getInstance().getWidth() - 520));
 
             //mSplitPane.setDividerLocation(
             //    Integer.parseInt(mEditorProject.getEditorConfig().getProperty("propertiesdividerlocation")));

@@ -25,7 +25,7 @@ public class ListValue extends AbstractValue {
         LinkedList<AbstractValue> valueListCopy = new LinkedList<>();
 
         for (AbstractValue value : mValueList) {
-            valueListCopy.add((AbstractValue) value.getCopy());
+            valueListCopy.add(value.getCopy());
         }
 
         return valueListCopy;

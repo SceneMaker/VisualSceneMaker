@@ -24,11 +24,11 @@ public class StructValue extends AbstractValue {
         HashMap<java.lang.String, AbstractValue> valueMapCopy = new HashMap<>();
 
         for (Map.Entry<String, AbstractValue> stringAbstractValueEntry : mValueMap.entrySet()) {
-            Map.Entry pairs = (Map.Entry) stringAbstractValueEntry;
+            Map.Entry pairs = stringAbstractValueEntry;
             String name = (String) pairs.getKey();
             AbstractValue value = (AbstractValue) pairs.getValue();
 
-            valueMapCopy.put(name, (AbstractValue) value.getCopy());
+            valueMapCopy.put(name, value.getCopy());
         }
 
         return valueMapCopy;
@@ -42,7 +42,7 @@ public class StructValue extends AbstractValue {
         StringBuilder result = new StringBuilder("StructValue(");
 
         for (Map.Entry<String, AbstractValue> stringAbstractValueEntry : mValueMap.entrySet()) {
-            Map.Entry pairs = (Map.Entry) stringAbstractValueEntry;
+            Map.Entry pairs = stringAbstractValueEntry;
             String name = (String) pairs.getKey();
             AbstractValue value = (AbstractValue) pairs.getValue();
 

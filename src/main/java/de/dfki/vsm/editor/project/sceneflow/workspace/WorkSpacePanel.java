@@ -1296,7 +1296,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
 
         SuperNode parent = getSceneFlowManager().getCurrentActiveSuperNode();
 
-        while (parent.equals(supernode) != true) {
+        while (!parent.equals(supernode)) {
             decreaseWorkSpaceLevel();
             parent = getSceneFlowManager().getCurrentActiveSuperNode();
         }

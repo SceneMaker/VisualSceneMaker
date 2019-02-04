@@ -117,7 +117,7 @@ public class SuperNode extends BasicNode {
         HashMap<String, BasicNode> copy = new HashMap<>();
 
         for (Map.Entry<String, BasicNode> stringBasicNodeEntry : mStartNodeMap.entrySet()) {
-            Map.Entry pairs = (Map.Entry) stringBasicNodeEntry;
+            Map.Entry pairs = stringBasicNodeEntry;
             String nodeId = (String) pairs.getKey();
             BasicNode nodeData = (BasicNode) pairs.getValue();
 
@@ -529,7 +529,7 @@ public class SuperNode extends BasicNode {
                 + ((mHistoryNode == null) ? 0 : mHistoryNode.hashCode())
                 + ((mLocalVariableBadge == null) ? 0 : mLocalVariableBadge.hashCode())
                 + ((mGlobalVariableBadge == null) ? 0 : mGlobalVariableBadge.hashCode())
-                + ((mHideLocalVarBadge == true) ? 1 : 0) + ((mHideGlobalVarBadge == true) ? 1 : 0);
+                + ((mHideLocalVarBadge) ? 1 : 0) + ((mHideGlobalVarBadge) ? 1 : 0);
 
         // Add hash of all commands inside SuperNode
         for (int cntCommand = 0; cntCommand < getSizeOfCmdList(); cntCommand++) {

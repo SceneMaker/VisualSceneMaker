@@ -150,12 +150,8 @@ public class GridRectangle extends Rectangle {
         Line2D              bottomRect         = new Line2D(x1, y2, x2, y2);
         Collection<Point2D> bottomIntersection = edgeBezier.intersections(bottomRect);
 
-        if (!bottomIntersection.isEmpty()) {
+        // System.out.println("Found intersection on: " + getRowIndex() + "," + getColumnIndex());
+        return !bottomIntersection.isEmpty();
 
-            // System.out.println("Found intersection on: " + getRowIndex() + "," + getColumnIndex());
-            return true;
-        }
-
-        return false;
     }
 }

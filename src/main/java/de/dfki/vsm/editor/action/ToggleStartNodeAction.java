@@ -32,9 +32,7 @@ public class ToggleStartNodeAction extends NodeAction {
 
         // check start node state
         mStartNodes  = mParentDataNode.getStartNodeMap();
-        mIsStartNode = (mStartNodes.containsKey(mDataNodeId))
-                       ? true
-                       : false;
+        mIsStartNode = mStartNodes.containsKey(mDataNodeId);
     }
 
     @Override

@@ -171,9 +171,7 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
         mSourceNode = sourceNode;
         mTargetNode = targetNode;
         mType = type;
-        mPointingToSameNode = (mTargetNode == mSourceNode)
-                ? true
-                : false;
+        mPointingToSameNode = mTargetNode == mSourceNode;
 
         // Timer
         mVisualisationTimer = new Timer("Edge(" + mDataEdge.getSourceUnid() + "->" + mDataEdge.getTargetUnid()
@@ -193,9 +191,7 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
         mSourceNode = sourceNode;
         mTargetNode = targetNode;
         mType = type;
-        mPointingToSameNode = (mTargetNode == mSourceNode)
-                ? true
-                : false;
+        mPointingToSameNode = mTargetNode == mSourceNode;
 
         // Timer
         mVisualisationTimer = new Timer("Edge(" + mDataEdge.getSourceUnid() + "->" + mDataEdge.getTargetUnid()
@@ -804,7 +800,7 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
                 BasicStroke.JOIN_MITER));
         graphics.draw(mEg.mCurve);
 
-        if (mEditMode == false) {
+        if (!mEditMode) {
             if (mDescription.length() > 0) {
                 paintRoundedTextBadge(graphics, new Point((int) mEg.mLeftCurve.x2, (int) mEg.mLeftCurve.y2),
                         mDescription);

@@ -236,11 +236,7 @@ public class Comment extends JComponent implements EventListener, Observer, Mous
 
         // DEBUG System.out.println("bounds " + getBounds());
         // DEBUG System.out.println("point " + p);
-        if (((r.x + r.width) - p.x < 15) && ((r.y + r.height) - p.y < 15)) {
-            return true;
-        } else {
-            return false;
-        }
+        return ((r.x + r.width) - p.x < 15) && ((r.y + r.height) - p.y < 15);
     }
 
     @Override

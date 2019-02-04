@@ -131,7 +131,7 @@ public class CmdDialog extends Dialog {
         String inputString = mInputTextField.getText().trim();
 
         try {
-            final Command cmd = (Command) GlueParser.run(inputString);
+            final Command cmd = GlueParser.run(inputString);
 
             if (cmd != null) {
                 mCommand = cmd;

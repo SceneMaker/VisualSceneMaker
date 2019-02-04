@@ -90,16 +90,13 @@ public class MaryTTsProcess extends Observable{
             command.add("/C");
             command.add(cmd);
         }
-        return (String[]) command.toArray(new String[0]);
+        return command.toArray(new String[0]);
     }
 
     private boolean isMaryTTSInstalled(){
         String cmd = getMaryTTSExecPath();
         File f = new File(cmd);
-        if(f.exists() && !f.isDirectory()) {
-            return  true;
-        }
-        return false;
+        return f.exists() && !f.isDirectory();
     }
 
     private String getMaryTTSExecPath(){

@@ -51,7 +51,7 @@ public class IDManager {
         for (SuperNode sn : supernodes) {
 
             // only scan for supernodes and nodes
-            if (!de.dfki.vsm.model.sceneflow.chart.SceneFlow.class.isInstance(sn)) {
+            if (!(sn instanceof de.dfki.vsm.model.sceneflow.chart.SceneFlow)) {
                 mSuperNodeIDs.add(new Integer(sn.getId().substring(1)));
             }
 
@@ -81,7 +81,7 @@ public class IDManager {
         String  idStr = n.getDataNode().getId().substring(1);
         Integer id    = new Integer(idStr);
 
-        if (SuperNode.class.isInstance(n.getDataNode())) {
+        if (n.getDataNode() instanceof SuperNode) {
             if (!mSuperNodeIDs.contains(id)) {
 
                 // System.out.println("id added for supernode!");
@@ -136,7 +136,7 @@ public class IDManager {
         String  idStr = n.getDataNode().getId().substring(1);
         Integer id    = new Integer(idStr);
 
-        if (SuperNode.class.isInstance(n.getDataNode())) {
+        if (n.getDataNode() instanceof SuperNode) {
             mSuperNodeIDs.remove(id);
             Collections.sort(mSuperNodeIDs);
         } else {
@@ -166,7 +166,7 @@ public class IDManager {
         Hashtable<String, String> currentOldNewIDRef = lastOldNewIDRef;
 
         for (BasicNode node : nodes) {
-            if (SuperNode.class.isInstance(node)) {
+            if (node instanceof SuperNode) {
                 String oldID = node.getId();
                 String newID = getNextFreeSuperNodeID();
 
@@ -384,7 +384,7 @@ public class IDManager {
                 }
             }
 
-            if (SuperNode.class.isInstance(node)) {
+            if (node instanceof SuperNode) {
                 ArrayList<BasicNode> childNodes = ((SuperNode) node).getNodeAndSuperNodeList();
 
                 reassignEdgesID(childNodes, relationOldNewIDRef);

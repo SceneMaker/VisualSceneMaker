@@ -126,7 +126,7 @@ public class VarBadgeLocal extends JComponent implements EventListener, ActionLi
         // Enable antialiasing
         Dimension dimension = computeTextRectSize(g);
 
-        if (useCachedImage == false) {
+        if (!useCachedImage) {
 
             bufferedImage = new BufferedImage((int) dimension.getWidth(), (int) dimension.getHeight(), BufferedImage.TYPE_4BYTE_ABGR);
             Graphics2D graphics = bufferedImage.createGraphics();

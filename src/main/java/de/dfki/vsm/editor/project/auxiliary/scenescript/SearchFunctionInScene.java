@@ -126,11 +126,7 @@ public class SearchFunctionInScene {
         button_ReplaceAll.addActionListener(e -> replaceAll(textField_FindInput.getText(), textField_ReplaceInput.getText()));
 
         checkBox_SearchControl.addItemListener(e -> {
-            if (e.getStateChange() == 1) {
-                search_Scene_Name_Symbol = true;
-            } else {
-                search_Scene_Name_Symbol = false;
-            }
+            search_Scene_Name_Symbol = e.getStateChange() == 1;
         });
 
         button_EmptytextField.addActionListener(e -> emptytextField());

@@ -57,7 +57,7 @@ public class SceneFlowManager {
     }
 
     public boolean isRootSuperNode(BasicNode n) {
-        return (n.equals((SuperNode) mSceneFlow));
+        return (n.equals(mSceneFlow));
     }
 
     /*
@@ -137,7 +137,7 @@ public class SceneFlowManager {
             if (sn != null) {
                 nSet.add(sn);
 
-                if (!sn.equals((SuperNode) mSceneFlow)) {
+                if (!sn.equals(mSceneFlow)) {
                     nSet = buildSuperNodeSet(sn, nSet);
                 }
             }
@@ -158,7 +158,7 @@ public class SceneFlowManager {
         if (pn != null) {
             nSet.add(pn);
 
-            if (!pn.equals((SuperNode) mSceneFlow)) {
+            if (!pn.equals(mSceneFlow)) {
                 nSet = buildSuperNodeSet(pn, nSet);
             }
         }
@@ -171,7 +171,7 @@ public class SceneFlowManager {
      */
     public SuperNode getParentSuperNode(BasicNode n) {
         if (!isRootSuperNode(n)) {
-            SuperNode parentSuperNode = (SuperNode) mSceneFlow;
+            SuperNode parentSuperNode = mSceneFlow;
             Set<BasicNode> ns              = getSubNodes(parentSuperNode);
 
             // checking if node is contained in the nodes of the root SuperNode
@@ -179,7 +179,7 @@ public class SceneFlowManager {
                 if (cn.equals(n)) {
                     return parentSuperNode;
                 } else {
-                    if (SuperNode.class.isInstance(cn)) {
+                    if (cn instanceof SuperNode) {
                         SuperNode sun = findParentSuperNode((SuperNode) cn, n);
 
                         if (sun != null) {
@@ -206,7 +206,7 @@ public class SceneFlowManager {
                 if (cn.equals(n)) {
                     return parentSuperNode;
                 } else {
-                    if (SuperNode.class.isInstance(cn)) {
+                    if (cn instanceof SuperNode) {
                         SuperNode sun = findParentSuperNode((SuperNode) cn, n);
 
                         if (sun != null) {
@@ -235,11 +235,7 @@ public class SceneFlowManager {
             return false;
         }
 
-        if (nSet.contains(n)) {
-            return true;
-        } else {
-            return false;
-        }
+        return nSet.contains(n);
     }
 
     private Set<BasicNode> getSuperNodeSubNodes(SuperNode sNode, Set allSubNodes) {
@@ -272,7 +268,7 @@ public class SceneFlowManager {
     }
 
     public Set<BasicNode> getSubNodes() {
-        return getSubNodes((SuperNode) mSceneFlow);
+        return getSubNodes(mSceneFlow);
     }
 
     public Set<BasicNode> getSubNodes(SuperNode sNode) {

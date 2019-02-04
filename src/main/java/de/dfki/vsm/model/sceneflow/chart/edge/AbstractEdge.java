@@ -2,13 +2,13 @@ package de.dfki.vsm.model.sceneflow.chart.edge;
 
 import de.dfki.vsm.model.ModelObject;
 import de.dfki.vsm.model.sceneflow.chart.BasicNode;
-import de.dfki.vsm.model.sceneflow.glue.command.Command;
 import de.dfki.vsm.model.sceneflow.chart.graphics.edge.EdgeGraphics;
+import de.dfki.vsm.model.sceneflow.glue.command.Command;
 import de.dfki.vsm.util.tpl.TPLTuple;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Gregor Mehlmann
@@ -134,7 +134,7 @@ public abstract class AbstractEdge implements ModelObject {
         HashMap<TPLTuple<String, BasicNode>, TPLTuple<String, BasicNode>> copy = new HashMap<>();
 
         for (Map.Entry<TPLTuple<String, BasicNode>, TPLTuple<String, BasicNode>> tplTupleTPLTupleEntry : mAltMap.entrySet()) {
-            Map.Entry pairs = (Map.Entry) tplTupleTPLTupleEntry;
+            Map.Entry pairs = tplTupleTPLTupleEntry;
             TPLTuple<String, BasicNode> startNodePair = (TPLTuple<String, BasicNode>) pairs.getKey();
             TPLTuple<String, BasicNode> altStartNodePair = (TPLTuple<String, BasicNode>) pairs.getValue();
             TPLTuple<String, BasicNode> startNodePairCopy = new TPLTuple<>(startNodePair.getFirst(),
@@ -153,7 +153,7 @@ public abstract class AbstractEdge implements ModelObject {
         StringBuilder result = new StringBuilder();
 
         for (Map.Entry<TPLTuple<String, BasicNode>, TPLTuple<String, BasicNode>> tplTupleTPLTupleEntry : mAltMap.entrySet()) {
-            Map.Entry pairs = (Map.Entry) tplTupleTPLTupleEntry;
+            Map.Entry pairs = tplTupleTPLTupleEntry;
             TPLTuple<String, BasicNode> start = (TPLTuple<String, BasicNode>) pairs.getKey();
             TPLTuple<String, BasicNode> alt = (TPLTuple<String, BasicNode>) pairs.getValue();
 

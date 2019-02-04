@@ -80,12 +80,9 @@ public class SystemHistory {
         if (mHistoryStackMap.get(node.getId()) == null) {
             return true;
         } else {
-            if (mHistoryStackMap.get(node.getId()).isEmpty()) {
-                return true;
-            }
+            return mHistoryStackMap.get(node.getId()).isEmpty();
         }
 
-        return false;
     }
 
     ////////////////////////////

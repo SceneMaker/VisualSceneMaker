@@ -112,7 +112,7 @@ public class SceneUttr extends ScriptEntity {
 		// TODO variables
 		for (UttrElement word : mWordList) {
 			if (word instanceof SceneWord) {
-				result.append(((SceneWord) word).getText()).append(" ");
+				result.append(word.getText()).append(" ");
 			}
 		}
 		result = new StringBuilder(result.toString().trim());
@@ -129,7 +129,7 @@ public class SceneUttr extends ScriptEntity {
 		// TODO variables
 		for (UttrElement word : mWordList) {
 			if (word instanceof SceneWord) {
-				result.append(((SceneWord) word).getText()).append(" ");
+				result.append(word.getText()).append(" ");
 			}
 		}
 		result = new StringBuilder(result.toString().trim() + getPunctuationMark() + " ");

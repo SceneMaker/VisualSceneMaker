@@ -159,7 +159,7 @@ public class FunDefDialog extends Dialog {
         sanitizeComponent(mMethodLabel, labelSize);
         sanitizeComponent(mMethodComboBox, textFielSize);
         mMethodComboBox.setModel(new DefaultComboBoxModel());
-        mMethodComboBox.addActionListener(evt -> methodComboBoxActionPerformed(evt));
+        mMethodComboBox.addActionListener(this::methodComboBoxActionPerformed);
         //Method box
         Box methodBox = Box.createHorizontalBox();
         methodBox.add(mMethodLabel);
@@ -328,7 +328,7 @@ public class FunDefDialog extends Dialog {
 
             // Get the selected method and resize/fill the argument list
             mIsValidClass = true;
-            mSelectedMethod = mMethodMap.get((String) mMethodComboBox.getSelectedItem());
+            mSelectedMethod = mMethodMap.get(mMethodComboBox.getSelectedItem());
             resizeArgNameList();
             updateArgList();
         }
@@ -485,7 +485,7 @@ public class FunDefDialog extends Dialog {
     public void methodComboBoxActionPerformed(ActionEvent evt) {
 
         // Get the selected method and resize/fill the argument list
-        mSelectedMethod = mMethodMap.get((String) mMethodComboBox.getSelectedItem());
+        mSelectedMethod = mMethodMap.get(mMethodComboBox.getSelectedItem());
         resizeArgNameList();
         updateArgList();
     }
@@ -509,7 +509,7 @@ public class FunDefDialog extends Dialog {
                 int index = mArgList.getSelectedIndex();
                 String result = (String) JOptionPane.showInputDialog(this, "Rename Parameter:", "Rename Parameter",
                         JOptionPane.PLAIN_MESSAGE, null, null,
-                        mNameMap.get((String) mArgList.getSelectedValue()));
+                        mNameMap.get(mArgList.getSelectedValue()));
 
                 mArgNameList.set(index, result);
                 updateArgList();

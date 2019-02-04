@@ -618,8 +618,7 @@ public class Process extends java.lang.Thread {
 								nextEdge = null;
 								mInterpreter.unlock();
 
-								continue;
-							}
+                            }
 						} else if (dedge instanceof EpsilonEdge) {
 							EpsilonEdge eedge = (EpsilonEdge) dedge;
 
@@ -659,8 +658,7 @@ public class Process extends java.lang.Thread {
 					if (mNextEdge != null) {
 						handleContinuation();
 
-						continue;
-					} else {
+                    } else {
 						handleTermination();
 
 						break;
@@ -711,8 +709,7 @@ public class Process extends java.lang.Thread {
 				// mLogger.message("Interpreter: Process " + getName() + " catched an interruption request");
 				handleInterruption();
 
-				continue;
-			} catch (TerminationSignal e) {
+            } catch (TerminationSignal e) {
 
 				// mLogger.message("Interpreter: Process " + getName() + " catched a termination request");
 				handleTermination();

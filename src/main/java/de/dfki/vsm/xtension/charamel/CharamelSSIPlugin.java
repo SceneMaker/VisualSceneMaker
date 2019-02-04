@@ -184,7 +184,7 @@ public final class CharamelSSIPlugin extends SSIRunTimePlugin {
 
                 } else if (event.getSender().equalsIgnoreCase("shore")
                         && event.getEvent().equalsIgnoreCase("head")) {
-                    final String content = ((SSIStringData) data).toString();
+                    final String content = data.toString();
                     final Document element = XMLUtilities.xmlStringToDocument(content);
                     final NodeList childs = element.getElementsByTagName("head");
                     for (int i = 0; i < childs.getLength(); i++) {
@@ -264,7 +264,7 @@ public final class CharamelSSIPlugin extends SSIRunTimePlugin {
                     }
                 } else if (event.getSender().equalsIgnoreCase("speech")
                         && event.getEvent().equalsIgnoreCase("act")) {
-                    final String keyword = ((SSIStringData) data).toString().trim();
+                    final String keyword = data.toString().trim();
                     // User started speaking
                     mLogger.message("User said '" + keyword + "'");
                     if (mUseJPL) {
@@ -307,7 +307,7 @@ public final class CharamelSSIPlugin extends SSIRunTimePlugin {
                 }
             } else if (data instanceof SSIStringData) {
                 final CharamelSSIData mSSIData = new CharamelSSIData(
-                        ((SSIStringData) array.list().get(0).getData()).toString());
+                        array.list().get(0).getData().toString());
 
                 //mLogger.message("Handling SSI data " + mSSIData);
                 final HashMap<String, AbstractValue> values = new HashMap<>();

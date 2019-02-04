@@ -126,17 +126,13 @@ public final class Node extends JComponent implements EventListener, Observer {
         mDockingManager = new DockingManager(this);
 
         // TODO: move this to data model
-        mIsEndNode = (!mDataNode.hasEdge())
-                ? true
-                : false;
+        mIsEndNode = !mDataNode.hasEdge();
 
         // check if connected edge(s) is/are cedge(s)
         if (mDataNode.getFlavour().equals(de.dfki.vsm.model.sceneflow.chart.BasicNode.FLAVOUR.CNODE)) {
 
             // If no additional default edge is present - node is possible end node!
-            mIsEndNode = (mDataNode.getDedge() == null)
-                    ? true
-                    : false;
+            mIsEndNode = mDataNode.getDedge() == null;
         }
 
         // Init the visualization timer
@@ -229,17 +225,13 @@ public final class Node extends JComponent implements EventListener, Observer {
 
         /////////////////////////////////////font
         // mLogger.message("BasicNode.update()");
-        mIsEndNode = (!mDataNode.hasEdge())
-                ? true
-                : false;
+        mIsEndNode = !mDataNode.hasEdge();
 
         // check if connected edge(s) is/are cedge(s)
         if (mDataNode.getFlavour().equals(de.dfki.vsm.model.sceneflow.chart.BasicNode.FLAVOUR.CNODE)) {
 
             // If no additional default edge is present - node is possible end node!
-            mIsEndNode = (mDataNode.getDedge() == null)
-                    ? true
-                    : false;
+            mIsEndNode = mDataNode.getDedge() == null;
 
             ////System.out.println("Is end node " + mIsEndNode);
         }
@@ -684,48 +676,36 @@ public final class Node extends JComponent implements EventListener, Observer {
                 break;
 
             case ENode:    // only one eegde is allowed
-                allowed = ((eType == Edge.TYPE.CEDGE) || (eType == Edge.TYPE.IEDGE))
-                        ? true
-                        : false;
+                allowed = (eType == Edge.TYPE.CEDGE) || (eType == Edge.TYPE.IEDGE);
 
                 break;
 
             case TNode:    // only one tegde is allowed
-                allowed = ((eType == Edge.TYPE.CEDGE) || (eType == Edge.TYPE.IEDGE))
-                        ? true
-                        : false;
+                allowed = (eType == Edge.TYPE.CEDGE) || (eType == Edge.TYPE.IEDGE);
 
                 break;
 
             case CNode:    // only cedges are allowed - TODO allow dedge/tedge
-                allowed = ((eType == Edge.TYPE.CEDGE)
+                allowed = (eType == Edge.TYPE.CEDGE)
                         || ((mDataNode.getDedge() == null)
-                        && (((eType == Edge.TYPE.TEDGE) || (eType == Edge.TYPE.EEDGE)))))
-                        ? true
-                        : false;
+                        && (((eType == Edge.TYPE.TEDGE) || (eType == Edge.TYPE.EEDGE))));
 
                 break;
 
             case PNode:    // only pedges are allowed - TODO allow dedge/tedge
-                allowed = (eType == Edge.TYPE.PEDGE)
-                        ? true
-                        : false;
+                allowed = eType == Edge.TYPE.PEDGE;
 
                 break;
 
             case FNode:    // only fedges are allowed
-                allowed = (eType == Edge.TYPE.FEDGE)
-                        ? true
-                        : false;
+                allowed = eType == Edge.TYPE.FEDGE;
 
                 break;
 
             case INode:    // allow TEdges and IEdges
-                allowed = ((eType == Edge.TYPE.IEDGE)
+                allowed = (eType == Edge.TYPE.IEDGE)
                         || ((mDataNode.getDedge() == null)
-                        && (((eType == Edge.TYPE.TEDGE) || (eType == Edge.TYPE.EEDGE)))))
-                        ? true
-                        : false;
+                        && (((eType == Edge.TYPE.TEDGE) || (eType == Edge.TYPE.EEDGE))));
                 break;
         }
 

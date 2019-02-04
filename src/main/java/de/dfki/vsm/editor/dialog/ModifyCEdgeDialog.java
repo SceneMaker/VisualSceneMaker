@@ -320,7 +320,7 @@ public class ModifyCEdgeDialog extends Dialog implements EventListener{
         if (mCEdge.getTargetNode() instanceof SuperNode) {
 
             for (Map.Entry<TPLTuple<String, BasicNode>, TPLTuple<String, BasicNode>> tplTupleTPLTupleEntry : mAltStartNodeManager.mAltStartNodeMap.entrySet()) {
-                Map.Entry pairs = (Map.Entry) tplTupleTPLTupleEntry;
+                Map.Entry pairs = tplTupleTPLTupleEntry;
                 TPLTuple<String, BasicNode> startNodePair = (TPLTuple<String, BasicNode>) pairs.getKey();
                 TPLTuple<String, BasicNode> altStartNodePair = (TPLTuple<String, BasicNode>) pairs.getValue();
 
@@ -352,7 +352,7 @@ public class ModifyCEdgeDialog extends Dialog implements EventListener{
         ((DefaultListModel) mAltStartNodeList.getModel()).clear();
 
         for (Map.Entry<TPLTuple<String, BasicNode>, TPLTuple<String, BasicNode>> tplTupleTPLTupleEntry : mAltStartNodeManager.mAltStartNodeMap.entrySet()) {
-            Map.Entry pairs = (Map.Entry) tplTupleTPLTupleEntry;
+            Map.Entry pairs = tplTupleTPLTupleEntry;
             TPLTuple<String, BasicNode> startNodePair = (TPLTuple<String, BasicNode>) pairs.getKey();
             TPLTuple<String, BasicNode> altStartNodePair = (TPLTuple<String, BasicNode>) pairs.getValue();
 

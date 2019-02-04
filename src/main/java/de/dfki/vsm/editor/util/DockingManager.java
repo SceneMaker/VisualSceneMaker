@@ -320,9 +320,7 @@ public class DockingManager {
             rp.release();
         }
 
-        return (rp != null)
-               ? true
-               : false;
+        return rp != null;
     }
 
     private boolean hasDockpoint(String name) {
