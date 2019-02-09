@@ -8,7 +8,6 @@ import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
 
-//import de.dfki.vsm.runtime.RunTimeInstance;
 
 /**
  * @author Gregor Mehlmann
@@ -25,40 +24,25 @@ public final class SceneMaker3 {
         SwingUtilities.invokeLater(() -> {
             // Check if we have at least one argument
             if (args.length > 0) {
-                // Read the first command line argument
-                final String mode = args[0];
-                // Check the options from this agument
-                if (mode.equals("runtime")) {
-                    // In runtime mode we need a project file
-                    if (args.length == 2) {
-                        // Get the project file name agrument
-                        final String name = args[1];
-                        // Create the project configuration
-                        final File file = new File(name);
-                        if (file.exists()) {
+                if (args.length == 2) {
+                    // Read the first command line argument
+                    final String mode = args[0];
+                    // Get the project file name argument
+                    final String name = args[1];
+                    // Create the project configuration
+                    final File file = new File(name);
+                    // Check the options from this argument
+                    if (file.exists()) {
+                        if (mode.equals("runtime")) {
                             runtime(file);
-                        } else {
-                            error(file);
-                        }
-                    } else {
-                        usage();
-                    }
-                } else if (mode.equalsIgnoreCase("editor")) {
-                    if (args.length == 2) {
-                        // Get the project file name agrument
-                        final String name = args[1];
-                        // Create the project configuration
-                        final File file = new File(name);
-                        if (file.exists()) {
+                        } else if (mode.equalsIgnoreCase("editor")) {
                             editor(file);
                         } else {
-                            error(file);
+                            usage();
                         }
                     } else {
-                        usage();
+                        error(file);
                     }
-                } else {
-                    usage();
                 }
             } else {
                 editor();
