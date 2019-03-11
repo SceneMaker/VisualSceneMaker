@@ -6,9 +6,9 @@ plugins {
 }
 
 group 'de.dfki'
-version '4.0-SNAPSHOT'
+version '4.0.1-SNAPSHOT'
 
-sourceCompatibility = 1.8
+sourceCompatibility = 11
 
 repositories {
     mavenCentral()
