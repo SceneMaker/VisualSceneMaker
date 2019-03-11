@@ -44,6 +44,7 @@ public class VideoPlayer implements Runnable {
         try {
             mSocket = new Socket("localhost",9000);
             out = new PrintStream(mSocket.getOutputStream());
+            out.println("1234");
         } catch (IOException ex) {
             Logger.getLogger(VideoPlayer.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -54,7 +55,7 @@ public class VideoPlayer implements Runnable {
     }
 
     void playVideo(String video) {
-        out.println(video);
+        out.println("add "+video);
     }
         
 }
