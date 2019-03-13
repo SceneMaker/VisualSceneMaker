@@ -12,10 +12,11 @@ import de.dfki.vsm.util.log.LOGConsoleLogger;
 public final class QRCodeGrabber extends ActivityExecutor {
 
     private static WebCamFrame mWebcamwindow = null;
-        // The singelton logger instance
+    // The singelton logger instance
     private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
-    
-    
+    private boolean webcamAttached;
+
+
     // Construct executor
     public QRCodeGrabber(final PluginConfig config, final RunTimeProject project) {
         super(config, project);
@@ -30,13 +31,20 @@ public final class QRCodeGrabber extends ActivityExecutor {
     @Override
     public final void launch() {
         mLogger.message("Launching QRCodeGrabber ...");
-        mWebcamwindow = WebCamFrame.getInstance();
+        try {
+            mWebcamwindow = WebCamFrame.getInstance();
+            webcamAttached = true;
+        } catch (NoWebcamException e) {
+            mLogger.message(e.getMessage());
+            webcamAttached = false;
+        }
     }
 
     @Override
     public final void unload() {
         mLogger.message("Stopping QRCodeGrabber ...");
-        mWebcamwindow.shutdown ();
+        mWebcamwindow.shutdown();
+        webcamAttached = false;
     }
 
     @Override
@@ -45,8 +53,12 @@ public final class QRCodeGrabber extends ActivityExecutor {
         //activity.setType(AbstractActivity.Type.blocking);
         // Get log message features
         final String name = activity.getName();
+        if (!webcamAttached) {
+            mLogger.failure("No webcam attached");
+            return;
+        }
         if (name.equalsIgnoreCase("grab")) {
-            String code = (mWebcamwindow!= null) ? mWebcamwindow.getQRCode(): "";
+            String code = (mWebcamwindow != null) ? mWebcamwindow.getQRCode() : "";
             mProject.setVariable("code", code);
         }
     }

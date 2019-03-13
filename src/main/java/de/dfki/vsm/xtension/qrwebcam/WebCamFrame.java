@@ -3,20 +3,15 @@ package de.dfki.vsm.xtension.qrwebcam;
 import com.github.sarxos.webcam.Webcam;
 import com.github.sarxos.webcam.WebcamPanel;
 import com.github.sarxos.webcam.WebcamResolution;
-import com.google.zxing.BinaryBitmap;
-import com.google.zxing.LuminanceSource;
-import com.google.zxing.MultiFormatReader;
-import com.google.zxing.NotFoundException;
-import com.google.zxing.Result;
+import com.google.zxing.*;
 import com.google.zxing.client.j2se.BufferedImageLuminanceSource;
 import com.google.zxing.common.HybridBinarizer;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
-import java.awt.FlowLayout;
+
+import javax.swing.*;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-
-import javax.swing.JFrame;
-import javax.swing.SwingUtilities;
 
 /**
  * @author Patrick Gebhard
@@ -26,15 +21,18 @@ public class WebCamFrame extends JFrame {
     private static Webcam sWebcam = null;
     // The singelton logger instance
     private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
-    private static WebCamFrame sInstance = new WebCamFrame();
+    private static WebCamFrame sInstance;
     private WebcamPanel mPanel = null;
 
-    public static WebCamFrame getInstance() {
+    public static WebCamFrame getInstance() throws NoWebcamException {
         sInstance = (sInstance != null) ? sInstance : new WebCamFrame();
         return sInstance;
     }
 
-    private WebCamFrame() {
+    private WebCamFrame() throws NoWebcamException {
+        if (Webcam.getWebcams().isEmpty()) {
+            throw new NoWebcamException();
+        }
         setLayout(new FlowLayout());
 
         sWebcam = Webcam.getDefault();
