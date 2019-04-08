@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Project name="Stickworld">
+  <Plugins>
+    <Plugin type="device" name="stickman" class="de.dfki.vsm.xtension.stickman.StickmanExecutor" load="true">
+      <Feature key="smhost" val="127.0.0.1"/>
+      <Feature key="smport" val="8009"/>
+      <Feature key="showstickmanname" val="true"/>
+      <Feature key="stickman" val="Stickman2D"/>
+      <Feature key="" val=""/>
+    </Plugin>
+  </Plugins>
+  <Agents>
+    <Agent name="susanne" device="stickman">
+    </Agent>
+    <Agent name="patrick" device="stickman">
+    </Agent>
+  </Agents>
+  <Player>
+  </Player>
+</Project>

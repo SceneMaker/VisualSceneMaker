@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SceneScript lower="0" upper="0">
+  <SceneComment lower="0" upper="21" comment="/* command examples*/"/>
+  <SceneComment lower="23" upper="83" comment="/* anim command, make sure the emdl files is in the folder*/"/>
+  <SceneComment lower="85" upper="121" comment="/* [anim name='Emotions/neutral'] */"/>
+  <SceneComment lower="123" upper="158" comment="/* [led color='red' side='both'] */"/>
+  <SceneComment lower="160" upper="190" comment="/* [anim name='Eyes/blink'] */"/>
+  <SceneComment lower="192" upper="210" comment="/* pose command */"/>
+  <SceneComment lower="212" upper="248" comment="/* [pose neckPan='50' speed='60'] */"/>
+  <SceneComment lower="250" upper="300" comment="/* [pose neckPan='50' neckTilt='30' speed='50'] */"/>
+  <SceneComment lower="302" upper="386" comment="/* [pose neckPan='50' neckTilt='30' rightEyeTilt='40' leftEyePan='20' speed='70'] */"/>
+  <SceneComment lower="388" upper="446" comment="/* motor command ReetiUrbiServer need to be run on Reeti*/"/>
+  <SceneComment lower="448" upper="487" comment="/* [motor neckPan='20' smooth='0.4'] */"/>
+  <SceneComment lower="489" upper="521" comment="/* Example with  pose and anim*/"/>
+  <SceneObject lower="522" upper="556" language="en" identifier="Hello">
+    <SceneTurn lower="537" upper="556" speaker="reeti">
+      <SceneUttr lower="544" upper="556" punct=".">
+        <SceneWord lower="544" upper="549" text="Hallo"/>
+        <SceneWord lower="550" upper="555" text="World"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="558" upper="593" language="en" identifier="LookLeft">
+    <SceneTurn lower="576" upper="593" speaker="reeti">
+      <SceneUttr lower="583" upper="593" punct=".">
+        <SceneWord lower="583" upper="587" text="Look"/>
+        <SceneWord lower="588" upper="592" text="left"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="595" upper="690" language="en" identifier="LookLeftMove">
+    <SceneTurn lower="617" upper="690" speaker="reeti">
+      <SceneUttr lower="625" upper="690" punct=".">
+        <ActionObject lower="625" upper="629" actor="" name="pose">
+          <ActionFeature lower="630" upper="644" key="neckRotat" val="'65'"/>
+          <ActionFeature lower="645" upper="660" key="leftEyePan" val="'90'"/>
+          <ActionFeature lower="661" upper="677" key="rightEyePan" val="'90'"/>
+          <ActionFeature lower="678" upper="688" key="speed" val="'50'"/>
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="692" upper="738" language="en" identifier="Neutral">
+    <SceneTurn lower="709" upper="738" speaker="reeti">
+      <SceneUttr lower="717" upper="738" punct=".">
+        <ActionObject lower="717" upper="721" actor="" name="anim">
+          <ActionFeature lower="722" upper="736" key="name" val="'Neutral'"/>
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="740" upper="777" language="en" identifier="LookRight">
+    <SceneTurn lower="759" upper="777" speaker="reeti">
+      <SceneUttr lower="766" upper="777" punct=".">
+        <SceneWord lower="766" upper="770" text="Look"/>
+        <SceneWord lower="771" upper="776" text="right"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="779" upper="875" language="en" identifier="LookRightMove">
+    <SceneTurn lower="802" upper="875" speaker="reeti">
+      <SceneUttr lower="810" upper="875" punct=".">
+        <ActionObject lower="810" upper="814" actor="" name="pose">
+          <ActionFeature lower="815" upper="829" key="neckRotat" val="'35'"/>
+          <ActionFeature lower="830" upper="845" key="leftEyePan" val="'10'"/>
+          <ActionFeature lower="846" upper="862" key="rightEyePan" val="'10'"/>
+          <ActionFeature lower="863" upper="873" key="speed" val="'50'"/>
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneComment lower="877" upper="895" comment="/* MotorExample */"/>
+  <SceneObject lower="896" upper="955" language="en" identifier="neckPan_left">
+    <SceneTurn lower="918" upper="955" speaker="reeti">
+      <SceneUttr lower="926" upper="955" punct=".">
+        <ActionObject lower="926" upper="931" actor="" name="motor">
+          <ActionFeature lower="932" upper="942" key="neckPan" val="80"/>
+          <ActionFeature lower="943" upper="953" key="smooth" val="'1'"/>
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="957" upper="1017" language="en" identifier="neckPan_right">
+    <SceneTurn lower="980" upper="1017" speaker="reeti">
+      <SceneUttr lower="988" upper="1017" punct=".">
+        <ActionObject lower="988" upper="993" actor="" name="motor">
+          <ActionFeature lower="994" upper="1004" key="neckPan" val="20"/>
+          <ActionFeature lower="1005" upper="1015" key="smooth" val="'1'"/>
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="1019" upper="1080" language="en" identifier="neckPan_middle">
+    <SceneTurn lower="1043" upper="1080" speaker="reeti">
+      <SceneUttr lower="1051" upper="1080" punct=".">
+        <ActionObject lower="1051" upper="1056" actor="" name="motor">
+          <ActionFeature lower="1057" upper="1067" key="neckPan" val="50"/>
+          <ActionFeature lower="1068" upper="1078" key="smooth" val="'1'"/>
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="1082" upper="1165" language="en" identifier="Talking_About_Sun">
+    <SceneTurn lower="1109" upper="1165" speaker="reeti">
+      <SceneUttr lower="1116" upper="1130" punct="?">
+        <SceneWord lower="1116" upper="1119" text="you"/>
+        <SceneWord lower="1120" upper="1124" text="know"/>
+        <SceneWord lower="1125" upper="1129" text="what"/>
+      </SceneUttr>
+      <SceneUttr lower="1131" upper="1165" punct="!">
+        <SceneWord lower="1131" upper="1132" text="I"/>
+        <SceneWord lower="1133" upper="1139" text="always"/>
+        <SceneWord lower="1140" upper="1146" text="wanted"/>
+        <SceneWord lower="1147" upper="1149" text="to"/>
+        <SceneWord lower="1150" upper="1153" text="fly"/>
+        <SceneWord lower="1154" upper="1156" text="to"/>
+        <SceneWord lower="1157" upper="1160" text="the"/>
+        <SceneWord lower="1161" upper="1164" text="sun"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+</SceneScript>
