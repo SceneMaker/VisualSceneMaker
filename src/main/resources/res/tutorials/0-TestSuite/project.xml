@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Project name="TestSuite">
+  <Plugins>
+    <Plugin type="device" name="SSIMessageExecutor" class="de.dfki.vsm.xtension.ssi.SSICmdExecutor" load="true">
+      <Feature key="loghost" val="127.0.0.1"/>
+      <Feature key="logport" val="8989"/>
+      <Feature key="logvar" val="LoggerMessage"/>
+      <Feature key="pipes" val="interview:127.0.0.1:1111,debriefing:127.0.0.1:2222"/>
+    </Plugin>
+    <Plugin type="device" name="TimerExecutor" class="de.dfki.vsm.xtension.timer.TimerExecutor" load="true">
+    </Plugin>
+  </Plugins>
+  <Agents>
+    <Agent name="ssi" device="SSICmdExecutor">
+    </Agent>
+    <Agent name="timer" device="TimerExecutor">
+    </Agent>
+  </Agents>
+  <Player>
+    <Feature key="usejpl" val="true"/>
+  </Player>
+</Project>
