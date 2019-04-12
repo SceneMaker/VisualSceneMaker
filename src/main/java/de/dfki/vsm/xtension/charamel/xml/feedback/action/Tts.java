@@ -11,6 +11,7 @@ import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLParseable;
 import de.dfki.vsm.util.xml.XMLWriteError;
 import de.dfki.vsm.util.xml.XMLWriteable;
+import de.dfki.vsm.xtension.charamel.CharamelExecutor;
 import org.w3c.dom.Element;
 
 /**
@@ -18,7 +19,7 @@ import org.w3c.dom.Element;
  * @author Patrick Gebhard
  *
  */
-public class Tts implements XMLParseable, XMLWriteable {
+public class Tts extends CharaXMLElement implements XMLParseable, XMLWriteable {
 
     public String mStatus = "";
     public String mMarker = "";
@@ -27,6 +28,10 @@ public class Tts implements XMLParseable, XMLWriteable {
     static final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
 
     public Tts() {
+    }
+
+    Tts(CharaXMLElement parent) {
+        this.parent = parent;
     }
 
     @Override
@@ -70,4 +75,7 @@ public class Tts implements XMLParseable, XMLWriteable {
 //            }
 //        });
     }
+    
+    @Override
+    public void handle(CharamelExecutor executor) {executor.handle(this);}
 }

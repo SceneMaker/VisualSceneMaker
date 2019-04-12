@@ -7,26 +7,33 @@ package de.dfki.vsm.xtension.charamel.xml.feedback.action;
 
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
-import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLParseable;
 import de.dfki.vsm.util.xml.XMLWriteError;
 import de.dfki.vsm.util.xml.XMLWriteable;
+import de.dfki.vsm.xtension.charamel.CharamelExecutor;
 import org.w3c.dom.Element;
 
 /**
  *
- * @author Patrick Gebhard
+ * @author Patrick Gebhard, Manuel Anglet
  *
  */
-public class CaiEvent implements XMLParseable, XMLWriteable {
+public class CaiEvent extends CharaXMLElement implements XMLParseable, XMLWriteable {
 
     public Tts mTts = null;
+    String id;
+    String name;
+
 
     // Logger
     static final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
 
     public CaiEvent() {
+    }
+
+    CaiEvent(CharaXMLElement parent) {
+        this.parent = parent;
     }
 
     public boolean hasTTSStatus() {
@@ -49,22 +56,27 @@ public class CaiEvent implements XMLParseable, XMLWriteable {
 
     @Override
     public void parseXML(final Element element) throws XMLParseError {
-        // Process The Child Nodes
-        XMLParseAction.processChildNodes(element, new XMLParseAction() {
-            @Override
-            public void run(final Element element) throws XMLParseError {
-
-                final String name = element.getTagName();
-
-                if (name.equalsIgnoreCase("tts")) {
-
-                    Tts t = new Tts();
-
-                    t.parseXML(element);
-
-                    mTts = t;
-                }
-            }
-        });
+        id = element.getAttribute("id");
+        name = element.getAttribute("name");
+        this.parseChildren(element);
     }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    @Override
+    public void handle(CharamelExecutor executor) {executor.handle(this);}
 }

@@ -1,43 +1,57 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package de.dfki.vsm.xtension.charamel.xml.feedback.action;
 
+import de.dfki.vsm.xtension.charamel.xml.feedback.object.Object;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
-import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLParseable;
 import de.dfki.vsm.util.xml.XMLWriteError;
 import de.dfki.vsm.util.xml.XMLWriteable;
+import de.dfki.vsm.xtension.charamel.CharamelExecutor;
+import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.w3c.dom.Element;
 
 /**
  *
- * @author Patrick Gebhard
+ * @author Patrick Gebhard, Manuel Anglet
  *
  */
-public class Feedback implements XMLParseable, XMLWriteable {
+public class Feedback extends CharaXMLElement implements XMLParseable, XMLWriteable {
 
-    public String mName = "";
-    public String mValue = "";
-    public CaiEvent mCaiEvent = null;
+    public ArrayList<Action> mFeedbackActions = null;
+    public ArrayList<Object> mFeedbackObjects = null;
+    public ArrayList<Tts> mFeedbackTts = null;
 
     // Logger
     static final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
 
     public Feedback() {
+        mFeedbackActions = new ArrayList<>();
+        mFeedbackObjects = new ArrayList<>();
+        mFeedbackTts = new ArrayList<>();
     }
 
-    public boolean hasCaiEvent() {
-        return (mCaiEvent != null);
+    Feedback(CharaXMLElement parent) {
+        this.parent = parent;
+    }
+
+    public boolean hasActionFeedback() {
+        return (mFeedbackActions != null) && !mFeedbackActions.isEmpty();
+    }
+
+    public boolean hasObjectFeedback() {
+        return (mFeedbackObjects != null) && !mFeedbackObjects.isEmpty();
+    }
+
+    public boolean hasTtsFeedback() {
+        return (mFeedbackTts != null) && !mFeedbackTts.isEmpty();
     }
 
     @Override
     public void writeXML(IOSIndentWriter out) throws XMLWriteError {
-        out.println("<feedback>").push();
+        out.println("<TWorldFeedback>").push();
 
 //        mObjects.stream().forEach((o) -> {
 //            try {
@@ -46,30 +60,76 @@ public class Feedback implements XMLParseable, XMLWriteable {
 //                mLogger.failure(ex.getMessage());
 //            }
 //        });
-        out.pop().println("</feedback>");
+
+        out.pop().println("</TWorldFeedback>");
     }
 
     @Override
     public void parseXML(final Element element) throws XMLParseError {
-        mName = element.getAttribute("name");
-        mValue = element.getAttribute("value");
 
-        // Process The Child Nodes
-        XMLParseAction.processChildNodes(element, new XMLParseAction() {
-            @Override
-            public void run(final Element element) throws XMLParseError {
+       String name = element.getTagName();
+       mLogger.message("parsing charamel feedback with tag "+ name);
+       CharaXMLElement child;
+       switch (name){
+                case "cai_event":
+                    child = new CaiEvent(this);
+                    try {
+                        ((CaiEvent)child).parseXML(element);
+                    } catch (XMLParseError ex) {
+                        Logger.getLogger(CharaXMLElement.class.getName()).log(Level.SEVERE, "error parsing cai_event", ex);
+                    }
+                    children.add(child);
+                    break;
+                case "tts":
+                    child = new Tts(this);
+                    try {
+                        ((Tts)child).parseXML(element);
+                    } catch (XMLParseError ex) {
+                        Logger.getLogger(CharaXMLElement.class.getName()).log(Level.SEVERE, "error parsing tts", ex);
+                    }
+                    children.add(child);
+                    break;
+                case "action":
+                    child = new Action(this);
+                    try {
+                        ((Action)child).parseXML(element);
+                    } catch (XMLParseError ex) {
+                        Logger.getLogger(CharaXMLElement.class.getName()).log(Level.SEVERE, "error parsing action", ex);
+                    }
+                    children.add(child);
+                    break;
+                case "status":
+                    child = new Status(this);
+                    try {
+                        ((Status)child).parseXML(element);
+                    } catch (XMLParseError ex) {
+                        Logger.getLogger(CharaXMLElement.class.getName()).log(Level.SEVERE, "error parsing action", ex);
+                    }
+                    children.add(child);
+                    break;
+                case "cai_command":
+                    child = new CaiCommand(this);
+                    try {
+                        ((CaiCommand)child).parseXML(element);
+                    } catch (XMLParseError ex) {
+                        Logger.getLogger(CharaXMLElement.class.getName()).log(Level.SEVERE, "error parsing action", ex);
+                    }
+                    children.add(child);
+                    break;
+                case "cai_response":
+                    child = new CaiResponse(this);
+                    try {
+                        ((CaiResponse)child).parseXML(element);
+                    } catch (XMLParseError ex) {
+                        Logger.getLogger(CharaXMLElement.class.getName()).log(Level.SEVERE, "error parsing action", ex);
+                    }
+                    children.add(child);
+                    break;
 
-                final String name = element.getTagName();
-
-                if (name.equalsIgnoreCase("cai_event")) {
-
-                    CaiEvent ce = new CaiEvent();
-
-                    ce.parseXML(element);
-
-                    mCaiEvent = ce;
-                }
+                default:
+                    Logger.getLogger(CharaXMLElement.class.getName()).log(Level.SEVERE, "Could not parse XML tag:{0}", name);
             }
-        });
     }
+    @Override
+    public void handle(CharamelExecutor executor) {executor.handle(this);}
 }
