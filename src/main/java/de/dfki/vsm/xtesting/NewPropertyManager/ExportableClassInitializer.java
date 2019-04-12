@@ -3,7 +3,7 @@ package de.dfki.vsm.xtesting.NewPropertyManager;
 import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.runtime.plugin.RunTimePlugin;
 import de.dfki.vsm.runtime.project.RunTimeProject;
-import de.dfki.vsm.util.extensions.ExportableProperties;
+import de.dfki.vsm.extensionAPI.ExportableProperties;
 import de.dfki.vsm.xtesting.NewPropertyManager.exceptions.NotExportableInterface;
 
 import java.lang.reflect.Constructor;

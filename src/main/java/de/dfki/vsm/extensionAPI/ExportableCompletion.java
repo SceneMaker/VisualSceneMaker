@@ -1,4 +1,4 @@
-package de.dfki.vsm.util.extensions;
+package de.dfki.vsm.extensionAPI;
 
 import java.util.List;
 

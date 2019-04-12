@@ -3,7 +3,7 @@ package de.dfki.vsm.editor.util.autocompletation;
 import de.dfki.vsm.editor.project.EditorProject;
 import de.dfki.vsm.model.project.AgentConfig;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
-import de.dfki.vsm.util.extensions.ExportableCompletion;
+import de.dfki.vsm.extensionAPI.ExportableCompletion;
 
 import java.util.ArrayList;
 

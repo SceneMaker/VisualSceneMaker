@@ -1,4 +1,4 @@
-package de.dfki.vsm.util.extensions.value;
+package de.dfki.vsm.extensionAPI.value;
 
 import javafx.scene.Node;
 

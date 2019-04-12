@@ -1,12 +1,12 @@
 package de.dfki.vsm.xtension.tricatworld.util.property;
 
-import de.dfki.vsm.util.extensions.ExportableProperties;
-import de.dfki.vsm.util.extensions.ProjectProperty;
-import de.dfki.vsm.util.extensions.renderers.BooleanRenderer;
-import de.dfki.vsm.util.extensions.renderers.FilePathRenderer;
-import de.dfki.vsm.util.extensions.renderers.customcontrollers.pathchoosers.CustomFileChooser;
-import de.dfki.vsm.util.extensions.value.ProjectValueProperty;
-import de.dfki.vsm.util.extensions.value.ValueTYPE;
+import de.dfki.vsm.extensionAPI.ExportableProperties;
+import de.dfki.vsm.extensionAPI.ProjectProperty;
+import de.dfki.vsm.extensionAPI.renderers.BooleanRenderer;
+import de.dfki.vsm.extensionAPI.renderers.FilePathRenderer;
+import de.dfki.vsm.extensionAPI.renderers.customcontrollers.pathchoosers.CustomFileChooser;
+import de.dfki.vsm.extensionAPI.value.ProjectValueProperty;
+import de.dfki.vsm.extensionAPI.value.ValueTYPE;
 
 import java.util.HashMap;
 import java.util.Map;

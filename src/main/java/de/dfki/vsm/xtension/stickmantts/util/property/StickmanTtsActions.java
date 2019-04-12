@@ -1,7 +1,7 @@
 package de.dfki.vsm.xtension.stickmantts.util.property;
 
 import de.dfki.common.interfaces.StageRoom;
-import de.dfki.vsm.util.extensions.ExportableCompletion;
+import de.dfki.vsm.extensionAPI.ExportableCompletion;
 import de.dfki.vsm.util.stickman.StickmanRepository;
 
 import java.util.List;

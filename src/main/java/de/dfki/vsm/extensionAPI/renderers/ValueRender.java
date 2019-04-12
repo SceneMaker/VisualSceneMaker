@@ -1,7 +1,7 @@
-package de.dfki.vsm.util.extensions.renderers;
+package de.dfki.vsm.extensionAPI.renderers;
 
-import de.dfki.vsm.util.extensions.value.ProjectValueProperty;
-import de.dfki.vsm.util.extensions.value.ValueRenderable;
+import de.dfki.vsm.extensionAPI.value.ProjectValueProperty;
+import de.dfki.vsm.extensionAPI.value.ValueRenderable;
 import javafx.scene.Node;
 
 /**

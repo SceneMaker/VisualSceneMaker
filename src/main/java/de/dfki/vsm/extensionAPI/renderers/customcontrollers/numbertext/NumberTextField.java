@@ -1,4 +1,4 @@
-package de.dfki.vsm.util.extensions.renderers.customcontrollers.numbertext;
+package de.dfki.vsm.extensionAPI.renderers.customcontrollers.numbertext;
 
 /**
  * Created by alvaro on 4/23/17.
@@ -8,10 +8,6 @@ import java.text.NumberFormat;
 import java.text.ParseException;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.scene.control.TextField;
 
 /**

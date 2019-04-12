@@ -1,7 +1,7 @@
-package de.dfki.vsm.util.extensions.renderers;
+package de.dfki.vsm.extensionAPI.renderers;
 
-import de.dfki.vsm.util.extensions.renderers.customcontrollers.CustomPathChooser;
-import de.dfki.vsm.util.extensions.renderers.customcontrollers.pathchoosers.PathChooser;
+import de.dfki.vsm.extensionAPI.renderers.customcontrollers.CustomPathChooser;
+import de.dfki.vsm.extensionAPI.renderers.customcontrollers.pathchoosers.PathChooser;
 
 /**
  * Created by alvaro on 4/20/17.
