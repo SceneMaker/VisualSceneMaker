@@ -1,4 +1,4 @@
-package de.dfki.vsm.util.extensions;
+package de.dfki.vsm.extensionAPI;
 
 /**
  * Created by alvaro on 4/20/17.

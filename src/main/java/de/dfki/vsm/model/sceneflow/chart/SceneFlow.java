@@ -71,10 +71,7 @@ public final class SceneFlow extends SuperNode {
     }
 
     public ArrayList<String> getCopyOfClassPathList() {
-
-        ArrayList<String> copy = new ArrayList<>(mClassPathList);
-
-        return copy;
+        return new ArrayList<>(mClassPathList);
     }
 
     public HashMap<String, FunctionDefinition> getUsrCmdDefMap() {
@@ -371,9 +368,29 @@ public final class SceneFlow extends SuperNode {
     public int getHashCode() {
 
         // Add hash of General Attributes
-        int hashCode = ((mNodeName == null)
+        int hashCode;
+        if (mNodeName == null) hashCode = ((mComment == null)
                 ? 0
-                : mNodeName.hashCode()) + ((mComment == null)
+                : mComment.hashCode()) + ((mGraphics == null)
+                ? 0
+                : mGraphics.hashCode()) + ((mParentNode == null)
+                ? 0
+                : mParentNode.hashCode()) + ((mHistoryNode == null)
+                ? 0
+                : mHistoryNode.hashCode()) + ((mStartNodeMap == null)
+                ? 0
+                : mStartNodeMap.hashCode()) + ((mIsHistoryNode)
+                ? 1
+                : 0) + ((mLocalVariableBadge == null)
+                ? 0
+                : mLocalVariableBadge.hashCode()) + ((mGlobalVariableBadge == null)
+                ? 0
+                : mGlobalVariableBadge.hashCode()) + ((mHideLocalVarBadge)
+                ? 1
+                : 0) + ((mHideGlobalVarBadge)
+                ? 1
+                : 0);
+        else hashCode = mNodeName.hashCode() + ((mComment == null)
                 ? 0
                 : mComment.hashCode()) + ((mGraphics == null)
                 ? 0
@@ -395,7 +412,7 @@ public final class SceneFlow extends SuperNode {
                 ? 1
                 : 0);
 
-       
+
         // Add hash of existing user commands
         for (FunctionDefinition fundDef : mUserCmdDefMap.values()) {
             hashCode += fundDef.getName().hashCode() + fundDef.getClassName().hashCode()

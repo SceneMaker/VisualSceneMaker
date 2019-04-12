@@ -1,4 +1,4 @@
-package de.dfki.vsm.util.extensions.renderers;
+package de.dfki.vsm.extensionAPI.renderers;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;

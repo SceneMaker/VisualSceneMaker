@@ -1,12 +1,12 @@
 package de.dfki.vsm.xtension.remote.client.properties;
 
-import de.dfki.vsm.util.extensions.ExportableProperties;
-import de.dfki.vsm.util.extensions.ProjectProperty;
-import de.dfki.vsm.util.extensions.renderers.IntegerRenderer;
-import de.dfki.vsm.util.extensions.renderers.SelectableRenderer;
-import de.dfki.vsm.util.extensions.renderers.StringRender;
-import de.dfki.vsm.util.extensions.value.ProjectValueProperty;
-import de.dfki.vsm.util.extensions.value.ValueTYPE;
+import de.dfki.vsm.extensionAPI.ExportableProperties;
+import de.dfki.vsm.extensionAPI.ProjectProperty;
+import de.dfki.vsm.extensionAPI.renderers.IntegerRenderer;
+import de.dfki.vsm.extensionAPI.renderers.SelectableRenderer;
+import de.dfki.vsm.extensionAPI.renderers.StringRender;
+import de.dfki.vsm.extensionAPI.value.ProjectValueProperty;
+import de.dfki.vsm.extensionAPI.value.ValueTYPE;
 
 import java.util.ArrayList;
 import java.util.Arrays;

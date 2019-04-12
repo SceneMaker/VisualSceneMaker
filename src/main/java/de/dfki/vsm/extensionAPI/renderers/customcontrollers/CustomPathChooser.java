@@ -1,8 +1,8 @@
-package de.dfki.vsm.util.extensions.renderers.customcontrollers;
+package de.dfki.vsm.extensionAPI.renderers.customcontrollers;
 
-import de.dfki.vsm.util.extensions.renderers.customcontrollers.pathchoosers.*;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
+import de.dfki.vsm.extensionAPI.extensions.renderers.customcontrollers.pathchoosers.*;
+import de.dfki.vsm.extensionAPI.renderers.customcontrollers.pathchoosers.CustomDirectoryChooser;
+import de.dfki.vsm.extensionAPI.renderers.customcontrollers.pathchoosers.PathChooser;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;

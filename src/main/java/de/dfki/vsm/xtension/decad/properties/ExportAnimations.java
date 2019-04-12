@@ -1,6 +1,6 @@
 package de.dfki.vsm.xtension.decad.properties;
 
-import de.dfki.vsm.util.extensions.ExportableCompletion;
+import de.dfki.vsm.extensionAPI.ExportableCompletion;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 import de.dfki.vsm.xtension.decad.commands.AnimationsListCommand;
 import de.dfki.vsm.xtension.decad.commands.DecadCommand;

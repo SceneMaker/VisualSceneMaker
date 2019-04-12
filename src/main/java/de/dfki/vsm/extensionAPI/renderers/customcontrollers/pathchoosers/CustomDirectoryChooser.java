@@ -1,4 +1,4 @@
-package de.dfki.vsm.util.extensions.renderers.customcontrollers.pathchoosers;
+package de.dfki.vsm.extensionAPI.renderers.customcontrollers.pathchoosers;
 
 import javafx.stage.DirectoryChooser;
 
