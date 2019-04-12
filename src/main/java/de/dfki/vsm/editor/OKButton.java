@@ -2,19 +2,13 @@ package de.dfki.vsm.editor;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.Preferences;
+import de.dfki.vsm.PreferencesDesktop;
 
-//~--- JDK imports ------------------------------------------------------------
-
-import java.awt.Color;
-import java.awt.ComponentOrientation;
-import java.awt.Dimension;
-import java.awt.Font;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.MouseEvent;
 
-import javax.swing.BorderFactory;
-import javax.swing.JLabel;
-import javax.swing.SwingConstants;
+//~--- JDK imports ------------------------------------------------------------
 
 /**
  *
@@ -29,7 +23,7 @@ public class OKButton extends JLabel {
         setHorizontalAlignment(SwingConstants.RIGHT);
         setOpaque(true);
         setBackground(Color.white);
-        setIcon(Preferences.ICON_OK_STANDARD);
+        setIcon(PreferencesDesktop.ICON_OK_STANDARD);
         setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
         setToolTipText("OK");
         setIconTextGap(20);
@@ -46,13 +40,13 @@ public class OKButton extends JLabel {
             public void mouseEntered(MouseEvent me) {
                 if (isEnabled())
                 {
-                    setIcon(Preferences.ICON_OK_ROLLOVER);
+                    setIcon(PreferencesDesktop.ICON_OK_ROLLOVER);
                     setBackground(new Color(82, 127, 255));
                 }
             }
             @Override
             public void mouseExited(MouseEvent me) {
-                setIcon(Preferences.ICON_OK_STANDARD);
+                setIcon(PreferencesDesktop.ICON_OK_STANDARD);
                 setBackground(new Color(255, 255, 255));
             }
         });

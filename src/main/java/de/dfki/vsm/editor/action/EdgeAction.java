@@ -5,41 +5,22 @@ package de.dfki.vsm.editor.action;
 import de.dfki.vsm.editor.Edge.TYPE;
 import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.Node.Flavour;
+import de.dfki.vsm.editor.dialog.ModifyPEdgeDialog;
 import de.dfki.vsm.editor.project.sceneflow.SceneFlowEditor;
 import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
-import de.dfki.vsm.editor.util.grid.AStarEdgeFinder;
-import de.dfki.vsm.editor.util.grid.BezierFit;
-import de.dfki.vsm.editor.util.grid.BezierPoint;
-import de.dfki.vsm.editor.util.grid.DockingPoint;
-import de.dfki.vsm.editor.util.grid.GridConstants;
-import de.dfki.vsm.editor.util.grid.GridRectangle;
+import de.dfki.vsm.editor.util.grid.*;
 import de.dfki.vsm.editor.util.grid.pathfinding.Path;
-import de.dfki.vsm.model.sceneflow.chart.edge.GuargedEdge;
-import de.dfki.vsm.model.sceneflow.chart.edge.EpsilonEdge;
-import de.dfki.vsm.model.sceneflow.chart.edge.AbstractEdge;
-import de.dfki.vsm.model.sceneflow.chart.edge.ForkingEdge;
-import de.dfki.vsm.model.sceneflow.chart.edge.InterruptEdge;
-import de.dfki.vsm.model.sceneflow.chart.edge.RandomEdge;
-import de.dfki.vsm.model.sceneflow.chart.edge.TimeoutEdge;
+import de.dfki.vsm.model.sceneflow.chart.edge.*;
 
-import static de.dfki.vsm.editor.Edge.TYPE.CEDGE;
-import static de.dfki.vsm.editor.Edge.TYPE.EEDGE;
-import static de.dfki.vsm.editor.Edge.TYPE.IEDGE;
-import static de.dfki.vsm.editor.Edge.TYPE.PEDGE;
-import static de.dfki.vsm.editor.Edge.TYPE.TEDGE;
-import static de.dfki.vsm.model.sceneflow.chart.BasicNode.FLAVOUR.ENODE;
-
-import de.dfki.vsm.editor.dialog.ModifyPEdgeDialog;
-
-//~--- JDK imports ------------------------------------------------------------
-
-import java.awt.Point;
+import javax.swing.undo.UndoManager;
+import java.awt.*;
 import java.awt.geom.Point2D;
-
 import java.util.ArrayList;
 import java.util.Set;
 
-import javax.swing.undo.UndoManager;
+import static de.dfki.vsm.editor.Edge.TYPE.PEDGE;
+
+//~--- JDK imports ------------------------------------------------------------
 
 /**
  * @author Gregor Mehlmann

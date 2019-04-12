@@ -1,13 +1,13 @@
 package de.dfki.vsm.editor.project.auxiliary.scenescript;
 
+import de.dfki.vsm.PreferencesDesktop;
 import de.dfki.vsm.editor.AddButton;
 import de.dfki.vsm.editor.EditorInstance;
-import de.dfki.vsm.editor.project.EditorProject;
-import de.dfki.vsm.editor.project.auxiliary.functions.FunctionsEditor;
 import de.dfki.vsm.editor.SceneElementDisplay;
 import de.dfki.vsm.editor.event.SceneSelectedEvent;
 import de.dfki.vsm.editor.event.TreeEntrySelectedEvent;
-import de.dfki.vsm.Preferences;
+import de.dfki.vsm.editor.project.EditorProject;
+import de.dfki.vsm.editor.project.auxiliary.functions.FunctionsEditor;
 import de.dfki.vsm.editor.util.autocompletation.PluginProvider;
 import de.dfki.vsm.model.project.EditorConfig;
 import de.dfki.vsm.model.scenescript.SceneScript;
@@ -21,23 +21,19 @@ import org.apache.commons.lang.StringUtils;
 import org.fife.ui.autocomplete.AutoCompletion;
 import org.fife.ui.autocomplete.CompletionProvider;
 import org.ujmp.core.collections.ArrayIndexList;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Rectangle;
-import java.awt.event.*;
-import java.util.ArrayList;
+
 import javax.swing.*;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.plaf.basic.BasicTabbedPaneUI;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.DefaultHighlighter;
-import javax.swing.text.Document;
-import javax.swing.text.Highlighter;
-import javax.swing.text.JTextComponent;
+import javax.swing.text.*;
+import java.awt.*;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 
 /**
  * @author Gregor Mehlmannn
@@ -116,11 +112,11 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
         mElementPane = new SceneElementDisplay(mEditorProject);
 
         mGesticonButton = new JButton(Boolean.valueOf(mEditorConfig.getProperty("showsceneelements"))
-                ? Preferences.ICON_MORE_STANDARD
-                : Preferences.ICON_LESS_STANDARD);
+                ? PreferencesDesktop.ICON_MORE_STANDARD
+                : PreferencesDesktop.ICON_LESS_STANDARD);
         mGesticonButton.setRolloverIcon(Boolean.valueOf(mEditorConfig.getProperty("showsceneelements"))
-                ? Preferences.ICON_MORE_ROLLOVER
-                : Preferences.ICON_LESS_ROLLOVER);
+                ? PreferencesDesktop.ICON_MORE_ROLLOVER
+                : PreferencesDesktop.ICON_LESS_ROLLOVER);
         mGesticonButton.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent me) {
@@ -215,7 +211,7 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
         Highlighter highlighter = new DefaultHighlighter();
 
         mEditorPane.setHighlighter(highlighter);
-        painter = new DefaultHighlighter.DefaultHighlightPainter(Preferences.sHIGHLIGHT_SCENE_COLOR);
+        painter = new DefaultHighlighter.DefaultHighlightPainter(PreferencesDesktop.sHIGHLIGHT_SCENE_COLOR);
 
         CompletionProvider provider = PluginProvider.getProvider(mEditorPane);
         AutoCompletion ac = new AutoCompletion(provider);
@@ -275,13 +271,13 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
             @Override
             public void mouseEntered(MouseEvent me) {
                 if (mTabPane.getSelectedIndex() == mAddButton.getTabPos()) {
-                    mAddButton.setIcon(Preferences.ICON_PLUS_ROLLOVER);
+                    mAddButton.setIcon(PreferencesDesktop.ICON_PLUS_ROLLOVER);
                 }
             }
 
             @Override
             public void mouseExited(MouseEvent me) {
-                mAddButton.setIcon(Preferences.ICON_PLUS_STANDARD);
+                mAddButton.setIcon(PreferencesDesktop.ICON_PLUS_STANDARD);
             }
 
             @Override
@@ -504,19 +500,19 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
     public void showElementDisplay() {
 
         if (Boolean.valueOf(mEditorConfig.getProperty("showsceneelements"))) {
-            mGesticonButton.setIcon(Preferences.ICON_LESS_STANDARD);
+            mGesticonButton.setIcon(PreferencesDesktop.ICON_LESS_STANDARD);
             mEditorConfig.setProperty("showsceneelements", "false");
             //mPreferences.save(getPreferencesFileName());
             scriptSplitPane.setDividerLocation(0);
         } else {
-            mGesticonButton.setIcon(Preferences.ICON_MORE_STANDARD);
+            mGesticonButton.setIcon(PreferencesDesktop.ICON_MORE_STANDARD);
             mEditorConfig.setProperty("showsceneelements", "true");
             //mPreferences.save(getPreferencesFileName());
             scriptSplitPane.setDividerLocation(250);
         }
         mGesticonButton.setRolloverIcon(Boolean.valueOf(mEditorConfig.getProperty("showsceneelements"))
-                ? Preferences.ICON_MORE_ROLLOVER
-                : Preferences.ICON_LESS_ROLLOVER);
+                ? PreferencesDesktop.ICON_MORE_ROLLOVER
+                : PreferencesDesktop.ICON_LESS_ROLLOVER);
     }
 
     ////////////////////////////////////////////////////////////////////////////

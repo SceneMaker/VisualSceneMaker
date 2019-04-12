@@ -2,27 +2,21 @@ package de.dfki.vsm.model.sceneflow.chart;
 
 import de.dfki.vsm.model.sceneflow.chart.badge.CommentBadge;
 import de.dfki.vsm.model.sceneflow.chart.badge.VariableBadge;
-import de.dfki.vsm.model.sceneflow.chart.edge.RandomEdge;
-import de.dfki.vsm.model.sceneflow.chart.edge.TimeoutEdge;
-import de.dfki.vsm.model.sceneflow.chart.edge.ForkingEdge;
-import de.dfki.vsm.model.sceneflow.chart.edge.AbstractEdge;
-import de.dfki.vsm.model.sceneflow.chart.edge.EpsilonEdge;
-import de.dfki.vsm.model.sceneflow.chart.edge.GuargedEdge;
-import de.dfki.vsm.model.sceneflow.chart.edge.InterruptEdge;
-import de.dfki.vsm.model.sceneflow.glue.command.Command;
-import de.dfki.vsm.model.sceneflow.glue.command.definition.VariableDefinition;
-import de.dfki.vsm.model.sceneflow.glue.command.definition.DataTypeDefinition;
+import de.dfki.vsm.model.sceneflow.chart.edge.*;
 import de.dfki.vsm.model.sceneflow.chart.graphics.node.NodeGraphics;
+import de.dfki.vsm.model.sceneflow.glue.command.Command;
+import de.dfki.vsm.model.sceneflow.glue.command.definition.DataTypeDefinition;
+import de.dfki.vsm.model.sceneflow.glue.command.definition.VariableDefinition;
 import de.dfki.vsm.util.cpy.CopyTool;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.tpl.TPLTuple;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLWriteError;
-import java.util.ArrayList;
 import org.w3c.dom.Element;
+
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 /**
@@ -30,15 +24,15 @@ import java.util.Map;
  */
 public class SuperNode extends BasicNode {
 
-    protected ArrayList<CommentBadge> mCommentList = new ArrayList<>();
-    protected ArrayList<BasicNode> mNodeList = new ArrayList<>();
-    protected ArrayList<SuperNode> mSuperNodeList = new ArrayList<>();
-    protected HashMap<String, BasicNode> mStartNodeMap = new HashMap<>();
-    protected BasicNode mHistoryNode = null;
-    protected boolean mHideLocalVarBadge = false;
-    protected boolean mHideGlobalVarBadge = false;
-    protected VariableBadge mLocalVariableBadge = new VariableBadge("LocalVariableBadge");
-    protected VariableBadge mGlobalVariableBadge = new VariableBadge("GlobalVariableBadge");
+    ArrayList<CommentBadge> mCommentList = new ArrayList<>();
+    ArrayList<BasicNode> mNodeList = new ArrayList<>();
+    ArrayList<SuperNode> mSuperNodeList = new ArrayList<>();
+    HashMap<String, BasicNode> mStartNodeMap = new HashMap<>();
+    BasicNode mHistoryNode = null;
+    boolean mHideLocalVarBadge = false;
+    boolean mHideGlobalVarBadge = false;
+    VariableBadge mLocalVariableBadge = new VariableBadge("LocalVariableBadge");
+    VariableBadge mGlobalVariableBadge = new VariableBadge("GlobalVariableBadge");
 
     public SuperNode() {
     }

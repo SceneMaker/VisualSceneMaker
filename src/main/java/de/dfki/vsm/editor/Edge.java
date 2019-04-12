@@ -1,6 +1,6 @@
 package de.dfki.vsm.editor;
 
-import de.dfki.vsm.Preferences;
+import de.dfki.vsm.PreferencesDesktop;
 import de.dfki.vsm.editor.action.ModifyEdgeAction;
 import de.dfki.vsm.editor.action.RedoAction;
 import de.dfki.vsm.editor.action.UndoAction;
@@ -37,10 +37,10 @@ import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
 import java.awt.font.TextAttribute;
 import java.awt.geom.AffineTransform;
-import java.util.*;
 import java.util.Timer;
+import java.util.*;
 
-import static de.dfki.vsm.Preferences.*;
+import static de.dfki.vsm.PreferencesDesktop.*;
 
 /**
  * @author Patrick Gebhard
@@ -382,24 +382,24 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
         mTextPanel.setLayout(new BoxLayout(mTextPanel, BoxLayout.Y_AXIS));
         mTextPanel.setBackground(Color.WHITE);
 
-        Color borderColor = Preferences.sTEDGE_COLOR;
+        Color borderColor = PreferencesDesktop.sTEDGE_COLOR;
 
         switch (mType) {
 
             case TEDGE:
-                borderColor = Preferences.sTEDGE_COLOR;
+                borderColor = PreferencesDesktop.sTEDGE_COLOR;
                 break;
 
             case CEDGE:
-                borderColor = Preferences.sCEDGE_COLOR;
+                borderColor = PreferencesDesktop.sCEDGE_COLOR;
                 break;
 
             case PEDGE:
-                borderColor = Preferences.sPEDGE_COLOR;
+                borderColor = PreferencesDesktop.sPEDGE_COLOR;
                 break;
 
             case IEDGE:
-                borderColor = Preferences.sIEDGE_COLOR;
+                borderColor = PreferencesDesktop.sIEDGE_COLOR;
                 break;
         }
 
@@ -440,7 +440,7 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
                 updateFromTextEditor();
 
                 if (!validate(mValueEditor.getText())) {
-                    EditorInstance.getInstance().getSelectedProjectEditor().getSceneFlowEditor().getFooterLabel().setForeground(Preferences.sIEDGE_COLOR);
+                    EditorInstance.getInstance().getSelectedProjectEditor().getSceneFlowEditor().getFooterLabel().setForeground(PreferencesDesktop.sIEDGE_COLOR);
                     EditorInstance.getInstance().getSelectedProjectEditor().getSceneFlowEditor().setMessageLabelText(
                             "Invalid Condition");
                     EditorInstance.getInstance().getSelectedProjectEditor().getSceneFlowEditor().getFooterLabel().setForeground(Color.BLACK);

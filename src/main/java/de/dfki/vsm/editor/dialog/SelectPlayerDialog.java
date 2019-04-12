@@ -1,6 +1,6 @@
 package de.dfki.vsm.editor.dialog;
 
-import de.dfki.vsm.Preferences;
+import de.dfki.vsm.PreferencesDesktop;
 import de.dfki.vsm.editor.CancelButton;
 import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.OKButton;
@@ -101,7 +101,7 @@ public class SelectPlayerDialog extends JDialog
 
         mOkButton = new OKButton();
         mOkButton.setText((mMissingAgents.size() > 1) ? "Next" : "Finish");
-        mOkButton.setIcon((mMissingAgents.size() > 1) ? Preferences.ICON_NEXT_STANDARD : Preferences.ICON_OK_STANDARD);
+        mOkButton.setIcon((mMissingAgents.size() > 1) ? PreferencesDesktop.ICON_NEXT_STANDARD : PreferencesDesktop.ICON_OK_STANDARD);
         mOkButton.addMouseListener(new java.awt.event.MouseAdapter()
         {
             public void mouseClicked(java.awt.event.MouseEvent evt)
@@ -112,22 +112,22 @@ public class SelectPlayerDialog extends JDialog
                 setBackground(new Color(82, 127, 255));
                 if (isEnabled() && currentIndex < (mMissingAgents.size() -1 ))
                 {
-                    mOkButton.setIcon(Preferences.ICON_NEXT_ROLLOVER);   
+                    mOkButton.setIcon(PreferencesDesktop.ICON_NEXT_ROLLOVER);
                 }
                 else
                 {
-                    mOkButton.setIcon(Preferences.ICON_OK_ROLLOVER); 
+                    mOkButton.setIcon(PreferencesDesktop.ICON_OK_ROLLOVER);
                 }
             }
             public void mouseExited(MouseEvent me) {
                 setBackground(new Color(255, 255, 255));
                 if (isEnabled() && currentIndex < (mMissingAgents.size() -1 ))
                 {
-                    mOkButton.setIcon(Preferences.ICON_NEXT_STANDARD);   
+                    mOkButton.setIcon(PreferencesDesktop.ICON_NEXT_STANDARD);
                 }
                 else
                 {
-                    mOkButton.setIcon(Preferences.ICON_OK_STANDARD); 
+                    mOkButton.setIcon(PreferencesDesktop.ICON_OK_STANDARD);
                 }
             }
         });
@@ -144,22 +144,22 @@ public class SelectPlayerDialog extends JDialog
                 setBackground(new Color(82, 127, 255));
                 if (currentIndex == 0)
                 {
-                    mCancelButton.setIcon(Preferences.ICON_CANCEL_ROLLOVER);   
+                    mCancelButton.setIcon(PreferencesDesktop.ICON_CANCEL_ROLLOVER);
                 }
                 else
                 {
-                    mCancelButton.setIcon(Preferences.ICON_PREVIOUS_ROLLOVER); 
+                    mCancelButton.setIcon(PreferencesDesktop.ICON_PREVIOUS_ROLLOVER);
                 }
             }
             public void mouseExited(MouseEvent me) {
                 setBackground(new Color(255, 255, 255));
                 if ( currentIndex > 0)
                 {
-                    mCancelButton.setIcon(Preferences.ICON_PREVIOUS_STANDARD);   
+                    mCancelButton.setIcon(PreferencesDesktop.ICON_PREVIOUS_STANDARD);
                 }
                 else
                 {
-                    mCancelButton.setIcon(Preferences.ICON_CANCEL_STANDARD); 
+                    mCancelButton.setIcon(PreferencesDesktop.ICON_CANCEL_STANDARD);
                 }
             }
         });
@@ -291,14 +291,14 @@ public class SelectPlayerDialog extends JDialog
             if (currentIndex == mMissingAgents.size() - 1)
             {
 //                mNextButton.setEnabled(false);
-                mOkButton.setIcon(Preferences.ICON_OK_STANDARD);
+                mOkButton.setIcon(PreferencesDesktop.ICON_OK_STANDARD);
                 mOkButton.setText("Finish");
             }
             
             if (currentIndex < mMissingAgents.size())
             {
                 mCharacterNameText.setText(mMissingAgents.get(currentIndex));
-                mCancelButton.setIcon(Preferences.ICON_PREVIOUS_STANDARD);
+                mCancelButton.setIcon(PreferencesDesktop.ICON_PREVIOUS_STANDARD);
                 mCancelButton.setText("Back");
             }
         }
@@ -317,14 +317,14 @@ public class SelectPlayerDialog extends JDialog
             if (currentIndex == 0)
             {
                 mCancelButton.setText("Cancel");
-                mCancelButton.setIcon(Preferences.ICON_CANCEL_STANDARD);
+                mCancelButton.setIcon(PreferencesDesktop.ICON_CANCEL_STANDARD);
 //                mCancelButton.setEnabled(false);
             }
             mCharacterNameText.setText(mMissingAgents.get(currentIndex));
             
             if (mMissingAgents.size() > 1)
             {
-                mOkButton.setIcon(Preferences.ICON_NEXT_STANDARD); 
+                mOkButton.setIcon(PreferencesDesktop.ICON_NEXT_STANDARD);
                 mOkButton.setText("Next");
             }
         }

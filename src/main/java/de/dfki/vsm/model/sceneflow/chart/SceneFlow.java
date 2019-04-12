@@ -1,23 +1,23 @@
 package de.dfki.vsm.model.sceneflow.chart;
 
+import de.dfki.vsm.Preferences;
 import de.dfki.vsm.model.sceneflow.chart.badge.CommentBadge;
 import de.dfki.vsm.model.sceneflow.chart.badge.VariableBadge;
-import de.dfki.vsm.Preferences;
 import de.dfki.vsm.model.sceneflow.glue.command.Command;
-import de.dfki.vsm.model.sceneflow.glue.command.definition.FunctionDefinition;
 import de.dfki.vsm.model.sceneflow.glue.command.definition.ArgumentDefinition;
-import de.dfki.vsm.model.sceneflow.glue.command.definition.VariableDefinition;
 import de.dfki.vsm.model.sceneflow.glue.command.definition.DataTypeDefinition;
+import de.dfki.vsm.model.sceneflow.glue.command.definition.FunctionDefinition;
+import de.dfki.vsm.model.sceneflow.glue.command.definition.VariableDefinition;
 import de.dfki.vsm.util.cpy.CopyTool;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLWriteError;
 import org.w3c.dom.Element;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 /**
@@ -25,15 +25,15 @@ import java.util.Map;
  */
 public final class SceneFlow extends SuperNode {
 
-    protected String mXMLNameSpace = new String();
-    protected String mXMLSchemeInstance = new String();
-    protected String mXMLSchemeLocation = new String();
-    protected String mPackageName = new String();
-    protected String mContextClass = new String();
-    protected String mContextCode = new String();
-    protected ArrayList<String> mClassPathList = new ArrayList<>();
-    protected HashMap<String, FunctionDefinition> mUserCmdDefMap = new HashMap<>();
-    protected String mModifDate = new String();
+    private String mXMLNameSpace = "";
+    private String mXMLSchemeInstance = "";
+    private String mXMLSchemeLocation = "";
+    private String mPackageName = "";
+    private String mContextClass = "";
+    private String mContextCode = "";
+    private ArrayList<String> mClassPathList = new ArrayList<>();
+    private HashMap<String, FunctionDefinition> mUserCmdDefMap = new HashMap<>();
+    private String mModifDate = "";
 
     public SceneFlow() {
     }

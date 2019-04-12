@@ -1,48 +1,37 @@
 package de.dfki.vsm.editor.project.sceneflow;
 
 //import com.sun.java.swing.plaf.windows.WindowsScrollBarUI;
+
+import de.dfki.vsm.Preferences;
 import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.action.RedoAction;
 import de.dfki.vsm.editor.action.UndoAction;
+import de.dfki.vsm.editor.dialog.OptionsDialog;
+import de.dfki.vsm.editor.dialog.SaveFileDialog;
+import de.dfki.vsm.editor.event.ElementEditorToggledEvent;
+import de.dfki.vsm.editor.event.ProjectChangedEvent;
 import de.dfki.vsm.editor.project.EditorProject;
-import de.dfki.vsm.Preferences;
 import de.dfki.vsm.model.project.EditorConfig;
 import de.dfki.vsm.model.sceneflow.chart.SuperNode;
-//import de.dfki.vsm.runtime.RunTimeInstance;
 import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
 import de.dfki.vsm.util.ios.ResourceLoader;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
-import java.awt.Color;
-import java.awt.Dimension;
+import de.dfki.vsm.xtesting.NewPropertyManager.PropertyManagerGUI;
+
+import javax.swing.*;
+import javax.swing.plaf.basic.BasicButtonUI;
+import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.util.LinkedList;
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollBar;
-import javax.swing.JScrollPane;
-import javax.swing.JSeparator;
-import javax.swing.JToolBar;
-import javax.swing.SwingConstants;
-import javax.swing.TransferHandler;
-import javax.swing.plaf.basic.BasicButtonUI;
-import static de.dfki.vsm.Preferences.SCREEN_HORIZONTAL;
-import de.dfki.vsm.editor.dialog.OptionsDialog;
-import de.dfki.vsm.editor.dialog.SaveFileDialog;
-import de.dfki.vsm.editor.event.ElementEditorToggledEvent;
-import de.dfki.vsm.editor.event.ProjectChangedEvent;
-import de.dfki.vsm.xtesting.NewPropertyManager.PropertyManagerGUI;
+
+import static de.dfki.vsm.PreferencesDesktop.SCREEN_HORIZONTAL;
+
+//import de.dfki.vsm.runtime.RunTimeInstance;
 
 /**
  * @author Gregor Mehlmann

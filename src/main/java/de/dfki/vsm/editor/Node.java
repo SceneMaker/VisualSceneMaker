@@ -1,12 +1,9 @@
 package de.dfki.vsm.editor;
 
 //~--- non-JDK imports --------------------------------------------------------
+
+import de.dfki.vsm.editor.event.*;
 import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
-import de.dfki.vsm.editor.event.NodeExecutedEvent;
-import de.dfki.vsm.editor.event.NodeSelectedEvent;
-import de.dfki.vsm.editor.event.NodeStartedEvent;
-import de.dfki.vsm.editor.event.NodeTerminatedEvent;
-import de.dfki.vsm.editor.event.SceneStoppedEvent;
 import de.dfki.vsm.editor.util.DockingManager;
 import de.dfki.vsm.editor.util.VisualisationTask;
 import de.dfki.vsm.model.project.EditorConfig;
@@ -16,39 +13,16 @@ import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 
-import static de.dfki.vsm.Preferences.sBASIC_NODE_COLOR;
-import static de.dfki.vsm.Preferences.sCEDGE_COLOR;
-import static de.dfki.vsm.Preferences.sEEDGE_COLOR;
-import static de.dfki.vsm.Preferences.sFEDGE_COLOR;
-import static de.dfki.vsm.Preferences.sHISTORY_NODE_COLOR;
-import static de.dfki.vsm.Preferences.sIEDGE_COLOR;
-import static de.dfki.vsm.Preferences.sPEDGE_COLOR;
-import static de.dfki.vsm.Preferences.sSTART_SIGN_COLOR;
-import static de.dfki.vsm.Preferences.sSUPER_NODE_COLOR;
-import static de.dfki.vsm.Preferences.sTEDGE_COLOR;
-
-//~--- JDK imports ------------------------------------------------------------
-import java.awt.BasicStroke;
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.FontMetrics;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Point;
-import java.awt.RenderingHints;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.font.TextAttribute;
-import java.util.ArrayList;
-
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Map;
-import java.util.Observable;
-import java.util.Observer;
-import java.util.Set;
 import java.util.Timer;
+import java.util.*;
 
-import javax.swing.JComponent;
+import static de.dfki.vsm.PreferencesDesktop.*;
+
+//~--- JDK imports ------------------------------------------------------------
 
 /**
  * @author Gregor Mehlmann

@@ -1,13 +1,13 @@
 package de.dfki.vsm.editor;
 
 //import com.sun.java.swing.plaf.windows.WindowsScrollBarUI;
-import de.dfki.vsm.Preferences;
+
+import de.dfki.vsm.PreferencesDesktop;
 import de.dfki.vsm.editor.dialog.*;
 import de.dfki.vsm.editor.event.SceneStoppedEvent;
 import de.dfki.vsm.editor.project.EditorProject;
 import de.dfki.vsm.editor.project.ProjectEditor;
 import de.dfki.vsm.editor.project.sceneflow.workspace.ClipBoard;
-import de.dfki.vsm.model.sceneflow.chart.BasicNode;
 import de.dfki.vsm.runtime.interpreter.event.TerminationEvent;
 import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.evt.EventListener;
@@ -85,16 +85,16 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
     private ComponentListener mComponentListener = new ComponentListener() {
         @Override
         public void componentResized(ComponentEvent e) {
-            Preferences.setProperty("frame_height", Integer.toString(getHeight()));
-            Preferences.setProperty("frame_width", Integer.toString(getWidth()));
-            Preferences.save();
+            PreferencesDesktop.setProperty("frame_height", Integer.toString(getHeight()));
+            PreferencesDesktop.setProperty("frame_width", Integer.toString(getWidth()));
+            PreferencesDesktop.save();
         }
 
         @Override
         public void componentMoved(ComponentEvent e) {
-            Preferences.setProperty("frame_posx", Integer.toString(getX()));
-            Preferences.setProperty("frame_posy", Integer.toString(getY()));
-            Preferences.save();
+            PreferencesDesktop.setProperty("frame_posx", Integer.toString(getX()));
+            PreferencesDesktop.setProperty("frame_posy", Integer.toString(getY()));
+            PreferencesDesktop.save();
         }
 
         @Override
@@ -108,10 +108,10 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
 
     // Private construction of an editor
     private EditorInstance() {
-        Preferences.configure();
+        PreferencesDesktop.configure();
 
         // Load the preferences
-        Preferences.load();
+        PreferencesDesktop.load();
 
         getContentPane().setBackground(Color.WHITE);
         /*try {
@@ -158,14 +158,14 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
 
         // Init the editor application frame
         // TODO: static property fields
-        Dimension editorSize = new Dimension(Integer.valueOf(Preferences.getProperty("frame_width")),
-                Integer.valueOf(Preferences.getProperty("frame_height")));
+        Dimension editorSize = new Dimension(Integer.valueOf(PreferencesDesktop.getProperty("frame_width")),
+                Integer.valueOf(PreferencesDesktop.getProperty("frame_height")));
 
         setPreferredSize(editorSize);
         setSize(editorSize);
         checkAndSetLocation();
-        setTitle(Preferences.getProperty("frame_title"));
-        setName(Preferences.getProperty("frame_name"));
+        setTitle(PreferencesDesktop.getProperty("frame_title"));
+        setName(PreferencesDesktop.getProperty("frame_name"));
         setJMenuBar(mEditorMenuBar);
         // setContentPane(jsWelcome);
         // add(mProjectEditorList); // COMMENTED BY M.FALLAS
@@ -241,10 +241,10 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
 
     private void checkAndSetLocation() {
         Point finalPos = new Point(0, 0);
-        Point editorPosition = new Point(Integer.valueOf(Preferences.getProperty("frame_posx")),
-                Integer.valueOf(Preferences.getProperty("frame_posy")));
-        Dimension editorSize = new Dimension(Integer.valueOf(Preferences.getProperty("frame_width")),
-                Integer.valueOf(Preferences.getProperty("frame_height")));
+        Point editorPosition = new Point(Integer.valueOf(PreferencesDesktop.getProperty("frame_posx")),
+                Integer.valueOf(PreferencesDesktop.getProperty("frame_posy")));
+        Dimension editorSize = new Dimension(Integer.valueOf(PreferencesDesktop.getProperty("frame_width")),
+                Integer.valueOf(PreferencesDesktop.getProperty("frame_height")));
 
         // check systems monitor setup
         Rectangle virtualBounds = new Rectangle();
@@ -481,18 +481,18 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
 
         // Create an AddButton
         final AddButton mCloseButton = new AddButton();
-        mCloseButton.setIcon(Preferences.ICON_CANCEL_STANDARD_TINY);
+        mCloseButton.setIcon(PreferencesDesktop.ICON_CANCEL_STANDARD_TINY);
         mCloseButton.setTabPos(mProjectEditors.getTabCount() - 1);
         mCloseButton.removeMouseListener(mCloseButton.getMouseListeners()[1]);
         mCloseButton.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent me) {
-                mCloseButton.setIcon(Preferences.ICON_CANCEL_ROLLOVER_TINY);
+                mCloseButton.setIcon(PreferencesDesktop.ICON_CANCEL_ROLLOVER_TINY);
             }
 
             @Override
             public void mouseExited(MouseEvent me) {
-                mCloseButton.setIcon(Preferences.ICON_CANCEL_STANDARD_TINY);
+                mCloseButton.setIcon(PreferencesDesktop.ICON_CANCEL_STANDARD_TINY);
             }
 
             @Override
@@ -730,12 +730,12 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
         ArrayList<String> recentProjectPaths = new ArrayList<>();
         ArrayList<String> recentProjectNames = new ArrayList<>();
         // Load the list of recent projects
-        for (int i = 0; i <= Preferences.sMAX_RECENT_PROJECTS; i++) {
-            String path = Preferences.getProperty("recentproject." + i + ".path");
-            String pName = Preferences.getProperty("recentproject." + i + ".name");
-            if (path != null && pName != null && !path.startsWith(Preferences.sSAMPLE_PROJECTS) && !path.startsWith(Preferences.sTUTORIALS_PROJECTS)) {
-                recentProjectPaths.add(Preferences.getProperty("recentproject." + i + ".path"));
-                recentProjectNames.add(Preferences.getProperty("recentproject." + i + ".name"));
+        for (int i = 0; i <= PreferencesDesktop.sMAX_RECENT_PROJECTS; i++) {
+            String path = PreferencesDesktop.getProperty("recentproject." + i + ".path");
+            String pName = PreferencesDesktop.getProperty("recentproject." + i + ".name");
+            if (path != null && pName != null && !path.startsWith(PreferencesDesktop.sSAMPLE_PROJECTS) && !path.startsWith(PreferencesDesktop.sTUTORIALS_PROJECTS)) {
+                recentProjectPaths.add(PreferencesDesktop.getProperty("recentproject." + i + ".path"));
+                recentProjectNames.add(PreferencesDesktop.getProperty("recentproject." + i + ".name"));
             }
         }
         if (recentProjectPaths.contains(projectPath)) {
@@ -745,7 +745,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
 
                 // case: project is on list - has now to be at first pos
                 int index = recentProjectPaths.indexOf(projectPath);
-                Preferences.setProperty("recentproject." + index + ".date", Preferences.sDATE_FORMAT.format(new Date()));
+                PreferencesDesktop.setProperty("recentproject." + index + ".date", PreferencesDesktop.sDATE_FORMAT.format(new Date()));
                 if (index != 0) {
                     recentProjectPaths.add(0, projectPath);
                     recentProjectNames.add(0, projectName);
@@ -757,12 +757,12 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
                 // dir is the same, but name changed
                 int index = recentProjectPaths.indexOf(projectPath);
 
-                Preferences.setProperty("recentproject." + index + ".name", projectName);
-                Preferences.setProperty("recentproject." + index + ".date", Preferences.sDATE_FORMAT.format(new Date()));
+                PreferencesDesktop.setProperty("recentproject." + index + ".name", projectName);
+                PreferencesDesktop.setProperty("recentproject." + index + ".date", PreferencesDesktop.sDATE_FORMAT.format(new Date()));
                 recentProjectNames.remove(index);
                 recentProjectNames.add(index, projectName);
             }
-        } else if (projectPath != null && !projectPath.contains(Preferences.sSAMPLE_PROJECTS) && !projectPath.contains(Preferences.sTUTORIALS_PROJECTS)) {
+        } else if (projectPath != null && !projectPath.contains(PreferencesDesktop.sSAMPLE_PROJECTS) && !projectPath.contains(PreferencesDesktop.sTUTORIALS_PROJECTS)) {
             // case: project not in recent list
             recentProjectPaths.add(0, projectPath);
             recentProjectNames.add(0, projectName);
@@ -771,14 +771,14 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
         // set properties
         String dir = null;
         String name = null;
-        int maxCnt = ((recentProjectPaths.size() <= Preferences.sMAX_RECENT_PROJECTS) ? recentProjectPaths.size() : Preferences.sMAX_RECENT_PROJECTS);
+        int maxCnt = ((recentProjectPaths.size() <= PreferencesDesktop.sMAX_RECENT_PROJECTS) ? recentProjectPaths.size() : PreferencesDesktop.sMAX_RECENT_PROJECTS);
         for (int i = 0; i < maxCnt; i++) {
             dir = recentProjectPaths.get(i);
             name = recentProjectNames.get(i);
 
             if ((dir != null) && (name != null)) {
-                Preferences.setProperty("recentproject." + i + ".path", dir);
-                Preferences.setProperty("recentproject." + i + ".name", name);
+                PreferencesDesktop.setProperty("recentproject." + i + ".path", dir);
+                PreferencesDesktop.setProperty("recentproject." + i + ".name", name);
                 //Preferences.setProperty("recentproject." + i + ".date", Preferences.sDATE_FORMAT.format(new Date()));
             } else {
                 break;
@@ -786,7 +786,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
         }
 
         // save properties
-        Preferences.save();
+        PreferencesDesktop.save();
         mWelcomePanel.createRecentAndSamplePrjList();
         mEditorMenuBar.refreshRecentFileMenu();
     }

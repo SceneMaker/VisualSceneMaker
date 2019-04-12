@@ -13,13 +13,9 @@ import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
 import de.dfki.vsm.runtime.interpreter.value.StringValue;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
+
 import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.net.InterfaceAddress;
-import java.net.NetworkInterface;
-import java.nio.charset.StandardCharsets;
+import java.net.*;
 import java.util.Enumeration;
 import java.util.LinkedList;
 
@@ -94,12 +90,12 @@ public class SenderExecutor extends ActivityExecutor {
 
             long timestamp = System.currentTimeMillis();
 
-            byte[] sendData = (sMSG_HEADER + "None" + sMSG_SEPARATOR + timestamp).getBytes(StandardCharsets.UTF_8);
+            byte[] sendData = (sMSG_HEADER + "None" + sMSG_SEPARATOR + timestamp).getBytes("UTF8");
 
             if (!mMessage.equalsIgnoreCase("REQUEST")) {
-                sendData = (sMSG_HEADER + mMessage + sMSG_SEPARATOR + timestamp + ((!mMessageTimeInfo.isEmpty()) ? sMSG_SEPARATOR + mMessageTimeInfo : "")).getBytes(StandardCharsets.UTF_8);
+                sendData = (sMSG_HEADER + mMessage + sMSG_SEPARATOR + timestamp + ((!mMessageTimeInfo.isEmpty()) ? sMSG_SEPARATOR + mMessageTimeInfo : "")).getBytes("UTF8");
             } else if (mMessage.equalsIgnoreCase("REQUEST") && (!mMessageRequestVar.isEmpty()) && (!mMessageRequestValues.isEmpty())) {
-                sendData = (sMSG_HEADER + mMessage + sMSG_SEPARATOR + timestamp + sMSG_SEPARATOR + mMessageRequestVar + sMSG_SEPARATOR + mMessageRequestValues.replace("'", "")).getBytes(StandardCharsets.UTF_8);
+                sendData = (sMSG_HEADER + mMessage + sMSG_SEPARATOR + timestamp + sMSG_SEPARATOR + mMessageRequestVar + sMSG_SEPARATOR + mMessageRequestValues.replace("'", "")).getBytes("UTF8");
             }
 
 //            //Try the 255.255.255.255 first
@@ -110,7 +106,7 @@ public class SenderExecutor extends ActivityExecutor {
 //            } catch (Exception e) {
 //            }
             // Broadcast the message over all the network interfaces
-            StringBuilder hosts = new StringBuilder();
+            String hosts = "";
 
             Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
             while (interfaces.hasMoreElements()) {
@@ -131,7 +127,7 @@ public class SenderExecutor extends ActivityExecutor {
                     try {
                         DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, broadcast, mPort);
                         c.send(sendPacket);
-                        hosts.append(broadcast.getHostAddress()).append(", ");
+                        hosts = hosts + broadcast.getHostAddress() + ", ";
                         mLogger.message(mMessage + " sent to " + broadcast.getHostAddress() + " on interface " + networkInterface.getDisplayName());
                         packetSend = true;
                     } catch (Exception e) {

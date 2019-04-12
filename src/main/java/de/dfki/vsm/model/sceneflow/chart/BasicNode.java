@@ -20,26 +20,25 @@ import java.util.ArrayList;
  */
 public class BasicNode implements ModelObject {
 
-    protected String mNodeId = new String();
-    protected String mNodeName = new String();
-    protected String mComment = new String();
+    public Byte hasOne = Byte.valueOf("1");
+    public Byte hasMany = Byte.valueOf("2");
+    protected ArrayList<Command> mCmdList = new ArrayList<>();
+    String mNodeId = "";
+    String mNodeName = "";
+    String mComment = "";
     //
-    protected ArrayList<DataTypeDefinition> mTypeDefList = new ArrayList();
-    protected ArrayList<VariableDefinition> mVarDefList = new ArrayList();
-    protected ArrayList<Command> mCmdList = new ArrayList();
-    protected ArrayList<GuargedEdge> mCEdgeList = new ArrayList();
-    protected ArrayList<RandomEdge> mPEdgeList = new ArrayList();
-    protected ArrayList<InterruptEdge> mIEdgeList = new ArrayList();
-    protected ArrayList<ForkingEdge> mFEdgeList = new ArrayList();
-    //
-    protected AbstractEdge mDEdge = null;
+    ArrayList<DataTypeDefinition> mTypeDefList = new ArrayList<>();
+    ArrayList<VariableDefinition> mVarDefList = new ArrayList<>();
+    ArrayList<GuargedEdge> mCEdgeList = new ArrayList<>();
+    ArrayList<RandomEdge> mPEdgeList = new ArrayList<>();
+    ArrayList<InterruptEdge> mIEdgeList = new ArrayList<>();
     protected NodeGraphics mGraphics = null;
-    protected SuperNode mParentNode = null;
-    protected boolean mIsHistoryNode = false;
-
-    public Byte hasNone = new Byte("0");
-    public Byte hasOne = new Byte("1");
-    public Byte hasMany = new Byte("2");
+    ArrayList<ForkingEdge> mFEdgeList = new ArrayList<>();
+    //
+    AbstractEdge mDEdge = null;
+    SuperNode mParentNode = null;
+    boolean mIsHistoryNode = false;
+    private Byte hasNone = Byte.valueOf("0");
 
     public enum FLAVOUR {
 
@@ -341,7 +340,7 @@ public class BasicNode implements ModelObject {
     }
 
     public ArrayList<DataTypeDefinition> getCopyOfTypeDefList() {
-        final ArrayList<DataTypeDefinition> copy = new ArrayList();
+        final ArrayList<DataTypeDefinition> copy = new ArrayList<>();
         for (final DataTypeDefinition def : mTypeDefList) {
             copy.add(def.getCopy());
         }

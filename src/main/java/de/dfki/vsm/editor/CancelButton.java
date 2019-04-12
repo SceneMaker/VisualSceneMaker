@@ -1,18 +1,14 @@
 package de.dfki.vsm.editor;
 
 //~--- non-JDK imports --------------------------------------------------------
-import de.dfki.vsm.Preferences;
 
-//~--- JDK imports ------------------------------------------------------------
-import java.awt.Color;
-import java.awt.ComponentOrientation;
-import java.awt.Dimension;
-import java.awt.Font;
+import de.dfki.vsm.PreferencesDesktop;
+
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.MouseEvent;
 
-import javax.swing.BorderFactory;
-import javax.swing.JLabel;
-import javax.swing.SwingConstants;
+//~--- JDK imports ------------------------------------------------------------
 
 /**
  *
@@ -29,7 +25,7 @@ public class CancelButton extends JLabel
         setHorizontalAlignment(SwingConstants.RIGHT);
         setOpaque(true);
         setBackground(Color.white);
-        setIcon(Preferences.ICON_CANCEL_STANDARD);
+        setIcon(PreferencesDesktop.ICON_CANCEL_STANDARD);
         setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
         setToolTipText("Cancel");
         setIconTextGap(10);
@@ -47,14 +43,14 @@ public class CancelButton extends JLabel
             {
                 if (isEnabled())
                 {
-                    setIcon(Preferences.ICON_CANCEL_ROLLOVER);
+                    setIcon(PreferencesDesktop.ICON_CANCEL_ROLLOVER);
                     setBackground(new Color(82, 127, 255));
                 }
             }
 
             public void mouseExited(MouseEvent me)
             {
-                setIcon(Preferences.ICON_CANCEL_STANDARD);
+                setIcon(PreferencesDesktop.ICON_CANCEL_STANDARD);
                 setBackground(new Color(255, 255, 255));
             }
         });

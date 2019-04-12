@@ -7,7 +7,7 @@ package de.dfki.vsm.editor.dialog;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.Preferences;
+import de.dfki.vsm.PreferencesDesktop;
 import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.util.HintTextField;
 import de.dfki.vsm.model.acticon.ActiconAction;
@@ -16,31 +16,13 @@ import de.dfki.vsm.model.scenescript.ActionFeature;
 import de.dfki.vsm.util.ios.ResourceLoader;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 
-//~--- JDK imports ------------------------------------------------------------
-
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-
 import java.util.ArrayList;
 
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.DefaultListModel;
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.ListCellRenderer;
-import javax.swing.WindowConstants;
+//~--- JDK imports ------------------------------------------------------------
 
 /**
  * @author Patrick Gebahrd
@@ -210,7 +192,7 @@ public class SceneActionDialog extends JDialog {
                     : " ...]"));
         });
 
-        JButton editButton = new JButton(Preferences.ICON_EDIT_STANDARD);
+        JButton editButton = new JButton(PreferencesDesktop.ICON_EDIT_STANDARD);
 
         editButton.setMinimumSize(new Dimension(20, 20));
         editButton.setMaximumSize(new Dimension(20, 20));
@@ -229,7 +211,7 @@ public class SceneActionDialog extends JDialog {
         argListPanel.add(Box.createHorizontalGlue());
         argAddPanel.setLayout(new BoxLayout(argAddPanel, BoxLayout.X_AXIS));
 
-        JButton addButton = new JButton(Preferences.ICON_MINUS_STANDARD);
+        JButton addButton = new JButton(PreferencesDesktop.ICON_MINUS_STANDARD);
 
         addButton.setMinimumSize(new Dimension(20, 20));
         addButton.setMaximumSize(new Dimension(20, 20));

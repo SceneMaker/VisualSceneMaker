@@ -1,8 +1,8 @@
 package de.dfki.vsm.editor;
 
-import de.dfki.vsm.editor.project.EditorProject;
+import de.dfki.vsm.PreferencesDesktop;
 import de.dfki.vsm.editor.dialog.SceneActionDialog;
-import de.dfki.vsm.Preferences;
+import de.dfki.vsm.editor.project.EditorProject;
 import de.dfki.vsm.model.acticon.ActiconAction;
 import de.dfki.vsm.model.acticon.ActiconConfig;
 import de.dfki.vsm.model.gesticon.GesticonAgent;
@@ -11,30 +11,15 @@ import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.evt.EventListener;
 import de.dfki.vsm.util.evt.EventObject;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.dnd.DnDConstants;
-import java.awt.dnd.DragGestureEvent;
-import java.awt.dnd.DragGestureListener;
-import java.awt.dnd.DragSource;
-import java.awt.dnd.DragSourceDragEvent;
-import java.awt.dnd.DragSourceDropEvent;
-import java.awt.dnd.DragSourceEvent;
-import java.awt.dnd.DragSourceListener;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import javax.swing.BorderFactory;
-import javax.swing.Icon;
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
-import javax.swing.JTree;
+
+import javax.swing.*;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeSelectionModel;
+import java.awt.*;
+import java.awt.dnd.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 /**
  * @author Gregor Mehlmannn
@@ -120,7 +105,7 @@ public final class SceneElementDisplay extends JScrollPane implements EventListe
     private class SceneElementTree extends JTree implements EventListener {
 
         // Elements
-        private final TreeEntry mRootEntry = new TreeEntry("Scene Elements", Preferences.ICON_ROOT_FOLDER, null);
+        private final TreeEntry mRootEntry = new TreeEntry("Scene Elements", PreferencesDesktop.ICON_ROOT_FOLDER, null);
         private final TreeEntry mGesticonEntry = new TreeEntry("Gesticon", null, null);
         private final TreeEntry mActionDefinitionsEntry = new TreeEntry("Acticon", null, null);
 

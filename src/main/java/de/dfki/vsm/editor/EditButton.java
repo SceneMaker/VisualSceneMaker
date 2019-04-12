@@ -8,18 +8,13 @@ package de.dfki.vsm.editor;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.Preferences;
+import de.dfki.vsm.PreferencesDesktop;
 
-//~--- JDK imports ------------------------------------------------------------
-
-import java.awt.Color;
-import java.awt.ComponentOrientation;
-import java.awt.Dimension;
-import java.awt.Font;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.MouseEvent;
 
-import javax.swing.JLabel;
-import javax.swing.SwingConstants;
+//~--- JDK imports ------------------------------------------------------------
 
 /**
  *
@@ -32,7 +27,7 @@ public class EditButton extends JLabel {
         setHorizontalAlignment(SwingConstants.RIGHT);
         setOpaque(false);
         setBackground(Color.white);
-        setIcon(Preferences.ICON_EDIT_STANDARD);
+        setIcon(PreferencesDesktop.ICON_EDIT_STANDARD);
         setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
         setToolTipText("Edit");
         setIconTextGap(10);
@@ -46,10 +41,10 @@ public class EditButton extends JLabel {
 //              //savePreferences(true);
 //          }
             public void mouseEntered(MouseEvent me) {
-                setIcon(Preferences.ICON_EDIT_ROLLOVER);
+                setIcon(PreferencesDesktop.ICON_EDIT_ROLLOVER);
             }
             public void mouseExited(MouseEvent me) {
-                setIcon(Preferences.ICON_EDIT_STANDARD);
+                setIcon(PreferencesDesktop.ICON_EDIT_STANDARD);
             }
         });
     }

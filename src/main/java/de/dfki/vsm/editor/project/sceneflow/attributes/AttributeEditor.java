@@ -1,25 +1,13 @@
 package de.dfki.vsm.editor.project.sceneflow.attributes;
 
-import de.dfki.vsm.Preferences;
+import de.dfki.vsm.PreferencesDesktop;
 import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.model.sceneflow.chart.BasicNode;
 import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.evt.EventListener;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.DefaultListModel;
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.ListCellRenderer;
+
+import javax.swing.*;
+import java.awt.*;
 
 /**
  * @author Gregor Mehlmann
@@ -55,9 +43,9 @@ abstract class AttributeEditor extends JPanel implements EventListener {
         mScrollPane.setMinimumSize(new Dimension(200, 100));
 
         // Init the button panel
-        mAddButton = new JButton(Preferences.ICON_PLUS_STANDARD);
-        mAddButton.setRolloverIcon(Preferences.ICON_PLUS_ROLLOVER);
-        mAddButton.setDisabledIcon(Preferences.ICON_PLUS_DISABLED);
+        mAddButton = new JButton(PreferencesDesktop.ICON_PLUS_STANDARD);
+        mAddButton.setRolloverIcon(PreferencesDesktop.ICON_PLUS_ROLLOVER);
+        mAddButton.setDisabledIcon(PreferencesDesktop.ICON_PLUS_DISABLED);
         mAddButton.setMaximumSize(new Dimension(22, 22));
         mAddButton.setPreferredSize(new Dimension(22, 22));
         mAddButton.setMinimumSize(new Dimension(22, 22));
@@ -71,9 +59,9 @@ abstract class AttributeEditor extends JPanel implements EventListener {
         });
 
         //
-        mRemoveButton = new JButton(Preferences.ICON_MINUS_STANDARD);
-        mRemoveButton.setRolloverIcon(Preferences.ICON_MINUS_ROLLOVER);
-        mRemoveButton.setDisabledIcon(Preferences.ICON_MINUS_DISABLED);
+        mRemoveButton = new JButton(PreferencesDesktop.ICON_MINUS_STANDARD);
+        mRemoveButton.setRolloverIcon(PreferencesDesktop.ICON_MINUS_ROLLOVER);
+        mRemoveButton.setDisabledIcon(PreferencesDesktop.ICON_MINUS_DISABLED);
         mRemoveButton.setMinimumSize(new Dimension(22, 22));
         mRemoveButton.setMaximumSize(new Dimension(22, 22));
         mRemoveButton.setPreferredSize(new Dimension(22, 22));
@@ -87,8 +75,8 @@ abstract class AttributeEditor extends JPanel implements EventListener {
         });
 
         //
-        mEditButton = new JButton(Preferences.ICON_EDIT_STANDARD);
-        mEditButton.setRolloverIcon(Preferences.ICON_EDIT_ROLLOVER);
+        mEditButton = new JButton(PreferencesDesktop.ICON_EDIT_STANDARD);
+        mEditButton.setRolloverIcon(PreferencesDesktop.ICON_EDIT_ROLLOVER);
         mEditButton.setMinimumSize(new Dimension(22, 22));
         mEditButton.setMaximumSize(new Dimension(22, 22));
         mEditButton.setPreferredSize(new Dimension(22, 22));
@@ -102,9 +90,9 @@ abstract class AttributeEditor extends JPanel implements EventListener {
         });
 
         //
-        mUpButton = new JButton(Preferences.ICON_UP_STANDARD);
-        mUpButton.setRolloverIcon(Preferences.ICON_UP_ROLLOVER);
-        mUpButton.setDisabledIcon(Preferences.ICON_UP_DISABLED);
+        mUpButton = new JButton(PreferencesDesktop.ICON_UP_STANDARD);
+        mUpButton.setRolloverIcon(PreferencesDesktop.ICON_UP_ROLLOVER);
+        mUpButton.setDisabledIcon(PreferencesDesktop.ICON_UP_DISABLED);
         mUpButton.setMinimumSize(new Dimension(20, 20));
         mUpButton.setMaximumSize(new Dimension(20, 20));
         mUpButton.setPreferredSize(new Dimension(20, 20));
@@ -118,9 +106,9 @@ abstract class AttributeEditor extends JPanel implements EventListener {
         });
 
         //
-        mDownButton = new JButton(Preferences.ICON_DOWN_STANDARD);
-        mDownButton.setRolloverIcon(Preferences.ICON_DOWN_ROLLOVER);
-        mDownButton.setDisabledIcon(Preferences.ICON_DOWN_DISABLED);
+        mDownButton = new JButton(PreferencesDesktop.ICON_DOWN_STANDARD);
+        mDownButton.setRolloverIcon(PreferencesDesktop.ICON_DOWN_ROLLOVER);
+        mDownButton.setDisabledIcon(PreferencesDesktop.ICON_DOWN_DISABLED);
         mDownButton.setMinimumSize(new Dimension(22, 22));
         mDownButton.setMaximumSize(new Dimension(22, 22));
         mDownButton.setPreferredSize(new Dimension(22, 22));
