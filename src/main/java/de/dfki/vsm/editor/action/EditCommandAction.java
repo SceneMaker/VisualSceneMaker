@@ -1,9 +1,9 @@
 package de.dfki.vsm.editor.action;
 
 import de.dfki.vsm.editor.CmdBadge;
-import de.dfki.vsm.editor.event.NodeSelectedEvent;
 import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
-import de.dfki.vsm.util.evt.EventDispatcher;
+import de.dfki.vsm.event.EventDispatcher;
+import de.dfki.vsm.event.event.NodeSelectedEvent;
 
 /**
  * Sergio Soto

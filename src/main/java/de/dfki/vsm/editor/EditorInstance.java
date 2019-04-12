@@ -4,14 +4,14 @@ package de.dfki.vsm.editor;
 
 import de.dfki.vsm.PreferencesDesktop;
 import de.dfki.vsm.editor.dialog.*;
-import de.dfki.vsm.editor.event.SceneStoppedEvent;
 import de.dfki.vsm.editor.project.EditorProject;
 import de.dfki.vsm.editor.project.ProjectEditor;
 import de.dfki.vsm.editor.project.sceneflow.workspace.ClipBoard;
+import de.dfki.vsm.event.EventDispatcher;
+import de.dfki.vsm.event.EventListener;
+import de.dfki.vsm.event.EventObject;
+import de.dfki.vsm.event.event.SceneStoppedEvent;
 import de.dfki.vsm.runtime.interpreter.event.TerminationEvent;
-import de.dfki.vsm.util.evt.EventDispatcher;
-import de.dfki.vsm.util.evt.EventListener;
-import de.dfki.vsm.util.evt.EventObject;
 import de.dfki.vsm.util.ios.ResourceLoader;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 

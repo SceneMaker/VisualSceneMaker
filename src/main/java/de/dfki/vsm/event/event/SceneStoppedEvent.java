@@ -1,9 +1,10 @@
-package de.dfki.vsm.editor.event;
+package de.dfki.vsm.event.event;
 
 //~--- non-JDK imports --------------------------------------------------------
 
 //import de.dfki.embots.output.scenePlayer.scenes.Scene;
-import de.dfki.vsm.util.evt.EventObject;
+
+import de.dfki.vsm.event.EventObject;
 
 /**
  * @author Sergio Soto

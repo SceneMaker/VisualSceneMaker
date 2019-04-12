@@ -1,17 +1,17 @@
-package de.dfki.vsm.editor.event;
+package de.dfki.vsm.event.event;
 
 //~--- non-JDK imports --------------------------------------------------------
 
+import de.dfki.vsm.event.EventObject;
 import de.dfki.vsm.model.sceneflow.chart.edge.AbstractEdge;
-import de.dfki.vsm.util.evt.EventObject;
 
 /**
- * @author Gregor Mehlmann
+ * @author Sergio Soto
  */
-public class EdgeSelectedEvent extends EventObject {
+public class EdgeEditEvent extends EventObject {
     private AbstractEdge mEdge;
 
-    public EdgeSelectedEvent(Object source, AbstractEdge edge) {
+    public EdgeEditEvent(Object source, AbstractEdge edge) {
         super(source);
         mEdge = edge;
     }
@@ -21,6 +21,6 @@ public class EdgeSelectedEvent extends EventObject {
     }
     
     public String getEventDescription() {
-        return "NodeSelectedEvent(" + mEdge.getSourceUnid() + " -> " + mEdge.getTargetUnid() + ")";
+        return "EdgeEditEvent(" + mEdge.getSourceUnid() + " -> " + mEdge.getTargetUnid() + ")";
     }
 }

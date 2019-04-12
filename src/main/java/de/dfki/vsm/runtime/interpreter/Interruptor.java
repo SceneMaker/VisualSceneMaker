@@ -1,13 +1,13 @@
 package de.dfki.vsm.runtime.interpreter;
 
+import de.dfki.vsm.event.EventDispatcher;
 import de.dfki.vsm.model.sceneflow.chart.edge.InterruptEdge;
 import de.dfki.vsm.model.sceneflow.glue.command.Expression;
+import de.dfki.vsm.runtime.interpreter.Configuration.State;
 import de.dfki.vsm.runtime.interpreter.error.InterpreterError;
 import de.dfki.vsm.runtime.interpreter.event.TerminationEvent;
-import de.dfki.vsm.runtime.interpreter.Configuration.State;
 import de.dfki.vsm.runtime.interpreter.value.AbstractValue;
 import de.dfki.vsm.runtime.interpreter.value.BooleanValue;
-import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 
 public final class Interruptor {

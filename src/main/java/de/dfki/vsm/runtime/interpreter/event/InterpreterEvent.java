@@ -1,6 +1,6 @@
 package de.dfki.vsm.runtime.interpreter.event;
 
-import de.dfki.vsm.util.evt.EventObject;
+import de.dfki.vsm.event.EventObject;
 
 /**
  * @author Gregor Mehlmann

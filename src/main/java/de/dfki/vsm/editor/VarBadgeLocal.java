@@ -1,34 +1,31 @@
 package de.dfki.vsm.editor;
 
 //~--- non-JDK imports --------------------------------------------------------
-import de.dfki.vsm.editor.event.VariableChangedEvent;
+
+import de.dfki.vsm.event.EventListener;
+import de.dfki.vsm.event.EventObject;
+import de.dfki.vsm.event.event.VariableChangedEvent;
 import de.dfki.vsm.model.sceneflow.chart.SuperNode;
 import de.dfki.vsm.model.sceneflow.chart.badge.VariableEntry;
-import de.dfki.vsm.model.sceneflow.glue.command.definition.VariableDefinition;
 import de.dfki.vsm.model.sceneflow.chart.graphics.node.NodePosition;
+import de.dfki.vsm.model.sceneflow.glue.command.definition.VariableDefinition;
 import de.dfki.vsm.util.TextFormat;
-import de.dfki.vsm.util.evt.EventListener;
-import de.dfki.vsm.util.evt.EventObject;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 import de.dfki.vsm.util.tpl.TPLTuple;
 
-//~--- JDK imports ------------------------------------------------------------
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.font.TextLayout;
-
 import java.awt.image.BufferedImage;
 import java.text.AttributedString;
 import java.util.ArrayList;
-
 import java.util.Observable;
 import java.util.Observer;
 
-import javax.swing.JComponent;
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
+//~--- JDK imports ------------------------------------------------------------
 
 /**
  * @author Gregor Mehlmann

@@ -1,26 +1,24 @@
 package de.dfki.vsm.editor.project;
 
-import de.dfki.vsm.editor.project.sceneflow.SceneFlowEditor;
-import de.dfki.vsm.editor.event.FunctionSelectedEvent;
-import de.dfki.vsm.editor.event.NodeSelectedEvent;
-import de.dfki.vsm.editor.event.TreeEntrySelectedEvent;
-import de.dfki.vsm.editor.project.auxiliary.scenescript.OLDSceneScriptEditor;
 import de.dfki.vsm.Preferences;
+import de.dfki.vsm.editor.project.auxiliary.scenescript.OLDSceneScriptEditor;
+import de.dfki.vsm.editor.project.sceneflow.SceneFlowEditor;
 import de.dfki.vsm.editor.util.autocompletation.AutoCompletionPluginDiscover;
-import de.dfki.vsm.util.evt.EventDispatcher;
-import de.dfki.vsm.util.evt.EventListener;
-import de.dfki.vsm.util.evt.EventObject;
+import de.dfki.vsm.event.EventDispatcher;
+import de.dfki.vsm.event.EventListener;
+import de.dfki.vsm.event.EventObject;
+import de.dfki.vsm.event.event.FunctionSelectedEvent;
+import de.dfki.vsm.event.event.NodeSelectedEvent;
+import de.dfki.vsm.event.event.TreeEntrySelectedEvent;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 
-import java.awt.Color;
-import java.awt.Dimension;
+import javax.swing.*;
+import javax.swing.plaf.basic.BasicSplitPaneDivider;
+import javax.swing.plaf.basic.BasicSplitPaneUI;
+import java.awt.*;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.MouseEvent;
-import javax.swing.BorderFactory;
-import javax.swing.JSplitPane;
-import javax.swing.plaf.basic.BasicSplitPaneDivider;
-import javax.swing.plaf.basic.BasicSplitPaneUI;
 
 /**
  * @author Gregor Mehlmann

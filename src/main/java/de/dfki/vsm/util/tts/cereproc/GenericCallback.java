@@ -1,7 +1,7 @@
 package de.dfki.vsm.util.tts.cereproc;
 
 import com.cereproc.cerevoice_eng.*;
-import de.dfki.vsm.util.evt.EventDispatcher;
+import de.dfki.vsm.event.EventDispatcher;
 import de.dfki.vsm.util.tts.cereproc.audioplayer.Audioplayer;
 import de.dfki.vsm.util.tts.cereproc.audioplayer.ClipPlayer;
 import de.dfki.vsm.util.tts.cereproc.audioplayer.LinePlayer;

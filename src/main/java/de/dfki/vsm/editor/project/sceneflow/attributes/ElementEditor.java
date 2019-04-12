@@ -2,59 +2,39 @@ package de.dfki.vsm.editor.project.sceneflow.attributes;
 
 //~--- non-JDK imports --------------------------------------------------------
 //import com.sun.java.swing.plaf.windows.WindowsScrollBarUI;
+
 import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.action.RedoAction;
 import de.dfki.vsm.editor.action.UndoAction;
-import de.dfki.vsm.editor.dialog.CmdDialog;
-import de.dfki.vsm.editor.dialog.FunDefDialog;
-import de.dfki.vsm.editor.dialog.ModifyCEdgeDialog;
-import de.dfki.vsm.editor.dialog.ModifyIEdgeDialog;
-import de.dfki.vsm.editor.dialog.ModifyPEdgeDialog;
-import de.dfki.vsm.editor.dialog.ModifyTEdgeDialog;
-import de.dfki.vsm.editor.dialog.TypeDefDialog;
-import de.dfki.vsm.editor.dialog.VarDefDialog;
-import de.dfki.vsm.editor.event.CEdgeDialogModifiedEvent;
-import de.dfki.vsm.editor.event.EdgeSelectedEvent;
-import de.dfki.vsm.editor.event.NodeSelectedEvent;
-import de.dfki.vsm.model.sceneflow.chart.edge.GuargedEdge;
-import de.dfki.vsm.model.sceneflow.chart.edge.AbstractEdge;
-import de.dfki.vsm.model.sceneflow.chart.edge.AbstractEdge.EdgeType;
-import de.dfki.vsm.model.sceneflow.chart.edge.InterruptEdge;
+import de.dfki.vsm.editor.dialog.*;
+import de.dfki.vsm.event.EventDispatcher;
+import de.dfki.vsm.event.EventListener;
+import de.dfki.vsm.event.EventObject;
+import de.dfki.vsm.event.event.CEdgeDialogModifiedEvent;
+import de.dfki.vsm.event.event.EdgeSelectedEvent;
+import de.dfki.vsm.event.event.NodeSelectedEvent;
 import de.dfki.vsm.model.sceneflow.chart.BasicNode;
-import de.dfki.vsm.model.sceneflow.chart.edge.RandomEdge;
 import de.dfki.vsm.model.sceneflow.chart.SceneFlow;
 import de.dfki.vsm.model.sceneflow.chart.SuperNode;
-import de.dfki.vsm.model.sceneflow.chart.edge.TimeoutEdge;
+import de.dfki.vsm.model.sceneflow.chart.edge.*;
+import de.dfki.vsm.model.sceneflow.chart.edge.AbstractEdge.EdgeType;
+import de.dfki.vsm.model.sceneflow.glue.GlueParser;
 import de.dfki.vsm.model.sceneflow.glue.command.Command;
+import de.dfki.vsm.model.sceneflow.glue.command.Expression;
+import de.dfki.vsm.model.sceneflow.glue.command.definition.DataTypeDefinition;
 import de.dfki.vsm.model.sceneflow.glue.command.definition.FunctionDefinition;
 import de.dfki.vsm.model.sceneflow.glue.command.definition.VariableDefinition;
-import de.dfki.vsm.model.sceneflow.glue.command.definition.DataTypeDefinition;
-import de.dfki.vsm.model.sceneflow.glue.GlueParser;
-import de.dfki.vsm.model.sceneflow.glue.command.Expression;
 import de.dfki.vsm.util.RegularExpressions;
-import de.dfki.vsm.util.evt.EventDispatcher;
-import de.dfki.vsm.util.evt.EventListener;
-import de.dfki.vsm.util.evt.EventObject;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 
-//~--- JDK imports ------------------------------------------------------------
-import java.awt.Color;
-import java.awt.Dimension;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-
+import java.util.ArrayList;
 import java.util.HashMap;
 
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextField;
-import javax.swing.ScrollPaneConstants;
-
-import static java.awt.Component.RIGHT_ALIGNMENT;
-import java.util.ArrayList;
+//~--- JDK imports ------------------------------------------------------------
 
 ///**
 // * @author Gregor Mehlmann

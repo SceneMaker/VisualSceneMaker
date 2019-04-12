@@ -3,7 +3,7 @@ package de.dfki.vsm.util.tts.cereproc;
 import com.cereproc.cerevoice_eng.SWIGTYPE_p_CPRCEN_engine;
 import com.cereproc.cerevoice_eng.TtsEngineCallback;
 import com.cereproc.cerevoice_eng.cerevoice_eng;
-import de.dfki.vsm.util.evt.EventDispatcher;
+import de.dfki.vsm.event.EventDispatcher;
 import de.dfki.vsm.util.tts.SpeechClient;
 import de.dfki.vsm.util.tts.cereproc.util.Audioline;
 import de.dfki.vsm.util.tts.cereproc.util.CereprocLibPath;

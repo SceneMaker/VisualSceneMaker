@@ -1,10 +1,11 @@
-package de.dfki.vsm.editor.event;
+package de.dfki.vsm.event.event;
 
 //~--- non-JDK imports --------------------------------------------------------
 
 //import de.dfki.embots.output.scenePlayer.scenes.Turn;
+
+import de.dfki.vsm.event.EventObject;
 import de.dfki.vsm.model.scenescript.SceneTurn;
-import de.dfki.vsm.util.evt.EventObject;
 
 /**
  * @author Gregor Mehlmann

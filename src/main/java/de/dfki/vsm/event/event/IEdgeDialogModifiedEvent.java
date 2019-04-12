@@ -1,4 +1,4 @@
-package de.dfki.vsm.editor.event;
+package de.dfki.vsm.event.event;
 
 /**
  * Created by alvaro on 2/16/17.

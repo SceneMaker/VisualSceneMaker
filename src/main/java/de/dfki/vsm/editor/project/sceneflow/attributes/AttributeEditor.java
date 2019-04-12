@@ -2,9 +2,9 @@ package de.dfki.vsm.editor.project.sceneflow.attributes;
 
 import de.dfki.vsm.PreferencesDesktop;
 import de.dfki.vsm.editor.EditorInstance;
+import de.dfki.vsm.event.EventDispatcher;
+import de.dfki.vsm.event.EventListener;
 import de.dfki.vsm.model.sceneflow.chart.BasicNode;
-import de.dfki.vsm.util.evt.EventDispatcher;
-import de.dfki.vsm.util.evt.EventListener;
 
 import javax.swing.*;
 import java.awt.*;

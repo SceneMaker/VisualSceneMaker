@@ -1,9 +1,9 @@
 package de.dfki.vsm.xtension.voicerecognition.plugins.sender;
 
+import de.dfki.vsm.event.EventDispatcher;
+import de.dfki.vsm.event.EventListener;
+import de.dfki.vsm.event.EventObject;
 import de.dfki.vsm.model.project.PluginConfig;
-import de.dfki.vsm.util.evt.EventDispatcher;
-import de.dfki.vsm.util.evt.EventListener;
-import de.dfki.vsm.util.evt.EventObject;
 import de.dfki.vsm.util.xtensions.observers.VoiceRecognitionEvent;
 import de.dfki.vsm.xtension.remote.client.factories.ClientsFactory;
 import de.dfki.vsm.xtension.remote.client.sender.Clientable;

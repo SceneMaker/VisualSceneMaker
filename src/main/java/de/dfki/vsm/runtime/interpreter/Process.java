@@ -1,33 +1,29 @@
 package de.dfki.vsm.runtime.interpreter;
 
 //~--- non-JDK imports --------------------------------------------------------
-import de.dfki.vsm.editor.event.EdgeExecutedEvent;
-import de.dfki.vsm.editor.event.NodeExecutedEvent;
-import de.dfki.vsm.editor.event.NodeStartedEvent;
-import de.dfki.vsm.editor.event.NodeTerminatedEvent;
-import de.dfki.vsm.model.sceneflow.chart.edge.GuargedEdge;
-import de.dfki.vsm.model.sceneflow.chart.edge.EpsilonEdge;
-import de.dfki.vsm.model.sceneflow.chart.edge.AbstractEdge;
-import de.dfki.vsm.model.sceneflow.chart.edge.ForkingEdge;
-import de.dfki.vsm.model.sceneflow.chart.edge.InterruptEdge;
+
+import de.dfki.vsm.event.EventDispatcher;
+import de.dfki.vsm.event.event.EdgeExecutedEvent;
+import de.dfki.vsm.event.event.NodeExecutedEvent;
+import de.dfki.vsm.event.event.NodeStartedEvent;
+import de.dfki.vsm.event.event.NodeTerminatedEvent;
 import de.dfki.vsm.model.sceneflow.chart.BasicNode;
-import de.dfki.vsm.model.sceneflow.chart.edge.RandomEdge;
 import de.dfki.vsm.model.sceneflow.chart.SuperNode;
-import de.dfki.vsm.model.sceneflow.chart.edge.TimeoutEdge;
+import de.dfki.vsm.model.sceneflow.chart.edge.*;
 import de.dfki.vsm.model.sceneflow.glue.command.Command;
 import de.dfki.vsm.model.sceneflow.glue.command.definition.VariableDefinition;
-import de.dfki.vsm.runtime.interpreter.signal.InterruptionSignal;
 import de.dfki.vsm.runtime.interpreter.error.InterpreterError;
-import de.dfki.vsm.runtime.interpreter.signal.TerminationSignal;
 import de.dfki.vsm.runtime.interpreter.event.TerminationEvent;
+import de.dfki.vsm.runtime.interpreter.signal.InterruptionSignal;
+import de.dfki.vsm.runtime.interpreter.signal.TerminationSignal;
 import de.dfki.vsm.runtime.interpreter.value.BooleanValue;
-import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
-import java.util.ArrayList;
 
-//~--- JDK imports ------------------------------------------------------------
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Random;
+
+//~--- JDK imports ------------------------------------------------------------
 
 /**
  * @author Gregor Mehlmann

@@ -3,10 +3,10 @@
 ////~--- non-JDK imports --------------------------------------------------------
 //
 //import de.dfki.vsm.editor.project.EditorProject;
-//import de.dfki.vsm.editor.event.SceneSelectedEvent;
+//import de.dfki.vsm.event.event.SceneSelectedEvent;
 //import de.dfki.vsm.model.scenescript.SceneGroup;
 //import de.dfki.vsm.model.scenescript.SceneScript;
-//import de.dfki.vsm.util.evt.EventDispatcher;
+//import de.dfki.vsm.event.EventDispatcher;
 //import de.dfki.vsm.util.log.LOGDefaultLogger;
 //
 //import static de.dfki.vsm.editor.util.Preferences.sHIGHLIGHT_COLOR;

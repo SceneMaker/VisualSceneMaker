@@ -1,12 +1,12 @@
 package de.dfki.vsm.runtime.interpreter.symbol;
 
-import de.dfki.vsm.editor.event.VariableChangedEvent;
+import de.dfki.vsm.event.EventDispatcher;
+import de.dfki.vsm.event.event.VariableChangedEvent;
 import de.dfki.vsm.runtime.interpreter.error.InterpreterError;
 import de.dfki.vsm.runtime.interpreter.value.AbstractValue;
 import de.dfki.vsm.runtime.interpreter.value.ListValue;
 import de.dfki.vsm.runtime.interpreter.value.StructValue;
 import de.dfki.vsm.util.cpy.Copyable;
-import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.tpl.TPLTuple;
 
 public final class SymbolEntry implements Copyable {

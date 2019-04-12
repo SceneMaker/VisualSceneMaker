@@ -1,9 +1,9 @@
 package de.dfki.vsm.xtension.voicerecognition.plugins.variablesetter;
 
+import de.dfki.vsm.event.EventDispatcher;
+import de.dfki.vsm.event.EventListener;
+import de.dfki.vsm.event.EventObject;
 import de.dfki.vsm.runtime.project.RunTimeProject;
-import de.dfki.vsm.util.evt.EventDispatcher;
-import de.dfki.vsm.util.evt.EventListener;
-import de.dfki.vsm.util.evt.EventObject;
 import de.dfki.vsm.util.xtensions.observers.VoiceRecognitionEvent;
 import de.dfki.vsm.xtension.voicerecognition.plugins.VRPlugin;
 
