@@ -1,40 +1,40 @@
 package de.dfki.vsm.editor.dialog;
 
 //import com.sun.java.swing.plaf.windows.WindowsScrollBarUI;
+
 import de.dfki.vsm.editor.CancelButton;
 import de.dfki.vsm.editor.EditorInstance;
-import de.dfki.vsm.editor.project.EditorProject;
 import de.dfki.vsm.editor.OKButton;
-import de.dfki.vsm.editor.event.VariableChangedEvent;
+import de.dfki.vsm.editor.project.EditorProject;
 import de.dfki.vsm.editor.util.HintTextField;
+import de.dfki.vsm.event.EventDispatcher;
+import de.dfki.vsm.event.EventListener;
+import de.dfki.vsm.event.EventObject;
+import de.dfki.vsm.event.event.VariableChangedEvent;
 import de.dfki.vsm.model.sceneflow.chart.SceneFlow;
+import de.dfki.vsm.model.sceneflow.glue.GlueParser;
 import de.dfki.vsm.model.sceneflow.glue.command.Expression;
+import de.dfki.vsm.model.sceneflow.glue.command.definition.VariableDefinition;
 import de.dfki.vsm.model.sceneflow.glue.command.expression.UnaryExpression;
 import de.dfki.vsm.model.sceneflow.glue.command.expression.literal.BoolLiteral;
 import de.dfki.vsm.model.sceneflow.glue.command.expression.literal.FloatLiteral;
 import de.dfki.vsm.model.sceneflow.glue.command.expression.literal.IntLiteral;
-import de.dfki.vsm.model.sceneflow.glue.command.expression.record.ArrayExpression;
 import de.dfki.vsm.model.sceneflow.glue.command.expression.literal.StringLiteral;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.record.ArrayExpression;
 import de.dfki.vsm.model.sceneflow.glue.command.expression.record.StructExpression;
-import de.dfki.vsm.model.sceneflow.glue.command.definition.VariableDefinition;
-import de.dfki.vsm.model.sceneflow.glue.GlueParser;
-import de.dfki.vsm.util.evt.EventDispatcher;
-import de.dfki.vsm.util.evt.EventListener;
-import de.dfki.vsm.util.evt.EventObject;
 import de.dfki.vsm.util.jpl.JPLEngine;
 import de.dfki.vsm.util.jpl.JPLResult;
 
-//~--- JDK imports ------------------------------------------------------------
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
-import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
+
+//~--- JDK imports ------------------------------------------------------------
 
 /**
  * @author Gregor Mehlmann

@@ -1,6 +1,6 @@
 package de.dfki.vsm.util.xtensions.observers;
 
-import de.dfki.vsm.util.evt.EventObject;
+import de.dfki.vsm.event.EventObject;
 
 /**
  * Created by alvaro on 6/6/17.

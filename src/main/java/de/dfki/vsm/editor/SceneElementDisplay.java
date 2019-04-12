@@ -3,13 +3,13 @@ package de.dfki.vsm.editor;
 import de.dfki.vsm.PreferencesDesktop;
 import de.dfki.vsm.editor.dialog.SceneActionDialog;
 import de.dfki.vsm.editor.project.EditorProject;
+import de.dfki.vsm.event.EventDispatcher;
+import de.dfki.vsm.event.EventListener;
+import de.dfki.vsm.event.EventObject;
 import de.dfki.vsm.model.acticon.ActiconAction;
 import de.dfki.vsm.model.acticon.ActiconConfig;
 import de.dfki.vsm.model.gesticon.GesticonAgent;
 import de.dfki.vsm.model.gesticon.GesticonGesture;
-import de.dfki.vsm.util.evt.EventDispatcher;
-import de.dfki.vsm.util.evt.EventListener;
-import de.dfki.vsm.util.evt.EventObject;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 
 import javax.swing.*;

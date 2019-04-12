@@ -1,6 +1,7 @@
-package de.dfki.vsm.util.evt;
+package de.dfki.vsm.event;
 
 import de.dfki.vsm.util.log.LOGDefaultLogger;
+
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.CopyOnWriteArrayList;

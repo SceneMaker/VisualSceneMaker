@@ -1,32 +1,29 @@
 package de.dfki.vsm.editor.project.auxiliary.functions;
 
 //import com.sun.java.swing.plaf.windows.WindowsScrollBarUI;
+
 import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.action.RedoAction;
 import de.dfki.vsm.editor.action.UndoAction;
 import de.dfki.vsm.editor.project.EditorProject;
-import de.dfki.vsm.editor.event.FunctionCreatedEvent;
-import de.dfki.vsm.editor.event.FunctionModifiedEvent;
-import de.dfki.vsm.editor.event.FunctionRemovedEvent;
-import de.dfki.vsm.editor.event.FunctionSelectedEvent;
+import de.dfki.vsm.event.EventDispatcher;
+import de.dfki.vsm.event.EventListener;
+import de.dfki.vsm.event.EventObject;
+import de.dfki.vsm.event.event.FunctionCreatedEvent;
+import de.dfki.vsm.event.event.FunctionModifiedEvent;
+import de.dfki.vsm.event.event.FunctionRemovedEvent;
+import de.dfki.vsm.event.event.FunctionSelectedEvent;
 import de.dfki.vsm.model.sceneflow.chart.SceneFlow;
-import de.dfki.vsm.model.sceneflow.glue.command.definition.FunctionDefinition;
 import de.dfki.vsm.model.sceneflow.glue.command.definition.ArgumentDefinition;
-import de.dfki.vsm.util.evt.EventDispatcher;
-import de.dfki.vsm.util.evt.EventListener;
-import de.dfki.vsm.util.evt.EventObject;
+import de.dfki.vsm.model.sceneflow.glue.command.definition.FunctionDefinition;
 
-import java.awt.Dimension;
-import java.awt.GridLayout;
-import java.util.ArrayList;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
+import javax.swing.*;
 import javax.swing.undo.AbstractUndoableEdit;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoManager;
+import java.awt.*;
+import java.util.ArrayList;
 
 /**
  * @author Sergio Soto

@@ -2,15 +2,15 @@ package de.dfki.vsm.editor;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.editor.event.*;
 import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
 import de.dfki.vsm.editor.util.DockingManager;
 import de.dfki.vsm.editor.util.VisualisationTask;
+import de.dfki.vsm.event.EventDispatcher;
+import de.dfki.vsm.event.EventListener;
+import de.dfki.vsm.event.EventObject;
+import de.dfki.vsm.event.event.*;
 import de.dfki.vsm.model.project.EditorConfig;
 import de.dfki.vsm.model.sceneflow.chart.SuperNode;
-import de.dfki.vsm.util.evt.EventDispatcher;
-import de.dfki.vsm.util.evt.EventListener;
-import de.dfki.vsm.util.evt.EventObject;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 
 import javax.swing.*;

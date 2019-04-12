@@ -1,4 +1,4 @@
-package de.dfki.vsm.util.evt;
+package de.dfki.vsm.event;
 
 /**
  * @author Gregor Mehlmann

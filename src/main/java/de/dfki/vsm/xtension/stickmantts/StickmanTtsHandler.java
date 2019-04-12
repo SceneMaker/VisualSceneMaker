@@ -1,8 +1,8 @@
 package de.dfki.vsm.xtension.stickmantts;
 
-import de.dfki.vsm.util.evt.EventDispatcher;
-import de.dfki.vsm.util.evt.EventListener;
-import de.dfki.vsm.util.evt.EventObject;
+import de.dfki.vsm.event.EventDispatcher;
+import de.dfki.vsm.event.EventListener;
+import de.dfki.vsm.event.EventObject;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
 import de.dfki.vsm.xtension.stickmantts.util.tts.events.LineStart;
 import de.dfki.vsm.xtension.stickmantts.util.tts.events.LineStop;

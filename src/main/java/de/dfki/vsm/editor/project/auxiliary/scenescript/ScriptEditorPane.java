@@ -1,43 +1,31 @@
 package de.dfki.vsm.editor.project.auxiliary.scenescript;
 
-import de.dfki.vsm.editor.event.SceneSelectedEvent;
 import de.dfki.vsm.editor.project.EditorProject;
-import de.dfki.vsm.editor.util.sceneScript.SceneFinder;
 import de.dfki.vsm.editor.util.VisualisationTask;
+import de.dfki.vsm.editor.util.sceneScript.SceneFinder;
 import de.dfki.vsm.editor.util.sceneScript.document.DocumentHighlighter;
 import de.dfki.vsm.editor.util.sceneScript.document.beans.HighlightInformation;
+import de.dfki.vsm.event.EventDispatcher;
+import de.dfki.vsm.event.EventListener;
+import de.dfki.vsm.event.EventObject;
+import de.dfki.vsm.event.event.SceneSelectedEvent;
 import de.dfki.vsm.model.acticon.ActiconAction;
-import de.dfki.vsm.model.project.EditorConfig;
 import de.dfki.vsm.model.gesticon.GesticonGesture;
+import de.dfki.vsm.model.project.EditorConfig;
 import de.dfki.vsm.model.visicon.VisiconViseme;
-import de.dfki.vsm.util.evt.EventDispatcher;
-import de.dfki.vsm.util.evt.EventListener;
-import de.dfki.vsm.util.evt.EventObject;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.Rectangle;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.UnsupportedFlavorException;
-import java.awt.dnd.DnDConstants;
-import java.awt.dnd.DropTarget;
-import java.awt.dnd.DropTargetDragEvent;
-import java.awt.dnd.DropTargetDropEvent;
-import java.awt.dnd.DropTargetEvent;
-import java.awt.dnd.DropTargetListener;
-import java.awt.dnd.InvalidDnDOperationException;
-
-import java.awt.event.ActionEvent;
-import java.io.IOException;
-
 import javax.swing.*;
-import javax.swing.event.UndoableEditEvent;
-import javax.swing.event.UndoableEditListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoManager;
+import java.awt.*;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.dnd.*;
+import java.awt.event.ActionEvent;
+import java.io.IOException;
 
 /**
  * @author Gregor Mehlmann

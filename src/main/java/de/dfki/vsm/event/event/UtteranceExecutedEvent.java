@@ -1,10 +1,11 @@
-package de.dfki.vsm.editor.event;
+package de.dfki.vsm.event.event;
 
 //~--- non-JDK imports --------------------------------------------------------
 
 //import de.dfki.embots.output.scenePlayer.scenes.utterance.Utterance;
+
+import de.dfki.vsm.event.EventObject;
 import de.dfki.vsm.model.scenescript.SceneUttr;
-import de.dfki.vsm.util.evt.EventObject;
 
 /**
  * @author Gregor Mehlmann

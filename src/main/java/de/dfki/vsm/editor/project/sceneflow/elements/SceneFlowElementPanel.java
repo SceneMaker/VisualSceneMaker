@@ -4,14 +4,14 @@ import de.dfki.vsm.PreferencesDesktop;
 import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.TreeEntry;
 import de.dfki.vsm.editor.dialog.FunDefDialog;
-import de.dfki.vsm.editor.event.*;
 import de.dfki.vsm.editor.project.EditorProject;
+import de.dfki.vsm.event.EventDispatcher;
+import de.dfki.vsm.event.event.*;
 import de.dfki.vsm.model.sceneflow.chart.SceneFlow;
 import de.dfki.vsm.model.sceneflow.glue.command.definition.FunctionDefinition;
 import de.dfki.vsm.model.scenescript.SceneGroup;
 import de.dfki.vsm.model.scenescript.SceneObject;
 import de.dfki.vsm.model.scenescript.SceneScript;
-import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 
 import javax.swing.*;

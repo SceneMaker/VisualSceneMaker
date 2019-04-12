@@ -1,17 +1,17 @@
-package de.dfki.vsm.editor.event;
+package de.dfki.vsm.event.event;
 
 //~--- non-JDK imports --------------------------------------------------------
 
+import de.dfki.vsm.event.EventObject;
 import de.dfki.vsm.model.sceneflow.chart.BasicNode;
-import de.dfki.vsm.util.evt.EventObject;
 
 /**
- * @author Patrick Gebhard
+ * @author Gregor Mehlmann
  */
-public class NodeStartedEvent extends EventObject {
+public class NodeExecutedEvent extends EventObject {
     private BasicNode mNode;
 
-    public NodeStartedEvent(Object source, BasicNode node) {
+    public NodeExecutedEvent(Object source, BasicNode node) {
         super(source);
         mNode = node;
     }

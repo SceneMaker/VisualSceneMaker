@@ -2,11 +2,11 @@ package de.dfki.vsm.editor.action;
 
 import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.Node;
-import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
 import de.dfki.vsm.editor.dialog.CmdDialog;
-import de.dfki.vsm.editor.event.NodeSelectedEvent;
+import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
+import de.dfki.vsm.event.EventDispatcher;
+import de.dfki.vsm.event.event.NodeSelectedEvent;
 import de.dfki.vsm.model.sceneflow.glue.command.Command;
-import de.dfki.vsm.util.evt.EventDispatcher;
 
 /**
  * Sergio Soto

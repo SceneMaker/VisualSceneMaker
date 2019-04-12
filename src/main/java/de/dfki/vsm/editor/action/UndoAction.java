@@ -3,21 +3,18 @@ package de.dfki.vsm.editor.action;
 //~--- non-JDK imports --------------------------------------------------------
 
 import de.dfki.vsm.editor.EditorInstance;
-import de.dfki.vsm.editor.event.ProjectChangedEvent;
-import de.dfki.vsm.util.evt.EventDispatcher;
+import de.dfki.vsm.event.EventDispatcher;
+import de.dfki.vsm.event.event.ProjectChangedEvent;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 
-//~--- JDK imports ------------------------------------------------------------
-
-import java.awt.Toolkit;
+import javax.swing.*;
+import javax.swing.undo.CannotUndoException;
+import javax.swing.undo.UndoManager;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.KeyStroke;
-import javax.swing.undo.CannotUndoException;
-import javax.swing.undo.UndoManager;
+//~--- JDK imports ------------------------------------------------------------
 
 /**
  *

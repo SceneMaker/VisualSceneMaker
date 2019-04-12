@@ -1,51 +1,32 @@
 package de.dfki.vsm.editor.project.auxiliary.functions;
 
 //import com.sun.java.swing.plaf.windows.WindowsScrollBarUI;
+
 import de.dfki.vsm.editor.CancelButton;
 import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.OKButton;
 import de.dfki.vsm.editor.RemoveButton;
-import de.dfki.vsm.editor.event.FunctionRemovedEvent;
+import de.dfki.vsm.event.EventDispatcher;
+import de.dfki.vsm.event.event.FunctionRemovedEvent;
 import de.dfki.vsm.model.sceneflow.chart.SceneFlow;
-import de.dfki.vsm.model.sceneflow.glue.command.definition.FunctionDefinition;
 import de.dfki.vsm.model.sceneflow.glue.command.definition.ArgumentDefinition;
-import de.dfki.vsm.util.evt.EventDispatcher;
+import de.dfki.vsm.model.sceneflow.glue.command.definition.FunctionDefinition;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.GridLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseEvent;
+
+import javax.swing.*;
+import javax.swing.event.MouseInputAdapter;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import javax.swing.text.PlainDocument;
+import java.awt.*;
+import java.awt.event.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Vector;
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.DefaultListModel;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextField;
-import javax.swing.event.MouseInputAdapter;
-import javax.swing.text.AttributeSet;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
-import javax.swing.text.PlainDocument;
 
 /**
  *

@@ -2,22 +2,23 @@ package de.dfki.vsm.editor.project.sceneflow;
 
 //~--- non-JDK imports --------------------------------------------------------
 //import com.sun.java.swing.plaf.windows.WindowsScrollBarUI;
+
 import de.dfki.vsm.Preferences;
 import de.dfki.vsm.editor.EditorInstance;
-import de.dfki.vsm.editor.event.ElementEditorToggledEvent;
-import de.dfki.vsm.editor.event.NodeExecutedEvent;
-import de.dfki.vsm.editor.event.NodeSelectedEvent;
 import de.dfki.vsm.editor.project.EditorProject;
 import de.dfki.vsm.editor.project.sceneflow.attributes.ElementEditor;
 import de.dfki.vsm.editor.project.sceneflow.elements.SceneFlowElementPanel;
 import de.dfki.vsm.editor.project.sceneflow.elements.SceneFlowPalettePanel;
 import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
 import de.dfki.vsm.editor.util.SceneFlowManager;
+import de.dfki.vsm.event.EventDispatcher;
+import de.dfki.vsm.event.EventListener;
+import de.dfki.vsm.event.EventObject;
+import de.dfki.vsm.event.event.ElementEditorToggledEvent;
+import de.dfki.vsm.event.event.NodeExecutedEvent;
+import de.dfki.vsm.event.event.NodeSelectedEvent;
 import de.dfki.vsm.model.sceneflow.chart.SceneFlow;
 import de.dfki.vsm.model.sceneflow.chart.SuperNode;
-import de.dfki.vsm.util.evt.EventDispatcher;
-import de.dfki.vsm.util.evt.EventListener;
-import de.dfki.vsm.util.evt.EventObject;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 
 import javax.swing.*;

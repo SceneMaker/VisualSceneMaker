@@ -1,8 +1,8 @@
 package de.dfki.vsm.xtension.voicerecognition.recognizers;
 
+import de.dfki.vsm.event.EventDispatcher;
 import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.runtime.project.RunTimeProject;
-import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.xtensions.observers.VoiceRecognitionEvent;
 import main.speechrecognition.notification.SpeechObserver;
 import main.speechrecognition.recognizers.voiceactivated.SpeechRecognitionVoiceActivated;

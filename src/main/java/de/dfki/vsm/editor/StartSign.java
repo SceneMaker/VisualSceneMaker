@@ -2,8 +2,8 @@ package de.dfki.vsm.editor;
 
 //~--- non-JDK imports --------------------------------------------------------
 
+import de.dfki.vsm.event.EventDispatcher;
 import de.dfki.vsm.model.project.EditorConfig;
-import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 
 import javax.swing.*;

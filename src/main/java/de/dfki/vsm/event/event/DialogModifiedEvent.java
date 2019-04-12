@@ -1,6 +1,6 @@
-package de.dfki.vsm.editor.event;
+package de.dfki.vsm.event.event;
 
-import de.dfki.vsm.util.evt.EventObject;
+import de.dfki.vsm.event.EventObject;
 
 /**
  * Created by alvaro on 2/16/17.

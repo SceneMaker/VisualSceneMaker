@@ -1,5 +1,6 @@
 package de.dfki.vsm.runtime.interpreter;
 
+import de.dfki.vsm.event.EventDispatcher;
 import de.dfki.vsm.model.sceneflow.glue.command.Assignment;
 import de.dfki.vsm.model.sceneflow.glue.command.Command;
 import de.dfki.vsm.model.sceneflow.glue.command.Expression;
@@ -19,7 +20,6 @@ import de.dfki.vsm.runtime.interpreter.error.InterpreterError;
 import de.dfki.vsm.runtime.interpreter.error.SceneDoesNotExists;
 import de.dfki.vsm.runtime.interpreter.event.TerminationEvent;
 import de.dfki.vsm.runtime.interpreter.value.*;
-import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.jpl.JPLEngine;
 import de.dfki.vsm.util.jpl.JPLResult;
 import de.dfki.vsm.util.jpl.JPLUtility;

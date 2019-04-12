@@ -1,14 +1,14 @@
 package de.dfki.vsm.xtension.voiceover;
 
+import de.dfki.vsm.event.EventDispatcher;
+import de.dfki.vsm.event.EventListener;
+import de.dfki.vsm.event.EventObject;
 import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
 import de.dfki.vsm.runtime.activity.SpeechActivity;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
 import de.dfki.vsm.runtime.activity.scheduler.ActivityWorker;
 import de.dfki.vsm.runtime.project.RunTimeProject;
-import de.dfki.vsm.util.evt.EventDispatcher;
-import de.dfki.vsm.util.evt.EventListener;
-import de.dfki.vsm.util.evt.EventObject;
 import de.dfki.vsm.util.tts.SpeakerTts;
 import de.dfki.vsm.util.tts.TTSFactory;
 import de.dfki.vsm.util.tts.marytts.MaryTTsProcess;
