@@ -7,23 +7,22 @@ package de.dfki.vsm.xtension.charamel.xml.feedback.action;
 
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
-import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLParseable;
 import de.dfki.vsm.util.xml.XMLWriteError;
 import de.dfki.vsm.util.xml.XMLWriteable;
+import de.dfki.vsm.xtension.charamel.CharamelExecutor;
 import org.w3c.dom.Element;
 
 /**
  *
- * @author Patrick Gebhard
+ * @author Patrick Gebhard, Manuel Anglet
  *
  */
-public class Action implements XMLParseable, XMLWriteable {
+public class Action extends CharaXMLElement implements XMLParseable, XMLWriteable {
 
     public String mName = "";
     public String mId = "";
-    public Feedback mActionFeedback;
 
     // Logger
     static final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
@@ -36,28 +35,26 @@ public class Action implements XMLParseable, XMLWriteable {
     public Action() {
     }
 
+    /**
+     *
+     * @param parent
+     */
+    public Action(CharaXMLElement parent){
+        this.parent = parent;
+    }
+
     @Override
     public void parseXML(final Element element) throws XMLParseError {
         mName = element.getAttribute("name");
         mId = element.getAttribute("id");
-        
-        // Process The Child Nodes
-        XMLParseAction.processChildNodes(element, new XMLParseAction() {
-            @Override
-            public void run(final Element element) throws XMLParseError {
-                final String name = element.getTagName();
-
-                if (name.equalsIgnoreCase("feedback")) {
-                    mActionFeedback = new Feedback();
-                    mActionFeedback.parseXML(element);
-        
-                }
-            }
-        });
+        this.parseChildren(element);
     }
 
     @Override
     public void writeXML(IOSIndentWriter writer) throws XMLWriteError {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
+    @Override
+    public void handle(CharamelExecutor executor) {executor.handle(this);}
+
 }

@@ -12,6 +12,7 @@ import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLParseable;
 import de.dfki.vsm.util.xml.XMLWriteError;
 import de.dfki.vsm.util.xml.XMLWriteable;
+import de.dfki.vsm.xtension.charamel.xml.feedback.CharaXMLFeedback;
 import org.w3c.dom.Element;
 
 /**
@@ -23,7 +24,7 @@ public class Object implements XMLParseable, XMLWriteable {
 
     public String mName = "";
     public String mId = "";
-    public Feedback mObjectFeedback;
+    public CharaXMLFeedback mObjectFeedback;
 
     // Logger
     static final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
@@ -35,6 +36,8 @@ public class Object implements XMLParseable, XMLWriteable {
 
     public Object() {
     }
+
+
 
     @Override
     public void parseXML(final Element element) throws XMLParseError {
@@ -48,7 +51,7 @@ public class Object implements XMLParseable, XMLWriteable {
                 final String name = element.getTagName();
 
                 if (name.equalsIgnoreCase("feedback")) {
-                    mObjectFeedback = new Feedback();
+                    mObjectFeedback = new CharaXMLFeedback();
                     mObjectFeedback.parseXML(element);
 
                 }
