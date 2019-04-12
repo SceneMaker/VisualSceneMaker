@@ -1,28 +1,15 @@
 package de.dfki.vsm.editor.project.sceneflow.elements;
 
-import de.dfki.vsm.Preferences;
-import java.awt.Cursor;
-import java.awt.Image;
-import java.awt.Point;
-import java.awt.Toolkit;
+import de.dfki.vsm.PreferencesDesktop;
+
+import javax.swing.*;
+import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
-import java.awt.dnd.DnDConstants;
-import java.awt.dnd.DragGestureEvent;
-import java.awt.dnd.DragGestureListener;
-import java.awt.dnd.DragSource;
-import java.awt.dnd.DragSourceDragEvent;
-import java.awt.dnd.DragSourceDropEvent;
-import java.awt.dnd.DragSourceEvent;
-import java.awt.dnd.DragSourceListener;
+import java.awt.dnd.*;
 import java.awt.event.MouseAdapter;
-
 import java.io.IOException;
-
-import javax.swing.ImageIcon;
-import javax.swing.JLabel;
-import javax.swing.TransferHandler;
 
 public final class SceneFlowPaletteItem extends JLabel implements Transferable {
    
@@ -56,9 +43,9 @@ public final class SceneFlowPaletteItem extends JLabel implements Transferable {
         setTransferHandler(mTransferHandler);
         setHorizontalAlignment(JLabel.CENTER);
         setToolTipText(mToolTipText + ": " + info);
-        setPreferredSize(Preferences.SF_PALETTEITEM_SIZE);
-        setMinimumSize(Preferences.SF_PALETTEITEM_SIZE);
-        setMaximumSize(Preferences.SF_PALETTEITEM_SIZE);
+        setPreferredSize(PreferencesDesktop.SF_PALETTEITEM_SIZE);
+        setMinimumSize(PreferencesDesktop.SF_PALETTEITEM_SIZE);
+        setMaximumSize(PreferencesDesktop.SF_PALETTEITEM_SIZE);
         setIcon(mStandardIcon);
         addMouseListener(new MouseAdapter() {
 

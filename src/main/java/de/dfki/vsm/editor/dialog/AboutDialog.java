@@ -2,44 +2,12 @@ package de.dfki.vsm.editor.dialog;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.Preferences;
+import de.dfki.vsm.PreferencesDesktop;
 import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.OKButton;
 import de.dfki.vsm.editor.util.SImageView;
 
-import static de.dfki.vsm.editor.dialog.Dialog.getFillerBox;
-import static de.dfki.vsm.Preferences.sABOUT_FILE;
-
-//~--- JDK imports ------------------------------------------------------------
-
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.RenderingHints;
-import java.awt.Toolkit;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-
-import java.io.IOException;
-
-import java.net.URL;
-
-import java.util.Timer;
-import java.util.TimerTask;
-
-import javax.swing.BoxLayout;
-import javax.swing.JDialog;
-import javax.swing.JEditorPane;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JSeparator;
-import javax.swing.JViewport;
+import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.text.Element;
 import javax.swing.text.StyleConstants;
@@ -47,6 +15,18 @@ import javax.swing.text.View;
 import javax.swing.text.ViewFactory;
 import javax.swing.text.html.HTML;
 import javax.swing.text.html.HTMLEditorKit;
+import java.awt.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.io.IOException;
+import java.net.URL;
+import java.util.Timer;
+import java.util.TimerTask;
+
+import static de.dfki.vsm.PreferencesDesktop.sABOUT_FILE;
+import static de.dfki.vsm.editor.dialog.Dialog.getFillerBox;
+
+//~--- JDK imports ------------------------------------------------------------
 
 /**
  * @author Patrick Gebhard
@@ -106,9 +86,9 @@ public class AboutDialog extends JDialog {
         JPanel logoPanel = new JPanel();
 
         logoPanel.setLayout(new BoxLayout(logoPanel, BoxLayout.X_AXIS));
-        logoPanel.add(new JLabel(Preferences.ICON_SCENEMAKER_LOGO));
+        logoPanel.add(new JLabel(PreferencesDesktop.ICON_SCENEMAKER_LOGO));
 
-        int logoXSize = Preferences.ICON_SCENEMAKER_LOGO.getIconWidth();
+        int logoXSize = PreferencesDesktop.ICON_SCENEMAKER_LOGO.getIconWidth();
 
         mAboutPane = new MyEditorPane();
         mAboutPane.setEditorKit(editorKit);

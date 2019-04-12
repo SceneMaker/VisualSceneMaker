@@ -6,21 +6,14 @@ import de.dfki.vsm.model.project.EditorConfig;
 import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 
-import static de.dfki.vsm.Preferences.sSTART_SIGN_COLOR;
-
-//~--- JDK imports ------------------------------------------------------------
-
-import java.awt.BasicStroke;
-import java.awt.Color;
-import java.awt.Graphics2D;
-import java.awt.Point;
-import java.awt.Polygon;
-import java.awt.RenderingHints;
-
+import javax.swing.*;
+import java.awt.*;
 import java.util.Observable;
 import java.util.Observer;
 
-import javax.swing.JComponent;
+import static de.dfki.vsm.PreferencesDesktop.sSTART_SIGN_COLOR;
+
+//~--- JDK imports ------------------------------------------------------------
 
 /**
  * @author Patrick Gebhard

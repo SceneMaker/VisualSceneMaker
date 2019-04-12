@@ -1,26 +1,17 @@
 package de.dfki.vsm.editor;
 
+import de.dfki.vsm.Preferences;
+import de.dfki.vsm.PreferencesDesktop;
 import de.dfki.vsm.editor.action.RedoAction;
 import de.dfki.vsm.editor.action.UndoAction;
 import de.dfki.vsm.editor.dialog.NewProjectDialog;
 import de.dfki.vsm.editor.dialog.QuitDialog;
-import de.dfki.vsm.Preferences;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
-import java.awt.Color;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.io.File;
-import javax.swing.Action;
-import javax.swing.ImageIcon;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JSeparator;
-import javax.swing.KeyStroke;
 
 /**
  * @author Gregor Mehlmann
@@ -103,7 +94,7 @@ public final class EditorMenuBar extends JMenuBar {
 
         boolean hasEntries = false;
 
-        for (int i = 0; i <= Preferences.sMAX_RECENT_FILE_COUNT; i++) {
+        for (int i = 0; i <= PreferencesDesktop.sMAX_RECENT_FILE_COUNT; i++) {
             String projectDirName = Preferences.getProperty("recentproject." + i + ".path");
             String projectName = Preferences.getProperty("recentproject." + i + ".name");
 
@@ -115,7 +106,7 @@ public final class EditorMenuBar extends JMenuBar {
 
                     JMenuItem recentFileMenuItem = new JMenuItem(projectName);
 
-                    recentFileMenuItem.setAccelerator(KeyStroke.getKeyStroke(Preferences.sDYNAMIC_KEYS.get(i),
+                    recentFileMenuItem.setAccelerator(KeyStroke.getKeyStroke(PreferencesDesktop.sDYNAMIC_KEYS.get(i),
                             Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
                     recentFileMenuItem.addActionListener(e -> mEditorInstance.openProject(projectDir.getPath()));
                     mOpenRecentFileMenu.add(recentFileMenuItem);
@@ -154,7 +145,7 @@ public final class EditorMenuBar extends JMenuBar {
         // mOpenRecentFileMenu.setIcon(new ImageIcon("data/img/recent.png"));
         mClearRecentFileMenuItem = new JMenuItem("Clear List");
         mClearRecentFileMenuItem.addActionListener(e -> {
-            for (int i = 0; i <= Preferences.sMAX_RECENT_FILE_COUNT; i++) {
+            for (int i = 0; i <= PreferencesDesktop.sMAX_RECENT_FILE_COUNT; i++) {
                 String projectDirName = Preferences.getProperty("recentproject." + i + ".path");
                 String projectName = Preferences.getProperty("recentproject." + i + ".name");
 

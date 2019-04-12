@@ -1,6 +1,12 @@
-package de.dfki.vsm.xtension.videoplayer;
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package de.dfki.vsm.xtension.VideoPlayer;
 
 import de.dfki.vsm.util.log.LOGConsoleLogger;
+
 import java.io.IOException;
 import java.io.PrintStream;
 import java.net.Socket;
@@ -16,11 +22,13 @@ public class VideoPlayer implements Runnable {
     private VideoPlayerExecutor mVideoPLayerExecutor;
     Socket mSocket; 
     PrintStream out;
-     private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
+    private final LOGConsoleLogger mLogger
+            = LOGConsoleLogger.getInstance();
     
     public VideoPlayer(){
     }
-    
+
+
     @Override
     public void run(){
         setUpSocket();
@@ -35,6 +43,7 @@ public class VideoPlayer implements Runnable {
         try {
             mSocket = new Socket("localhost",9000);
             out = new PrintStream(mSocket.getOutputStream());
+            out.println("1234");
         } catch (IOException ex) {
             Logger.getLogger(VideoPlayer.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -45,7 +54,7 @@ public class VideoPlayer implements Runnable {
     }
 
     void playVideo(String video) {
-        out.println(video);
+        out.println("add " + video);
     }
         
 }

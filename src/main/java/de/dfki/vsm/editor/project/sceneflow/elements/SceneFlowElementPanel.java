@@ -1,15 +1,11 @@
 package de.dfki.vsm.editor.project.sceneflow.elements;
 
+import de.dfki.vsm.PreferencesDesktop;
 import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.TreeEntry;
-import de.dfki.vsm.editor.project.EditorProject;
 import de.dfki.vsm.editor.dialog.FunDefDialog;
-import de.dfki.vsm.editor.event.FunctionCreatedEvent;
-import de.dfki.vsm.editor.event.FunctionModifiedEvent;
-import de.dfki.vsm.editor.event.FunctionSelectedEvent;
-import de.dfki.vsm.editor.event.SceneSelectedEvent;
-import de.dfki.vsm.editor.event.TreeEntrySelectedEvent;
-import de.dfki.vsm.Preferences;
+import de.dfki.vsm.editor.event.*;
+import de.dfki.vsm.editor.project.EditorProject;
 import de.dfki.vsm.model.sceneflow.chart.SceneFlow;
 import de.dfki.vsm.model.sceneflow.glue.command.definition.FunctionDefinition;
 import de.dfki.vsm.model.scenescript.SceneGroup;
@@ -17,15 +13,13 @@ import de.dfki.vsm.model.scenescript.SceneObject;
 import de.dfki.vsm.model.scenescript.SceneScript;
 import de.dfki.vsm.util.evt.EventDispatcher;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.dnd.DnDConstants;
-import java.awt.dnd.DragGestureEvent;
-import java.awt.dnd.DragGestureListener;
-import java.awt.dnd.DragSource;
-import java.awt.dnd.DragSourceAdapter;
-import java.awt.dnd.DragSourceListener;
+
+import javax.swing.*;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
+import javax.swing.tree.*;
+import java.awt.*;
+import java.awt.dnd.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -34,20 +28,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
-import javax.swing.BorderFactory;
-import javax.swing.Icon;
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
-import javax.swing.JTree;
-import javax.swing.ToolTipManager;
-import javax.swing.event.TreeSelectionEvent;
-import javax.swing.event.TreeSelectionListener;
-import javax.swing.tree.DefaultTreeCellRenderer;
-import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreeNode;
-import javax.swing.tree.TreePath;
-import javax.swing.tree.TreeSelectionModel;
 
 /**
  * @author Gregor Mehlmann
@@ -96,7 +76,7 @@ class ElementTree extends JTree implements ActionListener, TreeSelectionListener
     private final TreeEntry mFunctionsEntry = new TreeEntry("Functions", null, null);
     
     //Global element tree
-    private final TreeEntry mElementTree = new TreeEntry("SceneFlow", Preferences.ICON_ROOT_FOLDER, null);
+    private final TreeEntry mElementTree = new TreeEntry("SceneFlow", PreferencesDesktop.ICON_ROOT_FOLDER, null);
     
     
     //Popup menu buttons //TODO: does it work?
@@ -129,8 +109,8 @@ class ElementTree extends JTree implements ActionListener, TreeSelectionListener
 
         for (final FunctionDefinition def : functionDefinitions) {
             mFunctionsEntry.add(new TreeEntry(def.getName(), def.isValidClass()
-                    ? Preferences.ICON_FUNCTION_ENTRY
-                    : Preferences.ICON_FUNCTION_ERROR_ENTRY, def));
+                    ? PreferencesDesktop.ICON_FUNCTION_ENTRY
+                    : PreferencesDesktop.ICON_FUNCTION_ERROR_ENTRY, def));
         }
     }
     /**

@@ -1,6 +1,5 @@
 package de.dfki.vsm.extensionAPI.renderers.customcontrollers;
 
-import de.dfki.vsm.extensionAPI.extensions.renderers.customcontrollers.pathchoosers.*;
 import de.dfki.vsm.extensionAPI.renderers.customcontrollers.pathchoosers.CustomDirectoryChooser;
 import de.dfki.vsm.extensionAPI.renderers.customcontrollers.pathchoosers.PathChooser;
 import javafx.scene.Node;

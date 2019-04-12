@@ -4,6 +4,7 @@ package de.dfki.vsm.editor;
 import de.dfki.common.Gender;
 import de.dfki.stickmanSwing.StickmanSwing;
 import de.dfki.vsm.Preferences;
+import de.dfki.vsm.PreferencesDesktop;
 import de.dfki.vsm.SceneMaker3;
 import de.dfki.vsm.editor.dialog.NewProjectDialog;
 import de.dfki.vsm.runtime.project.RunTimeProject;
@@ -50,9 +51,9 @@ public class EditorStarter extends JPanel {
 	// Welcome Stickman
 	private final static StickmanSwing mWelcomeStickman = new StickmanSwing("", (Math.random() > 0.5) ? Gender.TYPE.FEMALE : Gender.TYPE.MALE, 1.5f);
 	private boolean mShowStickman = true;
-	
-	private final File SampleProjFolder = new File(Preferences.sSAMPLE_PROJECTS);
-	private final File TutorialsProjFolder = new File(Preferences.sTUTORIALS_PROJECTS);
+
+    private final File SampleProjFolder = new File(PreferencesDesktop.sSAMPLE_PROJECTS);
+    private final File TutorialsProjFolder = new File(PreferencesDesktop.sTUTORIALS_PROJECTS);
 
 	private final EditorInstance mEditorInstance;
 	private final Box mCenterProjectBox;
@@ -256,7 +257,7 @@ public class EditorStarter extends JPanel {
 		Graphics2D g2 = (Graphics2D) graphics;
 		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-		graphics.drawImage(Preferences.BACKGROUND_IMAGE, -550, -20, null);
+        graphics.drawImage(PreferencesDesktop.BACKGROUND_IMAGE, -550, -20, null);
 
 		g2.setColor(new Color(0, 0, 0, 64));
 		g2.fillRect(0, getBounds().height - 30, getBounds().width, getBounds().height);
@@ -376,7 +377,7 @@ public class EditorStarter extends JPanel {
         // *********************************************************************
 		// LIST OF RECENT PROJECTS
 		// *********************************************************************
-		JLabel titleMenu = new JLabel((Preferences.sMAX_RECENT_FILE_COUNT > 1) ? " Recent Projects" : " Recent Project");
+        JLabel titleMenu = new JLabel((PreferencesDesktop.sMAX_RECENT_FILE_COUNT > 1) ? " Recent Projects" : " Recent Project");
 
 		titleMenu.setBorder(null);
 		titleMenu.setFont(sMENUHEADLINEFONT);
@@ -387,13 +388,13 @@ public class EditorStarter extends JPanel {
 		titleMenu.setMaximumSize(new Dimension(buttonSize));
 		titleMenu.setPreferredSize(new Dimension(buttonSize));
 
-		JLabel[] projectList = new JLabel[Preferences.sMAX_RECENT_FILE_COUNT];
+        JLabel[] projectList = new JLabel[PreferencesDesktop.sMAX_RECENT_FILE_COUNT];
 		JPanel recentPanel = new JPanel();
 
 		recentPanel.setOpaque(false);
 		recentPanel.setLayout(new BoxLayout(recentPanel, BoxLayout.Y_AXIS));
 
-		int filesConsidered = (Preferences.sMAX_RECENT_FILE_COUNT < 5) ? Preferences.sMAX_RECENT_FILE_COUNT : 4;
+        int filesConsidered = (PreferencesDesktop.sMAX_RECENT_FILE_COUNT < 5) ? PreferencesDesktop.sMAX_RECENT_FILE_COUNT : 4;
 		for (int i = 0; i <= filesConsidered; i++) {
 			String projectDirName = Preferences.getProperty("recentproject." + i + ".path");
 			String projectName = Preferences.getProperty("recentproject." + i + ".name");

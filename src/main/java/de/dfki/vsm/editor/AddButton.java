@@ -2,14 +2,11 @@ package de.dfki.vsm.editor;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.Preferences;
-import java.awt.ComponentOrientation;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.event.MouseEvent;
+import de.dfki.vsm.PreferencesDesktop;
 
-import javax.swing.JLabel;
-import javax.swing.SwingConstants;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.MouseEvent;
 
 /**
  *
@@ -28,7 +25,7 @@ public class AddButton extends JLabel {
     }
     public AddButton() {
         setHorizontalAlignment(SwingConstants.RIGHT);
-        setIcon(Preferences.ICON_PLUS_STANDARD);
+        setIcon(PreferencesDesktop.ICON_PLUS_STANDARD);
         setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
         setToolTipText("Add");
         setIconTextGap(10);
@@ -38,10 +35,10 @@ public class AddButton extends JLabel {
         setMinimumSize(buttonSize);
         addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(MouseEvent me) {
-                setIcon(Preferences.ICON_PLUS_ROLLOVER);
+                setIcon(PreferencesDesktop.ICON_PLUS_ROLLOVER);
             }
             public void mouseExited(MouseEvent me) {
-                setIcon(Preferences.ICON_PLUS_STANDARD);
+                setIcon(PreferencesDesktop.ICON_PLUS_STANDARD);
             }
         });
     }
