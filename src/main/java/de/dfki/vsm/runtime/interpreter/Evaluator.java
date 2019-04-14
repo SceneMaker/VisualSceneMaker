@@ -676,7 +676,7 @@ public final class Evaluator {
         }
     }
 
-    public final boolean executeQuery(final String querystr, final Environment env) {
+    private final boolean executeQuery(final String querystr, final Environment env) {
 
         //mLogger.warning("Executing Prolog Query '" + querystr + "'");
         // Make The Query To The KB
