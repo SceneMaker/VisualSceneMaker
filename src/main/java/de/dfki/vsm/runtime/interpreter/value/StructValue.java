@@ -10,13 +10,13 @@ import java.util.Map;
  * @author Gregor Mehlmann
  */
 public class StructValue extends AbstractValue {
-    private final HashMap<java.lang.String, AbstractValue> mValueMap;
+    private final Map<String, AbstractValue> mValueMap;
 
-    public StructValue(HashMap<java.lang.String, AbstractValue> valueMap) {
+    public StructValue(Map<String, AbstractValue> valueMap) {
         mValueMap = valueMap;
     }
 
-    public HashMap<java.lang.String, AbstractValue> getValueMap() {
+    public Map<String, AbstractValue> getValueMap() {
         return mValueMap;
     }
 

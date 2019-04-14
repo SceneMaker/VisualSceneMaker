@@ -30,10 +30,7 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 
 /**
@@ -41,7 +38,7 @@ import java.util.Map.Entry;
  */
 public final class Evaluator {
 
-    // The singelton logger instance 
+    // The singelton logger instance
     private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
     // The parent interpreter object
     private final Interpreter mInterpreter;
@@ -51,7 +48,7 @@ public final class Evaluator {
         mInterpreter = interpreter;
     }
 
-    // Execute a definition  
+    // Execute a definition
     public final void define(
             final VariableDefinition def,
             final Environment env) throws InterpreterError {
@@ -59,7 +56,7 @@ public final class Evaluator {
         env.create(def.getName(), evaluate(def.getExp(), env));
     }
 
-    // Execute a command 
+    // Execute a command
     public final void execute(
             final Command cmd,
             final Environment env) throws InterpreterError {
@@ -96,7 +93,7 @@ public final class Evaluator {
         } else if (cmd instanceof PlayActionActivity) {
             final PlayActionActivity command = (PlayActionActivity) cmd;
             final AbstractValue value = evaluate(command.getCommand(), env);
-            final LinkedList list = evaluateExpList(command.getArgList(), env);
+            final List<AbstractValue> list = evaluateExpList(command.getArgList(), env);
             // Check the type of the command
             if (value instanceof StringValue) {
                 try {
@@ -114,7 +111,7 @@ public final class Evaluator {
         } else if (cmd instanceof PlayScenesActivity) {
             final PlayScenesActivity command = (PlayScenesActivity) cmd;
             final AbstractValue value = evaluate(command.getArgument(), env);
-            final LinkedList list = evaluateExpList(command.getArgList(), env);
+            final List<AbstractValue> list = evaluateExpList(command.getArgList(), env);
             // Check the type of the command
             if (value instanceof StringValue) {
                 try {
@@ -431,7 +428,7 @@ public final class Evaluator {
         } else if (exp instanceof ContainsList) {
             final AbstractValue listValue = evaluate(((ContainsList) exp).getListExp(), env);
             if (listValue instanceof ListValue) {
-                final LinkedList<AbstractValue> list = ((ListValue)listValue).getValueList();
+                final List<AbstractValue> list = ((ListValue) listValue).getValueList();
                 //
                 final AbstractValue itemValue = evaluate(((ContainsList) exp).getItemExp(), env);
                 for(final AbstractValue value : list) {
@@ -440,7 +437,7 @@ public final class Evaluator {
                     }
                 }
             }
-            return new BooleanValue(false);            
+            return new BooleanValue(false);
         } else if (exp instanceof HistoryContains) {
             SystemHistory.Entry entry = mInterpreter.getSystemHistory().get(((HistoryContains) exp).getState(),
                     ((HistoryContains) exp).getDepth());
@@ -490,10 +487,10 @@ public final class Evaluator {
     }
 
     // Evaluate expression list
-    public final LinkedList<AbstractValue> evaluateExpList(
+    public final List<AbstractValue> evaluateExpList(
             final ArrayList<Expression> list,
             final Environment env) throws InterpreterError {
-        final LinkedList<AbstractValue> values = new LinkedList();
+        final LinkedList<AbstractValue> values = new LinkedList<>();
         for (final Expression exp : list) {
             values.add(evaluate(exp, env));
         }
@@ -501,10 +498,10 @@ public final class Evaluator {
     }
 
     // Evaluate assignment list
-    public final HashMap<String, AbstractValue> evaluateAsgList(
+    public final Map<String, AbstractValue> evaluateAsgList(
             final ArrayList<Assignment> list,
             final Environment env) throws InterpreterError {
-        final HashMap<String, AbstractValue> values = new HashMap();
+        final HashMap<String, AbstractValue> values = new HashMap<>();
         for (final Assignment exp : list) {
             // ATTENTION: An assignment can incklude any type of variable expression - not just simple variables
             values.put(((SimpleVariable) exp.getLeftExpression()).getName(), evaluate(exp.getInitExpression(), env));
@@ -520,8 +517,8 @@ public final class Evaluator {
         // Get the name of the command
         final String command = cmd.getName();
         // Evaluate the argument list
-        final LinkedList<AbstractValue> list = evaluateExpList(cmd.getArgList(), env);
-        // Get the user command definition 
+        final List<AbstractValue> list = evaluateExpList(cmd.getArgList(), env);
+        // Get the user command definition
         final FunctionDefinition definition = mInterpreter.getSceneFlow().getUsrCmdDefMap().get(command);
         // Check if definition does exist
         if (definition == null) {
