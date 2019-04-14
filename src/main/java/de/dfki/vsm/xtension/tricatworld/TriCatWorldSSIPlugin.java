@@ -32,7 +32,7 @@ public final class TriCatWorldSSIPlugin extends SSIRunTimePlugin {
 
     // The map of processes
     private final HashMap<String, Process> mProcessMap
-            = new HashMap();
+            = new HashMap<>();
     // The flag if we use the JPL
     private final boolean mUseJPL;
     // The flag for executables
