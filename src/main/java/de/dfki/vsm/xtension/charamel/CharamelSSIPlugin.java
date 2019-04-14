@@ -1,6 +1,5 @@
 package de.dfki.vsm.xtension.charamel;
 
-import de.dfki.vsm.xtension.ssi.event.SSIEventArray;
 import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.runtime.interpreter.value.AbstractValue;
 import de.dfki.vsm.runtime.interpreter.value.FloatValue;
@@ -10,18 +9,20 @@ import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.jpl.JPLEngine;
 import de.dfki.vsm.util.xml.XMLUtilities;
 import de.dfki.vsm.xtension.ssi.SSIRunTimePlugin;
+import de.dfki.vsm.xtension.ssi.event.SSIEventArray;
 import de.dfki.vsm.xtension.ssi.event.SSIEventEntry;
 import de.dfki.vsm.xtension.ssi.event.data.SSIEventData;
 import de.dfki.vsm.xtension.ssi.event.data.SSIStringData;
 import de.dfki.vsm.xtension.ssi.event.data.SSITupleData;
-import java.io.File;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Map.Entry;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map.Entry;
 
 /**
  * @author Gregor Mehlmann
@@ -287,7 +288,7 @@ public final class CharamelSSIPlugin extends SSIRunTimePlugin {
                             final AbstractValue value = mProject.getValueOf("KeywordList");
                             if (value instanceof ListValue) {
                                 final ListValue listValue = (ListValue) value;
-                                final LinkedList list = listValue.getValueList();
+                                final List<AbstractValue> list = listValue.getValueList();
                                 if (list != null) {
                                     list.add(new StringValue(keyword));
                                     mProject.setVariable("KeywordList", listValue);

@@ -3,9 +3,11 @@ package de.dfki.vsm.runtime.player;
 import de.dfki.vsm.model.project.PlayerConfig;
 import de.dfki.vsm.runtime.activity.scheduler.ActivityScheduler;
 import de.dfki.vsm.runtime.interpreter.error.SceneDoesNotExists;
+import de.dfki.vsm.runtime.interpreter.value.AbstractValue;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
-import java.util.LinkedList;
+
+import java.util.List;
 
 /**
  * @author Gregor Mehlmann
@@ -72,8 +74,8 @@ public abstract class RunTimePlayer {
     public abstract void unload();
 
     // Play an action
-    public abstract void playAction(final String name, final LinkedList args);
+    public abstract void playAction(final String name, final List<AbstractValue> args);
 
     // Play a scene
-    public abstract void playScene(final String name, final LinkedList args) throws SceneDoesNotExists;
+    public abstract void playScene(final String name, final List<AbstractValue> args) throws SceneDoesNotExists;
 }

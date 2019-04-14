@@ -1,19 +1,20 @@
 package de.dfki.vsm.runtime.interpreter.value;
 
 import java.util.LinkedList;
+import java.util.List;
 
 /**
  * @author Gregor Mehlmann
  */
 public class ListValue extends AbstractValue {
 
-    private final LinkedList<AbstractValue> mValueList;
+    private final List<AbstractValue> mValueList;
 
-    public ListValue(LinkedList<AbstractValue> valueList) {
+    public ListValue(List<AbstractValue> valueList) {
         mValueList = valueList;
     }
 
-    public LinkedList<AbstractValue> getValueList() {
+    public List<AbstractValue> getValueList() {
         return mValueList;
     }
 

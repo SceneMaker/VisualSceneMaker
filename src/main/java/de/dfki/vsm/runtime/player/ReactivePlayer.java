@@ -1,27 +1,22 @@
 package de.dfki.vsm.runtime.player;
 
 import de.dfki.vsm.model.project.PlayerConfig;
-import de.dfki.vsm.model.scenescript.ActionFeature;
-import de.dfki.vsm.model.scenescript.ActionObject;
-import de.dfki.vsm.model.scenescript.SceneGroup;
-import de.dfki.vsm.model.scenescript.SceneObject;
-import de.dfki.vsm.model.scenescript.SceneScript;
-import de.dfki.vsm.model.scenescript.SceneTurn;
-import de.dfki.vsm.model.scenescript.SceneUttr;
-import de.dfki.vsm.model.scenescript.UttrElement;
+import de.dfki.vsm.model.scenescript.*;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
-import de.dfki.vsm.runtime.interpreter.Process;
 import de.dfki.vsm.runtime.activity.ActionActivity;
 import de.dfki.vsm.runtime.activity.SpeechActivity;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
 import de.dfki.vsm.runtime.activity.scheduler.ActivityWorker;
+import de.dfki.vsm.runtime.interpreter.Process;
 import de.dfki.vsm.runtime.interpreter.error.SceneDoesNotExists;
-import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.runtime.interpreter.value.AbstractValue;
 import de.dfki.vsm.runtime.interpreter.value.StructValue;
+import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.jpl.JPLEngine;
+
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -76,7 +71,7 @@ public final class ReactivePlayer extends RunTimePlayer {
 
     // Call the play action activity method
     @Override
-    public final void playAction(final String text, final LinkedList args) {
+    public final void playAction(final String text, final List<AbstractValue> args) {
         // Get the current process
         final Process process = (Process) Thread.currentThread();
         // Make unique worker name
@@ -150,7 +145,7 @@ public final class ReactivePlayer extends RunTimePlayer {
     // Call the play scene group method
     @Override
 
-    public final void playScene(final String name, final LinkedList args) throws SceneDoesNotExists {
+    public final void playScene(final String name, final List<AbstractValue> args) throws SceneDoesNotExists {
         // Get the current process
         final Process process = (Process) Thread.currentThread();
         // Make unique worker name
@@ -280,7 +275,7 @@ public final class ReactivePlayer extends RunTimePlayer {
     }
 
     // Translate the arguments
-    private HashMap getSubstitutions(final LinkedList args) {
+    private HashMap getSubstitutions(final List<AbstractValue> args) {
         final HashMap substitutions = new HashMap();
         if (args != null && !args.isEmpty()) {
             for (final Object object : args) {
