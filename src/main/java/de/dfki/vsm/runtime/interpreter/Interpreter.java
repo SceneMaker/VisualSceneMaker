@@ -31,19 +31,15 @@ public class Interpreter {
     private final Condition mPauseCondition;
     //private final RunTimePlayer mScenePlayer;
     private final RunTimePlayer mScenePlayer;
-    //private final RunTimePlayer mDialogPlayer;
-    //private final RunTimePlayer mDialogPlayer;
-    private final RunTimeProject mRunTimeProject;
     private Process mSceneFlowThread;
 
     // Construct an interpreter with a project
     public Interpreter(final RunTimeProject project) {
         // Initialize the runtime project
-        mRunTimeProject = project;
         // Initialize the sceneflow object
-        mSceneFlow = mRunTimeProject.getSceneFlow();
+        mSceneFlow = project.getSceneFlow();
         // TODO: We want only one scene player
-        mScenePlayer = mRunTimeProject.getRunTimePlayer();
+        mScenePlayer = project.getRunTimePlayer();
         //mDialogPlayer = new DefaultPlayer(project);
         mLock = new ReentrantLock(true);
         mPauseCondition = mLock.newCondition();
@@ -58,27 +54,19 @@ public class Interpreter {
         return mLock;
     }
 
-    public void lock() {
-        //mLogger.message("REQUEST (" + Thread.currentThread() + "," + mLock.getHoldCount()+ ")");
-
-        //mLogger.message("IS LOCKED : " +mLock.isLocked());
-        //mLogger.message("IS LOCKED BY CURRENTTHREAD : " + mLock.isHeldByCurrentThread());
+    void lock() {
         mLock.lock();
-
-        //mLogger.message("ACQUIRE (" + Thread.currentThread() + "," + mLock.getHoldCount()+ ")");
     }
 
-    public void unlock() {
+    void unlock() {
         mLock.unlock();
-
-        //mLogger.message("RELEASE (" + Thread.currentThread() + "," + mLock.getHoldCount()+ ")");
     }
 
-    public void await() {
+    void await() {
         mPauseCondition.awaitUninterruptibly();
     }
 
-    public void signalAll() {
+    void signalAll() {
         mPauseCondition.signalAll();
     }
 
@@ -92,7 +80,7 @@ public class Interpreter {
         }
     }
 
-    public Evaluator getEvaluator() {
+    Evaluator getEvaluator() {
         try {
             lock();
 
@@ -103,7 +91,7 @@ public class Interpreter {
     }
 
     // Get the scene player
-    public final RunTimePlayer getScenePlayer() {
+    final RunTimePlayer getScenePlayer() {
         try {
             lock();
             return mScenePlayer;
@@ -112,17 +100,6 @@ public class Interpreter {
         }
     }
 
-    /*
-     public  DefaultPlayer getDialogPlayer() {
-     try {
-     lock();
-
-     return mDialogPlayer;
-     } finally {
-     unlock();
-     }
-     }
-     */
     public Configuration getConfiguration() {
         try {
             lock();
@@ -133,7 +110,7 @@ public class Interpreter {
         }
     }
 
-    public TimeoutManager getTimeoutManager() {
+    TimeoutManager getTimeoutManager() {
         try {
             lock();
 
@@ -143,7 +120,7 @@ public class Interpreter {
         }
     }
 
-    public Interruptor getEventObserver() {
+    Interruptor getEventObserver() {
         try {
             lock();
 
@@ -153,7 +130,7 @@ public class Interpreter {
         }
     }
 
-    public SystemHistory getSystemHistory() {
+    SystemHistory getSystemHistory() {
         try {
             lock();
 
@@ -170,11 +147,6 @@ public class Interpreter {
         // alive is not the right condition
         // PathLogger.startLogging();
         if ((mSceneFlowThread == null) || (!mSceneFlowThread.isAlive())) {
-            
-            //mDispatcher.reset();
-
-            // Print some information 
-            //mLogger.message("Starting execution of project '" + mRunTimeProject + "' with interpreter '" + this + "'");
             // Create a new thread
             mSceneFlowThread = new Process(mSceneFlow.getId(), null, // TODO: choose an adquate thread group and check if this group has died before
                     mSceneFlow, new Environment(), 0, null, this);
@@ -202,9 +174,6 @@ public class Interpreter {
 
     public boolean abort() {
         if ((mSceneFlowThread != null) && (mSceneFlowThread.isAlive())) {    // TODO: This is insecure, cause the thread could start in the meantime
-
-            // Print some information 
-            //mLogger.message("Aborting execution of project '" + mRunTimeProject + "' with interpreter '" + this + "'");
             try {
                 lock();
 
@@ -212,25 +181,12 @@ public class Interpreter {
             } finally {
                 unlock();
             }
-
-            // Wait here until terminated and clear data structures
-            // Clean up the data structures of the interpreter
-            // mSystemHistory.clear();
-            // mConfiguration.clear();
-            // mTimeoutManager.clear();
-            /**
-             * Notification
-             */
         } else {
             mLogger.warning("Interpreter '" + this + "' cannot abort the execution of '" + mSceneFlow.getId() + "'");
         }
-
-        // mLogger.message("Stopping EventCaster and TimeoutManager");
         mTimeoutManager.abort();
         //mDispatcher.abort();
-
         return true;
-        // PathLogger.stopLogging();
     }
 
     public boolean pause() {
@@ -344,11 +300,8 @@ public class Interpreter {
             lock();
             
             mConfiguration.getState(mSceneFlow).getThread().getEnvironment().write(varName, value);
-            
-            
-            //BasicNode currentNode = EditorInstance.getInstance().getSelectedProjectEditor().getSceneFlowEditor().getSceneFlowManager().getCurrentActiveSuperNode();
-            //mConfiguration.getState(currentNode).getThread().getEnvironment().write(varName, value);
-            
+
+
             mEventObserver.update();
 
             return true;
@@ -492,38 +445,4 @@ public class Interpreter {
             unlock();
         }
     }
-
-    /*
-     public ArrayList listActiveStates() {
-
-     try {
-     // First lock the interpreter
-     lock();
-     // Create the result list
-     final ArrayList list = new ArrayList();
-     // List all active state 
-     final Object[] states = mConfiguration.getOrderedStates();
-     //
-     for (final Object object : states) {
-     final State state = (State) object;
-     //
-     final String pname = state.getThread().getName();
-     final String nname = state.getNode().getName();
-     //
-     final Environment env = state.getThread().getEnvironment();
-     final SymbolTable table = env.getActiveSymbolTable();
-     final HashMap map = table.copySymbolTable();
-     //
-     final TPLTriple triple = new TPLTriple(pname, nname, map);
-     //
-     list.add(triple);
-     }
-     // Return the result list
-     return list;
-     //return new ArrayList(Arrays.asList(Arrays.copyOf(states, states.length)));
-     } finally {
-     // Finally unlock the interpreter
-     unlock();
-     }
-     }*/
 }
