@@ -5,6 +5,7 @@ import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLWriteError;
+import org.jetbrains.annotations.NotNull;
 import org.w3c.dom.Element;
 
 /**
@@ -61,6 +62,11 @@ public final class UnaryExpression extends Expression {
         String exp = (mExp != null)
                 ? mExp.getConcreteSyntax()
                 : "";
+        return joinWithOperator(op, exp);
+    }
+
+    @NotNull
+    private String joinWithOperator(String op, String exp) {
         if (mOperator == null) {
             return "";
         }
@@ -90,27 +96,7 @@ public final class UnaryExpression extends Expression {
         String exp = (mExp != null)
                 ? mExp.getFormattedSyntax()
                 : "";
-        if (mOperator == null) {
-            return "";
-        }
-        switch (mOperator) {
-            case Neg:
-                op = "- " + exp;
-                break;
-            case Not:
-                op = "! " + exp;
-                break;
-            case Lnot:
-                op = "~ " + exp;
-                break;
-            case Inc:
-                op = "++ " + exp;
-                break;
-            case Dec:
-                op = "-- " + exp;
-                break;
-        }
-        return op;
+        return joinWithOperator(op, exp);
     }
 
     @Override

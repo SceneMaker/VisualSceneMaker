@@ -5,36 +5,11 @@ import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLWriteError;
-import java.util.LinkedList;
+import org.jetbrains.annotations.NotNull;
 import org.w3c.dom.Element;
 
-// Static Imports
-/*
-import de.dfki.vsm.model.sceneflow.glue.command.invocation.PlayActivity.Mode;
-import static de.dfki.vsm.model.sceneflow.glue.command.invocation.PlayActivity.Mode.Sequential;
-import static de.dfki.vsm.model.sceneflow.glue.command.invocation.PlayActivity.Mode.Concurrent;
-import static de.dfki.vsm.model.sceneflow.glue.command.expression.UnaryExpression.Operator.Neg;
-import static de.dfki.vsm.model.sceneflow.glue.command.expression.UnaryExpression.Operator.Not;
-import static de.dfki.vsm.model.sceneflow.glue.command.expression.UnaryExpression.Operator.Lnot;
-import static de.dfki.vsm.model.sceneflow.glue.command.expression.UnaryExpression.Operator.Inc;
-import static de.dfki.vsm.model.sceneflow.glue.command.expression.UnaryExpression.Operator.Dec;
-import static de.dfki.vsm.model.sceneflow.glue.command.expression.BinaryExpression.Operator.AndAnd;
-import static de.dfki.vsm.model.sceneflow.glue.command.expression.BinaryExpression.Operator.OrOr;
-import static de.dfki.vsm.model.sceneflow.glue.command.expression.BinaryExpression.Operator.And;
-import static de.dfki.vsm.model.sceneflow.glue.command.expression.BinaryExpression.Operator.Or;
-import static de.dfki.vsm.model.sceneflow.glue.command.expression.BinaryExpression.Operator.Xor;
-import static de.dfki.vsm.model.sceneflow.glue.command.expression.BinaryExpression.Operator.Add;
-import static de.dfki.vsm.model.sceneflow.glue.command.expression.BinaryExpression.Operator.Sub;
-import static de.dfki.vsm.model.sceneflow.glue.command.expression.BinaryExpression.Operator.Mul;
-import static de.dfki.vsm.model.sceneflow.glue.command.expression.BinaryExpression.Operator.Div;
-import static de.dfki.vsm.model.sceneflow.glue.command.expression.BinaryExpression.Operator.Mod;
-import static de.dfki.vsm.model.sceneflow.glue.command.expression.BinaryExpression.Operator.Eq;
-import static de.dfki.vsm.model.sceneflow.glue.command.expression.BinaryExpression.Operator.Neq;
-import static de.dfki.vsm.model.sceneflow.glue.command.expression.BinaryExpression.Operator.Ge;
-import static de.dfki.vsm.model.sceneflow.glue.command.expression.BinaryExpression.Operator.Gt;
-import static de.dfki.vsm.model.sceneflow.glue.command.expression.BinaryExpression.Operator.Le;
-import static de.dfki.vsm.model.sceneflow.glue.command.expression.BinaryExpression.Operator.Lt;
-*/
+import java.util.LinkedList;
+
 
 /**
  * @author Gregor Mehlmann
@@ -116,56 +91,7 @@ public final class BinaryExpression extends Expression {
         if (mOperator == null) {
             return "";
         }
-        switch (mOperator) {
-            case AndAnd:
-                op = left + " && " + right;
-                break;
-            case OrOr:
-                op = left + " || " + right;
-                break;
-            case And:
-                op = left + " & " + right;
-                break;
-            case Or:
-                op = left + " | " + right;
-                break;
-            case Xor:
-                op = left + " ^ " + right;
-                break;
-            case Add:
-                op = left + " + " + right;
-                break;
-            case Sub:
-                op = left + " - " + right;
-                break;
-            case Mul:
-                op = left + " * " + right;
-                break;
-            case Div:
-                op = left + " / " + right;
-                break;
-            case Mod:
-                op = left + " % " + right;
-                break;
-            case Eq:
-                op = left + " == " + right;
-                break;
-            case Neq:
-                op = left + " != " + right;
-                break;
-            case Ge:
-                op = left + " >= " + right;
-                break;
-            case Gt:
-                op = left + " > " + right;
-                break;
-            case Le:
-                op = left + " <= " + right;
-                break;
-            case Lt:
-                op = left + " < " + right;
-                break;
-        }
+        op = joinWithOperator(left, right);
         return op;
     }
 
@@ -182,57 +108,48 @@ public final class BinaryExpression extends Expression {
         if (mOperator == null) {
             return "";
         }
+        op += joinWithOperator(left, right);
+        return op;
+    }
+
+    @NotNull
+    private String joinWithOperator(String left, String right) {
         switch (mOperator) {
             case AndAnd:
-                op = left + " && " + right;
-                break;
+                return left + " && " + right;
             case OrOr:
-                op = left + " || " + right;
-                break;
+                return left + " || " + right;
             case And:
-                op = left + " & " + right;
-                break;
+                return left + " & " + right;
             case Or:
-                op = left + " | " + right;
-                break;
+                return left + " | " + right;
             case Xor:
-                op = left + " ^ " + right;
-                break;
+                return left + " ^ " + right;
             case Add:
-                op = left + " + " + right;
-                break;
+                return left + " + " + right;
             case Sub:
-                op = left + " - " + right;
-                break;
+                return left + " - " + right;
             case Mul:
-                op = left + " * " + right;
-                break;
+                return left + " * " + right;
             case Div:
-                op = left + " / " + right;
-                break;
+                return left + " / " + right;
             case Mod:
-                op = left + " % " + right;
-                break;
+                return left + " % " + right;
             case Eq:
-                op = left + " == " + right;
-                break;
+                return left + " == " + right;
             case Neq:
-                op = left + " != " + right;
-                break;
+                return left + " != " + right;
             case Ge:
-                op = left + " >= " + right;
-                break;
+                return left + " >= " + right;
             case Gt:
-                op = left + " > " + right;
-                break;
+                return left + " > " + right;
             case Le:
-                op = left + " <= " + right;
-                break;
+                return left + " <= " + right;
             case Lt:
-                op = left + " < " + right;
-                break;
+                return left + " < " + right;
+            default:
+                throw new IllegalStateException("Unexpected value: " + mOperator);
         }
-        return op;
     }
 
     @Override
