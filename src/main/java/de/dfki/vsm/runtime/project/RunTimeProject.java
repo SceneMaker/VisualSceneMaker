@@ -2,35 +2,26 @@ package de.dfki.vsm.runtime.project;
 
 import de.dfki.vsm.model.acticon.ActiconConfig;
 import de.dfki.vsm.model.gesticon.GesticonConfig;
-import de.dfki.vsm.model.project.ProjectConfig;
 import de.dfki.vsm.model.project.AgentConfig;
 import de.dfki.vsm.model.project.PluginConfig;
+import de.dfki.vsm.model.project.ProjectConfig;
 import de.dfki.vsm.model.sceneflow.chart.SceneFlow;
 import de.dfki.vsm.model.scenescript.SceneScript;
 import de.dfki.vsm.model.visicon.VisiconConfig;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
 import de.dfki.vsm.runtime.interpreter.Interpreter;
-import de.dfki.vsm.runtime.interpreter.value.AbstractValue;
-import de.dfki.vsm.runtime.interpreter.value.BooleanValue;
-import de.dfki.vsm.runtime.interpreter.value.FloatValue;
-import de.dfki.vsm.runtime.interpreter.value.IntValue;
-import de.dfki.vsm.runtime.interpreter.value.StringValue;
+import de.dfki.vsm.runtime.interpreter.value.*;
 import de.dfki.vsm.runtime.player.ReactivePlayer;
 import de.dfki.vsm.runtime.player.RunTimePlayer;
 import de.dfki.vsm.runtime.plugin.RunTimePlugin;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 import de.dfki.vsm.util.xml.XMLUtilities;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.lang.reflect.Constructor;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author Gregor Mehlmann
@@ -61,7 +52,7 @@ public class RunTimeProject {
     // The default interpreter of the project
     private Interpreter mInterpreter;
     // The runtime plugin map of the project
-    private final HashMap<String, RunTimePlugin> mPluginMap = new HashMap();
+    private final Map<String, RunTimePlugin> mPluginMap = new HashMap<>();
 
     // Construct an empty runtime project
     public RunTimeProject() {
@@ -105,7 +96,7 @@ public class RunTimeProject {
     }
 
     // Get the list of all configured agents in the project configuation (agged PG 8.4.2016)
-    public final ArrayList<String> getAgentNames() {
+    public final List<String> getAgentNames() {
         return mProjectConfig.getAgentNames();
     }
 
@@ -254,44 +245,38 @@ public class RunTimeProject {
     }
 
     // Load the executors of the project
-    public final boolean loadRunTimePlugins() {
+    private boolean loadRunTimePlugins() {
         // Get the list of devices
         for (final PluginConfig config : mProjectConfig.getPluginConfigList()) {
             // Get the plugin attributes
-            final String type = config.getPluginType();
-            final String name = config.getPluginName();
-            final String clasn = config.getClassName();
+            final String pluginType = config.getPluginType();
+            final String pluginName = config.getPluginName();
+            final String className = config.getClassName();
 
             // check if plugin show be loaded - added PG 19.4.2016
             if (config.isMarkedtoLoad()) {
                 // Load the device executor
                 try {
                     // Get the class object
-                    final Class clazz = Class.forName(clasn);
+                    final Class clazz = Class.forName(className);
                     // Get the constructor
                     final Constructor constructor
                             = clazz.getConstructor(PluginConfig.class, RunTimeProject.class);
                     // Call the constructor
                     final RunTimePlugin plugin = (RunTimePlugin) constructor.newInstance(config, this);
                     // Add the executor then
-                    mPluginMap.put(name, plugin);
+                    mPluginMap.put(pluginName, plugin);
                     // Print some information
                     mLogger.message("Loading plugin object '" + plugin + "' of class '" + plugin.getClass().getName() + "'");
                 } catch (final Exception exc) {
                     mLogger.failure(exc.toString());
                 }
             } else {
-                mLogger.message("Plugin object '" + name + "' is marked as 'not load' - skipping loading plugin.");
+                mLogger.message("Plugin object '" + pluginName + "' is marked as 'not load' - skipping loading plugin.");
             }
         }
         // Return true at success
         return true;
-    }
-
-    // TODO: Load Plugins and call methods on them via the evaluator in the interpreter
-    // Make a new command type in the syntax for that purpose
-    public final Object call(final String name, final String method) {
-        return null;
     }
 
     // Launch the runtime objects of the project
@@ -304,9 +289,7 @@ public class RunTimeProject {
         createRuntimePlayerIfNeeded();
         mRunTimePlayer.launch();
         // Launch all plugins
-        for (final RunTimePlugin plugin : mPluginMap.values()) {
-            plugin.launch();
-        }
+        mPluginMap.values().forEach(RunTimePlugin::launch);
         // Create an interpreter
         mInterpreter = new Interpreter(this);//GM
         // Return true at success
@@ -324,9 +307,7 @@ public class RunTimeProject {
         // Unload the scene player
         mRunTimePlayer.unload();
         // Unload all plugins
-        for (final RunTimePlugin plugin : mPluginMap.values()) {
-            plugin.unload();
-        }
+        mPluginMap.values().forEach(RunTimePlugin::unload);
         // Remove the interpreter
         mInterpreter = null;//GM
         // Return true at success
@@ -339,7 +320,6 @@ public class RunTimeProject {
             // Start the interpreter
             return mInterpreter.start();
         }
-        //
         return false;
     }
 
@@ -349,7 +329,6 @@ public class RunTimeProject {
             // Abort the interpreter
             return mInterpreter.abort();
         }
-        //
         return false;
     }
 
@@ -359,7 +338,6 @@ public class RunTimeProject {
             // Abort the interpreter
             return mInterpreter.pause();
         }
-        //
         return false;
     }
 
@@ -369,7 +347,6 @@ public class RunTimeProject {
             // Abort the interpreter
             return mInterpreter.proceed();
         }
-        //
         return false;
     }
 
@@ -379,7 +356,6 @@ public class RunTimeProject {
             // Abort the interpreter
             return mInterpreter.isRunning();
         }
-        //
         return false;
     }
 
@@ -389,7 +365,6 @@ public class RunTimeProject {
             // Abort the interpreter
             return mInterpreter.isPaused();
         }
-        //
         return false;
     }
 
@@ -399,7 +374,6 @@ public class RunTimeProject {
             // Abort the interpreter
             return mInterpreter.wasExecuted();
         }
-        //
         return false;
     }
 

@@ -29,7 +29,6 @@ public class Interpreter {
     private final TimeoutManager mTimeoutManager;
     private final ReentrantLock mLock;
     private final Condition mPauseCondition;
-    //private final RunTimePlayer mScenePlayer;
     private final RunTimePlayer mScenePlayer;
     private Process mSceneFlowThread;
 
