@@ -149,13 +149,13 @@ public final class SceneMaker3 {
     // Start the runtime with some project
     private static void runtime(final File file) {
         // Get an editor project from file 
-        final RunTimeProject data = new RunTimeProject(file);
+        final RunTimeProject runTimeProject = new RunTimeProject(file);
         // Get the singelton runtime instance
         //final RunTimeInstance sRunTime = RunTimeInstance.getInstance();
         // Launch the runtime with the project
-        if (/*sRunTime.launch(data)*/data.launch()) {
+        if (/*sRunTime.launch(runTimeProject)*/runTimeProject.launch()) {
             // Start the runtime with the project
-            if (/*sRunTime.start(data)*/data.start()) {
+            if (/*sRunTime.start(runTimeProject)*/runTimeProject.start()) {
                 // Wait until user aborts execution
                 System.err.println("Press Key To Abort ...");
                 // TODO: Stop waiting if execution
@@ -169,11 +169,11 @@ public final class SceneMaker3 {
                     // Do nothing
                 } finally {
                     // Abort the runtime with the project
-                    //sRunTime.abort(data);
-                    data.abort();
+                    //sRunTime.abort(runTimeProject);
+                    runTimeProject.abort();
                     // Unload the project from the runtime  
-                    //sRunTime.unload(data);
-                    data.unload();
+                    //sRunTime.unload(runTimeProject);
+                    runTimeProject.unload();
                 }
 
             }
