@@ -191,48 +191,48 @@ public class Process extends java.lang.Thread {
 
 	public void handleStart() throws InterpreterError {
 
-		/**
-		 * Set the new current node start time
+		/*
+		  Set the new current node start time
 		 */
 		mNodeTime = System.currentTimeMillis();
 
-		/**
-		 * Update the configuration by adding the new current node to it
+		/*
+		  Update the configuration by adding the new current node to it
 		 */
 		mConfiguration.enterState(new Configuration.State(mCurrentNode, this));
 
-		/**
+		/*
 		 * Create a new temporary history entry for the new current node
 		 */
 		mSystemHistory.set(mCurrentNode, new SystemHistory.Entry(mCurrentNode));
 
-		/**
+		/*
 		 * Initialize all timeout conditions of the new current node and
 		 * outgoing edges
 		 */
 		processTimeoutConditionList();
 
-		/**
+		/*
 		 * Process the variable definitions of the new current node
 		 */
 		processVarDefList();
 
-		/**
+		/*
 		 * Start the thread
 		 */
 		super.start();
 
-		/**
+		/*
 		 * Set flag that sceneflow is running
 		 */
 		mIsRunning = true;
 
-		/**
+		/*
 		 * Set flag a sceneflow was executed to false, since it will be
 		 */
 		mWasExecuted = false;
 
-		/**
+		/*
 		 * Multicast the events for visualization
 		 */
 		EventDispatcher.getInstance().convey(new NodeStartedEvent(this, mCurrentNode));
@@ -241,13 +241,13 @@ public class Process extends java.lang.Thread {
 	public void handleTermination() throws InterpreterError {
 		if (mParentThread != null) {
 
-			/**
+			/*
 			 * Update the history entry of the parent thread
 			 */
 			mSystemHistory.get(mParentThread.mCurrentNode).addChildNode(mCurrentNode);
 		}
 
-		/**
+		/*
 		 * Update the history entry with the current symbol table and the curent
 		 * time
 		 */
@@ -255,12 +255,12 @@ public class Process extends java.lang.Thread {
 		mSystemHistory.get(mCurrentNode).setEndTime();
 		mSystemHistory.push(mCurrentNode, mSystemHistory.get(mCurrentNode));
 
-		/**
+		/*
 		 * Update the configuration by removing the current node from it
 		 */
 		mConfiguration.exitState(mCurrentNode, this);
 
-		/**
+		/*
 		 * Reset the thread data
 		 */
 		mIsTerminationRequested = false;
@@ -272,17 +272,17 @@ public class Process extends java.lang.Thread {
 		interrupted();
 
 		// PathLogger.deregister(this);
-		/**
+		/*
 		 * Set flag that sceneflow is terminated
 		 */
 		mIsRunning = false;
 
-		/**
+		/*
 		 * Set flag a sceneflow was executed
 		 */
 		mWasExecuted = true;
 
-		/**
+		/*
 		 * Multicast the events for visualization
 		 */
 		EventDispatcher.getInstance().convey(new NodeTerminatedEvent(this, mCurrentNode));
@@ -290,7 +290,7 @@ public class Process extends java.lang.Thread {
 
 	public void handleForkTermination() throws InterpreterError {
 
-		/**
+		/*
 		 * Update the history entry with the current symbol table and the curent
 		 * time
 		 */
@@ -298,12 +298,12 @@ public class Process extends java.lang.Thread {
 		mSystemHistory.get(mCurrentNode).setEndTime();
 		mSystemHistory.push(mCurrentNode, mSystemHistory.get(mCurrentNode));
 
-		/**
+		/*
 		 * Update the configuration by removing the current node from it
 		 */
 		mConfiguration.exitState(mCurrentNode, this);
 
-		/**
+		/*
 		 * Reset the thread data
 		 */
 		mIsTerminationRequested = false;
@@ -315,7 +315,7 @@ public class Process extends java.lang.Thread {
 		interrupted();
 
 		// PathLogger.deregister(this);
-		/**
+		/*
 		 * Multicast the events for visualization
 		 */
 		EventDispatcher.getInstance().convey(new NodeTerminatedEvent(this, mCurrentNode));
@@ -323,13 +323,13 @@ public class Process extends java.lang.Thread {
 
 	public void handleInterruption() throws InterpreterError {
 
-		/**
+		/*
 		 * Set the new incoming edge to the interruptive edge that caused this
 		 * interruption
 		 */
 		mIncomingEdge = mInterruptEdge;
 
-		/**
+		/*
 		 * Update the history entry with the current symbol table and the curent
 		 * time
 		 */
@@ -337,52 +337,52 @@ public class Process extends java.lang.Thread {
 		mSystemHistory.get(mCurrentNode).setEndTime();
 		mSystemHistory.push(mCurrentNode, mSystemHistory.get(mCurrentNode));
 
-		/**
+		/*
 		 * Update the configuration by removing the current node from it
 		 */
 		mConfiguration.exitState(mCurrentNode, this);
 
-		/**
+		/*
 		 * Set the new current node to the target node of the incoming edge
 		 */
 		mCurrentNode = mIncomingEdge.getTargetNode();
 
-		/**
+		/*
 		 * Initialize the new current environment with the empty environment
 		 */
 		mEnvironment.push();
 
-		/**
+		/*
 		 * Set the new current node start time
 		 */
 		mNodeTime = System.currentTimeMillis();
 
-		/**
+		/*
 		 * Update the configuration by adding the new current node to it
 		 */
 		mConfiguration.enterState(new Configuration.State(mCurrentNode, this));
 
-		/**
+		/*
 		 * Create a new temporary history entry for the new current node
 		 */
 		mSystemHistory.set(mCurrentNode, new SystemHistory.Entry(mCurrentNode));
 
-		/**
+		/*
 		 * Initialize all timeout conditions of the new current node and
 		 * outgoing edges
 		 */
 		processTimeoutConditionList();
 
-		/**
+		/*
 		 * Process the variable definitions of the new current node
 		 */
 		processVarDefList();
 
-		/**
+		/*
 		 * Process the on exit commands of the new current node
 		 */
 		// processOnExitCommandList();
-		/**
+		/*
 		 * Reset the thread data
 		 */
 		mIsTerminationRequested = false;
@@ -391,7 +391,7 @@ public class Process extends java.lang.Thread {
 		mNextEdge = null;
 		interrupted();
 
-		/**
+		/*
 		 * Multicast the events for visualization
 		 */
 		EventDispatcher.getInstance().convey(new EdgeExecutedEvent(this, mIncomingEdge));
@@ -400,13 +400,13 @@ public class Process extends java.lang.Thread {
 
 	public void handleContinuation() throws InterpreterError {
 
-		/**
+		/*
 		 * Set the new incoming edge to the next edge that has to be executed
 		 */
 		mIncomingEdge = mNextEdge;
 
 		// PathLogger.logEdge(mIncomingEdge, this);
-		/**
+		/*
 		 * Update the history entry with the current symbol table and the curent
 		 * time
 		 */
@@ -414,57 +414,57 @@ public class Process extends java.lang.Thread {
 		mSystemHistory.get(mCurrentNode).setEndTime();
 		mSystemHistory.push(mCurrentNode, mSystemHistory.get(mCurrentNode));
 
-		/**
+		/*
 		 * Update the configuration by removing the current node from it
 		 */
 		mConfiguration.exitState(mCurrentNode, this);
 
-		/**
+		/*
 		 * Multicast the events for visualization
 		 */
 		EventDispatcher.getInstance().convey(new NodeExecutedEvent(this, mCurrentNode));
 
-		/**
+		/*
 		 * Set the new current node to the target node of the incoming edge
 		 */
 		mCurrentNode = mIncomingEdge.getTargetNode();
 
-		/**
+		/*
 		 * Initialize the new current environment with the empty environment
 		 */
 		mEnvironment.push();
 
-		/**
+		/*
 		 * Set the new current node start time
 		 */
 		mNodeTime = System.currentTimeMillis();
 
-		/**
+		/*
 		 * Update the configuration by adding the new current node to it
 		 */
 		mConfiguration.enterState(new Configuration.State(mCurrentNode, this));
 
-		/**
+		/*
 		 * Create a new temporary history entry for the new current node
 		 */
 		mSystemHistory.set(mCurrentNode, new SystemHistory.Entry(mCurrentNode));
 
-		/**
+		/*
 		 * Initialize all timeout conditions of the new current node and
 		 * outgoing edges
 		 */
 		processTimeoutConditionList();
 
-		/**
+		/*
 		 * Process the variable definitions of the new current node
 		 */
 		processVarDefList();
 
-		/**
+		/*
 		 * Process the on exit commands of the new current node
 		 */
 		// processOnExitCommandList();
-		/**
+		/*
 		 * Reset the thread data
 		 */
 		mIsTerminationRequested = false;
@@ -473,7 +473,7 @@ public class Process extends java.lang.Thread {
 		mNextEdge = null;
 		interrupted();
 
-		/**
+		/*
 		 * Multicast the events for visualization
 		 */
 		EventDispatcher.getInstance().convey(new EdgeExecutedEvent(this, mIncomingEdge));
@@ -489,13 +489,13 @@ public class Process extends java.lang.Thread {
 		} catch (InterpreterError e) {
 
 			// PathLogger.deregister(this);
-			/**
+			/*
 			 * Multicast the events for visualization
 			 */
 			// mLogger.message("Interpreter: Aborting execution");
 			EventDispatcher.getInstance().convey(new TerminationEvent(this, e));
 
-			/**
+			/*
 			 * Stop the interpreter
 			 */
 			mInterpreter.abort();
@@ -523,7 +523,7 @@ public class Process extends java.lang.Thread {
 
 		while (true) {
 
-			/**
+			/*
 			 * Start the event observer to detect the changes that have been
 			 * introduced by the change of the configuration and the
 			 * initialization of the nodes that have been entered to the
@@ -543,13 +543,13 @@ public class Process extends java.lang.Thread {
 					mInterpreter.lock();
 					checkStatus();
 
-					/**
+					/*
 					 * Execute the command and update the history
 					 */
 					mEvaluator.execute(cmd, mEnvironment);
 					mSystemHistory.get(mCurrentNode).addCmd(cmd);
 
-					/**
+					/*
 					 * Check interruptive edges
 					 */
 					mEventObserver.update();
@@ -623,7 +623,7 @@ public class Process extends java.lang.Thread {
 							break;
 						} else {
 
-							/**
+							/*
 							 * There can neither be found a conditional edge nor
 							 * a default edge that can be taken. Therefore the
 							 * current node is a possible end node and this
@@ -688,15 +688,12 @@ public class Process extends java.lang.Thread {
 					/* *Wake up the parent thread so that the parent thread can update its child list */
 					mParentThread.interrupt();
 
-					/**
-					 *
-					 */
 					mEventObserver.update();
 					mInterpreter.unlock();
 
 					return;
 				}
-			} //////////////////////////////////////////////////////////// //////////////////////////////////////////////////////////// //////////////////////////////////////////////////////////// //////////////////////////////////////////////////////////// //////////////////////////////////////////////////////////// //////////////////////////////////////////////////////////// //////////////////////////////////////////////////////////// ////////////////////////////////////////////////////////////
+			}
 			/////////////////////////////////////////////////////////////
 			// HANDLE INTERRUPTION REQUESTS AND TERMINATIOJ REQUESTS
 			////////////////////////////////////////////////////////////
@@ -718,8 +715,6 @@ public class Process extends java.lang.Thread {
 		mInterpreter.unlock();
 	}
 
-	/**
-	 */
 	private void executeStartNodeList() throws InterruptionSignal, TerminationSignal, InterpreterError {
 		ArrayList<BasicNode> startNodeList = computeStartNodeList();
 
@@ -727,9 +722,6 @@ public class Process extends java.lang.Thread {
 			mInterpreter.lock();
 			checkStatus();
 
-			/**
-			 *
-			 */
 			for (BasicNode node : startNodeList) {
 				Process thread = new Process(node.getId(), null, node, mEnvironment.getCopy(), mLevel + 1, this,
 				  mInterpreter);
@@ -738,7 +730,7 @@ public class Process extends java.lang.Thread {
 				thread.handleStart();
 			}
 
-			/**
+			/*
 			 * Here the changes to the configuration are finally performed. The
 			 * child threads are added to the configuration and are started. Now
 			 * this thread can release the write lock of the configuration. This
@@ -751,7 +743,7 @@ public class Process extends java.lang.Thread {
 			checkStatus();    // ERROR if here terminatedRequested and lock holding then never releasing lock again
 			mInterpreter.unlock();
 
-			/**
+			/*
 			 * Try to wait until all child threads are terminated. If this
 			 * thread is interrupted while waiting for a child thread, then it
 			 * tries again to wait. So this thread can just continue execution
@@ -766,7 +758,7 @@ public class Process extends java.lang.Thread {
 					}
 				} catch (InterruptedException e) {
 
-					/**
+					/*
 					 * If this thread is interrupted while it waits within the
 					 * join call then we have to repeat the joining procedure
 					 * until all it's child threads are terminated. The
@@ -780,7 +772,7 @@ public class Process extends java.lang.Thread {
 					continue;
 				}
 
-				/**
+				/*
 				 * Egal was passiert , wir warten bis alle childs beendet sind,
 				 * erst dann wird der status gecheckt
 				 *
@@ -789,7 +781,7 @@ public class Process extends java.lang.Thread {
 
 				if (mAddChildThreadList.isEmpty()) {
 
-					/**
+					/*
 					 * If this thread has successfully waited for the
 					 * termination of all it's child threads then it sets it's
 					 * activity status in the configuration to active again.
@@ -803,7 +795,7 @@ public class Process extends java.lang.Thread {
 				mInterpreter.unlock();
 			}
 
-			/**
+			/*
 			 * We have to check the status here to ckeck if this thread was
 			 * terminated or interrupted or if this thread has to continue the
 			 * execution regularily.
@@ -817,7 +809,7 @@ public class Process extends java.lang.Thread {
 
 	private void updateChildList() {
 
-		/**
+		/*
 		 * Create a list with already dead childs
 		 */
 		ArrayList<Process> deadChildList = new ArrayList<>();
@@ -828,14 +820,14 @@ public class Process extends java.lang.Thread {
 			}
 		}
 
-		/**
+		/*
 		 * Remove the dead childs from the child list
 		 */
 		for (Process thread : deadChildList) {
 			mChildThreadList.remove(thread);
 		}
 
-		/**
+		/*
 		 * Add the living additional childs to the child list
 		 */
 		for (Process thread : mAddChildThreadList) {
@@ -844,7 +836,7 @@ public class Process extends java.lang.Thread {
 			}
 		}
 
-		/**
+		/*
 		 * Clear the additional child list
 		 */
 		mAddChildThreadList.clear();
@@ -854,21 +846,21 @@ public class Process extends java.lang.Thread {
 	 */
 	private ArrayList<BasicNode> computeStartNodeList() {
 
-		/**
+		/*
 		 */
 		ArrayList<BasicNode> startNodeList = new ArrayList<>();
 
-		/**
+		/*
 		 * Get the history node of the current node
 		 */
 		BasicNode historyNode = ((SuperNode) mCurrentNode).getHistoryNode();
 
-		/**
+		/*
 		 * Look if there exists a history for the current node
 		 */
 		if (!mSystemHistory.isEmpty(mCurrentNode)) {
 
-			/**
+			/*
 			 * The history of the current node is not empty, so that we have
 			 * some history information of the current node. In this case we do
 			 * consider the history node and check if there exist any edges
@@ -883,7 +875,7 @@ public class Process extends java.lang.Thread {
 			}
 		}
 
-		/**
+		/*
 		 * There do not exist any edges originating from the history node or the
 		 * history of the current node is empty, so that we do not have any
 		 * history information of the current node. In this case we do ignore
@@ -891,17 +883,17 @@ public class Process extends java.lang.Thread {
 		 * alternative start nodes of the current node as the next nodes to
 		 * execute.
 		 */
-		/**
+		/*
 		 * Get the start node list of the current node
 		 */
 		Collection<BasicNode> commonStartNodeList = ((SuperNode) mCurrentNode).getStartNodeMap().values();
 
-		/**
+		/*
 		 * Fill the next start node list with these start nodes
 		 */
         startNodeList.addAll(commonStartNodeList);
 
-		/**
+		/*
 		 * Check if there exist any alternative start nodes. In this case
 		 * replace the start nodes with their substitutions.
 		 */
