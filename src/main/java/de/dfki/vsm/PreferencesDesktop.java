@@ -234,4 +234,5 @@ public final class PreferencesDesktop extends Preferences {
         final String os = System.getProperty("os.name").toLowerCase();
         return ((os.contains("nix")) || (os.contains("nux")));
     }
+
 }

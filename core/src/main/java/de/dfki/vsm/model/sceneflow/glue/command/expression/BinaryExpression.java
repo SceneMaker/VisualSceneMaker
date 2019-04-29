@@ -169,7 +169,7 @@ public final class BinaryExpression extends Expression {
     @Override
     public final void parseXML(final Element element) throws XMLParseError {
         mOperator = BinaryOp.valueOf(element.getTagName());
-        final LinkedList<Expression> expList = new LinkedList();
+        final LinkedList<Expression> expList = new LinkedList<>();
         XMLParseAction.processChildNodes(element, new XMLParseAction() {
             @Override
             public final void run(final Element element) throws XMLParseError {
