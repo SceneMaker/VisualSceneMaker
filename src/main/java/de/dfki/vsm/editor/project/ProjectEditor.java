@@ -1,6 +1,6 @@
 package de.dfki.vsm.editor.project;
 
-import de.dfki.vsm.Preferences;
+import de.dfki.vsm.PreferencesDesktop;
 import de.dfki.vsm.editor.project.auxiliary.scenescript.OLDSceneScriptEditor;
 import de.dfki.vsm.editor.project.sceneflow.SceneFlowEditor;
 import de.dfki.vsm.editor.util.autocompletation.AutoCompletionPluginDiscover;
@@ -52,7 +52,7 @@ public final class ProjectEditor extends JSplitPane implements EventListener {
         mSceneFlowEditor = new SceneFlowEditor(mEditorProject);
         AutoCompletionPluginDiscover pluginDiscover = new AutoCompletionPluginDiscover(project);
         pluginDiscover.discover();
-        // Initialize the auxuliary editor
+        // Initialize the auxiliary editor
         mAuxiliaryEditor = new OLDSceneScriptEditor(mEditorProject);
         //mAuxiliaryEditor = new AuxiliaryEditor(mEditorProject);
         // Register at the event dispatcher
@@ -101,7 +101,7 @@ public final class ProjectEditor extends JSplitPane implements EventListener {
 
         setOneTouchExpandable(true);
 
-        setResizeWeight(Float.valueOf(Preferences.getProperty("sceneflow_sceneeditor_ratio")));
+        setResizeWeight(Float.valueOf(PreferencesDesktop.getProperty("sceneflow_sceneeditor_ratio")));
 
         setUI(new BasicSplitPaneUI() {
 
@@ -125,7 +125,7 @@ public final class ProjectEditor extends JSplitPane implements EventListener {
                                 }
                                 break;
                             case MouseEvent.MOUSE_RELEASED:
-                                Preferences.setProperty("propertiesdividerlocation", String.valueOf(((ProjectEditor) this.getParent()).getDividerLocation()));
+                                PreferencesDesktop.setProperty("propertiesdividerlocation", String.valueOf(((ProjectEditor) this.getParent()).getDividerLocation()));
                                 mAuxiliaryEditor.setPinPricked();
                                 break;
                         }
@@ -148,15 +148,15 @@ public final class ProjectEditor extends JSplitPane implements EventListener {
         setBottomComponent(mAuxiliaryEditor);
 
         // setting size
-        boolean showSceneFlowEditor = Boolean.valueOf(Preferences.getProperty("showscenefloweditor"));
-        boolean showSceneDocEditor = Boolean.valueOf(Preferences.getProperty("showsceneeditor"));
+        boolean showSceneFlowEditor = Boolean.valueOf(PreferencesDesktop.getProperty("showscenefloweditor"));
+        boolean showSceneDocEditor = Boolean.valueOf(PreferencesDesktop.getProperty("showsceneeditor"));
 
         if (!showSceneFlowEditor) {
             setDividerLocation(1d);
         }
 
         if (showSceneDocEditor && showSceneFlowEditor) {
-            setDividerLocation(Integer.parseInt(Preferences.getProperty("propertiesdividerlocation")));
+            setDividerLocation(Integer.parseInt(PreferencesDesktop.getProperty("propertiesdividerlocation")));
         }
 
         mAuxiliaryEditor.addComponentListener(
@@ -166,18 +166,18 @@ public final class ProjectEditor extends JSplitPane implements EventListener {
                     public void componentResized(ComponentEvent e
                     ) {
                         if (mSceneFlowEditor.getSize().height == 0) {
-                            Preferences.setProperty("showscenefloweditor", "false");
-                            Preferences.setProperty("showsceneeditor", "true");
+                            PreferencesDesktop.setProperty("showscenefloweditor", "false");
+                            PreferencesDesktop.setProperty("showsceneeditor", "true");
                         } else {
-                            Preferences.setProperty("showscenefloweditor", "true");
+                            PreferencesDesktop.setProperty("showscenefloweditor", "true");
                         }
                         if (mAuxiliaryEditor.getSize().height == 0) {
-                            Preferences.setProperty("showscenefloweditor", "true");
-                            Preferences.setProperty("showsceneeditor", "false");
+                            PreferencesDesktop.setProperty("showscenefloweditor", "true");
+                            PreferencesDesktop.setProperty("showsceneeditor", "false");
                         } else {
-                            Preferences.setProperty("showsceneeditor", "true");
+                            PreferencesDesktop.setProperty("showsceneeditor", "true");
                         }
-                        Preferences.save();
+                        PreferencesDesktop.save();
                     }
 
                     @Override
@@ -202,7 +202,7 @@ public final class ProjectEditor extends JSplitPane implements EventListener {
     private void showAuxiliaryEditor() {
         setDividerLocation(
                 // TODO: Do we really need to parse this every time here?
-                Integer.parseInt(Preferences.getProperty("propertiesdividerlocation")));
+                Integer.parseInt(PreferencesDesktop.getProperty("propertiesdividerlocation")));
     }
 
     // Hides the bottom part of the project editor

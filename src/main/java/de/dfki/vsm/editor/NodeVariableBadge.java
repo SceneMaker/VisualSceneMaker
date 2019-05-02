@@ -4,23 +4,16 @@ package de.dfki.vsm.editor;
 
 import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
 import de.dfki.vsm.model.project.EditorConfig;
-import de.dfki.vsm.util.TextFormat;
+import de.dfki.vsm.util.TextFormatDesktop;
 import de.dfki.vsm.util.tpl.TPLTuple;
 
-//~--- JDK imports ------------------------------------------------------------
-
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Graphics2D;
-import java.awt.Point;
-import java.awt.RenderingHints;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.font.TextLayout;
-
 import java.text.AttributedString;
-
 import java.util.ArrayList;
 
-import javax.swing.JComponent;
+//~--- JDK imports ------------------------------------------------------------
 
 /**
  * @author Gregor Mehlmann
@@ -42,8 +35,6 @@ public class NodeVariableBadge extends JComponent {
     int                                           mBeautyYOffSet     = 0;
     EditorConfig                            mEditorConfig;
 
-    static enum LocationType { TOP, BOTTOM, LEFT, RIGHT }
-
     public NodeVariableBadge(Node node, WorkSpacePanel workSpace, ArrayList<String> localVarDefList,
                              ArrayList<String> globalVarDefList, ArrayList<String> localTypeDefList,
                              ArrayList<String> globalTypeDefList) {
@@ -51,10 +42,10 @@ public class NodeVariableBadge extends JComponent {
         mEditorConfig       = EditorInstance.getInstance().getSelectedProjectEditor().getEditorProject().getEditorConfig();
         mDataNode          = node.getDataNode();
         mWorkSpace         = workSpace;
-        mLocalVarDefList   = TextFormat.getPairList(localVarDefList);
-        mGlobalVarDefList  = TextFormat.getPairList(globalVarDefList);
-        mLocalTypeDefList  = TextFormat.getPairList(localTypeDefList);
-        mGlobalTypeDefList = TextFormat.getPairList(globalTypeDefList);
+        mLocalVarDefList = TextFormatDesktop.getPairList(localVarDefList);
+        mGlobalVarDefList = TextFormatDesktop.getPairList(globalVarDefList);
+        mLocalTypeDefList = TextFormatDesktop.getPairList(localTypeDefList);
+        mGlobalTypeDefList = TextFormatDesktop.getPairList(globalTypeDefList);
         mCompleteList.addAll(mGlobalTypeDefList);
         mCompleteList.addAll(mLocalTypeDefList);
         mCompleteList.addAll(mGlobalVarDefList);
@@ -66,6 +57,8 @@ public class NodeVariableBadge extends JComponent {
 
         // correctBounds();
     }
+
+    enum LocationType {TOP, BOTTOM, LEFT, RIGHT}
 
     private Point computeLocation() {
 

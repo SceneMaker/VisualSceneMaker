@@ -1,0 +1,20 @@
+plugins {
+    id 'java'
+}
+group 'de.dfki.vsm'
+version '4.0.1-SNAPSHOT'
+
+sourceCompatibility = 11
+
+repositories {
+    mavenCentral()
+    maven { url "http://repo.spring.io/libs-release" }
+}
+dependencies {
+    compile files('../lib/JCup.jar')
+    compile files('../lib/JFlex.jar')
+    // https://mvnrepository.com/artifact/jpl/jpl
+    compile group: 'jpl', name: 'jpl', version: '7.4.0'
+    // https://mvnrepository.com/artifact/org.jetbrains/annotations
+    compile group: 'org.jetbrains', name: 'annotations', version: '17.0.0'
+}

@@ -6,6 +6,8 @@ import de.dfki.vsm.util.log.LOGDefaultLogger;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
@@ -215,6 +217,33 @@ public final class PreferencesDesktop extends Preferences {
         } catch (final ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException | NoSuchMethodException | SecurityException | IllegalArgumentException | InvocationTargetException exc) {
             LOGDefaultLogger.getInstance().failure("Error: " + exc.getMessage());
         }
+    }
+
+    private static synchronized void init() {
+
+        // load visual appearance settings
+        PreferencesDesktop.sSHOW_ELEMENTS = Boolean.valueOf(sPROPERTIES.getProperty("showelements"));
+        PreferencesDesktop.sSHOW_ELEMENT_PROPERTIES = Boolean.valueOf(sPROPERTIES.getProperty("showelementproperties"));
+        PreferencesDesktop.sSHOW_SCENEEDITOR = Boolean.valueOf(sPROPERTIES.getProperty("showsceneeditor"));
+        PreferencesDesktop.sSHOW_SCENEFLOWEDITOR = Boolean.valueOf(sPROPERTIES.getProperty("showscenefloweditor"));
+        // sSCENEFLOW_SCENE_EDITOR_RATIO = Float.valueOf(sPROPERTIES.getProperty("sceneflow_sceneeditor_ratio"));
+        PreferencesDesktop.sSHOW_GESTURES = Boolean.valueOf(sPROPERTIES.getProperty("showgestures"));
+    }
+
+    public static synchronized void save() {
+        try {
+            try (FileOutputStream fileOutputStream = new FileOutputStream(sCONFIG_FILE)) {
+                sPROPERTIES.storeToXML(fileOutputStream, "Properties for the Sceneflow Editor", "ISO8859_1");
+            }
+        } catch (IOException e) {
+            LOGDefaultLogger.getInstance().failure("Error: " + e.getMessage());
+        }
+        init();
+    }
+
+    public static synchronized void load() {
+        parseConfigFile();
+        init();
     }
 
     // Check if we are on a WINDOWS system
