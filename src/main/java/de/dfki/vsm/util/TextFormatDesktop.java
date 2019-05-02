@@ -1,25 +1,23 @@
 package de.dfki.vsm.util;
 
 //~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.util.tpl.TPLTuple;
 
-//~--- JDK imports ------------------------------------------------------------
-import java.awt.Color;
-import java.awt.Font;
+import java.awt.*;
 import java.awt.font.TextAttribute;
-
 import java.text.AttributedString;
-
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
+
+//~--- JDK imports ------------------------------------------------------------
 
 /**
  * @author Gregor Mehlmann
  */
-public class TextFormat {
+public class TextFormatDesktop extends TextFormat {
 
     /**
      *
@@ -41,7 +39,7 @@ public class TextFormat {
      */
     public static TPLTuple<String, AttributedString> fillWithAttributes(String inputString) {
         HashMap<TPLTuple<TextAttribute, Object>, TPLTuple<Integer, Integer>> attributeMap = new HashMap();
-        String unformattedString = new String();
+        String unformattedString = "";
 
         while (true) {
             int i = inputString.indexOf('#');
@@ -182,40 +180,5 @@ public class TextFormat {
         return new TPLTuple<>(unformattedString, attributedString);
     }
 
-    public static String formatConstantStringLiteral(String valueString) {
-        ArrayList<Character> charList = new ArrayList<>();
-        char[] charArray = valueString.toCharArray();
 
-        for (int i = 0; i < charArray.length; i++) {
-            if (charArray[i] == ' ') {
-                charList.add(charArray[i]);
-            } else {
-                if (i == 0) {
-                    charList.add('#');
-                    charList.add('c');
-                    charList.add('#');
-                    charList.add(charArray[i]);
-                } else {
-                    if (charArray[i - 1] == ' ') {
-                        charList.add('#');
-                        charList.add('c');
-                        charList.add('#');
-                        charList.add(charArray[i]);
-                    } else {
-                        charList.add(charArray[i]);
-                    }
-                }
-            }
-        }
-
-        char[] formattedCharArray = new char[charList.size()];
-
-        for (int i = 0; i < formattedCharArray.length; i++) {
-            formattedCharArray[i] = charList.get(i);
-        }
-
-        String formatedString = String.valueOf(formattedCharArray);
-
-        return formatedString;
-    }
 }

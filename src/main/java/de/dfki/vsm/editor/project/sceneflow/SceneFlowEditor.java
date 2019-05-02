@@ -3,7 +3,7 @@ package de.dfki.vsm.editor.project.sceneflow;
 //~--- non-JDK imports --------------------------------------------------------
 //import com.sun.java.swing.plaf.windows.WindowsScrollBarUI;
 
-import de.dfki.vsm.Preferences;
+import de.dfki.vsm.PreferencesDesktop;
 import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.project.EditorProject;
 import de.dfki.vsm.editor.project.sceneflow.attributes.ElementEditor;
@@ -178,8 +178,8 @@ public final class SceneFlowEditor extends JPanel implements EventListener
 
         // PG 17.12.13 - FUTURE FEATURE! mNewElementDisplay.add(new EdgeTypeSelection(), BorderLayout.NORTH);
         add(mNewElementDisplay, BorderLayout.WEST);
-        mNewElementDisplay.setVisible(Boolean.valueOf(Preferences.getProperty("showelements")));
-        mElementEditor.setVisible(Boolean.valueOf(Preferences.getProperty("showelementproperties")));
+        mNewElementDisplay.setVisible(Boolean.valueOf(PreferencesDesktop.getProperty("showelements")));
+        mElementEditor.setVisible(Boolean.valueOf(PreferencesDesktop.getProperty("showelementproperties")));
 
         //INITIALIZE THE SPLIT PANEL WITH WORK SPACE AND ELEMENTEDITOR
         mWorkSpaceScrollPane.setMinimumSize(new Dimension(10, 10));
@@ -189,7 +189,7 @@ public final class SceneFlowEditor extends JPanel implements EventListener
         mElementEditor.setMaximumSize(new Dimension(10000, 3000));
         mSplitPane.setResizeWeight(1.0);
         mSplitPane.setRightComponent(mElementEditor);
-        if (Boolean.valueOf(Preferences.getProperty("showelementproperties")))
+        if (Boolean.valueOf(PreferencesDesktop.getProperty("showelementproperties")))
         {
 
             mSplitPane.setDividerLocation((EditorInstance.getInstance().getWidth() - 520));
@@ -207,7 +207,7 @@ public final class SceneFlowEditor extends JPanel implements EventListener
         mSplitPane.addPropertyChangeListener(JSplitPane.DIVIDER_LOCATION_PROPERTY, pce -> {
 
             // solve issue here
-            if (Preferences.getProperty("showelementproperties").equals("true"))
+            if (PreferencesDesktop.getProperty("showelementproperties").equals("true"))
             {
                 mEditorProject.getEditorConfig().setProperty("propertiesdividerlocation", "" + mSplitPane.getDividerLocation());
             }
@@ -250,18 +250,18 @@ public final class SceneFlowEditor extends JPanel implements EventListener
      */
     public void toggleElementEditor()
     {
-        if (Boolean.valueOf(Preferences.getProperty("showelementproperties")))
+        if (Boolean.valueOf(PreferencesDesktop.getProperty("showelementproperties")))
         {
             mElementEditor.setVisible(false);
-            Preferences.setProperty("showelementproperties", "false");
-            Preferences.save();
+            PreferencesDesktop.setProperty("showelementproperties", "false");
+            PreferencesDesktop.save();
             mSplitPane.setDividerLocation(1d);
         }
         else
         {
             mElementEditor.setVisible(true);
-            Preferences.setProperty("showelementproperties", "true");
-            Preferences.save();
+            PreferencesDesktop.setProperty("showelementproperties", "true");
+            PreferencesDesktop.save();
             mSplitPane.setDividerLocation(
                     Integer.parseInt(mEditorProject.getEditorConfig().getProperty("propertiesdividerlocation")));
         }
@@ -283,15 +283,15 @@ public final class SceneFlowEditor extends JPanel implements EventListener
         if (mNewElementDisplay.isVisible())
         {
             mNewElementDisplay.setVisible(false);
-            Preferences.setProperty("showelements", "false");
-            Preferences.save();
+            PreferencesDesktop.setProperty("showelements", "false");
+            PreferencesDesktop.save();
         }
         else
         {
             mNewElementDisplay.setVisible(true);
-            Preferences.setProperty("showelements", "true");
-            Preferences.save();
-            Preferences.save();
+            PreferencesDesktop.setProperty("showelements", "true");
+            PreferencesDesktop.save();
+            PreferencesDesktop.save();
         }
     }
 

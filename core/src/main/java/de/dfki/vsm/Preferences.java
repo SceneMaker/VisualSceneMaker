@@ -4,7 +4,6 @@ import de.dfki.vsm.util.log.LOGDefaultLogger;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
@@ -50,11 +49,11 @@ public class Preferences {
     ////////////////////////////////////////////////////////////////////////////
     // VERSION INFORMATION
     ////////////////////////////////////////////////////////////////////////////
-    public static final URL sVSM_VERSIONURL                 = SceneMaker3.class.getResource("/res/version.ini");
+    public static final URL sVSM_VERSIONURL = Core.class.getResource("/res/version.ini");
     ////////////////////////////////////////////////////////////////////////////
     // URL RESOURCES
     ////////////////////////////////////////////////////////////////////////////
-    public static final URL sSTYLESURL                      = SceneMaker3.class.getResource("/res/sty/scripts.xml");
+    public static final URL sSTYLESURL = Core.class.getResource("/res/sty/scripts.xml");
     ////////////////////////////////////////////////////////////////////////////
     // DIRECTORIES
     ////////////////////////////////////////////////////////////////////////////
@@ -62,41 +61,16 @@ public class Preferences {
     public static final String sUSER_HOME                   = System.getProperty("user.home");
     public static final String sUSER_DIR                    = System.getProperty("user.dir");
     // The editor properties object
-    private static final Properties sPROPERTIES = new Properties();
+    protected static final Properties sPROPERTIES = new Properties();
     // The global properties file
-    private static final String sCONFIG_FILE
+    protected static final String sCONFIG_FILE
             = System.getProperty("user.home")
             + System.getProperty("file.separator") + ".vsm";
 
     /**
      *
      */
-    private static synchronized void init() {
 
-        // load visual appearance settings
-        PreferencesDesktop.sSHOW_ELEMENTS = Boolean.valueOf(sPROPERTIES.getProperty("showelements"));
-        PreferencesDesktop.sSHOW_ELEMENT_PROPERTIES = Boolean.valueOf(sPROPERTIES.getProperty("showelementproperties"));
-        PreferencesDesktop.sSHOW_SCENEEDITOR = Boolean.valueOf(sPROPERTIES.getProperty("showsceneeditor"));
-        PreferencesDesktop.sSHOW_SCENEFLOWEDITOR = Boolean.valueOf(sPROPERTIES.getProperty("showscenefloweditor"));
-       // sSCENEFLOW_SCENE_EDITOR_RATIO = Float.valueOf(sPROPERTIES.getProperty("sceneflow_sceneeditor_ratio"));
-        PreferencesDesktop.sSHOW_GESTURES = Boolean.valueOf(sPROPERTIES.getProperty("showgestures"));
-    }
-
-    public static synchronized void save() {
-        try {
-            try (FileOutputStream fileOutputStream = new FileOutputStream(sCONFIG_FILE)) {
-                sPROPERTIES.storeToXML(fileOutputStream, "Properties for the Sceneflow Editor", "ISO8859_1");
-            }
-        } catch (IOException e) {
-            LOGDefaultLogger.getInstance().failure("Error: " + e.getMessage());
-        }
-        init();
-    }
-
-    public static synchronized void load() {
-        parseConfigFile();
-        init();
-    }
 
     // TODO: This should actually be private
     public static synchronized String getProperty(String key) {
@@ -118,7 +92,7 @@ public class Preferences {
         return new TreeSet<>(sPROPERTIES.keySet());
     }
 
-    private static synchronized void parseConfigFile() {
+    protected static synchronized void parseConfigFile() {
         if ((new File(sCONFIG_FILE)).canRead()) {
             try {
                 try (FileInputStream in = new FileInputStream(sCONFIG_FILE)) {

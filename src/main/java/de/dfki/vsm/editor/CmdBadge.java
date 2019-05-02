@@ -10,7 +10,7 @@ import de.dfki.vsm.event.event.SceneExecutedEvent;
 import de.dfki.vsm.model.project.EditorConfig;
 import de.dfki.vsm.model.sceneflow.glue.GlueParser;
 import de.dfki.vsm.model.sceneflow.glue.command.Command;
-import de.dfki.vsm.util.TextFormat;
+import de.dfki.vsm.util.TextFormatDesktop;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 import de.dfki.vsm.util.tpl.TPLTuple;
 
@@ -293,7 +293,7 @@ public class CmdBadge extends JComponent implements EventListener, Observer {
         }
 
         // Update the string list
-        mStringList = TextFormat.getPairList(strings);
+        mStringList = TextFormatDesktop.getPairList(strings);
 
         // Sets visibility of the component to true only if there is something to display
         setVisible(!mStringList.isEmpty());

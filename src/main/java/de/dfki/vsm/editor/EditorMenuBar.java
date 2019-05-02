@@ -1,6 +1,5 @@
 package de.dfki.vsm.editor;
 
-import de.dfki.vsm.Preferences;
 import de.dfki.vsm.PreferencesDesktop;
 import de.dfki.vsm.editor.action.RedoAction;
 import de.dfki.vsm.editor.action.UndoAction;
@@ -95,8 +94,8 @@ public final class EditorMenuBar extends JMenuBar {
         boolean hasEntries = false;
 
         for (int i = 0; i <= PreferencesDesktop.sMAX_RECENT_FILE_COUNT; i++) {
-            String projectDirName = Preferences.getProperty("recentproject." + i + ".path");
-            String projectName = Preferences.getProperty("recentproject." + i + ".name");
+            String projectDirName = PreferencesDesktop.getProperty("recentproject." + i + ".path");
+            String projectName = PreferencesDesktop.getProperty("recentproject." + i + ".name");
 
             if (projectDirName != null) {
                 final File projectDir = new File(projectDirName);
@@ -137,7 +136,7 @@ public final class EditorMenuBar extends JMenuBar {
                 Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         mOpenFileMenuItem.addActionListener(e -> {
             mEditorInstance.openProject();
-            Preferences.save();
+            PreferencesDesktop.save();
             refreshRecentFileMenu();
         });
         mOpenRecentFileMenu = new JMenu("Open Recent Project");
@@ -146,17 +145,17 @@ public final class EditorMenuBar extends JMenuBar {
         mClearRecentFileMenuItem = new JMenuItem("Clear List");
         mClearRecentFileMenuItem.addActionListener(e -> {
             for (int i = 0; i <= PreferencesDesktop.sMAX_RECENT_FILE_COUNT; i++) {
-                String projectDirName = Preferences.getProperty("recentproject." + i + ".path");
-                String projectName = Preferences.getProperty("recentproject." + i + ".name");
+                String projectDirName = PreferencesDesktop.getProperty("recentproject." + i + ".path");
+                String projectName = PreferencesDesktop.getProperty("recentproject." + i + ".name");
 
                 if (projectDirName != null) {
-                    Preferences.removeProperty("recentproject." + i + ".path");
-                    Preferences.removeProperty("recentproject." + i + ".date");
-                    Preferences.removeProperty("recentproject." + i + ".name");
+                    PreferencesDesktop.removeProperty("recentproject." + i + ".path");
+                    PreferencesDesktop.removeProperty("recentproject." + i + ".date");
+                    PreferencesDesktop.removeProperty("recentproject." + i + ".name");
                 }
             }
             mEditorInstance.clearRecentProjects();
-            Preferences.save();
+            PreferencesDesktop.save();
             refreshRecentFileMenu();
         });
         refreshRecentFileMenu();

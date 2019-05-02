@@ -7,7 +7,7 @@ import de.dfki.vsm.model.sceneflow.chart.SuperNode;
 import de.dfki.vsm.model.sceneflow.chart.badge.VariableEntry;
 import de.dfki.vsm.model.sceneflow.chart.graphics.node.NodePosition;
 import de.dfki.vsm.model.sceneflow.glue.command.definition.VariableDefinition;
-import de.dfki.vsm.util.TextFormat;
+import de.dfki.vsm.util.TextFormatDesktop;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 import de.dfki.vsm.util.tpl.TPLTuple;
 
@@ -64,7 +64,7 @@ public class VarBadgeGlobal extends JComponent implements EventListener, ActionL
 
                 for (VariableDefinition varDef : varDefList) {
                     mEntryList.add(new VariableEntry(parentNode, false, varDef.getConcreteSyntax(), varDef.getFormattedSyntax(),
-                            TextFormat.fillWithAttributes(varDef.getFormattedSyntax()).getSecond()));
+                            TextFormatDesktop.fillWithAttributes(varDef.getFormattedSyntax()).getSecond()));
                 }
 
                 parentNode = parentNode.getParentNode();
@@ -259,7 +259,7 @@ public class VarBadgeGlobal extends JComponent implements EventListener, ActionL
 
                     // if (!containsEntryFor(varName)) {
                     mEntryList.add(new VariableEntry(parentNode, false, varDef.getConcreteSyntax(), varDef.getFormattedSyntax(),
-                            TextFormat.fillWithAttributes(varDef.getFormattedSyntax()).getSecond()));
+                            TextFormatDesktop.fillWithAttributes(varDef.getFormattedSyntax()).getSecond()));
 
                     // }
                 }
@@ -288,7 +288,7 @@ public class VarBadgeGlobal extends JComponent implements EventListener, ActionL
                 String typ = entry.getVarType();
 
                 if (var.equals(varVal.getFirst())) {
-                    TPLTuple<String, AttributedString> formatedPair = TextFormat.fillWithAttributes("#r#" + typ + " " + var
+                    TPLTuple<String, AttributedString> formatedPair = TextFormatDesktop.fillWithAttributes("#r#" + typ + " " + var
                             + " = " + varVal.getSecond());
 
                     entry.setFormatted(formatedPair.getFirst());
