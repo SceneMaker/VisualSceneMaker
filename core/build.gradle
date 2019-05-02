@@ -2,7 +2,7 @@ plugins {
     id 'java'
 }
 group 'de.dfki.vsm'
-version '4.0.1-SNAPSHOT'
+version '4.0.0'
 
 sourceCompatibility = 11
 
