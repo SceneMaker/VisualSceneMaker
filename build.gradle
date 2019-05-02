@@ -23,7 +23,7 @@ dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.0'
     // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api
     testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.3.2'
-
+    compile project(":core")
     compile fileTree(dir: 'lib', include: "*.jar")
     // https://mvnrepository.com/artifact/jpl/jpl
     compile group: 'jpl', name: 'jpl', version: '7.4.0'
