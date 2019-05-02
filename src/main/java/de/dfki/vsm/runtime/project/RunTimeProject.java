@@ -28,13 +28,9 @@ import java.util.Map;
  */
 public class RunTimeProject {
 
-    protected  boolean isNewProject = false;
     // The singelton logger instance
     protected final LOGDefaultLogger mLogger
             = LOGDefaultLogger.getInstance();
-
-    // The project Path (added PG 11.4.2016);
-    private String mProjectPath = "";
     // The sceneflow of the project
     private final SceneFlow mSceneFlow = new SceneFlow();
     // The scenescript of the project
@@ -47,12 +43,15 @@ public class RunTimeProject {
     private final VisiconConfig mVisiconConfig = new VisiconConfig();
     // The gesticon configuration of the project
     private final GesticonConfig mGesticonConfig = new GesticonConfig();
+    // The runtime plugin map of the project
+    private final Map<String, RunTimePlugin> mPluginMap = new HashMap<>();
+    protected boolean isNewProject = false;
+    // The project Path (added PG 11.4.2016);
+    private String mProjectPath = "";
     // The default scene player of the project
     private RunTimePlayer mRunTimePlayer;
     // The default interpreter of the project
     private Interpreter mInterpreter;
-    // The runtime plugin map of the project
-    private final Map<String, RunTimePlugin> mPluginMap = new HashMap<>();
 
     // Construct an empty runtime project
     public RunTimeProject() {
