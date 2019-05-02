@@ -25,7 +25,7 @@ public abstract class RunTimePlayer {
     public RunTimePlayer(
             final PlayerConfig config,
             final RunTimeProject project) {
-        // Initializ the config
+        // Initialize the config
         mConfig = config;
         // Initialize the project
         mProject = project;
