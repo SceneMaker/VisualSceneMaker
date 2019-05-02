@@ -65,11 +65,11 @@ public class ReceiverThread extends Thread {
                     byte[] data = Arrays.copyOf(packet.getData(), packet.getLength());
 
                     // #ommitted# Check if this has been received
-                    /*  if (data.equals(lastReceivedData)) {
+                    if (data.equals(lastReceivedData)) {
                     mLogger.message("Ommitting message - was received alread");
-                    break;
+                    continue;
                 }
-                     */
+                     
                     lastReceivedData = data;
 
                     String message = new String(packet.getData(), "UTF-8").trim();
