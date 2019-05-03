@@ -7,10 +7,10 @@ import java.io.IOException;
 
 public class Core {
     // Start the runtime with some project
-    static void runtime(final File file) {
+    public static void runtime(final File file) {
         // Get an editor project from file
         final RunTimeProject runTimeProject = new RunTimeProject(file);
-        // Get the singelton runtime instance
+        // Get the singleton runtime instance
         //final RunTimeInstance sRunTime = RunTimeInstance.getInstance();
         // Launch the runtime with the project
         if (/*sRunTime.launch(runTimeProject)*/runTimeProject.launch()) {
