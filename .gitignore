@@ -3,3 +3,6 @@ tmp/
 /prj/version.ini
 /log/vsm3.log
 /log/stickman.log
+.idea/*
+.gradle
+/build/

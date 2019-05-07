@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SceneScript lower="0" upper="0">
+  <SceneObject lower="0" upper="76" language="en" identifier="welcome">
+    <SceneTurn lower="17" upper="76" speaker="charly">
+      <SceneUttr lower="25" upper="76" punct="?">
+        <SceneWord lower="25" upper="30" text="Hello"/>
+        <ActionObject lower="32" upper="36" actor="" name="name">
+        </ActionObject>
+        <SceneWord lower="38" upper="41" text="how"/>
+        <ActionObject lower="43" upper="54" actor="actor" name="name">
+        </ActionObject>
+        <SceneWord lower="56" upper="59" text="are"/>
+        <SceneWord lower="60" upper="63" text="you"/>
+        <SceneParam lower="64" upper="69" name="user"/>
+        <SceneWord lower="70" upper="75" text="today"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="78" upper="128" language="de" identifier="Wilkommen">
+    <SceneTurn lower="97" upper="128" speaker="gregor">
+      <SceneUttr lower="105" upper="111" punct=",">
+        <SceneWord lower="105" upper="110" text="Hallo"/>
+      </SceneUttr>
+      <SceneUttr lower="112" upper="128" punct="?">
+        <SceneWord lower="112" upper="115" text="wie"/>
+        <SceneWord lower="116" upper="120" text="geht"/>
+        <SceneWord lower="121" upper="123" text="es"/>
+        <SceneWord lower="124" upper="127" text="dir"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+</SceneScript>
