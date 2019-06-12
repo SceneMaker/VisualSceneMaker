@@ -1,5 +1,7 @@
 package de.dfki.vsm.xtension.odp;
 
+import de.dfki.vsm.util.log.LOGConsoleLogger;
+
 import java.io.IOException;
 import java.net.*;
 
@@ -10,6 +12,10 @@ public class UdpClient {
     private int port;
     private byte[] buf;
 
+    // The singleton logger instance
+    private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
+
+
     public UdpClient(String ipAddress, int port) throws SocketException, UnknownHostException {
         this.ipAddress = ipAddress;
         this.port = port;
@@ -18,14 +24,10 @@ public class UdpClient {
     }
 
     void clientSend(String msg) throws IOException {
-        System.out.println("send: " + msg);
+        mLogger.message("OPDExecutor: Send message to ODP: " + msg);
         buf = msg.getBytes();
-        DatagramPacket packet = new DatagramPacket(buf, buf.length, address, this.port);
+        DatagramPacket packet = new DatagramPacket(buf, buf.length, address, port);
         socket.send(packet);
-        // packet = new DatagramPacket(buf, buf.length);
-        // socket.receive(packet);
-        // String received = new String(packet.getData(), 0,
-        // packet.getLength());
     }
 
     public void close() {
