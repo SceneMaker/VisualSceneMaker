@@ -12,7 +12,7 @@ public class UpdServer extends Thread {
     private boolean running;
     private byte[] buf = new byte[1024];
 
-    // The singelton logger instance
+    // The singleton logger instance
     private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
 
 
@@ -23,7 +23,7 @@ public class UpdServer extends Thread {
     @Override
     public void run() {
         running = true;
-        System.out.println("ready to receive message!");
+        mLogger.message("ODPExecutor: Ready to receive messages ...");
         while (running) {
             DatagramPacket packet = new DatagramPacket(buf, buf.length);
             try {
