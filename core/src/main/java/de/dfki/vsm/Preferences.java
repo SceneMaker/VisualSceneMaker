@@ -20,29 +20,29 @@ import java.util.logging.Level;
  * Standard VSM configurations
  */
 public class Preferences {
-    public static final String sSYSPROPS_LINE_SEPR          = System.getProperty("line.separator");
-    public static final String sSYSPROPS_FILE_SEPR          = System.getProperty("file.separator");
-    public static final String sSYSPROPS_PATH_SEPR          = System.getProperty("path.separator");
-    public static final String sSYSPROPS_JAVA_PATH          = System.getProperty("java.class.path");
-    public static final String sSYSPROPS_JAVA_HOME          = System.getProperty("java.home");
-    public static final String sSYSPROPS_JAVA_VEND          = System.getProperty("java.vendor");
-    public static final String sSYSPROPS_JAVA_VURL          = System.getProperty("java.vendor.url");
-    public static final String sSYSPROPS_OSYS_ARCH          = System.getProperty("os.arch");
-    public static final String sSYSPROPS_OSYS_NAME          = System.getProperty("os.name");
-    public static final String sSYSPROPS_OSYS_VERS          = System.getProperty("os.version");
+    public static final String sSYSPROPS_LINE_SEPR = System.getProperty("line.separator");
+    public static final String sSYSPROPS_FILE_SEPR = System.getProperty("file.separator");
+    public static final String sSYSPROPS_PATH_SEPR = System.getProperty("path.separator");
+    public static final String sSYSPROPS_JAVA_PATH = System.getProperty("java.class.path");
+    public static final String sSYSPROPS_JAVA_HOME = System.getProperty("java.home");
+    public static final String sSYSPROPS_JAVA_VEND = System.getProperty("java.vendor");
+    public static final String sSYSPROPS_JAVA_VURL = System.getProperty("java.vendor.url");
+    public static final String sSYSPROPS_OSYS_ARCH = System.getProperty("os.arch");
+    public static final String sSYSPROPS_OSYS_NAME = System.getProperty("os.name");
+    public static final String sSYSPROPS_OSYS_VERS = System.getProperty("os.version");
     ////////////////////////////////////////////////////////////////////////////
     // LOGFILE BASE CONFIGURATION
     ////////////////////////////////////////////////////////////////////////////
-    public static final String sLOGFILE_FILE_NAME           = "./log/vsm3.log";
+    public static final String sLOGFILE_FILE_NAME = "./log/vsm3.log";
     ////////////////////////////////////////////////////////////////////////////
     // LOGFILE BASE CONFIGURATION
     ////////////////////////////////////////////////////////////////////////////
     // PG: Why is this in the VSM preferences?
-	public static final String sNOVAFILE_FILE_NAME          = "./log/nova.log";
+    public static final String sNOVAFILE_FILE_NAME = "./log/nova.log";
     ////////////////////////////////////////////////////////////////////////////
     // LOGFILE BASE CONFIGURATION
     ////////////////////////////////////////////////////////////////////////////
-    public static final String sSOCKFILE_FILE_NAME          = "./log/sock.log";
+    public static final String sSOCKFILE_FILE_NAME = "./log/sock.log";
     //////////////////////////////////////////////////////////////////////////////
     // DATE FORMAT
     //////////////////////////////////////////////////////////////////////////////
@@ -224,6 +224,11 @@ public class Preferences {
     }
 
     public static Level getLogLevel() {
-        return Level.ALL;
+        String logLevelEnv = System.getenv("LOG_LEVEL");
+        if (logLevelEnv != null && !logLevelEnv.isEmpty()) {
+            return Level.parse(logLevelEnv);
+        } else {
+            return Level.SEVERE;
+        }
     }
 }
