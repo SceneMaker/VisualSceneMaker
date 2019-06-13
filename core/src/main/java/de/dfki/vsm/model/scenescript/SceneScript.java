@@ -50,10 +50,10 @@ public final class SceneScript extends ScriptEntity {
         for (final ScriptEntity entity : mEntityList) {
             if (entity instanceof SceneObject) {
                 mSceneList.add((SceneObject) entity);
-            } else if (entity instanceof SceneObject) { //TODO: should this be SceneComment?
+            } else if (entity instanceof SceneComment) {
                 mCommentList.add((SceneComment) entity);
             } else {
-                throw new IllegalStateException("This should not happen");
+                throw new IllegalStateException("This should not happen" + entity);
                 // This Should Not Happen
             }
         }
