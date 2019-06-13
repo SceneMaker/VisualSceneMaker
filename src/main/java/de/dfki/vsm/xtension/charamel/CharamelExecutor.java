@@ -1,6 +1,9 @@
 package de.dfki.vsm.xtension.charamel;
 
 import de.dfki.vsm.editor.dialog.WaitingDialog;
+import de.dfki.vsm.extensionAPI.ExportableProperties;
+import de.dfki.vsm.extensionAPI.ProjectProperty;
+import de.dfki.vsm.extensionAPI.value.ProjectValueProperty;
 import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
 import de.dfki.vsm.runtime.activity.AbstractActivity.Type;
@@ -8,21 +11,11 @@ import de.dfki.vsm.runtime.activity.SpeechActivity;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
 import de.dfki.vsm.runtime.activity.scheduler.ActivityWorker;
 import de.dfki.vsm.runtime.project.RunTimeProject;
-import de.dfki.vsm.extensionAPI.ExportableProperties;
-import de.dfki.vsm.extensionAPI.ProjectProperty;
-import de.dfki.vsm.extensionAPI.value.ProjectValueProperty;
 import de.dfki.vsm.util.jpl.JPLEngine;
 import de.dfki.vsm.util.xml.XMLUtilities;
 import de.dfki.vsm.xtension.charamel.util.property.CharamelProjectProperty;
 import de.dfki.vsm.xtension.charamel.xml.command.object.action.CharamelActObject;
-import de.dfki.vsm.xtension.charamel.xml.feedback.action.Action;
-import de.dfki.vsm.xtension.charamel.xml.feedback.action.CaiCommand;
-import de.dfki.vsm.xtension.charamel.xml.feedback.action.CaiEvent;
-import de.dfki.vsm.xtension.charamel.xml.feedback.action.CaiResponse;
-import de.dfki.vsm.xtension.charamel.xml.feedback.action.CharaXMLElement;
-import de.dfki.vsm.xtension.charamel.xml.feedback.action.Feedback;
-import de.dfki.vsm.xtension.charamel.xml.feedback.action.Status;
-import de.dfki.vsm.xtension.charamel.xml.feedback.action.Tts;
+import de.dfki.vsm.xtension.charamel.xml.feedback.action.*;
 import de.dfki.vsm.xtension.charamel.xml.util.CharamelActionLoader;
 
 import java.io.ByteArrayInputStream;
@@ -46,11 +39,11 @@ public final class CharamelExecutor extends ActivityExecutor implements Exportab
     // The tworld listener
     private CharamelListener mListener;
     // The map of processes
-    private final HashMap<String, Process> mProcessMap = new HashMap();
+    private final Map<String, Process> mProcessMap = new HashMap<>();
     // The client thread list
-    private final HashMap<String, CharamelHandler> mClientMap = new HashMap();
+    private final Map<String, CharamelHandler> mClientMap = new HashMap<>();
     // The map of activity worker
-    private final HashMap<String, ActivityWorker> mActivityWorkerMap = new HashMap();
+    private final Map<String, ActivityWorker> mActivityWorkerMap = new HashMap<>();
     // The Charamel Action loader 
     private final CharamelActionLoader mActionLoader = CharamelActionLoader.getInstance();
     // The word mapping properties
@@ -161,26 +154,30 @@ public final class CharamelExecutor extends ActivityExecutor implements Exportab
         if (mUseExe) {
             // Wait for pawned processes
             for (final Entry<String, Process> entry : mProcessMap.entrySet()) {
-                // Get the process entry
-                final String name = entry.getKey();
-                final Process process = entry.getValue();
-                try {
-                    // Kill the processes
-                    final Process killer = Runtime.getRuntime().exec("taskkill /F /IM " + name);
-                    // Wait for the killer
-                    killer.waitFor();
-                    // Print some information 
-                    mLogger.message("Joining killer " + name + "");
-                    // Wait for the process
-                    process.waitFor();
-                    // Print some information 
-                    mLogger.message("Joining process " + name + "");
-                } catch (final IOException | InterruptedException exc) {
-                    mLogger.failure(exc.toString());
-                }
+                killProcess(entry);
             }
             // Clear the map of processes 
             mProcessMap.clear();
+        }
+    }
+
+    private void killProcess(Entry<String, Process> entry) {
+        // Get the process entry
+        final String name = entry.getKey();
+        final Process process = entry.getValue();
+        try {
+            // Kill the processes
+            final Process killer = Runtime.getRuntime().exec("taskkill /F /IM " + name);
+            // Wait for the killer
+            killer.waitFor();
+            // Print some information
+            mLogger.message("Joining killer " + name + "");
+            // Wait for the process
+            process.waitFor();
+            // Print some information
+            mLogger.message("Joining process " + name + "");
+        } catch (final IOException | InterruptedException exc) {
+            mLogger.failure(exc.toString());
         }
     }
 
