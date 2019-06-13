@@ -1,11 +1,8 @@
 package de.dfki.vsm.xtension.stickman;
 
 import de.dfki.vsm.util.log.LOGConsoleLogger;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
+
+import java.io.*;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 
@@ -113,7 +110,7 @@ public class StickmanHandler extends Thread {
             final String message = recv();
             if (message != null) {
                 // Handle the message
-                System.out.println("Receiving new message: " + message);
+                mLogger.success("Receiving new message: " + message);
                 mExecutor.handle(message, this);
             }
         }

@@ -401,7 +401,7 @@ public class RunTimeProject {
             return false;
         }
 
-        mLogger.message("Loaded project from path '" + path + "':\n" + mProjectConfig);
+        mLogger.success("Loaded project from path '" + path + "':\n" + mProjectConfig);
         // Return success if the project was loaded
         return true;
     }

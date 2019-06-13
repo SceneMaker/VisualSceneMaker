@@ -8,6 +8,10 @@ import de.dfki.common.interfaces.StageRoom;
 import de.dfki.stickman3D.Stickman3D;
 import de.dfki.util.ios.IOSIndentWriter;
 import de.dfki.util.xml.XMLUtilities;
+import de.dfki.vsm.extensionAPI.ExportableCompletion;
+import de.dfki.vsm.extensionAPI.ExportableProperties;
+import de.dfki.vsm.extensionAPI.ProjectProperty;
+import de.dfki.vsm.extensionAPI.value.ProjectValueProperty;
 import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.model.scenescript.ActionFeature;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
@@ -16,10 +20,6 @@ import de.dfki.vsm.runtime.activity.SpeechActivity;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
 import de.dfki.vsm.runtime.activity.scheduler.ActivityWorker;
 import de.dfki.vsm.runtime.project.RunTimeProject;
-import de.dfki.vsm.extensionAPI.ExportableCompletion;
-import de.dfki.vsm.extensionAPI.ExportableProperties;
-import de.dfki.vsm.extensionAPI.ProjectProperty;
-import de.dfki.vsm.extensionAPI.value.ProjectValueProperty;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
 import de.dfki.vsm.util.stickman.StickmanRepository;
 import de.dfki.vsm.xtension.stickman.util.property.StickmanProjectProperty;
@@ -139,7 +139,7 @@ public class StickmanExecutor extends ActivityExecutor implements ExportableProp
                         }
                     }
                 }
-                System.out.println("de.dfki.vsm.xtension.stickman.StickmanExecutor.execute()");
+                mLogger.success("de.dfki.vsm.xtension.stickman.StickmanExecutor.execute()");
                 executeAnimation(stickmanAnimation);
             }
         }

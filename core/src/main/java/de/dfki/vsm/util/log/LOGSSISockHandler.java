@@ -2,17 +2,16 @@ package de.dfki.vsm.util.log;
 
 //~--- JDK imports ------------------------------------------------------------
 
-import java.io.IOException;
+import de.dfki.vsm.Preferences;
 
+import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
-
 import java.util.logging.ErrorManager;
 import java.util.logging.Formatter;
 import java.util.logging.Handler;
-import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
 /**
@@ -37,8 +36,8 @@ public class LOGSSISockHandler extends Handler {
         // Install A New Console Formatter
         setFormatter(new LOGSSISockFormat());
 
-        // Log The Messages From All Levels
-        setLevel(Level.ALL);
+        // Log The Messages From configured Levels
+        setLevel(Preferences.getLogLevel());
     }
 
     ////////////////////////////////////////////////////////////////////////////

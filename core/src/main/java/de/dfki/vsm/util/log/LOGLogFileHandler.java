@@ -1,8 +1,9 @@
 package de.dfki.vsm.util.log;
 
+import de.dfki.vsm.Preferences;
+
 import java.io.IOException;
 import java.util.logging.FileHandler;
-import java.util.logging.Level;
 
 /**
  * @author Gregor Mehlmann
@@ -15,7 +16,7 @@ public class LOGLogFileHandler extends FileHandler {
         // Install A New Console Formatter
         setFormatter(new LOGLogFileFormat());
         // Log The Messages From All Levels
-        setLevel(Level.ALL);
+        setLevel(Preferences.getLogLevel());
         // Set Logger Encoding To UTF-8
         try {
             setEncoding("UTF-8");

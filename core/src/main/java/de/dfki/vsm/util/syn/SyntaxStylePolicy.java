@@ -1,6 +1,7 @@
 package de.dfki.vsm.util.syn;
 
 //~--- non-JDK imports --------------------------------------------------------
+
 import de.dfki.vsm.model.ModelObject;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
@@ -8,22 +9,17 @@ import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLUtilities;
 import de.dfki.vsm.util.xml.XMLWriteError;
-
 import org.w3c.dom.Element;
-
-//~--- JDK imports ------------------------------------------------------------
-import java.awt.Font;
-import java.awt.Graphics;
-
-import java.io.ByteArrayOutputStream;
-
-import java.net.URL;
-
-import java.util.HashMap;
 
 import javax.swing.text.Segment;
 import javax.swing.text.TabExpander;
 import javax.swing.text.Utilities;
+import java.awt.*;
+import java.io.ByteArrayOutputStream;
+import java.net.URL;
+import java.util.HashMap;
+
+//~--- JDK imports ------------------------------------------------------------
 
 /**
  * @author Gregor Mehlmann
@@ -51,7 +47,7 @@ public final class SyntaxStylePolicy implements ModelObject {
             if (XMLUtilities.parseFromXMLURL(this, mURL)) {
 
                 // Print Some Debug Information
-                mLogger.message("Success: Loading Style Policy URL:\n" + toString());
+                mLogger.success("Success: Loading Style Policy URL:\n" + toString());
 //                mLogger.message("Success: Loading Style Policy URL:\n");
             } else {
                 // Print Some Information

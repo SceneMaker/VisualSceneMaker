@@ -3,6 +3,7 @@ package de.dfki.vsm.runtime.activity.scheduler;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
+
 import java.util.List;
 
 /**
@@ -68,7 +69,7 @@ public final class ActivityWorker extends Thread {
         // Return when aborted
         if (!mDone) {
             // Print some information
-            mLogger.message("Executing activity '" + mActivity + "' on executor '" + mExecutor + "'");
+            mLogger.success("Executing activity '" + mActivity + "' on executor '" + mExecutor + "'");
             // Execute the activity
             mExecutor.execute(mActivity);
         }

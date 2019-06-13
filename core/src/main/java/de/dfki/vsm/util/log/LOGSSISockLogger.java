@@ -4,11 +4,11 @@ package de.dfki.vsm.util.log;
 
 import de.dfki.vsm.Preferences;
 
-//~--- JDK imports ------------------------------------------------------------
-
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+//~--- JDK imports ------------------------------------------------------------
 
 /**
  * @author Gregor Mehlmann
@@ -36,7 +36,7 @@ public class LOGSSISockLogger {
         mPort = port;
 
         // Log The Messages From All Levels
-        sLogger.setLevel(Level.ALL);
+        sLogger.setLevel(Preferences.getLogLevel());
 
         // Do Not Propagate The Messages
         sLogger.setUseParentHandlers(false);
