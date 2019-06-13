@@ -4,10 +4,11 @@ import de.dfki.vsm.model.ModelObject;
 import de.dfki.vsm.model.sceneflow.chart.BasicNode;
 import de.dfki.vsm.model.sceneflow.chart.graphics.edge.EdgeGraphics;
 import de.dfki.vsm.model.sceneflow.glue.command.Command;
-import de.dfki.vsm.util.tpl.TPLTuple;
+import de.dfki.vsm.util.tpl.Tuple;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -15,14 +16,13 @@ import java.util.Map;
  */
 public abstract class AbstractEdge implements ModelObject {
 
-    protected String mTargetUnid = new String();
-    protected String mSourceUnid = new String();
+    protected String mTargetUnid = "";
+    protected String mSourceUnid = "";
     protected BasicNode mTargetNode = null;
     protected BasicNode mSourceNode = null;
     protected EdgeGraphics mGraphics = null;
-    protected ArrayList<Command> mCmdList = new ArrayList();
-    protected HashMap<
-            TPLTuple<String, BasicNode>, TPLTuple<String, BasicNode>> mAltMap = new HashMap();
+    protected List<Command> mCmdList = new ArrayList<>();
+    protected Map<Tuple<String, BasicNode>, Tuple<String, BasicNode>> mAltMap = new HashMap<>();
 
     // The edge type
     public enum EdgeType {
@@ -44,8 +44,8 @@ public abstract class AbstractEdge implements ModelObject {
             final BasicNode targetNode,
             final BasicNode sourceNode,
             final EdgeGraphics graphics,
-            final ArrayList cmdList,
-            final HashMap altMap) {
+            final List cmdList,
+            final Map altMap) {
         mTargetUnid = targetUnid;
         mSourceUnid = sourceUnid;
         mTargetNode = targetNode;
@@ -95,16 +95,16 @@ public abstract class AbstractEdge implements ModelObject {
         mGraphics = value;
     }
 
-    public final ArrayList<Command> getCmdList() {
+    public final List<Command> getCmdList() {
         return mCmdList;
     }
 
-    public final void setCmdList(final ArrayList<Command> value) {
+    public final void setCmdList(final List<Command> value) {
         mCmdList = value;
     }
 
-    public final ArrayList<Command> getCopyOfCmdList() {
-        final ArrayList<Command> copy = new ArrayList();
+    public final List<Command> getCopyOfCmdList() {
+        final ArrayList<Command> copy = new ArrayList<>();
         for (Command cmd : mCmdList) {
             copy.add(cmd.getCopy());
         }
@@ -114,37 +114,35 @@ public abstract class AbstractEdge implements ModelObject {
     /*
     public final ArrayList<BasicNode> getAltList() {
         final ArrayList<BasicNode> altList = new ArrayList();
-        for (TPLTuple<String, BasicNode> pair : mAltMap.values()) {
+        for (Tuple<String, BasicNode> pair : mAltMap.values()) {
             altList.add(pair.getSecond());
         }
         return altList;
     }
      */
-    public final HashMap<
-        TPLTuple<String, BasicNode>, TPLTuple<String, BasicNode>> getAltMap() {
+    public final Map<Tuple<String, BasicNode>, Tuple<String, BasicNode>> getAltMap() {
         return mAltMap;
     }
 
-    public final void setAltMap(final HashMap value) {
+    public final void setAltMap(final Map value) {
         mAltMap = value;
     }
 
-    // TODO: This is not yet a deep copy
-    public HashMap<TPLTuple<String, BasicNode>, TPLTuple<String, BasicNode>> getCopyOfAltStartNodeMap() {
-        HashMap<TPLTuple<String, BasicNode>, TPLTuple<String, BasicNode>> copy = new HashMap<>();
+    public Map<Tuple<String, BasicNode>, Tuple<String, BasicNode>> getCopyOfAltStartNodeMap() {
+        Map<Tuple<String, BasicNode>, Tuple<String, BasicNode>> copy = new HashMap<>();
 
-        for (Map.Entry<TPLTuple<String, BasicNode>, TPLTuple<String, BasicNode>> tplTupleTPLTupleEntry : mAltMap.entrySet()) {
-            Map.Entry pairs = tplTupleTPLTupleEntry;
-            TPLTuple<String, BasicNode> startNodePair = (TPLTuple<String, BasicNode>) pairs.getKey();
-            TPLTuple<String, BasicNode> altStartNodePair = (TPLTuple<String, BasicNode>) pairs.getValue();
-            TPLTuple<String, BasicNode> startNodePairCopy = new TPLTuple<>(startNodePair.getFirst(),
-                    startNodePair.getSecond());
-            TPLTuple<String, BasicNode> altStartNodePairCopy = new TPLTuple<>(altStartNodePair.getFirst(),
-                    altStartNodePair.getSecond());
+        mAltMap.forEach((startNodePair, altStartNodePair) -> {
+            var startNodePairCopy = new Tuple<>(
+                    startNodePair.getFirst(),
+                    startNodePair.getSecond().getCopy()
+            );
+            var altStartNodePairCopy = new Tuple<>(
+                    altStartNodePair.getFirst(),
+                    altStartNodePair.getSecond().getCopy()
+            );
 
             copy.put(startNodePairCopy, altStartNodePairCopy);
-        }
-
+        });
         return copy;
     }
 
@@ -152,12 +150,14 @@ public abstract class AbstractEdge implements ModelObject {
     public String getAltStartNodesAsString() {
         StringBuilder result = new StringBuilder();
 
-        for (Map.Entry<TPLTuple<String, BasicNode>, TPLTuple<String, BasicNode>> tplTupleTPLTupleEntry : mAltMap.entrySet()) {
-            Map.Entry pairs = tplTupleTPLTupleEntry;
-            TPLTuple<String, BasicNode> start = (TPLTuple<String, BasicNode>) pairs.getKey();
-            TPLTuple<String, BasicNode> alt = (TPLTuple<String, BasicNode>) pairs.getValue();
+        for (Map.Entry<Tuple<String, BasicNode>, Tuple<String, BasicNode>> pairs : mAltMap.entrySet()) {
+            var start = pairs.getKey();
+            var alt = pairs.getValue();
 
-            result.append(start.getFirst()).append("/").append(alt.getFirst()).append(";");
+            result.append(start.getFirst())
+                    .append("/")
+                    .append(alt.getFirst())
+                    .append(";");
         }
 
         return result.toString();

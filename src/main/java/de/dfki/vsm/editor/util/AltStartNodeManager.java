@@ -2,17 +2,16 @@ package de.dfki.vsm.editor.util;
 
 //~--- non-JDK imports --------------------------------------------------------
 
-import de.dfki.vsm.model.sceneflow.chart.edge.AbstractEdge;
 import de.dfki.vsm.model.sceneflow.chart.BasicNode;
 import de.dfki.vsm.model.sceneflow.chart.SuperNode;
-import de.dfki.vsm.util.tpl.TPLTuple;
+import de.dfki.vsm.model.sceneflow.chart.edge.AbstractEdge;
+import de.dfki.vsm.util.tpl.Tuple;
+
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 //~--- JDK imports ------------------------------------------------------------
-
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
 
 /**
  * @author Patrick Gebhard
@@ -20,7 +19,7 @@ import java.util.Map;
  */
 public class AltStartNodeManager {
     public AbstractEdge                                                    mEdge;
-    public HashMap<TPLTuple<String, BasicNode>, TPLTuple<String, BasicNode>> mAltStartNodeMap;
+    public Map<Tuple<String, BasicNode>, Tuple<String, BasicNode>> mAltStartNodeMap;
 
     public AltStartNodeManager(AbstractEdge edge) {
         mEdge            = edge;
@@ -36,9 +35,9 @@ public class AltStartNodeManager {
     }
 
     public void removeAltStartNode(String id) {
-        TPLTuple<String, BasicNode> pair = null;
+        Tuple<String, BasicNode> pair = null;
 
-        for (TPLTuple<String, BasicNode> p : mAltStartNodeMap.keySet()) {
+        for (Tuple<String, BasicNode> p : mAltStartNodeMap.keySet()) {
             if (p.getFirst().equals(id)) {
                 pair = p;
 
@@ -56,7 +55,7 @@ public class AltStartNodeManager {
         ArrayList<BasicNode> substitutableStartNodeList = new ArrayList<>(((SuperNode) mEdge.getTargetNode()).getStartNodeMap().values());
 
         //
-        for (TPLTuple<String, BasicNode> startNodePair : mAltStartNodeMap.keySet()) {
+        for (Tuple<String, BasicNode> startNodePair : mAltStartNodeMap.keySet()) {
             if (!startNodePair.getFirst().equals("none")) {
                 substitutableStartNodeList.remove(startNodePair.getSecond());
             }
@@ -84,7 +83,7 @@ public class AltStartNodeManager {
                 reachableNodeMap.put(node, node.getReachableNodeList());
             }
 
-            for (TPLTuple<String, BasicNode> p : mAltStartNodeMap.values()) {
+            for (Tuple<String, BasicNode> p : mAltStartNodeMap.values()) {
                 reachableNodeMap.put(p.getSecond(), p.getSecond().getReachableNodeList());
             }
 
@@ -122,10 +121,10 @@ public class AltStartNodeManager {
 
                 ////
 
-                for (Map.Entry<TPLTuple<String, BasicNode>, TPLTuple<String, BasicNode>> tplTupleTPLTupleEntry : mAltStartNodeMap.entrySet()) {
+                for (Map.Entry<Tuple<String, BasicNode>, Tuple<String, BasicNode>> tplTupleTPLTupleEntry : mAltStartNodeMap.entrySet()) {
                     Map.Entry pairs = tplTupleTPLTupleEntry;
-                    TPLTuple<String, BasicNode> p1 = (TPLTuple<String, BasicNode>) pairs.getKey();
-                    TPLTuple<String, BasicNode> p2 = (TPLTuple<String, BasicNode>) pairs.getValue();
+                    Tuple<String, BasicNode> p1 = (Tuple<String, BasicNode>) pairs.getKey();
+                    Tuple<String, BasicNode> p2 = (Tuple<String, BasicNode>) pairs.getValue();
 
                     if (reverse.contains(p2.getSecond())) {
 
@@ -158,8 +157,8 @@ public class AltStartNodeManager {
                                         : s);
         BasicNode                   n1    = ((SuperNode) mEdge.getTargetNode()).getChildNodeById(x);
         BasicNode                   n2    = ((SuperNode) mEdge.getTargetNode()).getChildNodeById(a);
-        TPLTuple<String, BasicNode> pair1 = new TPLTuple<>(x, n1);
-        TPLTuple<String, BasicNode> pair2 = new TPLTuple<>(a, n2);
+        Tuple<String, BasicNode> pair1 = new Tuple<>(x, n1);
+        Tuple<String, BasicNode> pair2 = new Tuple<>(a, n2);
 
         mAltStartNodeMap.put(pair1, pair2);
     }

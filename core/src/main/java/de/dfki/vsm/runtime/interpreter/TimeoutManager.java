@@ -2,25 +2,25 @@ package de.dfki.vsm.runtime.interpreter;
 
 import de.dfki.vsm.model.sceneflow.glue.command.Assignment;
 import de.dfki.vsm.model.sceneflow.glue.command.Command;
-import de.dfki.vsm.model.sceneflow.glue.command.invocation.PlayDialogAction;
-import de.dfki.vsm.model.sceneflow.glue.command.invocation.PlayScenesActivity;
-import de.dfki.vsm.model.sceneflow.glue.command.invocation.UnblockSceneGroup;
-import de.dfki.vsm.model.sceneflow.glue.command.expression.BinaryExpression;
-import de.dfki.vsm.model.sceneflow.glue.command.expression.TernaryExpression;
 import de.dfki.vsm.model.sceneflow.glue.command.Expression;
-import de.dfki.vsm.model.sceneflow.glue.command.expression.UnaryExpression;
+import de.dfki.vsm.model.sceneflow.glue.command.definition.VariableDefinition;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.BinaryExpression;
 import de.dfki.vsm.model.sceneflow.glue.command.expression.CallingExpression;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.TernaryExpression;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.UnaryExpression;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.invocation.TimeoutQuery;
 import de.dfki.vsm.model.sceneflow.glue.command.expression.record.ArrayExpression;
 import de.dfki.vsm.model.sceneflow.glue.command.expression.record.StructExpression;
 import de.dfki.vsm.model.sceneflow.glue.command.expression.variable.ArrayVariable;
-import de.dfki.vsm.model.sceneflow.glue.command.expression.invocation.TimeoutQuery;
-import de.dfki.vsm.model.sceneflow.glue.command.definition.VariableDefinition;
+import de.dfki.vsm.model.sceneflow.glue.command.invocation.PlayDialogAction;
+import de.dfki.vsm.model.sceneflow.glue.command.invocation.PlayScenesActivity;
+import de.dfki.vsm.model.sceneflow.glue.command.invocation.UnblockSceneGroup;
 import de.dfki.vsm.runtime.interpreter.error.InterpreterError;
 import de.dfki.vsm.runtime.interpreter.value.AbstractValue;
 import de.dfki.vsm.runtime.interpreter.value.IntValue;
 import de.dfki.vsm.runtime.interpreter.value.StringValue;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
-import de.dfki.vsm.util.tpl.TPLTuple;
+import de.dfki.vsm.util.tpl.Tuple;
 
 import java.util.HashMap;
 import java.util.Timer;
@@ -32,7 +32,7 @@ import java.util.TimerTask;
 public class TimeoutManager {
 
     private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
-    private final HashMap<TimeoutQuery, TPLTuple<Boolean, TimerTask>> mTimeoutCondList = new HashMap<>();
+    private final HashMap<TimeoutQuery, Tuple<Boolean, TimerTask>> mTimeoutCondList = new HashMap<>();
     private final Timer mTimer = new Timer("Timeout-Manager-Timer");
     private Interpreter mInterpreter;
 
@@ -49,7 +49,7 @@ public class TimeoutManager {
     }
 
     public void clear() {
-        for (TPLTuple<Boolean, TimerTask> pair : mTimeoutCondList.values()) {
+        for (Tuple<Boolean, TimerTask> pair : mTimeoutCondList.values()) {
             pair.setFirst(false);
             pair.getSecond().cancel();
         }
@@ -95,7 +95,7 @@ public class TimeoutManager {
             }
         };
 
-        mTimeoutCondList.put(cond, new TPLTuple<>(false, task));
+        mTimeoutCondList.put(cond, new Tuple<>(false, task));
         mTimer.schedule(task, timeout);
     }
 

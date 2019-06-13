@@ -9,7 +9,7 @@ import de.dfki.vsm.model.sceneflow.chart.graphics.node.NodePosition;
 import de.dfki.vsm.model.sceneflow.glue.command.definition.VariableDefinition;
 import de.dfki.vsm.util.TextFormatDesktop;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
-import de.dfki.vsm.util.tpl.TPLTuple;
+import de.dfki.vsm.util.tpl.Tuple;
 
 import javax.swing.*;
 import java.awt.*;
@@ -280,7 +280,7 @@ public class VarBadgeGlobal extends JComponent implements EventListener, ActionL
         }
     }
 
-    private void updateVariable(TPLTuple<String, String> varVal) {
+    private void updateVariable(Tuple<String, String> varVal) {
         synchronized (mEntryList) {
             // System.err.println("updateVariable");
             for (VariableEntry entry : mEntryList) {
@@ -288,7 +288,7 @@ public class VarBadgeGlobal extends JComponent implements EventListener, ActionL
                 String typ = entry.getVarType();
 
                 if (var.equals(varVal.getFirst())) {
-                    TPLTuple<String, AttributedString> formatedPair = TextFormatDesktop.fillWithAttributes("#r#" + typ + " " + var
+                    Tuple<String, AttributedString> formatedPair = TextFormatDesktop.fillWithAttributes("#r#" + typ + " " + var
                             + " = " + varVal.getSecond());
 
                     entry.setFormatted(formatedPair.getFirst());

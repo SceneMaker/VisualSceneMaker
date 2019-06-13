@@ -14,7 +14,7 @@ import de.dfki.vsm.model.sceneflow.chart.SuperNode;
 import de.dfki.vsm.model.sceneflow.chart.edge.InterruptEdge;
 import de.dfki.vsm.model.sceneflow.glue.GlueParser;
 import de.dfki.vsm.model.sceneflow.glue.command.Expression;
-import de.dfki.vsm.util.tpl.TPLTuple;
+import de.dfki.vsm.util.tpl.Tuple;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -294,10 +294,10 @@ public class ModifyIEdgeDialog extends Dialog implements EventListener {
         mAltStartNodeManager.loadAltStartNodeMap();
 
         if (mIEdge.getTargetNode() instanceof SuperNode) {
-            for (Map.Entry<TPLTuple<String, BasicNode>, TPLTuple<String, BasicNode>> tplTupleTPLTupleEntry : mAltStartNodeManager.mAltStartNodeMap.entrySet()) {
+            for (Map.Entry<Tuple<String, BasicNode>, Tuple<String, BasicNode>> tplTupleTPLTupleEntry : mAltStartNodeManager.mAltStartNodeMap.entrySet()) {
                 Map.Entry pairs = tplTupleTPLTupleEntry;
-                TPLTuple<String, BasicNode> startNodePair = (TPLTuple<String, BasicNode>) pairs.getKey();
-                TPLTuple<String, BasicNode> altStartNodePair = (TPLTuple<String, BasicNode>) pairs.getValue();
+                Tuple<String, BasicNode> startNodePair = (Tuple<String, BasicNode>) pairs.getKey();
+                Tuple<String, BasicNode> altStartNodePair = (Tuple<String, BasicNode>) pairs.getValue();
                 ((DefaultListModel) mAltStartNodeList.getModel()).addElement(
                         startNodePair.getFirst() + "/" + altStartNodePair.getFirst());
                 ////System.err.println("loading start node "+startNodePair.getSecond());
@@ -322,10 +322,10 @@ public class ModifyIEdgeDialog extends Dialog implements EventListener {
 
         // /
         ((DefaultListModel) mAltStartNodeList.getModel()).clear();
-        for (Map.Entry<TPLTuple<String, BasicNode>, TPLTuple<String, BasicNode>> tplTupleTPLTupleEntry : mAltStartNodeManager.mAltStartNodeMap.entrySet()) {
+        for (Map.Entry<Tuple<String, BasicNode>, Tuple<String, BasicNode>> tplTupleTPLTupleEntry : mAltStartNodeManager.mAltStartNodeMap.entrySet()) {
             Map.Entry pairs = tplTupleTPLTupleEntry;
-            TPLTuple<String, BasicNode> startNodePair = (TPLTuple<String, BasicNode>) pairs.getKey();
-            TPLTuple<String, BasicNode> altStartNodePair = (TPLTuple<String, BasicNode>) pairs.getValue();
+            Tuple<String, BasicNode> startNodePair = (Tuple<String, BasicNode>) pairs.getKey();
+            Tuple<String, BasicNode> altStartNodePair = (Tuple<String, BasicNode>) pairs.getValue();
 
             ((DefaultListModel) mAltStartNodeList.getModel()).addElement(startNodePair.getFirst() + "/"
                     + altStartNodePair.getFirst());

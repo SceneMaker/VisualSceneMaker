@@ -1,17 +1,16 @@
 package de.dfki.vsm.model.sceneflow.chart.edge;
 
 import de.dfki.vsm.model.sceneflow.chart.BasicNode;
-import de.dfki.vsm.model.sceneflow.glue.command.Command;
 import de.dfki.vsm.model.sceneflow.chart.graphics.edge.EdgeGraphics;
+import de.dfki.vsm.model.sceneflow.glue.command.Command;
 import de.dfki.vsm.model.sceneflow.glue.command.Expression;
-import de.dfki.vsm.util.tpl.TPLTuple;
+import de.dfki.vsm.util.tpl.Tuple;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLWriteError;
-import java.util.ArrayList;
 import org.w3c.dom.Element;
-import java.util.HashMap;
-import java.util.Iterator;
+
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -25,8 +24,8 @@ public class GuargedEdge extends AbstractEdge {
     }
 
     public GuargedEdge(String target, String source, BasicNode targetNode, BasicNode sourceNode, EdgeGraphics graphics,
-            ArrayList<Command> cmdList, HashMap<TPLTuple<String, BasicNode>, TPLTuple<String, BasicNode>> altStartNodeMap,
-            Expression condition) {
+                       List<Command> cmdList, Map<Tuple<String, BasicNode>, Tuple<String, BasicNode>> altStartNodeMap,
+                       Expression condition) {
         super(target, source, targetNode, sourceNode, graphics, cmdList, altStartNodeMap);
         mCondition = condition;
     }
@@ -65,10 +64,10 @@ public class GuargedEdge extends AbstractEdge {
     public void writeXML(de.dfki.vsm.util.ios.IOSIndentWriter out) throws XMLWriteError {
         StringBuilder start = new StringBuilder();
 
-        for (Map.Entry<TPLTuple<String, BasicNode>, TPLTuple<String, BasicNode>> tplTupleTPLTupleEntry : mAltMap.entrySet()) {
+        for (Map.Entry<Tuple<String, BasicNode>, Tuple<String, BasicNode>> tplTupleTPLTupleEntry : mAltMap.entrySet()) {
             Map.Entry pairs = tplTupleTPLTupleEntry;
-            TPLTuple<String, BasicNode> startNodeData = (TPLTuple<String, BasicNode>) pairs.getKey();
-            TPLTuple<String, BasicNode> altStartNodeData = (TPLTuple<String, BasicNode>) pairs.getValue();
+            Tuple<String, BasicNode> startNodeData = (Tuple<String, BasicNode>) pairs.getKey();
+            Tuple<String, BasicNode> altStartNodeData = (Tuple<String, BasicNode>) pairs.getValue();
 
             start.append(startNodeData.getFirst()).append("/").append(altStartNodeData.getFirst()).append(";");
         }
@@ -106,8 +105,8 @@ public class GuargedEdge extends AbstractEdge {
                 String[] ids = idPair.split("/");
                 String startId = ids[0];
                 String altStartId = ids[1];
-                TPLTuple<String, BasicNode> startPair = new TPLTuple<>(startId, null);
-                TPLTuple<String, BasicNode> altStartPair = new TPLTuple<>(altStartId, null);
+                Tuple<String, BasicNode> startPair = new Tuple<>(startId, null);
+                Tuple<String, BasicNode> altStartPair = new Tuple<>(altStartId, null);
 
                 mAltMap.put(startPair, altStartPair);
             }

@@ -9,7 +9,7 @@ import de.dfki.vsm.model.sceneflow.glue.command.definition.DataTypeDefinition;
 import de.dfki.vsm.model.sceneflow.glue.command.definition.VariableDefinition;
 import de.dfki.vsm.util.cpy.CopyTool;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
-import de.dfki.vsm.util.tpl.TPLTuple;
+import de.dfki.vsm.util.tpl.Tuple;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLWriteError;
@@ -249,7 +249,7 @@ public class SuperNode extends BasicNode {
                 if (edge.getTargetNode() instanceof SuperNode) {
 
                     // First establish the start nodes
-                    for (TPLTuple<String, BasicNode> startNodePair : edge.getAltMap().keySet()) {
+                    for (Tuple<String, BasicNode> startNodePair : edge.getAltMap().keySet()) {
                         if (!startNodePair.getFirst().equals("")) {
                             BasicNode n = ((SuperNode) edge.getTargetNode()).getChildNodeById(startNodePair.getFirst());
 
@@ -258,7 +258,7 @@ public class SuperNode extends BasicNode {
                     }
 
                     // Second establish the alternative nodes
-                    for (TPLTuple<String, BasicNode> altStartNodePair : edge.getAltMap().values()) {
+                    for (Tuple<String, BasicNode> altStartNodePair : edge.getAltMap().values()) {
                         BasicNode n = ((SuperNode) edge.getTargetNode()).getChildNodeById(altStartNodePair.getFirst());
 
                         altStartNodePair.setSecond(n);

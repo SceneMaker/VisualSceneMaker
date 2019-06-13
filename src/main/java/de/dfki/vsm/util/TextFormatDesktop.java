@@ -3,7 +3,7 @@ package de.dfki.vsm.util;
 //~--- non-JDK imports --------------------------------------------------------
 
 import de.dfki.vsm.editor.EditorInstance;
-import de.dfki.vsm.util.tpl.TPLTuple;
+import de.dfki.vsm.util.tpl.Tuple;
 
 import java.awt.*;
 import java.awt.font.TextAttribute;
@@ -22,11 +22,11 @@ public class TextFormatDesktop extends TextFormat {
     /**
      *
      */
-    public static ArrayList<TPLTuple<String, AttributedString>> getPairList(ArrayList<String> formattedStringList) {
-        ArrayList<TPLTuple<String, AttributedString>> pairList = new ArrayList<>();
+    public static ArrayList<Tuple<String, AttributedString>> getPairList(ArrayList<String> formattedStringList) {
+        ArrayList<Tuple<String, AttributedString>> pairList = new ArrayList<>();
 
         for (String s : formattedStringList) {
-            TPLTuple<String, AttributedString> pair = fillWithAttributes(s);
+            Tuple<String, AttributedString> pair = fillWithAttributes(s);
 
             pairList.add(pair);
         }
@@ -37,8 +37,8 @@ public class TextFormatDesktop extends TextFormat {
     /**
      *
      */
-    public static TPLTuple<String, AttributedString> fillWithAttributes(String inputString) {
-        HashMap<TPLTuple<TextAttribute, Object>, TPLTuple<Integer, Integer>> attributeMap = new HashMap();
+    public static Tuple<String, AttributedString> fillWithAttributes(String inputString) {
+        HashMap<Tuple<TextAttribute, Object>, Tuple<Integer, Integer>> attributeMap = new HashMap();
         String unformattedString = "";
 
         while (true) {
@@ -78,33 +78,33 @@ public class TextFormatDesktop extends TextFormat {
             String postString = inputString.substring(i + 3);
 
             //
-            TPLTuple<Integer, Integer> position
-                    = new TPLTuple<>(
+            Tuple<Integer, Integer> position
+                    = new Tuple<>(
                     unformattedString.length() + preString.length(),
                     unformattedString.length() + preString.length() + subString.length());
 
             if (c == 'b') {
                 // Highlight with bold weight
-                TPLTuple attribute
-                        = new TPLTuple(
+                Tuple attribute
+                        = new Tuple(
                                 TextAttribute.WEIGHT,
                                 TextAttribute.WEIGHT_BOLD);
                 attributeMap.put(attribute, position);
                 
             } else if (c == 'i') {
                 // Highlight with italic posture
-                TPLTuple attribute
-                        = new TPLTuple(
+                Tuple attribute
+                        = new Tuple(
                                 TextAttribute.POSTURE,
                                 TextAttribute.POSTURE_OBLIQUE);
                 attributeMap.put(attribute, position);
             } else if (c == 'r') {
                 // Highlight like reserved word
-                TPLTuple attribute1
-                        = new TPLTuple(
+                Tuple attribute1
+                        = new Tuple(
                                 TextAttribute.FOREGROUND, Color.BLUE);
-                TPLTuple attribute2
-                        = new TPLTuple(
+                Tuple attribute2
+                        = new Tuple(
                                 TextAttribute.WEIGHT,
                                 TextAttribute.WEIGHT_BOLD);
 
@@ -113,8 +113,8 @@ public class TextFormatDesktop extends TextFormat {
             } else if (c == 'c') {
 
                 // Constant Literals
-                TPLTuple attribute
-                        = new TPLTuple(
+                Tuple attribute
+                        = new Tuple(
                                 TextAttribute.FOREGROUND,
                                 Color.RED.darker());
 
@@ -122,8 +122,8 @@ public class TextFormatDesktop extends TextFormat {
             } else if (c == 't') {
 
                 // User-Defined Type Names
-                TPLTuple attribute
-                        = new TPLTuple(
+                Tuple attribute
+                        = new Tuple(
                                 TextAttribute.FOREGROUND,
                                 Color.MAGENTA.darker());
 
@@ -131,19 +131,19 @@ public class TextFormatDesktop extends TextFormat {
             } else if (c == 'h') {
 
                 // Struct or List Definitions
-                TPLTuple attribute
-                        = new TPLTuple(
+                Tuple attribute
+                        = new Tuple(
                                 TextAttribute.FOREGROUND, Color.BLACK);
 
                 attributeMap.put(attribute, position);
             } else if (c == 'p') {
                 // Highlight predefined commands
-                TPLTuple attribute1
-                        = new TPLTuple(
+                Tuple attribute1
+                        = new Tuple(
                                 TextAttribute.FOREGROUND,
                                 Color.GREEN.darker().darker().darker());
-                TPLTuple attribute2
-                        = new TPLTuple(
+                Tuple attribute2
+                        = new Tuple(
                                 TextAttribute.WEIGHT,
                                 TextAttribute.WEIGHT_BOLD);
 
@@ -169,15 +169,15 @@ public class TextFormatDesktop extends TextFormat {
 
         // Fill the attributed string with attributes
 
-        for (Map.Entry<TPLTuple<TextAttribute, Object>, TPLTuple<Integer, Integer>> tplTupleTPLTupleEntry : attributeMap.entrySet()) {
+        for (Map.Entry<Tuple<TextAttribute, Object>, Tuple<Integer, Integer>> tplTupleTPLTupleEntry : attributeMap.entrySet()) {
             Map.Entry entry = tplTupleTPLTupleEntry;
-            TPLTuple<TextAttribute, Object> key = (TPLTuple<TextAttribute, Object>) entry.getKey();
-            TPLTuple<Integer, Integer> value = (TPLTuple<Integer, Integer>) entry.getValue();
+            Tuple<TextAttribute, Object> key = (Tuple<TextAttribute, Object>) entry.getKey();
+            Tuple<Integer, Integer> value = (Tuple<Integer, Integer>) entry.getValue();
 
             attributedString.addAttribute(key.getFirst(), key.getSecond(), value.getFirst(), value.getSecond());
         }
 
-        return new TPLTuple<>(unformattedString, attributedString);
+        return new Tuple<>(unformattedString, attributedString);
     }
 
 

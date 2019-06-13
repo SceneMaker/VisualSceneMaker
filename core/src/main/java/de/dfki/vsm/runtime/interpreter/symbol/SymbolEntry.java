@@ -7,7 +7,7 @@ import de.dfki.vsm.runtime.interpreter.value.AbstractValue;
 import de.dfki.vsm.runtime.interpreter.value.ListValue;
 import de.dfki.vsm.runtime.interpreter.value.StructValue;
 import de.dfki.vsm.util.cpy.Copyable;
-import de.dfki.vsm.util.tpl.TPLTuple;
+import de.dfki.vsm.util.tpl.Tuple;
 
 public final class SymbolEntry implements Copyable {
 
@@ -37,7 +37,7 @@ public final class SymbolEntry implements Copyable {
 
             // Send event to dispatcher
             EventDispatcher.getInstance().convey(new VariableChangedEvent(this,
-                    new TPLTuple(mSymbol, mValue.getFormattedSyntax())));
+                    new Tuple(mSymbol, mValue.getFormattedSyntax())));
 
             //
             return mValue;
@@ -59,7 +59,7 @@ public final class SymbolEntry implements Copyable {
 
                     //
                     EventDispatcher.getInstance().convey(new VariableChangedEvent(this,
-                            new TPLTuple<>(mSymbol /* .getName() */, mValue.getFormattedSyntax())));
+                            new Tuple<>(mSymbol /* .getName() */, mValue.getFormattedSyntax())));
 
                     //
                     return mValue;
@@ -90,7 +90,7 @@ public final class SymbolEntry implements Copyable {
 
                         //
                         EventDispatcher.getInstance().convey(new VariableChangedEvent(this,
-                                new TPLTuple<>(mSymbol /* .getName() */, mValue.getFormattedSyntax())));
+                                new Tuple<>(mSymbol /* .getName() */, mValue.getFormattedSyntax())));
 
                         //
                         return mValue;
