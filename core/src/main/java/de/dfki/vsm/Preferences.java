@@ -10,6 +10,7 @@ import java.text.SimpleDateFormat;
 import java.util.Properties;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.logging.Level;
 
 /**
  * @author Gregor Mehlmann
@@ -220,5 +221,9 @@ public class Preferences {
         if (!sPROPERTIES.containsKey("workspace_fontsize")) {
             sPROPERTIES.setProperty("workspace_fontsize", "11");
         }
+    }
+
+    public static Level getLogLevel() {
+        return Level.ALL;
     }
 }

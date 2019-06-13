@@ -1,5 +1,7 @@
 package de.dfki.vsm.util.log;
 
+import de.dfki.vsm.Preferences;
+
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -20,7 +22,8 @@ public class LOGConsoleLogger {
     private LOGConsoleLogger() {
 
         // Log The Messages From All Levels
-        sLogger.setLevel(Level.ALL);
+        Level logLevel = Preferences.getLogLevel();
+        sLogger.setLevel(logLevel);
         // Do Not Propagate The Messages
         sLogger.setUseParentHandlers(false);
         try {
