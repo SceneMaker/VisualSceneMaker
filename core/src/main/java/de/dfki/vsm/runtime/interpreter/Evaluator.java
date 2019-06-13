@@ -119,10 +119,9 @@ public final class Evaluator {
                     mInterpreter.unlock();
                     // Execute the activity
                     mInterpreter.getScenePlayer().playScene(((StringValue) value).getValue(), list);
-                }catch (SceneDoesNotExists missingScene){
+                } catch (SceneDoesNotExists missingScene) {
                     EventDispatcher.getInstance().convey(new TerminationEvent(new Object(), missingScene));
-                }
-                finally {
+                } finally {
                     // Lock interpreter again
                     mInterpreter.lock();
                 }
@@ -431,8 +430,8 @@ public final class Evaluator {
                 final List<AbstractValue> list = ((ListValue) listValue).getValueList();
                 //
                 final AbstractValue itemValue = evaluate(((ContainsList) exp).getItemExp(), env);
-                for(final AbstractValue value : list) {
-                    if(value.equalsValue(itemValue)) {
+                for (final AbstractValue value : list) {
+                    if (value.equalsValue(itemValue)) {
                         return new BooleanValue(true);
                     }
                 }
@@ -512,7 +511,7 @@ public final class Evaluator {
     // Execute a Java command
     private Object executeUsrCmd(
             final CallingExpression cmd,
-            final Environment env) throws InterpreterError, Exception {
+            final Environment env) throws Exception {
 
         // Get the name of the command
         final String command = cmd.getName();
@@ -698,9 +697,6 @@ public final class Evaluator {
                     // Convert list and pair appearances
                     final String binding = JPLUtility.convert(term.toString());
 
-                    // mLogger.warning("Variable '" + variable + "'");
-                    // mLogger.warning("Term '" + binding + "'");
-                    //mLogger.warning("Setting Variable " + variable + " To " + binding + " Via Prolog Query");
                     // This call returns nothing if the variable exists and and throws an exeption
                     env.write(variable, new StringValue(binding));
 

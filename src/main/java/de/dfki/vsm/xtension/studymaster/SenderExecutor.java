@@ -16,13 +16,13 @@ import de.dfki.vsm.util.log.LOGConsoleLogger;
 
 import java.io.IOException;
 import java.net.*;
+import java.nio.charset.StandardCharsets;
 import java.util.Enumeration;
 import java.util.LinkedList;
+import java.util.List;
 
 /**
- *
  * @author Patrick Gebhard
- *
  */
 public class SenderExecutor extends ActivityExecutor {
 
@@ -30,8 +30,8 @@ public class SenderExecutor extends ActivityExecutor {
     private String mSceneflowVar;
 
     // The message, format "VSMMessage#<string without space>#<timestamp>"
-    public static final String sMSG_SEPARATOR = "#";
-    public static final String sMSG_HEADER = "VSMMessage" + sMSG_SEPARATOR;
+    static final String sMSG_SEPARATOR = "#";
+    static final String sMSG_HEADER = "VSMMessage" + sMSG_SEPARATOR;
 
     private String mMessage = "";
     private String mMessageTimeInfo = "";
@@ -66,7 +66,7 @@ public class SenderExecutor extends ActivityExecutor {
                 }
             }
         } else {
-            final LinkedList<ActionFeature> features = activity.getFeatures();
+            final List<ActionFeature> features = activity.getFeatures();
 
             mMessage = activity.getName();
 
@@ -90,21 +90,14 @@ public class SenderExecutor extends ActivityExecutor {
 
             long timestamp = System.currentTimeMillis();
 
-            byte[] sendData = (sMSG_HEADER + "None" + sMSG_SEPARATOR + timestamp).getBytes("UTF8");
+            byte[] sendData = (sMSG_HEADER + "None" + sMSG_SEPARATOR + timestamp).getBytes(StandardCharsets.UTF_8);
 
             if (!mMessage.equalsIgnoreCase("REQUEST")) {
-                sendData = (sMSG_HEADER + mMessage + sMSG_SEPARATOR + timestamp + ((!mMessageTimeInfo.isEmpty()) ? sMSG_SEPARATOR + mMessageTimeInfo : "")).getBytes("UTF8");
+                sendData = (sMSG_HEADER + mMessage + sMSG_SEPARATOR + timestamp + ((!mMessageTimeInfo.isEmpty()) ? sMSG_SEPARATOR + mMessageTimeInfo : "")).getBytes(StandardCharsets.UTF_8);
             } else if (mMessage.equalsIgnoreCase("REQUEST") && (!mMessageRequestVar.isEmpty()) && (!mMessageRequestValues.isEmpty())) {
-                sendData = (sMSG_HEADER + mMessage + sMSG_SEPARATOR + timestamp + sMSG_SEPARATOR + mMessageRequestVar + sMSG_SEPARATOR + mMessageRequestValues.replace("'", "")).getBytes("UTF8");
+                sendData = (sMSG_HEADER + mMessage + sMSG_SEPARATOR + timestamp + sMSG_SEPARATOR + mMessageRequestVar + sMSG_SEPARATOR + mMessageRequestValues.replace("'", "")).getBytes(StandardCharsets.UTF_8);
             }
 
-//            //Try the 255.255.255.255 first
-//            try {
-//                DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, InetAddress.getByName("255.255.255.255"), mPort);
-//                c.send(sendPacket);
-//               // mLogger.message(">>> Request packet sent to: 255.255.255.255 (DEFAULT)");
-//            } catch (Exception e) {
-//            }
             // Broadcast the message over all the network interfaces
             String hosts = "";
 
@@ -140,18 +133,6 @@ public class SenderExecutor extends ActivityExecutor {
                 }
             }
 
-//            mLogger.message("Waiting for a reply ...");
-//
-//            //Wait for a response(s) - This should be in a thread since it could be that there are more than one receiver.
-//            byte[] recvBuf = new byte[15000];
-//            DatagramPacket receivePacket = new DatagramPacket(recvBuf, recvBuf.length);
-//            c.receive(receivePacket);
-//
-//            //Check if the message is correct
-//            String message = new String(receivePacket.getData()).trim();
-//            if (message.equals("VSMMessage#Received")) {
-//                mProject.setVariable(mSceneflowVar, new StringValue("Message successfully delivered"));
-//            }
             //Close the port!
             c.close();
         } catch (IOException ex) {
@@ -176,13 +157,12 @@ public class SenderExecutor extends ActivityExecutor {
     }
 
     // get the value of a feature (added PG) - quick and dirty
-    private final String getActionFeatureValue(String name, LinkedList<ActionFeature> features) {
-        for (ActionFeature af : features) {
-            if (af.getKey().equalsIgnoreCase(name)) {
-                return af.getVal();
-            }
-        }
-        return "";
+    private final String getActionFeatureValue(String name, List<ActionFeature> features) {
+        return features.stream()
+                .filter(af -> af.getKey().equalsIgnoreCase(name))
+                .findFirst()
+                .map(ActionFeature::getVal)
+                .orElse("");
     }
 
 }

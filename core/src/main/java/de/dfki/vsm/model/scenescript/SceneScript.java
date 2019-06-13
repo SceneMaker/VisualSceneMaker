@@ -5,10 +5,8 @@ import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLWriteError;
 import org.w3c.dom.Element;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Set;
-import java.util.TreeSet;
+
+import java.util.*;
 
 /**
  * @author Gregor Mehlmann
@@ -16,24 +14,24 @@ import java.util.TreeSet;
 public final class SceneScript extends ScriptEntity {
 
     // The List Of Entities
-    private LinkedList<ScriptEntity> mEntityList = new LinkedList<>();
+    private List<ScriptEntity> mEntityList = new LinkedList<>();
 
     // The List Of Comments
-    private LinkedList<SceneComment> mCommentList = new LinkedList<>();
+    private List<SceneComment> mCommentList = new LinkedList<>();
 
     // The List Of Scenes
-    private LinkedList<SceneObject> mSceneList = new LinkedList<>();
+    private List<SceneObject> mSceneList = new LinkedList<>();
 
     // Map Of Scene Groups
-    private final HashMap<String, SceneGroup> mGroupMap = new HashMap<>();
+    private final Map<String, SceneGroup> mGroupMap = new HashMap<>();
 
     // Map Of Scene Groups
-    private final HashMap<String, HashMap<String, SceneGroup>> mLangMap = new HashMap<>();
+    private final Map<String, HashMap<String, SceneGroup>> mLangMap = new HashMap<>();
 
     public SceneScript() {
     }
 
-    public SceneScript(final int lower, final int upper, final LinkedList<ScriptEntity> list) {
+    public SceneScript(final int lower, final int upper, final List<ScriptEntity> list) {
         super(lower, upper);
         // Initialize The List
         mEntityList = list;
@@ -44,7 +42,7 @@ public final class SceneScript extends ScriptEntity {
         initLangMap();
     }
 
-    public void initObjectLists() {
+    private void initObjectLists() {
         // First Clear The Groups
         mSceneList.clear();
         mCommentList.clear();
@@ -52,16 +50,16 @@ public final class SceneScript extends ScriptEntity {
         for (final ScriptEntity entity : mEntityList) {
             if (entity instanceof SceneObject) {
                 mSceneList.add((SceneObject) entity);
-            } else if (entity instanceof SceneObject) {
+            } else if (entity instanceof SceneObject) { //TODO: should this be SceneComment?
                 mCommentList.add((SceneComment) entity);
             } else {
-
+                throw new IllegalStateException("This should not happen");
                 // This Should Not Happen
             }
         }
     }
 
-    public final void initLangMap() {
+    private final void initLangMap() {
         // First Clear The Groups
         mLangMap.clear();
         // Initialize The Groups
@@ -70,7 +68,7 @@ public final class SceneScript extends ScriptEntity {
             final String name = scene.getName();
             final String lang = scene.getLanguage();
             // Add Scene To Group
-            mLangMap.computeIfAbsent(lang, k -> new HashMap());
+            mLangMap.computeIfAbsent(lang, k -> new HashMap<>());
 
             if (mLangMap.get(lang).get(name) == null) {
                 mLangMap.get(lang).put(name, new SceneGroup(name));
@@ -79,7 +77,7 @@ public final class SceneScript extends ScriptEntity {
         }
     }
 
-    public final void initGroupMap() {
+    private final void initGroupMap() {
         // First Clear The Groups
         mGroupMap.clear();
         // Initialize The Groups
@@ -98,31 +96,31 @@ public final class SceneScript extends ScriptEntity {
         return mLangMap.keySet();
     }
 
-    public final LinkedList<ScriptEntity> getEntityList() {
+    public final List<ScriptEntity> getEntityList() {
         return mEntityList;
     }
 
-    public final void setEntityList(final LinkedList<ScriptEntity> list) {
+    public final void setEntityList(final List<ScriptEntity> list) {
         mEntityList = list;
     }
 
-    public final LinkedList<SceneObject> getSceneList() {
+    public final List<SceneObject> getSceneList() {
         return mSceneList;
     }
 
-    public final void setSceneList(final LinkedList<SceneObject> list) {
+    public final void setSceneList(final List<SceneObject> list) {
         mSceneList = list;
     }
 
-    public final LinkedList<SceneComment> getCommentList() {
+    public final List<SceneComment> getCommentList() {
         return mCommentList;
     }
 
-    public final void setCommentList(final LinkedList<SceneComment> list) {
+    public final void setCommentList(final List<SceneComment> list) {
         mCommentList = list;
     }
 
-    public final LinkedList<SceneObject> copySceneList() {
+    public final List<SceneObject> copySceneList() {
         // Construct A List Copy
         final LinkedList<SceneObject> copy = new LinkedList<>();
         // Copy Each Single Member
@@ -133,7 +131,7 @@ public final class SceneScript extends ScriptEntity {
         return copy;
     }
 
-    public final LinkedList<SceneComment> copyCommentList() {
+    public final List<SceneComment> copyCommentList() {
         // Construct A List Copy
         final LinkedList<SceneComment> copy = new LinkedList<>();
         // Copy Each Single Member
@@ -144,7 +142,7 @@ public final class SceneScript extends ScriptEntity {
         return copy;
     }
 
-    public final LinkedList<ScriptEntity> copyEntityList() {
+    public final List<ScriptEntity> copyEntityList() {
         // Construct A List Copy
         final LinkedList<ScriptEntity> copy = new LinkedList<>();
         // Copy Each Single Member
@@ -155,12 +153,12 @@ public final class SceneScript extends ScriptEntity {
         return copy;
     }
 
-    public final HashMap<String, SceneGroup> getSceneGroupMap() {
+    public final Map<String, SceneGroup> getSceneGroupMap() {
         return mGroupMap;
     }
 
     public final TreeSet<SceneGroup> getOrderedGroupSet() {
-        return new TreeSet(mGroupMap.values());
+        return new TreeSet<>(mGroupMap.values());
     }
 
     public final SceneGroup getSceneGroup(final String name) {

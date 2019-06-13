@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 /**
@@ -28,9 +29,6 @@ public class ReceiverThread extends Thread {
 
     private DatagramSocket mSocket;
 
-    // last raw data
-    private static byte[] lastReceivedData;
-
     // The singelton logger instance
     private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
 
@@ -41,11 +39,6 @@ public class ReceiverThread extends Thread {
 
     @Override
     public void run() {
-
-//            mSocket = new MulticastSocket(mPort);
-//            mSocket.setReuseAddress(true);
-//            mSocket.setBroadcast(true);
-//            mSocket.joinGroup(InetAddress.getByName("230.0.0.1"));
         //Keep a mSocket open to listen to all the UDP trafic that is destined for this port
         while (mRunning) {
             try {
@@ -71,9 +64,9 @@ public class ReceiverThread extends Thread {
                     break;
                 }
                      */
-                    lastReceivedData = data;
+                    // last raw data
 
-                    String message = new String(packet.getData(), "UTF-8").trim();
+                    String message = new String(packet.getData(), StandardCharsets.UTF_8).trim();
                     System.out.println("Message in studymaster: " + message);
                     mLogger.message("Message received " + message + " from " + packet.getAddress().getHostAddress());
                     if (message.startsWith(SenderExecutor.sMSG_HEADER)) {
