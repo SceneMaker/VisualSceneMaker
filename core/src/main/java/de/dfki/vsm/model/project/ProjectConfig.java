@@ -6,9 +6,12 @@ import de.dfki.vsm.util.log.LOGDefaultLogger;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLWriteError;
+import org.w3c.dom.Element;
+
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
-import org.w3c.dom.Element;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author Gregor Mehlmann
@@ -23,14 +26,14 @@ public final class ProjectConfig implements ModelObject {
     //
     private final PlayerConfig mPlayerConfig;
     // The list of plugin configurations
-    private final ArrayList<PluginConfig> mPluginList;
+    private final List<PluginConfig> mPluginList;
     // The list of agent configurations
-    private final ArrayList<AgentConfig> mAgentList;
+    private final List<AgentConfig> mAgentList;
 
     // Construct an empty project
     public ProjectConfig() {
         // Initialize The Project Name
-        mProjectName = new String();
+        mProjectName = "";
         // Initialize The Plugin List
         mPluginList = new ArrayList<>();
         // Initialize The Agent List
@@ -41,9 +44,9 @@ public final class ProjectConfig implements ModelObject {
 
     // Construct an empty project
     public ProjectConfig(final String name,
-            final ArrayList<PluginConfig> plugins,
-            final ArrayList<AgentConfig> agents,
-            final PlayerConfig player) {
+                         final List<PluginConfig> plugins,
+                         final List<AgentConfig> agents,
+                         final PlayerConfig player) {
         // Initialize The Project Name
         mProjectName = name;
         // Initialize The Plugin List
@@ -87,7 +90,7 @@ public final class ProjectConfig implements ModelObject {
     }
 
     // Get the list of agent configurations
-    public final ArrayList<AgentConfig> getAgentConfigList() {
+    public final List<AgentConfig> getAgentConfigList() {
         return mAgentList;
     }
 
@@ -101,7 +104,7 @@ public final class ProjectConfig implements ModelObject {
     }
 
     // Get the list of plugin configurations
-    public ArrayList<PluginConfig> getPluginConfigList() {
+    public List<PluginConfig> getPluginConfigList() {
         return mPluginList;
     }
 
@@ -189,7 +192,7 @@ public final class ProjectConfig implements ModelObject {
         }
     }
 
-     // Get string representation
+    // Get string representation
     @Override
     public final String toString() {
         final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
@@ -201,7 +204,7 @@ public final class ProjectConfig implements ModelObject {
         }
         writer.flush();
         writer.close();
-       try {
+        try {
             //return buffer.toString("UTF-8");
             return buffer.toString();
         } catch (final Exception exc) {
@@ -214,7 +217,16 @@ public final class ProjectConfig implements ModelObject {
     // Get a copy of the project configuration
     @Override
     public ProjectConfig getCopy() {
-        // TODO: Use copies of the lists
-        return new ProjectConfig(mProjectName, null, null, null);
+        List<PluginConfig> plugins = getPluginConfigList().stream()
+                .map(PluginConfig::getCopy)
+                .collect(Collectors.toList());
+
+        List<AgentConfig> agents = getAgentConfigList().stream()
+                .map(AgentConfig::getCopy)
+                .collect(Collectors.toList());
+
+        PlayerConfig player = getPlayerConfig().getCopy();
+
+        return new ProjectConfig(mProjectName, plugins, agents, player);
     }
 }
