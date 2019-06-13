@@ -3,21 +3,21 @@ package de.dfki.vsm.event.event;
 //~--- non-JDK imports --------------------------------------------------------
 
 import de.dfki.vsm.event.EventObject;
-import de.dfki.vsm.util.tpl.TPLTuple;
+import de.dfki.vsm.util.tpl.Tuple;
 
 /**
  * @author Gregor Mehlmann
  */
 public class VariableChangedEvent extends EventObject {
 
-    private TPLTuple<String, String> mVariableValuePair;
+    private Tuple<String, String> mVariableValuePair;
 
-    public VariableChangedEvent(Object source, TPLTuple<String, String> variableValuePair) {
+    public VariableChangedEvent(Object source, Tuple<String, String> variableValuePair) {
         super(source);
         mVariableValuePair = variableValuePair;
     }
 
-    public TPLTuple<String, String> getVarValue() {
+    public Tuple<String, String> getVarValue() {
         return mVariableValuePair;
     }
 

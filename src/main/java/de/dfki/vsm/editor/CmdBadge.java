@@ -12,7 +12,7 @@ import de.dfki.vsm.model.sceneflow.glue.GlueParser;
 import de.dfki.vsm.model.sceneflow.glue.command.Command;
 import de.dfki.vsm.util.TextFormatDesktop;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
-import de.dfki.vsm.util.tpl.TPLTuple;
+import de.dfki.vsm.util.tpl.Tuple;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -50,7 +50,7 @@ public class CmdBadge extends JComponent implements EventListener, Observer {
     private final Timer mVisuTimer;
 
     // The maintained list
-    private ArrayList<TPLTuple<String, AttributedString>> mStringList;
+    private ArrayList<Tuple<String, AttributedString>> mStringList;
     private final ArrayList<JTextArea> mCmdEditors;
     private final Font mFont;
 
@@ -107,7 +107,7 @@ public class CmdBadge extends JComponent implements EventListener, Observer {
             // Draw Type Definitions and Variable Definition
             int currentDrawingOffset = 0;
 
-            for (TPLTuple<String, AttributedString> pair : mStringList) {
+            for (Tuple<String, AttributedString> pair : mStringList) {
                 AttributedString attributedString = pair.getSecond();
                 TextLayout textLayout = new TextLayout(attributedString.getIterator(),
                         graphics.getFontRenderContext());
@@ -132,8 +132,8 @@ public class CmdBadge extends JComponent implements EventListener, Observer {
         int width = 0,
                 height = 0;
 
-        for (TPLTuple<String, AttributedString> stringAttributedStringTPLTuple : mStringList) {
-            TextLayout textLayout = new TextLayout(stringAttributedStringTPLTuple.getSecond().getIterator(),
+        for (Tuple<String, AttributedString> stringAttributedStringTuple : mStringList) {
+            TextLayout textLayout = new TextLayout(stringAttributedStringTuple.getSecond().getIterator(),
                     graphics.getFontRenderContext());
             int advance = (int) textLayout.getVisibleAdvance();
 
@@ -161,7 +161,7 @@ public class CmdBadge extends JComponent implements EventListener, Observer {
 
     public void setEditMode() {
         mEditMode = true;
-        for (TPLTuple<String, AttributedString> s : mStringList) {
+        for (Tuple<String, AttributedString> s : mStringList) {
             addCmdEditor(s.getFirst());
         }
 
@@ -312,7 +312,7 @@ public class CmdBadge extends JComponent implements EventListener, Observer {
                 String sceneName = ((SceneExecutedEvent) event).getScene().getName();
                 boolean contained = false;
 
-                for (TPLTuple<String, AttributedString> pair : mStringList) {
+                for (Tuple<String, AttributedString> pair : mStringList) {
                     if (pair.getFirst().equals("PlaySceneGroup ( \"" + sceneName + "\" )")) {
                         contained = true;
                     }

@@ -3,7 +3,7 @@ package de.dfki.vsm.util.tpl;
 /**
  * @author Gregor Mehlmann
  */
-public class TPLTuple<F, S> {
+public class Tuple<F, S> {
 
     // The first component
     private F mFirst;
@@ -11,7 +11,7 @@ public class TPLTuple<F, S> {
     private S mSecond;
 
     // Construct a tuple
-    public TPLTuple(final F first, final S second) {
+    public Tuple(final F first, final S second) {
         mFirst = first;
         mSecond = second;
     }

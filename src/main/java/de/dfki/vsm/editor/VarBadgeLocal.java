@@ -11,7 +11,7 @@ import de.dfki.vsm.model.sceneflow.chart.graphics.node.NodePosition;
 import de.dfki.vsm.model.sceneflow.glue.command.definition.VariableDefinition;
 import de.dfki.vsm.util.TextFormatDesktop;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
-import de.dfki.vsm.util.tpl.TPLTuple;
+import de.dfki.vsm.util.tpl.Tuple;
 
 import javax.swing.*;
 import java.awt.*;
@@ -294,14 +294,14 @@ public class VarBadgeLocal extends JComponent implements EventListener, ActionLi
             }
     }
 
-    private void updateVariable(TPLTuple<String, String> varVal) {
+    private void updateVariable(Tuple<String, String> varVal) {
         synchronized (mEntryList) {
             for (VariableEntry entry : mEntryList) {
                 String var = entry.getVarName();    // the name of the current variable
                 String typ = entry.getVarType();
 
                 if (var.equals(varVal.getFirst())) {
-                    TPLTuple<String, AttributedString> formatedPair = TextFormatDesktop.fillWithAttributes("#r#" + typ + " " + var
+                    Tuple<String, AttributedString> formatedPair = TextFormatDesktop.fillWithAttributes("#r#" + typ + " " + var
                             + " = " + varVal.getSecond());
                     entry.setFormatted(formatedPair.getFirst());
                     entry.setAttributed(formatedPair.getSecond());

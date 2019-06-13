@@ -5,7 +5,7 @@ package de.dfki.vsm.editor;
 import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
 import de.dfki.vsm.model.project.EditorConfig;
 import de.dfki.vsm.util.TextFormatDesktop;
-import de.dfki.vsm.util.tpl.TPLTuple;
+import de.dfki.vsm.util.tpl.Tuple;
 
 import javax.swing.*;
 import java.awt.*;
@@ -25,11 +25,11 @@ public class NodeVariableBadge extends JComponent {
     WorkSpacePanel                                     mWorkSpace         = null;
     de.dfki.vsm.model.sceneflow.chart.BasicNode              mDataNode          = null;
     Point                                         mRelPos            = null;
-    ArrayList<TPLTuple<String, AttributedString>> mLocalVarDefList   = null;
-    ArrayList<TPLTuple<String, AttributedString>> mGlobalVarDefList  = null;
-    ArrayList<TPLTuple<String, AttributedString>> mLocalTypeDefList  = null;
-    ArrayList<TPLTuple<String, AttributedString>> mGlobalTypeDefList = null;
-    ArrayList<TPLTuple<String, AttributedString>> mCompleteList      = new ArrayList<>();
+    ArrayList<Tuple<String, AttributedString>> mLocalVarDefList = null;
+    ArrayList<Tuple<String, AttributedString>> mGlobalVarDefList = null;
+    ArrayList<Tuple<String, AttributedString>> mLocalTypeDefList = null;
+    ArrayList<Tuple<String, AttributedString>> mGlobalTypeDefList = null;
+    ArrayList<Tuple<String, AttributedString>> mCompleteList = new ArrayList<>();
     int                                           mPositionOffset    = 10;
     int                                           mBeautyXOffSet     = 0;
     int                                           mBeautyYOffSet     = 0;
@@ -105,8 +105,8 @@ public class NodeVariableBadge extends JComponent {
         int width  = 0,
             height = 0;
 
-        for (TPLTuple<String, AttributedString> stringAttributedStringTPLTuple : mCompleteList) {
-            TextLayout textLayout = new TextLayout(stringAttributedStringTPLTuple.getSecond().getIterator(),
+        for (Tuple<String, AttributedString> stringAttributedStringTuple : mCompleteList) {
+            TextLayout textLayout = new TextLayout(stringAttributedStringTuple.getSecond().getIterator(),
                     graphics.getFontRenderContext());
             int advance = (int) textLayout.getVisibleAdvance();
 
@@ -178,7 +178,7 @@ public class NodeVariableBadge extends JComponent {
         // Draw Type Definitions and Variable Definition
         int currentDrawingOffset = 0;
 
-        for (TPLTuple<String, AttributedString> pair : mCompleteList) {
+        for (Tuple<String, AttributedString> pair : mCompleteList) {
             AttributedString attributedString = pair.getSecond();
             TextLayout       textLayout       = new TextLayout(attributedString.getIterator(),
                                                     graphics.getFontRenderContext());
