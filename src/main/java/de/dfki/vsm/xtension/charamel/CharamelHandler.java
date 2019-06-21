@@ -2,14 +2,15 @@ package de.dfki.vsm.xtension.charamel;
 
 import de.dfki.vsm.util.bin.BINUtilities;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.Socket;
-import java.nio.charset.StandardCharsets;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.charset.StandardCharsets;
 
 /**
  * @author Gregor Mehlmann
@@ -39,7 +40,9 @@ public class CharamelHandler extends Thread {
         mExecutor = executor;
     }
 
-    // Start the client thread
+    /**
+     * Start the client thread
+     */
     @Override
     public void start() {
 
@@ -48,41 +51,45 @@ public class CharamelHandler extends Thread {
             mOutStream.flush();
             mInStream = mSocket.getInputStream();
             dInStream = new DataInputStream(mInStream);
-                    //new BufferedReader(new InputStreamReader(mSocket.getInputStream(), "UTF-8"));
+            //new BufferedReader(new InputStreamReader(mSocket.getInputStream(), "UTF-8"));
         } catch (final IOException exc) {
             mLogger.failure(exc.toString());
         }
 
-//        try {
-//            // Get the socket streams
-//            mInStream = new BufferedReader(
-//                    new InputStreamReader(
-//                            mSocket.getInputStream(), "UTF-8"));
-//            mOutStream = new BufferedWriter(
-//                    new OutputStreamWriter(
-//                            mSocket.getOutputStream(), "UTF-8"));
-//        } catch (final IOException exc) {
-//            mLogger.failure(exc.toString());
-//        }
-        // Start the thread
+/*
+        try {
+            // Get the socket streams
+            mInStream = new BufferedReader(
+                    new InputStreamReader(
+                            mSocket.getInputStream(), "UTF-8"));
+            mOutStream = new BufferedWriter(
+                    new OutputStreamWriter(
+                            mSocket.getOutputStream(), "UTF-8"));
+        } catch (final IOException exc) {
+            mLogger.failure(exc.toString());
+        }
+ Start the thread
+*/
         super.start();
     }
 
-    // Abort the client thread
+    /**
+     * Abort the client thread
+     */
     public final void abort() {
 
-    // Set the termination flag
+        // Set the termination flag
         mDone = true;
         // Eventually close the socket
-        if (mSocket != null){
-            if( !mSocket.isClosed()) {
-            try {
-                mSocket.close();
-            } catch (final IOException exc) {
-                mLogger.failure(exc.toString());
+        if (mSocket != null) {
+            if (!mSocket.isClosed()) {
+                try {
+                    mSocket.close();
+                } catch (final IOException exc) {
+                    mLogger.failure(exc.toString());
+                }
             }
-            }
-            mSocket= null;
+            mSocket = null;
         }
 
 
@@ -90,33 +97,37 @@ public class CharamelHandler extends Thread {
         interrupt();
     }
 
-    // Receive some message
+    /**
+     * Receive some message
+     */
     public final String recv() {
-       // try {
-            // wait and get response
-//            byte[] respArr;
-//            synchronized (mSocket.getInputStream()) {
-//                byte[] header = new byte[12];
-//                mInStream.readFully(header);
-//
-//                mLogger.message("Header bytes " + header);
-//                final String headerStr = new String(header, "UTF-8").trim();
-//                mLogger.message("Header  " + headerStr);
-//
-//                int msgSize = BINUtilities.BytesLEToInt(header) + 2;
-//                mLogger.message("Message Size  " + msgSize);
-//                // read the message
-//                respArr = new byte[msgSize];
-//
-//                mInStream.readFully(respArr);
-//
-//                for (int i = 0; i < msgSize; i++) {
-//                    mLogger.message("[" + i + "]\t" + String.format("0x%02X", respArr[i]) + "\t" + (char)respArr[i]);
-//                }
-//
-//            }
-//            final String message = new String(respArr, StandardCharsets.UTF_8).trim();
-/*
+        /*
+         try {
+         wait and get response
+                    byte[] respArr;
+                    synchronized (mSocket.getInputStream()) {
+                        byte[] header = new byte[12];
+                        mInStream.readFully(header);
+
+                        mLogger.message("Header bytes " + header);
+                        final String headerStr = new String(header, "UTF-8").trim();
+                        mLogger.message("Header  " + headerStr);
+
+                        int msgSize = BINUtilities.BytesLEToInt(header) + 2;
+                        mLogger.message("Message Size  " + msgSize);
+                        // read the message
+                        respArr = new byte[msgSize];
+
+                        mInStream.readFully(respArr);
+
+                        for (int i = 0; i < msgSize; i++) {
+                            mLogger.message("[" + i + "]\t" + String.format("0x%02X", respArr[i]) + "\t" + (char)respArr[i]);
+                        }
+
+                    }
+                    final String message = new String(respArr, StandardCharsets.UTF_8).trim();
+        */
+        /*
             // Receive The Next Line
             final String rawMessage = mInStream.readLine();
             // Cut of header - special charamel treatment
@@ -134,22 +145,24 @@ public class CharamelHandler extends Thread {
             // Otherwise Return Null
             return null;
         }
-*/      try {
-            int msgTag,statusTag,msgLen;
+*/
+        try {
+            int msgTag, statusTag, msgLen;
             msgTag = nextLeInt();
             statusTag = nextLeInt();
             msgLen = nextLeInt();
-            mLogger.message("new Msg (tag: "+msgTag+" status: "+statusTag+" Length: "+msgLen+")");
+            mLogger.message("new Msg (tag: " + msgTag + " status: " + statusTag + " Length: " + msgLen + ")");
             byte[] msg = new byte[msgLen];
             dInStream.readFully(msg);
-            return new String(msg,"UTF-8");
+            return new String(msg, StandardCharsets.UTF_8);
 
         } catch (IOException ex) {
             mLogger.warning(ex.toString());
             return null;
         }
     }
-    Integer nextLeInt() throws IOException{
+
+    Integer nextLeInt() throws IOException {
         byte[] b = new byte[4];
         dInStream.readFully(b);
         StringBuilder ib = new StringBuilder();
@@ -183,7 +196,9 @@ public class CharamelHandler extends Thread {
         }
     }
 
-    // Execute the client thread
+    /**
+     * Execute the client thread
+     */
     @Override
     public final void run() {
         while (!mDone) {

@@ -1,6 +1,7 @@
 package de.dfki.vsm.xtension.charamel;
 
 import de.dfki.vsm.util.log.LOGConsoleLogger;
+
 import java.io.IOException;
 import java.net.Socket;
 
@@ -28,7 +29,9 @@ public class CharamelListener extends Thread {
         mExecutor = executor;
     }
 
-    // Parse specific elements
+    /**
+     * Parse specific elements
+     */
     @Override
     public final void start() {
         try {
@@ -39,7 +42,9 @@ public class CharamelListener extends Thread {
         }
     }
 
-    // Abort the server thread
+    /**
+     * Abort the server thread
+     */
     public final void abort() {
         // Set the termination flag
         mDone = true;
@@ -55,11 +60,13 @@ public class CharamelListener extends Thread {
         interrupt();
     }
 
-    // Execute the server thread
+    /**
+     * Execute the server thread
+     */
     @Override
     public final void run() {
 
-     mLogger.message("Ready for accepting socket connections ...");
-     mExecutor.connectToCharamel(mSocket);
+        mLogger.message("Ready for accepting socket connections ...");
+        mExecutor.connectToCharamel(mSocket);
     }
 }
