@@ -12,3 +12,4 @@ This version is the master version. It includes the latest changes. Always handl
 
 For more information, visit the website 
 [scenemaker.dfki.de](http://scenemaker.dfki.de)
+# GitTest
