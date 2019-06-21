@@ -56,7 +56,9 @@ public final class CharamelExecutor extends ActivityExecutor implements Exportab
     // The TCP socket connection 
     private Socket mSocket;
 
-    // Construct the executor
+    /**
+     * Construct the executor
+     */
     public CharamelExecutor(final PluginConfig config, final RunTimeProject project) {
         // Initialize the plugin
         super(config, project);
@@ -68,7 +70,9 @@ public final class CharamelExecutor extends ActivityExecutor implements Exportab
                 mConfig.getProperty("useexe"));
     }
 
-    // Launch the executor 
+    /**
+     * Launch the executor
+     */
     @Override
     public final void launch() {
         // Get the plugin configuration
@@ -116,7 +120,9 @@ public final class CharamelExecutor extends ActivityExecutor implements Exportab
         connectToCharamel(mSocket);
     }
 
-    // Unload the executor 
+    /**
+     * Unload the executor
+     */
     @Override
     public final void unload() {
         try {
@@ -140,16 +146,18 @@ public final class CharamelExecutor extends ActivityExecutor implements Exportab
         }
         // Clear the map of clients 
         mClientMap.clear();
-        // Abort the server thread
-//        try {
-//            mListener.abort();
-//            // Join the client thread
-//            mListener.join();
-//            // Print some information 
-//            mLogger.message("Joining server thread");
-//        } catch (final InterruptedException exc) {
-//            mLogger.failure(exc.toString());
-//        }
+        /*
+ Abort the server thread
+        try {
+            mListener.abort();
+            // Join the client thread
+            mListener.join();
+            // Print some information
+            mLogger.message("Joining server thread");
+        } catch (final InterruptedException exc) {
+            mLogger.failure(exc.toString());
+        }
+*/
 
         if (mUseExe) {
             // Wait for pawned processes
@@ -357,7 +365,7 @@ public final class CharamelExecutor extends ActivityExecutor implements Exportab
                 zdegree = (zdegree == null) ? "0.0" : zdegree;
                 charamelAct = mActionLoader.loadCharamelAnimation(activity_name, joint, interpolation, xdegree, ydegree, zdegree, aid);
                 activity.setType(Type.parallel);
-            }else if (activity_name.equalsIgnoreCase("MoveCamera")) {
+            } else if (activity_name.equalsIgnoreCase("MoveCamera")) {
                 String posX = activity.get("posX");
                 posX = (posX == null) ? "0.0" : posX;
                 String posY = activity.get("posY");
@@ -376,10 +384,10 @@ public final class CharamelExecutor extends ActivityExecutor implements Exportab
                 upY = (upY == null) ? "0.0" : upY;
                 String upZ = activity.get("upZ");
                 upZ = (upZ == null) ? "0.0" : upZ;
-                charamelAct = mActionLoader.loadCharamelAnimation(activity_name, posX, posY, posZ,lookX,lookY,lookZ,upX,upY,upZ, aid);
+                charamelAct = mActionLoader.loadCharamelAnimation(activity_name, posX, posY, posZ, lookX, lookY, lookZ, upX, upY, upZ, aid);
                 activity.setType(Type.parallel);
-            }else {
-                System.out.println("unknowns charamel activity");
+            } else {
+                mLogger.warning("unknowns charamel activity");
                 // Unknown activity_name
             }
         }
@@ -500,21 +508,27 @@ public final class CharamelExecutor extends ActivityExecutor implements Exportab
 
     }
 
-    // Broadcast some message
+    /**
+     * Broadcast some message
+     */
     private void broadcast(final String message) {
         mClientMap.values().stream().forEach((client) -> {
             client.send(message);
         });
     }
 
-    // Show action waiting dialog
+    /**
+     * Show action waiting dialog
+     */
     private void dialog(final String message) {
         WaitingDialog InfoDialog = new WaitingDialog(message);
         InfoDialog.setModal(true);
         InfoDialog.setVisible(true);
     }
 
-    // Check if action file exists
+    /**
+     * Check if action file exists
+     */
     private boolean exists(final String path) {
         final File file = new File(path);
         return file.exists() && file.isDirectory();
@@ -618,19 +632,18 @@ public final class CharamelExecutor extends ActivityExecutor implements Exportab
         List<CharaXMLElement> children = caiRsp.getChildren();
         String status = "";
         String actionID = "";
-        for(CharaXMLElement child:children){
-            if(child instanceof Status) status = child.getText();
-            if(child instanceof CaiCommand) actionID = ((CaiCommand) child).getMId();
+        for (CharaXMLElement child : children) {
+            if (child instanceof Status) status = child.getText();
+            if (child instanceof CaiCommand) actionID = ((CaiCommand) child).getMId();
         }
-        mLogger.message("found status,actionID: " + status + ", "+ actionID);
-        if ((status.equalsIgnoreCase("success") || status.equalsIgnoreCase("failure")) && !actionID.equals("")){
+        mLogger.message("found status,actionID: " + status + ", " + actionID);
+        if ((status.equalsIgnoreCase("success") || status.equalsIgnoreCase("failure")) && !actionID.equals("")) {
             synchronized (mActivityWorkerMap) {
                 if (mActivityWorkerMap.containsKey(actionID)) {
-                         mActivityWorkerMap.remove(actionID);
-                    }
-                else {
-                        mLogger.failure("Activityworker for " + actionID + " has been stopped before ...");
-                    }
+                    mActivityWorkerMap.remove(actionID);
+                } else {
+                    mLogger.failure("Activityworker for " + actionID + " has been stopped before ...");
+                }
                 // wake me up ..
                 mActivityWorkerMap.notifyAll();
             }
