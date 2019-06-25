@@ -1,5 +1,7 @@
 package de.dfki.vsm.xtension.odp;
 
+import de.dfki.vsm.runtime.interpreter.value.StringValue;
+import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
 
 import java.io.IOException;
@@ -12,11 +14,15 @@ public class UpdServer extends Thread {
     private boolean running;
     private byte[] buf = new byte[1024];
 
+    private RunTimeProject mProject;
+    private String mSceneFlowVar = "opdMsg";
+
     // The singleton logger instance
     private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
 
 
-    public UpdServer(int port) throws SocketException {
+    public UpdServer(int port, RunTimeProject project) throws SocketException {
+        mProject = project;
         socket = new DatagramSocket(port);
     }
 
@@ -36,6 +42,8 @@ public class UpdServer extends Thread {
 
             if (packet.getLength() > 0) {
                 String message = new String(packet.getData(), 0, packet.getLength());
+
+                mProject.setVariable(mSceneFlowVar, new StringValue(message));
 
                 mLogger.message("OPD UPD Message received: " + message);
             }
