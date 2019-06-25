@@ -51,7 +51,7 @@ public class ODPExecutor extends ActivityExecutor {
         clientPort = 4445;
         serverAddress = "127.0.0.1";
         serverPort = 4446;
-        clientText = "{task:\"greeting\", voice:\"Hallo, Wie heißen Sie?\"}";
+        //clientText = "{task:\"greeting\", voice:\"Hallo, Wie heißen Sie?\"}";
 
         initClient();
         initServer();
@@ -71,7 +71,7 @@ public class ODPExecutor extends ActivityExecutor {
     private void initServer() {
         if (server == null) {
             try {
-                server = new UpdServer(serverPort);
+                server = new UpdServer(serverPort, mProject);
                 mLogger.message("Initialize udp server");
                 server.start();
             } catch (SocketException e) {
@@ -95,8 +95,9 @@ public class ODPExecutor extends ActivityExecutor {
 
         final String name = activity.getName();
         if (name.equalsIgnoreCase("send")) {
+            String task = activity.get("task");
             try {
-                client.clientSend(clientText);
+                client.clientSend("{task:\"" + task + "\"}");
             } catch (IOException e) {
                 mLogger.failure(e.getMessage());
             }
