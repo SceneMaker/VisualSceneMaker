@@ -43,6 +43,14 @@ public class UpdServer extends Thread {
             if (packet.getLength() > 0) {
                 String message = new String(packet.getData(), 0, packet.getLength());
 
+                // cleaning message ...
+                //remove " : _
+                message = message.replaceAll("\"", "");
+                message = message.replaceAll("\\:", "");
+                message = message.replaceAll("\\_", "");
+                message = message.replaceAll("\\{", "");
+                message = message.replaceAll("\\}", "");
+
                 mProject.setVariable(mSceneFlowVar, new StringValue(message));
 
                 mLogger.message("OPD UPD Message received: " + message);
