@@ -22,7 +22,7 @@ public abstract class RunTimePlugin {
     public RunTimePlugin(
             final PluginConfig config,
             final RunTimeProject project) {
-        // Initializ the config
+        // Initialize the config
         mConfig = config;
         // Initialize the project
         mProject = project;

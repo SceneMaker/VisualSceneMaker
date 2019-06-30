@@ -16,6 +16,7 @@ import de.dfki.vsm.runtime.interpreter.value.StructValue;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.jpl.JPLEngine;
 import de.dfki.vsm.util.xml.XMLUtilities;
+import de.dfki.vsm.xtension.WordMapping;
 import de.dfki.vsm.xtension.tricatworld.util.property.TricatWorldtProjectProperty;
 import de.dfki.vsm.xtension.tricatworld.xml.command.TriCatWorldCommand;
 import de.dfki.vsm.xtension.tricatworld.xml.command.object.TriCatWorldCmdObject;
@@ -25,7 +26,6 @@ import de.dfki.vsm.xtension.tricatworld.xml.util.ActionLoader;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
@@ -33,7 +33,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Properties;
 
 /**
  * @author Gregor Mehlmann
@@ -52,7 +51,7 @@ public final class TriCatWorldExecutor extends ActivityExecutor implements Expor
     // The Charamel Action loader 
     private final ActionLoader mActionLoader = ActionLoader.getInstance();
     // The word mapping properties
-    private final Properties mWordMapping = new Properties();
+    private WordMapping mWordMapping = new WordMapping();
     // The flag if we use the JPL
     private final boolean mUseJPL;
     // The flag for executables
@@ -211,13 +210,7 @@ public final class TriCatWorldExecutor extends ActivityExecutor implements Expor
                 }
             } else {
                 // load wordmapping database
-                try {
-                    String wmf = mProject.getProjectPath() + File.separator + mProject.getAgentConfig(activity_actor).getProperty("wordmapping");
-                    wmf = wmf.replace("\\", "/");
-                    mWordMapping.load(new FileReader(new File(wmf)));
-                } catch (IOException ex) {
-                    mLogger.failure("Wordmapping file (" + mProject.getAgentConfig(activity_actor).getProperty("wordmapping") + ") not found!");
-                }
+                mWordMapping.load(activity_actor, mProject);
                 // do the pronounciation mapping
                 speech_activity.doPronounciationMapping(mWordMapping);
                 // get the charamel avatar id
