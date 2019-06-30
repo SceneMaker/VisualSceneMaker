@@ -4,6 +4,8 @@ plugins {
     id 'net.nemerosa.versioning' version '2.8.2'
     id 'com.github.johnrengelman.shadow' version '5.0.0'
 }
+compileJava {options.encoding = "UTF-8"}
+javadoc { options.encoding = 'UTF-8' }
 
 group 'de.dfki'
 version '4.0.0'
