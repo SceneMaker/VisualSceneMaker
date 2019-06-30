@@ -1,6 +1,9 @@
 package de.dfki.vsm.xtension.tricatworld;
 
 import de.dfki.vsm.editor.dialog.WaitingDialog;
+import de.dfki.vsm.extensionAPI.ExportableProperties;
+import de.dfki.vsm.extensionAPI.ProjectProperty;
+import de.dfki.vsm.extensionAPI.value.ProjectValueProperty;
 import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
 import de.dfki.vsm.runtime.activity.AbstractActivity.Type;
@@ -11,9 +14,6 @@ import de.dfki.vsm.runtime.interpreter.value.AbstractValue;
 import de.dfki.vsm.runtime.interpreter.value.StringValue;
 import de.dfki.vsm.runtime.interpreter.value.StructValue;
 import de.dfki.vsm.runtime.project.RunTimeProject;
-import de.dfki.vsm.extensionAPI.ExportableProperties;
-import de.dfki.vsm.extensionAPI.ProjectProperty;
-import de.dfki.vsm.extensionAPI.value.ProjectValueProperty;
 import de.dfki.vsm.util.jpl.JPLEngine;
 import de.dfki.vsm.util.xml.XMLUtilities;
 import de.dfki.vsm.xtension.tricatworld.util.property.TricatWorldtProjectProperty;
@@ -44,11 +44,11 @@ public final class TriCatWorldExecutor extends ActivityExecutor implements Expor
     // The tworld listener
     private TriCatWorldListener mListener;
     // The map of processes
-    private final HashMap<String, Process> mProcessMap = new HashMap();
+    private final HashMap<String, Process> mProcessMap = new HashMap<>();
     // The client thread list
-    private final HashMap<String, TriCatWorldHandler> mClientMap = new HashMap();
+    private final HashMap<String, TriCatWorldHandler> mClientMap = new HashMap<>();
     // The map of activity worker
-    private final HashMap<String, ActivityWorker> mActivityWorkerMap = new HashMap();
+    private final HashMap<String, ActivityWorker> mActivityWorkerMap = new HashMap<>();
     // The Charamel Action loader 
     private final ActionLoader mActionLoader = ActionLoader.getInstance();
     // The word mapping properties
