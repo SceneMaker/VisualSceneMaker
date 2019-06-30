@@ -22,9 +22,9 @@ public abstract class CharaXMLElement {
 
     private final LOGConsoleLogger mLogger
             = LOGConsoleLogger.getInstance();
-    List<CharaXMLElement> children = new ArrayList();
+    List<CharaXMLElement> children = new ArrayList<>();
     CharaXMLElement parent;
-    String text;
+    private String text;
 
     CharaXMLElement() {
     }
@@ -42,9 +42,7 @@ public abstract class CharaXMLElement {
     }
 
     public void handle() {
-        children.stream().forEach((c) -> {
-            c.handle();
-        });
+        children.stream().forEach(CharaXMLElement::handle);
     }
 
     public void parseXML() {
@@ -53,7 +51,7 @@ public abstract class CharaXMLElement {
     void parseChildren(Element element) {
         mLogger.message("Parsing " + element);
         NodeList list = element.getChildNodes();
-        List<Element> childElementList = new ArrayList();
+        List<Element> childElementList = new ArrayList<>();
         for (int i = 0; i < list.getLength(); i++) {
             if (list.item(i).getNodeType() == Node.ELEMENT_NODE) {
                 childElementList.add((Element) list.item(i));
