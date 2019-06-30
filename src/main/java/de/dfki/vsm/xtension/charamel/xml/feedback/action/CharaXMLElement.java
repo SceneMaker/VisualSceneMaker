@@ -14,8 +14,6 @@ import org.w3c.dom.NodeList;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * @author Manuel
@@ -53,6 +51,7 @@ public abstract class CharaXMLElement {
     }
 
     void parseChildren(Element element) {
+        mLogger.message("Parsing " + element);
         NodeList list = element.getChildNodes();
         List<Element> childElementList = new ArrayList();
         for (int i = 0; i < list.getLength(); i++) {
@@ -61,19 +60,18 @@ public abstract class CharaXMLElement {
             } else if (list.item(i).getNodeType() == Node.TEXT_NODE) {
                 text = list.item(i).getTextContent();
             }
-
         }
         CharaXMLElement child;
         for (Element childElement : childElementList) {
             String name = childElement.getTagName();
-            mLogger.message("found child " + name);
+            mLogger.message("processing child " + name);
             switch (name) {
                 case "cai_event":
                     child = new CaiEvent(this);
                     try {
                         ((CaiEvent) child).parseXML(childElement);
                     } catch (XMLParseError ex) {
-                        Logger.getLogger(CharaXMLElement.class.getName()).log(Level.SEVERE, "error parsing cai_event", ex);
+                        mLogger.failure("error parsing cai_event: " + ex.getMsg());
                     }
                     children.add(child);
                     break;
@@ -82,7 +80,7 @@ public abstract class CharaXMLElement {
                     try {
                         ((Tts) child).parseXML(childElement);
                     } catch (XMLParseError ex) {
-                        Logger.getLogger(CharaXMLElement.class.getName()).log(Level.SEVERE, "error parsing tts", ex);
+                        mLogger.failure("error parsing cai_event: " + ex.getMsg());
                     }
                     children.add(child);
                     break;
@@ -91,7 +89,7 @@ public abstract class CharaXMLElement {
                     try {
                         ((Action) child).parseXML(childElement);
                     } catch (XMLParseError ex) {
-                        Logger.getLogger(CharaXMLElement.class.getName()).log(Level.SEVERE, "error parsing action", ex);
+                        mLogger.failure("error parsing cai_event: " + ex.getMsg());
                     }
                     children.add(child);
                     break;
@@ -100,7 +98,7 @@ public abstract class CharaXMLElement {
                     try {
                         ((Status) child).parseXML(childElement);
                     } catch (XMLParseError ex) {
-                        Logger.getLogger(CharaXMLElement.class.getName()).log(Level.SEVERE, "error parsing action", ex);
+                        mLogger.failure("error parsing cai_event: " + ex.getMsg());
                     }
                     children.add(child);
                     break;
@@ -109,7 +107,7 @@ public abstract class CharaXMLElement {
                     try {
                         ((CaiCommand) child).parseXML(childElement);
                     } catch (XMLParseError ex) {
-                        Logger.getLogger(CharaXMLElement.class.getName()).log(Level.SEVERE, "error parsing action", ex);
+                        mLogger.failure("error parsing cai_event: " + ex.getMsg());
                     }
                     children.add(child);
                     break;
@@ -118,14 +116,14 @@ public abstract class CharaXMLElement {
                     try {
                         ((CaiResponse) child).parseXML(childElement);
                     } catch (XMLParseError ex) {
-                        Logger.getLogger(CharaXMLElement.class.getName()).log(Level.SEVERE, "error parsing action", ex);
+                        mLogger.failure("error parsing cai_event: " + ex.getMsg());
                     }
                     children.add(child);
                     break;
 
                 default:
-                    Logger.getLogger(CharaXMLElement.class.getName()).log(Level.SEVERE, "Could not parse XML tag:{0}", name);
-                   
+                    mLogger.failure("error parsing cai_event " + name);
+
                 /*case "feedback":
                     child = new Feedback(this);           
                     try {
