@@ -13,6 +13,7 @@ import de.dfki.vsm.runtime.activity.scheduler.ActivityWorker;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.jpl.JPLEngine;
 import de.dfki.vsm.util.xml.XMLUtilities;
+import de.dfki.vsm.xtension.WordMapping;
 import de.dfki.vsm.xtension.charamel.util.property.CharamelProjectProperty;
 import de.dfki.vsm.xtension.charamel.xml.command.object.action.CharamelActObject;
 import de.dfki.vsm.xtension.charamel.xml.feedback.action.*;
@@ -20,7 +21,6 @@ import de.dfki.vsm.xtension.charamel.xml.util.CharamelActionLoader;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
@@ -28,7 +28,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Properties;
 
 /**
  * @author Gregor Mehlmann
@@ -47,7 +46,7 @@ public final class CharamelExecutor extends ActivityExecutor implements Exportab
     // The Charamel Action loader 
     private final CharamelActionLoader mActionLoader = CharamelActionLoader.getInstance();
     // The word mapping properties
-    private final Properties mWordMapping = new Properties();
+    private WordMapping mWordMapping = new WordMapping();
     // The flag if we use the JPL
     private final boolean mUseJPL;
     // The flag for executables
@@ -146,18 +145,6 @@ public final class CharamelExecutor extends ActivityExecutor implements Exportab
         }
         // Clear the map of clients 
         mClientMap.clear();
-        /*
- Abort the server thread
-        try {
-            mListener.abort();
-            // Join the client thread
-            mListener.join();
-            // Print some information
-            mLogger.message("Joining server thread");
-        } catch (final InterruptedException exc) {
-            mLogger.failure(exc.toString());
-        }
-*/
 
         if (mUseExe) {
             // Wait for pawned processes
@@ -201,7 +188,6 @@ public final class CharamelExecutor extends ActivityExecutor implements Exportab
         final Type activity_type = activity.getType();
         final String activity_text = activity.getText();
         final String activity_name = activity.getName();
-        //final String activity_mode = activity.getMode();
         final String activity_actor = activity.getActor();
         final List activity_features = activity.getFeatures();
         // Initialize the command        
@@ -219,19 +205,11 @@ public final class CharamelExecutor extends ActivityExecutor implements Exportab
                 // If speech_text is empty we assume that the activity has 
                 // empty speech text but has marker activities registered
                 for (final String tm : time_marks) {
-                    //mLogger.message("Directly executing activity at timemark " + tm);
                     mProject.getRunTimePlayer().getActivityScheduler().handle(tm);
-                    return;
                 }
             } else {
                 // load wordmapping database
-                try {
-                    String wmf = mProject.getProjectPath() + File.separator + mProject.getAgentConfig(activity_actor).getProperty("wordmapping");
-                    wmf = wmf.replace("\\", "/");
-                    mWordMapping.load(new FileReader(new File(wmf)));
-                } catch (IOException ex) {
-                    mLogger.failure("Wordmapping file (" + mProject.getAgentConfig(activity_actor).getProperty("wordmapping") + ") not found!");
-                }
+                mWordMapping.load(activity_actor, mProject);
                 // do the pronounciation mapping
                 speech_activity.doPronounciationMapping(mWordMapping);
                 // get the charamel avatar id
@@ -240,7 +218,7 @@ public final class CharamelExecutor extends ActivityExecutor implements Exportab
                 charamelAct = mActionLoader.buildCharamelAnimation("Speak", speech_activity.getBlocks(), speech_activity.getPunct(), aid);
             }
         } else {
-            System.err.println("Activity Name: '" + activity_name + "'");
+            mLogger.message("Activity Name: '" + activity_name + "'");
             // Get the unique actor id
             final String aid = mProject.getAgentConfig(activity_actor).getProperty("aid");
             // Check the activity name
@@ -392,9 +370,6 @@ public final class CharamelExecutor extends ActivityExecutor implements Exportab
             }
         }
 
-        // Create command object
-//        final CharamelCommand triCatWorldCmd = new CharamelCommand();
-//        triCatWorldCmd.addObject(new CharamelCmdObject(activity_actor, charamelAct));
         // Write the commmand to XML        
         final String message = XMLUtilities.xmlStringToPrettyXMLString(charamelAct.toString());
         // Print debug message
@@ -418,23 +393,11 @@ public final class CharamelExecutor extends ActivityExecutor implements Exportab
                         mLogger.failure(exc.toString());
                     }
                 }
-
-                StringBuilder sb = new StringBuilder();
-
-                if (mActivityWorkerMap.size() > 1) {
-                    for (String aw : mActivityWorkerMap.keySet()) {
-                        sb.append(aw).append(", ");
-                    }
-
-                    sb.delete(sb.length() - 2, sb.length());
-                    //mLogger.message("ActivityWorker " + tworld_cmd_action.getId() + " done, ActivityWorker (" + sb.toString() + ") stil active ...");
-                } else {
-                    //mLogger.message("ActivityWorker " + tworld_cmd_action.getId() + " done ...");
-                }
             }
         }
         // Return when terminated
     }
+
 
     // Start some connection
     public final void connectToCharamel(final Socket socket) {
@@ -472,39 +435,6 @@ public final class CharamelExecutor extends ActivityExecutor implements Exportab
         // Handle action feedback
         handle(charamelFeedback);
         mLogger.message("handling done");
-        // TODO marker!
-        /* else {
-                            // there is no cai_event - hence no tts notification.
-                            // since it is an action_finished message, remove the activity in any case
-                            if (mActivityWorkerMap.containsKey(action.mId)) {
-                                mActivityWorkerMap.remove(action.mId);
-                            } else {
-                                mLogger.failure("Activityworker for " + action.mId + " has been stopped before ...");
-                            }
-                            // wake me up ..
-                            mActivityWorkerMap.notifyAll();
-                        }
-                    }
-
-            // Handle action feedback
-            if (charamelFeedback.hasObjectFeedback()) {
-                // added pg 24.3.2017 - process multiple objects in feedback 
-                for (de.dfki.vsm.xtension.charamel.xml.feedback.object.Object object : charamelFeedback.mFeedbackObjects) {
-                    HashMap<String, AbstractValue> values = new HashMap<>();
-                    values.put("type", new StringValue(object.mObjectFeedback.mName));
-                    values.put("elicitor", new StringValue(object.mObjectFeedback.mTriggerObject));
-                    values.put("name", new StringValue(object.mName));
-
-                    try {
-                        //RunTimeInstance runTime = RunTimeInstance.getInstance();
-                        StructValue struct = new StructValue(values);
-                        //runTime.setVariable(mProject, "feedback", struct);
-                        mProject.setVariable("feedback", struct);//GM
-                    } catch (Exception e) {
-                        // System.out.println("not running");
-                    }
-                }
-            }*/
 
     }
 
