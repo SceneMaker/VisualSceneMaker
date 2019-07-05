@@ -13,6 +13,7 @@ import de.dfki.vsm.util.log.LOGConsoleLogger;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -40,8 +41,11 @@ public class PepperExecutor extends ActivityExecutor implements ExportableProper
 //        for (Map.Entry<ProjectProperty, ProjectValueProperty> p : extensionProperties.getExportableProperties().entrySet()) {
 //            mLogger.message("Entry: " + p.getKey() + ": " + p.getValue().getValue());
 //        }
-//        mLogger.message("mConfig Entry: " + mConfig.getProperty("Python 2.7 (32 bit) executable"));
-//        mLogger.message("mConfig Entry: " + mConfig.getProperty("Pepper IP address"));
+        mLogger.message("mConfig Entry: " + mConfig.getProperty("Python 2.7 (32 bit) executable"));
+        mLogger.message("mConfig Entry: " + mConfig.getProperty("Pepper IP address", "pepper.local"));
+        // TODO investigate: if I don't specify the defaultValue null is returned;
+        // why do I need to specify it _again_ when I already did so in the definition of PepperExtensionProperties?
+        // whole plugin property architecture seems convoluted...
 
         // mConfig inherited from RunTimePlugin via ActivityExecutor
         //mConfig.getProperty("myProperty", "default");
@@ -82,11 +86,15 @@ public class PepperExecutor extends ActivityExecutor implements ExportableProper
          * Start the Python process and let it connect to this program
          */
         String pythonScript = "Pepper.py";
-        ProcessBuilder processBuilder = new ProcessBuilder("python2-32", pythonScript);
-//        String pythonPath = mConfig.getProperty("")
-//        ProcessBuilder processBuilder = new ProcessBuilder()
-        processBuilder.directory(new File(
-                "C:/Users/Matthias/Uni/11. Semester/Social Computing/VSM_release/src/de/dfki/vsm/xtension/pepper"));
+        String pythonExecutable = mConfig.getProperty("Python 2.7 (32 bit) executable");
+        String pepperIPAddress = mConfig.getProperty("Pepper IP address", "pepper.local");
+        ProcessBuilder processBuilder = new ProcessBuilder(pythonExecutable, pythonScript,
+                "--address-pepper", pepperIPAddress);
+
+
+        String pepperExecutorDir = getPepperExecutorDirectory();
+        
+        processBuilder.directory(new File(pepperExecutorDir));
         processBuilder.inheritIO();
         Process process = null;
         try {
@@ -151,6 +159,24 @@ public class PepperExecutor extends ActivityExecutor implements ExportableProper
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     * Hacky way to get the directory containing the PepperExecutor source file,
+     * which contains the needed "Pepper.py" Python script.
+     *
+     * Assumes that the Visual Scene Maker is executed via a .jar located three
+     * directory levels deep in a folder which also contains the VSM source.
+     */
+    private String getPepperExecutorDirectory() {
+        String VSMjarPath = PepperExecutor.class.getProtectionDomain().getCodeSource().getLocation().toString();
+//        mLogger.message(VSMjarPath);
+        String[] splitPath = VSMjarPath.split("/");
+        // now remove "file:" prefix and trailing relative path from VSM base directory to jar (something like "build\libs\VisualSceneMaker-4.0.0.jar")
+        String VSMbasePath = String.join("/", Arrays.copyOfRange(splitPath, 1, splitPath.length - 3));
+        String pepperExecutorPath = VSMbasePath.concat("/src/main/java/de/dfki/vsm/xtension/pepper");
+//        mLogger.message(pepperExecutorPath);
+        return pepperExecutorPath;
     }
 
     /**
