@@ -18,12 +18,11 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
+import java.awt.font.TextAttribute;
 import java.awt.font.TextLayout;
 import java.awt.image.BufferedImage;
 import java.text.AttributedString;
-import java.util.ArrayList;
-import java.util.Observable;
-import java.util.Observer;
+import java.util.*;
 
 //~--- JDK imports ------------------------------------------------------------
 
@@ -51,6 +50,7 @@ public class VarBadgeLocal extends JComponent implements EventListener, ActionLi
     private boolean mIsHidden;
     private boolean useCachedImage = false;
     private BufferedImage bufferedImage;
+    FontMetrics fontMetrics = null;
 
     public VarBadgeLocal(SuperNode superNode, boolean hidden) {
         mSuperNode = superNode;
@@ -67,6 +67,24 @@ public class VarBadgeLocal extends JComponent implements EventListener, ActionLi
                         TextFormatDesktop.fillWithAttributes(varDef.getFormattedSyntax()).getSecond()));
             }
         }
+        // Initialize font
+        Map<TextAttribute, Object> map = new Hashtable<>();
+
+        map.put(TextAttribute.KERNING, TextAttribute.KERNING_ON);
+        map.put(TextAttribute.FAMILY, Font.SANS_SERIF);
+        map.put(TextAttribute.POSTURE, TextAttribute.POSTURE_REGULAR);
+        map.put(TextAttribute.WEIGHT, TextAttribute.WEIGHT_DEMIBOLD);
+        map.put(TextAttribute.SIZE, 16); // get from Editor config
+
+        // Derive the font from the attribute map
+        Font font = Font.getFont(map);
+
+        // Derive the node's font metrics from the font
+        fontMetrics = getFontMetrics(font);
+
+        // Set the node's font to the updated font
+        setFont(font);
+
         // Initialize size and location
         setSize(new Dimension(1, 1));
         setLocation(superNode.getLocalVariableBadge().getPosition().getXPos(), superNode.getLocalVariableBadge().getPosition().getYPos());
@@ -114,7 +132,6 @@ public class VarBadgeLocal extends JComponent implements EventListener, ActionLi
                 useCachedImage = false;
             } else {
                 paintDetailedVariables((Graphics2D) g);
-
             }
         }
     }
@@ -124,10 +141,12 @@ public class VarBadgeLocal extends JComponent implements EventListener, ActionLi
         Dimension dimension = computeTextRectSize(g);
 
         if (!useCachedImage) {
-
             bufferedImage = new BufferedImage((int) dimension.getWidth(), (int) dimension.getHeight(), BufferedImage.TYPE_4BYTE_ABGR);
             Graphics2D graphics = bufferedImage.createGraphics();
             graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            graphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+            graphics.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
+            graphics.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
 
             // Compute the size of the variable badge
             setSize(dimension);
@@ -135,6 +154,7 @@ public class VarBadgeLocal extends JComponent implements EventListener, ActionLi
             // draw background
             graphics.setColor(new Color(220, 220, 220, 200));
             graphics.fillRoundRect(0, 0, dimension.width, dimension.height, 5, 5);
+            graphics.setFont(fontMetrics.getFont());
 
             // Draw the variables
             graphics.setStroke(new BasicStroke(1.5f));
@@ -145,9 +165,9 @@ public class VarBadgeLocal extends JComponent implements EventListener, ActionLi
             int y = 12;
             for (VariableEntry entry : mEntryList) {
                 AttributedString attributedString = entry.getAttributed();
-                TextLayout textLayout = new TextLayout(attributedString.getIterator(),
-                        graphics.getFontRenderContext());
 
+                TextLayout textLayout = new TextLayout(attributedString.getIterator(),
+                        fontMetrics.getFontRenderContext());
                 currentDrawingOffset = (int) (currentDrawingOffset + textLayout.getAscent());
                 graphics.drawString(attributedString.getIterator(), mPositionOffset,
                         mPositionOffset + currentDrawingOffset);
@@ -164,15 +184,13 @@ public class VarBadgeLocal extends JComponent implements EventListener, ActionLi
         }
     }
 
-    private void paintFromImage(Graphics2D graphics2) {
-        graphics2.drawImage(bufferedImage, 0, 0, null);
+    private void paintFromImage(Graphics2D g) {
+        g.drawImage(bufferedImage, 0, 0, null);
     }
 
     private void paintMinimized(Graphics2D g) {
         // Enable antialiasing
         Graphics2D graphics = g;
-
-        graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
         // Compute the size of the variable badge
         Dimension dimension = new Dimension(128, 15);
@@ -183,8 +201,8 @@ public class VarBadgeLocal extends JComponent implements EventListener, ActionLi
         // draw background
         graphics.fillRoundRect(0, 0, 15, 15, 5, 5);
         graphics.setColor(new Color(51, 51, 51));
-        graphics.setFont(new Font("Serif", Font.PLAIN, FONT_SIZE));
-        graphics.drawString("Local Variables [...]", 18, 12);
+        //graphics.setFont(new Font("Serif", Font.PLAIN, FONT_SIZE));
+        graphics.drawString("Variables [...]", 18, 12);
     }
 
     private boolean containsEntryFor(String varName) {

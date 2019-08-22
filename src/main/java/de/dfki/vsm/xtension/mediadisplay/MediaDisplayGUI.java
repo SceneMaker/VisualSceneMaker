@@ -5,12 +5,7 @@
  */
 package de.dfki.vsm.xtension.mediadisplay;
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Toolkit;
-import java.io.File;
-import java.io.IOException;
-import java.util.HashMap;
+import de.dfki.vsm.util.log.LOGConsoleLogger;
 import javafx.application.Platform;
 import javafx.embed.swing.JFXPanel;
 import javafx.fxml.FXMLLoader;
@@ -18,7 +13,12 @@ import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
-import javax.swing.JFrame;
+
+import javax.swing.*;
+import java.awt.*;
+import java.io.File;
+import java.io.IOException;
+import java.util.HashMap;
 
 /**
  *
@@ -39,6 +39,8 @@ public class MediaDisplayGUI {
     private HashMap<String, String> mDisplayValues = new HashMap<>();
     // The current image
     private String mImageResource;
+    // The singelton logger instance
+    private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
 
     public void init(MediaDisplayExecutor executor, HashMap<String, String> values) {
         mExecutor = executor;
@@ -68,8 +70,16 @@ public class MediaDisplayGUI {
             mImageResource = "file:///" + mDisplayValues.get("path") + File.separator + mDisplayValues.get(name);            
             mImageResource = mImageResource.replace("\\", "/").replace(" ", "%20");
 
-            System.out.println(">>>> image ressource " + mImageResource);
-                        
+            mLogger.message(">>>> image ressource " + mImageResource);
+
+            if (mController == null) {
+                mLogger.message("Controller null");
+            }
+
+            if (mController.canvas == null) {
+                mLogger.message("Controller Canvas null");
+            }
+
             mController.canvas.setStyle("-fx-background-image: url('" + mImageResource + "'); "
                     + "-fx-background-position: center center; "
                     + "-fx-background-repeat: no-repeat no-repeat;"
@@ -84,7 +94,7 @@ public class MediaDisplayGUI {
     }
 
     private void initFX(JFXPanel jfxPanel) {
-        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/res/de/dfki/vsm/xtension/mediadisplay/FXMLDocument.fxml"));
+        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/src/main/java/de/dfki/vsm/xtension/mediadisplay/FXMLDocument.fxml"));
         mController = new FXMLDocumentController();
         fxmlLoader.setController(mController);
 
