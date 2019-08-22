@@ -14,11 +14,11 @@ import de.dfki.vsm.runtime.activity.scheduler.ActivityWorker;
 import de.dfki.vsm.runtime.interpreter.value.StringValue;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
+import javafx.application.Platform;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
-
-import javafx.application.Platform;
 
 /**
  *
@@ -67,9 +67,13 @@ public class ButtonGUIExecutor extends ActivityExecutor {
             }
         } else {
             final String name = activity.getName();
-            
+
             if (name.equalsIgnoreCase("show")) {
                 String[] buttons = mProject.getAgentConfig(activity.getActor()).getProperty("show").split(",");
+                mLogger.message("Showing buttons ...");
+                for (String b : buttons) {
+                    mLogger.message(b);
+                }
                 Platform.runLater(() -> mButtonGUI.showButton(buttons));
             }
             
@@ -139,6 +143,8 @@ public class ButtonGUIExecutor extends ActivityExecutor {
                         values[3].trim(),
                         values[4].trim(),
                         values[5].trim());
+
+                mLogger.message("Found button definition with id " + bv.mId + " @ " + bv.mX + "," + bv.mY + " (" + bv.mSize + "), name=" + bv.mName + ", value=" + bv.mValue + " vsmVar=" + bv.mVSMVar);
 
 //                    // Check if scene_flow has the global variable values[5].trim();
 //                    mLogger.message("Checking var " + values[5].trim());
