@@ -9,33 +9,18 @@ import de.dfki.vsm.runtime.activity.ActionActivity;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
 import de.dfki.vsm.runtime.activity.scheduler.ActivityWorker;
 import de.dfki.vsm.runtime.project.RunTimeProject;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.GridLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.LinkedList;
-import javax.swing.BorderFactory;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JSlider;
-import javax.swing.JTextPane;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
+
+import javax.swing.*;
 import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
-import javax.swing.BoxLayout;
+import java.awt.*;
+import java.awt.event.ItemEvent;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.LinkedList;
+
 import static javax.swing.BoxLayout.X_AXIS;
 import static javax.swing.BoxLayout.Y_AXIS;
 
@@ -619,7 +604,7 @@ public final class WizardExecutor extends ActivityExecutor {
         // User status variables
         mUserRoleLabel.setEnabled(false);
         mUserActLabel.setEnabled(false);
-        // User state button
+        // User state gui
         mUserStateButton.setEnabled(true);
         // Regulation buttons
         mUserRequestButton.setEnabled(false);
@@ -635,13 +620,13 @@ public final class WizardExecutor extends ActivityExecutor {
         mEyegazeCombo.setEnabled(false);
         mExpressionLabel.setEnabled(false);
         mExpressionCombo.setEnabled(false);
-        // User voice button
+        // User voice gui
         mUserVoiceLabel.setEnabled(false);
         mUserVoiceButton.setEnabled(false);
         // Agent status variables
         mAgentRoleLabel.setEnabled(false);
         mAgentActLabel.setEnabled(false);
-        // Agent state button
+        // Agent state gui
         mAgentStateButton.setEnabled(true);
         //mAgentVoiceButton.setEnabled(false);
         mAgentRequestButton.setEnabled(false);

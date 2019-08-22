@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.dfki.vsm.xtension.button;
+package de.dfki.vsm.xtension.gui;
 
 import de.dfki.vsm.model.config.ConfigFeature;
 import de.dfki.vsm.model.project.PluginConfig;
@@ -25,7 +25,7 @@ import java.util.LinkedList;
  * @author Patrick Gebhard
  *
  */
-public class ButtonGUIExecutor extends ActivityExecutor {
+public class GUIExecutor extends ActivityExecutor {
 
     // The GUI
     private static GUIRenderer mGUIRenderer = null;
@@ -35,13 +35,13 @@ public class ButtonGUIExecutor extends ActivityExecutor {
     ActivityWorker mActivityWorker = null;
     private final HashSet<ActivityWorker> mActivityWorkers = new HashSet<>();
     // Configuration values
-    public final HashMap<String, GUIElementValues> mButtonsAndValues = new HashMap<>();
+    public final HashMap<String, GUIElementValues> mGUIElementIdValues = new HashMap<>();
     // The singelton logger instance
     private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
-    
-    private static ButtonGUIExecutor sInstance;
-    
-    public ButtonGUIExecutor(PluginConfig config, RunTimeProject project) {
+
+    private static GUIExecutor sInstance;
+
+    public GUIExecutor(PluginConfig config, RunTimeProject project) {
         super(config, project);
         sInstance = this;
     }
@@ -69,12 +69,12 @@ public class ButtonGUIExecutor extends ActivityExecutor {
             final String name = activity.getName();
 
             if (name.equalsIgnoreCase("show")) {
-                String[] buttons = mProject.getAgentConfig(activity.getActor()).getProperty("show").split(",");
+                String[] elements = mProject.getAgentConfig(activity.getActor()).getProperty("show").split(",");
                 mLogger.message("Showing gui elements ...");
-                for (String b : buttons) {
-                    mLogger.message(b);
+                for (String e : elements) {
+                    mLogger.message(e);
                 }
-                Platform.runLater(() -> mGUIRenderer.showGUIElement(buttons));
+                Platform.runLater(() -> mGUIRenderer.showGUIElement(elements));
             }
             
             if (name.equalsIgnoreCase("hide")) {
@@ -86,11 +86,15 @@ public class ButtonGUIExecutor extends ActivityExecutor {
     public void setVSmVar(String var, String value) {
         mProject.setVariable(var, new StringValue(value));
     }
-    
-    public static ButtonGUIExecutor getInstance() {
+
+    public static GUIExecutor getInstance() {
         return sInstance;
     }
-    
+
+
+    protected String getProjectPath() {
+        return mProject.getProjectPath();
+    }
     @Override
     public void launch() {
         mLogger.message("Launching GUIRenderer ...");
@@ -109,11 +113,17 @@ public class ButtonGUIExecutor extends ActivityExecutor {
 
         // format for button config
         // id, x, y, name, value, scenemaker var
-        //<Feature key="button_yes" val="100, 100, 24, "Yes","yes_pressed", "user_input"/>
+        //<Feature key="button_yes" val="100, 100, <font size, e.g., 24>, "Yes", "yes_pressed", "user_input"/>
+
+        // format for image config
+        // id, x, y, name, default value, scenemaker var
+        //<Feature key="image_yes" val="100, 100, <font size, e.g., 24>, "<imagename>","<path to image>", "user_input"/>
 
         // format for text field config
         // id, x, y, name, default value, scenemaker var
-        //<Feature key="button_yes" val="100, 100, 24, "Yes","enter name", "user_input"/>
+        //<Feature key="textfield_yes" val="100, 100, <font size, e.g., 24>, "<Yes>", "entername", "user_input"/>
+
+
         //if (!mButtonGui.isInitialized()) {
 //            String missingVariables = "";
 //            int missingVarCnt = 0;
@@ -137,21 +147,6 @@ public class ButtonGUIExecutor extends ActivityExecutor {
                 }
             }
 
-            if (key.contains("textfield")) {
-                String[] values = cf.getValue().split(",");
-
-                GUIElementValues bv = new GUIElementValues(key,
-                        Integer.parseInt(values[0].trim()),
-                        Integer.parseInt(values[1].trim()),
-                        Integer.parseInt(values[2].trim()),
-                        values[3].trim(),
-                        values[4].trim(),
-                        values[5].trim());
-                mLogger.message("Found text field definition with id " + bv.mId + " @ " + bv.mX + "," + bv.mY + " (" + bv.mSize + "), name=" + bv.mName + ", value=" + bv.mValue + " vsmVar=" + bv.mVSMVar);
-
-                mButtonsAndValues.put(key, bv);
-            }
-            
             if (key.contains("button")) {
                 String[] values = cf.getValue().split(",");
 
@@ -178,8 +173,41 @@ public class ButtonGUIExecutor extends ActivityExecutor {
 //                        missingVarCnt++;
 //                        missingVariables += values[5].trim() + ",";
 //                    }
-                mButtonsAndValues.put(key, bv);
+                mGUIElementIdValues.put(key, bv);
             }
+
+            if (key.contains("image")) {
+                String[] values = cf.getValue().split(",");
+
+                GUIElementValues bv = new GUIElementValues(key,
+                        Integer.parseInt(values[0].trim()),
+                        Integer.parseInt(values[1].trim()),
+                        Integer.parseInt(values[2].trim()),
+                        values[3].trim(),
+                        values[4].trim(),
+                        values[5].trim());
+
+                mLogger.message("Found image definition with id " + bv.mId + " @ " + bv.mX + "," + bv.mY + " (" + bv.mSize + "), name=" + bv.mName + ", value=" + bv.mValue + " vsmVar=" + bv.mVSMVar);
+
+                mGUIElementIdValues.put(key, bv);
+            }
+
+            if (key.contains("textfield")) {
+                String[] values = cf.getValue().split(",");
+
+                GUIElementValues bv = new GUIElementValues(key,
+                        Integer.parseInt(values[0].trim()),
+                        Integer.parseInt(values[1].trim()),
+                        Integer.parseInt(values[2].trim()),
+                        values[3].trim(),
+                        values[4].trim(),
+                        values[5].trim());
+
+                mLogger.message("Found text field definition with id " + bv.mId + " @ " + bv.mX + "," + bv.mY + " (" + bv.mSize + "), name=" + bv.mName + ", value=" + bv.mValue + " vsmVar=" + bv.mVSMVar);
+
+                mGUIElementIdValues.put(key, bv);
+            }
+
             // }
 
 //            // create dialog if global var is missing.

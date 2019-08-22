@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.dfki.vsm.xtension.button;
+package de.dfki.vsm.xtension.gui;
 
 import de.dfki.vsm.util.log.LOGConsoleLogger;
 import javafx.application.Application;
@@ -17,6 +17,9 @@ import javafx.scene.SubScene;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.effect.BlendMode;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
@@ -24,6 +27,8 @@ import javafx.stage.Modality;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+
+import java.io.File;
 
 /**
  *
@@ -36,7 +41,7 @@ public class GUIRenderer extends Application {
     public boolean mAlwaysOnTop = true;
     public boolean mModal = true;
 
-    private ButtonGUIExecutor mExecutor = null;
+    private GUIExecutor mExecutor = null;
 
     private Stage mStage;
 
@@ -49,7 +54,7 @@ public class GUIRenderer extends Application {
         return mIsRunning;
     }
 
-    public void setButtonExecutor(ButtonGUIExecutor be) {
+    public void setButtonExecutor(GUIExecutor be) {
         mExecutor = be;
     }
 
@@ -85,10 +90,10 @@ public class GUIRenderer extends Application {
         Screen screen = Screen.getPrimary();
         Rectangle2D bounds = screen.getVisualBounds();
 
-        Group buttonNode = new Group();
-        SubScene buttonsSubScene = new SubScene(buttonNode, bounds.getWidth(), bounds.getHeight(), true, SceneAntialiasing.BALANCED);
-        buttonsSubScene.setFill(javafx.scene.paint.Color.TRANSPARENT);
-        buttonsSubScene.setBlendMode(BlendMode.MULTIPLY);
+        Group groupNode = new Group();
+        SubScene guiSubScene = new SubScene(groupNode, bounds.getWidth(), bounds.getHeight(), true, SceneAntialiasing.BALANCED);
+        guiSubScene.setFill(javafx.scene.paint.Color.TRANSPARENT);
+        guiSubScene.setBlendMode(BlendMode.MULTIPLY);
 
         mStage.setX(bounds.getMinX());
         mStage.setY(bounds.getMinY());
@@ -104,18 +109,18 @@ public class GUIRenderer extends Application {
         for (String e : elements) {
             e = e.trim(); // get rid of some white space that might be there.
 
-            GUIElementValues bv = mExecutor.mButtonsAndValues.get(e);
+            GUIElementValues values = mExecutor.mGUIElementIdValues.get(e);
 
-            if (bv.mId.contains("button")) {
+            if (values.mId.contains("button")) {
                 Button button = new Button();
-                button.setText(bv.mName);
-                button.setFont(Font.font(Font.getDefault().getName(), bv.mSize));
-                button.setTranslateX(bv.mX);
-                button.setTranslateY(bv.mY);
+                button.setText(values.mName);
+                button.setFont(Font.font(Font.getDefault().getName(), values.mSize));
+                button.setTranslateX(values.mX);
+                button.setTranslateY(values.mY);
                 button.setOnAction(arg0 -> {
                     // set SceneMaker variable
                     if (mExecutor != null) {
-                        mExecutor.setVSmVar(bv.mVSMVar, bv.mValue);
+                        mExecutor.setVSmVar(values.mVSMVar, values.mValue);
                     }
                     // hide only if option hide on pressed is set true
                     if (mHideOnPressed) {
@@ -124,19 +129,45 @@ public class GUIRenderer extends Application {
                     }
                 });
 
-                buttonNode.getChildren().add(button);
+                groupNode.getChildren().add(button);
             }
 
-            if (bv.mId.contains("textfield")) {
+            if (values.mId.contains("image")) {
+                HBox canvas = new HBox();
+
+                String imageResource = "file:///" + mExecutor.getProjectPath() + File.separator + values.mValue;
+                imageResource = imageResource.replace("\\", "/").replace(" ", "%20");
+
+                Image image = new Image(imageResource);
+                ImageView view = new ImageView(image);
+
+                view.setTranslateX(values.mX);
+                view.setTranslateY(values.mY);
+                //view.setOnAction(arg0 -> {
+                // set SceneMaker variable
+                //    if (mExecutor != null) {
+                //        mExecutor.setVSmVar(values.mVSMVar, values.mName);
+                //    }
+                // hide only if option hide on pressed is set true
+                //    if (mHideOnPressed) {
+                //        mStage.close();
+                //        mStage = null;
+                //    }
+                //});
+
+                groupNode.getChildren().add(view);
+            }
+
+            if (values.mId.contains("textfield")) {
                 TextField textfield = new TextField();
-                textfield.setText(bv.mValue);
-                textfield.setFont(Font.font(Font.getDefault().getName(), bv.mSize));
-                textfield.setTranslateX(bv.mX);
-                textfield.setTranslateY(bv.mY);
+                textfield.setText(values.mValue);
+                textfield.setFont(Font.font(Font.getDefault().getName(), values.mSize));
+                textfield.setTranslateX(values.mX);
+                textfield.setTranslateY(values.mY);
                 textfield.setOnAction(arg0 -> {
                     // set SceneMaker variable
                     if (mExecutor != null) {
-                        mExecutor.setVSmVar(bv.mVSMVar, textfield.getText());
+                        mExecutor.setVSmVar(values.mVSMVar, textfield.getText());
                     }
                     // hide only if option hide on pressed is set true
                     if (mHideOnPressed) {
@@ -145,14 +176,14 @@ public class GUIRenderer extends Application {
                     }
                 });
 
-                buttonNode.getChildren().add(textfield);
+                groupNode.getChildren().add(textfield);
             }
         }
 
         // build layout
         StackPane sp = new StackPane();
-        StackPane.setAlignment(buttonsSubScene, Pos.TOP_CENTER);
-        sp.getChildren().add(buttonsSubScene);
+        StackPane.setAlignment(guiSubScene, Pos.TOP_CENTER);
+        sp.getChildren().add(guiSubScene);
         sp.setStyle("-fx-background-color: #FFFFFF00;");
 
         //scaling
