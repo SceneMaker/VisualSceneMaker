@@ -8,8 +8,6 @@ package de.dfki.vsm.xtension.button;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
 import javafx.application.Application;
 import javafx.application.Platform;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.geometry.Pos;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Group;
@@ -17,6 +15,7 @@ import javafx.scene.Scene;
 import javafx.scene.SceneAntialiasing;
 import javafx.scene.SubScene;
 import javafx.scene.control.Button;
+import javafx.scene.control.TextField;
 import javafx.scene.effect.BlendMode;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
@@ -31,7 +30,7 @@ import javafx.stage.StageStyle;
  * @author Patrick Gebhard
  *
  */
-public class ButtonGUI extends Application {
+public class GUIRenderer extends Application {
 
     public boolean mHideOnPressed = true;
     public boolean mAlwaysOnTop = true;
@@ -39,7 +38,7 @@ public class ButtonGUI extends Application {
 
     private ButtonGUIExecutor mExecutor = null;
 
-    private Stage mButtonDialog;
+    private Stage mStage;
 
     private static boolean mIsRunning = false;
 
@@ -80,8 +79,8 @@ public class ButtonGUI extends Application {
         }
     }
 
-    public void showButton(String[] buttons) {
-        mButtonDialog = new Stage();
+    public void showGUIElement(String[] elements) {
+        mStage = new Stage();
 
         Screen screen = Screen.getPrimary();
         Rectangle2D bounds = screen.getVisualBounds();
@@ -91,40 +90,63 @@ public class ButtonGUI extends Application {
         buttonsSubScene.setFill(javafx.scene.paint.Color.TRANSPARENT);
         buttonsSubScene.setBlendMode(BlendMode.MULTIPLY);
 
-        mButtonDialog.setX(bounds.getMinX());
-        mButtonDialog.setY(bounds.getMinY());
-        mButtonDialog.setWidth(bounds.getWidth());
-        mButtonDialog.setHeight(bounds.getHeight());
+        mStage.setX(bounds.getMinX());
+        mStage.setY(bounds.getMinY());
+        mStage.setWidth(bounds.getWidth());
+        mStage.setHeight(bounds.getHeight());
 
-        mButtonDialog.initStyle(StageStyle.TRANSPARENT);
+        mStage.initStyle(StageStyle.TRANSPARENT);
 
-        mButtonDialog.initModality((mModal) ? Modality.APPLICATION_MODAL : Modality.NONE);
-        mButtonDialog.setAlwaysOnTop(mAlwaysOnTop);
+        mStage.initModality((mModal) ? Modality.APPLICATION_MODAL : Modality.NONE);
+        mStage.setAlwaysOnTop(mAlwaysOnTop);
 
-        // build buttons
-        for (String b : buttons) {
-            b = b.trim(); // get rid of some white space that might be there.
+        // build gui elements
+        for (String e : elements) {
+            e = e.trim(); // get rid of some white space that might be there.
 
-            ButtonValues bv = mExecutor.mButtonsAndValues.get(b);
+            GUIElementValues bv = mExecutor.mButtonsAndValues.get(e);
 
-            Button button = new Button();
-            button.setText(bv.mName);
-            button.setFont(Font.font(Font.getDefault().getName(), bv.mSize));
-            button.setTranslateX(bv.mX);
-            button.setTranslateY(bv.mY);
-            button.setOnAction(arg0 -> {
-                // set SceneMaker variable
-                if (mExecutor != null) {
-                    mExecutor.setVSmVar(bv.mVSMVar, bv.mValue);
-                }
-                // hide only if option hide on pressed is set true
-                if (mHideOnPressed) {
-                    mButtonDialog.close();
-                    mButtonDialog = null;
-                }
-            });
+            if (bv.mId.contains("button")) {
+                Button button = new Button();
+                button.setText(bv.mName);
+                button.setFont(Font.font(Font.getDefault().getName(), bv.mSize));
+                button.setTranslateX(bv.mX);
+                button.setTranslateY(bv.mY);
+                button.setOnAction(arg0 -> {
+                    // set SceneMaker variable
+                    if (mExecutor != null) {
+                        mExecutor.setVSmVar(bv.mVSMVar, bv.mValue);
+                    }
+                    // hide only if option hide on pressed is set true
+                    if (mHideOnPressed) {
+                        mStage.close();
+                        mStage = null;
+                    }
+                });
 
-            buttonNode.getChildren().add(button);
+                buttonNode.getChildren().add(button);
+            }
+
+            if (bv.mId.contains("textfield")) {
+                TextField textfield = new TextField();
+                textfield.setText(bv.mValue);
+                textfield.setFont(Font.font(Font.getDefault().getName(), bv.mSize));
+                textfield.setTranslateX(bv.mX);
+                textfield.setTranslateY(bv.mY);
+                textfield.setOnAction(arg0 -> {
+                    // set SceneMaker variable
+                    if (mExecutor != null) {
+                        mExecutor.setVSmVar(bv.mVSMVar, textfield.getText());
+                    }
+                    // hide only if option hide on pressed is set true
+                    if (mHideOnPressed) {
+                        mStage.close();
+                        mStage = null;
+                    }
+                });
+
+                buttonNode.getChildren().add(textfield);
+            }
         }
 
         // build layout
@@ -150,14 +172,14 @@ public class ButtonGUI extends Application {
         } else {
             scene.setFill(javafx.scene.paint.Color.TRANSPARENT);
         }
-        mButtonDialog.setScene(scene);
-        mButtonDialog.show();
+        mStage.setScene(scene);
+        mStage.show();
     }
 
     public void hideButton() {
-        if (mButtonDialog != null) {
-            mButtonDialog.close();
-            mButtonDialog = null;
+        if (mStage != null) {
+            mStage.close();
+            mStage = null;
         }
     }
 

@@ -10,7 +10,7 @@ package de.dfki.vsm.xtension.button;
  * @author Patrick Gebhard
  * 
  */
-public class ButtonValues {
+public class GUIElementValues {
 
     String mId;
     int mX;
@@ -20,7 +20,7 @@ public class ButtonValues {
     String mValue;
     String mVSMVar;
 
-    public ButtonValues(String id, int x, int y, int size, String name, String value, String vsmvar) {
+    public GUIElementValues(String id, int x, int y, int size, String name, String value, String vsmvar) {
         mId = id;
         mX = x;
         mY = y;

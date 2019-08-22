@@ -28,14 +28,14 @@ import java.util.LinkedList;
 public class ButtonGUIExecutor extends ActivityExecutor {
 
     // The GUI
-    private static ButtonGUI mButtonGUI = null;
+    private static GUIRenderer mGUIRenderer = null;
     // The GUI thread
     Thread mButtonGUIThread = null;
     // The current ActivityWorker
     ActivityWorker mActivityWorker = null;
     private final HashSet<ActivityWorker> mActivityWorkers = new HashSet<>();
     // Configuration values
-    public final HashMap<String, ButtonValues> mButtonsAndValues = new HashMap<>();
+    public final HashMap<String, GUIElementValues> mButtonsAndValues = new HashMap<>();
     // The singelton logger instance
     private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
     
@@ -70,15 +70,15 @@ public class ButtonGUIExecutor extends ActivityExecutor {
 
             if (name.equalsIgnoreCase("show")) {
                 String[] buttons = mProject.getAgentConfig(activity.getActor()).getProperty("show").split(",");
-                mLogger.message("Showing buttons ...");
+                mLogger.message("Showing gui elements ...");
                 for (String b : buttons) {
                     mLogger.message(b);
                 }
-                Platform.runLater(() -> mButtonGUI.showButton(buttons));
+                Platform.runLater(() -> mGUIRenderer.showGUIElement(buttons));
             }
             
             if (name.equalsIgnoreCase("hide")) {
-                Platform.runLater(() -> mButtonGUI.hideButton());
+                Platform.runLater(() -> mGUIRenderer.hideButton());
             }
         }
     }
@@ -93,16 +93,16 @@ public class ButtonGUIExecutor extends ActivityExecutor {
     
     @Override
     public void launch() {
-        mLogger.message("Lauching ButtonGUI ...");
-        // Since ButtonGUI is a JavaFX application it can only be executed once in the JVM!
-        mButtonGUI = (mButtonGUIThread == null) ? new ButtonGUI() : mButtonGUI;
-        // give ButtonGUI the vsm executor instance
-        mButtonGUI.setButtonExecutor(this);
+        mLogger.message("Launching GUIRenderer ...");
+        // Since GUIRenderer is a JavaFX application it can only be executed once in the JVM!
+        mGUIRenderer = (mButtonGUIThread == null) ? new GUIRenderer() : mGUIRenderer;
+        // give GUIRenderer the vsm executor instance
+        mGUIRenderer.setButtonExecutor(this);
         mButtonGUIThread = new Thread() {
             @Override
             public void run() {
-                this.setName("ButtonGUI Thread");
-                mButtonGUI.create();
+                this.setName("GUIRenderer Thread");
+                mGUIRenderer.create();
             }
         };
         mButtonGUIThread.start();
@@ -110,6 +110,10 @@ public class ButtonGUIExecutor extends ActivityExecutor {
         // format for button config
         // id, x, y, name, value, scenemaker var
         //<Feature key="button_yes" val="100, 100, 24, "Yes","yes_pressed", "user_input"/>
+
+        // format for text field config
+        // id, x, y, name, default value, scenemaker var
+        //<Feature key="button_yes" val="100, 100, 24, "Yes","enter name", "user_input"/>
         //if (!mButtonGui.isInitialized()) {
 //            String missingVariables = "";
 //            int missingVarCnt = 0;
@@ -119,24 +123,39 @@ public class ButtonGUIExecutor extends ActivityExecutor {
             
             if (key.equalsIgnoreCase("hideonpressed")) {
                 if (cf.getValue().equalsIgnoreCase("true") || cf.getValue().equalsIgnoreCase("false")) {
-                    mButtonGUI.mHideOnPressed = Boolean.parseBoolean(cf.getValue());
+                    mGUIRenderer.mHideOnPressed = Boolean.parseBoolean(cf.getValue());
                 }
             }
             if (key.equalsIgnoreCase("alwaysontop")) {
                 if (cf.getValue().equalsIgnoreCase("true") || cf.getValue().equalsIgnoreCase("false")) {
-                    mButtonGUI.mAlwaysOnTop = Boolean.parseBoolean(cf.getValue());
+                    mGUIRenderer.mAlwaysOnTop = Boolean.parseBoolean(cf.getValue());
                 }
             }
             if (key.equalsIgnoreCase("takesallinput")) {
                 if (cf.getValue().equalsIgnoreCase("true") || cf.getValue().equalsIgnoreCase("false")) {
-                    mButtonGUI.mModal = Boolean.parseBoolean(cf.getValue());
+                    mGUIRenderer.mModal = Boolean.parseBoolean(cf.getValue());
                 }
+            }
+
+            if (key.contains("textfield")) {
+                String[] values = cf.getValue().split(",");
+
+                GUIElementValues bv = new GUIElementValues(key,
+                        Integer.parseInt(values[0].trim()),
+                        Integer.parseInt(values[1].trim()),
+                        Integer.parseInt(values[2].trim()),
+                        values[3].trim(),
+                        values[4].trim(),
+                        values[5].trim());
+                mLogger.message("Found text field definition with id " + bv.mId + " @ " + bv.mX + "," + bv.mY + " (" + bv.mSize + "), name=" + bv.mName + ", value=" + bv.mValue + " vsmVar=" + bv.mVSMVar);
+
+                mButtonsAndValues.put(key, bv);
             }
             
             if (key.contains("button")) {
                 String[] values = cf.getValue().split(",");
-                
-                ButtonValues bv = new ButtonValues(key,
+
+                GUIElementValues bv = new GUIElementValues(key,
                         Integer.parseInt(values[0].trim()),
                         Integer.parseInt(values[1].trim()),
                         Integer.parseInt(values[2].trim()),
