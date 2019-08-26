@@ -15,11 +15,13 @@ import javafx.scene.Scene;
 import javafx.scene.SceneAntialiasing;
 import javafx.scene.SubScene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.effect.BlendMode;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
@@ -84,7 +86,10 @@ public class GUIRenderer extends Application {
         }
     }
 
-    public void showGUIElement(String[] elements) {
+    public void showGUIElements(String[] elements) {
+        String cssResource = "file:///" + mExecutor.getProjectPath() + File.separator + mExecutor.getProjectConfigVar("css");
+        cssResource = cssResource.replace("\\", "/").replace(" ", "%20");
+
         mStage = new Stage();
 
         Screen screen = Screen.getPrimary();
@@ -113,6 +118,8 @@ public class GUIRenderer extends Application {
 
             if (values.mId.contains("button")) {
                 Button button = new Button();
+                button.getStylesheets().add(cssResource);
+                button.getStyleClass().add("button");
                 button.setText(values.mName);
                 button.setFont(Font.font(Font.getDefault().getName(), values.mSize));
                 button.setTranslateX(values.mX);
@@ -143,6 +150,7 @@ public class GUIRenderer extends Application {
 
                 view.setTranslateX(values.mX);
                 view.setTranslateY(values.mY);
+
                 //view.setOnAction(arg0 -> {
                 // set SceneMaker variable
                 //    if (mExecutor != null) {
@@ -156,6 +164,37 @@ public class GUIRenderer extends Application {
                 //});
 
                 groupNode.getChildren().add(view);
+            }
+
+            if (values.mId.contains("label")) {
+                Label label = new Label();
+                //label.getStyleClass().add("label");
+                label.setText(values.mName);
+                label.setFont(Font.font(Font.getDefault().getName(), values.mSize));
+                label.setTranslateX(values.mX);
+                label.setTranslateY(values.mY);
+
+                groupNode.getChildren().add(label);
+            }
+
+            if (values.mId.contains("rectangle")) {
+                Pane pane = new Pane();
+
+                pane.setTranslateX(values.mX);
+                pane.setTranslateY(values.mY);
+                pane.setPrefSize(values.mSize, Integer.parseInt(values.mName));
+                pane.setStyle("-fx-background-color: " + values.mValue);
+
+//                Rectangle rectangle = new Rectangle();
+//                rectangle.setTranslateX(values.mX);
+//                rectangle.setTranslateY(values.mY);
+//
+//                rectangle.setWidth(values.mSize);
+//                rectangle.setHeight(Integer.parseInt(values.mName));
+//
+//                rectangle.setStyle("-fx-background-color: " + values.mValue);
+
+                groupNode.getChildren().add(pane);
             }
 
             if (values.mId.contains("textfield")) {
@@ -207,7 +246,7 @@ public class GUIRenderer extends Application {
         mStage.show();
     }
 
-    public void hideButton() {
+    public void hideGUIElements() {
         if (mStage != null) {
             mStage.close();
             mStage = null;
