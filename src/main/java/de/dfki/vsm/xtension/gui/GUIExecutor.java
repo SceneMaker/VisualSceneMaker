@@ -7,6 +7,7 @@ package de.dfki.vsm.xtension.gui;
 
 import de.dfki.vsm.model.config.ConfigFeature;
 import de.dfki.vsm.model.project.PluginConfig;
+import de.dfki.vsm.model.scenescript.ActionFeature;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
 import de.dfki.vsm.runtime.activity.SpeechActivity;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
@@ -30,7 +31,7 @@ public class GUIExecutor extends ActivityExecutor {
     // The GUI
     private static GUIRenderer mGUIRenderer = null;
     // The GUI thread
-    Thread mButtonGUIThread = null;
+    Thread mGUIThread = null;
     // The current ActivityWorker
     ActivityWorker mActivityWorker = null;
     private final HashSet<ActivityWorker> mActivityWorkers = new HashSet<>();
@@ -74,11 +75,34 @@ public class GUIExecutor extends ActivityExecutor {
                 for (String e : elements) {
                     mLogger.message(e);
                 }
-                Platform.runLater(() -> mGUIRenderer.showGUIElement(elements));
+                Platform.runLater(() -> mGUIRenderer.showGUIElements(elements));
             }
             
             if (name.equalsIgnoreCase("hide")) {
-                Platform.runLater(() -> mGUIRenderer.hideButton());
+                Platform.runLater(() -> mGUIRenderer.hideGUIElements());
+            }
+
+            if (name.equalsIgnoreCase("set")) {
+
+                String element = null;
+                String value = null;
+
+                for (ActionFeature af : activity.getFeatures()) {
+                    if (af.getKey().contains("textfield")) {
+                        element = af.getKey();
+                        value = af.getVal();
+
+                        if (mGUIElementIdValues.containsKey(element)) {
+                            GUIElementValues gev = mGUIElementIdValues.get(element);
+                            gev.mValue = value.replace("'", "");
+                        }
+
+                        mLogger.message("Assigning value of " + element + " with " + value);
+
+                    }
+                }
+
+
             }
         }
     }
@@ -95,39 +119,63 @@ public class GUIExecutor extends ActivityExecutor {
     protected String getProjectPath() {
         return mProject.getProjectPath();
     }
+
+    protected String getProjectConfigVar(String k) {
+        String value = null;
+
+        for (ConfigFeature cf : mConfig.getEntryList()) {
+            String key = cf.getKey();
+
+            if (key.equalsIgnoreCase(k)) {
+                value = cf.getValue();
+                mLogger.message("Found CSS " + value);
+            }
+        }
+
+        return value;
+    }
+
     @Override
     public void launch() {
         mLogger.message("Launching GUIRenderer ...");
         // Since GUIRenderer is a JavaFX application it can only be executed once in the JVM!
-        mGUIRenderer = (mButtonGUIThread == null) ? new GUIRenderer() : mGUIRenderer;
+        mGUIRenderer = (mGUIThread == null) ? new GUIRenderer() : mGUIRenderer;
         // give GUIRenderer the vsm executor instance
         mGUIRenderer.setButtonExecutor(this);
-        mButtonGUIThread = new Thread() {
+        mGUIThread = new Thread() {
             @Override
             public void run() {
                 this.setName("GUIRenderer Thread");
                 mGUIRenderer.create();
             }
         };
-        mButtonGUIThread.start();
-
+        mGUIThread.start();
         // format for button config
         // id, x, y, name, value, scenemaker var
-        //<Feature key="button_yes" val="100, 100, <font size, e.g., 24>, "Yes", "yes_pressed", "user_input"/>
+        //<Feature key="button_yes" val="100, 100, <font size, e.g., 24>, "<name>", "yes_pressed", "<vsm var:String>"/>
 
         // format for image config
         // id, x, y, name, default value, scenemaker var
-        //<Feature key="image_yes" val="100, 100, <font size, e.g., 24>, "<imagename>","<path to image>", "user_input"/>
+        //<Feature key="image_yes" val="100, 100, <font size, e.g., 24>, "<imagename>","<path to image>", "<vsm var:String>"/>
+
+        // format for label config
+        // id, x, y, name, value, scenemaker var
+        //<Feature key="label_name" val="100, 100, <font size, e.g., 24>, "<name>", "<label name>", "<vsm var:String>"/>
+
+        // format for rectangle config
+        // id, x, y, name, default value, scenemaker var
+        //<Feature key="rectangle_green" val="100, 100, <xsize>, <ysize>, "<rgb color + alpha, e.g., #FFFFFF00>", "<vsm var:String>"/>
 
         // format for text field config
         // id, x, y, name, default value, scenemaker var
-        //<Feature key="textfield_yes" val="100, 100, <font size, e.g., 24>, "<Yes>", "entername", "user_input"/>
+        //<Feature key="textfield_yes" val="100, 100, <font size, e.g., 24>, "<Name>", "entername", "<vsm var:String>"/>
 
 
         //if (!mButtonGui.isInitialized()) {
 //            String missingVariables = "";
 //            int missingVarCnt = 0;
 //            ArrayList<VarDef> globalVars = mProject.getSceneFlow().getParentNode().getVarDefList();
+
         for (ConfigFeature cf : mConfig.getEntryList()) {
             String key = cf.getKey();
             
@@ -192,6 +240,38 @@ public class GUIExecutor extends ActivityExecutor {
                 mGUIElementIdValues.put(key, bv);
             }
 
+            if (key.contains("label")) {
+                String[] values = cf.getValue().split(",");
+
+                GUIElementValues bv = new GUIElementValues(key,
+                        Integer.parseInt(values[0].trim()),
+                        Integer.parseInt(values[1].trim()),
+                        Integer.parseInt(values[2].trim()),
+                        values[3].trim(),
+                        values[4].trim(),
+                        values[5].trim());
+
+                mLogger.message("Found label definition with id " + bv.mId + " @ " + bv.mX + "," + bv.mY + " (" + bv.mSize + "), name=" + bv.mName + ", value=" + bv.mValue + " vsmVar=" + bv.mVSMVar);
+
+                mGUIElementIdValues.put(key, bv);
+            }
+
+            if (key.contains("rectangle")) {
+                String[] values = cf.getValue().split(",");
+
+                GUIElementValues bv = new GUIElementValues(key,
+                        Integer.parseInt(values[0].trim()),
+                        Integer.parseInt(values[1].trim()),
+                        Integer.parseInt(values[2].trim()),
+                        values[3].trim(),
+                        values[4].trim(),
+                        values[5].trim());
+
+                mLogger.message("Found rectangle definition with id " + bv.mId + " @ " + bv.mX + "," + bv.mY + " (" + bv.mSize + "x" + bv.mName + "), color=" + bv.mValue + " vsmVar=" + bv.mVSMVar);
+
+                mGUIElementIdValues.put(key, bv);
+            }
+
             if (key.contains("textfield")) {
                 String[] values = cf.getValue().split(",");
 
@@ -207,18 +287,6 @@ public class GUIExecutor extends ActivityExecutor {
 
                 mGUIElementIdValues.put(key, bv);
             }
-
-            // }
-
-//            // create dialog if global var is missing.
-//            if (missingVarCnt > 0) {
-//                missingVariables = missingVariables.substring(0, missingVariables.length() - 1);
-//                JOptionPane.showMessageDialog(mButtonGui,
-//                        "Please add global " + ((missingVarCnt > 1) ? " variables to sceneflow " + missingVariables : " variable to sceneflow " + missingVariables),
-//                        "Variable not defined!",
-//                        JOptionPane.WARNING_MESSAGE);
-//            }
-            //Platform.runLater(() -> mButtonGui.initFX());
         }
     }
     
