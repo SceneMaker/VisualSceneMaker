@@ -3,6 +3,7 @@ package de.dfki.vsm.xtension.odp;
 import de.dfki.vsm.runtime.interpreter.value.StringValue;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -15,7 +16,9 @@ public class UpdServer extends Thread {
     private byte[] buf = new byte[1024];
 
     private RunTimeProject mProject;
-    private String mSceneFlowVar = "opdMsg";
+    private String mSceneFlowTaskVar = "opdTask";
+    private String mSceneFlowFuncVar = "opdFunc";
+    private String mSceneFlowContVar = "opdCont";
 
     // The singleton logger instance
     private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
@@ -43,17 +46,17 @@ public class UpdServer extends Thread {
             if (packet.getLength() > 0) {
                 String message = new String(packet.getData(), 0, packet.getLength());
 
-                // cleaning message ...
-                //remove " : _
-                message = message.replaceAll("\"", "");
-                message = message.replaceAll("\\:", "");
-                message = message.replaceAll("\\_", "");
-                message = message.replaceAll("\\{", "");
-                message = message.replaceAll("\\}", "");
+                JSONObject jObj = new JSONObject(message);
 
-                mProject.setVariable(mSceneFlowVar, new StringValue(message));
+                String task = (jObj.getString("task") != null) ? jObj.getString("task") : "";
+                String function = (jObj.getString("function") != null) ? jObj.getString("function") : "";
+                String content = (jObj.getString("content") != null) ? jObj.getString("content") : "";
 
-                mLogger.message("OPD UPD Message received: " + message);
+                mProject.setVariable(mSceneFlowTaskVar, new StringValue(task));
+                mProject.setVariable(mSceneFlowFuncVar, new StringValue(function));
+                mProject.setVariable(mSceneFlowContVar, new StringValue(content));
+
+                mLogger.message("OPD UPD Message received: " + jObj);
             }
         }
     }
