@@ -6,6 +6,7 @@ import de.dfki.vsm.runtime.activity.AbstractActivity.Type;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.net.SocketException;
@@ -96,13 +97,24 @@ public class ODPExecutor extends ActivityExecutor {
         final String name = activity.getName();
         if (name.equalsIgnoreCase("send")) {
             String task = activity.get("task");
+            // abort if no task there
+            if (task == null) {
+                return;
+            }
+            String function = (activity.get("func") != null) ? activity.get("func") : "";
+            String content = (activity.get("cont") != null) ? activity.get("cont") : "";
+
+            JSONObject jsonOut = new JSONObject();
+
+            jsonOut.put("task", task);
+            jsonOut.put("function", function);
+            jsonOut.put("content", content);
+
             try {
-                client.clientSend("{task:\"" + task + "\"}");
+                client.clientSend(jsonOut.toString());
             } catch (IOException e) {
                 mLogger.failure(e.getMessage());
             }
-
-            //mProject.setVariable("code", code);
         }
 
     }
