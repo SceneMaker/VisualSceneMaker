@@ -604,9 +604,10 @@ public class EditorStarter extends JPanel {
 			}
 			ZipEntry ze = null;
 
+            String entryName = "";
 			try {
 				while ((ze = zip.getNextEntry()) != null) {
-					String entryName = ze.getName();
+                    entryName = ze.getName();
 					if (entryName.startsWith(path) && ze.isDirectory()) {
 						String entry = entryName.substring(path.length() + 1);
 						int checkSubdir = entry.indexOf("/");
@@ -621,7 +622,7 @@ public class EditorStarter extends JPanel {
 					}
 				}
 			} catch (IOException ex) {
-				mLogger.failure("Error reading resource");
+                mLogger.failure("Error reading resource " + entryName);
 			}
 
 		}
