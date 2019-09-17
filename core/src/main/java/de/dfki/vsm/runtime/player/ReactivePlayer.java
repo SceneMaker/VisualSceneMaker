@@ -153,7 +153,7 @@ public final class ReactivePlayer extends RunTimePlayer {
         // Translate the arguments
         final HashMap substitutions = getSubstitutions(args);
         // Print some information
-        //mLogger.message("Playing Scene '" + name + "' in process '" + process + "' on reactive player '" + this + "' with substitutions '" + substitutions.toString() + "'");
+        mLogger.message("Playing Scene '" + name + "' in process '" + process + "' on reactive player '" + this + "' with substitutions '" + substitutions.toString() + "'");
 
         // Get the scene object
         final SceneScript script = mProject.getSceneScript();
@@ -285,7 +285,7 @@ public final class ReactivePlayer extends RunTimePlayer {
                         final StructValue struct = (StructValue) value;
                         for (Entry<String, AbstractValue> entry : struct.getValueMap().entrySet()) {
                             substitutions.put(entry.getKey(), entry.getValue().getValue().toString());
-                            System.err.println("SUBSITUTION " + entry.getKey() + "->" + entry.getValue().getValue().toString());
+                            mLogger.message("SUBSITUTION " + entry.getKey() + "->" + entry.getValue().getValue().toString());
                         }
                     }
                 }
