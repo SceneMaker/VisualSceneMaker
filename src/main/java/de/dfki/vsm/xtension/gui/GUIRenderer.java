@@ -39,9 +39,9 @@ import java.io.File;
  */
 public class GUIRenderer extends Application {
 
-    public boolean mHideOnPressed = true;
-    public boolean mAlwaysOnTop = true;
-    public boolean mModal = true;
+    boolean mHideOnPressed = true;
+    boolean mAlwaysOnTop = true;
+    boolean mModal = true;
 
     private GUIExecutor mExecutor = null;
 
@@ -52,12 +52,12 @@ public class GUIRenderer extends Application {
     // The singelton logger instance
     private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
 
-    public static boolean isRunning() {
+    static boolean isRunning() {
         return mIsRunning;
     }
 
-    public void setButtonExecutor(GUIExecutor be) {
-        mExecutor = be;
+    void setButtonExecutor(GUIExecutor buttonExecutor) {
+        mExecutor = buttonExecutor;
     }
 
     @Override
@@ -80,14 +80,15 @@ public class GUIRenderer extends Application {
         mIsRunning = true;
     }
 
-    public void create() {
+    void create() {
         if (!mIsRunning) {
             launch();
         }
     }
 
-    public void showGUIElements(String[] elements) {
-        String cssResource = "file:///" + mExecutor.getProjectPath() + File.separator + mExecutor.getProjectConfigVar("css");
+    void showGUIElements(String[] elements) {
+        File css = new File(mExecutor.getProjectPath() + File.separator + mExecutor.getProjectConfigVar("css"));
+        String cssResource = "file:///" + css.getAbsolutePath();
         cssResource = cssResource.replace("\\", "/").replace(" ", "%20");
 
         mStage = new Stage();
@@ -99,6 +100,7 @@ public class GUIRenderer extends Application {
         SubScene guiSubScene = new SubScene(groupNode, bounds.getWidth(), bounds.getHeight(), true, SceneAntialiasing.BALANCED);
         guiSubScene.setFill(javafx.scene.paint.Color.TRANSPARENT);
         guiSubScene.setBlendMode(BlendMode.MULTIPLY);
+        groupNode.getStylesheets().add(cssResource);
 
         mStage.setX(bounds.getMinX());
         mStage.setY(bounds.getMinY());
@@ -118,7 +120,6 @@ public class GUIRenderer extends Application {
 
             if (values.mId.contains("button")) {
                 Button button = new Button();
-                button.getStylesheets().add(cssResource);
                 button.getStyleClass().add("button");
                 button.setText(values.mName);
                 button.setFont(Font.font(Font.getDefault().getName(), values.mSize));
@@ -151,18 +152,6 @@ public class GUIRenderer extends Application {
                 view.setTranslateX(values.mX);
                 view.setTranslateY(values.mY);
 
-                //view.setOnAction(arg0 -> {
-                // set SceneMaker variable
-                //    if (mExecutor != null) {
-                //        mExecutor.setVSmVar(values.mVSMVar, values.mName);
-                //    }
-                // hide only if option hide on pressed is set true
-                //    if (mHideOnPressed) {
-                //        mStage.close();
-                //        mStage = null;
-                //    }
-                //});
-
                 groupNode.getChildren().add(view);
             }
 
@@ -184,15 +173,6 @@ public class GUIRenderer extends Application {
                 pane.setTranslateY(values.mY);
                 pane.setPrefSize(values.mSize, Integer.parseInt(values.mName));
                 pane.setStyle("-fx-background-color: " + values.mValue);
-
-//                Rectangle rectangle = new Rectangle();
-//                rectangle.setTranslateX(values.mX);
-//                rectangle.setTranslateY(values.mY);
-//
-//                rectangle.setWidth(values.mSize);
-//                rectangle.setHeight(Integer.parseInt(values.mName));
-//
-//                rectangle.setStyle("-fx-background-color: " + values.mValue);
 
                 groupNode.getChildren().add(pane);
             }
@@ -246,7 +226,7 @@ public class GUIRenderer extends Application {
         mStage.show();
     }
 
-    public void hideGUIElements() {
+    void hideGUIElements() {
         if (mStage != null) {
             mStage.close();
             mStage = null;
