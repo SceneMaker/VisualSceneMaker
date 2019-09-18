@@ -118,7 +118,7 @@ public class GUIExecutor extends ActivityExecutor {
 
                             setVSmVar(gev.mVSMVar, gev.mValue);
 
-                            mLogger.message("Storing value " + gev.mVSMVar + " of " + gev.mName + " in VSM var " + gev.mValue);
+                            mLogger.message("Storing value " + gev.mValue + " of " + gev.mName + " in VSM var " + gev.mVSMVar);
                         }
 
 
