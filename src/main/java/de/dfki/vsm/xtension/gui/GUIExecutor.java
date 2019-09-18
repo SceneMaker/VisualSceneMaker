@@ -101,8 +101,29 @@ public class GUIExecutor extends ActivityExecutor {
 
                     }
                 }
+            }
+
+            if (name.equalsIgnoreCase("get")) {
+
+                String element = null;
+                String value = null;
+
+                for (ActionFeature af : activity.getFeatures()) {
+                    if (af.getKey().contains("textfield")) {
+                        element = af.getKey();
+                        value = af.getVal();
+
+                        if (mGUIElementIdValues.containsKey(element)) {
+                            GUIElementValues gev = mGUIElementIdValues.get(element);
+
+                            setVSmVar(gev.mVSMVar, gev.mValue);
+
+                            mLogger.message("Storing value " + gev.mVSMVar + " of " + gev.mName + " in VSM var " + gev.mValue);
+                        }
 
 
+                    }
+                }
             }
         }
     }
