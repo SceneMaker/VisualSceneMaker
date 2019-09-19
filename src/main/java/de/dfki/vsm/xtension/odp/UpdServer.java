@@ -16,9 +16,10 @@ public class UpdServer extends Thread {
     private byte[] buf = new byte[1024];
 
     private RunTimeProject mProject;
-    private String mSceneFlowTaskVar = "opdTask";
-    private String mSceneFlowFuncVar = "opdFunc";
-    private String mSceneFlowContVar = "opdCont";
+    private final String mSceneFlowTaskVar = "odpTask";
+    private final String mSceneFlowFuncVar = "odpFunc";
+    private final String mSceneFlowContVar = "odpCont";
+    private final String mSceneFlowActiVar = "odpAct";
 
     // The singleton logger instance
     private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
@@ -46,17 +47,65 @@ public class UpdServer extends Thread {
             if (packet.getLength() > 0) {
                 String message = new String(packet.getData(), 0, packet.getLength());
 
+                mLogger.message("ODP UPD Message received: " + message);
+
                 JSONObject jObj = new JSONObject(message);
 
-                String task = (jObj.getString("task") != null) ? jObj.getString("task") : "";
-                String function = (jObj.getString("function") != null) ? jObj.getString("function") : "";
-                String content = (jObj.getString("content") != null) ? jObj.getString("content") : "";
+                // task
+                String task = "";
+                try {
+                    task = jObj.getString("task");
+                } catch (Exception e) {
+                    task = "";
+                }
+
+                // function
+                String function = "";
+                try {
+                    function = jObj.getString("function");
+                } catch (Exception e) {
+                    function = "";
+                }
+
+                // content
+                String content = "";
+                try {
+                    content = jObj.getString("content");
+                } catch (Exception e) {
+                    content = "";
+                }
+
+                // action
+                String action = "";
+                try {
+                    action = jObj.getString("action");
+                } catch (Exception e) {
+                    action = "";
+                }
+
+                // ContactName
+                String ContactName = "";
+                try {
+                    ContactName = jObj.getString("ContactName");
+                } catch (Exception e) {
+                    ContactName = "";
+                }
+
+                // ContactNumber
+                String ContactNumber = "";
+                try {
+                    ContactNumber = jObj.getString("ContactNumber");
+                } catch (Exception e) {
+                    ContactNumber = "";
+                }
+
 
                 mProject.setVariable(mSceneFlowTaskVar, new StringValue(task));
                 mProject.setVariable(mSceneFlowFuncVar, new StringValue(function));
                 mProject.setVariable(mSceneFlowContVar, new StringValue(content));
+                mProject.setVariable(mSceneFlowActiVar, new StringValue(action));
 
-                mLogger.message("OPD UPD Message received: " + jObj);
+                mLogger.message("Parsed ODP Message: " + jObj);
             }
         }
     }
