@@ -19,7 +19,7 @@ import java.util.List;
 public class UMExecutor extends ActivityExecutor {
 
     // List of all users
-    private JSONArray mUserProfiles = new JSONArray();
+    private JSONObject mUserProfiles = new JSONObject();
 
     // The singelton logger instance
     private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
@@ -39,17 +39,7 @@ public class UMExecutor extends ActivityExecutor {
         mLogger.message("Loading UMExecutor ...");
 
         // load user profiles
-        String umf = mProject.getProjectPath() + File.separator + mConfig.getProperty("umdir") + File.separator + "UM.json";
-
-        // read
-        JSONObject jo = null;
-        try {
-            jo = new JSONObject(new FileReader(umf));
-        } catch (FileNotFoundException e) {
-            mLogger.failure("No User Model found in " + umf);
-        }
-
-        mUserProfiles = (JSONArray) jo.getJSONArray("user");
+        loadUserModel();
     }
 
 
@@ -77,7 +67,7 @@ public class UMExecutor extends ActivityExecutor {
             String therapist = (activity.get("therapist") != null) ? activity.get("therapist") : "";
             String therapistPhone = (activity.get("therapistphone") != null) ? activity.get("therapistphone") : "";
             String planedWorkTimeMo = (activity.get("nextworktime_mo") != null) ? activity.get("nextworktime_mo") : "";
-            String planedWorkTimeTue = (activity.get("nextworktime_tu") != null) ? activity.get("nextworktime_tu") : "";
+            String planedWorkTimeTue = (activity.get("nextworktime_mo") != null) ? activity.get("nextworktime_tu") : "";
             String planedWorkTimeWed = (activity.get("nextworktime_we") != null) ? activity.get("nextworktime_we") : "";
             String planedWorkTimeThr = (activity.get("nextworktime_th") != null) ? activity.get("nextworktime_th") : "";
             String planedWorkTimeFri = (activity.get("nextworktime_fr") != null) ? activity.get("nextworktime_fr") : "";
@@ -88,23 +78,92 @@ public class UMExecutor extends ActivityExecutor {
             String actualWorkTimeFri = (activity.get("actworktime_fr") != null) ? activity.get("actworktime_fr") : "";
             String positiveActivitiy = (activity.get("pos_activitiy") != null) ? activity.get("pos_activitiy") : "";
 
-
-            JSONObject jsonOut = new JSONObject();
-
-            // add to user profiles
+            // add/update to user profiles
         }
 
+    }
+
+    private void loadUserModel() {
+        String umf = mProject.getProjectPath() + File.separator + mConfig.getProperty("umdir") + File.separator + "UM.json";
+
+        String input = "";
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(umf));
+            StringBuilder sb = new StringBuilder();
+            String line = br.readLine();
+            while (line != null) {
+                sb.append(line);
+                line = br.readLine();
+            }
+            input = sb.toString();
+        } catch (FileNotFoundException e) {
+            mLogger.warning("No User Model found in " + umf + ", creating new.");
+
+            // create first entry, with the first user - id 0
+            //out object and user array object
+            JSONObject jsonOut = new JSONObject();
+            JSONArray jsonUserArray = new JSONArray();
+
+            // user
+            JSONObject user = new JSONObject();
+            user.put("id", "0");
+            user.put("name", "unknown");
+            user.put("break", "unknown");
+            user.put("type", "unknown");
+            user.put("therapy", "unknown");
+            user.put("icd", "unknown");
+            user.put("contact", "unknown");
+            user.put("contactphone", "unknown");
+            user.put("therapist", "unknown");
+            user.put("therapistphone", "unknown");
+            user.put("nextworktime_mo", "unknown");
+            user.put("nextworktime_tu", "unknown");
+            user.put("nextworktime_we", "unknown");
+            user.put("nextworktime_th", "unknown");
+            user.put("nextworktime_fr", "unknown");
+            user.put("actworktime_mo", "unknown");
+            user.put("actworktime_tu", "unknown");
+            user.put("actworktime_we", "unknown");
+            user.put("actworktime_th", "unknown");
+            user.put("actworktime_fr", "unknown");
+            user.put("posactivity", "unknown");
+
+            jsonUserArray.put(user);
+            jsonOut.put("users", jsonUserArray);
+
+            input = jsonOut.toString();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        mUserProfiles = new JSONObject(input);
+
+        saveUserModel();
+
+        JSONArray users = mUserProfiles.getJSONArray("users");
+
+        mLogger.message("Found user " + users.get(0).toString());
+
+    }
+
+    private void saveUserModel() {
+        String umf = mProject.getProjectPath() + File.separator + mConfig.getProperty("umdir") + File.separator + "UM.json";
+        try {
+            FileWriter umfw = new FileWriter(umf);
+
+            mLogger.message("Saving user profiles " + mUserProfiles);
+
+            umfw.write(mUserProfiles.toString());
+            umfw.flush();
+            umfw.close();
+        } catch (IOException e) {
+            mLogger.failure("Error writing UM to " + umf);
+        }
     }
 
     @Override
     public void unload() {
         // save user data in user Model
-        String umf = mProject.getProjectPath() + File.separator + mConfig.getProperty("umdir") + File.separator + "UM.json";
-        try {
-            FileWriter umfw = new FileWriter(umf);
-            umfw.write(mUserProfiles.toString());
-        } catch (IOException e) {
-            mLogger.failure("Error writing UM to " + umf);
-        }
+        saveUserModel();
     }
 }
