@@ -19,6 +19,7 @@ public class UpdServer extends Thread {
     private final String mSceneFlowTaskVar = "odpTask";
     private final String mSceneFlowFuncVar = "odpFunc";
     private final String mSceneFlowContVar = "odpCont";
+    private final String mSceneFlowNumbVar = "odpNum"; // stores the int value if odpCont is an int value
     private final String mSceneFlowActiVar = "odpAct";
 
     // The singleton logger instance
@@ -75,6 +76,14 @@ public class UpdServer extends Thread {
                     content = "";
                 }
 
+                // int content
+                int number = -1;
+                try {
+                    number = Integer.parseInt(content);
+                } catch (NumberFormatException e) {
+                    number = -1;
+                }
+
                 // action
                 String action = "";
                 try {
@@ -99,10 +108,10 @@ public class UpdServer extends Thread {
                     ContactNumber = "";
                 }
 
-
                 mProject.setVariable(mSceneFlowTaskVar, new StringValue(task));
                 mProject.setVariable(mSceneFlowFuncVar, new StringValue(function));
                 mProject.setVariable(mSceneFlowContVar, new StringValue(content));
+                mProject.setVariable(mSceneFlowNumbVar, number);
                 mProject.setVariable(mSceneFlowActiVar, new StringValue(action));
 
                 mLogger.message("Parsed ODP Message: " + jObj);
