@@ -300,7 +300,12 @@ public final class CharamelExecutor extends ActivityExecutor implements Exportab
                 intensity = (intensity == null) ? "1.0" : intensity;
                 charamelAct = mActionLoader.loadCharamelAnimation(activity_name, intensity, aid);
                 activity.setType(Type.parallel);
-            } else if (activity_name.equalsIgnoreCase("Neutral")) {
+            }else if (activity_name.equalsIgnoreCase("RawXML")) {
+                String XML = activity.get("XML");
+                charamelAct = mActionLoader.loadCharamelAnimation(activity_name, aid,XML);
+                activity.setType(Type.parallel);
+            }
+            else if (activity_name.equalsIgnoreCase("Neutral")) {
                 charamelAct = mActionLoader.loadCharamelAnimation(activity_name, "1.0", aid);
             } else if (activity_name.equalsIgnoreCase("Sad")) {
                 String intensity = activity.get("intensity");
@@ -317,7 +322,12 @@ public final class CharamelExecutor extends ActivityExecutor implements Exportab
                 intensity = (intensity == null) ? "1.0" : intensity;
                 charamelAct = mActionLoader.loadCharamelAnimation(activity_name, intensity, aid);
                 activity.setType(Type.parallel);
-            } else if (activity_name.equalsIgnoreCase("InitJointAnimation")) {
+            }
+            else if (activity_name.equalsIgnoreCase("ArmsCrossed")) {
+                charamelAct = mActionLoader.loadCharamelAnimation(activity_name,aid);
+                activity.setType(Type.parallel);
+            }
+            else if (activity_name.equalsIgnoreCase("InitJointAnimation")) {
                 String joint = activity.get("joint");
                 joint = (joint == null) ? "" : joint;
                 charamelAct = mActionLoader.loadCharamelAnimation(activity_name, joint, aid);
