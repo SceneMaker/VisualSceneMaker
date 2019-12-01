@@ -47,7 +47,7 @@ public class ArmsCrossed extends CharamelActObject implements XMLParseable, XMLW
                 + "<cai_command id=\"" + mId + "\">RenderXML"
                     + "<animation_track>"
                     + "<event aid=\""+mCharameAvatarId+"\">"
-               +"<motion>interaction/think/think_arms_crossed_01</motion>"
+               +"Motion<event_param>interaction/think/think_arms_crossed_01</event_param>"
                 + "</event></animation_track>"
                 + "</cai_command></cai_request>";
         out.push().println(xml);
