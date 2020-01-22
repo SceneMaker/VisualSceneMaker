@@ -8,7 +8,7 @@ compileJava {options.encoding = "UTF-8"}
 javadoc { options.encoding = 'UTF-8' }
 
 group 'de.dfki'
-version '4.0.0'
+version '4.0.1'
 
 sourceCompatibility = 11
 
@@ -30,7 +30,7 @@ dependencies {
     // https://mvnrepository.com/artifact/jpl/jpl
     compile group: 'jpl', name: 'jpl', version: '7.4.0'
     // https://mvnrepository.com/artifact/de.sciss/sphinx4
-    compile group: 'de.dfki.mary', name: 'marytts-client', version: '5.1.2'
+//    compile group: 'de.dfki.mary', name: 'marytts-client', version: '5.1.2'
     // https://mvnrepository.com/artifact/net.java.dev.jna/jna
     compile group: 'net.java.dev.jna', name: 'jna', version: '4.2.2'
     // https://mvnrepository.com/artifact/net.java.dev.jna/jna-platform
