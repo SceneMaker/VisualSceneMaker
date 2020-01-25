@@ -3,7 +3,7 @@ install: true
 
 os: linux
 dist: trusty
-jdk: oraclejdk8
+jdk: oraclejdk12
 before_install:
  - chmod +x gradlew
 script:
