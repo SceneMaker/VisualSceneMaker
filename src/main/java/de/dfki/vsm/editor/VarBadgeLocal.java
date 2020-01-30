@@ -52,6 +52,8 @@ public class VarBadgeLocal extends JComponent implements EventListener, ActionLi
     private BufferedImage bufferedImage;
     FontMetrics fontMetrics = null;
 
+    //javafx.scene.control.Label mLabel = new Label("Test");
+
     public VarBadgeLocal(SuperNode superNode, boolean hidden) {
         mSuperNode = superNode;
 
@@ -141,6 +143,13 @@ public class VarBadgeLocal extends JComponent implements EventListener, ActionLi
         Dimension dimension = computeTextRectSize(g);
 
         if (!useCachedImage) {
+
+            //VBox scene = new VBox(10, saveBtn);
+
+            //BufferedImage bi = new BufferedImage((int) dimension.getWidth(), (int) dimension.getHeight(), BufferedImage.TYPE_4BYTE_ABGR);
+
+            //bufferedImage = javafx.embed.swing.SwingFXUtils.fromFXImage(scene.snapshot(new SnapshotParameters(), null), bi);
+
             bufferedImage = new BufferedImage((int) dimension.getWidth(), (int) dimension.getHeight(), BufferedImage.TYPE_4BYTE_ABGR);
             Graphics2D graphics = bufferedImage.createGraphics();
             graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -174,7 +183,6 @@ public class VarBadgeLocal extends JComponent implements EventListener, ActionLi
                 y += FONT_SIZE + PADDING_BETWEEN_LINE;
                 currentDrawingOffset = (int) (currentDrawingOffset + textLayout.getLeading()
                         + textLayout.getDescent());
-
             }
             paintFromImage(g);
 

@@ -8,19 +8,10 @@ import de.dfki.vsm.editor.OKButton;
 import de.dfki.vsm.editor.util.AltStartNodeManager;
 import de.dfki.vsm.model.sceneflow.chart.BasicNode;
 
-//~--- JDK imports ------------------------------------------------------------
-
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
+import javax.swing.*;
 import java.util.ArrayList;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
 
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
+//~--- JDK imports ------------------------------------------------------------
 
 /**
  * @author Gregor Mehlmann
@@ -50,7 +41,7 @@ public class CreateAltStartNodeDialog extends Dialog {
         mAltStartNodeLabel    = new JLabel("Alternative:");
         mAltStartNodeComboBox = new JComboBox(new DefaultComboBoxModel());
 
-        // Ok button
+        // Ok gui
         mOkButton = new OKButton();
         mOkButton.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -58,7 +49,7 @@ public class CreateAltStartNodeDialog extends Dialog {
             }
         });
 
-        // Cancel button
+        // Cancel gui
         mCancelButton = new CancelButton();
         mCancelButton.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {

@@ -2,49 +2,32 @@ package de.dfki.vsm.editor.dialog;
 
 //~--- non-JDK imports --------------------------------------------------------
 //import com.sun.java.swing.plaf.windows.WindowsScrollBarUI;
+
 import de.dfki.vsm.editor.CancelButton;
 import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.OKButton;
-import de.dfki.vsm.model.sceneflow.glue.command.definition.FunctionDefinition;
 import de.dfki.vsm.model.sceneflow.glue.command.definition.ArgumentDefinition;
+import de.dfki.vsm.model.sceneflow.glue.command.definition.FunctionDefinition;
 
-//~--- JDK imports ------------------------------------------------------------
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.GridLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseEvent;
-
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Vector;
-
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.DefaultListModel;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextField;
+import javax.swing.*;
 import javax.swing.event.MouseInputAdapter;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.PlainDocument;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Vector;
+
+//~--- JDK imports ------------------------------------------------------------
 
 /**
  *
@@ -185,14 +168,14 @@ public class FunDefDialog extends Dialog {
         argBox.add(mArgLabel);
         argBox.add(Box.createHorizontalStrut(10));
         argBox.add(mArgScrollPane);
-        // ok button
+        // ok gui
         mOkButton = new OKButton();
         mOkButton.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 okActionPerformed();
             }
         });
-        // cancel button
+        // cancel gui
         mCancelButton = new CancelButton();
         mCancelButton.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {

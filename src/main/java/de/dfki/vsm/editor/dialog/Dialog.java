@@ -4,23 +4,11 @@ package de.dfki.vsm.editor.dialog;
 
 import de.dfki.vsm.util.ios.ResourceLoader;
 
-//~--- JDK imports ------------------------------------------------------------
-
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.KeyEvent;
 
-import javax.swing.Box;
-import javax.swing.ImageIcon;
-import javax.swing.JComponent;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.KeyStroke;
-import javax.swing.WindowConstants;
+//~--- JDK imports ------------------------------------------------------------
 
 /**
  * @author Gregor Mehlmann
@@ -113,9 +101,9 @@ public abstract class Dialog extends JDialog {
     }
 
     protected void dispose(Button button) {
-        //System.err.println("disposing on button " + mPressedButton);
+        //System.err.println("disposing on gui " + mPressedButton);
         mPressedButton = button;
-        //System.err.println("disposing on button " + mPressedButton);
+        //System.err.println("disposing on gui " + mPressedButton);
         setVisible(false);
         dispose();
     }

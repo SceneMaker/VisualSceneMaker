@@ -42,7 +42,7 @@ abstract class AttributeEditor extends JPanel implements EventListener {
         mScrollPane.setPreferredSize(new Dimension(200, 100));
         mScrollPane.setMinimumSize(new Dimension(200, 100));
 
-        // Init the button panel
+        // Init the gui panel
         mAddButton = new JButton(PreferencesDesktop.ICON_PLUS_STANDARD);
         mAddButton.setRolloverIcon(PreferencesDesktop.ICON_PLUS_ROLLOVER);
         mAddButton.setDisabledIcon(PreferencesDesktop.ICON_PLUS_DISABLED);

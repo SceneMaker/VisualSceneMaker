@@ -69,7 +69,7 @@ import java.util.HashMap;
 //        mScrollPane.setPreferredSize(new Dimension(200, 100));
 //        mScrollPane.setMinimumSize(new Dimension(200, 100));
 //
-//        // Init the button panel
+//        // Init the gui panel
 //        mAddButton = new JButton(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/add.png"));
 //        mAddButton.setRolloverIcon(ResourceLoader.loadImageIcon("/res/img/toolbar_icons/add_blue.png"));
 //        mAddButton.setMaximumSize(new Dimension(22, 22));

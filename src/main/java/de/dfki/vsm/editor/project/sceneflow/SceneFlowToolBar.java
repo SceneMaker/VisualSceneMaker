@@ -126,7 +126,7 @@ public class SceneFlowToolBar extends JToolBar implements EventListener {
     // The current editor config    
     private final EditorConfig mEditorConfig;
 
-    // The button GUI components
+    // The gui GUI components
     private JButton mTogglePallete;
     private JButton mToggleElementEditor;
     private JButton mPlayButton;
@@ -578,7 +578,7 @@ public class SceneFlowToolBar extends JToolBar implements EventListener {
         mRedo.setEnabled(redoAction.isEnabled());
         //*************************************
         //mLogger.message("Check execution status '" + this + "'");
-        //refresh the play button when running the scene player
+        //refresh the play gui when running the scene player
         if (/*mRunTime.isRunning(mEditorProject)*/mEditorProject.isRunning()) {
             // Print some information
             //mLogger.message("Running");
@@ -602,7 +602,7 @@ public class SceneFlowToolBar extends JToolBar implements EventListener {
             mPlayButton.setRolloverIcon(ICON_PLAY_ROLLOVER);
             
             mPlayButton.setToolTipText("Initialize project/Start the execution of the sceneflow");
-            // if an execution has been ended disable the play button
+            // if an execution has been ended disable the play gui
             if (/*mRunTime.wasExecuted(mEditorProject)*/mEditorProject.wasExecuted() && mStopButton.isEnabled()) {
                 mPlayButton.setEnabled(false);
             } else if (!/*mRunTime.isRunning(mEditorProject)*/mEditorProject.isRunning()){
@@ -695,7 +695,7 @@ public class SceneFlowToolBar extends JToolBar implements EventListener {
             intensity = (intensity < 0) ? 0 : intensity;
             // Create a label with an arrow
             final JLabel arrow = new JLabel("\u2192");
-            // Create a button with the name
+            // Create a gui with the name
             final JButton pathElement = new JButton(action);
             pathElement.setUI(new BasicButtonUI());
             pathElement.setBorder(BorderFactory.createLineBorder(Color.GRAY));

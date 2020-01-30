@@ -99,7 +99,7 @@ public class ModifyTEdgeDialog extends Dialog {
         // Init alternative start node panel
         initAltStartNodePanel();
 
-        // Init button panel
+        // Init gui panel
         initButtonPanel();
 
         // Init main panel
@@ -166,14 +166,14 @@ public class ModifyTEdgeDialog extends Dialog {
     }
     private void initButtonPanel() {
 
-        // Ok button
+        // Ok gui
         mOkButton = new OKButton();
         mOkButton.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 okActionPerformed();
             }
         });
-        // Cancel button
+        // Cancel gui
         mCancelButton = new CancelButton();
         mCancelButton.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -204,21 +204,21 @@ public class ModifyTEdgeDialog extends Dialog {
         mAltStartNodeScrollPane.setMinimumSize(tfSize);
         mAltStartNodeScrollPane.setMaximumSize(tfSize);
         // Init alternative start node buttons
-        //add button
+        //add gui
         mAddAltStartNodeButton = new AddButton();
         mAddAltStartNodeButton.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 addAltStartNode();
             }
         });
-        //remove button
+        //remove gui
         mRemoveAltStartNodeButton = new RemoveButton();
         mRemoveAltStartNodeButton.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 removeAltStartNode();
             }
         });
-        //edit button
+        //edit gui
         mEditAltStartNodeButton = new EditButton();
         mEditAltStartNodeButton.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {

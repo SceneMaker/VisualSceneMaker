@@ -10,18 +10,9 @@ import de.dfki.vsm.editor.util.sceneScript.SceneFinder;
 import de.dfki.vsm.editor.util.sceneScript.document.DocumentHighlighter;
 import de.dfki.vsm.editor.util.sceneScript.document.beans.HighlightInformation;
 
-import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JTextField;
+import javax.swing.*;
 import javax.swing.text.BadLocationException;
+import java.awt.*;
 
 /**
  *
@@ -162,8 +153,8 @@ public class SearchFunctionInScene {
         button_ReplaceAll.setVisible(true);
         button_EmptytextField.setVisible(true);
     }
-    
-    // change the button to show or hide the search function
+
+    // change the gui to show or hide the search function
     public void set_button_appearanceControl(String s) {
         button_appearanceControl.setText(s);
     }

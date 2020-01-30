@@ -1,6 +1,7 @@
 package de.dfki.vsm.runtime.activity;
 
 import de.dfki.vsm.util.log.LOGConsoleLogger;
+
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Properties;
@@ -68,7 +69,9 @@ public final class SpeechActivity extends AbstractActivity {
             //mLogger.success("text to be checked and maybe replaced " + text);
             for (Map.Entry<Object, Object> entry : pronounciationMap.entrySet()) {
                 if (text != null && entry.getKey() != null && entry.getValue() != null) {
+                    String vorher = text;
                     text = text.replaceAll("\\b" + entry.getKey() + "\\b", (String) entry.getValue());
+                    mLogger.success("Ersetze alt >" + vorher + "< with >" + text + "<");
                 }
             }
             //mLogger.success(" with " + text);

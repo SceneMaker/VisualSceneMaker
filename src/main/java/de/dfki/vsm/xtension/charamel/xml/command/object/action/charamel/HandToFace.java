@@ -15,23 +15,21 @@ import de.dfki.vsm.xtension.charamel.xml.command.object.action.CharamelActObject
 import org.w3c.dom.Element;
 
 /**
- *
  * @author Patrick Gebhard
- *
  */
-public class ArmsCrossed extends CharamelActObject implements XMLParseable, XMLWriteable {
+public class HandToFace extends CharamelActObject implements XMLParseable, XMLWriteable {
 
     private String mCharameAvatarId = "1";
     // The logger instance
     private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
 
     // TODO cai_request sub element String mValue = "";
-    public ArmsCrossed( String aid) {
+    public HandToFace(String aid) {
         mName = "caixml";
         mCharameAvatarId = aid;
     }
 
-    public ArmsCrossed() {
+    public HandToFace() {
         mName = "caixml";
     }
 
@@ -42,14 +40,13 @@ public class ArmsCrossed extends CharamelActObject implements XMLParseable, XMLW
 
         String xml = "<cai_request version=\"1.0\">"
                 + "<cai_command id=\"" + mId + "\">RenderXML"
-                    + "<animation_track>"
-                    + "<event aid=\""+mCharameAvatarId+"\">"
-                + "Motion<event_param>interaction/interaction/think/think_arms_crossed_01</event_param>"
+                + "<animation_track>"
+                + "<event aid=\"" + mCharameAvatarId + "\">"
+                + "Motion<event_param>interaction/smell/stinky_01</event_param>"
                 + "</event></animation_track>"
                 + "</cai_command></cai_request>";
         out.push().println(xml);
         out.pop().pop().println("</Action>");
-
 
 
     }

@@ -326,10 +326,10 @@ public final class CharamelExecutor extends ActivityExecutor implements Exportab
             else if (activity_name.equalsIgnoreCase("ArmsCrossed")) {
                 charamelAct = mActionLoader.loadCharamelAnimation(activity_name,aid);
                 activity.setType(Type.parallel);
-            }            
-            else if (activity_name.equalsIgnoreCase("HandToFace")) {
+            } else if (activity_name.equalsIgnoreCase("HandToFace")) {
                 charamelAct = mActionLoader.loadCharamelAnimation(activity_name,aid);
                 activity.setType(Type.parallel);
+            }
             else if (activity_name.equalsIgnoreCase("InitJointAnimation")) {
                 String joint = activity.get("joint");
                 joint = (joint == null) ? "" : joint;

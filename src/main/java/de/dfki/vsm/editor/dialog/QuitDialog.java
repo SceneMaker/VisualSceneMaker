@@ -5,22 +5,13 @@ package de.dfki.vsm.editor.dialog;
 import de.dfki.vsm.editor.CancelButton;
 import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.OKButton;
-
 import de.dfki.vsm.util.ios.ResourceLoader;
 
-//~--- JDK imports ------------------------------------------------------------
-
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Toolkit;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.MouseEvent;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.ImageIcon;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
+
+//~--- JDK imports ------------------------------------------------------------
 
 /**
  * @author Martín Fallas
@@ -88,8 +79,8 @@ public class QuitDialog extends JDialog {
         mExitMessage.setMinimumSize(new Dimension(450, 120));
         mExitMessage.setMaximumSize(new Dimension(450, 120));
         mExitMessage.setPreferredSize(new Dimension(450, 120));
-        // Init the button
-        // Ok button
+        // Init the gui
+        // Ok gui
         mYesButton = new OKButton();
         mYesButton.setText(yesButtonMessage);
         mYesButton.addMouseListener(new java.awt.event.MouseAdapter() {

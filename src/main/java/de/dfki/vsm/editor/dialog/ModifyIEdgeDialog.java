@@ -92,7 +92,7 @@ public class ModifyIEdgeDialog extends Dialog implements EventListener {
     private void initComponents() {
         // Init input panel
         initInputPanel();
-        // Init button panel
+        // Init gui panel
         initButtonPanel();
         // Init alternative start node panel
         initAltStartNodePanel();
@@ -157,14 +157,14 @@ public class ModifyIEdgeDialog extends Dialog implements EventListener {
     }
 
     private void initButtonPanel() {
-        // Ok button
+        // Ok gui
         mOkButton = new OKButton();
         mOkButton.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 okActionPerformed();
             }
         });
-        // Cancel button
+        // Cancel gui
         mCancelButton = new CancelButton();
         mCancelButton.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -195,21 +195,21 @@ public class ModifyIEdgeDialog extends Dialog implements EventListener {
         mAltStartNodeScrollPane.setMinimumSize(tfSize);
         mAltStartNodeScrollPane.setMaximumSize(tfSize);
         // Init alternative start node buttons
-        //add button
+        //add gui
         mAddAltStartNodeButton = new AddButton();
         mAddAltStartNodeButton.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 addAltStartNode();
             }
         });
-        //remove button
+        //remove gui
         mRemoveAltStartNodeButton = new RemoveButton();
         mRemoveAltStartNodeButton.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 removeAltStartNode();
             }
         });
-        //edit button
+        //edit gui
         mEditAltStartNodeButton = new EditButton();
         mEditAltStartNodeButton.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {

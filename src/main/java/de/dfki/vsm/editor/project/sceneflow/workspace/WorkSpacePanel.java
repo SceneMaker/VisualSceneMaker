@@ -2502,7 +2502,7 @@ public final class WorkSpacePanel extends JPanel implements EventListener, Mouse
     }
 
     /**
-     * Implementation of the delete button. the del-key is bound to the function
+     * Implementation of the delete gui. the del-key is bound to the function
      * mWorkspace.deleteSelectedItem this detects which items are selected and
      * will throw them away selection will be canceled. 1-2-2014 Bert Bierman
      * TNO

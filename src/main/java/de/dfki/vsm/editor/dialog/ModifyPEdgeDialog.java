@@ -146,7 +146,7 @@ public class ModifyPEdgeDialog extends Dialog {
         // Init probability panel
         initEdgeProbabilityPanel();
 
-        // Init button panel
+        // Init gui panel
         initButtonPanel();
 
         // Init alternative start node panel
@@ -172,7 +172,7 @@ public class ModifyPEdgeDialog extends Dialog {
 
     private void initButtonPanel() {
 
-        // Ok button
+        // Ok gui
         mOkButton = new OKButton();
         mOkButton.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -180,7 +180,7 @@ public class ModifyPEdgeDialog extends Dialog {
             }
         });
 
-        // Cancel button
+        // Cancel gui
         mCancelButton = new CancelButton();
         mCancelButton.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -304,8 +304,8 @@ public class ModifyPEdgeDialog extends Dialog {
         mRestPanel.add(Box.createRigidArea(new Dimension(15, 0)));
         mRestPanel.add(mRestField);
         mRestPanel.add(Box.createHorizontalGlue());
-        
-        // Normalize button
+
+        // Normalize gui
         mNormButton = new JLabel();
         mNormButton.setHorizontalAlignment(SwingConstants.RIGHT);
         mNormButton.setOpaque(true);
@@ -334,7 +334,7 @@ public class ModifyPEdgeDialog extends Dialog {
             }
         });
 
-        // Uniform button
+        // Uniform gui
         mUniButton = new JLabel();
         mUniButton.setHorizontalAlignment(SwingConstants.RIGHT);
         mUniButton.setOpaque(true);
@@ -400,7 +400,7 @@ public class ModifyPEdgeDialog extends Dialog {
         mAltStartNodeScrollPane.setMaximumSize(tfSize);
 
         // Init alternative start node buttons300
-        // add button
+        // add gui
         mAddAltStartNodeButton = new AddButton();
         mAddAltStartNodeButton.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -408,7 +408,7 @@ public class ModifyPEdgeDialog extends Dialog {
             }
         });
 
-        // remove button
+        // remove gui
         mRemoveAltStartNodeButton = new RemoveButton();
         mRemoveAltStartNodeButton.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -416,7 +416,7 @@ public class ModifyPEdgeDialog extends Dialog {
             }
         });
 
-        // edit button
+        // edit gui
         mEditAltStartNodeButton = new EditButton();
         mEditAltStartNodeButton.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {

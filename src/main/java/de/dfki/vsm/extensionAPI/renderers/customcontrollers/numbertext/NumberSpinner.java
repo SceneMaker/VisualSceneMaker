@@ -3,8 +3,7 @@ package de.dfki.vsm.extensionAPI.renderers.customcontrollers.numbertext;
 /**
  * Created by alvaro on 4/23/17.
  */
-import java.math.BigDecimal;
-import java.text.NumberFormat;
+
 import javafx.beans.binding.NumberBinding;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -18,7 +17,10 @@ import javafx.scene.layout.VBox;
 import javafx.scene.shape.LineTo;
 import javafx.scene.shape.MoveTo;
 import javafx.scene.shape.Path;
-import javax.swing.JSpinner;
+
+import javax.swing.*;
+import java.math.BigDecimal;
+import java.text.NumberFormat;
 
 /**
  * JavaFX Control that behaves like a {@link JSpinner} known in Swing. The
@@ -78,7 +80,7 @@ public class NumberSpinner extends HBox {
         arrowUp.setId(ARROW);
         arrowUp.getElements().addAll(new MoveTo(-ARROW_SIZE, 0), new LineTo(ARROW_SIZE, 0),
                 new LineTo(0, -ARROW_SIZE), new LineTo(-ARROW_SIZE, 0));
-        // mouse clicks should be forwarded to the underlying button
+        // mouse clicks should be forwarded to the underlying gui
         arrowUp.setMouseTransparent(true);
 
         Path arrowDown = new Path();
@@ -110,7 +112,7 @@ public class NumberSpinner extends HBox {
             ae.consume();
         });
 
-        // Paint arrow path on button using a StackPane
+        // Paint arrow path on gui using a StackPane
         StackPane incPane = new StackPane();
         incPane.getChildren().addAll(incrementButton, arrowUp);
         incPane.setAlignment(Pos.CENTER);

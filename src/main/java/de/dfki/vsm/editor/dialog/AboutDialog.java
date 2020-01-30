@@ -114,8 +114,8 @@ public class AboutDialog extends JDialog {
         mAboutTextScrollPane.setViewportBorder(new EmptyBorder(0, 0, 0, 0));
         mAboutTextScrollPane.setBorder(new EmptyBorder(0, 0, 0, 0));
 
-        // Init the button
-        // Ok button
+        // Init the gui
+        // Ok gui
         mOkButton = new OKButton();
         mOkButton.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
