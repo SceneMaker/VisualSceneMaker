@@ -1,5 +1,6 @@
 package de.dfki.vsm;
 
+
 import de.dfki.vsm.runtime.project.RunTimeProject;
 
 import java.io.File;
@@ -24,8 +25,11 @@ public class Core {
                     final int in = System.in.read();
                     if (in != -1) {
                         // Aborting the execution now
+                    } else { // For the case there is no access to System.in
+                        waitTillIsFinished(runTimeProject);
                     }
-                } catch (final IOException exc) {
+
+                } catch (final IOException | InterruptedException exc) {
                     // Do nothing
                 } finally {
                     // Abort the runtime with the project
@@ -37,6 +41,14 @@ public class Core {
                 }
 
             }
+        }
+    }
+
+    private static void waitTillIsFinished(RunTimeProject runTimeProject) throws InterruptedException {
+        boolean isRunning = true;
+        while (isRunning) {
+            Thread.sleep(200);
+            isRunning = runTimeProject.isRunning();
         }
     }
 }

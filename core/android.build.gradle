@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'net.nemerosa.versioning' version '2.8.2'
 }
 group 'de.dfki.vsm'
 version '4.0.0'
@@ -8,6 +9,11 @@ repositories {
     mavenCentral()
     maven { url "http://repo.spring.io/libs-release" }
 }
+
+apply plugin: 'java'
+targetCompatibility = 1.8
+sourceCompatibility = 1.8
+
 dependencies {
     compile files('../lib/JCup.jar')
     compile files('../lib/JFlex.jar')
