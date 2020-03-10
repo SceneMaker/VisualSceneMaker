@@ -2,6 +2,8 @@ package de.dfki.vsm.util.log;
 
 import de.dfki.vsm.Preferences;
 
+import java.io.File;
+import java.util.Arrays;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -27,7 +29,9 @@ public class LOGDefaultLogger {
             // Install The Console Handler
             install(new LOGConsoleHandler());
             // Install The Logfile Handler
-            install(new LOGLogFileHandler(Preferences.sLOGFILE_FILE_NAME, 10485760, 1, true));    // 10 MB Size
+            if(new File(Preferences.sLOGFILE_FILE_NAME).canWrite()){
+                install(new LOGLogFileHandler(Preferences.sLOGFILE_FILE_NAME, 10485760, 1, true));    // 10 MB Size
+            }
         } catch (Exception exc) {
             exc.printStackTrace();
             sLogger.severe(exc.toString());
