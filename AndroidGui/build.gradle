@@ -1,0 +1,37 @@
+plugins {
+    id 'java'
+}
+
+group 'de.dfki'
+version '4.0.1-android'
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+    implementation project(':core')
+}
+jar {
+    doFirst {
+        project.ext.set('flavor', 'android')
+        project.ext.set('buildInfo', 'android')
+    }
+
+    from {
+        (configurations.runtimeClasspath).collect {
+            it.isDirectory() ? it : zipTree(it)
+        }
+    }
+    manifest {
+        attributes(
+                'Main-Class': 'de.dfki.vsm.Core'
+
+        )
+    }
+    duplicatesStrategy = 'exclude'
+}
