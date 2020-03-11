@@ -288,7 +288,9 @@ public class RunTimeProject {
         createRuntimePlayerIfNeeded();
         mRunTimePlayer.launch();
         // Launch all plugins
-        mPluginMap.values().forEach(RunTimePlugin::launch);
+        for (RunTimePlugin runTimePlugin : mPluginMap.values()) {
+            runTimePlugin.launch();
+        }
         // Create an interpreter
         mInterpreter = new Interpreter(this);//GM
         // Return true at success
