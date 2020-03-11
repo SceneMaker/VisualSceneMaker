@@ -1,13 +1,28 @@
 plugins {
     id 'java'
 }
+
+
+
 group 'de.dfki.vsm'
-version '4.0.0'
+
+
+if(!project.hasProperty('flavor')){
+    apply plugin: 'java'
+    targetCompatibility = 1.8
+    sourceCompatibility = 1.8
+    version "android-4.0.1" ;
+
+    println("Building jar for ANDROID")
+}else {
+    sourceCompatibility = 11
+}
 
 repositories {
     mavenCentral()
     maven { url "http://repo.spring.io/libs-release" }
 }
+
 dependencies {
     compile files('../lib/JCup.jar')
     compile files('../lib/JFlex.jar')
@@ -19,6 +34,11 @@ dependencies {
 
 
 jar {
+    doFirst {
+        project.ext.set('flavor', 'android')
+        project.ext.set('buildInfo', 'android')
+    }
+
     from {
         (configurations.runtime).collect {
             it.isDirectory() ? it : zipTree(it)
@@ -26,9 +46,8 @@ jar {
     }
     manifest {
         attributes(
-                'Main-Class': 'de.dfki.vsm.Core',
-                'build' : versioning.info.build,
-                'Build-Revision': versioning.info.commit
+                'Main-Class': 'de.dfki.vsm.Core'
+
         )
     }
     duplicatesStrategy = 'exclude'
