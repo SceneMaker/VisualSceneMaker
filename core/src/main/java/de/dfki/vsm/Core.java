@@ -1,10 +1,15 @@
 package de.dfki.vsm;
 
 
+import de.dfki.vsm.event.EventDispatcher;
+import de.dfki.vsm.event.EventListener;
+import de.dfki.vsm.event.EventObject;
+import de.dfki.vsm.event.event.ForceShutdownEvent;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Core {
     // Start the runtime with some project
@@ -26,7 +31,8 @@ public class Core {
                     if (in != -1) {
                         // Aborting the execution now
                     } else { // For the case there is no access to System.in
-                        waitTillIsFinished(runTimeProject);
+                        ProjectTerminationWaiter waiter = new ProjectTerminationWaiter(runTimeProject);
+                        waiter.waitTillFinished();
                     }
 
                 } catch (final IOException | InterruptedException exc) {
@@ -44,11 +50,27 @@ public class Core {
         }
     }
 
-    private static void waitTillIsFinished(RunTimeProject runTimeProject) throws InterruptedException {
-        boolean isRunning = true;
-        while (isRunning) {
-            Thread.sleep(200);
-            isRunning = runTimeProject.isRunning();
+
+    private static class ProjectTerminationWaiter implements EventListener {
+        private final RunTimeProject runTimeProject;
+        private final AtomicBoolean isRunning = new AtomicBoolean(true);
+
+        private ProjectTerminationWaiter(RunTimeProject runTimeProject){
+            EventDispatcher.getInstance().register(this);
+            this.runTimeProject = runTimeProject;
+        }
+        @Override
+        public synchronized void update(EventObject event) {
+            if(event instanceof ForceShutdownEvent) {
+                isRunning.set(false);
+            }
+        }
+
+        public void waitTillFinished() throws InterruptedException {
+            while (isRunning.get()) {
+                Thread.sleep(200);
+                isRunning.compareAndSet(true, runTimeProject.isRunning());
+            }
         }
     }
 }
