@@ -16,6 +16,7 @@ import org.w3c.dom.Element;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.function.Function;
 
 /**
  * @author Gregor Mehlmann
@@ -28,7 +29,12 @@ public class Configuration {
     }
 
     public void enterState(State state) {
-        mConfiguration.computeIfAbsent(state.getNode(), k -> new LinkedList<>());
+        mConfiguration.computeIfAbsent(state.getNode(), new Function<BasicNode, LinkedList<State>>() {
+            @Override
+            public LinkedList<State> apply(BasicNode k) {
+                return new LinkedList<>();
+            }
+        });
 
         mConfiguration.get(state.getNode()).addLast(state);
     }

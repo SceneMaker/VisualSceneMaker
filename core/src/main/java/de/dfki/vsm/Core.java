@@ -1,9 +1,15 @@
 package de.dfki.vsm;
 
+
+import de.dfki.vsm.event.EventDispatcher;
+import de.dfki.vsm.event.EventListener;
+import de.dfki.vsm.event.EventObject;
+import de.dfki.vsm.event.event.ForceShutdownEvent;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Core {
     // Start the runtime with some project
@@ -24,8 +30,12 @@ public class Core {
                     final int in = System.in.read();
                     if (in != -1) {
                         // Aborting the execution now
+                    } else { // For the case there is no access to System.in
+                        ProjectTerminationWaiter waiter = new ProjectTerminationWaiter(runTimeProject);
+                        waiter.waitTillFinished();
                     }
-                } catch (final IOException exc) {
+
+                } catch (final IOException | InterruptedException exc) {
                     // Do nothing
                 } finally {
                     // Abort the runtime with the project
@@ -36,6 +46,30 @@ public class Core {
                     runTimeProject.unload();
                 }
 
+            }
+        }
+    }
+
+
+    private static class ProjectTerminationWaiter implements EventListener {
+        private final RunTimeProject runTimeProject;
+        private final AtomicBoolean isRunning = new AtomicBoolean(true);
+
+        private ProjectTerminationWaiter(RunTimeProject runTimeProject){
+            EventDispatcher.getInstance().register(this);
+            this.runTimeProject = runTimeProject;
+        }
+        @Override
+        public synchronized void update(EventObject event) {
+            if(event instanceof ForceShutdownEvent) {
+                isRunning.set(false);
+            }
+        }
+
+        public void waitTillFinished() throws InterruptedException {
+            while (isRunning.get()) {
+                Thread.sleep(200);
+                isRunning.compareAndSet(true, runTimeProject.isRunning());
             }
         }
     }

@@ -132,11 +132,11 @@ public abstract class AbstractEdge implements ModelObject {
         Map<Tuple<String, BasicNode>, Tuple<String, BasicNode>> copy = new HashMap<>();
 
         mAltMap.forEach((startNodePair, altStartNodePair) -> {
-            var startNodePairCopy = new Tuple<>(
+            Tuple startNodePairCopy = new Tuple<>(
                     startNodePair.getFirst(),
                     startNodePair.getSecond().getCopy()
             );
-            var altStartNodePairCopy = new Tuple<>(
+            Tuple altStartNodePairCopy = new Tuple<>(
                     altStartNodePair.getFirst(),
                     altStartNodePair.getSecond().getCopy()
             );
@@ -151,8 +151,8 @@ public abstract class AbstractEdge implements ModelObject {
         StringBuilder result = new StringBuilder();
 
         for (Map.Entry<Tuple<String, BasicNode>, Tuple<String, BasicNode>> pairs : mAltMap.entrySet()) {
-            var start = pairs.getKey();
-            var alt = pairs.getValue();
+            Tuple<String, BasicNode> start = pairs.getKey();
+            Tuple<String, BasicNode> alt = pairs.getValue();
 
             result.append(start.getFirst())
                     .append("/")

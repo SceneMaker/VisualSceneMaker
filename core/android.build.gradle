@@ -1,25 +1,18 @@
 plugins {
     id 'java'
+    id 'net.nemerosa.versioning' version '2.8.2'
 }
-
-
-
 group 'de.dfki.vsm'
-
-targetCompatibility = 1.8
-sourceCompatibility = 1.8
-
-if(!project.hasProperty('flavor')){
-    apply plugin: 'java'
-    version "android-4.0.1" ;
-
-    println("Building jar for ANDROID")
-}
+version '4.0.0'
 
 repositories {
     mavenCentral()
     maven { url "http://repo.spring.io/libs-release" }
 }
+
+apply plugin: 'java'
+targetCompatibility = 1.8
+sourceCompatibility = 1.8
 
 dependencies {
     compile files('../lib/JCup.jar')
@@ -32,11 +25,6 @@ dependencies {
 
 
 jar {
-    doFirst {
-        project.ext.set('flavor', 'android')
-        project.ext.set('buildInfo', 'android')
-    }
-
     from {
         (configurations.runtime).collect {
             it.isDirectory() ? it : zipTree(it)
@@ -44,8 +32,9 @@ jar {
     }
     manifest {
         attributes(
-                'Main-Class': 'de.dfki.vsm.Core'
-
+                'Main-Class': 'de.dfki.vsm.Core',
+                'build' : versioning.info.build,
+                'Build-Revision': versioning.info.commit
         )
     }
     duplicatesStrategy = 'exclude'
