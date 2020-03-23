@@ -3,18 +3,22 @@ package de.dfki.vsm.xtension.keyhook;
 import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.runtime.plugin.RunTimePlugin;
 import de.dfki.vsm.runtime.project.RunTimeProject;
+import de.dfki.vsm.util.log.LOGConsoleLogger;
 import org.jnativehook.GlobalScreen;
 import org.jnativehook.NativeHookException;
 import org.jnativehook.keyboard.NativeKeyEvent;
 import org.jnativehook.keyboard.NativeKeyListener;
 
 /**
- * @author Gregor Mehlmann
+ * @author Gregor Mehlmann, Patrick Gebhard
  */
 public final class KeyRunTimePlugin extends RunTimePlugin {
 
+    // The singelton logger instance
+    private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
+
     // The native key listener
-    final GlobalKeyListener mKeyListener = new GlobalKeyListener();
+    GlobalKeyListener mKeyListener = new GlobalKeyListener();
 
     // The key listener class        
     public class GlobalKeyListener implements NativeKeyListener {
@@ -22,7 +26,7 @@ public final class KeyRunTimePlugin extends RunTimePlugin {
         public void nativeKeyPressed(final NativeKeyEvent e) {
             final String code = NativeKeyEvent.getKeyText(e.getKeyCode());
             
-            System.out.println("Pressed Key: " + code);
+            mLogger.message("Pressed Key: " + code);
             
             mProject.setVariable("PressedKey", code);
 
@@ -50,21 +54,28 @@ public final class KeyRunTimePlugin extends RunTimePlugin {
     // Launch plugin
     @Override
     public void launch() {
-        System.err.println("Launchin key hook plugin");
+        mLogger.message("Launching KeyRunTimePlugin ...");
         try {
             GlobalScreen.registerNativeHook();
         } catch (NativeHookException ex) {
-            System.err.println("There was a problem registering the native hook.");
-            System.err.println(ex.getMessage());
+            mLogger.failure("There was a problem registering the native key hook.");
+            mLogger.failure(ex.getMessage());
             System.exit(1);
         }
         GlobalScreen.addNativeKeyListener(mKeyListener);
-
+        mKeyListener = new GlobalKeyListener();
     }
 
     // Unload plugin
     @Override
     public void unload() {
+
+        try {
+            GlobalScreen.unregisterNativeHook();
+        } catch (NativeHookException e) {
+            mLogger.failure("There was a problem unregistering the native key hook.");
+            mLogger.failure(e.getMessage());
+        }
         GlobalScreen.removeNativeKeyListener(mKeyListener);
     }
 }
