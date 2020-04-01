@@ -1,4 +1,4 @@
 rootProject.name = 'VisualSceneMaker'
 
 include 'core'
-include 'AndroidGui'
+include 'plugins:AndroidGui'
