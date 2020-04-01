@@ -3,4 +3,4 @@ rootProject.name = 'VisualSceneMaker'
 include 'core'
 include 'plugins:AndroidGui'
 include 'plugins:yallah'
-
+include 'plugins:decad'

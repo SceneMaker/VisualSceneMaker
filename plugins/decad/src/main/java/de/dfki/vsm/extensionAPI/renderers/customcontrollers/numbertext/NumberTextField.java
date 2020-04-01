@@ -3,12 +3,14 @@ package de.dfki.vsm.extensionAPI.renderers.customcontrollers.numbertext;
 /**
  * Created by alvaro on 4/23/17.
  */
-import java.math.BigDecimal;
-import java.text.NumberFormat;
-import java.text.ParseException;
+
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.control.TextField;
+
+import java.math.BigDecimal;
+import java.text.NumberFormat;
+import java.text.ParseException;
 
 /**
  * Textfield implementation that accepts formatted number and stores them in a
