@@ -27,6 +27,7 @@ dependencies {
     testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.3.2'
     compile project(":core", {p->p.ext.flavor = "pc"; p.version = versioning.info.lastTag})
     compile fileTree(dir: 'lib', include: "*.jar")
+    compile project(":plugins:AndroidGui")
     // https://mvnrepository.com/artifact/jpl/jpl
     compile group: 'jpl', name: 'jpl', version: '7.4.0'
     // https://mvnrepository.com/artifact/de.sciss/sphinx4
