@@ -14,6 +14,7 @@ import de.dfki.vsm.runtime.interpreter.value.StringValue;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
 import io.javalin.Javalin;
+import io.javalin.websocket.WsCloseContext;
 import io.javalin.websocket.WsConnectContext;
 
 import java.util.ArrayList;
@@ -109,9 +110,16 @@ public class WebStudyMasterExecutor extends ActivityExecutor {
                 System.out.println(ctx.message());
                 mMessagereceiver.handleMessage(ctx.message());
             });
-            ws.onClose(ctx -> System.out.println("Closed"));
+            ws.onClose(ctx -> {
+                this.removeWs(ctx);
+                System.out.println("Closed");
+            });
             ws.onError(ctx -> System.out.println("Errored"));
         });
+    }
+
+    private synchronized void removeWs(WsCloseContext ctx) {
+        websockets.remove(ctx);
     }
 
     private synchronized void addWs(WsConnectContext ws) {
