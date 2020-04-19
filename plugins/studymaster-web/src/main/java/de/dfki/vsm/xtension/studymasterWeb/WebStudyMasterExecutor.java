@@ -120,6 +120,7 @@ public class WebStudyMasterExecutor extends ActivityExecutor {
 
     @Override
     public void unload() {
+        websockets.clear();
         app.stop();
     }
 
