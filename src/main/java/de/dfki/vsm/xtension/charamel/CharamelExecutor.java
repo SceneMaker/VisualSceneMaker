@@ -33,7 +33,7 @@ import java.util.Map.Entry;
  * @author Gregor Mehlmann
  * @author Patrick Gebhard
  */
-public final class CharamelExecutor extends ActivityExecutor implements ExportableProperties {
+    public final class CharamelExecutor extends ActivityExecutor implements ExportableProperties {
 
     // The tworld listener
     private CharamelListener mListener;
