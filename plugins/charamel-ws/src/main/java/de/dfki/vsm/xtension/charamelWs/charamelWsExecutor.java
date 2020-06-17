@@ -114,7 +114,8 @@ public class charamelWsExecutor extends ActivityExecutor {
                         "      \"timestamp\": 200,\n" +
                         "      \"duration\": 5000,\n" +
                         "      \"data\": {\n" +
-                        "        \"text\": \"Hello,my name is Gloria\"\n" +
+                        "        \"text\": \"Hello,my name is Gloria\",\n" +
+                        "        \"voice\": \"Joanna\"\n" +
                         "      }\n" +
                         "    },\n" +
                         "    {\n" +
