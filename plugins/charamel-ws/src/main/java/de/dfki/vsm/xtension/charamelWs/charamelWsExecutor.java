@@ -61,55 +61,7 @@ public class charamelWsExecutor extends ActivityExecutor {
                     mProject.getRunTimePlayer().getActivityScheduler().handle(tm);
                 }
             } else {
-                mCtx.send("{\n" +
-                        "  \"type\": \"animation\",\n" +
-                        "  \"name\": \"\",\n" +
-                        "  \"uuid\": \"58a11974-146c-4e3a-ab47-b180922cdec9\",\n" +
-                        "  \"timeline\": [\n" +
-                        "    {\n" +
-                        "      \"type\": \"timeline-element\",\n" +
-                        "      \"subtype\": \"tts\",\n" +
-                        "      \"uuid\": \"606fee1b-ad84-406d-9667-bd5822291166\",\n" +
-                        "      \"name\": \"hello\",\n" +
-                        "      \"track\": \"uuid_tts\",\n" +
-                        "      \"timestamp\": 200,\n" +
-                        "      \"duration\": 5000,\n" +
-                        "      \"data\": {\n" +
-                        "        \"text\": \""+ text +"\",\n" +
-                        "        \"voice\": \"" + mProject.getAgentConfig(activity_actor).getProperty("voice") + "\"\n" +
-                        "      }\n" +
-                        "    },\n" +
-                        "    {\n" +
-                        "      \"type\": \"timeline-element\",\n" +
-                        "      \"subtype\": \"motion\",\n" +
-                        "      \"uuid\": \"d291dacd-d53d-4968-b425-cfaa9e44a6cc\",\n" +
-                        "      \"name\": \"greet01.glb\",\n" +
-                        "      \"track\": \"motions1_uuid\",\n" +
-                        "      \"timestamp\": 0,\n" +
-                        "      \"duration\": 2400,\n" +
-                        "      \"data\": {\n" +
-                        "        \"attack\": 500,\n" +
-                        "        \"decay\": 500,\n" +
-                        "        \"speed\": 1,\n" +
-                        "        \"path\": \"humanoid/interaction/greet/greet01.glb\"\n" +
-                        "      }\n" +
-                        "    },\n" +
-                        "    {\n" +
-                        "      \"type\": \"timeline-element\",\n" +
-                        "      \"subtype\": \"morph\",\n" +
-                        "      \"uuid\": \"10536d63-fc88-4183-aed5-735ea9170da2\",\n" +
-                        "      \"name\": \"emot_happy\",\n" +
-                        "      \"track\": \"morph_uuid\",\n" +
-                        "      \"timestamp\": 600,\n" +
-                        "      \"duration\": 2000,\n" +
-                        "      \"data\": {\n" +
-                        "        \"morph\": \"uuid_emot_happy\",\n" +
-                        "        \"attack\": 500,\n" +
-                        "        \"decay\": 500\n" +
-                        "      }\n" +
-                        "    }\n" +
-                        "  ]\n" +
-                        "}");
+                mCtx.send(Strings.speakCommand(mProject.getAgentConfig(activity_actor).getProperty("voice"), text));
             }
         } else {
             final String name = activity.getName();
@@ -119,55 +71,7 @@ public class charamelWsExecutor extends ActivityExecutor {
 
                 System.out.println("Testing ...");
 
-                mCtx.send("{\n" +
-                        "  \"type\": \"animation\",\n" +
-                        "  \"name\": \"\",\n" +
-                        "  \"uuid\": \"58a11974-146c-4e3a-ab47-b180922cdec9\",\n" +
-                        "  \"timeline\": [\n" +
-                        "    {\n" +
-                        "      \"type\": \"timeline-element\",\n" +
-                        "      \"subtype\": \"tts\",\n" +
-                        "      \"uuid\": \"606fee1b-ad84-406d-9667-bd5822291166\",\n" +
-                        "      \"name\": \"hello\",\n" +
-                        "      \"track\": \"uuid_tts\",\n" +
-                        "      \"timestamp\": 200,\n" +
-                        "      \"duration\": 5000,\n" +
-                        "      \"data\": {\n" +
-                        "        \"text\": \"Hello,my name is Gloria\",\n" +
-                        "        \"voice\": \"Joanna\"\n" +
-                        "      }\n" +
-                        "    },\n" +
-                        "    {\n" +
-                        "      \"type\": \"timeline-element\",\n" +
-                        "      \"subtype\": \"motion\",\n" +
-                        "      \"uuid\": \"d291dacd-d53d-4968-b425-cfaa9e44a6cc\",\n" +
-                        "      \"name\": \"greet01.glb\",\n" +
-                        "      \"track\": \"motions1_uuid\",\n" +
-                        "      \"timestamp\": 0,\n" +
-                        "      \"duration\": 2400,\n" +
-                        "      \"data\": {\n" +
-                        "        \"attack\": 500,\n" +
-                        "        \"decay\": 500,\n" +
-                        "        \"speed\": 1,\n" +
-                        "        \"path\": \"humanoid/interaction/greet/greet01.glb\"\n" +
-                        "      }\n" +
-                        "    },\n" +
-                        "    {\n" +
-                        "      \"type\": \"timeline-element\",\n" +
-                        "      \"subtype\": \"morph\",\n" +
-                        "      \"uuid\": \"10536d63-fc88-4183-aed5-735ea9170da2\",\n" +
-                        "      \"name\": \"emot_happy\",\n" +
-                        "      \"track\": \"morph_uuid\",\n" +
-                        "      \"timestamp\": 600,\n" +
-                        "      \"duration\": 2000,\n" +
-                        "      \"data\": {\n" +
-                        "        \"morph\": \"uuid_emot_happy\",\n" +
-                        "        \"attack\": 500,\n" +
-                        "        \"decay\": 500\n" +
-                        "      }\n" +
-                        "    }\n" +
-                        "  ]\n" +
-                        "}");
+                mCtx.send(Strings.testMsg);
             } else if (name.equalsIgnoreCase("stop")) {
                 app.stop();
             } else {
@@ -181,9 +85,22 @@ public class charamelWsExecutor extends ActivityExecutor {
                 String sendData = (sMSG_HEADER + "None" + sMSG_SEPARATOR + timestamp);
 
                 if (!mMessage.equalsIgnoreCase("REQUEST")) {
-                    sendData = (sMSG_HEADER + mMessage + sMSG_SEPARATOR + timestamp + ((!mMessageTimeInfo.isEmpty()) ? sMSG_SEPARATOR + mMessageTimeInfo : ""));
-                } else if (mMessage.equalsIgnoreCase("REQUEST") && (!mMessageRequestVar.isEmpty()) && (!mMessageRequestValues.isEmpty())) {
-                    sendData = (sMSG_HEADER + mMessage + sMSG_SEPARATOR + timestamp + sMSG_SEPARATOR + mMessageRequestVar + sMSG_SEPARATOR + mMessageRequestValues.replace("'", ""));
+                    sendData = (sMSG_HEADER
+                            + mMessage
+                            + sMSG_SEPARATOR
+                            + timestamp
+                            + ((!mMessageTimeInfo.isEmpty()) ? sMSG_SEPARATOR + mMessageTimeInfo : ""));
+                } else if (mMessage.equalsIgnoreCase("REQUEST")
+                        && (!mMessageRequestVar.isEmpty())
+                        && (!mMessageRequestValues.isEmpty())) {
+                    sendData = (sMSG_HEADER
+                            + mMessage
+                            + sMSG_SEPARATOR
+                            + timestamp
+                            + sMSG_SEPARATOR
+                            + mMessageRequestVar
+                            + sMSG_SEPARATOR
+                            + mMessageRequestValues.replace("'", ""));
                 }
                 synchronized (this) {
                     String finalSendData = sendData;
@@ -198,67 +115,15 @@ public class charamelWsExecutor extends ActivityExecutor {
         mLogger.message("Loading CharamelWSExecutor ...");
         final int port = Integer.parseInt(Objects.requireNonNull(mConfig.getProperty("port")));
 
-        app = Javalin.create(config -> {
-            config.enforceSsl = true;
-        }).start(port);
+        app = Javalin.create(config -> config.enforceSsl = true).start(port);
         app.ws("/ws", ws -> {
             ws.onConnect(ctx -> {
                 this.addWs(ctx);
                 mCtx = ctx;
                 System.out.println("Connected");
-                ctx.send("{\n" +
-                        "  \"type\": \"animation\",\n" +
-                        "  \"name\": \"\",\n" +
-                        "  \"uuid\": \"58a11974-146c-4e3a-ab47-b180922cdec9\",\n" +
-                        "  \"timeline\": [\n" +
-                        "    {\n" +
-                        "      \"type\": \"timeline-element\",\n" +
-                        "      \"subtype\": \"tts\",\n" +
-                        "      \"uuid\": \"606fee1b-ad84-406d-9667-bd5822291166\",\n" +
-                        "      \"name\": \"hello\",\n" +
-                        "      \"track\": \"uuid_tts\",\n" +
-                        "      \"timestamp\": 200,\n" +
-                        "      \"duration\": 5000,\n" +
-                        "      \"data\": {\n" +
-                        "        \"text\": \"Hello,my name is Gloria\",\n" +
-                        "        \"voice\": \"Joanna\"\n" +
-                        "      }\n" +
-                        "    },\n" +
-                        "    {\n" +
-                        "      \"type\": \"timeline-element\",\n" +
-                        "      \"subtype\": \"motion\",\n" +
-                        "      \"uuid\": \"d291dacd-d53d-4968-b425-cfaa9e44a6cc\",\n" +
-                        "      \"name\": \"greet01.glb\",\n" +
-                        "      \"track\": \"motions1_uuid\",\n" +
-                        "      \"timestamp\": 0,\n" +
-                        "      \"duration\": 2400,\n" +
-                        "      \"data\": {\n" +
-                        "        \"attack\": 500,\n" +
-                        "        \"decay\": 500,\n" +
-                        "        \"speed\": 1,\n" +
-                        "        \"path\": \"humanoid/interaction/greet/greet01.glb\"\n" +
-                        "      }\n" +
-                        "    },\n" +
-                        "    {\n" +
-                        "      \"type\": \"timeline-element\",\n" +
-                        "      \"subtype\": \"morph\",\n" +
-                        "      \"uuid\": \"10536d63-fc88-4183-aed5-735ea9170da2\",\n" +
-                        "      \"name\": \"emot_happy\",\n" +
-                        "      \"track\": \"morph_uuid\",\n" +
-                        "      \"timestamp\": 600,\n" +
-                        "      \"duration\": 2000,\n" +
-                        "      \"data\": {\n" +
-                        "        \"morph\": \"uuid_emot_happy\",\n" +
-                        "        \"attack\": 500,\n" +
-                        "        \"decay\": 500\n" +
-                        "      }\n" +
-                        "    }\n" +
-                        "  ]\n" +
-                        "}");
+                ctx.send(Strings.launchString);
             });
-            ws.onMessage(ctx -> {
-                System.out.println(ctx.message());
-            });
+            ws.onMessage(ctx -> System.out.println(ctx.message()));
             ws.onClose(ctx -> {
                 this.removeWs(ctx);
                 System.out.println("Closed");
