@@ -101,24 +101,12 @@ class Strings {
             "}";
 
     static String speakCommand(String voice, String text) {
-        return "{\n" +
+        return ("{\n" +
                 "  \"type\": \"animation\",\n" +
                 "  \"name\": \"\",\n" +
                 "  \"uuid\": \"58a11974-146c-4e3a-ab47-b180922cdec9\",\n" +
                 "  \"timeline\": [\n" +
-                "    {\n" +
-                "      \"type\": \"timeline-element\",\n" +
-                "      \"subtype\": \"tts\",\n" +
-                "      \"uuid\": \"606fee1b-ad84-406d-9667-bd5822291166\",\n" +
-                "      \"name\": \"hello\",\n" +
-                "      \"track\": \"uuid_tts\",\n" +
-                "      \"timestamp\": 200,\n" +
-                "      \"duration\": 5000,\n" +
-                "      \"data\": {\n" +
-                "        \"text\": \"" + text + "\",\n" +
-                "        \"voice\": \"" + voice + "\"\n" +
-                "      }\n" +
-                "    },\n" +
+                new SpeakCommand(text, voice).toJsonCommand() +
                 "    {\n" +
                 "      \"type\": \"timeline-element\",\n" +
                 "      \"subtype\": \"motion\",\n" +
@@ -149,6 +137,6 @@ class Strings {
                 "      }\n" +
                 "    }\n" +
                 "  ]\n" +
-                "}";
+                "}");
     }
 }
