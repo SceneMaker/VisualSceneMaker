@@ -94,12 +94,24 @@ public final class SpeechActivity extends AbstractActivity {
     public final String getText() {
         final StringBuilder builder = new StringBuilder();
         for (final Object item : mBlocks) {
-            builder.append(item.toString());
-            if (!item.equals(mBlocks.getLast())) {
-                builder.append(' ');
+            if (item.equals(mBlocks.getLast())) {
+                if (item.toString().startsWith("${'")) { // PG 14.7.2020 quick and dirty solution if there is a marker at the end, the punctuation comes before.
+                    if( builder.length() > 0 )
+                        builder.deleteCharAt(builder.length() - 1); // remove the last space
+                        builder.append(mPunct).append(' ').append(item.toString());
+                } else {
+                    builder.append(item.toString()).append(mPunct);
+                }
             } else {
-                builder.append(mPunct);
+                builder.append(item.toString()).append(' ');
             }
+
+            //builder.append(item.toString());
+            //if (!item.equals(mBlocks.getLast())) {
+            //    builder.append(' ');
+            //} else {
+            //    builder.append(mPunct);
+            //}
         }
         return builder.toString();
     }
