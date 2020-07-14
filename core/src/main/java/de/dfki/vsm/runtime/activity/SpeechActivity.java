@@ -1,6 +1,7 @@
 package de.dfki.vsm.runtime.activity;
 
 import de.dfki.vsm.util.log.LOGConsoleLogger;
+
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Properties;
@@ -40,7 +41,12 @@ public final class SpeechActivity extends AbstractActivity {
         return mPunct;
     }
 
-    // Get the text only - without time mark blocks (added by PG)
+    /**
+     * Get the text only - without time mark blocks (added by PG)
+     *
+     * @param markerSign The beginning of the marker
+     * @return The text without speech markers
+     */
     public final String getTextOnly(final String markerSign) {
         final StringBuilder builder = new StringBuilder();
         for (final Object item : mBlocks) {
@@ -56,9 +62,13 @@ public final class SpeechActivity extends AbstractActivity {
         return builder.toString();
     }
 
-    // Do pronounciation mapping for a better text to speech output. (added by PG - 2.5.2016)
-    public final void doPronounciationMapping(Properties pronounciationMap) {
-        if (pronounciationMap == null) {
+    /**
+     * Do pronounciation mapping for a better text to speech output.
+     *
+     * @author PG - 2.5.2016
+     */
+    public final void doPronounciationMapping(Properties pronunciationMap) {
+        if (pronunciationMap == null) {
             return;
         }
 
@@ -66,7 +76,7 @@ public final class SpeechActivity extends AbstractActivity {
         for (final Object item : mBlocks) {
             String text = item.toString();
             //mLogger.success("text to be checked and maybe replaced " + text);
-            for (Map.Entry<Object, Object> entry : pronounciationMap.entrySet()) {
+            for (Map.Entry<Object, Object> entry : pronunciationMap.entrySet()) {
                 if (text != null && entry.getKey() != null && entry.getValue() != null) {
                     text = text.replaceAll("\\b" + entry.getKey() + "\\b", (String) entry.getValue());
                 }
@@ -77,7 +87,13 @@ public final class SpeechActivity extends AbstractActivity {
         mBlocks = replaced;
     }
 
-// Get the punctuation information (added by PG 20.4.2016)
+    /**
+     * Get the punctuation information
+     *
+     * @param markerSign The beginning of the marker
+     * @return
+     * @author PG 20.4.2016
+     */
     public final LinkedList<String> getTimeMarks(final String markerSign) {
         final LinkedList<String> tms = new LinkedList<>();
         for (final Object item : mBlocks) {
@@ -89,7 +105,11 @@ public final class SpeechActivity extends AbstractActivity {
         return tms;
     }
 
-    // Get textual representation
+    /**
+     * Get textual representation
+     *
+     * @return
+     */
     @Override
     public final String getText() {
         final StringBuilder builder = new StringBuilder();
