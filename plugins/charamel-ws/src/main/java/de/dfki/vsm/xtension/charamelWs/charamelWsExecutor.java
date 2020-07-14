@@ -16,6 +16,7 @@ import de.dfki.vsm.util.log.LOGConsoleLogger;
 import io.javalin.Javalin;
 import io.javalin.websocket.WsCloseContext;
 import io.javalin.websocket.WsConnectContext;
+import io.javalin.websocket.WsMessageContext;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -41,7 +42,7 @@ public class charamelWsExecutor extends ActivityExecutor {
 
     @Override
     public synchronized String marker(long id) {
-        return "$(" + id + ")";
+        return "${'" + id + "'}";
     }
 
     @Override
@@ -51,8 +52,8 @@ public class charamelWsExecutor extends ActivityExecutor {
 
         if (activity instanceof SpeechActivity) {
             SpeechActivity sa = (SpeechActivity) activity;
-            String text = sa.getTextOnly("$(").trim();
-            LinkedList<String> timemarks = sa.getTimeMarks("$(");
+            String text = sa.getTextOnly("${'").trim();
+            LinkedList<String> timemarks = sa.getTimeMarks("${'");
 
             // If text is empty - assume activity has empty text but has marker activities registered
             if (text.isEmpty()) {
@@ -61,7 +62,9 @@ public class charamelWsExecutor extends ActivityExecutor {
                     mProject.getRunTimePlayer().getActivityScheduler().handle(tm);
                 }
             } else {
-                mCtx.send(Strings.speakCommand(mProject.getAgentConfig(activity_actor).getProperty("voice"), text));
+                System.out.println("Text with Markers: " +sa.getText());
+                //System.out.println(text);
+                mCtx.send(Strings.speakCommand(mProject.getAgentConfig(activity_actor).getProperty("voice"), sa.getText()));
             }
         } else {
             final String name = activity.getName();
@@ -120,16 +123,26 @@ public class charamelWsExecutor extends ActivityExecutor {
             ws.onConnect(ctx -> {
                 this.addWs(ctx);
                 mCtx = ctx;
-                System.out.println("Connected");
+                System.out.println("Connected Testversion");
                 ctx.send(Strings.launchString);
             });
-            ws.onMessage(ctx -> System.out.println(ctx.message()));
+            ws.onMessage(ctx -> {
+                System.out.println("got a message from Charamel ...");
+                handleMessage(ctx);
+            });
             ws.onClose(ctx -> {
                 this.removeWs(ctx);
                 System.out.println("Closed");
             });
             ws.onError(ctx -> System.out.println("Errored"));
         });
+    }
+
+    private synchronized void handleMessage(WsMessageContext ctx) {
+        String message = ctx.toString();
+        System.out.println("Charamel message: >" + message + "<");
+        System.out.println("Charamel message: >" + ctx.message() + "<");
+        System.out.println("Charamel message: >" + ctx.getSessionId() + "<");
     }
 
     private synchronized void removeWs(WsCloseContext ctx) {
