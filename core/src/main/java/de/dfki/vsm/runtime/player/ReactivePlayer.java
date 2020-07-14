@@ -185,6 +185,10 @@ public final class ReactivePlayer extends RunTimePlayer {
                         //mLogger.message("Utterance " + uttr.getText().trim());
                         final LinkedList<String> textBuilder = new LinkedList();
                         final LinkedList<ActivityWorker> observedWorkerList = new LinkedList();
+
+                        // PG 14.7.2020 add "start utterance marker
+                        textBuilder.add("${'utterance':'start'}$");
+
                         for (final UttrElement element : uttr.getWordList()) {
                             //mLogger.message("element " + element);
 
@@ -231,6 +235,10 @@ public final class ReactivePlayer extends RunTimePlayer {
                         final String punctuation = uttr.getPunctuationMark();
                         // mLogger.message("Scheduling Speech Activity:\n" + textBuilder + "");
                         // Schedule the activity
+
+                        // PG 14.7.2020 add "stop utterance marker
+                        textBuilder.add("${'utterance':'stop'}$");
+
                         mScheduler.schedule(
                                 0, // Schedule without delay
                                 observedWorkerList,
