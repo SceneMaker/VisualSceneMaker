@@ -3,7 +3,7 @@ plugins {
 }
 
 group 'de.dfki'
-version '4.0.1'
+version '1.0.0'
 
 repositories {
     mavenCentral()
