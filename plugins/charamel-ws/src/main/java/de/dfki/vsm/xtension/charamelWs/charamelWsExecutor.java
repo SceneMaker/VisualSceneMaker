@@ -159,16 +159,16 @@ public class charamelWsExecutor extends ActivityExecutor {
         app.stop();
     }
 
-    public boolean hasProjectVar(String var) {
+    boolean hasProjectVar(String var) {
         return mProject.hasVariable(var);
     }
 
-    public void setSceneFlowVariable(String message) {
+    void setSceneFlowVariable(String message) {
         mLogger.message("Assigning sceneflow variable " + mSceneflowVar + " with value " + message);
         mProject.setVariable(mSceneflowVar, new StringValue(message));
     }
 
-    public void setSceneFlowVariable(String var, String value) {
+    void setSceneFlowVariable(String var, String value) {
         mLogger.message("Assigning sceneflow variable " + var + " with value " + value);
         if (mProject.hasVariable(var)) {
             mProject.setVariable(var, new StringValue(value));
