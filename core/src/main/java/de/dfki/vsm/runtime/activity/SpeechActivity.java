@@ -16,14 +16,14 @@ public final class SpeechActivity extends AbstractActivity {
             = LOGConsoleLogger.getInstance();
 
     // The list of blocks
-    private LinkedList mBlocks;
+    private LinkedList<String> mBlocks;
     // The punctuation mark
     private final String mPunct;
 
     // Construct the activity
     public SpeechActivity(
             final String actor,
-            final LinkedList list,
+            final LinkedList<String> list,
             final String punct) {
         super(Type.blocking, actor, /*"speech",*/ "speak");
         // Initialize the content
@@ -32,7 +32,7 @@ public final class SpeechActivity extends AbstractActivity {
     }
 
     // Get the text and time mark blocks (added by PG)
-    public final LinkedList getBlocks() {
+    public final LinkedList<String> getBlocks() {
         return mBlocks;
     }
 
