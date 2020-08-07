@@ -77,7 +77,7 @@ public final class ReactivePlayer extends RunTimePlayer {
         // Make unique worker name
         final String task = process.getName() + ":" + text + "@";
         // Translate the arguments
-        final HashMap substitutions = getSubstitutions(args);
+        final HashMap<String, String> substitutions = getSubstitutions(args);
         // Print some information
         //mLogger.message("Playing Action '" + text + "' in process '" + process + "' on reactive player '" + this + "' with substitutions '" + substitutions.toString() + "'");
         // Create playback task
@@ -151,7 +151,7 @@ public final class ReactivePlayer extends RunTimePlayer {
         // Make unique worker name
         final String task = process.getName() + ":" + name + "@";
         // Translate the arguments
-        final HashMap substitutions = getSubstitutions(args);
+        final HashMap<String, String> substitutions = getSubstitutions(args);
         // Print some information
         mLogger.message("Playing Scene '" + name + "' in process '" + process + "' on reactive player '" + this + "' with substitutions '" + substitutions.toString() + "'");
 
@@ -183,8 +183,8 @@ public final class ReactivePlayer extends RunTimePlayer {
                     for (SceneUttr uttr : turn.getUttrList()) {
 
                         //mLogger.message("Utterance " + uttr.getText().trim());
-                        final LinkedList<String> textBuilder = new LinkedList();
-                        final LinkedList<ActivityWorker> observedWorkerList = new LinkedList();
+                        final LinkedList<String> textBuilder = new LinkedList<>();
+                        final LinkedList<ActivityWorker> observedWorkerList = new LinkedList<>();
 
                         // PG 14.7.2020 add "start utterance marker
                         textBuilder.add("${'utterance':'start'}$");
@@ -283,8 +283,8 @@ public final class ReactivePlayer extends RunTimePlayer {
     }
 
     // Translate the arguments
-    private HashMap getSubstitutions(final List<AbstractValue> args) {
-        final HashMap substitutions = new HashMap();
+    private HashMap<String, String> getSubstitutions(final List<AbstractValue> args) {
+        final HashMap<String, String> substitutions = new HashMap<>();
         if (args != null && !args.isEmpty()) {
             for (final Object object : args) {
                 if (object instanceof AbstractValue) {
