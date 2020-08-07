@@ -20,10 +20,7 @@ public abstract class CharacterPlugin extends ActivityExecutor {
         this.markerSign = markerSign;
     }
 
-    @Override
-    public String marker(long id) {
-        return null;
-    }
+    public abstract String marker(long id);
 
     @Override
     public void execute(AbstractActivity activity) {
