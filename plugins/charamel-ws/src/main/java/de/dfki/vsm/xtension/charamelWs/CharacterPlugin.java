@@ -20,6 +20,7 @@ public abstract class CharacterPlugin extends ActivityExecutor {
         this.markerSign = markerSign;
     }
 
+    @Override
     public abstract String marker(long id);
 
     @Override
@@ -51,7 +52,7 @@ public abstract class CharacterPlugin extends ActivityExecutor {
         }
     }
 
-    protected abstract void speak(LinkedList<String> blocks, String punct, String aid);
+    protected abstract void speak(LinkedList blocks, String punct, String aid);
 
     abstract void speak(SpeechActivity speech);
 
