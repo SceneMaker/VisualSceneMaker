@@ -28,9 +28,9 @@ import java.util.*;
 public class charamelWsExecutor extends ActivityExecutor {
     static final String sMSG_SEPARATOR = "#";
     static final String sMSG_HEADER = "VSMMessage" + sMSG_SEPARATOR;
-    // The singelton logger instance
     // The map of activity worker
     private final Map<String, ActivityWorker> mActivityWorkerMap = new HashMap<>();
+    // The singleton logger instance
     private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
     private final ArrayList<WsConnectContext> websockets = new ArrayList<>();
     private String mSceneflowVar;
@@ -104,7 +104,6 @@ public class charamelWsExecutor extends ActivityExecutor {
 
             if (name.equalsIgnoreCase("test")) {
                 mLogger.message("Testing ...");
-
                 broadcast(Strings.testMsg);
             } else if (name.equalsIgnoreCase("stop")) {
                 broadcast(Strings.testMsg);
@@ -192,12 +191,6 @@ public class charamelWsExecutor extends ActivityExecutor {
             String header = parts[0];
             String content = parts[1];
 
-//            // can be used for avatar speech activity processing in sceneflow.
-//            String[] headerParts = header.split("_");
-//            String actor = headerParts[0];
-//            String action = headerParts[1];
-//            String cnt = headerParts[2];
-
             // check if there the activity manager waits for an action to be finished
             if (content.equalsIgnoreCase("stop")) {
                 synchronized (mActivityWorkerMap) {
@@ -223,7 +216,7 @@ public class charamelWsExecutor extends ActivityExecutor {
             if (mProject.getRunTimePlayer().getActivityScheduler().hasMaker(message)) {
                 mProject.getRunTimePlayer().getActivityScheduler().handle(message);
             } else {
-                mLogger.failure("Marker has already be send and has been processed!");
+                mLogger.failure("Marker has already be sent and has been processed!");
             }
         }
     }
