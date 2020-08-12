@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * @author Patrick Gebhard
+ * @author Lenny Händler, Patrick Gebhard
  */
 public class charamelWsExecutor extends ActivityExecutor {
     static final String sMSG_SEPARATOR = "#";
