@@ -52,7 +52,7 @@ public abstract class CharacterPlugin extends ActivityExecutor {
         }
     }
 
-    protected abstract void speak(LinkedList blocks, String punct, String aid);
+    protected abstract void speak(LinkedList<String> blocks, String punct, String aid);
 
     abstract void speak(SpeechActivity speech);
 
