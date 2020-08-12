@@ -71,35 +71,34 @@ public class charamelWsExecutor extends ActivityExecutor {
                 }
             } else {
                 // prepare for Vuppetmaster
-                long vmuid = getVMUtteranceId();
-                String cmd = "${'" + activity_actor + "_utterance_" + vmuid + "':'start'}$" + sa.getText() + "${'" + activity_actor + "_utterance_" +  vmuid + "':'stop'}$";
+                String vmuid = activity_actor + "_utterance_" + getVMUtteranceId();
+                String cmd = "${'" + vmuid + "':'start'}$" + sa.getText() + "${'" + vmuid + "':'stop'}$";
 
-                System.out.println("Utterance with CMD Markers: " + cmd);
+                mLogger.message("Utterance with CMD Markers: " + cmd);
 
                 // Make text activity blocking
                 activity.setType(AbstractActivity.Type.blocking);
 
                 // Send command object
                 synchronized (mActivityWorkerMap) {
-
                     mCtx.send(Strings.speakCommand(mProject.getAgentConfig(activity_actor).getProperty("voice"), cmd));
 
                     // organize wait for feedback if (activity instanceof SpeechActivity) {
-//                    ActivityWorker cAW = (ActivityWorker) Thread.currentThread();
-//                    mActivityWorkerMap.put(charamelAct.getId(), cAW);
-//
-//                    if (activity.getType() == AbstractActivity.Type.blocking) { // Wait only if activity is blocking
-//                        // wait until we got feedback
-//                        //mLogger.message("ActivityWorker " + tworld_cmd_action.getId() + " waiting ...");
-//
-//                        while (mActivityWorkerMap.containsValue(cAW)) {
-//                            try {
-//                                mActivityWorkerMap.wait();
-//                            } catch (InterruptedException exc) {
-//                                mLogger.failure(exc.toString());
-//                            }
-//                        }
-//                    }
+                    ActivityWorker cAW = (ActivityWorker) Thread.currentThread();
+                    mActivityWorkerMap.put(vmuid, cAW);
+
+                    if (activity.getType() == AbstractActivity.Type.blocking) { // Wait only if activity is blocking
+                        // wait until we got feedback
+                        mLogger.message("ActivityWorker waiting for feedback on action with id " + vmuid + "...");
+
+                        while (mActivityWorkerMap.containsValue(cAW)) {
+                            try {
+                                mActivityWorkerMap.wait();
+                            } catch (InterruptedException exc) {
+                                mLogger.failure(exc.toString());
+                            }
+                        }
+                    }
                 }
             }
         } else {
@@ -108,7 +107,7 @@ public class charamelWsExecutor extends ActivityExecutor {
 
             if (name.equalsIgnoreCase("test")) {
 
-                System.out.println("Testing ...");
+                mLogger.message("Testing ...");
 
                 mCtx.send(Strings.testMsg);
             } else if (name.equalsIgnoreCase("stop")) {
@@ -151,7 +150,7 @@ public class charamelWsExecutor extends ActivityExecutor {
 
     @Override
     public void launch() {
-        mLogger.message("Loading CharamelWSExecutor ...");
+        mLogger.message("Loading Charamel VuppetMaster Executor (WS) ...");
         final int port = Integer.parseInt(Objects.requireNonNull(mConfig.getProperty("port")));
 
         app = Javalin.create(config -> config.enforceSsl = true).start(port);
@@ -159,26 +158,60 @@ public class charamelWsExecutor extends ActivityExecutor {
             ws.onConnect(ctx -> {
                 this.addWs(ctx);
                 mCtx = ctx;
-                System.out.println("Connected Testversion");
+                mLogger.message("Connected to Charamel VuppetMaster");
                 ctx.send(Strings.launchString);
             });
             ws.onMessage(ctx -> {
-                System.out.println("got a message from Charamel ...");
+                mLogger.message("Got a message from Charamel VuppetMaster...");
                 handleMessage(ctx);
             });
             ws.onClose(ctx -> {
                 this.removeWs(ctx);
-                System.out.println("Closed");
+                mLogger.message("Closed");
             });
-            ws.onError(ctx -> System.out.println("Errored"));
+            ws.onError(ctx -> mLogger.failure("Error handling ws message exchnage"));
         });
     }
 
     private synchronized void handleMessage(WsMessageContext ctx) {
-        String message = ctx.toString();
-        System.out.println("Charamel message: >" + message + "<");
-        System.out.println("Charamel message: >" + ctx.message() + "<");
-        System.out.println("Charamel message: >" + ctx.getSessionId() + "<");
+        String message = ctx.message();
+        mLogger.message("Processing Charamel VuppetMaster message: >" + message + "<");
+
+        // clean message
+        message = message.replace("{", "");
+        message = message.replace("}", "");
+        message = message.replace("'", "");
+        message = message.replace("\"", "");
+
+        // split header and content
+        if (message.contains(":")) {
+            mLogger.message("Message is related to an ongoing action");
+            String[] parts = message.split(":");
+            String header = parts[0];
+            String content = parts[1];
+
+//            // can be used for avatar speech activity processing in sceneflow.
+//            String[] headerParts = header.split("_");
+//            String actor = headerParts[0];
+//            String action = headerParts[1];
+//            String cnt = headerParts[2];
+
+            // check if there the activity manager waits for an action to be finished
+            if (content.equalsIgnoreCase("stop")) {
+                synchronized (mActivityWorkerMap) {
+                    if (mActivityWorkerMap.containsKey(header)) {
+                        mActivityWorkerMap.remove(header);
+                    } else {
+                        mLogger.failure("Activityworker for action with id " + header + " has been stopped before ...");
+                    }
+                    // wake me up ..
+                    mActivityWorkerMap.notifyAll();
+                }
+            }
+
+        } else {
+            mLogger.message("Message is a timemark");
+        }
     }
 
     private synchronized void removeWs(WsCloseContext ctx) {
