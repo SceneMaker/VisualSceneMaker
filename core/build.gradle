@@ -11,11 +11,13 @@ sourceCompatibility = 1.8
 
 if(!project.hasProperty('flavor')){
     apply plugin: 'java'
-    version "android-4.0.1" ;
+    version "android-4.0.1"
 
     println("Building jar for ANDROID")
 }
-
+compileJava{
+   //options.release = 8
+}
 repositories {
     mavenCentral()
     maven { url "http://repo.spring.io/libs-release" }

@@ -17,6 +17,7 @@ import de.dfki.vsm.util.log.LOGConsoleLogger;
 import io.javalin.Javalin;
 import io.javalin.websocket.WsCloseContext;
 import io.javalin.websocket.WsConnectContext;
+import io.javalin.websocket.WsContext;
 import io.javalin.websocket.WsMessageContext;
 
 import java.util.ArrayList;
@@ -48,7 +49,7 @@ public class charamelWsExecutor extends ActivityExecutor {
 
     @Override
     public synchronized String marker(long id) {
-        return "${'" + id + "'}$";
+        return "${'" + id + "'}";
     }
 
     public synchronized Long getVMUtteranceId() {return ++sUtteranceId;}
@@ -81,7 +82,7 @@ public class charamelWsExecutor extends ActivityExecutor {
 
                 // Send command object
                 synchronized (mActivityWorkerMap) {
-                    mCtx.send(Strings.speakCommand(mProject.getAgentConfig(activity_actor).getProperty("voice"), cmd));
+                    broadcast(Strings.speakCommand(mProject.getAgentConfig(activity_actor).getProperty("voice"), cmd));
 
                     // organize wait for feedback if (activity instanceof SpeechActivity) {
                     ActivityWorker cAW = (ActivityWorker) Thread.currentThread();
@@ -108,7 +109,9 @@ public class charamelWsExecutor extends ActivityExecutor {
             if (name.equalsIgnoreCase("test")) {
                 mLogger.message("Testing ...");
 
-                mCtx.send(Strings.testMsg);
+                broadcast(Strings.testMsg);
+            } else if (name.equalsIgnoreCase("stop")) {
+                broadcast(Strings.testMsg);
             }  if (name.equalsIgnoreCase("wave")) {
                 mLogger.message("Waving ...");
 
@@ -238,6 +241,12 @@ public class charamelWsExecutor extends ActivityExecutor {
 
     private synchronized void addWs(WsConnectContext ws) {
         this.websockets.add(ws);
+    }
+
+    private synchronized void broadcast(String msg) {
+        for (WsContext ws : websockets) {
+            ws.send(msg);
+        }
     }
 
     @Override
