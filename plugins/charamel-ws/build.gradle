@@ -15,3 +15,6 @@ dependencies {
     compile "io.javalin:javalin:3.8.0"
     compile project(":core")
 }
+compileJava{
+    //options.release = 8
+}
