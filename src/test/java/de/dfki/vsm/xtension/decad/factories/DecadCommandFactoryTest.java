@@ -20,7 +20,7 @@ class DecadCommandFactoryTest {
     @Test
     void shouldReturnSpeechCommandWhenSpeechActivity() {
         factory = makeFactory();
-        AbstractActivity activity = new SpeechActivity("Test actor", new LinkedList(), ".");
+        AbstractActivity activity = new SpeechActivity("Test actor", new LinkedList<>(), ".");
         DecadCommand resultCommand = factory.getCommand(activity);
         assertTrue(resultCommand instanceof SpeechCommand);
     }
@@ -33,7 +33,7 @@ class DecadCommandFactoryTest {
     void shouldReturnAnimationCommandWhenSpeechActivity() {
         factory = makeFactory();
         AbstractActivity activity = new ActionActivity("Test actor", "Test name", "Test text",
-                new LinkedList(), new HashMap<>());
+                new LinkedList<>(), new HashMap<>());
         DecadCommand resultCommand = factory.getCommand(activity);
         assertTrue(resultCommand instanceof AnimationCommand);
     }
