@@ -48,7 +48,7 @@ public class charamelWsExecutor extends ActivityExecutor {
 
     @Override
     public synchronized String marker(long id) {
-        return "${'" + id + "'}";
+        return "${'" + id + "'}$";
     }
 
     public synchronized Long getVMUtteranceId() {return ++sUtteranceId;}
@@ -106,11 +106,15 @@ public class charamelWsExecutor extends ActivityExecutor {
             final LinkedList<ActionFeature> features = activity.getFeatures();
 
             if (name.equalsIgnoreCase("test")) {
-
                 mLogger.message("Testing ...");
 
                 mCtx.send(Strings.testMsg);
-            } else if (name.equalsIgnoreCase("stop")) {
+            }  if (name.equalsIgnoreCase("wave")) {
+                mLogger.message("Waving ...");
+
+                mCtx.send(Strings.waveCommand);
+            }
+            else if (name.equalsIgnoreCase("stop")) {
                 app.stop();
             } else {
                 var mMessage = activity.getName();
@@ -177,15 +181,17 @@ public class charamelWsExecutor extends ActivityExecutor {
         String message = ctx.message();
         mLogger.message("Processing Charamel VuppetMaster message: >" + message + "<");
 
-        // clean message
-        message = message.replace("{", "");
-        message = message.replace("}", "");
-        message = message.replace("'", "");
-        message = message.replace("\"", "");
-
-        // split header and content
-        if (message.contains(":")) {
+        // status messages always contains a ":"
+        if (message.contains(":")) { // status message
             mLogger.message("Message is related to an ongoing action");
+
+            // clean message
+            message = message.replace("{", "");
+            message = message.replace("}", "");
+            message = message.replace("'", "");
+            message = message.replace("\"", "");
+
+            // split header and content
             String[] parts = message.split(":");
             String header = parts[0];
             String content = parts[1];
@@ -208,9 +214,21 @@ public class charamelWsExecutor extends ActivityExecutor {
                     mActivityWorkerMap.notifyAll();
                 }
             }
+        } else { // time mark message
+            mLogger.message("Message is a time mark action");
 
-        } else {
-            mLogger.message("Message is a timemark");
+            //clean message
+            message = message.replace("\"", "");
+            message = "$" + message + "$"; // bracketing "$" are nto send back from VuppetMaster
+
+            //execute scheduled action
+            mLogger.message("Tell VSM activity scheduler to handle action represented by time marker >" + message + "<");
+
+            if (mProject.getRunTimePlayer().getActivityScheduler().hasMaker(message)) {
+                mProject.getRunTimePlayer().getActivityScheduler().handle(message);
+            } else {
+                mLogger.failure("Marker has already be send and has been processed!");
+            }
         }
     }
 
