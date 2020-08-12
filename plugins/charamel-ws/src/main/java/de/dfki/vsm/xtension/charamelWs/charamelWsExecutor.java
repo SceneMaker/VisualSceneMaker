@@ -20,12 +20,7 @@ import io.javalin.websocket.WsConnectContext;
 import io.javalin.websocket.WsContext;
 import io.javalin.websocket.WsMessageContext;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * @author Lenny Händler, Patrick Gebhard
@@ -40,7 +35,6 @@ public class charamelWsExecutor extends ActivityExecutor {
     private final ArrayList<WsConnectContext> websockets = new ArrayList<>();
     private String mSceneflowVar;
     private Javalin app;
-    private WsConnectContext mCtx;
     static long sUtteranceId = 0;
 
     public charamelWsExecutor(PluginConfig config, RunTimeProject project) {
@@ -52,7 +46,9 @@ public class charamelWsExecutor extends ActivityExecutor {
         return "${'" + id + "'}$";
     }
 
-    public synchronized Long getVMUtteranceId() {return ++sUtteranceId;}
+    public synchronized Long getVMUtteranceId() {
+        return ++sUtteranceId;
+    }
 
     @Override
     public void execute(AbstractActivity activity) {
@@ -112,12 +108,12 @@ public class charamelWsExecutor extends ActivityExecutor {
                 broadcast(Strings.testMsg);
             } else if (name.equalsIgnoreCase("stop")) {
                 broadcast(Strings.testMsg);
-            }  if (name.equalsIgnoreCase("wave")) {
+            }
+            if (name.equalsIgnoreCase("wave")) {
                 mLogger.message("Waving ...");
 
-                mCtx.send(Strings.waveCommand);
-            }
-            else if (name.equalsIgnoreCase("stop")) {
+                broadcast(Strings.waveCommand);
+            } else if (name.equalsIgnoreCase("stop")) {
                 app.stop();
             } else {
                 var mMessage = activity.getName();
@@ -147,10 +143,8 @@ public class charamelWsExecutor extends ActivityExecutor {
                             + sMSG_SEPARATOR
                             + mMessageRequestValues.replace("'", ""));
                 }
-                synchronized (this) {
-                    String finalSendData = sendData;
-                    websockets.forEach(ws -> ws.send(finalSendData));
-                }
+                String finalSendData = sendData;
+                broadcast(finalSendData);
             }
         }
     }
@@ -164,7 +158,6 @@ public class charamelWsExecutor extends ActivityExecutor {
         app.ws("/ws", ws -> {
             ws.onConnect(ctx -> {
                 this.addWs(ctx);
-                mCtx = ctx;
                 mLogger.message("Connected to Charamel VuppetMaster");
                 ctx.send(Strings.launchString);
             });
