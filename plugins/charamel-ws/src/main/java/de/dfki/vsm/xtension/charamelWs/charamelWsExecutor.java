@@ -10,6 +10,7 @@ import de.dfki.vsm.model.scenescript.ActionFeature;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
 import de.dfki.vsm.runtime.activity.SpeechActivity;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
+import de.dfki.vsm.runtime.activity.scheduler.ActivityWorker;
 import de.dfki.vsm.runtime.interpreter.value.StringValue;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
@@ -20,6 +21,8 @@ import io.javalin.websocket.WsMessageContext;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.List;
 import java.util.Objects;
 
@@ -30,11 +33,14 @@ public class charamelWsExecutor extends ActivityExecutor {
     static final String sMSG_SEPARATOR = "#";
     static final String sMSG_HEADER = "VSMMessage" + sMSG_SEPARATOR;
     // The singelton logger instance
+    // The map of activity worker
+    private final Map<String, ActivityWorker> mActivityWorkerMap = new HashMap<>();
     private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
     private final ArrayList<WsConnectContext> websockets = new ArrayList<>();
     private String mSceneflowVar;
     private Javalin app;
     private WsConnectContext mCtx;
+    static long sUtteranceId = 0;
 
     public charamelWsExecutor(PluginConfig config, RunTimeProject project) {
         super(config, project);
@@ -44,6 +50,8 @@ public class charamelWsExecutor extends ActivityExecutor {
     public synchronized String marker(long id) {
         return "${'" + id + "'}";
     }
+
+    public synchronized Long getVMUtteranceId() {return ++sUtteranceId;}
 
     @Override
     public void execute(AbstractActivity activity) {
@@ -62,9 +70,37 @@ public class charamelWsExecutor extends ActivityExecutor {
                     mProject.getRunTimePlayer().getActivityScheduler().handle(tm);
                 }
             } else {
-                System.out.println("Text with Markers: " +sa.getText());
-                //System.out.println(text);
-                mCtx.send(Strings.speakCommand(mProject.getAgentConfig(activity_actor).getProperty("voice"), sa.getText()));
+                // prepare for Vuppetmaster
+                long vmuid = getVMUtteranceId();
+                String cmd = "${'" + activity_actor + "_utterance_" + vmuid + "':'start'}$" + sa.getText() + "${'" + activity_actor + "_utterance_" +  vmuid + "':'stop'}$";
+
+                System.out.println("Utterance with CMD Markers: " + cmd);
+
+                // Make text activity blocking
+                activity.setType(AbstractActivity.Type.blocking);
+
+                // Send command object
+                synchronized (mActivityWorkerMap) {
+
+                    mCtx.send(Strings.speakCommand(mProject.getAgentConfig(activity_actor).getProperty("voice"), cmd));
+
+                    // organize wait for feedback if (activity instanceof SpeechActivity) {
+//                    ActivityWorker cAW = (ActivityWorker) Thread.currentThread();
+//                    mActivityWorkerMap.put(charamelAct.getId(), cAW);
+//
+//                    if (activity.getType() == AbstractActivity.Type.blocking) { // Wait only if activity is blocking
+//                        // wait until we got feedback
+//                        //mLogger.message("ActivityWorker " + tworld_cmd_action.getId() + " waiting ...");
+//
+//                        while (mActivityWorkerMap.containsValue(cAW)) {
+//                            try {
+//                                mActivityWorkerMap.wait();
+//                            } catch (InterruptedException exc) {
+//                                mLogger.failure(exc.toString());
+//                            }
+//                        }
+//                    }
+                }
             }
         } else {
             final String name = activity.getName();
