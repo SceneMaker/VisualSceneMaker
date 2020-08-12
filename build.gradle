@@ -3,6 +3,7 @@ plugins {
     id 'org.openjfx.javafxplugin' version '0.0.5'
     id 'net.nemerosa.versioning' version '2.8.2'
     id 'com.github.johnrengelman.shadow' version '5.0.0'
+    id "pmd"
 }
 compileJava {options.encoding = "UTF-8"}
 javadoc { options.encoding = 'UTF-8' }
@@ -19,6 +20,20 @@ repositories {
 
 javafx {
     modules = [ 'javafx.controls', 'javafx.graphics', 'javafx.fxml', 'javafx.swing' ]
+}
+
+pmd {
+    consoleOutput = true
+    ignoreFailures = true
+    toolVersion = "6.21.0"
+    rulePriority = 5
+    ruleSets = ["category/java/errorprone.xml", "category/java/bestpractices.xml"]
+}
+
+compileJava {
+    options.incremental = true
+    options.fork = true
+    options.failOnError = false
 }
 
 dependencies {
