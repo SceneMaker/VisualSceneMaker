@@ -1,10 +1,14 @@
 package de.dfki.vsm.xtension.charamelWs;
 
+import java.util.UUID;
+
 public class SpeakCommand {
     private final String text;
     private final String voice;
+    private final UUID uuid;
 
     public SpeakCommand(String text, String voice) {
+        this.uuid = UUID.randomUUID();
         this.text = text;
         this.voice = voice;
     }
@@ -13,7 +17,7 @@ public class SpeakCommand {
         return "    {\n" +
                 "      \"type\": \"timeline-element\",\n" +
                 "      \"subtype\": \"tts\",\n" +
-                "      \"uuid\": \"606fee1b-ad84-406d-9667-bd5822291166\",\n" +
+                "      \"uuid\": \"" + uuid + "\",\n" +
                 "      \"name\": \"hello\",\n" +
                 "      \"track\": \"uuid_tts\",\n" +
                 "      \"timestamp\": 200,\n" +
