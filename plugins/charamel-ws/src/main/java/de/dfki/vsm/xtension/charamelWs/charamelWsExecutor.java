@@ -17,14 +17,10 @@ import de.dfki.vsm.util.log.LOGConsoleLogger;
 import io.javalin.Javalin;
 import io.javalin.websocket.WsCloseContext;
 import io.javalin.websocket.WsConnectContext;
+import io.javalin.websocket.WsContext;
 import io.javalin.websocket.WsMessageContext;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * @author Patrick Gebhard
@@ -39,7 +35,6 @@ public class charamelWsExecutor extends ActivityExecutor {
     private final ArrayList<WsConnectContext> websockets = new ArrayList<>();
     private String mSceneflowVar;
     private Javalin app;
-    private WsConnectContext mCtx;
     static long sUtteranceId = 0;
 
     public charamelWsExecutor(PluginConfig config, RunTimeProject project) {
@@ -81,7 +76,7 @@ public class charamelWsExecutor extends ActivityExecutor {
 
                 // Send command object
                 synchronized (mActivityWorkerMap) {
-                    mCtx.send(Strings.speakCommand(mProject.getAgentConfig(activity_actor).getProperty("voice"), cmd));
+                    broadcast(Strings.speakCommand(mProject.getAgentConfig(activity_actor).getProperty("voice"), cmd));
 
                     // organize wait for feedback if (activity instanceof SpeechActivity) {
                     ActivityWorker cAW = (ActivityWorker) Thread.currentThread();
@@ -109,7 +104,7 @@ public class charamelWsExecutor extends ActivityExecutor {
 
                 mLogger.message("Testing ...");
 
-                mCtx.send(Strings.testMsg);
+                broadcast(Strings.testMsg);
             } else if (name.equalsIgnoreCase("stop")) {
                 app.stop();
             } else {
@@ -157,7 +152,6 @@ public class charamelWsExecutor extends ActivityExecutor {
         app.ws("/ws", ws -> {
             ws.onConnect(ctx -> {
                 this.addWs(ctx);
-                mCtx = ctx;
                 mLogger.message("Connected to Charamel VuppetMaster");
                 ctx.send(Strings.launchString);
             });
@@ -220,6 +214,12 @@ public class charamelWsExecutor extends ActivityExecutor {
 
     private synchronized void addWs(WsConnectContext ws) {
         this.websockets.add(ws);
+    }
+
+    private synchronized void broadcast(String msg) {
+        for (WsContext ws : websockets) {
+            ws.send(msg);
+        }
     }
 
     @Override
