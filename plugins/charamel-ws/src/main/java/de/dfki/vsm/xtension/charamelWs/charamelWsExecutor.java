@@ -222,7 +222,7 @@ public class charamelWsExecutor extends ActivityExecutor {
 
             //clean message
             message = message.replace("\"", "");
-            message = "$" + message + "$"; // bracketing "$" are nto send back from VuppetMaster
+            message = "$" + message + "$"; // bracketing "$" are not send back from VuppetMaster
 
             //execute scheduled action
             mLogger.message("Tell VSM activity scheduler to handle action represented by time marker >" + message + "<");
