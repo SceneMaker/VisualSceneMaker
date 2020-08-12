@@ -139,4 +139,27 @@ class Strings {
                 "  ]\n" +
                 "}");
     }
+
+    static String waveCommand = "{\n" +
+            "  \"type\": \"animation\",\n" +
+            "  \"name\": \"\",\n" +
+            "  \"uuid\": \"58a11974-146c-4e3a-ab47-b180922cdec9\",\n" +
+            "  \"timeline\": [\n" +
+            "    {\n" +
+            "      \"type\": \"timeline-element\",\n" +
+            "      \"subtype\": \"motion\",\n" +
+            "      \"uuid\": \"d291dacd-d53d-4968-b425-cfaa9e44a6cc\",\n" +
+            "      \"name\": \"greet01.glb\",\n" +
+            "      \"track\": \"motions1_uuid\",\n" +
+            "      \"timestamp\": 0,\n" +
+            "      \"duration\": 2400,\n" +
+            "      \"data\": {\n" +
+            "        \"attack\": 500,\n" +
+            "        \"decay\": 500,\n" +
+            "        \"speed\": 1,\n" +
+            "        \"path\": \"humanoid/interaction/greet/greet01.glb\"\n" +
+            "      }\n" +
+            "    }\n" +
+            "  ]\n" +
+            "}";
 }
