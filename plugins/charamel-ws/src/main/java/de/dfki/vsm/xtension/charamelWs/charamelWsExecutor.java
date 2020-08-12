@@ -49,7 +49,7 @@ public class charamelWsExecutor extends ActivityExecutor {
 
     @Override
     public synchronized String marker(long id) {
-        return "${'" + id + "'}";
+        return "${'" + id + "'}$";
     }
 
     public synchronized Long getVMUtteranceId() {return ++sUtteranceId;}
