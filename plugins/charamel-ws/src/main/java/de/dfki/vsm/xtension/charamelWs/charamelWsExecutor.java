@@ -80,21 +80,27 @@ public class charamelWsExecutor extends ActivityExecutor {
                 synchronized (mActivityWorkerMap) {
                     broadcast(Strings.speakCommand(mProject.getAgentConfig(activity_actor).getProperty("voice"), cmd));
 
-                    // organize wait for feedback if (activity instanceof SpeechActivity) {
-                    ActivityWorker cAW = (ActivityWorker) Thread.currentThread();
-                    mActivityWorkerMap.put(vmuid, cAW);
+                    if (!websockets.isEmpty()) { //only enable blocking method if at least one connection exists.
+                        // TODO: make sure it is a valid connection with a valid VuppetMaster client
 
-                    if (activity.getType() == AbstractActivity.Type.blocking) { // Wait only if activity is blocking
-                        // wait until we got feedback
-                        mLogger.message("ActivityWorker waiting for feedback on action with id " + vmuid + "...");
+                        // organize wait for feedback if (activity instanceof SpeechActivity) {
+                        ActivityWorker cAW = (ActivityWorker) Thread.currentThread();
+                        mActivityWorkerMap.put(vmuid, cAW);
 
-                        while (mActivityWorkerMap.containsValue(cAW)) {
-                            try {
-                                mActivityWorkerMap.wait();
-                            } catch (InterruptedException exc) {
-                                mLogger.failure(exc.toString());
+                        if (activity.getType() == AbstractActivity.Type.blocking) { // Wait only if activity is blocking
+                            // wait until we got feedback
+                            mLogger.message("ActivityWorker waiting for feedback on action with id " + vmuid + "...");
+
+                            while (mActivityWorkerMap.containsValue(cAW)) {
+                                try {
+                                    mActivityWorkerMap.wait();
+                                } catch (InterruptedException exc) {
+                                    mLogger.failure(exc.toString());
+                                }
                             }
                         }
+                    } else {
+                        mLogger.warning("Blocking action command was send to nowhere. Executor will not wait. ");
                     }
                 }
             }
