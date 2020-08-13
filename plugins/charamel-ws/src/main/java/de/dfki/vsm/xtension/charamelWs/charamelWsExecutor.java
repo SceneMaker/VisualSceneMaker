@@ -105,13 +105,9 @@ public class charamelWsExecutor extends ActivityExecutor {
             if (name.equalsIgnoreCase("test")) {
                 mLogger.message("Testing ...");
                 broadcast(Strings.testMsg);
-            } else if (name.equalsIgnoreCase("stop")) {
-                broadcast(Strings.testMsg);
-            }
-            if (name.equalsIgnoreCase("wave")) {
+            } else if (name.equalsIgnoreCase("wave")) {
                 mLogger.message("Waving ...");
-
-                broadcast(Strings.waveCommand);
+                broadcast(new WaveCommand().toJsonCommand());
             } else if (name.equalsIgnoreCase("stop")) {
                 app.stop();
             } else {
@@ -161,7 +157,7 @@ public class charamelWsExecutor extends ActivityExecutor {
                 ctx.send(Strings.launchString);
             });
             ws.onMessage(ctx -> {
-                mLogger.message("Got a message from Charamel VuppetMaster...");
+                //mLogger.message("Got a message from Charamel VuppetMaster...");
                 handleMessage(ctx);
             });
             ws.onClose(ctx -> {
@@ -216,7 +212,7 @@ public class charamelWsExecutor extends ActivityExecutor {
             if (mProject.getRunTimePlayer().getActivityScheduler().hasMaker(message)) {
                 mProject.getRunTimePlayer().getActivityScheduler().handle(message);
             } else {
-                mLogger.failure("Marker has already be sent and has been processed!");
+                mLogger.failure("Marker has already been processed!");
             }
         }
     }
