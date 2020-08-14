@@ -61,12 +61,21 @@ public class ContextTreeItem extends AbstractTreeItem implements TreeObservable 
     @Override
     public ContextMenu getMenu() {
         ContextMenu menu = new ContextMenu();
+
         if (entryItem instanceof EntryPlugin) {
             MenuItem addNewAgent = getAddNewAgentItem();
-            menu.getItems().add(addNewAgent);
-            if (((EntryPlugin) entryItem).getPluginConfig().getClassName().contains("Stickman")) {
-                MenuItem editStickman = getEditStickmanItem((EntryPlugin) entryItem);
-                menu.getItems().add(editStickman);
+
+            // Only add a "add agent context menu, if it is a executor)
+            ExtensionsFromJar extensions = new ExtensionsFromJar("de.dfki.vsm.xtension", false);
+
+            if (extensions.isClassAnActivityExecutor(((EntryPlugin) entryItem).getPluginConfig().getClassName())) {
+                menu.getItems().add(addNewAgent);
+
+                // special treatment, if item is a stickman
+                if (((EntryPlugin) entryItem).getPluginConfig().getClassName().contains("Stickman")) {
+                    MenuItem editStickman = getEditStickmanItem((EntryPlugin) entryItem);
+                    menu.getItems().add(editStickman);
+                }
             }
         }
 

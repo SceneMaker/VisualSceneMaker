@@ -7,6 +7,7 @@ import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.extensionAPI.ProjectProperty;
 import de.dfki.vsm.extensionAPI.value.ProjectValueProperty;
 import de.dfki.vsm.extensionAPI.value.ValueRenderable;
+import de.dfki.vsm.util.log.LOGConsoleLogger;
 import de.dfki.vsm.xtesting.NewPropertyManager.exceptions.NotExportableInterface;
 import de.dfki.vsm.xtesting.NewPropertyManager.model.*;
 import de.dfki.vsm.xtesting.NewPropertyManager.model.tableView.AgentTableConfig;
@@ -42,6 +43,9 @@ import java.util.stream.Collectors;
  * Created by alvaro on 6/2/16.
  */
 public class PropertyManagerController implements Initializable, TreeObserver {
+
+    // The singelton logger instance
+    private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
 
     public static final String FX_TEXT_BOX_BORDER_RED = "-fx-text-box-border: red";
     public static final int DYNAMIC_CONTROL_POSITION = 1;
