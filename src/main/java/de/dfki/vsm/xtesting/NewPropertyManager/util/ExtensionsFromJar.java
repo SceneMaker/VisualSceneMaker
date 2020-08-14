@@ -19,29 +19,31 @@ public class ExtensionsFromJar {
     // The singelton logger instance
     private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
 
-    private  ArrayList<String> mScenePlayersShortNames = new ArrayList<>();
-    private  ArrayList<String> mScenePlayersLongNames = new ArrayList<>();
-    private  String packageName;
-    private  boolean nonSelectedFirst;
-    public ExtensionsFromJar(String packName, boolean pAddNonSelectedFirst){
+    private ArrayList<String> mScenePlayersShortNames = new ArrayList<>();
+    private ArrayList<String> mScenePlayersLongNames = new ArrayList<>();
+    private String packageName;
+    private boolean nonSelectedFirst;
+
+    public ExtensionsFromJar(String packName, boolean pAddNonSelectedFirst) {
         packageName = packName;
         nonSelectedFirst = pAddNonSelectedFirst;
     }
 
-    public ExtensionsFromJar(String packName){
+    public ExtensionsFromJar(String packName) {
         packageName = packName;
         nonSelectedFirst = true;
     }
-    public ArrayList getActivitiesShortNames(){
+
+    public ArrayList getActivitiesShortNames() {
         return mScenePlayersShortNames;
     }
 
-    public ArrayList getActivitiesLongName(){
+    public ArrayList getActivitiesLongName() {
         return mScenePlayersLongNames;
     }
 
     public void loadClass() {
-        try{
+        try {
             if (mScenePlayersShortNames.size() <= 0) {
                 addNoSelectedAtFirst();
                 getClassNamesFromPackage(packageName);
@@ -83,30 +85,19 @@ public class ExtensionsFromJar {
                 jf = new JarFile(jarFileName);
                 jarEntries = jf.entries();
 
-                // Debug mLogger.message("Scanning SceneMaker jar for classes in package " + packageName);
-
                 while (jarEntries.hasMoreElements()) {
                     String entryName;
                     entryName = jarEntries.nextElement().getName();
                     try {
-                        //mLogger.message(">> Jar Entry " + entryName);
-
                         if ((packageName.length() == 0 || (entryName.startsWith(packageName) && entryName.length() > packageName.length() + 5))) {
                             entryName = entryName.replace("/", ".");
-                            // Debug mLogger.message("Found entry " + entryName + ", check if equals class " + className);
 
                             if (entryName.contains(className)) {
-
-                                //String fullClassName = entryName.replace("/", ".");
                                 String cleanClassName = entryName.substring(0, entryName.lastIndexOf('.'));
-
-                                // Debug mLogger.message("Clean class name " + cleanClassName);
 
                                 if (className.equalsIgnoreCase(cleanClassName)) {
                                     Class classEntry = Class.forName(cleanClassName);
                                     Class superClass = classEntry.getSuperclass();
-
-                                    // Debug mLogger.message("Class " + entryName + " has superClass " + superClass.getSimpleName());
 
                                     isAE = superClass != null && (superClass.getSimpleName().equals("ActivityExecutor"));
                                 }
@@ -125,8 +116,8 @@ public class ExtensionsFromJar {
         return isAE;
     }
 
-    private void addNoSelectedAtFirst(){
-        if(nonSelectedFirst){
+    private void addNoSelectedAtFirst() {
+        if (nonSelectedFirst) {
             mScenePlayersShortNames.add("Non selected");
         }
     }
@@ -140,7 +131,7 @@ public class ExtensionsFromJar {
         parseJar(jarFileName);
     }
 
-    private void parseJar(String jarFileName){
+    private void parseJar(String jarFileName) {
         JarFile jf;
         Enumeration<JarEntry> jarEntries = null;
         try {
@@ -152,7 +143,7 @@ public class ExtensionsFromJar {
         }
     }
 
-    private  void ExtractExtensions( Enumeration<JarEntry> jarEntries) {
+    private void ExtractExtensions(Enumeration<JarEntry> jarEntries) {
         while (jarEntries.hasMoreElements()) {
             tryToAddActivityExecutor(jarEntries);
         }
@@ -162,24 +153,24 @@ public class ExtensionsFromJar {
         String entryName;
         entryName = jarEntries.nextElement().getName();
         try {
-            if (isActivityExecutor(entryName)){
+            if (isActivityExecutor(entryName)) {
                 addActivityExecutor(entryName);
             }
         } catch (ClassNotFoundException e) {
-
+            e.printStackTrace();
         }
     }
 
     private boolean isActivityExecutor(String entryName) throws ClassNotFoundException {
         entryName = entryName.replace("/", ".");
         boolean belongsToPackage = (packageName.length() == 0 || (entryName.startsWith(packageName) && entryName.length() > packageName.length() + 5));
-        if(belongsToPackage) {
+        if (belongsToPackage) {
             String fullClassName = entryName.replace("/", ".");
             String className = fullClassName.substring(0, entryName.lastIndexOf('.'));
             Class classEntry = Class.forName(className);
             Class superClass = classEntry.getSuperclass();
             // 13.8.2020 - PG added RuntimePlugins
-            return  ((superClass != null && (superClass.getSimpleName().equals("ActivityExecutor"))) || (superClass != null && (superClass.getSimpleName().equals("RunTimePlugin"))));
+            return ((superClass != null && (superClass.getSimpleName().equals("ActivityExecutor"))) || (superClass != null && (superClass.getSimpleName().equals("RunTimePlugin"))));
         }
         return false;
     }
@@ -190,6 +181,4 @@ public class ExtensionsFromJar {
         mScenePlayersLongNames.add(className);
         mScenePlayersShortNames.add(className.substring(className.lastIndexOf('.') + 1));
     }
-
-
 }
