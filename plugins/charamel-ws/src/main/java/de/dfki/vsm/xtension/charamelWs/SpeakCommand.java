@@ -6,8 +6,10 @@ public class SpeakCommand {
     private final String text;
     private final String voice;
     private final UUID uuid;
+    private final String actorId;
 
-    public SpeakCommand(String text, String voice) {
+    public SpeakCommand(String text, String voice, String actorId) {
+        this.actorId = actorId;
         this.uuid = UUID.randomUUID();
         this.text = text;
         this.voice = voice;
@@ -18,7 +20,7 @@ public class SpeakCommand {
                 "      \"type\": \"timeline-element\",\n" +
                 "      \"subtype\": \"tts\",\n" +
                 "      \"uuid\": \"" + uuid + "\",\n" +
-                "      \"name\": \"hello\",\n" +
+                "      \"name\": \"" + actorId + "\",\n" +
                 "      \"track\": \"uuid_tts\",\n" +
                 "      \"timestamp\": 200,\n" +
                 "      \"duration\": 5000,\n" +
@@ -26,6 +28,6 @@ public class SpeakCommand {
                 "        \"text\": \"" + text + "\",\n" +
                 "        \"voice\": \"" + voice + "\"\n" +
                 "      }\n" +
-                "    },\n";
+                "    }\n";
     }
 }

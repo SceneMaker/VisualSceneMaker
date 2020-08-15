@@ -78,7 +78,9 @@ public class charamelWsExecutor extends ActivityExecutor {
 
                 // Send command object
                 synchronized (mActivityWorkerMap) {
-                    broadcast(Strings.speakCommand(mProject.getAgentConfig(activity_actor).getProperty("voice"), cmd));
+                    broadcast(Strings.speakCommand(mProject.getAgentConfig(activity_actor).getProperty("voice"),
+                            cmd,
+                            activity_actor));
 
                     if (!websockets.isEmpty()) { //only enable blocking method if at least one connection exists.
                         // TODO: make sure it is a valid connection with a valid VuppetMaster client
@@ -162,10 +164,8 @@ public class charamelWsExecutor extends ActivityExecutor {
                 mLogger.message("Connected to Charamel VuppetMaster");
                 ctx.send(Strings.launchString);
             });
-            ws.onMessage(ctx -> {
-                //mLogger.message("Got a message from Charamel VuppetMaster...");
-                handleMessage(ctx);
-            });
+            //mLogger.message("Got a message from Charamel VuppetMaster...");
+            ws.onMessage(this::handleMessage);
             ws.onClose(ctx -> {
                 this.removeWs(ctx);
                 mLogger.message("Closed");
@@ -260,7 +260,7 @@ public class charamelWsExecutor extends ActivityExecutor {
     }
 
     // get the value of a feature (added PG) - quick and dirty
-    private final String getActionFeatureValue(String name, List<ActionFeature> features) {
+    private String getActionFeatureValue(String name, List<ActionFeature> features) {
         return features.stream()
                 .filter(af -> af.getKey().equalsIgnoreCase(name))
                 .findFirst()
