@@ -154,7 +154,7 @@ public class charamelWsExecutor extends ActivityExecutor {
 
     @Override
     public void launch() {
-        mLogger.message("Loading Charamel VuppetMaster Executor (WS) ...");
+        mLogger.message("Loading Charamel VuppetMaster Executor (WebSocket) ...");
         final int port = Integer.parseInt(Objects.requireNonNull(mConfig.getProperty("port")));
 
         app = Javalin.create(config -> config.enforceSsl = true).start(port);
@@ -162,15 +162,23 @@ public class charamelWsExecutor extends ActivityExecutor {
             ws.onConnect(ctx -> {
                 this.addWs(ctx);
                 mLogger.message("Connected to Charamel VuppetMaster");
-                ctx.send(Strings.launchString);
+                // 17.8.2020 PG - deactivated - Do we need a launch string? ctx.send(Strings.launchString);
             });
-            //mLogger.message("Got a message from Charamel VuppetMaster...");
             ws.onMessage(this::handleMessage);
             ws.onClose(ctx -> {
                 this.removeWs(ctx);
+
                 mLogger.message("Closed");
+
+                mLogger.message("remove active (but old) activity actions");
+                synchronized (mActivityWorkerMap) {
+                    mActivityWorkerMap.clear();
+                    // wake me up ..
+                    mActivityWorkerMap.notifyAll();
+                }
+
             });
-            ws.onError(ctx -> mLogger.failure("Error handling ws message exchnage"));
+            ws.onError(ctx -> mLogger.failure("Error handling ws message exchange"));
         });
     }
 
