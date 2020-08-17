@@ -11,7 +11,6 @@ import de.dfki.vsm.runtime.activity.AbstractActivity;
 import de.dfki.vsm.runtime.activity.SpeechActivity;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
 import de.dfki.vsm.runtime.activity.scheduler.ActivityWorker;
-import de.dfki.vsm.runtime.interpreter.value.StringValue;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
 import io.javalin.Javalin;
@@ -26,14 +25,11 @@ import java.util.*;
  * @author Lenny Händler, Patrick Gebhard
  */
 public class charamelWsExecutor extends ActivityExecutor {
-    static final String sMSG_SEPARATOR = "#";
-    static final String sMSG_HEADER = "VSMMessage" + sMSG_SEPARATOR;
     // The map of activity worker
     private final Map<String, ActivityWorker> mActivityWorkerMap = new HashMap<>();
     // The singleton logger instance
     private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
     private final ArrayList<WsConnectContext> websockets = new ArrayList<>();
-    private String mSceneflowVar;
     private Javalin app;
     static long sUtteranceId = 0;
 
@@ -132,7 +128,6 @@ public class charamelWsExecutor extends ActivityExecutor {
             ws.onConnect(ctx -> {
                 this.addWs(ctx);
                 mLogger.message("Connected to Charamel VuppetMaster");
-                // 17.8.2020 PG - deactivated - Do we need a launch string? ctx.send(Strings.launchString);
             });
             ws.onMessage(this::handleMessage);
             ws.onClose(ctx -> {
@@ -218,22 +213,6 @@ public class charamelWsExecutor extends ActivityExecutor {
     public void unload() {
         websockets.clear();
         app.stop();
-    }
-
-    boolean hasProjectVar(String var) {
-        return mProject.hasVariable(var);
-    }
-
-    void setSceneFlowVariable(String message) {
-        mLogger.message("Assigning SceneFlow variable " + mSceneflowVar + " with value " + message);
-        mProject.setVariable(mSceneflowVar, new StringValue(message));
-    }
-
-    void setSceneFlowVariable(String var, String value) {
-        mLogger.message("Assigning sceneflow variable " + var + " with value " + value);
-        if (mProject.hasVariable(var)) {
-            mProject.setVariable(var, new StringValue(value));
-        }
     }
 
     // get the value of a feature (added PG) - quick and dirty
