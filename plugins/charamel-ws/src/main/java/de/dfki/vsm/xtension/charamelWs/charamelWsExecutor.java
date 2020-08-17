@@ -118,36 +118,6 @@ public class charamelWsExecutor extends ActivityExecutor {
                 broadcast(new WaveCommand().toJsonCommand());
             } else if (name.equalsIgnoreCase("stop")) {
                 app.stop();
-            } else {
-                var mMessage = activity.getName();
-                var mMessageTimeInfo = getActionFeatureValue("time", features);
-                var mMessageRequestVar = getActionFeatureValue("var", features);
-                var mMessageRequestValues = getActionFeatureValue("values", features);
-
-                long timestamp = System.currentTimeMillis();
-
-                String sendData = (sMSG_HEADER + "None" + sMSG_SEPARATOR + timestamp);
-
-                if (!mMessage.equalsIgnoreCase("REQUEST")) {
-                    sendData = (sMSG_HEADER
-                            + mMessage
-                            + sMSG_SEPARATOR
-                            + timestamp
-                            + ((!mMessageTimeInfo.isEmpty()) ? sMSG_SEPARATOR + mMessageTimeInfo : ""));
-                } else if (mMessage.equalsIgnoreCase("REQUEST")
-                        && (!mMessageRequestVar.isEmpty())
-                        && (!mMessageRequestValues.isEmpty())) {
-                    sendData = (sMSG_HEADER
-                            + mMessage
-                            + sMSG_SEPARATOR
-                            + timestamp
-                            + sMSG_SEPARATOR
-                            + mMessageRequestVar
-                            + sMSG_SEPARATOR
-                            + mMessageRequestValues.replace("'", ""));
-                }
-                String finalSendData = sendData;
-                broadcast(finalSendData);
             }
         }
     }
@@ -170,13 +140,12 @@ public class charamelWsExecutor extends ActivityExecutor {
 
                 mLogger.message("Closed");
 
-                mLogger.message("remove active (but old) activity actions");
+                mLogger.message("Remove active (but not needed anymore) activity actions");
                 synchronized (mActivityWorkerMap) {
                     mActivityWorkerMap.clear();
                     // wake me up ..
                     mActivityWorkerMap.notifyAll();
                 }
-
             });
             ws.onError(ctx -> mLogger.failure("Error handling ws message exchange"));
         });
@@ -256,7 +225,7 @@ public class charamelWsExecutor extends ActivityExecutor {
     }
 
     void setSceneFlowVariable(String message) {
-        mLogger.message("Assigning sceneflow variable " + mSceneflowVar + " with value " + message);
+        mLogger.message("Assigning SceneFlow variable " + mSceneflowVar + " with value " + message);
         mProject.setVariable(mSceneflowVar, new StringValue(message));
     }
 
