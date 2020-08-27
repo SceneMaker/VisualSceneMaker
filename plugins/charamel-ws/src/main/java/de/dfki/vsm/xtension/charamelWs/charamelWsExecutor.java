@@ -73,11 +73,12 @@ public class charamelWsExecutor extends ActivityExecutor {
                 activity.setType(AbstractActivity.Type.blocking);
 
                 // Send command object
-                synchronized (mActivityWorkerMap) {
-                    broadcast(Strings.speakCommand(mProject.getAgentConfig(activity_actor).getProperty("voice"),
-                            cmd,
-                            activity_actor));
+                 broadcast(Strings.speakCommand(mProject.getAgentConfig(activity_actor).getProperty("voice"),
+                         cmd,
+                         activity_actor));
+                mLogger.message("Speech command with CMD markers send ...");
 
+                synchronized (mActivityWorkerMap) {
                     if (!websockets.isEmpty()) { //only enable blocking method if at least one connection exists.
                         // TODO: make sure it is a valid connection with a valid VuppetMaster client
 
@@ -96,6 +97,8 @@ public class charamelWsExecutor extends ActivityExecutor {
                                     mLogger.failure(exc.toString());
                                 }
                             }
+                        } else {
+                            mLogger.message("ActivityWorker does not feedback on action with id " + vmuid + " since action is non-blocking ...");
                         }
                     } else {
                         mLogger.warning("Blocking action command was send to nowhere. Executor will not wait. ");
@@ -165,15 +168,24 @@ public class charamelWsExecutor extends ActivityExecutor {
             String header = parts[0];
             String content = parts[1];
 
+            mLogger.message("Message header is >" + header + "<, content is >" + content + "<");
+
             // check if there the activity manager waits for an action to be finished
             if (content.equalsIgnoreCase("stop")) {
+
+                mLogger.message("Processing stop message ...");
+
                 synchronized (mActivityWorkerMap) {
                     if (mActivityWorkerMap.containsKey(header)) {
+
+                        mLogger.message("Removing id from active activities ids ...");
+
                         mActivityWorkerMap.remove(header);
                     } else {
                         mLogger.failure("Activityworker for action with id " + header + " has been stopped before ...");
                     }
                     // wake me up ..
+                    mLogger.message("Unlocking activity manager ...");
                     mActivityWorkerMap.notifyAll();
                 }
             }
