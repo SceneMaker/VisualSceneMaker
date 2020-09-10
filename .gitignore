@@ -10,5 +10,7 @@ tmp/
 
 /build/
 /core/build/
+/plugins/decad/build/
+/plugins/extensionAPI/build/
 /plugins/AndroidGui/build/
 /plugins/yallah/build
