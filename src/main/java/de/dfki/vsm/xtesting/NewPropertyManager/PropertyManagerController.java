@@ -1,12 +1,12 @@
 package de.dfki.vsm.xtesting.NewPropertyManager;
 
+import de.dfki.vsm.extensionAPI.ProjectProperty;
+import de.dfki.vsm.extensionAPI.value.ProjectValueProperty;
+import de.dfki.vsm.extensionAPI.value.ValueRenderable;
 import de.dfki.vsm.model.config.ConfigFeature;
 import de.dfki.vsm.model.project.AgentConfig;
 import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.runtime.project.RunTimeProject;
-import de.dfki.vsm.extensionAPI.ProjectProperty;
-import de.dfki.vsm.extensionAPI.value.ProjectValueProperty;
-import de.dfki.vsm.extensionAPI.value.ValueRenderable;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
 import de.dfki.vsm.xtesting.NewPropertyManager.exceptions.NotExportableInterface;
 import de.dfki.vsm.xtesting.NewPropertyManager.model.*;
@@ -37,7 +37,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.ResourceBundle;
-import java.util.stream.Collectors;
 
 /**
  * Created by alvaro on 6/2/16.
@@ -100,10 +99,10 @@ public class PropertyManagerController implements Initializable, TreeObserver {
     private ArrayList<String> activityClassesShortNames;
     private ArrayList<String> activityClassesLongNames;
     private TreeItem<AbstractTreeEntry> devices;
-    private HashMap<String, PluginConfig> plugins = new HashMap<>();
-    private EntryDevice entryDevice;
-    private ObservableList<TableConfig> data = FXCollections.observableArrayList();
-    private ProjectConfigWrapper projectConfigWrapper;
+    private final HashMap<String, PluginConfig> plugins = new HashMap<>();
+    private final EntryDevice entryDevice;
+    private final ObservableList<TableConfig> data = FXCollections.observableArrayList();
+    private final ProjectConfigWrapper projectConfigWrapper;
     private HashMap<ProjectProperty, ProjectValueProperty> exportableProperties;
     private Boolean advancedBottonMark = false;
 
@@ -240,11 +239,11 @@ public class PropertyManagerController implements Initializable, TreeObserver {
 
     private void fillComboWithActivityExecutors() {
         ExtensionsFromJar extensions = new ExtensionsFromJar("de.dfki.vsm.xtension", false);
-        extensions.loadClass();
+        extensions.loadExtensions();
         ObservableList<String> devicesNames = FXCollections.observableArrayList();
         activityClassesShortNames = extensions.getActivitiesShortNames();
         activityClassesLongNames = extensions.getActivitiesLongName();
-        devicesNames.addAll(activityClassesShortNames.stream().collect(Collectors.toList()));
+        devicesNames.addAll(new ArrayList<>(activityClassesShortNames));
         cmbExecutor.getItems().addAll(devicesNames);
     }
 
