@@ -28,8 +28,13 @@ dependencies {
     compile project(":core", {p->p.ext.flavor = "pc"; p.version = versioning.info.lastTag})
     compile fileTree(dir: 'lib', include: "*.jar")
     compile project(":plugins:AndroidGui")
+
+    // https://mvnrepository.com/artifact/org.reflections/reflections
+    compile group: 'org.reflections', name: 'reflections', version: '0.9.12'
+
     compile project(":plugins:yallah")
     compile project(":plugins:decad")
+
     // https://mvnrepository.com/artifact/jpl/jpl
     compile group: 'jpl', name: 'jpl', version: '7.4.0'
     // https://mvnrepository.com/artifact/de.sciss/sphinx4
@@ -46,6 +51,8 @@ dependencies {
     compile group: 'math.geom2d', name: 'javaGeom', version: '0.11.1'
     // https://mvnrepository.com/artifact/net.sourceforge.javaflacencoder/java-flac-encoder
     compile group: 'net.sourceforge.javaflacencoder', name: 'java-flac-encoder', version: '0.3.7'
+    // https://mvnrepository.com/artifact/org.json/json
+    compile group: 'org.json', name: 'json', version: '20171018'
     // https://mvnrepository.com/artifact/javax.xml.bind/jaxb-api
     compile group: 'javax.xml.bind', name: 'jaxb-api', version: '2.4.0-b180830.0359'
     // https://mvnrepository.com/artifact/com.github.sarxos/webcam-capture
