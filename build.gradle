@@ -47,6 +47,10 @@ dependencies {
 
     compile group: 'org.slf4j', name:'slf4j-simple', version:'1.8.0-beta4'
 
+
+    // https://mvnrepository.com/artifact/org.reflections/reflections
+    compile group: 'org.reflections', name: 'reflections', version: '0.9.12'
+
     // https://mvnrepository.com/artifact/jpl/jpl
     compile group: 'jpl', name: 'jpl', version: '7.4.0'
     // https://mvnrepository.com/artifact/de.sciss/sphinx4
