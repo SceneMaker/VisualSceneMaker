@@ -20,12 +20,11 @@ public class YallahExecutor extends ActivityExecutor {
 
     @Override
     public void execute(AbstractActivity activity) {
-        System.out.println("YALLAH Agent " + activity.getActor() + " said: " + activity.getText());
+        mLogger.message("YALLAH Agent " + activity.getActor() + " said: " + activity.getText());
     }
 
     @Override
     public void launch() {
-
         //
         // TODO --  launch either the desktop app or the web page
 
