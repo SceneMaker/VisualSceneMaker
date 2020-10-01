@@ -36,6 +36,7 @@ public class charamelWsExecutor extends ActivityExecutor {
     private final ArrayList<WsConnectContext> websockets = new ArrayList<>();
     private Javalin app;
     static long sUtteranceId = 0;
+    private String mPathToCertificate = "";
 
     public charamelWsExecutor(PluginConfig config, RunTimeProject project) {
         super(config, project);
@@ -131,6 +132,7 @@ public class charamelWsExecutor extends ActivityExecutor {
         final int wss_port = Integer.parseInt(Objects.requireNonNull(mConfig.getProperty("wss_port")));
         final int ws_port = Integer.parseInt(Objects.requireNonNull(mConfig.getProperty("ws_port")));
         final String sceneflowVar = mConfig.getProperty("sceneflowVar");
+        mPathToCertificate = mConfig.getProperty("certificate");
 
         mLogger.message(sceneflowVar);
 
@@ -252,7 +254,7 @@ public class charamelWsExecutor extends ActivityExecutor {
 
     private SslContextFactory getSslContextFactory() {
         SslContextFactory sslContextFactory = new SslContextFactory.Server();
-        sslContextFactory.setKeyStorePath(this.getClass().getResource("/my-release-key.keystore").toExternalForm());
+        sslContextFactory.setKeyStorePath(this.getClass().getResource(mPathToCertificate).toExternalForm()); //default "/my-release-key.keystore"
         sslContextFactory.setKeyStorePassword("123456");
         return sslContextFactory;
     }
