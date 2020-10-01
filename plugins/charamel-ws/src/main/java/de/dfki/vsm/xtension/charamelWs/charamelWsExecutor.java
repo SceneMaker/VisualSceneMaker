@@ -128,7 +128,8 @@ public class charamelWsExecutor extends ActivityExecutor {
     @Override
     public void launch() {
         mLogger.message("Loading Charamel VuppetMaster Executor (WebSocket) ...");
-        final int port = Integer.parseInt(Objects.requireNonNull(mConfig.getProperty("port")));
+        final int wss_port = Integer.parseInt(Objects.requireNonNull(mConfig.getProperty("wss_port")));
+        final int ws_port = Integer.parseInt(Objects.requireNonNull(mConfig.getProperty("ws_port")));
         final String sceneflowVar = mConfig.getProperty("sceneflowVar");
 
         mLogger.message(sceneflowVar);
@@ -137,9 +138,9 @@ public class charamelWsExecutor extends ActivityExecutor {
             config.server(() -> {
                 Server server = new Server();
                 ServerConnector sslConnector = new ServerConnector(server, getSslContextFactory());
-                sslConnector.setPort(443);
+                sslConnector.setPort(wss_port);
                 ServerConnector connector = new ServerConnector(server);
-                connector.setPort(80);
+                connector.setPort(ws_port);
                 server.setConnectors(new Connector[]{sslConnector, connector});
                 return server;
             });
@@ -150,9 +151,9 @@ public class charamelWsExecutor extends ActivityExecutor {
                 mLogger.message("Connected to Charamel VuppetMaster");
 
                 // let sceneflow know that a client has connected
-//                if (mProject.hasVariable(sceneflowVar)) {
-//                    mProject.setVariable(sceneflowVar, true);
-//                }
+                if (mProject.hasVariable(sceneflowVar)) {
+                    mProject.setVariable(sceneflowVar, true);
+                }
             });
             ws.onMessage(this::handleMessage);
             ws.onClose(ctx -> {
