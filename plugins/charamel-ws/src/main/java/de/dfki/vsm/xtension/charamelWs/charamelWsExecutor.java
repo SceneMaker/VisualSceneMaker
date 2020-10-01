@@ -18,6 +18,10 @@ import io.javalin.websocket.WsCloseContext;
 import io.javalin.websocket.WsConnectContext;
 import io.javalin.websocket.WsContext;
 import io.javalin.websocket.WsMessageContext;
+import org.eclipse.jetty.server.Connector;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.util.ssl.SslContextFactory;
 
 import java.util.*;
 
@@ -125,20 +129,30 @@ public class charamelWsExecutor extends ActivityExecutor {
     public void launch() {
         mLogger.message("Loading Charamel VuppetMaster Executor (WebSocket) ...");
         final int port = Integer.parseInt(Objects.requireNonNull(mConfig.getProperty("port")));
-        final String sceneflowVar =mConfig.getProperty("sceneflowVar");
+        final String sceneflowVar = mConfig.getProperty("sceneflowVar");
 
         mLogger.message(sceneflowVar);
 
-        app = Javalin.create(config -> config.enforceSsl = true).start(port);
+        app = Javalin.create(config -> {
+            config.server(() -> {
+                Server server = new Server();
+                ServerConnector sslConnector = new ServerConnector(server, getSslContextFactory());
+                sslConnector.setPort(443);
+                ServerConnector connector = new ServerConnector(server);
+                connector.setPort(80);
+                server.setConnectors(new Connector[]{sslConnector, connector});
+                return server;
+            });
+        }).start();
         app.ws("/ws", ws -> {
             ws.onConnect(ctx -> {
                 this.addWs(ctx);
                 mLogger.message("Connected to Charamel VuppetMaster");
 
                 // let sceneflow know that a client has connected
-                if (mProject.hasVariable(sceneflowVar)) {
-                    mProject.setVariable(sceneflowVar, true);
-                }
+//                if (mProject.hasVariable(sceneflowVar)) {
+//                    mProject.setVariable(sceneflowVar, true);
+//                }
             });
             ws.onMessage(this::handleMessage);
             ws.onClose(ctx -> {
@@ -233,6 +247,13 @@ public class charamelWsExecutor extends ActivityExecutor {
     public void unload() {
         websockets.clear();
         app.stop();
+    }
+
+    private SslContextFactory getSslContextFactory() {
+        SslContextFactory sslContextFactory = new SslContextFactory.Server();
+        sslContextFactory.setKeyStorePath(this.getClass().getResource("/my-release-key.keystore").toExternalForm());
+        sslContextFactory.setKeyStorePassword("123456");
+        return sslContextFactory;
     }
 
     // get the value of a feature (added PG) - quick and dirty
