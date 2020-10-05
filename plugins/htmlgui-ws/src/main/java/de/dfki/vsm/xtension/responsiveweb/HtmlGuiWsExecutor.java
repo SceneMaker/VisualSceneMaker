@@ -36,6 +36,7 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
     private final ArrayList<WsConnectContext> websockets = new ArrayList<>();
     private Javalin app;
     private String mPathToCertificate = "";
+    private String mSceneflowInfoVar = "";
 
     public HtmlGuiWsExecutor(PluginConfig config, RunTimeProject project) {
         super(config, project);
@@ -70,11 +71,8 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
 
             if (name.equalsIgnoreCase("set")) {
                 String element = activity.get("element");
-                String value = activity.get("value");
+                String value = activity.get("value").replace("'", "");
                 broadcast(element + ":" + value);
-            } else if (name.equalsIgnoreCase("test")) {
-                mLogger.message("Testing ...");
-                broadcast("default_gui.html");
             } else if (name.equalsIgnoreCase("stop")) {
                 app.stop();
             } else if (!name.isEmpty()) { //check if name represents a webpage - must be configured in the device's agent as key, value pair.
@@ -92,10 +90,11 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
         mLogger.message("Loading HTML GUI Executor (WebSocket) ...");
         final int wss_port = Integer.parseInt(Objects.requireNonNull(mConfig.getProperty("wss_port")));
         final int ws_port = Integer.parseInt(Objects.requireNonNull(mConfig.getProperty("ws_port")));
-        final String sceneflowVar = mConfig.getProperty("sceneflowVar");
+        final String sceneflowStateVar = mConfig.getProperty("sceneflowStateVar");
+        mSceneflowInfoVar = mConfig.getProperty("sceneflowInfoVar");
         mPathToCertificate = mConfig.getProperty("certificate");
 
-        mLogger.message(sceneflowVar);
+        mLogger.message(sceneflowStateVar);
 
         app = Javalin.create(config -> {
             config.server(() -> {
@@ -116,8 +115,8 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
                 // test
                 //broadcast("./default_gui.html");
                 // let sceneflow know that a client has connected
-                if (mProject.hasVariable(sceneflowVar)) {
-                    mProject.setVariable(sceneflowVar, true);
+                if (mProject.hasVariable(sceneflowStateVar)) {
+                    mProject.setVariable(sceneflowStateVar, true);
                 }
             });
             ws.onMessage(this::handleMessage);
@@ -139,6 +138,11 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
     private synchronized void handleMessage(WsMessageContext ctx) {
         String message = ctx.message();
         mLogger.message("Processing Browser GUI message: >" + message + "<");
+
+        // let sceneflow know that a client has send a message.
+        if (mProject.hasVariable(mSceneflowInfoVar)) {
+            mProject.setVariable(mSceneflowInfoVar, message);
+        }
     }
 
     private synchronized void removeWs(WsCloseContext ctx) {
