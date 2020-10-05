@@ -44,13 +44,15 @@ dependencies {
     compile fileTree(dir: 'lib', include: "*.jar")
     compile project(":plugins:AndroidGui")
     compile project(":plugins:charamel-ws")
+    compile project(":plugins:htmlgui-ws")
 
     compile group: 'org.slf4j', name:'slf4j-simple', version:'1.8.0-beta4'
 
+    // https://mvnrepository.com/artifact/org.bouncycastle/bcprov-jdk15on
+    // does not work compile group: 'org.bouncycastle', name: 'bcprov-jdk15on', version: '1.66'
 
     // https://mvnrepository.com/artifact/org.reflections/reflections
     compile group: 'org.reflections', name: 'reflections', version: '0.9.12'
-
     // https://mvnrepository.com/artifact/jpl/jpl
     compile group: 'jpl', name: 'jpl', version: '7.4.0'
     // https://mvnrepository.com/artifact/de.sciss/sphinx4
