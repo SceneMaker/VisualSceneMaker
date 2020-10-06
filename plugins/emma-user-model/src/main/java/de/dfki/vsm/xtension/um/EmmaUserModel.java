@@ -1,4 +1,4 @@
-package de.dfki.vsm.xtension.usermodel;
+package de.dfki.vsm.xtension.um;
 
 import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
@@ -80,7 +80,6 @@ public class EmmaUserModel extends ActivityExecutor {
 
             // add/update to user profiles
         }
-
     }
 
     private void loadUserModel() {
