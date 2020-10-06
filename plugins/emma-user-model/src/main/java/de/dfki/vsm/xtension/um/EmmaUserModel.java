@@ -14,9 +14,9 @@ import java.util.List;
 
 
 /**
- * Created by Patrick on 18/09/19.
+ * Created by Patrick
  */
-public class UMExecutor extends ActivityExecutor {
+public class EmmaUserModel extends ActivityExecutor {
 
     // List of all users
     private JSONObject mUserProfiles = new JSONObject();
@@ -24,7 +24,7 @@ public class UMExecutor extends ActivityExecutor {
     // The singelton logger instance
     private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
 
-    public UMExecutor(PluginConfig config, RunTimeProject project) {
+    public EmmaUserModel(PluginConfig config, RunTimeProject project) {
         super(config, project);
     }
 
@@ -84,7 +84,8 @@ public class UMExecutor extends ActivityExecutor {
     }
 
     private void loadUserModel() {
-        String umf = mProject.getProjectPath() + File.separator + mConfig.getProperty("umdir") + File.separator + "UM.json";
+        mLogger.message("Loading EmmA User Model ...");
+        String umf = (mProject.getProjectPath() + File.separator + mConfig.getProperty("umdir") + File.separator + "UM.json").replace("\\", "/");;
 
         String input = "";
         try {
