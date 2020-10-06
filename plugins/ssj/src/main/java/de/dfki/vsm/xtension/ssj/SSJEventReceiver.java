@@ -52,7 +52,14 @@ final class SSJEventReceiver extends Thread
         try
         {
             // Create the server socket
-            mSocket = new DatagramSocket(mLAddr);
+            if ("localhost".equalsIgnoreCase(mLHost) || "127.0.0.1".equalsIgnoreCase(mLHost))
+            {
+                mSocket = new DatagramSocket(mLPort);
+            }
+            else
+            {
+                mSocket = new DatagramSocket(mLAddr);
+            }
             // Start the server thread
             super.start();
         }

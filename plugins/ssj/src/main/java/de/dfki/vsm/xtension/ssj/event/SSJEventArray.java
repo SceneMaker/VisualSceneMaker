@@ -20,7 +20,7 @@ public final class SSJEventArray extends SSJEventObject
     // The event sequence version
     private String mVersion;
     // The event object sequence
-    private final ArrayList<SSJEventEntry> mList = new ArrayList();
+    protected final ArrayList<SSJEventEntry> mList = new ArrayList<>();
 
     // Create a new event array
     public SSJEventArray()
