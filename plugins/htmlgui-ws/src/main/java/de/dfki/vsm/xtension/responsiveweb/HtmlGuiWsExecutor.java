@@ -14,6 +14,8 @@ import de.dfki.vsm.runtime.activity.scheduler.ActivityWorker;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
 import io.javalin.Javalin;
+import io.javalin.core.JavalinConfig;
+import io.javalin.http.staticfiles.Location;
 import io.javalin.websocket.WsCloseContext;
 import io.javalin.websocket.WsConnectContext;
 import io.javalin.websocket.WsContext;
@@ -23,6 +25,7 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 
+import java.io.File;
 import java.util.*;
 
 /**
@@ -90,11 +93,11 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
         mLogger.message("Loading HTML GUI Executor (WebSocket) ...");
         final int wss_port = Integer.parseInt(Objects.requireNonNull(mConfig.getProperty("wss_port")));
         final int ws_port = Integer.parseInt(Objects.requireNonNull(mConfig.getProperty("ws_port")));
+        final int html_port = Integer.parseInt(Objects.requireNonNull(mConfig.getProperty("html_port")));
+        final String guiFiles = (mProject.getProjectPath() + File.separator + mConfig.getProperty("guifiles")).replace("\\", "/");
         final String sceneflowStateVar = mConfig.getProperty("sceneflowStateVar");
         mSceneflowInfoVar = mConfig.getProperty("sceneflowInfoVar");
         mPathToCertificate = mConfig.getProperty("certificate");
-
-        mLogger.message(sceneflowStateVar);
 
         app = Javalin.create(config -> {
             config.server(() -> {
@@ -104,10 +107,16 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
                 sslConnector.setPort(wss_port);
                 ServerConnector connector = new ServerConnector(server);
                 connector.setPort(ws_port);
-                server.setConnectors(new Connector[]{sslConnector, connector});
+                ServerConnector htmlConnector = new ServerConnector(server);
+                htmlConnector.setPort(html_port);
+                server.setConnectors(new Connector[]{sslConnector, connector, htmlConnector});
+                config.addStaticFiles(guiFiles, Location.EXTERNAL);
                 return server;
             });
         }).start();
+        app.get("/", ctx -> {
+            ctx.redirect("/index.html");
+        });
         app.ws("/ws", ws -> {
             ws.onConnect(ctx -> {
                 this.addWs(ctx);
