@@ -11,6 +11,8 @@ import de.dfki.vsm.runtime.activity.AbstractActivity;
 import de.dfki.vsm.runtime.activity.SpeechActivity;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
 import de.dfki.vsm.runtime.activity.scheduler.ActivityWorker;
+import de.dfki.vsm.runtime.interpreter.value.BooleanValue;
+import de.dfki.vsm.runtime.interpreter.value.StringValue;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
 import io.javalin.Javalin;
@@ -37,6 +39,7 @@ public class charamelWsExecutor extends ActivityExecutor {
     private Javalin app;
     static long sUtteranceId = 0;
     private String mPathToCertificate = "";
+    private String mVSMCharacterSpeakingVar = "";
 
     public charamelWsExecutor(PluginConfig config, RunTimeProject project) {
         super(config, project);
@@ -83,6 +86,11 @@ public class charamelWsExecutor extends ActivityExecutor {
                          activity_actor));
                 mLogger.message("Speech command with CMD markers send ...");
 
+                // let vsm model know that character is speaking - this is dirty. it should actually be done with messages
+                if (mProject.hasVariable(mVSMCharacterSpeakingVar)) {
+                    mProject.setVariable(mVSMCharacterSpeakingVar,  new BooleanValue(true));
+                }
+
                 synchronized (mActivityWorkerMap) {
                     if (!websockets.isEmpty()) { //only enable blocking method if at least one connection exists.
                         // TODO: make sure it is a valid connection with a valid VuppetMaster client
@@ -109,6 +117,11 @@ public class charamelWsExecutor extends ActivityExecutor {
                         mLogger.warning("Blocking action command was send to nowhere. Executor will not wait. ");
                     }
                 }
+
+                // let vsm model know that character is speaking - this is dirty. it should actually be done with messages
+                if (mProject.hasVariable(mVSMCharacterSpeakingVar)) {
+                    mProject.setVariable(mVSMCharacterSpeakingVar,  new BooleanValue(false));
+                }
             }
         } else {
             final String name = activity.getName();
@@ -132,6 +145,7 @@ public class charamelWsExecutor extends ActivityExecutor {
         final int wss_port = Integer.parseInt(Objects.requireNonNull(mConfig.getProperty("wss_port")));
         final int ws_port = Integer.parseInt(Objects.requireNonNull(mConfig.getProperty("ws_port")));
         final String sceneflowVar = mConfig.getProperty("sceneflowVar");
+        mVSMCharacterSpeakingVar = mConfig.getProperty("characterSpeaking");
         mPathToCertificate = mConfig.getProperty("certificate");
 
         mLogger.message(sceneflowVar);
