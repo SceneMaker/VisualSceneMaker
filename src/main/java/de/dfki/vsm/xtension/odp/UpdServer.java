@@ -9,11 +9,12 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
+import java.nio.charset.StandardCharsets;
 
 public class UpdServer extends Thread {
     private DatagramSocket socket;
     private boolean running;
-    private byte[] buf = new byte[1024];
+    private byte[] buf = new byte[2048];
 
     private RunTimeProject mProject;
     private final String mSceneFlowTaskVar = "odpTask";
@@ -46,11 +47,24 @@ public class UpdServer extends Thread {
             }
 
             if (packet.getLength() > 0) {
-                String message = new String(packet.getData(), 0, packet.getLength());
+                String message = new String(packet.getData(), 0, packet.getLength(), StandardCharsets.UTF_8);
 
                 mLogger.message("ODP UPD Message received: " + message);
 
                 JSONObject jObj = new JSONObject(message);
+
+                // check if object contains transcription element
+                if (jObj.has("transcription")) {
+                    JSONObject transcript = jObj.getJSONObject("transcription");
+                    String utterance = transcript.getString("utterance");
+                    float confidence = transcript.getFloat("confidence");
+
+                    //JSONObject liwcObj = transcript.getJSONObject("liwc-result");
+
+                    if (mProject.hasVariable("userUtterance")) {
+                        mProject.setVariable("userUtterance", new StringValue(utterance));
+                    }
+                }
 
                 // task
                 String task = "";

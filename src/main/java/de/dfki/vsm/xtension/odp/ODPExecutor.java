@@ -92,9 +92,18 @@ public class ODPExecutor extends ActivityExecutor {
         final String activity_actor = activity.getActor();
         final List activity_features = activity.getFeatures();
         // set all activities blocking
-        activity.setType(Type.blocking);
+        //activity.setType(Type.blocking);
 
         final String name = activity.getName();
+        if (name.equalsIgnoreCase("charspeak")) {
+            String state = (activity.get("state") != null) ? activity.get("state") : "";
+
+            JSONObject jsonOut = new JSONObject();
+            jsonOut.put("tts", (state.equalsIgnoreCase("start")) ? "start" : "end");
+
+            sendToOPD(jsonOut);
+        }
+
         if (name.equalsIgnoreCase("send")) {
             String task = activity.get("task");
             // abort if no task there
@@ -110,13 +119,19 @@ public class ODPExecutor extends ActivityExecutor {
             jsonOut.put("function", function);
             jsonOut.put("content", content);
 
-            try {
-                client.clientSend(jsonOut.toString());
-            } catch (IOException e) {
-                mLogger.failure(e.getMessage());
-            }
+            sendToOPD(jsonOut);
         }
 
+
+
+    }
+
+    private void sendToOPD(JSONObject jo) {
+        try {
+            client.clientSend(jo.toString());
+        } catch (IOException e) {
+            mLogger.failure(e.getMessage());
+        }
     }
 
     @Override
