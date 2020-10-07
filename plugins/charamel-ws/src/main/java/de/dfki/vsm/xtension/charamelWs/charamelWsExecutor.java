@@ -12,7 +12,6 @@ import de.dfki.vsm.runtime.activity.SpeechActivity;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
 import de.dfki.vsm.runtime.activity.scheduler.ActivityWorker;
 import de.dfki.vsm.runtime.interpreter.value.BooleanValue;
-import de.dfki.vsm.runtime.interpreter.value.StringValue;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
 import io.javalin.Javalin;
@@ -153,7 +152,8 @@ public class charamelWsExecutor extends ActivityExecutor {
         app = Javalin.create(config -> {
             config.server(() -> {
                 Server server = new Server();
-                ServerConnector sslConnector = new ServerConnector(server, getSslContextFactory());
+                ServerConnector sslConnector = null;
+                sslConnector = new ServerConnector(server, getSslContextFactory());
                 sslConnector.setPort(wss_port);
                 ServerConnector connector = new ServerConnector(server);
                 connector.setPort(ws_port);
@@ -216,16 +216,15 @@ public class charamelWsExecutor extends ActivityExecutor {
 
                 synchronized (mActivityWorkerMap) {
                     if (mActivityWorkerMap.containsKey(header)) {
-
                         mLogger.message("Removing id from active activities ids ...");
-
                         mActivityWorkerMap.remove(header);
+                        // wake me up ...
+                        mLogger.message("Unlocking activity manager ...");
+                        mActivityWorkerMap.notifyAll();
+                        mLogger.message("done.");
                     } else {
                         mLogger.failure("Activityworker for action with id " + header + " has been stopped before ...");
                     }
-                    // wake me up ..
-                    mLogger.message("Unlocking activity manager ...");
-                    mActivityWorkerMap.notifyAll();
                 }
             }
         } else { // time mark message
