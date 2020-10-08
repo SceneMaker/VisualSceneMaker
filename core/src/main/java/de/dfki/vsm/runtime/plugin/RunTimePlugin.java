@@ -15,7 +15,7 @@ public abstract class RunTimePlugin {
 
     // The runtime project
     protected final RunTimeProject mProject;
-    // The plugin's name
+    // The plugin's configuration
     protected final PluginConfig mConfig;
 
     // Construct the plugin
