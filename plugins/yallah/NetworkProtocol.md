@@ -37,13 +37,23 @@ For commands:
 {
   "type": "command",
   "command": "PlayAnimationClip",
-  "parameters": "name=wave,speed=fast"
+  "parameters": "name=wave"
 }
 ```
 
 Parameters formatting reason. It would be more elegant to encode the parameters as a dictionary.
 However, Unity doesn't integrate a full-fledged json parser. The provided `UnityEngine.JsonUtility` supports only serialization to-from classes, with no support for variable structures.
 Hence, we leave the parameters in the key1=value,key2=value,... format and leave the unpacking to the Unity side.
+
+So, for example, when more parameters are needed:
+
+```JSON
+{
+  "type": "command",
+  "command": "LookAtPoint",
+  "parameters": "x=1.5,y=2.1,z=1.0"
+}
+```
 
 
 ## Supported commands
@@ -61,4 +71,9 @@ This is a subset of the API provided by the YALLAH controllers <https://github.c
 * LookAtObject
   * name: string
 
+* LookAtPoint
+  * x: float
+  * y: float
+  * z: float
+  
 * StopLooking
