@@ -61,8 +61,18 @@ public class UpdServer extends Thread {
 
                     //JSONObject liwcObj = transcript.getJSONObject("liwc-result");
 
+                    // TODO make VSM variable userUtterance configurable
                     if (mProject.hasVariable("userUtterance")) {
                         mProject.setVariable("userUtterance", new StringValue(utterance));
+                    }
+                }
+
+                if (jObj.has("odpstate")) {
+                    String value = jObj.getString("odpstate");
+
+                    // TODO make VSM variable odpstate configurable
+                    if (mProject.hasVariable("odpstate")) {
+                        mProject.setVariable("odpstate", new StringValue(value));
                     }
                 }
 
