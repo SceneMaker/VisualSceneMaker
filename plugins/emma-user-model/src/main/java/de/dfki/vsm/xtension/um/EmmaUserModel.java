@@ -11,7 +11,6 @@ import org.json.JSONObject;
 
 import java.io.*;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 
 
@@ -41,12 +40,11 @@ public class EmmaUserModel extends ActivityExecutor {
 
     @Override
     public void launch() {
-        mLogger.message("Loading UMExecutor ...");
+        mLogger.message("Loading EmmA UserModel Executor ...");
 
         // load user profiles
         loadUserModel();
     }
-
 
     @Override
     public void execute(AbstractActivity activity) {
@@ -62,33 +60,31 @@ public class EmmaUserModel extends ActivityExecutor {
 
         final String name = activity.getName();
         if (name.equalsIgnoreCase("set")) {
-            mLogger.message("Emma User Model setting user attributes ...");
+            setUserValue("break", activity);
+            setUserValue("type", activity);
+            setUserValue("therapy", activity);
+            setUserValue("icd", activity);
+            setUserValue("contact", activity);
+            setUserValue("contactphone", activity);
+            setUserValue("therapist", activity);
+            setUserValue("therapistphone", activity);
+            setUserValue("nextworktime_mo", activity);
+            setUserValue("nextworktime_tu", activity);
+            setUserValue("nextworktime_we", activity);
+            setUserValue("nextworktime_th", activity);
+            setUserValue("nextworktime_fr", activity);
+            setUserValue("actworktime_mo", activity);
+            setUserValue("actworktime_tu", activity);
+            setUserValue("actworktime_we", activity);
+            setUserValue("actworktime_th", activity);
+            setUserValue("actworktime_fr", activity);
+            setUserValue("pos_activitiy", activity);
 
-//            String breakLength = (activity.get("break") != null) ? activity.get("break") : "";
-//            String breakType = (activity.get("type") != null) ? activity.get("type") : "";
-//            String inTherapy = (activity.get("therapy") != null) ? activity.get("therapy") : "";
-//            String icdCode = (activity.get("icd") != null) ? activity.get("therapy") : "";
-//            String contact = (activity.get("contact") != null) ? activity.get("contact") : "";
-//            String contactPhone = (activity.get("contactphone") != null) ? activity.get("contactphone") : "";
-//            String therapist = (activity.get("therapist") != null) ? activity.get("therapist") : "";
-//            String therapistPhone = (activity.get("therapistphone") != null) ? activity.get("therapistphone") : "";
-//            String planedWorkTimeMo = (activity.get("nextworktime_mo") != null) ? activity.get("nextworktime_mo") : "";
-//            String planedWorkTimeTue = (activity.get("nextworktime_mo") != null) ? activity.get("nextworktime_tu") : "";
-//            String planedWorkTimeWed = (activity.get("nextworktime_we") != null) ? activity.get("nextworktime_we") : "";
-//            String planedWorkTimeThr = (activity.get("nextworktime_th") != null) ? activity.get("nextworktime_th") : "";
-//            String planedWorkTimeFri = (activity.get("nextworktime_fr") != null) ? activity.get("nextworktime_fr") : "";
-//            String actualWorkTimeMo = (activity.get("actworktime_mo") != null) ? activity.get("actworktime_mo") : "";
-//            String actualWorkTimeTue = (activity.get("actworktime_tu") != null) ? activity.get("actworktime_tu") : "";
-//            String actualWorkTimeWed = (activity.get("actworktime_we") != null) ? activity.get("actworktime_we") : "";
-//            String actualWorkTimeThr = (activity.get("actworktime_th") != null) ? activity.get("actworktime_th") : "";
-//            String actualWorkTimeFri = (activity.get("actworktime_fr") != null) ? activity.get("actworktime_fr") : "";
-//            String positiveActivitiy = (activity.get("pos_activitiy") != null) ? activity.get("pos_activitiy") : "";
-//
-//            // add/update to user profiles
-//
-//            saveUserModel();
+            // add/update to user profiles
+            saveUserModel();
         }
 
+        // load creates a new user model, if there is no user with the specific name.
         if (name.equalsIgnoreCase("load")) {
             if ((activity.get("name") != null)) {
                 String userName =  activity.get("name");
@@ -97,8 +93,8 @@ public class EmmaUserModel extends ActivityExecutor {
                 if (mUser != null) {
                     mLogger.message("Data from user " + userName + " found!");
                 } else {
-                    JSONObject newUser = createUser(userName);
                     JSONArray users = mUserProfiles.getJSONArray("users");
+                    JSONObject newUser = createUser(userName, users.length() + 1);
                     users.put(newUser);
 
                     saveUserModel();
@@ -122,11 +118,18 @@ public class EmmaUserModel extends ActivityExecutor {
         }
     }
 
+    // set also overrides previously set values.
+    private void setUserValue(String key, AbstractActivity activity) {
+        if ((activity.get(key) != null) && (mUser.get(key) != "")) {
+            mUser.putOnce(key, activity.get(key));
+        }
+    }
+
     private long getLastDiaryEntryNumber() {
         JSONArray diary = mUser.getJSONArray("diary");
         long biggestNo = 1;
 
-        for (int i = 0; i < diary.length(); i++)  {
+        for (int i = 0; i < diary.length(); i++) {
             JSONObject item = diary.getJSONObject(i);
             biggestNo = (item.getLong("no") > biggestNo) ? item.getLong("no") : biggestNo;
         }
@@ -143,11 +146,12 @@ public class EmmaUserModel extends ActivityExecutor {
         return null;
     }
 
-    private JSONObject createUser(String name) {
+    private JSONObject createUser(String name, long id) {
         JSONObject user = new JSONObject();
 
         // initial user data
         user.put("name", name);
+        user.put("id", id);
         user.put("break", "unknown");
         user.put("type", "unknown");
         user.put("therapy", "unknown");
@@ -206,7 +210,7 @@ public class EmmaUserModel extends ActivityExecutor {
             JSONArray jsonUserArray = new JSONArray();
 
             // user
-            jsonUserArray.put(createUser("unknown"));
+            jsonUserArray.put(createUser("unknown", 0));
             jsonOut.put("users", jsonUserArray);
 
             input = jsonOut.toString();
