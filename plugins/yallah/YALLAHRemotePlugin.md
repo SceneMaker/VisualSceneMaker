@@ -2,7 +2,7 @@
 
 This VSM plugin implements the communication with a YALLAH character in Unity.
 
-The communication is based on WebSockets, allowing for a communication also with WebPages.
+The communication uses WebSockets, allowing for a communication also with WebPages.
 
 
 ## Messages
