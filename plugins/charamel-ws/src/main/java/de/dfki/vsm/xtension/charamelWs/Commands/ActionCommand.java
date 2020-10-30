@@ -1,12 +1,16 @@
-package de.dfki.vsm.xtension.charamelWs;
+package de.dfki.vsm.xtension.charamelWs.Commands;
 
 import java.util.UUID;
 
-public class WaveCommand {
+abstract class ActionCommand implements ICommand {
     private final UUID animation_uuid;
     private final UUID timeline_uuid;
+    private final String path;
+    private final String filename;
 
-    public WaveCommand() {
+    public ActionCommand(String path, String filename) {
+        this.path = path;
+        this.filename = filename;
         this.animation_uuid = UUID.randomUUID();
         this.timeline_uuid = UUID.randomUUID();
     }
@@ -21,7 +25,7 @@ public class WaveCommand {
                 "      \"type\": \"timeline-element\",\n" +
                 "      \"subtype\": \"motion\",\n" +
                 "      \"uuid\": \"" + timeline_uuid + "\",\n" +
-                "      \"name\": \"greet01.glb\",\n" +
+                "      \"name\": \"" + filename + "\",\n" +
                 "      \"track\": \"motions1_uuid\",\n" +
                 "      \"timestamp\": 0,\n" +
                 "      \"duration\": 2400,\n" +
@@ -29,7 +33,7 @@ public class WaveCommand {
                 "        \"attack\": 500,\n" +
                 "        \"decay\": 500,\n" +
                 "        \"speed\": 1,\n" +
-                "        \"path\": \"humanoid/interaction/greet/greet01.glb\"\n" +
+                "        \"path\": \"" + path + filename + "\"\n" +
                 "      }\n" +
                 "    }\n" +
                 "  ]\n" +
