@@ -1,4 +1,4 @@
-package de.dfki.vsm.xtension.charamelWs;
+package de.dfki.vsm.xtension.charamelWs.Commands;
 
 import java.util.UUID;
 

@@ -1,5 +1,7 @@
 package de.dfki.vsm.xtension.charamelWs;
 
+import de.dfki.vsm.xtension.charamelWs.Commands.SpeakCommand;
+
 import java.util.UUID;
 
 class Strings {
