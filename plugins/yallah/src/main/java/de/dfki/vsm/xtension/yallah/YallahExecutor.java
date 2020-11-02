@@ -22,17 +22,20 @@ import java.util.*;
 
 public class YallahExecutor extends ActivityExecutor implements ExportableProperties {
 
-    // The properties
+    /** The properties of ths plugin. */
     private final YallahProperties mYallahProperties = new YallahProperties() ;
 
-    // The websocket server reading messages coming from the YALLAH visualizer
+    /** The websocket server reading messages coming from the YALLAH visualizer. */
     private Javalin mWebSocketServer;
 
-    // The connection instance associated to the connected client
+    /** The connection instance. Not null when a connection os established with a remote client. */
     private WsConnectContext mSocketConnectCtx = null;
 
 
-    // The map of activity worker
+    /** The map of activity workers. This is used to keep track of threads waiting for the sentences to be spoken on the client.
+     * The key is a unique identifier of the spoken text.
+     * The value is the reference to the thread waiting inside the `execute()` method.
+     */
     private final Map<String, ActivityWorker> mActivityWorkerMap = new HashMap<>();
 
 
@@ -89,7 +92,16 @@ public class YallahExecutor extends ActivityExecutor implements ExportableProper
             });
 
             // Server error
-            ws.onError(ctx -> mLogger.failure("Error handling ws message exchange:" + ctx));
+            ws.onError(ctx -> {
+                mLogger.failure("Error handling ws message exchange:" + ctx) ;
+                mLogger.message("Remove active activity actions to avoid deadlocks...");
+                synchronized (mActivityWorkerMap) {
+                    mActivityWorkerMap.clear();
+                    // wake me up ..
+                    mActivityWorkerMap.notifyAll();
+                }
+
+            });
         });
 
 
@@ -114,12 +126,12 @@ public class YallahExecutor extends ActivityExecutor implements ExportableProper
 
 
         //
-        mLogger.message("YALLAH launched.");
+        mLogger.message("YALLAH plugin launched.");
     }
 
     @Override
     public void unload() {
-        mLogger.message("YALLAH unloading....");
+        mLogger.message("YALLAH plugin unloading....");
 
         //
         // TODO -- 1. Stop the YALLAH application (Not much to do if it is a WebPage)
@@ -128,7 +140,7 @@ public class YallahExecutor extends ActivityExecutor implements ExportableProper
         mWebSocketServer.stop();
         mSocketConnectCtx = null ;
 
-        mLogger.message("YALLAH unloaded.");
+        mLogger.message("YALLAH plugin unloaded.");
     }
 
 
@@ -157,28 +169,43 @@ public class YallahExecutor extends ActivityExecutor implements ExportableProper
             SpeechActivity sa = (SpeechActivity) activity;
 
             String punct = sa.getPunct() ;
-            String text_only = sa.getTextOnly(MARKER) ;
+            String text_only = sa.getTextOnly(MARKER).trim() ;
             LinkedList<String> time_marks = sa.getTimeMarks(MARKER);
 
             mLogger.message("This is a Speech Activity. text only: '" + text_only + "'; punct: '" + punct + "'"
                     + "There are " + time_marks.size() + " time marks") ;
             time_marks.forEach(mLogger::message);
 
-            //
-            // Send the sentence to the client
-            if(mSocketConnectCtx != null) {
-                String text = activity.getText() ;
+            if (text_only.isEmpty()) {
+                //
+                // If text is empty, there is no need to send the marker to the client:
+                // execute them all of them immediately.
+
+                LinkedList<String> timemarks = sa.getTimeMarks(YallahExecutor.MARKER);
+                for (String tm : timemarks) {
+                    // mLogger.warning("Directly executing activity at timemark " + tm);
+                    mProject.getRunTimePlayer().getActivityScheduler().handle(tm);
+                }
+
+            } else {
+
+                //
+                // Send the sentence to the client
+                String text = activity.getText();
 
                 String json_string = "{\n"
                         + "\"type\": \"text\",\n"
                         + "\"text\": \"" + text + "\"\n"
-                        + "}" ;
+                        + "}";
 
-                mSocketConnectCtx.send(json_string);
+                if (mSocketConnectCtx != null) {
+                    mSocketConnectCtx.send(json_string);
+                }
             }
         } else {
             //
-            // It is an [ACTION (with parameters)]
+            // It is an [ACTION (with features)]
+            // aka [COMMAND (with parameters)]
 
             String cmd = activity.getName() ;
             final LinkedList<ActionFeature> features = activity.getFeatures();
@@ -213,13 +240,19 @@ public class YallahExecutor extends ActivityExecutor implements ExportableProper
     private void handleMessage(@NotNull WsMessageContext wsMessageContext) {
         String message = wsMessageContext.message();
 
-        mLogger.message("YALLAH: Tell VSM activity scheduler to handle action represented by time marker >" + message + "<");
-        if (mProject.getRunTimePlayer().getActivityScheduler().hasMarker(message)) {
-            mProject.getRunTimePlayer().getActivityScheduler().handle(message);
-        } else {
-            mLogger.failure("Marker has already been processed!");
-        }
+        if(message.startsWith("$")) {
+            //
+            // This is received when the client encountered a marker while speaking.
 
+            mLogger.message("YALLAH: Tell VSM activity scheduler to handle action represented by time marker >" + message + "<");
+            if (mProject.getRunTimePlayer().getActivityScheduler().hasMarker(message)) {
+                mProject.getRunTimePlayer().getActivityScheduler().handle(message);
+            } else {
+                mLogger.failure("Marker has already been processed!");
+            }
+        } else {
+            mLogger.warning("Received unknown message format from the client '" + message + "'. Ignoring.");
+        }
 
     }
 
