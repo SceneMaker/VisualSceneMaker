@@ -31,6 +31,8 @@ public class YallahExecutor extends ActivityExecutor implements ExportableProper
     /** The connection instance. Not null when a connection os established with a remote client. */
     private WsConnectContext mSocketConnectCtx = null;
 
+    /** The incremental counter used as unique ID for the sentences to speak, and as thread identifier. */
+    private int mSentenceCounter = 0 ;
 
     /** The map of activity workers. This is used to keep track of threads waiting for the sentences to be spoken on the client.
      * The key is a unique identifier of the spoken text.
@@ -150,19 +152,6 @@ public class YallahExecutor extends ActivityExecutor implements ExportableProper
         mLogger.message("YALLAH Agent '" + activity.getActor() + "' said: " + activity.getText());
         mLogger.message("Activity name: " + activity.getName() + ", type: " + activity.getType() + ", features: " + activity.getFeatures());
 
-        //activity.getSubstitutions().forEach((k, v) -> subs += k + ", " + v + "; ");
-        if(activity.getSubstitutions() != null) {
-            String subs = "";
-            for (Map.Entry<String, String> e : activity.getSubstitutions().entrySet()) {
-                String k = e.getKey();
-                String v = e.getValue();
-                subs += k + ", " + v + "; ";
-            }
-            mLogger.message(subs);
-        } else {
-            mLogger.message("No substitutions");
-        }
-
         if (activity instanceof SpeechActivity) {
             //
             // SPEECH activity
@@ -193,15 +182,39 @@ public class YallahExecutor extends ActivityExecutor implements ExportableProper
                 // Send the sentence to the client
                 String text = activity.getText();
 
+                mSentenceCounter++ ;
+
                 String json_string = "{\n"
                         + "\"type\": \"text\",\n"
-                        + "\"text\": \"" + text + "\"\n"
+                        + "\"text\": \"" + text + "\",\n"
+                        + "\"id\": \"" + mSentenceCounter + "\"\n"
                         + "}";
+
+                // Make text activity blocking
+                //activity.setType(AbstractActivity.Type.blocking);
+
 
                 if (mSocketConnectCtx != null) {
                     mSocketConnectCtx.send(json_string);
+
+                    // Wait for client answer
+                    synchronized (mActivityWorkerMap) {
+                        // organize wait for feedback if (activity instanceof SpeechActivity) {
+                        ActivityWorker cAW = (ActivityWorker) Thread.currentThread();
+                        mActivityWorkerMap.put(mSentenceCounter + "", cAW);
+
+                        // wait until we get notified
+                        while (mActivityWorkerMap.containsValue(cAW)) {
+                            try {
+                                mActivityWorkerMap.wait();
+                            } catch (InterruptedException exc) {
+                                mLogger.failure(exc.toString());
+                            }
+                        }
+                    }
                 }
             }
+
         } else {
             //
             // It is an [ACTION (with features)]
@@ -250,6 +263,21 @@ public class YallahExecutor extends ActivityExecutor implements ExportableProper
             } else {
                 mLogger.failure("Marker has already been processed!");
             }
+        } else if(message.startsWith("@")) {
+            //
+            // The client has finished speaking the sentence
+            String text_id = message.substring(1) ;
+            mLogger.message("Sentence " + text_id + " finished");
+
+            // Remove the entry from the map and notify the threads to check again.
+            synchronized (mActivityWorkerMap) {
+                if (mActivityWorkerMap.containsKey(text_id)) {
+                    //mLogger.message("Removing id from active activities ids ...");
+                    mActivityWorkerMap.remove(text_id);
+                }
+                mActivityWorkerMap.notifyAll();
+            }
+
         } else {
             mLogger.warning("Received unknown message format from the client '" + message + "'. Ignoring.");
         }

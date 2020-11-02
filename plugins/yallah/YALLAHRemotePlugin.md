@@ -4,10 +4,37 @@ This VSM plugin implements the communication with a YALLAH character in Unity.
 
 The communication uses WebSockets, allowing for a communication also with WebPages.
 
+## Message exchange dynamics
 
+Between `YALLAH <-- and --> VSM`
+* `<--` VSM parse a sentence:
+  * substitutes actions with markers;
+  * split it according to punctuation;
+  * and send one message per clause;
+  * when a marker mesage is received, converts it into action and send a message with action name and parameters.
+* `-->` YALLAH must:
+  * use the text to speak out the sentence;
+  * send a message to VSM each time a marker is met;
+  * send a message to VSM when the sentence has been spoken out completely.
+
+Example: "Bye [PlayAnimationClip name=wave], and hope to see [PlayAnimationClip name=point_forward] you soon."
+
+* `<--` text: "Bye $1", id: 23
+* `-->` "$1"
+* `<--` command: "PlayAnimationClip", parameters: "name=wave"
+* `-->` "@23"
+* `<--` "and hope to see $2 you soon", id: 25
+* `-->` "$2"
+* `<--` command: "PlayAnimationClip", parameters: "name=point_forward"
+* `-->` "@24"
+* at this point VSM can switch to the next state
+
+_Beware: text speech is blocking, actions NOT! If an action is still executing while the sentence finishes, it might overlap with actions of the next sentence._
+
+    
 ## Messages
 
-Messages can be of 2 types: text or command.
+Messages traveling from VSM to YALLAH can be of 2 types: text or command.
 
 * A text is the text with the actions substituted by markers.
   * Example:
@@ -21,11 +48,19 @@ All messages will be structured as JSON strings
 
 ## Message structure
 
+The messages from YALLAH to VSM a re simple text strings:
+
+* `$xx` (where xx is an integer number) is to notify that an action marker was reached;
+* `@xx` (where xx is an integer number) is to notify that a sentence utterance has finished. 
+
+The following are the structure of the JSON messages from VSM to YALLAH.
+
 For text messages:
 
 ```JSON
 {
   "type": "text",
+  "id": "integer_unique_id",
   "text": "Bye $1. Stay well, and hope to see $2 you soon."
 }
 ```
@@ -67,6 +102,7 @@ This is a subset of the API provided by the YALLAH controllers <https://github.c
   * name: string
 
 * ClearFacialExpression
+  * _no parameters_
 
 * LookAtObject
   * name: string
@@ -77,3 +113,5 @@ This is a subset of the API provided by the YALLAH controllers <https://github.c
   * z: float
   
 * StopLooking
+  * _no parameters_
+

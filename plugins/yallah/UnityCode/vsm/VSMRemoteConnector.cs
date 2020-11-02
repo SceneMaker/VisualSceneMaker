@@ -45,6 +45,30 @@ public class VSMRemoteConnector : MonoBehaviour
     private EyeHeadGazeController _eyeGazeController;
 
 
+    class MaryTTSCallback : MaryTTSController.MaryTTSListener
+    {
+        private WebSocket _webSock;
+
+        public MaryTTSCallback(WebSocket webSock)
+        {
+            this._webSock = webSock;
+        }
+
+        public void SpeechFinished(System.Object param)
+        {
+            if(this._webSock.State == WebSocketState.Open)
+            {
+                // we know that the parameter is an int.
+                // just convert it into a string
+                string msg = "@" + param.ToString();
+                Debug.Log("Speech FInished. Sending '" + msg + "'");
+                this._webSock.SendText(msg);
+            }
+        }
+    }
+
+    private MaryTTSCallback _ttsListener;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -109,6 +133,11 @@ public class VSMRemoteConnector : MonoBehaviour
         */
 
         Debug.Log("WebSocket State: " + _webSock.State);
+
+
+        // Instantiate the listener
+        this._ttsListener = new MaryTTSCallback(this._webSock);
+        this._ttsController.AddListener(this._ttsListener);
 
     }
 
@@ -185,6 +214,7 @@ public class VSMRemoteConnector : MonoBehaviour
     class VSMTextMessage: VSMmessage
     {
         public string text;
+        public string id;
     }
 
     [System.Serializable]
@@ -209,7 +239,7 @@ public class VSMRemoteConnector : MonoBehaviour
             VSMTextMessage text_msg = JsonUtility.FromJson<VSMTextMessage>(msg);
             Debug.Log("Built JSON: " + JsonUtility.ToJson(text_msg));
 
-            this._handleText(text_msg.text);
+            this._handleText(text_msg.text, int.Parse(text_msg.id));
 
 /*
             // Identify the VSM markers
@@ -293,7 +323,7 @@ public class VSMRemoteConnector : MonoBehaviour
 
     private readonly string MARKER_REGEXP = "\\$\\d+" ;
 
-    private void _handleText(string txt)
+    private void _handleText(string txt, int id)
     {
 
 
@@ -314,7 +344,7 @@ public class VSMRemoteConnector : MonoBehaviour
         if (text_only != "" && text_only != ".")
         {
             Debug.Log("Found " + markers.Count + " markers.\tSaying text: '" + text_only + "'");
-            this._ttsController.MaryTTSspeak(text_only);
+            this._ttsController.MaryTTSspeak(text_only, id);
         }
 
 
