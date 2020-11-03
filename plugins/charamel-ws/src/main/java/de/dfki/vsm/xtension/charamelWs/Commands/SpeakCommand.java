@@ -2,7 +2,7 @@ package de.dfki.vsm.xtension.charamelWs.Commands;
 
 import java.util.UUID;
 
-public class SpeakCommand {
+public class SpeakCommand implements ICommand {
     private final String text;
     private final String voice;
     private final UUID uuid;

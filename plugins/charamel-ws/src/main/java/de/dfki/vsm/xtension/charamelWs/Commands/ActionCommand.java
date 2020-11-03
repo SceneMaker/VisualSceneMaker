@@ -4,7 +4,6 @@ import java.util.UUID;
 
 abstract class ActionCommand implements ICommand {
     private final UUID animation_uuid;
-    private final UUID timeline_uuid;
     private final String path;
     private final String filename;
 
@@ -12,19 +11,13 @@ abstract class ActionCommand implements ICommand {
         this.path = path;
         this.filename = filename;
         this.animation_uuid = UUID.randomUUID();
-        this.timeline_uuid = UUID.randomUUID();
     }
 
     public String toJsonCommand() {
-        return "{\n" +
-                "  \"type\": \"animation\",\n" +
-                "  \"name\": \"\",\n" +
-                "  \"uuid\": \"" + animation_uuid + "\",\n" +
-                "  \"timeline\": [\n" +
-                "    {\n" +
+        return "    {\n" +
                 "      \"type\": \"timeline-element\",\n" +
                 "      \"subtype\": \"motion\",\n" +
-                "      \"uuid\": \"" + timeline_uuid + "\",\n" +
+                "      \"uuid\": \"" + animation_uuid + "\",\n" +
                 "      \"name\": \"" + filename + "\",\n" +
                 "      \"track\": \"motions1_uuid\",\n" +
                 "      \"timestamp\": 0,\n" +
@@ -35,9 +28,7 @@ abstract class ActionCommand implements ICommand {
                 "        \"speed\": 1,\n" +
                 "        \"path\": \"" + path + filename + "\"\n" +
                 "      }\n" +
-                "    }\n" +
-                "  ]\n" +
-                "}";
+                "    }\n";
 
     }
 }

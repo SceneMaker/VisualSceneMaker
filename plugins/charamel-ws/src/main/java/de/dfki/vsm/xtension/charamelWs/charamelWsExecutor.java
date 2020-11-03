@@ -14,7 +14,7 @@ import de.dfki.vsm.runtime.activity.scheduler.ActivityWorker;
 import de.dfki.vsm.runtime.interpreter.value.BooleanValue;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
-import de.dfki.vsm.xtension.charamelWs.Commands.WaveCommand;
+import de.dfki.vsm.xtension.charamelWs.Commands.*;
 import io.javalin.Javalin;
 import io.javalin.websocket.WsCloseContext;
 import io.javalin.websocket.WsConnectContext;
@@ -81,14 +81,14 @@ public class charamelWsExecutor extends ActivityExecutor {
                 activity.setType(AbstractActivity.Type.blocking);
 
                 // Send command object
-                 broadcast(Strings.speakCommand(mProject.getAgentConfig(activity_actor).getProperty("voice"),
-                         cmd,
-                         activity_actor));
+                broadcast(new TimeLine(
+                        new SpeakCommand(cmd, mProject.getAgentConfig(activity_actor).getProperty("voice"), activity_actor)
+                ));
                 mLogger.message("Speech command with CMD markers send ...");
 
                 // let vsm model know that character is speaking - this is dirty. it should actually be done with messages
                 if (mProject.hasVariable(mVSMCharacterSpeakingVar)) {
-                    mProject.setVariable(mVSMCharacterSpeakingVar,  new BooleanValue(true));
+                    mProject.setVariable(mVSMCharacterSpeakingVar, new BooleanValue(true));
                 }
 
                 synchronized (mActivityWorkerMap) {
@@ -129,12 +129,33 @@ public class charamelWsExecutor extends ActivityExecutor {
 
             if (name.equalsIgnoreCase("test")) {
                 mLogger.message("Testing ...");
-                broadcast(Strings.testMsg);
+                //broadcast(Strings.testMsg);
             } else if (name.equalsIgnoreCase("wave")) {
                 mLogger.message("Waving ...");
-                broadcast(new WaveCommand().toJsonCommand());
+                broadcast(new TimeLine(new WaveCommand()));
             } else if (name.equalsIgnoreCase("stop")) {
                 app.stop();
+            }
+
+            switch (name) {
+                case "camera": {
+                    String posStr = getActionFeatureValue("position", activity.getFeatures());
+                    CameraCommand.CameraPos pos;
+                    switch (posStr) {
+                        case "face":
+                            pos = CameraCommand.CameraPos.FACE;
+                            break;
+                        case "default":
+                            pos = CameraCommand.CameraPos.DEFAULT;
+                            break;
+                        case "upper":
+                            pos = CameraCommand.CameraPos.UPPER;
+                            break;
+                        default:
+                            throw new IllegalStateException("Unexpected value: " + posStr);
+                    }
+                    broadcast(new TimeLine(new CameraCommand(pos)));
+                }
             }
         }
     }
@@ -260,9 +281,9 @@ public class charamelWsExecutor extends ActivityExecutor {
         this.websockets.add(ws);
     }
 
-    private synchronized void broadcast(String msg) {
+    private synchronized void broadcast(Broadcastable msg) {
         for (WsContext ws : websockets) {
-            ws.send(msg);
+            ws.send(msg.toJson());
         }
     }
 
