@@ -150,18 +150,24 @@ public class charamelWsExecutor extends ActivityExecutor {
 
         mLogger.message(sceneflowVar);
 
-        app = Javalin.create(config -> {
-            config.server(() -> {
-                Server server = new Server();
-                ServerConnector sslConnector = null;
-                sslConnector = new ServerConnector(server, getSslContextFactory());
-                sslConnector.setPort(wss_port);
-                ServerConnector connector = new ServerConnector(server);
-                connector.setPort(ws_port);
-                server.setConnectors(new Connector[]{sslConnector, connector});
-                return server;
-            });
-        }).start();
+        if (mPathToCertificate != null) {
+            app = Javalin.create(config -> {
+                config.server(() -> {
+                    Server server = new Server();
+                    ServerConnector sslConnector = null;
+                    sslConnector = new ServerConnector(server, getSslContextFactory());
+                    sslConnector.setPort(wss_port);
+                    ServerConnector connector = new ServerConnector(server);
+                    connector.setPort(ws_port);
+                    server.setConnectors(new Connector[]{sslConnector, connector});
+                    return server;
+                });
+            }).start();
+        }
+        else {
+            app = Javalin.create(config -> config.enforceSsl = true).start(ws_port);
+        }
+
         app.ws("/ws", ws -> {
             ws.onConnect(ctx -> {
                 this.addWs(ctx);
