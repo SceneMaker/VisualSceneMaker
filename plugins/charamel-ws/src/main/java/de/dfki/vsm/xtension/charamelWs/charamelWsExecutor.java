@@ -154,7 +154,14 @@ public class charamelWsExecutor extends ActivityExecutor {
                         default:
                             throw new IllegalStateException("Unexpected value: " + posStr);
                     }
-                    broadcast(new TimeLine(new CameraCommand(pos)));
+                    broadcast(new CameraCommand(pos));
+                }
+                case "lookat": {
+                    String xString = getActionFeatureValue("x", activity.getFeatures());
+                    String yString = getActionFeatureValue("y", activity.getFeatures());
+                    double xPos = Double.parseDouble(xString);
+                    double yPos = Double.parseDouble(yString);
+                    broadcast(new LookCommand(xPos, yPos));
                 }
             }
         }
