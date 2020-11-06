@@ -31,13 +31,13 @@ import java.util.*;
  * @author Lenny Händler, Patrick Gebhard
  */
 public class charamelWsExecutor extends ActivityExecutor {
+    static long sUtteranceId = 0;
     // The map of activity worker
     private final Map<String, ActivityWorker> mActivityWorkerMap = new HashMap<>();
     // The singleton logger instance
     private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
     private final ArrayList<WsConnectContext> websockets = new ArrayList<>();
     private Javalin app;
-    static long sUtteranceId = 0;
     private String mPathToCertificate = "";
     private String mVSMCharacterSpeakingVar = "";
 
@@ -120,49 +120,205 @@ public class charamelWsExecutor extends ActivityExecutor {
 
                 // let vsm model know that character is speaking - this is dirty. it should actually be done with messages
                 if (mProject.hasVariable(mVSMCharacterSpeakingVar)) {
-                    mProject.setVariable(mVSMCharacterSpeakingVar,  new BooleanValue(false));
+                    mProject.setVariable(mVSMCharacterSpeakingVar, new BooleanValue(false));
                 }
             }
         } else {
             final String name = activity.getName();
-            final LinkedList<ActionFeature> features = activity.getFeatures();
 
             if (name.equalsIgnoreCase("test")) {
                 mLogger.message("Testing ...");
                 //broadcast(Strings.testMsg);
-            } else if (name.equalsIgnoreCase("wave")) {
-                mLogger.message("Waving ...");
-                broadcast(new TimeLine(new WaveCommand()));
             } else if (name.equalsIgnoreCase("stop")) {
                 app.stop();
             }
 
-            switch (name) {
-                case "camera": {
-                    String posStr = getActionFeatureValue("position", activity.getFeatures());
-                    CameraCommand.CameraPos pos;
-                    switch (posStr) {
-                        case "face":
-                            pos = CameraCommand.CameraPos.FACE;
-                            break;
-                        case "default":
-                            pos = CameraCommand.CameraPos.DEFAULT;
-                            break;
-                        case "upper":
-                            pos = CameraCommand.CameraPos.UPPER;
-                            break;
-                        default:
-                            throw new IllegalStateException("Unexpected value: " + posStr);
-                    }
-                    broadcast(new CameraCommand(pos));
-                }
-                case "lookat": {
-                    String xString = getActionFeatureValue("x", activity.getFeatures());
-                    String yString = getActionFeatureValue("y", activity.getFeatures());
-                    double xPos = Double.parseDouble(xString);
-                    double yPos = Double.parseDouble(yString);
-                    broadcast(new LookCommand(xPos, yPos));
-                }
+            parseAction(name, activity.getFeatures());
+        }
+    }
+
+    private void parseAction(String name, LinkedList<ActionFeature> f) {
+        switch (name) {
+            case "camera": {
+                String posStr = getActionFeatureValue("position", f);
+                CameraCommand.CameraPos pos = CameraCommand.CameraPos.valueOf(posStr);
+                broadcast(new CameraCommand(pos));
+                break;
+            }
+            case "lookat": {
+                String xString = getActionFeatureValue("x", f);
+                String yString = getActionFeatureValue("y", f);
+                double xPos = Double.parseDouble(xString);
+                double yPos = Double.parseDouble(yString);
+                broadcast(new LookCommand(xPos, yPos));
+                break;
+            }
+            case "armscrossed": {
+                broadcast(new TimeLine(new ArmscrossedCommand()));
+                break;
+            }
+            case "armbewegungen": {
+                String directionString = getActionFeatureValue("direction", f);
+                Direction direction = Direction.valueOf(directionString);
+                broadcast(new TimeLine(new ArmbewegungenCommand(direction)));
+                break;
+            }
+            case "background": {
+                String url = getActionFeatureValue("url", f);
+                broadcast(new BackgroundCommand(url));
+                break;
+            }
+            case "converse": {
+                String directionString = getActionFeatureValue("direction", f);
+                Direction direction = Direction.valueOf(directionString);
+                new ConverseCommand(direction);
+                break;
+            }
+            case "countleft": {
+                String numberString = getActionFeatureValue("number", f);
+                int number = Integer.parseInt(numberString);
+                broadcast(new TimeLine(new CountLeftCommand(number)));
+                break;
+            }
+            case "explain": {
+                String numberString = getActionFeatureValue("number", f);
+                int number = Integer.parseInt(numberString);
+                broadcast(new TimeLine(new ExplainCommand(number)));
+                break;
+            }
+            case "foldhands": {
+                broadcast(new TimeLine(new FoldhandsCommand()));
+                break;
+            }
+            case "hairback": {
+                broadcast(new TimeLine(new HairbackCommand()));
+                break;
+            }
+            case "handontable": {
+                broadcast(new TimeLine(new HandontableCommand()));
+                break;
+            }
+            case "handscircle": {
+                broadcast(new TimeLine(new HandscircleCommand()));
+                break;
+            }
+            case "handstogether": {
+                broadcast(new TimeLine(new HandstogetherCommand()));
+                break;
+            }
+            case "introduce": {
+                String numberString = getActionFeatureValue("number", f);
+                int number = Integer.parseInt(numberString);
+                broadcast(new TimeLine(new IntroduceCommand(number)));
+                break;
+            }
+            case "leftfist": {
+                broadcast(new TimeLine(new LeftfistCommand()));
+                break;
+            }
+            case "legscrossed": {
+                String directionString = getActionFeatureValue("direction", f);
+                Direction direction = Direction.valueOf(directionString);
+                broadcast(new TimeLine(new LegcrossedCommand(direction)));
+                break;
+            }
+            case "lookatdirection": {
+                String clockXString = getActionFeatureValue("clockX", f);
+                String clockYString = getActionFeatureValue("clockY", f);
+                int clockX = Integer.parseInt(clockXString);
+                int clockY = Integer.parseInt(clockYString);
+                broadcast(new TimeLine(new LookAtDirectionCommand(clockX, clockY)));
+                break;
+            }
+            case "lookleft": {
+                String steppingString = getActionFeatureValue("stepping", f);
+                int stepping = Integer.parseInt(steppingString);
+                broadcast(new TimeLine(new LookLeftCommand(stepping)));
+                break;
+            }
+            case "lookright": {
+                String steppingString = getActionFeatureValue("stepping", f);
+                int stepping = Integer.parseInt(steppingString);
+                broadcast(new TimeLine(new LookRightCommand(stepping)));
+                break;
+            }
+            case "luemmeln": {
+                String variantString = getActionFeatureValue("variant", f);
+                int variant = Integer.parseInt(variantString);
+                broadcast(new TimeLine(new LuemmelnCommand(variant)));
+                break;
+            }
+            case "nodd": {
+                broadcast(new TimeLine(new NoddCommand()));
+                break;
+            }
+            case "openarm": {
+                broadcast(new TimeLine(new OpenArmCommand()));
+                break;
+            }
+            case "openfists": {
+                broadcast(new TimeLine(new OpenfistsCommand()));
+                break;
+            }
+            case "pointopenpalm": {
+                String directionString = getActionFeatureValue("direction", f);
+                Direction direction = Direction.valueOf(directionString);
+                broadcast(new TimeLine(new PointOpenPalmCommand(direction)));
+                break;
+            }
+            case "pointovershoulder": {
+                String directionString = getActionFeatureValue("direction", f);
+                Direction direction = Direction.valueOf(directionString);
+                broadcast(new TimeLine(new PointovershoulderCommand(direction)));
+                break;
+            }
+            case "protectassertive": {
+                broadcast(new TimeLine(new ProtectAssertiveCommand()));
+                break;
+            }
+            case "protectdefensive": {
+                broadcast(new TimeLine(new ProtectDefensiveCommand()));
+                break;
+            }
+            case "shakehead": {
+                broadcast(new TimeLine(new ShakeheadCommand()));
+                break;
+            }
+            case "showpalm": {
+                broadcast(new TimeLine(new ShowPalmCommand()));
+                break;
+            }
+            case "showpalmdirection": {
+                String directionString = getActionFeatureValue("direction", f);
+                Direction direction = Direction.valueOf(directionString);
+                broadcast(new TimeLine(new ShowPalmDirectionCommand(direction)));
+                break;
+            }
+            case "sitbrave": {
+                broadcast(new TimeLine(new SitBraveCommand()));
+                break;
+            }
+            case "sit": {
+                broadcast(new TimeLine(new SitCommand()));
+                break;
+            }
+            case "sitnodd": {
+                broadcast(new TimeLine(new SitNoddCommand()));
+                break;
+            }
+            case "sittalk": {
+                String stepString = getActionFeatureValue("step", f);
+                int step = Integer.parseInt(stepString);
+                broadcast(new TimeLine(new SitTalkCommand(step)));
+                break;
+            }
+            case "thinking": {
+                broadcast(new TimeLine(new ThinkingCommand()));
+                break;
+            }
+            case "wave": {
+                broadcast(new TimeLine(new WaveCommand()));
+                break;
             }
         }
     }
@@ -191,8 +347,7 @@ public class charamelWsExecutor extends ActivityExecutor {
                     return server;
                 });
             }).start();
-        }
-        else {
+        } else {
             app = Javalin.create(config -> config.enforceSsl = true).start(ws_port);
         }
 
