@@ -152,6 +152,9 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
         if (mProject.hasVariable(mSceneflowInfoVar)) {
             mProject.setVariable(mSceneflowInfoVar, message);
         }
+        if (message.equals("stopwatch")) {
+            broadcast("./ui_arbeitszeit.html");
+        }
     }
 
     private synchronized void removeWs(WsCloseContext ctx) {
