@@ -1,6 +1,6 @@
 package de.dfki.vsm.xtension.charamelWs.Commands;
 
-public class CameraCommand implements ICommand {
+public class CameraCommand implements Broadcastable {
     private final CameraPos cameraPos;
 
     public CameraCommand(CameraPos cameraPos) {
@@ -8,7 +8,7 @@ public class CameraCommand implements ICommand {
     }
 
     @Override
-    public String toJsonCommand() {
+    public String toJson() {
         return String.format("{\n" +
                 "  type: 'camera',\n" +
                 "  name: '%s',\n" +
