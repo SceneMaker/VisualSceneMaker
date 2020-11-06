@@ -1,6 +1,6 @@
 package de.dfki.vsm.xtension.charamelWs.Commands;
 
-public class BackgroundCommand implements ICommand {
+public class BackgroundCommand implements Broadcastable {
     private final String url;
 
     public BackgroundCommand(String url) {
@@ -8,7 +8,7 @@ public class BackgroundCommand implements ICommand {
     }
 
     @Override
-    public String toJsonCommand() {
+    public String toJson() {
         return String.format("{\n" +
                 "  type: 'background',\n" +
                 "  url:\n" +
