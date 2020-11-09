@@ -5,4 +5,12 @@ tmp/
 /log/stickman.log
 .idea/*
 .gradle
+
+# Ignoring all build directories
 /build/
+/core/build/
+/plugins/AndroidGui/build/
+/plugins/charamel-ws/build/
+/plugins/emma-user-model/build/
+/plugins/htmlgui-ws/build/
+/plugins/ssj/build/
