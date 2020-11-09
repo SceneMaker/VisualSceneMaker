@@ -155,6 +155,14 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
         if (message.equals("stopwatch")) {
             broadcast("./ui_arbeitszeit.html");
         }
+
+        else if (message.equals("calendar")) {
+            broadcast("./ui_stimmungsbarometer.html");
+        }
+
+        else if (message.equals("home")) {
+            broadcast("./index.html");
+        }
     }
 
     private synchronized void removeWs(WsCloseContext ctx) {
