@@ -5,4 +5,4 @@ tmp/
 /log/stickman.log
 .idea/*
 .gradle
-/build/
+build/
