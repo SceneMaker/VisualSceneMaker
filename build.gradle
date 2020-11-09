@@ -9,7 +9,7 @@ compileJava {options.encoding = "UTF-8"}
 javadoc { options.encoding = 'UTF-8' }
 
 group 'de.dfki'
-version '4.0.1-' + versioning.info.full
+version '4.1.0-' + versioning.info.full
 
 sourceCompatibility = 11
 
