@@ -5,7 +5,4 @@ tmp/
 /log/stickman.log
 .idea/*
 .gradle
-
-/build/
-/core/build/
-/plugins/AndroidGui/build/
+build/
