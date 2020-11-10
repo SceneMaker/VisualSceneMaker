@@ -5,12 +5,4 @@ tmp/
 /log/stickman.log
 .idea/*
 .gradle
-
-.DS_Store
-
-/build/
-/core/build/
-/plugins/decad/build/
-/plugins/extensionAPI/build/
-/plugins/AndroidGui/build/
-/plugins/yallah/build
+build/
