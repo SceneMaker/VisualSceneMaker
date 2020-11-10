@@ -57,7 +57,7 @@ public class ExtensionsFromJar {
      */
     public boolean isClassAnActivityExecutor(String className) {
         return new Reflections(packageName).getSubTypesOf(ActivityExecutor.class).stream()
-                .anyMatch(aClass -> aClass.getSimpleName().equals(className));
+                .anyMatch(aClass -> aClass.getCanonicalName().equals(className));
     }
 
 }
