@@ -64,7 +64,6 @@ public class YallahExecutor extends ActivityExecutor implements ExportableProper
         final int port = Integer.parseInt(Objects.requireNonNull(mConfig.getProperty("port")));
         mLogger.message("Starting the WebSocket server on port " + port + "...");
 
-        //mWebSocketServer = Javalin.create(config -> config.enforceSsl = true).start(port);
         mWebSocketServer = Javalin.create().start(port);
 
         // This sequence sets up what the websocket server must do when events occur
@@ -115,11 +114,9 @@ public class YallahExecutor extends ActivityExecutor implements ExportableProper
             case None:
                 break ;
             case App:
-                // TODO -- launch a standalone app
                 mLogger.failure("Launch mode " + lm.toString() + "not supported yet. YALLAH not launched.");
                 break;
             case WebPage:
-                // TODO -- run an internal web server that provides the webpages and open them in a browser.
                 mLogger.failure("Launch mode " + lm.toString() + "not supported yet. YALLAH not launched.");
                 break;
             default:
@@ -135,10 +132,7 @@ public class YallahExecutor extends ActivityExecutor implements ExportableProper
     public void unload() {
         mLogger.message("YALLAH plugin unloading....");
 
-        //
-        // TODO -- 1. Stop the YALLAH application (Not much to do if it is a WebPage)
-
-        // 2. Shutdown the WebSocket server
+        // Shutdown the WebSocket server
         mWebSocketServer.stop();
         mSocketConnectCtx = null ;
 
@@ -172,7 +166,6 @@ public class YallahExecutor extends ActivityExecutor implements ExportableProper
 
                 LinkedList<String> timemarks = sa.getTimeMarks(YallahExecutor.MARKER);
                 for (String tm : timemarks) {
-                    // mLogger.warning("Directly executing activity at timemark " + tm);
                     mProject.getRunTimePlayer().getActivityScheduler().handle(tm);
                 }
 
@@ -182,19 +175,14 @@ public class YallahExecutor extends ActivityExecutor implements ExportableProper
                 // Send the sentence to the client
                 String text = activity.getText();
 
-                mSentenceCounter++ ;
-
-                String json_string = "{\n"
-                        + "\"type\": \"text\",\n"
-                        + "\"text\": \"" + text + "\",\n"
-                        + "\"id\": \"" + mSentenceCounter + "\"\n"
-                        + "}";
-
-                // Make text activity blocking
-                //activity.setType(AbstractActivity.Type.blocking);
-
-
                 if (mSocketConnectCtx != null) {
+
+                    String json_string = "{\n"
+                            + "\"type\": \"text\",\n"
+                            + "\"text\": \"" + text + "\",\n"
+                            + "\"id\": \"" + mSentenceCounter + "\"\n"
+                            + "}";
+
                     mSocketConnectCtx.send(json_string);
 
                     // Wait for client answer
@@ -211,6 +199,10 @@ public class YallahExecutor extends ActivityExecutor implements ExportableProper
                                 mLogger.failure(exc.toString());
                             }
                         }
+
+                        // This must stay in the synch block.
+                        mSentenceCounter++;
+
                     }
                 }
             }
