@@ -6,3 +6,5 @@ include 'plugins:charamel-ws'
 include 'plugins:htmlgui-ws'
 include 'plugins:emma-user-model'
 include 'plugins:ssj'
+include 'plugins:odp'
+
