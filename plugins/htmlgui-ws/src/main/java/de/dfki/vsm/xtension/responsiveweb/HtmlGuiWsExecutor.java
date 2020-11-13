@@ -14,7 +14,6 @@ import de.dfki.vsm.runtime.activity.scheduler.ActivityWorker;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
 import io.javalin.Javalin;
-import io.javalin.core.JavalinConfig;
 import io.javalin.http.staticfiles.Location;
 import io.javalin.websocket.WsCloseContext;
 import io.javalin.websocket.WsConnectContext;
@@ -113,24 +112,41 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
         mSceneflowInfoVar = mConfig.getProperty("sceneflowInfoVar");
         mPathToCertificate = mConfig.getProperty("certificate");
 
-        app = Javalin.create(config -> {
-            config.server(() -> {
-                Server server = new Server();
-                ServerConnector sslConnector = null;
-                sslConnector = new ServerConnector(server, getSslContextFactory());
-                sslConnector.setPort(wss_port);
-                ServerConnector connector = new ServerConnector(server);
-                connector.setPort(ws_port);
-                ServerConnector htmlConnector = new ServerConnector(server);
-                htmlConnector.setPort(html_port);
-                server.setConnectors(new Connector[]{sslConnector, connector, htmlConnector});
-                config.addStaticFiles(guiFiles, Location.EXTERNAL);
-                return server;
-            });
-        }).start();
+        if (mPathToCertificate != null) {
+            app = Javalin.create(config -> {
+                config.server(() -> {
+                    Server server = new Server();
+                    ServerConnector sslConnector = null;
+                    sslConnector = new ServerConnector(server, getSslContextFactory());
+                    sslConnector.setPort(wss_port);
+                    ServerConnector connector = new ServerConnector(server);
+                    connector.setPort(ws_port);
+                    ServerConnector htmlConnector = new ServerConnector(server);
+                    htmlConnector.setPort(html_port);
+                    server.setConnectors(new Connector[]{sslConnector, connector, htmlConnector});
+                    config.addStaticFiles(guiFiles, Location.EXTERNAL);
+                    return server;
+                });
+            }).start();
+        } else {
+            app = Javalin.create(config -> {
+                config.server(() -> {
+                    Server server = new Server();
+                    ServerConnector connector = new ServerConnector(server);
+                    connector.setPort(ws_port);
+                    ServerConnector htmlConnector = new ServerConnector(server);
+                    htmlConnector.setPort(html_port);
+                    server.setConnectors(new Connector[]{connector, htmlConnector});
+                    config.addStaticFiles(guiFiles, Location.EXTERNAL);
+                    return server;
+                });
+            }).start();
+        }
+
         app.get("/", ctx -> {
             ctx.redirect("/index.html");
         });
+
         app.ws("/ws", ws -> {
             ws.onConnect(ctx -> {
                 this.addWs(ctx);
