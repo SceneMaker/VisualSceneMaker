@@ -6,3 +6,7 @@ tmp/
 .idea/*
 .gradle
 build/
+
+#
+# MacOS stuff
+.DS_Store
