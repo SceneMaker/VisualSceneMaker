@@ -39,6 +39,9 @@ public final class ReactivePlayer extends RunTimePlayer {
     // The runtime timer
     //private RunTimeTimer mTimer = null;
 
+    // PG: 18.11.2020 global Sceneflow variable for the whole turn information.
+    private String mVSMCharacterTurnVar = "turn_utterance";
+
     // Create the scene player
     public ReactivePlayer(
             final PlayerConfig config,
@@ -182,6 +185,10 @@ public final class ReactivePlayer extends RunTimePlayer {
                     // Serially play the utterances
                     for (SceneUttr uttr : turn.getUttrList()) {
 
+                        // PG: 18.11.2020 let vsm model know what the current character is speaking - this is dirty. it should actually be done with messages
+                        if (mProject.hasVariable(mVSMCharacterTurnVar)) {
+                            mProject.setVariable(mVSMCharacterTurnVar, turn.getCleanText());
+                        }
                         //mLogger.message("Utterance " + uttr.getText().trim());
                         final LinkedList<String> textBuilder = new LinkedList<>();
                         final LinkedList<ActivityWorker> observedWorkerList = new LinkedList<>();
@@ -231,7 +238,7 @@ public final class ReactivePlayer extends RunTimePlayer {
                         }
                         // 
                         final String punctuation = uttr.getPunctuationMark();
-                        // mLogger.message("Scheduling Speech Activity:\n" + textBuilder + "");
+                        mLogger.message("Scheduling Speech Activity:\n" + textBuilder + "");
                         // Schedule the activity
 
                         mScheduler.schedule(
@@ -242,8 +249,10 @@ public final class ReactivePlayer extends RunTimePlayer {
                                         textBuilder,
                                         punctuation),
                                 turnActorExecutor);
+                        mLogger.message("Check if thread is interupted ...");
                         // Check for interruption
                         if (isDone()) {
+                            mLogger.message("It is interupted ...");
                             return;
                         }
                     }
@@ -251,30 +260,32 @@ public final class ReactivePlayer extends RunTimePlayer {
             }
         };
         // Start the playback task
+        mLogger.message("Start worker thread (task) ...");
         worker.start();
 
         // Wait for playback task
         boolean finished = false;
+        mLogger.message("Wait for worker thread being finished ...");
         while (!finished) {
             try {
                 // Print some information
-                //mLogger.message("Awaiting player worker '" + worker + "'");
+                mLogger.message("Awaiting player worker '" + worker + "'");
                 // Join the playback task
                 worker.join();
                 // Continue after joining
                 finished = true;
                 // Print some information
-                //mLogger.message("Joining player worker '" + worker + "'");
+                mLogger.message("Joining player worker '" + worker + "'");
             } catch (final InterruptedException exc) {
                 // Print some information
-                //mLogger.warning("Aborting player worker '" + worker + "'");
+                mLogger.warning("Aborting player worker '" + worker + "'");
                 // Terminate playback task
                 worker.abort();
             }
         }
 
         // Print some information
-        //mLogger.message("Continuing '" + process + "'");
+        mLogger.message("Continuing '" + process + "'");
     }
 
     // Translate the arguments
