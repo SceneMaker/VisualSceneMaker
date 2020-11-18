@@ -102,7 +102,6 @@ public class charamelWsExecutor extends ActivityExecutor {
                         if (activity.getType() == AbstractActivity.Type.blocking) { // Wait only if activity is blocking
                             // wait until we got feedback
                             mLogger.message("ActivityWorker waiting for feedback on action with id " + vmuid + "...");
-
                             while (mActivityWorkerMap.containsValue(cAW)) {
                                 try {
                                     mActivityWorkerMap.wait();
@@ -110,6 +109,7 @@ public class charamelWsExecutor extends ActivityExecutor {
                                     mLogger.failure(exc.toString());
                                 }
                             }
+                            mLogger.message("ActivityWorker proceed - got feedback on blocking action with id " + vmuid + "...");
                         } else {
                             mLogger.message("ActivityWorker does not feedback on action with id " + vmuid + " since action is non-blocking ...");
                         }
@@ -468,6 +468,6 @@ public class charamelWsExecutor extends ActivityExecutor {
                 .filter(af -> af.getKey().equalsIgnoreCase(name))
                 .findFirst()
                 .map(ActionFeature::getVal)
-                .orElse("");
+                .orElse("").replace("'", "");
     }
 }
