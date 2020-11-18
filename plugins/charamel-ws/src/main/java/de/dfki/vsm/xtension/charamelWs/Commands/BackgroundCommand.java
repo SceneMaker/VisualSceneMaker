@@ -10,9 +10,8 @@ public class BackgroundCommand implements Broadcastable {
     @Override
     public String toJson() {
         return String.format("{\n" +
-                "  type: 'background',\n" +
-                "  url:\n" +
-                "    '%s',\n" +
+                "  \"type\": \"background\",\n" +
+                "  \"url\": \"%s\"\n" +
                 "}", this.url);
     }
 }
