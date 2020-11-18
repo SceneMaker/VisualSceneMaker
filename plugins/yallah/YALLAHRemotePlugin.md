@@ -2,20 +2,27 @@
 
 This VSM plugin implements the communication with a YALLAH character in Unity.
 
-The communication uses WebSockets, allowing for a communication also with WebPages.
+The communication uses WebSockets, allowing for a communication also when the YALLAH project is deployed as WebGL page.
+
+For the YALLAH counterpart, see:
+
+* The main YALLAH project at <https://github.com/yallah-team/YALLAH>
+* The C# script at https://github.com/yallah-team/YALLAH/tree/master/UnityProjects/YallahTestbed/Assets/YALLAH/Scripts/vsm
 
 ## Message exchange dynamics
 
 Between `YALLAH <-- and --> VSM`
-* `<--` VSM parse a sentence:
+* When a scene sentence is executed, VSM must:
+  * parse the sentence;
   * substitutes actions with markers;
   * split it according to punctuation;
-  * and send one message per clause;
-  * when a marker mesage is received, converts it into action and send a message with action name and parameters.
-* `-->` YALLAH must:
+  * `<--` send one message per clause.
+* On message reception, YALLAH must:
   * use the text to speak out the sentence;
-  * send a message to VSM each time a marker is met;
-  * send a message to VSM when the sentence has been spoken out completely.
+  * `-->` send a message to VSM each time a marker is met;
+  * `-->` send a message to VSM when the sentence has been spoken out completely.
+* When a marker message is received (e.g., $1), VSM must:
+  * `<--` retrieve the action from the marker number and send a message with action name and parameters.
 
 Example: "Bye [PlayAnimationClip name=wave], and hope to see [PlayAnimationClip name=point_forward] you soon."
 
@@ -34,21 +41,21 @@ _Beware: text speech is blocking, actions NOT! If an action is still executing w
     
 ## Messages
 
-Messages traveling from VSM to YALLAH can be of 2 types: text or command.
+Messages traveling to YALLAH `<--` from VSM can be of 2 types: text or command.
 
-* A text is the text with the actions substituted by markers.
+* A **text** is the text with the actions substituted by markers.
   * Example:
   "Bye [PlayAnimationClip name=wave]. Stay well, and hope to see [PlayAnimationClip name=point_forward] you soon.",
   will be sent to the YALLAH agent as:
   "Bye $1. Stay well, and hope to see $2 you soon."
-* A command is the translation of the markers into actions
+* A **command** is the translation of the markers into actions
   * Example: [PlayAnimationClip name=wave]
 
 All messages will be structured as JSON strings
 
 ## Message structure
 
-The messages from YALLAH to VSM a re simple text strings:
+The messages from YALLAH `-->` to VSM are simple text strings:
 
 * `$xx` (where xx is an integer number) is to notify that an action marker was reached;
 * `@xx` (where xx is an integer number) is to notify that a sentence utterance has finished. 
@@ -60,11 +67,10 @@ For text messages:
 ```JSON
 {
   "type": "text",
-  "id": "integer_unique_id",
+  "id": "23",
   "text": "Bye $1. Stay well, and hope to see $2 you soon."
 }
 ```
-
 
 For commands:
 
@@ -77,10 +83,10 @@ For commands:
 ```
 
 Parameters formatting reason. It would be more elegant to encode the parameters as a dictionary.
-However, Unity doesn't integrate a full-fledged json parser. The provided `UnityEngine.JsonUtility` supports only serialization to-from classes, with no support for variable structures.
+However, Unity doesn't integrate a full-fledged JSON parser. The provided `UnityEngine.JsonUtility` supports only serialization to/from classes, with no support for variable structures.
 Hence, we leave the parameters in the key1=value,key2=value,... format and leave the unpacking to the Unity side.
 
-So, for example, when more parameters are needed:
+So, for example, when more parameters are needed, we send:
 
 ```JSON
 {
@@ -93,7 +99,7 @@ So, for example, when more parameters are needed:
 
 ## Supported commands
 
-This is a subset of the API provided by the YALLAH controllers <https://github.com/yallah-team/YALLAH/wiki/Developer-UnityAPI>.
+This is a subset of the API provided by the YALLAH controllers (see <https://github.com/yallah-team/YALLAH/wiki/Developer-UnityAPI>).
 
 * PlayAnimationClip
   * name: string
