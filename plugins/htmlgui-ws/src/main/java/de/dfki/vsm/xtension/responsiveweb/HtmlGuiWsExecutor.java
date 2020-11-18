@@ -190,6 +190,22 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
             broadcast("./ui_stimmungsbarometer.html");
         }
 
+        else if (message.equals("phone")) {
+            broadcast("./slider_gui.html");
+        }
+
+        else if (message.equals("chat")) {
+            broadcast("./emotion_gui.html");
+        }
+
+        else if (message.equals("persons")) {
+            broadcast("./days_gui.html");
+        }
+
+        else if (message.equals("day_Montag")) {
+            broadcast("./conv_gui.html");
+        }
+
         else if (message.equals("home")) {
             broadcast("./index.html");
         }
