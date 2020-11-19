@@ -75,20 +75,6 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
                 String element = activity.get("element");
                 String value = activity.get("value").replace("'", "");
                 broadcast(element + ":" + value);
-            } else if (name.equalsIgnoreCase("setMoodGraph")) {
-                String cmd = name;
-                String element = activity.get("element");
-                String day = activity.get("day");
-                String type = activity.get("type");
-                String value = activity.get("value").replace("'", "");
-                broadcast(element + ":" + cmd + "_" + day + "_" + type + "_" + value);
-            } else if (name.equalsIgnoreCase("setWorkHrsGraph")) {
-                String cmd = name;
-                String element = activity.get("element");
-                String day = activity.get("day");
-                String type = activity.get("type");
-                String value = activity.get("value").replace("'", "");
-                broadcast(element + ":" + cmd + "_" + day + "_" + type + "_" + value);
             } else if (name.equalsIgnoreCase("stop")) {
                 app.stop();
             } else if (!name.isEmpty()) { //check if name represents a webpage - must be configured in the device's agent as key, value pair.
@@ -182,33 +168,35 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
         if (mProject.hasVariable(mSceneflowInfoVar)) {
             mProject.setVariable(mSceneflowInfoVar, message);
         }
-        if (message.equals("stopwatch")) {
-            broadcast("./ui_arbeitszeit.html");
+
+        // PG - Comment: This should be handled by a Sceneflow model!
+/*        if (message.equals("stopwatch")) {
+            broadcast("./ui_arbeitszeit.html"); //arbeitszeit
         }
 
         else if (message.equals("calendar")) {
-            broadcast("./ui_stimmungsbarometer.html");
+            broadcast("./ui_stimmungsbarometer.html"); //moodgraph
         }
 
         else if (message.equals("phone")) {
-            broadcast("./slider_gui.html");
+            broadcast("./slider_gui.html"); //slider
         }
 
         else if (message.equals("chat")) {
-            broadcast("./emotion_gui.html");
+            broadcast("./emotion_gui.html"); //emotion
         }
 
         else if (message.equals("persons")) {
-            broadcast("./days_gui.html");
+            broadcast("./days_gui.html"); // days
         }
 
         else if (message.equals("day_Montag")) {
-            broadcast("./conv_gui.html");
+            broadcast("./conv_gui.html"); //conv
         }
 
-        else if (message.equals("home")) {
+        else if (message.equals("home")) { //default
             broadcast("./index.html");
-        }
+        }*/
     }
 
     private synchronized void removeWs(WsCloseContext ctx) {
