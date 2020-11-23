@@ -3,22 +3,22 @@ package de.dfki.vsm.xtension.yallah;
 import de.dfki.vsm.extensionAPI.ExportableProperties;
 import de.dfki.vsm.extensionAPI.ProjectProperty;
 import de.dfki.vsm.extensionAPI.value.ProjectValueProperty;
-import de.dfki.vsm.model.scenescript.ActionFeature;
-import de.dfki.vsm.runtime.activity.SpeechActivity;
-import de.dfki.vsm.runtime.activity.scheduler.ActivityWorker;
-import io.javalin.Javalin;
-
 import de.dfki.vsm.model.project.PluginConfig;
+import de.dfki.vsm.model.scenescript.ActionFeature;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
+import de.dfki.vsm.runtime.activity.SpeechActivity;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
+import de.dfki.vsm.runtime.activity.scheduler.ActivityWorker;
 import de.dfki.vsm.runtime.project.RunTimeProject;
-import io.javalin.websocket.WsCloseContext;
+import io.javalin.Javalin;
 import io.javalin.websocket.WsConnectContext;
-import io.javalin.websocket.WsContext;
 import io.javalin.websocket.WsMessageContext;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.Map;
+import java.util.Objects;
 
 public class YallahExecutor extends ActivityExecutor implements ExportableProperties {
 
@@ -215,25 +215,24 @@ public class YallahExecutor extends ActivityExecutor implements ExportableProper
             String cmd = activity.getName() ;
             final LinkedList<ActionFeature> features = activity.getFeatures();
 
-            String json_string = "{\n"
+            StringBuilder json_string = new StringBuilder("{\n"
                     + "\"type\": \"command\",\n"
                     + "\"command\": \"" + cmd + "\",\n"
-                    + "\"parameters\": \"" ;
+                    + "\"parameters\": \"");
 
             // The Action "features" are actually the parameters.
             for (int i = 0, featuresSize = features.size(); i < featuresSize; i++) {
                 ActionFeature af = features.get(i);
 
-                json_string += af.getKey() + "=" + af.getVal() ;
+                json_string.append(af.getKey()).append("=").append(af.getVal());
                 // Add a comma only if it is not the last element
-                if (i < featuresSize-1) json_string += "," ;
+                if (i < featuresSize-1) json_string.append(",");
             }
 
-            json_string += "\"\n"
-                    + "}\n" ;
+            json_string.append("\"\n" + "}\n");
 
             if(mSocketConnectCtx != null) {
-                mSocketConnectCtx.send(json_string);
+                mSocketConnectCtx.send(json_string.toString());
             }
 
         }
@@ -263,10 +262,7 @@ public class YallahExecutor extends ActivityExecutor implements ExportableProper
 
             // Remove the entry from the map and notify the threads to check again.
             synchronized (mActivityWorkerMap) {
-                if (mActivityWorkerMap.containsKey(text_id)) {
-                    //mLogger.message("Removing id from active activities ids ...");
-                    mActivityWorkerMap.remove(text_id);
-                }
+                mActivityWorkerMap.remove(text_id);
                 mActivityWorkerMap.notifyAll();
             }
 
