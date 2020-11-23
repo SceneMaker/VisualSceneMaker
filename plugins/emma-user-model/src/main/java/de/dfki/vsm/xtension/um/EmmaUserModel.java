@@ -4,6 +4,8 @@ import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
 import de.dfki.vsm.runtime.activity.AbstractActivity.Type;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
+import de.dfki.vsm.runtime.interpreter.value.IntValue;
+import de.dfki.vsm.runtime.interpreter.value.StringValue;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
 import org.json.JSONArray;
@@ -25,7 +27,7 @@ public class EmmaUserModel extends ActivityExecutor {
     // current user
     private JSONObject mUser = null;
 
-    // The singelton logger instance
+    // The singleton logger instance
     private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
 
     public EmmaUserModel(PluginConfig config, RunTimeProject project) {
@@ -84,10 +86,21 @@ public class EmmaUserModel extends ActivityExecutor {
             saveUserModel();
         }
 
+        if (name.equalsIgnoreCase("get")) {
+            if ((activity.get("strVar") != null) && (mProject.hasVariable(activity.get("strVar")))) {
+                String val = getUserStrValue(activity);
+                mProject.setVariable(activity.get("strVar"), new StringValue(val));
+            }
+            if ((activity.get("intVar") != null) && (mProject.hasVariable(activity.get("intVar")))) {
+                Integer val = getUserIntValue(activity);
+                mProject.setVariable(activity.get("intVar"), new IntValue(val));
+            }
+        }
+
         // load creates a new user model, if there is no user with the specific name.
         if (name.equalsIgnoreCase("load")) {
             if ((activity.get("name") != null)) {
-                String userName =  activity.get("name");
+                String userName = activity.get("name");
                 mUser = loadUserData(userName);
 
                 if (mUser != null) {
@@ -122,6 +135,26 @@ public class EmmaUserModel extends ActivityExecutor {
     private void setUserValue(String key, AbstractActivity activity) {
         if ((activity.get(key) != null) && (mUser.get(key) != "")) {
             mUser.putOnce(key, activity.get(key));
+        }
+    }
+
+    // get String value.
+    private String getUserStrValue(AbstractActivity activity) {
+        final String key = "value";
+        if ((activity.get(key) != null) && (mUser.get(activity.get(key)) != "")) {
+            return mUser.getString(activity.get(key));
+        } else {
+            return "";
+        }
+    }
+
+    // get Integer value.
+    private Integer getUserIntValue(AbstractActivity activity) {
+        final String key = "value";
+        if ((activity.get(key) != null) && (mUser.get(activity.get(key)) != "")) {
+            return Integer.parseInt(mUser.getString(activity.get(key)));
+        } else {
+            return -1;
         }
     }
 
@@ -189,7 +222,7 @@ public class EmmaUserModel extends ActivityExecutor {
 
     private void loadUserModel() {
         mLogger.message("Loading EmmA User Model ...");
-        String umf = (mProject.getProjectPath() + File.separator + mConfig.getProperty("umdir") + File.separator + "UM.json").replace("\\", "/");;
+        String umf = (mProject.getProjectPath() + File.separator + mConfig.getProperty("umdir") + File.separator + "UM.json").replace("\\", "/");
 
         String input = "";
         try {
