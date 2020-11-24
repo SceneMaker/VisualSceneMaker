@@ -8,14 +8,19 @@ public class LookCommand implements Broadcastable {
 
     public LookCommand(double xPos, double yPos) {
         // Validate parameters
-        if (Math.abs(xPos) > 1 || Math.abs(yPos) > 1) {
-            throw new IllegalArgumentException(
-                    String.format("Expected x and y to be >= -1 and <= 1\n" +
-                            "was: x: %f, y: %f", xPos, yPos)
-            );
+        if (Math.abs(xPos) > 1) {
+            this.xPos = 0;
         }
-        this.xPos = xPos;
-        this.yPos = yPos;
+        else {
+            this.xPos = xPos;
+        }
+
+        if (Math.abs(yPos) > 1) {
+            this.yPos = 0;
+        }
+        else {
+            this.yPos = yPos;
+        }
     }
 
     @Override
