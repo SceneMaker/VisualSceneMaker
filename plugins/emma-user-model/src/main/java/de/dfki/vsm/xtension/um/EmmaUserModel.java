@@ -107,8 +107,8 @@ public class EmmaUserModel extends ActivityExecutor {
                     mLogger.message("Data from user " + userName + " found!");
                 } else {
                     JSONArray users = mUserProfiles.getJSONArray("users");
-                    JSONObject newUser = createUser(userName, users.length() + 1);
-                    users.put(newUser);
+                    mUser = createUser(userName, users.length() + 1);
+                    users.put(mUser);
 
                     saveUserModel();
 
@@ -116,6 +116,33 @@ public class EmmaUserModel extends ActivityExecutor {
                 }
             }
         }
+
+        if (name.equalsIgnoreCase("diary_emotion")) {
+            if (mUser != null) {
+                JSONObject diaryentry = new JSONObject();
+
+                diaryentry.put("date", Calendar.getInstance().getTime());
+                diaryentry.put("no", getLastDiaryEntryNumber() + 1);
+                diaryentry.put("producer", "user");
+                diaryentry.put("entry", (activity.get("value") != null) ? activity.get("value") : "");
+            } else {
+                mLogger.warning("No user specified, diary emotion value will not be stored.");
+            }
+        }
+
+        if (name.equalsIgnoreCase("diary_mood")) {
+            if (mUser != null) {
+                JSONObject diaryentry = new JSONObject();
+
+                diaryentry.put("date", Calendar.getInstance().getTime());
+                diaryentry.put("no", getLastDiaryEntryNumber() + 1);
+                diaryentry.put("producer", "user");
+                diaryentry.put("entry", (activity.get("value") != null) ? activity.get("value") : "");
+            } else {
+                mLogger.warning("No user specified, diary mood value will not be stored.");
+            }
+        }
+
 
         if (name.equalsIgnoreCase("diary")) {
             if (mUser != null) {
@@ -144,6 +171,8 @@ public class EmmaUserModel extends ActivityExecutor {
         if ((activity.get(key) != null) && (mUser.get(activity.get(key)) != "")) {
             return mUser.getString(activity.get(key));
         } else {
+            mLogger.failure("Failed to retrieve user model information " + activity.get(key) + " with activity key " + key);
+            mLogger.failure(mUser.toString());
             return "";
         }
     }
@@ -154,6 +183,8 @@ public class EmmaUserModel extends ActivityExecutor {
         if ((activity.get(key) != null) && (mUser.get(activity.get(key)) != "")) {
             return Integer.parseInt(mUser.getString(activity.get(key)));
         } else {
+            mLogger.failure("Failed to retrieve user model information " + activity.get(key) + " with activity key " + key);
+            mLogger.failure(mUser.toString());
             return -1;
         }
     }
