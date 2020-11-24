@@ -70,11 +70,24 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
         } else {
             final String name = activity.getName();
             //final LinkedList<ActionFeature> features = activity.getFeatures();
-
             if (name.equalsIgnoreCase("set")) {
                 String element = activity.get("element");
                 String value = activity.get("value").replace("'", "");
                 broadcast(element + ":" + value);
+            } else if (name.equalsIgnoreCase("setMoodGraph")) {
+                String cmd = name;
+                String element = activity.get("element");
+                String day = activity.get("day");
+                String type = activity.get("type");
+                String value = activity.get("value").replace("'", "");
+                broadcast(element + ":" + cmd + "_" + day + "_" + type + "_" + value);
+            } else if (name.equalsIgnoreCase("setWorkHrsGraph")) {
+                String cmd = name;
+                String element = activity.get("element");
+                String day = activity.get("day");
+                String type = activity.get("type");
+                String value = activity.get("value").replace("'", "");
+                broadcast(element + ":" + cmd + "_" + day + "_" + type + "_" + value);
             } else if (name.equalsIgnoreCase("stop")) {
                 app.stop();
             } else if (!name.isEmpty()) { //check if name represents a webpage - must be configured in the device's agent as key, value pair.
