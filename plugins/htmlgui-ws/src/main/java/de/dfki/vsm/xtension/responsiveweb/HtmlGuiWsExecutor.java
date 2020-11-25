@@ -70,24 +70,24 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
         } else {
             final String name = activity.getName();
             //final LinkedList<ActionFeature> features = activity.getFeatures();
+
             if (name.equalsIgnoreCase("set")) {
                 String element = activity.get("element");
                 String value = activity.get("value").replace("'", "");
                 broadcast(element + ":" + value);
-            } else if (name.equalsIgnoreCase("setMoodGraph")) {
-                String cmd = name;
+            } else if (name.equalsIgnoreCase("setMoodGraph") ||
+                        name.equalsIgnoreCase("setWorkHrsGraph")) {
                 String element = activity.get("element");
                 String day = activity.get("day");
                 String type = activity.get("type");
                 String value = activity.get("value").replace("'", "");
-                broadcast(element + ":" + cmd + "_" + day + "_" + type + "_" + value);
-            } else if (name.equalsIgnoreCase("setWorkHrsGraph")) {
-                String cmd = name;
+                broadcast(element + ":" + name + "_" + day + "_" + type + "_" + value);
+                broadcast(element + ":" + name + "_" + day + "_" + type + "_" + value);
+            } else if (name.equalsIgnoreCase("setSpeechBubble")) {
                 String element = activity.get("element");
-                String day = activity.get("day");
-                String type = activity.get("type");
+                String producer = activity.get("producer");
                 String value = activity.get("value").replace("'", "");
-                broadcast(element + ":" + cmd + "_" + day + "_" + type + "_" + value);
+                broadcast(element + ":" + name + "_" + producer + "_" + value);
             } else if (name.equalsIgnoreCase("stop")) {
                 app.stop();
             } else if (!name.isEmpty()) { //check if name represents a webpage - must be configured in the device's agent as key, value pair.
@@ -183,33 +183,25 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
         }
 
         // PG - Comment: This should be handled by a Sceneflow model!
-/*        if (message.equals("stopwatch")) {
-            broadcast("./ui_arbeitszeit.html"); //arbeitszeit
-        }
-
-        else if (message.equals("calendar")) {
-            broadcast("./ui_stimmungsbarometer.html"); //moodgraph
-        }
-
-        else if (message.equals("phone")) {
-            broadcast("./slider_gui.html"); //slider
-        }
-
-        else if (message.equals("chat")) {
-            broadcast("./emotion_gui.html"); //emotion
-        }
-
-        else if (message.equals("persons")) {
-            broadcast("./days_gui.html"); // days
-        }
-
-        else if (message.equals("day_Montag")) {
-            broadcast("./conv_gui.html"); //conv
-        }
-
-        else if (message.equals("home")) { //default
-            broadcast("./index.html");
-        }*/
+//        if (message.equals("stopwatch")) {
+//            broadcast("./ui_arbeitszeit.html"); //arbeitszeit
+//        } else if (message.equals("calendar")) {
+//            broadcast("./ui_stimmungsbarometer.html"); //moodgraph
+//        } else if (message.equals("phone")) {
+//            broadcast("./slider_gui.html"); //slider
+//        } else if (message.equals("chat")) {
+//            broadcast("./emotion_gui.html"); //emotion
+//        } else if (message.equals("persons")) {
+//            broadcast("./days_gui.html"); // days
+//        } else if (message.equals("day_Montag")) {
+//            broadcast("./conv_gui.html"); //conv
+//        } else if (message.equals("home")) { //default
+//            broadcast("./index.html");
+//        } else if (message.equals("person")) {
+//            broadcast(("./username_gui.html"));
+//        } else if (message.equals("diary")) {
+//            broadcast(("./conv_gui.html"));
+//        }
     }
 
     private synchronized void removeWs(WsCloseContext ctx) {
