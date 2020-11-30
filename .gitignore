@@ -6,3 +6,6 @@ tmp/
 .idea/*
 .gradle
 build/
+
+
+.DS_Store

@@ -1,13 +1,13 @@
 package de.dfki.vsm.xtension.decad;
 
-import de.dfki.vsm.model.project.PluginConfig;
-import de.dfki.vsm.runtime.activity.AbstractActivity;
-import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
-import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.extensionAPI.ExportableCompletion;
 import de.dfki.vsm.extensionAPI.ExportableProperties;
 import de.dfki.vsm.extensionAPI.ProjectProperty;
 import de.dfki.vsm.extensionAPI.value.ProjectValueProperty;
+import de.dfki.vsm.model.project.PluginConfig;
+import de.dfki.vsm.runtime.activity.AbstractActivity;
+import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
+import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.xtension.decad.commands.DecadCommand;
 import de.dfki.vsm.xtension.decad.factories.DecadCommandFactory;
 import de.dfki.vsm.xtension.decad.properties.ExportAnimations;
