@@ -2,6 +2,8 @@ package de.dfki.vsm.xtension.charamelWs;
 
 import de.dfki.vsm.xtension.charamelWs.Commands.Broadcastable;
 
+import java.util.Locale;
+
 public class LookCommand implements Broadcastable {
     private final double xPos;
     private final double yPos;
@@ -25,7 +27,7 @@ public class LookCommand implements Broadcastable {
 
     @Override
     public String toJson() {
-        return String.format("{\n" +
+        return String.format(Locale.ENGLISH, "{\n" +
                 "  \"type\": \"lookat\",\n" +
                 "  \"x\": %f,\n" +
                 "  \"y\": %f\n" +
