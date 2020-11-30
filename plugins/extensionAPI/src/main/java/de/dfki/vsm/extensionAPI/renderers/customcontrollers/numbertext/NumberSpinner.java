@@ -3,8 +3,7 @@ package de.dfki.vsm.extensionAPI.renderers.customcontrollers.numbertext;
 /**
  * Created by alvaro on 4/23/17.
  */
-import java.math.BigDecimal;
-import java.text.NumberFormat;
+
 import javafx.beans.binding.NumberBinding;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -18,7 +17,10 @@ import javafx.scene.layout.VBox;
 import javafx.scene.shape.LineTo;
 import javafx.scene.shape.MoveTo;
 import javafx.scene.shape.Path;
-import javax.swing.JSpinner;
+
+import javax.swing.*;
+import java.math.BigDecimal;
+import java.text.NumberFormat;
 
 /**
  * JavaFX Control that behaves like a {@link JSpinner} known in Swing. The
