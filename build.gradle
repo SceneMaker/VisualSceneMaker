@@ -28,7 +28,7 @@ dependencies {
     compile project(":core", {p->p.ext.flavor = "pc"; p.version = versioning.info.lastTag})
     compile fileTree(dir: 'lib', include: "*.jar")
     compile project(":plugins:AndroidGui")
-    compile project(":plugins:ssi")
+    compile project(":plugins:decad")
 
     // https://mvnrepository.com/artifact/org.reflections/reflections
     compile group: 'org.reflections', name: 'reflections', version: '0.9.12'
