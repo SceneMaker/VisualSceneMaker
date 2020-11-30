@@ -1,5 +1,6 @@
 package de.dfki.vsm.xtension.tricatworld;
 
+import de.dfki.vsm.util.WordMapping;
 import de.dfki.vsm.extensionAPI.ExportableProperties;
 import de.dfki.vsm.extensionAPI.ProjectProperty;
 import de.dfki.vsm.extensionAPI.value.ProjectValueProperty;
