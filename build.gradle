@@ -29,6 +29,7 @@ dependencies {
     compile fileTree(dir: 'lib', include: "*.jar")
     compile project(":plugins:AndroidGui")
     compile project(":plugins:decad")
+    compile project(":plugins:ssi")
 
     // https://mvnrepository.com/artifact/org.reflections/reflections
     compile group: 'org.reflections', name: 'reflections', version: '0.9.12'
