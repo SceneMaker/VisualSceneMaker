@@ -7,7 +7,20 @@ The communication uses WebSockets, allowing for a communication also when the YA
 For the YALLAH counterpart, see:
 
 * The main YALLAH project at <https://github.com/yallah-team/YALLAH>
-* The C# script at https://github.com/yallah-team/YALLAH/tree/master/UnityProjects/YallahTestbed/Assets/YALLAH/Scripts/vsm
+* The C# script at <https://github.com/yallah-team/YALLAH/tree/master/UnityProjects/YallahTestbed/Assets/YALLAH/Scripts/vsm>
+
+## Configuration
+
+After opening/creating a project, the plugin can be used by:
+
+* Add a Device of type `YallahExecutor` with parameters.
+  * `port` This is the tcp port that the WebSocket server will use for listening to incoming connection. The same port number must be configured in the YALLAH side as `ServerPort` component attribute.
+  * `launchMode` This can be configured to force starting a YALLAH instance. Three values are possible:
+    * `None` We assume the YALLAH Unity application will be started manually;
+    * `App` (Still unsupported) The path to an executable file that will be launched;
+    * `WebPage` (Still unsupported) The application will be opened as WebGL application and served from the specified HTML page.
+* Add an Agent on that device
+  * Only 1 agent is supported. If you ant to drive more agents, then add another device listening to a different port.
 
 ## Message exchange dynamics
 
