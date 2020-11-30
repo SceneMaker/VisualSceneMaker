@@ -32,6 +32,7 @@ dependencies {
     compile project(":plugins:ssi")
     compile project(":plugins:reeti")
     compile project(":plugins:tricatworld")
+    compile project(":plugins:charamel")
 
     // https://mvnrepository.com/artifact/org.reflections/reflections
     compile group: 'org.reflections', name: 'reflections', version: '0.9.12'
