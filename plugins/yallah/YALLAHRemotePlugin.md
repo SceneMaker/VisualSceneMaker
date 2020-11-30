@@ -43,7 +43,7 @@ Example: "Bye [PlayAnimationClip name=wave], and hope to see [PlayAnimationClip 
 * `-->` "$1"
 * `<--` command: "PlayAnimationClip", parameters: "name=wave"
 * `-->` "@23"
-* `<--` "and hope to see $2 you soon", id: 25
+* `<--` "and hope to see $2 you soon", id: 24
 * `-->` "$2"
 * `<--` command: "PlayAnimationClip", parameters: "name=point_forward"
 * `-->` "@24"
