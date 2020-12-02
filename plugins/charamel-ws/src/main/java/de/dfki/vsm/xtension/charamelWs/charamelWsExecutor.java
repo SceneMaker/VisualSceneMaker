@@ -41,6 +41,9 @@ public class charamelWsExecutor extends ActivityExecutor {
     private String mPathToCertificate = "";
     private String mVSMCharacterSpeakingVar = "";
 
+    // PG: 18.11.2020 global Sceneflow variable for the whole turn information.
+    private String mVSMCharacterTurnVar = "turn_utterance";
+
     public charamelWsExecutor(PluginConfig config, RunTimeProject project) {
         super(config, project);
     }
@@ -64,6 +67,7 @@ public class charamelWsExecutor extends ActivityExecutor {
             String text = sa.getTextOnly("${'").trim();
             LinkedList<String> timemarks = sa.getTimeMarks("${'");
 
+
             // If text is empty - assume activity has empty text but has marker activities registered
             if (text.isEmpty()) {
                 for (String tm : timemarks) {
@@ -86,9 +90,18 @@ public class charamelWsExecutor extends ActivityExecutor {
                 ));
                 mLogger.message("Speech command with CMD markers send ...");
 
-                // let vsm model know that character is speaking - this is dirty. it should actually be done with messages
-                if (mProject.hasVariable(mVSMCharacterSpeakingVar)) {
-                    mProject.setVariable(mVSMCharacterSpeakingVar, new BooleanValue(true));
+
+                // PG: 18.11.2020 let vsm model know what the current character is speaking - this is dirty. it should actually be done with messages
+                if (mProject.hasVariable(mVSMCharacterTurnVar)) {
+                    // Whole Turn: mProject.setVariable(mVSMCharacterTurnVar, sa.getSceneTurn().getCleanText());
+                    mProject.setVariable(mVSMCharacterTurnVar, text);
+                }
+
+                // let vsm model know that character has started speaking wrt to a scene - this is dirty. it should actually be done with messages
+                if ((sa.getTurnNumber() == 1) && (sa.getUtteranceNumber() == 1)) { //do this only for the first turn and first utterance, within the scene
+                    if (mProject.hasVariable(mVSMCharacterSpeakingVar)) {
+                        mProject.setVariable(mVSMCharacterSpeakingVar, new BooleanValue(true));
+                    }
                 }
 
                 synchronized (mActivityWorkerMap) {
@@ -119,8 +132,12 @@ public class charamelWsExecutor extends ActivityExecutor {
                 }
 
                 // let vsm model know that character is speaking - this is dirty. it should actually be done with messages
-                if (mProject.hasVariable(mVSMCharacterSpeakingVar)) {
-                    mProject.setVariable(mVSMCharacterSpeakingVar, new BooleanValue(false));
+                mLogger.warning("Current turn number is " + sa.getTurnNumber() + " / " + sa.getTotalTurns());
+                mLogger.warning("Current utterance number in turn is " + sa.getUtteranceNumber() + " / " + sa.getTotalUtterances());
+                if ((sa.getTurnNumber() == sa.getTotalTurns()) && (sa.getUtteranceNumber() == sa.getTotalUtterances())) { // do this only after the last turn
+                    if (mProject.hasVariable(mVSMCharacterSpeakingVar)) {
+                        mProject.setVariable(mVSMCharacterSpeakingVar, new BooleanValue(false));
+                    }
                 }
             }
         } else {
