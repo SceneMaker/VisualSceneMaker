@@ -16,5 +16,5 @@ dependencies {
     compile project(":core")
     compile project(":plugins:extensionAPI")
     compile project(":plugins:ssi")
-    implementation fileTree('lib')  // Needed to use RobotEngineApplication.jar
+    implementation files('lib/RobotEngineApplication.jar')
 }

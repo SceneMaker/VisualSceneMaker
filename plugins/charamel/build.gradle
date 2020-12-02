@@ -17,5 +17,5 @@ dependencies {
     compile project(":plugins:extensionAPI")
     compile project(":plugins:ssi")
     compile project(":plugins:tricatworld")
-    implementation fileTree('lib')  // Needed to use Charamelapi-1.0.jar
+    implementation files('lib/Charamelapi-1.0.jar')
 }
