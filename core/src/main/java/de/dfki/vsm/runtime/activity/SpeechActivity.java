@@ -1,5 +1,6 @@
 package de.dfki.vsm.runtime.activity;
 
+import de.dfki.vsm.model.scenescript.SceneTurn;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
 
 import java.util.LinkedList;
@@ -19,16 +20,33 @@ public final class SpeechActivity extends AbstractActivity {
     private LinkedList<String> mBlocks;
     // The punctuation mark
     private final String mPunct;
+    // Turn information
+    private final SceneTurn mTurn;
+    private final int mTurnNum;
+    private final int mTotalTurns;
+    // Utterance information
+    private final int mUtteranceNum;
+    private final int mTotalUtterances;
 
     // Construct the activity
     public SpeechActivity(
             final String actor,
             final LinkedList<String> list,
-            final String punct) {
+            final String punct,
+            final SceneTurn turn,
+            final int turn_num,
+            final int total_turns,
+            final int utterance_num,
+            final int total_utterances) {
         super(Type.blocking, actor, /*"speech",*/ "speak");
         // Initialize the content
         mBlocks = list;
         mPunct = punct;
+        mTurn = turn;
+        mTurnNum = turn_num;
+        mTotalTurns = total_turns;
+        mUtteranceNum = utterance_num;
+        mTotalUtterances = total_utterances;
     }
 
     // Get the text and time mark blocks (added by PG)
@@ -104,6 +122,52 @@ public final class SpeechActivity extends AbstractActivity {
 
         return tms;
     }
+
+    /**
+     * Get the actual turn number (as index)
+     *
+     * @return
+     */
+    public final int getTurnNumber() {
+        return mTurnNum;
+    }
+
+    /**
+     * Get the total turn numbers
+     *
+     * @return
+     */
+    public final int getTotalTurns() {
+        return mTotalTurns;
+    }
+
+    /**
+     * Get the actual utterance number (as index)
+     *
+     * @return
+     */
+    public final int getUtteranceNumber() {
+        return mUtteranceNum;
+    }
+
+    /**
+     * Get the total utterances number
+     *
+     * @return
+     */
+    public final int getTotalUtterances() {
+        return mTotalUtterances;
+    }
+
+    /**
+     * Get the whole SceneTurn object
+     *
+     * @return
+     */
+    public final SceneTurn getSceneTurn() {
+        return mTurn;
+    }
+
 
     /**
      * Get textual representation
