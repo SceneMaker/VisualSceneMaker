@@ -42,6 +42,10 @@ public final class ActivityScheduler {
         //}
     }
 
+    public final boolean hasMarker(final String marker) {
+        return mWorkerMap.containsKey(marker) ;
+    }
+
     // Schedule an activity on an executor with a timeout
     public final void schedule(
             final long timeout,
