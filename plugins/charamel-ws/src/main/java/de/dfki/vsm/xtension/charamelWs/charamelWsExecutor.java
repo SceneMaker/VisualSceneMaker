@@ -156,6 +156,90 @@ public class charamelWsExecutor extends ActivityExecutor {
 
     private void parseAction(String name, LinkedList<ActionFeature> f) {
         switch (name) {
+            case "angry": {
+                String intensityStr = getActionFeatureValue("intensity", f);
+                EmotionCommand hc = new EmotionCommand("emot_angry", (intensityStr.isEmpty()) ? 0.7f : Float.parseFloat(intensityStr));
+                broadcast(hc);
+                break;
+            }
+            case "bored": {
+                String intensityStr = getActionFeatureValue("intensity", f);
+                EmotionCommand hc = new EmotionCommand("emot_bored", (intensityStr.isEmpty()) ? 0.7f : Float.parseFloat(intensityStr));
+                broadcast(hc);
+                break;
+            }
+            case "crazy": {
+                String intensityStr = getActionFeatureValue("intensity", f);
+                EmotionCommand hc = new EmotionCommand("emot_crazy", (intensityStr.isEmpty()) ? 0.7f : Float.parseFloat(intensityStr));
+                broadcast(hc);
+                break;
+            }
+            case "demanding": {
+                String intensityStr = getActionFeatureValue("intensity", f);
+                EmotionCommand hc = new EmotionCommand("emot_demanding", (intensityStr.isEmpty()) ? 0.7f : Float.parseFloat(intensityStr));
+                broadcast(hc);
+                break;
+            }
+            case "disappointed": {
+                String intensityStr = getActionFeatureValue("intensity", f);
+                EmotionCommand hc = new EmotionCommand("emot_disappointed", (intensityStr.isEmpty()) ? 0.7f : Float.parseFloat(intensityStr));
+                broadcast(hc);
+                break;
+            }
+            case "disgust": {
+                String intensityStr = getActionFeatureValue("intensity", f);
+                EmotionCommand hc = new EmotionCommand("emot_disgust", (intensityStr.isEmpty()) ? 0.7f : Float.parseFloat(intensityStr));
+                broadcast(hc);
+                break;
+            }
+            case "happy": {
+                String intensityStr = getActionFeatureValue("intensity", f);
+                EmotionCommand hc = new EmotionCommand("emot_happy", (intensityStr.isEmpty()) ? 0.7f : Float.parseFloat(intensityStr));
+                broadcast(hc);
+                break;
+            }
+            case "pensively": {
+                String intensityStr = getActionFeatureValue("intensity", f);
+                EmotionCommand hc = new EmotionCommand("emot_pensively", (intensityStr.isEmpty()) ? 0.7f : Float.parseFloat(intensityStr));
+                broadcast(hc);
+                break;
+            }
+            case "sad": {
+                String intensityStr = getActionFeatureValue("intensity", f);
+                EmotionCommand hc = new EmotionCommand("emot_sad", (intensityStr.isEmpty()) ? 0.7f : Float.parseFloat(intensityStr));
+                broadcast(hc);
+                break;
+            }
+            case "smile": {
+                String intensityStr = getActionFeatureValue("intensity", f);
+                EmotionCommand hc = new EmotionCommand("emot_smile", (intensityStr.isEmpty()) ? 0.7f : Float.parseFloat(intensityStr));
+                broadcast(hc);
+                break;
+            }
+            case "surprised": {
+                String intensityStr = getActionFeatureValue("intensity", f);
+                EmotionCommand hc = new EmotionCommand("emot_surprised", (intensityStr.isEmpty()) ? 0.7f : Float.parseFloat(intensityStr));
+                broadcast(hc);
+                break;
+            }
+            case "blink": {
+                String intensityStr = getActionFeatureValue("intensity", f);
+                EmotionCommand hc = new EmotionCommand("mimic_blink", (intensityStr.isEmpty()) ? 0.7f : Float.parseFloat(intensityStr));
+                broadcast(hc);
+                break;
+            }
+            case "blow": {
+                String intensityStr = getActionFeatureValue("intensity", f);
+                EmotionCommand hc = new EmotionCommand("mimic_blow", (intensityStr.isEmpty()) ? 0.7f : Float.parseFloat(intensityStr));
+                broadcast(hc);
+                break;
+            }
+            case "wink": {
+                String intensityStr = getActionFeatureValue("intensity", f);
+                EmotionCommand hc = new EmotionCommand("mimic_winkl", (intensityStr.isEmpty()) ? 0.7f : Float.parseFloat(intensityStr));
+                broadcast(hc);
+                break;
+            }
             case "camera": {
                 String posStr = getActionFeatureValue("position", f);
                 CameraCommand.CameraPos pos = CameraCommand.CameraPos.valueOf(posStr);
