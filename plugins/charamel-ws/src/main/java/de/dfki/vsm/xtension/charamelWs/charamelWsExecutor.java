@@ -155,7 +155,6 @@ public class charamelWsExecutor extends ActivityExecutor {
     }
 
     private void parseAction(String name, LinkedList<ActionFeature> f) {
-        mLogger.warning("Do command " + name);
         switch (name) {
             case "angry": {
                 String intensityStr = getActionFeatureValue("intensity", f);
@@ -195,7 +194,9 @@ public class charamelWsExecutor extends ActivityExecutor {
             }
             case "happy": {
                 String intensityStr = getActionFeatureValue("intensity", f);
-                EmotionCommand hc = new EmotionCommand("emot_happy", (intensityStr.isEmpty()) ? 0.7f : Float.parseFloat(intensityStr));
+                String attackStr = getActionFeatureValue("attack", f);
+                String holdStr = getActionFeatureValue("hold", f);
+                EmotionCommand hc = new EmotionCommand("emot_happy", (intensityStr.isEmpty()) ? 0.7f : Float.parseFloat(intensityStr), (attackStr.isEmpty()) ? 200 : Integer.parseInt(attackStr), (holdStr.isEmpty()) ? 1000 : Integer.parseInt(holdStr));
                 broadcast(hc);
                 break;
             }
@@ -213,7 +214,9 @@ public class charamelWsExecutor extends ActivityExecutor {
             }
             case "smile": {
                 String intensityStr = getActionFeatureValue("intensity", f);
-                EmotionCommand hc = new EmotionCommand("emot_smile", (intensityStr.isEmpty()) ? 0.7f : Float.parseFloat(intensityStr));
+                String attackStr = getActionFeatureValue("attack", f);
+                String holdStr = getActionFeatureValue("hold", f);
+                EmotionCommand hc = new EmotionCommand("emot_smile", (intensityStr.isEmpty()) ? 0.7f : Float.parseFloat(intensityStr), (attackStr.isEmpty()) ? 200 : Integer.parseInt(attackStr), (holdStr.isEmpty()) ? 1000 : Integer.parseInt(holdStr));
                 broadcast(hc);
                 break;
             }
