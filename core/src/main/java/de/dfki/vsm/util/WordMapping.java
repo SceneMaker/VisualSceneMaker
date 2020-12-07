@@ -1,4 +1,4 @@
-package de.dfki.vsm.xtension;
+package de.dfki.vsm.util;
 
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
