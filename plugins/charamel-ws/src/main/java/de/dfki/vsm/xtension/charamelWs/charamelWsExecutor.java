@@ -155,6 +155,7 @@ public class charamelWsExecutor extends ActivityExecutor {
     }
 
     private void parseAction(String name, LinkedList<ActionFeature> f) {
+        mLogger.warning("Do command " + name);
         switch (name) {
             case "angry": {
                 String intensityStr = getActionFeatureValue("intensity", f);

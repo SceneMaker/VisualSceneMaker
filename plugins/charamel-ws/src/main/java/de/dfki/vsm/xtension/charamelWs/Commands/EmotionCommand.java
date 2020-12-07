@@ -11,8 +11,8 @@ public class EmotionCommand implements Broadcastable {
 
     public String toJson() {
         return "    {\n" +
-                "      \"type\": 'emotion',\n" +
-                "      \"name\": '" + emotionname + "',\n" +
+                "      \"type\": \"emotion\",\n" +
+                "      \"name\": \"" + emotionname + "\",\n" +
                 "      \"attack\": 200,\n" +
                 "      \"hold\": 1000,\n" +
                 "      \"decay\": 200,\n" +
