@@ -1,6 +1,5 @@
 package de.dfki.vsm.xtension.charamel;
 
-import de.dfki.vsm.editor.dialog.WaitingDialog;
 import de.dfki.vsm.extensionAPI.ExportableProperties;
 import de.dfki.vsm.extensionAPI.ProjectProperty;
 import de.dfki.vsm.extensionAPI.value.ProjectValueProperty;
@@ -13,7 +12,7 @@ import de.dfki.vsm.runtime.activity.scheduler.ActivityWorker;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.jpl.JPLEngine;
 import de.dfki.vsm.util.xml.XMLUtilities;
-import de.dfki.vsm.xtension.WordMapping;
+import de.dfki.vsm.util.WordMapping;
 import de.dfki.vsm.xtension.charamel.util.property.CharamelProjectProperty;
 import de.dfki.vsm.xtension.charamel.xml.command.object.action.CharamelActObject;
 import de.dfki.vsm.xtension.charamel.xml.feedback.action.*;
@@ -84,7 +83,7 @@ public final class CharamelExecutor extends ActivityExecutor implements Exportab
         if (mUseExe) {
             // Check the executable files
             if (!exists(cactordir)) {
-                dialog("Missing '" + cactordir + "' in '" + workindir + "'");
+                mLogger.warning("Missing '" + cactordir + "' in '" + workindir + "'");
             }
             // Create the plugin's processes
             try {
@@ -445,15 +444,6 @@ public final class CharamelExecutor extends ActivityExecutor implements Exportab
         mClientMap.values().stream().forEach((client) -> {
             client.send(message);
         });
-    }
-
-    /**
-     * Show action waiting dialog
-     */
-    private void dialog(final String message) {
-        WaitingDialog InfoDialog = new WaitingDialog(message);
-        InfoDialog.setModal(true);
-        InfoDialog.setVisible(true);
     }
 
     /**
