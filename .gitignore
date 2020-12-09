@@ -7,3 +7,6 @@ tmp/
 .gradle
 # Ignoring all build directories
 build/
+
+
+.DS_Store

@@ -6,8 +6,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
-import static de.dfki.vsm.xtension.decad.utils.constants.Constants.UTF_8;
-
 public class PostParametersBuilder {
     private static final String EQUAL_SEPARATOR = "=";
     private final HashMap<String, String> parameters = new HashMap<>();

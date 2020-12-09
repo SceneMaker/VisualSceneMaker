@@ -12,8 +12,10 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.*;
-import java.util.Calendar;
-import java.util.List;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 
 /**
@@ -26,6 +28,17 @@ public class EmmaUserModel extends ActivityExecutor {
 
     // current user
     private JSONObject mUser = null;
+    // days at which the user had a diary conversation
+    private List<String> mDiaryDays = new LinkedList<>();
+    // current day and daily items
+    private int mSelectedDay = -1;
+    private List<Integer> mDailyItemReferences = new LinkedList<>();
+
+    // sceneflow variables
+    private final String mVSM_DiaryDay = "diaryDay";
+    private final String mVSM_DiaryDailyItemsNumber = "diaryDailyItemsNum";
+    private final String mVSM_DiaryItemProducer = "diaryItemProducer";
+    private final String mVSM_DiaryItemText = "diaryItemText";
 
     // The singleton logger instance
     private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
@@ -62,6 +75,7 @@ public class EmmaUserModel extends ActivityExecutor {
 
         final String name = activity.getName();
         if (name.equalsIgnoreCase("set")) {
+            setUserValue("name", activity);
             setUserValue("break", activity);
             setUserValue("type", activity);
             setUserValue("therapy", activity);
@@ -109,22 +123,90 @@ public class EmmaUserModel extends ActivityExecutor {
                     JSONArray users = mUserProfiles.getJSONArray("users");
                     mUser = createUser(userName, users.length() + 1);
                     users.put(mUser);
-
                     saveUserModel();
-
                     mLogger.warning("Data from user " + userName + " not found - new user created!");
                 }
+            } else { // load the latest
+                mUser = loadUserData();
+                String userName = mUser.getString("name");
+                mLogger.message("Data from user " + userName + " loaded!");
+            }
+            // at this point, there is a user model, a freshly created or loaded
+            diaryDaysManagement();
+        }
+
+        // PlayAction("[um diaryday no=0]") stores a day string (e.g., "2. November 2020")
+        // in a sceneflow var (mVSM_DiaryDay)
+        if (name.equalsIgnoreCase("diaryday")) {
+            if ((activity.get("no") != null)) {
+                int day = Integer.parseInt(activity.get("no"));
+
+                if (mProject.hasVariable(mVSM_DiaryDay)) {
+                    if (mDiaryDays.get(day) != null) {
+                        mProject.setVariable(mVSM_DiaryDay, mDiaryDays.get(day).replace(",", " ")); //replace "," with " "
+                    } else {
+                        mLogger.failure("Requested diary day (" + day + ") does not exist");
+                    }
+                }
+            }
+        }
+
+        // PlayAction ( "[um dailyitems day=0]" ) stores the number of dialog parts
+        // in a sceneflow var (mVSM_DiaryDailyItemsNumber)
+        if (name.equalsIgnoreCase("dailyitems")) {
+            if ((activity.get("day") != null)) {
+                mSelectedDay = Integer.parseInt(activity.get("day"));
+
+                if (mProject.hasVariable(mVSM_DiaryDailyItemsNumber)) {
+                    if ((mSelectedDay < mDiaryDays.size()) && (mDiaryDays.get(mSelectedDay) != null)) {
+                        String dayStr = mDiaryDays.get(mSelectedDay);
+                        mDailyItemReferences = collectDailyItems(dayStr);
+
+                        mProject.setVariable(mVSM_DiaryDailyItemsNumber, mDailyItemReferences.size());
+                    } else {
+                        mLogger.failure("Requested diary day (" + mSelectedDay + ") does not exist");
+                    }
+                }
+            } else {
+                mLogger.failure("Required 'day' information (int) is missing for loading daily items.");
+            }
+        }
+
+        //PlayAction ( "[um item no=" + dcnt + "]" ) saves producer and text of a diary item (no) in sceneflow vars
+        //(mVSM_DiaryItemProducer, mVSM_DiaryItemText) containing the informatio about the dialog item
+        if (name.equalsIgnoreCase("item")) {
+            if (activity.get("no") != null) {
+                int no = Integer.parseInt(activity.get("no"));
+
+                if (mProject.hasVariable(mVSM_DiaryItemProducer) && mProject.hasVariable(mVSM_DiaryItemText)) {
+                    if ((mSelectedDay < mDiaryDays.size()) && (mDiaryDays.get(mSelectedDay) != null)) {
+                        String dayStr = mDiaryDays.get(mSelectedDay);
+                        int itemNum = mDailyItemReferences.get(no);
+                        mLogger.message("Retrieving dialog part represented with no " + itemNum);
+
+                        JSONArray diary = mUser.getJSONArray("diary");
+                        JSONObject entry;
+                        for (int i = 0; i < diary.length(); i++) {
+                            if (diary.getJSONObject(i).getInt("no") == itemNum) {
+                                entry = diary.getJSONObject(i);
+                                mProject.setVariable(mVSM_DiaryItemProducer, new StringValue(entry.getString("producer")));
+                                mProject.setVariable(mVSM_DiaryItemText, new StringValue(entry.getString("entry")));
+                                return;
+                            }
+                        }
+                        mProject.setVariable(mVSM_DiaryItemProducer, new StringValue("unknown"));
+                        mProject.setVariable(mVSM_DiaryItemText, new StringValue("No entry referred by " + mSelectedDay));
+                        mLogger.failure("Requested diary day (" + mSelectedDay + ") does not exist");
+                    }
+                }
+            } else {
+                mLogger.failure("Required 'no' information (int) is missing for loading item.");
             }
         }
 
         if (name.equalsIgnoreCase("diary_emotion")) {
             if (mUser != null) {
-                JSONObject diaryentry = new JSONObject();
-
-                diaryentry.put("date", Calendar.getInstance().getTime());
-                diaryentry.put("no", getLastDiaryEntryNumber() + 1);
-                diaryentry.put("producer", "user");
-                diaryentry.put("entry", (activity.get("value") != null) ? activity.get("value") : "");
+                storeDiaryEntry(activity, "user", "emotion", "value");
             } else {
                 mLogger.warning("No user specified, diary emotion value will not be stored.");
             }
@@ -132,26 +214,15 @@ public class EmmaUserModel extends ActivityExecutor {
 
         if (name.equalsIgnoreCase("diary_mood")) {
             if (mUser != null) {
-                JSONObject diaryentry = new JSONObject();
-
-                diaryentry.put("date", Calendar.getInstance().getTime());
-                diaryentry.put("no", getLastDiaryEntryNumber() + 1);
-                diaryentry.put("producer", "user");
-                diaryentry.put("entry", (activity.get("value") != null) ? activity.get("value") : "");
+                storeDiaryEntry(activity, "user", "mood", "value");
             } else {
                 mLogger.warning("No user specified, diary mood value will not be stored.");
             }
         }
 
-
         if (name.equalsIgnoreCase("diary")) {
             if (mUser != null) {
-                JSONObject diaryentry = new JSONObject();
-
-                diaryentry.put("date", Calendar.getInstance().getTime());
-                diaryentry.put("no", getLastDiaryEntryNumber() + 1);
-                diaryentry.put("producer", (activity.get("producer") != null) ? activity.get("producer") : "");
-                diaryentry.put("entry", (activity.get("entry") != null) ? activity.get("entry") : "");
+                storeDiaryEntry(activity, "producer", "entry", "entry");
             } else {
                 mLogger.warning("No user specified, diary entry will not be stored.");
             }
@@ -161,7 +232,8 @@ public class EmmaUserModel extends ActivityExecutor {
     // set also overrides previously set values.
     private void setUserValue(String key, AbstractActivity activity) {
         if ((activity.get(key) != null) && (mUser.get(key) != "")) {
-            mUser.putOnce(key, activity.get(key));
+            String value = activity.get(key).replace("'", "");
+            mUser.put(key, value);
         }
     }
 
@@ -189,25 +261,135 @@ public class EmmaUserModel extends ActivityExecutor {
         }
     }
 
+    private void storeDiaryEntry(AbstractActivity activity, String producer, String key, String value) {
+        JSONObject diaryentry = new JSONObject();
+
+        DateFormat df = new SimpleDateFormat("MMMM d, yyyy", Locale.GERMANY);
+        String dateStr = df.format(Calendar.getInstance().getTime());
+
+        diaryentry.put("date", dateStr);
+        diaryentry.put("no", getLastDiaryEntryNumber() + 1);
+        diaryentry.put("producer", (activity.get(producer) != null) ? activity.get(value) : "");
+        diaryentry.put(key, (activity.get(value) != null) ? activity.get(value).replace("'", "") : "");
+
+        JSONArray diary = mUser.getJSONArray("diary");
+        diary.put(diaryentry);
+
+        saveUserModel();
+        diaryDaysManagement();
+    }
+
+    private void diaryDaysManagement() {
+        // do diary management
+        collectDiaryDays();
+
+        if (mProject.hasVariable("diaryDaysNum")) {
+            mProject.setVariable("diaryDaysNum", mDiaryDays.size());
+        }
+    }
+
+    private void collectDiaryDays() {
+        mDiaryDays = new LinkedList<>();
+        Map<Date, JSONArray> dateDiaryEntries = new HashMap<>();
+        JSONArray diary = mUser.getJSONArray("diary");
+
+        if (diary.length() > 0) {
+            mLogger.message("Found " + diary.length() + " diary entries.");
+            for (int i = 0; i < diary.length(); i++) {
+                JSONObject diaryItem = diary.getJSONObject(i);
+
+                // make a proper date
+                String dateStr = diaryItem.getString("date");
+                DateFormat format = new SimpleDateFormat("MMMM d, yyyy", Locale.GERMANY);
+                // sort it
+                try {
+                    Date date = format.parse(dateStr);
+
+                    if (dateDiaryEntries.containsKey(date)) { // if there is an entry for this particular date, add diary entry
+                        JSONArray dateEntries = dateDiaryEntries.get(date);
+                        dateEntries.put(diaryItem);
+                        dateDiaryEntries.replace(date, dateEntries);
+                    } else { // if there is not an entry for this particular date, create diary entry array and add diary entrey
+                        JSONArray dateEntries = new JSONArray();
+                        dateEntries.put(diaryItem);
+                        dateDiaryEntries.put(date, dateEntries);
+                    }
+                } catch (ParseException e) {
+                    mLogger.failure("Dialog entry faulty " + diaryItem);
+                }
+            }
+            for (Map.Entry<Date, JSONArray> entry : dateDiaryEntries.entrySet()) {
+                Date k = entry.getKey();
+                DateFormat df = new SimpleDateFormat("MMMM d, yyyy", Locale.GERMANY);
+                String dateStr = df.format(k);
+                mLogger.message("Adding day >" + dateStr + "< to the list for active diary days.");
+                mDiaryDays.add(dateStr);
+            }
+        }
+        mLogger.message("Found entries for " + dateDiaryEntries.keySet().size() + " different days.");
+    }
+
+    private List<Integer> collectDailyItems(String dayStr) {
+        JSONArray diary = mUser.getJSONArray("diary");
+        List<Integer> entries = new LinkedList<>();
+
+        // Date format
+        DateFormat df = new SimpleDateFormat("MMMM d, yyyy", Locale.GERMANY);
+        Date targetDate = Calendar.getInstance().getTime(); // initialize it with today
+        try { // try to parse dayStr and create Date object
+            targetDate = df.parse(dayStr);
+        } catch (ParseException e) {
+            mLogger.failure(dayStr + " is not a valid day (date)!");
+        }
+        if (diary.length() > 0) {
+            mLogger.message("Found " + diary.length() + " diary entries.");
+            for (int i = 0; i < diary.length(); i++) {
+                JSONObject diaryItem = diary.getJSONObject(i);
+                // make a proper date
+                String dateStr = diaryItem.getString("date");
+                // get the number of the dialog entry
+                try {
+                    Date date = df.parse(dateStr);
+                    if (date.equals(targetDate)) {
+                        entries.add(diaryItem.getInt("no"));
+                    }
+                } catch (ParseException e) {
+                    mLogger.failure("Dialog entry faulty " + diaryItem);
+                }
+            }
+        }
+        return entries;
+    }
+
     private long getLastDiaryEntryNumber() {
         JSONArray diary = mUser.getJSONArray("diary");
-        long biggestNo = 1;
+        long biggestNo = -1;
 
         for (int i = 0; i < diary.length(); i++) {
             JSONObject item = diary.getJSONObject(i);
             biggestNo = (item.getLong("no") > biggestNo) ? item.getLong("no") : biggestNo;
         }
-
         return biggestNo;
     }
 
     private JSONObject loadUserData(String name) {
         JSONArray users = mUserProfiles.getJSONArray("users");
-        for (int i = 0; i < users.length(); i++)  {
+        for (int i = 0; i < users.length(); i++) {
             JSONObject item = users.getJSONObject(i);
             if (item.getString("name").equalsIgnoreCase(name)) return item;
         }
         return null;
+    }
+
+    private JSONObject loadUserData() { // load data from device user
+        JSONArray users = mUserProfiles.getJSONArray("users");
+
+        if (users.length() > 0) {
+            return users.getJSONObject(0);
+        } else {
+            loadUserModel();
+            return users.getJSONObject(0);
+        }
     }
 
     private JSONObject createUser(String name, long id) {
@@ -240,12 +422,15 @@ public class EmmaUserModel extends ActivityExecutor {
         JSONArray diary = new JSONArray();
         JSONObject diaryentry = new JSONObject();
 
-        diaryentry.put("date", Calendar.getInstance().getTime());
-        diaryentry.put("no", 1);
+        DateFormat df = new SimpleDateFormat("MMMM d, yyyy", Locale.GERMANY);
+        String dateStr = df.format(Calendar.getInstance().getTime());
+
+        diaryentry.put("date", dateStr);
+        diaryentry.put("no", 0);
         diaryentry.put("producer", "system");
         diaryentry.put("entry", "created");
 
-        diary.put(diaryentry);
+        //diary.put(diaryentry);
         user.put("diary", diary);
 
         return user;
@@ -295,8 +480,6 @@ public class EmmaUserModel extends ActivityExecutor {
         String umf = mProject.getProjectPath() + File.separator + mConfig.getProperty("umdir") + File.separator + "UM.json";
         try {
             FileWriter umfw = new FileWriter(umf);
-
-            mLogger.message("Saving user profiles " + mUserProfiles);
 
             umfw.write(mUserProfiles.toString());
             umfw.flush();
