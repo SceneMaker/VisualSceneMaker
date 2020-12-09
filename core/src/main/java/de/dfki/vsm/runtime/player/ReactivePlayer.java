@@ -103,17 +103,11 @@ public final class ReactivePlayer extends RunTimePlayer {
                     while (matcher.find()) {
                         final String token = matcher.group().trim();
                         if (cnt == 0) {
-                            mLogger.warning("PlayAction actor " + token);
-
                             actor = token;
                         } else if (cnt == 1) {
-                            mLogger.warning("PlayAction second token (action) " + token);
-
                             name = token;
                             name = (name.contains("]")) ? name.replace("]", "") : name;
                         } else if (token.contains("=")) {
-                            mLogger.warning("PlayAction token " + token);
-
                             String[] pair = token.split("=");
                             features.add(new ActionFeature(0, pair[0].length(), pair[0], pair[1]));
                         }
