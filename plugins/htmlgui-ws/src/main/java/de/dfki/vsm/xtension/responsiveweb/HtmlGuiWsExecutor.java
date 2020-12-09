@@ -73,20 +73,35 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
 
             if (name.equalsIgnoreCase("set")) {
                 String element = activity.get("element");
-                String value = activity.get("value").replace("'", "");
+                String value = activity.get("value");
+                if (value != null) {
+                    value = value.replace("'", "");
+                } else {
+                    value = "";
+                }
                 broadcast(element + ":" + value);
             } else if (name.equalsIgnoreCase("setMoodGraph") ||
                     name.equalsIgnoreCase("setWorkHrsGraph")) {
                 String element = activity.get("element");
                 String day = activity.get("day");
                 String type = activity.get("type");
-                String value = activity.get("value").replace("'", "");
+                String value = activity.get("value");
+                if (value != null) {
+                    value = value.replace("'", "");
+                } else {
+                    value = "";
+                }
                 broadcast(element + ":" + name + "_" + day + "_" + type + "_" + value);
                 broadcast(element + ":" + name + "_" + day + "_" + type + "_" + value);
             } else if (name.equalsIgnoreCase("setSpeechBubble")) {
                 String element = activity.get("element");
                 String producer = activity.get("producer");
-                String value = activity.get("value").replace("'", "");
+                String value = activity.get("value");
+                if (value != null) {
+                    value = value.replace("'", "");
+                } else {
+                    value = "";
+                }
                 broadcast(element + ":" + name + "_" + producer + "_" + value);
             } else if (name.equalsIgnoreCase("setMenuItem")) {
                 //Dummy variable to match format of other cmds
