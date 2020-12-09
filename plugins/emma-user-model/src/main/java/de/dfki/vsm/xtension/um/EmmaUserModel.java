@@ -222,7 +222,7 @@ public class EmmaUserModel extends ActivityExecutor {
 
         if (name.equalsIgnoreCase("diary")) {
             if (mUser != null) {
-                storeDiaryEntry(activity, "user", "entry", "entry");
+                storeDiaryEntry(activity, "producer", "entry", "entry");
             } else {
                 mLogger.warning("No user specified, diary entry will not be stored.");
             }
@@ -269,8 +269,8 @@ public class EmmaUserModel extends ActivityExecutor {
 
         diaryentry.put("date", dateStr);
         diaryentry.put("no", getLastDiaryEntryNumber() + 1);
-        diaryentry.put("producer", producer);
-        diaryentry.put(key, (activity.get(value) != null) ? activity.get(value) : "");
+        diaryentry.put("producer", (activity.get(producer) != null) ? activity.get(value) : "");
+        diaryentry.put(key, (activity.get(value) != null) ? activity.get(value).replace("'", "") : "");
 
         JSONArray diary = mUser.getJSONArray("diary");
         diary.put(diaryentry);
