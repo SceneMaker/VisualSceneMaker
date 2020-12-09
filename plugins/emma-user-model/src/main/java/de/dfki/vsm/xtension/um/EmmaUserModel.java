@@ -175,7 +175,6 @@ public class EmmaUserModel extends ActivityExecutor {
         //PlayAction ( "[um item no=" + dcnt + "]" ) saves producer and text of a diary item (no) in sceneflow vars
         //(mVSM_DiaryItemProducer, mVSM_DiaryItemText) containing the informatio about the dialog item
         if (name.equalsIgnoreCase("item")) {
-            mLogger.warning("Activity " + activity.toString());
             if (activity.get("no") != null) {
                 int no = Integer.parseInt(activity.get("no"));
 
@@ -364,7 +363,7 @@ public class EmmaUserModel extends ActivityExecutor {
 
     private long getLastDiaryEntryNumber() {
         JSONArray diary = mUser.getJSONArray("diary");
-        long biggestNo = 1;
+        long biggestNo = -1;
 
         for (int i = 0; i < diary.length(); i++) {
             JSONObject item = diary.getJSONObject(i);
@@ -431,7 +430,7 @@ public class EmmaUserModel extends ActivityExecutor {
         diaryentry.put("producer", "system");
         diaryentry.put("entry", "created");
 
-        diary.put(diaryentry);
+        //diary.put(diaryentry);
         user.put("diary", diary);
 
         return user;
