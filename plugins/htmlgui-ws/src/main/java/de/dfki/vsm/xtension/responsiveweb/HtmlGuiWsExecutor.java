@@ -76,7 +76,7 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
                 String value = activity.get("value").replace("'", "");
                 broadcast(element + ":" + value);
             } else if (name.equalsIgnoreCase("setMoodGraph") ||
-                        name.equalsIgnoreCase("setWorkHrsGraph")) {
+                    name.equalsIgnoreCase("setWorkHrsGraph")) {
                 String element = activity.get("element");
                 String day = activity.get("day");
                 String type = activity.get("type");
@@ -88,6 +88,13 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
                 String producer = activity.get("producer");
                 String value = activity.get("value").replace("'", "");
                 broadcast(element + ":" + name + "_" + producer + "_" + value);
+            } else if (name.equalsIgnoreCase("setMenuItem")) {
+                //Dummy variable to match format of other cmds
+                String element = "dummy_el";
+
+                String id = activity.get("id");
+                String value = activity.get("value").replace("'", "");
+                broadcast(element + ":" + name + "_" + id + "_" + value);
             } else if (name.equalsIgnoreCase("stop")) {
                 app.stop();
             } else if (!name.isEmpty()) { //check if name represents a webpage - must be configured in the device's agent as key, value pair.
