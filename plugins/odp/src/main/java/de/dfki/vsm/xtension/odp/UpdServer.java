@@ -1,5 +1,6 @@
 package de.dfki.vsm.xtension.odp;
 
+import de.dfki.vsm.runtime.interpreter.value.BooleanValue;
 import de.dfki.vsm.runtime.interpreter.value.StringValue;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
@@ -70,6 +71,20 @@ public class UpdServer extends Thread {
                         // TODO make VSM variable odpstate configurable
                         if (mProject.hasVariable("odpstate")) {
                             mProject.setVariable("odpstate", new StringValue(value));
+                        }
+
+                        if (value.equalsIgnoreCase("startSpeech")) {
+                            // TODO make VSM variable user_speaking configurable
+                            if (mProject.hasVariable("user_speaking")) {
+                                mProject.setVariable("user_speaking", new BooleanValue(true));
+                            }
+                        }
+
+                        if (value.equalsIgnoreCase("stopSpeech")) {
+                            // TODO make VSM variable user_speaking configurable
+                            if (mProject.hasVariable("user_speaking")) {
+                                mProject.setVariable("user_speaking", new BooleanValue(false));
+                            }
                         }
                     }
 
