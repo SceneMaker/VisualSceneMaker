@@ -7,7 +7,7 @@ import de.dfki.vsm.runtime.project.RunTimeProject;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * @author Gregor Mehlmann
+ * @author Gregor Mehlmann, Patrick Gebhard
  */
 public final class TimerExecutor extends ActivityExecutor {
 

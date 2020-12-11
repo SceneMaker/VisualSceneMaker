@@ -48,6 +48,7 @@ dependencies {
     compile project(":plugins:htmlgui-ws")
     compile project(":plugins:emma-user-model")
     compile project(":plugins:ssj")
+    compile project(":plugins:timer")
     compile project(":plugins:odp")
 
     compile group: 'org.slf4j', name:'slf4j-simple', version:'1.8.0-beta4'
