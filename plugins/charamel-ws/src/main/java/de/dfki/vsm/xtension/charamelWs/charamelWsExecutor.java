@@ -377,6 +377,12 @@ public class charamelWsExecutor extends ActivityExecutor {
                 broadcast(new TimeLine(new PointovershoulderCommand(direction)));
                 break;
             }
+            case "pointdownleft": {
+                broadcast(new TimeLine(new PointDownLeft()));
+            }
+            case "pointdownright": {
+                broadcast(new TimeLine(new PointDownRight()));
+            }
             case "protectassertive": {
                 broadcast(new TimeLine(new ProtectAssertiveCommand()));
                 break;
