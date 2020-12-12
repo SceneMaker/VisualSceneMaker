@@ -353,8 +353,8 @@ public class charamelWsExecutor extends ActivityExecutor {
                 broadcast(new TimeLine(new LuemmelnCommand(variant)));
                 break;
             }
-            case "nodd": {
-                broadcast(new TimeLine(new NoddCommand()));
+            case "nod": {
+                broadcast(new TimeLine(new NodCommand()));
                 break;
             }
             case "openarm": {
