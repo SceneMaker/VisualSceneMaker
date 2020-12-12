@@ -1,11 +1,13 @@
 package de.dfki.vsm.xtension.odp;
 
 import de.dfki.vsm.model.project.PluginConfig;
+import de.dfki.vsm.model.scenescript.ActionFeature;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
 import de.dfki.vsm.runtime.activity.AbstractActivity.Type;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
+import de.dfki.vsm.xtension.odp.id_generator.TtsIdGen;
 import org.json.JSONObject;
 
 import java.io.IOException;
@@ -18,6 +20,7 @@ import java.util.List;
  * Created by Patrick on 11/06/19.
  */
 public class ODPExecutor extends ActivityExecutor {
+    public static final String TTS_ID = "ttsId";
 
     //private final String variableName;
     //private final int port;
@@ -30,6 +33,7 @@ public class ODPExecutor extends ActivityExecutor {
     private String serverAddress;
     private int clientPort;
     private int serverPort;
+    private final TtsIdGen ttsEvents = new TtsIdGen();
 
     // The singelton logger instance
     private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
@@ -90,7 +94,7 @@ public class ODPExecutor extends ActivityExecutor {
         final String activity_name = activity.getName();
         //final String activity_mode = activity.getMode();
         final String activity_actor = activity.getActor();
-        final List activity_features = activity.getFeatures();
+        final List<ActionFeature> activity_features = activity.getFeatures();
         // set all activities blocking
         //activity.setType(Type.blocking);
 
@@ -99,7 +103,21 @@ public class ODPExecutor extends ActivityExecutor {
             String state = (activity.get("state") != null) ? activity.get("state") : "";
 
             JSONObject jsonOut = new JSONObject();
-            jsonOut.put("tts", (state.equalsIgnoreCase("start")) ? "start" : "end");
+            String event ;
+            int ttsId ;
+
+            if(state == null) return; // Actually should not happen, but IntellijIDEA was complaining...
+
+            if(state.equalsIgnoreCase("start")) {
+                event = "start";
+                ttsId = ttsEvents.ttsStarted().get();
+            }
+            else {
+                event = "end";
+                ttsId = ttsEvents.ttsEnded().get();
+            }
+            jsonOut.put("tts", event);
+            jsonOut.put(TTS_ID, ttsId);
 
             sendToOPD(jsonOut);
         }
@@ -120,6 +138,9 @@ public class ODPExecutor extends ActivityExecutor {
             jsonOut.put("function", function);
             jsonOut.put("content", content);
             jsonOut.put("postproc", postproc);
+
+            jsonOut.put(TTS_ID, ttsEvents.newTaskArrived(task).get());
+
 
             sendToOPD(jsonOut);
         }
