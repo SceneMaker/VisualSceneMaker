@@ -1,9 +1,12 @@
 package de.dfki.vsm.xtension.odp;
 
 import de.dfki.vsm.runtime.interpreter.value.BooleanValue;
+import de.dfki.vsm.runtime.interpreter.value.FloatValue;
+import de.dfki.vsm.runtime.interpreter.value.IntValue;
 import de.dfki.vsm.runtime.interpreter.value.StringValue;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.IOException;
@@ -57,11 +60,77 @@ public class UpdServer extends Thread {
                         String utterance = transcript.getString("utterance");
                         //float confidence = transcript.getFloat("confidence");
 
-                        //JSONObject liwcObj = transcript.getJSONObject("liwc-result");
-
                         // TODO make VSM variable userUtterance configurable
                         if (mProject.hasVariable("userUtterance")) {
                             mProject.setVariable("userUtterance", new StringValue(utterance));
+                        }
+                    }
+
+                    if (jObj.has("liwc-result")) {
+                        JSONObject liwcObj = jObj.getJSONObject("liwc-result");
+
+                        if (liwcObj.has("II. Psychologische Prozesse")) {
+                            JSONArray psychCogProc = liwcObj.getJSONArray("II. Psychologische Prozesse");
+
+                            if (psychCogProc.length() > 0) {
+                                JSONObject instance = psychCogProc.getJSONObject(0);
+
+                                if (instance.has("Affektive und emotionale Prozesse")) {
+                                    JSONObject affProc = instance.getJSONObject("Affektive und emotionale Prozesse");
+
+                                    if (affProc.has("Positiveemotion")) {
+                                        float posAffect = affProc.getFloat("Positiveemotion");
+                                        if (mProject.hasVariable("userUtterancePosAffect")) {
+                                            mProject.setVariable("userUtterancePosAffect", new FloatValue(posAffect));
+                                        }
+                                    }
+                                }
+
+                                if (instance.has("Kognitive Prozesse")) {
+                                    JSONObject kogProc = instance.getJSONObject("Kognitive Prozesse");
+
+                                    if (kogProc.has("Discrepancy")) {
+                                        float discrepancy = kogProc.getFloat("Discrepancy");
+                                        if (mProject.hasVariable("userUtteranceDiscrepancy")) {
+                                            mProject.setVariable("userUtteranceDiscrepancy", new FloatValue(discrepancy));
+                                        }
+                                    }
+
+                                    if (kogProc.has("Insight")) {
+                                        float insight = kogProc.getFloat("Insight");
+                                        if (mProject.hasVariable("userUtteranceInsight")) {
+                                            mProject.setVariable("userUtteranceInsight", new FloatValue(insight));
+                                        }
+                                    }
+
+                                    if (kogProc.has("Tentative")) {
+                                        float tenative = kogProc.getFloat("Tentative");
+                                        if (mProject.hasVariable("userUtteranceTentative")) {
+                                            mProject.setVariable("userUtteranceTentative", new FloatValue(tenative));
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        if (liwcObj.has("Gesamtwortzahl")) {
+                            int totalWords = liwcObj.getInt("Gesamtwortzahl");
+
+                            // TODO make VSM variable userUtteranceTotalWords configurable
+                            if (mProject.hasVariable("userUtteranceTotalWords")) {
+                                mProject.setVariable("userUtteranceTotalWords", new IntValue(totalWords));
+                            }
+                        }
+                    }
+
+                    if (jObj.has("inferred-topics")) {
+                        String topics = jObj.getString("inferred-topics");
+                        topics = topics.replace(" ", ""); // remove spaces
+                        topics = (topics.startsWith(",")) ? topics.substring(1) : topics;
+
+                        // TODO make VSM variable userUtteranceTotalWords configurable
+                        if (mProject.hasVariable("userUtteranceTopics")) {
+                            mProject.setVariable("userUtteranceTopics", new StringValue(topics));
                         }
                     }
 
