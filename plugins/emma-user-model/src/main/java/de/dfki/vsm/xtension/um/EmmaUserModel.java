@@ -25,7 +25,6 @@ public class EmmaUserModel extends ActivityExecutor {
 
     // List of all users
     private JSONObject mUserProfiles = new JSONObject();
-
     // current user
     private JSONObject mUser = null;
     // days at which the user had a diary conversation
@@ -39,6 +38,10 @@ public class EmmaUserModel extends ActivityExecutor {
     private final String mVSM_DiaryDailyItemsNumber = "diaryDailyItemsNum";
     private final String mVSM_DiaryItemProducer = "diaryItemProducer";
     private final String mVSM_DiaryItemText = "diaryItemText";
+
+    // File stuff
+    private String umDir = "";
+    private String umFile = "";
 
     // The singleton logger instance
     private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
@@ -76,6 +79,7 @@ public class EmmaUserModel extends ActivityExecutor {
         final String name = activity.getName();
         if (name.equalsIgnoreCase("set")) {
             setUserValue("name", activity);
+            setUserValue("introduction", activity);
             setUserValue("break", activity);
             setUserValue("type", activity);
             setUserValue("therapy", activity);
@@ -189,8 +193,10 @@ public class EmmaUserModel extends ActivityExecutor {
                         for (int i = 0; i < diary.length(); i++) {
                             if (diary.getJSONObject(i).getInt("no") == itemNum) {
                                 entry = diary.getJSONObject(i);
-                                mProject.setVariable(mVSM_DiaryItemProducer, new StringValue(entry.getString("producer")));
-                                mProject.setVariable(mVSM_DiaryItemText, new StringValue(entry.getString("entry")));
+                                if ((entry.has("entry")) && (!entry.getString("entry").isEmpty())) { // for now, do only consider entries with key "entry"
+                                    mProject.setVariable(mVSM_DiaryItemProducer, new StringValue(entry.getString("producer")));
+                                    mProject.setVariable(mVSM_DiaryItemText, new StringValue(entry.getString("entry")));
+                                }
                                 return;
                             }
                         }
@@ -269,7 +275,7 @@ public class EmmaUserModel extends ActivityExecutor {
 
         diaryentry.put("date", dateStr);
         diaryentry.put("no", getLastDiaryEntryNumber() + 1);
-        diaryentry.put("producer", (activity.get(producer) != null) ? activity.get(value) : "");
+        diaryentry.put("producer", (activity.get(producer) != null) ? activity.get(producer) : "");
         diaryentry.put(key, (activity.get(value) != null) ? activity.get(value).replace("'", "") : "");
 
         JSONArray diary = mUser.getJSONArray("diary");
@@ -345,16 +351,18 @@ public class EmmaUserModel extends ActivityExecutor {
             mLogger.message("Found " + diary.length() + " diary entries.");
             for (int i = 0; i < diary.length(); i++) {
                 JSONObject diaryItem = diary.getJSONObject(i);
-                // make a proper date
-                String dateStr = diaryItem.getString("date");
-                // get the number of the dialog entry
-                try {
-                    Date date = df.parse(dateStr);
-                    if (date.equals(targetDate)) {
-                        entries.add(diaryItem.getInt("no"));
+                if ((diaryItem.has("entry")) && (!diaryItem.getString("entry").isEmpty())) { // for now, do only consider entries with key "entry"
+                    // make a proper date
+                    String dateStr = diaryItem.getString("date");
+                    // get the number of the dialog entry
+                    try {
+                        Date date = df.parse(dateStr);
+                        if (date.equals(targetDate)) {
+                            entries.add(diaryItem.getInt("no"));
+                        }
+                    } catch (ParseException e) {
+                        mLogger.failure("Dialog entry faulty " + diaryItem);
                     }
-                } catch (ParseException e) {
-                    mLogger.failure("Dialog entry faulty " + diaryItem);
                 }
             }
         }
@@ -398,6 +406,7 @@ public class EmmaUserModel extends ActivityExecutor {
         // initial user data
         user.put("name", name);
         user.put("id", id);
+        user.put("introduction", "unknown");
         user.put("break", "unknown");
         user.put("type", "unknown");
         user.put("therapy", "unknown");
@@ -438,8 +447,21 @@ public class EmmaUserModel extends ActivityExecutor {
 
     private void loadUserModel() {
         mLogger.message("Loading EmmA User Model ...");
-        String umf = (mProject.getProjectPath() + File.separator + mConfig.getProperty("umdir") + File.separator + "UM.json").replace("\\", "/");
 
+        if ((mConfig.getProperty("umdir") != null) && (!mConfig.getProperty("umdir").isEmpty())) {
+            umDir = mConfig.getProperty("umdir");
+        } else {
+            mLogger.failure("<Feature key=\"umdir\" val=\"<directory>\"/> is not specified in VSM project file. Aborting!");
+            System.exit(0);
+        }
+        if ((mConfig.getProperty("umfile") != null) && (!mConfig.getProperty("umfile").isEmpty())) {
+            umFile = mConfig.getProperty("umfile");
+        } else {
+            mLogger.failure("<Feature key=\"umfile\" val=\"<file name>\"/> is not specified in VSM project file. Aborting!");
+            System.exit(0);
+        }
+
+        String umf = (mProject.getProjectPath() + File.separator + umDir + File.separator + umFile).replace("\\", "/");
         String input = "";
         try {
             BufferedReader br = new BufferedReader(new FileReader(umf));
@@ -477,7 +499,7 @@ public class EmmaUserModel extends ActivityExecutor {
     }
 
     private void saveUserModel() {
-        String umf = mProject.getProjectPath() + File.separator + mConfig.getProperty("umdir") + File.separator + "UM.json";
+        String umf = (mProject.getProjectPath() + File.separator + umDir + File.separator + umFile).replace("\\", "/");
         try {
             FileWriter umfw = new FileWriter(umf);
 
