@@ -4,6 +4,14 @@ import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
 import de.dfki.vsm.runtime.project.RunTimeProject;
+
+import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -29,6 +37,7 @@ public final class TimerExecutor extends ActivityExecutor {
 
     @Override
     public final void launch() {
+        mLogger.message("Launching Timer Executor ...");
     }
 
     @Override
@@ -41,7 +50,6 @@ public final class TimerExecutor extends ActivityExecutor {
         //activity.setType(AbstractActivity.Type.blocking);
 
         // Get log message features
-
         mLogger.message("TimerExecutor, processing action " + activity.getName());
         final String name = activity.getName();
         if (name.equalsIgnoreCase("clear")) {
@@ -55,9 +63,23 @@ public final class TimerExecutor extends ActivityExecutor {
         } else if (name.equalsIgnoreCase("timediff")) {
             Long lasttime = Long.parseLong(activity.get("lasttime"));
             Long currenttime = System.currentTimeMillis();
-            Long diff = currenttime-lasttime;
-
+            Long diff = currenttime - lasttime;
             mProject.setVariable(activity.get("var"), diff.intValue());
+        } else if (name.equalsIgnoreCase("day")) {
+            Calendar calendar = Calendar.getInstance();
+            Date date = calendar.getTime();
+            String day = new SimpleDateFormat("EEEE", Locale.GERMANY).format(date.getTime());
+            mProject.setVariable(activity.get("var"), day);
+        } else if (name.equalsIgnoreCase("partofday")) {
+            Instant tinst = Instant.now();
+            LocalDateTime ldt = LocalDateTime.ofInstant(tinst, ZoneId.systemDefault());
+            int hour = ldt.getHour();
+            String partOfDayDescription =
+                    ((hour > 20) || (hour < 24)) ? "late" :
+                            ((hour >= 0) || (hour < 4)) ? "very late" :
+                                    ((hour >= 4) || (hour < 7)) ? "early" :
+                                            ((hour >= 7) || (hour < 12)) ? "late early" : "mid day";
+            mProject.setVariable(activity.get("var"), partOfDayDescription);
         }
     }
 
