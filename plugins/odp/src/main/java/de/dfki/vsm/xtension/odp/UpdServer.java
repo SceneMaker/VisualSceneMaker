@@ -14,6 +14,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
 import java.nio.charset.StandardCharsets;
+import java.util.Iterator;
 
 public class UpdServer extends Thread {
     private DatagramSocket socket;
@@ -54,9 +55,11 @@ public class UpdServer extends Thread {
 
                     JSONObject jObj = new JSONObject(message);
 
+
                     // check if object contains transcription element
                     if (jObj.has("transcription")) {
                         JSONObject transcript = jObj.getJSONObject("transcription");
+
                         String utterance = transcript.getString("utterance");
                         //float confidence = transcript.getFloat("confidence");
 
@@ -64,10 +67,23 @@ public class UpdServer extends Thread {
                         if (mProject.hasVariable("userUtterance")) {
                             mProject.setVariable("userUtterance", new StringValue(utterance));
                         }
+
+                        String allkeys = "";
+                        //debug
+                        for (Iterator iterator = jObj.keySet().iterator(); iterator.hasNext(); ) {
+                            String key = (String) iterator.next();
+                            allkeys = allkeys + " " + key.replace("\"", "");
+                        }
+                        mProject.setVariable("debug", new StringValue("Alle ODP messages keys " + allkeys));
                     }
 
                     if (jObj.has("liwc-result")) {
                         JSONObject liwcObj = jObj.getJSONObject("liwc-result");
+
+                        // TODO make VSM variable userUtterance configurable
+                        if (mProject.hasVariable("debug")) {
+                            mProject.setVariable("debug", new StringValue("liwc daten " + liwcObj.toString().replace("\"", "").length()));
+                        }
 
                         if (liwcObj.has("II. Psychologische Prozesse")) {
                             JSONArray psychCogProc = liwcObj.getJSONArray("II. Psychologische Prozesse");
