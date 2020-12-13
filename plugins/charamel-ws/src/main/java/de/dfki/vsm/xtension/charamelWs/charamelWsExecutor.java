@@ -285,9 +285,16 @@ public class charamelWsExecutor extends ActivityExecutor {
                 broadcast(new TimeLine(new CountLeftCommand(number)));
                 break;
             }
-            case "explain": {
+            case "emphasis": {
                 String numberString = getActionFeatureValue("number", f);
                 int number = Integer.parseInt(numberString);
+                broadcast(new TimeLine(new EmphasisCommand()));
+                break;
+            }
+            case "explain": {
+                String numberString = getActionFeatureValue("number", f);
+                int number = (numberString.isEmpty()) ? 1 : Integer.parseInt(numberString);
+                number = (number > 4) ? 4 : number;
                 broadcast(new TimeLine(new ExplainCommand(number)));
                 break;
             }
