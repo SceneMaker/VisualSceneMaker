@@ -1,0 +1,10 @@
+#SetJointState service
+
+#REQUEST
+sensor_msgs/JointState point
+
+---
+
+#RESPONSE
+bool success
+string message

@@ -1,0 +1,8 @@
+prefix=/home/sarah/MindBotCommunication/devel
+
+Name: communication_package
+Description: Description of communication_package
+Version: 0.1.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: message_runtime mindbot_msgs

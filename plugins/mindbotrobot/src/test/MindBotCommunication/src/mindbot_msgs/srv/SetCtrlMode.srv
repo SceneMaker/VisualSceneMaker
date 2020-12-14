@@ -1,0 +1,10 @@
+#SetCtrlMode service
+
+#REQUEST
+mindbot_msgs/CtrlMode ctrl_mode
+
+---
+
+#RESPONSE
+bool success
+string message

@@ -1,0 +1,10 @@
+#SetPose service
+
+#REQUEST
+geometry_msgs/Pose pose
+
+---
+
+#RESPONSE
+bool success
+string message

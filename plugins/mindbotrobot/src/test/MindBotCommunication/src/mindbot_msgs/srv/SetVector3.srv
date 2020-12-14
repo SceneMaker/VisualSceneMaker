@@ -1,0 +1,10 @@
+#SetVector3 service
+
+#REQUEST
+geometry_msgs/Vector3 data
+
+---
+
+#RESPONSE
+bool success
+string message
