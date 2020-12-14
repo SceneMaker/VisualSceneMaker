@@ -286,8 +286,6 @@ public class charamelWsExecutor extends ActivityExecutor {
                 break;
             }
             case "emphasis": {
-                String numberString = getActionFeatureValue("number", f);
-                int number = Integer.parseInt(numberString);
                 broadcast(new TimeLine(new EmphasisCommand()));
                 break;
             }
@@ -430,8 +428,12 @@ public class charamelWsExecutor extends ActivityExecutor {
                 broadcast(new TimeLine(new SitTalkCommand(step)));
                 break;
             }
-            case "thinking": {
+            case "think": {
                 broadcast(new TimeLine(new ThinkingCommand()));
+                break;
+            }
+            case "ups": {
+                broadcast(new TimeLine(new UpsCommand()));
                 break;
             }
             case "wave": {
