@@ -193,11 +193,23 @@ public class charamelWsExecutor extends ActivityExecutor {
                 break;
             }
             case "happy": {
+                String manualOperationStr = getActionFeatureValue("manual", f);
+                manualOperationStr = (manualOperationStr.isEmpty()) ? "false" : manualOperationStr;
+                boolean manual = Boolean.parseBoolean(manualOperationStr);
+
+
                 String intensityStr = getActionFeatureValue("intensity", f);
                 String attackStr = getActionFeatureValue("attack", f);
-                String holdStr = getActionFeatureValue("hold", f);
-                EmotionCommand hc = new EmotionCommand("emot_happy", (intensityStr.isEmpty()) ? 0.7f : Float.parseFloat(intensityStr), (attackStr.isEmpty()) ? 200 : Integer.parseInt(attackStr), (holdStr.isEmpty()) ? 1000 : Integer.parseInt(holdStr));
-                broadcast(hc);
+
+                if (manual) {
+                    EmotionManualConfigCommand ec = new EmotionManualConfigCommand("emot_happy", (intensityStr.isEmpty()) ? 0.7f : Float.parseFloat(intensityStr), (attackStr.isEmpty()) ? 200 : Integer.parseInt(attackStr));
+                    broadcast(ec);
+                } else {
+                    String holdStr = getActionFeatureValue("hold", f);
+                    EmotionCommand hc = new EmotionCommand("emot_happy", (intensityStr.isEmpty()) ? 0.7f : Float.parseFloat(intensityStr), (attackStr.isEmpty()) ? 200 : Integer.parseInt(attackStr), (holdStr.isEmpty()) ? 1000 : Integer.parseInt(holdStr));
+                    broadcast(hc);
+                }
+
                 break;
             }
             case "pensively": {
@@ -213,11 +225,21 @@ public class charamelWsExecutor extends ActivityExecutor {
                 break;
             }
             case "smile": {
+                String manualOperationStr = getActionFeatureValue("manual", f);
+                manualOperationStr = (manualOperationStr.isEmpty()) ? "false" : manualOperationStr;
+                boolean manual = Boolean.parseBoolean(manualOperationStr);
+
                 String intensityStr = getActionFeatureValue("intensity", f);
                 String attackStr = getActionFeatureValue("attack", f);
-                String holdStr = getActionFeatureValue("hold", f);
-                EmotionCommand hc = new EmotionCommand("emot_smile", (intensityStr.isEmpty()) ? 0.7f : Float.parseFloat(intensityStr), (attackStr.isEmpty()) ? 200 : Integer.parseInt(attackStr), (holdStr.isEmpty()) ? 1000 : Integer.parseInt(holdStr));
-                broadcast(hc);
+
+                if (manual) {
+                    EmotionManualConfigCommand ec = new EmotionManualConfigCommand("emot_smile", (intensityStr.isEmpty()) ? 0.7f : Float.parseFloat(intensityStr), (attackStr.isEmpty()) ? 200 : Integer.parseInt(attackStr));
+                    broadcast(ec);
+                } else {
+                    String holdStr = getActionFeatureValue("hold", f);
+                    EmotionCommand ec = new EmotionCommand("emot_smile", (intensityStr.isEmpty()) ? 0.7f : Float.parseFloat(intensityStr), (attackStr.isEmpty()) ? 200 : Integer.parseInt(attackStr), (holdStr.isEmpty()) ? 1000 : Integer.parseInt(holdStr));
+                    broadcast(ec);
+                }
                 break;
             }
             case "surprised": {
@@ -314,6 +336,10 @@ public class charamelWsExecutor extends ActivityExecutor {
             }
             case "handstogether": {
                 broadcast(new TimeLine(new HandstogetherCommand()));
+                break;
+            }
+            case "headshake": {
+                broadcast(new TimeLine(new HeadShakeCommand()));
                 break;
             }
             case "introduce": {
