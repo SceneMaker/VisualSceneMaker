@@ -95,9 +95,9 @@ public class UpdServer extends Thread {
                                     JSONObject affProc = instance.getJSONObject("Affektive und emotionale Prozesse");
 
                                     if (affProc.has("Positiveemotion")) {
-                                        float posAffect = affProc.getFloat("Positiveemotion");
+                                        int posAffect = affProc.getInt("Positiveemotion");
                                         if (mProject.hasVariable("userUtterancePosAffect")) {
-                                            mProject.setVariable("userUtterancePosAffect", new FloatValue(posAffect));
+                                            mProject.setVariable("userUtterancePosAffect", new IntValue(posAffect));
                                         }
                                     }
                                 }
