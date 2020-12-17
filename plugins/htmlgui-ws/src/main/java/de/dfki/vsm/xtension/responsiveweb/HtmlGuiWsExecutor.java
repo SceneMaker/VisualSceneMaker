@@ -39,6 +39,8 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
     private Javalin app;
     private String mPathToCertificate = "";
     private String mSceneflowInfoVar = "";
+    private final static String svalueSeparatorChar = "#";
+    private final static String sCmdSeperatorChar = "$";
 
     public HtmlGuiWsExecutor(PluginConfig config, RunTimeProject project) {
         super(config, project);
@@ -79,7 +81,7 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
                 } else {
                     value = "";
                 }
-                broadcast(element + ":" + value);
+                broadcast(element + sCmdSeperatorChar + value);
             } else if (name.equalsIgnoreCase("setMoodGraph") ||
                     name.equalsIgnoreCase("setWorkHrsGraph")) {
                 String element = activity.get("element");
@@ -91,8 +93,8 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
                 } else {
                     value = "";
                 }
-                broadcast(element + ":" + name + "_" + day + "_" + type + "_" + value);
-                broadcast(element + ":" + name + "_" + day + "_" + type + "_" + value);
+                broadcast(element + sCmdSeperatorChar + name + svalueSeparatorChar + day + svalueSeparatorChar + type + svalueSeparatorChar + value);
+                broadcast(element + sCmdSeperatorChar + name + svalueSeparatorChar + day + svalueSeparatorChar + type + svalueSeparatorChar + value);
             } else if (name.equalsIgnoreCase("setSpeechBubble")) {
                 String element = activity.get("element");
                 String producer = activity.get("producer");
@@ -102,14 +104,14 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
                 } else {
                     value = "";
                 }
-                broadcast(element + ":" + name + "_" + producer + "_" + value);
+                broadcast(element + sCmdSeperatorChar + name + svalueSeparatorChar + producer + svalueSeparatorChar + value);
             } else if (name.equalsIgnoreCase("setMenuItem")) {
                 //Dummy variable to match format of other cmds
                 String element = "dummy_el";
 
                 String id = activity.get("id");
                 String value = activity.get("value").replace("'", "");
-                broadcast(element + ":" + name + "_" + id + "_" + value);
+                broadcast(element + sCmdSeperatorChar + name + svalueSeparatorChar + id + svalueSeparatorChar + value);
             } else if (name.equalsIgnoreCase("stop")) {
                 app.stop();
             } else if (!name.isEmpty()) { //check if name represents a webpage - must be configured in the device's agent as key, value pair.
