@@ -130,7 +130,7 @@ public class ODPExecutor extends ActivityExecutor {
             }
             String function = (activity.get("func") != null) ? activity.get("func") : "";
             String content = (activity.get("cont") != null) ? activity.get("cont") : "";
-            String postproc = (activity.get("ppro") != null) ? activity.get("cont") : "false";
+            String postproc = (activity.get("post") != null) ? activity.get("post") : "false";
 
             JSONObject jsonOut = new JSONObject();
 
