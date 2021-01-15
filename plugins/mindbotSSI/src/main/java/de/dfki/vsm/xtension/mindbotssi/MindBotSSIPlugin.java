@@ -1,30 +1,14 @@
 package de.dfki.vsm.xtension.mindbotssi;
 
 import de.dfki.vsm.model.project.PluginConfig;
-import de.dfki.vsm.runtime.interpreter.value.AbstractValue;
-import de.dfki.vsm.runtime.interpreter.value.FloatValue;
-import de.dfki.vsm.runtime.interpreter.value.ListValue;
-import de.dfki.vsm.runtime.interpreter.value.StringValue;
 import de.dfki.vsm.runtime.project.RunTimeProject;
-import de.dfki.vsm.util.jpl.JPLEngine;
-import de.dfki.vsm.util.xml.XMLUtilities;
 import de.dfki.vsm.xtension.ssi.SSIRunTimePlugin;
 import de.dfki.vsm.xtension.ssi.event.SSIEventArray;
 import de.dfki.vsm.xtension.ssi.event.SSIEventEntry;
 import de.dfki.vsm.xtension.ssi.event.data.SSIEventData;
-import de.dfki.vsm.xtension.ssi.event.data.SSIStringData;
-import de.dfki.vsm.xtension.ssi.event.data.SSITupleData;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map.Entry;
 
 /**
- * @author Gregor Mehlmann
- * @author Patrick Gebhard
+ * @author Fabrizio Nunnari
  */
 public final class MindBotSSIPlugin extends SSIRunTimePlugin {
 
@@ -57,18 +41,21 @@ public final class MindBotSSIPlugin extends SSIRunTimePlugin {
     public void handle(final SSIEventArray array) {
         // Print some information
         mLogger.message("Got SSI message array of size " + array.size());
-        for (final SSIEventEntry event : array.list()) {
-            final SSIEventData data = event.getData();
+        for (final SSIEventEntry event_entry : array.list()) {
+            final SSIEventData data = event_entry.getData();
             // Imagine the event was produced from address "coords@mouse" or "click@mouse"
-            mLogger.message(" - sender: " +  event.getSender() + // "mouse"
-                    "\t event: " + event.getEvent() + // "coords"
-                    "\t from: " + event.getFrom() + // an integer number (?)
-                    "\t type: " + event.getType() + // TUPLE for coords, or EMPTY for clicks
-                    "\t state: " + event.getState() +  // "continued" for streamed coords and clicks down, or "completed" for clicks up.
+            mLogger.message(" - sender: " +  event_entry.getSender() + // "mouse"
+                    "\t event: " + event_entry.getEvent() + // "coords"
+                    "\t from: " + event_entry.getFrom() + // an integer number (?)
+                    "\t type: " + event_entry.getType() + // TUPLE for coords, or EMPTY for clicks
+                    "\t state: " + event_entry.getState() +  // "continued" for streamed coords and clicks down, or "completed" for clicks up.
                     "\t data: " + data);
 
-            if (event.getSender().equals("mouse") && event.getEvent().equals("coords")) {
-                assert event.getType().equals("STRING") ;
+            String sender = event_entry.getSender() ;
+            String event = event_entry.getEvent() ;
+
+            if (sender.equals("mouse") && event.equals("coords")) {
+                assert event_entry.getType().equals("STRING") ;
                 String data_str = data.toString() ;
                 // Format, e.g.: 0.249269,0.507675;0.249269,0.507675;0.249269,0.507675;0.249269,0.507675;0.249269,0.507675;0.249269,0.507675;0.249269,0.507675;0.249269,0.507675;0.249269,0.507675;0.249269,0.507675;0.249269,0.507675;0.249269,0.507675;0.249269,0.507675;0.249269,0.507675;0.249269,0.507675;0.249269,0.507675;0.249269,0.507675;0.249269,0.507675;0.249269,0.507675;0.249269,0.507675;0.249269,0.507675;0.249269,0.507675;0.249269,0.507675;0.249269,0.507675;0.249269,0.507675;0.249269,0.507675;0.249269,0.507675;0.249269,0.507675;0.249269,0.507675;0.249269,0.507675;0.249269,0.507675;0.249269,0.507675;0.249269,0.507675;0.249269,0.507675;0.249269,0.507675;0.249269,0.507675;0.249269,0.507675;0.249269,0.507675;0.249269,0.507675;0.249269,0.507675;0.249269,0.507675;0.249269,0.507675;0.249269,0.507675;0.249269,0.507675;0.249269,0.507675;0.249269,0.507675;0.249269,0.507675;0.249269,0.507675;0.249269,0.507675;0.249269,0.507675
                 String[] coords = data_str.split(";") ;
@@ -78,9 +65,22 @@ public final class MindBotSSIPlugin extends SSIRunTimePlugin {
                 float x = Float.parseFloat(last_coords_str[0]) ;
                 float y = Float.parseFloat(last_coords_str[1]) ;
                 mLogger.message("Most recent Mouse coords: \t" + x + "\t" + y);
-            }
 
-            // mProject.setVariable("UserSaidKeyword", keyword);
+                mProject.setVariable("ssi_mouse_x", x);
+                mProject.setVariable("ssi_mouse_y", y);
+
+            } else if (sender.equals("mouse") && event.equals("click")) {
+                assert event_entry.getType().equals("STRING") ;
+                assert data == null ; // Mouse clicks bring no data
+                String state = event_entry.getState() ;
+                if (state.equals("continued")) {
+                    mLogger.message("Mouse Click DOWN");
+                } else if (state.equals("completed")) {
+                    mLogger.message("Mouse Click UP. Duration: " + event_entry.getDur());
+                } else {
+                    assert false;
+                }
+            }
 
         }
     }
