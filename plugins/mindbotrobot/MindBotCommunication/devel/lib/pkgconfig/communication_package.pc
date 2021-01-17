@@ -1,4 +1,4 @@
-prefix=/home/sarah/MindBotCommunication/devel
+prefix=/home/sarah/MindbotRobot/VisualSceneMaker/plugins/mindbotrobot/MindBotCommunication/devel
 
 Name: communication_package
 Description: Description of communication_package
