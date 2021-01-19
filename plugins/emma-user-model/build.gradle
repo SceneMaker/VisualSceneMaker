@@ -8,8 +8,8 @@ version '1.0.0'
 repositories {
     mavenCentral()
 }
-sourceCompatibility = 11
-targetCompatibility = 11
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
     // https://mvnrepository.com/artifact/org.json/json
