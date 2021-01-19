@@ -16,5 +16,5 @@ dependencies {
     compile project(":core")
 }
 compileJava{
-    //options.release = 8
+//    options.release = 8
 }
