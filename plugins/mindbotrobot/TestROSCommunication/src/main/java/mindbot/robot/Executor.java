@@ -15,6 +15,7 @@ public class Executor {
     public static void main(String[] argv) throws Exception {
 
         boolean runSubscriber = true ;
+        boolean runClient = false ;
 
         if(argv.length < 1) {
             System.err.println("Missing <ROSCORE_URL> argument, e.g.: 'http://localhost:11311'");
@@ -26,6 +27,7 @@ public class Executor {
 
         // MindbotPublisher pubNodeMain;
         MindbotSubscriber subNodeMain;
+        MindbotClient clientNodeMain;
         NodeMainExecutor nodeMainExecutor = DefaultNodeMainExecutor.newDefault();
 
         // Execute the Publisher
@@ -54,6 +56,16 @@ public class Executor {
         }
 
         // Execute the Client
-
+        if (runClient) {
+            String host = InetAddressFactory.newNonLoopback().getHostAddress();
+            NodeConfiguration clientNodeConfiguration = NodeConfiguration.newPublic(host, ros_uri);
+            clientNodeMain = new MindbotClient();
+            clientNodeConfiguration.setNodeName("MindbotClient");
+            nodeMainExecutor.execute(clientNodeMain, clientNodeConfiguration);
+            clientNodeMain.setUpClient();
+            clientNodeMain.callClient();
+            // nodeMainExecutor.shutdownNodeMain(subNodeMain);
+            // nodeMainExecutor.shutdown();
+        }
     }
 }
