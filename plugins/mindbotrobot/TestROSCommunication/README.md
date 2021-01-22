@@ -44,6 +44,58 @@ The, run this project as a standalone project and run the test using the `run` g
 
 
 ## Building mindbot_msgs-x.y.z.jar
+First create a folder, name it how you like, for this tutorial we name it 'MindbotCommunication'. 
+Then open a terminal and move to that folder. 
+With the following commands we create a source folder and rosjava creates for us a package and a project which contains a Subscriber and a Publisher:
+```
+mkdir -p src
+cd src
+catkin_create_rosjava_pkg communication_package
+cd ..
+catkin_make
+source devel/setup.bash
+cd src/communication_package
+catkin_create_rosjava_project communication_project
+cd ../..
+catkin_make
+```
 
-TODO (Sarah)
+Catkin_make builds the project and creates a build and a devel folder.
 
+We have created a Project which contains a subscriber and a publisher. Now we need to move the mindbot_msgs into the source folder which is in the outermost folder MindbotCommunication where also the folder communication_package is located.
+
+Now you need to change the following files (replace the methods with the following methods):
+
+src/communication_package/CMakeLists.txt:
+```
+find_package(catkin REQUIRED
+rosjava_build_tools
+message_generation
+mindbot_msgs)
+catkin_package(CATKIN_DEPENDS
+message_runtime
+mindbot_msgs)
+```
+
+src/communcation_package/package.xml:
+```
+<buildtool_depend>catkin</buildtool_depend>
+<build_depend>rosjava_build_tools</build_depend>
+<build_depend>message_generation</build_depend>
+<build_depend>mindbot_msgs</build_depend>
+<exec_depend>mindbot_msgs</exec_depend>
+<exec_depend>message_runtime</exec_depend>
+```
+
+src/communcation_package/communcation_project/build.gradle:
+```
+compile 'org.ros.rosjava_core:rosjava:[0.3,0.4)'
+compile 'org.ros.rosjava_messages:mindbot_msgs:[0.0, 0.1)'
+```
+
+Once again in a console move to the folder MindbotCommunication and:
+```
+catkin_make
+```
+
+You can find the jar in MindbotCommunication/build/mindbot_msgs/java/mindbot_msgs/build/libs
