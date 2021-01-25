@@ -42,7 +42,7 @@ public class charamelWsExecutor extends ActivityExecutor {
     private String mVSMCharacterSpeakingVar = "";
 
     // PG: 18.11.2020 global Sceneflow variable for the whole turn information.
-    private String mVSMCharacterTurnVar = "turn_utterance";
+    private final String mVSMCharacterTurnVar = "turn_utterance";
 
     public charamelWsExecutor(PluginConfig config, RunTimeProject project) {
         super(config, project);
@@ -573,7 +573,7 @@ public class charamelWsExecutor extends ActivityExecutor {
             //execute scheduled action
             mLogger.message("Tell VSM activity scheduler to handle action represented by time marker >" + message + "<");
 
-            if (mProject.getRunTimePlayer().getActivityScheduler().hasMaker(message)) {
+            if (mProject.getRunTimePlayer().getActivityScheduler().hasMarker(message)) {
                 mProject.getRunTimePlayer().getActivityScheduler().handle(message);
             } else {
                 mLogger.failure("Marker has already been processed!");

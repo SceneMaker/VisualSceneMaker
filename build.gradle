@@ -55,6 +55,11 @@ dependencies {
 
     // https://mvnrepository.com/artifact/org.bouncycastle/bcprov-jdk15on
     // does not work compile group: 'org.bouncycastle', name: 'bcprov-jdk15on', version: '1.66'
+    compile project(":plugins:yallah")
+    compile project(":plugins:ssi")
+    compile project(":plugins:reeti")
+    compile project(":plugins:tricatworld")
+    compile project(":plugins:charamel")
 
     // https://mvnrepository.com/artifact/org.reflections/reflections
     compile group: 'org.reflections', name: 'reflections', version: '0.9.12'
