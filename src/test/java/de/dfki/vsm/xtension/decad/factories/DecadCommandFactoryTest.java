@@ -1,5 +1,6 @@
 package de.dfki.vsm.xtension.decad.factories;
 
+import de.dfki.vsm.model.scenescript.SceneTurn;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
 import de.dfki.vsm.runtime.activity.ActionActivity;
 import de.dfki.vsm.runtime.activity.SpeechActivity;
@@ -20,7 +21,9 @@ class DecadCommandFactoryTest {
     @Test
     void shouldReturnSpeechCommandWhenSpeechActivity() {
         factory = makeFactory();
-        AbstractActivity activity = new SpeechActivity("Test actor", new LinkedList<>(), ".");
+        LinkedList textToSpeak = new LinkedList();
+        SceneTurn turn = new SceneTurn();
+        AbstractActivity activity = new SpeechActivity("Test actor", textToSpeak, ".", turn, 1, 1, 1, 1);
         DecadCommand resultCommand = factory.getCommand(activity);
         assertTrue(resultCommand instanceof SpeechCommand);
     }
