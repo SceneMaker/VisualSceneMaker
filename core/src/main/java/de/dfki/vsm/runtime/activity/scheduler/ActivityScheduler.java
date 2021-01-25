@@ -44,7 +44,7 @@ public final class ActivityScheduler {
 
 
     //Check if there is an marker / activity.
-    public boolean hasMaker(String marker) {
+    public boolean hasMarker(String marker) {
         synchronized (mWorkerMap) {
             return mWorkerMap.containsKey(marker);
         }
@@ -85,8 +85,6 @@ public final class ActivityScheduler {
             final String marker,
             final ActionActivity activity,
             final ActivityExecutor executor) {
-
-        // PG 12.8.2020 debug: mLogger.message("ActivityScheduler registers activity " + activity.getText() + " with marker >" + marker + "< and executor " + executor.getClass().getCanonicalName());
         // Create a new activity task
         final ActivityWorker task = new ActivityWorker(
                 -1, null, activity, executor);

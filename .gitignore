@@ -8,5 +8,6 @@ tmp/
 # Ignoring all build directories
 build/
 
-
+#
+# MacOS stuff
 .DS_Store
