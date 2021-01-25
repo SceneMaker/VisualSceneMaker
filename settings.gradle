@@ -1,6 +1,7 @@
 rootProject.name = 'VisualSceneMaker'
 
 include 'core'
+include 'plugins:extensionAPI'
 include 'plugins:AndroidGui'
 include 'plugins:charamel-ws'
 include 'plugins:htmlgui-ws'
@@ -10,5 +11,8 @@ include 'plugins:timer'
 include 'plugins:odp'
 
 include 'plugins:decad'
-include 'plugins:extensionAPI'
-
+include 'plugins:yallah'
+include 'plugins:ssi'
+include 'plugins:reeti'
+include 'plugins:tricatworld'
+include 'plugins:charamel'
