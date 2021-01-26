@@ -14,8 +14,8 @@ public class Executor {
 
     public static void main(String[] argv) throws Exception {
 
-        boolean runSubscriber = true ;
-        boolean runClient = false ;
+        boolean runSubscriber = false ;
+        boolean runClient = true ;
 
         if(argv.length < 1) {
             System.err.println("Missing <ROSCORE_URL> argument, e.g.: 'http://localhost:11311'");
@@ -23,6 +23,7 @@ public class Executor {
         }
 
         String ros_url = argv[0] ;
+        ros_url = "http://localhost:11311";
         URI ros_uri = URI.create(ros_url) ;
 
         // MindbotPublisher pubNodeMain;
@@ -62,7 +63,6 @@ public class Executor {
             clientNodeMain = new MindbotClient();
             clientNodeConfiguration.setNodeName("MindbotClient");
             nodeMainExecutor.execute(clientNodeMain, clientNodeConfiguration);
-            clientNodeMain.setUpClient();
             clientNodeMain.callClient();
             // nodeMainExecutor.shutdownNodeMain(subNodeMain);
             // nodeMainExecutor.shutdown();

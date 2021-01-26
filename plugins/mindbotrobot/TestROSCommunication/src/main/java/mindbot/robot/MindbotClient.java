@@ -18,14 +18,13 @@ public class MindbotClient extends AbstractNodeMain {
     }
     ServiceClient<mindbot_msgs.SetPoseRequest, mindbot_msgs.SetPoseResponse> serviceClient;
     private Log log;
-    ConnectedNode connectedNode;
 
     public void onStart(final ConnectedNode connectedNode) {
-        this.connectedNode = connectedNode;
         this.log = connectedNode.getLog();
+        setUpClient(connectedNode);
     }
 
-    public void setUpClient() {
+    public void setUpClient(ConnectedNode connectedNode) {
         try {
             serviceClient = connectedNode.newServiceClient("/iiwa/set_tcp_target", mindbot_msgs.SetPose._TYPE);
         } catch (ServiceNotFoundException e) {
