@@ -25,7 +25,7 @@ For the project Mindbot, the VSM plugin must communicate with the ROS-machine th
 For this reason, it is necessary to install rosjava on the ROS-machine and compile a java project able to convert the `mindbot_msgs` custom packages into java classes.
 The create package is then manually copied as `lib/mindbot_msgs-0.0.0.jar`.
 
-Instructions on how to build such package are given later
+Instructions on how to build such package are given later.
 
 ## Running
 
@@ -38,21 +38,101 @@ run {
 ```
 
 
-The, run this project as a standalone project and run the test using the `run` gradle task.
+Then, run this project as a standalone project and run the test using the `run` gradle task.
 
     > ./gradlew run
 
 
 ## Building mindbot_msgs-x.y.z.jar
-First create a folder, name it how you like, for this tutorial we name it 'MindbotCommunication'. 
-Then open a terminal and move to that folder. 
-With the following commands we create a source folder and rosjava creates for us a package and a project which contains a Subscriber and a Publisher:
+
+This is an operation to be performed on the ROS-machine.
+
+### Install rosjava
+
+Installing rosjava in the ROS-machine from the sources.
+The tutorial is here (<http://wiki.ros.org/rosjava/Tutorials/kinetic/Source%20Installation>) is a bit updated. So we report fixes here:
+
+Prerequisites:
+
 ```
+sudo apt install ros-melodic-catkin ros-melodic-rospack python-wstool openjdk-8-jdk
+export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
+```
+
+Start installing rosjava in your local folder.
+
+```
+> mkdir -p ~/rosjava/src
+> wstool init -j4 ~/rosjava/src https://raw.githubusercontent.com/rosjava/rosjava/kinetic/rosjava.rosinstall
+> source /opt/ros/melodic/setup.bash
+> cd ~/rosjava
+# Make sure we've got all rosdeps and msg packages.
+> rosdep update
+```
+
+Fix missing packages (<https://github.com/rosjava/genjava/issues/19#issuecomment-591173183>):
+
+Run:
+
+    nano -w src/rosjava_messages/CMakeLists.txt
+
+and remove line:
+
+    world_canvas_msgs
+
+Run:
+
+    nano -w src/rosjava_messages/package.xml
+    
+and remove line
+
+    <build_depend>world_canvas_msgs</build_depend>
+
+Now continue...
+
+```
+> rosdep install --from-paths src -i -y
+> catkin_make
+```
+
+### Retrieve the mindbot_msgs definition
+
+Get somewhere the mindbot_msgs definitions from the mindbot repository:
+
+```
+git clone https://mindbotgit.cloud.garrservices.it/matteolavitnicora/mindbot_robot_control.git
+```
+
+Now directory `mindbot_robot_control/mindbot_stack/` contains folder `mindbot_msgs/`
+
+
+### Setup the rosjava workspace
+
+Activate the ROS environment:
+
+```
+source /opt/ros/melodic/setup.bash
+source ~/rosjava/devel/setup.bash
+export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
+```
+
+Create a folder for the rosjava workspace, name it how you like, for this tutorial we name it 'mindbot_vsm_ws'. 
+With the following commands we create a source folder and rosjava creates for us a package and a project which contains a Subscriber and a Publisher:
+
+```
+mkdir mindbot_vsm_ws
+cd mindbot_vsm_ws
 mkdir -p src
 cd src
 catkin_create_rosjava_pkg communication_package
 cd ..
 catkin_make
+```
+
+`catkin_make` builds the project and creates a `build` and a `devel` folder.
+Now activate the new devel environment and create the project:
+
+```
 source devel/setup.bash
 cd src/communication_package
 catkin_create_rosjava_project communication_project
@@ -60,13 +140,25 @@ cd ../..
 catkin_make
 ```
 
-Catkin_make builds the project and creates a build and a devel folder.
+We have created a project which contains a subscriber (`Listener.java`) and a publisher (`Talker.java`). Check it with:
 
-We have created a Project which contains a subscriber and a publisher. Now we need to move the mindbot_msgs into the source folder which is in the outermost folder MindbotCommunication where also the folder communication_package is located.
+    ls -la src/communication_package/communication_project/src/main/java/com/github/communication_package/communication_project/
 
-Now you need to change the following files (replace the methods with the following methods):
 
-src/communication_package/CMakeLists.txt:
+Now we need to move the `mindbot_msgs` into the top `src` folder, where also the folder `communication_package` is located.
+
+```
+cd path/to/mindbot_vsm_ws/
+cp -r path/to/mindbot_robot_control/mindbot_stack/mindbot_msgs/ src/
+```
+
+
+Now you need to change the following file:
+
+    nano -w src/communication_package/CMakeLists.txt
+
+and replace the calls to `find_package()` and `catkin_package()` with the following:
+
 ```
 find_package(catkin REQUIRED
 rosjava_build_tools
@@ -77,7 +169,12 @@ message_runtime
 mindbot_msgs)
 ```
 
-src/communcation_package/package.xml:
+And this file:
+
+    nano -w src/communcation_package/package.xml
+
+and extend the dependencies:
+
 ```
 <buildtool_depend>catkin</buildtool_depend>
 <build_depend>rosjava_build_tools</build_depend>
@@ -87,13 +184,19 @@ src/communcation_package/package.xml:
 <exec_depend>message_runtime</exec_depend>
 ```
 
-src/communcation_package/communcation_project/build.gradle:
+and finally:
+
+    nano -w src/communcation_package/communcation_project/build.gradle:
+
+and extend the `dependencies` section:
+
 ```
 compile 'org.ros.rosjava_core:rosjava:[0.3,0.4)'
 compile 'org.ros.rosjava_messages:mindbot_msgs:[0.0, 0.1)'
 ```
 
-Once again in a console move to the folder MindbotCommunication and:
+Once again in a console, be sure you are in folder `mindbot_vsm_ws` and:
+
 ```
 catkin_make
 ```
