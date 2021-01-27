@@ -33,7 +33,7 @@ public class MindbotServiceRequester extends AbstractNodeMain {
 
     public void setUpClient(ConnectedNode connectedNode) {
         try {
-            this.log.info("Setting Up Client!!!!!") ;
+            this.log.info("Setting Up the ServiceRequester!!!!!") ;
             _setTcpTargetService = connectedNode.newServiceClient("/iiwa/set_tcp_target", mindbot_msgs.SetPose._TYPE);
             _setJointTargetService = connectedNode.newServiceClient("/iiwa/set_joint_target", mindbot_msgs.SetJointState._TYPE);
             _setMaxTcpVelocityService = connectedNode.newServiceClient("/iiwa/set_max_tcp_velocity", mindbot_msgs.SetVector3._TYPE);
@@ -46,6 +46,12 @@ public class MindbotServiceRequester extends AbstractNodeMain {
     }
 
 
+    /**     /iiwa/set_joint_target           (mindbot_msgs::SetJointState)
+     *
+     * @param p
+     * @param v
+     * @param e
+     */
     public void setJointTarget(double[] p, double[] v, double[] e) {
         mindbot_msgs.SetJointStateRequest request = _setJointTargetService.newMessage();
 
@@ -68,8 +74,17 @@ public class MindbotServiceRequester extends AbstractNodeMain {
         });
     }
 
-
-    public void setTcpTarget(float x, float y, float z, float or_w, float or_x, float or_y, float or_z) {
+    /** /iiwa/set_tcp_target             (mindbot_msgs::SetPose)
+     *
+     * @param x
+     * @param y
+     * @param z
+     * @param or_w
+     * @param or_x
+     * @param or_y
+     * @param or_z
+     */
+     public void setTcpTarget(float x, float y, float z, float or_w, float or_x, float or_y, float or_z) {
         mindbot_msgs.SetPoseRequest request = _setTcpTargetService.newMessage();
 
         geometry_msgs.Pose pose = request.getPose();
@@ -96,7 +111,13 @@ public class MindbotServiceRequester extends AbstractNodeMain {
     }
 
 
-    public void setMaxTcpVelocityService(double x, double y, double z) {
+    /** /iiwa/set_max_tcp_velocity       (mindbot_msgs::SetVector3)
+     *
+     * @param x
+     * @param y
+     * @param z
+     */
+     public void setMaxTcpVelocity(double x, double y, double z) {
         mindbot_msgs.SetVector3Request request = _setMaxTcpVelocityService.newMessage();
 
         geometry_msgs.Vector3 maxTcpVelocity = request.getData();
@@ -118,8 +139,13 @@ public class MindbotServiceRequester extends AbstractNodeMain {
         });
     }
 
-
-    public void setMaxTcpAccelerationService(double x, double y, double z) {
+    /** /iiwa/set_max_tcp_acceleration   (mindbot_msgs::SetVector3)
+     *
+     * @param x
+     * @param y
+     * @param z
+     */
+     public void setMaxTcpAcceleration(double x, double y, double z) {
         mindbot_msgs.SetVector3Request request = _setMaxTcpAccelerationService.newMessage();
 
         geometry_msgs.Vector3 maxTcpAcceleration = request.getData();
@@ -142,7 +168,11 @@ public class MindbotServiceRequester extends AbstractNodeMain {
     }
 
 
-    public void setCtrlStateService(byte state) {
+    /** /iiwa/set_ctrl_state             (cob_srvs::SetString)
+     *
+     * @param state
+     */
+     public void setCtrlState(byte state) {
         mindbot_msgs.SetCtrlStateRequest request = _setCtrlStateService.newMessage();
 
         mindbot_msgs.CtrlState ctrlState = request.getCtrlState();
@@ -162,8 +192,11 @@ public class MindbotServiceRequester extends AbstractNodeMain {
         });
     }
 
-
-    public void setCtrlModeService(byte mode) {
+    /** /iiwa/set_ctrl_mode              (cob_srvs::SetString)
+     *
+     * @param mode
+     */
+     public void setCtrlMode(byte mode) {
         mindbot_msgs.SetCtrlModeRequest request = _setCtrlModeService.newMessage();
 
         mindbot_msgs.CtrlMode ctrlMode = request.getCtrlMode();
@@ -182,5 +215,9 @@ public class MindbotServiceRequester extends AbstractNodeMain {
             }
         });
     }
+
+    // TODO
+    // /iiwa/set_min_clearance          (cob_srvs::SetFloat)
+
 
 }

@@ -55,15 +55,16 @@ public class Executor {
             nodeMainExecutor.execute(serviceReq, clientNodeConfiguration);
             try { Thread.sleep(2000); } catch (Exception e) {} // wait for the node setUpClient to be executed.
 
-            serviceReq.setTcpTarget(0.1f, 0.2f, 1, 1, 0, 0, 0);
+            serviceReq.setTcpTarget(0.1f, 0.2f, 0.4f, 1, 0, 0, 0);
             double[] p = {1d}; double[] v = {1d}; double[] e = {1d};
             serviceReq.setJointTarget(p, v, e);
-            serviceReq.setMaxTcpVelocityService(1d,1d,1d);
-            serviceReq.setMaxTcpAccelerationService(1d,1d,1d);
+            serviceReq.setMaxTcpVelocity(1d,1d,1d);
+            serviceReq.setMaxTcpAcceleration(1d,1d,1d);
             byte state = 1;
-            serviceReq.setCtrlStateService(state);
+            serviceReq.setCtrlState(state);
             byte mode = 1;
-            serviceReq.setCtrlModeService(mode);
+            serviceReq.setCtrlMode(mode);
+
             // nodeMainExecutor.shutdownNodeMain(subNodeMain);
             // nodeMainExecutor.shutdown();
         }
