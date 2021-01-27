@@ -14,7 +14,7 @@ public class Executor {
 
     public static void main(String[] argv) throws Exception {
 
-        boolean runSubscriber = false ;
+        boolean runSubscriber = true ;
         boolean runClient = true ;
 
         if(argv.length < 1) {
@@ -23,12 +23,16 @@ public class Executor {
         }
 
         String ros_url = argv[0] ;
-        ros_url = "http://localhost:11311";
+        //ros_url = "http://localhost:11311";
         URI ros_uri = URI.create(ros_url) ;
 
+        // The local IP/port host use to contact ROS
+        String host = InetAddressFactory.newNonLoopback().getHostAddress();
+
+
         // MindbotPublisher pubNodeMain;
-        MindbotSubscriber subNodeMain;
-        MindbotClient clientNodeMain;
+        MindbotTopicReceiver topicReceiver;
+        MindbotServiceRequester serviceReq;
         NodeMainExecutor nodeMainExecutor = DefaultNodeMainExecutor.newDefault();
 
         // Execute the Publisher
@@ -47,23 +51,27 @@ public class Executor {
 
         // Execute the Subscriber
         if (runSubscriber) {
-            String host = InetAddressFactory.newNonLoopback().getHostAddress();
             NodeConfiguration subNodeConfiguration = NodeConfiguration.newPublic(host, ros_uri);
-            subNodeMain = new MindbotSubscriber();
-            subNodeConfiguration.setNodeName("MindbotSubscriber");
-            nodeMainExecutor.execute(subNodeMain, subNodeConfiguration);
+            topicReceiver = new MindbotTopicReceiver();
+            subNodeConfiguration.setNodeName("MindbotTopicSubscriber");
+
+            nodeMainExecutor.execute(topicReceiver, subNodeConfiguration);
             // nodeMainExecutor.shutdownNodeMain(subNodeMain);
             // nodeMainExecutor.shutdown();
         }
 
         // Execute the Client
         if (runClient) {
-            String host = InetAddressFactory.newNonLoopback().getHostAddress();
             NodeConfiguration clientNodeConfiguration = NodeConfiguration.newPublic(host, ros_uri);
-            clientNodeMain = new MindbotClient();
-            clientNodeConfiguration.setNodeName("MindbotClient");
-            nodeMainExecutor.execute(clientNodeMain, clientNodeConfiguration);
-            clientNodeMain.callClient();
+            serviceReq = new MindbotServiceRequester();
+            clientNodeConfiguration.setNodeName("MindbotServiceRequester");
+
+            nodeMainExecutor.execute(serviceReq, clientNodeConfiguration);
+            try { Thread.sleep(2000); } catch (Exception e) {} // wait for the node setUpClient to be executed.
+
+            //clientNodeMain.setUpClient(clientNodeConfiguration);
+            //clientNodeMain.setUpClient(nodeMainExecutor) ;
+            serviceReq.setTcpTarget(0.1f, 0.2f, 1, 1, 0, 0, 0);
             // nodeMainExecutor.shutdownNodeMain(subNodeMain);
             // nodeMainExecutor.shutdown();
         }

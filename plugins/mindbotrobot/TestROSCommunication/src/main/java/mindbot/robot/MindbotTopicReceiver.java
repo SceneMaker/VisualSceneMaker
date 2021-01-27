@@ -1,5 +1,6 @@
 package mindbot.robot;
 
+import mindbot_msgs.CtrlState;
 import org.apache.commons.logging.Log;
 import org.ros.message.MessageListener;
 import org.ros.namespace.GraphName;
@@ -13,7 +14,8 @@ import org.ros.node.topic.Subscriber;
  * @author sarah.hoffmann@dfki.de (Sarah Hoffmann)
  */
 
-public class MindbotSubscriber implements NodeMain {
+public class MindbotTopicReceiver implements NodeMain {
+
   private Log log;
   private double posexnow = 0;
   private mindbot_msgs.CtrlState statenow;
@@ -22,6 +24,30 @@ public class MindbotSubscriber implements NodeMain {
   protected Subscriber<mindbot_msgs.CtrlState> subscriberCtrlState;
   protected Subscriber<mindbot_msgs.CtrlMode> subscriberCtrlMode;
   public static boolean finished;
+
+  public static String ctrlStateToString (byte state_code) {
+    if(state_code == 0) {
+      return "OFF";
+    } else if (state_code == 1) {
+      return "ON" ;
+    } else if (state_code == 2) {
+      return "ERROR" ;
+    } else {
+      return "Undefined" ;
+    }
+  }
+
+  public static String ctrlModeToString(byte mode_code) {
+    if(mode_code == 0) {
+      return "MODE0";
+    } else if (mode_code == 1) {
+      return "MODE1" ;
+    } else if (mode_code == 2) {
+      return "MODE2" ;
+    } else {
+      return "Undefined" ;
+    }
+  }
 
   @Override
   public GraphName getDefaultNodeName() {
@@ -66,7 +92,7 @@ public class MindbotSubscriber implements NodeMain {
   }
 
 
-  private void setupListeners(){
+  private void setupListeners() {
 
     subscriberTcpState.addMessageListener(new MessageListener<geometry_msgs.PoseStamped>() {
       @Override
@@ -81,13 +107,15 @@ public class MindbotSubscriber implements NodeMain {
 
     subscriberCtrlState.addMessageListener(new MessageListener<mindbot_msgs.CtrlState>() {
       public void onNewMessage(mindbot_msgs.CtrlState message) {
-        log.info("CtrlState: \"" + message + "\"");
+        byte ctrl_state = message.getCtrlState() ;
+        log.info("CtrlState: \"" + ctrlStateToString(ctrl_state) + "\"");
       }
     });
 
     subscriberCtrlMode.addMessageListener(new MessageListener<mindbot_msgs.CtrlMode>() {
       public void onNewMessage(mindbot_msgs.CtrlMode message) {
-        log.info("CtrlMode: \"" + message + "\"");
+        byte ctrl_mode = message.getCtrlMode();
+        log.info("CtrlMode: \"" + ctrlModeToString(ctrl_mode) + "\"");
       }
     });
   }
