@@ -30,24 +30,10 @@ public class Executor {
         String host = InetAddressFactory.newNonLoopback().getHostAddress();
 
 
-        // MindbotPublisher pubNodeMain;
         MindbotTopicReceiver topicReceiver;
         MindbotServiceRequester serviceReq;
         NodeMainExecutor nodeMainExecutor = DefaultNodeMainExecutor.newDefault();
 
-        // Execute the Publisher
-        /*
-        String pubsArgv = "communication_package.communication_project.MindbotPublisher";
-        if (Arrays.asList(argv).contains(pubsArgv)) {
-            String host = InetAddressFactory.newNonLoopback().getHostAddress();
-            NodeConfiguration pubNodeConfiguration = NodeConfiguration.newPublic(host, ros_uri);
-            pubNodeMain = new MindbotPublisher();
-            pubNodeConfiguration.setNodeName("MindbotPublisher");
-            nodeMainExecutor.execute(pubNodeMain, pubNodeConfiguration);
-            // nodeMainExecutor.shutdownNodeMain(pubNodeMain);
-            // nodeMainExecutor.shutdown();
-        }
-        */
 
         // Execute the Subscriber
         if (runSubscriber) {
@@ -69,9 +55,15 @@ public class Executor {
             nodeMainExecutor.execute(serviceReq, clientNodeConfiguration);
             try { Thread.sleep(2000); } catch (Exception e) {} // wait for the node setUpClient to be executed.
 
-            //clientNodeMain.setUpClient(clientNodeConfiguration);
-            //clientNodeMain.setUpClient(nodeMainExecutor) ;
             serviceReq.setTcpTarget(0.1f, 0.2f, 1, 1, 0, 0, 0);
+            double[] p = {1d}; double[] v = {1d}; double[] e = {1d};
+            serviceReq.setJointTarget(p, v, e);
+            serviceReq.setMaxTcpVelocityService(1d,1d,1d);
+            serviceReq.setMaxTcpAccelerationService(1d,1d,1d);
+            byte state = 1;
+            serviceReq.setCtrlStateService(state);
+            byte mode = 1;
+            serviceReq.setCtrlModeService(mode);
             // nodeMainExecutor.shutdownNodeMain(subNodeMain);
             // nodeMainExecutor.shutdown();
         }

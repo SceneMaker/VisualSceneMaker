@@ -18,8 +18,11 @@ public class MindbotServiceRequester extends AbstractNodeMain {
     }
 
     private ServiceClient<mindbot_msgs.SetPoseRequest, mindbot_msgs.SetPoseResponse> _setTcpTargetService;
-    // TODO -- Add here the other service clients
-    // ...
+    private ServiceClient<mindbot_msgs.SetJointStateRequest, mindbot_msgs.SetJointStateResponse> _setJointTargetService;
+    private ServiceClient<mindbot_msgs.SetVector3Request, mindbot_msgs.SetVector3Response> _setMaxTcpVelocityService;
+    private ServiceClient<mindbot_msgs.SetVector3Request, mindbot_msgs.SetVector3Response> _setMaxTcpAccelerationService;
+    private ServiceClient<mindbot_msgs.SetCtrlStateRequest, mindbot_msgs.SetCtrlStateResponse> _setCtrlStateService;
+    private ServiceClient<mindbot_msgs.SetCtrlModeRequest, mindbot_msgs.SetCtrlModeResponse> _setCtrlModeService;
 
     private Log log;
 
@@ -32,9 +35,37 @@ public class MindbotServiceRequester extends AbstractNodeMain {
         try {
             this.log.info("Setting Up Client!!!!!") ;
             _setTcpTargetService = connectedNode.newServiceClient("/iiwa/set_tcp_target", mindbot_msgs.SetPose._TYPE);
+            _setJointTargetService = connectedNode.newServiceClient("/iiwa/set_joint_target", mindbot_msgs.SetJointState._TYPE);
+            _setMaxTcpVelocityService = connectedNode.newServiceClient("/iiwa/set_max_tcp_velocity", mindbot_msgs.SetVector3._TYPE);
+            _setMaxTcpAccelerationService = connectedNode.newServiceClient("/iiwa/set_max_tcp_acceleration", mindbot_msgs.SetVector3._TYPE);
+            _setCtrlStateService = connectedNode.newServiceClient("/iiwa/set_ctrl_state", mindbot_msgs.SetCtrlState._TYPE);
+            _setCtrlModeService = connectedNode.newServiceClient("/iiwa/set_ctrl_mode", mindbot_msgs.SetCtrlMode._TYPE);
         } catch (ServiceNotFoundException e) {
             throw new RosRuntimeException(e);
         }
+    }
+
+
+    public void setJointTarget(double[] p, double[] v, double[] e) {
+        mindbot_msgs.SetJointStateRequest request = _setJointTargetService.newMessage();
+
+        sensor_msgs.JointState jointState = request.getPoint();
+        jointState.setPosition(p);
+        jointState.setVelocity(v);
+        jointState.setEffort(e);
+
+        request.setPoint(jointState);
+        _setJointTargetService.call(request, new ServiceResponseListener<mindbot_msgs.SetJointStateResponse>() {
+            @Override
+            public void onSuccess(mindbot_msgs.SetJointStateResponse response) {
+                log.info("The response is: " +response.getMessage());
+            }
+
+            @Override
+            public void onFailure(RemoteException e) {
+                throw new RosRuntimeException(e);
+            }
+        });
     }
 
 
@@ -64,17 +95,92 @@ public class MindbotServiceRequester extends AbstractNodeMain {
         });
     }
 
-    // TODO
-    // Add the remaining services
-    // ...
-    /*
-    /iiwa/set_joint_target           (mindbot_msgs::SetJointState)
-    DONE /iiwa/set_tcp_target             (mindbot_msgs::SetPose)
-    /iiwa/set_max_tcp_velocity       (mindbot_msgs::SetVector3)
-    /iiwa/set_max_tcp_acceleration   (mindbot_msgs::SetVector3)
-    /iiwa/set_ctrl_state             (cob_srvs::SetString)
-    /iiwa/set_ctrl_mode              (cob_srvs::SetString)
-    /iiwa/set_min_clearance          (cob_srvs::SetFloat)
-    */
+
+    public void setMaxTcpVelocityService(double x, double y, double z) {
+        mindbot_msgs.SetVector3Request request = _setMaxTcpVelocityService.newMessage();
+
+        geometry_msgs.Vector3 maxTcpVelocity = request.getData();
+        maxTcpVelocity.setX(x);
+        maxTcpVelocity.setY(y);
+        maxTcpVelocity.setZ(z);
+
+        request.setData(maxTcpVelocity);
+        _setMaxTcpVelocityService.call(request, new ServiceResponseListener<mindbot_msgs.SetVector3Response>() {
+            @Override
+            public void onSuccess(mindbot_msgs.SetVector3Response response) {
+                log.info("The response is: " +response.getMessage());
+            }
+
+            @Override
+            public void onFailure(RemoteException e) {
+                throw new RosRuntimeException(e);
+            }
+        });
+    }
+
+
+    public void setMaxTcpAccelerationService(double x, double y, double z) {
+        mindbot_msgs.SetVector3Request request = _setMaxTcpAccelerationService.newMessage();
+
+        geometry_msgs.Vector3 maxTcpAcceleration = request.getData();
+        maxTcpAcceleration.setX(x);
+        maxTcpAcceleration.setY(y);
+        maxTcpAcceleration.setZ(z);
+
+        request.setData(maxTcpAcceleration);
+        _setMaxTcpAccelerationService.call(request, new ServiceResponseListener<mindbot_msgs.SetVector3Response>() {
+            @Override
+            public void onSuccess(mindbot_msgs.SetVector3Response response) {
+                log.info("The response is: " +response.getMessage());
+            }
+
+            @Override
+            public void onFailure(RemoteException e) {
+                throw new RosRuntimeException(e);
+            }
+        });
+    }
+
+
+    public void setCtrlStateService(byte state) {
+        mindbot_msgs.SetCtrlStateRequest request = _setCtrlStateService.newMessage();
+
+        mindbot_msgs.CtrlState ctrlState = request.getCtrlState();
+        ctrlState.setCtrlState(state);
+
+        request.setCtrlState(ctrlState);
+        _setCtrlStateService.call(request, new ServiceResponseListener<mindbot_msgs.SetCtrlStateResponse>() {
+            @Override
+            public void onSuccess(mindbot_msgs.SetCtrlStateResponse response) {
+                log.info("The response is: " +response.getMessage());
+            }
+
+            @Override
+            public void onFailure(RemoteException e) {
+                throw new RosRuntimeException(e);
+            }
+        });
+    }
+
+
+    public void setCtrlModeService(byte mode) {
+        mindbot_msgs.SetCtrlModeRequest request = _setCtrlModeService.newMessage();
+
+        mindbot_msgs.CtrlMode ctrlMode = request.getCtrlMode();
+        ctrlMode.setCtrlMode(mode);
+
+        request.setCtrlMode(ctrlMode);
+        _setCtrlModeService.call(request, new ServiceResponseListener<mindbot_msgs.SetCtrlModeResponse>() {
+            @Override
+            public void onSuccess(mindbot_msgs.SetCtrlModeResponse response) {
+                log.info("The response is: " +response.getMessage());
+            }
+
+            @Override
+            public void onFailure(RemoteException e) {
+                throw new RosRuntimeException(e);
+            }
+        });
+    }
 
 }
