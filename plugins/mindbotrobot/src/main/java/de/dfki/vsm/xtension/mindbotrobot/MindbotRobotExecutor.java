@@ -91,7 +91,7 @@ public final class MindbotRobotExecutor extends ActivityExecutor {
         mLogger.message("Setting Listener...");
         topicReceiver.setListener(new MindbotTopicReceiver.TopicListener() {
             @Override
-            public void TcpChanged(Pose new_pose) {
+            public void tcpChanged(Pose new_pose) {
                 mLogger.message("pose updated " + new_pose.getPosition());
                 Point pos = new_pose.getPosition();
                 if(mProject.hasVariable("robot_x")) { mProject.setVariable("robot_x", (float)pos.getX()) ; }
@@ -107,7 +107,7 @@ public final class MindbotRobotExecutor extends ActivityExecutor {
 
 
             @Override
-            public void CtrlStateChanged(String new_state) {
+            public void ctrlStateChanged(String new_state) {
                 if(mProject.hasVariable("robot_ctrl_state")) {
                     mProject.setVariable("robot_ctrl_state", new_state) ;
                 }
@@ -115,7 +115,7 @@ public final class MindbotRobotExecutor extends ActivityExecutor {
             }
 
             @Override
-            public void CtrlModeChanged(String new_mode) {
+            public void ctrlModeChanged(String new_mode) {
                 if(mProject.hasVariable("robot_ctrl_mode")) {
                     mProject.setVariable("robot_ctrl_mode", new_mode) ;
                 }

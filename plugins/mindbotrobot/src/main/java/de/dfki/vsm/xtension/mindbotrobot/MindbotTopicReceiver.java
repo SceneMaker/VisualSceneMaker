@@ -49,9 +49,9 @@ public class MindbotTopicReceiver implements NodeMain {
 
   /** Interface for topic listeners. */
   public interface TopicListener {
-    void TcpChanged(Pose new_pose) ;
-    void CtrlStateChanged(String new_state) ;
-    void CtrlModeChanged(String new_mode) ;
+    void tcpChanged(Pose new_pose) ;
+    void ctrlStateChanged(String new_state) ;
+    void ctrlModeChanged(String new_mode) ;
     void error(String message) ;
   }
 
@@ -146,7 +146,7 @@ public class MindbotTopicReceiver implements NodeMain {
         // log.info("TcpState Position X: \"" + message.getPose().getPosition().getX() + "\"");
 
         if ((_lastPose == null) || ! _equalPoses(_lastPose, pose)) {
-          _listener.TcpChanged(pose);
+          _listener.tcpChanged(pose);
           _lastPose = pose ;
         }
 
@@ -163,7 +163,7 @@ public class MindbotTopicReceiver implements NodeMain {
         // log.info("CtrlState: \"" + ctrl_state_str + "\"");
 
         if (_lastState == null || !_lastState.equals(ctrl_state_str)) {
-          _listener.CtrlStateChanged(ctrl_state_str);
+          _listener.ctrlStateChanged(ctrl_state_str);
           _lastState = ctrl_state_str ;
         }
 
@@ -180,7 +180,7 @@ public class MindbotTopicReceiver implements NodeMain {
         // log.info("CtrlMode: \"" + ctrl_mode_str + "\"");
 
         if(_lastMode == null || !_lastMode.equals(ctrl_mode_str)) {
-          _listener.CtrlModeChanged(ctrl_mode_str);
+          _listener.ctrlModeChanged(ctrl_mode_str);
           _lastMode = ctrl_mode_str ;
         }
       }
