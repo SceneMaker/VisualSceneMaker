@@ -1,3 +1,25 @@
+# MindBot Robot Controller
+
+This plugin (`mindbotrobot`) is developed within project MindBot (<https://www.mindbot.eu>) and serves to pilot the Collaborative robots using Visual Scene Maker.
+
+The plugin uses rosjava (<http://wiki.ros.org/rosjava>) to connect to a remote Linux machine running the robot within a ROS (<https://www.ros.org/>) architecture.
+ 
+## Project setup
+
+* Open a new VSM project and add a `MindBotRobotExecutor` device.
+* Setup the device properties:
+  * `rosuri`: The URI (e.g., http://localhost:11311) on which the main ROS system and the robot are running.
+* Add an agent for the device.
+
+![MindBotRobot plugin configuration](images/VSM-MindBotRobotConfig.png)
+
+* Setup the project variables:
+  * `robot_ctrl_mode` (String): returns the mode of the robot among: `MODE0`, `MODE1`, `MODE2`, `Undefined`.
+  * `robot_ctrl_state` (String): returns the state of the robot among: `ON`, `OFF`, `ERROR`, `Undefined`.
+  * A set of variables for the TCP pose of the robot:
+    * `robot_x`, `robot_y`, `robot_z` (Float) for the TCP position; and
+    * `robot_or_w`,`robot_or_x`, `robot_or_y`, `robot_or_z` (Float) for the TCP orientation quaternion;
+
 # How to Run the ROSJava Code to connect with the Mindbot
 
 * Go inside the folder 'MindbotCommunication'

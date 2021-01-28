@@ -15,6 +15,9 @@ sourceCompatibility = 11
 repositories {
     mavenCentral()
     maven { url "http://repo.spring.io/libs-release" }
+
+    maven { url "https://github.com/rosjava/rosjava_mvn_repo/raw/master" }
+    jcenter()
 }
 
 javafx {
@@ -68,7 +71,6 @@ dependencies {
     compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.25'
     // https://mvnrepository.com/artifact/com.nativelibs4java/bridj
     compile group: 'com.nativelibs4java', name: 'bridj', version: '0.7.0'
-    //compile 'org.ros.rosjava_messages:geometry_msgs:[1.12,1.13)'
 }
 
 jar {
