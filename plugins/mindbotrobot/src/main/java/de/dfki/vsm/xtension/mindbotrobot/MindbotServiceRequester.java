@@ -10,6 +10,8 @@ import org.ros.node.ConnectedNode;
 import org.ros.node.service.ServiceClient;
 import org.ros.node.service.ServiceResponseListener;
 
+import java.util.List;
+
 
 public class MindbotServiceRequester extends AbstractNodeMain {
     @Override
@@ -56,14 +58,16 @@ public class MindbotServiceRequester extends AbstractNodeMain {
 
     /**     /iiwa/set_joint_target           (mindbot_msgs::SetJointState)
      *
-     * @param p
-     * @param v
-     * @param e
+     * @param joint_names The name of the joints to modify.
+     * @param p The position (actually the rotation) of each joint, in the same order of the names.
+     * @param v The velocity of each joint, in the same order of the names.
+     * @param e The effort of each joint, in the same order of the names.
      */
-    public void setJointTarget(double[] p, double[] v, double[] e) {
+    public void setJointTarget(List<String> joint_names, double[] p, double[] v, double[] e) {
         mindbot_msgs.SetJointStateRequest request = _setJointTargetService.newMessage();
 
         sensor_msgs.JointState jointState = request.getPoint();
+        jointState.setName(joint_names);
         jointState.setPosition(p);
         jointState.setVelocity(v);
         jointState.setEffort(e);

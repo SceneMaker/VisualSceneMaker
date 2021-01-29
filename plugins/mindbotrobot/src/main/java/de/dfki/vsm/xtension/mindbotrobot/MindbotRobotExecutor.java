@@ -15,9 +15,11 @@ import org.ros.node.NodeConfiguration;
 import org.ros.node.NodeMainExecutor;
 
 import java.net.URI;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public final class MindbotRobotExecutor extends ActivityExecutor {
 
@@ -147,6 +149,14 @@ public final class MindbotRobotExecutor extends ActivityExecutor {
 
     }
 
+    private static HashMap<String, String> featureListToMap(LinkedList<ActionFeature> features) {
+        HashMap<String, String> out = new HashMap<String, String>() ;
+        for (ActionFeature f : features) {
+            out.put(f.getKey(), f.getVal()) ;
+        }
+        return out;
+    }
+
     @Override
     public void execute(final AbstractActivity activity) {
 
@@ -174,29 +184,78 @@ public final class MindbotRobotExecutor extends ActivityExecutor {
             // aka [COMMAND (with parameters)]
 
             String cmd = activity.getName() ;
-            final LinkedList<ActionFeature> features = activity.getFeatures();
+            final LinkedList<ActionFeature> features_list = activity.getFeatures();
+            final HashMap<String, String> features_map = featureListToMap(features_list) ;
 
-            if(cmd.equals("set_joint_target")) {
+            switch (cmd) {
+                case "set_joint_target": {
+                    // All parameters are in fact comma-separated lists of values.
+                    // E.g.: botty: [set_joint_target joint_names="j1, j2, j3" positions="34.1, 5.4, 6.7" velocities="...", efforts="..." ].
 
-            } else if(cmd.equals("set_tcp_target")) {
+                    String[] joint_names = features_map.get("joint_names").split(",");
+                    List<String> joint_names_list = Arrays.stream(joint_names).map(String::trim).collect(Collectors.toList());
+                    String[] positions_str = features_map.get("positions").split(",");
+                    double[] positions = Arrays.stream(positions_str).mapToDouble(p -> Double.parseDouble(p.trim())).toArray();
+                    String[] velocities_str = features_map.get("velocities").split(",");
+                    double[] velocities = Arrays.stream(velocities_str).mapToDouble(p -> Double.parseDouble(p.trim())).toArray();
+                    String[] efforts_str = features_map.get("efforts").split(",");
+                    double[] efforts = Arrays.stream(efforts_str).mapToDouble(p -> Double.parseDouble(p.trim())).toArray();
 
-                float x = Float.parseFloat(features.get(0).getVal()) ;
-                float y = Float.parseFloat(features.get(1).getVal()) ;
-                float z = Float.parseFloat(features.get(2).getVal()) ;
-                float or_w = Float.parseFloat(features.get(3).getVal()) ;
-                float or_x = Float.parseFloat(features.get(4).getVal()) ;
-                float or_y = Float.parseFloat(features.get(5).getVal()) ;
-                float or_z = Float.parseFloat(features.get(6).getVal()) ;
-                serviceReq.setTcpTarget(x, y, z, or_w, or_x, or_y, or_z);
+                    serviceReq.setJointTarget(joint_names_list, positions, velocities, efforts);
 
-            } else if(cmd.equals("set_max_tcp_velocity")) {
-            } else if(cmd.equals("set_max_tcp_acceleration")) {
-            } else if(cmd.equals("set_ctrl_state")) {
-            } else if(cmd.equals("set_ctrl_mode")) {
-            } else if(cmd.equals("set_min_clearance")) {
-                mLogger.failure("Action 'set_min_clearance' not supported, yet");
-            } else {
-                mLogger.failure("Unrecognized command '" + cmd + "'");
+                    break;
+                }
+                case "set_tcp_target": {
+
+                    float x = Float.parseFloat(features_map.get("x"));
+                    float y = Float.parseFloat(features_map.get("y"));
+                    float z = Float.parseFloat(features_map.get("z"));
+                    float or_w = Float.parseFloat(features_map.get("or_w"));
+                    float or_x = Float.parseFloat(features_map.get("or_x"));
+                    float or_y = Float.parseFloat(features_map.get("or_y"));
+                    float or_z = Float.parseFloat(features_map.get("or_z"));
+                    serviceReq.setTcpTarget(x, y, z, or_w, or_x, or_y, or_z);
+
+                    break;
+                }
+                case "set_max_tcp_velocity": {
+
+                    float x = Float.parseFloat(features_map.get("x"));
+                    float y = Float.parseFloat(features_map.get("y"));
+                    float z = Float.parseFloat(features_map.get("z"));
+                    serviceReq.setMaxTcpVelocity(x, y, z);
+
+                    break;
+                }
+                case "set_max_tcp_acceleration": {
+
+                    float x = Float.parseFloat(features_map.get("x"));
+                    float y = Float.parseFloat(features_map.get("y"));
+                    float z = Float.parseFloat(features_map.get("z"));
+                    serviceReq.setMaxTcpAcceleration(x, y, z);
+
+                    break;
+                }
+                case "set_ctrl_state":
+
+                    byte s = Byte.parseByte(features_map.get("state"));
+                    serviceReq.setCtrlState(s);
+
+                    break;
+                case "set_ctrl_mode":
+
+                    byte m = Byte.parseByte(features_map.get("mode"));
+                    serviceReq.setCtrlState(m);
+
+                    break;
+                case "set_min_clearance":
+
+                    mLogger.failure("Action 'set_min_clearance' not supported, yet");
+
+                    break;
+                default:
+                    mLogger.failure("Unrecognized action '" + cmd + "'");
+                    break;
             }
 
         }
