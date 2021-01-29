@@ -250,6 +250,7 @@ public final class MindbotRobotExecutor extends ActivityExecutor {
                     break;
                 case "set_min_clearance":
 
+                    // TODO
                     mLogger.failure("Action 'set_min_clearance' not supported, yet");
 
                     break;

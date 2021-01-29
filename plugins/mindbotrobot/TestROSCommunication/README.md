@@ -204,7 +204,7 @@ catkin_make
 
 Yes, run it two times. The first will not find the mindbot_msgs. The second will get it done.
 
-You can find the jar in `mindbot_vsm_ws/build/mindbot_msgs/java/mindbot_msgs/build/libs`
+You can find the jar in `mindbot_vsm_ws/build/mindbot_msgs/java/mindbot_msgs/build/libs/mindbot_msgs-0.0.0.jar`
 
 
 From now on, every time you need to update the jar, you just need to initialize the environment (_source_s and _JAVA_HOME_) and run `catkin_make` from here.
