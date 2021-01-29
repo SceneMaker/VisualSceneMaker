@@ -6,6 +6,8 @@ import org.ros.node.NodeConfiguration;
 import org.ros.node.NodeMainExecutor;
 
 import java.net.URI;
+import java.util.LinkedList;
+import java.util.List;
 
 // This class will run a publisher or a subscriber
 public class StandaloneExecutor {
@@ -54,8 +56,9 @@ public class StandaloneExecutor {
             try { Thread.sleep(2000); } catch (Exception e) {} // wait for the node setUpClient to be executed.
 
             serviceReq.setTcpTarget(0.1f, 0.2f, 0.4f, 1, 0, 0, 0);
+            List<String> names = new LinkedList<String>() ; names.add("joint1") ;
             double[] p = {1d}; double[] v = {1d}; double[] e = {1d};
-            serviceReq.setJointTarget(p, v, e);
+            serviceReq.setJointTarget(names, p, v, e);
             serviceReq.setMaxTcpVelocity(1d,1d,1d);
             serviceReq.setMaxTcpAcceleration(1d,1d,1d);
             byte state = 1;
