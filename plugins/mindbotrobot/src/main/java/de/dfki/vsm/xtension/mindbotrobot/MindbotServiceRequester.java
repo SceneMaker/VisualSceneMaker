@@ -25,6 +25,7 @@ public class MindbotServiceRequester extends AbstractNodeMain {
     private ServiceClient<mindbot_msgs.SetVector3Request, mindbot_msgs.SetVector3Response> _setMaxTcpAccelerationService;
     private ServiceClient<mindbot_msgs.SetCtrlStateRequest, mindbot_msgs.SetCtrlStateResponse> _setCtrlStateService;
     private ServiceClient<mindbot_msgs.SetCtrlModeRequest, mindbot_msgs.SetCtrlModeResponse> _setCtrlModeService;
+    private ServiceClient<mindbot_msgs.SetFloatRequest, mindbot_msgs.SetFloatResponse> _setMinClearanceService;
 
     private Log log;
 
@@ -48,6 +49,7 @@ public class MindbotServiceRequester extends AbstractNodeMain {
             _setMaxTcpAccelerationService = connectedNode.newServiceClient("/iiwa/set_max_tcp_acceleration", mindbot_msgs.SetVector3._TYPE);
             _setCtrlStateService = connectedNode.newServiceClient("/iiwa/set_ctrl_state", mindbot_msgs.SetCtrlState._TYPE);
             _setCtrlModeService = connectedNode.newServiceClient("/iiwa/set_ctrl_mode", mindbot_msgs.SetCtrlMode._TYPE);
+            _setMinClearanceService = connectedNode.newServiceClient("/iiwa/set_min_clearance", mindbot_msgs.SetFloat._TYPE);
         } catch (ServiceNotFoundException e) {
             throw new RosRuntimeException(e);
         }
@@ -228,8 +230,25 @@ public class MindbotServiceRequester extends AbstractNodeMain {
         });
     }
 
-    // TODO
-    // /iiwa/set_min_clearance          (cob_srvs::SetFloat)
+    /**     /iiwa/set_min_clearance           (mindbot_msgs::SetFloat)
+     *
+     * @param min_clearance A float with the minimum accepted distance between robot and operator.
+     */
+    public void setMinClearanceService(float min_clearance) {
+        mindbot_msgs.SetFloatRequest request = _setMinClearanceService.newMessage();
 
+        request.setData(min_clearance);
+        _setMinClearanceService.call(request, new ServiceResponseListener<mindbot_msgs.SetFloatResponse>() {
+            @Override
+            public void onSuccess(mindbot_msgs.SetFloatResponse response) {
+                log.info("The response is: " +response.getSuccess());
+            }
+
+            @Override
+            public void onFailure(RemoteException e) {
+                throw new RosRuntimeException(e);
+            }
+        });
+    }
 
 }

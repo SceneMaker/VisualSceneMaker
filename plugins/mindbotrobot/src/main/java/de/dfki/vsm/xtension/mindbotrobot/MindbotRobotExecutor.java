@@ -250,8 +250,8 @@ public final class MindbotRobotExecutor extends ActivityExecutor {
                     break;
                 case "set_min_clearance":
 
-                    // TODO
-                    mLogger.failure("Action 'set_min_clearance' not supported, yet");
+                    float min_clearance = Float.parseFloat(features_map.get("min_clearance"));
+                    serviceReq.setMinClearanceService(min_clearance);
 
                     break;
                 default:
