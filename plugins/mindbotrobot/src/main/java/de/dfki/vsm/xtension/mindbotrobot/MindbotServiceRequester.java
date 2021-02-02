@@ -16,7 +16,7 @@ import java.util.List;
 public class MindbotServiceRequester extends AbstractNodeMain {
     @Override
     public GraphName getDefaultNodeName() {
-        return GraphName.of("rosjava/MindbotClient");
+        return GraphName.of("mindbot/vsm/RobotServiceRequester");
     }
 
     private ServiceClient<mindbot_msgs.SetPoseRequest, mindbot_msgs.SetPoseResponse> _setTcpTargetService;

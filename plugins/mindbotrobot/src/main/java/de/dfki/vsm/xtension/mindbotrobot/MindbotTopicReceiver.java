@@ -77,7 +77,7 @@ public class MindbotTopicReceiver implements NodeMain {
 
   @Override
   public GraphName getDefaultNodeName() {
-    return GraphName.of("rosjava/mindbotlistener");
+    return GraphName.of("mindbot/vsm/RobotTopicReceiver");
   }
 
   @Override
