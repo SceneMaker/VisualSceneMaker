@@ -46,6 +46,7 @@ dependencies {
     compile 'org.ros.rosjava_bootstrap:message_generation:[0.3,0.4)'
     // provides `sensor_msgs` package
     compile 'org.ros.rosjava_messages:sensor_msgs:[1.12,1.13)'
+    compile 'org.ros.rosjava_messages:rosjava_test_msgs:[0.3,0.4)'
 
     implementation files('lib/mindbot_msgs-0.0.0.jar')
 }

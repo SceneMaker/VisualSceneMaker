@@ -3,14 +3,20 @@ package de.dfki.vsm.xtension.mindbotrobot;
 import org.apache.commons.logging.Log;
 import org.ros.exception.RemoteException;
 import org.ros.exception.RosRuntimeException;
+import org.ros.exception.ServiceException;
 import org.ros.exception.ServiceNotFoundException;
 import org.ros.namespace.GraphName;
 import org.ros.node.AbstractNodeMain;
 import org.ros.node.ConnectedNode;
 import org.ros.node.service.ServiceClient;
+import org.ros.node.service.ServiceResponseBuilder;
 import org.ros.node.service.ServiceResponseListener;
+import rosjava_test_msgs.AddTwoIntsRequest;
+import rosjava_test_msgs.AddTwoIntsResponse;
 
 import java.util.List;
+import java.util.HashMap;
+import static java.lang.Math.toIntExact;
 
 
 public class MindbotServiceRequester extends AbstractNodeMain {
@@ -32,13 +38,15 @@ public class MindbotServiceRequester extends AbstractNodeMain {
     public void onStart(final ConnectedNode connectedNode) {
         this.log = connectedNode.getLog();
         setUpClient(connectedNode);
+        setUpServer(connectedNode);
     }
 
     public boolean isSetupDone() {
-        return _setupDone;
+        return (_setupClientDone && _setupServerDone);
     }
 
-    private boolean _setupDone = false ;
+    private boolean _setupClientDone = false ;
+    private boolean _setupServerDone = false ;
 
     public void setUpClient(ConnectedNode connectedNode) {
         try {
@@ -54,7 +62,19 @@ public class MindbotServiceRequester extends AbstractNodeMain {
             throw new RosRuntimeException(e);
         }
 
-        _setupDone = true ;
+        _setupClientDone = true ;
+    }
+
+    public void setUpServer(ConnectedNode connectedNode) {
+        connectedNode.newServiceServer("/mindbot/robot/action_done", rosjava_test_msgs.AddTwoInts._TYPE,
+                (ServiceResponseBuilder<AddTwoIntsRequest, AddTwoIntsResponse>) (request, response) -> actionTerminated(toIntExact(request.getA()), toIntExact(request.getB())));
+        _setupServerDone = true;
+    }
+
+    HashMap<Integer, Integer> actions = new HashMap<>();
+
+    public void actionTerminated(Integer id, Integer errorcode) {
+        actions.put(id, errorcode);
     }
 
 
@@ -79,6 +99,10 @@ public class MindbotServiceRequester extends AbstractNodeMain {
             @Override
             public void onSuccess(mindbot_msgs.SetJointStateResponse response) {
                 log.info("The response is: " +response.getMessage());
+                int id = 1; // id of the service "/iiwa/set_joint_target"
+                // 2. parameter: number which indicates that the call is being called and the action is not done yet,
+                // if the action is done, the method actionTerminated will be automatically called
+                actions.put(id, 0);
             }
 
             @Override
