@@ -1,10 +1,11 @@
-# Test ROS Communication
+# Mindbot Cobot communication plugin - development notes
 
-This is a standalone Java project to test the communication with a ROS machine as a standalone executable.
+This document explains the development guidelines for this plugin.
 
-This is NOT a VSM plugin! This is just a small test project. Code here for testing and sharing.
+It contains also a small stand-alone class to test the communication without running a VSM project.
 
-## Problem
+
+## Problem description
 
 From a machine running VSM (VSM-machine, likely running windows), we want to connect to a remote machine (normally running Linux Ubuntu) on which a [ROS](https://www.ros.org/) instance runs (ROS-machine).
 
@@ -27,21 +28,6 @@ The create package is then manually copied as `lib/mindbot_msgs-0.0.0.jar`.
 
 Instructions on how to build such package are given later.
 
-## Running
-
-You probably need to first edit the IP address of the ROS-machine in the `build.gradle` file:
-
-```
-run {
-    args = ["http://192.168.56.101:11311"]
-}
-```
-
-
-Then, run this project as a standalone project and run the test using the `run` gradle task.
-
-    > ./gradlew run
-
 
 ## Building mindbot_msgs-x.y.z.jar
 
@@ -50,7 +36,7 @@ This is an operation to be performed on the ROS-machine.
 ### Install rosjava
 
 Installing rosjava in the ROS-machine from the sources.
-The tutorial is here (<http://wiki.ros.org/rosjava/Tutorials/kinetic/Source%20Installation>) is a bit updated. So we report fixes here:
+The official tutorial (<http://wiki.ros.org/rosjava/Tutorials/kinetic/Source%20Installation>) is a bit outdated. So we report fixes here:
 
 Prerequisites:
 
@@ -59,7 +45,7 @@ sudo apt install ros-melodic-catkin ros-melodic-rospack python-wstool openjdk-8-
 export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
 ```
 
-Start installing rosjava in your local folder.
+Start installing rosjava in your home folder.
 
 ```
 > mkdir -p ~/rosjava/src
@@ -70,7 +56,7 @@ Start installing rosjava in your local folder.
 > rosdep update
 ```
 
-Fix missing packages (<https://github.com/rosjava/genjava/issues/19#issuecomment-591173183>):
+Fix missing packages (see <https://github.com/rosjava/genjava/issues/19#issuecomment-591173183>):
 
 Run:
 
@@ -95,9 +81,11 @@ Now continue...
 > catkin_make
 ```
 
+Now rojava is installed.
+
 ### Retrieve the mindbot_msgs definition
 
-Get somewhere the mindbot_msgs definitions from the mindbot repository:
+Get the `mindbot_msgs` definitions from the mindbot repository:
 
 ```
 git clone https://mindbotgit.cloud.garrservices.it/matteolavitnicora/mindbot_robot_control.git
@@ -117,7 +105,7 @@ export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
 ```
 
 Create a folder for the rosjava workspace, name it how you like, for this tutorial we name it 'mindbot_vsm_ws'. 
-With the following commands we create a source folder and rosjava creates for us a package and a project which contains a Subscriber and a Publisher:
+With the following commands, we create a source folder, and rosjava creates for us a package and a project which contains a Subscriber and a Publisher:
 
 ```
 mkdir mindbot_vsm_ws
@@ -144,6 +132,7 @@ We have created a project which contains a subscriber (`Listener.java`) and a pu
 
     ls -la src/communication_package/communication_project/src/main/java/com/github/communication_package/communication_project/
 
+but we will not use them.
 
 Now we need to move the `mindbot_msgs` into the top `src` folder, where also the folder `communication_package` is located.
 
@@ -204,7 +193,7 @@ catkin_make
 
 Yes, run it two times. The first will not find the mindbot_msgs. The second will get it done.
 
-You can find the jar in `mindbot_vsm_ws/build/mindbot_msgs/java/mindbot_msgs/build/libs/mindbot_msgs-0.0.0.jar`
+You can find the jar in `mindbot_vsm_ws/build/mindbot_msgs/java/mindbot_msgs/build/libs/mindbot_msgs-0.0.0.jar`.
 
 
 From now on, every time you need to update the jar, you just need to initialize the environment (_source_s and _JAVA_HOME_) and run `catkin_make` from here.

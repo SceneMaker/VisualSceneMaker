@@ -7,6 +7,17 @@ version '4.0.1'
 
 sourceCompatibility = 1.8
 
+
+/* Plugin for creating installDist tasks (i.e. executables) */
+/*
+apply plugin: 'application'
+mainClassName = 'de.dfki.vsm.xtension.mindbotrobot.StandaloneExecutor'
+run {
+    args = ["http://192.168.56.101:11311"]
+}
+*/
+
+
 repositories {
     mavenCentral()
 
@@ -15,6 +26,7 @@ repositories {
         url "https://github.com/rosjava/rosjava_mvn_repo/raw/master"
     }
 
+    // for apache log stuff
     jcenter()
 }
 
