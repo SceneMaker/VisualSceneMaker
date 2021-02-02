@@ -241,7 +241,7 @@ public class MindbotServiceRequester extends AbstractNodeMain {
         _setMinClearanceService.call(request, new ServiceResponseListener<mindbot_msgs.SetFloatResponse>() {
             @Override
             public void onSuccess(mindbot_msgs.SetFloatResponse response) {
-                log.info("The response is: " +response.getSuccess());
+                log.info("The response is: " +response.getMessage());
             }
 
             @Override
