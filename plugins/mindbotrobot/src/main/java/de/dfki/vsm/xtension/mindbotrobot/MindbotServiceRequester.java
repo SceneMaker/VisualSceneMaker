@@ -11,15 +11,29 @@ import org.ros.node.ConnectedNode;
 import org.ros.node.service.ServiceClient;
 import org.ros.node.service.ServiceResponseBuilder;
 import org.ros.node.service.ServiceResponseListener;
+import rosjava_test_msgs.AddTwoInts;
 import rosjava_test_msgs.AddTwoIntsRequest;
 import rosjava_test_msgs.AddTwoIntsResponse;
 
 import java.util.List;
 import java.util.HashMap;
-import static java.lang.Math.toIntExact;
 
 
 public class MindbotServiceRequester extends AbstractNodeMain {
+
+    // Possible state paths:
+    // CALLED -> FAILURE
+    // CALLED -> SUCCESS -> ABORTED
+    // CALLED -> SUCCESS -> DONE
+    public enum CallState {
+        CALLED,     // The remote ROS service has been called
+        FAILURE,    // The remote ROS service answered FAILURE (will not be executed. Don't wait for it)
+        SUCCESS,    // The remote ROS service answered SUCCESS (still being in execution on the ROS side)
+        ABORTED,    // The remote ROS called back our service to inform that the call couldn't execute properly
+        DONE        // The remote ROS called back our service to inform that the call was executed successfully
+    }
+
+
     @Override
     public GraphName getDefaultNodeName() {
         return GraphName.of("mindbot/vsm/RobotServiceRequester");
@@ -35,20 +49,33 @@ public class MindbotServiceRequester extends AbstractNodeMain {
 
     private Log log;
 
+    @Override
     public void onStart(final ConnectedNode connectedNode) {
         this.log = connectedNode.getLog();
         setUpClient(connectedNode);
-        setUpServer(connectedNode);
     }
 
+    /** Will be set to true when the object Setup is done. */
+    private boolean _setupDone = false ;
+
+    /** An incremental counter to determine a local actionID for each call. */
+    private static int _actionCounter = 0;
+
+    /** Maps the call IDs to their call state.*/
+    private final HashMap<Integer, CallState> actionsState = new HashMap<>();
+
+    /** Maps the id that ROS generated for a call to the local actionID. */
+    private final  HashMap<Integer, Integer> rosToActionID = new HashMap<>() ;
+
+    /** Check for setup state.
+     *
+     * @return true if the ROS onStart terminated without exceptions.
+     */
     public boolean isSetupDone() {
-        return (_setupClientDone && _setupServerDone);
+        return (_setupDone);
     }
 
-    private boolean _setupClientDone = false ;
-    private boolean _setupServerDone = false ;
-
-    public void setUpClient(ConnectedNode connectedNode) {
+    private void setUpClient(ConnectedNode connectedNode) {
         try {
             this.log.info("Setting Up the ServiceRequester!!!!!") ;
             _setTcpTargetService = connectedNode.newServiceClient("/iiwa/set_tcp_target", mindbot_msgs.SetPose._TYPE);
@@ -58,23 +85,88 @@ public class MindbotServiceRequester extends AbstractNodeMain {
             _setCtrlStateService = connectedNode.newServiceClient("/iiwa/set_ctrl_state", mindbot_msgs.SetCtrlState._TYPE);
             _setCtrlModeService = connectedNode.newServiceClient("/iiwa/set_ctrl_mode", mindbot_msgs.SetCtrlMode._TYPE);
             _setMinClearanceService = connectedNode.newServiceClient("/iiwa/set_min_clearance", mindbot_msgs.SetFloat._TYPE);
+
+            //
+            // Instantiate the listening service, receiving the result of the calls.
+            connectedNode.newServiceServer("/mindbot/robot/action_done", AddTwoInts._TYPE,
+                    new ServiceResponseBuilder<AddTwoIntsRequest, AddTwoIntsResponse>() {
+
+                        /** This will be invoked every time the local "action_done" service is invoked.
+                         * Here, the goal is to set the status of the action call and trigger the waiting threads.
+                         *
+                         * @param request
+                         * @param response
+                         * @throws ServiceException
+                         */
+                        @Override
+                        public void build(AddTwoIntsRequest request, AddTwoIntsResponse response) throws ServiceException {
+                            // TODO -- get from the request:
+                            // 1. the call ID
+                            int rosCallID = 1;  // request.getCallID()
+                            // 2. the result ID: 0=ERROR, 1=OK
+                            int result = 1;  // request.getResult()
+                            CallState s = (result == 1) ? CallState.DONE : CallState.ABORTED;
+
+                            // This will set the state of the action and notify threads waiting for the call.
+                            int actionID = rosToActionID.get(rosCallID) ;
+                            actionsState.put(actionID, s) ;
+                            actionsState.notifyAll();
+
+                            // TODO -- Set the response result... if needed (probably not).
+                            // response.setSum(0);
+                        }
+                    }) ;
+
         } catch (ServiceNotFoundException e) {
             throw new RosRuntimeException(e);
         }
 
-        _setupClientDone = true ;
+        _setupDone = true ;
     }
 
-    public void setUpServer(ConnectedNode connectedNode) {
-        connectedNode.newServiceServer("/mindbot/robot/action_done", rosjava_test_msgs.AddTwoInts._TYPE,
-                (ServiceResponseBuilder<AddTwoIntsRequest, AddTwoIntsResponse>) (request, response) -> actionTerminated(toIntExact(request.getA()), toIntExact(request.getB())));
-        _setupServerDone = true;
-    }
+    /** Wait for an action until it is terminated.
+     *
+     * @param actionID
+     * @return The last CallState registered
+     */
+    public CallState waitAction(int actionID) {
 
-    HashMap<Integer, Integer> actions = new HashMap<>();
+        CallState s = null;
 
-    public void actionTerminated(Integer id, Integer errorcode) {
-        actions.put(id, errorcode);
+        while (true) {
+            synchronized (actionsState) {
+                s = actionsState.get(actionID);
+            }
+            if (s == CallState.DONE || s == CallState.FAILURE || s == CallState.ABORTED) {
+                break;
+            } else {
+                // the call is either just CALLED or SUCCESS. We have to wait.
+                try {
+                    actionsState.wait();
+                } catch (InterruptedException e) {
+                }
+            }
+        }
+
+
+        synchronized (actionsState) {
+
+            //
+            // remove the IDs from the actionMap
+            actionsState.remove(actionID);
+
+            // remove the ID from the ros map.
+            // (I know, it is linear complexity, but we don't have BiMaps and size is always limited.)
+            for (int ros_id : rosToActionID.keySet()) {
+                int act_id = rosToActionID.get(ros_id);
+                if (act_id == actionID) {
+                    rosToActionID.remove(ros_id);
+                    break;
+                }
+            }
+        }
+
+        return s ;
     }
 
 
@@ -85,7 +177,7 @@ public class MindbotServiceRequester extends AbstractNodeMain {
      * @param v The velocity of each joint, in the same order of the names.
      * @param e The effort of each joint, in the same order of the names.
      */
-    public void setJointTarget(List<String> joint_names, double[] p, double[] v, double[] e) {
+    public int setJointTarget(List<String> joint_names, double[] p, double[] v, double[] e) {
         mindbot_msgs.SetJointStateRequest request = _setJointTargetService.newMessage();
 
         sensor_msgs.JointState jointState = request.getPoint();
@@ -95,21 +187,34 @@ public class MindbotServiceRequester extends AbstractNodeMain {
         jointState.setEffort(e);
 
         request.setPoint(jointState);
+
+        int actionID = _actionCounter++;
+        synchronized (actionsState) {
+            actionsState.put(actionID, CallState.CALLED);
+        }
+
         _setJointTargetService.call(request, new ServiceResponseListener<mindbot_msgs.SetJointStateResponse>() {
             @Override
             public void onSuccess(mindbot_msgs.SetJointStateResponse response) {
                 log.info("The response is: " +response.getMessage());
-                int id = 1; // id of the service "/iiwa/set_joint_target"
-                // 2. parameter: number which indicates that the call is being called and the action is not done yet,
-                // if the action is done, the method actionTerminated will be automatically called
-                actions.put(id, 0);
+                // TODO -- the ID must be extracted from the response message, maybe in a regular expression like "\(\d+\)"
+                int ros_id = 1; // id of the call e.g., "/iiwa/set_joint_target node1 1 2 3"
+                synchronized (actionsState) {
+                    actionsState.put(actionID, CallState.SUCCESS);
+                    rosToActionID.put(ros_id, actionID);
+                }
             }
 
             @Override
             public void onFailure(RemoteException e) {
+                synchronized (actionsState) {
+                    actionsState.put(actionID, CallState.FAILURE);
+                }
                 throw new RosRuntimeException(e);
             }
         });
+
+        return actionID ;
     }
 
     /** /iiwa/set_tcp_target             (mindbot_msgs::SetPose)

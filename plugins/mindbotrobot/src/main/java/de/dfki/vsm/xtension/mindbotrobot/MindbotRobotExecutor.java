@@ -187,6 +187,8 @@ public final class MindbotRobotExecutor extends ActivityExecutor {
             final LinkedList<ActionFeature> features_list = activity.getFeatures();
             final HashMap<String, String> features_map = featureListToMap(features_list) ;
 
+            int actionID = -1 ;
+
             switch (cmd) {
                 case "set_joint_target": {
                     // All parameters are in fact comma-separated lists of values.
@@ -201,7 +203,7 @@ public final class MindbotRobotExecutor extends ActivityExecutor {
                     String[] efforts_str = features_map.get("efforts").split(",");
                     double[] efforts = Arrays.stream(efforts_str).mapToDouble(p -> Double.parseDouble(p.trim())).toArray();
 
-                    serviceReq.setJointTarget(joint_names_list, positions, velocities, efforts);
+                    actionID = serviceReq.setJointTarget(joint_names_list, positions, velocities, efforts);
 
                     break;
                 }
@@ -257,6 +259,15 @@ public final class MindbotRobotExecutor extends ActivityExecutor {
                 default:
                     mLogger.failure("Unrecognized action '" + cmd + "'");
                     break;
+            }
+
+            if(actionID != -1) {
+                MindbotServiceRequester.CallState result = serviceReq.waitAction(actionID) ;
+                if(result == MindbotServiceRequester.CallState.FAILURE ||
+                result== MindbotServiceRequester.CallState.ABORTED) {
+                    // TODO -- This is a candidate information to be notified in the interface (pop up?).
+                    mLogger.failure("Action '" + cmd + "' (id=" + actionID + ") reported error: " + result);
+                }
             }
 
         }
