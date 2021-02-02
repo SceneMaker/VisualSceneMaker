@@ -2,8 +2,6 @@ plugins {
     id 'java'
 }
 
-
-
 group 'de.dfki.vsm'
 
 targetCompatibility = 1.8
