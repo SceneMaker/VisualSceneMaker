@@ -5,6 +5,7 @@ import org.ros.exception.RemoteException;
 import org.ros.exception.RosRuntimeException;
 import org.ros.exception.ServiceException;
 import org.ros.exception.ServiceNotFoundException;
+import org.ros.internal.message.Message;
 import org.ros.namespace.GraphName;
 import org.ros.node.AbstractNodeMain;
 import org.ros.node.ConnectedNode;
@@ -170,13 +171,53 @@ public class MindbotServiceRequester extends AbstractNodeMain {
     }
 
 
-    /**     /iiwa/set_joint_target           (mindbot_msgs::SetJointState)
-     *
-     * @param joint_names The name of the joints to modify.
-     * @param p The position (actually the rotation) of each joint, in the same order of the names.
-     * @param v The velocity of each joint, in the same order of the names.
-     * @param e The effort of each joint, in the same order of the names.
+    /** Generic Listener that can be used to intercept the answer from any service.
+     * The responding service must provide a field named `actionID` of type int32.
      */
+    class MindBotResponseListener implements ServiceResponseListener<org.ros.internal.message.Message> {
+
+        int vsmActionID ;
+
+        public MindBotResponseListener() {
+
+            // Generate a new local VSM ID for this action call
+            this.vsmActionID = _actionCounter++;
+            synchronized (actionsState) {
+                actionsState.put(this.vsmActionID, CallState.CALLED);
+            }
+
+        }
+
+        @Override
+        public void onSuccess(Message response) {
+            int rosActionID = response.toRawMessage().getInt32("actionID");
+            log.info("The response from property is: " + rosActionID);
+
+            synchronized (actionsState) {
+                actionsState.put(vsmActionID, CallState.SUCCESS);
+                rosToActionID.put(rosActionID, vsmActionID);
+            }
+
+        }
+
+        @Override
+        public void onFailure(RemoteException e) {
+            synchronized (actionsState) {
+                actionsState.put(vsmActionID, CallState.FAILURE);
+            }
+            throw new RosRuntimeException(e);
+
+        }
+    }
+
+
+            /**     /iiwa/set_joint_target           (mindbot_msgs::SetJointState)
+             *
+             * @param joint_names The name of the joints to modify.
+             * @param p The position (actually the rotation) of each joint, in the same order of the names.
+             * @param v The velocity of each joint, in the same order of the names.
+             * @param e The effort of each joint, in the same order of the names.
+             */
     public int setJointTarget(List<String> joint_names, double[] p, double[] v, double[] e) {
         mindbot_msgs.SetJointStateRequest request = _setJointTargetService.newMessage();
 
@@ -244,6 +285,10 @@ public class MindbotServiceRequester extends AbstractNodeMain {
             @Override
             public void onSuccess(mindbot_msgs.SetPoseResponse response) {
                 log.info("The response is: " +response.getMessage());
+
+                String message_from_property = response.toRawMessage().getString("message");
+                log.info("The response from property is: " + message_from_property);
+
             }
 
             @Override
