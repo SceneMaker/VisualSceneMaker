@@ -216,7 +216,7 @@ public final class MindbotRobotExecutor extends ActivityExecutor {
                     float or_x = Float.parseFloat(features_map.get("or_x"));
                     float or_y = Float.parseFloat(features_map.get("or_y"));
                     float or_z = Float.parseFloat(features_map.get("or_z"));
-                    serviceReq.setTcpTarget(x, y, z, or_w, or_x, or_y, or_z);
+                    actionID = serviceReq.setTcpTarget(x, y, z, or_w, or_x, or_y, or_z);
 
                     break;
                 }
@@ -225,7 +225,7 @@ public final class MindbotRobotExecutor extends ActivityExecutor {
                     float x = Float.parseFloat(features_map.get("x"));
                     float y = Float.parseFloat(features_map.get("y"));
                     float z = Float.parseFloat(features_map.get("z"));
-                    serviceReq.setMaxTcpVelocity(x, y, z);
+                    actionID = serviceReq.setMaxTcpVelocity(x, y, z);
 
                     break;
                 }
@@ -234,7 +234,7 @@ public final class MindbotRobotExecutor extends ActivityExecutor {
                     float x = Float.parseFloat(features_map.get("x"));
                     float y = Float.parseFloat(features_map.get("y"));
                     float z = Float.parseFloat(features_map.get("z"));
-                    serviceReq.setMaxTcpAcceleration(x, y, z);
+                    actionID = serviceReq.setMaxTcpAcceleration(x, y, z);
 
                     break;
                 }
@@ -253,7 +253,7 @@ public final class MindbotRobotExecutor extends ActivityExecutor {
                 case "set_min_clearance":
 
                     float min_clearance = Float.parseFloat(features_map.get("min_clearance"));
-                    serviceReq.setMinClearanceService(min_clearance);
+                    actionID = serviceReq.setMinClearanceService(min_clearance);
 
                     break;
                 default:
