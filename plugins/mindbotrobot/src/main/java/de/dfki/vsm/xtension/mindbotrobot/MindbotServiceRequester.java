@@ -1,11 +1,11 @@
 package de.dfki.vsm.xtension.mindbotrobot;
 
-import mindbot_msgs.SetVector3Response;
 import org.apache.commons.logging.Log;
 import org.ros.exception.RemoteException;
 import org.ros.exception.RosRuntimeException;
 import org.ros.exception.ServiceException;
 import org.ros.exception.ServiceNotFoundException;
+import org.ros.internal.message.Message;
 import org.ros.namespace.GraphName;
 import org.ros.node.AbstractNodeMain;
 import org.ros.node.ConnectedNode;
@@ -166,14 +166,54 @@ public class MindbotServiceRequester extends AbstractNodeMain {
     }
 
 
-    /**     /iiwa/set_joint_target           (mindbot_msgs::SetJointState)
-     *
-     * @param joint_names The name of the joints to modify.
-     * @param p The position (actually the rotation) of each joint, in the same order of the names.
-     * @param v The velocity of each joint, in the same order of the names.
-     * @param e The effort of each joint, in the same order of the names.
+    /** Generic Listener that can be used to intercept the answer from any service.
+     * The responding service must provide a field named `actionID` of type int32.
      */
-    public int setJointTarget(List<String> joint_names, double[] p, double[] v, double[] e) {
+    class MindBotResponseListener implements ServiceResponseListener<org.ros.internal.message.Message> {
+
+        int vsmActionID ;
+
+        public MindBotResponseListener() {
+
+            // Generate a new local VSM ID for this action call
+            this.vsmActionID = _actionCounter++;
+            synchronized (actionsState) {
+                actionsState.put(this.vsmActionID, CallState.CALLED);
+            }
+
+        }
+
+        @Override
+        public void onSuccess(Message response) {
+            int rosActionID = response.toRawMessage().getInt32("actionID");
+            log.info("The response from property is: " + rosActionID);
+
+            synchronized (actionsState) {
+                actionsState.put(vsmActionID, CallState.SUCCESS);
+                rosToActionID.put(rosActionID, vsmActionID);
+            }
+
+        }
+
+        @Override
+        public void onFailure(RemoteException e) {
+            synchronized (actionsState) {
+                actionsState.put(vsmActionID, CallState.FAILURE);
+            }
+            throw new RosRuntimeException(e);
+
+        }
+    }
+
+
+            /**     /iiwa/set_joint_target           (mindbot_msgs::SetJointState)
+             *
+             * @param joint_names The name of the joints to modify.
+             * @param p The position (actually the rotation) of each joint, in the same order of the names.
+             * @param v The velocity of each joint, in the same order of the names.
+             * @param e The effort of each joint, in the same order of the names.
+             */
+    public void setJointTarget(List<String> joint_names, double[] p, double[] v, double[] e) {
         mindbot_msgs.SetJointStateRequest request = _setJointTargetService.newMessage();
 
         sensor_msgs.JointState jointState = request.getPoint();
@@ -184,31 +224,9 @@ public class MindbotServiceRequester extends AbstractNodeMain {
 
         request.setPoint(jointState);
 
-        int actionID = _actionCounter++;
-        synchronized (actionsState) {
-            actionsState.put(actionID, CallState.CALLED);
-        }
+        //_setJointTargetService.call(request, new MindBotResponseListener<mindbot_msgs.SetJointStateResponse>() {});
 
-        _setJointTargetService.call(request, new ServiceResponseListener<mindbot_msgs.SetJointStateResponse>() {
-            @Override
-            public void onSuccess(mindbot_msgs.SetJointStateResponse response) {
-                int ros_id = response.getActionID();
-                synchronized (actionsState) {
-                    actionsState.put(actionID, CallState.SUCCESS);
-                    rosToActionID.put(ros_id, actionID);
-                }
-            }
-
-            @Override
-            public void onFailure(RemoteException e) {
-                synchronized (actionsState) {
-                    actionsState.put(actionID, CallState.FAILURE);
-                }
-                throw new RosRuntimeException(e);
-            }
-        });
-
-        return actionID ;
+        //return actionID ;
     }
 
     /** /iiwa/set_tcp_target             (mindbot_msgs::SetPose)
@@ -221,7 +239,7 @@ public class MindbotServiceRequester extends AbstractNodeMain {
      * @param or_y
      * @param or_z
      */
-     public int setTcpTarget(float x, float y, float z, float or_w, float or_x, float or_y, float or_z) {
+     public void setTcpTarget(float x, float y, float z, float or_w, float or_x, float or_y, float or_z) {
         mindbot_msgs.SetPoseRequest request = _setTcpTargetService.newMessage();
 
         geometry_msgs.Pose pose = request.getPose();
@@ -234,32 +252,6 @@ public class MindbotServiceRequester extends AbstractNodeMain {
         pose.getOrientation().setZ(or_z);
 
         request.setPose(pose);
-
-         int actionID = _actionCounter++;
-         synchronized (actionsState) {
-             actionsState.put(actionID, CallState.CALLED);
-         }
-
-         _setTcpTargetService.call(request, new ServiceResponseListener<mindbot_msgs.SetPoseResponse>() {
-             @Override
-             public void onSuccess(mindbot_msgs.SetPoseResponse response) {
-                 int ros_id = response.getActionID();
-                 synchronized (actionsState) {
-                     actionsState.put(actionID, CallState.SUCCESS);
-                     rosToActionID.put(ros_id, actionID);
-                 }
-             }
-
-             @Override
-             public void onFailure(RemoteException e) {
-                 synchronized (actionsState) {
-                     actionsState.put(actionID, CallState.FAILURE);
-                 }
-                 throw new RosRuntimeException(e);
-             }
-         });
-
-         return actionID ;
     }
 
 
@@ -269,7 +261,7 @@ public class MindbotServiceRequester extends AbstractNodeMain {
      * @param y
      * @param z
      */
-     public int setMaxTcpVelocity(double x, double y, double z) {
+     public void setMaxTcpVelocity(double x, double y, double z) {
         mindbot_msgs.SetVector3Request request = _setMaxTcpVelocityService.newMessage();
 
         geometry_msgs.Vector3 maxTcpVelocity = request.getData();
@@ -278,6 +270,7 @@ public class MindbotServiceRequester extends AbstractNodeMain {
         maxTcpVelocity.setZ(z);
 
         request.setData(maxTcpVelocity);
+        /*
 
          int actionID = _actionCounter++;
          synchronized (actionsState) {
@@ -303,7 +296,7 @@ public class MindbotServiceRequester extends AbstractNodeMain {
              }
          });
 
-         return actionID ;
+         return actionID ;*/
     }
 
     /** /iiwa/set_max_tcp_acceleration   (mindbot_msgs::SetVector3)
@@ -312,7 +305,7 @@ public class MindbotServiceRequester extends AbstractNodeMain {
      * @param y
      * @param z
      */
-     public int setMaxTcpAcceleration(double x, double y, double z) {
+     public void setMaxTcpAcceleration(double x, double y, double z) {
         mindbot_msgs.SetVector3Request request = _setMaxTcpAccelerationService.newMessage();
 
         geometry_msgs.Vector3 maxTcpAcceleration = request.getData();
@@ -321,32 +314,6 @@ public class MindbotServiceRequester extends AbstractNodeMain {
         maxTcpAcceleration.setZ(z);
 
         request.setData(maxTcpAcceleration);
-
-         int actionID = _actionCounter++;
-         synchronized (actionsState) {
-             actionsState.put(actionID, CallState.CALLED);
-         }
-
-         _setMaxTcpVelocityService.call(request, new ServiceResponseListener<SetVector3Response>() {
-             @Override
-             public void onSuccess(mindbot_msgs.SetVector3Response response) {
-                 int ros_id = response.getActionID();
-                 synchronized (actionsState) {
-                     actionsState.put(actionID, CallState.SUCCESS);
-                     rosToActionID.put(ros_id, actionID);
-                 }
-             }
-
-             @Override
-             public void onFailure(RemoteException e) {
-                 synchronized (actionsState) {
-                     actionsState.put(actionID, CallState.FAILURE);
-                 }
-                 throw new RosRuntimeException(e);
-             }
-         });
-
-         return actionID ;
     }
 
 
@@ -361,17 +328,6 @@ public class MindbotServiceRequester extends AbstractNodeMain {
         ctrlState.setCtrlState(state);
 
         request.setCtrlState(ctrlState);
-        _setCtrlStateService.call(request, new ServiceResponseListener<mindbot_msgs.SetCtrlStateResponse>() {
-            @Override
-            public void onSuccess(mindbot_msgs.SetCtrlStateResponse response) {
-
-            }
-
-            @Override
-            public void onFailure(RemoteException e) {
-                throw new RosRuntimeException(e);
-            }
-        });
     }
 
     /** /iiwa/set_ctrl_mode              (cob_srvs::SetString)
@@ -385,53 +341,16 @@ public class MindbotServiceRequester extends AbstractNodeMain {
         ctrlMode.setCtrlMode(mode);
 
         request.setCtrlMode(ctrlMode);
-        _setCtrlModeService.call(request, new ServiceResponseListener<mindbot_msgs.SetCtrlModeResponse>() {
-            @Override
-            public void onSuccess(mindbot_msgs.SetCtrlModeResponse response) {
-
-            }
-
-            @Override
-            public void onFailure(RemoteException e) {
-                throw new RosRuntimeException(e);
-            }
-        });
     }
 
     /**     /iiwa/set_min_clearance           (mindbot_msgs::SetFloat)
      *
      * @param min_clearance A float with the minimum accepted distance between robot and operator.
      */
-    public int setMinClearanceService(float min_clearance) {
+    public void setMinClearanceService(float min_clearance) {
         mindbot_msgs.SetFloatRequest request = _setMinClearanceService.newMessage();
 
         request.setData(min_clearance);
-
-        int actionID = _actionCounter++;
-        synchronized (actionsState) {
-            actionsState.put(actionID, CallState.CALLED);
-        }
-
-        _setMinClearanceService.call(request, new ServiceResponseListener<mindbot_msgs.SetFloatResponse>() {
-            @Override
-            public void onSuccess(mindbot_msgs.SetFloatResponse response) {
-                int ros_id = response.getActionID();
-                synchronized (actionsState) {
-                    actionsState.put(actionID, CallState.SUCCESS);
-                    rosToActionID.put(ros_id, actionID);
-                }
-            }
-
-            @Override
-            public void onFailure(RemoteException e) {
-                synchronized (actionsState) {
-                    actionsState.put(actionID, CallState.FAILURE);
-                }
-                throw new RosRuntimeException(e);
-            }
-        });
-
-        return actionID ;
     }
 
 }
