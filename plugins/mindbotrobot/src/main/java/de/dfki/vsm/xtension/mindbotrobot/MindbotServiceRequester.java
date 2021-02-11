@@ -3,7 +3,6 @@ package de.dfki.vsm.xtension.mindbotrobot;
 import org.apache.commons.logging.Log;
 import org.ros.exception.RemoteException;
 import org.ros.exception.RosRuntimeException;
-import org.ros.exception.ServiceException;
 import org.ros.exception.ServiceNotFoundException;
 import org.ros.internal.message.Message;
 import org.ros.namespace.GraphName;
@@ -37,13 +36,13 @@ public class MindbotServiceRequester extends AbstractNodeMain {
         return GraphName.of("mindbot/vsm/RobotServiceRequester");
     }
 
-    private ServiceClient<mindbot_msgs.SetPoseRequest, mindbot_msgs.SetPoseResponse> _setTcpTargetService;
-    private ServiceClient<mindbot_msgs.SetJointStateRequest, mindbot_msgs.SetJointStateResponse> _setJointTargetService;
-    private ServiceClient<mindbot_msgs.SetVector3Request, mindbot_msgs.SetVector3Response> _setMaxTcpVelocityService;
-    private ServiceClient<mindbot_msgs.SetVector3Request, mindbot_msgs.SetVector3Response> _setMaxTcpAccelerationService;
+    private ServiceClient<mindbot_msgs.SetPoseRequest, Message> _setTcpTargetService;
+    private ServiceClient<mindbot_msgs.SetJointStateRequest, Message> _setJointTargetService;
+    private ServiceClient<mindbot_msgs.SetVector3Request, Message> _setMaxTcpVelocityService;
+    private ServiceClient<mindbot_msgs.SetVector3Request, Message> _setMaxTcpAccelerationService;
     private ServiceClient<mindbot_msgs.SetCtrlStateRequest, mindbot_msgs.SetCtrlStateResponse> _setCtrlStateService;
     private ServiceClient<mindbot_msgs.SetCtrlModeRequest, mindbot_msgs.SetCtrlModeResponse> _setCtrlModeService;
-    private ServiceClient<mindbot_msgs.SetFloatRequest, mindbot_msgs.SetFloatResponse> _setMinClearanceService;
+    private ServiceClient<mindbot_msgs.SetFloatRequest, Message> _setMinClearanceService;
 
     private Log log;
 
@@ -64,6 +63,9 @@ public class MindbotServiceRequester extends AbstractNodeMain {
 
     /** Maps the id that ROS generated for a call to the local actionID. */
     private final  HashMap<Integer, Integer> rosToActionID = new HashMap<>() ;
+
+    /** The actionID of the service which is being called to notify the Executor */
+    int actionID;
 
     /** Check for setup state.
      *
@@ -97,9 +99,9 @@ public class MindbotServiceRequester extends AbstractNodeMain {
                          */
                         @Override
                         public void build(mindbot_msgs.VSMActionDoneRequest request, mindbot_msgs.VSMActionDoneResponse response) {
-                            int rosCallID = (int) request.getCallID();
+                            int rosCallID = request.getCallID();
                             // the result ID: 0=ERROR, 1=OK
-                            int result = (int) request.getResult();
+                            int result = request.getResult();
                             CallState s = (result == 1) ? CallState.DONE : CallState.ABORTED;
 
                             // This will set the state of the action and notify threads waiting for the call.
@@ -179,6 +181,7 @@ public class MindbotServiceRequester extends AbstractNodeMain {
             this.vsmActionID = _actionCounter++;
             synchronized (actionsState) {
                 actionsState.put(this.vsmActionID, CallState.CALLED);
+                actionID = vsmActionID;
             }
 
         }
@@ -213,7 +216,7 @@ public class MindbotServiceRequester extends AbstractNodeMain {
              * @param v The velocity of each joint, in the same order of the names.
              * @param e The effort of each joint, in the same order of the names.
              */
-    public void setJointTarget(List<String> joint_names, double[] p, double[] v, double[] e) {
+    public int setJointTarget(List<String> joint_names, double[] p, double[] v, double[] e) {
         mindbot_msgs.SetJointStateRequest request = _setJointTargetService.newMessage();
 
         sensor_msgs.JointState jointState = request.getPoint();
@@ -224,9 +227,8 @@ public class MindbotServiceRequester extends AbstractNodeMain {
 
         request.setPoint(jointState);
 
-        //_setJointTargetService.call(request, new MindBotResponseListener<mindbot_msgs.SetJointStateResponse>() {});
-
-        //return actionID ;
+        _setJointTargetService.call(request, new MindBotResponseListener() {});
+        return actionID;
     }
 
     /** /iiwa/set_tcp_target             (mindbot_msgs::SetPose)
@@ -239,7 +241,7 @@ public class MindbotServiceRequester extends AbstractNodeMain {
      * @param or_y
      * @param or_z
      */
-     public void setTcpTarget(float x, float y, float z, float or_w, float or_x, float or_y, float or_z) {
+     public int setTcpTarget(float x, float y, float z, float or_w, float or_x, float or_y, float or_z) {
         mindbot_msgs.SetPoseRequest request = _setTcpTargetService.newMessage();
 
         geometry_msgs.Pose pose = request.getPose();
@@ -252,6 +254,9 @@ public class MindbotServiceRequester extends AbstractNodeMain {
         pose.getOrientation().setZ(or_z);
 
         request.setPose(pose);
+
+         _setTcpTargetService.call(request, new MindBotResponseListener() {});
+         return actionID;
     }
 
 
@@ -261,7 +266,7 @@ public class MindbotServiceRequester extends AbstractNodeMain {
      * @param y
      * @param z
      */
-     public void setMaxTcpVelocity(double x, double y, double z) {
+     public int setMaxTcpVelocity(double x, double y, double z) {
         mindbot_msgs.SetVector3Request request = _setMaxTcpVelocityService.newMessage();
 
         geometry_msgs.Vector3 maxTcpVelocity = request.getData();
@@ -270,33 +275,9 @@ public class MindbotServiceRequester extends AbstractNodeMain {
         maxTcpVelocity.setZ(z);
 
         request.setData(maxTcpVelocity);
-        /*
 
-         int actionID = _actionCounter++;
-         synchronized (actionsState) {
-             actionsState.put(actionID, CallState.CALLED);
-         }
-
-         _setMaxTcpVelocityService.call(request, new ServiceResponseListener<mindbot_msgs.SetVector3Response>() {
-             @Override
-             public void onSuccess(mindbot_msgs.SetVector3Response response) {
-                 int ros_id = response.getActionID();
-                 synchronized (actionsState) {
-                     actionsState.put(actionID, CallState.SUCCESS);
-                     rosToActionID.put(ros_id, actionID);
-                 }
-             }
-
-             @Override
-             public void onFailure(RemoteException e) {
-                 synchronized (actionsState) {
-                     actionsState.put(actionID, CallState.FAILURE);
-                 }
-                 throw new RosRuntimeException(e);
-             }
-         });
-
-         return actionID ;*/
+         _setMaxTcpVelocityService.call(request, new MindBotResponseListener() {});
+         return actionID;
     }
 
     /** /iiwa/set_max_tcp_acceleration   (mindbot_msgs::SetVector3)
@@ -305,7 +286,7 @@ public class MindbotServiceRequester extends AbstractNodeMain {
      * @param y
      * @param z
      */
-     public void setMaxTcpAcceleration(double x, double y, double z) {
+     public int setMaxTcpAcceleration(double x, double y, double z) {
         mindbot_msgs.SetVector3Request request = _setMaxTcpAccelerationService.newMessage();
 
         geometry_msgs.Vector3 maxTcpAcceleration = request.getData();
@@ -314,12 +295,17 @@ public class MindbotServiceRequester extends AbstractNodeMain {
         maxTcpAcceleration.setZ(z);
 
         request.setData(maxTcpAcceleration);
+
+         _setMaxTcpAccelerationService.call(request, new MindBotResponseListener() {});
+         return actionID;
     }
 
 
     /** /iiwa/set_ctrl_state             (cob_srvs::SetString)
      *
-     * @param state
+     * @param state     OFF = 0
+     *                  ON = 1
+     *                  ERROR = 2
      */
      public void setCtrlState(byte state) {
         mindbot_msgs.SetCtrlStateRequest request = _setCtrlStateService.newMessage();
@@ -332,7 +318,9 @@ public class MindbotServiceRequester extends AbstractNodeMain {
 
     /** /iiwa/set_ctrl_mode              (cob_srvs::SetString)
      *
-     * @param mode
+     * @param mode      MODEO = 0
+     *                  MODE1 = 1
+     *                  MODE2 = 2
      */
      public void setCtrlMode(byte mode) {
         mindbot_msgs.SetCtrlModeRequest request = _setCtrlModeService.newMessage();
@@ -347,10 +335,13 @@ public class MindbotServiceRequester extends AbstractNodeMain {
      *
      * @param min_clearance A float with the minimum accepted distance between robot and operator.
      */
-    public void setMinClearanceService(float min_clearance) {
+    public int setMinClearanceService(float min_clearance) {
         mindbot_msgs.SetFloatRequest request = _setMinClearanceService.newMessage();
 
         request.setData(min_clearance);
+
+        _setMinClearanceService.call(request, new MindBotResponseListener() {});
+        return actionID;
     }
 
 }
