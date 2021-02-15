@@ -37,13 +37,14 @@ public class MindbotServiceRequester extends AbstractNodeMain {
         return GraphName.of("mindbot/vsm/RobotServiceRequester");
     }
 
-    private ServiceClient<mindbot_msgs.SetPoseRequest, Message> _setTcpTargetService;
-    private ServiceClient<mindbot_msgs.SetJointStateRequest, Message> _setJointTargetService;
-    private ServiceClient<mindbot_msgs.SetVector3Request, Message> _setMaxTcpVelocityService;
-    private ServiceClient<mindbot_msgs.SetVector3Request, Message> _setMaxTcpAccelerationService;
+    private ServiceClient<mindbot_msgs.SetPoseRequest, mindbot_msgs.SetPoseResponse> _setTcpTargetService;
+    private ServiceClient<mindbot_msgs.SetJointStateRequest, mindbot_msgs.SetJointStateResponse> _setJointTargetService;
+    private ServiceClient<mindbot_msgs.SetVector3Request, mindbot_msgs.SetVector3Response> _setMaxTcpVelocityService;
+    private ServiceClient<mindbot_msgs.SetVector3Request, mindbot_msgs.SetVector3Response> _setMaxTcpAccelerationService;
     private ServiceClient<mindbot_msgs.SetCtrlStateRequest, mindbot_msgs.SetCtrlStateResponse> _setCtrlStateService;
     private ServiceClient<mindbot_msgs.SetCtrlModeRequest, mindbot_msgs.SetCtrlModeResponse> _setCtrlModeService;
-    private ServiceClient<mindbot_msgs.SetFloatRequest, Message> _setMinClearanceService;
+    private ServiceClient<mindbot_msgs.SetFloatRequest, mindbot_msgs.SetFloatResponse> _setMinClearanceService;
+
 
     private Log log;
 
@@ -105,10 +106,12 @@ public class MindbotServiceRequester extends AbstractNodeMain {
                             int result = request.getResult();
                             CallState s = (result == 1) ? CallState.DONE : CallState.ABORTED;
 
-                            // This will set the state of the action and notify threads waiting for the call.
-                            int actionID = rosToActionID.get(rosCallID) ;
-                            actionsState.put(actionID, s) ;
-                            actionsState.notifyAll();
+                            synchronized (actionsState) {
+                                // This will set the state of the action and notify threads waiting for the call.
+                                int actionID = rosToActionID.get(rosCallID);
+                                actionsState.put(actionID, s);
+                                actionsState.notifyAll();
+                            }
 
                             // TODO -- Set the response result... if needed (probably not).
                             // response.setSum(0);
@@ -134,17 +137,18 @@ public class MindbotServiceRequester extends AbstractNodeMain {
         while (true) {
             synchronized (actionsState) {
                 s = actionsState.get(actionID);
-            }
-            if (s == CallState.DONE || s == CallState.FAILURE || s == CallState.ABORTED) {
-                break;
-            } else {
-                // the call is either just CALLED or SUCCESS. We have to wait.
-                try {
-                    actionsState.wait();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+                if (s == CallState.DONE || s == CallState.FAILURE || s == CallState.ABORTED) {
+                    break;
+                } else {
+                    // the call is either just CALLED or SUCCESS. We have to wait.
+                    try {
+                        actionsState.wait();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
+
         }
 
 
@@ -368,7 +372,7 @@ public class MindbotServiceRequester extends AbstractNodeMain {
      *
      * @param min_clearance A float with the minimum accepted distance between robot and operator.
      */
-    public int setMinClearanceService(float min_clearance) {
+    public void setMinClearanceService(float min_clearance) {
         mindbot_msgs.SetFloatRequest request = _setMinClearanceService.newMessage();
 
         request.setData(min_clearance);
