@@ -4,7 +4,6 @@ import mindbot_msgs.*;
 import org.apache.commons.logging.Log;
 import org.ros.exception.RemoteException;
 import org.ros.exception.RosRuntimeException;
-import org.ros.exception.ServiceException;
 import org.ros.exception.ServiceNotFoundException;
 import org.ros.internal.message.Message;
 import org.ros.namespace.GraphName;
@@ -13,9 +12,6 @@ import org.ros.node.ConnectedNode;
 import org.ros.node.service.ServiceClient;
 import org.ros.node.service.ServiceResponseBuilder;
 import org.ros.node.service.ServiceResponseListener;
-import rosjava_test_msgs.AddTwoInts;
-import rosjava_test_msgs.AddTwoIntsRequest;
-import rosjava_test_msgs.AddTwoIntsResponse;
 
 import java.util.List;
 import java.util.HashMap;
@@ -41,13 +37,13 @@ public class MindbotServiceRequester extends AbstractNodeMain {
         return GraphName.of("mindbot/vsm/RobotServiceRequester");
     }
 
-    private ServiceClient<mindbot_msgs.SetPoseRequest, mindbot_msgs.SetPoseResponse> _setTcpTargetService;
-    private ServiceClient<mindbot_msgs.SetJointStateRequest, mindbot_msgs.SetJointStateResponse> _setJointTargetService;
-    private ServiceClient<mindbot_msgs.SetVector3Request, mindbot_msgs.SetVector3Response> _setMaxTcpVelocityService;
-    private ServiceClient<mindbot_msgs.SetVector3Request, mindbot_msgs.SetVector3Response> _setMaxTcpAccelerationService;
+    private ServiceClient<mindbot_msgs.SetPoseRequest, Message> _setTcpTargetService;
+    private ServiceClient<mindbot_msgs.SetJointStateRequest, Message> _setJointTargetService;
+    private ServiceClient<mindbot_msgs.SetVector3Request, Message> _setMaxTcpVelocityService;
+    private ServiceClient<mindbot_msgs.SetVector3Request, Message> _setMaxTcpAccelerationService;
     private ServiceClient<mindbot_msgs.SetCtrlStateRequest, mindbot_msgs.SetCtrlStateResponse> _setCtrlStateService;
     private ServiceClient<mindbot_msgs.SetCtrlModeRequest, mindbot_msgs.SetCtrlModeResponse> _setCtrlModeService;
-    private ServiceClient<mindbot_msgs.SetFloatRequest, mindbot_msgs.SetFloatResponse> _setMinClearanceService;
+    private ServiceClient<mindbot_msgs.SetFloatRequest, Message> _setMinClearanceService;
 
     private Log log;
 
@@ -68,6 +64,9 @@ public class MindbotServiceRequester extends AbstractNodeMain {
 
     /** Maps the id that ROS generated for a call to the local actionID. */
     private final  HashMap<Integer, Integer> rosToActionID = new HashMap<>() ;
+
+    /** The actionID of the service which is being called to notify the Executor */
+    int actionID;
 
     /** Check for setup state.
      *
@@ -90,23 +89,20 @@ public class MindbotServiceRequester extends AbstractNodeMain {
 
             //
             // Instantiate the listening service, receiving the result of the calls.
-            connectedNode.newServiceServer("/mindbot/robot/action_done", AddTwoInts._TYPE,
-                    new ServiceResponseBuilder<AddTwoIntsRequest, AddTwoIntsResponse>() {
+            connectedNode.newServiceServer("/mindbot/robot/action_done", mindbot_msgs.VSMActionDone._TYPE,
+                    new ServiceResponseBuilder<mindbot_msgs.VSMActionDoneRequest, mindbot_msgs.VSMActionDoneResponse>() {
 
                         /** This will be invoked every time the local "action_done" service is invoked.
                          * Here, the goal is to set the status of the action call and trigger the waiting threads.
                          *
-                         * @param request
-                         * @param response
-                         * @throws ServiceException
+                         * @param request callid & resultid
+                         * @param response message & success
                          */
                         @Override
-                        public void build(AddTwoIntsRequest request, AddTwoIntsResponse response) throws ServiceException {
-                            // TODO -- get from the request:
-                            // 1. the call ID
-                            int rosCallID = 1;  // request.getCallID()
-                            // 2. the result ID: 0=ERROR, 1=OK
-                            int result = 1;  // request.getResult()
+                        public void build(mindbot_msgs.VSMActionDoneRequest request, mindbot_msgs.VSMActionDoneResponse response) {
+                            int rosCallID = request.getCallID();
+                            // the result ID: 0=ERROR, 1=OK
+                            int result = request.getResult();
                             CallState s = (result == 1) ? CallState.DONE : CallState.ABORTED;
 
                             // This will set the state of the action and notify threads waiting for the call.
@@ -133,7 +129,7 @@ public class MindbotServiceRequester extends AbstractNodeMain {
      */
     public CallState waitAction(int actionID) {
 
-        CallState s = null;
+        CallState s;
 
         while (true) {
             synchronized (actionsState) {
@@ -146,6 +142,7 @@ public class MindbotServiceRequester extends AbstractNodeMain {
                 try {
                     actionsState.wait();
                 } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
             }
         }
@@ -333,7 +330,9 @@ public class MindbotServiceRequester extends AbstractNodeMain {
 
     /** /iiwa/set_ctrl_state             (cob_srvs::SetString)
      *
-     * @param state
+     * @param state     OFF = 0
+     *                  ON = 1
+     *                  ERROR = 2
      */
     public void setCtrlState(byte state) {
         mindbot_msgs.SetCtrlStateRequest request = _setCtrlStateService.newMessage();
@@ -349,7 +348,9 @@ public class MindbotServiceRequester extends AbstractNodeMain {
 
     /** /iiwa/set_ctrl_mode              (cob_srvs::SetString)
      *
-     * @param mode
+     * @param mode      MODEO = 0
+     *                  MODE1 = 1
+     *                  MODE2 = 2
      */
     public void setCtrlMode(byte mode) {
         mindbot_msgs.SetCtrlModeRequest request = _setCtrlModeService.newMessage();
@@ -367,7 +368,7 @@ public class MindbotServiceRequester extends AbstractNodeMain {
      *
      * @param min_clearance A float with the minimum accepted distance between robot and operator.
      */
-    public void setMinClearanceService(float min_clearance) {
+    public int setMinClearanceService(float min_clearance) {
         mindbot_msgs.SetFloatRequest request = _setMinClearanceService.newMessage();
 
         request.setData(min_clearance);
