@@ -35,10 +35,6 @@ dependencies {
     compile project(":core")
     compile project(":plugins:extensionAPI")
 
-
-    // https://mvnrepository.com/artifact/commons-logging/commons-logging
-    compile group: 'commons-logging', name: 'commons-logging', version: '1.2'
-
     compile 'org.ros.rosjava_core:rosjava:[0.3,0.4)'
     compile 'org.ros.rosjava_messages:std_msgs:0.5.11'
     compile 'org.ros.rosjava_messages:geometry_msgs:[1.12,1.13)'

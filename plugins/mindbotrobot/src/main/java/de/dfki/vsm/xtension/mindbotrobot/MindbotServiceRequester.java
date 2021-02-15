@@ -1,7 +1,6 @@
 package de.dfki.vsm.xtension.mindbotrobot;
 
 import mindbot_msgs.*;
-import org.apache.commons.logging.Log;
 import org.ros.exception.RemoteException;
 import org.ros.exception.RosRuntimeException;
 import org.ros.exception.ServiceNotFoundException;
@@ -45,12 +44,8 @@ public class MindbotServiceRequester extends AbstractNodeMain {
     private ServiceClient<mindbot_msgs.SetCtrlModeRequest, mindbot_msgs.SetCtrlModeResponse> _setCtrlModeService;
     private ServiceClient<mindbot_msgs.SetFloatRequest, mindbot_msgs.SetFloatResponse> _setMinClearanceService;
 
-
-    private Log log;
-
     @Override
     public void onStart(final ConnectedNode connectedNode) {
-        this.log = connectedNode.getLog();
         setUpClient(connectedNode);
     }
 
@@ -79,7 +74,6 @@ public class MindbotServiceRequester extends AbstractNodeMain {
 
     private void setUpClient(ConnectedNode connectedNode) {
         try {
-            this.log.info("Setting Up the ServiceRequester!!!!!") ;
             _setTcpTargetService = connectedNode.newServiceClient("/iiwa/set_tcp_target", mindbot_msgs.SetPose._TYPE);
             _setJointTargetService = connectedNode.newServiceClient("/iiwa/set_joint_target", mindbot_msgs.SetJointState._TYPE);
             _setMaxTcpVelocityService = connectedNode.newServiceClient("/iiwa/set_max_tcp_velocity", mindbot_msgs.SetVector3._TYPE);
@@ -211,7 +205,6 @@ public class MindbotServiceRequester extends AbstractNodeMain {
 
             if(this.vsmActionID != -1) {
                 int rosActionID = response.toRawMessage().getInt32("action_id");
-                log.info("The response from property is: " + rosActionID);
                 synchronized (actionsState) {
                     actionsState.put(vsmActionID, CallState.SUCCESS);
                     rosToActionID.put(rosActionID, vsmActionID);

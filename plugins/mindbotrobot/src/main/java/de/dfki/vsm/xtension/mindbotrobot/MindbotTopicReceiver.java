@@ -154,7 +154,6 @@ public class MindbotTopicReceiver implements NodeMain {
                     return ;
 
                 Pose pose = message.getPose();
-                // log.info("TcpState Position X: \"" + message.getPose().getPosition().getX() + "\"");
 
                 if ((_lastPose == null) || ! _equalPoses(_lastPose, pose)) {
                     _listener.tcpChanged(pose);
@@ -171,7 +170,6 @@ public class MindbotTopicReceiver implements NodeMain {
 
                 byte ctrl_state = message.getCtrlState() ;
                 String ctrl_state_str = ctrlStateToString(ctrl_state) ;
-                // log.info("CtrlState: \"" + ctrl_state_str + "\"");
 
                 if (_lastState == null || !_lastState.equals(ctrl_state_str)) {
                     _listener.ctrlStateChanged(ctrl_state_str);
@@ -188,7 +186,6 @@ public class MindbotTopicReceiver implements NodeMain {
 
                 byte ctrl_mode = message.getCtrlMode();
                 String ctrl_mode_str = ctrlModeToString(ctrl_mode) ;
-                // log.info("CtrlMode: \"" + ctrl_mode_str + "\"");
 
                 if(_lastMode == null || !_lastMode.equals(ctrl_mode_str)) {
                     _listener.ctrlModeChanged(ctrl_mode_str);
