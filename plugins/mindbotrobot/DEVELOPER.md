@@ -197,3 +197,12 @@ You can find the jar in `mindbot_vsm_ws/build/mindbot_msgs/java/mindbot_msgs/bui
 
 
 From now on, every time you need to update the jar, you just need to initialize the environment (_source_s and _JAVA_HOME_) and run `catkin_make` from here.
+
+```
+source ~/rosjava/devel/setup.bash
+export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
+cd path/to/mindbot_vsm_ws/
+cp -r path/to/mindbot_robot_control/mindbot_stack/mindbot_msgs/ src/
+catkin_make
+catkin_make
+```

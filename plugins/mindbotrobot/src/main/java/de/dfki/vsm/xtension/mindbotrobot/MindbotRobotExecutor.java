@@ -216,7 +216,8 @@ public final class MindbotRobotExecutor extends ActivityExecutor {
                     float or_x = Float.parseFloat(features_map.get("or_x"));
                     float or_y = Float.parseFloat(features_map.get("or_y"));
                     float or_z = Float.parseFloat(features_map.get("or_z"));
-                    serviceReq.setTcpTarget(x, y, z, or_w, or_x, or_y, or_z);
+
+                    actionID = serviceReq.setTcpTarget(x, y, z, or_w, or_x, or_y, or_z);
 
                     break;
                 }
