@@ -24,6 +24,7 @@ import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
@@ -476,26 +477,9 @@ public class charamelWsExecutor extends ActivityExecutor {
         final int ws_port = Integer.parseInt(Objects.requireNonNull(mConfig.getProperty("ws_port")));
         final String sceneflowVar = mConfig.getProperty("sceneflowVar");
         mVSMCharacterSpeakingVar = mConfig.getProperty("characterSpeaking");
-        mPathToCertificate = mConfig.getProperty("certificate");
-
         mLogger.message(sceneflowVar);
 
-        if (mPathToCertificate != null) {
-            app = Javalin.create(config -> {
-                config.server(() -> {
-                    Server server = new Server();
-                    ServerConnector sslConnector = null;
-                    sslConnector = new ServerConnector(server, getSslContextFactory());
-                    sslConnector.setPort(wss_port);
-                    ServerConnector connector = new ServerConnector(server);
-                    connector.setPort(ws_port);
-                    server.setConnectors(new Connector[]{sslConnector, connector});
-                    return server;
-                });
-            }).start();
-        } else {
-            app = Javalin.create(config -> config.enforceSsl = true).start(ws_port);
-        }
+        app = createServer(wss_port, ws_port);
 
         app.ws("/ws", ws -> {
             ws.onConnect(ctx -> {
@@ -524,61 +508,97 @@ public class charamelWsExecutor extends ActivityExecutor {
         });
     }
 
+    private Javalin createServer(int wss_port, int ws_port) {
+        mPathToCertificate = mConfig.getProperty("certificate");
+        Javalin app;
+        if (mPathToCertificate != null) {
+            app = Javalin.create(config -> {
+                config.server(() -> {
+                    Server server = new Server();
+                    ServerConnector sslConnector = null;
+                    sslConnector = new ServerConnector(server, getSslContextFactory());
+                    sslConnector.setPort(wss_port);
+                    ServerConnector connector = new ServerConnector(server);
+                    connector.setPort(ws_port);
+                    server.setConnectors(new Connector[]{sslConnector, connector});
+                    return server;
+                });
+            }).start();
+        } else {
+            app = Javalin.create(config -> config.enforceSsl = true).start(ws_port);
+        }
+        return app;
+    }
+
     private synchronized void handleMessage(WsMessageContext ctx) {
         String message = ctx.message();
         mLogger.message("Processing Charamel VuppetMaster message: >" + message + "<");
 
         // status messages always contains a ":"
         if (message.contains(":")) { // status message
-            mLogger.message("Message is related to an ongoing action");
+            processStatusMessage(message);
+        } else { // time mark message
+            processTimeMarkMessage(message);
+        }
+    }
 
-            // clean message
-            message = message.replace("{", "");
-            message = message.replace("}", "");
-            message = message.replace("'", "");
-            message = message.replace("\"", "");
+    private void processTimeMarkMessage(String message) {
+        mLogger.message("Message is a time mark action");
 
-            // split header and content
-            String[] parts = message.split(":");
-            String header = parts[0];
-            String content = parts[1];
+        //clean message
+        message = message.replace("\"", "");
+        message = "$" + message + "$"; // bracketing "$" are not send back from VuppetMaster
 
-            mLogger.message("Message header is >" + header + "<, content is >" + content + "<");
+        //execute scheduled action
+        mLogger.message("Tell VSM activity scheduler to handle action represented by time marker >" + message + "<");
 
-            // check if there the activity manager waits for an action to be finished
-            if (content.equalsIgnoreCase("stop")) {
+        if (mProject.getRunTimePlayer().getActivityScheduler().hasMarker(message)) {
+            mProject.getRunTimePlayer().getActivityScheduler().handle(message);
+        } else {
+            mLogger.failure("Marker has already been processed!");
+        }
+    }
 
-                mLogger.message("Processing stop message ...");
+    private void processStatusMessage(String message) {
+        mLogger.message("Message is related to an ongoing action");
 
-                synchronized (mActivityWorkerMap) {
-                    if (mActivityWorkerMap.containsKey(header)) {
-                        mLogger.message("Removing id from active activities ids ...");
-                        mActivityWorkerMap.remove(header);
-                        // wake me up ...
-                        mLogger.message("Unlocking activity manager ...");
-                        mActivityWorkerMap.notifyAll();
-                        mLogger.message("done.");
-                    } else {
-                        mLogger.failure("Activityworker for action with id " + header + " has been stopped before ...");
-                    }
+        // clean message
+        message = cleanMessage(message);
+
+        // split header and content
+        String[] parts = message.split(":");
+        String header = parts[0];
+        String content = parts[1];
+
+        mLogger.message("Message header is >" + header + "<, content is >" + content + "<");
+
+        // check if there the activity manager waits for an action to be finished
+        if (content.equalsIgnoreCase("stop")) {
+
+            mLogger.message("Processing stop message ...");
+
+            synchronized (mActivityWorkerMap) {
+                if (mActivityWorkerMap.containsKey(header)) {
+                    mLogger.message("Removing id from active activities ids ...");
+                    mActivityWorkerMap.remove(header);
+                    // wake me up ...
+                    mLogger.message("Unlocking activity manager ...");
+                    mActivityWorkerMap.notifyAll();
+                    mLogger.message("done.");
+                } else {
+                    mLogger.failure("Activityworker for action with id " + header + " has been stopped before ...");
                 }
             }
-        } else { // time mark message
-            mLogger.message("Message is a time mark action");
-
-            //clean message
-            message = message.replace("\"", "");
-            message = "$" + message + "$"; // bracketing "$" are not send back from VuppetMaster
-
-            //execute scheduled action
-            mLogger.message("Tell VSM activity scheduler to handle action represented by time marker >" + message + "<");
-
-            if (mProject.getRunTimePlayer().getActivityScheduler().hasMarker(message)) {
-                mProject.getRunTimePlayer().getActivityScheduler().handle(message);
-            } else {
-                mLogger.failure("Marker has already been processed!");
-            }
         }
+    }
+
+    @NotNull
+    private static String cleanMessage(String message) {
+        message = message.replace("{", "");
+        message = message.replace("}", "");
+        message = message.replace("'", "");
+        message = message.replace("\"", "");
+        return message;
     }
 
     private synchronized void removeWs(WsCloseContext ctx) {
