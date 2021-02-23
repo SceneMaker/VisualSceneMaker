@@ -7,9 +7,7 @@ public class EmotionManualConfigCommand implements Broadcastable {
 
 
     public EmotionManualConfigCommand(String name, float intensity) {
-        this.emotionname = name;
-        this.intensity = intensity;
-        this.attack = 200;
+        this(name, intensity, 200);
     }
 
     public EmotionManualConfigCommand(String name, float intensity, int attack) {
