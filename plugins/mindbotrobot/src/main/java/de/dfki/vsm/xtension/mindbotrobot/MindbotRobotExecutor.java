@@ -248,7 +248,7 @@ public final class MindbotRobotExecutor extends ActivityExecutor {
                 case "set_ctrl_mode":
 
                     byte m = Byte.parseByte(features_map.get("mode"));
-                    serviceReq.setCtrlState(m);
+                    serviceReq.setCtrlMode(m);
 
                     break;
                 case "set_min_clearance":
