@@ -20,7 +20,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Objects;
 
 /**
@@ -160,13 +159,5 @@ public class WebStudyMasterExecutor extends ActivityExecutor {
         if (mProject.hasVariable(var)) {
             mProject.setVariable(var, new StringValue(value));
         }
-    }
-
-    private final String getActionFeatureValue(String name, List<ActionFeature> features) {
-        return features.stream()
-                .filter(af -> af.getKey().equalsIgnoreCase(name))
-                .findFirst()
-                .map(ActionFeature::getVal)
-                .orElse("");
     }
 }
