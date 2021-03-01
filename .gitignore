@@ -5,4 +5,8 @@ tmp/
 /log/stickman.log
 .idea/*
 .gradle
-/build/
+build/
+
+#
+# MacOS stuff
+.DS_Store

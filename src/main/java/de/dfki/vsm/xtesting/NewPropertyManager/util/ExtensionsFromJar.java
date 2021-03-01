@@ -1,131 +1,63 @@
 package de.dfki.vsm.xtesting.NewPropertyManager.util;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URL;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
+import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
+import de.dfki.vsm.runtime.plugin.RunTimePlugin;
+import de.dfki.vsm.util.log.LOGConsoleLogger;
+import org.reflections.Reflections;
+
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
 
 /**
  * Created by alvaro on 6/3/16.
+ * Refactor: Lenny 12/sept/2020: replace jar parsing with reflection.
  */
 public class ExtensionsFromJar {
+    // The singelton logger instance
+    private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
 
-    private  ArrayList<String> mScenePlayersShortNames = new ArrayList<>();
-    private  ArrayList<String> mScenePlayersLongNames = new ArrayList<>();
-    private  String packageName;
-    private  boolean nonSelectedFirst;
-    public ExtensionsFromJar(String packName, boolean pAddNonSelectedFirst){
+    private final ArrayList<String> mScenePlayersShortNames = new ArrayList<>();
+    private final ArrayList<String> mScenePlayersLongNames = new ArrayList<>();
+    private final String packageName;
+    private final boolean nonSelectedFirst;
+
+    public ExtensionsFromJar(String packName, boolean pAddNonSelectedFirst) {
         packageName = packName;
         nonSelectedFirst = pAddNonSelectedFirst;
     }
 
-    public ExtensionsFromJar(String packName){
+    public ExtensionsFromJar(String packName) {
         packageName = packName;
         nonSelectedFirst = true;
     }
-    public ArrayList getActivitiesShortNames(){
+
+    public void loadExtensions() {
+        new Reflections(packageName)
+                .getSubTypesOf(RunTimePlugin.class).stream()
+                .filter(aClass -> !Modifier.isAbstract(aClass.getModifiers()) &&
+                        !Modifier.isInterface(aClass.getModifiers()))
+                .forEach(aClass -> {
+                    mScenePlayersLongNames.add(aClass.getCanonicalName());
+                    mScenePlayersShortNames.add(aClass.getSimpleName());
+                });
+
+    }
+
+    public ArrayList<String> getActivitiesShortNames() {
         return mScenePlayersShortNames;
     }
 
-    public ArrayList getActivitiesLongName(){
+    public ArrayList<String> getActivitiesLongName() {
         return mScenePlayersLongNames;
     }
 
-    public  void loadClass() {
-        try{
-            if (mScenePlayersShortNames.size() <= 0) {
-                addNoSelectedAtFirst();
-                getClassNamesFromPackage(packageName);
-            }
-        } catch (IOException e)
-        {
-            e.printStackTrace();
-        }
+    // Added PG 14.8.2020, refactor by Lenny
+    /*
+     * Checks if a specific class is a subclass of the ActivityExecutor class
+     */
+    public boolean isClassAnActivityExecutor(String className) {
+        return new Reflections(packageName).getSubTypesOf(ActivityExecutor.class).stream()
+                .anyMatch(aClass -> aClass.getCanonicalName().equals(className));
     }
-
-    public  void getClassNamesFromPackage(String packageName) throws IOException {
-        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-        URL packageURL;
-        ArrayList<String> names = new ArrayList<>();
-        packageName = packageName.replace(".", "/");
-        packageURL = classLoader.getResource(packageName);
-        if (packageURL.getProtocol().equals("jar")) {
-            packageIsJar(packageURL);
-        }
-    }
-
-    private void addNoSelectedAtFirst(){
-        if(nonSelectedFirst){
-            mScenePlayersShortNames.add("Non selected");
-        }
-    }
-
-    private void packageIsJar(URL packageURL) throws UnsupportedEncodingException {
-        String jarFileName;
-        // build jar file name, then loop through zipped entries
-        jarFileName = URLDecoder.decode(packageURL.getFile(), StandardCharsets.UTF_8);
-        jarFileName = jarFileName.substring(5, jarFileName.indexOf("!"));
-        System.out.println(">" + jarFileName);
-        parseJar(jarFileName);
-    }
-
-    private  void parseJar(String jarFileName){
-        JarFile jf;
-        Enumeration<JarEntry> jarEntries = null;
-        try {
-            jf = new JarFile(jarFileName);
-            jarEntries = jf.entries();
-            ExtractExtensions( jarEntries);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private  void ExtractExtensions( Enumeration<JarEntry> jarEntries) {
-        while (jarEntries.hasMoreElements())
-        {
-            tryToAddActivityExecutor(jarEntries);
-        }
-    }
-
-    private void tryToAddActivityExecutor(Enumeration<JarEntry> jarEntries) {
-        String entryName;
-        entryName = jarEntries.nextElement().getName();
-        try {
-            if (isActivityExecutor(entryName)){
-                addActivityExecutor(entryName);
-            }
-        } catch (ClassNotFoundException e) {
-
-        }
-
-    }
-
-    private boolean isActivityExecutor(String entryName) throws ClassNotFoundException {
-        entryName = entryName.replace("/", ".");
-        boolean belongsToPackage = (packageName.length() == 0 || (entryName.startsWith(packageName) && entryName.length() > packageName.length() + 5));
-        if(belongsToPackage) {
-            String fullClassName = entryName.replace("/", ".");
-            String className = fullClassName.substring(0, entryName.lastIndexOf('.'));
-            Class classEntry = Class.forName(className);
-            Class superClass = classEntry.getSuperclass();
-            return  (superClass != null && (superClass.getSimpleName().equals("ActivityExecutor")));
-        }
-        return false;
-
-    }
-
-    private void addActivityExecutor(String entryName) throws ClassNotFoundException {
-        entryName = entryName.replace("/", ".");
-        String className = entryName.substring(0, entryName.lastIndexOf('.'));
-        mScenePlayersLongNames.add(className);
-        mScenePlayersShortNames.add(className.substring(className.lastIndexOf('.') + 1));
-    }
-
 
 }

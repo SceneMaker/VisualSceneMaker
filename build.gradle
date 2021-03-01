@@ -8,7 +8,9 @@ compileJava {options.encoding = "UTF-8"}
 javadoc { options.encoding = 'UTF-8' }
 
 group 'de.dfki'
-version '4.0.1-' + versioning.info.full
+allprojects {
+    version = versioning.info.lastTag
+}
 
 sourceCompatibility = 11
 
@@ -29,6 +31,15 @@ dependencies {
     compile fileTree(dir: 'lib', include: "*.jar")
     compile project(":plugins:AndroidGui")
     compile project(":plugins:studymaster-web")
+    compile project(":plugins:decad")
+    compile project(":plugins:yallah")
+    compile project(":plugins:ssi")
+    compile project(":plugins:reeti")
+    compile project(":plugins:tricatworld")
+    compile project(":plugins:charamel")
+
+    // https://mvnrepository.com/artifact/org.reflections/reflections
+    compile group: 'org.reflections', name: 'reflections', version: '0.9.12'
     // https://mvnrepository.com/artifact/jpl/jpl
     compile group: 'jpl', name: 'jpl', version: '7.4.0'
     // https://mvnrepository.com/artifact/de.sciss/sphinx4
@@ -71,7 +82,9 @@ jar {
         attributes(
                 'Main-Class': 'de.dfki.vsm.SceneMaker3',
                 'build' : versioning.info.build,
-                'Build-Revision': versioning.info.commit
+                'Build-Revision': versioning.info.commit,
+                'Full-Version': versioning.info.full,
+                'Last-Tag': versioning.info.lastTag
         )
     }
 }

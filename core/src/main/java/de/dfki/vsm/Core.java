@@ -73,4 +73,20 @@ public class Core {
             }
         }
     }
+    public static void main(String[] args){
+        if (args.length == 2) {
+            // Read the first command line argument
+            final String mode = args[0];
+            // Get the project file name argument
+            final String name = args[1];
+            // Create the project configuration
+            final File file = new File(name);
+            // Check the options from this argument
+            if (file.exists()) {
+                if (mode.equals("runtime")) {
+                    Core.runtime(file);
+                }
+            }
+        }
+    }
 }
