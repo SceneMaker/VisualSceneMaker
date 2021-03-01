@@ -145,10 +145,6 @@ public class WebStudyMasterExecutor extends ActivityExecutor {
         app.stop();
     }
 
-    public boolean hasProjectVar(String var) {
-        return mProject.hasVariable(var);
-    }
-
     public void setSceneFlowVariable(String message) {
         mLogger.message("Assigning sceneflow variable " + mSceneflowVar + " with value " + message);
         mProject.setVariable(mSceneflowVar, new StringValue(message));
