@@ -30,10 +30,10 @@ public class WebStudyMasterExecutor extends ActivityExecutor {
     static final String sMSG_HEADER = "VSMMessage" + sMSG_SEPARATOR;
     // The singelton logger instance
     private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
+    private final ArrayList<WsConnectContext> websockets = new ArrayList<>();
     Receiver mMessagereceiver;
     private String mSceneflowVar;
     private Javalin app;
-    private final ArrayList<WsConnectContext> websockets = new ArrayList<>();
 
     public WebStudyMasterExecutor(PluginConfig config, RunTimeProject project) {
         super(config, project);
@@ -83,29 +83,39 @@ public class WebStudyMasterExecutor extends ActivityExecutor {
 
         long timestamp = System.currentTimeMillis();
 
-        String sendData = (sMSG_HEADER + "None" + sMSG_SEPARATOR + timestamp);
-
         if (!mMessage.equalsIgnoreCase("REQUEST")) {
-            sendData = (
-                    sMSG_HEADER
-                            + mMessage
-                            + sMSG_SEPARATOR
-                            + timestamp
-                            + ((!mMessageTimeInfo.isEmpty()) ? sMSG_SEPARATOR + mMessageTimeInfo : ""));
+            return message(mMessage, mMessageTimeInfo, timestamp);
         } else if (mMessage.equalsIgnoreCase("REQUEST")
                 && (!mMessageRequestVar.isEmpty()) && (!mMessageRequestValues.isEmpty())) {
-            sendData = (
-                    sMSG_HEADER
-                            + mMessage
-                            + sMSG_SEPARATOR
-                            + timestamp
-                            + sMSG_SEPARATOR
-                            + mMessageRequestVar
-                            + sMSG_SEPARATOR
-                            + mMessageRequestValues.replace("'", "")
-            );
+            return varRequestWithValues(mMessage, mMessageRequestVar, mMessageRequestValues, timestamp);
+        } else {
+            return (sMSG_HEADER + "None" + sMSG_SEPARATOR + timestamp);
         }
-        return sendData;
+
+    }
+
+    @NotNull
+    private String message(String mMessage, String mMessageTimeInfo, long timestamp) {
+        return (
+                sMSG_HEADER
+                        + mMessage
+                        + sMSG_SEPARATOR
+                        + timestamp
+                        + ((!mMessageTimeInfo.isEmpty()) ? sMSG_SEPARATOR + mMessageTimeInfo : ""));
+    }
+
+    @NotNull
+    private String varRequestWithValues(String mMessage, String mMessageRequestVar, String mMessageRequestValues, long timestamp) {
+        return (
+                sMSG_HEADER
+                        + mMessage
+                        + sMSG_SEPARATOR
+                        + timestamp
+                        + sMSG_SEPARATOR
+                        + mMessageRequestVar
+                        + sMSG_SEPARATOR
+                        + mMessageRequestValues.replace("'", "")
+        );
     }
 
     @Override
