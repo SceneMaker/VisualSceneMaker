@@ -16,6 +16,7 @@ import de.dfki.vsm.util.log.LOGConsoleLogger;
 import io.javalin.Javalin;
 import io.javalin.websocket.WsCloseContext;
 import io.javalin.websocket.WsConnectContext;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -33,7 +34,7 @@ public class WebStudyMasterExecutor extends ActivityExecutor {
     Receiver mMessagereceiver;
     private String mSceneflowVar;
     private Javalin app;
-    private ArrayList<WsConnectContext> websockets = new ArrayList<>();
+    private final ArrayList<WsConnectContext> websockets = new ArrayList<>();
 
     public WebStudyMasterExecutor(PluginConfig config, RunTimeProject project) {
         super(config, project);
@@ -66,26 +67,46 @@ public class WebStudyMasterExecutor extends ActivityExecutor {
             if (name.equalsIgnoreCase("stop")) {
                 app.stop();
             } else {
-                var mMessage = activity.getName();
-                var mMessageTimeInfo = getActionFeatureValue("time", features);
-                var mMessageRequestVar = getActionFeatureValue("var", features);
-                var mMessageRequestValues = getActionFeatureValue("values", features);
-
-                long timestamp = System.currentTimeMillis();
-
-                String sendData = (sMSG_HEADER + "None" + sMSG_SEPARATOR + timestamp);
-
-                if (!mMessage.equalsIgnoreCase("REQUEST")) {
-                    sendData = (sMSG_HEADER + mMessage + sMSG_SEPARATOR + timestamp + ((!mMessageTimeInfo.isEmpty()) ? sMSG_SEPARATOR + mMessageTimeInfo : ""));
-                } else if (mMessage.equalsIgnoreCase("REQUEST") && (!mMessageRequestVar.isEmpty()) && (!mMessageRequestValues.isEmpty())) {
-                    sendData = (sMSG_HEADER + mMessage + sMSG_SEPARATOR + timestamp + sMSG_SEPARATOR + mMessageRequestVar + sMSG_SEPARATOR + mMessageRequestValues.replace("'", ""));
-                }
+                String sendData = encodeRequest(activity, features);
                 synchronized (this) {
-                    String finalSendData = sendData;
-                    websockets.forEach(ws -> ws.send(finalSendData));
+                    websockets.forEach(ws -> ws.send(sendData));
                 }
             }
         }
+    }
+
+    @NotNull
+    private String encodeRequest(AbstractActivity activity, LinkedList<ActionFeature> features) {
+        var mMessage = activity.getName();
+        var mMessageTimeInfo = getActionFeatureValue("time", features);
+        var mMessageRequestVar = getActionFeatureValue("var", features);
+        var mMessageRequestValues = getActionFeatureValue("values", features);
+
+        long timestamp = System.currentTimeMillis();
+
+        String sendData = (sMSG_HEADER + "None" + sMSG_SEPARATOR + timestamp);
+
+        if (!mMessage.equalsIgnoreCase("REQUEST")) {
+            sendData = (
+                    sMSG_HEADER
+                            + mMessage
+                            + sMSG_SEPARATOR
+                            + timestamp
+                            + ((!mMessageTimeInfo.isEmpty()) ? sMSG_SEPARATOR + mMessageTimeInfo : ""));
+        } else if (mMessage.equalsIgnoreCase("REQUEST")
+                && (!mMessageRequestVar.isEmpty()) && (!mMessageRequestValues.isEmpty())) {
+            sendData = (
+                    sMSG_HEADER
+                            + mMessage
+                            + sMSG_SEPARATOR
+                            + timestamp
+                            + sMSG_SEPARATOR
+                            + mMessageRequestVar
+                            + sMSG_SEPARATOR
+                            + mMessageRequestValues.replace("'", "")
+            );
+        }
+        return sendData;
     }
 
     @Override
@@ -102,27 +123,20 @@ public class WebStudyMasterExecutor extends ActivityExecutor {
             config.enforceSsl = true;
         }).start(port);
         app.ws("/ws", ws -> {
-            ws.onConnect(ctx -> {
-                this.addWs(ctx);
-                System.out.println("Connected");
-            });
-            ws.onMessage(ctx -> {
-                System.out.println(ctx.message());
-                mMessagereceiver.handleMessage(ctx.message());
-            });
-            ws.onClose(ctx -> {
-                this.removeWs(ctx);
-                System.out.println("Closed");
-            });
-            ws.onError(ctx -> System.out.println("Errored"));
+            ws.onConnect(this::addWs);
+            ws.onMessage(ctx -> mMessagereceiver.handleMessage(ctx.message()));
+            ws.onClose(this::removeWs);
+            ws.onError(ctx -> mLogger.failure("Errored"));
         });
     }
 
     private synchronized void removeWs(WsCloseContext ctx) {
+        mLogger.message("closed socket");
         websockets.remove(ctx);
     }
 
     private synchronized void addWs(WsConnectContext ws) {
+        mLogger.message("Connected");
         this.websockets.add(ws);
     }
 
@@ -148,7 +162,6 @@ public class WebStudyMasterExecutor extends ActivityExecutor {
         }
     }
 
-    // get the value of a feature (added PG) - quick and dirty
     private final String getActionFeatureValue(String name, List<ActionFeature> features) {
         return features.stream()
                 .filter(af -> af.getKey().equalsIgnoreCase(name))
