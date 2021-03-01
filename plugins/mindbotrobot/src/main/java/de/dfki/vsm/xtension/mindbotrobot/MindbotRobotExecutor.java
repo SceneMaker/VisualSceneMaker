@@ -78,7 +78,7 @@ public final class MindbotRobotExecutor extends ActivityExecutor {
         mLogger.message("Waiting for setup of the Service Executor...");
         int i=0;
         while (! serviceReq.isSetupDone()) {
-            mLogger.failure("Waiting service request node setup (" +i+")...");
+            mLogger.failure("Waiting service request node setup (" + i + ")...");
             if(i>10) {
                 mLogger.failure("ROS Node Main Executor didn't terminate properly. Likely: connection timeout");
                 break;
@@ -164,9 +164,7 @@ public final class MindbotRobotExecutor extends ActivityExecutor {
             //
             // SPEECH activity
             SpeechActivity sa = (SpeechActivity) activity;
-
             String text_only = sa.getTextOnly(ACTION_MARKER).trim();
-            LinkedList<String> time_marks = sa.getTimeMarks(ACTION_MARKER);
 
             if (text_only.isEmpty()) {
                 LinkedList<String> timemarks = sa.getTimeMarks(ACTION_MARKER);

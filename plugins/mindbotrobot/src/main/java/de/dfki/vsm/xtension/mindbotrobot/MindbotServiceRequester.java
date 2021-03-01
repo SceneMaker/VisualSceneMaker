@@ -61,9 +61,6 @@ public class MindbotServiceRequester extends AbstractNodeMain {
     /** Maps the id that ROS generated for a call to the local actionID. */
     private final  HashMap<Integer, Integer> rosToActionID = new HashMap<>() ;
 
-    /** The actionID of the service which is being called to notify the Executor */
-    int actionID;
-
     /** Check for setup state.
      *
      * @return true if the ROS onStart terminated without exceptions.
@@ -101,14 +98,17 @@ public class MindbotServiceRequester extends AbstractNodeMain {
                             CallState s = (result == 1) ? CallState.DONE : CallState.ABORTED;
 
                             synchronized (actionsState) {
-                                // This will set the state of the action and notify threads waiting for the call.
-                                int actionID = rosToActionID.get(rosCallID);
-                                actionsState.put(actionID, s);
-                                actionsState.notifyAll();
+                                if(rosToActionID.containsKey(rosCallID)) {
+                                    // This will set the state of the action and notify threads waiting for the call.
+                                    int actionID = rosToActionID.get(rosCallID);
+                                    actionsState.put(actionID, s);
+                                    actionsState.notifyAll();
+                                }
+                                // if the is was not in the map, it is üossible that VSM (re-started) when a robot acton was still executing
                             }
 
-                            // TODO -- Set the response result... if needed (probably not).
-                            // response.setSum(0);
+                            // Set the response result.
+                            response.setSuccess(true);
                         }
                     }) ;
 
