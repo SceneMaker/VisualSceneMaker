@@ -34,7 +34,7 @@ Those variables will be continuously updated when the project runs.
 
 ## Invoking cobot commands
 
-The MindBot cobot can not speak, hence there is no support for text parsing.
+The MindBot cobot cannot speak, hence there is no support for text parsing.
 Scene utterances must be composed solely by actions. E.g.:
 
     <agent_name>: [<action_name> <parameter1>="<value1>" <parameter2>="<value2>"].
@@ -65,7 +65,7 @@ The following actions can be invoked within scenes:
     * `x`
     * `y`
     * `z`
-  * Example: TODO
+  * Example: `[set_max_tcp_velocity x=0.5 y=1 z=1]`
 * `set_max_tcp_acceleration`
   * Parameters:
     * `x`

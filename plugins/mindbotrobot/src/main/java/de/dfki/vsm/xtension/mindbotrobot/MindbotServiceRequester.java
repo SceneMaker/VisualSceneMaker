@@ -126,15 +126,17 @@ public class MindbotServiceRequester extends AbstractNodeMain {
      */
     public CallState waitAction(int actionID) {
 
+        // Will retain he last state for this action
         CallState s;
 
+        // Loop until the action is being processed
         while (true) {
             synchronized (actionsState) {
                 s = actionsState.get(actionID);
                 if (s == CallState.DONE || s == CallState.FAILURE || s == CallState.ABORTED) {
                     break;
                 } else {
-                    // the call is either just CALLED or SUCCESS. We have to wait.
+                    // Here, the call is either just CALLED or SUCCESS. We have to wait.
                     try {
                         actionsState.wait();
                     } catch (InterruptedException e) {
@@ -146,14 +148,14 @@ public class MindbotServiceRequester extends AbstractNodeMain {
         }
 
 
+        // Remove the
         synchronized (actionsState) {
-
             //
             // remove the IDs from the actionMap
             actionsState.remove(actionID);
 
             // remove the ID from the ros map.
-            // (I know, it is linear complexity, but we don't have BiMaps and size is always limited.)
+            // (I know, it is linear complexity, but we don't have BiMaps and anyway the size is always limited.)
             for (int ros_id : rosToActionID.keySet()) {
                 int act_id = rosToActionID.get(ros_id);
                 if (act_id == actionID) {

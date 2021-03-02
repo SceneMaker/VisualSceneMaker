@@ -23,6 +23,10 @@ import java.util.stream.Collectors;
 
 public final class MindbotRobotExecutor extends ActivityExecutor {
 
+    /** This is the delay that we force when an action of the robot, which is supposed to last for a while, faile immediately.
+     * This helps preventing dangerous light-speed loops.
+     */
+    private final static int ACTION_ABORT_DELAY_MILLIS = 500 ;
 
     private MindbotTopicReceiver topicReceiver;
     private MindbotServiceRequester serviceReq;
@@ -152,7 +156,7 @@ public final class MindbotRobotExecutor extends ActivityExecutor {
     private static HashMap<String, String> featureListToMap(LinkedList<ActionFeature> features) {
         HashMap<String, String> out = new HashMap<String, String>() ;
         for (ActionFeature f : features) {
-            out.put(f.getKey(), f.getVal()) ;
+            out.put(f.getKey(), f.getValNoQuotes()) ;
         }
         return out;
     }
@@ -262,10 +266,15 @@ public final class MindbotRobotExecutor extends ActivityExecutor {
 
             if(actionID != -1) {
                 MindbotServiceRequester.CallState result = serviceReq.waitAction(actionID) ;
-                if(result == MindbotServiceRequester.CallState.FAILURE ||
-                result== MindbotServiceRequester.CallState.ABORTED) {
+                if(result == MindbotServiceRequester.CallState.FAILURE
+                        || result== MindbotServiceRequester.CallState.ABORTED) {
                     // TODO -- This is a candidate information to be notified in the interface (pop up?).
-                    mLogger.failure("Action '" + cmd + "' (id=" + actionID + ") reported error: " + result);
+                    mLogger.failure("Action '" + cmd + "' (id=" + actionID + ") reported error: " + result + ". Delaying (" + ACTION_ABORT_DELAY_MILLIS + " millis)...");
+                    try {
+                        wait(ACTION_ABORT_DELAY_MILLIS);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
 
