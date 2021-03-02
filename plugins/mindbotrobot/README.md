@@ -49,38 +49,38 @@ The following actions can be invoked within scenes:
     * `positions`
     * `velocities`
     * `efforts`
-  * Example: TODO
-* `set_tcp_target` Set position and rotation of the robot end effector.
+  * Example: `[set_joint_target joint_names='j1' positions=1 velocities=1 efforts=1]`
+* `set_tcp_target` Set position and rotation (orientation) of the robot end effector.
   * Parameters:
     * `x`
     * `y`
     * `z`
-    * `rot_w`
-    * `rot_x`
-    * `rot_y`
-    * `rot_z`
-  * Example: `[set_tcp_target x=0.2 y=0.1 z=0.5 or_w=1 or_x=0 or_y=0 or_z=0]`
-* `set_max_tcp_velocity`
+    * `or_w`
+    * `or_x`
+    * `or_y`
+    * `or_z`
+  * Example: `[set_tcp_target x=0.2 y=0.1 z=0.5 or_w=1 or_x=0 or_y=0 or_z=0].`
+* `set_max_tcp_velocity` Set the velocity limits in cartesian coordinates.
   * Parameters:
     * `x`
     * `y`
     * `z`
-  * Example: `[set_max_tcp_velocity x=0.5 y=1 z=1]`
-* `set_max_tcp_acceleration`
+  * Example: `[set_max_tcp_velocity x=0.5 y=1 z=1].`
+* `set_max_tcp_acceleration` Set the acceleration limits in cartesian coordinates.
   * Parameters:
     * `x`
     * `y`
     * `z`
-  * Example: TODO
-* `set_ctrl_state`
+  * Example: `[set_max_tcp_acceleration x=0.5 y=1 z=1].`
+* `set_ctrl_state` Set the control state (OFF=0, ON=1, ERROR=2).
   * Parameters:
     * `state` Either 0, 1, or 2.
-  * Example: TODO
-* `set_ctrl_mode`
+  * Example: `[set_ctrl_state state=0].`
+* `set_ctrl_mode` Set the control mode (MODE0=0, MODE1=1, MODE2=2).
   * Parameters:
     * `mode` Either 0, 1, or 2.
-  * Example: TODO
-* `set_min_clearance`
+  * Example: `[set_ctrl_mode mode=0].`
+* `set_min_clearance` Set the minimum accepted distance between robot and operator.
   * Parameters:
     * `min_clearance`
-  * Example: TODO
+  * Example: `[set_min_clearance min_clearance=0.5].`
