@@ -65,9 +65,29 @@ public class ActionFeature extends ScriptEntity {
         mKey = key;
     }
 
+    /** Returns the value of the action feature.
+     * Beware, this version retains the single-quotes if they were used in the editor.
+     *
+     * @return The value of the action feature.
+     */
     public final String getVal() {
         return mVal;
     }
+
+    /** Alternative version of @getVal which removes the single-quotes.
+     *
+      * @return The value after removing (if present) the leading and trailing single-quotes.
+     */
+    public final String getValNoQuotes() {
+        if (mVal.startsWith("'")
+                && mVal.endsWith("'")) {
+            String out = mVal.substring(1,mVal.length()-1) ;
+            return out ;
+        } else {
+            return mVal ;
+        }
+    }
+
 
     public final void setVal(final String val) {
         mVal = val;
