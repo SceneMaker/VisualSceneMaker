@@ -23,7 +23,9 @@ import java.util.LinkedList;
 import java.util.Objects;
 
 /**
- * @author Patrick Gebhard
+ * @author Patrick Gebhard, Lenny Händler
+ * This plugin uses the Javalin web server to create a remote "Studymaster" connection over websocket
+ * and serve a html/javascript interface for control. The interface source is located in the resources.
  */
 public class WebStudyMasterExecutor extends ActivityExecutor {
     static final String sMSG_SEPARATOR = "#";
@@ -35,6 +37,11 @@ public class WebStudyMasterExecutor extends ActivityExecutor {
     private String mSceneflowVar;
     private Javalin app;
 
+    /**
+     * Default constructor, pass values to superclass.
+     * @param config Plugin configuration, as it can be set via the extensions settings, or manually via xml.
+     * @param project The running project the plugin is applied to.
+     */
     public WebStudyMasterExecutor(PluginConfig config, RunTimeProject project) {
         super(config, project);
     }
@@ -74,6 +81,16 @@ public class WebStudyMasterExecutor extends ActivityExecutor {
         }
     }
 
+    /**
+     *
+     * @param activity the invoked command ([<command> ...]). Accepted: REQUEST
+     * @param features parameters to the command ([... x="hello world"...]).
+     *                 this plugin takes arguments
+     *                 - time
+     *                 - var
+     *                 - values: values that should be displayed for selection by the user.
+     * @return String that is sent to the js client, the format is the same as in the Studymaster plugin
+     */
     @NotNull
     private String encodeRequest(AbstractActivity activity, LinkedList<ActionFeature> features) {
         var mMessage = activity.getName();
@@ -91,9 +108,15 @@ public class WebStudyMasterExecutor extends ActivityExecutor {
         } else {
             return (sMSG_HEADER + "None" + sMSG_SEPARATOR + timestamp);
         }
-
     }
 
+    /**
+     * Format a message to the client
+     * @param mMessage Message to be displayed
+     * @param mMessageTimeInfo action parameter "time"
+     * @param timestamp Time the message was sent
+     * @return Message in Studymaster format
+     */
     @NotNull
     private String message(String mMessage, String mMessageTimeInfo, long timestamp) {
         return (
@@ -135,7 +158,7 @@ public class WebStudyMasterExecutor extends ActivityExecutor {
             ws.onConnect(this::addWs);
             ws.onMessage(ctx -> mMessagereceiver.handleMessage(ctx.message()));
             ws.onClose(this::removeWs);
-            ws.onError(ctx -> mLogger.failure("Errored"));
+            ws.onError(ctx -> mLogger.failure("Errored: " + ctx.error()));
         });
     }
 
