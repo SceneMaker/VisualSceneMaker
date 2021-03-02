@@ -28,7 +28,7 @@ import java.util.Objects;
 public class WebStudyMasterExecutor extends ActivityExecutor {
     static final String sMSG_SEPARATOR = "#";
     static final String sMSG_HEADER = "VSMMessage" + sMSG_SEPARATOR;
-    // The singelton logger instance
+    // The singleton logger instance
     private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
     private final ArrayList<WsConnectContext> websockets = new ArrayList<>();
     Receiver mMessagereceiver;
