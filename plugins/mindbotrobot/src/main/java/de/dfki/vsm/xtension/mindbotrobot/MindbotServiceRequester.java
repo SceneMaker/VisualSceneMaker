@@ -97,6 +97,8 @@ public class MindbotServiceRequester extends AbstractNodeMain {
                             int result = request.getResult();
                             CallState s = (result == 1) ? CallState.DONE : CallState.ABORTED;
 
+                            String message = request.getMessage() ;
+
                             synchronized (actionsState) {
                                 if(rosToActionID.containsKey(rosCallID)) {
                                     // This will set the state of the action and notify threads waiting for the call.
@@ -234,9 +236,9 @@ public class MindbotServiceRequester extends AbstractNodeMain {
     /**     /iiwa/set_joint_target           (mindbot_msgs::SetJointState)
      *
      * @param joint_names The name of the joints to modify.
-     * @param p The position (actually the rotation) of each joint, in the same order of the names.
-     * @param v The velocity of each joint, in the same order of the names.
-     * @param e The effort of each joint, in the same order of the names.
+     * @param p The position (actually the rotation in radians) of each joint, in the same order of the names.
+     * @param v The velocity (rad/sec) of each joint, in the same order of the names.
+     * @param e The effort (N/m) of each joint, in the same order of the names.
      */
     public int setJointTarget(List<String> joint_names, double[] p, double[] v, double[] e) {
         mindbot_msgs.SetJointStateRequest request = _setJointTargetService.newMessage();

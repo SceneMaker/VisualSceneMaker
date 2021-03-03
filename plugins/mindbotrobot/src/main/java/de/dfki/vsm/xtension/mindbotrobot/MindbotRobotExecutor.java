@@ -82,14 +82,19 @@ public final class MindbotRobotExecutor extends ActivityExecutor {
         mLogger.message("Waiting for setup of the Service Executor...");
         int i=0;
         while (! serviceReq.isSetupDone()) {
-            mLogger.failure("Waiting service request node setup (" + i + ")...");
+            mLogger.message("Waiting service request node setup (" + i + ")...");
             if(i>10) {
-                mLogger.failure("ROS Node Main Executor didn't terminate properly. Likely: connection timeout");
                 break;
             }
 
             try { Thread.sleep(1000); } catch (Exception e) {}
             i++ ;
+        }
+
+        if(! serviceReq.isSetupDone()) {
+            String msg = "ROS Node 'MindbotServiceRequester' didn't setup properly (setUpClient failed). Likely a connection timeout. Check ROS master.";
+            mLogger.failure(msg);
+            throw new RuntimeException(msg) ;
         }
 
         //
@@ -199,13 +204,15 @@ public final class MindbotRobotExecutor extends ActivityExecutor {
                     String[] joint_names = features_map.get("joint_names").split(",");
                     List<String> joint_names_list = Arrays.stream(joint_names).map(String::trim).collect(Collectors.toList());
                     String[] positions_str = features_map.get("positions").split(",");
-                    double[] positions = Arrays.stream(positions_str).mapToDouble(p -> Double.parseDouble(p.trim())).toArray();
+                    double[] positions_degs = Arrays.stream(positions_str).mapToDouble(p -> Double.parseDouble(p.trim())).toArray();
+                    double[] positions_rads = Arrays.stream(positions_degs).map(Math::toRadians).toArray() ;
                     String[] velocities_str = features_map.get("velocities").split(",");
-                    double[] velocities = Arrays.stream(velocities_str).mapToDouble(p -> Double.parseDouble(p.trim())).toArray();
+                    double[] velocities_degs = Arrays.stream(velocities_str).mapToDouble(p -> Double.parseDouble(p.trim())).toArray();
+                    double[] velocities_rads = Arrays.stream(velocities_degs).map(Math::toRadians).toArray() ;
                     String[] efforts_str = features_map.get("efforts").split(",");
                     double[] efforts = Arrays.stream(efforts_str).mapToDouble(p -> Double.parseDouble(p.trim())).toArray();
 
-                    actionID = serviceReq.setJointTarget(joint_names_list, positions, velocities, efforts);
+                    actionID = serviceReq.setJointTarget(joint_names_list, positions_rads, velocities_rads, efforts);
 
                     break;
                 }
@@ -271,7 +278,7 @@ public final class MindbotRobotExecutor extends ActivityExecutor {
                     // TODO -- This is a candidate information to be notified in the interface (pop up?).
                     mLogger.failure("Action '" + cmd + "' (id=" + actionID + ") reported error: " + result + ". Delaying (" + ACTION_ABORT_DELAY_MILLIS + " millis)...");
                     try {
-                        wait(ACTION_ABORT_DELAY_MILLIS);
+                        Thread.sleep(ACTION_ABORT_DELAY_MILLIS);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }

@@ -43,13 +43,14 @@ _The full-stop at the end is mandatory!_
 
 The following actions can be invoked within scenes:
 
-* `set_joint_target` The parameters specify a comma-separated list of joint names and their respective target position (rotation), velocity, and effort.
+* `set_joint_target` The parameters specify a comma-separated list of joint names and their respective target position (rotation in degrees), velocity (in degrees/sec), and effort (N/m).
   * Parameters:
     * `joint_names`
     * `positions`
     * `velocities`
     * `efforts`
-  * Example: `[set_joint_target joint_names='j1' positions=1 velocities=1 efforts=1]`
+  * Example (names for iiwa robot): `[set_joint_target joint_names='iiwa_joint_0,iiwa_joint_1,iiwa_joint_2,iiwa_joint_3,iiwa_joint_4,iiwa_joint_5,iiwa_joint_6' positions='10,10,10,10,10,10,10' velocities='1,1,2,2,3,3,5' efforts='10,10,30,30,50,50,80']`.
+    It sets all the joints at 10 degrees rotation.
 * `set_tcp_target` Set position and rotation (orientation) of the robot end effector.
   * Parameters:
     * `x`
