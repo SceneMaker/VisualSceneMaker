@@ -2,8 +2,6 @@ plugins {
     id 'java'
 }
 
-
-
 group 'de.dfki.vsm'
 
 targetCompatibility = 1.8
@@ -11,7 +9,7 @@ sourceCompatibility = 1.8
 
 if(!project.hasProperty('flavor')){
     apply plugin: 'java'
-    version "android-4.0.1" ;
+    version "android-4.0.1"
 
     println("Building jar for ANDROID")
 }
