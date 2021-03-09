@@ -113,7 +113,7 @@ public class UpdServer extends Thread {
                                     }
 
                                     if (kogProc.has("Insight")) {
-                                        float insight = kogProc.getDouble("Insight");
+                                        float insight = (float) kogProc.getDouble("Insight");
                                         if (mProject.hasVariable("userUtteranceInsight")) {
                                             mProject.setVariable("userUtteranceInsight", new FloatValue(insight));
                                         }
