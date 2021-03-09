@@ -61,7 +61,7 @@ public class UpdServer extends Thread {
                         JSONObject transcript = jObj.getJSONObject("transcription");
 
                         String utterance = transcript.getString("utterance");
-                        //float confidence = transcript.getFloat("confidence");
+                        //float confidence = (float)transcript.getDouble("confidence");
 
                         // TODO make VSM variable userUtterance configurable
                         if (mProject.hasVariable("userUtterance")) {
@@ -106,21 +106,21 @@ public class UpdServer extends Thread {
                                     JSONObject kogProc = instance.getJSONObject("Kognitive Prozesse");
 
                                     if (kogProc.has("Discrepancy")) {
-                                        float discrepancy = kogProc.getFloat("Discrepancy");
+                                        float discrepancy = (float) kogProc.getDouble("Discrepancy");
                                         if (mProject.hasVariable("userUtteranceDiscrepancy")) {
                                             mProject.setVariable("userUtteranceDiscrepancy", new FloatValue(discrepancy));
                                         }
                                     }
 
                                     if (kogProc.has("Insight")) {
-                                        float insight = kogProc.getFloat("Insight");
+                                        float insight = kogProc.getDouble("Insight");
                                         if (mProject.hasVariable("userUtteranceInsight")) {
                                             mProject.setVariable("userUtteranceInsight", new FloatValue(insight));
                                         }
                                     }
 
                                     if (kogProc.has("Tentative")) {
-                                        float tenative = kogProc.getFloat("Tentative");
+                                        float tenative = (float) kogProc.getDouble("Tentative");
                                         if (mProject.hasVariable("userUtteranceTentative")) {
                                             mProject.setVariable("userUtteranceTentative", new FloatValue(tenative));
                                         }
