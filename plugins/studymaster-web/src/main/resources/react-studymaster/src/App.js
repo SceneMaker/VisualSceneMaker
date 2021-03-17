@@ -62,7 +62,7 @@ function App() {
       < form
   onSubmit = {sendmsg} >
       < input
-  id = 'in' > < /input>
+  id = 'in' >< /input>
       < button
   type = 'submit' > send < /button>
   {
