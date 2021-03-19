@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Project name="studymasterweb">
+  <Plugins>
+    <Plugin type="device" name="webstudymaster" class="de.dfki.vsm.xtension.studymasterWeb.WebStudyMasterExecutor" load="true">
+      <Feature key="port" val="80"/>
+    </Plugin>
+  </Plugins>
+  <Agents>
+    <Agent name="botty" device="webstudymaster">
+    </Agent>
+  </Agents>
+  <Player>
+  </Player>
+</Project>
