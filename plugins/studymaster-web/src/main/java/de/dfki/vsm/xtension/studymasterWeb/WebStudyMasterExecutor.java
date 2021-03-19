@@ -23,7 +23,7 @@ import java.util.LinkedList;
 import java.util.Objects;
 
 /**
- * @author Patrick Gebhard, Lenny Händler
+ * @author Patrick Gebhard, Lenny Händler, Sarah Hoffmann
  * This plugin uses the Javalin web server to create a remote "Studymaster" connection over websocket
  * and serve a html/javascript interface for control. The interface source is located in the resources.
  */
@@ -87,8 +87,9 @@ public class WebStudyMasterExecutor extends ActivityExecutor {
      * @param features parameters to the command ([... x="hello world"...]).
      *                 this plugin takes arguments
      *                 - time
-     *                 - var
-     *                 - values: values that should be displayed for selection by the user.
+     *                 - var: variables
+     *                 - values: value(s) for every variable.
+     *                 - type: types for the inputs for every variable.
      * @return String that is sent to the js client, the format is the same as in the Studymaster plugin
      */
     @NotNull
@@ -97,14 +98,15 @@ public class WebStudyMasterExecutor extends ActivityExecutor {
         var mMessageTimeInfo = getActionFeatureValue("time", features);
         var mMessageRequestVar = getActionFeatureValue("var", features);
         var mMessageRequestValues = getActionFeatureValue("values", features);
+        var mMessageRequestType = getActionFeatureValue("type", features);
 
         long timestamp = System.currentTimeMillis();
 
         if (!mMessage.equalsIgnoreCase("REQUEST")) {
             return message(mMessage, mMessageTimeInfo, timestamp);
         } else if (mMessage.equalsIgnoreCase("REQUEST")
-                && (!mMessageRequestVar.isEmpty()) && (!mMessageRequestValues.isEmpty())) {
-            return varRequestWithValues(mMessage, mMessageRequestVar, mMessageRequestValues, timestamp);
+                && (!mMessageRequestVar.isEmpty()) && (!mMessageRequestType.isEmpty()) && (!mMessageRequestValues.isEmpty())) {
+            return varRequestWithValues(mMessage, mMessageRequestVar, mMessageRequestValues, mMessageRequestType, timestamp);
         } else {
             return (sMSG_HEADER + "None" + sMSG_SEPARATOR + timestamp);
         }
@@ -128,16 +130,18 @@ public class WebStudyMasterExecutor extends ActivityExecutor {
     }
 
     @NotNull
-    private String varRequestWithValues(String mMessage, String mMessageRequestVar, String mMessageRequestValues, long timestamp) {
+    private String varRequestWithValues(String mMessage, String mMessageRequestVar, String mMessageRequestValues, String mMessageRequestType, long timestamp) {
         return (
                 sMSG_HEADER
                         + mMessage
                         + sMSG_SEPARATOR
                         + timestamp
                         + sMSG_SEPARATOR
-                        + mMessageRequestVar
+                        + mMessageRequestVar.replace("'", "")
                         + sMSG_SEPARATOR
                         + mMessageRequestValues.replace("'", "")
+                        + sMSG_SEPARATOR
+                        + mMessageRequestType.replace("'", "")
         );
     }
 

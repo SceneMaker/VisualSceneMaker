@@ -46,12 +46,12 @@ public class Receiver {
 
                     mExecutor.setSceneFlowVariable(var, value);
                 } else {
-                    if (msgParts.length > 2) {
-                        timestamp = msgParts[2];
+                    if (msgParts.length > 3) {
+                        timestamp = msgParts[3];
                     }
 
-                    if (msgParts.length == 4) {
-                        timeinfo = msgParts[3];
+                    if (msgParts.length == 5) {
+                        timeinfo = msgParts[4];
                     }
 
                     mExecutor.setSceneFlowVariable(msg);
