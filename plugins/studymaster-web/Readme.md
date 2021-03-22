@@ -28,3 +28,15 @@ Example:
 
 This example would look like this in the VisualSceneMaker:
 ```agent: [REQUEST var='name;surname;weight;gender;graduated' values='EnterName;EnterSurname;in kg;m,f,d;yes' type='text;text;text;radio;checkbox'].```
+
+## How to build react-studymaster in resources
+After building, the folder main\resources\react-studymaster\build\static will be updated.
+
+The JavaScript Library React is being used here, you can find more information here: https://reactjs.org/
+
+To build (use the changes of the folder main\resources\react-studymaster\src) you need to:
+* build a new React App to get the "node_modules" folder by typing into a console: ```npx create-react-app my-app```
+* move the folder "node_modules" inside the folder main/resources/react-studymaster
+* in a console go to: plugins\studymaster-web\src\main\resources\react-studymaster
+* run the command ```npm run build```
+* you need to remove the folder "node_modules" to be able to build the VisualSceneMaker
