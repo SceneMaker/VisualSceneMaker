@@ -29,14 +29,24 @@ Example:
 This example would look like this in the VisualSceneMaker:
 ```agent: [REQUEST var='name;surname;weight;gender;graduated' values='EnterName;EnterSurname;in kg;m,f,d;yes' type='text;text;text;radio;checkbox'].```
 
-## How to build react-studymaster in resources
+## How to build the App (react-studymaster in resources)
 After building, the folder main\resources\react-studymaster\build\static will be updated.
 
 The JavaScript Library React is being used here, you can find more information here: https://reactjs.org/
 
-To build (use the changes of the folder main\resources\react-studymaster\src) you need to:
+# To build the App you need to:
 * build a new React App to get the "node_modules" folder by typing into a console: ```npx create-react-app my-app```
-* move the folder "node_modules" inside the folder main/resources/react-studymaster
+* move the folder "node_modules" inside the folder main\resources\react-studymaster
 * in a console go to: plugins\studymaster-web\src\main\resources\react-studymaster
 * run the command ```npm run build```
-* you need to remove the folder "node_modules" to be able to build the VisualSceneMaker
+* you need to remove the folder "node_modules" to be able to build the VisualSceneMaker jar again
+
+# To run the App you need to:
+With this technique you can see immediate changes for the App without building the VisualSceneMaker jar again
+* build a new React App to get the "node_modules" folder by typing into a console: ```npx create-react-app my-app```
+* move the folder "node_modules" inside the folder main\resources\react-studymaster
+* in a console go to: plugins\studymaster-web\src\main\resources\react-studymaster
+* run the command ```npm start```
+* Run the VisualSceneMaker jar
+* In your project use the port 8080 instead of 80
+* The App will now run on localhost:3000 instead of localhost
