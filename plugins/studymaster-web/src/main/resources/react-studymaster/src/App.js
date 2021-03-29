@@ -40,9 +40,20 @@ function App() {
     ws.send(e.target.in.value)
   }
 
-  // If submit button is being pushed:
+  function sendSubmit(e){
+      ws.send(`VSMMessage#VAR#request_result#SUBMIT`);
+      sendVar(e);
+  }
+
+  function sendCancel(e){
+      ws.send(`VSMMessage#VAR#request_result#CANCEL`);
+      sendVar(e);
+  }
+
+  // If submit or cancel button is being pushed:
   // Send all variables with their selected/ written value.
-  function sendVar() {
+  function sendVar(e) {
+    e.preventDefault();
     var i;
     for (i = 0; i < state.variable.length; i++) {
       var variable = state.variable[i];
@@ -80,73 +91,76 @@ function App() {
     if (state.type[i] === "text") {
       return (
         <>
-          <input type="text" name={variable} placeholder={state.options[i]} id={variable} onChange={e => inputValue.set(variable, e.target.value)}/>
+        <p>
+            <label> {state.variable[i]} </label>
+            <input type="text" name={variable} placeholder={state.options[i]} id={variable} onChange={e => inputValue.set(variable, e.target.value)}/>
+        </p>
         </>
       )
     } else if (state.type[i] === "radio") {
       var values = state.options[i].split(',');
       return (
         <>
+        <p>
+        <label> {state.variable[i]} </label>
         {values.map((option) =>
-            <label>
-              <input type="radio" id={option} name={variable} value={option}/>
-                {option}
-            </label>
+            <>
+            <input type="radio" id={option} name={variable} value={option}/>
+            <label> {option} </label>
+            </>
         )}
+        </p>
         </>
       )
     } else if (state.type[i] === "checkbox") {
       return (
           <>
-            <label>
-              <input type="checkbox" id={variable} name={variable} value={state.options[i]}/>
-              {state.options[i]}
-            </label>
+          <p>
+            <label> {state.variable[i]} </label>
+            <input type="checkbox" id={variable} name={variable} value={state.options[i]}/>
+            <label> {state.options[i]} </label>
+          </p>
           </>
       )
     }
   }
 
-  function makeFieldset(i) {
-    return (
-      <>
-        For variable <input value = {state.variable[i]} id = "var" />
-        <fieldset id='selection'>
-          {inputWithType(i)}
-        </fieldset>
-      </>
-    )
-  }
 
-  function returnAllFieldsets() {
+  function returnAllFieldset() {
     var returnValue = [];
 
     var i;
     for (i = 0; i < state.variable.length; i++) {
-      var fieldset = makeFieldset(i);
-      returnValue.push(fieldset);
+      var inputBoxes = inputWithType(i);
+      returnValue.push(inputBoxes);
     }
-    return (
-        <form onSubmit={sendVar}>
-          {returnValue}
-          <button> submit </button>
-        </form>
+    return(
+    <>
+        {returnValue}
+    </>
     )
-
   }
 
 
   return (
     <div className="App">
     <header className="App-header">
-      {/* <img src={logo} className="App-logo" alt="logo" /> */}
+    {/*
+       <img src={logo} className="App-logo" alt="logo" />
       <button onClick={sendGo}> Go </button>
       <form onSubmit={sendmsg}>
         <input id = 'in' />
         <button type='submit'> send </button>
         {text}
       </form>
-      {(state && (state.action === "REQUEST")) && returnAllFieldsets()}
+    */}
+    <form>
+        <fieldset>
+            {(state && (state.action === "REQUEST")) && returnAllFieldset()}
+        </fieldset>
+        <button onClick={sendSubmit}> submit </button>
+        <button onClick={sendCancel}> cancel </button>
+    </form>
     </header>
     </div>
   )
