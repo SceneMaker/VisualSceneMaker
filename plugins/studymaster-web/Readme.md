@@ -7,6 +7,9 @@ communicates with the executor via websocket
 ```VSMMessage#VAR#<var>#<value>```  
 set variable <var> to value <value>
 
+The variable request_result will automatically be filled when pressing Submit or Cancel. Result will be "SUBMITTED" when submit is being clicked or "CANCELLED" when cancel is being clicked.
+
+
 ```VSMMessage#Go```  
 send 'Go' message. This is usually used to hold back a scene flow that has started,
 for example to hide scenemaker from study participants.
