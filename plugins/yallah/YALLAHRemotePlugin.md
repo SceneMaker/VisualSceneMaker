@@ -18,9 +18,9 @@ After opening/creating a project, the plugin can be used by:
   * `launchMode` This can be configured to force starting a YALLAH instance. Three values are possible:
     * `None` We assume the YALLAH Unity application will be started manually;
     * `App` (Still unsupported) The path to an executable file that will be launched;
-    * `WebPage` (Still unsupported) The application will be opened as WebGL application and served from the specified HTML page.
+    * `WebPage` (Still unsupported) The application will be opened as a WebGL application and served from the specified HTML page.
 * Add an Agent on that device
-  * Only 1 agent is supported. If you ant to drive more agents, then add another device listening to a different port.
+  * Only 1 agent is supported. If you want to drive more agents, then add another device listening to a different port.
 
 ## Message exchange dynamics
 
