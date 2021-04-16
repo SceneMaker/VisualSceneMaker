@@ -8,8 +8,19 @@ version '4.0.1'
 repositories {
     mavenCentral()
 }
+
 sourceCompatibility = 11
 targetCompatibility = 11
+
+// Exclude the `node_modules` folder, which is possibly created by `npm` when building the React web app.
+sourceSets {
+    main {
+        resources {
+            exclude 'react-studymaster/node_modules/'
+        }
+    }
+}
+
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
     compile "io.javalin:javalin:3.8.0"
