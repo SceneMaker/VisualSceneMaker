@@ -6,7 +6,7 @@
 <entry key="showsceneelements">true</entry>
 <entry key="grid_x">1</entry>
 <entry key="showsceneeditor">true</entry>
-<entry key="node_height">90</entry>
+<entry key="node_height">80</entry>
 <entry key="visualizationtrace">true</entry>
 <entry key="defaultsupernodename">default</entry>
 <entry key="autohidebottombar">true</entry>
@@ -18,10 +18,10 @@
 <entry key="launchPlayer">false</entry>
 <entry key="frame_width">800</entry>
 <entry key="showsmartpathcalculations">false</entry>
-<entry key="propertiesdividerlocation">456</entry>
+<entry key="propertiesdividerlocation">846</entry>
 <entry key="scriptfonttype">Monospaced</entry>
 <entry key="frame_posx">0</entry>
-<entry key="node_width">90</entry>
+<entry key="node_width">80</entry>
 <entry key="shownodeid">true</entry>
 <entry key="frame_posy">0</entry>
 <entry key="showelements">true</entry>
