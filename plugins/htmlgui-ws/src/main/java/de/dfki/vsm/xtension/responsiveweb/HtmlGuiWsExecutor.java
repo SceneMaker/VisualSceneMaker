@@ -93,8 +93,8 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
                 } else {
                     value = "";
                 }
-                broadcast(element + sCmdSeperatorChar + name + svalueSeparatorChar + day + svalueSeparatorChar + type + svalueSeparatorChar + value);
-                broadcast(element + sCmdSeperatorChar + name + svalueSeparatorChar + day + svalueSeparatorChar + type + svalueSeparatorChar + value);
+                broadcast(element + sCmdSeperatorChar + name + svalueSeparatorChar + day + svalueSeparatorChar +
+                        type + svalueSeparatorChar + value);
             } else if (name.equalsIgnoreCase("setSpeechBubble")) {
                 String element = activity.get("element");
                 String producer = activity.get("producer");
@@ -108,10 +108,17 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
             } else if (name.equalsIgnoreCase("setMenuItem")) {
                 //Dummy variable to match format of other cmds
                 String element = "dummy_el";
-
                 String id = activity.get("id");
                 String value = activity.get("value").replace("'", "");
                 broadcast(element + sCmdSeperatorChar + name + svalueSeparatorChar + id + svalueSeparatorChar + value);
+            } else if (name.equalsIgnoreCase("setAudioItem")) {
+                String element = activity.get("element");
+                String audio_src = "./" + activity.get("audio").replace("'", "");
+                broadcast(element + sCmdSeperatorChar + name + svalueSeparatorChar + audio_src);
+            } else if (name.equalsIgnoreCase("controlAudio")) {
+                String element = activity.get("element");
+                String control_type = activity.get("type");
+                broadcast(element + sCmdSeperatorChar + name + svalueSeparatorChar + control_type);
             } else if (name.equalsIgnoreCase("stop")) {
                 app.stop();
             } else if (!name.isEmpty()) { //check if name represents a webpage - must be configured in the device's agent as key, value pair.
@@ -131,6 +138,7 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
         final int ws_port = Integer.parseInt(Objects.requireNonNull(mConfig.getProperty("ws_port")));
         final int html_port = Integer.parseInt(Objects.requireNonNull(mConfig.getProperty("html_port")));
         final String guiFiles = (mProject.getProjectPath() + File.separator + mConfig.getProperty("guifiles")).replace("\\", "/");
+        final String audioFiles = (mProject.getProjectPath() + File.separator + mConfig.getProperty("audiofiles")).replace("\\", "/");
         final String sceneflowStateVar = mConfig.getProperty("sceneflowStateVar");
         mSceneflowInfoVar = mConfig.getProperty("sceneflowInfoVar");
         mPathToCertificate = mConfig.getProperty("certificate");
@@ -148,6 +156,7 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
                     htmlConnector.setPort(html_port);
                     server.setConnectors(new Connector[]{sslConnector, connector, htmlConnector});
                     config.addStaticFiles(guiFiles, Location.EXTERNAL);
+                    config.addStaticFiles(audioFiles, Location.EXTERNAL);
                     return server;
                 });
             }).start();
@@ -161,6 +170,7 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
                     htmlConnector.setPort(html_port);
                     server.setConnectors(new Connector[]{connector, htmlConnector});
                     config.addStaticFiles(guiFiles, Location.EXTERNAL);
+                    config.addStaticFiles(audioFiles, Location.EXTERNAL);
                     return server;
                 });
             }).start();
@@ -208,8 +218,9 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
 
         // PG - Comment: This should be handled by a Sceneflow model!
 //        if (message.equals("stopwatch")) {
-//            broadcast("./ui_arbeitszeit.html"); //arbeitszeit
-//        } else if (message.equals("calendar")) {
+//            broadcast("./audio_gui.html"); //arbeitszeit
+//        }
+//        else if (message.equals("calendar")) {
 //            broadcast("./ui_stimmungsbarometer.html"); //moodgraph
 //        } else if (message.equals("phone")) {
 //            broadcast("./slider_gui.html"); //slider
