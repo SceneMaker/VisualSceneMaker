@@ -233,6 +233,22 @@ public class EmmaUserModel extends ActivityExecutor {
                 mLogger.warning("No user specified, diary entry will not be stored.");
             }
         }
+
+        if (name.equalsIgnoreCase("utterancestart")) {
+            if (mUser != null) {
+                storeDiaryEntry(activity, "producer", "utterancestart", "value");
+            } else {
+                mLogger.warning("No user specified, diary entry will not be stored.");
+            }
+        }
+
+        if (name.equalsIgnoreCase("utteranceduration")) {
+            if (mUser != null) {
+                storeDiaryEntry(activity, "producer", "utteranceduration", "value");
+            } else {
+                mLogger.warning("No user specified, diary entry will not be stored.");
+            }
+        }
     }
 
     // set also overrides previously set values.
@@ -270,13 +286,12 @@ public class EmmaUserModel extends ActivityExecutor {
     private void storeDiaryEntry(AbstractActivity activity, String producer, String key, String value) {
         JSONObject diaryentry = new JSONObject();
 
-        DateFormat df = new SimpleDateFormat("MMMM d, yyyy", Locale.GERMANY);
-        String dateStr = df.format(Calendar.getInstance().getTime());
+        long dateMillis = System.currentTimeMillis();
 
-        diaryentry.put("date", dateStr);
+        diaryentry.put("date", dateMillis);
         diaryentry.put("no", getLastDiaryEntryNumber() + 1);
         diaryentry.put("producer", (activity.get(producer) != null) ? activity.get(producer) : "");
-        diaryentry.put(key, (activity.get(value) != null) ? activity.get(value).replace("'", "") : "");
+        diaryentry.put(key, (activity.get(value) != null) ? activity.get(value).replace("'", "").replace("\n", " ").replace("  ", " ") : "");
 
         JSONArray diary = mUser.getJSONArray("diary");
         diary.put(diaryentry);
@@ -301,34 +316,38 @@ public class EmmaUserModel extends ActivityExecutor {
 
         if (diary.length() > 0) {
             mLogger.message("Found " + diary.length() + " diary entries.");
+
             for (int i = 0; i < diary.length(); i++) {
                 JSONObject diaryItem = diary.getJSONObject(i);
 
                 // make a proper date
-                String dateStr = diaryItem.getString("date");
-                DateFormat format = new SimpleDateFormat("MMMM d, yyyy", Locale.GERMANY);
-                // sort it
+                long dateMillis = diaryItem.getLong("date");
+                Date exactDate = new Date(dateMillis);
+                // date format
+                DateFormat df = new SimpleDateFormat("MMMM d, yyyy", Locale.GERMANY);
+                // reduce it to month day year to "collect" all item for one day!
+                String dateStr = df.format(exactDate);
+                Date reducedDate = null;
                 try {
-                    Date date = format.parse(dateStr);
-
-                    if (dateDiaryEntries.containsKey(date)) { // if there is an entry for this particular date, add diary entry
-                        JSONArray dateEntries = dateDiaryEntries.get(date);
-                        dateEntries.put(diaryItem);
-                        dateDiaryEntries.replace(date, dateEntries);
-                    } else { // if there is not an entry for this particular date, create diary entry array and add diary entrey
-                        JSONArray dateEntries = new JSONArray();
-                        dateEntries.put(diaryItem);
-                        dateDiaryEntries.put(date, dateEntries);
-                    }
+                    reducedDate = df.parse(dateStr);
                 } catch (ParseException e) {
-                    mLogger.failure("Dialog entry faulty " + diaryItem);
+                    e.printStackTrace();
+                }
+                // sort it
+                if (dateDiaryEntries.containsKey(reducedDate)) { // if there is an entry for this particular date, add diary entry
+                    JSONArray dateEntries = dateDiaryEntries.get(reducedDate);
+                    dateEntries.put(diaryItem);
+                    dateDiaryEntries.replace(reducedDate, dateEntries);
+                } else { // if there is not an entry for this particular date, create diary entry array and add diary entrey
+                    JSONArray dateEntries = new JSONArray();
+                    dateEntries.put(diaryItem);
+                    dateDiaryEntries.put(reducedDate, dateEntries);
                 }
             }
             for (Map.Entry<Date, JSONArray> entry : dateDiaryEntries.entrySet()) {
                 Date k = entry.getKey();
                 DateFormat df = new SimpleDateFormat("MMMM d, yyyy", Locale.GERMANY);
                 String dateStr = df.format(k);
-                mLogger.message("Adding day >" + dateStr + "< to the list for active diary days.");
                 mDiaryDays.add(dateStr);
             }
         }
@@ -342,6 +361,7 @@ public class EmmaUserModel extends ActivityExecutor {
         // Date format
         DateFormat df = new SimpleDateFormat("MMMM d, yyyy", Locale.GERMANY);
         Date targetDate = Calendar.getInstance().getTime(); // initialize it with today
+
         try { // try to parse dayStr and create Date object
             targetDate = df.parse(dayStr);
         } catch (ParseException e) {
@@ -353,15 +373,19 @@ public class EmmaUserModel extends ActivityExecutor {
                 JSONObject diaryItem = diary.getJSONObject(i);
                 if ((diaryItem.has("entry")) && (!diaryItem.getString("entry").isEmpty())) { // for now, do only consider entries with key "entry"
                     // make a proper date
-                    String dateStr = diaryItem.getString("date");
+                    long dateMillis = diaryItem.getLong("date");
                     // get the number of the dialog entry
+                    Date exactDate = new Date(dateMillis);
+                    // reduce it to month day year to "collect" all item for one day!
+                    String dateStr = df.format(exactDate);
+                    Date reducedDate = null;
                     try {
-                        Date date = df.parse(dateStr);
-                        if (date.equals(targetDate)) {
-                            entries.add(diaryItem.getInt("no"));
-                        }
+                        reducedDate = df.parse(dateStr);
                     } catch (ParseException e) {
-                        mLogger.failure("Dialog entry faulty " + diaryItem);
+                        e.printStackTrace();
+                    }
+                    if (reducedDate.equals(targetDate)) {
+                        entries.add(diaryItem.getInt("no"));
                     }
                 }
             }
@@ -431,8 +455,7 @@ public class EmmaUserModel extends ActivityExecutor {
         JSONArray diary = new JSONArray();
         JSONObject diaryentry = new JSONObject();
 
-        DateFormat df = new SimpleDateFormat("MMMM d, yyyy", Locale.GERMANY);
-        String dateStr = df.format(Calendar.getInstance().getTime());
+        String dateStr = Long.toString(System.currentTimeMillis());
 
         diaryentry.put("date", dateStr);
         diaryentry.put("no", 0);
