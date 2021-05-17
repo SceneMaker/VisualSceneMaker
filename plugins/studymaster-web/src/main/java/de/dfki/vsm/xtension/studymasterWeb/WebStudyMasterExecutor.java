@@ -16,6 +16,7 @@ import de.dfki.vsm.util.log.LOGConsoleLogger;
 import io.javalin.Javalin;
 import io.javalin.websocket.WsCloseContext;
 import io.javalin.websocket.WsConnectContext;
+
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -36,10 +37,12 @@ public class WebStudyMasterExecutor extends ActivityExecutor {
     Receiver mMessagereceiver;
     private String mSceneflowVar;
     private Javalin app;
+    public String mSceneflowStateVar = "";
 
     /**
      * Default constructor, pass values to superclass.
-     * @param config Plugin configuration, as it can be set via the extensions settings, or manually via xml.
+     *
+     * @param config  Plugin configuration, as it can be set via the extensions settings, or manually via xml.
      * @param project The running project the plugin is applied to.
      */
     public WebStudyMasterExecutor(PluginConfig config, RunTimeProject project) {
@@ -82,7 +85,6 @@ public class WebStudyMasterExecutor extends ActivityExecutor {
     }
 
     /**
-     *
      * @param activity the invoked command ([<command> ...]). Accepted: REQUEST
      * @param features parameters to the command ([... x="hello world"...]).
      *                 this plugin takes arguments
@@ -114,9 +116,10 @@ public class WebStudyMasterExecutor extends ActivityExecutor {
 
     /**
      * Format a message to the client
-     * @param mMessage Message to be displayed
+     *
+     * @param mMessage         Message to be displayed
      * @param mMessageTimeInfo action parameter "time"
-     * @param timestamp Time the message was sent
+     * @param timestamp        Time the message was sent
      * @return Message in Studymaster format
      */
     @NotNull
@@ -147,6 +150,8 @@ public class WebStudyMasterExecutor extends ActivityExecutor {
 
     @Override
     public void launch() {
+        mSceneflowStateVar = mConfig.getProperty("sceneflowStateVar");
+
         mLogger.message("Loading StudyMaster message sender and receiver ...");
         final int port = Integer.parseInt(Objects.requireNonNull(mConfig.getProperty("port")));
 
@@ -160,7 +165,7 @@ public class WebStudyMasterExecutor extends ActivityExecutor {
         }).start(port);
         app.ws("/ws", ws -> {
             ws.onConnect(this::addWs);
-            ws.onMessage(ctx -> mMessagereceiver.handleMessage(ctx.message()));
+            ws.onMessage(ctx -> this.handleGUIMessage(ctx.message()));
             ws.onClose(this::removeWs);
             ws.onError(ctx -> mLogger.failure("Errored: " + ctx.error()));
         });
@@ -173,6 +178,9 @@ public class WebStudyMasterExecutor extends ActivityExecutor {
 
     private synchronized void addWs(WsConnectContext ws) {
         mLogger.message("Connected");
+        if (mProject.hasVariable(mSceneflowStateVar)) {
+            mProject.setVariable(mSceneflowStateVar, true);
+        }
         this.websockets.add(ws);
     }
 
@@ -191,6 +199,43 @@ public class WebStudyMasterExecutor extends ActivityExecutor {
         mLogger.message("Assigning sceneflow variable " + var + " with value " + value);
         if (mProject.hasVariable(var)) {
             mProject.setVariable(var, new StringValue(value));
+        }
+    }
+
+    public void handleGUIMessage(String message) {
+        if (message.startsWith(sMSG_HEADER)) {
+
+            if (mProject.hasVariable(mSceneflowStateVar)) {
+                mProject.setVariable(mSceneflowStateVar, true);
+            }
+
+            // parse message
+            String[] msgParts = message.split(sMSG_SEPARATOR);
+
+            if (msgParts.length > 1) {
+                String msgHeader = msgParts[0];
+                String msg = msgParts[1];
+                String timestamp = "";
+                String timeinfo = "";
+
+                if (msg.equalsIgnoreCase("VAR")) {
+                    String var = msgParts[2];
+                    String value = msgParts[3];
+
+                    this.setSceneFlowVariable(var, value);
+                } else {
+                    if (msgParts.length > 3) {
+                        timestamp = msgParts[3];
+                    }
+
+                    if (msgParts.length == 5) {
+                        timeinfo = msgParts[4];
+                    }
+
+                    this.setSceneFlowVariable(msg);
+                }
+            }
+
         }
     }
 }
