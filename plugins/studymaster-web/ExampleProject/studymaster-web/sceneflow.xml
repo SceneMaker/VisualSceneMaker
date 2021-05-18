@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<SceneFlow id="" name="default" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Mon, 17 May 2021 18:26:52" start="S3;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
+<SceneFlow id="" name="default" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Tue, 18 May 2021 16:55:31" start="N1;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
   <Define>
   </Define>
   <Declare>
@@ -21,21 +21,21 @@
     <VariableDefinition type="String" name ="request_result">
       <StringLiteral><![CDATA[]]></StringLiteral>
     </VariableDefinition>
-    <VariableDefinition type="Bool" name ="guiconnected">
+    <VariableDefinition type="Bool" name ="gui_connected">
       <BoolLiteral value="false"/>
     </VariableDefinition>
   </Declare>
   <Commands>
   </Commands>
   <LocalVariableBadge>
-    <Position xPos="593" yPos="672"/>
+    <Position xPos="719" yPos="303"/>
   </LocalVariableBadge>
   <GlobalVariableBadge>
     <Position xPos="10" yPos="10"/>
   </GlobalVariableBadge>
   <Comment>
     <Graphics>
-      <Boundary xPos="258" yPos="127" width="309" height="59"/>
+      <Boundary xPos="467" yPos="199" width="309" height="59"/>
     </Graphics>
     <Text style="color:blue">
       The substate generates a web form. Here, we wait for a user click.
@@ -43,7 +43,7 @@
   </Comment>
   <Comment>
     <Graphics>
-      <Boundary xPos="613" yPos="126" width="211" height="61"/>
+      <Boundary xPos="671" yPos="38" width="211" height="61"/>
     </Graphics>
     <Text style="color:blue">
       User clicked Submit. The project can continue.
@@ -55,7 +55,7 @@
     </Graphics>
     <Text style="color:blue">
       User clicked Cancel.
-                                                                                                                                                                                                                        Reset result action and loop back for another request.
+                                                                                                                                                                                                                                                                  Reset result action and loop back for another request.
     </Text>
   </Comment>
   <Comment>
@@ -72,6 +72,12 @@
     <Declare>
     </Declare>
     <Commands>
+      <Assignment>
+        <SimpleVariable name="request_result"/>
+        <Expression>
+          <StringLiteral><![CDATA[]]></StringLiteral>
+        </Expression>
+      </Assignment>
     </Commands>
     <TEdge target="S1" start="" timeout="5000">
     <Graphics>
@@ -92,8 +98,16 @@
     </Declare>
     <Commands>
     </Commands>
+    <TEdge target="N1" start="" timeout="3000">
     <Graphics>
-      <Position xPos="666" yPos="186"/>
+      <Connection>
+        <ControlPoint xPos="587" yPos="76" ctrlXPos="398" ctrlYPos="124"/>
+        <ControlPoint xPos="185" yPos="216" ctrlXPos="373" ctrlYPos="167"/>
+      </Connection>
+    </Graphics>
+    </TEdge>
+    <Graphics>
+      <Position xPos="586" yPos="26"/>
     </Graphics>
   </Node>
   <Node id="N7" name="Restore" history="false">
@@ -102,12 +116,6 @@
     <Declare>
     </Declare>
     <Commands>
-      <Assignment>
-        <SimpleVariable name="request_result"/>
-        <Expression>
-          <StringLiteral><![CDATA[]]></StringLiteral>
-        </Expression>
-      </Assignment>
     </Commands>
     <FEdge target="N1" start="">
       <Graphics>
@@ -137,7 +145,7 @@
     <FEdge target="S3" start="">
       <Graphics>
         <Connection>
-          <ControlPoint xPos="351" yPos="766" ctrlXPos="335" ctrlYPos="723"/>
+          <ControlPoint xPos="351" yPos="766" ctrlXPos="277" ctrlYPos="723"/>
           <ControlPoint xPos="186" yPos="649" ctrlXPos="270" ctrlYPos="697"/>
         </Connection>
       </Graphics>
@@ -167,8 +175,8 @@
     <IEdge target="N3" start="">
       <Graphics>
         <Connection>
-          <ControlPoint xPos="426" yPos="226" ctrlXPos="526" ctrlYPos="226"/>
-          <ControlPoint xPos="666" yPos="226" ctrlXPos="566" ctrlYPos="226"/>
+          <ControlPoint xPos="426" yPos="203" ctrlXPos="510" ctrlYPos="154"/>
+          <ControlPoint xPos="598" yPos="94" ctrlXPos="539" ctrlYPos="152"/>
         </Connection>
       </Graphics>
       <Eq>
@@ -276,8 +284,8 @@
     <IEdge target="N12" start="">
       <Graphics>
         <Connection>
-          <ControlPoint xPos="586" yPos="626" ctrlXPos="726" ctrlYPos="626"/>
-          <ControlPoint xPos="826" yPos="626" ctrlXPos="686" ctrlYPos="626"/>
+          <ControlPoint xPos="586" yPos="626" ctrlXPos="686" ctrlYPos="626"/>
+          <ControlPoint xPos="826" yPos="626" ctrlXPos="726" ctrlYPos="626"/>
         </Connection>
       </Graphics>
       <Eq>
@@ -288,8 +296,8 @@
     <IEdge target="N11" start="">
       <Graphics>
         <Connection>
-          <ControlPoint xPos="523" yPos="666" ctrlXPos="506" ctrlYPos="695"/>
-          <ControlPoint xPos="406" yPos="751" ctrlXPos="420" ctrlYPos="725"/>
+          <ControlPoint xPos="506" yPos="666" ctrlXPos="452" ctrlYPos="719"/>
+          <ControlPoint xPos="414" yPos="758" ctrlXPos="451" ctrlYPos="720"/>
         </Connection>
       </Graphics>
       <Eq>
@@ -385,8 +393,8 @@
     <IEdge target="S2" start="">
       <Graphics>
         <Connection>
-          <ControlPoint xPos="186" yPos="626" ctrlXPos="286" ctrlYPos="626"/>
-          <ControlPoint xPos="506" yPos="626" ctrlXPos="406" ctrlYPos="626"/>
+          <ControlPoint xPos="186" yPos="626" ctrlXPos="326" ctrlYPos="626"/>
+          <ControlPoint xPos="506" yPos="626" ctrlXPos="366" ctrlYPos="626"/>
         </Connection>
       </Graphics>
       <Eq>
