@@ -24,20 +24,42 @@ import java.util.LinkedList;
 import java.util.Objects;
 
 /**
- * @author Patrick Gebhard, Lenny Händler, Sarah Hoffmann
+ * @author Patrick Gebhard, Lenny Händler, Sarah Hoffmann, Fabrizio Nunnari
  * This plugin uses the Javalin web server to create a remote "Studymaster" connection over websocket
  * and serve a html/javascript interface for control. The interface source is located in the resources.
  */
 public class WebStudyMasterExecutor extends ActivityExecutor {
-    static final String sMSG_SEPARATOR = "#";
-    static final String sMSG_HEADER = "VSMMessage" + sMSG_SEPARATOR;
-    // The singleton logger instance
+
+    private static final String sMSG_SEPARATOR = "#";
+    private static final String sMSG_HEADER = "VSMMessage" + sMSG_SEPARATOR;
+
+    /** The name of the project variable holding the result of the user selection (SUBMIT/CANCEL) */
+    private static final String sREQUEST_RESULT_VAR = "request_result" ;
+
+    private static final String sGUI_CONNECTED_VAR_DEFAULT = "gui_connected" ;
+    private static final String sJAVALIN_PORT_DEFAULT = "8080" ;
+
+
+    /** The singleton logger instance.*/
     private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
+    /** The list of websocket connections. Yes, it will be possible to have several GUIs on the same scene flow.*/
     private final ArrayList<WsConnectContext> websockets = new ArrayList<>();
-    Receiver mMessagereceiver;
+    /** The Javalin HTTP server. */
+    private Javalin httpServer;
+
+
     private String mSceneflowVar;
-    private Javalin app;
-    public String mSceneflowStateVar = "";
+
+
+    /** This is the name of a Boolean global project variable that will be bet to _true_ when at least one web app is connected.*/
+    public String mGUIConnectedVar = "";
+
+    /** This is a "cache" of the last request sent to all connected GUIs.
+     * The string contains the message already formatted to the communication protocol.
+     * It will be used to send again the request to GUIs connecting after the REQUEST action was issued.
+     * If null, no pending request is active.
+     */
+    private String mLastRequestMessage = null;
 
     /**
      * Default constructor, pass values to superclass.
@@ -49,10 +71,83 @@ public class WebStudyMasterExecutor extends ActivityExecutor {
         super(config, project);
     }
 
+
     @Override
     public synchronized String marker(long id) {
         return "$(" + id + ")";
     }
+
+
+    @Override
+    public void launch() {
+        mLogger.message("Loading StudyMaster message sender and receiver ...");
+
+        mGUIConnectedVar = mConfig.getProperty("GUIStateVar", sGUI_CONNECTED_VAR_DEFAULT);
+        final int port = Integer.parseInt(Objects.requireNonNull(mConfig.getProperty("port", sJAVALIN_PORT_DEFAULT)));
+
+        mSceneflowVar = mConfig.getProperty("variable");
+
+        // Start the HTTP server
+        httpServer = Javalin.create(config -> {
+            config.addStaticFiles("/react-studymaster/build");
+            config.enforceSsl = true;
+        }).start(port);
+
+        // Set callbacks to manage WebSocket events
+        httpServer.ws("/ws", ws -> {
+            ws.onConnect(this::addWs);
+            ws.onMessage(ctx -> this.handleGUIMessage(ctx.message()));
+            ws.onClose(this::removeWs);
+            ws.onError(ctx -> mLogger.failure("Errored: " + ctx.error()));
+        });
+    }
+
+
+    @Override
+    public void unload() {
+        for (WsConnectContext ws: websockets) {
+            if (ws.session.isOpen()) {
+                ws.session.close();
+            }
+        }
+        websockets.clear();
+        httpServer.stop();
+    }
+
+
+    /** Invoked when a new websocket connection is opened (new web app is loaded).*/
+    private synchronized void addWs(WsConnectContext ws) {
+        mLogger.message("New WebSocket connection.");
+        this.websockets.add(ws);
+
+        // Update the connection status
+        if (mProject.hasVariable(mGUIConnectedVar)) {
+            mProject.setVariable(mGUIConnectedVar, true);
+        }
+
+        // If a request is pending, send it to the new client
+        if(mLastRequestMessage != null) {
+            ws.send(mLastRequestMessage) ;
+        }
+
+    }
+
+
+    /** Invoked when a websocket connection is closed (web app is closed, or timeout?).*/
+    private synchronized void removeWs(WsCloseContext ctx) {
+        mLogger.message("Closed WebSocket connection.");
+        websockets.remove(ctx);
+
+        // Set the GUIState variable to false if there are no more GUI connections.
+        if(websockets.size()==0) {
+            if (mProject.hasVariable(mGUIConnectedVar)) {
+                mProject.setVariable(mGUIConnectedVar, false);
+            }
+
+        }
+    }
+
+
 
     @Override
     public void execute(AbstractActivity activity) {
@@ -70,47 +165,64 @@ public class WebStudyMasterExecutor extends ActivityExecutor {
                 }
             }
         } else {
-            final String name = activity.getName();
+            final String action_name = activity.getName();
             final LinkedList<ActionFeature> features = activity.getFeatures();
 
-            if (name.equalsIgnoreCase("stop")) {
-                app.stop();
-            } else {
-                String sendData = encodeRequest(activity, features);
-                synchronized (this) {
-                    websockets.forEach(ws -> ws.send(sendData));
+            if (action_name.equalsIgnoreCase("stop")) {
+                httpServer.stop();
+            } else if (action_name.equals("REQUEST")) {
+                mLastRequestMessage = null ; // In case a previous request was still active.
+                try {
+                    mLastRequestMessage = encodeRequest(activity, features);
+                    synchronized (this) {
+                        websockets.forEach(ws -> ws.send(mLastRequestMessage));
+                    }
+                } catch (IllegalArgumentException e) {
+                    mLogger.failure("Malformed REQUEST");
                 }
+            } else {
+                mLogger.warning("Unknown action '" + action_name + "'");
             }
         }
     }
 
-    /**
+
+    /** Given the activity and the feastures of a REQUEST action, convert it into a string in the protocol format.
+     *
      * @param activity the invoked command ([<command> ...]). Accepted: REQUEST
      * @param features parameters to the command ([... x="hello world"...]).
      *                 this plugin takes arguments
      *                 - time
      *                 - var: variables
-     *                 - values: value(s) for every variable.
+     *                 - value: value(s) for every variable.
      *                 - type: types for the inputs for every variable.
      * @return String that is sent to the js client, the format is the same as in the Studymaster plugin
      */
     @NotNull
-    private String encodeRequest(AbstractActivity activity, LinkedList<ActionFeature> features) {
-        var mMessage = activity.getName();
-        var mMessageTimeInfo = getActionFeatureValue("time", features);
-        var mMessageRequestVar = getActionFeatureValue("var", features);
-        var mMessageRequestValues = getActionFeatureValue("values", features);
-        var mMessageRequestType = getActionFeatureValue("type", features);
+    private String encodeRequest(AbstractActivity activity, LinkedList<ActionFeature> features) throws IllegalArgumentException {
+        // var mMessage = activity.getName();
+        var varRequest = getActionFeatureValue("var", features);
+        var valuesRequest = getActionFeatureValue("values", features);
+        var typeRequest = getActionFeatureValue("type", features);
 
         long timestamp = System.currentTimeMillis();
 
-        if (!mMessage.equalsIgnoreCase("REQUEST")) {
-            return message(mMessage, mMessageTimeInfo, timestamp);
-        } else if (mMessage.equalsIgnoreCase("REQUEST")
-                && (!mMessageRequestVar.isEmpty()) && (!mMessageRequestType.isEmpty()) && (!mMessageRequestValues.isEmpty())) {
-            return varRequestWithValues(mMessage, mMessageRequestVar, mMessageRequestValues, mMessageRequestType, timestamp);
+        if ((!varRequest.isEmpty()) && (!typeRequest.isEmpty()) && (!valuesRequest.isEmpty())) {
+            return sMSG_HEADER
+                    + "REQUEST"
+                    + sMSG_SEPARATOR
+                    + timestamp
+                    + sMSG_SEPARATOR
+                    + varRequest.replace("'", "")
+                    + sMSG_SEPARATOR
+                    + valuesRequest.replace("'", "")
+                    + sMSG_SEPARATOR
+                    + typeRequest.replace("'", "") ;
+
+//      } else if (!mMessage.equalsIgnoreCase("REQUEST")) {
+//            return message(mMessage, mMessageTimeInfo, timestamp);
         } else {
-            return (sMSG_HEADER + "None" + sMSG_SEPARATOR + timestamp);
+            throw new IllegalArgumentException("REQUEST message malformed") ;
         }
     }
 
@@ -132,110 +244,51 @@ public class WebStudyMasterExecutor extends ActivityExecutor {
                         + ((!mMessageTimeInfo.isEmpty()) ? sMSG_SEPARATOR + mMessageTimeInfo : ""));
     }
 
-    @NotNull
-    private String varRequestWithValues(String mMessage, String mMessageRequestVar, String mMessageRequestValues, String mMessageRequestType, long timestamp) {
-        return (
-                sMSG_HEADER
-                        + mMessage
-                        + sMSG_SEPARATOR
-                        + timestamp
-                        + sMSG_SEPARATOR
-                        + mMessageRequestVar.replace("'", "")
-                        + sMSG_SEPARATOR
-                        + mMessageRequestValues.replace("'", "")
-                        + sMSG_SEPARATOR
-                        + mMessageRequestType.replace("'", "")
-        );
-    }
 
-    @Override
-    public void launch() {
-        mSceneflowStateVar = mConfig.getProperty("sceneflowStateVar");
-
-        mLogger.message("Loading StudyMaster message sender and receiver ...");
-        final int port = Integer.parseInt(Objects.requireNonNull(mConfig.getProperty("port")));
-
-        mSceneflowVar = mConfig.getProperty("variable");
-
-        mMessagereceiver = new Receiver(this);
-
-        app = Javalin.create(config -> {
-            config.addStaticFiles("/react-studymaster/build");
-            config.enforceSsl = true;
-        }).start(port);
-        app.ws("/ws", ws -> {
-            ws.onConnect(this::addWs);
-            ws.onMessage(ctx -> this.handleGUIMessage(ctx.message()));
-            ws.onClose(this::removeWs);
-            ws.onError(ctx -> mLogger.failure("Errored: " + ctx.error()));
-        });
-    }
-
-    private synchronized void removeWs(WsCloseContext ctx) {
-        mLogger.message("closed socket");
-        websockets.remove(ctx);
-    }
-
-    private synchronized void addWs(WsConnectContext ws) {
-        mLogger.message("Connected");
-        if (mProject.hasVariable(mSceneflowStateVar)) {
-            mProject.setVariable(mSceneflowStateVar, true);
-        }
-        this.websockets.add(ws);
-    }
-
-    @Override
-    public void unload() {
-        websockets.clear();
-        app.stop();
-    }
-
-    public void setSceneFlowVariable(String message) {
-        mLogger.message("Assigning sceneflow variable " + mSceneflowVar + " with value " + message);
-        mProject.setVariable(mSceneflowVar, new StringValue(message));
-    }
-
-    public void setSceneFlowVariable(String var, String value) {
-        mLogger.message("Assigning sceneflow variable " + var + " with value " + value);
-        if (mProject.hasVariable(var)) {
-            mProject.setVariable(var, new StringValue(value));
-        }
-    }
-
+    /** Invoked when a websocket connection gets a message from the web app.*/
     public void handleGUIMessage(String message) {
         if (message.startsWith(sMSG_HEADER)) {
-
-            if (mProject.hasVariable(mSceneflowStateVar)) {
-                mProject.setVariable(mSceneflowStateVar, true);
-            }
 
             // parse message
             String[] msgParts = message.split(sMSG_SEPARATOR);
 
             if (msgParts.length > 1) {
-                String msgHeader = msgParts[0];
+                // String msgHeader = msgParts[0];
                 String msg = msgParts[1];
-                String timestamp = "";
-                String timeinfo = "";
 
+                // MESSAGE VAR: VSMMessage#VAR#<var>#<value>
                 if (msg.equalsIgnoreCase("VAR")) {
                     String var = msgParts[2];
                     String value = msgParts[3];
 
-                    this.setSceneFlowVariable(var, value);
+                    if (mProject.hasVariable(var)) {
+                        mLogger.message("Assigning sceneflow variable " + var + " with value " + value);
+                        mProject.setVariable(var, new StringValue(value));
+
+                        // If we received the user choice, reset the request cache
+                        if(var.equals(sREQUEST_RESULT_VAR)) {
+                            mLastRequestMessage = null ;
+                        }
+                    } else {
+                        mLogger.warning("Can't assign sceneflow variable " + var + " with value " + value + ": global project variable not defined");
+                    }
+
+                // MESSAGE GO: VSMMessage#Go
+                } else if(msg.equalsIgnoreCase("GO")) {
+                    mLogger.message("Assigning sceneflow variable " + mSceneflowVar + " with value " + message);
+                    mProject.setVariable(mSceneflowVar, true);
+
+                // MESSAGE UNKNOWN!!!
                 } else {
-                    if (msgParts.length > 3) {
-                        timestamp = msgParts[3];
-                    }
-
-                    if (msgParts.length == 5) {
-                        timeinfo = msgParts[4];
-                    }
-
-                    this.setSceneFlowVariable(msg);
+                    mLogger.warning("Unsupported message '" + msg + "' received.");
                 }
+
+            } else {
+                mLogger.warning("Message malformed: no proper separation with '" + sMSG_SEPARATOR + "'");
             }
 
+        } else {
+            mLogger.warning("Message malformed: no header '" + sMSG_HEADER + "'");
         }
     }
 }

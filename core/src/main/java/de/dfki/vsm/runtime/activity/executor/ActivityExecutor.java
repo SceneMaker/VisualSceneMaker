@@ -38,7 +38,13 @@ public abstract class ActivityExecutor extends RunTimePlugin {
 
     public abstract void execute(final AbstractActivity activity);
 
-    protected String getActionFeatureValue(String name, List<ActionFeature> features) {
+    /** Support method to extract the value of a feature from the features dictionary.
+     *
+     * @param name
+     * @param features
+     * @return Empty string if the feature can't be found.
+     */
+    protected static String getActionFeatureValue(String name, List<ActionFeature> features) {
         return features.stream()
                 .filter(af -> af.getKey().equalsIgnoreCase(name))
                 .findFirst()
