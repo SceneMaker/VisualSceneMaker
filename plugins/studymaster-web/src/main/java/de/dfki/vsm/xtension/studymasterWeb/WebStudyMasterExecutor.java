@@ -36,8 +36,10 @@ public class WebStudyMasterExecutor extends ActivityExecutor {
     /** The name of the project variable holding the result of the user selection (SUBMIT/CANCEL) */
     private static final String sREQUEST_RESULT_VAR = "request_result" ;
 
+    private static final String sGUI_CONNECTED_VAR = "gui_connected_var" ;
     private static final String sGUI_CONNECTED_VAR_DEFAULT = "gui_connected" ;
-    private static final String sJAVALIN_PORT_DEFAULT = "8080" ;
+    private static final String sJAVALIN_PORT_VAR = "port" ;
+    private static final String sJAVALIN_PORT_VAR_DEFAULT = "8080" ;
 
 
     /** The singleton logger instance.*/
@@ -82,8 +84,8 @@ public class WebStudyMasterExecutor extends ActivityExecutor {
     public void launch() {
         mLogger.message("Loading StudyMaster message sender and receiver ...");
 
-        mGUIConnectedVar = mConfig.getProperty("GUIStateVar", sGUI_CONNECTED_VAR_DEFAULT);
-        final int port = Integer.parseInt(Objects.requireNonNull(mConfig.getProperty("port", sJAVALIN_PORT_DEFAULT)));
+        mGUIConnectedVar = mConfig.getProperty(sGUI_CONNECTED_VAR, sGUI_CONNECTED_VAR_DEFAULT);
+        final int port = Integer.parseInt(Objects.requireNonNull(mConfig.getProperty(sJAVALIN_PORT_VAR, sJAVALIN_PORT_VAR_DEFAULT)));
 
         mSceneflowVar = mConfig.getProperty("variable");
 
