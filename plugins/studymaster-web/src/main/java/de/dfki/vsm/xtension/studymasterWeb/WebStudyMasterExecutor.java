@@ -204,12 +204,12 @@ public class WebStudyMasterExecutor extends ActivityExecutor {
     private String encodeRequest(AbstractActivity activity, LinkedList<ActionFeature> features) throws IllegalArgumentException {
         // var mMessage = activity.getName();
         var varRequest = getActionFeatureValue("var", features);
-        var valuesRequest = getActionFeatureValue("values", features);
+        var valueRequest = getActionFeatureValue("value", features);
         var typeRequest = getActionFeatureValue("type", features);
 
         long timestamp = System.currentTimeMillis();
 
-        if ((!varRequest.isEmpty()) && (!typeRequest.isEmpty()) && (!valuesRequest.isEmpty())) {
+        if ((!varRequest.isEmpty()) && (!typeRequest.isEmpty()) && (!valueRequest.isEmpty())) {
             return sMSG_HEADER
                     + "REQUEST"
                     + sMSG_SEPARATOR
@@ -217,7 +217,7 @@ public class WebStudyMasterExecutor extends ActivityExecutor {
                     + sMSG_SEPARATOR
                     + varRequest.replace("'", "")
                     + sMSG_SEPARATOR
-                    + valuesRequest.replace("'", "")
+                    + valueRequest.replace("'", "")
                     + sMSG_SEPARATOR
                     + typeRequest.replace("'", "") ;
 
