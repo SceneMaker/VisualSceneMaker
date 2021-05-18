@@ -57,6 +57,10 @@ public class UpdServer extends Thread {
 
 
                     // check if object contains transcription element
+                    if (jObj.has("id")) { // String UUID
+                    }
+
+                    // check if object contains transcription element
                     if (jObj.has("transcription")) {
                         JSONObject transcript = jObj.getJSONObject("transcription");
 
@@ -68,13 +72,35 @@ public class UpdServer extends Thread {
                             mProject.setVariable("userUtterance", new StringValue(utterance));
                         }
 
+                        // check if object contains source element
+                        if (jObj.has("source")) { // "local" "asr_server"
+                            JSONObject transSrc = jObj.getJSONObject("source");
+                            String transSrcStr = transSrc.getString("source");
+
+                            if (mProject.hasVariable("transcriptionSource")) {
+                                mProject.setVariable("transcriptionSource", new StringValue(transSrcStr));
+                            }
+                        }
+
+                        // check if object contains id element
+                        if (jObj.has("id")) { // String UUID
+                            JSONObject transId = jObj.getJSONObject("id");
+                            String transIdStr = transId.getString("id");
+
+                            if (mProject.hasVariable("transcriptionID")) {
+                                mProject.setVariable("transcriptionID", new StringValue(transIdStr));
+                            }
+                        }
+
                         String allkeys = "";
                         //debug
                         for (Iterator iterator = jObj.keySet().iterator(); iterator.hasNext(); ) {
                             String key = (String) iterator.next();
                             allkeys = allkeys + " " + key.replace("\"", "");
                         }
-                        mProject.setVariable("debug", new StringValue("Alle ODP messages keys " + allkeys));
+                        if (mProject.hasVariable("debug")) {
+                            mProject.setVariable("debug", new StringValue("Alle ODP messages keys " + allkeys));
+                        }
                     }
 
                     if (jObj.has("liwc-result")) {
