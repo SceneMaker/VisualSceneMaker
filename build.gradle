@@ -8,7 +8,9 @@ compileJava {options.encoding = "UTF-8"}
 javadoc { options.encoding = 'UTF-8' }
 
 group 'de.dfki'
-version '4.1.0-' + versioning.info.full
+allprojects {
+    version = versioning.info.lastTag
+}
 
 sourceCompatibility = 11
 
@@ -83,7 +85,9 @@ jar {
         attributes(
                 'Main-Class': 'de.dfki.vsm.SceneMaker3',
                 'build' : versioning.info.build,
-                'Build-Revision': versioning.info.commit
+                'Build-Revision': versioning.info.commit,
+                'Full-Version': versioning.info.full,
+                'Last-Tag': versioning.info.lastTag
         )
     }
 }
