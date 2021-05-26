@@ -178,8 +178,10 @@ And this file:
 and extend the dependencies:
 
 ```
+<!-- AFTER these 2 lines -->
 <buildtool_depend>catkin</buildtool_depend>
 <build_depend>rosjava_build_tools</build_depend>
+<!-- ADD THESE 4 lines-->
 <build_depend>message_generation</build_depend>
 <build_depend>mindbot_msgs</build_depend>
 <exec_depend>mindbot_msgs</exec_depend>
