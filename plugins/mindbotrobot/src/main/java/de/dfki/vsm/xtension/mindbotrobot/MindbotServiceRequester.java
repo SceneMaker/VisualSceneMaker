@@ -83,38 +83,10 @@ public class MindbotServiceRequester extends AbstractNodeMain {
 
             //
             // Instantiate the listening service, receiving the result of the calls.
-            connectedNode.newServiceServer("/mindbot/robot/action_done", mindbot_msgs.VSMActionDone._TYPE,
-                    new ServiceResponseBuilder<mindbot_msgs.VSMActionDoneRequest, mindbot_msgs.VSMActionDoneResponse>() {
-
-                        /** This will be invoked every time the local "action_done" service is invoked.
-                         * Here, the goal is to set the status of the action call and trigger the waiting threads.
-                         *
-                         * @param request callid & resultid
-                         * @param response message & success
-                         */
-                        @Override
-                        public void build(mindbot_msgs.VSMActionDoneRequest request, mindbot_msgs.VSMActionDoneResponse response) {
-                            int rosCallID = request.getCallID();
-                            // the result ID: 0=ERROR, 1=OK
-                            int result = request.getResult();
-                            CallState s = (result == 1) ? CallState.DONE : CallState.ABORTED;
-
-                            String message = request.getMessage() ;
-
-                            synchronized (actionsState) {
-                                if(rosToActionID.containsKey(rosCallID)) {
-                                    // This will set the state of the action and notify threads waiting for the call.
-                                    int actionID = rosToActionID.get(rosCallID);
-                                    actionsState.put(actionID, s);
-                                    actionsState.notifyAll();
-                                }
-                                // if the is was not in the map, it is üossible that VSM (re-started) when a robot acton was still executing
-                            }
-
-                            // Set the response result.
-                            response.setSuccess(true);
-                        }
-                    }) ;
+            connectedNode.newServiceServer(
+                    "/mindbot/robot/action_done",
+                    mindbot_msgs.VSMActionDone._TYPE,
+                    new ActionDoneResponseBuilder());
 
         } catch (ServiceNotFoundException e) {
             throw new RosRuntimeException(e);
@@ -174,6 +146,43 @@ public class MindbotServiceRequester extends AbstractNodeMain {
         return s ;
     }
 
+    /**
+     * This is the code building the answer to the messages receives on the "action_done" service.
+     */
+    private class ActionDoneResponseBuilder implements ServiceResponseBuilder<mindbot_msgs.VSMActionDoneRequest, mindbot_msgs.VSMActionDoneResponse> {
+
+        /** This will be invoked every time the local "action_done" service is invoked.
+         * Here, the goal is to:
+         * * retrieve the rosID, i.e., the action ID from the ROS side.
+         * * set the status of the action associated to the rosID to either DONE or ABORTED
+         * * trigger the thread waiting for the conclusion of the action.
+         *
+         * @param request message, callid (aka rosID), result
+         * @param response success
+         */
+        @Override
+        public void build(mindbot_msgs.VSMActionDoneRequest request, mindbot_msgs.VSMActionDoneResponse response) {
+            int rosCallID = request.getCallID();
+            // the result ID: 0=ERROR, 1=OK
+            int result = request.getResult();
+            CallState s = (result == 1) ? CallState.DONE : CallState.ABORTED;
+
+            String message = request.getMessage() ;
+
+            synchronized (actionsState) {
+                if(rosToActionID.containsKey(rosCallID)) {
+                    // This will set the state of the action and notify threads waiting for the call.
+                    int actionID = rosToActionID.get(rosCallID);
+                    actionsState.put(actionID, s);
+                    actionsState.notifyAll();
+                }
+                // if the is was not in the map, it is possible that VSM re-started when a robot acton was still executing
+            }
+
+            // Set the response result.
+            response.setSuccess(true);
+        }
+    }
 
     /** Centralized parametric Listener that can be used to intercept the answer from any robot service.
      * If the expect_action_done_message in the constructor is true,
