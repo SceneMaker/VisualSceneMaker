@@ -6,7 +6,7 @@ The plugin uses rosjava (<http://wiki.ros.org/rosjava>) to connect to a remote L
 
 ## Prerequisites
 
-The plugin can be tested on a network where the MindBot robot is running. Please, refer to the MindBot code repository <https://mindbotgit.cloud.garrservices.it/matteolavitnicora/mindbot_robot_control.git>
+The plugin can be tested on a network where the MindBot robot is running. Please, refer to the MindBot code repository <https://mindbotgit.cloud.garrservices.it/wp5/mindbot-robot-control>
 
 Refer to the official VSM documentation on how to set up a project and execute scenes: <http://scenemaker.dfki.de/tutorial.html>.
 
@@ -15,7 +15,7 @@ Refer to the official VSM documentation on how to set up a project and execute s
 
 * Open a new VSM project and add a `MindBotRobotExecutor` device.
 * Setup the device properties:
-  * `rosuri`: The URI (e.g., http://localhost:11311) on which the main ROS system and the robot are running.
+  * `rosuri` The URI (e.g., http://localhost:11311) on which the main ROS system and the robot are running.
 * Add an agent for the device.
 
 ![MindBotRobot plugin configuration](images/VSM-MindBotRobotConfig.png)
