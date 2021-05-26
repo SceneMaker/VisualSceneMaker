@@ -175,7 +175,7 @@ and extend the dependencies:
 
 and finally:
 
-    nano -w src/communcation_package/communcation_project/build.gradle:
+    nano -w src/communication_package/communication_project/build.gradle
 
 and extend the `dependencies` section:
 
