@@ -123,9 +123,9 @@ public class MindbotTopicReceiver implements NodeMain {
     }
 
     private void setupSubscribers(ConnectedNode connectedNode) {
-        subscriberTcpState = connectedNode.newSubscriber("/iiwa/tcp_state", geometry_msgs.PoseStamped._TYPE);
-        subscriberCtrlState = connectedNode.newSubscriber("/iiwa/ctrl_state", mindbot_msgs.CtrlState._TYPE);
-        subscriberCtrlMode = connectedNode.newSubscriber("/iiwa/ctrl_mode", mindbot_msgs.CtrlMode._TYPE);
+        subscriberTcpState = connectedNode.newSubscriber("/mindbot/robot/tcp_state", geometry_msgs.PoseStamped._TYPE);
+        subscriberCtrlState = connectedNode.newSubscriber("/mindbot/robot/ctrl_state", mindbot_msgs.CtrlState._TYPE);
+        subscriberCtrlMode = connectedNode.newSubscriber("/mindbot/robot/ctrl_mode", mindbot_msgs.CtrlMode._TYPE);
     }
 
     private static boolean _equalPoses(Pose pose1, Pose pose2) {
@@ -140,8 +140,6 @@ public class MindbotTopicReceiver implements NodeMain {
                 or1.getX() == or2.getX() &&
                 or1.getY() == or2.getY() &&
                 or1.getZ() == or2.getZ() ;
-
-
 
     }
 

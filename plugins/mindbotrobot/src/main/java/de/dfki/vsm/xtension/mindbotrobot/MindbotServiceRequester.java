@@ -43,6 +43,7 @@ public class MindbotServiceRequester extends AbstractNodeMain {
     private ServiceClient<mindbot_msgs.SetCtrlStateRequest, mindbot_msgs.SetCtrlStateResponse> _setCtrlStateService;
     private ServiceClient<mindbot_msgs.SetCtrlModeRequest, mindbot_msgs.SetCtrlModeResponse> _setCtrlModeService;
     private ServiceClient<mindbot_msgs.SetFloatRequest, mindbot_msgs.SetFloatResponse> _setMinClearanceService;
+    private ServiceClient<mindbot_msgs.SetGripperActionRequest, mindbot_msgs.SetGripperActionResponse> _setGripperActionService;
 
     @Override
     public void onStart(final ConnectedNode connectedNode) {
@@ -71,13 +72,14 @@ public class MindbotServiceRequester extends AbstractNodeMain {
 
     private void setUpClient(ConnectedNode connectedNode) {
         try {
-            _setTcpTargetService = connectedNode.newServiceClient("/iiwa/set_tcp_target", mindbot_msgs.SetPose._TYPE);
-            _setJointTargetService = connectedNode.newServiceClient("/iiwa/set_joint_target", mindbot_msgs.SetJointState._TYPE);
-            _setMaxTcpVelocityService = connectedNode.newServiceClient("/iiwa/set_max_tcp_velocity", mindbot_msgs.SetVector3._TYPE);
-            _setMaxTcpAccelerationService = connectedNode.newServiceClient("/iiwa/set_max_tcp_acceleration", mindbot_msgs.SetVector3._TYPE);
-            _setCtrlStateService = connectedNode.newServiceClient("/iiwa/set_ctrl_state", mindbot_msgs.SetCtrlState._TYPE);
-            _setCtrlModeService = connectedNode.newServiceClient("/iiwa/set_ctrl_mode", mindbot_msgs.SetCtrlMode._TYPE);
-            _setMinClearanceService = connectedNode.newServiceClient("/iiwa/set_min_clearance", mindbot_msgs.SetFloat._TYPE);
+            _setTcpTargetService = connectedNode.newServiceClient("/mindbot/robot/set_tcp_target", mindbot_msgs.SetPose._TYPE);
+            _setJointTargetService = connectedNode.newServiceClient("/mindbot/robot/set_joint_target", mindbot_msgs.SetJointState._TYPE);
+            _setMaxTcpVelocityService = connectedNode.newServiceClient("/mindbot/robot/set_max_tcp_velocity", mindbot_msgs.SetVector3._TYPE);
+            _setMaxTcpAccelerationService = connectedNode.newServiceClient("/mindbot/robot/set_max_tcp_acceleration", mindbot_msgs.SetVector3._TYPE);
+            _setCtrlStateService = connectedNode.newServiceClient("/mindbot/robot/set_ctrl_state", mindbot_msgs.SetCtrlState._TYPE);
+            _setCtrlModeService = connectedNode.newServiceClient("/mindbot/robot/set_ctrl_mode", mindbot_msgs.SetCtrlMode._TYPE);
+            _setMinClearanceService = connectedNode.newServiceClient("/mindbot/robot/set_min_clearance", mindbot_msgs.SetFloat._TYPE);
+            _setGripperActionService = connectedNode.newServiceClient("/mindbot/robot/set_gripper_action", mindbot_msgs.SetGripperAction._TYPE);
 
             //
             // Instantiate the listening service, receiving the result of the calls.
@@ -133,6 +135,8 @@ public class MindbotServiceRequester extends AbstractNodeMain {
 
         // Loop until the action is being processed
         while (true) {
+            // TODO -- here, if we wait for too long, it probably means that the robot is disconnected
+            // TODO -- We should inform the user and abort the project.
             synchronized (actionsState) {
                 s = actionsState.get(actionID);
                 if (s == CallState.DONE || s == CallState.FAILURE || s == CallState.ABORTED) {
@@ -140,7 +144,7 @@ public class MindbotServiceRequester extends AbstractNodeMain {
                 } else {
                     // Here, the call is either just CALLED or SUCCESS. We have to wait.
                     try {
-                        actionsState.wait();
+                        actionsState.wait(1000);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
@@ -150,7 +154,7 @@ public class MindbotServiceRequester extends AbstractNodeMain {
         }
 
 
-        // Remove the
+        // Remove the local ID and the ROS ID from the respective maps.
         synchronized (actionsState) {
             //
             // remove the IDs from the actionMap
@@ -171,7 +175,7 @@ public class MindbotServiceRequester extends AbstractNodeMain {
     }
 
 
-    /** Centralized parametric Listener that can be used to intercept the answer from any service.
+    /** Centralized parametric Listener that can be used to intercept the answer from any robot service.
      * If the expect_action_done_message in the constructor is true,
      * the responding service must provide a field named `action_id` of type int32.
      * The constructor will insert the actionID in the `actionState` table with state `CALLED`.
@@ -233,7 +237,7 @@ public class MindbotServiceRequester extends AbstractNodeMain {
     }
 
 
-    /**     /iiwa/set_joint_target           (mindbot_msgs::SetJointState)
+    /**     /mindbot/robot/set_joint_target           (mindbot_msgs::SetJointState)
      *
      * @param joint_names The name of the joints to modify.
      * @param p The position (actually the rotation in radians) of each joint, in the same order of the names.
@@ -257,7 +261,7 @@ public class MindbotServiceRequester extends AbstractNodeMain {
         return listener.getActionID() ;
     }
 
-    /** /iiwa/set_tcp_target             (mindbot_msgs::SetPose)
+    /** /mindbot/robot/set_tcp_target             (mindbot_msgs::SetPose)
      *
      * @param x
      * @param y
@@ -288,7 +292,7 @@ public class MindbotServiceRequester extends AbstractNodeMain {
     }
 
 
-    /** /iiwa/set_max_tcp_velocity       (mindbot_msgs::SetVector3)
+    /** /mindbot/robot/set_max_tcp_velocity       (mindbot_msgs::SetVector3)
      *
      * @param x
      * @param y
@@ -308,7 +312,7 @@ public class MindbotServiceRequester extends AbstractNodeMain {
         _setMaxTcpVelocityService.call(request, listener);
     }
 
-    /** /iiwa/set_max_tcp_acceleration   (mindbot_msgs::SetVector3)
+    /** /mindbot/robot/set_max_tcp_acceleration   (mindbot_msgs::SetVector3)
      *
      * @param x
      * @param y
@@ -329,7 +333,7 @@ public class MindbotServiceRequester extends AbstractNodeMain {
     }
 
 
-    /** /iiwa/set_ctrl_state             (cob_srvs::SetString)
+    /** /mindbot/robot/set_ctrl_state             (cob_srvs::SetString)
      *
      * @param state     OFF = 0
      *                  ON = 1
@@ -347,7 +351,7 @@ public class MindbotServiceRequester extends AbstractNodeMain {
         _setCtrlStateService.call(request, listener);
     }
 
-    /** /iiwa/set_ctrl_mode              (cob_srvs::SetString)
+    /** /mindbot/robot/set_ctrl_mode              (cob_srvs::SetString)
      *
      * @param mode      MODEO = 0
      *                  MODE1 = 1
@@ -365,7 +369,7 @@ public class MindbotServiceRequester extends AbstractNodeMain {
         _setCtrlModeService.call(request, listener);
     }
 
-    /**     /iiwa/set_min_clearance           (mindbot_msgs::SetFloat)
+    /**     /mindbot/robot/set_min_clearance           (mindbot_msgs::SetFloat)
      *
      * @param min_clearance A float with the minimum accepted distance between robot and operator.
      */
@@ -376,6 +380,24 @@ public class MindbotServiceRequester extends AbstractNodeMain {
 
         MindBotResponseListener<SetFloatResponse> listener = new MindBotResponseListener<SetFloatResponse>(false);
         _setMinClearanceService.call(request, listener);
+    }
+
+
+    /**     /mindbot/robot/set_gripper_action        (mindbot_msgs::SetGripperAction)
+     *
+     * @param position
+     * @param velocity
+     * @param force
+     */
+    public void setGripperAction(int position, int velocity, int force) {
+        SetGripperActionRequest request = _setGripperActionService.newMessage();
+
+        request.setPosition(position);
+        request.setVelocity(velocity);
+        request.setForce(force);
+
+        MindBotResponseListener<SetGripperActionResponse> listener = new MindBotResponseListener<>(true) ;
+        _setGripperActionService.call(request, listener);
     }
 
 }

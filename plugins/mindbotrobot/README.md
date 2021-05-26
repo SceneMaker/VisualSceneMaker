@@ -85,3 +85,9 @@ The following actions can be invoked within scenes:
   * Parameters:
     * `min_clearance`
   * Example: `[set_min_clearance min_clearance=0.5].`
+* `set_gripper_aperture` Set the aperture of the gripper, or better, tries to reach the specified aperture, at a given speed, and stops before if a certain resistance force threshold limit is reached.
+  * Parameters:
+    * `aperture`
+    * `velocity`
+    * `force`
+  Example: `[set_gripper_aperture aperture=30 velocity=10 force=5]`
