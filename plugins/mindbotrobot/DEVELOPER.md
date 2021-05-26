@@ -48,12 +48,12 @@ export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
 Start installing rosjava in your home folder.
 
 ```
-> mkdir -p ~/rosjava/src
-> wstool init -j4 ~/rosjava/src https://raw.githubusercontent.com/rosjava/rosjava/kinetic/rosjava.rosinstall
-> source /opt/ros/melodic/setup.bash
-> cd ~/rosjava
+mkdir -p ~/rosjava/src
+wstool init -j4 ~/rosjava/src https://raw.githubusercontent.com/rosjava/rosjava/kinetic/rosjava.rosinstall
+source /opt/ros/melodic/setup.bash
+cd ~/rosjava
 # Make sure we've got all rosdeps and msg packages.
-> rosdep update
+rosdep update
 ```
 
 Fix missing packages (see <https://github.com/rosjava/genjava/issues/19#issuecomment-591173183>):
@@ -77,8 +77,8 @@ and remove line
 Now continue...
 
 ```
-> rosdep install --from-paths src -i -y
-> catkin_make
+rosdep install --from-paths src -i -y
+catkin_make
 ```
 
 Now rojava is installed.
