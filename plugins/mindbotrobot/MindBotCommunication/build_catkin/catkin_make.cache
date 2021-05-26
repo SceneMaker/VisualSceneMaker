@@ -1,2 +1,0 @@
-communication_package:mindbot_msgs
--DCATKIN_DEVEL_PREFIX=/home/sarah/MindbotRobot/VisualSceneMaker/plugins/mindbotrobot/MindBotCommunication/devel -DCMAKE_INSTALL_PREFIX=/home/sarah/MindbotRobot/VisualSceneMaker/plugins/mindbotrobot/MindBotCommunication/install -G Unix Makefiles

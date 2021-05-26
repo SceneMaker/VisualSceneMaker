@@ -1,8 +1,0 @@
-prefix=/home/sarah/MindbotRobot/VisualSceneMaker/plugins/mindbotrobot/MindBotCommunication/devel
-
-Name: mindbot_msgs
-Description: Description of mindbot_msgs
-Version: 0.0.0
-Cflags: -I/home/sarah/MindbotRobot/VisualSceneMaker/plugins/mindbotrobot/MindBotCommunication/devel/include
-Libs: -L${prefix}/lib 
-Requires: message_runtime roscpp rospy geometry_msgs sensor_msgs
