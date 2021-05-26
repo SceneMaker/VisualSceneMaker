@@ -160,7 +160,7 @@ mindbot_msgs)
 
 And this file:
 
-    nano -w src/communcation_package/package.xml
+    nano -w src/communication_package/package.xml
 
 and extend the dependencies:
 
