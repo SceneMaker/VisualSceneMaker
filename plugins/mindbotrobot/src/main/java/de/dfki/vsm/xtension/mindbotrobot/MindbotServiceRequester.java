@@ -385,9 +385,9 @@ public class MindbotServiceRequester extends AbstractNodeMain {
 
     /**     /mindbot/robot/set_gripper_action        (mindbot_msgs::SetGripperAction)
      *
-     * @param position
-     * @param velocity
-     * @param force
+     * @param position 0 (all open) to 255 (all closed, but unlikely perfectly 0mm)
+     * @param velocity 0 to 255 (ca. 150mm/sec)
+     * @param force 0 to 255 (ca. 5Kg)
      */
     public void setGripperAction(int position, int velocity, int force) {
         SetGripperActionRequest request = _setGripperActionService.newMessage();

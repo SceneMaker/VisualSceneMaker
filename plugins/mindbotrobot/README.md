@@ -85,9 +85,9 @@ The following actions can be invoked within scenes:
   * Parameters:
     * `min_clearance`
   * Example: `[set_min_clearance min_clearance=0.5].`
-* `set_gripper_aperture` Set the aperture of the gripper, or better, tries to reach the specified aperture, at a given speed, and stops before if a certain resistance force threshold limit is reached.
+* `set_gripper_closure` Set the closure of the gripper, or better, tries to reach the specified closure, at a given speed, and stops before if a certain resistance force threshold limit is reached.
   * Parameters:
-    * `aperture`
-    * `velocity`
-    * `force`
-  Example: `[set_gripper_aperture aperture=30 velocity=10 force=5]`
+    * `closure` An integer between 0 and 255 setting the distance between the gripper tips. Indicative values (subject to changes among robots): 0=60mm, 255=10mm.
+    * `velocity` An integer between 0 and 255 setting the movement speed of the gripper. Indicative values (subject to changes among robots): 0=20mm/sec, 255=150mm/sec.
+    * `force` An integer between 0 and 255 setting the maximum force exerted by the gripper before stopping. Indicative values (subject to changes among robots): 0=no_force 255=5Kg.
+  * Example: `[set_gripper_closure closure=255 velocity=150 force=2]`

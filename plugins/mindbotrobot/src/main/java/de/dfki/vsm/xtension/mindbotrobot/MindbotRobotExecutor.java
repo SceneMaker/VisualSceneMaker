@@ -266,12 +266,12 @@ public final class MindbotRobotExecutor extends ActivityExecutor {
                     serviceReq.setMinClearanceService(min_clearance);
 
                     break;
-                case "set_gripper_aperture":
+                case "set_gripper_closure":
 
-                    int aperture = Integer.parseInt(features_map.get("aperture")) ;
+                    int closure = Integer.parseInt(features_map.get("closure")) ;
                     int velocity = Integer.parseInt(features_map.get("velocity")) ;
                     int force = Integer.parseInt(features_map.get("force")) ;
-                    serviceReq.setGripperAction(aperture, velocity, force);
+                    serviceReq.setGripperAction(closure, velocity, force);
 
                     break;
                 default:
