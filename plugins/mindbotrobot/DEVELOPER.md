@@ -146,13 +146,26 @@ Now you need to change the following file:
 
     nano -w src/communication_package/CMakeLists.txt
 
-and replace the calls to `find_package()` and `catkin_package()` with the following:
+and update the `find_package()` and `catkin_package()` directoves.
+Replace the `# Catkin` section:
 
 ```
+##############################################################################
+# Catkin
+##############################################################################
+
 find_package(catkin REQUIRED
 rosjava_build_tools
 message_generation
 mindbot_msgs)
+
+
+# Set the gradle targets you want catkin's make to run by default, e.g.
+#   catkin_rosjava_setup(installDist)
+# Note that the catkin_create_rosjava_xxx scripts will usually automatically
+# add tasks to this for you when you create subprojects.
+catkin_rosjava_setup(installDist publish)
+
 catkin_package(CATKIN_DEPENDS
 message_runtime
 mindbot_msgs)
@@ -187,7 +200,7 @@ compile 'org.ros.rosjava_messages:mindbot_msgs:[0.0, 0.1)'
 Once again in a console, be sure you are in folder `mindbot_vsm_ws` and:
 
 ```
-catkin_make
+catkin_make  # This will give an error
 catkin_make
 ```
 
@@ -195,6 +208,7 @@ Yes, run it two times. The first will not find the mindbot_msgs. The second will
 
 You can find the jar in `mindbot_vsm_ws/build/mindbot_msgs/java/mindbot_msgs/build/libs/mindbot_msgs-0.0.0.jar`.
 
+    ls -la build/mindbot_msgs/java/mindbot_msgs/build/libs/
 
 From now on, every time you need to update the jar, you just need to initialize the environment (_source_s and _JAVA_HOME_) and run `catkin_make` from here.
 
