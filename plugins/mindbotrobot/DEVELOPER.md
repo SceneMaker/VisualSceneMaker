@@ -48,12 +48,12 @@ export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
 Start installing rosjava in your home folder.
 
 ```
-> mkdir -p ~/rosjava/src
-> wstool init -j4 ~/rosjava/src https://raw.githubusercontent.com/rosjava/rosjava/kinetic/rosjava.rosinstall
-> source /opt/ros/melodic/setup.bash
-> cd ~/rosjava
+mkdir -p ~/rosjava/src
+wstool init -j4 ~/rosjava/src https://raw.githubusercontent.com/rosjava/rosjava/kinetic/rosjava.rosinstall
+source /opt/ros/melodic/setup.bash
+cd ~/rosjava
 # Make sure we've got all rosdeps and msg packages.
-> rosdep update
+rosdep update
 ```
 
 Fix missing packages (see <https://github.com/rosjava/genjava/issues/19#issuecomment-591173183>):
@@ -77,8 +77,8 @@ and remove line
 Now continue...
 
 ```
-> rosdep install --from-paths src -i -y
-> catkin_make
+rosdep install --from-paths src -i -y
+catkin_make
 ```
 
 Now rojava is installed.
@@ -88,7 +88,7 @@ Now rojava is installed.
 Get the `mindbot_msgs` definitions from the mindbot repository:
 
 ```
-git clone https://mindbotgit.cloud.garrservices.it/matteolavitnicora/mindbot_robot_control.git
+git clone https://mindbotgit.cloud.garrservices.it/wp5/mindbot-robot-control.git
 ```
 
 Now directory `mindbot_robot_control/mindbot_stack/` contains folder `mindbot_msgs/`
@@ -138,7 +138,7 @@ Now we need to move the `mindbot_msgs` into the top `src` folder, where also the
 
 ```
 cd path/to/mindbot_vsm_ws/
-cp -r path/to/mindbot_robot_control/mindbot_stack/mindbot_msgs/ src/
+cp -r <path/to>/mindbot_ws/src/mindbot_robot_control/mindbot_stack/mindbot_msgs/ src/
 ```
 
 
@@ -146,13 +146,26 @@ Now you need to change the following file:
 
     nano -w src/communication_package/CMakeLists.txt
 
-and replace the calls to `find_package()` and `catkin_package()` with the following:
+and update the `find_package()` and `catkin_package()` directoves.
+Replace the `# Catkin` section:
 
 ```
+##############################################################################
+# Catkin
+##############################################################################
+
 find_package(catkin REQUIRED
 rosjava_build_tools
 message_generation
 mindbot_msgs)
+
+
+# Set the gradle targets you want catkin's make to run by default, e.g.
+#   catkin_rosjava_setup(installDist)
+# Note that the catkin_create_rosjava_xxx scripts will usually automatically
+# add tasks to this for you when you create subprojects.
+catkin_rosjava_setup(installDist publish)
+
 catkin_package(CATKIN_DEPENDS
 message_runtime
 mindbot_msgs)
@@ -160,13 +173,15 @@ mindbot_msgs)
 
 And this file:
 
-    nano -w src/communcation_package/package.xml
+    nano -w src/communication_package/package.xml
 
 and extend the dependencies:
 
 ```
+<!-- AFTER these 2 lines -->
 <buildtool_depend>catkin</buildtool_depend>
 <build_depend>rosjava_build_tools</build_depend>
+<!-- ADD THESE 4 lines-->
 <build_depend>message_generation</build_depend>
 <build_depend>mindbot_msgs</build_depend>
 <exec_depend>mindbot_msgs</exec_depend>
@@ -175,7 +190,7 @@ and extend the dependencies:
 
 and finally:
 
-    nano -w src/communcation_package/communcation_project/build.gradle:
+    nano -w src/communication_package/communication_project/build.gradle
 
 and extend the `dependencies` section:
 
@@ -187,7 +202,7 @@ compile 'org.ros.rosjava_messages:mindbot_msgs:[0.0, 0.1)'
 Once again in a console, be sure you are in folder `mindbot_vsm_ws` and:
 
 ```
-catkin_make
+catkin_make  # This will give an error
 catkin_make
 ```
 
@@ -195,12 +210,13 @@ Yes, run it two times. The first will not find the mindbot_msgs. The second will
 
 You can find the jar in `mindbot_vsm_ws/build/mindbot_msgs/java/mindbot_msgs/build/libs/mindbot_msgs-0.0.0.jar`.
 
+    ls -la build/mindbot_msgs/java/mindbot_msgs/build/libs/
 
 From now on, every time you need to update the jar, you just need to initialize the environment (_source_s and _JAVA_HOME_) and run `catkin_make` from here.
 
 ```
 cd path/to/mindbot_vsm_ws/
-cp -r path/to/mindbot_robot_control/mindbot_stack/mindbot_msgs/ src/
+cp -r <path/to>/mindbot_ws/src/mindbot_robot_control/mindbot_stack/mindbot_msgs/ src/
 source /opt/ros/melodic/setup.bash
 source ~/rosjava/devel/setup.bash
 export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
