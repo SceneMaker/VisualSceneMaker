@@ -49,219 +49,357 @@ public class UpdServer extends Thread {
                 }
 
                 if (packet.getLength() > 0 && mProject.isRunning()) {
-                    String message = new String(packet.getData(), 0, packet.getLength(), StandardCharsets.UTF_8);
 
-                    mLogger.message("ODP UPD Message received: " + message);
+                    synchronized (this) { // process the message at once, block other messages while processing
+                        String message = new String(packet.getData(), 0, packet.getLength(), StandardCharsets.UTF_8);
 
-                    JSONObject jObj = new JSONObject(message);
+                        mLogger.message("ODP UPD Message received: " + message);
+
+                        JSONObject jObj = new JSONObject(message);
 
 
-                    // check if object contains transcription element
-                    if (jObj.has("id")) { // String UUID
-                    }
+                        // check if object contains transcription element
+                        if (jObj.has("transcription")) {
+                            JSONObject transcript = jObj.getJSONObject("transcription");
 
-                    // check if object contains transcription element
-                    if (jObj.has("transcription")) {
-                        JSONObject transcript = jObj.getJSONObject("transcription");
+                            String utterance = transcript.getString("utterance");
+                            //float confidence = (float)transcript.getDouble("confidence");
 
-                        String utterance = transcript.getString("utterance");
-                        //float confidence = (float)transcript.getDouble("confidence");
+                            // TODO make VSM variable userUtterance configurable
+                            if (mProject.hasVariable("userUtterance")) {
+                                mProject.setVariable("userUtterance", new StringValue(utterance));
+                            }
 
-                        // TODO make VSM variable userUtterance configurable
-                        if (mProject.hasVariable("userUtterance")) {
-                            mProject.setVariable("userUtterance", new StringValue(utterance));
-                        }
+                            // check if object contains source element
+                            if (jObj.has("source")) { // "local" "asr_server"
+                                String transSrcStr = jObj.getString("source");
 
-                        // check if object contains source element
-                        if (jObj.has("source")) { // "local" "asr_server"
-                            JSONObject transSrc = jObj.getJSONObject("source");
-                            String transSrcStr = transSrc.getString("source");
+                                if (mProject.hasVariable("transcriptionSource")) {
+                                    mProject.setVariable("transcriptionSource", new StringValue(transSrcStr));
+                                }
+                            }
 
-                            if (mProject.hasVariable("transcriptionSource")) {
-                                mProject.setVariable("transcriptionSource", new StringValue(transSrcStr));
+                            // check if object contains id element
+                            if (jObj.has("id")) { // String UUID
+                                String transIdStr = jObj.getString("id");
+
+                                if (mProject.hasVariable("transcriptionID")) {
+                                    mProject.setVariable("transcriptionID", new StringValue(transIdStr));
+                                }
+                            }
+
+                            String allkeys = "";
+                            //debug
+                            for (Iterator iterator = jObj.keySet().iterator(); iterator.hasNext(); ) {
+                                String key = (String) iterator.next();
+                                allkeys = allkeys + " " + key.replace("\"", "");
+                            }
+                            if (mProject.hasVariable("debug")) {
+                                mProject.setVariable("debug", new StringValue("Alle ODP messages keys " + allkeys));
                             }
                         }
 
-                        // check if object contains id element
-                        if (jObj.has("id")) { // String UUID
-                            JSONObject transId = jObj.getJSONObject("id");
-                            String transIdStr = transId.getString("id");
+                        if (jObj.has("liwc-result")) {
+                            JSONObject liwcObj = jObj.getJSONObject("liwc-result");
 
-                            if (mProject.hasVariable("transcriptionID")) {
-                                mProject.setVariable("transcriptionID", new StringValue(transIdStr));
+                            // TODO make VSM variable userUtterance configurable
+                            if (mProject.hasVariable("debug")) {
+                                mProject.setVariable("debug", new StringValue("liwc daten " + liwcObj.toString().replace("\"", "").length()));
                             }
-                        }
 
-                        String allkeys = "";
-                        //debug
-                        for (Iterator iterator = jObj.keySet().iterator(); iterator.hasNext(); ) {
-                            String key = (String) iterator.next();
-                            allkeys = allkeys + " " + key.replace("\"", "");
-                        }
-                        if (mProject.hasVariable("debug")) {
-                            mProject.setVariable("debug", new StringValue("Alle ODP messages keys " + allkeys));
-                        }
-                    }
+                            if (liwcObj.has("I. Basislinguistische Dimensionen")) {
+                                JSONArray basisLingDim = liwcObj.getJSONArray("I. Basislinguistische Dimensionen");
 
-                    if (jObj.has("liwc-result")) {
-                        JSONObject liwcObj = jObj.getJSONObject("liwc-result");
+                                if (basisLingDim.length() > 0) {
+                                    JSONObject instance = basisLingDim.getJSONObject(0);
 
-                        // TODO make VSM variable userUtterance configurable
-                        if (mProject.hasVariable("debug")) {
-                            mProject.setVariable("debug", new StringValue("liwc daten " + liwcObj.toString().replace("\"", "").length()));
-                        }
+                                    if (instance.has("Pronomina (Gesamt)")) {
+                                        JSONObject pronomina = instance.getJSONObject("Pronomina (Gesamt)");
 
-                        if (liwcObj.has("II. Psychologische Prozesse")) {
-                            JSONArray psychCogProc = liwcObj.getJSONArray("II. Psychologische Prozesse");
+                                        if (pronomina.has("Pronoun")) {
+                                            float pronoun = (float) pronomina.getDouble("Pronoun");
+                                            if (mProject.hasVariable("userUtterancePronoun")) {
+                                                mProject.setVariable("userUtterancePronoun", new FloatValue(pronoun));
+                                            }
+                                        }
 
-                            if (psychCogProc.length() > 0) {
-                                JSONObject instance = psychCogProc.getJSONObject(0);
+                                        if (pronomina.has("I")) {
+                                            float myself = (float) pronomina.getDouble("I");
+                                            if (mProject.hasVariable("userUtteranceMyself")) {
+                                                mProject.setVariable("userUtteranceMyself", new FloatValue(myself));
+                                            }
+                                        }
 
-                                if (instance.has("Affektive und emotionale Prozesse")) {
-                                    JSONObject affProc = instance.getJSONObject("Affektive und emotionale Prozesse");
+                                        if (pronomina.has("We")) {
+                                            float we = (float) pronomina.getDouble("We");
+                                            if (mProject.hasVariable("userUtteranceWe")) {
+                                                mProject.setVariable("userUtteranceWe", new FloatValue(we));
+                                            }
+                                        }
 
-                                    if (affProc.has("Positiveemotion")) {
-                                        float posAffect = (float) affProc.getDouble("Positiveemotion");
-                                        if (mProject.hasVariable("userUtterancePosAffect")) {
-                                            mProject.setVariable("userUtterancePosAffect", new FloatValue(posAffect));
+                                        if (pronomina.has("Self")) {
+                                            float self = (float) pronomina.getDouble("Self");
+                                            if (mProject.hasVariable("userUtteranceSelf")) {
+                                                mProject.setVariable("userUtteranceSelf", new FloatValue(self));
+                                            }
+                                        }
+
+                                        if (pronomina.has("You")) {
+                                            float you = (float) pronomina.getDouble("You");
+                                            if (mProject.hasVariable("userUtteranceYou")) {
+                                                mProject.setVariable("userUtteranceYou", new FloatValue(you));
+                                            }
+                                        }
+
+                                        if (pronomina.has("Other")) {
+                                            float posAffect = (float) pronomina.getDouble("Other");
+                                            if (mProject.hasVariable("userUtteranceOther")) {
+                                                mProject.setVariable("userUtteranceOther", new FloatValue(posAffect));
+                                            }
                                         }
                                     }
                                 }
+                            }
 
-                                if (instance.has("Kognitive Prozesse")) {
-                                    JSONObject kogProc = instance.getJSONObject("Kognitive Prozesse");
+                            if (liwcObj.has("II. Psychologische Prozesse")) {
+                                JSONArray psychCogProc = liwcObj.getJSONArray("II. Psychologische Prozesse");
 
-                                    if (kogProc.has("Discrepancy")) {
-                                        float discrepancy = (float) kogProc.getDouble("Discrepancy");
-                                        if (mProject.hasVariable("userUtteranceDiscrepancy")) {
-                                            mProject.setVariable("userUtteranceDiscrepancy", new FloatValue(discrepancy));
+                                if (psychCogProc.length() > 0) {
+                                    JSONObject instance = psychCogProc.getJSONObject(0);
+
+                                    if (instance.has("Affektive und emotionale Prozesse")) {
+                                        JSONObject affProc = instance.getJSONObject("Affektive und emotionale Prozesse");
+
+                                        if (affProc.has("Positiveemotion")) {
+                                            float posAffect = (float) affProc.getDouble("Positiveemotion");
+                                            if (mProject.hasVariable("userUtterancePosAffect")) {
+                                                mProject.setVariable("userUtterancePosAffect", new FloatValue(posAffect));
+                                            }
+                                        }
+                                        if (affProc.has("Negativeemotion")) {
+                                            float negAffect = (float) affProc.getDouble("Negativeemotion");
+                                            if (mProject.hasVariable("userUtteranceNegAffect")) {
+                                                mProject.setVariable("userUtteranceNegAffect", new FloatValue(negAffect));
+                                            }
+                                        }
+                                        if (affProc.has("Optimism")) {
+                                            float optimism = (float) affProc.getDouble("Optimism");
+                                            if (mProject.hasVariable("userUtteranceOptimism")) {
+                                                mProject.setVariable("userUtteranceOptimism", new FloatValue(optimism));
+                                            }
+                                        }
+                                        if (affProc.has("Anxiety")) {
+                                            float anxiety = (float) affProc.getDouble("Anxiety");
+                                            if (mProject.hasVariable("userUtteranceAnxiety")) {
+                                                mProject.setVariable("userUtteranceAnxiety", new FloatValue(anxiety));
+                                            }
                                         }
                                     }
 
-                                    if (kogProc.has("Insight")) {
-                                        float insight = (float) kogProc.getDouble("Insight");
-                                        if (mProject.hasVariable("userUtteranceInsight")) {
-                                            mProject.setVariable("userUtteranceInsight", new FloatValue(insight));
-                                        }
-                                    }
+                                    if (instance.has("Kognitive Prozesse")) {
+                                        JSONObject kogProc = instance.getJSONObject("Kognitive Prozesse");
 
-                                    if (kogProc.has("Tentative")) {
-                                        float tenative = (float) kogProc.getDouble("Tentative");
-                                        if (mProject.hasVariable("userUtteranceTentative")) {
-                                            mProject.setVariable("userUtteranceTentative", new FloatValue(tenative));
+                                        if (kogProc.has("Discrepancy")) {
+                                            float discrepancy = (float) kogProc.getDouble("Discrepancy");
+                                            if (mProject.hasVariable("userUtteranceDiscrepancy")) {
+                                                mProject.setVariable("userUtteranceDiscrepancy", new FloatValue(discrepancy));
+                                            }
+                                        }
+
+                                        if (kogProc.has("Insight")) {
+                                            float insight = (float) kogProc.getDouble("Insight");
+                                            if (mProject.hasVariable("userUtteranceInsight")) {
+                                                mProject.setVariable("userUtteranceInsight", new FloatValue(insight));
+                                            }
+                                        }
+
+                                        if (kogProc.has("Tentative")) {
+                                            float tenative = (float) kogProc.getDouble("Tentative");
+                                            if (mProject.hasVariable("userUtteranceTentative")) {
+                                                mProject.setVariable("userUtteranceTentative", new FloatValue(tenative));
+                                            }
                                         }
                                     }
                                 }
                             }
+
+                            if (liwcObj.has("IV. Persönliche Belange")) {
+                                JSONArray psychCogProc = liwcObj.getJSONArray("IV. Persönliche Belange");
+
+                                if (psychCogProc.length() > 0) {
+                                    JSONObject instance = psychCogProc.getJSONObject(0);
+
+                                    if (instance.has("Körperliche Zustände und Funktionen")) {
+                                        JSONObject bodyStatesFcts = instance.getJSONObject("Körperliche Zustände und Funktionen");
+
+                                        if (bodyStatesFcts.has("Body")) {
+                                            float body = (float) bodyStatesFcts.getDouble("Body");
+                                            if (mProject.hasVariable("userUtteranceBody")) {
+                                                mProject.setVariable("userUtteranceBody", new FloatValue(body));
+                                            }
+                                        }
+                                        if (bodyStatesFcts.has("Sex")) {
+                                            float sex = (float) bodyStatesFcts.getDouble("Sex");
+                                            if (mProject.hasVariable("userUtteranceSex")) {
+                                                mProject.setVariable("userUtteranceSex", new FloatValue(sex));
+                                            }
+                                        }
+                                        if (bodyStatesFcts.has("Eat")) {
+                                            float eat = (float) bodyStatesFcts.getDouble("Eat");
+                                            if (mProject.hasVariable("userUtteranceEat")) {
+                                                mProject.setVariable("userUtteranceEat", new FloatValue(eat));
+                                            }
+                                        }
+                                        if (bodyStatesFcts.has("Sleep")) {
+                                            float sleep = (float) bodyStatesFcts.getDouble("Sleep");
+                                            if (mProject.hasVariable("userUtteranceSleep")) {
+                                                mProject.setVariable("userUtteranceSleep", new FloatValue(sleep));
+                                            }
+                                        }
+                                    }
+
+                                    if (instance.has("Berufs- und Ausbildungstätigkeit")) {
+                                        JSONObject employment = instance.getJSONObject("Berufs- und Ausbildungstätigkeit");
+
+                                        if (employment.has("School")) {
+                                            float school = (float) employment.getDouble("School");
+                                            if (mProject.hasVariable("userUtteranceSchool")) {
+                                                mProject.setVariable("userUtteranceSchool", new FloatValue(school));
+                                            }
+                                        }
+                                        if (employment.has("Job")) {
+                                            float job = (float) employment.getDouble("Job");
+                                            if (mProject.hasVariable("userUtteranceJob")) {
+                                                mProject.setVariable("userUtteranceJob", new FloatValue(job));
+                                            }
+                                        }
+                                        if (employment.has("Achieve")) {
+                                            float achieve = (float) employment.getDouble("Achieve");
+                                            if (mProject.hasVariable("userUtteranceAchieve")) {
+                                                mProject.setVariable("userUtteranceAchieve", new FloatValue(achieve));
+                                            }
+                                        }
+                                    }
+
+                                    if (instance.has("Freizeit")) {
+                                        JSONObject leisureTime = instance.getJSONObject("Freizeit");
+                                    }
+
+                                    if (instance.has("Metaphysische Themen")) {
+                                        JSONObject meta = instance.getJSONObject("Metaphysische Themen");
+                                    }
+                                }
+                            }
+
+
+                            if (liwcObj.has("Gesamtwortzahl")) {
+                                int totalWords = liwcObj.getInt("Gesamtwortzahl");
+
+                                // TODO make VSM variable userUtteranceTotalWords configurable
+                                if (mProject.hasVariable("userUtteranceTotalWords")) {
+                                    mProject.setVariable("userUtteranceTotalWords", new IntValue(totalWords));
+                                }
+                            }
                         }
 
-                        if (liwcObj.has("Gesamtwortzahl")) {
-                            int totalWords = liwcObj.getInt("Gesamtwortzahl");
+                        if (jObj.has("inferred-topics")) {
+                            String topics = jObj.getString("inferred-topics");
+                            topics = topics.replace(" ", ""); // remove spaces
+                            topics = (topics.startsWith(",")) ? topics.substring(1) : topics;
 
                             // TODO make VSM variable userUtteranceTotalWords configurable
-                            if (mProject.hasVariable("userUtteranceTotalWords")) {
-                                mProject.setVariable("userUtteranceTotalWords", new IntValue(totalWords));
-                            }
-                        }
-                    }
-
-                    if (jObj.has("inferred-topics")) {
-                        String topics = jObj.getString("inferred-topics");
-                        topics = topics.replace(" ", ""); // remove spaces
-                        topics = (topics.startsWith(",")) ? topics.substring(1) : topics;
-
-                        // TODO make VSM variable userUtteranceTotalWords configurable
-                        if (mProject.hasVariable("userUtteranceTopics")) {
-                            mProject.setVariable("userUtteranceTopics", new StringValue(topics));
-                        }
-                    }
-
-                    if (jObj.has("odpstate")) {
-                        String value = jObj.getString("odpstate");
-
-                        // TODO make VSM variable odpstate configurable
-                        if (mProject.hasVariable("odpstate")) {
-                            mProject.setVariable("odpstate", new StringValue(value));
-                        }
-
-                        if (value.equalsIgnoreCase("startSpeech")) {
-                            // TODO make VSM variable user_speaking configurable
-                            if (mProject.hasVariable("user_speaking")) {
-                                mProject.setVariable("user_speaking", new BooleanValue(true));
+                            if (mProject.hasVariable("userUtteranceTopics")) {
+                                mProject.setVariable("userUtteranceTopics", new StringValue(topics));
                             }
                         }
 
-                        if (value.equalsIgnoreCase("stopSpeech")) {
-                            // TODO make VSM variable user_speaking configurable
-                            if (mProject.hasVariable("user_speaking")) {
-                                mProject.setVariable("user_speaking", new BooleanValue(false));
+                        if (jObj.has("odpstate")) {
+                            String value = jObj.getString("odpstate");
+
+                            // TODO make VSM variable odpstate configurable
+                            if (mProject.hasVariable("odpstate")) {
+                                mProject.setVariable("odpstate", new StringValue(value));
+                            }
+
+                            if (value.equalsIgnoreCase("startSpeech")) {
+                                // TODO make VSM variable user_speaking configurable
+                                if (mProject.hasVariable("user_speaking")) {
+                                    mProject.setVariable("user_speaking", new BooleanValue(true));
+                                }
+                            }
+
+                            if (value.equalsIgnoreCase("stopSpeech")) {
+                                // TODO make VSM variable user_speaking configurable
+                                if (mProject.hasVariable("user_speaking")) {
+                                    mProject.setVariable("user_speaking", new BooleanValue(false));
+                                }
                             }
                         }
+
+                        // task
+                        String task = "";
+                        try {
+                            task = jObj.getString("task");
+                        } catch (Exception e) {
+                            task = "";
+                        }
+
+                        // function
+                        String function = "";
+                        try {
+                            function = jObj.getString("function");
+                        } catch (Exception e) {
+                            function = "";
+                        }
+
+                        // content
+                        String content = "";
+                        try {
+                            content = jObj.getString("content");
+                        } catch (Exception e) {
+                            content = "";
+                        }
+
+                        // int content
+                        int number = -1;
+                        try {
+                            number = Integer.parseInt(content);
+                        } catch (NumberFormatException e) {
+                            number = -1;
+                        }
+
+                        // action
+                        String action = "";
+                        try {
+                            action = jObj.getString("action");
+                        } catch (Exception e) {
+                            action = "";
+                        }
+
+                        // ContactName
+                        String ContactName = "";
+                        try {
+                            ContactName = jObj.getString("ContactName");
+                        } catch (Exception e) {
+                            ContactName = "";
+                        }
+
+                        // ContactNumber
+                        String ContactNumber = "";
+                        try {
+                            ContactNumber = jObj.getString("ContactNumber");
+                        } catch (Exception e) {
+                            ContactNumber = "";
+                        }
+
+                        mProject.setVariable(mSceneFlowTaskVar, new StringValue(task));
+                        mProject.setVariable(mSceneFlowFuncVar, new StringValue(function));
+                        mProject.setVariable(mSceneFlowContVar, new StringValue(content));
+                        mProject.setVariable(mSceneFlowNumbVar, number);
+                        mProject.setVariable(mSceneFlowActiVar, new StringValue(action));
+
+                        mLogger.message("Parsed ODP Message: " + jObj);
                     }
-
-                    // task
-                    String task = "";
-                    try {
-                        task = jObj.getString("task");
-                    } catch (Exception e) {
-                        task = "";
-                    }
-
-                    // function
-                    String function = "";
-                    try {
-                        function = jObj.getString("function");
-                    } catch (Exception e) {
-                        function = "";
-                    }
-
-                    // content
-                    String content = "";
-                    try {
-                        content = jObj.getString("content");
-                    } catch (Exception e) {
-                        content = "";
-                    }
-
-                    // int content
-                    int number = -1;
-                    try {
-                        number = Integer.parseInt(content);
-                    } catch (NumberFormatException e) {
-                        number = -1;
-                    }
-
-                    // action
-                    String action = "";
-                    try {
-                        action = jObj.getString("action");
-                    } catch (Exception e) {
-                        action = "";
-                    }
-
-                    // ContactName
-                    String ContactName = "";
-                    try {
-                        ContactName = jObj.getString("ContactName");
-                    } catch (Exception e) {
-                        ContactName = "";
-                    }
-
-                    // ContactNumber
-                    String ContactNumber = "";
-                    try {
-                        ContactNumber = jObj.getString("ContactNumber");
-                    } catch (Exception e) {
-                        ContactNumber = "";
-                    }
-
-                    mProject.setVariable(mSceneFlowTaskVar, new StringValue(task));
-                    mProject.setVariable(mSceneFlowFuncVar, new StringValue(function));
-                    mProject.setVariable(mSceneFlowContVar, new StringValue(content));
-                    mProject.setVariable(mSceneFlowNumbVar, number);
-                    mProject.setVariable(mSceneFlowActiVar, new StringValue(action));
-
-                    mLogger.message("Parsed ODP Message: " + jObj);
                 }
             }
             catch (IOException e) {
