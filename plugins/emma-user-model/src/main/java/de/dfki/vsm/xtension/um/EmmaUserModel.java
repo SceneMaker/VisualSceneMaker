@@ -32,12 +32,34 @@ public class EmmaUserModel extends ActivityExecutor {
     // current day and daily items
     private int mSelectedDay = -1;
     private List<Integer> mDailyItemReferences = new LinkedList<>();
+    // emotion history database
+    private Map<Long, Integer> mPastEmotionDiaryEntries = new HashMap<Long, Integer>();
+    private int[] mPast7EmotionDiaryEntries = new int[7];
+
+    private enum EmotionDiaryDays {
+        Mo(0), Di(1), Mi(2), Do(3), Fr(4), Sa(5), So(6);
+
+        private Integer dayNum;
+
+        private EmotionDiaryDays(final Integer num) {
+            this.dayNum = num;
+        }
+
+        public Integer getNum() {
+            return dayNum;
+        }
+
+    }
+
+    ;
 
     // sceneflow variables
     private final String mVSM_DiaryDay = "diaryDay";
     private final String mVSM_DiaryDailyItemsNumber = "diaryDailyItemsNum";
     private final String mVSM_DiaryItemProducer = "diaryItemProducer";
     private final String mVSM_DiaryItemText = "diaryItemText";
+    private final String mVSM_DiaryEmotionDay = "diaryEmotionDay";
+    private final String mVSM_DiaryEmotionDayValue = "diaryEmotionDayValue";
 
     // File stuff
     private String umDir = "";
@@ -210,9 +232,74 @@ public class EmmaUserModel extends ActivityExecutor {
             }
         }
 
+        if (name.equalsIgnoreCase("collect_diaryemotions")) {
+            collectEmotionEntries();
+            // today - normalize
+            Calendar cal = Calendar.getInstance();
+            cal.set(Calendar.HOUR_OF_DAY, 0);
+            cal.set(Calendar.MINUTE, 0);
+            cal.set(Calendar.SECOND, 0);
+            cal.set(Calendar.MILLISECOND, 0);
+            Date workDate = cal.getTime();
+            // go through methodically
+            SortedSet<Long> keys = new TreeSet<>(mPastEmotionDiaryEntries.keySet());
+            for (int dayCnt = 0; dayCnt < 7; dayCnt++) { // goes up to 6 (represents current day and six days in the past)
+                // initialize number and occurances
+                int emoValue = 0;
+                int emoValueCnt = 0;
+                // sort Dates
+                for (Long key : keys) {
+                    int value = mPastEmotionDiaryEntries.get(key);
+                    // normalize time
+                    Date entryDate = new Date(key);
+                    cal.setTime(entryDate);
+                    cal.set(Calendar.HOUR_OF_DAY, 0);
+                    cal.set(Calendar.MINUTE, 0);
+                    cal.set(Calendar.SECOND, 0);
+                    cal.set(Calendar.MILLISECOND, 0);
+                    Date normEntryDate = cal.getTime();
+                    // do if there is something
+                    if (workDate.getTime() == normEntryDate.getTime()) {
+                        // if more than one value found, calculate the mean
+                        emoValueCnt++;
+                        emoValue = emoValue + value;
+                    }
+                }
+                // Normalize emotion value
+                emoValue = (int) Math.ceil((double) emoValue / emoValueCnt);
+                // store the value in days array, 0 is today
+                mPast7EmotionDiaryEntries[dayCnt] = emoValue;
+                // update work day
+                cal.setTime(workDate);
+                cal.add(Calendar.DATE, -1); // go back 7 days, increment 1, start with 0 = current day
+                workDate = cal.getTime();
+            }
+            mLogger.message("Found emotion diary entries " + Arrays.toString(mPast7EmotionDiaryEntries));
+        }
+
+        if (name.equalsIgnoreCase("get_diaryemotion")) {
+            if ((activity.get("no") != null) || (activity.get("today") != null)) {
+                int no = Integer.parseInt(activity.get("no"));
+                String todayStr = activity.get("today");
+                EmotionDiaryDays todayDiaryDayNum = EmotionDiaryDays.valueOf(todayStr);
+                int weeklyDayNum = todayDiaryDayNum.getNum();
+                mLogger.message("Todays diary day offset is " + weeklyDayNum);
+                // get the day but mod 7
+                int queriedDay = (weeklyDayNum - no >= 0) ? weeklyDayNum - no : 7 + no;
+                EmotionDiaryDays day = todayDiaryDayNum.values()[queriedDay % 7];
+                // update model variables
+                mProject.setVariable(mVSM_DiaryEmotionDay, day.name());
+                mProject.setVariable(mVSM_DiaryEmotionDayValue, mPast7EmotionDiaryEntries[no]);
+
+            } else {
+                mLogger.failure("Required 'no' (int), or 'day' (String, e.g., Mo, Di, ...,  So) information is missing for loading item.");
+            }
+        }
+
+
         if (name.equalsIgnoreCase("diary_emotion")) {
             if (mUser != null) {
-                storeDiaryEntry(activity, "user", "emotion", "value");
+                storeDiaryEmotionEntry(activity, "value");
             } else {
                 mLogger.warning("No user specified, diary emotion value will not be stored.");
             }
@@ -220,9 +307,179 @@ public class EmmaUserModel extends ActivityExecutor {
 
         if (name.equalsIgnoreCase("diary_mood")) {
             if (mUser != null) {
-                storeDiaryEntry(activity, "user", "mood", "value");
+                storeDiaryEntry(activity, "User", "mood", "value");
             } else {
                 mLogger.warning("No user specified, diary mood value will not be stored.");
+            }
+        }
+
+        // final emotional user model entries (LIWC)
+
+        if (name.equalsIgnoreCase("diary_posaffect")) {
+            if (mUser != null) {
+                storeUserDiaryEntry(activity, "posaffect", "value");
+            } else {
+                mLogger.warning("No user specified, diary posaffect value will not be stored.");
+            }
+        }
+
+        if (name.equalsIgnoreCase("diary_negaffect")) {
+            if (mUser != null) {
+                storeUserDiaryEntry(activity, "negaffect", "value");
+            } else {
+                mLogger.warning("No user specified, diary negaffect value will not be stored.");
+            }
+        }
+
+        if (name.equalsIgnoreCase("diary_optimism")) {
+            if (mUser != null) {
+                storeUserDiaryEntry(activity, "optimism", "value");
+            } else {
+                mLogger.warning("No user specified, diary optimism value will not be stored.");
+            }
+        }
+
+        if (name.equalsIgnoreCase("diary_anxiety")) {
+            if (mUser != null) {
+                storeUserDiaryEntry(activity, "anxiety", "value");
+            } else {
+                mLogger.warning("No user specified, diary anxiety value will not be stored.");
+            }
+        }
+
+        if (name.equalsIgnoreCase("diary_discrepancy")) {
+            if (mUser != null) {
+                storeUserDiaryEntry(activity, "discrepancy", "value");
+            } else {
+                mLogger.warning("No user specified, diary discrepancy value will not be stored.");
+            }
+        }
+
+        if (name.equalsIgnoreCase("diary_insight")) {
+            if (mUser != null) {
+                storeUserDiaryEntry(activity, "insight", "value");
+            } else {
+                mLogger.warning("No user specified, diary insight value will not be stored.");
+            }
+        }
+
+        if (name.equalsIgnoreCase("diary_tentative")) {
+            if (mUser != null) {
+                storeUserDiaryEntry(activity, "tentative", "value");
+            } else {
+                mLogger.warning("No user specified, diary tentative value will not be stored.");
+            }
+        }
+
+        if (name.equalsIgnoreCase("diary_pronoun")) {
+            if (mUser != null) {
+                storeUserDiaryEntry(activity, "pronoun", "value");
+            } else {
+                mLogger.warning("No user specified, diary pronoun value will not be stored.");
+            }
+        }
+
+        if (name.equalsIgnoreCase("diary_myself")) {
+            if (mUser != null) {
+                storeUserDiaryEntry(activity, "myself", "value");
+            } else {
+                mLogger.warning("No user specified, diary myself value will not be stored.");
+            }
+        }
+
+        if (name.equalsIgnoreCase("diary_we")) {
+            if (mUser != null) {
+                storeUserDiaryEntry(activity, "we", "value");
+            } else {
+                mLogger.warning("No user specified, diary we value will not be stored.");
+            }
+        }
+
+        if (name.equalsIgnoreCase("diary_self")) {
+            if (mUser != null) {
+                storeUserDiaryEntry(activity, "self", "value");
+            } else {
+                mLogger.warning("No user specified, diary self value will not be stored.");
+            }
+        }
+
+        if (name.equalsIgnoreCase("diary_you")) {
+            if (mUser != null) {
+                storeUserDiaryEntry(activity, "you", "value");
+            } else {
+                mLogger.warning("No user specified, diary you value will not be stored.");
+            }
+        }
+
+        if (name.equalsIgnoreCase("diary_other")) {
+            if (mUser != null) {
+                storeUserDiaryEntry(activity, "diary_other", "value");
+            } else {
+                mLogger.warning("No user specified, diary diary_other value will not be stored.");
+            }
+        }
+
+        if (name.equalsIgnoreCase("diary_body")) {
+            if (mUser != null) {
+                storeUserDiaryEntry(activity, "body", "value");
+            } else {
+                mLogger.warning("No user specified, diary body value will not be stored.");
+            }
+        }
+
+        if (name.equalsIgnoreCase("diary_sex")) {
+            if (mUser != null) {
+                storeUserDiaryEntry(activity, "sex", "value");
+            } else {
+                mLogger.warning("No user specified, diary sex value will not be stored.");
+            }
+        }
+
+        if (name.equalsIgnoreCase("diary_eat")) {
+            if (mUser != null) {
+                storeUserDiaryEntry(activity, "eat", "value");
+            } else {
+                mLogger.warning("No user specified, diary eat value will not be stored.");
+            }
+        }
+
+        if (name.equalsIgnoreCase("diary_sleep")) {
+            if (mUser != null) {
+                storeUserDiaryEntry(activity, "sleep", "value");
+            } else {
+                mLogger.warning("No user specified, diary sleep value will not be stored.");
+            }
+        }
+
+        if (name.equalsIgnoreCase("diary_school")) {
+            if (mUser != null) {
+                storeUserDiaryEntry(activity, "school", "value");
+            } else {
+                mLogger.warning("No user specified, diary school value will not be stored.");
+            }
+        }
+
+        if (name.equalsIgnoreCase("diary_job")) {
+            if (mUser != null) {
+                storeUserDiaryEntry(activity, "job", "value");
+            } else {
+                mLogger.warning("No user specified, diary job value will not be stored.");
+            }
+        }
+
+        if (name.equalsIgnoreCase("diary_achieve")) {
+            if (mUser != null) {
+                storeUserDiaryEntry(activity, "achieve", "value");
+            } else {
+                mLogger.warning("No user specified, diary achieve value will not be stored.");
+            }
+        }
+
+        if (name.equalsIgnoreCase("avatar_animation")) {
+            if (mUser != null) {
+                storeDiaryEntry(activity, "producer", "avatar_animation", "value");
+            } else {
+                mLogger.warning("No user specified, diary avatar_animation value will not be stored.");
             }
         }
 
@@ -283,6 +540,10 @@ public class EmmaUserModel extends ActivityExecutor {
         }
     }
 
+    private void storeUserDiaryEntry(AbstractActivity activity, String key, String value) {
+        storeDiaryEntry(activity, "User", key, value);
+    }
+
     private void storeDiaryEntry(AbstractActivity activity, String producer, String key, String value) {
         JSONObject diaryentry = new JSONObject();
 
@@ -290,7 +551,7 @@ public class EmmaUserModel extends ActivityExecutor {
 
         diaryentry.put("date", dateMillis);
         diaryentry.put("no", getLastDiaryEntryNumber() + 1);
-        diaryentry.put("producer", (activity.get(producer) != null) ? activity.get(producer) : "");
+        diaryentry.put("producer", (activity.get(producer) != null) ? activity.get(producer) : producer);
         diaryentry.put(key, (activity.get(value) != null) ? activity.get(value).replace("'", "").replace("\n", " ").replace("  ", " ") : "");
 
         JSONArray diary = mUser.getJSONArray("diary");
@@ -298,6 +559,70 @@ public class EmmaUserModel extends ActivityExecutor {
 
         saveUserModel();
         diaryDaysManagement();
+    }
+
+    private void storeDiaryEmotionEntry(AbstractActivity activity, String emotionValue) {
+        JSONObject diaryentry = new JSONObject();
+
+        long dateMillis = System.currentTimeMillis();
+
+        diaryentry.put("date", dateMillis);
+        diaryentry.put("no", getLastDiaryEntryNumber() + 1);
+        diaryentry.put("producer", "User");
+
+        String emotion = (activity.get(emotionValue) != null) ? activity.get(emotionValue).replace("'", "").replace("\n", " ").replace("  ", " ") : "";
+
+        int value = -1;
+        switch (emotion) {
+            case "em_very_sad": {
+                value = 1;
+                break;
+            }
+            case "em_sad": {
+                value = 2;
+                break;
+            }
+            case "em_neutral": {
+                value = 3;
+                break;
+            }
+            case "em_happy": {
+                value = 4;
+                break;
+            }
+            case "em_very_happy": {
+                value = 5;
+                break;
+            }
+        }
+
+        diaryentry.put("emotion", value);
+
+        JSONArray diary = mUser.getJSONArray("diary");
+        diary.put(diaryentry);
+
+        saveUserModel();
+        diaryDaysManagement();
+    }
+
+    private void collectEmotionEntries() {
+        JSONArray diary = mUser.getJSONArray("diary");
+
+        if (diary.length() > 0) {
+            mLogger.message("Found " + diary.length() + " diary entries.");
+
+            for (int i = 0; i < diary.length(); i++) {
+                JSONObject diaryItem = diary.getJSONObject(i);
+
+                // make a proper date
+                long dateMillis = diaryItem.getLong("date");
+
+                // not every entry is an emotion entry; collect only those.
+                if (diaryItem.has("emotion")) {
+                    mPastEmotionDiaryEntries.put(dateMillis, diaryItem.getInt("emotion"));
+                }
+            }
+        }
     }
 
     private void diaryDaysManagement() {
