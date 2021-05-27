@@ -12,6 +12,7 @@ import de.dfki.vsm.runtime.activity.SpeechActivity;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
 import de.dfki.vsm.runtime.activity.scheduler.ActivityWorker;
 import de.dfki.vsm.runtime.interpreter.value.BooleanValue;
+import de.dfki.vsm.runtime.interpreter.value.StringValue;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
 import de.dfki.vsm.xtension.charamelWs.Commands.*;
@@ -44,6 +45,8 @@ public class charamelWsExecutor extends ActivityExecutor {
 
     // PG: 18.11.2020 global Sceneflow variable for the whole turn information.
     private final String mVSMCharacterTurnVar = "turn_utterance";
+    // PG: 25.05.2020 global sceneflow variable for the currently performed (animation) action
+    private final String mVSMCharacterGestureVar = "avatar_animation";
 
     public charamelWsExecutor(PluginConfig config, RunTimeProject project) {
         super(config, project);
@@ -152,6 +155,11 @@ public class charamelWsExecutor extends ActivityExecutor {
             }
 
             parseAction(name, activity.getFeatures());
+
+            // 25.25. pG: Assume action is an animation action - store information for  processing in global vsm model var
+            if (mProject.hasVariable(mVSMCharacterGestureVar)) {
+                mProject.setVariable(mVSMCharacterGestureVar, new StringValue(name));
+            }
         }
     }
 
