@@ -68,8 +68,13 @@ public final class TimerExecutor extends ActivityExecutor {
         } else if (name.equalsIgnoreCase("day")) {
             Calendar calendar = Calendar.getInstance();
             Date date = calendar.getTime();
+            String day = new SimpleDateFormat("EE", Locale.GERMANY).format(date.getTime());
+            mProject.setVariable(activity.get("var"), day.replace(".", ""));
+        } else if (name.equalsIgnoreCase("dayverbose")) {
+            Calendar calendar = Calendar.getInstance();
+            Date date = calendar.getTime();
             String day = new SimpleDateFormat("EEEE", Locale.GERMANY).format(date.getTime());
-            mProject.setVariable(activity.get("var"), day);
+            mProject.setVariable(activity.get("var"), day.replace(".", ""));
         } else if (name.equalsIgnoreCase("partofday")) {
             Instant tinst = Instant.now();
             LocalDateTime ldt = LocalDateTime.ofInstant(tinst, ZoneId.systemDefault());
