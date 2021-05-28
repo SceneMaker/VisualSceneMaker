@@ -80,10 +80,10 @@ public final class TimerExecutor extends ActivityExecutor {
             LocalDateTime ldt = LocalDateTime.ofInstant(tinst, ZoneId.systemDefault());
             int hour = ldt.getHour();
             String partOfDayDescription =
-                    ((hour > 20) || (hour < 24)) ? "late" :
-                            ((hour >= 0) || (hour < 4)) ? "very late" :
-                                    ((hour >= 4) || (hour < 7)) ? "early" :
-                                            ((hour >= 7) || (hour < 12)) ? "late early" : "mid day";
+                    ((hour > 20) && (hour < 24)) ? "late" :
+                            ((hour >= 0) && (hour < 4)) ? "very late" :
+                                    ((hour >= 4) && (hour < 7)) ? "early" :
+                                            ((hour >= 7) && (hour < 12)) ? "late early" : "mid day";
             mProject.setVariable(activity.get("var"), partOfDayDescription);
         }
     }
