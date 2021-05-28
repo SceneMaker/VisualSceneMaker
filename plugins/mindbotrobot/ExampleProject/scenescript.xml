@@ -1,175 +1,190 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <SceneScript lower="0" upper="0">
-  <SceneObject lower="0" upper="85" language="@@" identifier="Pose1">
-    <SceneTurn lower="15" upper="85" speaker="botty">
-      <SceneUttr lower="23" upper="85" punct=".">
-        <ActionObject lower="23" upper="37" actor="" name="set_tcp_target">
-          <ActionFeature lower="38" upper="43" key="x" val="1.3"/>
-          <ActionFeature lower="44" upper="49" key="y" val="0.3"/>
-          <ActionFeature lower="50" upper="55" key="z" val="0.5"/>
-          <ActionFeature lower="56" upper="62" key="or_w" val="1"/>
-          <ActionFeature lower="63" upper="69" key="or_x" val="0"/>
-          <ActionFeature lower="70" upper="76" key="or_y" val="0"/>
-          <ActionFeature lower="77" upper="83" key="or_z" val="0"/>
+  <SceneObject lower="0" upper="113" language="@@" identifier="TcpPositionHome">
+    <SceneTurn lower="25" upper="113" speaker="botty">
+      <SceneUttr lower="33" upper="113" punct=".">
+        <ActionObject lower="33" upper="47" actor="" name="set_tcp_target">
+          <ActionFeature lower="48" upper="54" key="x" val="0.64"/>
+          <ActionFeature lower="55" upper="62" key="y" val="-0.15"/>
+          <ActionFeature lower="63" upper="69" key="z" val="0.95"/>
+          <ActionFeature lower="70" upper="79" key="or_w" val="0.50"/>
+          <ActionFeature lower="80" upper="90" key="or_x" val="-0.50"/>
+          <ActionFeature lower="91" upper="101" key="or_y" val="-0.50"/>
+          <ActionFeature lower="102" upper="111" key="or_z" val="0.50"/>
         </ActionObject>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="87" upper="173" language="@@" identifier="Pose2">
-    <SceneTurn lower="102" upper="173" speaker="botty">
-      <SceneUttr lower="110" upper="173" punct=".">
-        <ActionObject lower="110" upper="124" actor="" name="set_tcp_target">
-          <ActionFeature lower="125" upper="131" key="x" val="-0.3"/>
-          <ActionFeature lower="132" upper="137" key="y" val="0.3"/>
-          <ActionFeature lower="138" upper="143" key="z" val="0.5"/>
-          <ActionFeature lower="144" upper="150" key="or_w" val="1"/>
-          <ActionFeature lower="151" upper="157" key="or_x" val="0"/>
-          <ActionFeature lower="158" upper="164" key="or_y" val="0"/>
-          <ActionFeature lower="165" upper="171" key="or_z" val="0"/>
+  <SceneObject lower="115" upper="225" language="@@" identifier="TcpPosition1">
+    <SceneTurn lower="137" upper="225" speaker="botty">
+      <SceneUttr lower="145" upper="225" punct=".">
+        <ActionObject lower="145" upper="159" actor="" name="set_tcp_target">
+          <ActionFeature lower="160" upper="166" key="x" val="0.64"/>
+          <ActionFeature lower="167" upper="174" key="y" val="-0.15"/>
+          <ActionFeature lower="175" upper="181" key="z" val="0.95"/>
+          <ActionFeature lower="182" upper="191" key="or_w" val="0.50"/>
+          <ActionFeature lower="192" upper="202" key="or_x" val="-0.50"/>
+          <ActionFeature lower="203" upper="213" key="or_y" val="-0.50"/>
+          <ActionFeature lower="214" upper="223" key="or_z" val="0.50"/>
         </ActionObject>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="175" upper="412" language="@@" identifier="JointTarget1">
-    <SceneTurn lower="197" upper="412" speaker="botty">
-      <SceneUttr lower="205" upper="412" punct=".">
-        <ActionObject lower="205" upper="221" actor="" name="set_joint_target">
-          <ActionFeature lower="222" upper="326" key="joint_names" val="'iiwa_joint_0,iiwa_joint_1,iiwa_joint_2,iiwa_joint_3,iiwa_joint_4,iiwa_joint_5,iiwa_joint_6'"/>
-          <ActionFeature lower="327" upper="359" key="positions" val="'10,10,10,10,10,10,10'"/>
-          <ActionFeature lower="360" upper="386" key="velocities" val="'1,1,2,2,3,3,5'"/>
-          <ActionFeature lower="387" upper="410" key="efforts" val="'1,1,1,1,1,1,1'"/>
+  <SceneObject lower="227" upper="336" language="@@" identifier="TcpPosition2">
+    <SceneTurn lower="249" upper="336" speaker="botty">
+      <SceneUttr lower="257" upper="336" punct=".">
+        <ActionObject lower="257" upper="271" actor="" name="set_tcp_target">
+          <ActionFeature lower="272" upper="278" key="x" val="0.34"/>
+          <ActionFeature lower="279" upper="285" key="y" val="0.26"/>
+          <ActionFeature lower="286" upper="292" key="z" val="1.08"/>
+          <ActionFeature lower="293" upper="302" key="or_w" val="0.20"/>
+          <ActionFeature lower="303" upper="313" key="or_x" val="-0.20"/>
+          <ActionFeature lower="314" upper="324" key="or_y" val="-0.68"/>
+          <ActionFeature lower="325" upper="334" key="or_z" val="0.68"/>
         </ActionObject>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="414" upper="658" language="@@" identifier="JointTarget2">
-    <SceneTurn lower="436" upper="658" speaker="botty">
-      <SceneUttr lower="444" upper="658" punct=".">
-        <ActionObject lower="444" upper="460" actor="" name="set_joint_target">
-          <ActionFeature lower="461" upper="565" key="joint_names" val="'iiwa_joint_0,iiwa_joint_1,iiwa_joint_2,iiwa_joint_3,iiwa_joint_4,iiwa_joint_5,iiwa_joint_6'"/>
-          <ActionFeature lower="566" upper="605" key="positions" val="'-10,-10,-10,-10,-10,-10,-10'"/>
-          <ActionFeature lower="606" upper="632" key="velocities" val="'1,1,2,2,3,3,5'"/>
-          <ActionFeature lower="633" upper="656" key="efforts" val="'1,1,1,1,1,1,1'"/>
+  <SceneObject lower="338" upper="575" language="@@" identifier="JointTarget1">
+    <SceneTurn lower="360" upper="575" speaker="botty">
+      <SceneUttr lower="368" upper="575" punct=".">
+        <ActionObject lower="368" upper="384" actor="" name="set_joint_target">
+          <ActionFeature lower="385" upper="489" key="joint_names" val="'iiwa_joint_0,iiwa_joint_1,iiwa_joint_2,iiwa_joint_3,iiwa_joint_4,iiwa_joint_5,iiwa_joint_6'"/>
+          <ActionFeature lower="490" upper="522" key="positions" val="'10,10,10,10,10,10,10'"/>
+          <ActionFeature lower="523" upper="549" key="velocities" val="'1,1,2,2,3,3,5'"/>
+          <ActionFeature lower="550" upper="573" key="efforts" val="'1,1,1,1,1,1,1'"/>
         </ActionObject>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="660" upper="712" language="@@" identifier="CtrlState0">
-    <SceneTurn lower="680" upper="712" speaker="botty">
-      <SceneUttr lower="688" upper="712" punct=".">
-        <ActionObject lower="688" upper="702" actor="" name="set_ctrl_state">
-          <ActionFeature lower="703" upper="710" key="state" val="0"/>
+  <SceneObject lower="577" upper="821" language="@@" identifier="JointTarget2">
+    <SceneTurn lower="599" upper="821" speaker="botty">
+      <SceneUttr lower="607" upper="821" punct=".">
+        <ActionObject lower="607" upper="623" actor="" name="set_joint_target">
+          <ActionFeature lower="624" upper="728" key="joint_names" val="'iiwa_joint_0,iiwa_joint_1,iiwa_joint_2,iiwa_joint_3,iiwa_joint_4,iiwa_joint_5,iiwa_joint_6'"/>
+          <ActionFeature lower="729" upper="768" key="positions" val="'-10,-10,-10,-10,-10,-10,-10'"/>
+          <ActionFeature lower="769" upper="795" key="velocities" val="'1,1,2,2,3,3,5'"/>
+          <ActionFeature lower="796" upper="819" key="efforts" val="'1,1,1,1,1,1,1'"/>
         </ActionObject>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="714" upper="766" language="@@" identifier="CtrlState1">
-    <SceneTurn lower="734" upper="766" speaker="botty">
-      <SceneUttr lower="742" upper="766" punct=".">
-        <ActionObject lower="742" upper="756" actor="" name="set_ctrl_state">
-          <ActionFeature lower="757" upper="764" key="state" val="1"/>
+  <SceneObject lower="823" upper="875" language="@@" identifier="CtrlState0">
+    <SceneTurn lower="843" upper="875" speaker="botty">
+      <SceneUttr lower="851" upper="875" punct=".">
+        <ActionObject lower="851" upper="865" actor="" name="set_ctrl_state">
+          <ActionFeature lower="866" upper="873" key="state" val="0"/>
         </ActionObject>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="768" upper="817" language="@@" identifier="CtrlMode0">
-    <SceneTurn lower="787" upper="817" speaker="botty">
-      <SceneUttr lower="795" upper="817" punct=".">
-        <ActionObject lower="795" upper="808" actor="" name="set_ctrl_mode">
-          <ActionFeature lower="809" upper="815" key="mode" val="0"/>
+  <SceneObject lower="877" upper="929" language="@@" identifier="CtrlState1">
+    <SceneTurn lower="897" upper="929" speaker="botty">
+      <SceneUttr lower="905" upper="929" punct=".">
+        <ActionObject lower="905" upper="919" actor="" name="set_ctrl_state">
+          <ActionFeature lower="920" upper="927" key="state" val="1"/>
         </ActionObject>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="819" upper="868" language="@@" identifier="CtrlMode1">
-    <SceneTurn lower="838" upper="868" speaker="botty">
-      <SceneUttr lower="846" upper="868" punct=".">
-        <ActionObject lower="846" upper="859" actor="" name="set_ctrl_mode">
-          <ActionFeature lower="860" upper="866" key="mode" val="1"/>
+  <SceneObject lower="931" upper="980" language="@@" identifier="CtrlMode0">
+    <SceneTurn lower="950" upper="980" speaker="botty">
+      <SceneUttr lower="958" upper="980" punct=".">
+        <ActionObject lower="958" upper="971" actor="" name="set_ctrl_mode">
+          <ActionFeature lower="972" upper="978" key="mode" val="0"/>
         </ActionObject>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="870" upper="936" language="@@" identifier="MaxVelocity1">
-    <SceneTurn lower="892" upper="936" speaker="botty">
-      <SceneUttr lower="900" upper="936" punct=".">
-        <ActionObject lower="900" upper="920" actor="" name="set_max_tcp_velocity">
-          <ActionFeature lower="921" upper="926" key="x" val="0.5"/>
-          <ActionFeature lower="927" upper="930" key="y" val="1"/>
-          <ActionFeature lower="931" upper="934" key="z" val="1"/>
+  <SceneObject lower="982" upper="1031" language="@@" identifier="CtrlMode1">
+    <SceneTurn lower="1001" upper="1031" speaker="botty">
+      <SceneUttr lower="1009" upper="1031" punct=".">
+        <ActionObject lower="1009" upper="1022" actor="" name="set_ctrl_mode">
+          <ActionFeature lower="1023" upper="1029" key="mode" val="1"/>
         </ActionObject>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="938" upper="1002" language="@@" identifier="MaxVelocity2">
-    <SceneTurn lower="960" upper="1002" speaker="botty">
-      <SceneUttr lower="968" upper="1002" punct=".">
-        <ActionObject lower="968" upper="988" actor="" name="set_max_tcp_velocity">
-          <ActionFeature lower="989" upper="992" key="x" val="1"/>
-          <ActionFeature lower="993" upper="996" key="y" val="1"/>
-          <ActionFeature lower="997" upper="1000" key="z" val="1"/>
+  <SceneObject lower="1033" upper="1099" language="@@" identifier="MaxVelocity1">
+    <SceneTurn lower="1055" upper="1099" speaker="botty">
+      <SceneUttr lower="1063" upper="1099" punct=".">
+        <ActionObject lower="1063" upper="1083" actor="" name="set_max_tcp_velocity">
+          <ActionFeature lower="1084" upper="1089" key="x" val="0.5"/>
+          <ActionFeature lower="1090" upper="1093" key="y" val="1"/>
+          <ActionFeature lower="1094" upper="1097" key="z" val="1"/>
         </ActionObject>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="1004" upper="1078" language="@@" identifier="MaxAcceleration1">
-    <SceneTurn lower="1030" upper="1078" speaker="botty">
-      <SceneUttr lower="1038" upper="1078" punct=".">
-        <ActionObject lower="1038" upper="1062" actor="" name="set_max_tcp_acceleration">
-          <ActionFeature lower="1063" upper="1068" key="x" val="0.5"/>
-          <ActionFeature lower="1069" upper="1072" key="y" val="1"/>
-          <ActionFeature lower="1073" upper="1076" key="z" val="1"/>
+  <SceneObject lower="1101" upper="1165" language="@@" identifier="MaxVelocity2">
+    <SceneTurn lower="1123" upper="1165" speaker="botty">
+      <SceneUttr lower="1131" upper="1165" punct=".">
+        <ActionObject lower="1131" upper="1151" actor="" name="set_max_tcp_velocity">
+          <ActionFeature lower="1152" upper="1155" key="x" val="1"/>
+          <ActionFeature lower="1156" upper="1159" key="y" val="1"/>
+          <ActionFeature lower="1160" upper="1163" key="z" val="1"/>
         </ActionObject>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="1080" upper="1152" language="@@" identifier="MaxAcceleration2">
-    <SceneTurn lower="1106" upper="1152" speaker="botty">
-      <SceneUttr lower="1114" upper="1152" punct=".">
-        <ActionObject lower="1114" upper="1138" actor="" name="set_max_tcp_acceleration">
-          <ActionFeature lower="1139" upper="1142" key="x" val="1"/>
-          <ActionFeature lower="1143" upper="1146" key="y" val="1"/>
-          <ActionFeature lower="1147" upper="1150" key="z" val="1"/>
+  <SceneObject lower="1167" upper="1241" language="@@" identifier="MaxAcceleration1">
+    <SceneTurn lower="1193" upper="1241" speaker="botty">
+      <SceneUttr lower="1201" upper="1241" punct=".">
+        <ActionObject lower="1201" upper="1225" actor="" name="set_max_tcp_acceleration">
+          <ActionFeature lower="1226" upper="1231" key="x" val="0.5"/>
+          <ActionFeature lower="1232" upper="1235" key="y" val="1"/>
+          <ActionFeature lower="1236" upper="1239" key="z" val="1"/>
         </ActionObject>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="1154" upper="1222" language="@@" identifier="MinClearance1">
-    <SceneTurn lower="1177" upper="1222" speaker="botty">
-      <SceneUttr lower="1185" upper="1222" punct=".">
-        <ActionObject lower="1185" upper="1202" actor="" name="set_min_clearance">
-          <ActionFeature lower="1203" upper="1220" key="min_clearance" val="0.5"/>
+  <SceneObject lower="1243" upper="1315" language="@@" identifier="MaxAcceleration2">
+    <SceneTurn lower="1269" upper="1315" speaker="botty">
+      <SceneUttr lower="1277" upper="1315" punct=".">
+        <ActionObject lower="1277" upper="1301" actor="" name="set_max_tcp_acceleration">
+          <ActionFeature lower="1302" upper="1305" key="x" val="1"/>
+          <ActionFeature lower="1306" upper="1309" key="y" val="1"/>
+          <ActionFeature lower="1310" upper="1313" key="z" val="1"/>
         </ActionObject>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="1224" upper="1290" language="@@" identifier="MinClearance2">
-    <SceneTurn lower="1247" upper="1290" speaker="botty">
-      <SceneUttr lower="1255" upper="1290" punct=".">
-        <ActionObject lower="1255" upper="1272" actor="" name="set_min_clearance">
-          <ActionFeature lower="1273" upper="1288" key="min_clearance" val="1"/>
+  <SceneObject lower="1317" upper="1385" language="@@" identifier="MinClearance1">
+    <SceneTurn lower="1340" upper="1385" speaker="botty">
+      <SceneUttr lower="1348" upper="1385" punct=".">
+        <ActionObject lower="1348" upper="1365" actor="" name="set_min_clearance">
+          <ActionFeature lower="1366" upper="1383" key="min_clearance" val="0.5"/>
         </ActionObject>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="1292" upper="1373" language="@@" identifier="OpenGripper">
-    <SceneTurn lower="1313" upper="1373" speaker="botty">
-      <SceneUttr lower="1321" upper="1373" punct=".">
-        <ActionObject lower="1321" upper="1340" actor="" name="set_gripper_closure">
-          <ActionFeature lower="1341" upper="1350" key="closure" val="0"/>
-          <ActionFeature lower="1351" upper="1363" key="velocity" val="255"/>
-          <ActionFeature lower="1364" upper="1371" key="force" val="0"/>
+  <SceneObject lower="1387" upper="1453" language="@@" identifier="MinClearance2">
+    <SceneTurn lower="1410" upper="1453" speaker="botty">
+      <SceneUttr lower="1418" upper="1453" punct=".">
+        <ActionObject lower="1418" upper="1435" actor="" name="set_min_clearance">
+          <ActionFeature lower="1436" upper="1451" key="min_clearance" val="1"/>
         </ActionObject>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="1375" upper="1459" language="@@" identifier="CloseGripper">
-    <SceneTurn lower="1397" upper="1459" speaker="botty">
-      <SceneUttr lower="1405" upper="1459" punct=".">
-        <ActionObject lower="1405" upper="1424" actor="" name="set_gripper_closure">
-          <ActionFeature lower="1425" upper="1436" key="closure" val="255"/>
-          <ActionFeature lower="1437" upper="1449" key="velocity" val="150"/>
-          <ActionFeature lower="1450" upper="1457" key="force" val="2"/>
+  <SceneObject lower="1455" upper="1536" language="@@" identifier="OpenGripper">
+    <SceneTurn lower="1476" upper="1536" speaker="botty">
+      <SceneUttr lower="1484" upper="1536" punct=".">
+        <ActionObject lower="1484" upper="1503" actor="" name="set_gripper_closure">
+          <ActionFeature lower="1504" upper="1513" key="closure" val="0"/>
+          <ActionFeature lower="1514" upper="1526" key="velocity" val="255"/>
+          <ActionFeature lower="1527" upper="1534" key="force" val="0"/>
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="1538" upper="1622" language="@@" identifier="CloseGripper">
+    <SceneTurn lower="1560" upper="1622" speaker="botty">
+      <SceneUttr lower="1568" upper="1622" punct=".">
+        <ActionObject lower="1568" upper="1587" actor="" name="set_gripper_closure">
+          <ActionFeature lower="1588" upper="1599" key="closure" val="255"/>
+          <ActionFeature lower="1600" upper="1612" key="velocity" val="150"/>
+          <ActionFeature lower="1613" upper="1620" key="force" val="2"/>
         </ActionObject>
       </SceneUttr>
     </SceneTurn>
