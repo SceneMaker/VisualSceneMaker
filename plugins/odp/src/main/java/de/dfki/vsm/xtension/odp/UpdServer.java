@@ -157,8 +157,8 @@ public class UpdServer extends Thread {
                             if (liwcObj.has("I. Basislinguistische Dimensionen")) {
                                 JSONArray basisLingDim = liwcObj.getJSONArray("I. Basislinguistische Dimensionen");
 
-                                if (basisLingDim.length() > 0) {
-                                    JSONObject instance = basisLingDim.getJSONObject(0);
+                                for (int blCnt = 0; blCnt < basisLingDim.length(); blCnt++) {
+                                    JSONObject instance = basisLingDim.getJSONObject(blCnt);
 
                                     if (instance.has("Pronomina (Gesamt)")) {
                                         JSONObject pronomina = instance.getJSONObject("Pronomina (Gesamt)");
@@ -211,8 +211,8 @@ public class UpdServer extends Thread {
                             if (liwcObj.has("II. Psychologische Prozesse")) {
                                 JSONArray psychCogProc = liwcObj.getJSONArray("II. Psychologische Prozesse");
 
-                                if (psychCogProc.length() > 0) {
-                                    JSONObject instance = psychCogProc.getJSONObject(0);
+                                for (int pcCnt = 0; pcCnt < psychCogProc.length(); pcCnt++) {
+                                    JSONObject instance = psychCogProc.getJSONObject(pcCnt);
 
                                     if (instance.has("Affektive und emotionale Prozesse")) {
                                         JSONObject affProc = instance.getJSONObject("Affektive und emotionale Prozesse");
@@ -273,8 +273,8 @@ public class UpdServer extends Thread {
                             if (liwcObj.has("IV. Persönliche Belange")) {
                                 JSONArray psychCogProc = liwcObj.getJSONArray("IV. Persönliche Belange");
 
-                                if (psychCogProc.length() > 0) {
-                                    JSONObject instance = psychCogProc.getJSONObject(0);
+                                for (int pcCnt = 0; pcCnt < psychCogProc.length(); pcCnt++) {
+                                    JSONObject instance = psychCogProc.getJSONObject(pcCnt);
 
                                     if (instance.has("Körperliche Zustände und Funktionen")) {
                                         JSONObject bodyStatesFcts = instance.getJSONObject("Körperliche Zustände und Funktionen");
