@@ -112,21 +112,6 @@ public class MindbotServiceRequester extends AbstractNodeMain {
         // Will retain he last state for this action
         CallState s;
 
-        // Retrieve the corresponding rosID
-        int rosID = -1;
-        synchronized (actionsState) {
-            // (I know, it is linear complexity, but we don't have BiMaps and anyway the size is always limited.)
-            for (int ros_id : rosToActionID.keySet()) {
-                int act_id = rosToActionID.get(ros_id);
-                if (act_id == actionID) {
-                    rosID = ros_id;
-                    break;
-                }
-            }
-        }
-        assert rosID != -1;
-
-
         // Loop until the action is being processed
         while (true) {
             // TODO -- here, if we wait for too long, it probably means that the robot is disconnected
@@ -139,7 +124,7 @@ public class MindbotServiceRequester extends AbstractNodeMain {
                     // Here, the call is either just CALLED or SUCCESS. We have to wait.
                     try {
                         actionsState.wait(1000);
-                        mLogger.warning("Still waiting for 'action_done' for rosID " + rosID + " (localID " + actionID + ")");
+                        mLogger.warning("Still waiting for 'action_done' for localID " + actionID);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
@@ -148,14 +133,22 @@ public class MindbotServiceRequester extends AbstractNodeMain {
 
         }
 
-
-        // Remove the local ID and the ROS ID from the respective maps.
+        // Delete the localID and rosID from the maps
         synchronized (actionsState) {
+            // (I know, it is linear complexity, but we don't have BiMaps and anyway the size is always limited.)
+            for (int ros_id : rosToActionID.keySet()) {
+                int act_id = rosToActionID.get(ros_id);
+                if (act_id == actionID) {
+                    rosToActionID.remove(ros_id) ;
+                }
+            }
+
             //
             // remove the IDs from the actionMap
             actionsState.remove(actionID);
-            rosToActionID.remove(rosID) ;
+
         }
+
 
         return s ;
     }
@@ -206,7 +199,7 @@ public class MindbotServiceRequester extends AbstractNodeMain {
      */
     class MindBotResponseListener<T extends org.ros.internal.message.Message> implements ServiceResponseListener<T> {
 
-        /** This is identificator of the VSM Action.
+        /** This is identifier of the VSM Action.
          * By default is -1.
          * However, if the listener must setup the waiting procedure, it will be initialized to a unique integer counter.
          */
@@ -229,7 +222,10 @@ public class MindbotServiceRequester extends AbstractNodeMain {
         }
 
         @Override
-        public void onSuccess(Message response) {
+        /** This will be invoked as a (positive) result when th execution of a ROS service has succeeded.
+         * We update the state of the running action and memorize the association between the action localID and rosID.
+         */
+         public void onSuccess(Message response) {
 
             boolean success = response.toRawMessage().getBool("success") ;
             // TODO -- test this and gracefully fail if false
@@ -249,7 +245,7 @@ public class MindbotServiceRequester extends AbstractNodeMain {
 
             if(this.vsmActionID != -1) {
 
-                // This is invoked b ROS in can of failure of the infrastructure
+                // This is invoked by ROS in case of failure of the infrastructure
                 synchronized (actionsState) {
                     actionsState.put(vsmActionID, CallState.FAILURE);
                 }
