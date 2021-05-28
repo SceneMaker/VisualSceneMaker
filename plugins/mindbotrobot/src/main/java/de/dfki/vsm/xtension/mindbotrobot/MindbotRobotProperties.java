@@ -14,6 +14,7 @@ public class MindbotRobotProperties implements ExportableProperties {
     private final Map<ProjectProperty, ProjectValueProperty> mProperties = new HashMap<>();
 
     public MindbotRobotProperties() {
+
         mProperties.put(
                 new ProjectProperty("rosuri",
                         true,

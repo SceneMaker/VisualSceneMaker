@@ -49,7 +49,7 @@ public class StandaloneExecutor {
         // Execute the Client
         if (runClient) {
             NodeConfiguration clientNodeConfiguration = NodeConfiguration.newPublic(host, ros_uri);
-            serviceReq = new MindbotServiceRequester();
+            serviceReq = new MindbotServiceRequester(null);
             clientNodeConfiguration.setNodeName("MindbotServiceRequester");
 
             nodeMainExecutor.execute(serviceReq, clientNodeConfiguration);

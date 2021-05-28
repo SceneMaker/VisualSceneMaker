@@ -9,16 +9,12 @@ import de.dfki.vsm.runtime.project.RunTimeProject;
 import geometry_msgs.Point;
 import geometry_msgs.Pose;
 import geometry_msgs.Quaternion;
-import org.ros.address.InetAddressFactory;
 import org.ros.node.DefaultNodeMainExecutor;
 import org.ros.node.NodeConfiguration;
 import org.ros.node.NodeMainExecutor;
 
-import java.net.URI;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
+import java.net.*;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public final class MindbotRobotExecutor extends ActivityExecutor {
@@ -26,7 +22,7 @@ public final class MindbotRobotExecutor extends ActivityExecutor {
     /** This is the delay that we force when an action of the robot, which is supposed to last for a while, faile immediately.
      * This helps preventing dangerous light-speed loops.
      */
-    private final static int ACTION_ABORT_DELAY_MILLIS = 500 ;
+    private final static int ACTION_ABORT_DELAY_MILLIS = 1000 ;
 
     private MindbotTopicReceiver topicReceiver;
     private MindbotServiceRequester serviceReq;
@@ -43,6 +39,72 @@ public final class MindbotRobotExecutor extends ActivityExecutor {
         return ACTION_MARKER+id ;
     }
 
+
+    private static int addressBytesToInt(byte[] addr_bytes) {
+        int addr_int = ((addr_bytes[0] << 24) & 0xff000000) |
+                ((addr_bytes[1] << 16) & 0x00ff0000) |
+                ((addr_bytes[2] << 8) & 0x0000ff00) |
+                ( addr_bytes[3] & 0x000000ff) ;
+        return addr_int;
+    }
+
+    public static class NetBindingResult {
+
+        public NetworkInterface intf ;
+        public InetAddress addr ;
+
+        public NetBindingResult(NetworkInterface interf, InetAddress address) {
+            this.intf = interf ;
+            this.addr = address ;
+        }
+
+    }
+
+    /**
+     *
+     * @param remote_addr A (remote) IPv4 address to contact
+     * @return The pair (interface,local_address), where the local address can be used to bind a Socket for a communication.
+     * @throws SocketException At the monet, can be raised only if the list of interfaces can not be retrieved.
+     */
+    private static NetBindingResult getBestInterfaceFor(Inet4Address remote_addr) throws SocketException {
+        byte[] remote_addr_bytes = remote_addr.getAddress();
+        int remote_addr_int = addressBytesToInt(remote_addr_bytes);
+
+        // Look for a compatible address on all the network interfaces...
+        Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
+        while(interfaces.hasMoreElements()) {
+            NetworkInterface intf = interfaces.nextElement();
+
+            // ... and through all of its addresses
+            List<InterfaceAddress> intf_addrs = intf.getInterfaceAddresses();
+            for(InterfaceAddress intf_addr : intf_addrs) {
+                InetAddress local_addr = intf_addr.getAddress();
+                byte[] local_addr_bytes = local_addr.getAddress();
+
+                if(local_addr_bytes.length != remote_addr_bytes.length) {
+                    // Likely, IP4 vs. IP6
+                    continue;
+                }
+
+                int local_addr_int = addressBytesToInt(local_addr_bytes) ;
+
+                // Compare the integer (4 bytes) version of the masked addresses.
+                short intf_prefix = intf_addr.getNetworkPrefixLength() ;
+                int net_mask = 0xffffffff << (32 - intf_prefix) ;
+                int intf_addr_masked = local_addr_int & net_mask ;
+                int remote_addr_masked = remote_addr_int & net_mask ;
+
+                // If the two netwrok prefixes match, then we use this address
+                if(intf_addr_masked == remote_addr_masked) {
+                    return new NetBindingResult(intf, local_addr) ;
+                }
+
+            }
+        }
+
+        return null ;
+    }
+
     @Override
     public final void launch() {
 
@@ -55,17 +117,39 @@ public final class MindbotRobotExecutor extends ActivityExecutor {
             throw new RuntimeException(msg) ;
         }
         URI ros_uri = URI.create(ros_uri_prop) ;
+        mLogger.message("ROS URI is " + ros_uri);
 
         //
-        // The local IP/port host use to contact ROS
-        String this_host = InetAddressFactory.newNonLoopback().getHostAddress();
+        // Retrieve the local IP which can be used to contact ROS
+        NetBindingResult binding_result = null ;
+
+        try {
+            String ros_host = ros_uri.getHost() ;
+            InetAddress ros_addr = Inet4Address.getByName(ros_host) ;
+            binding_result = getBestInterfaceFor((Inet4Address)ros_addr);
+        } catch (Exception e) {
+            String msg = "Exception while searching for a local address for connection to ROS host " + ros_uri.getHost() + ": " + e.getMessage() ;
+            mLogger.failure(msg);
+            throw new RuntimeException(msg) ;
+        }
+
+        if(binding_result == null) {
+            String msg = "Couldn't not find a suitable local address for binding with host " + ros_uri.getHost() ;
+            mLogger.failure(msg);
+            throw new RuntimeException(msg) ;
+        }
+
+        assert binding_result != null;
+
+        String this_host = binding_result.addr.getHostAddress();
+        mLogger.message("Using local address " + this_host + " on network interface '" + binding_result.intf.getDisplayName() + "' for ROS binding.");
 
         // Init the ROS main executor
         nodeMainExecutor = DefaultNodeMainExecutor.newDefault();
 
         //
         // Setup the topic Subscriber
-        mLogger.message("Registering ROS Topic Receiver");
+        mLogger.message("Registering " + this_host + " as ROS Topic Receiver to master " + ros_uri);
         NodeConfiguration topicReceiverConfig = NodeConfiguration.newPublic(this_host, ros_uri);
         topicReceiver = new MindbotTopicReceiver();
         topicReceiverConfig.setNodeName("MindbotTopicSubscriber");
@@ -73,9 +157,9 @@ public final class MindbotRobotExecutor extends ActivityExecutor {
 
         //
         // Setup the service invocation node
-        mLogger.message("Registering ROS Service Requester");
+        mLogger.message("Registering " + this_host + " as ROS Service Requester to master "  + ros_uri);
         NodeConfiguration serviceReqConfig = NodeConfiguration.newPublic(this_host, ros_uri);
-        serviceReq = new MindbotServiceRequester();
+        serviceReq = new MindbotServiceRequester(mLogger);
         serviceReqConfig.setNodeName("MindbotServiceRequester");
         nodeMainExecutor.execute(serviceReq, serviceReqConfig);
 
@@ -284,7 +368,7 @@ public final class MindbotRobotExecutor extends ActivityExecutor {
                 if(result == MindbotServiceRequester.CallState.FAILURE
                         || result== MindbotServiceRequester.CallState.ABORTED) {
                     // TODO -- This is a candidate information to be notified in the interface (pop up?).
-                    mLogger.failure("Action '" + cmd + "' (id=" + actionID + ") reported error: " + result + ". Delaying (" + ACTION_ABORT_DELAY_MILLIS + " millis)...");
+                    mLogger.failure("Action '" + cmd + "' (localID=" + actionID + ") reported error: " + result + ". Delaying (" + ACTION_ABORT_DELAY_MILLIS + " millis)...");
                     try {
                         Thread.sleep(ACTION_ABORT_DELAY_MILLIS);
                     } catch (InterruptedException e) {

@@ -1,5 +1,6 @@
 package de.dfki.vsm.xtension.mindbotrobot;
 
+import de.dfki.vsm.util.log.LOGDefaultLogger;
 import mindbot_msgs.*;
 import org.ros.exception.RemoteException;
 import org.ros.exception.RosRuntimeException;
@@ -44,6 +45,12 @@ public class MindbotServiceRequester extends AbstractNodeMain {
     private ServiceClient<mindbot_msgs.SetCtrlModeRequest, mindbot_msgs.SetCtrlModeResponse> _setCtrlModeService;
     private ServiceClient<mindbot_msgs.SetFloatRequest, mindbot_msgs.SetFloatResponse> _setMinClearanceService;
     private ServiceClient<mindbot_msgs.SetGripperActionRequest, mindbot_msgs.SetGripperActionResponse> _setGripperActionService;
+
+    private LOGDefaultLogger mLogger ;
+
+    public MindbotServiceRequester(LOGDefaultLogger logger) {
+        mLogger = logger ;
+    }
 
     @Override
     public void onStart(final ConnectedNode connectedNode) {
@@ -105,6 +112,21 @@ public class MindbotServiceRequester extends AbstractNodeMain {
         // Will retain he last state for this action
         CallState s;
 
+        // Retrieve the corresponding rosID
+        int rosID = -1;
+        synchronized (actionsState) {
+            // (I know, it is linear complexity, but we don't have BiMaps and anyway the size is always limited.)
+            for (int ros_id : rosToActionID.keySet()) {
+                int act_id = rosToActionID.get(ros_id);
+                if (act_id == actionID) {
+                    rosID = ros_id;
+                    break;
+                }
+            }
+        }
+        assert rosID != -1;
+
+
         // Loop until the action is being processed
         while (true) {
             // TODO -- here, if we wait for too long, it probably means that the robot is disconnected
@@ -117,6 +139,7 @@ public class MindbotServiceRequester extends AbstractNodeMain {
                     // Here, the call is either just CALLED or SUCCESS. We have to wait.
                     try {
                         actionsState.wait(1000);
+                        mLogger.warning("Still waiting for 'action_done' for rosID " + rosID + " (localID " + actionID + ")");
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
@@ -131,16 +154,7 @@ public class MindbotServiceRequester extends AbstractNodeMain {
             //
             // remove the IDs from the actionMap
             actionsState.remove(actionID);
-
-            // remove the ID from the ros map.
-            // (I know, it is linear complexity, but we don't have BiMaps and anyway the size is always limited.)
-            for (int ros_id : rosToActionID.keySet()) {
-                int act_id = rosToActionID.get(ros_id);
-                if (act_id == actionID) {
-                    rosToActionID.remove(ros_id);
-                    break;
-                }
-            }
+            rosToActionID.remove(rosID) ;
         }
 
         return s ;
