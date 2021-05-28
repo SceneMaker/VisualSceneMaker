@@ -69,9 +69,10 @@ public class UpdServer extends Thread {
                                 if (topicsObj.has("liwc-result")) {
                                     JSONArray topics = topicsObj.getJSONArray("liwc-result");
 
-                                    if (topics.length() > 0) {
-                                        JSONObject instance = topics.getJSONObject(0);
-                                        Map<String, Float> topicValues = new HashMap<>();
+                                    Map<String, Float> topicValues = new HashMap<>();
+                                    // iterate ...
+                                    for (int tCnt = 0; tCnt < topics.length(); tCnt++) {
+                                        JSONObject instance = topics.getJSONObject(tCnt);
 
                                         if (instance.has("I")) {
                                             topicValues.put("I", (float) instance.getDouble("I"));
