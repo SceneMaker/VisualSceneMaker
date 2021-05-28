@@ -138,7 +138,7 @@ Now we need to move the `mindbot_msgs` into the top `src` folder, where also the
 
 ```
 cd path/to/mindbot_vsm_ws/
-cp -r <path/to>/mindbot_ws/src/mindbot_robot_control/mindbot_stack/mindbot_msgs/ src/
+cp -r <path/to>/mindbot_ws/src/mindbot-robot-control/mindbot_stack/mindbot_msgs/ src/
 ```
 
 
