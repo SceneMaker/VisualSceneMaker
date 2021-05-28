@@ -35,7 +35,6 @@ public class UpdServer extends Thread {
     // The singleton logger instance
     private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
 
-
     public UpdServer(int port, RunTimeProject project) throws SocketException {
         mProject = project;
         socket = new DatagramSocket(port);
@@ -53,12 +52,9 @@ public class UpdServer extends Thread {
                 }
 
                 if (packet.getLength() > 0 && mProject.isRunning()) {
-
                     synchronized (this) { // process the message at once, block other messages while processing
                         String message = new String(packet.getData(), 0, packet.getLength(), StandardCharsets.UTF_8);
-
                         mLogger.message("ODP UPD Message received: " + message);
-
                         JSONObject jObj = new JSONObject(message);
 
                         // check if object contains sentence element
@@ -103,7 +99,6 @@ public class UpdServer extends Thread {
                                 }
                             }
                         }
-
 
                         // check if object contains transcription element
                         if (jObj.has("transcription")) {
@@ -271,10 +266,10 @@ public class UpdServer extends Thread {
                             }
 
                             if (liwcObj.has("IV. Persönliche Belange")) {
-                                JSONArray psychCogProc = liwcObj.getJSONArray("IV. Persönliche Belange");
+                                JSONArray persIssues = liwcObj.getJSONArray("IV. Persönliche Belange");
 
-                                for (int pcCnt = 0; pcCnt < psychCogProc.length(); pcCnt++) {
-                                    JSONObject instance = psychCogProc.getJSONObject(pcCnt);
+                                for (int pcCnt = 0; pcCnt < persIssues.length(); pcCnt++) {
+                                    JSONObject instance = persIssues.getJSONObject(pcCnt);
 
                                     if (instance.has("Körperliche Zustände und Funktionen")) {
                                         JSONObject bodyStatesFcts = instance.getJSONObject("Körperliche Zustände und Funktionen");
