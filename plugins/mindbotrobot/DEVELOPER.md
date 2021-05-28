@@ -216,7 +216,7 @@ From now on, every time you need to update the jar, you just need to initialize 
 
 ```
 cd path/to/mindbot_vsm_ws/
-cp -r <path/to>/mindbot_ws/src/mindbot_robot_control/mindbot_stack/mindbot_msgs/ src/
+cp -r <path/to>/mindbot_ws/src/mindbot-robot-control/mindbot_stack/mindbot_msgs/ src/
 source /opt/ros/melodic/setup.bash
 source ~/rosjava/devel/setup.bash
 export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
