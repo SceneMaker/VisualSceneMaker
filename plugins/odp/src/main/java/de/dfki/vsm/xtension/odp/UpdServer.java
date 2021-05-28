@@ -86,19 +86,18 @@ public class UpdServer extends Thread {
                                         if (instance.has("Friends")) {
                                             topicValues.put("Friends", (float) instance.getDouble("Friends"));
                                         }
+                                    }
 
-                                        if (topicValues.size() > 0) {
-                                            // put highest ranked topic first
-                                            Map<String, Float> sortedTopicValues = topicValues.entrySet()
-                                                    .stream()
-                                                    .sorted((Map.Entry.<String, Float>comparingByValue().reversed()))
-                                                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
-
-                                            // TODO make VSM variable userUtteranceMainTopic configurable
-                                            if (mProject.hasVariable("userUtteranceMainTopic")) {
-                                                String firstTopic = sortedTopicValues.keySet().stream().findFirst().get();
-                                                mProject.setVariable("userUtteranceMainTopic", new StringValue(firstTopic));
-                                            }
+                                    if (topicValues.size() > 0) {
+                                        // put highest ranked topic first
+                                        Map<String, Float> sortedTopicValues = topicValues.entrySet()
+                                                .stream()
+                                                .sorted((Map.Entry.<String, Float>comparingByValue().reversed()))
+                                                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
+                                        // TODO make VSM variable userUtteranceMainTopic configurable
+                                        if (mProject.hasVariable("userUtteranceMainTopic")) {
+                                            String firstTopic = sortedTopicValues.keySet().stream().findFirst().get();
+                                            mProject.setVariable("userUtteranceMainTopic", new StringValue(firstTopic));
                                         }
                                     }
                                 }
