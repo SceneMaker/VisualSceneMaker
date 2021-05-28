@@ -14,12 +14,16 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class UpdServer extends Thread {
     private DatagramSocket socket;
     private boolean running;
-    private byte[] buf = new byte[2048];
+    private byte[] buf = new byte[16384];
 
     private RunTimeProject mProject;
     private final String mSceneFlowTaskVar = "odpTask";
@@ -56,6 +60,49 @@ public class UpdServer extends Thread {
                         mLogger.message("ODP UPD Message received: " + message);
 
                         JSONObject jObj = new JSONObject(message);
+
+                        // check if object contains sentence element
+                        if (jObj.has("sentence")) {
+                            //JSONObject sentence = jObj.getJSONObject("sentence");
+                            if (jObj.has("current_topics")) {
+                                JSONObject topicsObj = jObj.getJSONObject("current_topics");
+                                if (topicsObj.has("liwc-result")) {
+                                    JSONArray topics = topicsObj.getJSONArray("liwc-result");
+
+                                    if (topics.length() > 0) {
+                                        JSONObject instance = topics.getJSONObject(0);
+                                        Map<String, Float> topicValues = new HashMap<>();
+
+                                        if (instance.has("I")) {
+                                            topicValues.put("I", (float) instance.getDouble("I"));
+                                        }
+                                        if (instance.has("Self")) {
+                                            topicValues.put("Self", (float) instance.getDouble("Self"));
+                                        }
+                                        if (instance.has("Job")) {
+                                            topicValues.put("Job", (float) instance.getDouble("Job"));
+                                        }
+                                        if (instance.has("Friends")) {
+                                            topicValues.put("Friends", (float) instance.getDouble("Friends"));
+                                        }
+
+                                        if (topicValues.size() > 0) {
+                                            // put highest ranked topic first
+                                            Map<String, Float> sortedTopicValues = topicValues.entrySet()
+                                                    .stream()
+                                                    .sorted((Map.Entry.<String, Float>comparingByValue().reversed()))
+                                                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
+
+                                            // TODO make VSM variable userUtteranceMainTopic configurable
+                                            if (mProject.hasVariable("userUtteranceMainTopic")) {
+                                                String firstTopic = sortedTopicValues.keySet().stream().findFirst().get();
+                                                mProject.setVariable("userUtteranceMainTopic", new StringValue(firstTopic));
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
 
 
                         // check if object contains transcription element
