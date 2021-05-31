@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <SceneScript lower="0" upper="0">
-  <SceneObject lower="0" upper="162" language="@@" identifier="SetRequest">
-    <SceneTurn lower="20" upper="162" speaker="web">
-      <SceneUttr lower="26" upper="162" punct=".">
+  <SceneObject lower="0" upper="164" language="@@" identifier="SetRequest">
+    <SceneTurn lower="20" upper="164" speaker="web">
+      <SceneUttr lower="26" upper="164" punct=".">
         <ActionObject lower="26" upper="33" actor="" name="REQUEST">
           <ActionFeature lower="34" upper="76" key="var" val="'name;surname;weight;gender;graduated'"/>
           <ActionFeature lower="77" upper="123" key="value" val="'EnterName;EnterSurname;in kg;m,f,d;yes'"/>
-          <ActionFeature lower="124" upper="160" key="type" val="'text;text;text;radio;checkbox'"/>
+          <ActionFeature lower="124" upper="162" key="type" val="'text;text;number;radio;checkbox'"/>
         </ActionObject>
       </SceneUttr>
     </SceneTurn>
