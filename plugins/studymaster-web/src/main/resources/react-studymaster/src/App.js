@@ -1,4 +1,4 @@
-import {useEffect, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import './App.css';
 
 
@@ -37,10 +37,10 @@ function App() {
 
 
     function sendSubmit(e) {
-        webSocket.send(`VSMMessage#VAR#request_result#SUBMIT`);
         let allFieldSet = extractAndSendUserInput(e);
 
         if (allFieldSet) {
+            webSocket.send(`VSMMessage#VAR#request_result#SUBMIT`);
             setFormContents({
                 action: "SUCCESSFULSEND",
                 timestamp: formContents.timestamp,
@@ -66,7 +66,6 @@ function App() {
         for (i = 0; i < formContents.variable.length; i++) {
             let variable = formContents.variable[i];
             if (formContents.type[i] === "radio") {
-
                 let j;
                 let values = formContents.options[i].split(',');
                 let radio_checked = false;
@@ -74,7 +73,6 @@ function App() {
                     let value = values[j];
                     let radioButtonValue = document.getElementById(value);
                     if (radioButtonValue.checked) {
-                        webSocket.send(`VSMMessage#VAR#${variable}#${value}`);
                         radio_checked = true;
                     }
                 }
@@ -83,24 +81,46 @@ function App() {
                     allFieldsSet = false;
                 }
             } else if (formContents.type[i] === "text") {
-                if (inputValue.has(variable)) {
-                    webSocket.send(`VSMMessage#VAR#${variable}#${inputValue.get(variable)}`);
-                } else {
+                if (!inputValue.has(variable)) {
                     alert("Please ensure to fill in text input for " + formContents.variable[i]);
                     allFieldsSet = false;
                 }
             } else if (formContents.type[i] === "number") {
-                if (inputValue.has(variable)) {
-                    webSocket.send(`VSMMessage#VAR#${variable}#${inputValue.get(variable)}`);
-                } else {
+                if (!inputValue.has(variable)) {
                     alert("Please ensure to fill in number input for " + formContents.variable[i]);
                     allFieldsSet = false;
                 }
-            } else if (formContents.type[i] === "checkbox") {
-                if (document.getElementById(variable).checked) {
-                    webSocket.send(`VSMMessage#VAR#${variable}#true`);
-                } else {
-                    webSocket.send(`VSMMessage#VAR#${variable}#false`);
+            }
+        }
+
+        if (allFieldsSet) {
+            for (i = 0; i < formContents.variable.length; i++) {
+                let variable = formContents.variable[i];
+                if (formContents.type[i] === "radio") {
+
+                    let j;
+                    let values = formContents.options[i].split(',');
+                    for (j = 0; j < values.length; j++) {
+                        let value = values[j];
+                        let radioButtonValue = document.getElementById(value);
+                        if (radioButtonValue.checked) {
+                            webSocket.send(`VSMMessage#VAR#${variable}#${value}`);
+                        }
+                    }
+                } else if (formContents.type[i] === "text") {
+                    if (inputValue.has(variable)) {
+                        webSocket.send(`VSMMessage#VAR#${variable}#${inputValue.get(variable)}`);
+                    }
+                } else if (formContents.type[i] === "number") {
+                    if (inputValue.has(variable)) {
+                        webSocket.send(`VSMMessage#VAR#${variable}#${inputValue.get(variable)}`);
+                    }
+                } else if (formContents.type[i] === "checkbox") {
+                    if (document.getElementById(variable).checked) {
+                        webSocket.send(`VSMMessage#VAR#${variable}#true`);
+                    } else {
+                        webSocket.send(`VSMMessage#VAR#${variable}#false`);
+                    }
                 }
             }
         }
@@ -176,25 +196,32 @@ function App() {
     }
 
 
-    function getSuccessMsg() {
-        return (
-            <h2>
-                Successfully posted!
-            </h2>
-        )
-    }
-
-
     return (
         <div className="App">
             <header className="App-header">
                 <form>
                     <fieldset>
                         {(formContents && (formContents.action === "REQUEST")) && generateFields()}
-                        {(formContents && (formContents.action === "SUCCESSFULSEND")) && getSuccessMsg()}
+                        {
+                            (formContents && (formContents.action === "SUCCESSFULSEND")) &&
+                            <div>
+                                <h2>Successfully posted!</h2>
+                            </div>
+                        }
                     </fieldset>
-                    <button onClick={sendSubmit}> submit</button>
-                    <button onClick={sendCancel}> cancel</button>
+                    {
+                        (formContents && (formContents.action === "REQUEST")) &&
+                        <div>
+                            <button onClick={sendSubmit}> submit</button>
+                            <button onClick={sendCancel}> cancel</button>
+                        </div>
+                    }
+                    {
+                        !(formContents && (formContents.action === "REQUEST")) &&
+                        <div>
+                            <h2>No active requests.</h2>
+                        </div>
+                    }
                 </form>
             </header>
         </div>
