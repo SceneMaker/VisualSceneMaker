@@ -33,11 +33,19 @@ public class WebStudyMasterExecutor extends ActivityExecutor {
     private static final String sMSG_SEPARATOR = "#";
     private static final String sMSG_HEADER = "VSMMessage" + sMSG_SEPARATOR;
 
-    /** The name of the project variable holding the result of the user selection (SUBMIT/CANCEL) */
-    private static final String sREQUEST_RESULT_VAR = "request_result" ;
+    /** Project variable set when the "GO" message is received. */
+    private static final String sGO_VAR = "go_var" ;
+    private static final String sGO_VAR_DEFAULT = "go" ;
 
+    /** Project variable holding the result of the user selection (SUBMIT/CANCEL) */
+    private static final String sREQUEST_RESULT_VAR = "request_result_var" ;
+    private static final String sREQUEST_RESULT_VAR_DEFAULT = "request_result" ;
+
+    /** Project variable set when the remote Web GUI connects via websocket. */
     private static final String sGUI_CONNECTED_VAR = "gui_connected_var" ;
     private static final String sGUI_CONNECTED_VAR_DEFAULT = "gui_connected" ;
+
+    /** HTTP port */
     private static final String sJAVALIN_PORT_VAR = "port" ;
     private static final String sJAVALIN_PORT_VAR_DEFAULT = "8080" ;
 
@@ -45,13 +53,13 @@ public class WebStudyMasterExecutor extends ActivityExecutor {
     /** The singleton logger instance.*/
     private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
     /** The list of websocket connections. Yes, it will be possible to have several GUIs on the same scene flow.*/
-    private final ArrayList<WsConnectContext> websockets = new ArrayList<>();
+    private final ArrayList<WsConnectContext> mWebsockets = new ArrayList<>();
     /** The Javalin HTTP server. */
-    private Javalin httpServer;
+    private Javalin mHttpServer;
 
+    private String mRequestResultVar ;
 
-    private String mSceneflowVar;
-
+    private String mSceneflowGoVar ;
 
     /** This is the name of a Boolean global project variable that will be bet to _true_ when at least one web app is connected.*/
     public String mGUIConnectedVar = "";
@@ -84,19 +92,21 @@ public class WebStudyMasterExecutor extends ActivityExecutor {
     public void launch() {
         mLogger.message("Loading StudyMaster message sender and receiver ...");
 
+        //
+        // Retrieve property values
         mGUIConnectedVar = mConfig.getProperty(sGUI_CONNECTED_VAR, sGUI_CONNECTED_VAR_DEFAULT);
-        final int port = Integer.parseInt(Objects.requireNonNull(mConfig.getProperty(sJAVALIN_PORT_VAR, sJAVALIN_PORT_VAR_DEFAULT)));
-
-        mSceneflowVar = mConfig.getProperty("variable");
+        final int http_port = Integer.parseInt(Objects.requireNonNull(mConfig.getProperty(sJAVALIN_PORT_VAR, sJAVALIN_PORT_VAR_DEFAULT)));
+        mRequestResultVar = mConfig.getProperty(sREQUEST_RESULT_VAR, sREQUEST_RESULT_VAR_DEFAULT) ;
+        mSceneflowGoVar = mConfig.getProperty(sGO_VAR, sGO_VAR_DEFAULT);
 
         // Start the HTTP server
-        httpServer = Javalin.create(config -> {
+        mHttpServer = Javalin.create(config -> {
             config.addStaticFiles("/react-studymaster/build");
             config.enforceSsl = true;
-        }).start(port);
+        }).start(http_port);
 
         // Set callbacks to manage WebSocket events
-        httpServer.ws("/ws", ws -> {
+        mHttpServer.ws("/ws", ws -> {
             ws.onConnect(this::addWs);
             ws.onMessage(ctx -> this.handleGUIMessage(ctx.message()));
             ws.onClose(this::removeWs);
@@ -107,20 +117,20 @@ public class WebStudyMasterExecutor extends ActivityExecutor {
 
     @Override
     public void unload() {
-        for (WsConnectContext ws: websockets) {
+        for (WsConnectContext ws: mWebsockets) {
             if (ws.session.isOpen()) {
                 ws.session.close();
             }
         }
-        websockets.clear();
-        httpServer.stop();
+        mWebsockets.clear();
+        mHttpServer.stop();
     }
 
 
     /** Invoked when a new websocket connection is opened (new web app is loaded).*/
     private synchronized void addWs(WsConnectContext ws) {
         mLogger.message("New WebSocket connection.");
-        this.websockets.add(ws);
+        this.mWebsockets.add(ws);
 
         // Update the connection status
         if (mProject.hasVariable(mGUIConnectedVar)) {
@@ -138,10 +148,10 @@ public class WebStudyMasterExecutor extends ActivityExecutor {
     /** Invoked when a websocket connection is closed (web app is closed, or timeout?).*/
     private synchronized void removeWs(WsCloseContext ctx) {
         mLogger.message("Closed WebSocket connection.");
-        websockets.remove(ctx);
+        mWebsockets.remove(ctx);
 
         // Set the GUIState variable to false if there are no more GUI connections.
-        if(websockets.size()==0) {
+        if(mWebsockets.size()==0) {
             if (mProject.hasVariable(mGUIConnectedVar)) {
                 mProject.setVariable(mGUIConnectedVar, false);
             }
@@ -171,13 +181,13 @@ public class WebStudyMasterExecutor extends ActivityExecutor {
             final LinkedList<ActionFeature> features = activity.getFeatures();
 
             if (action_name.equalsIgnoreCase("stop")) {
-                httpServer.stop();
+                mHttpServer.stop();
             } else if (action_name.equals("REQUEST")) {
                 mLastRequestMessage = null ; // In case a previous request was still active.
                 try {
                     mLastRequestMessage = encodeRequest(activity, features);
                     synchronized (this) {
-                        websockets.forEach(ws -> ws.send(mLastRequestMessage));
+                        mWebsockets.forEach(ws -> ws.send(mLastRequestMessage));
                     }
                 } catch (IllegalArgumentException e) {
                     mLogger.failure("Malformed REQUEST");
@@ -267,7 +277,7 @@ public class WebStudyMasterExecutor extends ActivityExecutor {
                         mLogger.message("Assigning sceneflow variable " + var + " with value " + value);
                         mProject.setVariable(var, new StringValue(value));
 
-                        // If we received the user choice, reset the request cache
+                        // If we received the user choice (submit/cancel), reset the request cache
                         if(var.equals(sREQUEST_RESULT_VAR)) {
                             mLastRequestMessage = null ;
                         }
@@ -276,9 +286,9 @@ public class WebStudyMasterExecutor extends ActivityExecutor {
                     }
 
                 // MESSAGE GO: VSMMessage#Go
-                } else if(msg.equalsIgnoreCase("GO")) {
-                    mLogger.message("Assigning sceneflow variable " + mSceneflowVar + " with value " + message);
-                    mProject.setVariable(mSceneflowVar, true);
+                } else if(msg.equalsIgnoreCase("Go")) {
+                    mLogger.message("Assigning sceneflow variable " + mSceneflowGoVar + " with value " + message);
+                    mProject.setVariable(mSceneflowGoVar, true);
 
                 // MESSAGE UNKNOWN!!!
                 } else {

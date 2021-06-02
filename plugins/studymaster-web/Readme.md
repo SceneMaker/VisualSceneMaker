@@ -16,8 +16,10 @@ The communication between the web GUI and the VSM plugin is done via Websockets.
 * Open the project preferences
 * Create an instance of plugin `webstudymaster`
 * Add an agent, call it for example `web`, with the following **properties**:
-  * `port` (default `8080`) It is the port number that will be used by the web app to contact the http and websocket server. 
+  * `port` (default `8080`) It is the port number that will be used by the HTTP web server to provide the web app and listen to the websocket connections.
   * `gui_connected_var` (default `gui_connected`) This is the name of the Bool variable that will be set to _true_ if at least one web app is connected.
+  * `go_var` (default `go`) Name of the Bool variable set when VSM receives a `Go` message.
+  * `request_result_var` (default `request_result`) Name of the String variable set to `SUBMIT` or `CANCEL` upon user selection in the requested form.
 * Run the project
 * Open a browser at `localhost:8080`
 * To show a request form, in the VSM project execute an action like this:
@@ -96,13 +98,10 @@ This section describes the websocket communication protocol between the web app 
 
   * Example: `VSMMessage#REQUEST#1615553956654#name;surname;weight;gender;graduated#EnterName;EnterSurname;in kg;m,f,d;yes#text;text;text;radio;checkbox`
 
-
 ### Client -> Server messages:
 
 * `VSMMessage#VAR#<var>#<value>` set the value of variable `var`, if defined as global project variable.
   * Example: `VSMMessage#VAR#weight#85`
 
-
 * `VSMMessage#Go` send 'Go' message. This is usually used to hold back a scene flow that has started,
 for example to hide VSM from study participants.
-
