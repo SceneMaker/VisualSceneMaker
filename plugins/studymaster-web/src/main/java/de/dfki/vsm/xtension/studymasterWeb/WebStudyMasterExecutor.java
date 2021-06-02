@@ -110,7 +110,7 @@ public class WebStudyMasterExecutor extends ActivityExecutor {
             ws.onConnect(this::addWs);
             ws.onMessage(ctx -> this.handleGUIMessage(ctx.message()));
             ws.onClose(this::removeWs);
-            ws.onError(ctx -> mLogger.failure("Errored: " + ctx.error()));
+            ws.onError(ctx -> mLogger.failure("WebSocket Error: " + ctx.error()));
         });
     }
 
