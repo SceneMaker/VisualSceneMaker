@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<SceneFlow id="" name="default" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Tue, 1 Jun 2021 17:33:52" start="N1;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
+<SceneFlow id="" name="default" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Wed, 2 Jun 2021 11:23:21" start="N1;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
   <Define>
   </Define>
   <Declare>
@@ -51,11 +51,11 @@
   </Comment>
   <Comment>
     <Graphics>
-      <Boundary xPos="179" yPos="353" width="269" height="104"/>
+      <Boundary xPos="179" yPos="353" width="272" height="56"/>
     </Graphics>
     <Text style="color:blue">
       User clicked Cancel.
-      Go back to the beginning.
+            Go back to the beginning.
     </Text>
   </Comment>
   <Comment>
@@ -64,6 +64,14 @@
     </Graphics>
     <Text style="color:blue">
       Start.
+    </Text>
+  </Comment>
+  <Comment>
+    <Graphics>
+      <Boundary xPos="4" yPos="508" width="372" height="78"/>
+    </Graphics>
+    <Text style="color:blue">
+      Alternatively, you can also wait for a flag until the interface is shown to the user.
     </Text>
   </Comment>
   <Node id="N1" name="N1" history="false">
@@ -192,7 +200,7 @@
       </Graphics>
       <Text style="color:blue">
         Send the message to show the form on the webpage.
-        Go to http://localhost:8080 to see the form.
+                Go to http://localhost:8080 to see the form.
       </Text>
     </Comment>
     <Comment>
@@ -221,7 +229,7 @@
       </Declare>
       <Commands>
         <PlayScene>
-          <StringLiteral><![CDATA[SetRequest]]></StringLiteral>
+          <StringLiteral><![CDATA[RequestUserInfo]]></StringLiteral>
         </PlayScene>
       </Commands>
       <FEdge target="N6" start="">
@@ -330,7 +338,7 @@
       </Declare>
       <Commands>
         <PlayScene>
-          <StringLiteral><![CDATA[SetRequest]]></StringLiteral>
+          <StringLiteral><![CDATA[RequestUserInfo]]></StringLiteral>
         </PlayScene>
       </Commands>
       <FEdge target="N9" start="">
