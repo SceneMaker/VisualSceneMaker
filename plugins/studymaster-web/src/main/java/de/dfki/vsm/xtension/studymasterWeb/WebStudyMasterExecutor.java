@@ -62,14 +62,14 @@ public class WebStudyMasterExecutor extends ActivityExecutor {
     private String mSceneflowGoVar ;
 
     /** This is the name of a Boolean global project variable that will be bet to _true_ when at least one web app is connected.*/
-    public String mGUIConnectedVar = "";
+    public String mGUIConnectedVar ;
 
     /** This is a "cache" of the last request sent to all connected GUIs.
      * The string contains the message already formatted to the communication protocol.
      * It will be used to send again the request to GUIs connecting after the REQUEST action was issued.
      * If null, no pending request is active.
      */
-    private String mLastRequestMessage = null;
+    private String mLastRequestMessage ;
 
     /**
      * Default constructor, pass values to superclass.
@@ -231,8 +231,6 @@ public class WebStudyMasterExecutor extends ActivityExecutor {
                     + sMSG_SEPARATOR
                     + typeRequest.replace("'", "") ;
 
-//      } else if (!mMessage.equalsIgnoreCase("REQUEST")) {
-//            return message(mMessage, mMessageTimeInfo, timestamp);
         } else {
             throw new IllegalArgumentException("REQUEST message malformed") ;
         }
@@ -265,28 +263,30 @@ public class WebStudyMasterExecutor extends ActivityExecutor {
             String[] msgParts = message.split(sMSG_SEPARATOR);
 
             if (msgParts.length > 1) {
-                // String msgHeader = msgParts[0];
                 String msg = msgParts[1];
 
                 // MESSAGE VAR: VSMMessage#VAR#<var>#<value>
-                if (msg.equalsIgnoreCase("VAR")) {
+                if (msg.equals("VAR")) {
                     String var = msgParts[2];
                     String value = msgParts[3];
+
+                    // If we received the user choice (submit/cancel)
+                    if(var.equals(sREQUEST_RESULT_VAR_DEFAULT)) {
+                        // Reassign the variable name to the one defined in the properties
+                        var = mRequestResultVar ;
+                        // reset the request cache
+                        mLastRequestMessage = null ;
+                    }
 
                     if (mProject.hasVariable(var)) {
                         mLogger.message("Assigning sceneflow variable " + var + " with value " + value);
                         mProject.setVariable(var, new StringValue(value));
-
-                        // If we received the user choice (submit/cancel), reset the request cache
-                        if(var.equals(sREQUEST_RESULT_VAR)) {
-                            mLastRequestMessage = null ;
-                        }
                     } else {
                         mLogger.warning("Can't assign sceneflow variable " + var + " with value " + value + ": global project variable not defined");
                     }
 
                 // MESSAGE GO: VSMMessage#Go
-                } else if(msg.equalsIgnoreCase("Go")) {
+                } else if(msg.equals("Go")) {
                     mLogger.message("Assigning sceneflow variable " + mSceneflowGoVar + " with value " + message);
                     mProject.setVariable(mSceneflowGoVar, true);
 
