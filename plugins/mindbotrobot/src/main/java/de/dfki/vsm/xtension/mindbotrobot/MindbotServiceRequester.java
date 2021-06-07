@@ -45,6 +45,7 @@ public class MindbotServiceRequester extends AbstractNodeMain {
     private ServiceClient<mindbot_msgs.SetCtrlModeRequest, mindbot_msgs.SetCtrlModeResponse> _setCtrlModeService;
     private ServiceClient<mindbot_msgs.SetFloatRequest, mindbot_msgs.SetFloatResponse> _setMinClearanceService;
     private ServiceClient<mindbot_msgs.SetGripperActionRequest, mindbot_msgs.SetGripperActionResponse> _setGripperActionService;
+    private ServiceClient<mindbot_msgs.SetDetectionRequest, mindbot_msgs.SetDetectionResponse > _setDetectionService;
 
     private LOGDefaultLogger mLogger ;
 
@@ -87,6 +88,7 @@ public class MindbotServiceRequester extends AbstractNodeMain {
             _setCtrlModeService = connectedNode.newServiceClient("/mindbot/robot/set_ctrl_mode", mindbot_msgs.SetCtrlMode._TYPE);
             _setMinClearanceService = connectedNode.newServiceClient("/mindbot/robot/set_min_clearance", mindbot_msgs.SetFloat._TYPE);
             _setGripperActionService = connectedNode.newServiceClient("/mindbot/robot/set_gripper_action", mindbot_msgs.SetGripperAction._TYPE);
+            _setDetectionService = connectedNode.newServiceClient("/mindbot/robot/set_detection", mindbot_msgs.SetDetection._TYPE) ;
 
             //
             // Instantiate the listening service, receiving the result of the calls.
@@ -417,6 +419,20 @@ public class MindbotServiceRequester extends AbstractNodeMain {
 
         MindBotResponseListener<SetGripperActionResponse> listener = new MindBotResponseListener<>(true) ;
         _setGripperActionService.call(request, listener);
+    }
+
+    /** /mindbot/robot/set_detection
+     * Service type is mindbot_msgs::SetDetection
+     *
+     * @param obj_name The nam of the object to be detected.
+     */
+    public void setVisualDetection(String obj_name) {
+        SetDetectionRequest request = _setDetectionService.newMessage() ;
+
+        request.setObjectName(obj_name);
+
+        MindBotResponseListener<SetDetectionResponse> listener = new MindBotResponseListener<>(true) ;
+        _setDetectionService.call(request, listener) ;
     }
 
 }

@@ -40,71 +40,6 @@ public final class MindbotRobotExecutor extends ActivityExecutor {
     }
 
 
-    private static int addressBytesToInt(byte[] addr_bytes) {
-        int addr_int = ((addr_bytes[0] << 24) & 0xff000000) |
-                ((addr_bytes[1] << 16) & 0x00ff0000) |
-                ((addr_bytes[2] << 8) & 0x0000ff00) |
-                ( addr_bytes[3] & 0x000000ff) ;
-        return addr_int;
-    }
-
-    public static class NetBindingResult {
-
-        public NetworkInterface intf ;
-        public InetAddress addr ;
-
-        public NetBindingResult(NetworkInterface interf, InetAddress address) {
-            this.intf = interf ;
-            this.addr = address ;
-        }
-
-    }
-
-    /**
-     *
-     * @param remote_addr A (remote) IPv4 address to contact
-     * @return The pair (interface,local_address), where the local address can be used to bind a Socket for a communication.
-     * @throws SocketException At the monet, can be raised only if the list of interfaces can not be retrieved.
-     */
-    private static NetBindingResult getBestInterfaceFor(Inet4Address remote_addr) throws SocketException {
-        byte[] remote_addr_bytes = remote_addr.getAddress();
-        int remote_addr_int = addressBytesToInt(remote_addr_bytes);
-
-        // Look for a compatible address on all the network interfaces...
-        Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
-        while(interfaces.hasMoreElements()) {
-            NetworkInterface intf = interfaces.nextElement();
-
-            // ... and through all of its addresses
-            List<InterfaceAddress> intf_addrs = intf.getInterfaceAddresses();
-            for(InterfaceAddress intf_addr : intf_addrs) {
-                InetAddress local_addr = intf_addr.getAddress();
-                byte[] local_addr_bytes = local_addr.getAddress();
-
-                if(local_addr_bytes.length != remote_addr_bytes.length) {
-                    // Likely, IP4 vs. IP6
-                    continue;
-                }
-
-                int local_addr_int = addressBytesToInt(local_addr_bytes) ;
-
-                // Compare the integer (4 bytes) version of the masked addresses.
-                short intf_prefix = intf_addr.getNetworkPrefixLength() ;
-                int net_mask = 0xffffffff << (32 - intf_prefix) ;
-                int intf_addr_masked = local_addr_int & net_mask ;
-                int remote_addr_masked = remote_addr_int & net_mask ;
-
-                // If the two netwrok prefixes match, then we use this address
-                if(intf_addr_masked == remote_addr_masked) {
-                    return new NetBindingResult(intf, local_addr) ;
-                }
-
-            }
-        }
-
-        return null ;
-    }
-
     @Override
     public final void launch() {
 
@@ -121,12 +56,12 @@ public final class MindbotRobotExecutor extends ActivityExecutor {
 
         //
         // Retrieve the local IP which can be used to contact ROS
-        NetBindingResult binding_result = null ;
+        NetTools.NetBindingResult binding_result = null ;
 
         try {
             String ros_host = ros_uri.getHost() ;
             InetAddress ros_addr = Inet4Address.getByName(ros_host) ;
-            binding_result = getBestInterfaceFor((Inet4Address)ros_addr);
+            binding_result = NetTools.getBestInterfaceFor((Inet4Address)ros_addr);
         } catch (Exception e) {
             String msg = "Exception while searching for a local address for connection to ROS host " + ros_uri.getHost() + ": " + e.getMessage() ;
             mLogger.failure(msg);
@@ -281,7 +216,7 @@ public final class MindbotRobotExecutor extends ActivityExecutor {
             int actionID = -1 ;
 
             switch (cmd) {
-                case "set_joint_target": {
+                case "set_joint_target":
                     // All parameters are in fact comma-separated lists of values.
                     // E.g.: botty: [set_joint_target joint_names="j1, j2, j3" positions="34.1, 5.4, 6.7" velocities="...", efforts="..." ].
 
@@ -299,8 +234,8 @@ public final class MindbotRobotExecutor extends ActivityExecutor {
                     actionID = serviceReq.setJointTarget(joint_names_list, positions_rads, velocities_rads, efforts);
 
                     break;
-                }
-                case "set_tcp_target": {
+
+                case "set_tcp_target":
 
                     float x = Float.parseFloat(features_map.get("x"));
                     float y = Float.parseFloat(features_map.get("y"));
@@ -313,54 +248,62 @@ public final class MindbotRobotExecutor extends ActivityExecutor {
                     actionID = serviceReq.setTcpTarget(x, y, z, or_w, or_x, or_y, or_z);
 
                     break;
-                }
-                case "set_max_tcp_velocity": {
 
-                    float x = Float.parseFloat(features_map.get("x"));
-                    float y = Float.parseFloat(features_map.get("y"));
-                    float z = Float.parseFloat(features_map.get("z"));
-                    serviceReq.setMaxTcpVelocity(x, y, z);
+                case "set_max_tcp_velocity":
 
-                    break;
-                }
-                case "set_max_tcp_acceleration": {
-
-                    float x = Float.parseFloat(features_map.get("x"));
-                    float y = Float.parseFloat(features_map.get("y"));
-                    float z = Float.parseFloat(features_map.get("z"));
-                    serviceReq.setMaxTcpAcceleration(x, y, z);
+                    float tcp_v_x = Float.parseFloat(features_map.get("x"));
+                    float tcp_v_y = Float.parseFloat(features_map.get("y"));
+                    float tcp_v_z = Float.parseFloat(features_map.get("z"));
+                    serviceReq.setMaxTcpVelocity(tcp_v_x, tcp_v_y, tcp_v_z);
 
                     break;
-                }
+
+                case "set_max_tcp_acceleration":
+
+                    float tcp_acc_x = Float.parseFloat(features_map.get("x"));
+                    float tcp_acc_y = Float.parseFloat(features_map.get("y"));
+                    float tcp_acc_z = Float.parseFloat(features_map.get("z"));
+                    serviceReq.setMaxTcpAcceleration(tcp_acc_x, tcp_acc_y, tcp_acc_z);
+
+                    break;
+
                 case "set_ctrl_state":
 
-                    byte s = Byte.parseByte(features_map.get("state"));
-                    serviceReq.setCtrlState(s);
+                    byte ctrl_state = Byte.parseByte(features_map.get("state"));
+                    serviceReq.setCtrlState(ctrl_state);
 
                     break;
+
                 case "set_ctrl_mode":
 
-                    byte m = Byte.parseByte(features_map.get("mode"));
-                    serviceReq.setCtrlMode(m);
+                    byte ctrl_mode = Byte.parseByte(features_map.get("mode"));
+                    serviceReq.setCtrlMode(ctrl_mode);
 
                     break;
-                case "set_min_clearance":
 
+                case "set_min_clearance":
                     float min_clearance = Float.parseFloat(features_map.get("min_clearance"));
                     serviceReq.setMinClearanceService(min_clearance);
 
                     break;
+
                 case "set_gripper_closure":
 
-                    int closure = Integer.parseInt(features_map.get("closure")) ;
-                    int velocity = Integer.parseInt(features_map.get("velocity")) ;
-                    int force = Integer.parseInt(features_map.get("force")) ;
-                    serviceReq.setGripperAction(closure, velocity, force);
+                    int grip_closure = Integer.parseInt(features_map.get("closure")) ;
+                    int grip_velocity = Integer.parseInt(features_map.get("velocity")) ;
+                    int grip_force = Integer.parseInt(features_map.get("force")) ;
+                    serviceReq.setGripperAction(grip_closure, grip_velocity, grip_force);
 
                     break;
+
+                case "detect_object":
+                    String detection_obj_name = features_map.get("name") ;
+                    serviceReq.setVisualDetection(detection_obj_name);
+
+                    break;
+
                 default:
                     mLogger.failure("Unrecognized action '" + cmd + "'");
-                    break;
             }
 
             if(actionID != -1) {

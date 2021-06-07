@@ -189,4 +189,13 @@
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
+  <SceneObject lower="1624" upper="1682" language="@@" identifier="DetectObject">
+    <SceneTurn lower="1646" upper="1682" speaker="botty">
+      <SceneUttr lower="1654" upper="1682" punct=".">
+        <ActionObject lower="1654" upper="1667" actor="" name="detect_object">
+          <ActionFeature lower="1668" upper="1680" key="name" val="'gear1'"/>
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
 </SceneScript>

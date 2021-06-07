@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<SceneFlow id="" name="default" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Fri, 28 May 2021 17:30:15" start="S1;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
+<SceneFlow id="" name="default" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Mon, 7 Jun 2021 17:23:45" start="S9;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
   <Define>
   </Define>
   <Declare>
@@ -41,7 +41,7 @@
   </GlobalVariableBadge>
   <Comment>
     <Graphics>
-      <Boundary xPos="54" yPos="230" width="314" height="79"/>
+      <Boundary xPos="16" yPos="228" width="314" height="79"/>
     </Graphics>
     <Text style="color:blue">
       To decide what commands to test, right click on the super-states and use "Set Start" ot "UnsetStart"
@@ -777,10 +777,10 @@
       </Graphics>
       <Text style="color:blue">
         DESCRIPTION:
-                                                                                                                                                                                                First, open the gripper at max speed.
-                                                                                                                                                                                                As soon as it is open, close it to the maximum.
-                                                                                                                                                                                                Then, wait a bit
-                                                                                                                                                                                                Repeat forever.
+                                                                                                                                                                                                                        First, open the gripper at max speed.
+                                                                                                                                                                                                                        As soon as it is open, close it to the maximum.
+                                                                                                                                                                                                                        Then, wait a bit
+                                                                                                                                                                                                                        Repeat forever.
       </Text>
     </Comment>
     <Node id="N3" name="History" history="true">
@@ -855,6 +855,75 @@
       </EEdge>
       <Graphics>
         <Position xPos="210" yPos="210"/>
+      </Graphics>
+    </Node>
+  </SuperNode>
+  <SuperNode id="S9" name="set_detection" comment="" hideLocalVar="false" hideGlobalVar="false" start="N37;">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <Graphics>
+      <Position xPos="480" yPos="210"/>
+    </Graphics>
+    <LocalVariableBadge>
+      <Position xPos="10" yPos="10"/>
+    </LocalVariableBadge>
+    <GlobalVariableBadge>
+      <Position xPos="10" yPos="10"/>
+    </GlobalVariableBadge>
+    <Node id="N36" name="History" history="true">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+      </Commands>
+      <Graphics>
+        <Position xPos="30" yPos="30"/>
+      </Graphics>
+    </Node>
+    <Node id="N37" name="N37" history="false">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+      </Commands>
+      <TEdge target="N38" start="" timeout="3000">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="120" yPos="255" ctrlXPos="187" ctrlYPos="255"/>
+          <ControlPoint xPos="300" yPos="255" ctrlXPos="232" ctrlYPos="255"/>
+        </Connection>
+      </Graphics>
+      </TEdge>
+      <Graphics>
+        <Position xPos="30" yPos="210"/>
+      </Graphics>
+    </Node>
+    <Node id="N38" name="N38" history="false">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+        <PlayScene>
+          <StringLiteral><![CDATA[DetectObject]]></StringLiteral>
+        </PlayScene>
+      </Commands>
+      <TEdge target="N38" start="" timeout="5000">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="357" yPos="212" ctrlXPos="381" ctrlYPos="126"/>
+          <ControlPoint xPos="384" yPos="232" ctrlXPos="462" ctrlYPos="186"/>
+        </Connection>
+      </Graphics>
+      </TEdge>
+      <Graphics>
+        <Position xPos="300" yPos="210"/>
       </Graphics>
     </Node>
   </SuperNode>
