@@ -20,14 +20,16 @@ public class MindbotServiceRequester extends AbstractNodeMain {
 
     // Possible state paths:
     // CALLED -> FAILURE
-    // CALLED -> EXECUTING -> ABORTED
+    // CALLED -> UNREACHABLE
+    // CALLED -> UNSUCCESSFUL
+    // CALLED -> EXECUTING -> FAILED
     // CALLED -> EXECUTING -> DONE
     public enum CallState {
         CALLED,     // The remote ROS service has been called
-        FAILURE,    // The remote ROS service answered FAILURE. Will not be executed. Don't wait for it.
-        // TODO -- ad an UNSUCCESS state
+        UNREACHABLE,    // The remote ROS service answered FAILURE. The action will not be executed. Don't wait for it.
+        UNSUCCESSFUL, // The remote ROS service was reachable but the recipient responded that the request can not be accomplished.
         EXECUTING,    // The remote ROS service answered SUCCESS. Action is in execution on the ROS side. Expect an action_done call when finished.
-        ABORTED,    // The remote ROS called back the action_done service to inform that the call couldn't execute properly.
+        FAILED,    // The remote ROS called back the action_done service to inform that the call couldn't execute properly.
         DONE        // The remote ROS called back the action_done to inform that the call was executed successfully.
     }
 
@@ -120,10 +122,14 @@ public class MindbotServiceRequester extends AbstractNodeMain {
             // TODO -- We should inform the user and abort the project.
             synchronized (actionsState) {
                 s = actionsState.get(actionID);
-                if (s == CallState.DONE || s == CallState.FAILURE || s == CallState.ABORTED) {
+                if (s == CallState.DONE
+                        || s == CallState.UNREACHABLE
+                        || s == CallState.UNSUCCESSFUL
+                        || s == CallState.FAILED) {
                     break;
                 } else {
-                    // Here, the call is either just CALLED or SUCCESS. We have to wait.
+                    // Here, the call is either just CALLED or EXECUTING. We have to wait.
+                    assert (s == CallState.CALLED || s == CallState.EXECUTING) ;
                     try {
                         actionsState.wait(1000);
                         mRobotFeedback.logWarning("Still waiting for 'action_done' for localID " + actionID);
@@ -151,7 +157,6 @@ public class MindbotServiceRequester extends AbstractNodeMain {
 
         }
 
-
         return s ;
     }
 
@@ -174,7 +179,7 @@ public class MindbotServiceRequester extends AbstractNodeMain {
             int rosCallID = request.getCallID();
             // the result ID: 0=ERROR, 1=OK
             int result = request.getResult();
-            CallState s = (result == 1) ? CallState.DONE : CallState.ABORTED;
+            CallState s = (result == 1) ? CallState.DONE : CallState.FAILED;
 
             String message = request.getMessage() ;
 
@@ -235,13 +240,18 @@ public class MindbotServiceRequester extends AbstractNodeMain {
         @Override
         public void onSuccess(Message response) {
 
-            boolean success = response.toRawMessage().getBool("success") ;
-            String message = response.toRawMessage().getString("message") ;
-            // TODO -- test this and gracefully fail if false
-
-
             if(this.vsmActionID != -1) {
+                boolean success = response.toRawMessage().getBool("success") ;
+                String message = response.toRawMessage().getString("message") ;
+
+                if(!success) {
+                    mRobotFeedback.setActionState(CallState.UNSUCCESSFUL.toString());
+                    mRobotFeedback.setActionMessage(message);
+                    return ;
+                }
+
                 int rosActionID = response.toRawMessage().getInt32("action_id");
+
                 synchronized (actionsState) {
                     actionsState.put(vsmActionID, CallState.EXECUTING);
                     rosToActionID.put(rosActionID, vsmActionID);
@@ -261,9 +271,9 @@ public class MindbotServiceRequester extends AbstractNodeMain {
             if(this.vsmActionID != -1) {
 
                 synchronized (actionsState) {
-                    actionsState.put(vsmActionID, CallState.FAILURE);
+                    actionsState.put(vsmActionID, CallState.UNREACHABLE);
 
-                    mRobotFeedback.setActionState(CallState.FAILURE.toString());
+                    mRobotFeedback.setActionState(CallState.UNREACHABLE.toString());
                 }
             }
 

@@ -308,8 +308,8 @@ public final class MindbotRobotExecutor extends ActivityExecutor implements Mind
 
             if(actionID != -1) {
                 MindbotServiceRequester.CallState result = serviceReq.waitAction(actionID) ;
-                if(result == MindbotServiceRequester.CallState.FAILURE
-                        || result== MindbotServiceRequester.CallState.ABORTED) {
+                if(result == MindbotServiceRequester.CallState.UNREACHABLE
+                        || result== MindbotServiceRequester.CallState.FAILED) {
                     // TODO -- This is a candidate information to be notified in the interface (pop up?).
                     mLogger.failure("Action '" + cmd + "' (localID=" + actionID + ") reported error: " + result + ". Delaying (" + ACTION_ABORT_DELAY_MILLIS + " millis)...");
                     try {

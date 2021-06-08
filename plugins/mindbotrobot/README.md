@@ -47,7 +47,7 @@ _The full-stop at the end is mandatory!_
 
 The following actions can be invoked within scenes:
 
-* `set_joint_target` The parameters specify a comma-separated list of joint names and their respective target position (rotation in degrees), velocity (in degrees/sec), and effort (N/m).
+* `set_joint_target` (Blocking) The parameters specify a comma-separated list of joint names and their respective target position (rotation in degrees), velocity (in degrees/sec), and effort (N/m).
   * Parameters:
     * `joint_names`
     * `positions`
@@ -55,7 +55,7 @@ The following actions can be invoked within scenes:
     * `efforts`
   * Example (names for iiwa robot): `[set_joint_target joint_names='iiwa_joint_0,iiwa_joint_1,iiwa_joint_2,iiwa_joint_3,iiwa_joint_4,iiwa_joint_5,iiwa_joint_6' positions='10,10,10,10,10,10,10' velocities='1,1,2,2,3,3,5' efforts='10,10,30,30,50,50,80']`.
     It sets all the joints at 10 degrees rotation.
-* `set_tcp_target` Set position and rotation (orientation) of the robot end effector.
+* `set_tcp_target` (Blocking) Set position and rotation (orientation) of the robot end effector.
   * Parameters:
     * `x`
     * `y`
@@ -89,13 +89,40 @@ The following actions can be invoked within scenes:
   * Parameters:
     * `min_clearance`
   * Example: `[set_min_clearance min_clearance=0.5].`
-* `set_gripper_closure` Set the closure of the gripper, or better, tries to reach the specified closure, at a given speed, and stops before if a certain resistance force threshold limit is reached.
+* `set_gripper_closure` (Blocking) Set the closure of the gripper, or better, tries to reach the specified closure, at a given speed, and stops before if a certain resistance force threshold limit is reached.
   * Parameters:
     * `closure` An integer between 0 and 255 setting the distance between the gripper tips. Indicative values (subject to changes among robots): 0=60mm, 255=10mm.
     * `velocity` An integer between 0 and 255 setting the movement speed of the gripper. Indicative values (subject to changes among robots): 0=20mm/sec, 255=150mm/sec.
     * `force` An integer between 0 and 255 setting the maximum force exerted by the gripper before stopping. Indicative values (subject to changes among robots): 0=no_force 255=5Kg.
   * Example: `[set_gripper_closure closure=255 velocity=150 force=2]`
-* `detect_object` Starts the procedure for a visual detection of an object.
+* `detect_object` (Blocking) Starts the procedure for a visual detection of an object.
   * Parameters:
     * `name` The name of the object to detect. The name will be resolved and associated to some physical entity at the cobot side.
   * Example: `[detect_object name='gear1']`
+  
+## Command feedback
+
+If actions are _blocking_, during their execution the VSM node will stop and be unlocked only
+after the `action_done` service is called back, upon execution termination.
+E.g., when the TCP reaches the requested position.
+
+During the execution of _blocking_ actions, the project variable `robot_action_state` will be updated according to the following scheme (Java code extract):
+
+```java
+    // Possible state paths:
+    // CALLED -> FAILURE
+    // CALLED -> UNREACHABLE
+    // CALLED -> UNSUCCESSFUL
+    // CALLED -> EXECUTING -> FAILED
+    // CALLED -> EXECUTING -> DONE
+    public enum CallState {
+        CALLED,     // The remote ROS service has been called
+        UNREACHABLE,    // The remote ROS service answered FAILURE. The action will not be executed. Don't wait for it.
+        UNSUCCESSFUL, // The remote ROS service was reachable but the recipient responded that the request can not be accomplished.
+        EXECUTING,    // The remote ROS service answered SUCCESS. Action is in execution on the ROS side. Expect an action_done call when finished.
+        FAILED,    // The remote ROS called back the action_done service to inform that the call couldn't execute properly.
+        DONE        // The remote ROS called back the action_done to inform that the call was executed successfully.
+    }
+```
+
+For the FAILED and DONE states, also the project variable `robot_action_message` will be set.
