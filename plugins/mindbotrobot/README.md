@@ -20,14 +20,14 @@ Refer to the official VSM documentation on how to set up a project and execute s
 
 ![MindBotRobot plugin configuration](images/VSM-MindBotRobotConfig.png)
 
-* Setup the project variables:
+* Setup the project global variables that will be updated while the project runs:
   * `robot_ctrl_mode` (String): returns the mode of the robot among: `MODE0`, `MODE1`, `MODE2`, `Undefined`.
   * `robot_ctrl_state` (String): returns the state of the robot among: `ON`, `OFF`, `ERROR`, `Undefined`.
   * A set of variables for the TCP pose of the robot:
     * `robot_x`, `robot_y`, `robot_z` (Float) for the TCP position; and
     * `robot_or_w`,`robot_or_x`, `robot_or_y`, `robot_or_z` (Float) for the TCP orientation quaternion;
-
-Those variables will be continuously updated when the project runs.
+  * `robot_action_state` (String): it is updated during the execution of a remote action which expects an `action_done` callback.
+  * `robot_action_message` (String): it is updated with the message brought by the last `action_done` callback.
 
 ![Project Variables](images/VSM-MindBotControlDemo.png)
 
@@ -35,9 +35,13 @@ Those variables will be continuously updated when the project runs.
 ## Invoking cobot commands
 
 The MindBot cobot cannot speak, hence there is no support for text parsing.
-Scene utterances must be composed solely by actions. E.g.:
+Scene utterances must be composed solely by actions:
 
     <agent_name>: [<action_name> <parameter1>="<value1>" <parameter2>="<value2>"].
+    
+For example:
+
+    botty: [set_tcp_target x=0.64 y=-0.15 z=0.95 or_w=0.50 or_x=-0.50 or_y=-0.50 or_z=0.50].
 
 _The full-stop at the end is mandatory!_
 
@@ -91,3 +95,7 @@ The following actions can be invoked within scenes:
     * `velocity` An integer between 0 and 255 setting the movement speed of the gripper. Indicative values (subject to changes among robots): 0=20mm/sec, 255=150mm/sec.
     * `force` An integer between 0 and 255 setting the maximum force exerted by the gripper before stopping. Indicative values (subject to changes among robots): 0=no_force 255=5Kg.
   * Example: `[set_gripper_closure closure=255 velocity=150 force=2]`
+* `detect_object` Starts the procedure for a visual detection of an object.
+  * Parameters:
+    * `name` The name of the object to detect. The name will be resolved and associated to some physical entity at the cobot side.
+  * Example: `[detect_object name='gear1']`

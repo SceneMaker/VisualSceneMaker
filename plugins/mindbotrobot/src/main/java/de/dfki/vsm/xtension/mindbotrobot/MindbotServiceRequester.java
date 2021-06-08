@@ -1,6 +1,5 @@
 package de.dfki.vsm.xtension.mindbotrobot;
 
-import de.dfki.vsm.util.log.LOGDefaultLogger;
 import mindbot_msgs.*;
 import org.ros.exception.RemoteException;
 import org.ros.exception.RosRuntimeException;
@@ -21,14 +20,15 @@ public class MindbotServiceRequester extends AbstractNodeMain {
 
     // Possible state paths:
     // CALLED -> FAILURE
-    // CALLED -> SUCCESS -> ABORTED
-    // CALLED -> SUCCESS -> DONE
+    // CALLED -> EXECUTING -> ABORTED
+    // CALLED -> EXECUTING -> DONE
     public enum CallState {
         CALLED,     // The remote ROS service has been called
-        FAILURE,    // The remote ROS service answered FAILURE (will not be executed. Don't wait for it)
-        SUCCESS,    // The remote ROS service answered SUCCESS (still being in execution on the ROS side)
-        ABORTED,    // The remote ROS called back our service to inform that the call couldn't execute properly
-        DONE        // The remote ROS called back our service to inform that the call was executed successfully
+        FAILURE,    // The remote ROS service answered FAILURE. Will not be executed. Don't wait for it.
+        // TODO -- ad an UNSUCCESS state
+        EXECUTING,    // The remote ROS service answered SUCCESS. Action is in execution on the ROS side. Expect an action_done call when finished.
+        ABORTED,    // The remote ROS called back the action_done service to inform that the call couldn't execute properly.
+        DONE        // The remote ROS called back the action_done to inform that the call was executed successfully.
     }
 
 
@@ -47,10 +47,10 @@ public class MindbotServiceRequester extends AbstractNodeMain {
     private ServiceClient<mindbot_msgs.SetGripperActionRequest, mindbot_msgs.SetGripperActionResponse> _setGripperActionService;
     private ServiceClient<mindbot_msgs.SetDetectionRequest, mindbot_msgs.SetDetectionResponse > _setDetectionService;
 
-    private LOGDefaultLogger mLogger ;
+    private MindbotRobotFeedback mRobotFeedback;
 
-    public MindbotServiceRequester(LOGDefaultLogger logger) {
-        mLogger = logger ;
+    public MindbotServiceRequester(MindbotRobotFeedback feedback) {
+        mRobotFeedback = feedback ;
     }
 
     @Override
@@ -64,10 +64,10 @@ public class MindbotServiceRequester extends AbstractNodeMain {
     /** An incremental counter to determine a local actionID for each call. */
     private static int _actionCounter = 0;
 
-    /** Maps the call IDs to their call state.*/
+    /** Maps the local actionIDs to their call state.*/
     private final HashMap<Integer, CallState> actionsState = new HashMap<>();
 
-    /** Maps the id that ROS generated for a call to the local actionID. */
+    /** Maps the id that ROS generated for a call (rosID) to the local actionID. */
     private final  HashMap<Integer, Integer> rosToActionID = new HashMap<>() ;
 
     /** Check for setup state.
@@ -126,7 +126,7 @@ public class MindbotServiceRequester extends AbstractNodeMain {
                     // Here, the call is either just CALLED or SUCCESS. We have to wait.
                     try {
                         actionsState.wait(1000);
-                        mLogger.warning("Still waiting for 'action_done' for localID " + actionID);
+                        mRobotFeedback.logWarning("Still waiting for 'action_done' for localID " + actionID);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
@@ -184,6 +184,9 @@ public class MindbotServiceRequester extends AbstractNodeMain {
                     int actionID = rosToActionID.get(rosCallID);
                     actionsState.put(actionID, s);
                     actionsState.notifyAll();
+
+                    mRobotFeedback.setActionState(s.toString());
+                    mRobotFeedback.setActionMessage(message);
                 }
                 // if the is was not in the map, it is possible that VSM re-started when a robot acton was still executing
             }
@@ -214,6 +217,9 @@ public class MindbotServiceRequester extends AbstractNodeMain {
                 this.vsmActionID = _actionCounter++;
                 synchronized (actionsState) {
                     actionsState.put(this.vsmActionID, CallState.CALLED);
+
+                    mRobotFeedback.setActionState(CallState.CALLED.toString());
+                    mRobotFeedback.setActionMessage("");
                 }
             }
 
@@ -223,38 +229,48 @@ public class MindbotServiceRequester extends AbstractNodeMain {
             return this.vsmActionID ;
         }
 
-        @Override
         /** This will be invoked as a (positive) result when th execution of a ROS service has succeeded.
          * We update the state of the running action and memorize the association between the action localID and rosID.
          */
-         public void onSuccess(Message response) {
+        @Override
+        public void onSuccess(Message response) {
 
             boolean success = response.toRawMessage().getBool("success") ;
+            String message = response.toRawMessage().getString("message") ;
             // TODO -- test this and gracefully fail if false
+
 
             if(this.vsmActionID != -1) {
                 int rosActionID = response.toRawMessage().getInt32("action_id");
                 synchronized (actionsState) {
-                    actionsState.put(vsmActionID, CallState.SUCCESS);
+                    actionsState.put(vsmActionID, CallState.EXECUTING);
                     rosToActionID.put(rosActionID, vsmActionID);
+
+                    mRobotFeedback.setActionState(CallState.EXECUTING.toString());
+
                 }
             }
 
         }
 
+        /** This is invoked by ROS in case of failure of the infrastructure, i.e., if the call couldn't be executed.
+         */
         @Override
         public void onFailure(RemoteException e) {
 
             if(this.vsmActionID != -1) {
 
-                // This is invoked by ROS in case of failure of the infrastructure
                 synchronized (actionsState) {
                     actionsState.put(vsmActionID, CallState.FAILURE);
+
+                    mRobotFeedback.setActionState(CallState.FAILURE.toString());
                 }
-                throw new RosRuntimeException(e);
             }
 
+            throw new RosRuntimeException(e);
+
         }
+
     }
 
 

@@ -17,7 +17,7 @@ import java.net.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public final class MindbotRobotExecutor extends ActivityExecutor {
+public final class MindbotRobotExecutor extends ActivityExecutor implements MindbotRobotFeedback {
 
     /** This is the delay that we force when an action of the robot, which is supposed to last for a while, faile immediately.
      * This helps preventing dangerous light-speed loops.
@@ -94,7 +94,7 @@ public final class MindbotRobotExecutor extends ActivityExecutor {
         // Setup the service invocation node
         mLogger.message("Registering " + this_host + " as ROS Service Requester to master "  + ros_uri);
         NodeConfiguration serviceReqConfig = NodeConfiguration.newPublic(this_host, ros_uri);
-        serviceReq = new MindbotServiceRequester(mLogger);
+        serviceReq = new MindbotServiceRequester(this);
         serviceReqConfig.setNodeName("MindbotServiceRequester");
         nodeMainExecutor.execute(serviceReq, serviceReqConfig);
 
@@ -321,5 +321,28 @@ public final class MindbotRobotExecutor extends ActivityExecutor {
             }
 
         }
+    }
+
+
+    private final String ROBOT_ACTION_VAR = "robot_action_state" ;
+    private final String ROBOT_MESSAGE_VAR = "robot_action_message" ;
+
+    @Override
+    public void setActionState(String res) {
+        if(mProject.hasVariable(ROBOT_ACTION_VAR)) {
+            mProject.setVariable(ROBOT_ACTION_VAR, res);
+        }
+    }
+
+    @Override
+    public void setActionMessage(String msg) {
+        if(mProject.hasVariable(ROBOT_MESSAGE_VAR)) {
+            mProject.setVariable(ROBOT_MESSAGE_VAR, msg);
+        }
+    }
+
+    @Override
+    public void logWarning(String msg) {
+        mLogger.warning(msg);
     }
 }
