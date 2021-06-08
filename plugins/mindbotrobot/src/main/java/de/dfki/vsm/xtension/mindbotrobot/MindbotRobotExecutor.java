@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 
 public final class MindbotRobotExecutor extends ActivityExecutor implements MindbotRobotFeedback {
 
-    /** This is the delay that we force when an action of the robot, which is supposed to last for a while, faile immediately.
+    /** This is the delay that we force when an action of the robot, which is supposed to last for a while, fails immediately.
      * This helps preventing dangerous light-speed loops.
      */
     private final static int ACTION_ABORT_DELAY_MILLIS = 1000 ;

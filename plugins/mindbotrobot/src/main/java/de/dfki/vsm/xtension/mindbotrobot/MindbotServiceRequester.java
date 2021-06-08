@@ -18,6 +18,11 @@ import java.util.HashMap;
 
 public class MindbotServiceRequester extends AbstractNodeMain {
 
+    /** This is the maximum time allowed to wait for an `action_done` feedback message.
+     * If this time exceeds, the node is anyway unlocked.
+     */
+    private final static int ACTION_DONE_TIMEOUT_MILLIS = 10000 ;
+
     // Possible state paths:
     // CALLED -> FAILURE
     // CALLED -> UNREACHABLE
@@ -116,6 +121,8 @@ public class MindbotServiceRequester extends AbstractNodeMain {
         // Will retain he last state for this action
         CallState s;
 
+        long wait_start = System.currentTimeMillis() ;
+
         // Loop until the action is being processed
         while (true) {
             // TODO -- here, if we wait for too long, it probably means that the robot is disconnected
@@ -137,6 +144,14 @@ public class MindbotServiceRequester extends AbstractNodeMain {
                         e.printStackTrace();
                     }
                 }
+            }
+
+            long elapsed = System.currentTimeMillis() - wait_start;
+            if(elapsed > ACTION_DONE_TIMEOUT_MILLIS) {
+                mRobotFeedback.logWarning("Time out. Waiting time exceeded " + ACTION_DONE_TIMEOUT_MILLIS
+                                + " millis while waiting for action_done feedback for action "
+                                + actionID + ". Proceeding anyway");
+                break ;
             }
 
         }
