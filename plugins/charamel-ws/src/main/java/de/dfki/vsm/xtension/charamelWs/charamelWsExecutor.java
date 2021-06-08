@@ -352,6 +352,11 @@ public class charamelWsExecutor extends ActivityExecutor {
                 broadcast(new TimeLine(new HeadShakeCommand()));
                 break;
             }
+            case "interogative": {
+                broadcast(new TimeLine(new InterogativeCommand()));
+                break;
+
+            }
             case "introduce": {
                 String numberString = getActionFeatureValue("number", f);
                 int number = (numberString.isEmpty()) ? 1 : Integer.parseInt(numberString);
@@ -468,6 +473,10 @@ public class charamelWsExecutor extends ActivityExecutor {
                 int step = (stepString.isEmpty()) ? 1 : Integer.parseInt(stepString);
                 step = (step > 12) ? 12 : ((step < 1) ? 1 : step);
                 broadcast(new TimeLine(new SitTalkCommand(step)));
+                break;
+            }
+            case "supportive": {
+                broadcast(new TimeLine(new SupportiveCommand()));
                 break;
             }
             case "think": {
