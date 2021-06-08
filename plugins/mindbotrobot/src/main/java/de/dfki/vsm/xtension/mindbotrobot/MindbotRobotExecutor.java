@@ -124,15 +124,15 @@ public final class MindbotRobotExecutor extends ActivityExecutor implements Mind
             public void tcpChanged(Pose new_pose) {
                 //mLogger.message("pose updated " + new_pose.getPosition());
                 Point pos = new_pose.getPosition();
-                if(mProject.hasVariable("robot_x")) { mProject.setVariable("robot_x", (float)pos.getX()) ; }
-                if(mProject.hasVariable("robot_y")) { mProject.setVariable("robot_y", (float)pos.getY()) ; }
-                if(mProject.hasVariable("robot_z")) { mProject.setVariable("robot_z", (float)pos.getZ()) ; }
+                if(mProject.hasVariable("robot_tcp_x")) { mProject.setVariable("robot_tcp_x", (float)pos.getX()) ; }
+                if(mProject.hasVariable("robot_tcp_y")) { mProject.setVariable("robot_tcp_y", (float)pos.getY()) ; }
+                if(mProject.hasVariable("robot_tcp_z")) { mProject.setVariable("robot_tcp_z", (float)pos.getZ()) ; }
 
                 Quaternion or = new_pose.getOrientation();
-                if(mProject.hasVariable("robot_or_w")) { mProject.setVariable("robot_or_w", (float)or.getW()) ; }
-                if(mProject.hasVariable("robot_or_x")) { mProject.setVariable("robot_or_x", (float)or.getX()) ; }
-                if(mProject.hasVariable("robot_or_y")) { mProject.setVariable("robot_or_y", (float)or.getY()) ; }
-                if(mProject.hasVariable("robot_or_z")) { mProject.setVariable("robot_or_z", (float)or.getZ()) ; }
+                if(mProject.hasVariable("robot_tcp_or_w")) { mProject.setVariable("robot_tcp_or_w", (float)or.getW()) ; }
+                if(mProject.hasVariable("robot_tcp_or_x")) { mProject.setVariable("robot_tcp_or_x", (float)or.getX()) ; }
+                if(mProject.hasVariable("robot_tcp_or_y")) { mProject.setVariable("robot_tcp_or_y", (float)or.getY()) ; }
+                if(mProject.hasVariable("robot_tcp_or_z")) { mProject.setVariable("robot_tcp_or_z", (float)or.getZ()) ; }
             }
 
 

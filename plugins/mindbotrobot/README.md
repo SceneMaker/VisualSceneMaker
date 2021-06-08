@@ -24,8 +24,8 @@ Refer to the official VSM documentation on how to set up a project and execute s
   * `robot_ctrl_mode` (String): returns the mode of the robot among: `MODE0`, `MODE1`, `MODE2`, `Undefined`.
   * `robot_ctrl_state` (String): returns the state of the robot among: `ON`, `OFF`, `ERROR`, `Undefined`.
   * A set of variables for the TCP pose of the robot:
-    * `robot_x`, `robot_y`, `robot_z` (Float) for the TCP position; and
-    * `robot_or_w`,`robot_or_x`, `robot_or_y`, `robot_or_z` (Float) for the TCP orientation quaternion;
+    * `robot_tcp_x`, `robot_tcp_y`, `robot_tcp_z` (Float) for the TCP position; and
+    * `robot_tcp_or_w`,`robot_tcp_or_x`, `robot_tcp_or_y`, `robot_tcp_or_z` (Float) for the TCP orientation quaternion;
   * `robot_action_state` (String): it is updated during the execution of a remote action which expects an `action_done` callback.
   * `robot_action_message` (String): it is updated with the message brought by the last `action_done` callback.
 
