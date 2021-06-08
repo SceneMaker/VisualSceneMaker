@@ -295,7 +295,7 @@ public class charamelWsExecutor extends ActivityExecutor {
             }
             case "armbewegungen": {
                 String directionString = getActionFeatureValue("direction", f);
-                Direction direction = Direction.valueOf(directionString);
+                Direction direction = (directionString.isEmpty()) ? Direction.RIGHT : Direction.valueOf(directionString);
                 broadcast(new TimeLine(new ArmbewegungenCommand(direction)));
                 break;
             }
@@ -306,13 +306,14 @@ public class charamelWsExecutor extends ActivityExecutor {
             }
             case "converse": {
                 String directionString = getActionFeatureValue("direction", f);
-                Direction direction = Direction.valueOf(directionString);
+                Direction direction = (directionString.isEmpty()) ? Direction.RIGHT : Direction.valueOf(directionString);
                 new ConverseCommand(direction);
                 break;
             }
             case "countleft": {
                 String numberString = getActionFeatureValue("number", f);
-                int number = Integer.parseInt(numberString);
+                int number = (numberString.isEmpty()) ? 1 : Integer.parseInt(numberString);
+                number = (number > 5) ? 5 : number;
                 broadcast(new TimeLine(new CountLeftCommand(number)));
                 break;
             }
@@ -353,7 +354,7 @@ public class charamelWsExecutor extends ActivityExecutor {
             }
             case "introduce": {
                 String numberString = getActionFeatureValue("number", f);
-                int number = Integer.parseInt(numberString);
+                int number = (numberString.isEmpty()) ? 1 : Integer.parseInt(numberString);
                 broadcast(new TimeLine(new IntroduceCommand(number)));
                 break;
             }
@@ -363,33 +364,36 @@ public class charamelWsExecutor extends ActivityExecutor {
             }
             case "legscrossed": {
                 String directionString = getActionFeatureValue("direction", f);
-                Direction direction = Direction.valueOf(directionString);
+                Direction direction = (directionString.isEmpty()) ? Direction.RIGHT : Direction.valueOf(directionString);
                 broadcast(new TimeLine(new LegcrossedCommand(direction)));
                 break;
             }
             case "lookatdirection": {
                 String clockXString = getActionFeatureValue("clockX", f);
                 String clockYString = getActionFeatureValue("clockY", f);
-                int clockX = Integer.parseInt(clockXString);
-                int clockY = Integer.parseInt(clockYString);
+                int clockX = (clockXString.isEmpty()) ? 12 : Integer.parseInt(clockXString);
+                int clockY = (clockYString.isEmpty()) ? 12 : Integer.parseInt(clockYString);
+                clockX = (clockX > 12) ? 12 : ((clockX < 1) ? 1 : clockX);
+                clockY = (clockY > 12) ? 12 : ((clockY < 1) ? 1 : clockY);
                 broadcast(new TimeLine(new LookAtDirectionCommand(clockX, clockY)));
                 break;
             }
             case "lookleft": {
                 String steppingString = getActionFeatureValue("stepping", f);
-                int stepping = Integer.parseInt(steppingString);
+                int stepping = (steppingString.isEmpty()) ? 20 : Integer.parseInt(steppingString);
                 broadcast(new TimeLine(new LookLeftCommand(stepping)));
                 break;
             }
             case "lookright": {
                 String steppingString = getActionFeatureValue("stepping", f);
-                int stepping = Integer.parseInt(steppingString);
+                int stepping = (steppingString.isEmpty()) ? 20 : Integer.parseInt(steppingString);
                 broadcast(new TimeLine(new LookRightCommand(stepping)));
                 break;
             }
             case "luemmeln": {
                 String variantString = getActionFeatureValue("variant", f);
-                int variant = Integer.parseInt(variantString);
+                int variant = (variantString.isEmpty()) ? 1 : Integer.parseInt(variantString);
+                variant = (variant > 6) ? 6 : ((variant < 1) ? 1 : variant);
                 broadcast(new TimeLine(new LuemmelnCommand(variant)));
                 break;
             }
@@ -407,21 +411,23 @@ public class charamelWsExecutor extends ActivityExecutor {
             }
             case "pointopenpalm": {
                 String directionString = getActionFeatureValue("direction", f);
-                Direction direction = Direction.valueOf(directionString);
+                Direction direction = (directionString.isEmpty()) ? Direction.RIGHT : Direction.valueOf(directionString);
                 broadcast(new TimeLine(new PointOpenPalmCommand(direction)));
                 break;
             }
             case "pointovershoulder": {
                 String directionString = getActionFeatureValue("direction", f);
-                Direction direction = Direction.valueOf(directionString);
+                Direction direction = (directionString.isEmpty()) ? Direction.RIGHT : Direction.valueOf(directionString);
                 broadcast(new TimeLine(new PointovershoulderCommand(direction)));
                 break;
             }
             case "pointdownleft": {
                 broadcast(new TimeLine(new PointDownLeft()));
+                break;
             }
             case "pointdownright": {
                 broadcast(new TimeLine(new PointDownRight()));
+                break;
             }
             case "protectassertive": {
                 broadcast(new TimeLine(new ProtectAssertiveCommand()));
@@ -441,7 +447,7 @@ public class charamelWsExecutor extends ActivityExecutor {
             }
             case "showpalmdirection": {
                 String directionString = getActionFeatureValue("direction", f);
-                Direction direction = Direction.valueOf(directionString);
+                Direction direction = (directionString.isEmpty()) ? Direction.RIGHT : Direction.valueOf(directionString);
                 broadcast(new TimeLine(new ShowPalmDirectionCommand(direction)));
                 break;
             }
@@ -459,7 +465,8 @@ public class charamelWsExecutor extends ActivityExecutor {
             }
             case "sittalk": {
                 String stepString = getActionFeatureValue("step", f);
-                int step = Integer.parseInt(stepString);
+                int step = (stepString.isEmpty()) ? 1 : Integer.parseInt(stepString);
+                step = (step > 12) ? 12 : ((step < 1) ? 1 : step);
                 broadcast(new TimeLine(new SitTalkCommand(step)));
                 break;
             }

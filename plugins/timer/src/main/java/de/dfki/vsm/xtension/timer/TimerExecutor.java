@@ -83,7 +83,10 @@ public final class TimerExecutor extends ActivityExecutor {
                     ((hour > 20) && (hour < 24)) ? "late" :
                             ((hour >= 0) && (hour < 4)) ? "very late" :
                                     ((hour >= 4) && (hour < 7)) ? "early" :
-                                            ((hour >= 7) && (hour < 12)) ? "late early" : "mid day";
+                                            ((hour >= 7) && (hour < 12)) ? "late early" :
+                                                    ((hour >= 12) && (hour < 14)) ? "mid day" :
+                                                            ((hour >= 14) && (hour < 16)) ? "late mid day" :
+                                                                    ((hour >= 16) && (hour < 19)) ? "afternoon" : "evening";
             mProject.setVariable(activity.get("var"), partOfDayDescription);
         }
     }

@@ -102,25 +102,26 @@ public class EmmaUserModel extends ActivityExecutor {
         if (name.equalsIgnoreCase("set")) {
             setUserValue("name", activity);
             setUserValue("introduction", activity);
-            setUserValue("break", activity);
-            setUserValue("type", activity);
-            setUserValue("therapy", activity);
-            setUserValue("icd", activity);
-            setUserValue("contact", activity);
-            setUserValue("contactphone", activity);
-            setUserValue("therapist", activity);
-            setUserValue("therapistphone", activity);
-            setUserValue("nextworktime_mo", activity);
-            setUserValue("nextworktime_tu", activity);
-            setUserValue("nextworktime_we", activity);
-            setUserValue("nextworktime_th", activity);
-            setUserValue("nextworktime_fr", activity);
-            setUserValue("actworktime_mo", activity);
-            setUserValue("actworktime_tu", activity);
-            setUserValue("actworktime_we", activity);
-            setUserValue("actworktime_th", activity);
-            setUserValue("actworktime_fr", activity);
-            setUserValue("pos_activitiy", activity);
+            setUserValue("meditation", activity);
+//            setUserValue("break", activity);
+//            setUserValue("type", activity);
+//            setUserValue("therapy", activity);
+//            setUserValue("icd", activity);
+//            setUserValue("contact", activity);
+//            setUserValue("contactphone", activity);
+//            setUserValue("therapist", activity);
+//            setUserValue("therapistphone", activity);
+//            setUserValue("nextworktime_mo", activity);
+//            setUserValue("nextworktime_tu", activity);
+//            setUserValue("nextworktime_we", activity);
+//            setUserValue("nextworktime_th", activity);
+//            setUserValue("nextworktime_fr", activity);
+//            setUserValue("actworktime_mo", activity);
+//            setUserValue("actworktime_tu", activity);
+//            setUserValue("actworktime_we", activity);
+//            setUserValue("actworktime_th", activity);
+//            setUserValue("actworktime_fr", activity);
+//            setUserValue("pos_activitiy", activity);
 
             // add/update to user profiles
             saveUserModel();
@@ -296,7 +297,6 @@ public class EmmaUserModel extends ActivityExecutor {
             }
         }
 
-
         if (name.equalsIgnoreCase("diary_emotion")) {
             if (mUser != null) {
                 storeDiaryEmotionEntry(activity, "value");
@@ -314,7 +314,6 @@ public class EmmaUserModel extends ActivityExecutor {
         }
 
         // final emotional user model entries (LIWC)
-
         if (name.equalsIgnoreCase("diary_posaffect")) {
             if (mUser != null) {
                 storeUserDiaryEntry(activity, "posaffect", "value");
@@ -506,12 +505,22 @@ public class EmmaUserModel extends ActivityExecutor {
                 mLogger.warning("No user specified, diary entry will not be stored.");
             }
         }
+
+        if (name.equalsIgnoreCase("log")) {
+            if (mUser != null) {
+                storeDiaryEntry(activity, "producer", "log", "value");
+            } else {
+                mLogger.warning("No user specified, diary log entry will not be stored.");
+            }
+        }
     }
 
     // set also overrides previously set values.
     private void setUserValue(String key, AbstractActivity activity) {
         if ((activity.get(key) != null) && (mUser.get(key) != "")) {
             String value = activity.get(key).replace("'", "");
+            mLogger.failure("Setting " + key + " with activity key " + value);
+            mUser.remove(key);
             mUser.put(key, value);
         }
     }
@@ -756,25 +765,26 @@ public class EmmaUserModel extends ActivityExecutor {
         user.put("name", name);
         user.put("id", id);
         user.put("introduction", "unknown");
-        user.put("break", "unknown");
-        user.put("type", "unknown");
-        user.put("therapy", "unknown");
-        user.put("icd", "unknown");
-        user.put("contact", "unknown");
-        user.put("contactphone", "unknown");
-        user.put("therapist", "unknown");
-        user.put("therapistphone", "unknown");
-        user.put("nextworktime_mo", "unknown");
-        user.put("nextworktime_tu", "unknown");
-        user.put("nextworktime_we", "unknown");
-        user.put("nextworktime_th", "unknown");
-        user.put("nextworktime_fr", "unknown");
-        user.put("actworktime_mo", "unknown");
-        user.put("actworktime_tu", "unknown");
-        user.put("actworktime_we", "unknown");
-        user.put("actworktime_th", "unknown");
-        user.put("actworktime_fr", "unknown");
-        user.put("posactivity", "unknown");
+        user.put("meditation", "unknown");
+//        user.put("break", "unknown");
+//        user.put("type", "unknown");
+//        user.put("therapy", "unknown");
+//        user.put("icd", "unknown");
+//        user.put("contact", "unknown");
+//        user.put("contactphone", "unknown");
+//        user.put("therapist", "unknown");
+//        user.put("therapistphone", "unknown");
+//        user.put("nextworktime_mo", "unknown");
+//        user.put("nextworktime_tu", "unknown");
+//        user.put("nextworktime_we", "unknown");
+//        user.put("nextworktime_th", "unknown");
+//        user.put("nextworktime_fr", "unknown");
+//        user.put("actworktime_mo", "unknown");
+//        user.put("actworktime_tu", "unknown");
+//        user.put("actworktime_we", "unknown");
+//        user.put("actworktime_th", "unknown");
+//        user.put("actworktime_fr", "unknown");
+//        user.put("posactivity", "unknown");
 
         // intial diary entry
         JSONArray diary = new JSONArray();
@@ -818,6 +828,7 @@ public class EmmaUserModel extends ActivityExecutor {
             while (line != null) {
                 sb.append(line);
                 line = br.readLine();
+                //mLogger.message("Raw input line: " + line);
             }
             input = sb.toString();
         } catch (FileNotFoundException e) {
@@ -836,6 +847,8 @@ public class EmmaUserModel extends ActivityExecutor {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        //mLogger.message("Raw input: " + input);
 
         mUserProfiles = new JSONObject(input);
 
