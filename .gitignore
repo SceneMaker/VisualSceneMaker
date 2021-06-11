@@ -6,6 +6,7 @@ tmp/
 .idea/*
 .gradle
 build/
+!plugins/studymaster-web/src/main/resources/react-studymaster/build
 
 #
 # MacOS stuff
