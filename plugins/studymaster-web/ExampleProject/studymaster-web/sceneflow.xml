@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<SceneFlow id="" name="default" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Wed, 2 Jun 2021 11:23:21" start="N1;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
+<SceneFlow id="" name="default" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Tue, 1 Jun 2021 19:43:40" start="N1;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
   <Define>
   </Define>
   <Declare>
@@ -51,11 +51,11 @@
   </Comment>
   <Comment>
     <Graphics>
-      <Boundary xPos="179" yPos="353" width="272" height="56"/>
+      <Boundary xPos="391" yPos="343" width="269" height="104"/>
     </Graphics>
     <Text style="color:blue">
       User clicked Cancel.
-            Go back to the beginning.
+                                                                                                                                                                                                                                                                                                                                                                                                                        Reset result action and loop back for another request.
     </Text>
   </Comment>
   <Comment>
@@ -64,14 +64,6 @@
     </Graphics>
     <Text style="color:blue">
       Start.
-    </Text>
-  </Comment>
-  <Comment>
-    <Graphics>
-      <Boundary xPos="4" yPos="508" width="372" height="78"/>
-    </Graphics>
-    <Text style="color:blue">
-      Alternatively, you can also wait for a flag until the interface is shown to the user.
     </Text>
   </Comment>
   <Node id="N1" name="N1" history="false">
@@ -116,6 +108,25 @@
     </TEdge>
     <Graphics>
       <Position xPos="586" yPos="26"/>
+    </Graphics>
+  </Node>
+  <Node id="N7" name="Restore" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <FEdge target="N1" start="">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="278" yPos="358" ctrlXPos="240" ctrlYPos="320"/>
+          <ControlPoint xPos="174" yPos="254" ctrlXPos="211" ctrlYPos="291"/>
+        </Connection>
+      </Graphics>
+    </FEdge>
+    <Graphics>
+      <Position xPos="266" yPos="346"/>
     </Graphics>
   </Node>
   <Node id="N11" name="Restore" history="false">
@@ -173,11 +184,11 @@
         <StringLiteral><![CDATA[SUBMIT]]></StringLiteral>
       </Eq>
     </IEdge>
-    <IEdge target="N1" start="">
+    <IEdge target="N7" start="">
       <Graphics>
         <Connection>
-          <ControlPoint xPos="363" yPos="266" ctrlXPos="359" ctrlYPos="357"/>
-          <ControlPoint xPos="181" yPos="246" ctrlXPos="227" ctrlYPos="366"/>
+          <ControlPoint xPos="363" yPos="266" ctrlXPos="346" ctrlYPos="295"/>
+          <ControlPoint xPos="326" yPos="351" ctrlXPos="340" ctrlYPos="325"/>
         </Connection>
       </Graphics>
       <Eq>
@@ -196,11 +207,10 @@
     </GlobalVariableBadge>
     <Comment>
       <Graphics>
-        <Boundary xPos="258" yPos="69" width="238" height="104"/>
+        <Boundary xPos="258" yPos="69" width="169" height="104"/>
       </Graphics>
       <Text style="color:blue">
-        Send the message to show the form on the webpage.
-                Go to http://localhost:8080 to see the form.
+        Send the message to show the form on the webpage
       </Text>
     </Comment>
     <Comment>
@@ -229,7 +239,7 @@
       </Declare>
       <Commands>
         <PlayScene>
-          <StringLiteral><![CDATA[RequestUserInfo]]></StringLiteral>
+          <StringLiteral><![CDATA[SetRequest]]></StringLiteral>
         </PlayScene>
       </Commands>
       <FEdge target="N6" start="">
@@ -338,7 +348,7 @@
       </Declare>
       <Commands>
         <PlayScene>
-          <StringLiteral><![CDATA[RequestUserInfo]]></StringLiteral>
+          <StringLiteral><![CDATA[SetRequest]]></StringLiteral>
         </PlayScene>
       </Commands>
       <FEdge target="N9" start="">
