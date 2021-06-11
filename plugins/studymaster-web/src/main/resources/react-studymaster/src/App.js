@@ -4,7 +4,7 @@ import './App.css';
 
 function App() {
     const [connectionStatusText, setConnectionStatusText] = useState("");
-    const [webSocket, setWebSocket] = useState();
+    const [webSocket, setWebSocket] = useState(new WebSocket('ws://' + document.location.host + '/ws'));
     const [formContents, setFormContents] = useState();
     const inputValue = new Map();
     useEffect(() => {

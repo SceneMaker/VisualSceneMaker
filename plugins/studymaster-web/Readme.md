@@ -58,7 +58,7 @@ The JavaScript library React is being used here, you can find more information a
 
 To develop the web app you require [NodeJS](https://nodejs.org/). Tested with version 15.14 
 (On MacOS, can be installed with `brew install node@15.14.0`).
-You also need react-scripts top buil the app:
+You also need react-scripts to build the app:
 
     brew install node@15.14.0  # or download from the website
     npm install react-scripts
@@ -66,9 +66,7 @@ You also need react-scripts top buil the app:
 To build the App you need to:
 
 * `cd` into folder `main\resources\react-studymaster`
-* build a new React App to get the "node_modules" folder by typing into a console: `npx create-react-app my-app`.
-  * This is of course needed only once, or to reset the whole application.
-  * A folder `node_modules` is created, containing several megabytes of NodeJS packages, but it is ignored by gradle and excluded from the resources.
+  * A folder `node_modules` contains several megabytes of NodeJS packages, but it is ignored by gradle and excluded from the resources.
 * Build (or update the app after changing JS/HTML code) with the command `npm run build`
   * This should be executed every time you update the JS or the HTML code of the web app.
 
