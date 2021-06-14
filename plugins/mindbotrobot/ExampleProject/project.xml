@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Project name="MindBotRobotControl">
+<Project name="TestRobotCommands">
   <Plugins>
     <Plugin type="device" name="MindBotRobot" class="de.dfki.vsm.xtension.mindbotrobot.MindbotRobotExecutor" load="true">
       <Feature key="rosuri_crow4" val="http://172.16.59.195:11311"/>
