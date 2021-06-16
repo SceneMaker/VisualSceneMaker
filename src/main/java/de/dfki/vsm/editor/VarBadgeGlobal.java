@@ -127,7 +127,7 @@ public class VarBadgeGlobal extends JComponent implements EventListener, ActionL
     }
 
     @Override
-    public synchronized void paintComponent(java.awt.Graphics g) {
+    public void paintComponent(java.awt.Graphics g) {
         super.paintComponent(g);
 
         if (EditorInstance.getInstance().getSelectedProjectEditor().getEditorProject().getEditorConfig().sSHOW_VARIABLE_BADGE_ON_WORKSPACE && !mEntryList.isEmpty()) {
