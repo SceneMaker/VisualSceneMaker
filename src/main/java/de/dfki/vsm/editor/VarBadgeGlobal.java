@@ -168,15 +168,17 @@ public class VarBadgeGlobal extends JComponent implements EventListener, ActionL
                 // Draw Type Definitions and Variable Definition
                 int currentDrawingOffset = 0;
 
-                for (VariableEntry entry : mEntryList) {
-                    AttributedString attributedString = entry.getAttributed();
-                    TextLayout textLayout = new TextLayout(attributedString.getIterator(),
-                            graphics.getFontRenderContext());
+                synchronized (mEntryList) {
+                    for (VariableEntry entry : mEntryList) {
+                        AttributedString attributedString = entry.getAttributed();
+                        TextLayout textLayout = new TextLayout(attributedString.getIterator(),
+                                graphics.getFontRenderContext());
 
-                    currentDrawingOffset = (int) (currentDrawingOffset + textLayout.getAscent());
-                    graphics.drawString(attributedString.getIterator(), mPositionOffset,
-                            mPositionOffset + currentDrawingOffset);
-                    currentDrawingOffset = (int) (currentDrawingOffset + textLayout.getLeading() + textLayout.getDescent());
+                        currentDrawingOffset = (int) (currentDrawingOffset + textLayout.getAscent());
+                        graphics.drawString(attributedString.getIterator(), mPositionOffset,
+                                mPositionOffset + currentDrawingOffset);
+                        currentDrawingOffset = (int) (currentDrawingOffset + textLayout.getLeading() + textLayout.getDescent());
+                    }
                 }
             }
         }
