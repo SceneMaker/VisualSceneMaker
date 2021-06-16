@@ -49,7 +49,7 @@ public class VarBadgeGlobal extends JComponent implements EventListener, ActionL
 
     /** Preferences for the font to use for this component. */
     public final static Map<TextAttribute, Object> sFontPrefsMap = new Hashtable<>();
-    {
+    static {
         sFontPrefsMap.put(TextAttribute.KERNING, TextAttribute.KERNING_ON);
         sFontPrefsMap.put(TextAttribute.FAMILY, Font.SANS_SERIF);
         sFontPrefsMap.put(TextAttribute.POSTURE, TextAttribute.POSTURE_OBLIQUE);
@@ -102,9 +102,6 @@ public class VarBadgeGlobal extends JComponent implements EventListener, ActionL
         // Derive the font from the attribute map
         Font font = Font.getFont(sFontPrefsMap);
 
-        // Derive the node's font metrics from the font
-        //FontMetrics fontMetrics = getFontMetrics(font);
-
         // Set the node's font to the updated font
         setFont(font);
     }
@@ -143,7 +140,7 @@ public class VarBadgeGlobal extends JComponent implements EventListener, ActionL
             Graphics2D graphics = (Graphics2D) g;
 
             // Enable antialiasing
-                graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             graphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
             graphics.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
             graphics.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
@@ -269,6 +266,7 @@ public class VarBadgeGlobal extends JComponent implements EventListener, ActionL
     }
 
     @Override
+    // Observer set by WorkSpacePanel
     public void update(Observable o, Object obj) {
 
         synchronized (mEntryList) {
@@ -294,6 +292,7 @@ public class VarBadgeGlobal extends JComponent implements EventListener, ActionL
             }
         }
     }
+
 
     @Override
     public synchronized void update(EventObject event) {
