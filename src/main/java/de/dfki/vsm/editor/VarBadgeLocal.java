@@ -121,7 +121,7 @@ public class VarBadgeLocal extends JComponent implements EventListener, ActionLi
     }
 
     @Override
-    public synchronized void paintComponent(java.awt.Graphics g) {
+    public void paintComponent(java.awt.Graphics g) {
 
         super.paintComponent(g);
 
