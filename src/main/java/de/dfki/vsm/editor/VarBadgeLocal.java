@@ -121,7 +121,7 @@ public class VarBadgeLocal extends JComponent implements EventListener, ActionLi
     }
 
     @Override
-    public synchronized void paintComponent(java.awt.Graphics g) {
+    public void paintComponent(java.awt.Graphics g) {
 
         super.paintComponent(g);
 
@@ -163,19 +163,22 @@ public class VarBadgeLocal extends JComponent implements EventListener, ActionLi
             // Draw Type Definitions and Variable Definition
             int currentDrawingOffset = 0;
             int y = 12;
-            for (VariableEntry entry : mEntryList) {
-                AttributedString attributedString = entry.getAttributed();
 
-                TextLayout textLayout = new TextLayout(attributedString.getIterator(),
-                        fontMetrics.getFontRenderContext());
-                currentDrawingOffset = (int) (currentDrawingOffset + textLayout.getAscent());
-                graphics.drawString(attributedString.getIterator(), mPositionOffset,
-                        mPositionOffset + currentDrawingOffset);
-                y += FONT_SIZE + PADDING_BETWEEN_LINE;
-                currentDrawingOffset = (int) (currentDrawingOffset + textLayout.getLeading()
-                        + textLayout.getDescent());
+            synchronized (mEntryList) {
+                for (VariableEntry entry : mEntryList) {
+                    AttributedString attributedString = entry.getAttributed();
 
+                    TextLayout textLayout = new TextLayout(attributedString.getIterator(),
+                            fontMetrics.getFontRenderContext());
+                    currentDrawingOffset = (int) (currentDrawingOffset + textLayout.getAscent());
+                    graphics.drawString(attributedString.getIterator(), mPositionOffset,
+                            mPositionOffset + currentDrawingOffset);
+                    y += FONT_SIZE + PADDING_BETWEEN_LINE;
+                    currentDrawingOffset = (int) (currentDrawingOffset + textLayout.getLeading()
+                            + textLayout.getDescent());
+                }
             }
+
             paintFromImage(g);
 
             useCachedImage = true;
