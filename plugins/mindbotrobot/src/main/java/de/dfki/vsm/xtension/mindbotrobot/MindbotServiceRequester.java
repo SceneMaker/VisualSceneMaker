@@ -159,12 +159,7 @@ public class MindbotServiceRequester extends AbstractNodeMain {
         // Delete the localID and rosID from the maps
         synchronized (actionsState) {
             // (I know, it is linear complexity, but we don't have BiMaps and anyway the size is always limited.)
-            for (int ros_id : rosToActionID.keySet()) {
-                int act_id = rosToActionID.get(ros_id);
-                if (act_id == actionID) {
-                    rosToActionID.remove(ros_id) ;
-                }
-            }
+            rosToActionID.keySet().removeIf(act_id -> act_id == actionID);
 
             //
             // remove the IDs from the actionMap
