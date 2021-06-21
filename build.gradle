@@ -49,7 +49,7 @@ dependencies {
     // https://mvnrepository.com/artifact/net.java.dev.jna/jna-platform
     compile group: 'net.java.dev.jna', name: 'jna-platform', version: '4.2.2'
     // https://mvnrepository.com/artifact/com.1stleg/jnativehook
-    compile group: 'com.1stleg', name: 'jnativehook', version: '2.0.3'
+    compile group: 'com.1stleg', name: 'jnativehook', version: '2.1.0'
     // https://mvnrepository.com/artifact/com.fifesoft/autocomplete
     compile group: 'com.fifesoft', name: 'autocomplete', version: '2.0.5.1'
     // https://mvnrepository.com/artifact/math.geom2d/javaGeom
