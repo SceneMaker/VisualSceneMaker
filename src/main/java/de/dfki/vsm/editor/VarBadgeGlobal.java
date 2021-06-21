@@ -47,6 +47,15 @@ public class VarBadgeGlobal extends JComponent implements EventListener, ActionL
     private final JMenuItem mShowBadgeMenuItem;
     private boolean mIsHidden;
 
+    /** Preferences for the font to use for this component. */
+    public final static Map<TextAttribute, Object> sFontPrefsMap = new Hashtable<>();
+    static {
+        sFontPrefsMap.put(TextAttribute.KERNING, TextAttribute.KERNING_ON);
+        sFontPrefsMap.put(TextAttribute.FAMILY, Font.SANS_SERIF);
+        sFontPrefsMap.put(TextAttribute.POSTURE, TextAttribute.POSTURE_OBLIQUE);
+        sFontPrefsMap.put(TextAttribute.WEIGHT, TextAttribute.WEIGHT_DEMIBOLD);
+        sFontPrefsMap.put(TextAttribute.SIZE, 16); // get from Editor config
+    }
 
     public VarBadgeGlobal(SuperNode superNode, boolean hidden) {
 
@@ -73,22 +82,7 @@ public class VarBadgeGlobal extends JComponent implements EventListener, ActionL
         }
 
         // Initialize font
-        Map<TextAttribute, Object> map = new Hashtable<>();
-
-        map.put(TextAttribute.KERNING, TextAttribute.KERNING_ON);
-        map.put(TextAttribute.FAMILY, Font.SANS_SERIF);
-        map.put(TextAttribute.POSTURE, TextAttribute.POSTURE_OBLIQUE);
-        map.put(TextAttribute.WEIGHT, TextAttribute.WEIGHT_DEMIBOLD);
-        map.put(TextAttribute.SIZE, 16); // get from Editor config
-
-        // Derive the font from the attribute map
-        Font font = Font.getFont(map);
-
-        // Derive the node's font metrics from the font
-        FontMetrics fontMetrics = getFontMetrics(font);
-
-        // Set the node's font to the updated font
-        setFont(font);
+        updateFont();
 
         // Initialize size and location
         setSize(new Dimension(1, 1));     
@@ -100,6 +94,18 @@ public class VarBadgeGlobal extends JComponent implements EventListener, ActionL
         mShowBadgeMenuItem = new JMenuItem("Show");
         mShowBadgeMenuItem.addActionListener(this);
     }
+
+    /** Re-scan the preferences map and updates the current font.
+     * Both the mFont variable is renewed and the font set for the Component.
+     */
+    private void updateFont() {
+        // Derive the font from the attribute map
+        Font font = Font.getFont(sFontPrefsMap);
+
+        // Set the node's font to the updated font
+        setFont(font);
+    }
+
 
     private Dimension computeTextRectSize(Graphics2D graphics) {
         int width = 0, height = 0;
@@ -127,14 +133,14 @@ public class VarBadgeGlobal extends JComponent implements EventListener, ActionL
     }
 
     @Override
-    public synchronized void paintComponent(java.awt.Graphics g) {
+    public void paintComponent(java.awt.Graphics g) {
         super.paintComponent(g);
 
         if (EditorInstance.getInstance().getSelectedProjectEditor().getEditorProject().getEditorConfig().sSHOW_VARIABLE_BADGE_ON_WORKSPACE && !mEntryList.isEmpty()) {
             Graphics2D graphics = (Graphics2D) g;
 
             // Enable antialiasing
-                graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             graphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
             graphics.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
             graphics.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
@@ -168,15 +174,17 @@ public class VarBadgeGlobal extends JComponent implements EventListener, ActionL
                 // Draw Type Definitions and Variable Definition
                 int currentDrawingOffset = 0;
 
-                for (VariableEntry entry : mEntryList) {
-                    AttributedString attributedString = entry.getAttributed();
-                    TextLayout textLayout = new TextLayout(attributedString.getIterator(),
-                            graphics.getFontRenderContext());
+                synchronized (mEntryList) {
+                    for (VariableEntry entry : mEntryList) {
+                        AttributedString attributedString = entry.getAttributed();
+                        TextLayout textLayout = new TextLayout(attributedString.getIterator(),
+                                graphics.getFontRenderContext());
 
-                    currentDrawingOffset = (int) (currentDrawingOffset + textLayout.getAscent());
-                    graphics.drawString(attributedString.getIterator(), mPositionOffset,
-                            mPositionOffset + currentDrawingOffset);
-                    currentDrawingOffset = (int) (currentDrawingOffset + textLayout.getLeading() + textLayout.getDescent());
+                        currentDrawingOffset = (int) (currentDrawingOffset + textLayout.getAscent());
+                        graphics.drawString(attributedString.getIterator(), mPositionOffset,
+                                mPositionOffset + currentDrawingOffset);
+                        currentDrawingOffset = (int) (currentDrawingOffset + textLayout.getLeading() + textLayout.getDescent());
+                    }
                 }
             }
         }
@@ -258,6 +266,7 @@ public class VarBadgeGlobal extends JComponent implements EventListener, ActionL
     }
 
     @Override
+    // Observer set by WorkSpacePanel
     public void update(Observable o, Object obj) {
 
         synchronized (mEntryList) {
@@ -284,27 +293,18 @@ public class VarBadgeGlobal extends JComponent implements EventListener, ActionL
         }
     }
 
+
     @Override
     public synchronized void update(EventObject event) {
         // Update the font and the font metrics that have to be
         // recomputed if the node's font size has changed
         // TODO: Move attributes to preferences and make editable
-        Map<TextAttribute, Object> map = new Hashtable<>();
 
-        map.put(TextAttribute.KERNING, TextAttribute.KERNING_ON);
-        map.put(TextAttribute.FAMILY, Font.SANS_SERIF);
-        map.put(TextAttribute.POSTURE, TextAttribute.POSTURE_OBLIQUE);
-        map.put(TextAttribute.WEIGHT, TextAttribute.WEIGHT_DEMIBOLD);
-        map.put(TextAttribute.SIZE, 16); // get from Editor config
-
-        // Derive the font from the attribute map
-        Font font = Font.getFont(map);
-
-        // Derive the node's font metrics from the font
-        FontMetrics fontMetrics = getFontMetrics(font);
-
-        // Set the node's font to the updated font
-        setFont(font);
+        // Retrieve and set the font only if there is a change in the preferences
+        //if(mFontPrefsMap.get(TextAttribute.SIZE) != "editor_font_size") {
+        //    mFontPrefsMap.put(TextAttribute.SIZE, "new_font_size") ;
+        //    updateFont();
+        //}
 
         if (event instanceof VariableChangedEvent) {
             updateVariable(((VariableChangedEvent) event).getVarValue());

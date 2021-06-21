@@ -5,4 +5,9 @@ tmp/
 /log/stickman.log
 .idea/*
 .gradle
-/build/
+build/
+!plugins/studymaster-web/src/main/resources/react-studymaster/build
+
+#
+# MacOS stuff
+.DS_Store
