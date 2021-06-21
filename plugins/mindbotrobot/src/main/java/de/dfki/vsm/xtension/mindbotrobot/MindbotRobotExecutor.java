@@ -324,8 +324,8 @@ public final class MindbotRobotExecutor extends ActivityExecutor implements Mind
     }
 
 
-    private final String ROBOT_ACTION_VAR = "robot_action_state" ;
-    private final String ROBOT_MESSAGE_VAR = "robot_action_message" ;
+    private final static String ROBOT_ACTION_VAR = "robot_action_state" ;
+    private final static String ROBOT_MESSAGE_VAR = "robot_action_message" ;
 
     @Override
     public void setActionState(String res) {

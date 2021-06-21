@@ -32,7 +32,7 @@ public class MindbotServiceRequester extends AbstractNodeMain {
     public enum CallState {
         CALLED,     // The remote ROS service has been called
         UNREACHABLE,    // The remote ROS service answered FAILURE. The action will not be executed. Don't wait for it.
-        UNSUCCESSFUL, // The remote ROS service was reachable but the recipient responded that the request can not be accomplished.
+        UNSUCCESSFUL, // The remote ROS service was reachable but the recipient responded that the request can not be accomplished. Don't wait for it.
         EXECUTING,    // The remote ROS service answered SUCCESS. Action is in execution on the ROS side. Expect an action_done call when finished.
         FAILED,    // The remote ROS called back the action_done service to inform that the call couldn't execute properly.
         DONE        // The remote ROS called back the action_done to inform that the call was executed successfully.
