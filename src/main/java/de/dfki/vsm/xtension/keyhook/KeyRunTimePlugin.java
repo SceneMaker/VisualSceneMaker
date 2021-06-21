@@ -8,8 +8,6 @@ import de.dfki.vsm.extensionAPI.value.ProjectValueProperty;
 import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.runtime.plugin.RunTimePlugin;
 import de.dfki.vsm.runtime.project.RunTimeProject;
-import de.dfki.vsm.util.log.LOGConsoleLogger;
-import de.dfki.vsm.util.tts.marytts.MaryTTsProcess;
 import de.dfki.vsm.xtension.keyhook.util.KeyRunTimePluginProperty;
 import org.jnativehook.GlobalScreen;
 import org.jnativehook.NativeHookException;
@@ -22,54 +20,46 @@ import org.jnativehook.mouse.NativeMouseMotionListener;
 import java.util.List;
 import java.util.Map;
 
+import java.util.logging.Logger ;
+import java.util.logging.Level ;
+
 /**
  * @author Gregor Mehlmann, Patrick Gebhard
  */
 public final class KeyRunTimePlugin extends RunTimePlugin implements ExportableProperties, ExportableCompletion {
 
-    // The singelton logger instance
-    private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
+    // Properties
+    private final ExportableProperties exportableProperties = new KeyRunTimePluginProperty();
+    private final ExportableCompletion exportableActions = null;
 
-    // properties
-    private ExportableProperties exportableProperties = new KeyRunTimePluginProperty();
-    private ExportableCompletion exportableActions = null;
+    // Project variables
+    private String mKeyPressedVarName ;
 
     // The native key listener
-    GlobalKeyListener mKeyListener = new GlobalKeyListener();
-    GlobalMouseListener mMouseListener = new GlobalMouseListener();
-    GlobalMouseMotionListener mMouseMotionListener = new GlobalMouseMotionListener();
+    private final GlobalKeyListener mKeyListener = new GlobalKeyListener();
+    private final GlobalMouseListener mMouseListener = new GlobalMouseListener();
+    private final GlobalMouseMotionListener mMouseMotionListener = new GlobalMouseMotionListener();
 
-    // the dummy mouse listener classes
-
-    public class GlobalMouseListener implements NativeMouseListener {
-
-        @Override
-        public void nativeMouseClicked(NativeMouseEvent nativeMouseEvent) {
-
-        }
+    // Mouse listener classes
+    public static class GlobalMouseListener implements NativeMouseListener {
 
         @Override
-        public void nativeMousePressed(NativeMouseEvent nativeMouseEvent) {
-
-        }
+        public void nativeMouseClicked(NativeMouseEvent nativeMouseEvent) { }
 
         @Override
-        public void nativeMouseReleased(NativeMouseEvent nativeMouseEvent) {
+        public void nativeMousePressed(NativeMouseEvent nativeMouseEvent) { }
 
-        }
+        @Override
+        public void nativeMouseReleased(NativeMouseEvent nativeMouseEvent) { }
     }
 
-    public class GlobalMouseMotionListener implements NativeMouseMotionListener {
+    public static class GlobalMouseMotionListener implements NativeMouseMotionListener {
 
         @Override
-        public void nativeMouseMoved(NativeMouseEvent nativeMouseEvent) {
-            //
-        }
+        public void nativeMouseMoved(NativeMouseEvent nativeMouseEvent) { }
 
         @Override
-        public void nativeMouseDragged(NativeMouseEvent nativeMouseEvent) {
-
-        }
+        public void nativeMouseDragged(NativeMouseEvent nativeMouseEvent) { }
     }
 
     // The key listener class        
@@ -77,25 +67,18 @@ public final class KeyRunTimePlugin extends RunTimePlugin implements ExportableP
 
         public void nativeKeyPressed(final NativeKeyEvent e) {
             final String code = NativeKeyEvent.getKeyText(e.getKeyCode());
-            
-            //mLogger.message("Pressed Key: " + code);
 
-            //if (mProject.hasVariable())
-
-            mProject.setVariable("PressedKey", code);
-
-            if (e.getKeyCode() == NativeKeyEvent.VC_ESCAPE) {
-                //GlobalScreen.unregisterNativeHook();
+            if (mProject.hasVariable(mKeyPressedVarName)) {
+                mProject.setVariable(mKeyPressedVarName, code);
+            } else {
+                mLogger.warning("Can not set Pressed key value: project variable '" + mKeyPressedVarName + " is missing.");
             }
+
         }
 
-        public void nativeKeyReleased(NativeKeyEvent e) {
-            //System.out.println("Key Released: " + NativeKeyEvent.getKeyText(e.getKeyCode()));
-        }
+        public void nativeKeyReleased(NativeKeyEvent e) { }
 
-        public void nativeKeyTyped(NativeKeyEvent e) {
-            //System.out.println("Key Typed: " + e.getKeyText(e.getKeyCode()));
-        }
+        public void nativeKeyTyped(NativeKeyEvent e) { }
     }
 
     public KeyRunTimePlugin(
@@ -108,6 +91,9 @@ public final class KeyRunTimePlugin extends RunTimePlugin implements ExportableP
     // Launch plugin
     @Override
     public void launch() {
+
+        mKeyPressedVarName = mConfig.getProperty(KeyRunTimePluginProperty.PRESSED_KEY_VAR_NAME, KeyRunTimePluginProperty.PRESSED_KEY_VAR_DEFAULT) ;
+
         mLogger.message("Launching KeyRunTimePlugin ...");
         try {
             GlobalScreen.registerNativeHook();
@@ -117,30 +103,31 @@ public final class KeyRunTimePlugin extends RunTimePlugin implements ExportableP
             System.exit(1);
         }
         GlobalScreen.addNativeKeyListener(mKeyListener);
-        mKeyListener = new GlobalKeyListener();
         GlobalScreen.addNativeMouseListener(mMouseListener);
-        mMouseListener = new GlobalMouseListener();
         GlobalScreen.addNativeMouseMotionListener(mMouseMotionListener);
-        mMouseMotionListener = new GlobalMouseMotionListener();
+
+        // Temporarily fixes issue #227
+        // Can be removed as son as jnativehook v2.2.0 is available on Maven
+        // See: https://github.com/kwhat/jnativehook/issues/291
+        Logger logger = Logger.getLogger(GlobalScreen.class.getPackage().getName());
+        logger.setLevel(Level.WARNING);
+        logger.setUseParentHandlers(false);
     }
 
-    private void showMissingVariable() {
-        WaitingDialog InfoDialog = new WaitingDialog("Loading MaryTTS...");
-
-        InfoDialog.setModal(true);
-        InfoDialog.setVisible(true);
-    }
 
     // Unload plugin
     @Override
     public void unload() {
+        GlobalScreen.removeNativeKeyListener(mKeyListener);
+        GlobalScreen.removeNativeMouseListener(mMouseListener);
+        GlobalScreen.removeNativeMouseMotionListener(mMouseMotionListener);
+
         try {
             GlobalScreen.unregisterNativeHook();
         } catch (NativeHookException e) {
             mLogger.failure("There was a problem unregistering the native key hook.");
             mLogger.failure(e.getMessage());
         }
-        GlobalScreen.removeNativeKeyListener(mKeyListener);
     }
 
     @Override
