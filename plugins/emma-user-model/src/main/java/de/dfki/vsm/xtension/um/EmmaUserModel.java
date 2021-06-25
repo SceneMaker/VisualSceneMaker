@@ -60,6 +60,7 @@ public class EmmaUserModel extends ActivityExecutor {
     private final String mVSM_DiaryItemText = "diaryItemText";
     private final String mVSM_DiaryEmotionDay = "diaryEmotionDay";
     private final String mVSM_DiaryEmotionDayValue = "diaryEmotionDayValue";
+    private final String mVSM_DiaryEmotionEntries = "diaryEmotionEntries";
 
     // File stuff
     private String umDir = "";
@@ -276,6 +277,15 @@ public class EmmaUserModel extends ActivityExecutor {
                 workDate = cal.getTime();
             }
             mLogger.message("Found emotion diary entries " + Arrays.toString(mPast7EmotionDiaryEntries));
+
+            int emoEntries = 0;
+            for (int dailyEmotion : mPast7EmotionDiaryEntries) {
+                emoEntries = (dailyEmotion > 0) ? emoEntries + 1 : emoEntries;
+            }
+
+            mLogger.message("Found emotion diary entries " + emoEntries);
+
+            mProject.setVariable(mVSM_DiaryEmotionEntries, emoEntries);
         }
 
         if (name.equalsIgnoreCase("get_diaryemotion")) {
