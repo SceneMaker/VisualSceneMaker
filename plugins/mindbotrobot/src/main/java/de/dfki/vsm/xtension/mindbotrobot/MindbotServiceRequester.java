@@ -21,7 +21,7 @@ public class MindbotServiceRequester extends AbstractNodeMain {
     /** This is the maximum time allowed to wait for an `action_done` feedback message.
      * If this time exceeds, the node is anyway unlocked.
      */
-    private final static int ACTION_DONE_TIMEOUT_MILLIS = 10000 ;
+    private final static int ACTION_DONE_TIMEOUT_MILLIS = 30000 ;
 
     // Possible state paths:
     // CALLED -> FAILURE

@@ -49,8 +49,8 @@ The following actions can be invoked within scenes:
 
 * `set_joint_target` (Blocking) The parameters specify a comma-separated list of joint names and their respective target position (rotation in degrees), velocity (in degrees/sec), and effort (N/m).
   * Parameters:
-    * `joint_names`
-    * `positions`
+    * `joint_names` The comma-separated list of the join names. This has to be compatible with the name of the joints of the robot.
+    * `positions` The comma-separated list of rotations of all joints, in degrees.
     * `velocities`
     * `efforts`
   * Example (names for iiwa robot): `[set_joint_target joint_names='iiwa_joint_0,iiwa_joint_1,iiwa_joint_2,iiwa_joint_3,iiwa_joint_4,iiwa_joint_5,iiwa_joint_6' positions='10,10,10,10,10,10,10' velocities='1,1,2,2,3,3,5' efforts='10,10,30,30,50,50,80']`.
