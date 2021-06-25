@@ -127,14 +127,14 @@ public class VarBadgeGlobal extends JComponent implements EventListener, ActionL
     }
 
     @Override
-    public synchronized void paintComponent(java.awt.Graphics g) {
+    public void paintComponent(java.awt.Graphics g) {
         super.paintComponent(g);
 
         if (EditorInstance.getInstance().getSelectedProjectEditor().getEditorProject().getEditorConfig().sSHOW_VARIABLE_BADGE_ON_WORKSPACE && !mEntryList.isEmpty()) {
             Graphics2D graphics = (Graphics2D) g;
 
             // Enable antialiasing
-                graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             graphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
             graphics.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
             graphics.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
