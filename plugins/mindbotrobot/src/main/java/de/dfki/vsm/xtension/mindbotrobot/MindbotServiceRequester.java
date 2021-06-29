@@ -97,16 +97,16 @@ public class MindbotServiceRequester extends AbstractNodeMain {
             _setGripperActionService = connectedNode.newServiceClient("/mindbot/robot/set_gripper_action", mindbot_msgs.SetGripperAction._TYPE);
             _setDetectionService = connectedNode.newServiceClient("/mindbot/robot/set_detection", mindbot_msgs.SetDetection._TYPE) ;
 
-            //
-            // Instantiate the listening service, receiving the result of the calls.
-            connectedNode.newServiceServer(
-                    "/mindbot/robot/action_done",
-                    mindbot_msgs.VSMActionDone._TYPE,
-                    new ActionDoneResponseBuilder());
-
         } catch (ServiceNotFoundException e) {
             throw new RosRuntimeException(e);
         }
+
+        //
+        // Instantiate the listening service, receiving the result of the calls.
+        connectedNode.newServiceServer(
+                "/mindbot/robot/action_done",
+                mindbot_msgs.VSMActionDone._TYPE,
+                new ActionDoneResponseBuilder());
 
         _setupDone = true ;
     }
