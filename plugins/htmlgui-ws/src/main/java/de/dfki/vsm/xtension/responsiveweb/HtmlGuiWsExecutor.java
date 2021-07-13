@@ -6,7 +6,6 @@
 package de.dfki.vsm.xtension.responsiveweb;
 
 import de.dfki.vsm.model.project.PluginConfig;
-import de.dfki.vsm.model.scenescript.ActionFeature;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
 import de.dfki.vsm.runtime.activity.SpeechActivity;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
@@ -264,14 +263,5 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
         sslContextFactory.setKeyStorePath(this.getClass().getResource(mPathToCertificate).toExternalForm()); //default "/my-release-key.keystore"
         sslContextFactory.setKeyStorePassword("123456");
         return sslContextFactory;
-    }
-
-    // get the value of a feature (added PG) - quick and dirty
-    private String getActionFeatureValue(String name, List<ActionFeature> features) {
-        return features.stream()
-                .filter(af -> af.getKey().equalsIgnoreCase(name))
-                .findFirst()
-                .map(ActionFeature::getVal)
-                .orElse("");
     }
 }
