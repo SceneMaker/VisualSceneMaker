@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SceneScript lower="0" upper="0">
+  <SceneObject lower="0" upper="169" language="@@" identifier="RequestUserInfo">
+    <SceneTurn lower="25" upper="169" speaker="web">
+      <SceneUttr lower="31" upper="169" punct=".">
+        <ActionObject lower="31" upper="38" actor="" name="REQUEST">
+          <ActionFeature lower="39" upper="81" key="var" val="'name;surname;weight;gender;graduated'"/>
+          <ActionFeature lower="82" upper="128" key="value" val="'EnterName;EnterSurname;in kg;m,f,d;yes'"/>
+          <ActionFeature lower="129" upper="167" key="type" val="'text;text;number;radio;checkbox'"/>
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+</SceneScript>

@@ -1,0 +1,465 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SceneFlow id="" name="default" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Tue, 1 Jun 2021 19:43:40" start="N1;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
+  <Define>
+  </Define>
+  <Declare>
+    <VariableDefinition type="String" name ="name">
+      <StringLiteral><![CDATA[]]></StringLiteral>
+    </VariableDefinition>
+    <VariableDefinition type="String" name ="surname">
+      <StringLiteral><![CDATA[]]></StringLiteral>
+    </VariableDefinition>
+    <VariableDefinition type="String" name ="gender">
+      <StringLiteral><![CDATA[]]></StringLiteral>
+    </VariableDefinition>
+    <VariableDefinition type="String" name ="graduated">
+      <StringLiteral><![CDATA[]]></StringLiteral>
+    </VariableDefinition>
+    <VariableDefinition type="String" name ="weight">
+      <StringLiteral><![CDATA[]]></StringLiteral>
+    </VariableDefinition>
+    <VariableDefinition type="String" name ="request_result">
+      <StringLiteral><![CDATA[]]></StringLiteral>
+    </VariableDefinition>
+    <VariableDefinition type="Bool" name ="gui_connected">
+      <BoolLiteral value="false"/>
+    </VariableDefinition>
+  </Declare>
+  <Commands>
+  </Commands>
+  <LocalVariableBadge>
+    <Position xPos="719" yPos="303"/>
+  </LocalVariableBadge>
+  <GlobalVariableBadge>
+    <Position xPos="10" yPos="10"/>
+  </GlobalVariableBadge>
+  <Comment>
+    <Graphics>
+      <Boundary xPos="467" yPos="199" width="309" height="59"/>
+    </Graphics>
+    <Text style="color:blue">
+      The substate generates a web form. Here, we wait for a user click.
+    </Text>
+  </Comment>
+  <Comment>
+    <Graphics>
+      <Boundary xPos="671" yPos="38" width="211" height="61"/>
+    </Graphics>
+    <Text style="color:blue">
+      User clicked Submit. The project can continue.
+    </Text>
+  </Comment>
+  <Comment>
+    <Graphics>
+      <Boundary xPos="391" yPos="343" width="269" height="104"/>
+    </Graphics>
+    <Text style="color:blue">
+      User clicked Cancel.
+                                                                                                                                                                                                                                                                                                                                                                                                                        Reset result action and loop back for another request.
+    </Text>
+  </Comment>
+  <Comment>
+    <Graphics>
+      <Boundary xPos="103" yPos="136" width="99" height="50"/>
+    </Graphics>
+    <Text style="color:blue">
+      Start.
+    </Text>
+  </Comment>
+  <Node id="N1" name="N1" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <Assignment>
+        <SimpleVariable name="request_result"/>
+        <Expression>
+          <StringLiteral><![CDATA[]]></StringLiteral>
+        </Expression>
+      </Assignment>
+    </Commands>
+    <TEdge target="S1" start="" timeout="5000">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="186" yPos="226" ctrlXPos="246" ctrlYPos="226"/>
+        <ControlPoint xPos="346" yPos="226" ctrlXPos="286" ctrlYPos="226"/>
+      </Connection>
+    </Graphics>
+    </TEdge>
+    <Graphics>
+      <Position xPos="106" yPos="186"/>
+    </Graphics>
+  </Node>
+  <Node id="N3" name="Continue" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <TEdge target="N1" start="" timeout="3000">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="587" yPos="76" ctrlXPos="398" ctrlYPos="124"/>
+        <ControlPoint xPos="185" yPos="216" ctrlXPos="373" ctrlYPos="167"/>
+      </Connection>
+    </Graphics>
+    </TEdge>
+    <Graphics>
+      <Position xPos="586" yPos="26"/>
+    </Graphics>
+  </Node>
+  <Node id="N7" name="Restore" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <FEdge target="N1" start="">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="278" yPos="358" ctrlXPos="240" ctrlYPos="320"/>
+          <ControlPoint xPos="174" yPos="254" ctrlXPos="211" ctrlYPos="291"/>
+        </Connection>
+      </Graphics>
+    </FEdge>
+    <Graphics>
+      <Position xPos="266" yPos="346"/>
+    </Graphics>
+  </Node>
+  <Node id="N11" name="Restore" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <Assignment>
+        <SimpleVariable name="request_result"/>
+        <Expression>
+          <StringLiteral><![CDATA[]]></StringLiteral>
+        </Expression>
+      </Assignment>
+    </Commands>
+    <FEdge target="S3" start="">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="351" yPos="766" ctrlXPos="277" ctrlYPos="723"/>
+          <ControlPoint xPos="186" yPos="649" ctrlXPos="270" ctrlYPos="697"/>
+        </Connection>
+      </Graphics>
+    </FEdge>
+    <Graphics>
+      <Position xPos="346" yPos="746"/>
+    </Graphics>
+  </Node>
+  <Node id="N12" name="Continue" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <Graphics>
+      <Position xPos="826" yPos="586"/>
+    </Graphics>
+  </Node>
+  <SuperNode id="S1" name="Wait user" comment="" hideLocalVar="false" hideGlobalVar="false" start="N5;">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <IEdge target="N3" start="">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="426" yPos="203" ctrlXPos="510" ctrlYPos="154"/>
+          <ControlPoint xPos="598" yPos="94" ctrlXPos="539" ctrlYPos="152"/>
+        </Connection>
+      </Graphics>
+      <Eq>
+        <SimpleVariable name="request_result"/>
+        <StringLiteral><![CDATA[SUBMIT]]></StringLiteral>
+      </Eq>
+    </IEdge>
+    <IEdge target="N7" start="">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="363" yPos="266" ctrlXPos="346" ctrlYPos="295"/>
+          <ControlPoint xPos="326" yPos="351" ctrlXPos="340" ctrlYPos="325"/>
+        </Connection>
+      </Graphics>
+      <Eq>
+        <SimpleVariable name="request_result"/>
+        <StringLiteral><![CDATA[CANCEL]]></StringLiteral>
+      </Eq>
+    </IEdge>
+    <Graphics>
+      <Position xPos="346" yPos="186"/>
+    </Graphics>
+    <LocalVariableBadge>
+      <Position xPos="10" yPos="10"/>
+    </LocalVariableBadge>
+    <GlobalVariableBadge>
+      <Position xPos="10" yPos="10"/>
+    </GlobalVariableBadge>
+    <Comment>
+      <Graphics>
+        <Boundary xPos="258" yPos="69" width="169" height="104"/>
+      </Graphics>
+      <Text style="color:blue">
+        Send the message to show the form on the webpage
+      </Text>
+    </Comment>
+    <Comment>
+      <Graphics>
+        <Boundary xPos="537" yPos="69" width="186" height="64"/>
+      </Graphics>
+      <Text style="color:blue">
+        Loop-wait forever
+      </Text>
+    </Comment>
+    <Node id="N4" name="History" history="true">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+      </Commands>
+      <Graphics>
+        <Position xPos="26" yPos="186"/>
+      </Graphics>
+    </Node>
+    <Node id="N5" name="N2" history="false">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+        <PlayScene>
+          <StringLiteral><![CDATA[SetRequest]]></StringLiteral>
+        </PlayScene>
+      </Commands>
+      <FEdge target="N6" start="">
+        <Graphics>
+          <Connection>
+            <ControlPoint xPos="346" yPos="226" ctrlXPos="366" ctrlYPos="226"/>
+            <ControlPoint xPos="586" yPos="226" ctrlXPos="566" ctrlYPos="226"/>
+          </Connection>
+        </Graphics>
+      </FEdge>
+      <Graphics>
+        <Position xPos="266" yPos="186"/>
+      </Graphics>
+    </Node>
+    <Node id="N6" name="N6" history="false">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+      </Commands>
+      <TEdge target="N6" start="" timeout="1000">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="636" yPos="187" ctrlXPos="656" ctrlYPos="109"/>
+          <ControlPoint xPos="661" yPos="206" ctrlXPos="731" ctrlYPos="166"/>
+        </Connection>
+      </Graphics>
+      </TEdge>
+      <Graphics>
+        <Position xPos="586" yPos="186"/>
+      </Graphics>
+    </Node>
+  </SuperNode>
+  <SuperNode id="S2" name="Wait user" comment="" hideLocalVar="false" hideGlobalVar="false" start="N8;">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <IEdge target="N12" start="">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="586" yPos="626" ctrlXPos="686" ctrlYPos="626"/>
+          <ControlPoint xPos="826" yPos="626" ctrlXPos="726" ctrlYPos="626"/>
+        </Connection>
+      </Graphics>
+      <Eq>
+        <SimpleVariable name="request_result"/>
+        <StringLiteral><![CDATA[SUBMIT]]></StringLiteral>
+      </Eq>
+    </IEdge>
+    <IEdge target="N11" start="">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="506" yPos="666" ctrlXPos="452" ctrlYPos="719"/>
+          <ControlPoint xPos="414" yPos="758" ctrlXPos="451" ctrlYPos="720"/>
+        </Connection>
+      </Graphics>
+      <Eq>
+        <SimpleVariable name="request_result"/>
+        <StringLiteral><![CDATA[CANCEL]]></StringLiteral>
+      </Eq>
+    </IEdge>
+    <Graphics>
+      <Position xPos="506" yPos="586"/>
+    </Graphics>
+    <LocalVariableBadge>
+      <Position xPos="10" yPos="10"/>
+    </LocalVariableBadge>
+    <GlobalVariableBadge>
+      <Position xPos="10" yPos="10"/>
+    </GlobalVariableBadge>
+    <Comment>
+      <Graphics>
+        <Boundary xPos="258" yPos="69" width="169" height="104"/>
+      </Graphics>
+      <Text style="color:blue">
+        Send the message to show the form on the webpage
+      </Text>
+    </Comment>
+    <Comment>
+      <Graphics>
+        <Boundary xPos="537" yPos="69" width="186" height="64"/>
+      </Graphics>
+      <Text style="color:blue">
+        Loop-wait forever
+      </Text>
+    </Comment>
+    <Node id="N2" name="History" history="true">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+      </Commands>
+      <Graphics>
+        <Position xPos="26" yPos="186"/>
+      </Graphics>
+    </Node>
+    <Node id="N8" name="N2" history="false">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+        <PlayScene>
+          <StringLiteral><![CDATA[SetRequest]]></StringLiteral>
+        </PlayScene>
+      </Commands>
+      <FEdge target="N9" start="">
+        <Graphics>
+          <Connection>
+            <ControlPoint xPos="346" yPos="226" ctrlXPos="366" ctrlYPos="226"/>
+            <ControlPoint xPos="586" yPos="226" ctrlXPos="566" ctrlYPos="226"/>
+          </Connection>
+        </Graphics>
+      </FEdge>
+      <Graphics>
+        <Position xPos="266" yPos="186"/>
+      </Graphics>
+    </Node>
+    <Node id="N9" name="N6" history="false">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+      </Commands>
+      <TEdge target="N9" start="" timeout="1000">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="636" yPos="187" ctrlXPos="656" ctrlYPos="109"/>
+          <ControlPoint xPos="661" yPos="206" ctrlXPos="731" ctrlYPos="166"/>
+        </Connection>
+      </Graphics>
+      </TEdge>
+      <Graphics>
+        <Position xPos="586" yPos="186"/>
+      </Graphics>
+    </Node>
+  </SuperNode>
+  <SuperNode id="S3" name="Wait for GUI" comment="" hideLocalVar="false" hideGlobalVar="false" start="S4;">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <IEdge target="S2" start="">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="186" yPos="626" ctrlXPos="326" ctrlYPos="626"/>
+          <ControlPoint xPos="506" yPos="626" ctrlXPos="366" ctrlYPos="626"/>
+        </Connection>
+      </Graphics>
+      <Eq>
+        <SimpleVariable name="gui_connected"/>
+        <BoolLiteral value="true"/>
+      </Eq>
+    </IEdge>
+    <Graphics>
+      <Position xPos="106" yPos="586"/>
+    </Graphics>
+    <LocalVariableBadge>
+      <Position xPos="10" yPos="10"/>
+    </LocalVariableBadge>
+    <GlobalVariableBadge>
+      <Position xPos="10" yPos="10"/>
+    </GlobalVariableBadge>
+    <Node id="N10" name="History" history="true">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+      </Commands>
+      <Graphics>
+        <Position xPos="26" yPos="186"/>
+      </Graphics>
+    </Node>
+    <SuperNode id="S4" name="S4" comment="" hideLocalVar="false" hideGlobalVar="false" start="">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+      </Commands>
+      <TEdge target="S4" start="" timeout="1000">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="146" yPos="426" ctrlXPos="146" ctrlYPos="346"/>
+          <ControlPoint xPos="186" yPos="426" ctrlXPos="266" ctrlYPos="346"/>
+        </Connection>
+      </Graphics>
+      </TEdge>
+      <Graphics>
+        <Position xPos="106" yPos="426"/>
+      </Graphics>
+      <LocalVariableBadge>
+        <Position xPos="10" yPos="10"/>
+      </LocalVariableBadge>
+      <GlobalVariableBadge>
+        <Position xPos="10" yPos="10"/>
+      </GlobalVariableBadge>
+      <Node id="N13" name="History" history="true">
+        <Define>
+        </Define>
+        <Declare>
+        </Declare>
+        <Commands>
+        </Commands>
+        <Graphics>
+          <Position xPos="26" yPos="186"/>
+        </Graphics>
+      </Node>
+    </SuperNode>
+  </SuperNode>
+  <ClassPath>
+  </ClassPath>
+  <InitContext></InitContext>
+</SceneFlow>
