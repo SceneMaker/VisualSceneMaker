@@ -538,7 +538,7 @@ public class EmmaUserModel extends ActivityExecutor {
     // get String value.
     private String getUserStrValue(AbstractActivity activity) {
         final String key = "value";
-        if ((activity.get(key) != null) && (mUser.get(activity.get(key)) != "")) {
+        if ((activity.get(key) != null) && (mUser.has(activity.get(key))) && (mUser.get(activity.get(key)) != "")) {
             return mUser.getString(activity.get(key));
         } else {
             mLogger.failure("Failed to retrieve user model information " + activity.get(key) + " with activity key " + key);
@@ -550,7 +550,7 @@ public class EmmaUserModel extends ActivityExecutor {
     // get Integer value.
     private Integer getUserIntValue(AbstractActivity activity) {
         final String key = "value";
-        if ((activity.get(key) != null) && (mUser.get(activity.get(key)) != "")) {
+        if ((activity.get(key) != null) && (mUser.has(activity.get(key))) && (mUser.get(activity.get(key)) != "")) {
             return Integer.parseInt(mUser.getString(activity.get(key)));
         } else {
             mLogger.failure("Failed to retrieve user model information " + activity.get(key) + " with activity key " + key);
