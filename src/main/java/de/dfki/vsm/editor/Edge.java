@@ -982,7 +982,9 @@ public class Edge extends JComponent implements EventListener, Observer, MouseLi
                     }
 
                     mVisualisationTask = new VisualisationTask(mEditorConfig.sVISUALISATIONTIME, this);
-                    mVisualisationTimer.schedule(mVisualisationTask, 0, 15);
+                    if (mVisualisationTimer != null) {
+                        mVisualisationTimer.schedule(mVisualisationTask, 0, 15);
+                    }
                 }
             }
         }

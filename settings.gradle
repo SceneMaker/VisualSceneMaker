@@ -9,7 +9,7 @@ include 'plugins:emma-user-model'
 include 'plugins:ssj'
 include 'plugins:timer'
 include 'plugins:odp'
-
+include 'plugins:studymaster-web'
 include 'plugins:decad'
 include 'plugins:yallah'
 include 'plugins:ssi'
