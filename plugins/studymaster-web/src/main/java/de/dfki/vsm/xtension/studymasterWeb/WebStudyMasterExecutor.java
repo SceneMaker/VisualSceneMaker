@@ -102,7 +102,6 @@ public class WebStudyMasterExecutor extends ActivityExecutor {
         // Start the HTTP server
         mHttpServer = Javalin.create(config -> {
             config.addStaticFiles("/react-studymaster/build");
-            config.enforceSsl = true;
         }).start(http_port);
 
         // Set callbacks to manage WebSocket events
