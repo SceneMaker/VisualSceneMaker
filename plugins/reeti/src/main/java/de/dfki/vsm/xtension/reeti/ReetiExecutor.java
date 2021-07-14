@@ -1,5 +1,8 @@
 package de.dfki.vsm.xtension.reeti;
 
+import de.dfki.vsm.extensionAPI.ExportableProperties;
+import de.dfki.vsm.extensionAPI.ProjectProperty;
+import de.dfki.vsm.extensionAPI.value.ProjectValueProperty;
 import de.dfki.vsm.model.project.AgentConfig;
 import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.model.scenescript.ActionFeature;
@@ -9,9 +12,6 @@ import de.dfki.vsm.runtime.activity.SpeechActivity;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
 import de.dfki.vsm.runtime.activity.scheduler.ActivityWorker;
 import de.dfki.vsm.runtime.project.RunTimeProject;
-import de.dfki.vsm.extensionAPI.ExportableProperties;
-import de.dfki.vsm.extensionAPI.ProjectProperty;
-import de.dfki.vsm.extensionAPI.value.ProjectValueProperty;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
 import de.dfki.vsm.xtension.reeti.util.property.ReetiProjectProperty;
 import de.hcm.robots.messaging.CommandMessage;
@@ -47,7 +47,7 @@ public class ReetiExecutor extends ActivityExecutor implements ExportablePropert
     // SSIUtility to handle message with SSI
     private SSIUtility mSSIUtility;
 
-    private ReetiProjectProperty reetiProjectProperty = new ReetiProjectProperty();
+    private final ReetiProjectProperty reetiProjectProperty = new ReetiProjectProperty();
 
     // Construct the executor
     public ReetiExecutor(

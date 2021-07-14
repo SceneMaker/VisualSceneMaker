@@ -1,6 +1,6 @@
 package de.dfki.vsm.xtension.yallah;
 
-import de.dfki.vsm.extensionAPI.ExportableProperties ;
+import de.dfki.vsm.extensionAPI.ExportableProperties;
 import de.dfki.vsm.extensionAPI.ProjectProperty;
 import de.dfki.vsm.extensionAPI.renderers.SelectableRenderer;
 import de.dfki.vsm.extensionAPI.renderers.StringRender;
@@ -19,7 +19,7 @@ public class YallahProperties implements ExportableProperties {
         None,
         App,
         WebPage
-    } ;
+    }
 
     private final Map<ProjectProperty, ProjectValueProperty> mProperties = new HashMap<>();
 

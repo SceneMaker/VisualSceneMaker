@@ -12,7 +12,7 @@ import de.dfki.vsm.runtime.activity.scheduler.ActivityWorker;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.jpl.JPLEngine;
 import de.dfki.vsm.util.xml.XMLUtilities;
-import de.dfki.vsm.util.WordMapping;
+import de.dfki.vsm.xtension.WordMapping;
 import de.dfki.vsm.xtension.charamel.util.property.CharamelProjectProperty;
 import de.dfki.vsm.xtension.charamel.xml.command.object.action.CharamelActObject;
 import de.dfki.vsm.xtension.charamel.xml.feedback.action.*;
@@ -32,7 +32,7 @@ import java.util.Map.Entry;
  * @author Gregor Mehlmann
  * @author Patrick Gebhard
  */
-public final class CharamelExecutor extends ActivityExecutor implements ExportableProperties {
+    public final class CharamelExecutor extends ActivityExecutor implements ExportableProperties {
 
     // The tworld listener
     private CharamelListener mListener;
@@ -45,7 +45,7 @@ public final class CharamelExecutor extends ActivityExecutor implements Exportab
     // The Charamel Action loader 
     private final CharamelActionLoader mActionLoader = CharamelActionLoader.getInstance();
     // The word mapping properties
-    private WordMapping mWordMapping = new WordMapping();
+    private final WordMapping mWordMapping = new WordMapping();
     // The flag if we use the JPL
     private final boolean mUseJPL;
     // The flag for executables

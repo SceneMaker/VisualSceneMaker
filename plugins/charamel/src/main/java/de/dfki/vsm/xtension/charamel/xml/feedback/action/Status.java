@@ -21,7 +21,7 @@ public class Status extends CharaXMLElement implements XMLParseable, XMLWriteabl
 
 
     // Logger
-    private LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
+    private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
 
     public Status() {
     }
