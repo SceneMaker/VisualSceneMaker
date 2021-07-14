@@ -4,11 +4,12 @@ import './App.css';
 
 function App() {
     const [connectionStatusText, setConnectionStatusText] = useState("");
-    const [webSocket, setWebSocket] = useState(new WebSocket('ws://' + document.location.host + '/ws'));
+    const proto = document.location.protocol === 'https:'? 'wss://':'ws://';
+    const [webSocket, setWebSocket] = useState(new WebSocket(proto + document.location.host + '/ws'));
     const [formContents, setFormContents] = useState();
     const inputValue = new Map();
     useEffect(() => {
-        let ws = new WebSocket('ws://' + document.location.host + '/ws');
+        let ws = new WebSocket(proto + document.location.host + '/ws');
 
         setConnectionStatusText('Connecting...');
         ws.onopen = function () {
