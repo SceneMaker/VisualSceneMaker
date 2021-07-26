@@ -120,6 +120,10 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
                 broadcast(element + sCmdSeperatorChar + name + svalueSeparatorChar + control_type);
             } else if (name.equalsIgnoreCase("stop")) {
                 app.stop();
+            } else if (name.equalsIgnoreCase("guiToFront")) {
+                broadcast(name);
+            } else if (name.equalsIgnoreCase("vcToFront")) {
+                broadcast(name);
             } else if (!name.isEmpty()) { //check if name represents a webpage - must be configured in the device's agent as key, value pair.
                 String guipage = mProject.getAgentConfig(activity_actor).getProperty(name);
                 // send only if there is a stored html page
