@@ -38,16 +38,13 @@ The communication between the web GUI and the VSM plugin is done via Websockets.
 
 Here are screenshots from an [Example Project](ExampleProject).
 
-Main project (top level)
-![Example project](ExampleProject/screenshot-main.png)
-
-The content of the "waiting" superstate
-![Example project](ExampleProject/screenshot-substate.png)
-
-The plugin configuration
+The plugin configuration:
 ![Example project](ExampleProject/screenshot-config.png)
 
-The WebApp after the request has been issued
+Main project:
+![Example project](ExampleProject/screenshot-main.png)
+
+The WebApp after the request has been issued:
 ![Example project](ExampleProject/screenshot-webgui.png)
 
 ## How to build the App (react-studymaster in resources)
