@@ -33,6 +33,12 @@ function App() {
             setConnectionStatusText(msg.data);
         };
         setWebSocket(ws);
+        document.title = "VSM StudyMaster";
+        var link = document.querySelector("link[rel*='icon']") || document.createElement('link');
+        link.type = 'image/x-icon';
+        link.rel = 'shortcut icon';
+        link.href = 'http://scenemaker.dfki.de/images/scenemaker/logo.png';
+        document.getElementsByTagName('head')[0].appendChild(link);
     }, []);
 
 
