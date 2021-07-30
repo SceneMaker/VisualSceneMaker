@@ -47,6 +47,8 @@ public class charamelWsExecutor extends ActivityExecutor {
     private final String mVSMCharacterTurnVar = "turn_utterance";
     // PG: 25.05.2020 global sceneflow variable for the currently performed (animation) action
     private final String mVSMCharacterGestureVar = "avatar_animation";
+    // PG: 28.07.2020 global Sceneflow variable for the whole turn information.
+    private final String mVSMCharacterSystemVar = "avatarsystem_status";
 
     public charamelWsExecutor(PluginConfig config, RunTimeProject project) {
         super(config, project);
@@ -595,6 +597,15 @@ public class charamelWsExecutor extends ActivityExecutor {
         String content = parts[1];
 
         mLogger.message("Message header is >" + header + "<, content is >" + content + "<");
+
+        // PG 28.07.2021: Added system information if user has allowed audio output on the webpage.
+        if (header.contains("fixAudioContext")) {
+            //PG 28.07.2021: Inform model about the audio output availability.
+            String audioavailable = (content.contains("true")) ? "audio_available" : "audio_not_available";
+            if (mProject.hasVariable(mVSMCharacterSystemVar)) {
+                mProject.setVariable(mVSMCharacterSystemVar, audioavailable);
+            }
+        }
 
         // check if there the activity manager waits for an action to be finished
         if (content.equalsIgnoreCase("stop")) {
