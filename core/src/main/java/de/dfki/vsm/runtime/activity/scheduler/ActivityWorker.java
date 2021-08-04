@@ -9,9 +9,9 @@ import java.util.List;
 /**
  * @author Gregor Mehlmann
  */
-public final class ActivityWorker extends Thread {
+public final class ActivityWorker<T extends AbstractActivity> extends Thread {
 
-    // The defaut system logger
+    // The default system logger
     private final LOGDefaultLogger mLogger
             = LOGDefaultLogger.getInstance();
     // The termination flag
@@ -19,9 +19,9 @@ public final class ActivityWorker extends Thread {
     // The execution delay
     private final long mTimeout;
     // The worker thread list
-    private final List<ActivityWorker> mList;
+    private final List<ActivityWorker<T>> mList;
     // The activity data
-    private final AbstractActivity mActivity;
+    private final T mActivity;
     private final ActivityExecutor mExecutor;
 
     // Abort the execution
@@ -40,8 +40,8 @@ public final class ActivityWorker extends Thread {
     // Construct with a name
     public ActivityWorker(
             final long timeout,
-            final List<ActivityWorker> workers,
-            final AbstractActivity activity,
+            final List<ActivityWorker<T>> workers,
+            final T activity,
             final ActivityExecutor executor) {
         super(activity.toString());
         // Initialize the flag
@@ -75,7 +75,7 @@ public final class ActivityWorker extends Thread {
         }
         // Wait for workers
         if (mList != null) {
-            for (final ActivityWorker worker : mList) {
+            for (final ActivityWorker<T> worker : mList) {
                 try {
                     // Print some information
                      //mLogger.message("Awaiting activity worker '" + worker + "'");
@@ -84,7 +84,7 @@ public final class ActivityWorker extends Thread {
                     // Print some information
                      //mLogger.message("Joining activity worker '" + worker + "'");
                     // TODO: Remove the worker from thread
-                    // or clear the list after joinig all
+                    // or clear the list after joining all
                 } catch (final InterruptedException exc) {
                     // Print some information
                     mLogger.warning(exc.toString());
