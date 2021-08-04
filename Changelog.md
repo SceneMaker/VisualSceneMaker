@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Plugin `studymaster-web`: new interface to control the flow from web page (#185, #209)
 - Plugin `yallah`: to control YALLAH avatars via websocket protocol (#184)
 ### Changed
+- study-master web has a much longer timeout for websockets
 ### Removed
 ### Deprecated
 - Plugin `decad` is deprecated as it is replaced by `yallah`
