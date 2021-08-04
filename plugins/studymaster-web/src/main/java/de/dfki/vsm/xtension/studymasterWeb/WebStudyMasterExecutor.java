@@ -128,6 +128,7 @@ public class WebStudyMasterExecutor extends ActivityExecutor {
 
     /** Invoked when a new websocket connection is opened (new web app is loaded).*/
     private synchronized void addWs(WsConnectContext ws) {
+        ws.session.setIdleTimeout(Long.MAX_VALUE);
         mLogger.message("New WebSocket connection.");
         this.mWebsockets.add(ws);
 
