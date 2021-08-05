@@ -16,7 +16,6 @@ import de.dfki.vsm.util.log.LOGConsoleLogger;
 import io.javalin.Javalin;
 import io.javalin.websocket.WsCloseContext;
 import io.javalin.websocket.WsConnectContext;
-
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -35,24 +34,40 @@ public class WebStudyMasterExecutor extends ActivityExecutor {
 
     /** Project variable set when the "GO" message is received. */
     private static final String sGO_VAR = "go_var" ;
-    private static final String sGO_VAR_DEFAULT = "go" ;
+    private static final String sGO_VAR_DEFAULT = "go";
 
-    /** Project variable holding the result of the user selection (SUBMIT/CANCEL) */
-    private static final String sREQUEST_RESULT_VAR = "request_result_var" ;
-    private static final String sREQUEST_RESULT_VAR_DEFAULT = "request_result" ;
+    /**
+     * Project variable holding the result of the user selection (SUBMIT/CANCEL)
+     */
+    private static final String sREQUEST_RESULT_VAR = "request_result_var";
+    private static final String sREQUEST_RESULT_VAR_DEFAULT = "request_result";
 
-    /** Project variable set when the remote Web GUI connects via websocket. */
-    private static final String sGUI_CONNECTED_VAR = "gui_connected_var" ;
-    private static final String sGUI_CONNECTED_VAR_DEFAULT = "gui_connected" ;
+    /**
+     * Project variable set when the remote Web GUI connects via websocket.
+     */
+    private static final String sGUI_CONNECTED_VAR = "gui_connected_var";
+    private static final String sGUI_CONNECTED_VAR_DEFAULT = "gui_connected";
 
-    /** HTTP port */
-    private static final String sJAVALIN_PORT_VAR = "port" ;
-    private static final String sJAVALIN_PORT_VAR_DEFAULT = "8080" ;
+    /**
+     * Project variable storing the satus of the remote Web GUI .
+     */
+    private static final String sSTUDYMASTER_INFO_VAR = "studymaster_info";
+    private static final String sSTUDYMASTER_INFO_VAR_DEFAULT = "alive";
+
+    /**
+     * HTTP port
+     */
+    private static final String sJAVALIN_PORT_VAR = "port";
+    private static final String sJAVALIN_PORT_VAR_DEFAULT = "8080";
 
 
-    /** The singleton logger instance.*/
+    /**
+     * The singleton logger instance.
+     */
     private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
-    /** The list of websocket connections. Yes, it will be possible to have several GUIs on the same scene flow.*/
+    /**
+     * The list of websocket connections. Yes, it will be possible to have several GUIs on the same scene flow.
+     */
     private final ArrayList<WsConnectContext> mWebsockets = new ArrayList<>();
     /** The Javalin HTTP server. */
     private Javalin mHttpServer;
@@ -285,13 +300,20 @@ public class WebStudyMasterExecutor extends ActivityExecutor {
                         mLogger.warning("Can't assign sceneflow variable " + var + " with value " + value + ": global project variable not defined");
                     }
 
-                // MESSAGE GO: VSMMessage#Go
-                } else if(msg.equals("Go")) {
+                    // MESSAGE GO: VSMMessage#Go
+                } else if (msg.equals("Go")) {
                     mLogger.message("Assigning sceneflow variable " + mSceneflowGoVar + " with value " + message);
                     mProject.setVariable(mSceneflowGoVar, true);
 
-                // MESSAGE UNKNOWN!!!
-                } else {
+                    // MESSAGESTATUS
+                } else if (msg.equals("STATUS")) {
+                    String value = msgParts[2];
+                    mLogger.message("Assigning sceneflow variable " + sSTUDYMASTER_INFO_VAR + " with value " + value);
+
+                    if (mProject.hasVariable(sSTUDYMASTER_INFO_VAR)) {
+                        mProject.setVariable(sSTUDYMASTER_INFO_VAR, value);
+                    }
+                } else { // MESSAGE UNKNOWN!!!
                     mLogger.warning("Unsupported message '" + msg + "' received.");
                 }
 
