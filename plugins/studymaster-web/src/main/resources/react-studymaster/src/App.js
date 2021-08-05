@@ -14,6 +14,7 @@ function App() {
         setConnectionStatusText('Connecting...');
         ws.onopen = function () {
             setConnectionStatusText('Connected!');
+            clientAliveMessage();
         };
         ws.onclose = function () {
             setConnectionStatusText('Lost connection');
@@ -42,6 +43,16 @@ function App() {
         document.getElementsByTagName('head')[0].appendChild(link);
     }, []);
 
+    var aliveTimer = null;
+
+    /**
+     * Message from client (this and webpage loading this) that client is alive
+     */
+    function clientAliveMessage() {
+        console.log("Send client alive message to server");
+        webSocket.send(`VSMMessage#STATUS#alive`);
+        aliveTimer = setTimeout(clientAliveMessage, 1000);
+    }
 
     function sendSubmit(e) {
         let allFieldSet = extractAndSendUserInput(e);
@@ -206,6 +217,9 @@ function App() {
     return (
         <div className="App">
             <header className="App-header">
+                <div>
+                    <h3>VSM StudyMaster</h3>
+                </div>
                 <form>
                     <fieldset>
                         {(formContents && (formContents.action === "REQUEST")) && generateFields()}
