@@ -39,6 +39,8 @@ dependencies {
     implementation project(":plugins:extensionAPI")
 
     implementation 'org.jetbrains:annotations:16.0.2'
+    // https://mvnrepository.com/artifact/org.slick2d/slick2d-core
+    implementation group: 'org.slick2d', name: 'slick2d-core', version: '1.0.2' // needed for documentation
     // https://mvnrepository.com/artifact/org.reflections/reflections
     implementation group: 'org.reflections', name: 'reflections', version: '0.9.12'
     // https://mvnrepository.com/artifact/jpl/jpl
