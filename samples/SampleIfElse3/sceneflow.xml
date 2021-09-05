@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SceneFlow id="" name="default" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="So., 5 Sep. 2021 17:50:12" start="N1;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
+  <Define>
+  </Define>
+  <Declare>
+    <VariableDefinition type="Int" name ="x">
+      <IntLiteral value="0"/>
+    </VariableDefinition>
+  </Declare>
+  <Commands>
+  </Commands>
+  <LocalVariableBadge>
+    <Position xPos="10" yPos="10"/>
+  </LocalVariableBadge>
+  <GlobalVariableBadge>
+    <Position xPos="10" yPos="10"/>
+  </GlobalVariableBadge>
+  <Node id="N1" name="If" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <Assignment>
+        <SimpleVariable name="x"/>
+        <Expression>
+          <Add>
+            <SimpleVariable name="x"/>
+            <IntLiteral value="1"/>
+          </Add>
+        </Expression>
+      </Assignment>
+    </Commands>
+    <CEdge target="N2" start="">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="120" yPos="435" ctrlXPos="255" ctrlYPos="440"/>
+          <ControlPoint xPos="390" yPos="435" ctrlXPos="265" ctrlYPos="440"/>
+        </Connection>
+      </Graphics>
+      <ParenExpression>
+        <Gt>
+          <SimpleVariable name="x"/>
+          <IntLiteral value="2"/>
+        </Gt>
+      </ParenExpression>
+    </CEdge>
+    <EEdge target="N3" start ="">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="75" yPos="390" ctrlXPos="80" ctrlYPos="365"/>
+        <ControlPoint xPos="75" yPos="300" ctrlXPos="80" ctrlYPos="335"/>
+      </Connection>
+    </Graphics>
+    </EEdge>
+    <Graphics>
+      <Position xPos="30" yPos="390"/>
+    </Graphics>
+  </Node>
+  <Node id="N2" name="N2" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <Graphics>
+      <Position xPos="390" yPos="390"/>
+    </Graphics>
+  </Node>
+  <Node id="N3" name="Else If" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <CEdge target="N4" start="">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="120" yPos="255" ctrlXPos="255" ctrlYPos="260"/>
+          <ControlPoint xPos="390" yPos="255" ctrlXPos="265" ctrlYPos="260"/>
+        </Connection>
+      </Graphics>
+      <ParenExpression>
+        <Eq>
+          <SimpleVariable name="x"/>
+          <IntLiteral value="0"/>
+        </Eq>
+      </ParenExpression>
+    </CEdge>
+    <EEdge target="N5" start ="">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="75" yPos="210" ctrlXPos="80" ctrlYPos="185"/>
+        <ControlPoint xPos="75" yPos="120" ctrlXPos="80" ctrlYPos="155"/>
+      </Connection>
+    </Graphics>
+    </EEdge>
+    <Graphics>
+      <Position xPos="30" yPos="210"/>
+    </Graphics>
+  </Node>
+  <Node id="N4" name="N4" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <Graphics>
+      <Position xPos="390" yPos="210"/>
+    </Graphics>
+  </Node>
+  <Node id="N5" name="N5" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <Graphics>
+      <Position xPos="30" yPos="30"/>
+    </Graphics>
+  </Node>
+  <ClassPath>
+  </ClassPath>
+  <InitContext></InitContext>
+</SceneFlow>

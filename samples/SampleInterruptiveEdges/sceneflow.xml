@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SceneFlow id="" name="default" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="So., 5 Sep. 2021 15:48:07" start="S1;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
+  <Define>
+  </Define>
+  <Declare>
+  </Declare>
+  <Commands>
+  </Commands>
+  <LocalVariableBadge>
+    <Position xPos="10" yPos="10"/>
+  </LocalVariableBadge>
+  <GlobalVariableBadge>
+    <Position xPos="10" yPos="10"/>
+  </GlobalVariableBadge>
+  <Node id="N2" name="N2" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <Graphics>
+      <Position xPos="390" yPos="210"/>
+    </Graphics>
+  </Node>
+  <SuperNode id="S1" name="S1" comment="" hideLocalVar="false" hideGlobalVar="false" start="">
+    <Define>
+    </Define>
+    <Declare>
+      <VariableDefinition type="Int" name ="a">
+        <IntLiteral value="0"/>
+      </VariableDefinition>
+      <VariableDefinition type="Int" name ="b">
+        <Neg>
+          <IntLiteral value="1"/>
+        </Neg>
+      </VariableDefinition>
+    </Declare>
+    <Commands>
+    </Commands>
+    <IEdge target="N2" start="">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="210" yPos="255" ctrlXPos="295" ctrlYPos="260"/>
+          <ControlPoint xPos="390" yPos="255" ctrlXPos="315" ctrlYPos="260"/>
+        </Connection>
+      </Graphics>
+      <ParenExpression>
+        <Lt>
+          <SimpleVariable name="a"/>
+          <SimpleVariable name="b"/>
+        </Lt>
+      </ParenExpression>
+    </IEdge>
+    <Graphics>
+      <Position xPos="120" yPos="210"/>
+    </Graphics>
+    <LocalVariableBadge>
+      <Position xPos="10" yPos="10"/>
+    </LocalVariableBadge>
+    <GlobalVariableBadge>
+      <Position xPos="10" yPos="10"/>
+    </GlobalVariableBadge>
+    <Node id="N1" name="History" history="true">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+      </Commands>
+      <Graphics>
+        <Position xPos="0" yPos="0"/>
+      </Graphics>
+    </Node>
+  </SuperNode>
+  <ClassPath>
+  </ClassPath>
+  <InitContext></InitContext>
+</SceneFlow>

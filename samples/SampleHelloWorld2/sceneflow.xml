@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SceneFlow id="" name="HelloWorld2" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="So., 5 Sep. 2021 16:05:53" start="N1;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
+  <Define>
+  </Define>
+  <Declare>
+  </Declare>
+  <Commands>
+  </Commands>
+  <LocalVariableBadge>
+    <Position xPos="10" yPos="10"/>
+  </LocalVariableBadge>
+  <GlobalVariableBadge>
+    <Position xPos="10" yPos="10"/>
+  </GlobalVariableBadge>
+  <Node id="N1" name="Start" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <TEdge target="N2" start="" timeout="1000">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="120" yPos="165" ctrlXPos="187" ctrlYPos="165"/>
+        <ControlPoint xPos="300" yPos="165" ctrlXPos="232" ctrlYPos="165"/>
+      </Connection>
+    </Graphics>
+    </TEdge>
+    <Graphics>
+      <Position xPos="30" yPos="120"/>
+    </Graphics>
+  </Node>
+  <Node id="N2" name="End" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <CallingExpression name="printString">
+        <StringLiteral><![CDATA[Hello World!]]></StringLiteral>
+      </CallingExpression>
+    </Commands>
+    <TEdge target="N1" start="" timeout="1000">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="302" yPos="177" ctrlXPos="237" ctrlYPos="195"/>
+        <ControlPoint xPos="118" yPos="177" ctrlXPos="182" ctrlYPos="195"/>
+      </Connection>
+    </Graphics>
+    </TEdge>
+    <Graphics>
+      <Position xPos="300" yPos="120"/>
+    </Graphics>
+  </Node>
+  <UserCommands>
+    <UserCommand name="printString" classname ="java.lang.System.out" method="println">
+      <ArgumentDefinition name="text" type="java.lang.String"/>
+    </UserCommand>
+  </UserCommands>
+  <ClassPath>
+  </ClassPath>
+  <InitContext></InitContext>
+</SceneFlow>

@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SceneFlow id="" name="default" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="So., 5 Sep. 2021 17:44:43" start="N1;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
+  <Define>
+  </Define>
+  <Declare>
+    <VariableDefinition type="Int" name ="x">
+      <IntLiteral value="0"/>
+    </VariableDefinition>
+  </Declare>
+  <Commands>
+  </Commands>
+  <LocalVariableBadge>
+    <Position xPos="10" yPos="10"/>
+  </LocalVariableBadge>
+  <GlobalVariableBadge>
+    <Position xPos="10" yPos="10"/>
+  </GlobalVariableBadge>
+  <Node id="N1" name="N1" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <Assignment>
+        <SimpleVariable name="x"/>
+        <Expression>
+          <Add>
+            <SimpleVariable name="x"/>
+            <IntLiteral value="1"/>
+          </Add>
+        </Expression>
+      </Assignment>
+    </Commands>
+    <CEdge target="N2" start="">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="120" yPos="435" ctrlXPos="205" ctrlYPos="440"/>
+          <ControlPoint xPos="300" yPos="435" ctrlXPos="225" ctrlYPos="440"/>
+        </Connection>
+      </Graphics>
+      <ParenExpression>
+        <Gt>
+          <SimpleVariable name="x"/>
+          <IntLiteral value="2"/>
+        </Gt>
+      </ParenExpression>
+    </CEdge>
+    <EEdge target="N3" start ="">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="75" yPos="390" ctrlXPos="75" ctrlYPos="322"/>
+        <ControlPoint xPos="75" yPos="210" ctrlXPos="75" ctrlYPos="277"/>
+      </Connection>
+    </Graphics>
+    </EEdge>
+    <Graphics>
+      <Position xPos="30" yPos="390"/>
+    </Graphics>
+  </Node>
+  <Node id="N2" name="N2" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <Graphics>
+      <Position xPos="300" yPos="390"/>
+    </Graphics>
+  </Node>
+  <Node id="N3" name="Else Node" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <Graphics>
+      <Position xPos="30" yPos="120"/>
+    </Graphics>
+  </Node>
+  <UserCommands>
+    <UserCommand name="doSomething" classname ="java.lang.System.out" method="println">
+      <ArgumentDefinition name="Arg0" type="int"/>
+    </UserCommand>
+  </UserCommands>
+  <ClassPath>
+  </ClassPath>
+  <InitContext></InitContext>
+</SceneFlow>

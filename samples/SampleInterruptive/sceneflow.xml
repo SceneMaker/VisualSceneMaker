@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SceneFlow id="" name="default" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="So., 5 Sep. 2021 17:57:38" start="N1;N3;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
+  <Define>
+  </Define>
+  <Declare>
+    <VariableDefinition type="Int" name ="x">
+      <IntLiteral value="0"/>
+    </VariableDefinition>
+    <VariableDefinition type="Int" name ="y">
+      <IntLiteral value="0"/>
+    </VariableDefinition>
+  </Declare>
+  <Commands>
+  </Commands>
+  <LocalVariableBadge>
+    <Position xPos="10" yPos="10"/>
+  </LocalVariableBadge>
+  <GlobalVariableBadge>
+    <Position xPos="10" yPos="10"/>
+  </GlobalVariableBadge>
+  <Node id="N1" name="N1" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <Assignment>
+        <SimpleVariable name="y"/>
+        <Expression>
+          <Add>
+            <SimpleVariable name="y"/>
+            <IntLiteral value="1"/>
+          </Add>
+        </Expression>
+      </Assignment>
+      <Assignment>
+        <SimpleVariable name="y"/>
+        <Expression>
+          <Add>
+            <SimpleVariable name="y"/>
+            <IntLiteral value="1"/>
+          </Add>
+        </Expression>
+      </Assignment>
+    </Commands>
+    <CEdge target="N2" start="">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="120" yPos="165" ctrlXPos="232" ctrlYPos="165"/>
+          <ControlPoint xPos="390" yPos="165" ctrlXPos="277" ctrlYPos="165"/>
+        </Connection>
+      </Graphics>
+      <ParenExpression>
+        <Gt>
+          <SimpleVariable name="y"/>
+          <IntLiteral value="2"/>
+        </Gt>
+      </ParenExpression>
+    </CEdge>
+    <EEdge target="N1" start ="">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="87" yPos="122" ctrlXPos="111" ctrlYPos="36"/>
+        <ControlPoint xPos="114" yPos="142" ctrlXPos="192" ctrlYPos="96"/>
+      </Connection>
+    </Graphics>
+    </EEdge>
+    <Graphics>
+      <Position xPos="30" yPos="120"/>
+    </Graphics>
+  </Node>
+  <Node id="N2" name="N2" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <Graphics>
+      <Position xPos="390" yPos="120"/>
+    </Graphics>
+  </Node>
+  <Node id="N3" name="N3" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <Assignment>
+        <SimpleVariable name="x"/>
+        <Expression>
+          <Add>
+            <SimpleVariable name="x"/>
+            <IntLiteral value="1"/>
+          </Add>
+        </Expression>
+      </Assignment>
+      <Assignment>
+        <SimpleVariable name="x"/>
+        <Expression>
+          <Add>
+            <SimpleVariable name="x"/>
+            <IntLiteral value="1"/>
+          </Add>
+        </Expression>
+      </Assignment>
+    </Commands>
+    <EEdge target="N3" start ="">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="87" yPos="302" ctrlXPos="111" ctrlYPos="216"/>
+        <ControlPoint xPos="114" yPos="322" ctrlXPos="192" ctrlYPos="276"/>
+      </Connection>
+    </Graphics>
+    </EEdge>
+    <IEdge target="N4" start="">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="120" yPos="345" ctrlXPos="232" ctrlYPos="345"/>
+          <ControlPoint xPos="390" yPos="345" ctrlXPos="277" ctrlYPos="345"/>
+        </Connection>
+      </Graphics>
+      <ParenExpression>
+        <Gt>
+          <SimpleVariable name="x"/>
+          <IntLiteral value="2"/>
+        </Gt>
+      </ParenExpression>
+    </IEdge>
+    <Graphics>
+      <Position xPos="30" yPos="300"/>
+    </Graphics>
+  </Node>
+  <Node id="N4" name="N4" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <Graphics>
+      <Position xPos="390" yPos="300"/>
+    </Graphics>
+  </Node>
+  <ClassPath>
+  </ClassPath>
+  <InitContext></InitContext>
+</SceneFlow>
