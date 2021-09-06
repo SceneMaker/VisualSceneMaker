@@ -1,6 +1,7 @@
 package de.dfki.vsm;
 
 import org.junit.*;
+import org.junit.internal.runners.statements.Fail;
 import org.junit.jupiter.api.Assertions;
 import org.junit.rules.Timeout;
 import org.junit.runner.RunWith;
@@ -31,6 +32,7 @@ public class SamplesRunTest {
             thread.interrupt();
         } catch (Exception e) {
             e.printStackTrace();
+            fail("Exception happened");
         }
     }
 
@@ -49,6 +51,7 @@ public class SamplesRunTest {
             thread.interrupt();
         } catch (Exception e) {
             e.printStackTrace();
+            fail("Exception happened");
         }
     }
 
@@ -67,6 +70,7 @@ public class SamplesRunTest {
             thread.interrupt();
         } catch (Exception e) {
             e.printStackTrace();
+            fail("Exception happened");
         }
     }
 
@@ -85,6 +89,7 @@ public class SamplesRunTest {
             thread.interrupt();
         } catch (Exception e) {
             e.printStackTrace();
+            fail("Exception happened");
         }
     }
 
@@ -103,6 +108,7 @@ public class SamplesRunTest {
             thread.interrupt();
         } catch (Exception e) {
             e.printStackTrace();
+            fail("Exception happened");
         }
     }
 
@@ -121,6 +127,7 @@ public class SamplesRunTest {
             thread.interrupt();
         } catch (Exception e) {
             e.printStackTrace();
+            fail("Exception happened");
         }
     }
 
@@ -139,6 +146,7 @@ public class SamplesRunTest {
             thread.interrupt();
         } catch (Exception e) {
             e.printStackTrace();
+            fail("Exception happened");
         }
     }
 
@@ -157,6 +165,7 @@ public class SamplesRunTest {
             thread.interrupt();
         } catch (Exception e) {
             e.printStackTrace();
+            fail("Exception happened");
         }
     }
 
@@ -175,6 +184,7 @@ public class SamplesRunTest {
             thread.interrupt();
         } catch (Exception e) {
             e.printStackTrace();
+            fail("Exception happened");
         }
     }
 
@@ -193,6 +203,7 @@ public class SamplesRunTest {
             thread.interrupt();
         } catch (Exception e) {
             e.printStackTrace();
+            fail("Exception happened");
         }
     }
 
@@ -211,6 +222,7 @@ public class SamplesRunTest {
             thread.interrupt();
         } catch (Exception e) {
             e.printStackTrace();
+            fail("Exception happened");
         }
     }
 
@@ -229,6 +241,7 @@ public class SamplesRunTest {
             thread.interrupt();
         } catch (Exception e) {
             e.printStackTrace();
+            fail("Exception happened");
         }
     }
 
@@ -247,6 +260,7 @@ public class SamplesRunTest {
             thread.interrupt();
         } catch (Exception e) {
             e.printStackTrace();
+            fail("Exception happened");
         }
     }
 
@@ -265,6 +279,8 @@ public class SamplesRunTest {
             thread.interrupt();
         } catch (Exception e) {
             e.printStackTrace();
+            fail("Exception happened");
+
         }
     }
 
@@ -285,6 +301,7 @@ public class SamplesRunTest {
             thread.interrupt();
         } catch (Exception e) {
             e.printStackTrace();
+            fail("Exception happened");
         }
     }
      */
