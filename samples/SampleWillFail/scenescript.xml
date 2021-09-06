@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SceneScript lower="0" upper="0">
+  <SceneObject lower="2" upper="29" language="@@" identifier="A">
+    <SceneTurn lower="13" upper="29" speaker="character">
+      <SceneUttr lower="24" upper="29" punct=".">
+        <SceneWord lower="24" upper="28" text="Text"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+</SceneScript>

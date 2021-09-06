@@ -20,6 +20,7 @@ repositories {
 }
 
 dependencies {
+    implementation 'junit:junit:4.13.1'
     compile files('../lib/JCup.jar')
     compile files('../lib/JFlex.jar')
     // https://mvnrepository.com/artifact/jpl/jpl
