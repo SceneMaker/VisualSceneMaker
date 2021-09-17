@@ -95,6 +95,33 @@ public final class SSIEventSender extends Thread {
         }
     }
 
+    // Send a message
+    public final boolean sendBytes(final byte[] bytes) {
+        try {
+            // Create the byte buffer
+            final byte[] buffer = bytes;
+            // Create the UDP packet
+            final DatagramPacket packet
+                    = new DatagramPacket(buffer, buffer.length);
+            // And send the UDP packet
+            mSocket.send(packet);
+
+
+            // Return true at success
+            return true;
+        } catch (final IOException exc) {
+            // Print some information
+            mLogger.failure(exc.toString());
+            // Return false at failure
+            return false;
+        }
+    }
+
+    public boolean sendString(final String string){
+        mLogger.message("SSI event sender sending '" + string + "'");
+        return sendBytes(string.getBytes(StandardCharsets.UTF_8));
+    }
+
     // Receive a message
     public final String recv() {
         if (mSocket != null) {
@@ -126,27 +153,6 @@ public final class SSIEventSender extends Thread {
         }
     }
 
-    // Send a message 
-    public final boolean sendString(final String string) {
-        try {
-            // Create the byte buffer
-            final byte[] buffer = string.getBytes(StandardCharsets.UTF_8);
-            // Create the UDP packet
-            final DatagramPacket packet
-                    = new DatagramPacket(buffer, buffer.length);
-            // And send the UDP packet
-            mSocket.send(packet);
-            // Print some information
-            mLogger.message("SSI event sender sending '" + string + "'");
-            // Return true at success
-            return true;
-        } catch (final IOException exc) {
-            // Print some information
-            mLogger.failure(exc.toString());
-            // Return false at failure 
-            return false;
-        }
-    }
 
     // Receive a byte array
     private byte[] recvBytes() {
