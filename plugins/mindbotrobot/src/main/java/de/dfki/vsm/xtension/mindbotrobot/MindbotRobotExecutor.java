@@ -341,6 +341,19 @@ public final class MindbotRobotExecutor extends ActivityExecutor implements Mind
         }
     }
 
+    public void setDetectedPose(Pose pose) {
+        // Copy the information of a newly detected extarnel object pose into project global variables.
+        Point pos = pose.getPosition();
+        Quaternion or = pose.getOrientation();
+        if(mProject.hasVariable("detected_pose_x")) { mProject.setVariable("detected_pose_x", (float)pos.getX()) ; }
+        if(mProject.hasVariable("detected_pose_y")) { mProject.setVariable("detected_pose_y", (float)pos.getX()) ; }
+        if(mProject.hasVariable("detected_pose_z")) { mProject.setVariable("detected_pose_z", (float)pos.getX()) ; }
+        if(mProject.hasVariable("detected_pose_qx")) { mProject.setVariable("detected_pose_qx", (float)or.getX()) ; }
+        if(mProject.hasVariable("detected_pose_qy")) { mProject.setVariable("detected_pose_qy", (float)or.getY()) ; }
+        if(mProject.hasVariable("detected_pose_qz")) { mProject.setVariable("detected_pose_qz", (float)or.getZ()) ; }
+        if(mProject.hasVariable("detected_pose_qw")) { mProject.setVariable("detected_pose_qw", (float)or.getW()) ; }
+    }
+
     @Override
     public void logWarning(String msg) {
         mLogger.warning(msg);

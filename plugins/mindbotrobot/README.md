@@ -99,6 +99,16 @@ The following actions can be invoked within scenes:
   * Parameters:
     * `name` The name of the object to detect. The name will be resolved and associated to some physical entity at the cobot side.
   * Example: `[detect_object name='gear1']`
+  * For this kind of message, if succeeded, the response will bring the Pose (translation and quaternion) of the detected object. This will b set in the VSM global variables:
+    * `detected_pose_x`
+    * `detected_pose_y`
+    * `detected_pose_z`
+    * `detected_pose_rw`
+    * `detected_pose_rx`
+    * `detected_pose_ry`
+    * `detected_pose_rz`
+    
+    Attention: If the variables are not defined, no warnings will be raised.
   
 ## Command feedback
 

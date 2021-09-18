@@ -11,4 +11,5 @@ public interface MindbotRobotFeedback {
 
     void logWarning(String msg) ;
 
+    void setDetectedPose(geometry_msgs.Pose p);
 }

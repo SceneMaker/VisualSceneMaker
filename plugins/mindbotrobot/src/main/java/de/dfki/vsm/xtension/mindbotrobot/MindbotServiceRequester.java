@@ -1,5 +1,6 @@
 package de.dfki.vsm.xtension.mindbotrobot;
 
+import geometry_msgs.Pose;
 import mindbot_msgs.*;
 import org.ros.exception.RemoteException;
 import org.ros.exception.RosRuntimeException;
@@ -202,8 +203,15 @@ public class MindbotServiceRequester extends AbstractNodeMain {
 
                     mRobotFeedback.setActionState(s.toString());
                     mRobotFeedback.setActionMessage(message);
+
+                    Pose pose = request.getDetectedPose();
+                    // If the pose values are NaN, it means they are not valid.
+                    // For performance reasons, we test only the first number.
+                    if (! Double.isNaN(pose.getPosition().getX())) {
+                        mRobotFeedback.setDetectedPose(pose);
+                    }
                 }
-                // if the is was not in the map, it is possible that VSM re-started when a robot acton was still executing
+                // if the rosCallID was not in the map, it is possible that VSM re-started when a robot acton was still executing
             }
 
             // Set the response result.
