@@ -22,8 +22,8 @@ sourceSets {
 }
 
 dependencies {
-    testCompile group: 'junit', name: 'junit', version: '4.12'
-    compile "io.javalin:javalin:3.8.0"
-    compile "org.slf4j:slf4j-simple:1.8.0-beta4"
-    compile project(":core")
+    testImplementation group: 'junit', name: 'junit', version: '4.12'
+    implementation "io.javalin:javalin:3.8.0"
+    implementation "org.slf4j:slf4j-simple:1.8.0-beta4"
+    implementation project(":core")
 }
