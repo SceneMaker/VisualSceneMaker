@@ -16,12 +16,12 @@ repositories {
 dependencies {
     //
     // These are always needed
-    testCompile group: 'junit', name: 'junit', version: '4.12'
-    compile "io.javalin:javalin:3.8.0"
-    compile project(":core")
+    //testCompile group: 'junit', name: 'junit', version: '4.12'
+    implementation "io.javalin:javalin:3.8.0"
+    implementation project(":core")
 
     //
     // Other dependencies
     // https://mvnrepository.com/artifact/org.json/json
-    compile group: 'org.json', name: 'json', version: '20171018'
+    implementation group: 'org.json', name: 'json', version: '20171018'
 }
