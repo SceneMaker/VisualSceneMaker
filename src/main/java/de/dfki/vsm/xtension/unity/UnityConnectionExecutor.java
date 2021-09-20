@@ -18,7 +18,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 
 /**
- * @author J.-L. Himbert <s9jehimb@stud.uni-saarland.de>
+ * @author J.-L. Himbert {@literal <s9jehimb@stud.uni-saarland.de>}
  */
 public final class UnityConnectionExecutor extends ActivityExecutor {
     public final String MarkerStartSign = "$(";
