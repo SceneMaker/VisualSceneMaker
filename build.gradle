@@ -37,6 +37,7 @@ dependencies {
     compile project(":plugins:reeti")
     compile project(":plugins:tricatworld")
     compile project(":plugins:charamel")
+    compile project(":plugins:mindbotESM")
 
     // https://mvnrepository.com/artifact/org.reflections/reflections
     compile group: 'org.reflections', name: 'reflections', version: '0.9.12'
