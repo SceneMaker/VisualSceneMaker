@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SceneScript lower="0" upper="0">
+  <SceneObject lower="0" upper="74" language="@@" identifier="Greetings">
+    <SceneTurn lower="19" upper="74" speaker="Anna">
+      <SceneUttr lower="25" upper="31" punct=",">
+        <SceneWord lower="25" upper="30" text="Hello"/>
+      </SceneUttr>
+      <SceneUttr lower="33" upper="74" punct=".">
+        <ActionObject lower="33" upper="50" actor="" name="PlayAnimationClip">
+          <ActionFeature lower="51" upper="62" key="name" val="Waving"/>
+        </ActionObject>
+        <SceneWord lower="64" upper="65" text="I"/>
+        <SceneWord lower="66" upper="68" text="am"/>
+        <SceneWord lower="69" upper="73" text="Anna"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="76" upper="147" language="@@" identifier="Dance">
+    <SceneTurn lower="91" upper="147" speaker="Anna">
+      <SceneUttr lower="97" upper="147" punct=".">
+        <SceneWord lower="97" upper="101" text="Some"/>
+        <SceneWord lower="102" upper="107" text="dance"/>
+        <ActionObject lower="109" upper="126" actor="" name="PlayAnimationClip">
+          <ActionFeature lower="127" upper="137" key="name" val="Salsa"/>
+        </ActionObject>
+        <SceneWord lower="139" upper="142" text="for"/>
+        <SceneWord lower="143" upper="146" text="you"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="149" upper="204" language="@@" identifier="LookStraight">
+    <SceneTurn lower="171" upper="204" speaker="Anna">
+      <SceneUttr lower="178" upper="204" punct=".">
+        <ActionObject lower="178" upper="190" actor="" name="LookAtObject">
+          <ActionFeature lower="191" upper="202" key="name" val="Camera"/>
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="206" upper="261" language="@@" identifier="Think">
+    <SceneTurn lower="221" upper="261" speaker="Anna">
+      <SceneUttr lower="228" upper="261" punct=".">
+        <ActionObject lower="228" upper="239" actor="" name="LookAtPoint">
+          <ActionFeature lower="240" upper="246" key="x" val="-1.0"/>
+          <ActionFeature lower="247" upper="252" key="y" val="2.0"/>
+          <ActionFeature lower="253" upper="259" key="z" val="-1.0"/>
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="263" upper="419" language="@@" identifier="SceneBye">
+    <SceneTurn lower="281" upper="419" speaker="Anna">
+      <SceneUttr lower="287" upper="332" punct=".">
+        <SceneWord lower="287" upper="290" text="Bye"/>
+        <ActionObject lower="292" upper="309" actor="" name="PlayAnimationClip">
+          <ActionFeature lower="310" upper="319" key="name" val="wave"/>
+          <ActionFeature lower="320" upper="330" key="speed" val="slow"/>
+        </ActionObject>
+      </SceneUttr>
+      <SceneUttr lower="333" upper="343" punct=",">
+        <SceneWord lower="333" upper="337" text="Stay"/>
+        <SceneWord lower="338" upper="342" text="well"/>
+      </SceneUttr>
+      <SceneUttr lower="344" upper="419" punct=".">
+        <SceneWord lower="344" upper="347" text="and"/>
+        <SceneWord lower="348" upper="352" text="hope"/>
+        <SceneWord lower="353" upper="355" text="to"/>
+        <SceneWord lower="356" upper="359" text="see"/>
+        <ActionObject lower="361" upper="378" actor="" name="PlayAnimationClip">
+          <ActionFeature lower="379" upper="397" key="name" val="point_forward"/>
+          <ActionFeature lower="398" upper="408" key="speed" val="fast"/>
+        </ActionObject>
+        <SceneWord lower="410" upper="413" text="you"/>
+        <SceneWord lower="414" upper="418" text="soon"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+</SceneScript>

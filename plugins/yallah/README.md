@@ -1,4 +1,4 @@
-# VSM plugin for communication with YALLAH
+# VSM plugin for communicating with YALLAH
 
 This VSM plugin implements the communication with a YALLAH character in Unity.
 
@@ -7,7 +7,7 @@ The communication uses WebSockets, allowing for a communication also when the YA
 For the YALLAH counterpart, see:
 
 * The main YALLAH project at <https://github.com/yallah-team/YALLAH>
-* The C# script at <https://github.com/yallah-team/YALLAH/tree/master/UnityProjects/YallahTestbed/Assets/YALLAH/Scripts/vsm>
+* The C# script(s) at <https://github.com/yallah-team/YALLAH/tree/master/UnityProjects/YallahTestbed/Assets/YALLAH/Scripts/vsm>
 
 ## Configuration
 
@@ -134,3 +134,10 @@ This is a subset of the API provided by the YALLAH controllers (see <https://git
 * StopLooking
   * _no parameters_
 
+
+## Known problems and limitations
+
+* The speech and the execution of the actions (sending the markers back to VSM) is not implemented, yet. All markers are sent back immediately;
+* It is still missing the synchronisation when there are more clauses in a line. E.g., in sentence "Hello, I am Anna", the "Hello" is not heard because it is immediately overridden by the "I am Anna";
+* Cannot playback animation containing a space in their name, neither look at a camera with a space in its name. See VSM issue #200: <https://github.com/SceneMaker/VisualSceneMaker/issues/200>;
+* Known bug: in WebGL, the YALLAH socket doesn't reconnect if the VSM server stops the project and restarts. Workaround: stop the VSM project, reload the page with the avatar, re-start the VSM project.
