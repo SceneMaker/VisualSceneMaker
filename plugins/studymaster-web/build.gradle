@@ -1,0 +1,29 @@
+plugins {
+    id 'java'
+}
+
+group 'de.dfki'
+version '4.0.1'
+
+repositories {
+    mavenCentral()
+}
+
+sourceCompatibility = 11
+targetCompatibility = 11
+
+// Exclude the `node_modules` folder, which is possibly created by `npm` when building the React web app.
+sourceSets {
+    main {
+        resources {
+            exclude 'react-studymaster/node_modules/'
+        }
+    }
+}
+
+dependencies {
+    testImplementation group: 'junit', name: 'junit', version: '4.12'
+    implementation "io.javalin:javalin:3.8.0"
+    implementation "org.slf4j:slf4j-simple:1.8.0-beta4"
+    implementation project(":core")
+}

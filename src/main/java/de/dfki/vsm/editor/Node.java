@@ -71,6 +71,19 @@ public final class Node extends JComponent implements EventListener, Observer {
     private VisualisationTask mVisualisationTask;
     private boolean mIsActive;
 
+
+    private static final Map<TextAttribute, Object> sFontPrefsMap = new Hashtable<>();
+    static {
+        sFontPrefsMap.put(TextAttribute.KERNING, TextAttribute.KERNING_ON);
+        sFontPrefsMap.put(TextAttribute.FAMILY, Font.SANS_SERIF);
+        sFontPrefsMap.put(TextAttribute.POSTURE, TextAttribute.POSTURE_OBLIQUE);
+        sFontPrefsMap.put(TextAttribute.WEIGHT, TextAttribute.WEIGHT_DEMIBOLD);
+        sFontPrefsMap.put(TextAttribute.SIZE, 16);
+    }
+
+    Font mFont = null ;
+
+
     public enum Flavour {
 
         None, ENode, TNode, CNode, PNode, INode, FNode
@@ -130,6 +143,9 @@ public final class Node extends JComponent implements EventListener, Observer {
             addAltStartSign();
         }
 
+        // Set the font for the first time
+        updateFont() ;
+
         // update
         update();
     }
@@ -168,6 +184,16 @@ public final class Node extends JComponent implements EventListener, Observer {
 
     public DockingManager getDockingManager() {
         return mDockingManager;
+    }
+
+    /** Re-scan the preferences map and updates the current font.
+     * Both the mFont variable is renewed and the font set for the Component.
+     */
+    private void updateFont() {
+        // Derive the font from the attribute map
+        mFont = Font.getFont(sFontPrefsMap);
+        // Set the node's font to the updated font
+        setFont(mFont);
     }
 
     /**
@@ -218,22 +244,17 @@ public final class Node extends JComponent implements EventListener, Observer {
         // Update the font and the font metrics that have to be
         // recomputed if the node's font size has changed
         // TODO: Move attributes to preferences and make editable
-        Map<TextAttribute, Object> map = new Hashtable<>();
 
-        map.put(TextAttribute.KERNING, TextAttribute.KERNING_ON);
-        map.put(TextAttribute.FAMILY, Font.SANS_SERIF);
-        map.put(TextAttribute.POSTURE, TextAttribute.POSTURE_OBLIQUE);
-        map.put(TextAttribute.WEIGHT, TextAttribute.WEIGHT_DEMIBOLD);
-        map.put(TextAttribute.SIZE, mEditorConfig.sWORKSPACEFONTSIZE);
+        if((int)sFontPrefsMap.get(TextAttribute.SIZE) != mEditorConfig.sWORKSPACEFONTSIZE) {
+            sFontPrefsMap.put(TextAttribute.SIZE, mEditorConfig.sWORKSPACEFONTSIZE);
+            updateFont();
+        }
 
-        // Derive the font from the attribute map
-        Font font = Font.getFont(map);
+        assert (mFont != null) ; // it was initialized either in the constructor or now.
 
         // Derive the node's font metrics from the font
-        FontMetrics fontMetrics = getFontMetrics(font);
+        FontMetrics fontMetrics = getFontMetrics(mFont);
 
-        // Set the node's font to the updated font
-        setFont(font);
 
         //TODO!!!
         // Update the display name that has to be changed if the
