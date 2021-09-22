@@ -16,6 +16,9 @@ sourceCompatibility = 11
 repositories {
     mavenCentral()
     maven { url "https://repo.spring.io/libs-release" }
+
+    maven { url "https://github.com/rosjava/rosjava_mvn_repo/raw/master" }
+    jcenter()
 }
 
 javafx {
@@ -37,6 +40,7 @@ dependencies {
     implementation project(":plugins:tricatworld")
     implementation project(":plugins:charamel")
     implementation project(":plugins:extensionAPI")
+    implementation project(":plugins:mindbotrobot")
     implementation project(":plugins:mindbotESM")
 
 

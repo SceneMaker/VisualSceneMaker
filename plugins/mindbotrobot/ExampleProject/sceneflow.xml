@@ -1,0 +1,1042 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SceneFlow id="" name="default" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Sat, 18 Sep 2021 10:33:47" start="S9;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
+  <Define>
+  </Define>
+  <Declare>
+    <VariableDefinition type="String" name ="robot_ctrl_mode">
+      <StringLiteral><![CDATA[]]></StringLiteral>
+    </VariableDefinition>
+    <VariableDefinition type="String" name ="robot_ctrl_state">
+      <StringLiteral><![CDATA[]]></StringLiteral>
+    </VariableDefinition>
+    <VariableDefinition type="Float" name ="robot_tcp_x">
+      <FloatLiteral value="0.0"/>
+    </VariableDefinition>
+    <VariableDefinition type="Float" name ="robot_tcp_y">
+      <FloatLiteral value="0.0"/>
+    </VariableDefinition>
+    <VariableDefinition type="Float" name ="robot_tcp_z">
+      <FloatLiteral value="0.0"/>
+    </VariableDefinition>
+    <VariableDefinition type="Float" name ="robot_tcp_or_w">
+      <FloatLiteral value="0.0"/>
+    </VariableDefinition>
+    <VariableDefinition type="Float" name ="robot_tcp_or_x">
+      <FloatLiteral value="0.0"/>
+    </VariableDefinition>
+    <VariableDefinition type="Float" name ="robot_tcp_or_y">
+      <FloatLiteral value="0.0"/>
+    </VariableDefinition>
+    <VariableDefinition type="Float" name ="robot_tcp_or_z">
+      <FloatLiteral value="0.0"/>
+    </VariableDefinition>
+    <VariableDefinition type="String" name ="robot_action_state">
+      <StringLiteral><![CDATA[]]></StringLiteral>
+    </VariableDefinition>
+    <VariableDefinition type="String" name ="robot_action_message">
+      <StringLiteral><![CDATA[]]></StringLiteral>
+    </VariableDefinition>
+    <VariableDefinition type="Float" name ="detected_pose_x">
+      <FloatLiteral value="0.0"/>
+    </VariableDefinition>
+    <VariableDefinition type="Float" name ="detected_pose_y">
+      <FloatLiteral value="0.0"/>
+    </VariableDefinition>
+    <VariableDefinition type="Float" name ="detected_pose_z">
+      <FloatLiteral value="0.0"/>
+    </VariableDefinition>
+    <VariableDefinition type="Float" name ="detected_pose_qx">
+      <FloatLiteral value="0.0"/>
+    </VariableDefinition>
+    <VariableDefinition type="Float" name ="detected_pose_qy">
+      <FloatLiteral value="0.0"/>
+    </VariableDefinition>
+    <VariableDefinition type="Float" name ="detected_pose_qz">
+      <FloatLiteral value="0.0"/>
+    </VariableDefinition>
+    <VariableDefinition type="Float" name ="detected_pose_qw">
+      <FloatLiteral value="0.0"/>
+    </VariableDefinition>
+  </Declare>
+  <Commands>
+  </Commands>
+  <LocalVariableBadge>
+    <Position xPos="24" yPos="15"/>
+  </LocalVariableBadge>
+  <GlobalVariableBadge>
+    <Position xPos="10" yPos="10"/>
+  </GlobalVariableBadge>
+  <Comment>
+    <Graphics>
+      <Boundary xPos="14" yPos="278" width="314" height="79"/>
+    </Graphics>
+    <Text style="color:blue">
+      To decide what commands to test, right-click on the super-states and use "Set Start" ot "UnsetStart"
+    </Text>
+  </Comment>
+  <SuperNode id="S1" name="Set_tcp_target" comment="" hideLocalVar="false" hideGlobalVar="false" start="N10;">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <Graphics>
+      <Position xPos="300" yPos="120"/>
+    </Graphics>
+    <LocalVariableBadge>
+      <Position xPos="10" yPos="10"/>
+    </LocalVariableBadge>
+    <GlobalVariableBadge>
+      <Position xPos="10" yPos="10"/>
+    </GlobalVariableBadge>
+    <Comment>
+      <Graphics>
+        <Boundary xPos="605" yPos="381" width="233" height="103"/>
+      </Graphics>
+      <Text style="color:blue">
+        Old version. Before the actions were synchronized, we had to manually wait for the robot movement to finish.
+      </Text>
+    </Comment>
+    <Node id="N8" name="History" history="true">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+      </Commands>
+      <Graphics>
+        <Position xPos="300" yPos="30"/>
+      </Graphics>
+    </Node>
+    <Node id="N9" name="TestPose" history="false">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+        <PlayScene>
+          <StringLiteral><![CDATA[TcpPosition2]]></StringLiteral>
+        </PlayScene>
+      </Commands>
+      <EEdge target="N11" start ="">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="482" yPos="267" ctrlXPos="417" ctrlYPos="285"/>
+          <ControlPoint xPos="298" yPos="267" ctrlXPos="362" ctrlYPos="285"/>
+        </Connection>
+      </Graphics>
+      </EEdge>
+      <Graphics>
+        <Position xPos="480" yPos="210"/>
+      </Graphics>
+    </Node>
+    <Node id="N10" name="Start" history="false">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+      </Commands>
+      <TEdge target="N11" start="" timeout="3000">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="120" yPos="255" ctrlXPos="142" ctrlYPos="255"/>
+          <ControlPoint xPos="210" yPos="255" ctrlXPos="187" ctrlYPos="255"/>
+        </Connection>
+      </Graphics>
+      </TEdge>
+      <Graphics>
+        <Position xPos="30" yPos="210"/>
+      </Graphics>
+    </Node>
+    <Node id="N11" name="TestPose1" history="false">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+        <PlayScene>
+          <StringLiteral><![CDATA[TcpPosition1]]></StringLiteral>
+        </PlayScene>
+      </Commands>
+      <EEdge target="N9" start ="">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="300" yPos="255" ctrlXPos="367" ctrlYPos="255"/>
+          <ControlPoint xPos="482" yPos="243" ctrlXPos="412" ctrlYPos="255"/>
+        </Connection>
+      </Graphics>
+      </EEdge>
+      <Graphics>
+        <Position xPos="210" yPos="210"/>
+      </Graphics>
+    </Node>
+    <Node id="N12" name="TestPose" history="false">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+        <PlayScene>
+          <StringLiteral><![CDATA[TcpPosition2]]></StringLiteral>
+        </PlayScene>
+      </Commands>
+      <TEdge target="N14" start="" timeout="5000">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="482" yPos="447" ctrlXPos="417" ctrlYPos="465"/>
+          <ControlPoint xPos="298" yPos="447" ctrlXPos="362" ctrlYPos="465"/>
+        </Connection>
+      </Graphics>
+      </TEdge>
+      <Graphics>
+        <Position xPos="480" yPos="390"/>
+      </Graphics>
+    </Node>
+    <Node id="N13" name="Start" history="false">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+      </Commands>
+      <TEdge target="N14" start="" timeout="3000">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="120" yPos="435" ctrlXPos="142" ctrlYPos="435"/>
+          <ControlPoint xPos="212" yPos="447" ctrlXPos="190" ctrlYPos="453"/>
+        </Connection>
+      </Graphics>
+      </TEdge>
+      <Graphics>
+        <Position xPos="30" yPos="390"/>
+      </Graphics>
+    </Node>
+    <Node id="N14" name="TestPose1" history="false">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+        <PlayScene>
+          <StringLiteral><![CDATA[TcpPosition1]]></StringLiteral>
+        </PlayScene>
+      </Commands>
+      <TEdge target="N12" start="" timeout="5000">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="300" yPos="435" ctrlXPos="367" ctrlYPos="435"/>
+          <ControlPoint xPos="480" yPos="435" ctrlXPos="412" ctrlYPos="435"/>
+        </Connection>
+      </Graphics>
+      </TEdge>
+      <Graphics>
+        <Position xPos="210" yPos="390"/>
+      </Graphics>
+    </Node>
+  </SuperNode>
+  <SuperNode id="S2" name="Set_joint_target" comment="" hideLocalVar="false" hideGlobalVar="false" start="N6;">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <Graphics>
+      <Position xPos="300" yPos="30"/>
+    </Graphics>
+    <LocalVariableBadge>
+      <Position xPos="10" yPos="10"/>
+    </LocalVariableBadge>
+    <GlobalVariableBadge>
+      <Position xPos="10" yPos="10"/>
+    </GlobalVariableBadge>
+    <Node id="N1" name="History" history="true">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+      </Commands>
+      <Graphics>
+        <Position xPos="300" yPos="30"/>
+      </Graphics>
+    </Node>
+    <Node id="N6" name="Start" history="false">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+      </Commands>
+      <TEdge target="N15" start="" timeout="3000">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="120" yPos="255" ctrlXPos="142" ctrlYPos="255"/>
+          <ControlPoint xPos="212" yPos="267" ctrlXPos="190" ctrlYPos="273"/>
+        </Connection>
+      </Graphics>
+      </TEdge>
+      <Graphics>
+        <Position xPos="30" yPos="210"/>
+      </Graphics>
+    </Node>
+    <Node id="N15" name="TestJointTarget1" history="false">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+        <PlayScene>
+          <StringLiteral><![CDATA[JointTarget1]]></StringLiteral>
+        </PlayScene>
+      </Commands>
+      <EEdge target="N2" start ="">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="300" yPos="255" ctrlXPos="367" ctrlYPos="255"/>
+          <ControlPoint xPos="480" yPos="255" ctrlXPos="412" ctrlYPos="255"/>
+        </Connection>
+      </Graphics>
+      </EEdge>
+      <Graphics>
+        <Position xPos="210" yPos="210"/>
+      </Graphics>
+    </Node>
+    <Node id="N2" name="N2" history="false">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+        <PlayScene>
+          <StringLiteral><![CDATA[JointTarget2]]></StringLiteral>
+        </PlayScene>
+      </Commands>
+      <EEdge target="N15" start ="">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="482" yPos="267" ctrlXPos="417" ctrlYPos="285"/>
+          <ControlPoint xPos="298" yPos="267" ctrlXPos="362" ctrlYPos="285"/>
+        </Connection>
+      </Graphics>
+      </EEdge>
+      <Graphics>
+        <Position xPos="480" yPos="210"/>
+      </Graphics>
+    </Node>
+  </SuperNode>
+  <SuperNode id="S3" name="Set_ctrl_state" comment="" hideLocalVar="false" hideGlobalVar="false" start="N7;">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <Graphics>
+      <Position xPos="660" yPos="30"/>
+    </Graphics>
+    <LocalVariableBadge>
+      <Position xPos="10" yPos="10"/>
+    </LocalVariableBadge>
+    <GlobalVariableBadge>
+      <Position xPos="10" yPos="10"/>
+    </GlobalVariableBadge>
+    <Node id="N16" name="History" history="true">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+      </Commands>
+      <Graphics>
+        <Position xPos="300" yPos="30"/>
+      </Graphics>
+    </Node>
+    <Node id="N7" name="Start" history="false">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+      </Commands>
+      <TEdge target="N21" start="" timeout="3000">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="120" yPos="255" ctrlXPos="142" ctrlYPos="255"/>
+          <ControlPoint xPos="212" yPos="267" ctrlXPos="187" ctrlYPos="255"/>
+        </Connection>
+      </Graphics>
+      </TEdge>
+      <Graphics>
+        <Position xPos="30" yPos="210"/>
+      </Graphics>
+    </Node>
+    <Node id="N20" name="TestCtrlState1" history="false">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+        <PlayScene>
+          <StringLiteral><![CDATA[CtrlState1]]></StringLiteral>
+        </PlayScene>
+      </Commands>
+      <TEdge target="N21" start="" timeout="5000">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="486" yPos="277" ctrlXPos="417" ctrlYPos="285"/>
+          <ControlPoint xPos="298" yPos="267" ctrlXPos="362" ctrlYPos="285"/>
+        </Connection>
+      </Graphics>
+      </TEdge>
+      <Graphics>
+        <Position xPos="480" yPos="210"/>
+      </Graphics>
+    </Node>
+    <Node id="N21" name="TestCtrlState0" history="false">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+        <PlayScene>
+          <StringLiteral><![CDATA[CtrlState0]]></StringLiteral>
+        </PlayScene>
+      </Commands>
+      <TEdge target="N20" start="" timeout="5000">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="300" yPos="255" ctrlXPos="367" ctrlYPos="255"/>
+          <ControlPoint xPos="482" yPos="267" ctrlXPos="412" ctrlYPos="255"/>
+        </Connection>
+      </Graphics>
+      </TEdge>
+      <Graphics>
+        <Position xPos="210" yPos="210"/>
+      </Graphics>
+    </Node>
+  </SuperNode>
+  <SuperNode id="S4" name="Set_ctrl_mode" comment="" hideLocalVar="false" hideGlobalVar="false" start="N18;">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <Graphics>
+      <Position xPos="660" yPos="120"/>
+    </Graphics>
+    <LocalVariableBadge>
+      <Position xPos="10" yPos="10"/>
+    </LocalVariableBadge>
+    <GlobalVariableBadge>
+      <Position xPos="10" yPos="10"/>
+    </GlobalVariableBadge>
+    <Node id="N17" name="History" history="true">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+      </Commands>
+      <Graphics>
+        <Position xPos="300" yPos="30"/>
+      </Graphics>
+    </Node>
+    <Node id="N18" name="Start" history="false">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+      </Commands>
+      <TEdge target="N22" start="" timeout="3000">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="120" yPos="255" ctrlXPos="142" ctrlYPos="255"/>
+          <ControlPoint xPos="212" yPos="267" ctrlXPos="187" ctrlYPos="255"/>
+        </Connection>
+      </Graphics>
+      </TEdge>
+      <Graphics>
+        <Position xPos="30" yPos="210"/>
+      </Graphics>
+    </Node>
+    <Node id="N19" name="TestCtrlMode1" history="false">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+        <PlayScene>
+          <StringLiteral><![CDATA[CtrlMode1]]></StringLiteral>
+        </PlayScene>
+      </Commands>
+      <TEdge target="N22" start="" timeout="5000">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="482" yPos="267" ctrlXPos="417" ctrlYPos="285"/>
+          <ControlPoint xPos="298" yPos="267" ctrlXPos="362" ctrlYPos="285"/>
+        </Connection>
+      </Graphics>
+      </TEdge>
+      <Graphics>
+        <Position xPos="480" yPos="210"/>
+      </Graphics>
+    </Node>
+    <Node id="N22" name="TestCtrlMode0" history="false">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+        <PlayScene>
+          <StringLiteral><![CDATA[CtrlMode0]]></StringLiteral>
+        </PlayScene>
+      </Commands>
+      <TEdge target="N19" start="" timeout="5000">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="300" yPos="255" ctrlXPos="367" ctrlYPos="255"/>
+          <ControlPoint xPos="482" yPos="243" ctrlXPos="412" ctrlYPos="255"/>
+        </Connection>
+      </Graphics>
+      </TEdge>
+      <Graphics>
+        <Position xPos="210" yPos="210"/>
+      </Graphics>
+    </Node>
+  </SuperNode>
+  <SuperNode id="S5" name="Set_max_tcp_acceleration" comment="" hideLocalVar="false" hideGlobalVar="false" start="N24;">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <Graphics>
+      <Position xPos="480" yPos="120"/>
+    </Graphics>
+    <LocalVariableBadge>
+      <Position xPos="10" yPos="10"/>
+    </LocalVariableBadge>
+    <GlobalVariableBadge>
+      <Position xPos="10" yPos="10"/>
+    </GlobalVariableBadge>
+    <Node id="N23" name="History" history="true">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+      </Commands>
+      <Graphics>
+        <Position xPos="300" yPos="30"/>
+      </Graphics>
+    </Node>
+    <Node id="N24" name="Start" history="false">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+      </Commands>
+      <TEdge target="N26" start="" timeout="3000">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="120" yPos="255" ctrlXPos="142" ctrlYPos="255"/>
+          <ControlPoint xPos="212" yPos="267" ctrlXPos="187" ctrlYPos="255"/>
+        </Connection>
+      </Graphics>
+      </TEdge>
+      <Graphics>
+        <Position xPos="30" yPos="210"/>
+      </Graphics>
+    </Node>
+    <Node id="N25" name="TestMaxAcceleration2" history="false">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+        <PlayScene>
+          <StringLiteral><![CDATA[MaxAcceleration2]]></StringLiteral>
+        </PlayScene>
+      </Commands>
+      <TEdge target="N26" start="" timeout="5000">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="482" yPos="267" ctrlXPos="417" ctrlYPos="285"/>
+          <ControlPoint xPos="298" yPos="267" ctrlXPos="362" ctrlYPos="285"/>
+        </Connection>
+      </Graphics>
+      </TEdge>
+      <Graphics>
+        <Position xPos="480" yPos="210"/>
+      </Graphics>
+    </Node>
+    <Node id="N26" name="TestMaxAcceleration1" history="false">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+        <PlayScene>
+          <StringLiteral><![CDATA[MaxAcceleration1]]></StringLiteral>
+        </PlayScene>
+      </Commands>
+      <TEdge target="N25" start="" timeout="5000">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="300" yPos="255" ctrlXPos="367" ctrlYPos="255"/>
+          <ControlPoint xPos="482" yPos="243" ctrlXPos="412" ctrlYPos="255"/>
+        </Connection>
+      </Graphics>
+      </TEdge>
+      <Graphics>
+        <Position xPos="210" yPos="210"/>
+      </Graphics>
+    </Node>
+  </SuperNode>
+  <SuperNode id="S6" name="Set_max_tcp_velocity" comment="" hideLocalVar="false" hideGlobalVar="false" start="N28;">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <Graphics>
+      <Position xPos="480" yPos="30"/>
+    </Graphics>
+    <LocalVariableBadge>
+      <Position xPos="10" yPos="10"/>
+    </LocalVariableBadge>
+    <GlobalVariableBadge>
+      <Position xPos="10" yPos="10"/>
+    </GlobalVariableBadge>
+    <Node id="N27" name="History" history="true">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+      </Commands>
+      <Graphics>
+        <Position xPos="300" yPos="30"/>
+      </Graphics>
+    </Node>
+    <Node id="N28" name="Start" history="false">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+      </Commands>
+      <TEdge target="N30" start="" timeout="3000">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="120" yPos="255" ctrlXPos="142" ctrlYPos="255"/>
+          <ControlPoint xPos="212" yPos="267" ctrlXPos="187" ctrlYPos="255"/>
+        </Connection>
+      </Graphics>
+      </TEdge>
+      <Graphics>
+        <Position xPos="30" yPos="210"/>
+      </Graphics>
+    </Node>
+    <Node id="N29" name="TestMaxVelocity2" history="false">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+        <PlayScene>
+          <StringLiteral><![CDATA[MaxVelocity2]]></StringLiteral>
+        </PlayScene>
+      </Commands>
+      <TEdge target="N30" start="" timeout="5000">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="482" yPos="267" ctrlXPos="417" ctrlYPos="285"/>
+          <ControlPoint xPos="298" yPos="267" ctrlXPos="362" ctrlYPos="285"/>
+        </Connection>
+      </Graphics>
+      </TEdge>
+      <Graphics>
+        <Position xPos="480" yPos="210"/>
+      </Graphics>
+    </Node>
+    <Node id="N30" name="TestMaxVelocity1" history="false">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+        <PlayScene>
+          <StringLiteral><![CDATA[MaxVelocity1]]></StringLiteral>
+        </PlayScene>
+      </Commands>
+      <TEdge target="N29" start="" timeout="5000">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="300" yPos="255" ctrlXPos="367" ctrlYPos="255"/>
+          <ControlPoint xPos="482" yPos="243" ctrlXPos="412" ctrlYPos="255"/>
+        </Connection>
+      </Graphics>
+      </TEdge>
+      <Graphics>
+        <Position xPos="210" yPos="210"/>
+      </Graphics>
+    </Node>
+  </SuperNode>
+  <SuperNode id="S7" name="Set_min_clearance" comment="" hideLocalVar="false" hideGlobalVar="false" start="N32;">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <Graphics>
+      <Position xPos="840" yPos="30"/>
+    </Graphics>
+    <LocalVariableBadge>
+      <Position xPos="10" yPos="10"/>
+    </LocalVariableBadge>
+    <GlobalVariableBadge>
+      <Position xPos="10" yPos="10"/>
+    </GlobalVariableBadge>
+    <Node id="N31" name="History" history="true">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+      </Commands>
+      <Graphics>
+        <Position xPos="300" yPos="30"/>
+      </Graphics>
+    </Node>
+    <Node id="N32" name="Start" history="false">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+      </Commands>
+      <TEdge target="N34" start="" timeout="3000">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="120" yPos="255" ctrlXPos="142" ctrlYPos="255"/>
+          <ControlPoint xPos="212" yPos="267" ctrlXPos="187" ctrlYPos="255"/>
+        </Connection>
+      </Graphics>
+      </TEdge>
+      <Graphics>
+        <Position xPos="30" yPos="210"/>
+      </Graphics>
+    </Node>
+    <Node id="N33" name="TestMinClearance2" history="false">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+        <PlayScene>
+          <StringLiteral><![CDATA[MinClearance2]]></StringLiteral>
+        </PlayScene>
+      </Commands>
+      <TEdge target="N34" start="" timeout="5000">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="482" yPos="267" ctrlXPos="417" ctrlYPos="285"/>
+          <ControlPoint xPos="298" yPos="267" ctrlXPos="362" ctrlYPos="285"/>
+        </Connection>
+      </Graphics>
+      </TEdge>
+      <Graphics>
+        <Position xPos="480" yPos="210"/>
+      </Graphics>
+    </Node>
+    <Node id="N34" name="TestMinClearance1" history="false">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+        <PlayScene>
+          <StringLiteral><![CDATA[MinClearance1]]></StringLiteral>
+        </PlayScene>
+      </Commands>
+      <TEdge target="N33" start="" timeout="5000">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="300" yPos="255" ctrlXPos="367" ctrlYPos="255"/>
+          <ControlPoint xPos="482" yPos="243" ctrlXPos="412" ctrlYPos="255"/>
+        </Connection>
+      </Graphics>
+      </TEdge>
+      <Graphics>
+        <Position xPos="210" yPos="210"/>
+      </Graphics>
+    </Node>
+  </SuperNode>
+  <SuperNode id="S8" name="Set_gripper_closure" comment="" hideLocalVar="false" hideGlobalVar="false" start="N5;">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <Graphics>
+      <Position xPos="840" yPos="120"/>
+    </Graphics>
+    <LocalVariableBadge>
+      <Position xPos="10" yPos="10"/>
+    </LocalVariableBadge>
+    <GlobalVariableBadge>
+      <Position xPos="10" yPos="10"/>
+    </GlobalVariableBadge>
+    <Comment>
+      <Graphics>
+        <Boundary xPos="240" yPos="342" width="440" height="108"/>
+      </Graphics>
+      <Text style="color:blue">
+        DESCRIPTION:
+                                                                                                                                                                                                                                                                                                                                First, open the gripper at max speed.
+                                                                                                                                                                                                                                                                                                                                As soon as it is open, close it to the maximum.
+                                                                                                                                                                                                                                                                                                                                Then, wait a bit
+                                                                                                                                                                                                                                                                                                                                Repeat forever.
+      </Text>
+    </Comment>
+    <Node id="N3" name="History" history="true">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+      </Commands>
+      <Graphics>
+        <Position xPos="300" yPos="30"/>
+      </Graphics>
+    </Node>
+    <Node id="N4" name="TestPose" history="false">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+        <PlayScene>
+          <StringLiteral><![CDATA[CloseGripper]]></StringLiteral>
+        </PlayScene>
+      </Commands>
+      <TEdge target="N35" start="" timeout="5000">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="570" yPos="255" ctrlXPos="457" ctrlYPos="255"/>
+          <ControlPoint xPos="298" yPos="243" ctrlXPos="405" ctrlYPos="213"/>
+        </Connection>
+      </Graphics>
+      </TEdge>
+      <Graphics>
+        <Position xPos="570" yPos="210"/>
+      </Graphics>
+    </Node>
+    <Node id="N5" name="Start" history="false">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+      </Commands>
+      <TEdge target="N35" start="" timeout="3000">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="120" yPos="255" ctrlXPos="142" ctrlYPos="255"/>
+          <ControlPoint xPos="210" yPos="255" ctrlXPos="187" ctrlYPos="255"/>
+        </Connection>
+      </Graphics>
+      </TEdge>
+      <Graphics>
+        <Position xPos="30" yPos="210"/>
+      </Graphics>
+    </Node>
+    <Node id="N35" name="TestPose1" history="false">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+        <PlayScene>
+          <StringLiteral><![CDATA[OpenGripper]]></StringLiteral>
+        </PlayScene>
+      </Commands>
+      <EEdge target="N4" start ="">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="300" yPos="255" ctrlXPos="412" ctrlYPos="255"/>
+          <ControlPoint xPos="572" yPos="267" ctrlXPos="464" ctrlYPos="297"/>
+        </Connection>
+      </Graphics>
+      </EEdge>
+      <Graphics>
+        <Position xPos="210" yPos="210"/>
+      </Graphics>
+    </Node>
+  </SuperNode>
+  <SuperNode id="S9" name="detect_object" comment="" hideLocalVar="false" hideGlobalVar="false" start="N37;">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <Graphics>
+      <Position xPos="480" yPos="210"/>
+    </Graphics>
+    <LocalVariableBadge>
+      <Position xPos="10" yPos="10"/>
+    </LocalVariableBadge>
+    <GlobalVariableBadge>
+      <Position xPos="10" yPos="10"/>
+    </GlobalVariableBadge>
+    <Comment>
+      <Graphics>
+        <Boundary xPos="858" yPos="501" width="182" height="50"/>
+      </Graphics>
+      <Text style="color:blue">
+        BAD! This should not happen!
+      </Text>
+    </Comment>
+    <Comment>
+      <Graphics>
+        <Boundary xPos="856" yPos="314" width="300" height="50"/>
+      </Graphics>
+      <Text style="color:blue">
+        Object found.
+        Object pose is in global variables "detected_pose_*"
+      </Text>
+    </Comment>
+    <Comment>
+      <Graphics>
+        <Boundary xPos="853" yPos="396" width="103" height="51"/>
+      </Graphics>
+      <Text style="color:blue">
+        No object found
+      </Text>
+    </Comment>
+    <Node id="N36" name="History" history="true">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+      </Commands>
+      <Graphics>
+        <Position xPos="210" yPos="30"/>
+      </Graphics>
+    </Node>
+    <Node id="N37" name="N37" history="false">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+      </Commands>
+      <TEdge target="N38" start="" timeout="3000">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="120" yPos="345" ctrlXPos="187" ctrlYPos="345"/>
+          <ControlPoint xPos="300" yPos="345" ctrlXPos="232" ctrlYPos="345"/>
+        </Connection>
+      </Graphics>
+      </TEdge>
+      <Graphics>
+        <Position xPos="30" yPos="300"/>
+      </Graphics>
+    </Node>
+    <Node id="N38" name="N38" history="false">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+        <PlayScene>
+          <StringLiteral><![CDATA[DetectObject]]></StringLiteral>
+        </PlayScene>
+      </Commands>
+      <CEdge target="N39" start="">
+        <Graphics>
+          <Connection>
+            <ControlPoint xPos="390" yPos="345" ctrlXPos="457" ctrlYPos="345"/>
+            <ControlPoint xPos="750" yPos="345" ctrlXPos="682" ctrlYPos="345"/>
+          </Connection>
+        </Graphics>
+        <Eq>
+          <SimpleVariable name="robot_action_message"/>
+          <StringLiteral><![CDATA[SUCCESSFUL DETECTION]]></StringLiteral>
+        </Eq>
+      </CEdge>
+      <CEdge target="N40" start="">
+        <Graphics>
+          <Connection>
+            <ControlPoint xPos="388" yPos="357" ctrlXPos="542" ctrlYPos="400"/>
+            <ControlPoint xPos="752" yPos="423" ctrlXPos="597" ctrlYPos="379"/>
+          </Connection>
+        </Graphics>
+        <Eq>
+          <SimpleVariable name="robot_action_message"/>
+          <StringLiteral><![CDATA[FAILED ACTION]]></StringLiteral>
+        </Eq>
+      </CEdge>
+      <EEdge target="N41" start ="">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="384" yPos="368" ctrlXPos="535" ctrlYPos="457"/>
+          <ControlPoint xPos="752" yPos="513" ctrlXPos="584" ctrlYPos="466"/>
+        </Connection>
+      </Graphics>
+      </EEdge>
+      <Graphics>
+        <Position xPos="300" yPos="300"/>
+      </Graphics>
+    </Node>
+    <Node id="N39" name="N39" history="false">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+      </Commands>
+      <Graphics>
+        <Position xPos="750" yPos="300"/>
+      </Graphics>
+    </Node>
+    <Node id="N40" name="N40" history="false">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+      </Commands>
+      <Graphics>
+        <Position xPos="750" yPos="390"/>
+      </Graphics>
+    </Node>
+    <Node id="N41" name="N41" history="false">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+      </Commands>
+      <Graphics>
+        <Position xPos="750" yPos="480"/>
+      </Graphics>
+    </Node>
+  </SuperNode>
+  <ClassPath>
+  </ClassPath>
+  <InitContext></InitContext>
+</SceneFlow>

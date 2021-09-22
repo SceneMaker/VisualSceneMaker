@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Project name="TestRobotCommands">
+  <Plugins>
+    <Plugin type="device" name="MindBotRobot" class="de.dfki.vsm.xtension.mindbotrobot.MindbotRobotExecutor" load="true">
+      <Feature key="rosuri_crow4" val="http://172.16.59.195:11311"/>
+      <Feature key="rosuri_zema" val="http://192.168.2.162:11311"/>
+      <Feature key="rosuri" val="http://192.168.56.101:11311"/>
+    </Plugin>
+  </Plugins>
+  <Agents>
+    <Agent name="botty" device="MindBotRobot">
+    </Agent>
+  </Agents>
+  <Player>
+  </Player>
+</Project>

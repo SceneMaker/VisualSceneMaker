@@ -1,0 +1,47 @@
+plugins {
+    id 'java'
+}
+
+group 'de.dfki'
+version '4.0.1'
+
+sourceCompatibility = 1.8
+
+
+/* Plugin for creating installDist tasks (i.e. executables) */
+/*
+apply plugin: 'application'
+mainClassName = 'de.dfki.vsm.xtension.mindbotrobot.StandaloneExecutor'
+run {
+    args = ["http://192.168.56.101:11311"]
+}
+*/
+
+
+repositories {
+    mavenCentral()
+
+    // for ROS pre-built jars
+    maven {
+        url "https://github.com/rosjava/rosjava_mvn_repo/raw/master"
+    }
+
+    // for apache log stuff
+    jcenter()
+}
+
+dependencies {
+    //testCompile group: 'junit', name: 'junit', version: '4.12'
+    implementation project(":core")
+    implementation project(":plugins:extensionAPI")
+
+    implementation 'org.ros.rosjava_core:rosjava:[0.3,0.4)'
+    implementation 'org.ros.rosjava_messages:std_msgs:0.5.11'
+    implementation 'org.ros.rosjava_messages:geometry_msgs:[1.12,1.13)'
+    // needed for MessageListener
+    implementation 'org.ros.rosjava_bootstrap:message_generation:[0.3,0.4)'
+    // provides `sensor_msgs` package
+    implementation 'org.ros.rosjava_messages:sensor_msgs:[1.12,1.13)'
+
+    implementation files('lib/mindbot_msgs-0.0.0.jar')
+}
