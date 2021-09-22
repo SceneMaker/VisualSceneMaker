@@ -1,6 +1,6 @@
 package de.dfki.vsm.xtension.tricatworld;
 
-import de.dfki.vsm.editor.dialog.WaitingDialog;
+import de.dfki.vsm.util.WordMapping;
 import de.dfki.vsm.extensionAPI.ExportableProperties;
 import de.dfki.vsm.extensionAPI.ProjectProperty;
 import de.dfki.vsm.extensionAPI.value.ProjectValueProperty;
@@ -16,7 +16,6 @@ import de.dfki.vsm.runtime.interpreter.value.StructValue;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.jpl.JPLEngine;
 import de.dfki.vsm.util.xml.XMLUtilities;
-import de.dfki.vsm.xtension.WordMapping;
 import de.dfki.vsm.xtension.tricatworld.util.property.TricatWorldtProjectProperty;
 import de.dfki.vsm.xtension.tricatworld.xml.command.TriCatWorldCommand;
 import de.dfki.vsm.xtension.tricatworld.xml.command.object.TriCatWorldCmdObject;
@@ -88,10 +87,10 @@ public final class TriCatWorldExecutor extends ActivityExecutor implements Expor
         if (mUseExe) {
             // Check the executable files
             if (!exists(cactordir)) {
-                dialog("Missing '" + cactordir + "' in '" + workindir + "'");
+                mLogger.warning("Missing '" + cactordir + "' in '" + workindir + "'");
             }
             if (!exists(tworlddir)) {
-                dialog("Missing '" + tworlddir + "' in '" + workindir + "'");
+                mLogger.warning("Missing '" + tworlddir + "' in '" + workindir + "'");
             }
             // Create the plugin's processes
             try {
@@ -717,13 +716,6 @@ public final class TriCatWorldExecutor extends ActivityExecutor implements Expor
         for (final TriCatWorldHandler client : mClientMap.values()) {
             client.send(message);
         }
-    }
-
-    // Show action waiting dialog
-    private void dialog(final String message) {
-        WaitingDialog InfoDialog = new WaitingDialog(message);
-        InfoDialog.setModal(true);
-        InfoDialog.setVisible(true);
     }
 
     // Check if action file exists

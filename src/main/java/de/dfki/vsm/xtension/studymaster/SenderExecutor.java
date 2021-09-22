@@ -156,13 +156,4 @@ public class SenderExecutor extends ActivityExecutor {
 
     }
 
-    // get the value of a feature (added PG) - quick and dirty
-    private final String getActionFeatureValue(String name, List<ActionFeature> features) {
-        return features.stream()
-                .filter(af -> af.getKey().equalsIgnoreCase(name))
-                .findFirst()
-                .map(ActionFeature::getVal)
-                .orElse("");
-    }
-
 }
