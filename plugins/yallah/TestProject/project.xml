@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Project name="TestRemoteYallah">
+  <Plugins>
+    <Plugin type="device" name="Yallah1" class="de.dfki.vsm.xtension.yallah.YallahExecutor" load="true">
+      <Feature key="port" val="4000"/>
+      <Feature key="launchMode" val="None"/>
+    </Plugin>
+  </Plugins>
+  <Agents>
+    <Agent name="Anna" device="Yallah1">
+    </Agent>
+  </Agents>
+  <Player>
+  </Player>
+</Project>

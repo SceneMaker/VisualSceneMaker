@@ -2,7 +2,7 @@ package de.dfki.vsm.xtension.unity.commands;
 
 /**
  * Base class for all commands send to the Unity3D plugin.
- * @author J.-L. Himbert <s9jehimb@stud.uni-saarland.de>
+ * @author J.-L. Himbert {@literal <s9jehimb@stud.uni-saarland.de>}
  */
 public abstract class Command {
     /**
