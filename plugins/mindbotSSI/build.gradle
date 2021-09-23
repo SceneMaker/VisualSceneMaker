@@ -12,8 +12,8 @@ repositories {
 }
 
 dependencies {
-    testCompile group: 'junit', name: 'junit', version: '4.12'
-    compile project(":core")
-    compile project(":plugins:extensionAPI")
-    compile project(":plugins:ssi")
+    testImplementation group: 'junit', name: 'junit', version: '4.12'
+    implementation project(":core")
+    implementation project(":plugins:extensionAPI")
+    implementation project(":plugins:ssi")
 }
