@@ -12,7 +12,7 @@ public abstract class SSIRunTimePlugin extends RunTimePlugin implements SSIEvent
     // The SSI event receiver
     private SSIEventReceiver mReceiver;
     // The SSI event handler
-    private SSIEventSender mSender;
+    protected SSIEventSender mSender;
 
     public SSIRunTimePlugin(
             final PluginConfig config,
