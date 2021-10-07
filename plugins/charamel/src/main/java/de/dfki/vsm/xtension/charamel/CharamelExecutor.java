@@ -10,9 +10,9 @@ import de.dfki.vsm.runtime.activity.SpeechActivity;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
 import de.dfki.vsm.runtime.activity.scheduler.ActivityWorker;
 import de.dfki.vsm.runtime.project.RunTimeProject;
+import de.dfki.vsm.util.WordMapping;
 import de.dfki.vsm.util.jpl.JPLEngine;
 import de.dfki.vsm.util.xml.XMLUtilities;
-import de.dfki.vsm.util.WordMapping;
 import de.dfki.vsm.xtension.charamel.util.property.CharamelProjectProperty;
 import de.dfki.vsm.xtension.charamel.xml.command.object.action.CharamelActObject;
 import de.dfki.vsm.xtension.charamel.xml.feedback.action.*;
@@ -223,6 +223,10 @@ public final class CharamelExecutor extends ActivityExecutor implements Exportab
             // Check the activity name
             if (activity_name.equalsIgnoreCase("SetCamera")) {
                 charamelAct = mActionLoader.loadCharamelAnimation(activity_name, aid);
+            } else if (activity_name.equalsIgnoreCase("SetClothing")) {
+                String style = activity.get("style");
+                style = (style == null) ? "" : style;
+                charamelAct = mActionLoader.loadCharamelAnimation(activity_name, aid, style);
             } else if (activity_name.equalsIgnoreCase("HideAvatar")) {
                 charamelAct = mActionLoader.loadCharamelAnimation(activity_name, aid);
             } else if (activity_name.equalsIgnoreCase("GetCamera")) {
