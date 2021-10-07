@@ -24,7 +24,6 @@ public class SetClothing extends CharamelActObject implements XMLParseable, XMLW
     private String mCharameAvatarId = "1";
     private String mCharacterClothing = "business_open_shortleg";
 
-    // TODO cai_request sub element String mValue = "";
     public SetClothing(String aid, String clothing) {
         mName = "caixml";
         mCharameAvatarId = aid;
@@ -56,6 +55,5 @@ public class SetClothing extends CharamelActObject implements XMLParseable, XMLW
     public void parseXML(final Element element) throws XMLParseError {
         mName = element.getAttribute("name");
         mId = element.getAttribute("id");
-        // TODO parse sub elements cai_request mValue = element.getAttribute("value");
     }
 }
