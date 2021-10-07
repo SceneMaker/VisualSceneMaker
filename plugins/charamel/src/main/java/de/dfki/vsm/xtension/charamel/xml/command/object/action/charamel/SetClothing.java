@@ -38,7 +38,7 @@ public class SetClothing extends CharamelActObject implements XMLParseable, XMLW
     public void writeXML(IOSIndentWriter out) throws XMLWriteError {
         out.push().println("<Action name=\"" + mName + "\" id=\"" + mId + "\">").push();
         out.push().println("<cai_request version=\"1.0\">");
-        out.push().println("<cai_command>RenderXML");
+        out.push().println("<cai_command id=\"" + mId + "\">RenderXML");
         out.push().println("<animation_track>");
         out.push().println("<event aid='" + mCharameAvatarId + "'>SetClothing");
         out.println("<event_param>" + mCharacterClothing + "</event_param>");
