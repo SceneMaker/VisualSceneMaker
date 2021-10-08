@@ -1,12 +1,6 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package de.dfki.vsm.xtension.charamel.xml.command.object.action.charamel;
 
 import de.dfki.vsm.util.ios.IOSIndentWriter;
-import de.dfki.vsm.util.log.LOGConsoleLogger;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLParseable;
 import de.dfki.vsm.util.xml.XMLWriteError;
@@ -18,9 +12,6 @@ import org.w3c.dom.Element;
  * @author Patrick Gebhard
  */
 public class SetClothing extends CharamelActObject implements XMLParseable, XMLWriteable {
-
-    // The logger instance
-    private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
     private String mCharameAvatarId = "1";
     private String mCharacterClothing = "business_open_shortleg";
 
