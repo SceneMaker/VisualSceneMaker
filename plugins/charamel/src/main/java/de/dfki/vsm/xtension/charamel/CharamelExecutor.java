@@ -227,11 +227,23 @@ public final class CharamelExecutor extends ActivityExecutor implements Exportab
                 String style = activity.get("style");
                 style = (style == null) ? "" : style;
                 charamelAct = mActionLoader.loadCharamelAnimation(activity_name, aid, style);
+            } else if (activity_name.equalsIgnoreCase("SetPosition")) {
+                String xpos = activity.get("x");
+                xpos = (xpos == null) ? "" : xpos;
+                String ypos = activity.get("y");
+                xpos = (ypos == null) ? "" : ypos;
+                String zpos = activity.get("z");
+                xpos = (zpos == null) ? "" : zpos;
+                String xorient = activity.get("xorient");
+                xpos = (xorient == null) ? "" : xorient;
+                String yorient = activity.get("yorient");
+                xpos = (yorient == null) ? "" : yorient;
+                String zorient = activity.get("zorient");
+                xpos = (zorient == null) ? "" : zorient;
+                charamelAct = mActionLoader.loadCharamelAnimation(activity_name, aid, xpos, ypos, zpos, xorient, yorient, zorient);
             } else if (activity_name.equalsIgnoreCase("HideAvatar")) {
                 charamelAct = mActionLoader.loadCharamelAnimation(activity_name, aid);
             } else if (activity_name.equalsIgnoreCase("GetCamera")) {
-                charamelAct = mActionLoader.loadCharamelAnimation(activity_name, aid);
-            } else if (activity_name.equalsIgnoreCase("SittingStart")) {
                 charamelAct = mActionLoader.loadCharamelAnimation(activity_name, aid);
             } else if (activity_name.equalsIgnoreCase("SittingSop")) {
                 charamelAct = mActionLoader.loadCharamelAnimation(activity_name, aid);
