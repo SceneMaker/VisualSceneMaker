@@ -42,8 +42,8 @@ public class SetPosition extends CharamelActObject implements XMLParseable, XMLW
         out.push().println("<Action name=\"" + mName + "\" id=\"" + mId + "\">").push();
         out.push().println("<cai_request version=\"1.0\">");
         out.push().println("<cai_command id=\"" + mId + "\">SetAvatarPositionXML");
-        out.push().println("<position x=\"" + mXPos + "\" y=\"" + mYPos + "\" z=\"" + mZPos + "\" >");
-        out.push().println("<orientation x=\"" + mXOrient + "\" y=\"" + mYOrient + "\" z=\"" + mZOrient + "\" >");
+        out.push().println("<position x=\"" + mXPos + "\" y=\"" + mYPos + "\" z=\"" + mZPos + "\"></position>");
+        out.push().println("<orientation x=\"" + mXOrient + "\" y=\"" + mYOrient + "\" z=\"" + mZOrient + "\"></orientation>");
         out.pop().println("</cai_command>");
         out.pop().println("</cai_request>");
         out.pop().pop().println("</Action>");
