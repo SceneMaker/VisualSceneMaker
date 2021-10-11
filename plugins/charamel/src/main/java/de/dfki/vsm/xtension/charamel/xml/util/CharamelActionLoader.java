@@ -210,7 +210,7 @@ public class CharamelActionLoader {
             Constructor[] constructors = c.getConstructors();
             for (Constructor con : constructors) {
                 Class[] params = con.getParameterTypes();
-                if (params.length == 10) {
+                if (params.length == 7) {
                     if (params[0].getSimpleName().equalsIgnoreCase("string") &&
                             params[1].getSimpleName().equalsIgnoreCase("string") &&
                             params[2].getSimpleName().equalsIgnoreCase("string") &&
@@ -244,7 +244,7 @@ public class CharamelActionLoader {
             Constructor[] constructors = c.getConstructors();
             for (Constructor con : constructors) {
                 Class[] params = con.getParameterTypes();
-                if (params.length == 10) {
+                if (params.length == 8) {
                     if (params[0].getSimpleName().equalsIgnoreCase("string") &&
                             params[1].getSimpleName().equalsIgnoreCase("string") &&
                             params[2].getSimpleName().equalsIgnoreCase("string") &&
