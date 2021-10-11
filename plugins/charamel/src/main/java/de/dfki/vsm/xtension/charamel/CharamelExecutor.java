@@ -231,15 +231,15 @@ public final class CharamelExecutor extends ActivityExecutor implements Exportab
                 String xpos = activity.get("x");
                 xpos = (xpos == null) ? "" : xpos;
                 String ypos = activity.get("y");
-                xpos = (ypos == null) ? "" : ypos;
+                ypos = (ypos == null) ? "" : ypos;
                 String zpos = activity.get("z");
-                xpos = (zpos == null) ? "" : zpos;
+                zpos = (zpos == null) ? "" : zpos;
                 String xorient = activity.get("xorient");
-                xpos = (xorient == null) ? "" : xorient;
+                xorient = (xorient == null) ? "" : xorient;
                 String yorient = activity.get("yorient");
-                xpos = (yorient == null) ? "" : yorient;
+                yorient = (yorient == null) ? "" : yorient;
                 String zorient = activity.get("zorient");
-                xpos = (zorient == null) ? "" : zorient;
+                zorient = (zorient == null) ? "" : zorient;
                 charamelAct = mActionLoader.loadCharamelAnimation(activity_name, aid, xpos, ypos, zpos, xorient, yorient, zorient);
             } else if (activity_name.equalsIgnoreCase("HideAvatar")) {
                 charamelAct = mActionLoader.loadCharamelAnimation(activity_name, aid);
