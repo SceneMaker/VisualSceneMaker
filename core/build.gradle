@@ -18,18 +18,18 @@ compileJava{
 }
 repositories {
     mavenCentral()
-    maven { url "http://repo.spring.io/libs-release" }
+    maven { url "https://repo.spring.io/libs-release" }
 }
 
 dependencies {
-    compile files('../lib/JCup.jar')
-    compile files('../lib/JFlex.jar')
+    implementation files('../lib/JCup.jar')
+    implementation files('../lib/JFlex.jar')
     // https://mvnrepository.com/artifact/jpl/jpl
-    compile group: 'jpl', name: 'jpl', version: '7.4.0'
+    implementation group: 'jpl', name: 'jpl', version: '7.4.0'
     // https://mvnrepository.com/artifact/org.jetbrains/annotations
-    compile group: 'org.jetbrains', name: 'annotations', version: '17.0.0'
+    implementation group: 'org.jetbrains', name: 'annotations', version: '17.0.0'
     // https://mvnrepository.com/artifact/javax.xml.bind/jaxb-api
-    compile group: 'javax.xml.bind', name: 'jaxb-api', version: '2.4.0-b180830.0359'
+    implementation group: 'javax.xml.bind', name: 'jaxb-api', version: '2.4.0-b180830.0359'
 
 }
 
@@ -41,7 +41,7 @@ jar {
     }
 
     from {
-        (configurations.runtime).collect {
+        (configurations.runtimeClasspath).collect {
             it.isDirectory() ? it : zipTree(it)
         }
     }
