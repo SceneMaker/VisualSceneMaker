@@ -12,14 +12,14 @@ import java.util.List;
 /**
  * @author Gregor Mehlmann
  */
-public final class ActivityScheduler {
+public final class ActivityScheduler<T extends AbstractActivity> {
 
     // The defaut system logger
     private final LOGDefaultLogger mLogger
             = LOGDefaultLogger.getInstance();
 
     // The list of detected marks
-    private final HashMap<String, ActivityWorker> mWorkerMap = new HashMap<>();
+    private final HashMap<String, ActivityWorker<T>> mWorkerMap = new HashMap<>();
 
     // Handle activity feedback
     public final void handle(final String marker) {
@@ -53,11 +53,11 @@ public final class ActivityScheduler {
     // Schedule an activity on an executor with a timeout
     public final void schedule(
             final long timeout,
-            final List<ActivityWorker> list,
-            final AbstractActivity activity,
+            final List<ActivityWorker<T>> list,
+            final T activity,
             final ActivityExecutor executor) {
         // Create a new activity task
-        final ActivityWorker task = new ActivityWorker(
+        final ActivityWorker<T> task = new ActivityWorker<T>(
                 timeout, list, activity, executor);
         // Start the activity task
         task.start();
@@ -81,12 +81,12 @@ public final class ActivityScheduler {
     }
 
     // Register an activity on an executor with a marker
-    public final ActivityWorker register(
+    public final ActivityWorker<T> register(
             final String marker,
-            final ActionActivity activity,
+            final T activity,
             final ActivityExecutor executor) {
         // Create a new activity task
-        final ActivityWorker task = new ActivityWorker(
+        final ActivityWorker<T> task = new ActivityWorker<>(
                 -1, null, activity, executor);
         // Add the task to the mapping
         synchronized (mWorkerMap) {
