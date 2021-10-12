@@ -17,5 +17,4 @@ dependencies {
     implementation project(":core")
     implementation project(":plugins:extensionAPI")
     implementation "io.javalin:javalin:3.8.0"
-    implementation files('lib/charamel-ws.jar')
 }
