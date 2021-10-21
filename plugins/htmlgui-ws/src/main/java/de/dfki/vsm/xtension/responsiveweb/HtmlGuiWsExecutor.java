@@ -110,6 +110,24 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
                 String id = activity.get("id");
                 String value = activity.get("value").replace("'", "");
                 broadcast(element + sCmdSeperatorChar + name + svalueSeparatorChar + id + svalueSeparatorChar + value);
+            } else if (name.equalsIgnoreCase("showElement")) {
+                //Dummy variable to match format of other cmds
+                String element = "dummy_el";
+                String id = activity.get("id");
+                broadcast(element + sCmdSeperatorChar + name + svalueSeparatorChar + id);
+            } else if (name.equalsIgnoreCase("hideElement")) {
+                //Dummy variable to match format of other cmds
+                String element = "dummy_el";
+                String id = activity.get("id");
+                broadcast(element + sCmdSeperatorChar + name + svalueSeparatorChar + id);
+            } else if (name.equalsIgnoreCase("muteMic")) {
+                //Dummy variable to match format of other cmds
+                String element = "dummy_el";
+                broadcast(element + sCmdSeperatorChar + name);
+            } else if (name.equalsIgnoreCase("openMic")) {
+                //Dummy variable to match format of other cmds
+                String element = "dummy_el";
+                broadcast(element + sCmdSeperatorChar + name);
             } else if (name.equalsIgnoreCase("setAudioItem")) {
                 String element = activity.get("element");
                 String audio_src = "./" + activity.get("audio").replace("'", "");
@@ -127,9 +145,12 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
             } else if (!name.isEmpty()) { //check if name represents a webpage - must be configured in the device's agent as key, value pair.
                 String guipage = mProject.getAgentConfig(activity_actor).getProperty(name);
                 // send only if there is a stored html page
-                if (guipage.contains(".html")) {
-                    broadcast(guipage);
-                }
+                if (guipage != null)
+                    if (guipage.contains(".html")) {
+                        broadcast(guipage);
+                    }
+            } else {
+                mLogger.failure("Either agent " + activity_actor + " or content " + name + " is not valid.");
             }
         }
     }
