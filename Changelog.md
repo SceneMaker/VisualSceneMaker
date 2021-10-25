@@ -13,6 +13,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The Changelog!
 - Plugin `studymaster-web`: new interface to control the flow from web page (#185, #209)
 - Plugin `yallah`: to control YALLAH avatars via websocket protocol (#184)
+- charamel branch has a new command SetClothing  with a style value that change different clothing option for the
+charamel chatacter. Different style values:
+  1. business_closed
+  2. business_open
+  3. business_open_shortleg
+  4. business_closed_shortleg
+  5. casual
+  6. casual_skirt
+
+- charamel branch can now move the characters position with PlayAction SetPosition position command. 
 ### Changed
 - study-master web has a much longer timeout for websockets
 ### Removed

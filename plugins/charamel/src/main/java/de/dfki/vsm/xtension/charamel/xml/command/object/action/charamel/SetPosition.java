@@ -11,17 +11,29 @@ import org.w3c.dom.Element;
 /**
  * @author Patrick Gebhard
  */
-public class SetClothing extends CharamelActObject implements XMLParseable, XMLWriteable {
-    private String mCharameAvatarId = "1";
-    private String mCharacterClothing = "business_open_shortleg";
+public class SetPosition extends CharamelActObject implements XMLParseable, XMLWriteable {
 
-    public SetClothing(String aid, String clothing) {
+    private String mCharameAvatarId = "1";
+    private int mXPos = 0;
+    private int mYPos = 0;
+    private int mZPos = 0;
+
+    private int mXOrient = 0;
+    private int mYOrient = 0;
+    private int mZOrient = 0;
+
+    public SetPosition(String aid, String xpos, String ypos, String zpos, String xorient, String yorient, String zorient) {
         mName = "caixml";
         mCharameAvatarId = aid;
-        mCharacterClothing = clothing;
+        mXPos = Integer.parseInt(xpos);
+        mYPos = Integer.parseInt(ypos);
+        mZPos = Integer.parseInt(zpos);
+        mXOrient = Integer.parseInt(xorient);
+        mYOrient = Integer.parseInt(yorient);
+        mZOrient = Integer.parseInt(zorient);
     }
 
-    public SetClothing() {
+    public SetPosition() {
         mName = "caixml";
     }
 
@@ -29,14 +41,9 @@ public class SetClothing extends CharamelActObject implements XMLParseable, XMLW
     public void writeXML(IOSIndentWriter out) throws XMLWriteError {
         out.push().println("<Action name=\"" + mName + "\" id=\"" + mId + "\">").push();
         out.push().println("<cai_request version=\"1.0\">");
-        out.push().println("<cai_command id=\"" + mId + "\">RenderXML");
-        out.push().println("<animation_track>");
-        out.push().println("<event aid='" + mCharameAvatarId + "'>SetClothing");
-        out.println("<event_param>" + mCharacterClothing + "</event_param>");
-        out.println("<event_param>1</event_param>");
-        out.println("<event_param>default</event_param>");
-        out.pop().println("</event>");
-        out.pop().println("</animation_track>");
+        out.push().println("<cai_command id=\"" + mId + "\">SetAvatarPositionXML");
+        out.push().println("<position x=\"" + mXPos + "\" y=\"" + mYPos + "\" z=\"" + mZPos + "\"></position>");
+        out.push().println("<orientation x=\"" + mXOrient + "\" y=\"" + mYOrient + "\" z=\"" + mZOrient + "\"></orientation>");
         out.pop().println("</cai_command>");
         out.pop().println("</cai_request>");
         out.pop().pop().println("</Action>");
