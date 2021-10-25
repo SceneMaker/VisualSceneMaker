@@ -13,11 +13,10 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.LinkedList;
 
 /**
- *
  * @author Patrick Gebhard
- *
  */
-public class CharamelActionLoader {
+public class
+CharamelActionLoader {
 
     public final static String sCHARAMELCMDPATH = "de.dfki.vsm.xtension.charamel.xml.command.object.action.charamel";
     private static CharamelActionLoader sInstance = null;
@@ -55,64 +54,8 @@ public class CharamelActionLoader {
         return classPath;
     }
 
-    public CharamelActObject loadCharamelAnimation(String cmd, String value1) {
-        CharamelActObject a = null;
-
-        String cp = getCharamelCommandClasspath(cmd);
-
-        try {
-            Class c = Class.forName(cp);
-            Constructor[] constructors = c.getConstructors();
-            for (Constructor con : constructors) {
-                Class[] params = con.getParameterTypes();
-                if (params.length == 1) {
-                    if (params[0].getSimpleName().equalsIgnoreCase("string")) {
-                        a = (CharamelActObject) c.getDeclaredConstructor(params).newInstance(value1);
-                    }
-                }
-
-            }
-        } catch (ClassNotFoundException | NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-            mLogger.failure("No Class for Charamel Action " + cmd + " and avatar id " + value1);
-        }
-
-        if (a != null) {
-            a.setId(getNextID());
-        }
-
-        return a;
-    }
-
-    public CharamelActObject loadCharamelAnimation(String cmd, String value1, String value2) {
-        CharamelActObject a = null;
-
-        String cp = getCharamelCommandClasspath(cmd);
-
-        try {
-            Class c = Class.forName(cp);
-            Constructor[] constructors = c.getConstructors();
-            for (Constructor con : constructors) {
-                Class[] params = con.getParameterTypes();
-                if (params.length == 2) {
-                    if (params[0].getSimpleName().equalsIgnoreCase("string") && params[1].getSimpleName().equalsIgnoreCase("string")) {
-                        a = (CharamelActObject) c.getDeclaredConstructor(params).newInstance(value1, value2);
-                    }
-                }
-
-            }
-        } catch (ClassNotFoundException | NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-            mLogger.failure("No Class for  Charamel Action " + cmd + " and value " + value1 + ", " + value2);
-        }
-
-        if (a != null) {
-            a.setId(getNextID());
-        }
-
-        return a;
-    }
-
     public CharamelActObject buildCharamelAnimation(String cmd, LinkedList value1, String value2, String value3) {
-         CharamelActObject a = null;
+        CharamelActObject a = null;
 
         String cp = getCharamelCommandClasspath(cmd);
 
@@ -138,171 +81,40 @@ public class CharamelActionLoader {
 
         return a;
     }
-    
-    public CharamelActObject loadCharamelAnimation(String cmd, String value1, String value2, String value3, String value4) {
-        CharamelActObject a = null;
 
-        String cp = getCharamelCommandClasspath(cmd);
+    public CharamelActObject loadCharamelAnimation(String cmd, String... values) {
+        CharamelActObject charamelActObject = null;
+
+        String charamelCommandClasspath = getCharamelCommandClasspath(cmd);
 
         try {
-            Class c = Class.forName(cp);
+            Class c = Class.forName(charamelCommandClasspath);
             Constructor[] constructors = c.getConstructors();
             for (Constructor con : constructors) {
                 Class[] params = con.getParameterTypes();
-                if (params.length == 4) {
-                    if (params[0].getSimpleName().equalsIgnoreCase("string") && params[1].getSimpleName().equalsIgnoreCase("string") && params[2].getSimpleName().equalsIgnoreCase("string") && params[3].getSimpleName().equalsIgnoreCase("string")) {
-                        a = (CharamelActObject) c.getDeclaredConstructor(params).newInstance(value1, value2, value3, value4);
+                if (params.length == values.length) {
+                    boolean b = true;
+                    for (Class param : params) {
+                        if (!param.getSimpleName().equalsIgnoreCase("string")) {
+                            b = false;
+                            break;
+                        }
+                    }
+                    if (b) {
+                        charamelActObject = (CharamelActObject) c.getDeclaredConstructor(params).newInstance(values);
                     }
                 }
 
             }
         } catch (ClassNotFoundException | NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-            mLogger.failure("No Class for Charamel Action " + cmd + " and value " + value1 + " , " + value2 + " , " + value3 + " , " + value4);
+            mLogger.failure("No Class for Charamel Action " + cmd + " and value " + String.join(", ", values));
         }
 
-        if (a != null) {
-            a.setId(getNextID());
+        if (charamelActObject != null) {
+            charamelActObject.setId(getNextID());
         }
 
-        return a;
-    }
-    
-    public CharamelActObject loadCharamelAnimation(String cmd, String value1, String value2, String value3, String value4, String value5, String value6) {
-        CharamelActObject a = null;
-
-        String cp = getCharamelCommandClasspath(cmd);
-
-        try {
-            Class c = Class.forName(cp);
-            Constructor[] constructors = c.getConstructors();
-            for (Constructor con : constructors) {
-                Class[] params = con.getParameterTypes();
-                if (params.length == 6) {
-                    if (params[0].getSimpleName().equalsIgnoreCase("string") && 
-                        params[1].getSimpleName().equalsIgnoreCase("string") &&
-                        params[2].getSimpleName().equalsIgnoreCase("string") &&
-                        params[3].getSimpleName().equalsIgnoreCase("string") &&
-                        params[4].getSimpleName().equalsIgnoreCase("string") &&                            
-                        params[5].getSimpleName().equalsIgnoreCase("string")) {
-                        a = (CharamelActObject) c.getDeclaredConstructor(params).newInstance(value1, value2, value3, value4, value5, value6);
-                    }
-                }
-
-            }
-        } catch (ClassNotFoundException | NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-            mLogger.failure("No Class for Charamel Action " + cmd + " and value " + value1 + " , " + value2 + " , " + value3 + " , " + value4 + " , " + value5 + " , " + value6);
-        }
-
-        if (a != null) {
-            a.setId(getNextID());
-        }
-
-        return a;
+        return charamelActObject;
     }
 
-    public CharamelActObject loadCharamelAnimation(String cmd, String value1, String value2, String value3, String value4, String value5, String value6, String value7) {
-        CharamelActObject a = null;
-
-        String cp = getCharamelCommandClasspath(cmd);
-
-        try {
-            Class c = Class.forName(cp);
-            Constructor[] constructors = c.getConstructors();
-            for (Constructor con : constructors) {
-                Class[] params = con.getParameterTypes();
-                if (params.length == 7) {
-                    if (params[0].getSimpleName().equalsIgnoreCase("string") &&
-                            params[1].getSimpleName().equalsIgnoreCase("string") &&
-                            params[2].getSimpleName().equalsIgnoreCase("string") &&
-                            params[3].getSimpleName().equalsIgnoreCase("string") &&
-                            params[4].getSimpleName().equalsIgnoreCase("string") &&
-                            params[5].getSimpleName().equalsIgnoreCase("string") &&
-                            params[6].getSimpleName().equalsIgnoreCase("string")) {
-                        a = (CharamelActObject) c.getDeclaredConstructor(params).newInstance(value1, value2, value3, value4, value5, value6, value7);
-                    }
-                }
-
-            }
-        } catch (ClassNotFoundException | NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-            mLogger.failure("No Class for Charamel Action " + cmd + " and value " + value1 + " , " + value2 + " , " + value3 + " , " + value4 + " , " + value5 + " , " + value6 + " , " + value7);
-        }
-
-        if (a != null) {
-            a.setId(getNextID());
-        }
-
-        return a;
-    }
-
-    public CharamelActObject loadCharamelAnimation(String cmd, String value1, String value2, String value3, String value4, String value5, String value6, String value7, String value8) {
-        CharamelActObject a = null;
-
-        String cp = getCharamelCommandClasspath(cmd);
-
-        try {
-            Class c = Class.forName(cp);
-            Constructor[] constructors = c.getConstructors();
-            for (Constructor con : constructors) {
-                Class[] params = con.getParameterTypes();
-                if (params.length == 8) {
-                    if (params[0].getSimpleName().equalsIgnoreCase("string") &&
-                            params[1].getSimpleName().equalsIgnoreCase("string") &&
-                            params[2].getSimpleName().equalsIgnoreCase("string") &&
-                            params[3].getSimpleName().equalsIgnoreCase("string") &&
-                            params[4].getSimpleName().equalsIgnoreCase("string") &&
-                            params[5].getSimpleName().equalsIgnoreCase("string") &&
-                            params[6].getSimpleName().equalsIgnoreCase("string") &&
-                            params[7].getSimpleName().equalsIgnoreCase("string")) {
-                        a = (CharamelActObject) c.getDeclaredConstructor(params).newInstance(value1, value2, value3, value4, value5, value6, value7, value8);
-                    }
-                }
-
-            }
-        } catch (ClassNotFoundException | NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-            mLogger.failure("No Class for Charamel Action " + cmd + " and value " + value1 + " , " + value2 + " , " + value3 + " , " + value4 + " , " + value5 + " , " + value6 + " , " + value7 + " , " + value8);
-        }
-
-        if (a != null) {
-            a.setId(getNextID());
-        }
-
-        return a;
-    }
-
-    public CharamelActObject loadCharamelAnimation(String cmd, String value1, String value2, String value3, String value4, String value5, String value6, String value7, String value8, String value9, String value10) {
-        CharamelActObject a = null;
-
-        String cp = getCharamelCommandClasspath(cmd);
-
-        try {
-            Class c = Class.forName(cp);
-            Constructor[] constructors = c.getConstructors();
-            for (Constructor con : constructors) {
-                Class[] params = con.getParameterTypes();
-                if (params.length == 10) {
-                    if (params[0].getSimpleName().equalsIgnoreCase("string") && 
-                        params[1].getSimpleName().equalsIgnoreCase("string") &&
-                        params[2].getSimpleName().equalsIgnoreCase("string") &&
-                        params[3].getSimpleName().equalsIgnoreCase("string") &&
-                        params[4].getSimpleName().equalsIgnoreCase("string") &&  
-                        params[5].getSimpleName().equalsIgnoreCase("string") &&   
-                        params[6].getSimpleName().equalsIgnoreCase("string") &&   
-                        params[7].getSimpleName().equalsIgnoreCase("string") &&   
-                        params[8].getSimpleName().equalsIgnoreCase("string") &&   
-                        params[9].getSimpleName().equalsIgnoreCase("string")) {
-                        a = (CharamelActObject) c.getDeclaredConstructor(params).newInstance(value1, value2, value3, value4, value5, value6,value7,value8,value9,value10);
-                    }
-                }
-
-            }
-        } catch (ClassNotFoundException | NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-            mLogger.failure("No Class for Charamel Action " + cmd + " and value " + value1 + " , " + value2 + " , " + value3 + " , " + value4 + " , " + value5 + " , " + value6+" , " + value7+" , " + value8+" , " + value9+" , " + value10);
-        }
-
-        if (a != null) {
-            a.setId(getNextID());
-        }
-
-        return a;
-    }
 }
