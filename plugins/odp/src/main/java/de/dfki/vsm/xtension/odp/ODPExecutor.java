@@ -99,16 +99,20 @@ public class ODPExecutor extends ActivityExecutor {
         //activity.setType(Type.blocking);
 
         final String name = activity.getName();
+        if (name.equalsIgnoreCase("stop")) {
+            JSONObject jsonOut = new JSONObject();
+            jsonOut.put("speechEnds", true);
+        }
         if (name.equalsIgnoreCase("charspeak")) {
             String state = (activity.get("state") != null) ? activity.get("state") : "";
 
             JSONObject jsonOut = new JSONObject();
-            String event ;
-            int ttsId ;
+            String event;
+            int ttsId;
 
-            if(state == null) return; // Actually should not happen, but IntellijIDEA was complaining...
+            if (state == null) return; // Actually should not happen, but IntellijIDEA was complaining...
 
-            if(state.equalsIgnoreCase("start")) {
+            if (state.equalsIgnoreCase("start")) {
                 event = "start";
                 ttsId = ttsEvents.ttsStarted().get();
             }
@@ -140,7 +144,6 @@ public class ODPExecutor extends ActivityExecutor {
             jsonOut.put("postproc", postproc);
 
             jsonOut.put(TTS_ID, ttsEvents.newTaskArrived(task).get());
-
 
             sendToOPD(jsonOut);
         }
