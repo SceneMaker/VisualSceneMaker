@@ -109,7 +109,14 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
                 String element = "dummy_el";
                 String id = activity.get("id");
                 String value = activity.get("value").replace("'", "");
-                broadcast(element + sCmdSeperatorChar + name + svalueSeparatorChar + id + svalueSeparatorChar + value);
+                String type = activity.get("type");
+                if (type != null) {
+                    type = type.replace("'", "");
+                    broadcast(element + sCmdSeperatorChar + name + svalueSeparatorChar + id + svalueSeparatorChar + value + svalueSeparatorChar + type);
+                } else {
+                    broadcast(element + sCmdSeperatorChar + name + svalueSeparatorChar + id + svalueSeparatorChar + value);
+                }
+
             } else if (name.equalsIgnoreCase("showElement")) {
                 //Dummy variable to match format of other cmds
                 String element = "dummy_el";
