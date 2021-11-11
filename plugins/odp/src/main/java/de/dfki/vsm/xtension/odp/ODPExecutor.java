@@ -102,6 +102,8 @@ public class ODPExecutor extends ActivityExecutor {
         if (name.equalsIgnoreCase("stop")) {
             JSONObject jsonOut = new JSONObject();
             jsonOut.put("speechEnds", true);
+
+            sendToOPD(jsonOut);
         }
         if (name.equalsIgnoreCase("charspeak")) {
             String state = (activity.get("state") != null) ? activity.get("state") : "";
@@ -147,9 +149,6 @@ public class ODPExecutor extends ActivityExecutor {
 
             sendToOPD(jsonOut);
         }
-
-
-
     }
 
     private void sendToOPD(JSONObject jo) {
