@@ -24,8 +24,18 @@ public final class MindbotRobotExecutor extends ActivityExecutor implements Mind
      */
     private final static int ACTION_ABORT_DELAY_MILLIS = 1000 ;
 
+    /** Will listen to the topics exposed by the robot and invoke the callback methods when the values change.
+     */
     private MindbotTopicReceiver topicReceiver;
+
+    /** Helper class to invoke the services exposed by the robot,
+     * wait for an answer of execution (for thos services taking some time),
+     * and invoke the callbacks when global variables can be updated.
+     */
     private MindbotServiceRequester serviceReq;
+
+    /** ROS class to register this plugin as ROS node.
+     */
     private NodeMainExecutor nodeMainExecutor;
 
     private static final String ACTION_MARKER = "$" ;

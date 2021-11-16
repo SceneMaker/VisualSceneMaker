@@ -24,8 +24,12 @@ public class MindbotServiceRequester extends AbstractNodeMain {
      */
     private final static int ACTION_DONE_TIMEOUT_MILLIS = 30000 ;
 
-    // Possible state paths:
-    // CALLED -> FAILURE
+    // Possible state paths for immediate actions, which do not need to wait for the action_done service invoked:
+    // CALLED -> UNREACHABLE
+    // CALLED -> UNSUCCESSFUL
+    // CALLED -> DONE
+
+    // Possible state paths for actions waiting for an answer (action_done) from the robot:
     // CALLED -> UNREACHABLE
     // CALLED -> UNSUCCESSFUL
     // CALLED -> EXECUTING -> FAILED
@@ -261,25 +265,29 @@ public class MindbotServiceRequester extends AbstractNodeMain {
     class MindBotResponseListener<T extends org.ros.internal.message.Message> implements ServiceResponseListener<T> {
 
         /** This is identifier of the VSM Action.
-         * By default is -1.
-         * However, if the listener must setup the waiting procedure, it will be initialized to a unique integer counter.
+         * It will be initialized to a unique integer counter.
          */
-        int vsmActionID = -1 ;
+        int vsmActionID ;
+
+        /** Flags if the message for this request will also need to wait for an `action_done` callback.
+          */
+        private boolean needs_action_done_message ;
 
         public MindBotResponseListener(ActionType type, boolean expect_action_done_message) {
 
             // Generate a new local VSM ID for this action call
-            if(expect_action_done_message) {
-                this.vsmActionID = _actionCounter++;
-                synchronized (actionsState) {
-                    actionsState.put(this.vsmActionID, CallState.CALLED);
-                    actionsType.put(this.vsmActionID, type) ;
+            this.vsmActionID = _actionCounter++;
 
-                    mRobotFeedback.setActionState(this.vsmActionID, CallState.CALLED.toString());
-                    mRobotFeedback.setActionMessage(this.vsmActionID,"");
-                }
+            this.needs_action_done_message = expect_action_done_message ;
 
+            synchronized (actionsState) {
+                actionsState.put(this.vsmActionID, CallState.CALLED);
+                actionsType.put(this.vsmActionID, type) ;
+
+                mRobotFeedback.setActionState(this.vsmActionID, CallState.CALLED.toString());
+                mRobotFeedback.setActionMessage(this.vsmActionID,"");
             }
+
 
         }
 
@@ -295,25 +303,33 @@ public class MindbotServiceRequester extends AbstractNodeMain {
         @Override
         public void onSuccess(Message response) {
 
-            if(this.vsmActionID != -1) {
-                boolean success = response.toRawMessage().getBool("success") ;
-                String message = response.toRawMessage().getString("message") ;
+            boolean success = response.toRawMessage().getBool("success") ;
+            String message = response.toRawMessage().getString("message") ;
 
-                if(!success) {
-                    mRobotFeedback.setActionState(this.vsmActionID, CallState.UNSUCCESSFUL.toString());
-                    mRobotFeedback.setActionMessage(this.vsmActionID, message);
-                    return ;
-                }
+            if(!success) {
+                mRobotFeedback.setActionState(this.vsmActionID, CallState.UNSUCCESSFUL.toString());
+                mRobotFeedback.setActionMessage(this.vsmActionID, message);
+                return ;
+            }
 
-                int rosActionID = response.toRawMessage().getInt32("action_id");
 
-                synchronized (actionsState) {
-                    actionsState.put(vsmActionID, CallState.EXECUTING);
+            synchronized (actionsState) {
+
+                if (this.needs_action_done_message) {
+                    // The ROS action ID needs to be saved only of we expect to receive later also the action_done service invocation.
+                    int rosActionID = response.toRawMessage().getInt32("action_id");
                     rosToActionID.put(rosActionID, vsmActionID);
 
+                    actionsState.put(vsmActionID, CallState.EXECUTING);
                     mRobotFeedback.setActionState(this.vsmActionID, CallState.EXECUTING.toString());
-                    mRobotFeedback.setActionMessage(this.vsmActionID, message);
+
+                } else {
+                    // If we do not wait for the action_done, then this is the last state to track.
+                    actionsState.put(vsmActionID, CallState.DONE);
+                    mRobotFeedback.setActionState(this.vsmActionID, CallState.DONE.toString()) ;
                 }
+
+                mRobotFeedback.setActionMessage(this.vsmActionID, message);
             }
 
         }
@@ -323,17 +339,13 @@ public class MindbotServiceRequester extends AbstractNodeMain {
         @Override
         public void onFailure(RemoteException e) {
 
-            if(this.vsmActionID != -1) {
-
-                synchronized (actionsState) {
-                    actionsState.put(vsmActionID, CallState.UNREACHABLE);
-
-                    mRobotFeedback.setActionState(this.vsmActionID, CallState.UNREACHABLE.toString());
-                }
+            synchronized (actionsState) {
+                actionsState.put(vsmActionID, CallState.UNREACHABLE);
+                mRobotFeedback.setActionState(this.vsmActionID, CallState.UNREACHABLE.toString());
             }
 
             throw new RosRuntimeException(e);
-
+            
         }
 
     }
