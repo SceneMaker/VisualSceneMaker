@@ -5,11 +5,11 @@ package de.dfki.vsm.xtension.mindbotrobot;
  */
 public interface MindbotRobotFeedback {
 
-    void setActionState(String res) ;
+    void setActionState(int action_id, String res) ;
 
-    void setActionMessage(String msg) ;
+    void setActionMessage(int action_id, String msg) ;
 
-    void logWarning(String msg) ;
+    void logWarning(int action_id, String msg) ;
 
-    void setDetectedPose(geometry_msgs.Pose p);
+    void setDetectedPose(int action_id, geometry_msgs.Pose p);
 }

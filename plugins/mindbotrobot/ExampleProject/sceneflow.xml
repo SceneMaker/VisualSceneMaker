@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<SceneFlow id="" name="default" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Sat, 18 Sep 2021 10:33:47" start="S9;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
+<SceneFlow id="" name="default" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Tue, 16 Nov 2021 20:10:02" start="S8;S9;S1;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
   <Define>
   </Define>
   <Declare>
@@ -30,12 +30,6 @@
     <VariableDefinition type="Float" name ="robot_tcp_or_z">
       <FloatLiteral value="0.0"/>
     </VariableDefinition>
-    <VariableDefinition type="String" name ="robot_action_state">
-      <StringLiteral><![CDATA[]]></StringLiteral>
-    </VariableDefinition>
-    <VariableDefinition type="String" name ="robot_action_message">
-      <StringLiteral><![CDATA[]]></StringLiteral>
-    </VariableDefinition>
     <VariableDefinition type="Float" name ="detected_pose_x">
       <FloatLiteral value="0.0"/>
     </VariableDefinition>
@@ -57,6 +51,30 @@
     <VariableDefinition type="Float" name ="detected_pose_qw">
       <FloatLiteral value="0.0"/>
     </VariableDefinition>
+    <VariableDefinition type="String" name ="robot_configuration_state">
+      <StringLiteral><![CDATA[]]></StringLiteral>
+    </VariableDefinition>
+    <VariableDefinition type="String" name ="robot_configuration_message">
+      <StringLiteral><![CDATA[]]></StringLiteral>
+    </VariableDefinition>
+    <VariableDefinition type="String" name ="robot_arm_state">
+      <StringLiteral><![CDATA[]]></StringLiteral>
+    </VariableDefinition>
+    <VariableDefinition type="String" name ="robot_arm_message">
+      <StringLiteral><![CDATA[]]></StringLiteral>
+    </VariableDefinition>
+    <VariableDefinition type="String" name ="robot_gripper_state">
+      <StringLiteral><![CDATA[]]></StringLiteral>
+    </VariableDefinition>
+    <VariableDefinition type="String" name ="robot_gripper_message">
+      <StringLiteral><![CDATA[]]></StringLiteral>
+    </VariableDefinition>
+    <VariableDefinition type="String" name ="robot_detection_state">
+      <StringLiteral><![CDATA[]]></StringLiteral>
+    </VariableDefinition>
+    <VariableDefinition type="String" name ="robot_detection_message">
+      <StringLiteral><![CDATA[]]></StringLiteral>
+    </VariableDefinition>
   </Declare>
   <Commands>
   </Commands>
@@ -68,7 +86,7 @@
   </GlobalVariableBadge>
   <Comment>
     <Graphics>
-      <Boundary xPos="14" yPos="278" width="314" height="79"/>
+      <Boundary xPos="15" yPos="342" width="314" height="79"/>
     </Graphics>
     <Text style="color:blue">
       To decide what commands to test, right-click on the super-states and use "Set Start" ot "UnsetStart"
@@ -90,14 +108,6 @@
     <GlobalVariableBadge>
       <Position xPos="10" yPos="10"/>
     </GlobalVariableBadge>
-    <Comment>
-      <Graphics>
-        <Boundary xPos="605" yPos="381" width="233" height="103"/>
-      </Graphics>
-      <Text style="color:blue">
-        Old version. Before the actions were synchronized, we had to manually wait for the robot movement to finish.
-      </Text>
-    </Comment>
     <Node id="N8" name="History" history="true">
       <Define>
       </Define>
@@ -119,16 +129,16 @@
           <StringLiteral><![CDATA[TcpPosition2]]></StringLiteral>
         </PlayScene>
       </Commands>
-      <EEdge target="N11" start ="">
+      <TEdge target="N11" start="" timeout="2000">
       <Graphics>
         <Connection>
-          <ControlPoint xPos="482" yPos="267" ctrlXPos="417" ctrlYPos="285"/>
-          <ControlPoint xPos="298" yPos="267" ctrlXPos="362" ctrlYPos="285"/>
+          <ControlPoint xPos="750" yPos="255" ctrlXPos="682" ctrlYPos="255"/>
+          <ControlPoint xPos="568" yPos="243" ctrlXPos="632" ctrlYPos="225"/>
         </Connection>
       </Graphics>
-      </EEdge>
+      </TEdge>
       <Graphics>
-        <Position xPos="480" yPos="210"/>
+        <Position xPos="750" yPos="210"/>
       </Graphics>
     </Node>
     <Node id="N10" name="Start" history="false">
@@ -141,13 +151,13 @@
       <TEdge target="N11" start="" timeout="3000">
       <Graphics>
         <Connection>
-          <ControlPoint xPos="120" yPos="255" ctrlXPos="142" ctrlYPos="255"/>
-          <ControlPoint xPos="210" yPos="255" ctrlXPos="187" ctrlYPos="255"/>
+          <ControlPoint xPos="390" yPos="255" ctrlXPos="412" ctrlYPos="255"/>
+          <ControlPoint xPos="480" yPos="255" ctrlXPos="457" ctrlYPos="255"/>
         </Connection>
       </Graphics>
       </TEdge>
       <Graphics>
-        <Position xPos="30" yPos="210"/>
+        <Position xPos="300" yPos="210"/>
       </Graphics>
     </Node>
     <Node id="N11" name="TestPose1" history="false">
@@ -163,76 +173,13 @@
       <EEdge target="N9" start ="">
       <Graphics>
         <Connection>
-          <ControlPoint xPos="300" yPos="255" ctrlXPos="367" ctrlYPos="255"/>
-          <ControlPoint xPos="482" yPos="243" ctrlXPos="412" ctrlYPos="255"/>
+          <ControlPoint xPos="570" yPos="255" ctrlXPos="637" ctrlYPos="255"/>
+          <ControlPoint xPos="752" yPos="243" ctrlXPos="682" ctrlYPos="255"/>
         </Connection>
       </Graphics>
       </EEdge>
       <Graphics>
-        <Position xPos="210" yPos="210"/>
-      </Graphics>
-    </Node>
-    <Node id="N12" name="TestPose" history="false">
-      <Define>
-      </Define>
-      <Declare>
-      </Declare>
-      <Commands>
-        <PlayScene>
-          <StringLiteral><![CDATA[TcpPosition2]]></StringLiteral>
-        </PlayScene>
-      </Commands>
-      <TEdge target="N14" start="" timeout="5000">
-      <Graphics>
-        <Connection>
-          <ControlPoint xPos="482" yPos="447" ctrlXPos="417" ctrlYPos="465"/>
-          <ControlPoint xPos="298" yPos="447" ctrlXPos="362" ctrlYPos="465"/>
-        </Connection>
-      </Graphics>
-      </TEdge>
-      <Graphics>
-        <Position xPos="480" yPos="390"/>
-      </Graphics>
-    </Node>
-    <Node id="N13" name="Start" history="false">
-      <Define>
-      </Define>
-      <Declare>
-      </Declare>
-      <Commands>
-      </Commands>
-      <TEdge target="N14" start="" timeout="3000">
-      <Graphics>
-        <Connection>
-          <ControlPoint xPos="120" yPos="435" ctrlXPos="142" ctrlYPos="435"/>
-          <ControlPoint xPos="212" yPos="447" ctrlXPos="190" ctrlYPos="453"/>
-        </Connection>
-      </Graphics>
-      </TEdge>
-      <Graphics>
-        <Position xPos="30" yPos="390"/>
-      </Graphics>
-    </Node>
-    <Node id="N14" name="TestPose1" history="false">
-      <Define>
-      </Define>
-      <Declare>
-      </Declare>
-      <Commands>
-        <PlayScene>
-          <StringLiteral><![CDATA[TcpPosition1]]></StringLiteral>
-        </PlayScene>
-      </Commands>
-      <TEdge target="N12" start="" timeout="5000">
-      <Graphics>
-        <Connection>
-          <ControlPoint xPos="300" yPos="435" ctrlXPos="367" ctrlYPos="435"/>
-          <ControlPoint xPos="480" yPos="435" ctrlXPos="412" ctrlYPos="435"/>
-        </Connection>
-      </Graphics>
-      </TEdge>
-      <Graphics>
-        <Position xPos="210" yPos="390"/>
+        <Position xPos="480" yPos="210"/>
       </Graphics>
     </Node>
   </SuperNode>
@@ -273,13 +220,13 @@
       <TEdge target="N15" start="" timeout="3000">
       <Graphics>
         <Connection>
-          <ControlPoint xPos="120" yPos="255" ctrlXPos="142" ctrlYPos="255"/>
-          <ControlPoint xPos="212" yPos="267" ctrlXPos="190" ctrlYPos="273"/>
+          <ControlPoint xPos="390" yPos="255" ctrlXPos="412" ctrlYPos="255"/>
+          <ControlPoint xPos="482" yPos="267" ctrlXPos="460" ctrlYPos="273"/>
         </Connection>
       </Graphics>
       </TEdge>
       <Graphics>
-        <Position xPos="30" yPos="210"/>
+        <Position xPos="300" yPos="210"/>
       </Graphics>
     </Node>
     <Node id="N15" name="TestJointTarget1" history="false">
@@ -295,13 +242,13 @@
       <EEdge target="N2" start ="">
       <Graphics>
         <Connection>
-          <ControlPoint xPos="300" yPos="255" ctrlXPos="367" ctrlYPos="255"/>
-          <ControlPoint xPos="480" yPos="255" ctrlXPos="412" ctrlYPos="255"/>
+          <ControlPoint xPos="570" yPos="255" ctrlXPos="637" ctrlYPos="255"/>
+          <ControlPoint xPos="750" yPos="255" ctrlXPos="682" ctrlYPos="255"/>
         </Connection>
       </Graphics>
       </EEdge>
       <Graphics>
-        <Position xPos="210" yPos="210"/>
+        <Position xPos="480" yPos="210"/>
       </Graphics>
     </Node>
     <Node id="N2" name="N2" history="false">
@@ -314,16 +261,16 @@
           <StringLiteral><![CDATA[JointTarget2]]></StringLiteral>
         </PlayScene>
       </Commands>
-      <EEdge target="N15" start ="">
+      <TEdge target="N15" start="" timeout="2500">
       <Graphics>
         <Connection>
-          <ControlPoint xPos="482" yPos="267" ctrlXPos="417" ctrlYPos="285"/>
-          <ControlPoint xPos="298" yPos="267" ctrlXPos="362" ctrlYPos="285"/>
+          <ControlPoint xPos="752" yPos="267" ctrlXPos="687" ctrlYPos="285"/>
+          <ControlPoint xPos="568" yPos="267" ctrlXPos="632" ctrlYPos="285"/>
         </Connection>
       </Graphics>
-      </EEdge>
+      </TEdge>
       <Graphics>
-        <Position xPos="480" yPos="210"/>
+        <Position xPos="750" yPos="210"/>
       </Graphics>
     </Node>
   </SuperNode>
@@ -364,13 +311,13 @@
       <TEdge target="N21" start="" timeout="3000">
       <Graphics>
         <Connection>
-          <ControlPoint xPos="120" yPos="255" ctrlXPos="142" ctrlYPos="255"/>
-          <ControlPoint xPos="212" yPos="267" ctrlXPos="187" ctrlYPos="255"/>
+          <ControlPoint xPos="120" yPos="435" ctrlXPos="142" ctrlYPos="435"/>
+          <ControlPoint xPos="212" yPos="447" ctrlXPos="187" ctrlYPos="435"/>
         </Connection>
       </Graphics>
       </TEdge>
       <Graphics>
-        <Position xPos="30" yPos="210"/>
+        <Position xPos="30" yPos="390"/>
       </Graphics>
     </Node>
     <Node id="N20" name="TestCtrlState1" history="false">
@@ -386,13 +333,13 @@
       <TEdge target="N21" start="" timeout="5000">
       <Graphics>
         <Connection>
-          <ControlPoint xPos="486" yPos="277" ctrlXPos="417" ctrlYPos="285"/>
-          <ControlPoint xPos="298" yPos="267" ctrlXPos="362" ctrlYPos="285"/>
+          <ControlPoint xPos="486" yPos="457" ctrlXPos="417" ctrlYPos="465"/>
+          <ControlPoint xPos="298" yPos="447" ctrlXPos="362" ctrlYPos="465"/>
         </Connection>
       </Graphics>
       </TEdge>
       <Graphics>
-        <Position xPos="480" yPos="210"/>
+        <Position xPos="480" yPos="390"/>
       </Graphics>
     </Node>
     <Node id="N21" name="TestCtrlState0" history="false">
@@ -408,13 +355,13 @@
       <TEdge target="N20" start="" timeout="5000">
       <Graphics>
         <Connection>
-          <ControlPoint xPos="300" yPos="255" ctrlXPos="367" ctrlYPos="255"/>
-          <ControlPoint xPos="482" yPos="267" ctrlXPos="412" ctrlYPos="255"/>
+          <ControlPoint xPos="300" yPos="435" ctrlXPos="367" ctrlYPos="435"/>
+          <ControlPoint xPos="482" yPos="447" ctrlXPos="412" ctrlYPos="435"/>
         </Connection>
       </Graphics>
       </TEdge>
       <Graphics>
-        <Position xPos="210" yPos="210"/>
+        <Position xPos="210" yPos="390"/>
       </Graphics>
     </Node>
   </SuperNode>
@@ -455,13 +402,13 @@
       <TEdge target="N22" start="" timeout="3000">
       <Graphics>
         <Connection>
-          <ControlPoint xPos="120" yPos="255" ctrlXPos="142" ctrlYPos="255"/>
-          <ControlPoint xPos="212" yPos="267" ctrlXPos="187" ctrlYPos="255"/>
+          <ControlPoint xPos="120" yPos="435" ctrlXPos="142" ctrlYPos="435"/>
+          <ControlPoint xPos="212" yPos="447" ctrlXPos="187" ctrlYPos="435"/>
         </Connection>
       </Graphics>
       </TEdge>
       <Graphics>
-        <Position xPos="30" yPos="210"/>
+        <Position xPos="30" yPos="390"/>
       </Graphics>
     </Node>
     <Node id="N19" name="TestCtrlMode1" history="false">
@@ -477,13 +424,13 @@
       <TEdge target="N22" start="" timeout="5000">
       <Graphics>
         <Connection>
-          <ControlPoint xPos="482" yPos="267" ctrlXPos="417" ctrlYPos="285"/>
-          <ControlPoint xPos="298" yPos="267" ctrlXPos="362" ctrlYPos="285"/>
+          <ControlPoint xPos="482" yPos="447" ctrlXPos="417" ctrlYPos="465"/>
+          <ControlPoint xPos="298" yPos="447" ctrlXPos="362" ctrlYPos="465"/>
         </Connection>
       </Graphics>
       </TEdge>
       <Graphics>
-        <Position xPos="480" yPos="210"/>
+        <Position xPos="480" yPos="390"/>
       </Graphics>
     </Node>
     <Node id="N22" name="TestCtrlMode0" history="false">
@@ -499,13 +446,13 @@
       <TEdge target="N19" start="" timeout="5000">
       <Graphics>
         <Connection>
-          <ControlPoint xPos="300" yPos="255" ctrlXPos="367" ctrlYPos="255"/>
-          <ControlPoint xPos="482" yPos="243" ctrlXPos="412" ctrlYPos="255"/>
+          <ControlPoint xPos="300" yPos="435" ctrlXPos="367" ctrlYPos="435"/>
+          <ControlPoint xPos="482" yPos="423" ctrlXPos="412" ctrlYPos="435"/>
         </Connection>
       </Graphics>
       </TEdge>
       <Graphics>
-        <Position xPos="210" yPos="210"/>
+        <Position xPos="210" yPos="390"/>
       </Graphics>
     </Node>
   </SuperNode>
@@ -546,13 +493,13 @@
       <TEdge target="N26" start="" timeout="3000">
       <Graphics>
         <Connection>
-          <ControlPoint xPos="120" yPos="255" ctrlXPos="142" ctrlYPos="255"/>
-          <ControlPoint xPos="212" yPos="267" ctrlXPos="187" ctrlYPos="255"/>
+          <ControlPoint xPos="120" yPos="435" ctrlXPos="142" ctrlYPos="435"/>
+          <ControlPoint xPos="212" yPos="447" ctrlXPos="187" ctrlYPos="435"/>
         </Connection>
       </Graphics>
       </TEdge>
       <Graphics>
-        <Position xPos="30" yPos="210"/>
+        <Position xPos="30" yPos="390"/>
       </Graphics>
     </Node>
     <Node id="N25" name="TestMaxAcceleration2" history="false">
@@ -568,13 +515,13 @@
       <TEdge target="N26" start="" timeout="5000">
       <Graphics>
         <Connection>
-          <ControlPoint xPos="482" yPos="267" ctrlXPos="417" ctrlYPos="285"/>
-          <ControlPoint xPos="298" yPos="267" ctrlXPos="362" ctrlYPos="285"/>
+          <ControlPoint xPos="482" yPos="447" ctrlXPos="417" ctrlYPos="465"/>
+          <ControlPoint xPos="298" yPos="447" ctrlXPos="362" ctrlYPos="465"/>
         </Connection>
       </Graphics>
       </TEdge>
       <Graphics>
-        <Position xPos="480" yPos="210"/>
+        <Position xPos="480" yPos="390"/>
       </Graphics>
     </Node>
     <Node id="N26" name="TestMaxAcceleration1" history="false">
@@ -590,13 +537,13 @@
       <TEdge target="N25" start="" timeout="5000">
       <Graphics>
         <Connection>
-          <ControlPoint xPos="300" yPos="255" ctrlXPos="367" ctrlYPos="255"/>
-          <ControlPoint xPos="482" yPos="243" ctrlXPos="412" ctrlYPos="255"/>
+          <ControlPoint xPos="300" yPos="435" ctrlXPos="367" ctrlYPos="435"/>
+          <ControlPoint xPos="482" yPos="423" ctrlXPos="412" ctrlYPos="435"/>
         </Connection>
       </Graphics>
       </TEdge>
       <Graphics>
-        <Position xPos="210" yPos="210"/>
+        <Position xPos="210" yPos="390"/>
       </Graphics>
     </Node>
   </SuperNode>
@@ -637,13 +584,13 @@
       <TEdge target="N30" start="" timeout="3000">
       <Graphics>
         <Connection>
-          <ControlPoint xPos="120" yPos="255" ctrlXPos="142" ctrlYPos="255"/>
-          <ControlPoint xPos="212" yPos="267" ctrlXPos="187" ctrlYPos="255"/>
+          <ControlPoint xPos="120" yPos="435" ctrlXPos="142" ctrlYPos="435"/>
+          <ControlPoint xPos="212" yPos="447" ctrlXPos="187" ctrlYPos="435"/>
         </Connection>
       </Graphics>
       </TEdge>
       <Graphics>
-        <Position xPos="30" yPos="210"/>
+        <Position xPos="30" yPos="390"/>
       </Graphics>
     </Node>
     <Node id="N29" name="TestMaxVelocity2" history="false">
@@ -659,13 +606,13 @@
       <TEdge target="N30" start="" timeout="5000">
       <Graphics>
         <Connection>
-          <ControlPoint xPos="482" yPos="267" ctrlXPos="417" ctrlYPos="285"/>
-          <ControlPoint xPos="298" yPos="267" ctrlXPos="362" ctrlYPos="285"/>
+          <ControlPoint xPos="482" yPos="447" ctrlXPos="417" ctrlYPos="465"/>
+          <ControlPoint xPos="298" yPos="447" ctrlXPos="362" ctrlYPos="465"/>
         </Connection>
       </Graphics>
       </TEdge>
       <Graphics>
-        <Position xPos="480" yPos="210"/>
+        <Position xPos="480" yPos="390"/>
       </Graphics>
     </Node>
     <Node id="N30" name="TestMaxVelocity1" history="false">
@@ -681,13 +628,13 @@
       <TEdge target="N29" start="" timeout="5000">
       <Graphics>
         <Connection>
-          <ControlPoint xPos="300" yPos="255" ctrlXPos="367" ctrlYPos="255"/>
-          <ControlPoint xPos="482" yPos="243" ctrlXPos="412" ctrlYPos="255"/>
+          <ControlPoint xPos="300" yPos="435" ctrlXPos="367" ctrlYPos="435"/>
+          <ControlPoint xPos="482" yPos="423" ctrlXPos="412" ctrlYPos="435"/>
         </Connection>
       </Graphics>
       </TEdge>
       <Graphics>
-        <Position xPos="210" yPos="210"/>
+        <Position xPos="210" yPos="390"/>
       </Graphics>
     </Node>
   </SuperNode>
@@ -728,13 +675,13 @@
       <TEdge target="N34" start="" timeout="3000">
       <Graphics>
         <Connection>
-          <ControlPoint xPos="120" yPos="255" ctrlXPos="142" ctrlYPos="255"/>
-          <ControlPoint xPos="212" yPos="267" ctrlXPos="187" ctrlYPos="255"/>
+          <ControlPoint xPos="120" yPos="435" ctrlXPos="142" ctrlYPos="435"/>
+          <ControlPoint xPos="212" yPos="447" ctrlXPos="187" ctrlYPos="435"/>
         </Connection>
       </Graphics>
       </TEdge>
       <Graphics>
-        <Position xPos="30" yPos="210"/>
+        <Position xPos="30" yPos="390"/>
       </Graphics>
     </Node>
     <Node id="N33" name="TestMinClearance2" history="false">
@@ -750,13 +697,13 @@
       <TEdge target="N34" start="" timeout="5000">
       <Graphics>
         <Connection>
-          <ControlPoint xPos="482" yPos="267" ctrlXPos="417" ctrlYPos="285"/>
-          <ControlPoint xPos="298" yPos="267" ctrlXPos="362" ctrlYPos="285"/>
+          <ControlPoint xPos="482" yPos="447" ctrlXPos="417" ctrlYPos="465"/>
+          <ControlPoint xPos="298" yPos="447" ctrlXPos="362" ctrlYPos="465"/>
         </Connection>
       </Graphics>
       </TEdge>
       <Graphics>
-        <Position xPos="480" yPos="210"/>
+        <Position xPos="480" yPos="390"/>
       </Graphics>
     </Node>
     <Node id="N34" name="TestMinClearance1" history="false">
@@ -772,13 +719,13 @@
       <TEdge target="N33" start="" timeout="5000">
       <Graphics>
         <Connection>
-          <ControlPoint xPos="300" yPos="255" ctrlXPos="367" ctrlYPos="255"/>
-          <ControlPoint xPos="482" yPos="243" ctrlXPos="412" ctrlYPos="255"/>
+          <ControlPoint xPos="300" yPos="435" ctrlXPos="367" ctrlYPos="435"/>
+          <ControlPoint xPos="482" yPos="423" ctrlXPos="412" ctrlYPos="435"/>
         </Connection>
       </Graphics>
       </TEdge>
       <Graphics>
-        <Position xPos="210" yPos="210"/>
+        <Position xPos="210" yPos="390"/>
       </Graphics>
     </Node>
   </SuperNode>
@@ -800,14 +747,14 @@
     </GlobalVariableBadge>
     <Comment>
       <Graphics>
-        <Boundary xPos="240" yPos="342" width="440" height="108"/>
+        <Boundary xPos="404" yPos="213" width="440" height="108"/>
       </Graphics>
       <Text style="color:blue">
         DESCRIPTION:
-                                                                                                                                                                                                                                                                                                                                First, open the gripper at max speed.
-                                                                                                                                                                                                                                                                                                                                As soon as it is open, close it to the maximum.
-                                                                                                                                                                                                                                                                                                                                Then, wait a bit
-                                                                                                                                                                                                                                                                                                                                Repeat forever.
+                                                                                                                                                                                                                                                                                                                                                        First, open the gripper at max speed.
+                                                                                                                                                                                                                                                                                                                                                        As soon as it is open, close it to the maximum.
+                                                                                                                                                                                                                                                                                                                                                        Then, wait a bit
+                                                                                                                                                                                                                                                                                                                                                        Repeat forever.
       </Text>
     </Comment>
     <Node id="N3" name="History" history="true">
@@ -834,13 +781,13 @@
       <TEdge target="N35" start="" timeout="5000">
       <Graphics>
         <Connection>
-          <ControlPoint xPos="570" yPos="255" ctrlXPos="457" ctrlYPos="255"/>
-          <ControlPoint xPos="298" yPos="243" ctrlXPos="405" ctrlYPos="213"/>
+          <ControlPoint xPos="570" yPos="435" ctrlXPos="457" ctrlYPos="435"/>
+          <ControlPoint xPos="298" yPos="423" ctrlXPos="405" ctrlYPos="393"/>
         </Connection>
       </Graphics>
       </TEdge>
       <Graphics>
-        <Position xPos="570" yPos="210"/>
+        <Position xPos="570" yPos="390"/>
       </Graphics>
     </Node>
     <Node id="N5" name="Start" history="false">
@@ -853,13 +800,13 @@
       <TEdge target="N35" start="" timeout="3000">
       <Graphics>
         <Connection>
-          <ControlPoint xPos="120" yPos="255" ctrlXPos="142" ctrlYPos="255"/>
-          <ControlPoint xPos="210" yPos="255" ctrlXPos="187" ctrlYPos="255"/>
+          <ControlPoint xPos="120" yPos="435" ctrlXPos="142" ctrlYPos="435"/>
+          <ControlPoint xPos="210" yPos="435" ctrlXPos="187" ctrlYPos="435"/>
         </Connection>
       </Graphics>
       </TEdge>
       <Graphics>
-        <Position xPos="30" yPos="210"/>
+        <Position xPos="30" yPos="390"/>
       </Graphics>
     </Node>
     <Node id="N35" name="TestPose1" history="false">
@@ -875,13 +822,13 @@
       <EEdge target="N4" start ="">
       <Graphics>
         <Connection>
-          <ControlPoint xPos="300" yPos="255" ctrlXPos="412" ctrlYPos="255"/>
-          <ControlPoint xPos="572" yPos="267" ctrlXPos="464" ctrlYPos="297"/>
+          <ControlPoint xPos="300" yPos="435" ctrlXPos="412" ctrlYPos="435"/>
+          <ControlPoint xPos="572" yPos="447" ctrlXPos="464" ctrlYPos="477"/>
         </Connection>
       </Graphics>
       </EEdge>
       <Graphics>
-        <Position xPos="210" yPos="210"/>
+        <Position xPos="210" yPos="390"/>
       </Graphics>
     </Node>
   </SuperNode>
@@ -915,7 +862,7 @@
       </Graphics>
       <Text style="color:blue">
         Object found.
-        Object pose is in global variables "detected_pose_*"
+                                Object pose is in global variables "detected_pose_*"
       </Text>
     </Comment>
     <Comment>
@@ -974,7 +921,7 @@
           </Connection>
         </Graphics>
         <Eq>
-          <SimpleVariable name="robot_action_message"/>
+          <SimpleVariable name="robot_detection_message"/>
           <StringLiteral><![CDATA[SUCCESSFUL DETECTION]]></StringLiteral>
         </Eq>
       </CEdge>
@@ -986,7 +933,7 @@
           </Connection>
         </Graphics>
         <Eq>
-          <SimpleVariable name="robot_action_message"/>
+          <SimpleVariable name="robot_detection_message"/>
           <StringLiteral><![CDATA[FAILED ACTION]]></StringLiteral>
         </Eq>
       </CEdge>
@@ -1009,6 +956,14 @@
       </Declare>
       <Commands>
       </Commands>
+      <EEdge target="N42" start ="">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="817" yPos="306" ctrlXPos="833" ctrlYPos="277"/>
+          <ControlPoint xPos="863" yPos="204" ctrlXPos="846" ctrlYPos="232"/>
+        </Connection>
+      </Graphics>
+      </EEdge>
       <Graphics>
         <Position xPos="750" yPos="300"/>
       </Graphics>
@@ -1020,6 +975,14 @@
       </Declare>
       <Commands>
       </Commands>
+      <EEdge target="N42" start ="">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="807" yPos="392" ctrlXPos="826" ctrlYPos="320"/>
+          <ControlPoint xPos="873" yPos="208" ctrlXPos="853" ctrlYPos="279"/>
+        </Connection>
+      </Graphics>
+      </EEdge>
       <Graphics>
         <Position xPos="750" yPos="390"/>
       </Graphics>
@@ -1031,8 +994,35 @@
       </Declare>
       <Commands>
       </Commands>
+      <EEdge target="N42" start ="">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="807" yPos="482" ctrlXPos="838" ctrlYPos="369"/>
+          <ControlPoint xPos="885" yPos="210" ctrlXPos="885" ctrlYPos="328"/>
+        </Connection>
+      </Graphics>
+      </EEdge>
       <Graphics>
         <Position xPos="750" yPos="480"/>
+      </Graphics>
+    </Node>
+    <Node id="N42" name="N42" history="false">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+      </Commands>
+      <TEdge target="N38" start="" timeout="3000">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="842" yPos="177" ctrlXPos="634" ctrlYPos="234"/>
+          <ControlPoint xPos="388" yPos="333" ctrlXPos="595" ctrlYPos="275"/>
+        </Connection>
+      </Graphics>
+      </TEdge>
+      <Graphics>
+        <Position xPos="840" yPos="120"/>
       </Graphics>
     </Node>
   </SuperNode>

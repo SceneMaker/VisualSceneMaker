@@ -297,6 +297,7 @@ public final class MindbotRobotExecutor extends ActivityExecutor implements Mind
                     break;
 
                 case "detect_object":
+
                     String detection_obj_name = features_map.get("name") ;
                     serviceReq.setVisualDetection(detection_obj_name);
 
@@ -324,25 +325,29 @@ public final class MindbotRobotExecutor extends ActivityExecutor implements Mind
     }
 
 
-    private final static String ROBOT_ACTION_VAR = "robot_action_state" ;
-    private final static String ROBOT_MESSAGE_VAR = "robot_action_message" ;
-
     @Override
-    public void setActionState(String res) {
-        if(mProject.hasVariable(ROBOT_ACTION_VAR)) {
-            mProject.setVariable(ROBOT_ACTION_VAR, res);
+    public void setActionState(int actionID, String res) {
+        MindbotServiceRequester.ActionType atype = this.serviceReq.getActionType(actionID);
+        String state_var = "robot_" + atype.toString().toLowerCase() + "_state" ;
+
+        if(mProject.hasVariable(state_var)) {
+            mProject.setVariable(state_var, res);
         }
     }
 
     @Override
-    public void setActionMessage(String msg) {
-        if(mProject.hasVariable(ROBOT_MESSAGE_VAR)) {
-            mProject.setVariable(ROBOT_MESSAGE_VAR, msg);
+    public void setActionMessage(int actionID, String msg) {
+        MindbotServiceRequester.ActionType atype = this.serviceReq.getActionType(actionID);
+        String message_var = "robot_" + atype.toString().toLowerCase() + "_message" ;
+
+        if(mProject.hasVariable(message_var)) {
+            mProject.setVariable(message_var, msg);
         }
     }
 
-    public void setDetectedPose(Pose pose) {
-        // Copy the information of a newly detected extarnel object pose into project global variables.
+    @Override
+    public void setDetectedPose(int actionID, Pose pose) {
+        // Copy the information of a newly detected external object pose into project global variables.
         Point pos = pose.getPosition();
         Quaternion or = pose.getOrientation();
         if(mProject.hasVariable("detected_pose_x")) { mProject.setVariable("detected_pose_x", (float)pos.getX()) ; }
@@ -355,7 +360,7 @@ public final class MindbotRobotExecutor extends ActivityExecutor implements Mind
     }
 
     @Override
-    public void logWarning(String msg) {
+    public void logWarning(int actionID, String msg) {
         mLogger.warning(msg);
     }
 }

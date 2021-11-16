@@ -39,6 +39,17 @@ public class MindbotServiceRequester extends AbstractNodeMain {
         DONE        // The remote ROS called back the action_done to inform that the call was executed successfully.
     }
 
+    /** Actions are divided into categories.
+     * Each category will set a different project variable to communicate state and messages.
+     * This helps in parallelizing actions and checking the results independently.
+     */
+    enum ActionType {
+        Configuration,  // Actions to set system parameters, whose execution is normally instantaneous
+        Arm,            // Actions moving the main robot arm
+        Gripper,        // Actions controlling the robot gripper
+        Detection       // Actions performing the detection of objects (e.g., via a vision module)
+    }
+
 
     @Override
     public GraphName getDefaultNodeName() {
@@ -75,6 +86,11 @@ public class MindbotServiceRequester extends AbstractNodeMain {
     /** Maps the local actionIDs to their call state.*/
     private final HashMap<Integer, CallState> actionsState = new HashMap<>();
 
+    /** Maps the local actionIDs to the action type.
+     * Used to retrieve back the action type when the message `action_done` is received.
+     */
+    private final HashMap<Integer, ActionType> actionsType = new HashMap<>();
+
     /** Maps the id that ROS generated for a call (rosID) to the local actionID. */
     private final  HashMap<Integer, Integer> rosToActionID = new HashMap<>() ;
 
@@ -85,6 +101,17 @@ public class MindbotServiceRequester extends AbstractNodeMain {
     public boolean isSetupDone() {
         return (_setupDone);
     }
+
+
+    /** Returns the type of the action given by ID.
+     *
+     * @param action_id The ID of a running action.
+     * @return The action type.
+     */
+    public ActionType getActionType(int action_id) {
+        return this.actionsType.get(action_id) ;
+    }
+
 
     private void setUpClient(ConnectedNode connectedNode) {
         try {
@@ -140,7 +167,8 @@ public class MindbotServiceRequester extends AbstractNodeMain {
                     assert (s == CallState.CALLED || s == CallState.EXECUTING) ;
                     try {
                         actionsState.wait(1000);
-                        mRobotFeedback.logWarning("Still waiting for 'action_done' for localID " + actionID);
+                        mRobotFeedback.logWarning(actionID,
+                                "Still waiting for 'action_done' for localID " + actionID);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
@@ -149,9 +177,10 @@ public class MindbotServiceRequester extends AbstractNodeMain {
 
             long elapsed = System.currentTimeMillis() - wait_start;
             if(elapsed > ACTION_DONE_TIMEOUT_MILLIS) {
-                mRobotFeedback.logWarning("Time out. Waiting time exceeded " + ACTION_DONE_TIMEOUT_MILLIS
+                mRobotFeedback.logWarning(actionID,
+                        "Time out. Waiting time exceeded " + ACTION_DONE_TIMEOUT_MILLIS
                                 + " millis while waiting for action_done feedback for action "
-                                + actionID + ". Proceeding anyway");
+                                + actionID + ". Proceeding anyway.");
                 break ;
             }
 
@@ -165,6 +194,7 @@ public class MindbotServiceRequester extends AbstractNodeMain {
             //
             // remove the IDs from the actionMap
             actionsState.remove(actionID);
+            actionsType.remove(actionID) ;
 
         }
 
@@ -173,6 +203,7 @@ public class MindbotServiceRequester extends AbstractNodeMain {
 
     /**
      * This is the code building the answer to the messages receives on the "action_done" service.
+     * The build() method will be invoked by ROS each time this extension received a message "/mindbot/robot/action_done" from the robot
      */
     private class ActionDoneResponseBuilder implements ServiceResponseBuilder<mindbot_msgs.VSMActionDoneRequest, mindbot_msgs.VSMActionDoneResponse> {
 
@@ -201,14 +232,14 @@ public class MindbotServiceRequester extends AbstractNodeMain {
                     actionsState.put(actionID, s);
                     actionsState.notifyAll();
 
-                    mRobotFeedback.setActionState(s.toString());
-                    mRobotFeedback.setActionMessage(message);
+                    mRobotFeedback.setActionState(actionID, s.toString());
+                    mRobotFeedback.setActionMessage(actionID, message);
 
                     Pose pose = request.getDetectedPose();
                     // If the pose values are NaN, it means they are not valid.
                     // For performance reasons, we test only the first number.
                     if (! Double.isNaN(pose.getPosition().getX())) {
-                        mRobotFeedback.setDetectedPose(pose);
+                        mRobotFeedback.setDetectedPose(actionID, pose);
                     }
                 }
                 // if the rosCallID was not in the map, it is possible that VSM re-started when a robot acton was still executing
@@ -219,7 +250,9 @@ public class MindbotServiceRequester extends AbstractNodeMain {
         }
     }
 
+
     /** Centralized parametric Listener that can be used to intercept the answer from any robot service.
+     * The onSuccess() and onFailure() methods of this listener are invoked as response to the invocation of a robot service..
      * If the expect_action_done_message in the constructor is true,
      * the responding service must provide a field named `action_id` of type int32.
      * The constructor will insert the actionID in the `actionState` table with state `CALLED`.
@@ -233,24 +266,28 @@ public class MindbotServiceRequester extends AbstractNodeMain {
          */
         int vsmActionID = -1 ;
 
-        public MindBotResponseListener(boolean expect_action_done_message) {
+        public MindBotResponseListener(ActionType type, boolean expect_action_done_message) {
 
             // Generate a new local VSM ID for this action call
             if(expect_action_done_message) {
                 this.vsmActionID = _actionCounter++;
                 synchronized (actionsState) {
                     actionsState.put(this.vsmActionID, CallState.CALLED);
+                    actionsType.put(this.vsmActionID, type) ;
 
-                    mRobotFeedback.setActionState(CallState.CALLED.toString());
-                    mRobotFeedback.setActionMessage("");
+                    mRobotFeedback.setActionState(this.vsmActionID, CallState.CALLED.toString());
+                    mRobotFeedback.setActionMessage(this.vsmActionID,"");
                 }
+
             }
 
         }
 
+
         int getActionID() {
             return this.vsmActionID ;
         }
+
 
         /** This will be invoked as a (positive) result when th execution of a ROS service has succeeded.
          * We update the state of the running action and memorize the association between the action localID and rosID.
@@ -263,8 +300,8 @@ public class MindbotServiceRequester extends AbstractNodeMain {
                 String message = response.toRawMessage().getString("message") ;
 
                 if(!success) {
-                    mRobotFeedback.setActionState(CallState.UNSUCCESSFUL.toString());
-                    mRobotFeedback.setActionMessage(message);
+                    mRobotFeedback.setActionState(this.vsmActionID, CallState.UNSUCCESSFUL.toString());
+                    mRobotFeedback.setActionMessage(this.vsmActionID, message);
                     return ;
                 }
 
@@ -274,8 +311,8 @@ public class MindbotServiceRequester extends AbstractNodeMain {
                     actionsState.put(vsmActionID, CallState.EXECUTING);
                     rosToActionID.put(rosActionID, vsmActionID);
 
-                    mRobotFeedback.setActionState(CallState.EXECUTING.toString());
-
+                    mRobotFeedback.setActionState(this.vsmActionID, CallState.EXECUTING.toString());
+                    mRobotFeedback.setActionMessage(this.vsmActionID, message);
                 }
             }
 
@@ -291,7 +328,7 @@ public class MindbotServiceRequester extends AbstractNodeMain {
                 synchronized (actionsState) {
                     actionsState.put(vsmActionID, CallState.UNREACHABLE);
 
-                    mRobotFeedback.setActionState(CallState.UNREACHABLE.toString());
+                    mRobotFeedback.setActionState(this.vsmActionID, CallState.UNREACHABLE.toString());
                 }
             }
 
@@ -320,11 +357,12 @@ public class MindbotServiceRequester extends AbstractNodeMain {
 
         request.setPoint(jointState);
 
-        MindBotResponseListener<SetJointStateResponse> listener = new MindBotResponseListener<SetJointStateResponse>(true);
+        MindBotResponseListener<SetJointStateResponse> listener = new MindBotResponseListener<SetJointStateResponse>(ActionType.Arm, true);
         _setJointTargetService.call(request, listener);
 
         return listener.getActionID() ;
     }
+
 
     /** /mindbot/robot/set_tcp_target             (mindbot_msgs::SetPose)
      *
@@ -350,7 +388,7 @@ public class MindbotServiceRequester extends AbstractNodeMain {
 
         request.setPose(pose);
 
-        MindBotResponseListener<SetPoseResponse> listener = new MindBotResponseListener<SetPoseResponse>(true);
+        MindBotResponseListener<SetPoseResponse> listener = new MindBotResponseListener<SetPoseResponse>(ActionType.Arm,true);
         _setTcpTargetService.call(request, listener);
 
         return listener.getActionID() ;
@@ -373,9 +411,10 @@ public class MindbotServiceRequester extends AbstractNodeMain {
 
         request.setData(maxTcpVelocity);
 
-        MindBotResponseListener<SetVector3Response> listener = new MindBotResponseListener<SetVector3Response>(false);
+        MindBotResponseListener<SetVector3Response> listener = new MindBotResponseListener<SetVector3Response>(ActionType.Configuration, false);
         _setMaxTcpVelocityService.call(request, listener);
     }
+
 
     /** /mindbot/robot/set_max_tcp_acceleration   (mindbot_msgs::SetVector3)
      *
@@ -393,7 +432,7 @@ public class MindbotServiceRequester extends AbstractNodeMain {
 
         request.setData(maxTcpAcceleration);
 
-        MindBotResponseListener<SetVector3Response> listener = new MindBotResponseListener<SetVector3Response>(false);
+        MindBotResponseListener<SetVector3Response> listener = new MindBotResponseListener<SetVector3Response>(ActionType.Configuration, false);
         _setMaxTcpAccelerationService.call(request, listener);
     }
 
@@ -412,9 +451,11 @@ public class MindbotServiceRequester extends AbstractNodeMain {
 
         request.setCtrlState(ctrlState);
 
-        MindBotResponseListener<SetCtrlStateResponse> listener = new MindBotResponseListener<SetCtrlStateResponse>(false);
+        MindBotResponseListener<SetCtrlStateResponse> listener =
+                new MindBotResponseListener<SetCtrlStateResponse>(ActionType.Configuration, false);
         _setCtrlStateService.call(request, listener);
     }
+
 
     /** /mindbot/robot/set_ctrl_mode              (cob_srvs::SetString)
      *
@@ -430,9 +471,11 @@ public class MindbotServiceRequester extends AbstractNodeMain {
 
         request.setCtrlMode(ctrlMode);
 
-        MindBotResponseListener<SetCtrlModeResponse> listener = new MindBotResponseListener<SetCtrlModeResponse>(false);
+        MindBotResponseListener<SetCtrlModeResponse> listener =
+                new MindBotResponseListener<SetCtrlModeResponse>(ActionType.Configuration, false);
         _setCtrlModeService.call(request, listener);
     }
+
 
     /**     /mindbot/robot/set_min_clearance           (mindbot_msgs::SetFloat)
      *
@@ -443,7 +486,8 @@ public class MindbotServiceRequester extends AbstractNodeMain {
 
         request.setData(min_clearance);
 
-        MindBotResponseListener<SetFloatResponse> listener = new MindBotResponseListener<SetFloatResponse>(false);
+        MindBotResponseListener<SetFloatResponse> listener =
+                new MindBotResponseListener<SetFloatResponse>(ActionType.Configuration, false);
         _setMinClearanceService.call(request, listener);
     }
 
@@ -461,9 +505,11 @@ public class MindbotServiceRequester extends AbstractNodeMain {
         request.setVelocity(velocity);
         request.setForce(force);
 
-        MindBotResponseListener<SetGripperActionResponse> listener = new MindBotResponseListener<>(true) ;
+        MindBotResponseListener<SetGripperActionResponse> listener =
+                new MindBotResponseListener<>(ActionType.Gripper, true) ;
         _setGripperActionService.call(request, listener);
     }
+
 
     /** /mindbot/robot/set_detection
      * Service type is mindbot_msgs::SetDetection
@@ -475,7 +521,8 @@ public class MindbotServiceRequester extends AbstractNodeMain {
 
         request.setObjectName(obj_name);
 
-        MindBotResponseListener<SetDetectionResponse> listener = new MindBotResponseListener<>(true) ;
+        MindBotResponseListener<SetDetectionResponse> listener =
+                new MindBotResponseListener<>(ActionType.Detection, true) ;
         _setDetectionService.call(request, listener) ;
     }
 
