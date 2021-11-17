@@ -18,7 +18,7 @@ Refer to the official VSM documentation on how to set up a project and execute s
   * `rosuri` The URI (e.g., http://localhost:11311) on which the main ROS system and the robot are running.
 * Add an agent for the device.
 
-![MindBotRobot plugin configuration](images/VSM-MindBotRobotConfig.png)
+  ![MindBotRobot plugin configuration](images/VSM-MindBotRobotConfig.png)
 
 * Setup the project global variables that will be updated while the project runs:
   * `robot_ctrl_mode` (String): returns the mode of the robot among: `MODE0`, `MODE1`, `MODE2`, `Undefined`.
@@ -26,16 +26,17 @@ Refer to the official VSM documentation on how to set up a project and execute s
   * A set of variables for the TCP pose of the robot:
     * `robot_tcp_x`, `robot_tcp_y`, `robot_tcp_z` (Float) for the TCP position; and
     * `robot_tcp_or_w`, `robot_tcp_or_x`, `robot_tcp_or_y`, `robot_tcp_or_z` (Float) for the TCP orientation quaternion;
-  * A set of action state and message variables:
+    
+    ![Robot state variables](images/VSM-MindBotRobotDefaultCoords.png)
+  * A set of action state and message variables (whose values are described in a later section):
     * `robot_configuration_state` and `robot_configuration_message` (String)
     * `robot_arm_state` and `robot_arm_message` (String)
     * `robot_gripper_state` and `robot_gripper_message` (String)
     * `robot_detection_state` and `robot_detection_message` (String)
-    * The values that can be assumed by these variables are reported in a later section.
-
-![Project Variables](images/VSM-MindBotControlDemo.png)
 
 Please, see the `ExampleProject` distributed with this plugin for a comprehensive example testing all of the above-mentioned commands.
+
+![Demo project](images/VSM-MindBotControlDemo.png)
 
 
 ## Invoking robot actions
