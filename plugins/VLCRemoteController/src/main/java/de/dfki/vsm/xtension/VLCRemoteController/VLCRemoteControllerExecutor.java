@@ -20,7 +20,7 @@ import java.util.LinkedList;
 
 /**
  *
- * @author Manuel
+ * @author Manuel Anglet, Fabrizio Nunnari
  */
 public class VLCRemoteControllerExecutor extends ActivityExecutor{
 
@@ -55,7 +55,6 @@ public class VLCRemoteControllerExecutor extends ActivityExecutor{
             // If text is empty - assume activity has empty text but has marker activities registered
             if (text.isEmpty()) {
                 for (String tm : timemarks) {
-                    // mLogger.warning("Directly executing activity at timemark " + tm);
                     mProject.getRunTimePlayer().getActivityScheduler().handle(tm);
                 }
             }
