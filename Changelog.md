@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The Changelog!
 - Plugin `studymaster-web`: new interface to control the flow from web page (#185, #209)
 - Plugin `yallah`: to control YALLAH avatars via websocket protocol (#184)
+- Plugin `VLCRemoteController`: to control VLC from VSM and play any kind of media (#249).
 ### Changed
 - study-master web has a much longer timeout for websockets
 ### Removed
