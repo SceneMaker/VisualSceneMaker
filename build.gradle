@@ -39,6 +39,7 @@ dependencies {
     implementation project(":plugins:reeti")
     implementation project(":plugins:tricatworld")
     implementation project(":plugins:charamel")
+    implementation project(":plugins:VLCRemoteController")
     implementation project(":plugins:extensionAPI")
     implementation project(":plugins:mindbotrobot")
     implementation project(":plugins:mindbotESM")
