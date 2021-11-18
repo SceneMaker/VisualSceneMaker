@@ -36,6 +36,7 @@ dependencies {
     implementation project(":plugins:reeti")
     implementation project(":plugins:tricatworld")
     implementation project(":plugins:charamel")
+    implementation project(":plugins:VLCRemoteController")
     implementation project(":plugins:extensionAPI")
 
     implementation 'org.jetbrains:annotations:16.0.2'
