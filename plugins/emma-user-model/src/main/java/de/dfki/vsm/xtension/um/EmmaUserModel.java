@@ -559,11 +559,11 @@ public class EmmaUserModel extends ActivityExecutor {
         }
     }
 
-    private void storeUserDiaryEntry(AbstractActivity activity, String key, String value) {
+    private synchronized void storeUserDiaryEntry(AbstractActivity activity, String key, String value) {
         storeDiaryEntry(activity, "User", key, value);
     }
 
-    private void storeDiaryEntry(AbstractActivity activity, String producer, String key, String value) {
+    private synchronized void storeDiaryEntry(AbstractActivity activity, String producer, String key, String value) {
         JSONObject diaryentry = new JSONObject();
 
         long dateMillis = System.currentTimeMillis();
@@ -580,7 +580,7 @@ public class EmmaUserModel extends ActivityExecutor {
         diaryDaysManagement();
     }
 
-    private void storeDiaryEmotionEntry(AbstractActivity activity, String emotionValue) {
+    private synchronized void storeDiaryEmotionEntry(AbstractActivity activity, String emotionValue) {
         JSONObject diaryentry = new JSONObject();
 
         long dateMillis = System.currentTimeMillis();
@@ -869,16 +869,18 @@ public class EmmaUserModel extends ActivityExecutor {
         mLogger.message("Found user " + users.get(0).toString());
     }
 
-    private void saveUserModel() {
+    private synchronized void saveUserModel() {
         String umf = (mProject.getProjectPath() + File.separator + umDir + File.separator + umFile).replace("\\", "/");
-        try {
-            FileWriter umfw = new FileWriter(umf);
+        synchronized (mUserProfiles) {
+            try {
+                FileWriter umfw = new FileWriter(umf);
 
-            umfw.write(mUserProfiles.toString());
-            umfw.flush();
-            umfw.close();
-        } catch (IOException e) {
-            mLogger.failure("Error writing UM to " + umf);
+                umfw.write(mUserProfiles.toString());
+                umfw.flush();
+                umfw.close();
+            } catch (IOException e) {
+                mLogger.failure("Error writing UM to " + umf);
+            }
         }
     }
 
