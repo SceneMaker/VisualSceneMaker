@@ -14,7 +14,7 @@ import de.dfki.vsm.runtime.activity.scheduler.ActivityWorker;
 import de.dfki.vsm.runtime.interpreter.value.BooleanValue;
 import de.dfki.vsm.runtime.interpreter.value.StringValue;
 import de.dfki.vsm.runtime.project.RunTimeProject;
-import de.dfki.vsm.util.log.LOGConsoleLogger;
+import de.dfki.vsm.util.log.LOGDefaultLogger;
 import de.dfki.vsm.xtension.charamelWs.Commands.*;
 import io.javalin.Javalin;
 import io.javalin.websocket.WsCloseContext;
@@ -36,10 +36,10 @@ public class charamelWsExecutor extends ActivityExecutor {
     static long sUtteranceId = 0;
     // The map of activity worker
     private final Map<String, ActivityWorker> mActivityWorkerMap = new HashMap<>();
-    // The singleton logger instance
-    private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
+    // The system logger
+    protected final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
     private final ArrayList<WsConnectContext> websockets = new ArrayList<>();
-    private Javalin app;
+    private Javalin mJavaLinInstance;
     private String mPathToCertificate = "";
     private String mVSMCharacterSpeakingVar = "";
 
@@ -153,7 +153,7 @@ public class charamelWsExecutor extends ActivityExecutor {
                 mLogger.message("Testing ...");
                 //broadcast(Strings.testMsg);
             } else if (name.equalsIgnoreCase("stop")) {
-                app.stop();
+                mJavaLinInstance.stop();
             }
 
             parseAction(name, activity.getFeatures());
@@ -501,13 +501,16 @@ public class charamelWsExecutor extends ActivityExecutor {
         mLogger.message("Loading Charamel VuppetMaster Executor (WebSocket) ...");
         final int wss_port = Integer.parseInt(Objects.requireNonNull(mConfig.getProperty("wss_port")));
         final int ws_port = Integer.parseInt(Objects.requireNonNull(mConfig.getProperty("ws_port")));
+        mJavaLinInstance = createServer(wss_port, ws_port);
+
+        setupWS();
+    }
+
+    private void setupWS() {
         final String sceneflowVar = mConfig.getProperty("sceneflowVar");
         mVSMCharacterSpeakingVar = mConfig.getProperty("characterSpeaking");
-        mLogger.message(sceneflowVar);
 
-        app = createServer(wss_port, ws_port);
-
-        app.ws("/ws", ws -> {
+        mJavaLinInstance.ws("/ws", ws -> {
             ws.onConnect(ctx -> {
                 this.addWs(ctx);
                 mLogger.message("Connected to Charamel VuppetMaster");
@@ -522,17 +525,23 @@ public class charamelWsExecutor extends ActivityExecutor {
                 this.removeWs(ctx);
 
                 mLogger.message("Closed");
-
                 mLogger.message("Remove active (but not needed anymore) activity actions");
                 synchronized (mActivityWorkerMap) {
                     mActivityWorkerMap.clear();
                     // wake me up ..
                     mActivityWorkerMap.notifyAll();
                 }
+
+                mLogger.message("Trying to reconnect");
+                setupWS();
             });
-            ws.onError(ctx -> mLogger.failure("Error handling ws message exchange"));
+            ws.onError(ctx -> {
+                mLogger.failure("Error handling ws message exchange");
+            });
         });
+
     }
+
 
     private Javalin createServer(int wss_port, int ws_port) {
         mPathToCertificate = mConfig.getProperty("certificate");
@@ -653,7 +662,7 @@ public class charamelWsExecutor extends ActivityExecutor {
     @Override
     public void unload() {
         websockets.clear();
-        app.stop();
+        mJavaLinInstance.stop();
     }
 
     private SslContextFactory getSslContextFactory() {
