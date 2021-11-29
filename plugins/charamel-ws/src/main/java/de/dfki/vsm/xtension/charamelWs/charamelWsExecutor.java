@@ -291,6 +291,16 @@ public class charamelWsExecutor extends ActivityExecutor {
                 broadcast(new LookCommand(xPos, yPos));
                 break;
             }
+            case "headtilt": {
+                String xString = getActionFeatureValue("xrot", f);
+                String yString = getActionFeatureValue("yrot", f);
+                String yString = getActionFeatureValue("zrot", f);
+                double xRot = Double.parseDouble(xString);
+                double yRot = Double.parseDouble(yString);
+                double zRot = Double.parseDouble(yString);
+                broadcast(new HeadTilt(xRot, yRot, zRot));
+                break;
+            }
             case "armscrossed": {
                 broadcast(new TimeLine(new ArmscrossedCommand()));
                 break;
