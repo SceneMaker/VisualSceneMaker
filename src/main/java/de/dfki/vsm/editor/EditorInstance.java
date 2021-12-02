@@ -22,6 +22,8 @@ import javax.swing.filechooser.FileFilter;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
+import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -820,7 +822,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
     }
 
     // Play the execution of the current project
-    public final void play() {
+    public final void play() throws SocketException, UnknownHostException {
         // Get the project that has to be executed
         final ProjectEditor editor = getSelectedProjectEditor();
         final EditorProject project = editor.getEditorProject();
@@ -829,7 +831,7 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
     }
 
     // Play the execution of the current project
-    public final boolean play(final EditorProject project) {
+    public final boolean play(final EditorProject project) throws SocketException, UnknownHostException {
         // Check State Of Execution
 
         if (/*mRunTime.isRunning(project)*/project.isRunning()) {

@@ -19,6 +19,8 @@ import de.dfki.vsm.util.xml.XMLUtilities;
 
 import java.io.*;
 import java.lang.reflect.Constructor;
+import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -279,7 +281,7 @@ public class RunTimeProject {
     }
 
     // Launch the runtime objects of the project
-    public final boolean launch() {
+    public final boolean launch() throws SocketException, UnknownHostException {
         // Launch the scene player
         if(isNewProject()){
             loadRunTimePlugins();

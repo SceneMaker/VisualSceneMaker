@@ -9,11 +9,13 @@ import de.dfki.vsm.runtime.project.RunTimeProject;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Core {
     // Start the runtime with some project
-    public static void runtime(final File file) {
+    public static void runtime(final File file) throws SocketException, UnknownHostException {
         // Get an editor project from file
         final RunTimeProject runTimeProject = new RunTimeProject(file);
         // Get the singleton runtime instance
@@ -73,7 +75,7 @@ public class Core {
             }
         }
     }
-    public static void main(String[] args){
+    public static void main(String[] args) throws SocketException, UnknownHostException {
         if (args.length == 2) {
             // Read the first command line argument
             final String mode = args[0];

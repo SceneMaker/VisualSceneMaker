@@ -27,6 +27,8 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
+import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.LinkedList;
 
 import static de.dfki.vsm.PreferencesDesktop.SCREEN_HORIZONTAL;
@@ -436,7 +438,13 @@ public class SceneFlowToolBar extends JToolBar implements EventListener {
             @Override
             public void actionPerformed(ActionEvent e) {
                 mEditorInstance.save();
-                mEditorInstance.play(mEditorProject);
+                try {
+                    mEditorInstance.play(mEditorProject);
+                } catch (SocketException ex) {
+                    ex.printStackTrace();
+                } catch (UnknownHostException ex) {
+                    ex.printStackTrace();
+                }
                 mStopButton.setEnabled(true);
             }
         });

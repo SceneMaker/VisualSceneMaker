@@ -4,6 +4,9 @@ import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 
+import java.net.SocketException;
+import java.net.UnknownHostException;
+
 /**
  * @author Gregor Mehlmann
  */
@@ -29,7 +32,7 @@ public abstract class RunTimePlugin {
     }
 
     // Launch the plugin
-    public abstract void launch();
+    public abstract void launch() throws SocketException, UnknownHostException;
 
     // Unload the plugin
     public abstract void unload();
