@@ -11,18 +11,18 @@ public class HeadTilt implements Broadcastable {
 
     public HeadTilt(double xRot, double yRot, double zRot) {
         // Validate parameters
-        if (Math.abs(xRot) > 1) {
+        if (Math.abs(xRot) > 90) {
             this.xRot = 0;
         } else {
             this.xRot = xRot;
         }
 
-        if (Math.abs(yRot) > 1) {
+        if (Math.abs(yRot) > 90) {
             this.yRot = 0;
         } else {
             this.yRot = yRot;
         }
-        if (Math.abs(zRot) > 1) {
+        if (Math.abs(zRot) > 90) {
             this.zRot = 0;
         } else {
             this.zRot = zRot;
@@ -34,7 +34,7 @@ public class HeadTilt implements Broadcastable {
         return String.format(Locale.ENGLISH, "{\n" +
                 "  \"type\": \"headTilt\",\n" +
                 "  \"x\": %f,\n" +
-                "  \"y\": %f\n" +
+                "  \"y\": %f,\n" +
                 "  \"z\": %f\n" +
                 "}", xRot, yRot, zRot);
     }

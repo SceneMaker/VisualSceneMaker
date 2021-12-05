@@ -297,7 +297,7 @@ public class charamelWsExecutor extends ActivityExecutor {
                 String zString = getActionFeatureValue("zrot", f);
                 double xRot = Double.parseDouble(xString);
                 double yRot = Double.parseDouble(yString);
-                double zRot = Double.parseDouble(yString);
+                double zRot = Double.parseDouble(zString);
                 broadcast(new HeadTilt(xRot, yRot, zRot));
                 break;
             }
