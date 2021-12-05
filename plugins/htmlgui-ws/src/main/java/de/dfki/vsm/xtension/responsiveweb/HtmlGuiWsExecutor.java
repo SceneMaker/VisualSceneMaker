@@ -6,12 +6,13 @@
 package de.dfki.vsm.xtension.responsiveweb;
 
 import de.dfki.vsm.model.project.PluginConfig;
+import de.dfki.vsm.model.scenescript.ActionFeature;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
 import de.dfki.vsm.runtime.activity.SpeechActivity;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
 import de.dfki.vsm.runtime.activity.scheduler.ActivityWorker;
 import de.dfki.vsm.runtime.project.RunTimeProject;
-import de.dfki.vsm.util.log.LOGConsoleLogger;
+import de.dfki.vsm.util.log.LOGDefaultLogger;
 import io.javalin.Javalin;
 import io.javalin.http.staticfiles.Location;
 import io.javalin.websocket.WsCloseContext;
@@ -33,7 +34,7 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
     // The map of activity worker
     private final Map<String, ActivityWorker> mActivityWorkerMap = new HashMap<>();
     // The singleton logger instance
-    private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
+    protected final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
     private final ArrayList<WsConnectContext> websockets = new ArrayList<>();
     private Javalin app;
     private String mPathToCertificate = "";
@@ -50,116 +51,13 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
         return "${'" + id + "'}$";
     }
 
-    @Override
-    public void execute(AbstractActivity activity) {
-        final String activity_actor = activity.getActor();
-
-        if (activity instanceof SpeechActivity) {
-            SpeechActivity sa = (SpeechActivity) activity;
-            String text = sa.getTextOnly("${'").trim();
-            LinkedList<String> timemarks = sa.getTimeMarks("${'");
-
-            // If text is empty - assume activity has empty text but has marker activities registered
-            if (text.isEmpty()) {
-                for (String tm : timemarks) {
-                    mLogger.warning("Directly executing activity at timemark " + tm);
-                    mProject.getRunTimePlayer().getActivityScheduler().handle(tm);
-                }
-            } else {
-                mLogger.warning("No gui command with CMD markers send ...");
-            }
-        } else {
-            final String name = activity.getName();
-            //final LinkedList<ActionFeature> features = activity.getFeatures();
-
-            if (name.equalsIgnoreCase("set")) {
-                String element = activity.get("element");
-                String value = activity.get("value");
-                if (value != null) {
-                    value = value.replace("'", "");
-                } else {
-                    value = "";
-                }
-                broadcast(element + sCmdSeperatorChar + value);
-            } else if (name.equalsIgnoreCase("setMoodGraph") ||
-                    name.equalsIgnoreCase("setWorkHrsGraph")) {
-                String element = activity.get("element");
-                String day = activity.get("day");
-                String type = activity.get("type");
-                String value = activity.get("value");
-                if (value != null) {
-                    value = value.replace("'", "");
-                } else {
-                    value = "";
-                }
-                broadcast(element + sCmdSeperatorChar + name + svalueSeparatorChar + day + svalueSeparatorChar +
-                        type + svalueSeparatorChar + value);
-            } else if (name.equalsIgnoreCase("setSpeechBubble")) {
-                String element = activity.get("element");
-                String producer = activity.get("producer");
-                String value = activity.get("value");
-                if (value != null) {
-                    value = value.replace("'", "");
-                } else {
-                    value = "";
-                }
-                broadcast(element + sCmdSeperatorChar + name + svalueSeparatorChar + producer + svalueSeparatorChar + value);
-            } else if (name.equalsIgnoreCase("setMenuItem")) {
-                //Dummy variable to match format of other cmds
-                String element = "dummy_el";
-                String id = activity.get("id");
-                String value = activity.get("value").replace("'", "");
-                String type = activity.get("type");
-                if (type != null) {
-                    type = type.replace("'", "");
-                    broadcast(element + sCmdSeperatorChar + name + svalueSeparatorChar + id + svalueSeparatorChar + value + svalueSeparatorChar + type);
-                } else {
-                    broadcast(element + sCmdSeperatorChar + name + svalueSeparatorChar + id + svalueSeparatorChar + value);
-                }
-
-            } else if (name.equalsIgnoreCase("showElement")) {
-                //Dummy variable to match format of other cmds
-                String element = "dummy_el";
-                String id = activity.get("id");
-                broadcast(element + sCmdSeperatorChar + name + svalueSeparatorChar + id);
-            } else if (name.equalsIgnoreCase("hideElement")) {
-                //Dummy variable to match format of other cmds
-                String element = "dummy_el";
-                String id = activity.get("id");
-                broadcast(element + sCmdSeperatorChar + name + svalueSeparatorChar + id);
-            } else if (name.equalsIgnoreCase("muteMic")) {
-                //Dummy variable to match format of other cmds
-                String element = "dummy_el";
-                broadcast(element + sCmdSeperatorChar + name);
-            } else if (name.equalsIgnoreCase("openMic")) {
-                //Dummy variable to match format of other cmds
-                String element = "dummy_el";
-                broadcast(element + sCmdSeperatorChar + name);
-            } else if (name.equalsIgnoreCase("setAudioItem")) {
-                String element = activity.get("element");
-                String audio_src = "./" + activity.get("audio").replace("'", "");
-                broadcast(element + sCmdSeperatorChar + name + svalueSeparatorChar + audio_src);
-            } else if (name.equalsIgnoreCase("controlAudio")) {
-                String element = activity.get("element");
-                String control_type = activity.get("type");
-                broadcast(element + sCmdSeperatorChar + name + svalueSeparatorChar + control_type);
-            } else if (name.equalsIgnoreCase("stop")) {
-                app.stop();
-            } else if (name.equalsIgnoreCase("guiToFront")) {
-                broadcast(name);
-            } else if (name.equalsIgnoreCase("vcToFront")) {
-                broadcast(name);
-            } else if (!name.isEmpty()) { //check if name represents a webpage - must be configured in the device's agent as key, value pair.
-                String guipage = mProject.getAgentConfig(activity_actor).getProperty(name);
-                // send only if there is a stored html page
-                if (guipage != null)
-                    if (guipage.contains(".html")) {
-                        broadcast(guipage);
-                    }
-            } else {
-                mLogger.failure("Either agent " + activity_actor + " or content " + name + " is not valid.");
-            }
-        }
+    // get the value of a feature (added PG) - quick and dirty
+    protected static String getActionFeatureValue(String name, List<ActionFeature> features) {
+        return features.stream()
+                .filter(af -> af.getKey().equalsIgnoreCase(name))
+                .findFirst()
+                .map(ActionFeature::getVal)
+                .orElse("").replace("'", "");
     }
 
     @Override
@@ -295,5 +193,122 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
         sslContextFactory.setKeyStorePath(this.getClass().getResource(mPathToCertificate).toExternalForm()); //default "/my-release-key.keystore"
         sslContextFactory.setKeyStorePassword("123456");
         return sslContextFactory;
+    }
+
+    @Override
+    public void execute(AbstractActivity activity) {
+        final String activity_actor = activity.getActor();
+
+        if (activity instanceof SpeechActivity) {
+            SpeechActivity sa = (SpeechActivity) activity;
+            String text = sa.getTextOnly("${'").trim();
+            LinkedList<String> timemarks = sa.getTimeMarks("${'");
+
+            // If text is empty - assume activity has empty text but has marker activities registered
+            if (text.isEmpty()) {
+                for (String tm : timemarks) {
+                    mLogger.warning("Directly executing activity at timemark " + tm);
+                    mProject.getRunTimePlayer().getActivityScheduler().handle(tm);
+                }
+            } else {
+                mLogger.warning("No gui command with CMD markers send ...");
+            }
+        } else {
+            final String name = activity.getName();
+            //final LinkedList<ActionFeature> features = activity.getFeatures();
+
+            if (name.equalsIgnoreCase("set")) {
+                String element = activity.get("element");
+                String value = activity.get("value");
+                if (value != null) {
+                    value = value.replace("'", "");
+                } else {
+                    value = "";
+                }
+                broadcast(element + sCmdSeperatorChar + value);
+            } else if (name.equalsIgnoreCase("setMoodGraph") ||
+                    name.equalsIgnoreCase("setWorkHrsGraph")) {
+                String element = activity.get("element");
+                String day = activity.get("day");
+                String type = activity.get("type");
+                String value = activity.get("value");
+                if (value != null) {
+                    value = value.replace("'", "");
+                } else {
+                    value = "";
+                }
+                broadcast(element + sCmdSeperatorChar + name + svalueSeparatorChar + day + svalueSeparatorChar +
+                        type + svalueSeparatorChar + value);
+            } else if (name.equalsIgnoreCase("setSpeechBubble")) {
+                String element = activity.get("element");
+                String producer = activity.get("producer");
+                String value = activity.get("value");
+                if (value != null) {
+                    value = value.replace("'", "");
+                } else {
+                    value = "";
+                }
+                broadcast(element + sCmdSeperatorChar + name + svalueSeparatorChar + producer + svalueSeparatorChar + value);
+            } else if (name.equalsIgnoreCase("setMenuItem")) {
+                //Dummy variable to match format of other cmds
+                String element = "dummy_el";
+                String id = activity.get("id");
+                String value = activity.get("value").replace("'", "");
+                String type = activity.get("type");
+                if (type != null) {
+                    type = type.replace("'", "");
+                    broadcast(element + sCmdSeperatorChar + name + svalueSeparatorChar + id + svalueSeparatorChar + value + svalueSeparatorChar + type);
+                } else {
+                    broadcast(element + sCmdSeperatorChar + name + svalueSeparatorChar + id + svalueSeparatorChar + value);
+                }
+            } else if (name.equalsIgnoreCase("showElement")) {
+                //Dummy variable to match format of other cmds
+                String element = "dummy_el";
+                String id = activity.get("id");
+                broadcast(element + sCmdSeperatorChar + name + svalueSeparatorChar + id);
+            } else if (name.equalsIgnoreCase("hideElement")) {
+                //Dummy variable to match format of other cmds
+                String element = "dummy_el";
+                String id = activity.get("id");
+                broadcast(element + sCmdSeperatorChar + name + svalueSeparatorChar + id);
+            } else if (name.equalsIgnoreCase("setcss")) {
+                //Dummy variable to match format of other cmds
+                String element = "dummy_el";
+                String property = getActionFeatureValue("var", activity.getFeatures()); //activity.get("var");
+                String value = getActionFeatureValue("value", activity.getFeatures());
+                broadcast(element + sCmdSeperatorChar + name + svalueSeparatorChar + property + svalueSeparatorChar + value);
+            } else if (name.equalsIgnoreCase("muteMic")) {
+                //Dummy variable to match format of other cmds
+                String element = "dummy_el";
+                broadcast(element + sCmdSeperatorChar + name);
+            } else if (name.equalsIgnoreCase("openMic")) {
+                //Dummy variable to match format of other cmds
+                String element = "dummy_el";
+                broadcast(element + sCmdSeperatorChar + name);
+            } else if (name.equalsIgnoreCase("setAudioItem")) {
+                String element = activity.get("element");
+                String audio_src = "./" + activity.get("audio").replace("'", "");
+                broadcast(element + sCmdSeperatorChar + name + svalueSeparatorChar + audio_src);
+            } else if (name.equalsIgnoreCase("controlAudio")) {
+                String element = activity.get("element");
+                String control_type = activity.get("type");
+                broadcast(element + sCmdSeperatorChar + name + svalueSeparatorChar + control_type);
+            } else if (name.equalsIgnoreCase("stop")) {
+                app.stop();
+            } else if (name.equalsIgnoreCase("guiToFront")) {
+                broadcast(name);
+            } else if (name.equalsIgnoreCase("vcToFront")) {
+                broadcast(name);
+            } else if (!name.isEmpty()) { //check if name represents a webpage - must be configured in the device's agent as key, value pair.
+                String guipage = mProject.getAgentConfig(activity_actor).getProperty(name);
+                // send only if there is a stored html page
+                if (guipage != null)
+                    if (guipage.contains(".html")) {
+                        broadcast(guipage);
+                    }
+            } else {
+                mLogger.failure("Either agent " + activity_actor + " or content " + name + " is not valid.");
+            }
+        }
     }
 }
