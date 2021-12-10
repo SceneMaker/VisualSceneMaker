@@ -224,7 +224,7 @@ public class YallahExecutor extends ActivityExecutor implements ExportableProper
             for (int i = 0, featuresSize = features.size(); i < featuresSize; i++) {
                 ActionFeature af = features.get(i);
 
-                json_string.append(af.getKey()).append("=").append(af.getVal());
+                json_string.append(af.getKey()).append("=").append(af.getValNoQuotes());
                 // Add a comma only if it is not the last element
                 if (i < featuresSize-1) json_string.append(",");
             }
