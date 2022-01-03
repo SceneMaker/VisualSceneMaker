@@ -11,4 +11,37 @@
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
+  <SceneObject lower="171" upper="264" language="@@" identifier="InformFill">
+    <SceneTurn lower="191" upper="264" speaker="web">
+      <SceneUttr lower="197" upper="264" punct=".">
+        <ActionObject lower="197" upper="203" actor="" name="INFORM">
+          <ActionFeature lower="204" upper="221" key="var" val="'information'"/>
+          <ActionFeature lower="222" upper="250" key="value" val="'Please fill the form'"/>
+          <ActionFeature lower="251" upper="262" key="type" val="'text'"/>
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="266" upper="360" language="@@" identifier="InformNewForm">
+    <SceneTurn lower="289" upper="360" speaker="web">
+      <SceneUttr lower="295" upper="360" punct=".">
+        <ActionObject lower="295" upper="301" actor="" name="INFORM">
+          <ActionFeature lower="302" upper="319" key="var" val="'information'"/>
+          <ActionFeature lower="320" upper="346" key="value" val="'New form coming up'"/>
+          <ActionFeature lower="347" upper="358" key="type" val="'text'"/>
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="362" upper="472" language="@@" identifier="InformWelcome">
+    <SceneTurn lower="385" upper="472" speaker="web">
+      <SceneUttr lower="391" upper="472" punct=".">
+        <ActionObject lower="391" upper="397" actor="" name="INFORM">
+          <ActionFeature lower="398" upper="415" key="var" val="'information'"/>
+          <ActionFeature lower="416" upper="458" key="value" val="'The Welcome Phase has been started'"/>
+          <ActionFeature lower="459" upper="470" key="type" val="'text'"/>
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
 </SceneScript>
