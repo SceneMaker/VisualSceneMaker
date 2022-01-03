@@ -70,6 +70,7 @@ public class WebStudyMasterExecutor extends ActivityExecutor {
      * If null, no pending request is active.
      */
     private String mLastRequestMessage ;
+    private String mLastInformMessage ;
 
     /**
      * Default constructor, pass values to superclass.
@@ -142,6 +143,10 @@ public class WebStudyMasterExecutor extends ActivityExecutor {
         if(mLastRequestMessage != null) {
             ws.send(mLastRequestMessage) ;
         }
+        // If an inform is pending, send it to the new client
+        else if(mLastInformMessage != null) {
+            ws.send(mLastInformMessage) ;
+        }
 
     }
 
@@ -193,6 +198,19 @@ public class WebStudyMasterExecutor extends ActivityExecutor {
                 } catch (IllegalArgumentException e) {
                     mLogger.failure("Malformed REQUEST");
                 }
+            } else if (action_name.equals("INFORM")) {
+                mLastInformMessage = null ; // In case a previous inform was still active.
+                mLogger.warning("Yo" + activity + " Yo" + features);
+                mLogger.failure("#############");
+                try {
+                    mLastInformMessage = encodeInform(activity, features);
+                    mLogger.failure("----------------" + mLastInformMessage);
+                    synchronized (this) {
+                        mWebsockets.forEach(ws -> ws.send(mLastInformMessage));
+                    }
+                } catch (IllegalArgumentException e) {
+                    mLogger.failure("Malformed REQUEST");
+                }
             } else {
                 mLogger.warning("Unknown action '" + action_name + "'");
             }
@@ -234,6 +252,31 @@ public class WebStudyMasterExecutor extends ActivityExecutor {
 
         } else {
             throw new IllegalArgumentException("REQUEST message malformed") ;
+        }
+    }
+
+    private String encodeInform(AbstractActivity activity, LinkedList<ActionFeature> features) throws IllegalArgumentException {
+        // var mMessage = activity.getName();
+        var varRequest = getActionFeatureValue("var", features);
+        var valueRequest = getActionFeatureValue("value", features);
+        var typeRequest = getActionFeatureValue("type", features);
+
+        long timestamp = System.currentTimeMillis();
+
+        if ((!varRequest.isEmpty()) && (!typeRequest.isEmpty()) && (!valueRequest.isEmpty())) {
+            return sMSG_HEADER
+                    + "INFORM"
+                    + sMSG_SEPARATOR
+                    + timestamp
+                    + sMSG_SEPARATOR
+                    + varRequest.replace("'", "")
+                    + sMSG_SEPARATOR
+                    + valueRequest.replace("'", "")
+                    + sMSG_SEPARATOR
+                    + typeRequest.replace("'", "") ;
+
+        } else {
+            throw new IllegalArgumentException("INFORM message malformed") ;
         }
     }
 
