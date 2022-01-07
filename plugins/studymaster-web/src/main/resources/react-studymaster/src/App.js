@@ -1,15 +1,21 @@
 import React, {useEffect, useState} from 'react';
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import Button from 'react-bootstrap/Button';
-import {Col, Container, Row} from "react-bootstrap";
+import {Container} from "react-bootstrap";
+import InfoLogUnit from "./components/infoLogUnit";
+import InputSheetUnit from "./components/inputSheetUnit";
+
+
+//TODO rename variables with proper meanings and in react style
+//TODO set up scrollable information log
+//TODO cleanup css with modern design
 
 function App() {
     const [connectionStatusText, setConnectionStatusText] = useState("");
     const [webSocket, setWebSocket] = useState(new WebSocket('ws://' + document.location.host + '/ws'));
     const [informContents, setInformContents] = useState();
     const [formContents, setFormContents] = useState();
-    const inputValue = new Map();
+    const [inputValue, setInputValue] = useState(new Map());
     useEffect(() => {
         let ws = new WebSocket('ws://' + document.location.host + '/ws');
 
@@ -145,150 +151,13 @@ function App() {
         return allFieldsSet
     }
 
-
-    function generateInputFieldWithType(i) {
-        let variable = formContents.variable[i];
-        if (formContents.type[i] === "text") {
-            return (
-                <Row style={{
-                    marginTop: "20px",
-                    marginBottom: "20px"
-                }}>
-                    <Col xs={2}>
-                        <label> {formContents.variable[i]} </label>
-                    </Col>
-                    <Col>
-                        <input type="text" name={variable} placeholder={formContents.options[i]} id={variable}
-                               onChange={e => inputValue.set(variable, e.target.value)}/>
-                    </Col>
-                </Row>
-            )
-        } else if (formContents.type[i] === "number") {
-            return (
-                <Row style={{
-                    marginTop: "20px",
-                    marginBottom: "20px"
-                }}>
-                    <Col xs={2}>
-                        <label> {formContents.variable[i]} </label>
-                    </Col>
-                    <Col>
-                        <input type="number" min={1} max={300} style={{"width": "150px"}} name={variable} placeholder={formContents.options[i]} id={variable}
-                               onChange={e => inputValue.set(variable, e.target.value)}/>
-                    </Col>
-                </Row>
-            )
-        } else if (formContents.type[i] === "radio") {
-            let values = formContents.options[i].split(',');
-            return (
-                <Row style={{
-                    marginTop: "20px",
-                    marginBottom: "20px"
-                }}>
-                    <Col xs={2}>
-                        <label> {formContents.variable[i]} </label>
-                    </Col>
-                    <Col>
-                        <Row>
-                            {values.map((option) =>
-                                <Col xs={1}>
-                                    <input type="radio" id={option} name={variable} value={option}/>
-                                    <label style={{"marginLeft": "10px"}}> {option} </label>
-                                </Col>
-                            )}
-                        </Row>
-                    </Col>
-                </Row>
-            )
-        } else if (formContents.type[i] === "checkbox") {
-            return (
-                <Row style={{
-                    marginTop: "20px",
-                    marginBottom: "20px"
-                }}>
-                    <Col xs={2}>
-                        <label> {formContents.variable[i]} </label>
-                    </Col>
-                    <Col>
-                        <input type="checkbox" id={variable} name={variable} value={formContents.options[i]}/>
-                        <label style={{"marginLeft": "10px"}}> {formContents.options[i]} </label>
-                    </Col>
-                </Row>
-            )
-        }
-    }
-
-
-    function generateFields() {
-        let returnValue = [];
-
-        let i;
-        for (i = 0; i < formContents.variable.length; i++) {
-            let inputBoxes = generateInputFieldWithType(i);
-            returnValue.push(inputBoxes);
-        }
-        return (
-            <div>
-                {returnValue}
-            </div>
-        )
-    }
-
-
     return (
         <div className="App">
             <header className="App-header">
                 <Container>
-                    <Row style={{
-                        minHeight: "400 px",
-                    }}>
-                        <div className="" style={{
-                            minHeight: "400 px",
-                            backgroundColor: "black"
-                        }}>
-                            <div className="h-100 d-inline-block">
-                                {(informContents && (informContents.action === "INFORM")) &&
-                                <h1 style={{color: "white"}}>{informContents.contents}</h1>}
-                            </div>
-                        </div>
-                    </Row>
-                    <Row>
-                        <form style={{
-                            height: "200 px",
-                            backgroundColor: "silver"
-                        }}>
-                            <fieldset>
-                                {(formContents && (formContents.action === "REQUEST")) && generateFields()}
-                                {
-                                    (formContents && (formContents.action === "SUCCESSFULSEND")) &&
-                                    <div>
-                                        <h2 style={{color: "green"}}>Successfully posted!</h2>
-                                    </div>
-                                }
-                            </fieldset>
-                            {
-                                (formContents && (formContents.action === "REQUEST")) &&
-                                <Row style={{
-                                    margin: "10px"
-                                }}>
-                                    <Row xs={2}>
-                                        {/*<Col style={} variant="primary">*/}
-                                            <Button as={Col} variant="primary" onClick={sendSubmit}> Submit</Button>
-                                        {/*</Col>*/}
-                                        {/*<Col style={}>*/}
-                                            <Button as={Col} variant="secondary" onClick={sendCancel}> Cancel</Button>
-                                        {/*</Col>*/}
-                                    </Row>
-                                </Row>
-                            }
-                            {
-                                !(formContents && (formContents.action === "REQUEST")) &&
-                                <div>
-                                    <p style={{color: "white"}}>No active requests.</p>
-                                </div>
-                            }
-                        </form>
-                    </Row>
+                    <InfoLogUnit informContents={informContents}/>
+                    <InputSheetUnit formContents={formContents} inputValue={inputValue} sendSubmit={sendSubmit}
+                                    sendCancel={sendCancel}/>
                 </Container>
             </header>
         </div>
