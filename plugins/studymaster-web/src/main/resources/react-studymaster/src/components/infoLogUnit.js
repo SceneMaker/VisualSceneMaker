@@ -11,8 +11,8 @@ function InfoLogUnit(props) {
             backgroundColor: "black"
         }}>
             <div className="h-100 d-inline-block">
-                {(props.informContents && (props.informContents.action === "INFORM")) &&
-                <h1 style={{color: "white"}}>{props.informContents.contents}</h1>}
+                {(props.infoLogContents && (props.infoLogContents.action === "INFORM")) &&
+                <h1 style={{color: "white"}}>{props.infoLogContents.message}</h1>}
             </div>
         </div>
     </Row>
