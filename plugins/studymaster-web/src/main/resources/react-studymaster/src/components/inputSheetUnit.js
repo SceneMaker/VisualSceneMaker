@@ -12,18 +12,19 @@ function InputSheetUnit(props) {
                 backgroundColor: "silver"
             }}>
                 <fieldset>
-                    {(props.formContents && (props.formContents.action === "REQUEST"))}
-                    <GenerateFields inputValue={props.inputValue} formContents={props.formContents}/>
+                    {(props.inputSheetFieldDetails && (props.inputSheetFieldDetails.action === "REQUEST"))}
+                    <GenerateFields updateUserSubmittedInfo={props.updateUserSubmittedInfo}
+                                    inputSheetFieldDetails={props.inputSheetFieldDetails}/>
 
                     {
-                        (props.formContents && (props.formContents.action === "SUCCESSFULSEND")) &&
+                        (props.inputSheetFieldDetails && (props.inputSheetFieldDetails.action === "SUCCESSFULSEND")) &&
                         <div>
                             <h2 style={{color: "green"}}>Successfully posted!</h2>
                         </div>
                     }
                 </fieldset>
                 {
-                    (props.formContents && (props.formContents.action === "REQUEST")) &&
+                    (props.inputSheetFieldDetails && (props.inputSheetFieldDetails.action === "REQUEST")) &&
                     <Row style={{
                         margin: "10px"
                     }}>
@@ -34,7 +35,7 @@ function InputSheetUnit(props) {
                     </Row>
                 }
                 {
-                    !(props.formContents && (props.formContents.action === "REQUEST")) &&
+                    !(props.inputSheetFieldDetails && (props.inputSheetFieldDetails.action === "REQUEST")) &&
                     <div>
                         <p style={{color: "white"}}>No active requests.</p>
                     </div>

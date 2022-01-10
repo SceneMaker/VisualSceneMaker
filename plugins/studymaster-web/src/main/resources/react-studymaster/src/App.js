@@ -6,32 +6,35 @@ import InfoLogUnit from "./components/infoLogUnit";
 import InputSheetUnit from "./components/inputSheetUnit";
 
 
-//TODO rename variables with proper meanings and in react style
 //TODO set up scrollable information log
 //TODO cleanup css with modern design
 
 function App() {
-    const [connectionStatusText, setConnectionStatusText] = useState("");
+    const [vsmConnectionStatus, setVsmConnectionStatus] = useState("");
     const [webSocket, setWebSocket] = useState(new WebSocket('ws://' + document.location.host + '/ws'));
-    const [informContents, setInformContents] = useState();
-    const [formContents, setFormContents] = useState();
-    const [inputValue, setInputValue] = useState(new Map());
+    const [infoLogContents, setInfoLogContents] = useState();
+    const [inputSheetFieldDetails, setInputSheetFieldDetails] = useState();
+    const [userSubmittedInfo, setUserSubmittedInfo] = useState(new Map());
+    const updateUserSubmittedInfo = (k,v) => {
+        setUserSubmittedInfo(new Map(userSubmittedInfo.set(k,v)));
+    }
+
     useEffect(() => {
         let ws = new WebSocket('ws://' + document.location.host + '/ws');
 
-        setConnectionStatusText('Connecting...');
+        setVsmConnectionStatus('Connecting...');
         ws.onopen = function () {
-            setConnectionStatusText('Connected!');
+            setVsmConnectionStatus('Connected!');
         };
         ws.onclose = function () {
-            setConnectionStatusText('Lost connection');
+            setVsmConnectionStatus('Lost connection');
         };
         ws.onmessage = function (msg) {
             console.log(msg.data);
             const parts = msg.data.split('#');
             const command = parts[1];
             if (command === "REQUEST") {
-                setFormContents({
+                setInputSheetFieldDetails({
                     action: command,
                     variable: parts[3].split(';'),
                     options: parts[4].split(';'),
@@ -40,14 +43,14 @@ function App() {
                 })
             }
             if (command === "INFORM") {
-                setInformContents({
+                setInfoLogContents({
                     action: command,
                     variable: parts[3],
-                    contents: parts[4],
+                    message: parts[4],
                     type: parts[5]
                 })
             }
-            setConnectionStatusText(msg.data);
+            setVsmConnectionStatus(msg.data);
         };
         setWebSocket(ws);
         document.title = "VSM StudyMaster";
@@ -59,38 +62,38 @@ function App() {
     }, []);
 
 
-    function sendSubmit(e) {
-        let allFieldSet = extractAndSendUserInput(e);
+    function sendSubmitToVsm(e) {
+        let areAllFieldsSet =extractVerifyAndSendUserInput(e);
 
-        if (allFieldSet) {
+        if (areAllFieldsSet) {
             webSocket.send(`VSMMessage#VAR#request_result#SUBMIT`);
-            setFormContents({
+            setInputSheetFieldDetails({
                 action: "SUCCESSFULSEND",
-                timestamp: formContents.timestamp,
+                timestamp: inputSheetFieldDetails.timestamp,
             })
         } else {
             window.location.reload();
         }
     }
 
-    function sendCancel() {
+    function sendCancelToVsm() {
         webSocket.send(`VSMMessage#VAR#request_result#CANCEL`);
 
         // Resetting form to empty
-        setFormContents(undefined);
+        setInputSheetFieldDetails(undefined);
     }
 
     // If submit or cancel button is being pushed:
-    // Send all variables with the selected/ written value from user input.
-    function extractAndSendUserInput(e) {
+    // Send all variables with the selected or submitted value from user input.
+    function extractVerifyAndSendUserInput(e) {
         e.preventDefault();
-        let allFieldsSet = true;
+        let areAllFieldsSet = true;
         let i;
-        for (i = 0; i < formContents.variable.length; i++) {
-            let variable = formContents.variable[i];
-            if (formContents.type[i] === "radio") {
+        for (i = 0; i < inputSheetFieldDetails.variable.length; i++) {
+            let variable = inputSheetFieldDetails.variable[i];
+            if (inputSheetFieldDetails.type[i] === "radio") {
                 let j;
-                let values = formContents.options[i].split(',');
+                let values = inputSheetFieldDetails.options[i].split(',');
                 let radio_checked = false;
                 for (j = 0; j < values.length; j++) {
                     let value = values[j];
@@ -100,29 +103,30 @@ function App() {
                     }
                 }
                 if (!radio_checked) {
-                    alert("Please ensure to fill in radio input for " + formContents.variable[i]);
-                    allFieldsSet = false;
+                    //TODO Replace alert with modern warnings under the component
+                    alert("Please ensure to fill in radio input for " + inputSheetFieldDetails.variable[i]);
+                    areAllFieldsSet = false;
                 }
-            } else if (formContents.type[i] === "text") {
-                if (!inputValue.has(variable)) {
-                    alert("Please ensure to fill in text input for " + formContents.variable[i]);
-                    allFieldsSet = false;
+            } else if (inputSheetFieldDetails.type[i] === "text") {
+                if (!userSubmittedInfo.has(variable)) {
+                    alert("Please ensure to fill in text input for " + inputSheetFieldDetails.variable[i]);
+                    areAllFieldsSet = false;
                 }
-            } else if (formContents.type[i] === "number") {
-                if (!inputValue.has(variable)) {
-                    alert("Please ensure to fill in number input for " + formContents.variable[i]);
-                    allFieldsSet = false;
+            } else if (inputSheetFieldDetails.type[i] === "number") {
+                if (!userSubmittedInfo.has(variable)) {
+                    alert("Please ensure to fill in number input for " + inputSheetFieldDetails.variable[i]);
+                    areAllFieldsSet = false;
                 }
             }
         }
 
-        if (allFieldsSet) {
-            for (i = 0; i < formContents.variable.length; i++) {
-                let variable = formContents.variable[i];
-                if (formContents.type[i] === "radio") {
+        if (areAllFieldsSet) {
+            for (i = 0; i < inputSheetFieldDetails.variable.length; i++) {
+                let variable = inputSheetFieldDetails.variable[i];
+                if (inputSheetFieldDetails.type[i] === "radio") {
 
                     let j;
-                    let values = formContents.options[i].split(',');
+                    let values = inputSheetFieldDetails.options[i].split(',');
                     for (j = 0; j < values.length; j++) {
                         let value = values[j];
                         let radioButtonValue = document.getElementById(value);
@@ -130,15 +134,15 @@ function App() {
                             webSocket.send(`VSMMessage#VAR#${variable}#${value}`);
                         }
                     }
-                } else if (formContents.type[i] === "text") {
-                    if (inputValue.has(variable)) {
-                        webSocket.send(`VSMMessage#VAR#${variable}#${inputValue.get(variable)}`);
+                } else if (inputSheetFieldDetails.type[i] === "text") {
+                    if (userSubmittedInfo.has(variable)) {
+                        webSocket.send(`VSMMessage#VAR#${variable}#${userSubmittedInfo.get(variable)}`);
                     }
-                } else if (formContents.type[i] === "number") {
-                    if (inputValue.has(variable)) {
-                        webSocket.send(`VSMMessage#VAR#${variable}#${inputValue.get(variable)}`);
+                } else if (inputSheetFieldDetails.type[i] === "number") {
+                    if (userSubmittedInfo.has(variable)) {
+                        webSocket.send(`VSMMessage#VAR#${variable}#${userSubmittedInfo.get(variable)}`);
                     }
-                } else if (formContents.type[i] === "checkbox") {
+                } else if (inputSheetFieldDetails.type[i] === "checkbox") {
                     if (document.getElementById(variable).checked) {
                         webSocket.send(`VSMMessage#VAR#${variable}#true`);
                     } else {
@@ -148,16 +152,17 @@ function App() {
             }
         }
 
-        return allFieldsSet
+        return areAllFieldsSet
     }
 
     return (
         <div className="App">
             <header className="App-header">
                 <Container>
-                    <InfoLogUnit informContents={informContents}/>
-                    <InputSheetUnit formContents={formContents} inputValue={inputValue} sendSubmit={sendSubmit}
-                                    sendCancel={sendCancel}/>
+                    <InfoLogUnit infoLogContents={infoLogContents}/>
+                    <InputSheetUnit inputSheetFieldDetails={inputSheetFieldDetails}
+                                    updateUserSubmittedInfo={updateUserSubmittedInfo}
+                                    sendSubmit={sendSubmitToVsm} sendCancel={sendCancelToVsm}/>
                 </Container>
             </header>
         </div>
