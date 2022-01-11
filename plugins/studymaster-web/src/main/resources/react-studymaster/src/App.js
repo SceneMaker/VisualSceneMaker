@@ -6,6 +6,7 @@ import InfoLogUnit from "./components/infoLogUnit";
 import InputSheetUnit from "./components/inputSheetUnit";
 
 
+//TODO set up user instruction in inputSheetUnit
 //TODO set up scrollable information log
 //TODO cleanup css with modern design
 
@@ -15,8 +16,8 @@ function App() {
     const [infoLogContents, setInfoLogContents] = useState();
     const [inputSheetFieldDetails, setInputSheetFieldDetails] = useState();
     const [userSubmittedInfo, setUserSubmittedInfo] = useState(new Map());
-    const updateUserSubmittedInfo = (k,v) => {
-        setUserSubmittedInfo(new Map(userSubmittedInfo.set(k,v)));
+    const updateUserSubmittedInfo = (k, v) => {
+        setUserSubmittedInfo(new Map(userSubmittedInfo.set(k, v)));
     }
 
     useEffect(() => {
@@ -50,7 +51,7 @@ function App() {
                     type: parts[5]
                 })
             }
-            setVsmConnectionStatus(msg.data);
+            setVsmConnectionStatus("Connected");
         };
         setWebSocket(ws);
         document.title = "VSM StudyMaster";
@@ -63,7 +64,7 @@ function App() {
 
 
     function sendSubmitToVsm(e) {
-        let areAllFieldsSet =extractVerifyAndSendUserInput(e);
+        let areAllFieldsSet = extractVerifyAndSendUserInput(e);
 
         if (areAllFieldsSet) {
             webSocket.send(`VSMMessage#VAR#request_result#SUBMIT`);
@@ -158,12 +159,26 @@ function App() {
     return (
         <div className="App">
             <header className="App-header">
-                <Container>
-                    <InfoLogUnit infoLogContents={infoLogContents}/>
-                    <InputSheetUnit inputSheetFieldDetails={inputSheetFieldDetails}
-                                    updateUserSubmittedInfo={updateUserSubmittedInfo}
-                                    sendSubmit={sendSubmitToVsm} sendCancel={sendCancelToVsm}/>
-                </Container>
+                <div className="wrapper-collapsed">
+                    <div className="header box">
+                        <h1>Studymaster</h1>
+                    </div>
+
+                    <div className="sidebar box">
+                        <InfoLogUnit infoLogContents={infoLogContents}/>
+                    </div>
+
+                    <div className="content box">
+                        <InputSheetUnit inputSheetFieldDetails={inputSheetFieldDetails}
+                                        updateUserSubmittedInfo={updateUserSubmittedInfo}
+                                        sendSubmit={sendSubmitToVsm} sendCancel={sendCancelToVsm}/>
+                    </div>
+
+                    <div className="footer box">
+                        <h3>Connection status = {vsmConnectionStatus}</h3>
+                    </div>
+
+                </div>
             </header>
         </div>
     );
