@@ -1,74 +1,127 @@
-import {Col, Row} from "react-bootstrap";
-import React from "react";
+import {Row} from "react-bootstrap";
+import React, {useEffect} from "react";
+import {FormHelperText, TextField} from "@mui/material";
+import Radio from '@mui/material/Radio';
+import RadioGroup from '@mui/material/RadioGroup';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import FormControl from '@mui/material/FormControl';
+import {Checkbox} from "@material-ui/core";
 
-function GenerateInputFieldWithType(updateUserSubmittedInfo, formContents, currIdx) {
+function GenerateInputFieldWithType(props, updateUserSubmittedInfo, formContents, currIdx, error) {
+
+
     let variable = formContents.variable[currIdx];
+
+
+    useEffect(() => {
+        if (formContents.type[currIdx] === "checkbox") {
+            updateUserSubmittedInfo(variable, false);
+        }
+    }, [])
+
     if (formContents.type[currIdx] === "text") {
         return (
             <Row style={{
-                marginTop: "20px",
-                marginBottom: "20px"
+                marginTop: "30px",
+                marginBottom: "30px"
             }}>
-                <Col xs={2}>
-                    <label> {formContents.variable[currIdx]} </label>
-                </Col>
-                <Col>
-                    <input type="text" name={variable} placeholder={formContents.options[currIdx]} id={variable}
-                           onChange={e => updateUserSubmittedInfo(variable, e.target.value)}/>
-                </Col>
+                <label> {formContents.variable[currIdx]} </label>
+                <TextField variant="standard" name={variable}
+                           label={formContents.options[currIdx]}
+                           id={variable}
+                           onChange={e => {
+                               updateUserSubmittedInfo(variable, e.target.value);
+                           }}
+                           {...(error[variable] && {
+                               error: true,
+                               helperText: error[variable]
+                           })}
+                />
             </Row>
         )
     } else if (formContents.type[currIdx] === "number") {
         return (
             <Row style={{
-                marginTop: "20px",
-                marginBottom: "20px"
+                marginTop: "30px",
+                marginBottom: "30px"
             }}>
-                <Col xs={2}>
-                    <label> {formContents.variable[currIdx]} </label>
-                </Col>
-                <Col>
-                    <input type="number" min={1} max={300} style={{"width": "150px"}} name={variable}
-                           placeholder={formContents.options[currIdx]} id={variable}
-                           onChange={e => updateUserSubmittedInfo(variable, e.target.value)}/>
-                </Col>
+                <label> {formContents.variable[currIdx]} </label>
+                <TextField
+                    type="number" style={{"width": "150px"}} name={variable}
+                    InputProps={{inputProps: {min: 10, max: 300}}}
+                    label={formContents.options[currIdx]}
+                    id={variable}
+                    onChange={e => updateUserSubmittedInfo(variable, e.target.value)}
+                    {...(error[variable] && {
+                        error: true,
+                        helperText: error[variable]
+                    })}
+                />
             </Row>
         )
     } else if (formContents.type[currIdx] === "radio") {
         let values = formContents.options[currIdx].split(',');
         return (
             <Row style={{
-                marginTop: "20px",
-                marginBottom: "20px"
+                marginTop: "30px",
+                marginBottom: "30px"
             }}>
-                <Col xs={2}>
-                    <label> {formContents.variable[currIdx]} </label>
-                </Col>
-                <Col>
-                    <Row>
-                        {values.map((option) =>
-                            <Col xs={1}>
-                                <input type="radio" id={option} name={variable} value={option}/>
-                                <label style={{"marginLeft": "10px"}}> {option} </label>
-                            </Col>
-                        )}
-                    </Row>
-                </Col>
+                <label> {formContents.variable[currIdx]} </label>
+                <Row>
+                    <FormControl
+                        error={error[variable] !== undefined}
+                    >
+                        <RadioGroup
+                            aria-label={formContents.variable[currIdx]}
+                            name="radio-buttons-group"
+                        >
+                            {values.map((option) =>
+                                <FormControlLabel key={Math.random().toString(36).substr(2, 9)}
+                                                  id={option}
+                                                  value={option} control={
+                                    <Radio sx={{
+                                        'm': 3,
+                                        '&:hover': {
+                                            bgcolor: 'transparent',
+                                        },
+                                    }}
+                                           color="default"/>} label={option}
+                                                  onChange={e => {
+                                                      updateUserSubmittedInfo(variable, e.target.value);
+                                                  }}/>
+                            )}
+                            <FormHelperText>{error[variable]}</FormHelperText>
+                        </RadioGroup>
+                    </FormControl>
+
+                </Row>
             </Row>
         )
     } else if (formContents.type[currIdx] === "checkbox") {
         return (
             <Row style={{
-                marginTop: "20px",
-                marginBottom: "20px"
+                marginTop: "30px",
+                marginBottom: "30px"
             }}>
-                <Col xs={2}>
-                    <label> {formContents.variable[currIdx]} </label>
-                </Col>
-                <Col>
-                    <input type="checkbox" id={variable} name={variable} value={formContents.options[currIdx]}/>
-                    <label style={{"marginLeft": "10px"}}> {formContents.options[currIdx]} </label>
-                </Col>
+                <label> {formContents.variable[currIdx]} </label>
+
+                <FormControl
+                    error={error[variable] !== undefined}
+                >
+                    <FormControlLabel
+                        label={formContents.options[currIdx]}
+                        control={
+                            <Checkbox
+                                defaultValue={false}
+                                color="default"
+                                onChange={e => {
+                                    updateUserSubmittedInfo(variable, e.target.checked);
+                                }}
+                            />
+                        }
+                    />
+                    <FormHelperText>{error[variable]}</FormHelperText>
+                </FormControl>
             </Row>
         )
     }
