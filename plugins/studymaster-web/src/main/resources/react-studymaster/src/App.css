@@ -1,9 +1,11 @@
 .sidebar {
     grid-area: sidebar;
+    min-width: 75px;
 }
 
 .content {
     grid-area: content;
+    color: black;
 }
 
 .header {
@@ -18,18 +20,16 @@
 
 .wrapper {
     display: grid;
-    grid-gap: 20px;
+    grid-gap: 10px;
     grid-template-columns: auto auto auto auto auto;
-    grid-template-rows: 0.1fr 1fr 0.1fr;
+    grid-template-rows: 75px 1fr 75px;
     grid-template-areas:
     "sidebar sidebar header header header"
     "sidebar sidebar content content content"
     "footer  footer  footer footer footer";
-    width: 100vw;
-    height: 100vh;
+    width: 98vw;
+    height: 98vh;
     margin: 10px;
-    /*background-color: #fff;*/
-    /*color: #444;*/
 }
 
 .wrapper-collapsed {
@@ -44,20 +44,55 @@
     width: 98vw;
     height: 98vh;
     margin: 10px;
-    /*background-color: #fff;*/
-    /*color: #444;*/
+}
+
+
+.sidebar-divider {
+    display: grid;
+    grid-template-rows: 75px 1fr 1fr;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+    "button-area"
+    "variable-list"
+    "log";
+    width: auto;
+    height: 100%;
+}
+
+.input-sheet-unit-divider{
+    display: grid;
+    grid-template-rows: 1fr 10fr 1fr;
+    grid-template-areas:
+    "instruction-area"
+    "in-form-fields"
+    "in-form-buttons";
+    width: 100%;
+    height: 100%;
 }
 
 
 .box {
     background-color: #444;
-    color: #fff;
+    color: black;
     border-radius: 5px;
     padding: 10px;
     font-size: 150%;
 }
 
+.logbox {
+    background-color: #444;
+    color: #fff;
+    border-radius: 5px;
+    font-size: 100%;
+    overflow-y: auto;
+}
+
 .header,
-.footer {
+.footer,
+.sidebar {
     background-color: #999;
+}
+
+.content {
+    background-color: #d0cdcd;
 }
