@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<SceneFlow id="" name="default" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Fri, 7 Jan 2022 14:50:29" start="N1;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
+<SceneFlow id="" name="default" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Fri, 14 Jan 2022 12:59:59" start="N1;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
   <Define>
   </Define>
   <Declare>
@@ -28,7 +28,7 @@
   <Commands>
   </Commands>
   <LocalVariableBadge>
-    <Position xPos="966" yPos="307"/>
+    <Position xPos="1263" yPos="24"/>
   </LocalVariableBadge>
   <GlobalVariableBadge>
     <Position xPos="10" yPos="10"/>
@@ -51,11 +51,11 @@
   </Comment>
   <Comment>
     <Graphics>
-      <Boundary xPos="476" yPos="654" width="269" height="104"/>
+      <Boundary xPos="423" yPos="513" width="269" height="104"/>
     </Graphics>
     <Text style="color:blue">
       User clicked Cancel.
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                Reset result action and loop back for another request.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      Reset result action and loop back for another request.
     </Text>
   </Comment>
   <Comment>
@@ -64,12 +64,12 @@
     </Graphics>
     <Text style="color:blue">
       Start.
-                                                                                                                        Open http://localhost:8080 to see the GUI
+                                                                                                                              Open http://localhost:8080 to see the GUI
     </Text>
   </Comment>
   <Comment>
     <Graphics>
-      <Boundary xPos="1089" yPos="173" width="175" height="111"/>
+      <Boundary xPos="1095" yPos="175" width="175" height="111"/>
     </Graphics>
     <Text style="color:blue">
       Here, we wait for the user to fill the form and submit (or cancel).
@@ -129,13 +129,13 @@
     <FEdge target="N1" start="">
       <Graphics>
         <Connection>
-          <ControlPoint xPos="751" yPos="446" ctrlXPos="568" ctrlYPos="341"/>
+          <ControlPoint xPos="511" yPos="446" ctrlXPos="328" ctrlYPos="341"/>
           <ControlPoint xPos="181" yPos="246" ctrlXPos="363" ctrlYPos="350"/>
         </Connection>
       </Graphics>
     </FEdge>
     <Graphics>
-      <Position xPos="746" yPos="426"/>
+      <Position xPos="506" yPos="426"/>
     </Graphics>
   </Node>
   <Node id="N11" name="Restore" history="false">
@@ -207,7 +207,7 @@
       <Graphics>
         <Connection>
           <ControlPoint xPos="991" yPos="246" ctrlXPos="839" ctrlYPos="332"/>
-          <ControlPoint xPos="821" yPos="446" ctrlXPos="972" ctrlYPos="359"/>
+          <ControlPoint xPos="581" yPos="446" ctrlXPos="732" ctrlYPos="359"/>
         </Connection>
       </Graphics>
       <Eq>
@@ -294,7 +294,7 @@
       </PlayScene>
     </Commands>
     <Graphics>
-      <Position xPos="426" yPos="426"/>
+      <Position xPos="1306" yPos="426"/>
     </Graphics>
   </Node>
   <SuperNode id="S2" name="Wait user" comment="" hideLocalVar="false" hideGlobalVar="false" start="N8;">
