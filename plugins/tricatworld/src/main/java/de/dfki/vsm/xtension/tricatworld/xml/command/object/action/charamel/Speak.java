@@ -7,16 +7,17 @@ import de.dfki.vsm.util.xml.XMLParseable;
 import de.dfki.vsm.util.xml.XMLWriteError;
 import de.dfki.vsm.util.xml.XMLWriteable;
 import de.dfki.vsm.xtension.tricatworld.xml.command.object.action.TriCatWorldActObject;
-import java.util.LinkedList;
 import org.w3c.dom.Element;
+
+import java.util.LinkedList;
 
 /**
  * @author Patrick Gebhard
  */
 public class Speak extends TriCatWorldActObject implements XMLParseable, XMLWriteable {
 
-    private LinkedList mTextBlocks;
-    private String mPunctuation;
+    private final LinkedList mTextBlocks;
+    private final String mPunctuation;
     private String mCharameAvatarId = "1";
     // The logger instance
     private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();

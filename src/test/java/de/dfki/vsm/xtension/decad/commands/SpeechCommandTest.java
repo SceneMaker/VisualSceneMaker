@@ -1,5 +1,6 @@
 package de.dfki.vsm.xtension.decad.commands;
 
+import de.dfki.vsm.model.scenescript.SceneTurn;
 import de.dfki.vsm.runtime.activity.SpeechActivity;
 import fakes.FakeHttpClient;
 import org.junit.jupiter.api.Test;
@@ -16,7 +17,10 @@ class SpeechCommandTest {
         LinkedList textToSpeak = new LinkedList();
         textToSpeak.add("hello");
         textToSpeak.add("world");
-        SpeechCommand command = new SpeechCommand(new SpeechActivity("Test actor", textToSpeak, "."));
+        SceneTurn turn = new SceneTurn();
+        turn.setSpeaker("TestSpeaker");
+        turn.setUttrList(textToSpeak);
+        SpeechCommand command = new SpeechCommand(new SpeechActivity("Test actor", textToSpeak, ".", turn, 1, 1, 1, 1));
         FakeHttpClient client = new FakeHttpClient();
         command.setHttpClient(client);
         command.execute();
@@ -26,7 +30,8 @@ class SpeechCommandTest {
     @Test
     void shouldHaveEmptyUrlWhenEmptyText() throws IOException, InterruptedException {
         LinkedList textToSpeak = new LinkedList();
-        SpeechCommand command = new SpeechCommand(new SpeechActivity("Test actor", textToSpeak, "."));
+        SceneTurn turn = new SceneTurn();
+        SpeechCommand command = new SpeechCommand(new SpeechActivity("Test actor", textToSpeak, ".", turn, 1, 1, 1, 1));
         FakeHttpClient client = new FakeHttpClient();
         command.setHttpClient(client);
         command.execute();

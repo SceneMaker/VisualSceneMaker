@@ -1,6 +1,5 @@
 package de.dfki.vsm.xtension.tricatworld;
 
-import de.dfki.vsm.util.WordMapping;
 import de.dfki.vsm.extensionAPI.ExportableProperties;
 import de.dfki.vsm.extensionAPI.ProjectProperty;
 import de.dfki.vsm.extensionAPI.value.ProjectValueProperty;
@@ -16,6 +15,7 @@ import de.dfki.vsm.runtime.interpreter.value.StructValue;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.jpl.JPLEngine;
 import de.dfki.vsm.util.xml.XMLUtilities;
+import de.dfki.vsm.xtension.WordMapping;
 import de.dfki.vsm.xtension.tricatworld.util.property.TricatWorldtProjectProperty;
 import de.dfki.vsm.xtension.tricatworld.xml.command.TriCatWorldCommand;
 import de.dfki.vsm.xtension.tricatworld.xml.command.object.TriCatWorldCmdObject;
@@ -50,12 +50,12 @@ public final class TriCatWorldExecutor extends ActivityExecutor implements Expor
     // The Charamel Action loader 
     private final ActionLoader mActionLoader = ActionLoader.getInstance();
     // The word mapping properties
-    private WordMapping mWordMapping = new WordMapping();
+    private final WordMapping mWordMapping = new WordMapping();
     // The flag if we use the JPL
     private final boolean mUseJPL;
     // The flag for executables
     private final boolean mUseExe;
-    private ExportableProperties exportableProperties = new TricatWorldtProjectProperty();
+    private final ExportableProperties exportableProperties = new TricatWorldtProjectProperty();
 
     // Construct the executor
     public TriCatWorldExecutor(

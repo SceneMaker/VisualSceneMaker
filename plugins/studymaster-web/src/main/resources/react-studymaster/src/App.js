@@ -4,15 +4,17 @@ import './App.css';
 
 function App() {
     const [connectionStatusText, setConnectionStatusText] = useState("");
-    const [webSocket, setWebSocket] = useState(new WebSocket('ws://' + document.location.host + '/ws'));
+    const proto = document.location.protocol === 'https:'? 'wss://':'ws://';
+    const [webSocket, setWebSocket] = useState(new WebSocket(proto + document.location.host + '/ws'));
     const [formContents, setFormContents] = useState();
     const inputValue = new Map();
     useEffect(() => {
-        let ws = new WebSocket('ws://' + document.location.host + '/ws');
+        let ws = new WebSocket(proto + document.location.host + '/ws');
 
         setConnectionStatusText('Connecting...');
         ws.onopen = function () {
             setConnectionStatusText('Connected!');
+            clientAliveMessage();
         };
         ws.onclose = function () {
             setConnectionStatusText('Lost connection');
@@ -41,6 +43,16 @@ function App() {
         document.getElementsByTagName('head')[0].appendChild(link);
     }, []);
 
+    var aliveTimer = null;
+
+    /**
+     * Message from client (this and webpage loading this) that client is alive
+     */
+    function clientAliveMessage() {
+        console.log("Send client alive message to server");
+        webSocket.send(`VSMMessage#STATUS#alive`);
+        aliveTimer = setTimeout(clientAliveMessage, 1000);
+    }
 
     function sendSubmit(e) {
         let allFieldSet = extractAndSendUserInput(e);
@@ -205,6 +217,9 @@ function App() {
     return (
         <div className="App">
             <header className="App-header">
+                <div>
+                    <h3>VSM StudyMaster</h3>
+                </div>
                 <form>
                     <fieldset>
                         {(formContents && (formContents.action === "REQUEST")) && generateFields()}

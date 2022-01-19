@@ -140,7 +140,7 @@ public class RunTimeProject {
         return mProjectConfig;
     }
 
-    public final ActivityExecutor getAgentDevice(final String agent) {
+    public final ActivityExecutor getAgentDevice(final String agent) throws NullPointerException {
         // Get the agent config 
         final AgentConfig config = mProjectConfig.getAgentConfig(agent);
         // Check the config
@@ -153,8 +153,7 @@ public class RunTimeProject {
                 return (ActivityExecutor) plugin;
             }
         }
-        // Return NULL at failure
-        return null;
+        throw new NullPointerException("Agent Device does not exist");
     }
 
     public boolean parse(final String file) {

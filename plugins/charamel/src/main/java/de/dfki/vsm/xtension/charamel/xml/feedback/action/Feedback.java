@@ -1,6 +1,5 @@
 package de.dfki.vsm.xtension.charamel.xml.feedback.action;
 
-import de.dfki.vsm.xtension.charamel.xml.feedback.object.Object;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
 import de.dfki.vsm.util.xml.XMLParseError;
@@ -8,10 +7,12 @@ import de.dfki.vsm.util.xml.XMLParseable;
 import de.dfki.vsm.util.xml.XMLWriteError;
 import de.dfki.vsm.util.xml.XMLWriteable;
 import de.dfki.vsm.xtension.charamel.CharamelExecutor;
+import de.dfki.vsm.xtension.charamel.xml.feedback.object.Object;
+import org.w3c.dom.Element;
+
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.w3c.dom.Element;
 
 /**
  *

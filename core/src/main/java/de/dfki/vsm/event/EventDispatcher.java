@@ -29,7 +29,7 @@ public final class EventDispatcher {
         mTimer = new Timer("EventCasterTimer");
         //
         mListenerList
-                = new CopyOnWriteArrayList();
+                = new CopyOnWriteArrayList<>();
     }
 
     // Get The Singelton Instance
