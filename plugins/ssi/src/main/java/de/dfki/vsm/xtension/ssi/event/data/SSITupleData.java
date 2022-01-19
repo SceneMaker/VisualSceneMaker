@@ -24,6 +24,8 @@ public final class SSITupleData extends SSIEventData implements XMLParseable, XM
     private final HashMap<String, String> mTupleMap
             = new HashMap();
 
+
+
     //
     public String get(final String key) {
         return mTupleMap.get(key);
@@ -36,7 +38,9 @@ public final class SSITupleData extends SSIEventData implements XMLParseable, XM
     // Write the tuple data
     @Override
     public void writeXML(final IOSIndentWriter writer) throws XMLWriteError {
-        // TODO ...
+        writer.print("<tuple"
+
+                + "glue=\"" + mTupleMap + "\">");
     }
 
     // Parse the tuple data
@@ -49,7 +53,7 @@ public final class SSITupleData extends SSIEventData implements XMLParseable, XM
             final Element tuple = ((Element) tupleList.item(j));
             // Get The Attributes
             final String string = tuple.getAttribute("string").toLowerCase();
-            final String value = String.format(Locale.US, "%.6f",
+            final String value = String.format(Locale.US, "%.2f",
                     Float.valueOf(tuple.getAttribute("value").toLowerCase()));
             // Removed by PG, 14.6.2017: System.err.println(string +"->"+value);
             // Append The Tuple
