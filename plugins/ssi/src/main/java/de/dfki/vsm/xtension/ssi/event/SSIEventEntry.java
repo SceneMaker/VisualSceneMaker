@@ -149,6 +149,7 @@ public final class SSIEventEntry extends SSIEventObject implements Comparable<SS
             } else if (mType.equalsIgnoreCase("ntuple")
                     || mType.equalsIgnoreCase("map")) {
                 final SSITupleData data = new SSITupleData();
+
                 data.parseXML(element);
 //                try {
 //                    final byte[] xml = element.getTextContent().getBytes("UTF-8");

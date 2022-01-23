@@ -526,6 +526,7 @@ public class charamelWsExecutor extends ActivityExecutor {
                 mLogger.message("Connected to Charamel VuppetMaster");
 
                 // let sceneflow know that a client has connected
+
                 if (mProject.hasVariable(sceneflowVar)) {
                     mProject.setVariable(sceneflowVar, true);
                 }

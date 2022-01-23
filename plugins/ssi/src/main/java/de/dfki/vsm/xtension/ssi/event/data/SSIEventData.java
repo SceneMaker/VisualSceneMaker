@@ -7,4 +7,7 @@ public abstract class SSIEventData {
 
     @Override
     public abstract String toString();
+
+
+
 }

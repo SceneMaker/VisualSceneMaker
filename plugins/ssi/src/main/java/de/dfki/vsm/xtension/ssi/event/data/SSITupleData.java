@@ -39,9 +39,9 @@ public final class SSITupleData extends SSIEventData implements XMLParseable, XM
     // Write the tuple data
     @Override
     public void writeXML(final IOSIndentWriter writer) throws XMLWriteError {
-        writer.print("<tuple"
+        writer.print(""
+                     + "" + mTupleMap + " ");
 
-                + "glue=\"" + mTupleMap + "\">");
     }
 
     // Parse the tuple data
@@ -58,7 +58,8 @@ public final class SSITupleData extends SSIEventData implements XMLParseable, XM
                     Float.valueOf(tuple.getAttribute("value").toLowerCase()));
             // Removed by PG, 14.6.2017: System.err.println(string +"->"+value);
             // Append The Tuple
-            mTupleMap.put(string, value);
+            mTupleMap.put(string,  value);
+           // mTupleMap.get(string.split(","));
         }
     }
 
