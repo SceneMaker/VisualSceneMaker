@@ -19,6 +19,7 @@ import de.dfki.vsm.util.xml.XMLUtilities;
 
 import java.io.*;
 import java.lang.reflect.Constructor;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -136,6 +137,11 @@ public class RunTimeProject {
     // Get the project configuration (added PG 15.4.2016)
     public final ProjectConfig getProjectConfig() {
         return mProjectConfig;
+    }
+
+    public final ArrayList getVarDefInSceneFlow() {
+        return mSceneFlow.getCopyOfVarDefList();
+
     }
 
     public final ActivityExecutor getAgentDevice(final String agent) {
