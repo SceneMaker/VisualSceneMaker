@@ -6,6 +6,7 @@ import RadioGroup from '@mui/material/RadioGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import FormControl from '@mui/material/FormControl';
 import {Checkbox} from "@material-ui/core";
+import {Form} from "react-bootstrap";
 
 function GenerateInputFieldWithType(props, updateUserSubmittedInfo, formContents, currIdx, error) {
 
@@ -48,7 +49,7 @@ function GenerateInputFieldWithType(props, updateUserSubmittedInfo, formContents
                 <label> {formContents.variable[currIdx]} </label>
                 <TextField
                     type="number" style={{"width": "150px"}} name={variable}
-                    InputProps={{inputProps: {min: 10, max: 300}}}
+                    InputProps={{inputProps: {min: 0, max: 1000}}}
                     label={formContents.options[currIdx]}
                     id={variable}
                     onChange={e => updateUserSubmittedInfo(variable, e.target.value)}
@@ -75,20 +76,35 @@ function GenerateInputFieldWithType(props, updateUserSubmittedInfo, formContents
                             aria-label={formContents.variable[currIdx]}
                             name="radio-buttons-group"
                         >
+
                             {values.map((option) =>
-                                <FormControlLabel key={Math.random().toString(36).substr(2, 9)}
-                                                  id={option}
-                                                  value={option} control={
-                                    <Radio sx={{
-                                        'm': 3,
-                                        '&:hover': {
-                                            bgcolor: 'transparent',
-                                        },
-                                    }}
-                                           color="default"/>} label={option}
-                                                  onChange={e => {
-                                                      updateUserSubmittedInfo(variable, e.target.value);
-                                                  }}/>
+                                    <Form.Check
+                                        key={option}
+                                        name={"group1"}
+                                        type={"radio"}
+                                        label={option}
+                                        value={option}
+                                        onChange={e => {
+                                            updateUserSubmittedInfo(variable, e.target.value);
+                                            console.log(e.target.value);
+                                        }}
+                                    />
+
+
+
+                                // <FormControlLabel key={Math.random().toString(36).substr(2, 9)}
+                                //                   id={option}
+                                //                   value={option} control={
+                                //     <Radio sx={{
+                                //         'm': 3,
+                                //         '&:hover': {
+                                //             bgcolor: 'transparent',
+                                //         },
+                                //     }}
+                                //            color="default"/>} label={option}
+                                //                   onChange={e => {
+                                //                       updateUserSubmittedInfo(variable, e.target.value);
+                                //                   }}/>
                             )}
                             <FormHelperText>{error[variable]}</FormHelperText>
                         </RadioGroup>

@@ -37,35 +37,38 @@ function InfoLogUnit(props) {
             </div>
 
             <div className="variable-list">
-                <Row>
-                    <div className="logbox" style={{minHeight: '35vh', color: 'white'}}>
+                {/*<Row>*/}
+                    <div className={open ? "logbox" : ""} style={{minHeight: '35vh', color: 'white'}}>
                         <Collapse in={open} dimension="width">
                             <div id="example-collapse-text">
                                 VSM Variable List (Work in Progress)
+                                <hr/>
                                 <div>
-                                    {/*{renderVsmVars}*/}
                                     {
-                                        Object.keys(vsmVars).map((key, index) => (
-                                            <p key={index}> {key} : {vsmVars[key]}</p>
+
+                                        Object.keys(props.vsmVars).map((key, index) => (
+                                            <p key={index}> {key} : {props.vsmVars[key]}</p>
                                         ))
                                     }
                                 </div>
                             </div>
                         </Collapse>
                     </div>
-                </Row>
+                {/*</Row>*/}
             </div>
 
             <div className="log">
-                <Row>
-                    <div className="logbox" style={{minHeight: '35vh', color: 'white'}}>
+                {/*<Row>*/}
+                    <div className={open ? "logbox" : ""} style={{minHeight: '35vh', color: 'white'}}>
                         <Collapse in={open} dimension="width">
                             <div id="example-collapse-text">
                                 Log history (Work in Progress)
+                                <hr/>
+
                             </div>
                         </Collapse>
                     </div>
-                </Row>
+                {/*</Row>*/}
             </div>
 
         </div>
