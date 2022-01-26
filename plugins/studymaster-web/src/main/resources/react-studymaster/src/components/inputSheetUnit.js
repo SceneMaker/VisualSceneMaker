@@ -1,11 +1,23 @@
 import GenerateFields from "./inputAllFields";
 import {Col, Container, Row} from "react-bootstrap";
-import Button from "react-bootstrap/Button";
+import Button from '@mui/material/Button';
 import React, {useState} from "react";
+import {Box, ButtonGroup} from "@material-ui/core";
+import {Grid, Stack} from "@mui/material";
+import DeleteIcon from '@mui/icons-material/Delete';
+import SendIcon from '@mui/icons-material/Send';
+import {createStyles, makeStyles} from '@mui/styles';
 
 function InputSheetUnit(props) {
 
     const [formFillingErrors, setFormFillingErrors] = useState({});
+
+    //styles
+    const styles = {
+        button: {
+            backgroundColor: 'red'
+        }
+    };
 
     function validateForm() {
 
@@ -59,57 +71,79 @@ function InputSheetUnit(props) {
 
     return (
         // <Container className="input-sheet-unit-divider">
-            <div className="input-sheet-unit-divider">
-                <div className="instruction-area">
-                    <div className="">
-                        {(props.infoLogContents && (props.infoLogContents.action === "INFORM")) &&
-                        <h1>{props.infoLogContents.message}</h1>}
-                    </div>
-                </div>
-                <form style={{
-                    marginLeft: "1vw",
-                }}>
-                    <div className="in-form-fields">
-                        <fieldset>
-                            {(props.inputSheetFieldDetails && (props.inputSheetFieldDetails.action === "REQUEST"))}
-                            <GenerateFields userSubmittedInfo={props.userSubmittedInfo}
-                                            updateUserSubmittedInfo={props.updateUserSubmittedInfo}
-                                            inputSheetFieldDetails={props.inputSheetFieldDetails}
-                                            validateForm={validateForm}
-                                            formFillingErrors={formFillingErrors}
-                            />
+        <div className="input-sheet-unit-divider">
+            <form style={{
+                marginLeft: "1vw",
+            }}>
+                <div className="in-form-fields">
+                    <fieldset>
+                        {(props.inputSheetFieldDetails && (props.inputSheetFieldDetails.action === "REQUEST"))}
+                        <GenerateFields userSubmittedInfo={props.userSubmittedInfo}
+                                        updateUserSubmittedInfo={props.updateUserSubmittedInfo}
+                                        inputSheetFieldDetails={props.inputSheetFieldDetails}
+                                        validateForm={validateForm}
+                                        formFillingErrors={formFillingErrors}
+                        />
 
-                            {
-                                (props.inputSheetFieldDetails && (props.inputSheetFieldDetails.action === "SUCCESSFULSEND")) &&
-                                <div>
-                                    <h2 style={{color: "green"}}>Successfully posted!</h2>
-                                </div>
-                            }
-                        </fieldset>
-                    </div>
-                </form>
-                <form>
-                    <div className="in-form-buttons">
                         {
-                            (props.inputSheetFieldDetails && (props.inputSheetFieldDetails.action === "REQUEST")) &&
-                            <Row style={{
-                                margin: "10px"
-                            }}>
-                                <Row xs={2}>
-                                    <Button as={Col} variant="primary" onClick={validateFormAndSubmit}> Submit</Button>
-                                    <Button as={Col} variant="secondary" onClick={props.sendCancel}> Cancel</Button>
-                                </Row>
-                            </Row>
-                        }
-                        {
-                            !(props.inputSheetFieldDetails && (props.inputSheetFieldDetails.action === "REQUEST")) &&
+                            (props.inputSheetFieldDetails && (props.inputSheetFieldDetails.action === "SUCCESSFULSEND")) &&
                             <div>
-                                <p style={{color: "white"}}>No active requests.</p>
+                                <h2 style={{color: "green"}}>Successfully posted!</h2>
                             </div>
                         }
-                    </div>
-                </form>
-            </div>
+                    </fieldset>
+                </div>
+            </form>
+            <form>
+                <div className="in-form-buttons">
+                    {
+                        (props.inputSheetFieldDetails && (props.inputSheetFieldDetails.action === "REQUEST")) &&
+                        // <div>
+                        <Grid container
+                              spacing={0}
+                              direction="column"
+                              alignItems="center"
+                              justifyContent="center"
+                        >
+                            <Grid item xs={2}>
+                                <Stack direction="row" spacing={2} style={{textAlign: 'center'}}>
+                                    {/*<Button className="buttonW" variant="contained" color="success"*/}
+                                    {/*        onClick={validateFormAndSubmit} startIcon={<SendIcon />}> Submit</Button>*/}
+                                    {/*<Button className="buttonW" variant="contained" color="error"*/}
+                                    {/*        onClick={props.sendCancel} startIcon={<DeleteIcon />}> Cancel</Button>*/}
+                                    <Button style={{
+                                        borderRadius: 35,
+                                        backgroundColor: "green",
+                                        padding: "18px 36px",
+                                        fontSize: "18px",
+                                        width:"15vw"
+                                    }} variant="contained"
+                                            onClick={validateFormAndSubmit} startIcon={<SendIcon/>}> Submit</Button>
+                                    <Button style={{
+                                        borderRadius: 35,
+                                        backgroundColor: "red",
+                                        padding: "18px 36px",
+                                        fontSize: "18px",
+                                        width:"15vw"
+                                    }} variant="contained" color="error"
+                                            onClick={props.sendCancel} startIcon={<DeleteIcon/>}> Cancel</Button>
+                                </Stack>
+                            </Grid>
+
+                        </Grid>
+                        // </div>
+
+
+                    }
+                    {
+                        !(props.inputSheetFieldDetails && (props.inputSheetFieldDetails.action === "REQUEST")) &&
+                        <div>
+                            <p style={{color: "white"}}>No active requests.</p>
+                        </div>
+                    }
+                </div>
+            </form>
+        </div>
         // </Container>
     )
 }

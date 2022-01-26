@@ -9,12 +9,12 @@
 }
 
 .header {
-    height: 0.5fr;
+    /*height: 0.5fr;*/
     grid-area: header;
 }
 
-.footer {
-    grid-area: footer;
+.inform {
+    grid-area: inform;
 }
 
 
@@ -22,11 +22,11 @@
     display: grid;
     grid-gap: 10px;
     grid-template-columns: auto auto auto auto auto;
-    grid-template-rows: 75px 1fr 75px;
+    grid-template-rows: 75px 75px 1fr;
     grid-template-areas:
-    "sidebar sidebar header header header"
-    "sidebar sidebar content content content"
-    "footer  footer  footer footer footer";
+    " header header header sidebar sidebar"
+    " inform inform inform sidebar sidebar"
+    " content content content sidebar sidebar";
     width: 98vw;
     height: 98vh;
     margin: 10px;
@@ -35,12 +35,12 @@
 .wrapper-collapsed {
     display: grid;
     grid-gap: 10px;
-    grid-template-columns: 0.01fr 0.01fr auto auto auto;
-    grid-template-rows: 75px 1fr 75px;
+    grid-template-columns: auto auto auto 0.01fr 0.01fr;
+    grid-template-rows: 75px 75px 1fr;
     grid-template-areas:
-    "sidebar sidebar header header header"
-    "sidebar sidebar content content content"
-    "footer  footer  footer footer footer";
+    " header header header header sidebar"
+    " inform inform inform inform inform "
+    " content content content content content ";
     width: 98vw;
     height: 98vh;
     margin: 10px;
@@ -59,11 +59,10 @@
     height: 100%;
 }
 
-.input-sheet-unit-divider{
+.input-sheet-unit-divider {
     display: grid;
-    grid-template-rows: 1fr 10fr 1fr;
+    grid-template-rows: 10fr 1fr;
     grid-template-areas:
-    "instruction-area"
     "in-form-fields"
     "in-form-buttons";
     width: 100%;
@@ -80,19 +79,38 @@
 }
 
 .logbox {
+    /*margin: 10px;*/
     background-color: #444;
     color: #fff;
     border-radius: 5px;
-    font-size: 100%;
+    font-size: 75%;
     overflow-y: auto;
 }
 
 .header,
-.footer,
 .sidebar {
     background-color: #999;
 }
 
-.content {
+.content,
+.inform {
     background-color: #d0cdcd;
+}
+
+.flex-container {
+
+    display: flex;
+    height: 100%;
+
+}
+
+
+.item1 {
+    order: 0;
+    flex-grow: 1;
+}
+
+.buttonW {
+    width: 20vw;
+    height: 5vh;
 }

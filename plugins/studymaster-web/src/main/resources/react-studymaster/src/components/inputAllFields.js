@@ -14,9 +14,20 @@ function GenerateFields(props) {
         }
     }
 
+    const generateKey = (pre) => {
+        return `${ pre }_${ new Date().getTime() }`;
+    }
+
     return (
         <div>
-                {fieldsForUserForm}
+            {fieldsForUserForm.map((field) =>
+                    <div
+                        // key={generateKey(field.name)}
+                    >
+                        {field}
+                    </div>
+                )
+                }
         </div>
     )
 }
