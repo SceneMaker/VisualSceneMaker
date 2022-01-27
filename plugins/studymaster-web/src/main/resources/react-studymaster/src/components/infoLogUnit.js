@@ -1,7 +1,8 @@
 import {Button, Row} from "react-bootstrap";
 import React, {useState} from "react";
 import DeveloperModeIcon from '@mui/icons-material/DeveloperMode';
-import {Card, Collapse} from "@material-ui/core";
+import {Card, Collapse, Tooltip} from "@material-ui/core";
+import LinkIcon from "@mui/icons-material/Link";
 
 function InfoLogUnit(props) {
     const [open, setOpen] = useState(false);
@@ -31,43 +32,54 @@ function InfoLogUnit(props) {
                     }
                     {
                         (!open) &&
-                        < DeveloperModeIcon/>
+                        <Tooltip disableFocusListener title="Developer Tools">
+                            < DeveloperModeIcon/>
+                        </Tooltip>
+
                     }
                 </Button>
             </div>
 
             <div className="variable-list">
                 {/*<Row>*/}
-                    <div className={open ? "logbox" : ""} style={{minHeight: '35vh', color: 'white'}}>
-                        <Collapse in={open} dimension="width">
-                            <div id="example-collapse-text">
-                                VSM Variable List (Work in Progress)
-                                <hr/>
-                                <div>
-                                    {
+                <div className={open ? "logbox" : ""} style={{minHeight: '35vh', color: 'white'}}>
+                    <Collapse in={open} dimension="width">
+                        <div id="example-collapse-text">
+                            VSM Variable List (Work in Progress)
+                            <hr/>
+                            <div style={{overflowY: "scroll"}}>
+                                {
 
-                                        Object.keys(props.vsmVars).map((key, index) => (
-                                            <p key={index}> {key} : {props.vsmVars[key]}</p>
-                                        ))
-                                    }
-                                </div>
+                                    Object.keys(props.vsmVars).map((key, index) => (
+                                        <p key={index}> {key} : {props.vsmVars[key]}</p>
+                                    ))
+                                }
                             </div>
-                        </Collapse>
-                    </div>
+                        </div>
+                    </Collapse>
+                </div>
                 {/*</Row>*/}
             </div>
 
             <div className="log">
                 {/*<Row>*/}
-                    <div className={open ? "logbox" : ""} style={{minHeight: '35vh', color: 'white'}}>
-                        <Collapse in={open} dimension="width">
-                            <div id="example-collapse-text">
-                                Log history (Work in Progress)
-                                <hr/>
+                <div className={open ? "logbox" : ""} style={{minHeight: '35vh', color: 'white'}}>
+                    <Collapse in={open} dimension="width">
+                        <div id="example-collapse-text">
+                            Log history (Work in Progress)
+                            <hr/>
+                            <div style={{overflowY: "scroll"}}>
+                                {
 
+                                    Object.keys(props.infoLogConents).map((key, index) => (
+                                        <p key={index}> {key} : {props.infoLogConents[key]}</p>
+                                    ))
+                                }
                             </div>
-                        </Collapse>
-                    </div>
+
+                        </div>
+                    </Collapse>
+                </div>
                 {/*</Row>*/}
             </div>
 
