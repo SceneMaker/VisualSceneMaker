@@ -114,7 +114,7 @@ public class WebStudyMasterExecutor extends ActivityExecutor implements EventLis
 
     @Override
     public void launch() {
-        mLogger.message("Loading StudyMaster message sender and receiver ...");
+        //mLogger.message("Loading StudyMaster message sender and receiver ...");
 
         EventDispatcher.getInstance().register(this);
 
@@ -161,7 +161,7 @@ public class WebStudyMasterExecutor extends ActivityExecutor implements EventLis
      */
     private synchronized void addWs(WsConnectContext ws) {
         ws.session.setIdleTimeout(Long.MAX_VALUE);
-        mLogger.message("New WebSocket connection.");
+        //mLogger.message("New WebSocket connection.");
         this.mWebsockets.add(ws);
 
         // Update the connection status
@@ -195,7 +195,7 @@ public class WebStudyMasterExecutor extends ActivityExecutor implements EventLis
      * Invoked when a websocket connection is closed (web app is closed, or timeout?).
      */
     private synchronized void removeWs(WsCloseContext ctx) {
-        mLogger.message("Closed WebSocket connection.");
+        //mLogger.message("Closed WebSocket connection.");
         mWebsockets.remove(ctx);
 
         // Set the GUIState variable to false if there are no more GUI connections.
@@ -219,7 +219,7 @@ public class WebStudyMasterExecutor extends ActivityExecutor implements EventLis
             // If text is empty - assume activity has empty text but has marker activities registered
             if (text.isEmpty()) {
                 for (String tm : timemarks) {
-                    mLogger.warning("Directly executing activity at timemark " + tm);
+                    //mLogger.warning("Directly executing activity at timemark " + tm);
                     mProject.getRunTimePlayer().getActivityScheduler().handle(tm);
                 }
             }
@@ -237,7 +237,7 @@ public class WebStudyMasterExecutor extends ActivityExecutor implements EventLis
                         mWebsockets.forEach(ws -> ws.send(mLastRequestMessage));
                     }
                 } catch (IllegalArgumentException e) {
-                    mLogger.failure("Malformed REQUEST");
+                    //mLogger.failure("Malformed REQUEST");
                 }
             } else if (action_name.equals("INFORM")) {
                 mLastInformMessage = null; // In case a previous inform was still active.
@@ -247,10 +247,10 @@ public class WebStudyMasterExecutor extends ActivityExecutor implements EventLis
                         mWebsockets.forEach(ws -> ws.send(mLastInformMessage));
                     }
                 } catch (IllegalArgumentException e) {
-                    mLogger.failure("Malformed REQUEST");
+                    //mLogger.failure("Malformed REQUEST");
                 }
             } else {
-                mLogger.warning("Unknown action '" + action_name + "'");
+                //mLogger.warning("Unknown action '" + action_name + "'");
             }
         }
     }
@@ -365,7 +365,7 @@ public class WebStudyMasterExecutor extends ActivityExecutor implements EventLis
                     }
 
                     if (mProject.hasVariable(var)) {
-                        mLogger.message("Assigning sceneflow variable " + var + " with value " + value);
+                        //mLogger.message("Assigning sceneflow variable " + var + " with value " + value);
                         mProject.setVariable(var, new StringValue(value));
 
                         try {
@@ -373,68 +373,55 @@ public class WebStudyMasterExecutor extends ActivityExecutor implements EventLis
                             mLastRequestMessage = "VSMMessage#UPDATE#" + var + "#" + value;
 
 //                            mLastRequestMessage = "VSMMessage#UPDATE#name#Carla#" + mProject.getVarDefInSceneFlow().get(0);
-                            synchronized (this) {
-                                if (var.equals(sREQUEST_RESULT_VAR_DEFAULT)) {
-                                    mWebsockets.forEach(websocks -> websocks.send(mLastRequestMessage));
-                                    mLastRequestMessage = "VSMMessage#UPDATE#" + var + "#" + " ";
-                                    mWebsockets.forEach(websocks -> websocks.send(mLastRequestMessage));
-                                } else {
-                                    mWebsockets.forEach(websocks -> websocks.send(mLastRequestMessage));
-                                }
-
-                            }
+//                            synchronized (this) {
+//                                if (var.equals(sREQUEST_RESULT_VAR_DEFAULT)) {
+//                                    mWebsockets.forEach(websocks -> websocks.send(mLastRequestMessage));
+//                                    mLastRequestMessage = "VSMMessage#UPDATE#" + var + "#" + " ";
+//                                    mWebsockets.forEach(websocks -> websocks.send(mLastRequestMessage));
+//                                } else {
+//                                    mWebsockets.forEach(websocks -> websocks.send(mLastRequestMessage));
+//                                }
+//
+//                            }
                         } catch (IllegalArgumentException e) {
-                            mLogger.failure("Malformed REQUEST");
+                            //mLogger.failure("Malformed REQUEST");
                         }
 
                     } else {
-                        mLogger.warning("Can't assign sceneflow variable " + var + " with value " + value + ": global project variable not defined");
+                        //mLogger.warning("Can't assign sceneflow variable " + var + " with value " + value + ": global project variable not defined");
                     }
 
                     // MESSAGE GO: VSMMessage#Go
                 } else if (msg.equals("Go")) {
-                    mLogger.message("Assigning sceneflow variable " + mSceneflowGoVar + " with value " + message);
+                    //mLogger.message("Assigning sceneflow variable " + mSceneflowGoVar + " with value " + message);
                     mProject.setVariable(mSceneflowGoVar, true);
 
                     // MESSAGE UNKNOWN!!!
                 } else {
-                    mLogger.warning("Unsupported message '" + msg + "' received.");
+                    //mLogger.warning("Unsupported message '" + msg + "' received.");
                 }
 
             } else {
-                mLogger.warning("Message malformed: no proper separation with '" + sMSG_SEPARATOR + "'");
+                //mLogger.warning("Message malformed: no proper separation with '" + sMSG_SEPARATOR + "'");
             }
 
         } else {
-            mLogger.warning("Message malformed: no header '" + sMSG_HEADER + "'");
+            //mLogger.warning("Message malformed: no header '" + sMSG_HEADER + "'");
         }
     }
 
     @Override
     public void update(EventObject event) {
         if (event instanceof VariableChangedEvent) {
+            VariableChangedEvent ev = (VariableChangedEvent)event ;
+            ev.getVarValue();
             String info = event.toString();
-//            info = info.split("(?<=VariableChangedEvent\\( )(.*)(?=,)")[0] + " " + info.split("(?<=#c#)(.*)(?=\\))");
-//            mLogger.message(info);
-//            Pattern p = Pattern.compile("(?<=VariableChangedEvent\\( )(.*)(?=,)");
-//            Matcher m = p.matcher(info);
-////                    Pattern.compile("(?<=#c#)(.*)(?=\\))").matcher(info).group(1).toString();
-//            if (m.find()) {
-//                mLogger.message(m.group(1));
+            info = info.split("\\(")[1].split(",")[0] + "#" + info.split("#c#")[1].split("\\)")[0];
+            mLastInformMessage = "VSMMessage#UPDATE#" + info;
+//            synchronized (this) {
+            mWebsockets.forEach(websocks -> websocks.send(mLastInformMessage));
 //            }
-            info = info.split("\\(")[1].split(",")[0] + " " + info.split("#c#")[1].split("\\)")[0];
-            mLogger.message(info);
-//            try {
-//                mLastRequestMessage = "VSMMessage#UPDATE#" + info;
-//
-//                synchronized (this) {
-//
-//                        mWebsockets.forEach(websocks -> websocks.send(mLastRequestMessage));
-//
-//                }
-//            } catch (IllegalArgumentException e) {
-//                mLogger.failure("Malformed REQUEST");
-//            }
+            mLogger.message(mLastInformMessage);
         }
         ;
     }
