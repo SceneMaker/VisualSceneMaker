@@ -10,11 +10,19 @@ import {Tooltip} from "@material-ui/core";
 
 //TODO set up scrollable information log
 
+function genTimeStamp() {
+    let today = new Date();
+    let timestamp = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate() +
+        today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
+    return timestamp;
+}
+
 function App() {
     const [vsmConnectionStatus, setVsmConnectionStatus] = useState(false);
-    // const [vsmConnectionStatus, setVsmConnectionStatus] = useState([]);
     const [webSocket, setWebSocket] = useState(new WebSocket('ws://' + document.location.host + '/ws'));
-    const [infoLogContents, setInfoLogContents] = useState();
+    // const [infoLogContents, setInfoLogContents] = useState();
+    const [infoLogContents, setInfoLogContents] = useState({});
+    const [informContent, setInformContent] = useState("");
     const [inputSheetFieldDetails, setInputSheetFieldDetails] = useState();
     const [collapseDevToolComp, setCollapseDevToolComp] = useState(true);
     const [vsmVarsForDevToolComp, setVsmVarsForDevToolComp] = useState({});
@@ -32,17 +40,22 @@ function App() {
 
     }
 
-    useEffect(() => {
-        let ws = new WebSocket('ws://' + document.location.host + '/ws');
 
-        setVsmConnectionStatus();
+    useEffect(() => {
+        // let ws = new WebSocket('ws://' + document.location.host + '/ws');
+        let ws = webSocket;
+
+        // setVsmConnectionStatus();
         ws.onopen = function () {
             setVsmConnectionStatus(true);
         };
-        ws.onclose = function () {
+        ws.onclose = function (msg) {
+            console.log(msg);
             setVsmConnectionStatus(false);
         };
         ws.onmessage = function (msg) {
+
+            console.log(msg);
             const parts = msg.data.split('#');
             const command = parts[1];
             if (command === "REQUEST") {
@@ -55,12 +68,15 @@ function App() {
                 })
             }
             if (command === "INFORM") {
-                setInfoLogContents({
-                    action: command,
-                    variable: parts[3],
-                    message: parts[4],
-                    type: parts[5]
-                })
+
+                let currTS = genTimeStamp();
+
+                let newInfo = {};
+                newInfo[currTS] = parts[4];
+                setInformContent(parts[4]);
+                // console.log(newInfo)
+                setInfoLogContents(Object.assign(infoLogContents, newInfo));
+                // console.log(infoLogContents);
             }
 
             if (command === "UPDATE") {
@@ -68,7 +84,6 @@ function App() {
                 let val = parts[3];
                 let newVarVal = {}
                 newVarVal[variable] = val;
-                console.log(vsmVarsForDevToolComp, newVarVal);
 
                 setVsmVarsForDevToolComp(Object.assign(vsmVarsForDevToolComp, newVarVal));
             }
@@ -120,7 +135,7 @@ function App() {
                 timestamp: inputSheetFieldDetails.timestamp,
             })
             setUserSubmittedInfo(new Map());
-            console.log("Reset")
+            // console.log("Reset")
         } else {
             window.location.reload();
         }
@@ -158,14 +173,16 @@ function App() {
 
                 <div className="sidebar box">
                     <InfoLogUnit vsmVars={vsmVarsForDevToolComp} collapseDevToolComp={collapseDevToolComp}
-                                 setCollapseDevToolComp={setCollapseDevToolComp}/>
+                                 setCollapseDevToolComp={setCollapseDevToolComp}
+                                 infoLogConents={infoLogContents}
+                    />
                 </div>
 
                 <div className="inform box">
 
                     <div className="">
-                        {(infoLogContents && (infoLogContents.action === "INFORM")) &&
-                        <h2>{infoLogContents.message}</h2>}
+                        {/*<h2>{infoLogContents[Object.keys(infoLogContents)[Object.keys(infoLogContents).length-1]]}</h2>*/}
+                        <h2>{informContent}</h2>
                     </div>
                 </div>
 

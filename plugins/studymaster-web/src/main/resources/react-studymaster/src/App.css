@@ -84,7 +84,7 @@
     color: #fff;
     border-radius: 5px;
     font-size: 75%;
-    overflow-y: auto;
+    overflow-y: scroll;
 }
 
 .header,

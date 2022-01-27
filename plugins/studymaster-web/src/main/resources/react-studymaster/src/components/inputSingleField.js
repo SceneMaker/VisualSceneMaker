@@ -86,7 +86,7 @@ function GenerateInputFieldWithType(props, updateUserSubmittedInfo, formContents
                                         value={option}
                                         onChange={e => {
                                             updateUserSubmittedInfo(variable, e.target.value);
-                                            console.log(e.target.value);
+                                            // console.log(e.target.value);
                                         }}
                                     />
 

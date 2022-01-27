@@ -33,15 +33,15 @@ function InputSheetUnit(props) {
         } else if ([...props.userSubmittedInfo.keys()].length > 0) {
 
             let reqdVars = [];
-            console.log(props.inputSheetFieldDetails.variable.length);
+            // console.log(props.inputSheetFieldDetails.variable.length);
             for (let i = 0; i < props.inputSheetFieldDetails.variable.length; i++) {
-                console.log(props.inputSheetFieldDetails.type[i])
+                // console.log(props.inputSheetFieldDetails.type[i])
                 if (props.inputSheetFieldDetails.type[i] !== "checkbox") {
                     reqdVars.push(props.inputSheetFieldDetails.variable[i])
                 }
             }
 
-            console.log(reqdVars, props.inputSheetFieldDetails);
+            // console.log(reqdVars, props.inputSheetFieldDetails);
             let sortedReqdVars = [...reqdVars].sort();
             // let sortedReqdVars = [...props.inputSheetFieldDetails.variable].sort();
             let sortedFilledVars = [...props.userSubmittedInfo.keys()].sort();
