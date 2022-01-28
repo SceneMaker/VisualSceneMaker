@@ -5,14 +5,11 @@ import InfoLogUnit from "./components/infoLogUnit";
 import InputSheetUnit from "./components/inputSheetUnit";
 import LinkIcon from '@mui/icons-material/Link';
 import LinkOffIcon from '@mui/icons-material/LinkOff';
-import PendingIcon from '@mui/icons-material/Pending';
 import {Tooltip} from "@material-ui/core";
-
-//TODO set up scrollable information log
 
 function genTimeStamp() {
     let today = new Date();
-    let timestamp = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate() +
+    let timestamp = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate() + "_" +
         today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
     return timestamp;
 }
@@ -20,7 +17,6 @@ function genTimeStamp() {
 function App() {
     const [vsmConnectionStatus, setVsmConnectionStatus] = useState(false);
     const [webSocket, setWebSocket] = useState(new WebSocket('ws://' + document.location.host + '/ws'));
-    // const [infoLogContents, setInfoLogContents] = useState();
     const [infoLogContents, setInfoLogContents] = useState({});
     const [informContent, setInformContent] = useState("");
     const [inputSheetFieldDetails, setInputSheetFieldDetails] = useState();
@@ -42,10 +38,8 @@ function App() {
 
 
     useEffect(() => {
-        // let ws = new WebSocket('ws://' + document.location.host + '/ws');
         let ws = webSocket;
 
-        // setVsmConnectionStatus();
         ws.onopen = function () {
             setVsmConnectionStatus(true);
         };
@@ -72,18 +66,16 @@ function App() {
                 let currTS = genTimeStamp();
 
                 let newInfo = {};
-                newInfo[currTS] = parts[4];
+                newInfo[currTS] = [parts[4]];
                 setInformContent(parts[4]);
-                // console.log(newInfo)
                 setInfoLogContents(Object.assign(infoLogContents, newInfo));
-                // console.log(infoLogContents);
             }
 
             if (command === "UPDATE") {
                 let variable = parts[2];
                 let val = parts[3];
                 let newVarVal = {}
-                newVarVal[variable] = val;
+                newVarVal[variable] = [val];
 
                 setVsmVarsForDevToolComp(Object.assign(vsmVarsForDevToolComp, newVarVal));
             }
@@ -98,10 +90,6 @@ function App() {
         link.href = 'http://scenemaker.dfki.de/images/scenemaker/logo.png';
         document.getElementsByTagName('head')[0].appendChild(link);
     }, []);
-
-    function timeout(delay) {
-        return new Promise(res => setTimeout(res, delay));
-    }
 
     function sendSubmitToVsm() {
         let areAllFieldsSet = true;
@@ -135,7 +123,6 @@ function App() {
                 timestamp: inputSheetFieldDetails.timestamp,
             })
             setUserSubmittedInfo(new Map());
-            // console.log("Reset")
         } else {
             window.location.reload();
         }
@@ -172,7 +159,8 @@ function App() {
                 </div>
 
                 <div className="sidebar box">
-                    <InfoLogUnit vsmVars={vsmVarsForDevToolComp} collapseDevToolComp={collapseDevToolComp}
+                    <InfoLogUnit vsmVars={vsmVarsForDevToolComp}
+                                 collapseDevToolComp={collapseDevToolComp}
                                  setCollapseDevToolComp={setCollapseDevToolComp}
                                  infoLogConents={infoLogContents}
                     />
@@ -181,7 +169,6 @@ function App() {
                 <div className="inform box">
 
                     <div className="">
-                        {/*<h2>{infoLogContents[Object.keys(infoLogContents)[Object.keys(infoLogContents).length-1]]}</h2>*/}
                         <h2>{informContent}</h2>
                     </div>
                 </div>
