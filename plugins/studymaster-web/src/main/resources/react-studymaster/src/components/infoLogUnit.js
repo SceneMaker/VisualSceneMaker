@@ -2,16 +2,10 @@ import {Button, Row} from "react-bootstrap";
 import React, {useState} from "react";
 import DeveloperModeIcon from '@mui/icons-material/DeveloperMode';
 import {Card, Collapse, Tooltip} from "@material-ui/core";
-import LinkIcon from "@mui/icons-material/Link";
+import BasicTable from "./utils/basicTable";
 
-function InfoLogUnit(props) {
+const InfoLogUnit = (props) => {
     const [open, setOpen] = useState(false);
-    const [vsmVars, setVsmVars] = useState({
-        name: "Karla",
-        gender: "f",
-    });
-
-    // var renderVsmVars = vsmVars.map((d) => <li key={d.name}>{d.name}</li>);
 
     return (
         <div className="sidebar-divider">
@@ -33,7 +27,7 @@ function InfoLogUnit(props) {
                     {
                         (!open) &&
                         <Tooltip disableFocusListener title="Developer Tools">
-                            < DeveloperModeIcon/>
+                            <DeveloperModeIcon/>
                         </Tooltip>
 
                     }
@@ -41,51 +35,36 @@ function InfoLogUnit(props) {
             </div>
 
             <div className="variable-list">
-                {/*<Row>*/}
                 <div className={open ? "logbox" : ""} style={{minHeight: '35vh', color: 'white'}}>
                     <Collapse in={open} dimension="width">
                         <div id="example-collapse-text">
                             VSM Variable List (Work in Progress)
                             <hr/>
-                            <div style={{overflowY: "scroll"}}>
-                                {
-
-                                    Object.keys(props.vsmVars).map((key, index) => (
-                                        <p key={index}> {key} : {props.vsmVars[key]}</p>
-                                    ))
-                                }
-                            </div>
+                            <BasicTable
+                                colNames={["Variables", "Value"]} colVals={props.vsmVars}/>
                         </div>
                     </Collapse>
                 </div>
-                {/*</Row>*/}
             </div>
 
             <div className="log">
-                {/*<Row>*/}
                 <div className={open ? "logbox" : ""} style={{minHeight: '35vh', color: 'white'}}>
                     <Collapse in={open} dimension="width">
                         <div id="example-collapse-text">
                             Log history (Work in Progress)
                             <hr/>
-                            <div style={{overflowY: "scroll"}}>
-                                {
 
-                                    Object.keys(props.infoLogConents).map((key, index) => (
-                                        <p key={index}> {key} : {props.infoLogConents[key]}</p>
-                                    ))
-                                }
-                            </div>
+                            <BasicTable
+                                colNames={["Timestamp", "InformCmd"]} colVals={props.infoLogConents}/>
 
                         </div>
                     </Collapse>
                 </div>
-                {/*</Row>*/}
             </div>
 
         </div>
 
     )
-}
+};
 
 export default InfoLogUnit;
