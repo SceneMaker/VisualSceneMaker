@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SceneScript lower="0" upper="0">
+  <SceneObject lower="0" upper="56" language="@@" identifier="PlayFile">
+    <SceneTurn lower="18" upper="56" speaker="vlc">
+      <SceneUttr lower="24" upper="56" punct=".">
+        <ActionObject lower="24" upper="28" actor="" name="play">
+          <ActionFeature lower="29" upper="54" key="file" val="'media/dingding.mp3'"/>
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="58" upper="155" language="@@" identifier="PlayUrl">
+    <SceneTurn lower="75" upper="155" speaker="vlc">
+      <SceneUttr lower="81" upper="155" punct=".">
+        <ActionObject lower="81" upper="85" actor="" name="play">
+          <ActionFeature lower="86" upper="153" key="url" val="'https://freesound.org/data/previews/173/173932_3229685-lq.mp3'"/>
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="157" upper="183" language="@@" identifier="Stop">
+    <SceneTurn lower="171" upper="183" speaker="vlc">
+      <SceneUttr lower="177" upper="183" punct=".">
+        <ActionObject lower="177" upper="181" actor="" name="stop">
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+</SceneScript>

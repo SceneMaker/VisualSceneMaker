@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Project name="VLCRemoteControllerExample">
+  <Plugins>
+    <Plugin type="device" name="vlccontroller" class="de.dfki.vsm.xtension.VLCRemoteController.VLCRemoteControllerExecutor" load="true">
+      <Feature key="vlcport" val="9000"/>
+    </Plugin>
+  </Plugins>
+  <Agents>
+    <Agent name="vlc" device="vlccontroller">
+    </Agent>
+  </Agents>
+  <Player>
+  </Player>
+</Project>
