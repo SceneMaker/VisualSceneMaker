@@ -6,7 +6,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 /**
- * @author J.-L. Himbert <s9jehimb@stud.uni-saarland.de>
+ * @author J.-L. Himbert {@literal <s9jehimb@stud.uni-saarland.de>}
  */
 public class UnityConnectionListener extends Thread {
     private final LOGConsoleLogger _logger = LOGConsoleLogger.getInstance();

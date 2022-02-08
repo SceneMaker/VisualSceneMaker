@@ -3,6 +3,9 @@ package de.dfki.vsm.runtime.activity.executor;
 import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.model.scenescript.ActionFeature;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
+import de.dfki.vsm.runtime.activity.ActionActivity;
+import de.dfki.vsm.runtime.activity.PauseActivity;
+import de.dfki.vsm.runtime.activity.SpeechActivity;
 import de.dfki.vsm.runtime.activity.scheduler.ActivityScheduler;
 import de.dfki.vsm.runtime.player.RunTimePlayer;
 import de.dfki.vsm.runtime.plugin.RunTimePlugin;
@@ -35,7 +38,15 @@ public abstract class ActivityExecutor extends RunTimePlugin {
     }
 
     public abstract String marker(final long id);
-
+    public void execute(final SpeechActivity activity) {
+        this.execute((AbstractActivity) activity);
+    }
+    public void execute(final PauseActivity activity) {
+        this.execute((AbstractActivity) activity);
+    }
+    public void execute(final ActionActivity activity) {
+        this.execute((AbstractActivity) activity);
+    }
     public abstract void execute(final AbstractActivity activity);
 
     /** Support method to extract the value of a feature from the features dictionary.
