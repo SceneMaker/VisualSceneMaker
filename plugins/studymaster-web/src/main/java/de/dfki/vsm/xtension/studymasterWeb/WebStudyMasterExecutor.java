@@ -271,9 +271,9 @@ public class WebStudyMasterExecutor extends ActivityExecutor implements EventLis
     @NotNull
     private String encodeRequest(AbstractActivity activity, LinkedList<ActionFeature> features) throws IllegalArgumentException {
         // var mMessage = activity.getName();
-        var varRequest = getActionFeatureValue("var", features);
-        var valueRequest = getActionFeatureValue("value", features);
-        var typeRequest = getActionFeatureValue("type", features);
+        String varRequest = getActionFeatureValue("var", features);
+        String valueRequest = getActionFeatureValue("value", features);
+        String typeRequest = getActionFeatureValue("type", features);
 
         long timestamp = System.currentTimeMillis();
 
@@ -296,9 +296,9 @@ public class WebStudyMasterExecutor extends ActivityExecutor implements EventLis
 
     private String encodeInform(AbstractActivity activity, LinkedList<ActionFeature> features) throws IllegalArgumentException {
         // var mMessage = activity.getName();
-        var varRequest = getActionFeatureValue("var", features);
-        var valueRequest = getActionFeatureValue("value", features);
-        var typeRequest = getActionFeatureValue("type", features);
+        String varRequest = getActionFeatureValue("var", features);
+        String valueRequest = getActionFeatureValue("value", features);
+        String typeRequest = getActionFeatureValue("type", features);
 
         long timestamp = System.currentTimeMillis();
 

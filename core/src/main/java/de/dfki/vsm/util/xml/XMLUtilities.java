@@ -197,7 +197,7 @@ public final class XMLUtilities {
     public final static boolean writeToXMLStream(final Properties properties, final OutputStream stream) {
         try {
             // Write the java properties to the stream
-            properties.storeToXML(stream, "", StandardCharsets.UTF_8);
+            properties.storeToXML(stream, "", "UTF-8");
             // Flush and close the stream and the file
             stream.flush();
             stream.close();
