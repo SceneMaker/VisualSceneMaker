@@ -6,15 +6,10 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
-import {makeStyles} from "@material-ui/core";
 import { styled } from '@mui/material/styles';
 import { tableCellClasses } from '@mui/material/TableCell';
 
-const useStyles = makeStyles({
-    tableCell: {
-        padding: "0px 8px"
-    }
-});
+
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
     [`&.${tableCellClasses.head}`]: {
@@ -42,7 +37,6 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
 const BasicTable = (props) => {
 
 
-    const classes = useStyles();
     return (
         <TableContainer component={Paper}>
             <Table sx={{minWidth: 650}} size="small" aria-label="simple table">
@@ -65,7 +59,8 @@ const BasicTable = (props) => {
                                 <StyledTableCell component="th" scope="row">
                                     {key}
                                 </StyledTableCell>
-                                <div>
+                                {/*{props.colVals}*/}
+                                {/*<div>*/}
                                     {
                                         props.colVals[key].map((vals, idx) => (
                                             <StyledTableCell align="right"
@@ -74,7 +69,7 @@ const BasicTable = (props) => {
                                             </StyledTableCell>
                                         ))
                                     }
-                                </div>
+                                {/*</div>*/}
                             </StyledTableRow>
                         ))
                     }

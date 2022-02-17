@@ -1,7 +1,7 @@
-import {Button, Row} from "react-bootstrap";
+import {Button} from "react-bootstrap";
 import React, {useState} from "react";
 import DeveloperModeIcon from '@mui/icons-material/DeveloperMode';
-import {Card, Collapse, Tooltip} from "@material-ui/core";
+import {Collapse, Tooltip} from "@material-ui/core";
 import BasicTable from "./utils/basicTable";
 
 const InfoLogUnit = (props) => {

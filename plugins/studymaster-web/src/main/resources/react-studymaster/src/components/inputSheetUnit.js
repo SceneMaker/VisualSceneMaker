@@ -1,23 +1,13 @@
 import GenerateFields from "./inputAllFields";
-import {Col, Container, Row} from "react-bootstrap";
 import Button from '@mui/material/Button';
 import React, {useState} from "react";
-import {Box, ButtonGroup} from "@material-ui/core";
 import {Grid, Stack} from "@mui/material";
 import DeleteIcon from '@mui/icons-material/Delete';
 import SendIcon from '@mui/icons-material/Send';
-import {createStyles, makeStyles} from '@mui/styles';
 
 function InputSheetUnit(props) {
 
     const [formFillingErrors, setFormFillingErrors] = useState({});
-
-    //styles
-    const styles = {
-        button: {
-            backgroundColor: 'red'
-        }
-    };
 
     function validateForm() {
 
@@ -30,7 +20,7 @@ function InputSheetUnit(props) {
             );
             setFormFillingErrors(errors);
             return false;
-        } else if ([...props.userSubmittedInfo.keys()].length > 0) {
+        } else if ([...Object.keys(props.userSubmittedInfo)].length > 0) {
 
             let reqdVars = [];
             // console.log(props.inputSheetFieldDetails.variable.length);
@@ -44,7 +34,7 @@ function InputSheetUnit(props) {
             // console.log(reqdVars, props.inputSheetFieldDetails);
             let sortedReqdVars = [...reqdVars].sort();
             // let sortedReqdVars = [...props.inputSheetFieldDetails.variable].sort();
-            let sortedFilledVars = [...props.userSubmittedInfo.keys()].sort();
+            let sortedFilledVars = [...Object.keys(props.userSubmittedInfo)].sort();
 
             let unfilledFields = sortedReqdVars.filter(x => !sortedFilledVars.includes(x));
 
@@ -56,7 +46,7 @@ function InputSheetUnit(props) {
             );
             setFormFillingErrors(errors);
 
-            if (unfilledFields.length == 0) {
+            if (unfilledFields.length === 0) {
                 return true;
             }
         }
