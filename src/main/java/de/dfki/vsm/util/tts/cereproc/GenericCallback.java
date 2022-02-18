@@ -17,18 +17,18 @@ import java.util.LinkedList;
  * Created by alvaro on 2/07/16.
  */
 /*The Callback function is fired for every phrase returned by the synthesiser.
-  First collect all the phoneme data and then speak
+  First collect all the phoneme data and then execute
   This callback colletcts the phoneme information so it can be cached later and the
   Sends the stream to the audio line in order to create the audio file
   */
 public class GenericCallback extends TtsEngineCallback {
-    private SourceDataLine line;
-    private HashMap<Integer, LinkedList<Phoneme>> phonemes;
+    private final SourceDataLine line;
+    private final HashMap<Integer, LinkedList<Phoneme>> phonemes;
     private String executionId;
     private final EventDispatcher mEventCaster = EventDispatcher.getInstance();
     private PhrasePhonemeCache phraseCache;
     private String toSpeakPhrase;
-    private String  audioDevice;
+    private String audioDevice;
 
     public GenericCallback(SourceDataLine line) {
         this.line = line;
@@ -94,7 +94,7 @@ public class GenericCallback extends TtsEngineCallback {
     }
 
     private class CereprocBuff {
-        private SWIGTYPE_p_CPRC_abuf abuf;
+        private final SWIGTYPE_p_CPRC_abuf abuf;
         private int word_counter;
         private LinkedList<Phoneme> wordPhoneme;
 

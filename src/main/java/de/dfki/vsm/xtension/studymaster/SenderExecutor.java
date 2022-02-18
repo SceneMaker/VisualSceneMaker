@@ -18,7 +18,6 @@ import java.io.IOException;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Enumeration;
-import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -56,7 +55,7 @@ public class SenderExecutor extends ActivityExecutor {
         if (activity instanceof SpeechActivity) {
             SpeechActivity sa = (SpeechActivity) activity;
             String text = sa.getTextOnly("$(").trim();
-            LinkedList<String> timemarks = sa.getTimeMarks("$(");
+            List<String> timemarks = sa.getTimeMarks("$(");
 
             // If text is empty - assume activity has empty text but has marker activities registered
             if (text.isEmpty()) {

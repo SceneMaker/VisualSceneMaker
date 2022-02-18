@@ -1,6 +1,4 @@
-package de.dfki.vsm.xtension.charamelWs;
-
-import de.dfki.vsm.xtension.charamelWs.Commands.Broadcastable;
+package de.dfki.vsm.xtension.charamelWs.Commands;
 
 import java.util.Locale;
 

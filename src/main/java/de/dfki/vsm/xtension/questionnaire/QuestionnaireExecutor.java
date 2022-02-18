@@ -8,22 +8,18 @@ package de.dfki.vsm.xtension.questionnaire;
 import de.dfki.vsm.model.config.ConfigFeature;
 import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.model.scenescript.ActionFeature;
-//import de.dfki.vsm.runtime.RunTimeInstance;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
 import de.dfki.vsm.runtime.activity.SpeechActivity;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
 import de.dfki.vsm.runtime.activity.scheduler.ActivityWorker;
-import de.dfki.vsm.runtime.interpreter.value.AbstractValue;
-import de.dfki.vsm.runtime.interpreter.value.BooleanValue;
-import de.dfki.vsm.runtime.interpreter.value.IntValue;
-import de.dfki.vsm.runtime.interpreter.value.StringValue;
-import de.dfki.vsm.runtime.interpreter.value.StructValue;
+import de.dfki.vsm.runtime.interpreter.value.*;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
+
+import javax.swing.*;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
-import javax.swing.SwingUtilities;
+import java.util.List;
 
 /**
  *
@@ -55,7 +51,7 @@ public class QuestionnaireExecutor extends ActivityExecutor implements Questionn
         if (activity instanceof SpeechActivity) {
             SpeechActivity sa = (SpeechActivity) activity;
             String text = sa.getTextOnly("$(").trim();
-            LinkedList<String> timemarks = sa.getTimeMarks("$(");
+            List<String> timemarks = sa.getTimeMarks("$(");
 
             // If text is empty - assume activity has empty text but has marker activities registered
             if (text.isEmpty()) {

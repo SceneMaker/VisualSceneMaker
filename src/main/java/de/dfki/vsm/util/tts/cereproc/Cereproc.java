@@ -163,7 +163,7 @@ public class Cereproc extends SpeechClient {
 
     private void isTextNonEmpty() throws Exception {
         if("".equals(finalWord)){
-            throw new Exception("Empty Text, could not speak");
+            throw new Exception("Empty Text, could not execute");
         }
     }
 

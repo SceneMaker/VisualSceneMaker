@@ -50,9 +50,9 @@ public class StickmanExecutor extends ActivityExecutor implements ExportableProp
     private final HashMap<String, ActivityWorker> mActivityWorkerMap = new HashMap();
     private Thread stickmanLaunchThread;
     private StageRoom stickmanStageC;
-    private StickmanRepository stickmanFactory;
+    private final StickmanRepository stickmanFactory;
     public static HashMap<String, Stickman3D> stickmanContainer = new HashMap<>();
-    private ExportableProperties exportableProperties = new StickmanProjectProperty();
+    private final ExportableProperties exportableProperties = new StickmanProjectProperty();
 
     // Construct the executor
     public StickmanExecutor(final PluginConfig config, final RunTimeProject project) {
@@ -96,7 +96,7 @@ public class StickmanExecutor extends ActivityExecutor implements ExportableProp
 
             String activityText = sa.getTextOnly("$").trim();
             if (activityText.isEmpty()) {
-                LinkedList<String> timemarks = sa.getTimeMarks("$");
+                List<String> timemarks = sa.getTimeMarks("$");
                 for (String tm : timemarks) {
                     mProject.getRunTimePlayer().getActivityScheduler().handle(tm);
                 }

@@ -4,6 +4,7 @@ import de.dfki.vsm.model.scenescript.SceneTurn;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
 
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -69,7 +70,7 @@ public final class SpeechActivity extends AbstractActivity {
         final StringBuilder builder = new StringBuilder();
         for (final Object item : mBlocks) {
             if (!item.toString().contains(markerSign)) {
-                builder.append(item.toString());
+                builder.append(item);
                 if (!item.equals(mBlocks.getLast())) {
                     builder.append(' ');
                 } else {
@@ -112,7 +113,7 @@ public final class SpeechActivity extends AbstractActivity {
      * @return
      * @author PG 20.4.2016
      */
-    public final LinkedList<String> getTimeMarks(final String markerSign) {
+    public final List<String> getTimeMarks(final String markerSign) {
         final LinkedList<String> tms = new LinkedList<>();
         for (final Object item : mBlocks) {
             if (item.toString().contains(markerSign)) {

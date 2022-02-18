@@ -13,6 +13,7 @@ import de.dfki.vsm.util.log.LOGConsoleLogger;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map.Entry;
 
 /**
@@ -32,7 +33,7 @@ public final class UnityExecutor extends ActivityExecutor {
     // The map of activity worker
     private final HashMap<String, ActivityWorker> mActivityWorkerMap = new HashMap();
     // The unity cmd id
-    private static int cmdId = 0;
+    private static final int cmdId = 0;
 
     // Construct the executor
     public UnityExecutor(
@@ -158,7 +159,7 @@ public final class UnityExecutor extends ActivityExecutor {
         if (activity instanceof SpeechActivity) {
             SpeechActivity sa = (SpeechActivity) activity;
             String text = sa.getTextOnly("$(").trim();
-            LinkedList<String> timemarks = sa.getTimeMarks("$(");
+            List<String> timemarks = sa.getTimeMarks("$(");
 
             //mLogger.success("text is " + text);
             // If text is empty - assume activity has empty text but has marker activities registered
@@ -169,7 +170,7 @@ public final class UnityExecutor extends ActivityExecutor {
                     return;
                 }
             } else {
-                unityCommand = cmdId + ", " + activity.getActor() + ", " + sa.toString() + sa.getPunct();
+                unityCommand = cmdId + ", " + activity.getActor() + ", " + sa + sa.getPunct();
 
             }
         } else {
@@ -234,9 +235,7 @@ public final class UnityExecutor extends ActivityExecutor {
                 int start = message.lastIndexOf("#") + 1;
                 String animId = message.substring(start);
 
-                if (mActivityWorkerMap.containsKey(animId)) {
-                    mActivityWorkerMap.remove(animId);
-                }
+                mActivityWorkerMap.remove(animId);
                 // wake me up ..
                 mActivityWorkerMap.notifyAll();
             } else if (message.contains("$")) {

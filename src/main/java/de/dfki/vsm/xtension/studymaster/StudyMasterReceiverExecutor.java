@@ -13,7 +13,9 @@ import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
 import de.dfki.vsm.runtime.interpreter.value.StringValue;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
+
 import java.util.LinkedList;
+import java.util.List;
 
 /**
  *
@@ -44,7 +46,7 @@ public class StudyMasterReceiverExecutor extends ActivityExecutor {
         if (activity instanceof SpeechActivity) {
             SpeechActivity sa = (SpeechActivity) activity;
             String text = sa.getTextOnly("$(").trim();
-            LinkedList<String> timemarks = sa.getTimeMarks("$(");
+            List<String> timemarks = sa.getTimeMarks("$(");
 
             // If text is empty - assume activity has empty text but has marker activities registered
             if (text.isEmpty()) {
