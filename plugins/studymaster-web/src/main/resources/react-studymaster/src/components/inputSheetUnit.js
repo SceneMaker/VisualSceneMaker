@@ -64,7 +64,7 @@ function InputSheetUnit(props) {
                     <fieldset>
                         {(props.inputSheetFieldDetails && (props.inputSheetFieldDetails.action === "REQUEST"))}
                         <GenerateFields userSubmittedInfo={props.userSubmittedInfo}
-                                        setUserSubmittedInfo = {props.setUserSubmittedInfo}
+                                        setUserSubmittedInfo={props.setUserSubmittedInfo}
                                         updateUserSubmittedInfo={props.updateUserSubmittedInfo}
                                         inputSheetFieldDetails={props.inputSheetFieldDetails}
                                         validateForm={validateForm}
@@ -97,7 +97,7 @@ function InputSheetUnit(props) {
                                         backgroundColor: "green",
                                         padding: "18px 36px",
                                         fontSize: "18px",
-                                        width:"15vw"
+                                        width: "15vw"
                                     }} variant="contained"
                                             onClick={validateFormAndSubmit} startIcon={<SendIcon/>}> Submit</Button>
                                     <Button style={{
@@ -105,7 +105,7 @@ function InputSheetUnit(props) {
                                         backgroundColor: "red",
                                         padding: "18px 36px",
                                         fontSize: "18px",
-                                        width:"15vw"
+                                        width: "15vw"
                                     }} variant="contained" color="error"
                                             onClick={props.sendCancel} startIcon={<DeleteIcon/>}> Cancel</Button>
                                 </Stack>

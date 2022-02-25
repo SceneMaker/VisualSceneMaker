@@ -1,5 +1,5 @@
 import {Row} from "react-bootstrap";
-import React, {useEffect, useState} from "react";
+import React, {useState} from "react";
 import {FormHelperText, TextField} from "@mui/material";
 import RadioGroup from '@mui/material/RadioGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
@@ -16,14 +16,6 @@ function GenerateInputFieldWithType(props, updateUserSubmittedInfo, formContents
 
     const [checkBoxState, setCheckBoxState] = useState(values.reduce((a, v) => ({...a, [v]: false}), {}));
 
-    // Similar to componentDidMount and componentDidUpdate:
-    // useEffect(() => {
-    //     console.log(props.userSubmittedInfo);
-    //     console.log(variable);
-    //     // updateUserSubmittedInfo(variable, "");
-    //     props.setUserSubmittedInfo({ ...props.userSubmittedInfo,
-    //         [variable]: ""});
-    // }, []);
 
     function updateCheckBoxAndUserInfo(variable, e) {
 
@@ -36,12 +28,8 @@ function GenerateInputFieldWithType(props, updateUserSubmittedInfo, formContents
 
         console.log(Object.keys(newCheckBoxState).filter(k => newCheckBoxState[k] === true));
 
-        let newCheckBoxStateStr = Object.keys(newCheckBoxState).filter(k => newCheckBoxState[k] === true);
-        // console.log( Object.values(newCheckBoxState).toString());
-        // console.log(typeof (newCheckBoxStateStr));
-        // console.log(newCheckBoxStateStr[4]);
-
-        updateUserSubmittedInfo(variable, newCheckBoxStateStr);
+        let newCheckBoxStateArr = Object.keys(newCheckBoxState).filter(k => newCheckBoxState[k] === true);
+        updateUserSubmittedInfo(variable, newCheckBoxStateArr);
     }
 
     return (
@@ -52,10 +40,8 @@ function GenerateInputFieldWithType(props, updateUserSubmittedInfo, formContents
                     marginTop: "30px",
                     marginBottom: "30px"
                 }}>
-                    {/*<label> {formContents.variable[currIdx]} </label>*/}
                     <InputLabel color='primary' focused={true} htmlFor={variable}
                                 style={{
-                                    // marginTop: "30px",
                                     marginBottom: "10px"
                                 }}
                     >
@@ -64,7 +50,6 @@ function GenerateInputFieldWithType(props, updateUserSubmittedInfo, formContents
                     <TextField variant="standard" name={variable}
                                label={formContents.options[currIdx]}
                                value={props.userSubmittedInfo[variable] || ''}
-                        // style={{"width": "90%"}}
                                id={variable}
                                onChange={e => {
                                    updateUserSubmittedInfo(variable, e.target.value);
@@ -82,10 +67,8 @@ function GenerateInputFieldWithType(props, updateUserSubmittedInfo, formContents
                     marginTop: "30px",
                     marginBottom: "30px"
                 }}>
-                    {/*<label> {formContents.variable[currIdx]} </label>*/}
                     <InputLabel color='primary' focused={true} htmlFor={variable}
                                 style={{
-                                    // marginTop: "30px",
                                     marginBottom: "10px"
                                 }}
                     >
@@ -111,10 +94,8 @@ function GenerateInputFieldWithType(props, updateUserSubmittedInfo, formContents
                     marginTop: "30px",
                     marginBottom: "30px"
                 }}>
-                    {/*<label> {formContents.variable[currIdx]} </label>*/}
                     <InputLabel color='primary' focused={true} htmlFor={variable}
                                 style={{
-                                    // marginTop: "30px",
                                     marginBottom: "10px"
                                 }}
                     >
@@ -138,7 +119,6 @@ function GenerateInputFieldWithType(props, updateUserSubmittedInfo, formContents
                                         value={option || ''}
                                         onChange={e => {
                                             updateUserSubmittedInfo(variable, e.target.value);
-                                            // console.log(e.target.value);
                                         }}
                                     />
                                 )}
@@ -155,10 +135,8 @@ function GenerateInputFieldWithType(props, updateUserSubmittedInfo, formContents
                     marginTop: "30px",
                     marginBottom: "30px"
                 }}>
-                    {/*<label> {formContents.variable[currIdx]} </label>*/}
                     <InputLabel color='primary' focused={true} htmlFor={variable}
                                 style={{
-                                    // marginTop: "30px",
                                     marginBottom: "10px"
                                 }}
                     >
