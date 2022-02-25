@@ -16,7 +16,8 @@ function genTimeStamp() {
 
 function App() {
     const [vsmConnectionStatus, setVsmConnectionStatus] = useState(false);
-    const [webSocket, setWebSocket] = useState(new WebSocket('ws://' + document.location.host + '/ws'));
+    // const [webSocket, setWebSocket] = useState(new WebSocket('ws://' + document.location.host + '/ws'));
+    let webSocket;
     const [infoLogContents, setInfoLogContents] = useState({});
     const [informContent, setInformContent] = useState("");
     const [inputSheetFieldDetails, setInputSheetFieldDetails] = useState();
@@ -26,34 +27,42 @@ function App() {
 
 
     const updateUserSubmittedInfo = (k, v) => {
-        // console.log(v.target.name);
-        // 1. Make a shallow copy of the items
         let items = {...userSubmittedInfo};
-        // 4. Put it back into our array. N.B. we *are* mutating the array here, but that's why we made a copy first
         items[k] = v;
-        // 5. Set the state to our new copy
+        // console.log("!");
+        // console.log("==>", k, v);
+        // console.log(v);
+        console.log(items);
         setUserSubmittedInfo(items);
-        // if (typeof (v) !== "string") {
-        //     setUserSubmittedInfo(new Map(userSubmittedInfo.set(k, v)));
-        // } else {
-        //     if (v.length !== 0) {
-        //         setUserSubmittedInfo(new Map(userSubmittedInfo.set(k, v)));
-        //     } else {
-        //         delete userSubmittedInfo.delete(k);
-        //     }
-        // }
+    }
 
+    const heartbeat = (ws, delay) => {
+        clearTimeout(ws.pingTimeout)
+
+        ws.pingTimeout = setTimeout(() => {
+            ws.terminate()
+        }, delay)
     }
 
 
     useEffect(() => {
+        webSocket = new WebSocket('ws://' + document.location.host + '/ws');
+
         let ws = webSocket;
 
         ws.onopen = function () {
             setVsmConnectionStatus(true);
+            clientAliveMessage();
+            console.log("Connection initiated by server.")
         };
         ws.onclose = function (msg) {
             setVsmConnectionStatus(false);
+            setInfoLogContents({});
+            setUserSubmittedInfo({});
+            setInputSheetFieldDetails({});
+            setInformContent("");
+            console.log("Connection terminated by server.")
+
         };
         ws.onmessage = function (msg) {
 
@@ -68,27 +77,11 @@ function App() {
                     type: parts[5].split(';'),
                     timestamp: parts[2]
                 };
-
-                // setInputSheetFieldDetails({
-                //     action: command,
-                //     variable: parts[3].split(';'),
-                //     options: parts[4].split(';'),
-                //     type: parts[5].split(';'),
-                //     timestamp: parts[2]
-                // });
-
                 setInputSheetFieldDetails(newInputSheetFieldDetails);
-
-
-                // let idxCheckBox = undefined;
-                // for (let i = 0; i < newInputSheetFieldDetails.variable.length; i++) {
-                //     if (newInputSheetFieldDetails.type[i] === "checkbox"){
-                //         idxCheckBox = i;
-                //     }
-                // }
-                //
-                // let values = newInputSheetFieldDetails.options[idxCheckBox].split(',');
-                // setCheckBoxState(values.reduce((a, v) => ({...a, [v]: false}), {}));
+                let obj = {};
+                let newObj = newInputSheetFieldDetails.variable.reduce((obj, key) => ({...obj, [key]: ""}), {})
+                // setUserSubmittedInfo({"variables": newObj});
+                setUserSubmittedInfo(newObj);
             }
             if (command === "INFORM") {
 
@@ -108,10 +101,9 @@ function App() {
 
                 setVsmVarsForDevToolComp(Object.assign(vsmVarsForDevToolComp, newVarVal));
             }
-
             setVsmConnectionStatus(true);
         };
-        setWebSocket(ws);
+        // setWebSocket(ws);
         document.title = "VSM StudyMaster";
         var link = document.querySelector("link[rel*='icon']") || document.createElement('link');
         link.type = 'image/x-icon';
@@ -119,6 +111,20 @@ function App() {
         link.href = 'http://scenemaker.dfki.de/images/scenemaker/logo.png';
         document.getElementsByTagName('head')[0].appendChild(link);
     }, []);
+
+    var aliveTimer = null;
+
+    /**
+     * Message from client (this and webpage loading this) that client is alive
+     */
+    function clientAliveMessage() {
+        // console.log("Send client alive message to server");
+        if (webSocket.readyState === WebSocket.OPEN) {
+            webSocket.send(`VSMMessage#STATUS#alive`);
+            aliveTimer = setTimeout(clientAliveMessage, 100);
+        }
+
+    }
 
     function sendSubmitToVsm() {
         let areAllFieldsSet = true;
@@ -141,6 +147,8 @@ function App() {
                     }
                 } else if (inputSheetFieldDetails.type[i] === "checkbox") {
                     if (userSubmittedInfo.hasOwnProperty(variable)) {
+                        console.log(userSubmittedInfo);
+                        console.log(userSubmittedInfo[variable]);
                         webSocket.send(`VSMMessage#VAR#${variable}#${userSubmittedInfo[variable]}`);
                     }
                 }
@@ -159,30 +167,6 @@ function App() {
 
     function sendCancelToVsm() {
         webSocket.send(`VSMMessage#VAR#request_result#CANCEL`);
-        // Resetting form to empty
-        // for (let i = 0; i < inputSheetFieldDetails.variable.length; i++) {
-        //     let variable = inputSheetFieldDetails.variable[i];
-        //     if (inputSheetFieldDetails.type[i] === "radio") {
-        //         if (userSubmittedInfo.hasOwnProperty(variable)) {
-        //             setUserSubmittedInfo(new Map(userSubmittedInfo.set(variable, "")));
-        //         }
-        //     } else if (inputSheetFieldDetails.type[i] === "text") {
-        //         if (userSubmittedInfo.hasOwnProperty(variable)) {
-        //             setUserSubmittedInfo(new Map(userSubmittedInfo.set(variable, "")));
-        //         }
-        //     } else if (inputSheetFieldDetails.type[i] === "number") {
-        //         if (userSubmittedInfo.hasOwnProperty(variable)) {
-        //             setUserSubmittedInfo(new Map(userSubmittedInfo.set(variable, "")));
-        //         }
-        //     } else if (inputSheetFieldDetails.type[i] === "checkbox") {
-        //         if (userSubmittedInfo.hasOwnProperty(variable)) {
-        //             setUserSubmittedInfo(new Map(userSubmittedInfo.set(variable, "")));
-        //         }
-        //     }
-        // }
-        // setUserSubmittedInfo(new Map(userSubmittedInfo.set("name", "")));
-        // updateUserSubmittedInfo("surname", "sdfsd");
-        // updateUserSubmittedInfo("name", "");
 
         for (let i = 0; i < inputSheetFieldDetails.variable.length; i++) {
             let variable = inputSheetFieldDetails.variable[i];
@@ -194,7 +178,7 @@ function App() {
             } else if (inputSheetFieldDetails.type[i] === "text") {
                 if (userSubmittedInfo.hasOwnProperty(variable)) {
                     // updateUserSubmittedInfo(variable, "");
-                    console.log(variable)
+                    // console.log(variable)
 
                 }
             } else if (inputSheetFieldDetails.type[i] === "number") {
@@ -216,10 +200,8 @@ function App() {
         }
 
         // setUserSubmittedInfo(new Map(userSubmittedInfo.set("surname", "")));
-
         // window.location.reload();
     }
-
 
 
     return (
@@ -241,9 +223,7 @@ function App() {
                                 </Tooltip>
                             }
                         </div>
-
                     </div>
-
                 </div>
 
                 <div className="sidebar box">
@@ -255,7 +235,6 @@ function App() {
                 </div>
 
                 <div className="inform box">
-
                     <div className="">
                         <h2>{informContent}</h2>
                     </div>
@@ -263,11 +242,11 @@ function App() {
 
                 <div className="content box">
                     <InputSheetUnit inputSheetFieldDetails={inputSheetFieldDetails}
+                                    setUserSubmittedInfo={setUserSubmittedInfo}
                                     updateUserSubmittedInfo={updateUserSubmittedInfo}
                                     sendSubmit={sendSubmitToVsm} sendCancel={sendCancelToVsm}
                                     userSubmittedInfo={userSubmittedInfo}
                     />
-
                 </div>
 
             </div>
