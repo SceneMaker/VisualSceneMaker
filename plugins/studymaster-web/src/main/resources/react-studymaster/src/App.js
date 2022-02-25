@@ -17,7 +17,7 @@ function genTimeStamp() {
 function App() {
     const [vsmConnectionStatus, setVsmConnectionStatus] = useState(false);
     // const [webSocket, setWebSocket] = useState(new WebSocket('ws://' + document.location.host + '/ws'));
-    let webSocket;
+    let webSocket = new WebSocket('ws://' + document.location.host + '/ws');
     const [infoLogContents, setInfoLogContents] = useState({});
     const [informContent, setInformContent] = useState("");
     const [inputSheetFieldDetails, setInputSheetFieldDetails] = useState();
@@ -46,7 +46,7 @@ function App() {
 
 
     useEffect(() => {
-        webSocket = new WebSocket('ws://' + document.location.host + '/ws');
+        // webSocket = new WebSocket('ws://' + document.location.host + '/ws');
 
         let ws = webSocket;
 
