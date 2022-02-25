@@ -23,17 +23,13 @@ function InputSheetUnit(props) {
         } else if ([...Object.keys(props.userSubmittedInfo)].length > 0) {
 
             let reqdVars = [];
-            // console.log(props.inputSheetFieldDetails.variable.length);
             for (let i = 0; i < props.inputSheetFieldDetails.variable.length; i++) {
-                // console.log(props.inputSheetFieldDetails.type[i])
                 if (props.inputSheetFieldDetails.type[i] !== "checkbox") {
                     reqdVars.push(props.inputSheetFieldDetails.variable[i])
                 }
             }
 
-            // console.log(reqdVars, props.inputSheetFieldDetails);
             let sortedReqdVars = [...reqdVars].sort();
-            // let sortedReqdVars = [...props.inputSheetFieldDetails.variable].sort();
             let sortedFilledVars = [...Object.keys(props.userSubmittedInfo)].sort();
 
             let unfilledFields = sortedReqdVars.filter(x => !sortedFilledVars.includes(x));
@@ -60,7 +56,6 @@ function InputSheetUnit(props) {
     }
 
     return (
-        // <Container className="input-sheet-unit-divider">
         <div className="input-sheet-unit-divider">
             <form style={{
                 marginLeft: "1vw",
@@ -69,6 +64,7 @@ function InputSheetUnit(props) {
                     <fieldset>
                         {(props.inputSheetFieldDetails && (props.inputSheetFieldDetails.action === "REQUEST"))}
                         <GenerateFields userSubmittedInfo={props.userSubmittedInfo}
+                                        setUserSubmittedInfo = {props.setUserSubmittedInfo}
                                         updateUserSubmittedInfo={props.updateUserSubmittedInfo}
                                         inputSheetFieldDetails={props.inputSheetFieldDetails}
                                         validateForm={validateForm}
@@ -88,7 +84,6 @@ function InputSheetUnit(props) {
                 <div className="in-form-buttons">
                     {
                         (props.inputSheetFieldDetails && (props.inputSheetFieldDetails.action === "REQUEST")) &&
-                        // <div>
                         <Grid container
                               spacing={0}
                               direction="column"
@@ -97,10 +92,6 @@ function InputSheetUnit(props) {
                         >
                             <Grid item xs={2}>
                                 <Stack direction="row" spacing={2} style={{textAlign: 'center'}}>
-                                    {/*<Button className="buttonW" variant="contained" color="success"*/}
-                                    {/*        onClick={validateFormAndSubmit} startIcon={<SendIcon />}> Submit</Button>*/}
-                                    {/*<Button className="buttonW" variant="contained" color="error"*/}
-                                    {/*        onClick={props.sendCancel} startIcon={<DeleteIcon />}> Cancel</Button>*/}
                                     <Button style={{
                                         borderRadius: 35,
                                         backgroundColor: "green",
@@ -119,10 +110,7 @@ function InputSheetUnit(props) {
                                             onClick={props.sendCancel} startIcon={<DeleteIcon/>}> Cancel</Button>
                                 </Stack>
                             </Grid>
-
                         </Grid>
-                        // </div>
-
 
                     }
                     {
@@ -134,7 +122,6 @@ function InputSheetUnit(props) {
                 </div>
             </form>
         </div>
-        // </Container>
     )
 }
 

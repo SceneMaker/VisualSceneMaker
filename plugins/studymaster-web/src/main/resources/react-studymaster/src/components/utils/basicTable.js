@@ -28,7 +28,6 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
     '&:nth-of-type(odd)': {
         backgroundColor: theme.palette.action.hover,
     },
-    // hide last border
     '&:last-child td, &:last-child th': {
         border: 0,
     },
@@ -59,8 +58,6 @@ const BasicTable = (props) => {
                                 <StyledTableCell component="th" scope="row">
                                     {key}
                                 </StyledTableCell>
-                                {/*{props.colVals}*/}
-                                {/*<div>*/}
                                     {
                                         props.colVals[key].map((vals, idx) => (
                                             <StyledTableCell align="right"
@@ -69,7 +66,6 @@ const BasicTable = (props) => {
                                             </StyledTableCell>
                                         ))
                                     }
-                                {/*</div>*/}
                             </StyledTableRow>
                         ))
                     }

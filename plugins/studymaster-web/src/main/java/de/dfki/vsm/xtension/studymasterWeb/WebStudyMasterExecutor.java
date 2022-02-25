@@ -58,6 +58,12 @@ public class WebStudyMasterExecutor extends ActivityExecutor implements EventLis
     private static final String sGUI_CONNECTED_VAR_DEFAULT = "gui_connected";
 
     /**
+     * Project variable storing the satus of the remote Web GUI .
+     */
+    private static final String sSTUDYMASTER_INFO_VAR = "studymaster_info";
+    private static final String sSTUDYMASTER_INFO_VAR_DEFAULT = "alive";
+
+    /**
      * HTTP port
      */
     private static final String sJAVALIN_PORT_VAR = "port";
@@ -397,6 +403,15 @@ public class WebStudyMasterExecutor extends ActivityExecutor implements EventLis
                     mProject.setVariable(mSceneflowGoVar, true);
 
                     // MESSAGE UNKNOWN!!!
+                }
+                // MESSAGESTATUS
+                else if (msg.equals("STATUS")) {
+                    String value = msgParts[2];
+                    mLogger.message("Assigning sceneflow variable " + sSTUDYMASTER_INFO_VAR + " with value " + value);
+
+                    if (mProject.hasVariable(sSTUDYMASTER_INFO_VAR)) {
+                        mProject.setVariable(sSTUDYMASTER_INFO_VAR, value);
+                    }
                 } else {
                     //mLogger.warning("Unsupported message '" + msg + "' received.");
                 }
@@ -413,7 +428,7 @@ public class WebStudyMasterExecutor extends ActivityExecutor implements EventLis
     @Override
     public void update(EventObject event) {
         if (event instanceof VariableChangedEvent) {
-            VariableChangedEvent ev = (VariableChangedEvent)event ;
+            VariableChangedEvent ev = (VariableChangedEvent) event;
             ev.getVarValue();
             String info = event.toString();
             info = info.split("\\(")[1].split(",")[0] + "#" + info.split("#c#")[1].split("\\)")[0];
