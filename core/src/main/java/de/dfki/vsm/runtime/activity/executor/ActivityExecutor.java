@@ -11,6 +11,7 @@ import de.dfki.vsm.runtime.player.RunTimePlayer;
 import de.dfki.vsm.runtime.plugin.RunTimePlugin;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -38,16 +39,16 @@ public abstract class ActivityExecutor extends RunTimePlugin {
     }
 
     public abstract String marker(final long id);
-    public void execute(final SpeechActivity activity) {
+    public void execute(final SpeechActivity activity) throws IOException {
         this.execute((AbstractActivity) activity);
     }
-    public void execute(final PauseActivity activity) {
+    public void execute(final PauseActivity activity) throws IOException {
         this.execute((AbstractActivity) activity);
     }
-    public void execute(final ActionActivity activity) {
+    public void execute(final ActionActivity activity) throws IOException {
         this.execute((AbstractActivity) activity);
     }
-    public abstract void execute(final AbstractActivity activity);
+    public abstract void execute(final AbstractActivity activity) throws IOException;
 
     /** Support method to extract the value of a feature from the features dictionary.
      *

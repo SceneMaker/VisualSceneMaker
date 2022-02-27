@@ -146,9 +146,9 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
         }
 
         // PG - Comment: This should be handled by a Sceneflow model!
-//        if (message.equals("stopwatch")) {
-//            broadcast("./audio_gui.html"); //arbeitszeit
-//        }
+//if (message.equals("person")) {
+  //         broadcast("./username_gui.html"); //arbeitszeit
+    //   }
 //        else if (message.equals("calendar")) {
 //            broadcast("./ui_stimmungsbarometer.html"); //moodgraph
 //        } else if (message.equals("phone")) {
@@ -299,7 +299,8 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
                 broadcast(name);
             } else if (name.equalsIgnoreCase("vcToFront")) {
                 broadcast(name);
-            } else if (!name.isEmpty()) { //check if name represents a webpage - must be configured in the device's agent as key, value pair.
+            }
+            else if (!name.isEmpty()) { //check if name represents a webpage - must be configured in the device's agent as key, value pair.
                 String guipage = mProject.getAgentConfig(activity_actor).getProperty(name);
                 // send only if there is a stored html page
                 if (guipage != null)

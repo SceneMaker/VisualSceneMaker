@@ -7,6 +7,15 @@
       <Feature key="rhost" val="127.0.0.1"/>
       <Feature key="rport" val="1241"/>
     </Plugin>
+    <Plugin type="device" name="SSIRECEIVER" class="de.dfki.vsm.xtension.mindbotssi.MindBotSSIPlugin" load="true">
+      <Feature key="k1" val="val1"/>
+      <Feature key="hlhost" val="192.168.0.101"/>
+      <Feature key="hlport" val="2222"/>
+      <Feature key="srhost" val="localhost"/>
+      <Feature key="srport" val="2223"/>
+      <Feature key="slhost" val="localhost"/>
+      <Feature key="slport" val="2224"/>
+    </Plugin>
   </Plugins>
   <Agents>
     <Agent name="reeti" device="reeti">

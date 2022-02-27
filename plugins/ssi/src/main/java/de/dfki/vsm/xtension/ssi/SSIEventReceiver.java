@@ -54,6 +54,7 @@ final class SSIEventReceiver extends Thread {
             mSocket = new DatagramSocket(mLAddr);
             // Start the server thread
             super.start();
+            mLogger.message("Starting the server");
         } catch (final SocketException exc) {
             mLogger.failure(exc.toString());
         }
@@ -69,6 +70,7 @@ final class SSIEventReceiver extends Thread {
         // Eventually close the socket
         if (mSocket != null && !mSocket.isClosed()) {
             mSocket.close();
+            mLogger.message("Getting aborted");
         }
         // Interrupt if sleeping
         interrupt();
@@ -78,11 +80,15 @@ final class SSIEventReceiver extends Thread {
     @Override
     public final void run() {
         // Receive while not done ...
+        mLogger.message("In the main run!");
+        //mLogger.message(mDone);
         while (!mDone) {
             // Receive a new message
+            mLogger.message("in the while loop");
             final String message = recvString();
             // Useful for check which sender/event: mLogger.message("Received message: "  + message);
-            
+            mLogger.message("Printing the received msg"+message);
+
             //mLogger.failure(message);
             // Check message content
             if (message != null) {
@@ -146,8 +152,10 @@ final class SSIEventReceiver extends Thread {
     private String recvString() {
         // Receive a byte buffer
         final byte[] buffer = recvBytes();
+        mLogger.message("recv strung");
         // Check the buffer content
         if (buffer != null) {
+            mLogger.message("recv strung2");
             // Construct a message
             final String message
                     = new String(buffer, 0, buffer.length, StandardCharsets.UTF_8);

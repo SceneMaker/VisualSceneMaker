@@ -25,7 +25,7 @@ public class SSIProjectProperty implements ExportableProperties {
                 + "If SSI runs on a different computer, this field should hold the IP address of "
                 + "the computer");
         ProjectValueProperty loghostVP = new ProjectValueProperty(ValueTYPE.STRING,
-                "127.0.0.1",
+                "192.168.0.105",
                 new StringRender());
 
         ProjectProperty logport = new ProjectProperty("logport", true,

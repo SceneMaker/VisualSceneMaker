@@ -18,6 +18,8 @@ public final class SSIEventArray extends SSIEventObject {
     // The singelton logger instance
     private final LOGConsoleLogger mLogger
             = LOGConsoleLogger.getInstance();
+
+
     // The event sequence version
     private String mVersion;
     // The event object sequence
@@ -97,6 +99,8 @@ public final class SSIEventArray extends SSIEventObject {
     // Parse the event sequence
     @Override
     public final void parseXML(final Element element) throws XMLParseError {
+
+
         // Check the element name
         if (element.getTagName().equals("events")) {
             // Parse the version name

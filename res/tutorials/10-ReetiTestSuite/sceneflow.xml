@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<SceneFlow id="" name="default" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Tue, 16 Oct 2018 13:45:23" start="N1;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
+<SceneFlow id="" name="default" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Fri, 4 Feb 2022 01:20:10" start="N5;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
   <Define>
   </Define>
   <Declare>
@@ -156,6 +156,44 @@
     </Commands>
     <Graphics>
       <Position xPos="210" yPos="390"/>
+    </Graphics>
+  </Node>
+  <Node id="N5" name="N5" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <TEdge target="N10" start="" timeout="1000">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="480" yPos="525" ctrlXPos="592" ctrlYPos="525"/>
+        <ControlPoint xPos="750" yPos="525" ctrlXPos="637" ctrlYPos="525"/>
+      </Connection>
+    </Graphics>
+    </TEdge>
+    <Graphics>
+      <Position xPos="390" yPos="480"/>
+    </Graphics>
+  </Node>
+  <Node id="N10" name="N10" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <TEdge target="N5" start="" timeout="1000">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="752" yPos="537" ctrlXPos="644" ctrlYPos="567"/>
+        <ControlPoint xPos="478" yPos="537" ctrlXPos="585" ctrlYPos="567"/>
+      </Connection>
+    </Graphics>
+    </TEdge>
+    <Graphics>
+      <Position xPos="750" yPos="480"/>
     </Graphics>
   </Node>
   <SuperNode id="S1" name="MotorExample" comment="" hideLocalVar="false" hideGlobalVar="false" start="N24;N19;">

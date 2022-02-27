@@ -4,6 +4,7 @@ import de.dfki.vsm.runtime.activity.AbstractActivity;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -71,7 +72,11 @@ public final class ActivityWorker<T extends AbstractActivity> extends Thread {
             // Print some information
             mLogger.success("Executing activity '" + mActivity + "' on executor '" + mExecutor + "'");
             // Execute the activity
-            mExecutor.execute(mActivity);
+            try {
+                mExecutor.execute(mActivity);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
         // Wait for workers
         if (mList != null) {
