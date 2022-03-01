@@ -3,6 +3,7 @@ import React, {useState} from "react";
 import DeveloperModeIcon from '@mui/icons-material/DeveloperMode';
 import {Collapse, Tooltip} from "@material-ui/core";
 import BasicTable from "./utils/basicTable";
+import DownloadIcon from '@mui/icons-material/Download';
 
 const InfoLogUnit = (props) => {
     const [open, setOpen] = useState(false);
@@ -35,31 +36,74 @@ const InfoLogUnit = (props) => {
             </div>
 
             <div className="variable-list">
-                <div className={open ? "logbox" : ""} style={{minHeight: '35vh', color: 'white'}}>
-                    <Collapse in={open} dimension="width">
-                        <div id="example-collapse-text">
-                            VSM Variable List (Work in Progress)
-                            <hr/>
+                <Collapse in={open} dimension="width">
+                    <hr/>
+
+                    <div>
+                        <h3>VSM Variable List</h3>
+                        <hr/>
+                        <div className={open ? "logbox" : ""} style={{height: '35vh', color: 'white'}}>
+
                             <BasicTable
                                 colNames={["Variables", "Value"]} colVals={props.vsmVars}/>
                         </div>
-                    </Collapse>
-                </div>
+                    </div>
+
+                </Collapse>
             </div>
 
+
             <div className="log">
-                <div className={open ? "logbox" : ""} style={{minHeight: '35vh', color: 'white'}}>
-                    <Collapse in={open} dimension="width">
-                        <div id="example-collapse-text">
-                            Log history (Work in Progress)
-                            <hr/>
+                <Collapse in={open} dimension="width">
+                    <hr/>
+
+                    <div>
+                        <div className="flex-container">
+                            <div className="item1">
+                                <h3>Log history</h3>
+                            </div>
+                            <div className="item2">
+                                <Button
+                                    variant="secondary"
+                                    onClick={() => {
+                                        console.log("Downloading...");
+                                        const myData = props.infoLogContents;
+                                        const fileName = "StudyMasterInformCmds";
+                                        const header = ["Timestamp", "InformCmd"];
+                                        let csvData = [];
+                                        Object.keys(myData).forEach(
+                                            (k) => {
+                                                csvData.push([k, myData[k].join(',')].join(','))
+                                            }
+                                        )
+                                        const csv = [
+                                            header.join(','),
+                                            ...csvData
+                                            ].join('\r\n');
+                                        const blob = new Blob([csv],{type:'application/csv'});
+                                        const href = URL.createObjectURL(blob);
+                                        const link = document.createElement('a');
+                                        link.href = href;
+                                        link.download = fileName + ".csv";
+                                        document.body.appendChild(link);
+                                        link.click();
+                                        document.body.removeChild(link);
+                                    }}
+                                >
+                                    <DownloadIcon/> Download logs
+                                </Button>
+                            </div>
+                        </div>
+
+                        <hr/>
+                        <div className={open ? "logbox" : ""} style={{height: '35vh', color: 'white'}}>
 
                             <BasicTable
-                                colNames={["Timestamp", "InformCmd"]} colVals={props.infoLogConents}/>
+                                colNames={["Timestamp", "InformCmd"]} colVals={props.infoLogContents}/>
 
                         </div>
-                    </Collapse>
-                </div>
+                    </div>
+                </Collapse>
             </div>
 
         </div>
