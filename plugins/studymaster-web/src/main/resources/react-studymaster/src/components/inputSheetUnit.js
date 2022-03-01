@@ -31,9 +31,9 @@ function InputSheetUnit(props) {
 
             let sortedReqdVars = [...reqdVars].sort();
             let sortedFilledVars = [...Object.keys(props.userSubmittedInfo)].sort();
+            sortedFilledVars = sortedFilledVars.filter(x => props.userSubmittedInfo[x] !== "")
 
             let unfilledFields = sortedReqdVars.filter(x => !sortedFilledVars.includes(x));
-
 
             let errors = {}
             unfilledFields.forEach(function (unfilledField) {

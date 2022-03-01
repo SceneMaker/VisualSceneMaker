@@ -9,7 +9,6 @@
 }
 
 .header {
-    /*height: 0.5fr;*/
     grid-area: header;
 }
 
@@ -79,12 +78,7 @@
 }
 
 .logbox {
-    /*margin: 10px;*/
-    background-color: #444;
-    color: #fff;
-    border-radius: 5px;
-    font-size: 75%;
-    overflow-y: scroll;
+    overflow-y: auto;
 }
 
 .header,
@@ -98,10 +92,8 @@
 }
 
 .flex-container {
-
     display: flex;
     height: 100%;
-
 }
 
 

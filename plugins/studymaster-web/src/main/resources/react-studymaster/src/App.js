@@ -14,6 +14,19 @@ function genTimeStamp() {
     return timestamp;
 }
 
+const useConfirmTabClose = () => {
+    React.useEffect(() => {
+        const handleBeforeUnload = () => {
+            console.log("deleting dev tool open or close state var...")
+            window.sessionStorage.removeItem("collapseDevToolComp")
+        };
+
+        window.addEventListener("beforeunload", handleBeforeUnload);
+        return () =>
+            window.removeEventListener("beforeunload", handleBeforeUnload);
+    }, []);
+};
+
 function App() {
     const [vsmConnectionStatus, setVsmConnectionStatus] = useState(false);
     let webSocket = new WebSocket('ws://' + document.location.host + '/ws');
@@ -23,8 +36,6 @@ function App() {
     const [collapseDevToolComp, setCollapseDevToolComp] = useState(true);
     const [vsmVarsForDevToolComp, setVsmVarsForDevToolComp] = useState({});
     const [userSubmittedInfo, setUserSubmittedInfo] = useState({});
-    // let aliveTimer = null;
-
 
     const updateUserSubmittedInfo = (k, v) => {
         let items = {...userSubmittedInfo};
@@ -32,6 +43,7 @@ function App() {
         setUserSubmittedInfo(items);
     }
 
+    useConfirmTabClose();
 
     const setupWebSocketForGUI = () => {
         let ws = webSocket;
@@ -64,6 +76,7 @@ function App() {
                     type: parts[5].split(';'),
                     timestamp: parts[2]
                 };
+                // console.log(newInputSheetFieldDetails);
                 setInputSheetFieldDetails(newInputSheetFieldDetails);
                 let newObj = newInputSheetFieldDetails.variable.reduce((obj, key) => ({...obj, [key]: ""}), {})
                 setUserSubmittedInfo(newObj);
@@ -72,6 +85,7 @@ function App() {
                 let newInfo = {};
                 newInfo[currTS] = [parts[4]];
                 setInformContent(parts[4]);
+                // console.log(infoLogContents);
                 setInfoLogContents(Object.assign(infoLogContents, newInfo));
             } else if (command === "UPDATE") {
                 let variable = parts[2];
@@ -97,9 +111,8 @@ function App() {
         // eslint-disable-next-line
     }, []);
 
-
     /**
-     * Message from client (this and webpage loading this) that client is alive
+     * Message from client (i.e. studymaster frontend) that client is alive
      */
     function clientAliveMessage() {
         // console.log("Send client alive message to server");
@@ -107,11 +120,9 @@ function App() {
             webSocket.send(`VSMMessage#STATUS#alive`);
             setTimeout(clientAliveMessage, 100);
         }
-
     }
 
     function sendSubmitToVsm() {
-        console.log(userSubmittedInfo);
 
         for (let i = 0; i < inputSheetFieldDetails.variable.length; i++) {
             let variable = inputSheetFieldDetails.variable[i];
@@ -144,7 +155,6 @@ function App() {
 
     function sendCancelToVsm() {
         webSocket.send(`VSMMessage#VAR#request_result#CANCEL`);
-        console.log("Cancelling");
         for (let i = 0; i < inputSheetFieldDetails.variable.length; i++) {
             let variable = inputSheetFieldDetails.variable[i];
             if (inputSheetFieldDetails.type[i] === "radio") {
@@ -169,8 +179,6 @@ function App() {
                 }
             }
         }
-
-        // window.location.reload();
     }
 
 
@@ -200,7 +208,7 @@ function App() {
                     <InfoLogUnit vsmVars={vsmVarsForDevToolComp}
                                  collapseDevToolComp={collapseDevToolComp}
                                  setCollapseDevToolComp={setCollapseDevToolComp}
-                                 infoLogConents={infoLogContents}
+                                 infoLogContents={infoLogContents}
                     />
                 </div>
 
@@ -216,6 +224,7 @@ function App() {
                                     updateUserSubmittedInfo={updateUserSubmittedInfo}
                                     sendSubmit={sendSubmitToVsm} sendCancel={sendCancelToVsm}
                                     userSubmittedInfo={userSubmittedInfo}
+                                    infoLogContents={infoLogContents}
                     />
                 </div>
 

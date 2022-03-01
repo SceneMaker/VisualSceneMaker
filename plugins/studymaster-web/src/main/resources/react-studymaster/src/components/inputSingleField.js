@@ -16,6 +16,21 @@ function GenerateInputFieldWithType(props, updateUserSubmittedInfo, formContents
 
     const [checkBoxState, setCheckBoxState] = useState(values.reduce((a, v) => ({...a, [v]: false}), {}));
 
+    function checkboxArrContainsObj(a, obj) {
+
+        if (typeof a === "undefined") {
+            return false;
+        }
+
+        let i = a.length;
+        while (i--) {
+            if (a[i] === obj) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 
     function updateCheckBoxAndUserInfo(variable, e) {
 
@@ -25,8 +40,6 @@ function GenerateInputFieldWithType(props, updateUserSubmittedInfo, formContents
         }
 
         setCheckBoxState(newCheckBoxState)
-
-        console.log(Object.keys(newCheckBoxState).filter(k => newCheckBoxState[k] === true));
 
         let newCheckBoxStateArr = Object.keys(newCheckBoxState).filter(k => newCheckBoxState[k] === true);
         updateUserSubmittedInfo(variable, newCheckBoxStateArr);
@@ -117,6 +130,7 @@ function GenerateInputFieldWithType(props, updateUserSubmittedInfo, formContents
                                         type={"radio"}
                                         label={option}
                                         value={option || ''}
+                                        checked={props.userSubmittedInfo[variable] === option || false}
                                         onChange={e => {
                                             updateUserSubmittedInfo(variable, e.target.value);
                                         }}
@@ -155,6 +169,7 @@ function GenerateInputFieldWithType(props, updateUserSubmittedInfo, formContents
                                         defaultValue={false}
                                         name={option}
                                         color="default"
+                                        checked={checkboxArrContainsObj(props.userSubmittedInfo[variable], option)}
                                         onChange={e => {
                                             updateCheckBoxAndUserInfo(variable, e);
                                         }}

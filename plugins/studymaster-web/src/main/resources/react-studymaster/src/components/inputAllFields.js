@@ -1,5 +1,5 @@
 import React from "react";
-import GenerateInputFieldWithType from "./inputSingleField2";
+import GenerateInputFieldWithType from "./inputSingleField";
 
 
 function GenerateFields(props) {

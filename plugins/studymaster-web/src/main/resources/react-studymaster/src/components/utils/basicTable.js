@@ -37,7 +37,8 @@ const BasicTable = (props) => {
 
     return (
         <TableContainer component={Paper}>
-            <Table sx={{minWidth: 650}} size="small" aria-label="simple table">
+            <Table sx={{
+            }} size="small" aria-label="simple table">
                 <TableHead>
                     <StyledTableRow>
                         {
@@ -59,7 +60,7 @@ const BasicTable = (props) => {
                                 </StyledTableCell>
                                 {
                                     props.colVals[key].map((vals, idx) => (
-                                        <StyledTableCell align="right"
+                                        <StyledTableCell
                                                          key={idx}>
                                             {vals}
                                         </StyledTableCell>
