@@ -5,41 +5,35 @@
       <SceneUttr lower="31" upper="171" punct=".">
         <ActionObject lower="31" upper="38" actor="" name="REQUEST">
           <ActionFeature lower="39" upper="81" key="var" val="'name;surname;weight;gender;graduated'"/>
-          <ActionFeature lower="82" upper="130" key="value" val="'Enter name;Enter surname;in kg;m,f,d;yes'"/>
+          <ActionFeature lower="82" upper="130" key="value" val="'Enter name;Enter surname;in kg;m,f,d;1,2'"/>
           <ActionFeature lower="131" upper="169" key="type" val="'text;text;number;radio;checkbox'"/>
         </ActionObject>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="173" upper="266" language="@@" identifier="InformFill">
-    <SceneTurn lower="193" upper="266" speaker="web">
-      <SceneUttr lower="199" upper="266" punct=".">
+  <SceneObject lower="173" upper="236" language="@@" identifier="InformFill">
+    <SceneTurn lower="193" upper="236" speaker="web">
+      <SceneUttr lower="199" upper="236" punct=".">
         <ActionObject lower="199" upper="205" actor="" name="INFORM">
-          <ActionFeature lower="206" upper="223" key="var" val="'information'"/>
-          <ActionFeature lower="224" upper="252" key="value" val="'Please fill the form'"/>
-          <ActionFeature lower="253" upper="264" key="type" val="'text'"/>
+          <ActionFeature lower="206" upper="234" key="value" val="'Please fill the form'"/>
         </ActionObject>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="268" upper="362" language="@@" identifier="InformNewForm">
-    <SceneTurn lower="291" upper="362" speaker="web">
-      <SceneUttr lower="297" upper="362" punct=".">
-        <ActionObject lower="297" upper="303" actor="" name="INFORM">
-          <ActionFeature lower="304" upper="321" key="var" val="'information'"/>
-          <ActionFeature lower="322" upper="348" key="value" val="'New form coming up'"/>
-          <ActionFeature lower="349" upper="360" key="type" val="'text'"/>
+  <SceneObject lower="238" upper="302" language="@@" identifier="InformNewForm">
+    <SceneTurn lower="261" upper="302" speaker="web">
+      <SceneUttr lower="267" upper="302" punct=".">
+        <ActionObject lower="267" upper="273" actor="" name="INFORM">
+          <ActionFeature lower="274" upper="300" key="value" val="'New form coming up'"/>
         </ActionObject>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="364" upper="474" language="@@" identifier="InformWelcome">
-    <SceneTurn lower="387" upper="474" speaker="web">
-      <SceneUttr lower="393" upper="474" punct=".">
-        <ActionObject lower="393" upper="399" actor="" name="INFORM">
-          <ActionFeature lower="400" upper="417" key="var" val="'information'"/>
-          <ActionFeature lower="418" upper="460" key="value" val="'The Welcome Phase has been started'"/>
-          <ActionFeature lower="461" upper="472" key="type" val="'text'"/>
+  <SceneObject lower="304" upper="384" language="@@" identifier="InformWelcome">
+    <SceneTurn lower="327" upper="384" speaker="web">
+      <SceneUttr lower="333" upper="384" punct=".">
+        <ActionObject lower="333" upper="339" actor="" name="INFORM">
+          <ActionFeature lower="340" upper="382" key="value" val="'The Welcome Phase has been started'"/>
         </ActionObject>
       </SceneUttr>
     </SceneTurn>
