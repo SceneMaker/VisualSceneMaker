@@ -26,13 +26,11 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Objects;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
- * @author Patrick Gebhard, Lenny Händler, Sarah Hoffmann, Fabrizio Nunnari
+ * @author Patrick Gebhard, Lenny Händler, Sarah Hoffmann, Fabrizio Nunnari, Chirag Bhuvaneshwara
  * This plugin uses the Javalin web server to create a remote "Studymaster" connection over websocket
- * and serve a html/javascript interface for control. The interface source is located in the resources.
+ * and serve a html/javascript interface (developed with React) for control. The interface source is located in the resources.
  */
 public class WebStudyMasterExecutor extends ActivityExecutor implements EventListener {
 
@@ -61,7 +59,7 @@ public class WebStudyMasterExecutor extends ActivityExecutor implements EventLis
      * Project variable storing the satus of the remote Web GUI .
      */
     private static final String sSTUDYMASTER_INFO_VAR = "studymaster_info";
-    private static final String sSTUDYMASTER_INFO_VAR_DEFAULT = "alive";
+//    private static final String sSTUDYMASTER_INFO_VAR_DEFAULT = "alive";
 
     /**
      * HTTP port
@@ -120,11 +118,10 @@ public class WebStudyMasterExecutor extends ActivityExecutor implements EventLis
 
     @Override
     public void launch() {
-        //mLogger.message("Loading StudyMaster message sender and receiver ...");
+        mLogger.message("Loading StudyMaster message sender and receiver ...");
 
         EventDispatcher.getInstance().register(this);
 
-        //
         // Retrieve property values
         mGUIConnectedVar = mConfig.getProperty(sGUI_CONNECTED_VAR, sGUI_CONNECTED_VAR_DEFAULT);
         final int http_port = Integer.parseInt(Objects.requireNonNull(mConfig.getProperty(sJAVALIN_PORT_VAR, sJAVALIN_PORT_VAR_DEFAULT)));
@@ -167,8 +164,10 @@ public class WebStudyMasterExecutor extends ActivityExecutor implements EventLis
      */
     private synchronized void addWs(WsConnectContext ws) {
         ws.session.setIdleTimeout(Long.MAX_VALUE);
-        //mLogger.message("New WebSocket connection.");
+
+        mLogger.message("New WebSocket connection made.");
         this.mWebsockets.add(ws);
+        mLogger.message("Total number of web sockets: " + this.mWebsockets.size());
 
         // Update the connection status
         if (mProject.hasVariable(mGUIConnectedVar)) {
@@ -180,19 +179,9 @@ public class WebStudyMasterExecutor extends ActivityExecutor implements EventLis
             ws.send(mLastRequestMessage);
         }
         // If an inform is pending, send it to the new client
-        else if (mLastInformMessage != null) {
+        if (mLastInformMessage != null) {
             ws.send(mLastInformMessage);
         }
-
-//        try {
-//            mLastRequestMessage = "VSMMessage#UPDATE#name#Carla";
-//            synchronized (this) {
-//                mWebsockets.forEach(websocks -> websocks.send(mLastRequestMessage));
-//
-//            }
-//        } catch (IllegalArgumentException e) {
-//            mLogger.failure("Malformed REQUEST");
-//        }
 
     }
 
@@ -201,15 +190,15 @@ public class WebStudyMasterExecutor extends ActivityExecutor implements EventLis
      * Invoked when a websocket connection is closed (web app is closed, or timeout?).
      */
     private synchronized void removeWs(WsCloseContext ctx) {
-        //mLogger.message("Closed WebSocket connection.");
+        mLogger.message("Closed WebSocket connection.");
         mWebsockets.remove(ctx);
+        mLogger.message("Total number of web sockets: " + this.mWebsockets.size());
 
         // Set the GUIState variable to false if there are no more GUI connections.
         if (mWebsockets.size() == 0) {
             if (mProject.hasVariable(mGUIConnectedVar)) {
                 mProject.setVariable(mGUIConnectedVar, false);
             }
-
         }
     }
 
@@ -238,34 +227,33 @@ public class WebStudyMasterExecutor extends ActivityExecutor implements EventLis
             } else if (action_name.equals("REQUEST")) {
                 mLastRequestMessage = null; // In case a previous request was still active.
                 try {
-                    mLastRequestMessage = encodeRequest(activity, features);
+                    mLastRequestMessage = encodeRequest(features);
                     synchronized (this) {
                         mWebsockets.forEach(ws -> ws.send(mLastRequestMessage));
                     }
                 } catch (IllegalArgumentException e) {
-                    //mLogger.failure("Malformed REQUEST");
+                    mLogger.failure("Malformed REQUEST");
                 }
             } else if (action_name.equals("INFORM")) {
                 mLastInformMessage = null; // In case a previous inform was still active.
                 try {
-                    mLastInformMessage = encodeInform(activity, features);
+                    mLastInformMessage = encodeInform(features);
                     synchronized (this) {
                         mWebsockets.forEach(ws -> ws.send(mLastInformMessage));
                     }
                 } catch (IllegalArgumentException e) {
-                    //mLogger.failure("Malformed REQUEST");
+                    mLogger.failure("Malformed INFORM");
                 }
             } else {
-                //mLogger.warning("Unknown action '" + action_name + "'");
+                mLogger.warning("Unknown action '" + action_name + "'");
             }
         }
     }
 
 
     /**
-     * Given the activity and the feastures of a REQUEST action, convert it into a string in the protocol format.
+     * Given the features of a REQUEST action, convert it into a string in the protocol format.
      *
-     * @param activity the invoked command ([<command> ...]). Accepted: REQUEST
      * @param features parameters to the command ([... x="hello world"...]).
      *                 this plugin takes arguments
      *                 - time
@@ -275,8 +263,7 @@ public class WebStudyMasterExecutor extends ActivityExecutor implements EventLis
      * @return String that is sent to the js client, the format is the same as in the Studymaster plugin
      */
     @NotNull
-    private String encodeRequest(AbstractActivity activity, LinkedList<ActionFeature> features) throws IllegalArgumentException {
-        // var mMessage = activity.getName();
+    private String encodeRequest(LinkedList<ActionFeature> features) throws IllegalArgumentException {
         String varRequest = getActionFeatureValue("var", features);
         String valueRequest = getActionFeatureValue("value", features);
         String typeRequest = getActionFeatureValue("type", features);
@@ -300,11 +287,21 @@ public class WebStudyMasterExecutor extends ActivityExecutor implements EventLis
         }
     }
 
-    private String encodeInform(AbstractActivity activity, LinkedList<ActionFeature> features) throws IllegalArgumentException {
-        // var mMessage = activity.getName();
-        String varRequest = getActionFeatureValue("var", features);
+    /**
+     * Given the features of an INFORM action, convert it into a string in the protocol format.
+     *
+     * @param features parameters to the command ([... x="hello world"...]).
+     *                 this plugin takes arguments
+     *                 - time
+     *                 - var: variables
+     *                 - value: value(s) for every variable.
+     *                 - type: types for the inputs for every variable.
+     * @return String that is sent to the js client to provide information in the INFORM box of the Web GUI.
+     */
+    private String encodeInform(LinkedList<ActionFeature> features) throws IllegalArgumentException {
+        String varRequest = "information";
         String valueRequest = getActionFeatureValue("value", features);
-        String typeRequest = getActionFeatureValue("type", features);
+        String typeRequest = "text";
 
         long timestamp = System.currentTimeMillis();
 
@@ -323,24 +320,6 @@ public class WebStudyMasterExecutor extends ActivityExecutor implements EventLis
         } else {
             throw new IllegalArgumentException("INFORM message malformed");
         }
-    }
-
-    /**
-     * Format a message to the client
-     *
-     * @param mMessage         Message to be displayed
-     * @param mMessageTimeInfo action parameter "time"
-     * @param timestamp        Time the message was sent
-     * @return Message in Studymaster format
-     */
-    @NotNull
-    private String message(String mMessage, String mMessageTimeInfo, long timestamp) {
-        return (
-                sMSG_HEADER
-                        + mMessage
-                        + sMSG_SEPARATOR
-                        + timestamp
-                        + ((!mMessageTimeInfo.isEmpty()) ? sMSG_SEPARATOR + mMessageTimeInfo : ""));
     }
 
 
@@ -367,44 +346,25 @@ public class WebStudyMasterExecutor extends ActivityExecutor implements EventLis
                         var = mRequestResultVar;
                         // reset the request cache
                         mLastRequestMessage = null;
-//                        mLastInformMessage = null ; //TODO: Check
+                        // reset the inform cache
+                        mLastInformMessage = null;
                     }
 
                     if (mProject.hasVariable(var)) {
-                        //mLogger.message("Assigning sceneflow variable " + var + " with value " + value);
+                        mLogger.message("Assigning sceneflow variable " + var + " with value " + value);
                         mProject.setVariable(var, new StringValue(value));
 
-                        try {
-//                            System.out.println(mProject.getVarDefInSceneFlow());
-                            mLastRequestMessage = "VSMMessage#UPDATE#" + var + "#" + value;
-
-//                            mLastRequestMessage = "VSMMessage#UPDATE#name#Carla#" + mProject.getVarDefInSceneFlow().get(0);
-//                            synchronized (this) {
-//                                if (var.equals(sREQUEST_RESULT_VAR_DEFAULT)) {
-//                                    mWebsockets.forEach(websocks -> websocks.send(mLastRequestMessage));
-//                                    mLastRequestMessage = "VSMMessage#UPDATE#" + var + "#" + " ";
-//                                    mWebsockets.forEach(websocks -> websocks.send(mLastRequestMessage));
-//                                } else {
-//                                    mWebsockets.forEach(websocks -> websocks.send(mLastRequestMessage));
-//                                }
-//
-//                            }
-                        } catch (IllegalArgumentException e) {
-                            //mLogger.failure("Malformed REQUEST");
-                        }
-
                     } else {
-                        //mLogger.warning("Can't assign sceneflow variable " + var + " with value " + value + ": global project variable not defined");
+                        mLogger.warning("Can't assign sceneflow variable " + var + " with value " + value + ": global project variable not defined");
                     }
 
                     // MESSAGE GO: VSMMessage#Go
                 } else if (msg.equals("Go")) {
-                    //mLogger.message("Assigning sceneflow variable " + mSceneflowGoVar + " with value " + message);
+                    mLogger.message("Assigning sceneflow variable " + mSceneflowGoVar + " with value " + message);
                     mProject.setVariable(mSceneflowGoVar, true);
 
-                    // MESSAGE UNKNOWN!!!
                 }
-                // MESSAGESTATUS
+                // MESSAGE STATUS: VSMMessage#STATUS
                 else if (msg.equals("STATUS")) {
                     String value = msgParts[2];
                     mLogger.message("Assigning sceneflow variable " + sSTUDYMASTER_INFO_VAR + " with value " + value);
@@ -412,16 +372,27 @@ public class WebStudyMasterExecutor extends ActivityExecutor implements EventLis
                     if (mProject.hasVariable(sSTUDYMASTER_INFO_VAR)) {
                         mProject.setVariable(sSTUDYMASTER_INFO_VAR, value);
                     }
+
+                    try {
+                        String PongMessageToClient = "VSMMessage#STATUS#alive#okay";
+                        synchronized (this) {
+                            mWebsockets.forEach(ws -> ws.send(PongMessageToClient));
+                        }
+                    } catch (Exception e) {
+                        mLogger.failure("Unknown error: " + e);
+                    }
+
                 } else {
-                    //mLogger.warning("Unsupported message '" + msg + "' received.");
+                    // MESSAGE UNKNOWN!!!
+                    mLogger.warning("Unsupported message '" + msg + "' received.");
                 }
 
             } else {
-                //mLogger.warning("Message malformed: no proper separation with '" + sMSG_SEPARATOR + "'");
+                mLogger.warning("Message malformed: no proper separation with '" + sMSG_SEPARATOR + "'");
             }
 
         } else {
-            //mLogger.warning("Message malformed: no header '" + sMSG_HEADER + "'");
+            mLogger.warning("Message malformed: no header '" + sMSG_HEADER + "'");
         }
     }
 
@@ -432,12 +403,13 @@ public class WebStudyMasterExecutor extends ActivityExecutor implements EventLis
             ev.getVarValue();
             String info = event.toString();
             info = info.split("\\(")[1].split(",")[0] + "#" + info.split("#c#")[1].split("\\)")[0];
-            mLastInformMessage = "VSMMessage#UPDATE#" + info;
-//            synchronized (this) {
-            mWebsockets.forEach(websocks -> websocks.send(mLastInformMessage));
-//            }
-            mLogger.message(mLastInformMessage);
+            String varListUpdatesMessage = "VSMMessage#UPDATE#" + info.replace("'", "");
+
+            try {
+                mWebsockets.forEach(websocks -> websocks.send(varListUpdatesMessage));
+            } catch (Exception e) {
+                mLogger.failure(e.toString());
+            }
         }
-        ;
     }
 }
