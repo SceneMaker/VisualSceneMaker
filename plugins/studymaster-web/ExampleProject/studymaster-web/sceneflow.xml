@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<SceneFlow id="" name="default" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Thu, 3 Mar 2022 11:39:52" start="N1;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
+<SceneFlow id="" name="default" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Wed, 9 Mar 2022 14:17:19" start="N1;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
   <Define>
   </Define>
   <Declare>
@@ -58,7 +58,7 @@
     </Graphics>
     <Text style="color:blue">
       User clicked Cancel.
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      Reset result action and loop back for another request.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  Reset result action and loop back for another request.
     </Text>
   </Comment>
   <Comment>
@@ -67,7 +67,7 @@
     </Graphics>
     <Text style="color:blue">
       Start.
-                                                                                                                                                                                                                                                                                                                                                                                                                              Open http://localhost:8080 to see the GUI
+                                                                                                                                                                                                                                                                                                                                                                                                                                          Open http://localhost:8080 to see the GUI
     </Text>
   </Comment>
   <Comment>
@@ -184,17 +184,17 @@
     </Declare>
     <Commands>
       <PlayScene>
-        <StringLiteral><![CDATA[InformFill]]></StringLiteral>
+        <StringLiteral><![CDATA[InformProceed]]></StringLiteral>
       </PlayScene>
     </Commands>
-    <TEdge target="N4" start="" timeout="1000">
+    <EEdge target="N4" start ="">
     <Graphics>
       <Connection>
         <ControlPoint xPos="506" yPos="226" ctrlXPos="606" ctrlYPos="226"/>
         <ControlPoint xPos="746" yPos="226" ctrlXPos="646" ctrlYPos="226"/>
       </Connection>
     </Graphics>
-    </TEdge>
+    </EEdge>
     <Graphics>
       <Position xPos="426" yPos="186"/>
     </Graphics>

@@ -20,20 +20,29 @@
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="238" upper="302" language="@@" identifier="InformNewForm">
-    <SceneTurn lower="261" upper="302" speaker="web">
-      <SceneUttr lower="267" upper="302" punct=".">
-        <ActionObject lower="267" upper="273" actor="" name="INFORM">
-          <ActionFeature lower="274" upper="300" key="value" val="'New form coming up'"/>
+  <SceneObject lower="238" upper="340" language="@@" identifier="InformProceed">
+    <SceneTurn lower="261" upper="340" speaker="web">
+      <SceneUttr lower="267" upper="340" punct=".">
+        <ActionObject lower="267" upper="274" actor="" name="PROCEED">
+          <ActionFeature lower="275" upper="338" key="value" val="'Please press the proceed button if it will not proceed.'"/>
         </ActionObject>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="304" upper="384" language="@@" identifier="InformWelcome">
-    <SceneTurn lower="327" upper="384" speaker="web">
-      <SceneUttr lower="333" upper="384" punct=".">
-        <ActionObject lower="333" upper="339" actor="" name="INFORM">
-          <ActionFeature lower="340" upper="382" key="value" val="'The Welcome Phase has been started'"/>
+  <SceneObject lower="342" upper="406" language="@@" identifier="InformNewForm">
+    <SceneTurn lower="365" upper="406" speaker="web">
+      <SceneUttr lower="371" upper="406" punct=".">
+        <ActionObject lower="371" upper="377" actor="" name="INFORM">
+          <ActionFeature lower="378" upper="404" key="value" val="'New form coming up'"/>
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="408" upper="488" language="@@" identifier="InformWelcome">
+    <SceneTurn lower="431" upper="488" speaker="web">
+      <SceneUttr lower="437" upper="488" punct=".">
+        <ActionObject lower="437" upper="443" actor="" name="INFORM">
+          <ActionFeature lower="444" upper="486" key="value" val="'The Welcome Phase has been started'"/>
         </ActionObject>
       </SceneUttr>
     </SceneTurn>
