@@ -14,6 +14,7 @@ import de.dfki.vsm.model.scenescript.ActionFeature;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
 import de.dfki.vsm.runtime.activity.SpeechActivity;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
+import de.dfki.vsm.runtime.activity.scheduler.ActivityWorker;
 import de.dfki.vsm.runtime.interpreter.value.StringValue;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
@@ -23,9 +24,7 @@ import io.javalin.websocket.WsConnectContext;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * @author Patrick Gebhard, Lenny Händler, Sarah Hoffmann, Fabrizio Nunnari, Chirag Bhuvaneshwara
@@ -33,6 +32,10 @@ import java.util.Objects;
  * and serve a html/javascript interface (developed with React) for control. The interface source is located in the resources.
  */
 public class WebStudyMasterExecutor extends ActivityExecutor implements EventListener {
+
+    static long sUtteranceId = 0;
+    // The map of activity worker
+    private final Map<String, ActivityWorker> mActivityWorkerMap = new HashMap<>();
 
     private static final String sMSG_SEPARATOR = "#";
     private static final String sMSG_HEADER = "VSMMessage" + sMSG_SEPARATOR;
@@ -98,6 +101,11 @@ public class WebStudyMasterExecutor extends ActivityExecutor implements EventLis
      */
     private String mLastRequestMessage;
     private String mLastInformMessage;
+
+
+    public synchronized Long getVMUtteranceId() {
+        return ++sUtteranceId;
+    }
 
     /**
      * Default constructor, pass values to superclass.
@@ -206,6 +214,8 @@ public class WebStudyMasterExecutor extends ActivityExecutor implements EventLis
     @Override
     public void execute(AbstractActivity activity) {
 
+        final String activity_actor = activity.getActor();
+
         if (activity instanceof SpeechActivity) {
             SpeechActivity sa = (SpeechActivity) activity;
             String text = sa.getTextOnly("$(").trim();
@@ -214,11 +224,14 @@ public class WebStudyMasterExecutor extends ActivityExecutor implements EventLis
             // If text is empty - assume activity has empty text but has marker activities registered
             if (text.isEmpty()) {
                 for (String tm : timemarks) {
-                    //mLogger.warning("Directly executing activity at timemark " + tm);
+                    mLogger.warning("Directly executing activity at timemark " + tm);
                     mProject.getRunTimePlayer().getActivityScheduler().handle(tm);
                 }
             }
         } else {
+
+            String vmuid = activity_actor + "_utterance_" + getVMUtteranceId();
+
             final String action_name = activity.getName();
             final LinkedList<ActionFeature> features = activity.getFeatures();
 
@@ -227,13 +240,44 @@ public class WebStudyMasterExecutor extends ActivityExecutor implements EventLis
             } else if (action_name.equals("REQUEST")) {
                 mLastRequestMessage = null; // In case a previous request was still active.
                 try {
-                    mLastRequestMessage = encodeRequest(features);
+                    mLastRequestMessage = encodeRequest(features, vmuid);
                     synchronized (this) {
                         mWebsockets.forEach(ws -> ws.send(mLastRequestMessage));
                     }
                 } catch (IllegalArgumentException e) {
                     mLogger.failure("Malformed REQUEST");
                 }
+
+                // Make text activity blocking
+                activity.setType(AbstractActivity.Type.blocking);
+
+                synchronized (mActivityWorkerMap) {
+                    if (!mWebsockets.isEmpty()) { //only enable blocking method if at least one connection exists.
+                        // TODO: make sure it is a valid connection with a valid VuppetMaster client
+
+                        // organize wait for feedback if (activity instanceof SpeechActivity) {
+                        ActivityWorker cAW = (ActivityWorker) Thread.currentThread();
+                        mActivityWorkerMap.put(vmuid, cAW);
+
+                        if (activity.getType() == AbstractActivity.Type.blocking) { // Wait only if activity is blocking
+                            // wait until we got feedback
+                            mLogger.message("ActivityWorker waiting for feedback on action with id " + vmuid + "...");
+                            while (mActivityWorkerMap.containsValue(cAW)) {
+                                try {
+                                    mActivityWorkerMap.wait();
+                                } catch (InterruptedException exc) {
+                                    mLogger.failure(exc.toString());
+                                }
+                            }
+                            mLogger.message("ActivityWorker proceed - got feedback on blocking action with id " + vmuid + "...");
+                        } else {
+                            mLogger.message("ActivityWorker does not feedback on action with id " + vmuid + " since action is non-blocking ...");
+                        }
+                    } else {
+                        mLogger.warning("Blocking action command was send to nowhere. Executor will not wait. ");
+                    }
+                }
+
             } else if (action_name.equals("INFORM")) {
                 mLastInformMessage = null; // In case a previous inform was still active.
                 try {
@@ -263,7 +307,7 @@ public class WebStudyMasterExecutor extends ActivityExecutor implements EventLis
      * @return String that is sent to the js client, the format is the same as in the Studymaster plugin
      */
     @NotNull
-    private String encodeRequest(LinkedList<ActionFeature> features) throws IllegalArgumentException {
+    private String encodeRequest(LinkedList<ActionFeature> features, String vm_uid) throws IllegalArgumentException {
         String varRequest = getActionFeatureValue("var", features);
         String valueRequest = getActionFeatureValue("value", features);
         String typeRequest = getActionFeatureValue("type", features);
@@ -280,7 +324,10 @@ public class WebStudyMasterExecutor extends ActivityExecutor implements EventLis
                     + sMSG_SEPARATOR
                     + valueRequest.replace("'", "")
                     + sMSG_SEPARATOR
-                    + typeRequest.replace("'", "");
+                    + typeRequest.replace("'", "")
+                    + sMSG_SEPARATOR
+                    + vm_uid
+                    ;
 
         } else {
             throw new IllegalArgumentException("REQUEST message malformed");
@@ -348,10 +395,27 @@ public class WebStudyMasterExecutor extends ActivityExecutor implements EventLis
                         mLastRequestMessage = null;
                         // reset the inform cache
                         mLastInformMessage = null;
+
+                        mLogger.message("Processing submit message ...");
+                        String vm_uid_frm_client = msgParts[4];
+                        mLogger.message("Unlocking thread " + vm_uid_frm_client);
+
+                        synchronized (mActivityWorkerMap) {
+                            if (mActivityWorkerMap.containsKey(vm_uid_frm_client)) {
+                                mLogger.message("Removing id from active activities ids ...");
+                                mActivityWorkerMap.remove(vm_uid_frm_client);
+                                // wake me up ...
+                                mLogger.message("Unlocking activity manager ...");
+                                mActivityWorkerMap.notifyAll();
+                                mLogger.message("done.");
+                            } else {
+                                mLogger.failure("Activityworker for action with id " + vm_uid_frm_client + " has been stopped before ...");
+                            }
+                        }
                     }
 
                     if (mProject.hasVariable(var)) {
-                        mLogger.message("Assigning sceneflow variable " + var + " with value " + value);
+//                        mLogger.message("Assigning sceneflow variable " + var + " with value " + value);
                         mProject.setVariable(var, new StringValue(value));
 
                     } else {
@@ -360,14 +424,14 @@ public class WebStudyMasterExecutor extends ActivityExecutor implements EventLis
 
                     // MESSAGE GO: VSMMessage#Go
                 } else if (msg.equals("Go")) {
-                    mLogger.message("Assigning sceneflow variable " + mSceneflowGoVar + " with value " + message);
+//                    mLogger.message("Assigning sceneflow variable " + mSceneflowGoVar + " with value " + message);
                     mProject.setVariable(mSceneflowGoVar, true);
 
                 }
                 // MESSAGE STATUS: VSMMessage#STATUS
                 else if (msg.equals("STATUS")) {
                     String value = msgParts[2];
-                    mLogger.message("Assigning sceneflow variable " + sSTUDYMASTER_INFO_VAR + " with value " + value);
+//                    mLogger.message("Assigning sceneflow variable " + sSTUDYMASTER_INFO_VAR + " with value " + value);
 
                     if (mProject.hasVariable(sSTUDYMASTER_INFO_VAR)) {
                         mProject.setVariable(sSTUDYMASTER_INFO_VAR, value);

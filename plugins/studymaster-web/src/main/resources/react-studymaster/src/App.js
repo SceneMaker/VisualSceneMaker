@@ -66,9 +66,10 @@ function App() {
                         variable: parts[3].split(';'),
                         options: parts[4].split(';'),
                         type: parts[5].split(';'),
-                        timestamp: parts[2]
+                        timestamp: parts[2],
+                        vm_uid: parts[6]
                     };
-                    // console.log(newInputSheetFieldDetails);
+                    console.log(newInputSheetFieldDetails);
                     setInputSheetFieldDetails(newInputSheetFieldDetails);
                     let newObj = newInputSheetFieldDetails.variable.reduce((obj, key) => ({...obj, [key]: ""}), {})
                     setUserSubmittedInfo(newObj);
@@ -153,7 +154,8 @@ function App() {
             }
         }
 
-        webSocket.send(`VSMMessage#VAR#request_result#SUBMIT`);
+        webSocket.send(`VSMMessage#VAR#request_result#SUBMIT#` + inputSheetFieldDetails.vm_uid);
+        //TODO: webSocket.send('Unblock thread');
         setInputSheetFieldDetails({
             action: "SUCCESSFULSEND",
             timestamp: inputSheetFieldDetails.timestamp,
