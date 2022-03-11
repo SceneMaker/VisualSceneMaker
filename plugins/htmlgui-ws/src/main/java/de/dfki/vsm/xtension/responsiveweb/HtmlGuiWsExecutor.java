@@ -25,6 +25,7 @@ import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.*;
 
 /**
@@ -196,7 +197,7 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
     }
 
     @Override
-    public void execute(AbstractActivity activity) {
+    public void execute(AbstractActivity activity) throws IOException {
         final String activity_actor = activity.getActor();
 
         if (activity instanceof SpeechActivity) {
@@ -299,6 +300,35 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
                 broadcast(name);
             } else if (name.equalsIgnoreCase("vcToFront")) {
                 broadcast(name);
+            }else if (name.equalsIgnoreCase("Circle")){
+                try {
+                    Process p;
+                    p = Runtime.getRuntime().exec("/home/rhythm/Downloads/wetransfer_planarm-software_2021-12-03_1101(1)/planarm_unity(1)/planarm_unity/VisualSceneMaker/circle.x86_64");
+                } catch (IOException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }else if (name.equalsIgnoreCase("Infinity")){
+                try {
+                    Process p;
+                    p = Runtime.getRuntime().exec("/home/rhythm/Downloads/wetransfer_planarm-software_2021-12-03_1101(1)/planarm_unity(1)/planarm_unity/VisualSceneMaker/infinity.x86_64");
+                } catch (IOException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }else if (name.equalsIgnoreCase("Line")){
+                try {
+                    Process p;
+                    p = Runtime.getRuntime().exec("/home/rhythm/Downloads/wetransfer_planarm-software_2021-12-03_1101(1)/planarm_unity(1)/planarm_unity/VisualSceneMaker/line.x86_64");
+                    
+                }
+                catch (IOException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+
+
+
             }
             else if (!name.isEmpty()) { //check if name represents a webpage - must be configured in the device's agent as key, value pair.
                 String guipage = mProject.getAgentConfig(activity_actor).getProperty(name);
