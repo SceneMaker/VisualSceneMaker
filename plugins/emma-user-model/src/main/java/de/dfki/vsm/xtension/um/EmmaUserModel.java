@@ -52,8 +52,6 @@ public class EmmaUserModel extends ActivityExecutor {
 
     }
 
-    ;
-
     // sceneflow variables
     private final String mVSM_DiaryDay = "diaryDay";
     private final String mVSM_DiaryDailyItemsNumber = "diaryDailyItemsNum";
