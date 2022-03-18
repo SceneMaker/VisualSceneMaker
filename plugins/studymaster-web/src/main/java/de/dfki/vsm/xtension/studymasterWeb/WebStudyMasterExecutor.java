@@ -34,7 +34,7 @@ import java.util.*;
 public class WebStudyMasterExecutor extends ActivityExecutor implements EventListener {
 
     static long sUtteranceId = 0;
-    // The map of activity worker
+    // The map of activity worker to keep track of all the active threads in the current scene
     private final Map<String, ActivityWorker> mActivityWorkerMap = new HashMap<>();
 
     private static final String sMSG_SEPARATOR = "#";
@@ -208,6 +208,9 @@ public class WebStudyMasterExecutor extends ActivityExecutor implements EventLis
                 mProject.setVariable(mGUIConnectedVar, false);
             }
         }
+
+        mLastInformMessage = null; // In case a previous inform was still active.
+        mLastRequestMessage = null; // In case a previous request was still active.
     }
 
 
@@ -253,7 +256,48 @@ public class WebStudyMasterExecutor extends ActivityExecutor implements EventLis
 
                 synchronized (mActivityWorkerMap) {
                     if (!mWebsockets.isEmpty()) { //only enable blocking method if at least one connection exists.
-                        // TODO: make sure it is a valid connection with a valid VuppetMaster client
+                        // TODO: make sure it is a valid connection with a valid Studymaster client
+
+                        // organize wait for feedback if (activity instanceof SpeechActivity) {
+                        ActivityWorker cAW = (ActivityWorker) Thread.currentThread();
+                        mActivityWorkerMap.put(vmuid, cAW);
+
+                        if (activity.getType() == AbstractActivity.Type.blocking) { // Wait only if activity is blocking
+                            // wait until we got feedback
+                            mLogger.message("ActivityWorker waiting for feedback on action with id " + vmuid + "...");
+                            while (mActivityWorkerMap.containsValue(cAW)) {
+                                try {
+                                    mActivityWorkerMap.wait();
+                                } catch (InterruptedException exc) {
+                                    mLogger.failure(exc.toString());
+                                }
+                            }
+                            mLogger.message("ActivityWorker proceed - got feedback on blocking action with id " + vmuid + "...");
+                        } else {
+                            mLogger.message("ActivityWorker does not feedback on action with id " + vmuid + " since action is non-blocking ...");
+                        }
+                    } else {
+                        mLogger.warning("Blocking action command was send to nowhere. Executor will not wait. ");
+                    }
+                }
+
+            } else if (action_name.equals("PROCEED")) {
+                mLastInformMessage = null; // In case a previous inform was still active.
+                try {
+                    mLastInformMessage = encodeProceed(features, vmuid);
+                    synchronized (this) {
+                        mWebsockets.forEach(ws -> ws.send(mLastInformMessage));
+                    }
+                } catch (IllegalArgumentException e) {
+                    mLogger.failure("Malformed INFORM");
+                }
+
+                // Make text activity blocking
+                activity.setType(AbstractActivity.Type.blocking);
+
+                synchronized (mActivityWorkerMap) {
+                    if (!mWebsockets.isEmpty()) { //only enable blocking method if at least one connection exists.
+                        // TODO: make sure it is a valid connection with a valid Studymaster client
 
                         // organize wait for feedback if (activity instanceof SpeechActivity) {
                         ActivityWorker cAW = (ActivityWorker) Thread.currentThread();
@@ -288,6 +332,7 @@ public class WebStudyMasterExecutor extends ActivityExecutor implements EventLis
                 } catch (IllegalArgumentException e) {
                     mLogger.failure("Malformed INFORM");
                 }
+
             } else {
                 mLogger.warning("Unknown action '" + action_name + "'");
             }
@@ -369,6 +414,44 @@ public class WebStudyMasterExecutor extends ActivityExecutor implements EventLis
         }
     }
 
+    /**
+     * Given the features of an INFORM action, convert it into a string in the protocol format.
+     *
+     * @param features parameters to the command ([... x="hello world"...]).
+     *                 this plugin takes arguments
+     *                 - time
+     *                 - var: variables
+     *                 - value: value(s) for every variable.
+     *                 - type: types for the inputs for every variable.
+     * @return String that is sent to the js client to provide information in the INFORM box of the Web GUI.
+     */
+    private String encodeProceed(LinkedList<ActionFeature> features, String vm_uid) throws IllegalArgumentException {
+        String varRequest = "information";
+        String valueRequest = getActionFeatureValue("value", features);
+        String typeRequest = "text";
+
+        long timestamp = System.currentTimeMillis();
+
+        if ((!varRequest.isEmpty()) && (!typeRequest.isEmpty()) && (!valueRequest.isEmpty())) {
+            return sMSG_HEADER
+                    + "PROCEED"
+                    + sMSG_SEPARATOR
+                    + timestamp
+                    + sMSG_SEPARATOR
+                    + varRequest.replace("'", "")
+                    + sMSG_SEPARATOR
+                    + valueRequest.replace("'", "")
+                    + sMSG_SEPARATOR
+                    + typeRequest.replace("'", "")
+                    + sMSG_SEPARATOR
+                    + vm_uid
+                    ;
+
+        } else {
+            throw new IllegalArgumentException("INFORM message malformed");
+        }
+    }
+
 
     /**
      * Invoked when a websocket connection gets a message from the web app.
@@ -409,7 +492,32 @@ public class WebStudyMasterExecutor extends ActivityExecutor implements EventLis
                                 mActivityWorkerMap.notifyAll();
                                 mLogger.message("done.");
                             } else {
-                                mLogger.failure("Activityworker for action with id " + vm_uid_frm_client + " has been stopped before ...");
+                                mLogger.failure("Activityworker for action with id " + vm_uid_frm_client +
+                                        " has been stopped before ...");
+                            }
+                        }
+                    }
+
+                    // If we received the user choice (submit/cancel)
+                    if (var.equals(sREQUEST_RESULT_VAR_DEFAULT)) {
+                        // Reassign the variable name to the one defined in the properties
+                        var = mRequestResultVar;
+
+                        mLogger.message("Processing proceed message ...");
+                        String vm_uid_frm_client = msgParts[4];
+                        mLogger.message("Unlocking thread " + vm_uid_frm_client);
+
+                        synchronized (mActivityWorkerMap) {
+                            if (mActivityWorkerMap.containsKey(vm_uid_frm_client)) {
+                                mLogger.message("Removing id from active activities ids ...");
+                                mActivityWorkerMap.remove(vm_uid_frm_client);
+                                // wake me up ...
+                                mLogger.message("Unlocking activity manager ...");
+                                mActivityWorkerMap.notifyAll();
+                                mLogger.message("done.");
+                            } else {
+                                mLogger.failure("Activityworker for action with id " + vm_uid_frm_client +
+                                        " has been stopped before ...");
                             }
                         }
                     }

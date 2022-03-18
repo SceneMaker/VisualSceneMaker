@@ -1,18 +1,34 @@
 import {Row} from "react-bootstrap";
 import React, {useState} from "react";
-import {FormHelperText, TextField} from "@mui/material";
+import {FormHelperText, Stack, TextField} from "@mui/material";
 import RadioGroup from '@mui/material/RadioGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import FormControl from '@mui/material/FormControl';
-import {Checkbox, InputLabel} from "@material-ui/core";
+import {Checkbox, InputLabel, Slider} from "@material-ui/core";
 import {Form} from "react-bootstrap";
 
-function GenerateInputFieldWithType(props, updateUserSubmittedInfo, formContents, currIdx, error) {
+function GenerateInputFieldWithType(props, updateUserSubmittedInfo, formContents, currIdx, error, webSocket) {
 
 
     let variable = formContents.variable[currIdx];
 
+    const [sliderVal, setSliderVal] = React.useState(50);
+
     let values = formContents.options[currIdx].split(',');
+    const marks = [
+        {
+            value: 0,
+            label: values[0],
+        },
+        {
+            value: 100,
+            label: values[1],
+        }
+    ];
+
+    function valuetext(value) {
+        return `${value}`;
+    }
 
     const [checkBoxState, setCheckBoxState] = useState(values.reduce((a, v) => ({...a, [v]: false}), {}));
 
@@ -43,6 +59,12 @@ function GenerateInputFieldWithType(props, updateUserSubmittedInfo, formContents
 
         let newCheckBoxStateArr = Object.keys(newCheckBoxState).filter(k => newCheckBoxState[k] === true);
         updateUserSubmittedInfo(variable, newCheckBoxStateArr);
+        let checkBoxStateStr = " ";
+        if (newCheckBoxStateArr.length > 0){
+            checkBoxStateStr = newCheckBoxStateArr.join(",");
+        }
+        props.webSocket.send(`VSMMessage#VAR#${variable}#` + checkBoxStateStr);
+
     }
 
     return (
@@ -66,6 +88,7 @@ function GenerateInputFieldWithType(props, updateUserSubmittedInfo, formContents
                                id={variable}
                                onChange={e => {
                                    updateUserSubmittedInfo(variable, e.target.value);
+                                   props.webSocket.send(`VSMMessage#VAR#${variable}#${e.target.value}`);
                                }}
                                {...(error[variable] && {
                                    error: true,
@@ -93,7 +116,10 @@ function GenerateInputFieldWithType(props, updateUserSubmittedInfo, formContents
                         label={formContents.options[currIdx]}
                         id={variable}
                         value={props.userSubmittedInfo[variable] || ''}
-                        onChange={e => updateUserSubmittedInfo(variable, e.target.value)}
+                        onChange={e => {
+                            updateUserSubmittedInfo(variable, e.target.value);
+                            props.webSocket.send(`VSMMessage#VAR#${variable}#${e.target.value}`);
+                        }}
                         {...(error[variable] && {
                             error: true,
                             helperText: error[variable]
@@ -133,6 +159,7 @@ function GenerateInputFieldWithType(props, updateUserSubmittedInfo, formContents
                                         checked={props.userSubmittedInfo[variable] === option || false}
                                         onChange={e => {
                                             updateUserSubmittedInfo(variable, e.target.value);
+                                            props.webSocket.send(`VSMMessage#VAR#${variable}#${e.target.value}`);
                                         }}
                                     />
                                 )}
@@ -172,11 +199,52 @@ function GenerateInputFieldWithType(props, updateUserSubmittedInfo, formContents
                                         checked={checkboxArrContainsObj(props.userSubmittedInfo[variable], option)}
                                         onChange={e => {
                                             updateCheckBoxAndUserInfo(variable, e);
+                                            // let arr = Object.keys(checkBoxState).filter(k => checkBoxState[k] === true);
+                                            // arr.indexOf(e.target.name) === -1 ? arr.push(e.target.name) : console.log("This item already exists");
+                                            // props.webSocket.send(`VSMMessage#VAR#${variable}#` + arr.join(","));
+                                            // console.log(`VSMMessage#VAR#${variable}#` + arr.join(","));
                                         }}
                                     />
                                 }
                             />
                         )}
+                        <FormHelperText>{error[variable]}</FormHelperText>
+                    </FormControl>
+                </Row>
+            }
+            {
+                (formContents.type[currIdx] === "slider") &&
+                <Row style={{
+                    marginTop: "30px",
+                    marginBottom: "30px"
+                }}>
+                    <InputLabel color='primary' focused={true} htmlFor={variable}
+                                style={{
+                                    marginBottom: "10px"
+                                }}
+                    >
+                        {formContents.variable[currIdx]}
+                    </InputLabel>
+
+                    <FormControl
+                        error={error[variable] !== undefined}
+                    >
+
+                        <Slider
+                            value={sliderVal}
+                            aria-label="Default" valueLabelDisplay="auto"
+                            aria-label="Custom marks"
+                            onChange={(e, newSliderVal) => {
+                                updateUserSubmittedInfo(variable, newSliderVal);
+                                setSliderVal(newSliderVal);
+                                props.webSocket.send(`VSMMessage#VAR#${variable}#${newSliderVal}`);
+                            }}
+                            getAriaValueText={valuetext}
+                            // step={10}
+                            valueLabelDisplay="auto"
+                            marks={marks}
+                        />
+
                         <FormHelperText>{error[variable]}</FormHelperText>
                     </FormControl>
                 </Row>

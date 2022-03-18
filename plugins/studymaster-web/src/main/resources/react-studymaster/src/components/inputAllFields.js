@@ -9,7 +9,7 @@ function GenerateFields(props) {
     if (props.inputSheetFieldDetails && (props.inputSheetFieldDetails.action === "REQUEST")) {
         for (let i = 0; i < props.inputSheetFieldDetails.variable.length; i++) {
             let currField = GenerateInputFieldWithType(props, props.updateUserSubmittedInfo,
-                props.inputSheetFieldDetails, i, props.formFillingErrors);
+                props.inputSheetFieldDetails, i, props.formFillingErrors, props.webSocket);
             fieldsForUserForm.push(currField);
         }
     }
@@ -20,6 +20,10 @@ function GenerateFields(props) {
             {fieldsForUserForm.map((field, index) =>
                 <div
                     key={index}
+
+                    style={{"width": "95%", }}
+
+
                 >
                     {field}
                 </div>
