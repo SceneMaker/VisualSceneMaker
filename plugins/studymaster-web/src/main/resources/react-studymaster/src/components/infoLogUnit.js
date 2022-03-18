@@ -1,17 +1,20 @@
-import {Button} from "react-bootstrap";
+// import {Button} from "react-bootstrap";
 import React, {useState} from "react";
 import DeveloperModeIcon from '@mui/icons-material/DeveloperMode';
 import {Collapse, Tooltip} from "@material-ui/core";
 import BasicTable from "./utils/basicTable";
 import DownloadIcon from '@mui/icons-material/Download';
+import Button from "@mui/material/Button";
+
 
 const InfoLogUnit = (props) => {
     const [open, setOpen] = useState(false);
 
     return (
         <div className="sidebar-divider">
-            <div className="button-area">
+            <div className="button-area ">
                 <Button
+                    variant="contained"
                     onClick={() => {
                         props.setCollapseDevToolComp(!props.collapseDevToolComp);
                         setOpen(!open);

@@ -6,11 +6,22 @@ import InputSheetUnit from "./components/inputSheetUnit";
 import LinkIcon from '@mui/icons-material/Link';
 import LinkOffIcon from '@mui/icons-material/LinkOff';
 import {Tooltip} from "@material-ui/core";
+import NavigateNextIcon from '@mui/icons-material/NavigateNext';
+import Button from "@mui/material/Button";
 
 function genTimeStamp() {
     let today = new Date();
-    let timestamp = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate() + "_" +
-        today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
+    const pad = (n,s=2) => (`${new Array(s).fill(0)}${n}`).slice(-s);
+
+    // let timestamp = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate() + "_" +
+    //     today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds() + ":" + today.getMilliseconds();
+    let ms = 111;
+    ms = (ms < 10? "0": "") + ms;
+    ms = (ms < 100? "0": "") + ms;
+
+    let timestamp = today.getFullYear() + '-' + pad(today.getMonth() + 1) + '-' + pad(today.getDate()) + "_" +
+        pad(today.getHours()) + ":" + pad(today.getMinutes()) + ":" + pad(today.getSeconds()) + ":" + ms;
+        // pad(pad("300", 2), 3);
     return timestamp;
 }
 
@@ -22,6 +33,8 @@ function App() {
     const [informContent, setInformContent] = useState("");
     const [inputSheetFieldDetails, setInputSheetFieldDetails] = useState();
     const [collapseDevToolComp, setCollapseDevToolComp] = useState(true);
+    const [dispProceedBtn, setDispProceedBtn] = useState(false);
+    const [proceedBtnUid, setProceedBtnUid] = useState("");
     const [vsmVarsForDevToolComp, setVsmVarsForDevToolComp] = useState({});
     const [userSubmittedInfo, setUserSubmittedInfo] = useState({});
 
@@ -41,25 +54,29 @@ function App() {
             setVsmConnectionStatus(true);
             clientAliveMessage();
             console.log("Connection initiated by server.")
+            setVsmVarsForDevToolComp({});
+            setInfoLogContents({});
+
         };
 
         ws.onclose = function (msg) {
-            console.log(msg);
             setVsmConnectionStatus(false);
-            setInfoLogContents({});
             setUserSubmittedInfo({});
             setInputSheetFieldDetails({});
-            setInformContent("");
+
+            setDispProceedBtn(false);
+            setProceedBtnUid("");
             let err_msg = "VSM is not in 'play' state anymore. Please press 'play' in VSM and refresh the page.";
             console.log(err_msg);
             setInformContent(err_msg);
+
         };
 
         ws.onmessage = function (msg) {
             const parts = msg.data.split('#');
             const command = parts[1];
 
-            if (["REQUEST", "INFORM", "UPDATE", "STATUS"].includes(command)) {
+            if (["REQUEST", "PROCEED", "INFORM", "UPDATE", "STATUS"].includes(command)) {
                 if (command === "REQUEST") {
                     let newInputSheetFieldDetails = {
                         action: command,
@@ -67,12 +84,22 @@ function App() {
                         options: parts[4].split(';'),
                         type: parts[5].split(';'),
                         timestamp: parts[2],
-                        vm_uid: parts[6]
+                        vm_uid: parts[6]         // vm_uid ==> contains information about which thread needs to be
+                                                 // unblocked in VSM
                     };
-                    console.log(newInputSheetFieldDetails);
                     setInputSheetFieldDetails(newInputSheetFieldDetails);
                     let newObj = newInputSheetFieldDetails.variable.reduce((obj, key) => ({...obj, [key]: ""}), {})
                     setUserSubmittedInfo(newObj);
+                }
+
+                if (command === "PROCEED") {
+                    let currTS = genTimeStamp();
+                    let newInfo = {};
+                    newInfo[currTS] = [parts[4]];
+                    setInformContent(parts[4]);
+                    setDispProceedBtn(true);
+                    setProceedBtnUid(parts[6]);
+                    setInfoLogContents(Object.assign(infoLogContents, newInfo));
                 }
 
                 if (command === "INFORM") {
@@ -80,8 +107,8 @@ function App() {
                     let newInfo = {};
                     newInfo[currTS] = [parts[4]];
                     setInformContent(parts[4]);
-                    // console.log(infoLogContents);
                     setInfoLogContents(Object.assign(infoLogContents, newInfo));
+                    setDispProceedBtn(false);
                 }
 
                 if (command === "UPDATE") {
@@ -151,11 +178,20 @@ function App() {
                 if (userSubmittedInfo.hasOwnProperty(variable)) {
                     webSocket.send(`VSMMessage#VAR#${variable}#${userSubmittedInfo[variable]}`);
                 }
+            } else if (inputSheetFieldDetails.type[i] === "slider") {
+                // console.log("1");
+                if (userSubmittedInfo.hasOwnProperty(variable)) {
+                    // console.log("2");
+                    webSocket.send(`VSMMessage#VAR#${variable}#${userSubmittedInfo[variable]}`);
+                }
             }
         }
 
+        console.log(inputSheetFieldDetails);
+        console.log(userSubmittedInfo);
+
+        // vm_uid ==> contains information about which thread needs to be unblocked in VSM
         webSocket.send(`VSMMessage#VAR#request_result#SUBMIT#` + inputSheetFieldDetails.vm_uid);
-        //TODO: webSocket.send('Unblock thread');
         setInputSheetFieldDetails({
             action: "SUCCESSFULSEND",
             timestamp: inputSheetFieldDetails.timestamp,
@@ -164,14 +200,28 @@ function App() {
     }
 
     function sendCancelToVsm() {
-        webSocket.send(`VSMMessage#VAR#request_result#CANCEL`);
+        console.log(`VSMMessage#VAR#request_result#CANCEL#` + inputSheetFieldDetails.vm_uid)
+        webSocket.send(`VSMMessage#VAR#request_result#CANCEL#` + inputSheetFieldDetails.vm_uid);
 
         setVsmConnectionStatus(false);
         setInfoLogContents({});
         setUserSubmittedInfo({});
         setInputSheetFieldDetails({});
         setInformContent("");
+        setDispProceedBtn(false);
+        setProceedBtnUid("");
+    }
 
+    function sendProceedToVsm() {
+        webSocket.send(`VSMMessage#VAR#request_result#PROCEED#` + proceedBtnUid);
+
+        setVsmConnectionStatus(false);
+        setInfoLogContents({});
+        setUserSubmittedInfo({});
+        setInputSheetFieldDetails({});
+        setInformContent("");
+        setDispProceedBtn(false);
+        setProceedBtnUid("");
     }
 
 
@@ -208,8 +258,25 @@ function App() {
                 </div>
 
                 <div className="inform box">
-                    <div className="">
-                        <h2>{informContent}</h2>
+                    <div className="flex-container">
+                        <div className="item1">
+                            <h2>{informContent}</h2>
+                        </div>
+
+                        {
+                            (dispProceedBtn) &&
+                            <div className="item2">
+                                <div className="button-area">
+                                    <Button variant="contained"
+                                            onClick={() => {
+                                                sendProceedToVsm();
+                                            }}
+                                    >
+                                        <NavigateNextIcon/>
+                                    </Button>
+                                </div>
+                            </div>
+                        }
                     </div>
                 </div>
 
@@ -220,6 +287,7 @@ function App() {
                                     sendSubmit={sendSubmitToVsm} sendCancel={sendCancelToVsm}
                                     userSubmittedInfo={userSubmittedInfo}
                                     infoLogContents={infoLogContents}
+                                    webSocket={webSocket}
                     />
                 </div>
 

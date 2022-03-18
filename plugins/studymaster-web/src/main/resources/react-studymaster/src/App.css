@@ -21,7 +21,7 @@
     display: grid;
     grid-gap: 10px;
     grid-template-columns: auto auto auto auto auto;
-    grid-template-rows: 75px 75px 1fr;
+    grid-template-rows: 70px 0.1fr 1fr;
     grid-template-areas:
     " header header header sidebar sidebar"
     " inform inform inform sidebar sidebar"
@@ -34,13 +34,13 @@
 .wrapper-collapsed {
     display: grid;
     grid-gap: 10px;
-    grid-template-columns: auto auto auto 0.01fr 0.01fr;
-    grid-template-rows: 75px 75px 1fr;
+    grid-template-columns: auto auto auto 0.03fr 84px;
+    grid-template-rows:  70px 0.1fr 1fr;
     grid-template-areas:
     " header header header header sidebar"
     " inform inform inform inform inform "
     " content content content content content ";
-    width: 98vw;
+    width: 99vw;
     height: 98vh;
     margin: 10px;
 }
@@ -48,7 +48,7 @@
 
 .sidebar-divider {
     display: grid;
-    grid-template-rows: 75px 1fr 1fr;
+    grid-template-rows: 70px 1fr 1fr;
     grid-template-columns: minmax(0, 1fr);
     grid-template-areas:
     "button-area"
