@@ -53,10 +53,10 @@ public class WebStudyMasterExecutor extends ActivityExecutor implements EventLis
     private static final String sREQUEST_RESULT_VAR_DEFAULT = "request_result";
 
     /**
-     * Project variable set when the remote Web GUI connects via websocket.
+     * Project variable set when the remote Web Studymaster connects via websocket.
      */
-    private static final String sGUI_CONNECTED_VAR = "gui_connected_var";
-    private static final String sGUI_CONNECTED_VAR_DEFAULT = "gui_connected";
+    private static final String sGUI_CONNECTED_VAR = "studymaster_connected_var";
+    private static final String sGUI_CONNECTED_VAR_DEFAULT = "studymaster_connected";
 
     /**
      * Project variable storing the satus of the remote Web GUI .
