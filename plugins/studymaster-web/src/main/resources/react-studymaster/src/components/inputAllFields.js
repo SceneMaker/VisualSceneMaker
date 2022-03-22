@@ -2,6 +2,12 @@ import React from "react";
 import GenerateInputFieldWithType from "./inputSingleField";
 
 
+/**
+ * The component in the Studymaster Web GUI that generates all the input fields based on the cmd from VSM.
+ *
+ * @version 1.0
+ * @author [Chirag Bhuvaneshwara](https://github.com/chiragbhuvaneshwara)
+ **/
 function GenerateFields(props) {
 
     let fieldsForUserForm = [];
@@ -21,7 +27,7 @@ function GenerateFields(props) {
                 <div
                     key={index}
 
-                    style={{"width": "95%", }}
+                    style={{"width": "95%",}}
 
 
                 >

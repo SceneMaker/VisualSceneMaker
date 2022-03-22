@@ -24,6 +24,12 @@ function genTimeStamp() {
 
 let webSocket;
 
+/**
+ * Studymaster web app main page.
+ *
+ * @version 1.0
+ * @author [Chirag Bhuvaneshwara](https://github.com/chiragbhuvaneshwara)
+ **/
 function App() {
     const [vsmConnectionStatus, setVsmConnectionStatus] = useState(false);
     const [infoLogContents, setInfoLogContents] = useState({});
@@ -75,6 +81,10 @@ function App() {
 
             if (["REQUEST", "PROCEED", "INFORM", "UPDATE", "STATUS"].includes(command)) {
                 if (command === "REQUEST") {
+                    // This cmd is used to generate the input fields where the "study master" can input values.
+                    // Ex: TextInput,SliderInput etc.
+                    // cmd type in VSM: Blocking ==> All other execution in VSM scene is halted till the request is
+                    // submitted.
                     let newInputSheetFieldDetails = {
                         action: command,
                         variable: parts[3].split(';'),
@@ -94,6 +104,10 @@ function App() {
                 }
 
                 if (command === "PROCEED") {
+                    // This cmd is used to provide some information to the "study master" and it generates a button
+                    // that must be clicked by the studymaster for the execution to continue.
+                    // cmd type in VSM: Blocking ==> All other execution in VSM scene is halted till the request is
+                    // submitted.
                     let currTS = genTimeStamp();
                     let newInfo = {};
                     newInfo[currTS] = [command, parts[4]];
@@ -104,6 +118,8 @@ function App() {
                 }
 
                 if (command === "INFORM") {
+                    // This cmd is used to provide some information to the "study master" to read.
+                    // cmd type in VSM: Non-blocking
                     let currTS = genTimeStamp();
                     let newInfo = {};
                     newInfo[currTS] = [command, parts[4]];
@@ -113,6 +129,9 @@ function App() {
                 }
 
                 if (command === "UPDATE") {
+                    // This cmd is used to display the updated state of all variables that are declared in VSM.
+                    // This cmd is executed upon update to variables in VSM.
+                    // cmd type in VSM: Non-blocking and is not connected to any node i.e. it works in the background.
                     let variable = parts[2];
                     let val = parts[3];
                     let newVarVal = {}
@@ -121,6 +140,9 @@ function App() {
                 }
 
                 if (command === "STATUS") {
+                    // This cmd is just a reply from the server to keep the web socket connection alive
+                    // This concept is referred to as the "ping-pong" messages exchanged between client
+                    // (studymaster GUI) and server (VSM) to keep the connection alive.
                     console.log()
                     ;
                 }
@@ -152,6 +174,9 @@ function App() {
      * Message from client (i.e. studymaster frontend) that client is alive
      */
     function clientAliveMessage() {
+        // This message is sent from the client to keep the web socket connection alive
+        // This concept is referred to as the "ping-pong" messages exchanged between the client
+        // (studymaster GUI) and the server (VSM) to keep the connection alive.
         // console.log("Send client alive message to server");
         if (webSocket.readyState === WebSocket.OPEN) {
             webSocket.send(`VSMMessage#STATUS#alive`);
