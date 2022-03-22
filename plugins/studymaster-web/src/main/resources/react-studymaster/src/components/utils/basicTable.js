@@ -32,6 +32,13 @@ const StyledTableRow = styled(TableRow)(({theme}) => ({
     },
 }));
 
+/**
+ * The component that converts and displays the supplied informatio in a tabular format. It is currently used to display
+ * 
+ *
+ * @version 1.0
+ * @author [Chirag Bhuvaneshwara](https://github.com/chiragbhuvaneshwara)
+ **/
 const BasicTable = (props) => {
 
 

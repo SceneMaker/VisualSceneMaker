@@ -5,6 +5,12 @@ import {Grid, Stack} from "@mui/material";
 import DeleteIcon from '@mui/icons-material/Delete';
 import SendIcon from '@mui/icons-material/Send';
 
+/**
+ * The component in the Studymaster Web GUI that corresponds to the area of the website where a form can be generated.
+ *
+ * @version 1.0
+ * @author [Chirag Bhuvaneshwara](https://github.com/chiragbhuvaneshwara)
+ **/
 function InputSheetUnit(props) {
 
     const [formFillingErrors, setFormFillingErrors] = useState({});

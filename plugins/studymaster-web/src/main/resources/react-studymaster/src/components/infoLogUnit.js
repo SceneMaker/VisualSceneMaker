@@ -19,6 +19,13 @@ function genTimeStamp() {
     return timestamp;
 };
 
+
+/**
+ * The component in the Studymaster Web GUI that collects the log information that is useful for debugging.
+ *
+ * @version 1.0
+ * @author [Chirag Bhuvaneshwara](https://github.com/chiragbhuvaneshwara)
+ **/
 const InfoLogUnit = (props) => {
     const [open, setOpen] = useState(false);
 

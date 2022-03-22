@@ -7,6 +7,12 @@ import FormControl from '@mui/material/FormControl';
 import {Checkbox, InputLabel, Slider} from "@material-ui/core";
 import {Form} from "react-bootstrap";
 
+/**
+ * The component in the Studymaster Web GUI that generates each input field based on the cmd from VSM.
+ *
+ * @version 1.0
+ * @author [Chirag Bhuvaneshwara](https://github.com/chiragbhuvaneshwara)
+ **/
 function GenerateInputFieldWithType(props, updateUserSubmittedInfo, formContents, currIdx, error, webSocket) {
 
 
@@ -60,7 +66,7 @@ function GenerateInputFieldWithType(props, updateUserSubmittedInfo, formContents
         let newCheckBoxStateArr = Object.keys(newCheckBoxState).filter(k => newCheckBoxState[k] === true);
         updateUserSubmittedInfo(variable, newCheckBoxStateArr);
         let checkBoxStateStr = " ";
-        if (newCheckBoxStateArr.length > 0){
+        if (newCheckBoxStateArr.length > 0) {
             checkBoxStateStr = newCheckBoxStateArr.join(",");
         }
         props.webSocket.send(`VSMMessage#VAR#${variable}#` + checkBoxStateStr);
