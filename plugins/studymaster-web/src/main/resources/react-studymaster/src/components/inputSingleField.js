@@ -1,6 +1,6 @@
 import {Row} from "react-bootstrap";
 import React, {useState} from "react";
-import {FormHelperText, Stack, TextField} from "@mui/material";
+import {FormHelperText, TextField} from "@mui/material";
 import RadioGroup from '@mui/material/RadioGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import FormControl from '@mui/material/FormControl';
@@ -199,10 +199,6 @@ function GenerateInputFieldWithType(props, updateUserSubmittedInfo, formContents
                                         checked={checkboxArrContainsObj(props.userSubmittedInfo[variable], option)}
                                         onChange={e => {
                                             updateCheckBoxAndUserInfo(variable, e);
-                                            // let arr = Object.keys(checkBoxState).filter(k => checkBoxState[k] === true);
-                                            // arr.indexOf(e.target.name) === -1 ? arr.push(e.target.name) : console.log("This item already exists");
-                                            // props.webSocket.send(`VSMMessage#VAR#${variable}#` + arr.join(","));
-                                            // console.log(`VSMMessage#VAR#${variable}#` + arr.join(","));
                                         }}
                                     />
                                 }
