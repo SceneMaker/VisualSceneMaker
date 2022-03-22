@@ -1,4 +1,3 @@
-// import {Button} from "react-bootstrap";
 import React, {useState} from "react";
 import DeveloperModeIcon from '@mui/icons-material/DeveloperMode';
 import {Collapse, Tooltip} from "@material-ui/core";
@@ -6,6 +5,19 @@ import BasicTable from "./utils/basicTable";
 import DownloadIcon from '@mui/icons-material/Download';
 import Button from "@mui/material/Button";
 
+
+function genTimeStamp() {
+    let today = new Date();
+    const pad = (n, s = 2) => (`${new Array(s).fill(0)}${n}`).slice(-s);
+
+    let ms = today.getMilliseconds();
+    ms = (ms < 10 ? "0" : "") + ms;
+    ms = (ms < 100 ? "0" : "") + ms;
+
+    let timestamp = today.getFullYear() + '-' + pad(today.getMonth() + 1) + '-' + pad(today.getDate()) + "_" +
+        pad(today.getHours()) + ":" + pad(today.getMinutes()) + ":" + pad(today.getSeconds()) + ":" + ms;
+    return timestamp;
+};
 
 const InfoLogUnit = (props) => {
     const [open, setOpen] = useState(false);
@@ -71,8 +83,8 @@ const InfoLogUnit = (props) => {
                                     onClick={() => {
                                         console.log("Downloading...");
                                         const myData = props.infoLogContents;
-                                        const fileName = "StudyMasterInformCmds";
-                                        const header = ["Timestamp", "InformCmd"];
+                                        const fileName = "StudyMasterDebugLog" + genTimeStamp();
+                                        const header = ["Timestamp", "cmdType", "cmdContent"];
                                         let csvData = [];
                                         Object.keys(myData).forEach(
                                             (k) => {
@@ -82,8 +94,8 @@ const InfoLogUnit = (props) => {
                                         const csv = [
                                             header.join(','),
                                             ...csvData
-                                            ].join('\r\n');
-                                        const blob = new Blob([csv],{type:'application/csv'});
+                                        ].join('\r\n');
+                                        const blob = new Blob([csv], {type: 'application/csv'});
                                         const href = URL.createObjectURL(blob);
                                         const link = document.createElement('a');
                                         link.href = href;
@@ -102,7 +114,7 @@ const InfoLogUnit = (props) => {
                         <div className={open ? "logbox" : ""} style={{height: '35vh', color: 'white'}}>
 
                             <BasicTable
-                                colNames={["Timestamp", "InformCmd"]} colVals={props.infoLogContents}/>
+                                colNames={["Timestamp", "cmdType", "cmdContent"]} colVals={props.infoLogContents}/>
 
                         </div>
                     </div>

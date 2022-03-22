@@ -13,17 +13,14 @@ function genTimeStamp() {
     let today = new Date();
     const pad = (n,s=2) => (`${new Array(s).fill(0)}${n}`).slice(-s);
 
-    // let timestamp = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate() + "_" +
-    //     today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds() + ":" + today.getMilliseconds();
-    let ms = 111;
+    let ms = today.getMilliseconds();
     ms = (ms < 10? "0": "") + ms;
     ms = (ms < 100? "0": "") + ms;
 
     let timestamp = today.getFullYear() + '-' + pad(today.getMonth() + 1) + '-' + pad(today.getDate()) + "_" +
         pad(today.getHours()) + ":" + pad(today.getMinutes()) + ":" + pad(today.getSeconds()) + ":" + ms;
-        // pad(pad("300", 2), 3);
     return timestamp;
-}
+};
 
 let webSocket;
 
@@ -42,7 +39,7 @@ function App() {
         let items = {...userSubmittedInfo};
         items[k] = v;
         setUserSubmittedInfo(items);
-    }
+    };
 
     useEffect(() => {
         console.log("Setting up web socket...");
@@ -90,12 +87,16 @@ function App() {
                     setInputSheetFieldDetails(newInputSheetFieldDetails);
                     let newObj = newInputSheetFieldDetails.variable.reduce((obj, key) => ({...obj, [key]: ""}), {})
                     setUserSubmittedInfo(newObj);
+                    let currTS = genTimeStamp();
+                    let newInfo = {};
+                    newInfo[currTS] = [command, parts[5]];
+                    setInfoLogContents(Object.assign(infoLogContents, newInfo));
                 }
 
                 if (command === "PROCEED") {
                     let currTS = genTimeStamp();
                     let newInfo = {};
-                    newInfo[currTS] = [parts[4]];
+                    newInfo[currTS] = [command, parts[4]];
                     setInformContent(parts[4]);
                     setDispProceedBtn(true);
                     setProceedBtnUid(parts[6]);
@@ -105,7 +106,7 @@ function App() {
                 if (command === "INFORM") {
                     let currTS = genTimeStamp();
                     let newInfo = {};
-                    newInfo[currTS] = [parts[4]];
+                    newInfo[currTS] = [command, parts[4]];
                     setInformContent(parts[4]);
                     setInfoLogContents(Object.assign(infoLogContents, newInfo));
                     setDispProceedBtn(false);
@@ -179,16 +180,11 @@ function App() {
                     webSocket.send(`VSMMessage#VAR#${variable}#${userSubmittedInfo[variable]}`);
                 }
             } else if (inputSheetFieldDetails.type[i] === "slider") {
-                // console.log("1");
                 if (userSubmittedInfo.hasOwnProperty(variable)) {
-                    // console.log("2");
                     webSocket.send(`VSMMessage#VAR#${variable}#${userSubmittedInfo[variable]}`);
                 }
             }
         }
-
-        console.log(inputSheetFieldDetails);
-        console.log(userSubmittedInfo);
 
         // vm_uid ==> contains information about which thread needs to be unblocked in VSM
         webSocket.send(`VSMMessage#VAR#request_result#SUBMIT#` + inputSheetFieldDetails.vm_uid);
@@ -197,10 +193,9 @@ function App() {
             timestamp: inputSheetFieldDetails.timestamp,
         })
         setUserSubmittedInfo(new Map());
-    }
+    };
 
     function sendCancelToVsm() {
-        console.log(`VSMMessage#VAR#request_result#CANCEL#` + inputSheetFieldDetails.vm_uid)
         webSocket.send(`VSMMessage#VAR#request_result#CANCEL#` + inputSheetFieldDetails.vm_uid);
 
         setVsmConnectionStatus(false);
@@ -210,7 +205,7 @@ function App() {
         setInformContent("");
         setDispProceedBtn(false);
         setProceedBtnUid("");
-    }
+    };
 
     function sendProceedToVsm() {
         webSocket.send(`VSMMessage#VAR#request_result#PROCEED#` + proceedBtnUid);
@@ -222,7 +217,7 @@ function App() {
         setInformContent("");
         setDispProceedBtn(false);
         setProceedBtnUid("");
-    }
+    };
 
 
     return (
@@ -294,6 +289,6 @@ function App() {
             </div>
         </div>
     );
-}
+};
 
 export default App;
