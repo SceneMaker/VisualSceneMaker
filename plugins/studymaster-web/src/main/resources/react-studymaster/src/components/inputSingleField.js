@@ -64,11 +64,11 @@ function GenerateInputFieldWithType(props, updateUserSubmittedInfo, formContents
         setCheckBoxState(newCheckBoxState)
 
         let newCheckBoxStateArr = Object.keys(newCheckBoxState).filter(k => newCheckBoxState[k] === true);
-        updateUserSubmittedInfo(variable, newCheckBoxStateArr);
         let checkBoxStateStr = " ";
         if (newCheckBoxStateArr.length > 0) {
             checkBoxStateStr = newCheckBoxStateArr.join(",");
         }
+        updateUserSubmittedInfo(variable, checkBoxStateStr);
         props.webSocket.send(`VSMMessage#VAR#${variable}#` + checkBoxStateStr);
 
     }
@@ -235,7 +235,6 @@ function GenerateInputFieldWithType(props, updateUserSubmittedInfo, formContents
                         <Slider
                             value={sliderVal}
                             aria-label="Default" valueLabelDisplay="auto"
-                            aria-label="Custom marks"
                             onChange={(e, newSliderVal) => {
                                 updateUserSubmittedInfo(variable, newSliderVal);
                                 setSliderVal(newSliderVal);
