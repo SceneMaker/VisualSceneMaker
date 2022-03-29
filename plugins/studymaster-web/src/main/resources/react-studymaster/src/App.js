@@ -202,7 +202,13 @@ function App() {
                 }
             } else if (inputSheetFieldDetails.type[i] === "checkbox") {
                 if (userSubmittedInfo.hasOwnProperty(variable)) {
-                    webSocket.send(`VSMMessage#VAR#${variable}#${userSubmittedInfo[variable]}`);
+
+                    let checkBoxState = userSubmittedInfo[variable];
+                    if (checkBoxState === ""){
+                        checkBoxState = " ";
+                    }
+
+                    webSocket.send(`VSMMessage#VAR#${variable}#${checkBoxState}`);
                 }
             } else if (inputSheetFieldDetails.type[i] === "slider") {
                 if (userSubmittedInfo.hasOwnProperty(variable)) {
@@ -223,7 +229,6 @@ function App() {
     function sendCancelToVsm() {
         webSocket.send(`VSMMessage#VAR#request_result#CANCEL#` + inputSheetFieldDetails.vm_uid);
 
-        setVsmConnectionStatus(false);
         setInfoLogContents({});
         setUserSubmittedInfo({});
         setInputSheetFieldDetails({});
@@ -235,7 +240,6 @@ function App() {
     function sendProceedToVsm() {
         webSocket.send(`VSMMessage#VAR#request_result#PROCEED#` + proceedBtnUid);
 
-        setVsmConnectionStatus(false);
         setInfoLogContents({});
         setUserSubmittedInfo({});
         setInputSheetFieldDetails({});
