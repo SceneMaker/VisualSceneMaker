@@ -289,7 +289,7 @@ public class WebStudyMasterExecutor extends ActivityExecutor implements EventLis
                         mWebsockets.forEach(ws -> ws.send(mLastInformMessage));
                     }
                 } catch (IllegalArgumentException e) {
-                    mLogger.failure("Malformed INFORM");
+                    mLogger.failure("Malformed PROCEED");
                 }
 
                 // Make text activity blocking
@@ -465,7 +465,7 @@ public class WebStudyMasterExecutor extends ActivityExecutor implements EventLis
             if (msgParts.length > 1) {
                 String msg = msgParts[1];
 
-                // MESSAGE VAR: VSMMessage#VAR#<var>#<value>
+                // MESSAGE VAR: VSMMessage#VAR#<var>#<value>#<VSM_THREAD_ID>
                 if (msg.equals("VAR")) {
                     String var = msgParts[2];
                     String value = msgParts[3];
@@ -479,7 +479,7 @@ public class WebStudyMasterExecutor extends ActivityExecutor implements EventLis
                         // reset the inform cache
                         mLastInformMessage = null;
 
-                        mLogger.message("Processing submit message ...");
+                        mLogger.message("Processing " + msgParts[3] + " message ...");
                         String vm_uid_frm_client = msgParts[4];
                         mLogger.message("Unlocking thread " + vm_uid_frm_client);
 
@@ -498,29 +498,6 @@ public class WebStudyMasterExecutor extends ActivityExecutor implements EventLis
                         }
                     }
 
-                    // If we received the user choice (submit/cancel)
-                    if (var.equals(sREQUEST_RESULT_VAR_DEFAULT)) {
-                        // Reassign the variable name to the one defined in the properties
-                        var = mRequestResultVar;
-
-                        mLogger.message("Processing proceed message ...");
-                        String vm_uid_frm_client = msgParts[4];
-                        mLogger.message("Unlocking thread " + vm_uid_frm_client);
-
-                        synchronized (mActivityWorkerMap) {
-                            if (mActivityWorkerMap.containsKey(vm_uid_frm_client)) {
-                                mLogger.message("Removing id from active activities ids ...");
-                                mActivityWorkerMap.remove(vm_uid_frm_client);
-                                // wake me up ...
-                                mLogger.message("Unlocking activity manager ...");
-                                mActivityWorkerMap.notifyAll();
-                                mLogger.message("done.");
-                            } else {
-                                mLogger.failure("Activityworker for action with id " + vm_uid_frm_client +
-                                        " has been stopped before ...");
-                            }
-                        }
-                    }
 
                     if (mProject.hasVariable(var)) {
 //                        mLogger.message("Assigning sceneflow variable " + var + " with value " + value);
