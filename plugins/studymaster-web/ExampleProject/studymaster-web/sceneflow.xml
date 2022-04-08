@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<SceneFlow id="" name="default" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Mon, 19 Jul 2021 13:03:31" start="N1;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
+<SceneFlow id="" name="default" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Wed, 30 Mar 2022 00:03:19" start="N1;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
   <Define>
   </Define>
   <Declare>
@@ -21,21 +21,27 @@
     <VariableDefinition type="String" name ="request_result">
       <StringLiteral><![CDATA[]]></StringLiteral>
     </VariableDefinition>
-    <VariableDefinition type="Bool" name ="gui_connected">
+    <VariableDefinition type="Bool" name ="studymaster_connected">
       <BoolLiteral value="false"/>
+    </VariableDefinition>
+    <VariableDefinition type="String" name ="studymaster_info">
+      <StringLiteral><![CDATA[]]></StringLiteral>
+    </VariableDefinition>
+    <VariableDefinition type="String" name ="intensity">
+      <StringLiteral><![CDATA[]]></StringLiteral>
     </VariableDefinition>
   </Declare>
   <Commands>
   </Commands>
   <LocalVariableBadge>
-    <Position xPos="719" yPos="303"/>
+    <Position xPos="1395" yPos="3"/>
   </LocalVariableBadge>
   <GlobalVariableBadge>
     <Position xPos="10" yPos="10"/>
   </GlobalVariableBadge>
   <Comment>
     <Graphics>
-      <Boundary xPos="388" yPos="158" width="275" height="50"/>
+      <Boundary xPos="1151" yPos="260" width="275" height="50"/>
     </Graphics>
     <Text style="color:blue">
       The action generates a web form.
@@ -43,7 +49,7 @@
   </Comment>
   <Comment>
     <Graphics>
-      <Boundary xPos="671" yPos="38" width="211" height="61"/>
+      <Boundary xPos="1175" yPos="99" width="211" height="61"/>
     </Graphics>
     <Text style="color:blue">
       User clicked Submit. The project can continue.
@@ -51,28 +57,28 @@
   </Comment>
   <Comment>
     <Graphics>
-      <Boundary xPos="388" yPos="382" width="269" height="104"/>
+      <Boundary xPos="513" yPos="477" width="269" height="104"/>
     </Graphics>
     <Text style="color:blue">
       User clicked Cancel.
-                                                                                                                                                                                                                                                                                                                                                                                                                                    Reset result action and loop back for another request.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              Reset result action and loop back for another request.
     </Text>
   </Comment>
   <Comment>
     <Graphics>
-      <Boundary xPos="55" yPos="103" width="256" height="74"/>
+      <Boundary xPos="1" yPos="379" width="256" height="74"/>
     </Graphics>
     <Text style="color:blue">
       Start.
-            Open http://localhost:8080 to see the GUI
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      Open http://localhost:8080 to see the GUI
     </Text>
   </Comment>
   <Comment>
     <Graphics>
-      <Boundary xPos="793" yPos="150" width="175" height="111"/>
+      <Boundary xPos="1246" yPos="320" width="175" height="111"/>
     </Graphics>
     <Text style="color:blue">
-      Here, we wait for the user to fill the form and submit (or cancel).
+      The REQUEST action will stop the flow and wait for the user to fill the form and submit (or cancel).
     </Text>
   </Comment>
   <Node id="N1" name="N1" history="false">
@@ -88,16 +94,25 @@
         </Expression>
       </Assignment>
     </Commands>
-    <TEdge target="N14" start="" timeout="5000">
+    <TEdge target="N1" start="" timeout="1000">
     <Graphics>
       <Connection>
-        <ControlPoint xPos="186" yPos="226" ctrlXPos="246" ctrlYPos="226"/>
-        <ControlPoint xPos="346" yPos="226" ctrlXPos="286" ctrlYPos="226"/>
+        <ControlPoint xPos="156" yPos="267" ctrlXPos="176" ctrlYPos="189"/>
+        <ControlPoint xPos="181" yPos="286" ctrlXPos="251" ctrlYPos="246"/>
       </Connection>
     </Graphics>
     </TEdge>
+    <IEdge target="N14" start="">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="185" yPos="296" ctrlXPos="282" ctrlYPos="271"/>
+          <ControlPoint xPos="426" yPos="306" ctrlXPos="326" ctrlYPos="306"/>
+        </Connection>
+      </Graphics>
+      <SimpleVariable name="studymaster_connected"/>
+    </IEdge>
     <Graphics>
-      <Position xPos="106" yPos="186"/>
+      <Position xPos="106" yPos="266"/>
     </Graphics>
   </Node>
   <Node id="N3" name="Continue" history="false">
@@ -107,35 +122,16 @@
     </Declare>
     <Commands>
     </Commands>
-    <TEdge target="N1" start="" timeout="3000">
+    <TEdge target="N5" start="" timeout="1000">
     <Graphics>
       <Connection>
-        <ControlPoint xPos="587" yPos="76" ctrlXPos="398" ctrlYPos="124"/>
-        <ControlPoint xPos="185" yPos="216" ctrlXPos="373" ctrlYPos="167"/>
+        <ControlPoint xPos="1066" yPos="66" ctrlXPos="766" ctrlYPos="66"/>
+        <ControlPoint xPos="426" yPos="66" ctrlXPos="726" ctrlYPos="66"/>
       </Connection>
     </Graphics>
     </TEdge>
     <Graphics>
-      <Position xPos="586" yPos="26"/>
-    </Graphics>
-  </Node>
-  <Node id="N7" name="Restore" history="false">
-    <Define>
-    </Define>
-    <Declare>
-    </Declare>
-    <Commands>
-    </Commands>
-    <FEdge target="N1" start="">
-      <Graphics>
-        <Connection>
-          <ControlPoint xPos="278" yPos="358" ctrlXPos="240" ctrlYPos="320"/>
-          <ControlPoint xPos="174" yPos="254" ctrlXPos="211" ctrlYPos="291"/>
-        </Connection>
-      </Graphics>
-    </FEdge>
-    <Graphics>
-      <Position xPos="266" yPos="346"/>
+      <Position xPos="1066" yPos="26"/>
     </Graphics>
   </Node>
   <Node id="N11" name="Restore" history="false">
@@ -154,13 +150,13 @@
     <FEdge target="S3" start="">
       <Graphics>
         <Connection>
-          <ControlPoint xPos="351" yPos="766" ctrlXPos="277" ctrlYPos="723"/>
-          <ControlPoint xPos="186" yPos="649" ctrlXPos="270" ctrlYPos="697"/>
+          <ControlPoint xPos="431" yPos="1246" ctrlXPos="357" ctrlYPos="1203"/>
+          <ControlPoint xPos="266" yPos="1129" ctrlXPos="350" ctrlYPos="1177"/>
         </Connection>
       </Graphics>
     </FEdge>
     <Graphics>
-      <Position xPos="346" yPos="746"/>
+      <Position xPos="426" yPos="1226"/>
     </Graphics>
   </Node>
   <Node id="N12" name="Continue" history="false">
@@ -171,10 +167,32 @@
     <Commands>
     </Commands>
     <Graphics>
-      <Position xPos="826" yPos="586"/>
+      <Position xPos="906" yPos="1066"/>
     </Graphics>
   </Node>
-  <Node id="N14" name="Request" history="false">
+  <Node id="N14" name="Proceed" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <PlayScene>
+        <StringLiteral><![CDATA[InformProceed]]></StringLiteral>
+      </PlayScene>
+    </Commands>
+    <EEdge target="N16" start ="">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="506" yPos="306" ctrlXPos="606" ctrlYPos="306"/>
+        <ControlPoint xPos="746" yPos="306" ctrlXPos="646" ctrlYPos="306"/>
+      </Connection>
+    </Graphics>
+    </EEdge>
+    <Graphics>
+      <Position xPos="426" yPos="266"/>
+    </Graphics>
+  </Node>
+  <Node id="N4" name="Request" history="false">
     <Define>
     </Define>
     <Declare>
@@ -184,42 +202,11 @@
         <StringLiteral><![CDATA[RequestUserInfo]]></StringLiteral>
       </PlayScene>
     </Commands>
-    <EEdge target="N15" start ="">
-    <Graphics>
-      <Connection>
-        <ControlPoint xPos="426" yPos="226" ctrlXPos="526" ctrlYPos="226"/>
-        <ControlPoint xPos="666" yPos="226" ctrlXPos="566" ctrlYPos="226"/>
-      </Connection>
-    </Graphics>
-    </EEdge>
-    <Graphics>
-      <Position xPos="346" yPos="186"/>
-    </Graphics>
-  </Node>
-  <Node id="N15" name="WaitUser" history="false">
-    <Define>
-    </Define>
-    <Declare>
-    </Declare>
-    <Commands>
-    </Commands>
-    <CEdge target="N7" start="">
-      <Graphics>
-        <Connection>
-          <ControlPoint xPos="671" yPos="246" ctrlXPos="535" ctrlYPos="323"/>
-          <ControlPoint xPos="345" yPos="376" ctrlXPos="496" ctrlYPos="337"/>
-        </Connection>
-      </Graphics>
-      <Eq>
-        <SimpleVariable name="request_result"/>
-        <StringLiteral><![CDATA[CANCEL]]></StringLiteral>
-      </Eq>
-    </CEdge>
     <CEdge target="N3" start="">
       <Graphics>
         <Connection>
-          <ControlPoint xPos="686" yPos="191" ctrlXPos="671" ctrlYPos="165"/>
-          <ControlPoint xPos="646" yPos="101" ctrlXPos="660" ctrlYPos="126"/>
+          <ControlPoint xPos="1106" yPos="266" ctrlXPos="1106" ctrlYPos="206"/>
+          <ControlPoint xPos="1106" yPos="106" ctrlXPos="1106" ctrlYPos="166"/>
         </Connection>
       </Graphics>
       <Eq>
@@ -227,16 +214,64 @@
         <StringLiteral><![CDATA[SUBMIT]]></StringLiteral>
       </Eq>
     </CEdge>
-    <TEdge target="N15" start="" timeout="1000">
+    <CEdge target="N1" start="">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="1067" yPos="316" ctrlXPos="808" ctrlYPos="485"/>
+          <ControlPoint xPos="186" yPos="306" ctrlXPos="492" ctrlYPos="537"/>
+        </Connection>
+      </Graphics>
+      <Eq>
+        <SimpleVariable name="request_result"/>
+        <StringLiteral><![CDATA[CANCEL]]></StringLiteral>
+      </Eq>
+    </CEdge>
+    <Graphics>
+      <Position xPos="1066" yPos="266"/>
+    </Graphics>
+  </Node>
+  <Node id="N5" name="N5" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <PlayScene>
+        <StringLiteral><![CDATA[InformNewForm]]></StringLiteral>
+      </PlayScene>
+    </Commands>
+    <TEdge target="N1" start="" timeout="2000">
     <Graphics>
       <Connection>
-        <ControlPoint xPos="716" yPos="187" ctrlXPos="736" ctrlYPos="109"/>
-        <ControlPoint xPos="741" yPos="206" ctrlXPos="811" ctrlYPos="166"/>
+        <ControlPoint xPos="358" yPos="94" ctrlXPos="281" ctrlYPos="170"/>
+        <ControlPoint xPos="174" yPos="278" ctrlXPos="250" ctrlYPos="201"/>
       </Connection>
     </Graphics>
     </TEdge>
     <Graphics>
-      <Position xPos="666" yPos="186"/>
+      <Position xPos="346" yPos="26"/>
+    </Graphics>
+  </Node>
+  <Node id="N16" name="Inform" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <PlayScene>
+        <StringLiteral><![CDATA[InformFill]]></StringLiteral>
+      </PlayScene>
+    </Commands>
+    <EEdge target="N4" start ="">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="826" yPos="306" ctrlXPos="926" ctrlYPos="306"/>
+        <ControlPoint xPos="1066" yPos="306" ctrlXPos="966" ctrlYPos="306"/>
+      </Connection>
+    </Graphics>
+    </EEdge>
+    <Graphics>
+      <Position xPos="746" yPos="266"/>
     </Graphics>
   </Node>
   <SuperNode id="S2" name="Wait user" comment="" hideLocalVar="false" hideGlobalVar="false" start="N8;">
@@ -249,8 +284,8 @@
     <IEdge target="N12" start="">
       <Graphics>
         <Connection>
-          <ControlPoint xPos="586" yPos="626" ctrlXPos="686" ctrlYPos="626"/>
-          <ControlPoint xPos="826" yPos="626" ctrlXPos="726" ctrlYPos="626"/>
+          <ControlPoint xPos="666" yPos="1106" ctrlXPos="766" ctrlYPos="1106"/>
+          <ControlPoint xPos="906" yPos="1106" ctrlXPos="806" ctrlYPos="1106"/>
         </Connection>
       </Graphics>
       <Eq>
@@ -261,8 +296,8 @@
     <IEdge target="N11" start="">
       <Graphics>
         <Connection>
-          <ControlPoint xPos="506" yPos="666" ctrlXPos="452" ctrlYPos="719"/>
-          <ControlPoint xPos="414" yPos="758" ctrlXPos="451" ctrlYPos="720"/>
+          <ControlPoint xPos="586" yPos="1146" ctrlXPos="532" ctrlYPos="1199"/>
+          <ControlPoint xPos="494" yPos="1238" ctrlXPos="531" ctrlYPos="1200"/>
         </Connection>
       </Graphics>
       <Eq>
@@ -271,7 +306,7 @@
       </Eq>
     </IEdge>
     <Graphics>
-      <Position xPos="506" yPos="586"/>
+      <Position xPos="586" yPos="1066"/>
     </Graphics>
     <LocalVariableBadge>
       <Position xPos="10" yPos="10"/>
@@ -358,8 +393,8 @@
     <IEdge target="S2" start="">
       <Graphics>
         <Connection>
-          <ControlPoint xPos="186" yPos="626" ctrlXPos="326" ctrlYPos="626"/>
-          <ControlPoint xPos="506" yPos="626" ctrlXPos="366" ctrlYPos="626"/>
+          <ControlPoint xPos="266" yPos="1106" ctrlXPos="406" ctrlYPos="1106"/>
+          <ControlPoint xPos="586" yPos="1106" ctrlXPos="446" ctrlYPos="1106"/>
         </Connection>
       </Graphics>
       <Eq>
@@ -368,7 +403,7 @@
       </Eq>
     </IEdge>
     <Graphics>
-      <Position xPos="106" yPos="586"/>
+      <Position xPos="186" yPos="1066"/>
     </Graphics>
     <LocalVariableBadge>
       <Position xPos="10" yPos="10"/>

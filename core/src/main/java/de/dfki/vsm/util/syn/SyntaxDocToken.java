@@ -175,7 +175,7 @@ public class SyntaxDocToken implements ModelObject {
 
         // Return String Representation
         try {
-            return buffer.toString(StandardCharsets.UTF_8);
+            return buffer.toString("UTF-8");
         } catch (Exception exc) {
             return buffer.toString();
         }

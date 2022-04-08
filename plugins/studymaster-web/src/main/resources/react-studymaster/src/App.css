@@ -1,0 +1,108 @@
+.sidebar {
+    grid-area: sidebar;
+    min-width: 75px;
+}
+
+.content {
+    grid-area: content;
+    color: black;
+}
+
+.header {
+    grid-area: header;
+}
+
+.inform {
+    grid-area: inform;
+}
+
+
+.wrapper {
+    display: grid;
+    grid-gap: 10px;
+    grid-template-columns: auto auto auto auto auto;
+    grid-template-rows: 70px 0.1fr 1fr;
+    grid-template-areas:
+    " header header header sidebar sidebar"
+    " inform inform inform sidebar sidebar"
+    " content content content sidebar sidebar";
+    width: 98vw;
+    height: 98vh;
+    margin: 10px;
+}
+
+.wrapper-collapsed {
+    display: grid;
+    grid-gap: 10px;
+    grid-template-columns: auto auto auto 0.03fr 84px;
+    grid-template-rows:  70px 0.1fr 1fr;
+    grid-template-areas:
+    " header header header header sidebar"
+    " inform inform inform inform inform "
+    " content content content content content ";
+    width: 99vw;
+    height: 98vh;
+    margin: 10px;
+}
+
+
+.sidebar-divider {
+    display: grid;
+    grid-template-rows: 70px 1fr 1fr;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+    "button-area"
+    "variable-list"
+    "log";
+    width: auto;
+    height: 100%;
+}
+
+.input-sheet-unit-divider {
+    display: grid;
+    grid-template-rows: 10fr 1fr;
+    grid-template-areas:
+    "in-form-fields"
+    "in-form-buttons";
+    width: 100%;
+    height: 100%;
+}
+
+
+.box {
+    background-color: #444;
+    color: black;
+    border-radius: 5px;
+    padding: 10px;
+    font-size: 150%;
+}
+
+.logbox {
+    overflow-y: auto;
+}
+
+.header,
+.sidebar {
+    background-color: #999;
+}
+
+.content,
+.inform {
+    background-color: #d0cdcd;
+}
+
+.flex-container {
+    display: flex;
+    height: 100%;
+}
+
+
+.item1 {
+    order: 0;
+    flex-grow: 1;
+}
+
+.buttonW {
+    width: 20vw;
+    height: 5vh;
+}
