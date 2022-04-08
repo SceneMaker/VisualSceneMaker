@@ -209,8 +209,8 @@ public class WebStudyMasterExecutor extends ActivityExecutor implements EventLis
             }
         }
 
-        mLastInformMessage = null; // In case a previous inform was still active.
-        mLastRequestMessage = null; // In case a previous request was still active.
+//        mLastInformMessage = null; // In case a previous inform was still active.
+//        mLastRequestMessage = null; // In case a previous request was still active.
     }
 
 
