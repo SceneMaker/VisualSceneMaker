@@ -242,7 +242,6 @@ function GenerateInputFieldWithType(props, updateUserSubmittedInfo, formContents
                             }}
                             getAriaValueText={valuetext}
                             // step={10}
-                            valueLabelDisplay="auto"
                             marks={marks}
                         />
 
