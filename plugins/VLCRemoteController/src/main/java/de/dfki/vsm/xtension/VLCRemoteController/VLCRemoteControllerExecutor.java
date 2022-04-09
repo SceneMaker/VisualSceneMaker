@@ -16,7 +16,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.net.Socket;
-import java.util.LinkedList;
+import java.util.List;
 
 /**
  *
@@ -50,7 +50,7 @@ public class VLCRemoteControllerExecutor extends ActivityExecutor{
         if (activity instanceof SpeechActivity) {
             SpeechActivity sa = (SpeechActivity) activity;
             String text = sa.getTextOnly("$(").trim();
-            LinkedList<String> timemarks = sa.getTimeMarks("$(");
+            List<String> timemarks = sa.getTimeMarks("$(");
 
             // If text is empty - assume activity has empty text but has marker activities registered
             if (text.isEmpty()) {

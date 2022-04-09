@@ -11,11 +11,17 @@ repositories {
     mavenCentral()
 }
 dependencies {
-    testImplementation group: 'junit', name: 'junit', version: '4.12'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
+
     implementation project(":core")
     implementation project(":plugins:extensionAPI")
 
     // https://mvnrepository.com/artifact/org.json/json
     implementation group: 'org.json', name: 'json', version: '20171018'
     implementation 'org.jetbrains:annotations:16.0.2'
+}
+
+test {
+    useJUnitPlatform()
 }

@@ -14,10 +14,11 @@ import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
 import de.dfki.vsm.runtime.activity.scheduler.ActivityWorker;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
+
+import javax.swing.*;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
-import javax.swing.SwingUtilities;
+import java.util.List;
 
 /**
  *
@@ -49,7 +50,7 @@ public class MediaDisplayExecutor extends ActivityExecutor {
         if (activity instanceof SpeechActivity) {
             SpeechActivity sa = (SpeechActivity) activity;
             String text = sa.getTextOnly("$(").trim();
-            LinkedList<String> timemarks = sa.getTimeMarks("$(");
+            List<String> timemarks = sa.getTimeMarks("$(");
 
             // If text is empty - assume activity has empty text but has marker activities registered
             if (text.isEmpty()) {

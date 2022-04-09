@@ -52,7 +52,7 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
     }
 
     // get the value of a feature (added PG) - quick and dirty
-    protected static String getActionFeatureValue(String name, List<ActionFeature> features) {
+    public static String getActionFeatureValue(String name, List<ActionFeature> features) {
         return features.stream()
                 .filter(af -> af.getKey().equalsIgnoreCase(name))
                 .findFirst()
@@ -202,7 +202,7 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
         if (activity instanceof SpeechActivity) {
             SpeechActivity sa = (SpeechActivity) activity;
             String text = sa.getTextOnly("${'").trim();
-            LinkedList<String> timemarks = sa.getTimeMarks("${'");
+            List<String> timemarks = sa.getTimeMarks("${'");
 
             // If text is empty - assume activity has empty text but has marker activities registered
             if (text.isEmpty()) {

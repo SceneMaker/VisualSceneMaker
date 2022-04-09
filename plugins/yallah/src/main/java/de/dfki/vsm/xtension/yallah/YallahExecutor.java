@@ -15,10 +15,7 @@ import io.javalin.websocket.WsConnectContext;
 import io.javalin.websocket.WsMessageContext;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 public class YallahExecutor extends ActivityExecutor implements ExportableProperties {
 
@@ -114,13 +111,13 @@ public class YallahExecutor extends ActivityExecutor implements ExportableProper
             case None:
                 break ;
             case App:
-                mLogger.failure("Launch mode " + lm.toString() + "not supported yet. YALLAH not launched.");
+                mLogger.failure("Launch mode " + lm + "not supported yet. YALLAH not launched.");
                 break;
             case WebPage:
-                mLogger.failure("Launch mode " + lm.toString() + "not supported yet. YALLAH not launched.");
+                mLogger.failure("Launch mode " + lm + "not supported yet. YALLAH not launched.");
                 break;
             default:
-                mLogger.warning("Unrecognized launch method " + lm.toString() );
+                mLogger.warning("Unrecognized launch method " + lm);
         }
 
 
@@ -152,8 +149,8 @@ public class YallahExecutor extends ActivityExecutor implements ExportableProper
             SpeechActivity sa = (SpeechActivity) activity;
 
             String punct = sa.getPunct() ;
-            String text_only = sa.getTextOnly(MARKER).trim() ;
-            LinkedList<String> time_marks = sa.getTimeMarks(MARKER);
+            String text_only = sa.getTextOnly(MARKER).trim();
+            List<String> time_marks = sa.getTimeMarks(MARKER);
 
             mLogger.message("This is a Speech Activity. text only: '" + text_only + "'; punct: '" + punct + "'"
                     + "There are " + time_marks.size() + " time marks") ;
@@ -164,7 +161,7 @@ public class YallahExecutor extends ActivityExecutor implements ExportableProper
                 // If text is empty, there is no need to send the marker to the client:
                 // execute them all of them immediately.
 
-                LinkedList<String> timemarks = sa.getTimeMarks(YallahExecutor.MARKER);
+                List<String> timemarks = sa.getTimeMarks(YallahExecutor.MARKER);
                 for (String tm : timemarks) {
                     mProject.getRunTimePlayer().getActivityScheduler().handle(tm);
                 }

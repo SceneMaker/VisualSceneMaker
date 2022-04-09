@@ -19,6 +19,7 @@ import de.hcm.robots.messaging.StatusMessage;
 
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -130,7 +131,7 @@ public class ReetiExecutor extends ActivityExecutor implements ExportablePropert
         if (activity instanceof SpeechActivity) {
             String activityText = ((SpeechActivity)activity).getTextOnly("\\book=").trim();
             if (activityText.isEmpty()) {
-                    LinkedList<String> timemarks = ((SpeechActivity)activity).getTimeMarks("\\book=");
+                List<String> timemarks = ((SpeechActivity) activity).getTimeMarks("\\book=");
                     for (String tm : timemarks) {
                         mProject.getRunTimePlayer().getActivityScheduler().handle(tm);
                     }
@@ -170,7 +171,7 @@ public class ReetiExecutor extends ActivityExecutor implements ExportablePropert
                     + "    name: " + name + "\n"
                     + "    type: " + type + "\n"
                     + "    text: " + text + "\n"
-                    + "Constructing command with id " + cmid + " and content \n" + command.toString() + "\n");
+                    + "Constructing command with id " + cmid + " and content \n" + command + "\n");
 
             // Send command to platform 
             synchronized (mWorkerMap) {

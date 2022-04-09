@@ -12,6 +12,10 @@ import de.dfki.common.interfaces.StickmanStage;
 import de.dfki.util.ios.IOSIndentWriter;
 import de.dfki.util.xml.XMLUtilities;
 import de.dfki.vsm.editor.dialog.WaitingDialog;
+import de.dfki.vsm.extensionAPI.ExportableCompletion;
+import de.dfki.vsm.extensionAPI.ExportableProperties;
+import de.dfki.vsm.extensionAPI.ProjectProperty;
+import de.dfki.vsm.extensionAPI.value.ProjectValueProperty;
 import de.dfki.vsm.model.config.ConfigFeature;
 import de.dfki.vsm.model.project.AgentConfig;
 import de.dfki.vsm.model.project.PluginConfig;
@@ -22,10 +26,6 @@ import de.dfki.vsm.runtime.activity.SpeechActivity;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
 import de.dfki.vsm.runtime.activity.scheduler.ActivityWorker;
 import de.dfki.vsm.runtime.project.RunTimeProject;
-import de.dfki.vsm.extensionAPI.ExportableCompletion;
-import de.dfki.vsm.extensionAPI.ExportableProperties;
-import de.dfki.vsm.extensionAPI.ProjectProperty;
-import de.dfki.vsm.extensionAPI.value.ProjectValueProperty;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
 import de.dfki.vsm.util.stickman.StickmanRepository;
 import de.dfki.vsm.util.tts.SpeakerTts;
@@ -58,18 +58,18 @@ public class StickmanTtsExecutor extends ActivityExecutor implements ExportableP
     private StickmanTtsListener mListener;
     private final HashMap<String, StickmanTtsHandler> mClientMap = new HashMap();
     private final HashMap<String, ActivityWorker> mActivityWorkerMap = new HashMap();
-    private HashMap<String, String> languageAgentMap;
-    private HashMap<String, SpeakerActivity> speechActivities = new HashMap<>();
-    private HashMap<String, WordTimeMarkSequence> wtsMap = new HashMap<>();
+    private final HashMap<String, String> languageAgentMap;
+    private final HashMap<String, SpeakerActivity> speechActivities = new HashMap<>();
+    private final HashMap<String, WordTimeMarkSequence> wtsMap = new HashMap<>();
     private MaryTTsProcess marySelfServer;
     public static String sExecutionId = "stickmanmary_";
     private String mDeviceName;
     private StageRoom stickmanStageC;
-    private StickmanRepository stickmanFactory;
+    private final StickmanRepository stickmanFactory;
     // The word mapping properties
     Properties mWordMapping = new Properties();
-    private ExportableProperties exportableProperties = new StickmanTTSProjectProperty();
-    private ExportableCompletion exportableActions ;
+    private final ExportableProperties exportableProperties = new StickmanTTSProjectProperty();
+    private final ExportableCompletion exportableActions;
 
     private int maryId;
 
@@ -216,7 +216,7 @@ public class StickmanTtsExecutor extends ActivityExecutor implements ExportableP
 
     private void handleEmptyTextActivity(SpeechActivity sa) {
         //Mainly use for setting a new voice while playing script
-        LinkedList<String> timemarks = sa.getTimeMarks("$");
+        List<String> timemarks = sa.getTimeMarks("$");
         for (String tm : timemarks) {
             mProject.getRunTimePlayer().getActivityScheduler().handle(tm);
         }
@@ -237,7 +237,7 @@ public class StickmanTtsExecutor extends ActivityExecutor implements ExportableP
         IOSIndentWriter iosw = new IOSIndentWriter(out);
         boolean r = XMLUtilities.writeToXMLWriter(stickmanAnimation, iosw);
         try {
-            broadcast(new String(out.toByteArray(), StandardCharsets.UTF_8).replace("\n", " "));
+            broadcast(out.toString(StandardCharsets.UTF_8).replace("\n", " "));
             out.close();
         } catch (UnsupportedEncodingException exc) {
             mLogger.warning(exc.getMessage());

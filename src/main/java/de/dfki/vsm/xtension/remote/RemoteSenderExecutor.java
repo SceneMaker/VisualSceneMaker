@@ -1,14 +1,14 @@
 package de.dfki.vsm.xtension.remote;
 
+import de.dfki.vsm.extensionAPI.ExportableProperties;
+import de.dfki.vsm.extensionAPI.ProjectProperty;
+import de.dfki.vsm.extensionAPI.value.ProjectValueProperty;
 import de.dfki.vsm.model.project.AgentConfig;
 import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
 import de.dfki.vsm.runtime.activity.SpeechActivity;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
 import de.dfki.vsm.runtime.project.RunTimeProject;
-import de.dfki.vsm.extensionAPI.ExportableProperties;
-import de.dfki.vsm.extensionAPI.ProjectProperty;
-import de.dfki.vsm.extensionAPI.value.ProjectValueProperty;
 import de.dfki.vsm.xtension.remote.client.factories.ClientsFactory;
 import de.dfki.vsm.xtension.remote.client.factories.remoteagent.RemoteAgentAbstractFactory;
 import de.dfki.vsm.xtension.remote.client.properties.RemoteSenderProjectProperty;
@@ -16,16 +16,16 @@ import de.dfki.vsm.xtension.remote.client.sender.Clientable;
 import de.dfki.vsm.xtension.remote.client.sender.DataSendable;
 
 import java.io.IOException;
-import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 /**
  * Created by alvaro on 5/2/17.
  */
-public class RemoteSenderExecutor extends ActivityExecutor implements ExportableProperties{
+public class RemoteSenderExecutor extends ActivityExecutor implements ExportableProperties {
     private Clientable client;
-    private ClientsFactory clientsFactory;
-    private ExportableProperties exportableProperties = new RemoteSenderProjectProperty();
+    private final ClientsFactory clientsFactory;
+    private final ExportableProperties exportableProperties = new RemoteSenderProjectProperty();
 
     public RemoteSenderExecutor(PluginConfig config, RunTimeProject project) {
         super(config, project);
@@ -59,7 +59,7 @@ public class RemoteSenderExecutor extends ActivityExecutor implements Exportable
     @Override
     public void execute(AbstractActivity activity) {
         if (activity instanceof SpeechActivity) {
-            exectureSpeechActivity((SpeechActivity) activity);
+            executeSpeechActivity((SpeechActivity) activity);
         } else {
             prepareDataAndSend(activity);
         }
@@ -84,17 +84,17 @@ public class RemoteSenderExecutor extends ActivityExecutor implements Exportable
         return RemoteAgentAbstractFactory.createRemoteAgent(agentConfiguration, activity).getSendable();
     }
 
-    private void exectureSpeechActivity(SpeechActivity activity) {
+    private void executeSpeechActivity(SpeechActivity activity) {
         String text = activity.getTextOnly("$(").trim();
-        LinkedList<String> timemarks = activity.getTimeMarks("$(");
+        List<String> timemarks = activity.getTimeMarks("$(");
         if (text.isEmpty()) {
             ExecuteActivityAtTimeMark(timemarks);
-        }else{
+        } else {
             prepareDataAndSend(activity);
         }
     }
 
-    private void ExecuteActivityAtTimeMark(LinkedList<String> timemarks) {
+    private void ExecuteActivityAtTimeMark(List<String> timemarks) {
         for (String tm : timemarks) {
             mLogger.warning("Directly executing activity at timemark " + tm);
             mProject.getRunTimePlayer().getActivityScheduler().handle(tm);
