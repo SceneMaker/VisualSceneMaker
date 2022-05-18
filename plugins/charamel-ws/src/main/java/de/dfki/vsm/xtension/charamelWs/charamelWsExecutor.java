@@ -14,6 +14,7 @@ import de.dfki.vsm.runtime.activity.scheduler.ActivityWorker;
 import de.dfki.vsm.runtime.interpreter.value.BooleanValue;
 import de.dfki.vsm.runtime.interpreter.value.StringValue;
 import de.dfki.vsm.runtime.project.RunTimeProject;
+import de.dfki.vsm.runtime.plugin.RunTimePlugin;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 import de.dfki.vsm.xtension.charamelWs.Commands.*;
 import io.javalin.Javalin;
@@ -501,6 +502,11 @@ public class charamelWsExecutor extends ActivityExecutor {
             }
             case "wave": {
                 broadcast(new TimeLine(new WaveCommand()));
+                break;
+            }
+            case "sequence": {
+                String sequenceName = getActionFeatureValue("name", f);
+                broadcast(new SequenceCommand(sequenceName));
                 break;
             }
         }
