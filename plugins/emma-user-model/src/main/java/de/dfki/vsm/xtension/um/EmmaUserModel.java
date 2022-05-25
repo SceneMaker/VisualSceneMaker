@@ -51,10 +51,9 @@ public class EmmaUserModel extends ActivityExecutor {
 
     }
 
-    ;
-
     // sceneflow variables
     private final String mVSM_DiaryDay = "diaryDay";
+    private final String mVSM_CurrentDiaryDay = "currentDiaryDay";
     private final String mVSM_DiaryDailyItemsNumber = "diaryDailyItemsNum";
     private final String mVSM_DiaryItemProducer = "diaryItemProducer";
     private final String mVSM_DiaryItemText = "diaryItemText";
@@ -161,6 +160,13 @@ public class EmmaUserModel extends ActivityExecutor {
             }
             // at this point, there is a user model, a freshly created or loaded
             diaryDaysManagement();
+        }
+
+        // PlayAction("[um currentday]") stores the number of the current day in a sceneflow var (mVSM_CurrentDiaryDay)
+        if (name.equalsIgnoreCase("currentday")) {
+                 if (mProject.hasVariable(mVSM_CurrentDiaryDay)) {
+                        mProject.setVariable(mVSM_CurrentDiaryDay, mDiaryDays.size());
+                    }
         }
 
         // PlayAction("[um diaryday no=0]") stores a day string (e.g., "2. November 2020")
