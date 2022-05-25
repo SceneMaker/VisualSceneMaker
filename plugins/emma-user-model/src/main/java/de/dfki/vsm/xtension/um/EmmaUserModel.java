@@ -29,9 +29,10 @@ public class EmmaUserModel extends ActivityExecutor {
     private JSONObject mUser = null;
     // days at which the user had a diary conversation
     private List<String> mDiaryDays = new LinkedList<>();
-    // current day and daily items
+    // current day, daily items, and context
     private int mSelectedDay = -1;
     private List<Integer> mDailyItemReferences = new LinkedList<>();
+    private String mContext = "unknown"; // context is some value that can be used to "annotate" information with that value
     // emotion history database
     private Map<Long, Integer> mPastEmotionDiaryEntries = new HashMap<Long, Integer>();
     private int[] mPast7EmotionDiaryEntries = new int[7];
@@ -127,6 +128,12 @@ public class EmmaUserModel extends ActivityExecutor {
             saveUserModel();
         }
 
+        if (name.equalsIgnoreCase("setcontext")) {
+            if ((activity.get("value") != null)) {
+                mContext = activity.get("value");
+            }
+        }
+
         if (name.equalsIgnoreCase("get")) {
             if ((activity.get("strVar") != null) && (mProject.hasVariable(activity.get("strVar")))) {
                 String val = getUserStrValue(activity);
@@ -191,11 +198,21 @@ public class EmmaUserModel extends ActivityExecutor {
             if ((activity.get("day") != null)) {
                 mSelectedDay = Integer.parseInt(activity.get("day"));
 
+                // filter by context, if present
+                String cont = "";
+                if ((activity.get("context") != null)) {
+                    cont = activity.get("context");
+                }
+
                 if (mProject.hasVariable(mVSM_DiaryDailyItemsNumber)) {
                     if ((mSelectedDay < mDiaryDays.size()) && (mDiaryDays.get(mSelectedDay) != null)) {
                         String dayStr = mDiaryDays.get(mSelectedDay);
-                        mDailyItemReferences = collectDailyItems(dayStr);
 
+                        if (cont != "") {
+                            mDailyItemReferences = collectDailyItems(dayStr, cont);
+                        } else {
+                            mDailyItemReferences = collectDailyItems(dayStr);
+                        }
                         mProject.setVariable(mVSM_DiaryDailyItemsNumber, mDailyItemReferences.size());
                     } else {
                         mLogger.failure("Requested diary day (" + mSelectedDay + ") does not exist");
@@ -565,11 +582,11 @@ public class EmmaUserModel extends ActivityExecutor {
         }
     }
 
-    private void storeUserDiaryEntry(AbstractActivity activity, String key, String value) {
+    private synchronized void storeUserDiaryEntry(AbstractActivity activity, String key, String value) {
         storeDiaryEntry(activity, "User", key, value);
     }
 
-    private void storeDiaryEntry(AbstractActivity activity, String producer, String key, String value) {
+    private synchronized void storeDiaryEntry(AbstractActivity activity, String producer, String key, String value) {
         JSONObject diaryentry = new JSONObject();
 
         long dateMillis = System.currentTimeMillis();
@@ -578,6 +595,7 @@ public class EmmaUserModel extends ActivityExecutor {
         diaryentry.put("no", getLastDiaryEntryNumber() + 1);
         diaryentry.put("producer", (activity.get(producer) != null) ? activity.get(producer) : producer);
         diaryentry.put(key, (activity.get(value) != null) ? activity.get(value).replace("'", "").replace("\n", " ").replace("  ", " ") : "");
+        diaryentry.put("context", mContext);
 
         JSONArray diary = mUser.getJSONArray("diary");
         diary.put(diaryentry);
@@ -586,7 +604,7 @@ public class EmmaUserModel extends ActivityExecutor {
         diaryDaysManagement();
     }
 
-    private void storeDiaryEmotionEntry(AbstractActivity activity, String emotionValue) {
+    private synchronized void storeDiaryEmotionEntry(AbstractActivity activity, String emotionValue) {
         JSONObject diaryentry = new JSONObject();
 
         long dateMillis = System.currentTimeMillis();
@@ -594,6 +612,7 @@ public class EmmaUserModel extends ActivityExecutor {
         diaryentry.put("date", dateMillis);
         diaryentry.put("no", getLastDiaryEntryNumber() + 1);
         diaryentry.put("producer", "User");
+        diaryentry.put("context", mContext);
 
         String emotion = (activity.get(emotionValue) != null) ? activity.get(emotionValue).replace("'", "").replace("\n", " ").replace("  ", " ") : "";
 
@@ -743,6 +762,48 @@ public class EmmaUserModel extends ActivityExecutor {
         return entries;
     }
 
+    private List<Integer> collectDailyItems(String dayStr, String context) {
+        JSONArray diary = mUser.getJSONArray("diary");
+        List<Integer> entries = new LinkedList<>();
+
+        // Date format
+        DateFormat df = new SimpleDateFormat("MMMM d, yyyy", Locale.GERMANY);
+        Date targetDate = Calendar.getInstance().getTime(); // initialize it with today
+
+        try { // try to parse dayStr and create Date object
+            targetDate = df.parse(dayStr);
+        } catch (ParseException e) {
+            mLogger.failure(dayStr + " is not a valid day (date)!");
+        }
+        if (diary.length() > 0) {
+            mLogger.message("Found " + diary.length() + " diary entries. Filtering for context " + context);
+            for (int i = 0; i < diary.length(); i++) {
+                JSONObject diaryItem = diary.getJSONObject(i);
+                if ((diaryItem.has("entry"))
+                        && (!diaryItem.getString("entry").isEmpty())
+                        && (!diaryItem.getString("context").isEmpty())
+                        && (diaryItem.getString("context").equalsIgnoreCase(context))) { // for now, do only consider entries with key "entry"
+                    // make a proper date
+                    long dateMillis = diaryItem.getLong("date");
+                    // get the number of the dialog entry
+                    Date exactDate = new Date(dateMillis);
+                    // reduce it to month day year to "collect" all item for one day!
+                    String dateStr = df.format(exactDate);
+                    Date reducedDate = null;
+                    try {
+                        reducedDate = df.parse(dateStr);
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                    }
+                    if (reducedDate.equals(targetDate)) {
+                        entries.add(diaryItem.getInt("no"));
+                    }
+                }
+            }
+        }
+        return entries;
+    }
+
     private long getLastDiaryEntryNumber() {
         JSONArray diary = mUser.getJSONArray("diary");
         long biggestNo = -1;
@@ -812,6 +873,7 @@ public class EmmaUserModel extends ActivityExecutor {
         diaryentry.put("no", 0);
         diaryentry.put("producer", "system");
         diaryentry.put("entry", "created");
+        diaryentry.put("context", mContext);
 
         //diary.put(diaryentry);
         user.put("diary", diary);
@@ -875,16 +937,18 @@ public class EmmaUserModel extends ActivityExecutor {
         mLogger.message("Found user " + users.get(0).toString());
     }
 
-    private void saveUserModel() {
+    private synchronized void saveUserModel() {
         String umf = (mProject.getProjectPath() + File.separator + umDir + File.separator + umFile).replace("\\", "/");
-        try {
-            FileWriter umfw = new FileWriter(umf);
+        synchronized (mUserProfiles) {
+            try {
+                FileWriter umfw = new FileWriter(umf);
 
-            umfw.write(mUserProfiles.toString());
-            umfw.flush();
-            umfw.close();
-        } catch (IOException e) {
-            mLogger.failure("Error writing UM to " + umf);
+                umfw.write(mUserProfiles.toString());
+                umfw.flush();
+                umfw.close();
+            } catch (IOException e) {
+                mLogger.failure("Error writing UM to " + umf);
+            }
         }
     }
 
