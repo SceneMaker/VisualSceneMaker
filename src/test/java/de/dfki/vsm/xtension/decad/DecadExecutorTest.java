@@ -9,6 +9,7 @@ import fakes.FakeDecadExecutor;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
 
@@ -34,7 +35,7 @@ class DecadExecutorTest {
     }
 
     @Test
-    void shouldExecuteCommand() {
+    void shouldExecuteCommand() throws IOException {
         executor = makeDefaultExecutor();
         executor.execute(new ActionActivity("actor", "Fake action", "text", new LinkedList<>(), new HashMap<>()));
         FakeCommand command = (FakeCommand) ((FakeDecadExecutor) executor).getExecutedCommand();

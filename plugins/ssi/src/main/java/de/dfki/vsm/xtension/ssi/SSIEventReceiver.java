@@ -132,7 +132,7 @@ final class SSIEventReceiver extends Thread {
     private byte[] recvBytes() {
         try {
             // Construct a byte array
-            final byte[] buffer = new byte[4096];
+            final byte[] buffer = new byte[8192];
             // Construct an UDP packet
             final DatagramPacket packet
                     = new DatagramPacket(buffer, buffer.length);

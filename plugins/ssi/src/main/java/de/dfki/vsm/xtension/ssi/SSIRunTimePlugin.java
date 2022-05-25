@@ -27,13 +27,15 @@ public abstract class SSIRunTimePlugin extends RunTimePlugin implements SSIEvent
         // Get the plugin configuration
         final String hlhost = mConfig.getProperty("hlhost");
         final String hlport = mConfig.getProperty("hlport");
+
         final String slhost = mConfig.getProperty("slhost");
         final String slport = mConfig.getProperty("slport");
         final String srhost = mConfig.getProperty("srhost");
         final String srport = mConfig.getProperty("srport");
         // Initialize the event receiver
         mReceiver = new SSIEventReceiver(this,
-                hlhost, Integer.parseInt(hlport));
+                hlhost, Integer.parseInt(hlport)
+                );
         // Initialize the event sender
         mSender = new SSIEventSender(
                 slhost, Integer.parseInt(slport),
