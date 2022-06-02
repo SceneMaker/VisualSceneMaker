@@ -15,7 +15,7 @@
     "@testing-library/user-event": "^7.2.1",
     "bootstrap": "^5.1.1",
     "http-proxy-middleware": "^0.20.0",
-    "npm": "^8.5.1",
+    "npm": "^8.11.0",
     "react": "^16.14.0",
     "react-bootstrap": "^2.0.0-rc.1",
     "react-dom": "^16.14.0",
