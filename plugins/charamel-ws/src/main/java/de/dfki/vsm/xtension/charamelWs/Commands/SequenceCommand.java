@@ -5,8 +5,8 @@ public class SequenceCommand implements Broadcastable{
 
     private String sequenceName;
 
-    public SequenceCommand(String name) {
-        sequenceName = name;
+    public SequenceCommand(String sequenceName) {
+        this.sequenceName = sequenceName;
     }
 
     @Override
