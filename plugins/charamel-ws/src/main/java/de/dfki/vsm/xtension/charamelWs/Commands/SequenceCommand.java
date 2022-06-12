@@ -11,10 +11,10 @@ public class SequenceCommand implements Broadcastable{
 
     @Override
     public String toJson() {
-        return String.format("{\n" +
-                "  \"type\": \"sequence\",\n" +
-                "  \"name\": \"%s\"\n" +
-                "}", this.sequenceName);
+        return " {\n" +
+                "      \"type\": \"sequence\",\n" +
+                "      \"name\": \"" + sequenceName + "\"\n" +
+                "    }\n";
     }
 
 }
