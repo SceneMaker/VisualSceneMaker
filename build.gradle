@@ -11,7 +11,7 @@ allprojects {
     version = versioning.info.lastTag
 }
 
-sourceCompatibility = 11
+sourceCompatibility = 1.8
 
 repositories {
     mavenCentral()

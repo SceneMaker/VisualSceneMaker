@@ -9,8 +9,8 @@ repositories {
     mavenCentral()
 }
 
-sourceCompatibility = 11
-targetCompatibility = 11
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
 
 // Exclude the `node_modules` folder, which is possibly created by `npm` when building the React web app.
 sourceSets {
