@@ -8,11 +8,22 @@
       <Feature key="stickman" val="Stickman2D"/>
       <Feature key="" val=""/>
     </Plugin>
+    <Plugin type="device" name="Stickman3D" class="de.dfki.vsm.xtension.stickman.StickmanExecutor" load="true">
+      <Feature key="smhost" val="127.0.0.1"/>
+      <Feature key="smport" val="8000"/>
+      <Feature key="showstickmanname" val="true"/>
+      <Feature key="stickman" val="Pinocchio"/>
+      <Feature key="fullscreen" val="false"/>
+    </Plugin>
   </Plugins>
   <Agents>
     <Agent name="susanne" device="stickman">
     </Agent>
     <Agent name="patrick" device="stickman">
+    </Agent>
+    <Agent name="Agent1" device="Stickman3D">
+    </Agent>
+    <Agent name="Agent2" device="Stickman3D">
     </Agent>
   </Agents>
   <Player>

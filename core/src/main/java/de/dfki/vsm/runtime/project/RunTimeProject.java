@@ -19,6 +19,7 @@ import de.dfki.vsm.util.xml.XMLUtilities;
 
 import java.io.*;
 import java.lang.reflect.Constructor;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -138,7 +139,12 @@ public class RunTimeProject {
         return mProjectConfig;
     }
 
-    public final ActivityExecutor getAgentDevice(final String agent) throws NullPointerException {
+    public final ArrayList getVarDefInSceneFlow() {
+        return mSceneFlow.getCopyOfVarDefList();
+
+    }
+
+    public final ActivityExecutor getAgentDevice(final String agent) {
         // Get the agent config 
         final AgentConfig config = mProjectConfig.getAgentConfig(agent);
         // Check the config
@@ -151,7 +157,8 @@ public class RunTimeProject {
                 return (ActivityExecutor) plugin;
             }
         }
-        throw new NullPointerException("Agent Device does not exist");
+        // Return NULL at failure
+        return null;
     }
 
     public boolean parse(final String file) {
