@@ -7,7 +7,7 @@ import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
 import de.dfki.vsm.runtime.interpreter.value.IntValue;
 import de.dfki.vsm.runtime.interpreter.value.StringValue;
 import de.dfki.vsm.runtime.project.RunTimeProject;
-import de.dfki.vsm.util.log.LOGConsoleLogger;
+import de.dfki.vsm.util.log.LOGDefaultLogger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -36,6 +36,8 @@ public class EmmaUserModel extends ActivityExecutor {
     // emotion history database
     private Map<Long, Integer> mPastEmotionDiaryEntries = new HashMap<Long, Integer>();
     private int[] mPast7EmotionDiaryEntries = new int[7];
+    // The system logger
+    protected final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
 
     private enum EmotionDiaryDays {
         Mo(0), Di(1), Mi(2), Do(3), Fr(4), Sa(5), So(6);
@@ -58,6 +60,7 @@ public class EmmaUserModel extends ActivityExecutor {
     private final String mVSM_DiaryDailyItemsNumber = "diaryDailyItemsNum";
     private final String mVSM_DiaryItemProducer = "diaryItemProducer";
     private final String mVSM_DiaryItemText = "diaryItemText";
+    private final String mVSM_DiaryItemTimeCode = "diaryItemTimeCode";
     private final String mVSM_DiaryEmotionDay = "diaryEmotionDay";
     private final String mVSM_DiaryEmotionDayValue = "diaryEmotionDayValue";
     private final String mVSM_DiaryEmotionEntries = "diaryEmotionEntries";
@@ -65,9 +68,6 @@ public class EmmaUserModel extends ActivityExecutor {
     // File stuff
     private String umDir = "";
     private String umFile = "";
-
-    // The singleton logger instance
-    private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
 
     public EmmaUserModel(PluginConfig config, RunTimeProject project) {
         super(config, project);
@@ -129,8 +129,10 @@ public class EmmaUserModel extends ActivityExecutor {
         }
 
         if (name.equalsIgnoreCase("setcontext")) {
-            if ((activity.get("value") != null)) {
+            mLogger.message("Setting context");
+            if (activity.get("value") != null) {
                 mContext = activity.get("value");
+                mLogger.message("Context set to " + mContext);
             }
         }
 
@@ -199,7 +201,7 @@ public class EmmaUserModel extends ActivityExecutor {
                 mSelectedDay = Integer.parseInt(activity.get("day"));
 
                 // filter by context, if present
-                String cont = "";
+                String cont = null;
                 if ((activity.get("context") != null)) {
                     cont = activity.get("context");
                 }
@@ -208,7 +210,7 @@ public class EmmaUserModel extends ActivityExecutor {
                     if ((mSelectedDay < mDiaryDays.size()) && (mDiaryDays.get(mSelectedDay) != null)) {
                         String dayStr = mDiaryDays.get(mSelectedDay);
 
-                        if (cont != "") {
+                        if (cont != null) {
                             mDailyItemReferences = collectDailyItems(dayStr, cont);
                         } else {
                             mDailyItemReferences = collectDailyItems(dayStr);
@@ -229,7 +231,7 @@ public class EmmaUserModel extends ActivityExecutor {
             if (activity.get("no") != null) {
                 int no = Integer.parseInt(activity.get("no"));
 
-                if (mProject.hasVariable(mVSM_DiaryItemProducer) && mProject.hasVariable(mVSM_DiaryItemText)) {
+                if (mProject.hasVariable(mVSM_DiaryItemProducer) && mProject.hasVariable(mVSM_DiaryItemText) && mProject.hasVariable(mVSM_DiaryItemTimeCode)) {
                     if ((mSelectedDay < mDiaryDays.size()) && (mDiaryDays.get(mSelectedDay) != null)) {
                         String dayStr = mDiaryDays.get(mSelectedDay);
                         int itemNum = mDailyItemReferences.get(no);
@@ -237,12 +239,26 @@ public class EmmaUserModel extends ActivityExecutor {
 
                         JSONArray diary = mUser.getJSONArray("diary");
                         JSONObject entry;
+
+                        String context = (activity.get("context") != null) ? activity.get("context") : null;
+
                         for (int i = 0; i < diary.length(); i++) {
                             if (diary.getJSONObject(i).getInt("no") == itemNum) {
                                 entry = diary.getJSONObject(i);
                                 if ((entry.has("entry")) && (!entry.getString("entry").isEmpty())) { // for now, do only consider entries with key "entry"
-                                    mProject.setVariable(mVSM_DiaryItemProducer, new StringValue(entry.getString("producer")));
-                                    mProject.setVariable(mVSM_DiaryItemText, new StringValue(entry.getString("entry")));
+                                    // if context information is present, filter further by context
+                                    if (context != null) { // if cmd comes with context filter, filter item accordingly
+                                        if ((entry.has("context"))) {
+                                            if (entry.getString("context").equalsIgnoreCase(context)) {
+                                                mProject.setVariable(mVSM_DiaryItemProducer, new StringValue(entry.getString("producer")));
+                                                mProject.setVariable(mVSM_DiaryItemText, new StringValue(entry.getString("entry")));
+                                            }
+                                        }
+                                    } else {
+                                        mProject.setVariable(mVSM_DiaryItemProducer, new StringValue(entry.getString("producer")));
+                                        mProject.setVariable(mVSM_DiaryItemText, new StringValue(entry.getString("entry")));
+                                    }
+                                    mProject.setVariable(mVSM_DiaryItemTimeCode, new StringValue(String.valueOf(entry.getLong("date"))));
                                 }
                                 return;
                             }
@@ -254,6 +270,30 @@ public class EmmaUserModel extends ActivityExecutor {
                 }
             } else {
                 mLogger.failure("Required 'no' information (int) is missing for loading item.");
+            }
+        }
+
+        if (name.equalsIgnoreCase("updateitem")) {
+            long dateid = Long.parseLong(activity.get("dateid"));
+            String value = activity.get("value");
+            // strip "'";
+            if (value != null) {
+                value = value.replace("'", "");
+            } else {
+                value = "";
+            }
+
+            JSONArray diary = mUser.getJSONArray("diary");
+
+            for (int i = 0; i < diary.length(); i++) {
+                JSONObject diaryItem = diary.getJSONObject(i);
+                long dateMillis = diaryItem.getLong("date");
+                if (diaryItem.getLong("date") == dateid) { // id dateid matches replace entry with new text
+                    diaryItem.put("entry", value);
+                    diary.put(i, diaryItem);
+                    saveUserModel();
+                    break; // exit loop since there (should) be only one item
+                }
             }
         }
 
@@ -842,6 +882,7 @@ public class EmmaUserModel extends ActivityExecutor {
         user.put("name", name);
         user.put("id", id);
         user.put("introduction", "unknown");
+        user.put("diarymenu", "unknown");
         user.put("meditation", "unknown");
 //        user.put("break", "unknown");
 //        user.put("type", "unknown");
