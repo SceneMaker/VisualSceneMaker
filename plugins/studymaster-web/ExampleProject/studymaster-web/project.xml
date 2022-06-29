@@ -3,7 +3,7 @@
   <Plugins>
     <Plugin type="device" name="webstudymaster" class="de.dfki.vsm.xtension.studymasterWeb.WebStudyMasterExecutor" load="true">
       <Feature key="port" val="8080"/>
-      <Feature key="gui_connected_var" val="gui_connected"/>
+      <Feature key="studymaster_connected_var" val="studymaster_connected"/>
     </Plugin>
   </Plugins>
   <Agents>
