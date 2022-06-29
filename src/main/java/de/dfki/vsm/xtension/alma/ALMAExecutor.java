@@ -22,15 +22,18 @@ import de.dfki.vsm.runtime.interpreter.value.ListValue;
 import de.dfki.vsm.runtime.interpreter.value.StringValue;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
+import org.apache.xmlbeans.XmlException;
+
 import java.io.File;
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.LinkedList;
-import org.apache.xmlbeans.XmlException;
 
 /**
  *
  * @author Patrick Gebhard
+ *
+ * 15.2.2022 - added pad interface for MindBot requirement to process p a d values as input
+ * 26.6.2022 - added the vsm variable mechanism to write list of active emotions for every simulated agent
  */
 public class ALMAExecutor extends ActivityExecutor implements AffectUpdateListener {
 
@@ -71,11 +74,26 @@ public class ALMAExecutor extends ActivityExecutor implements AffectUpdateListen
                 mLogger.message("Reset affect processing for  " + activity.getActor());
                 mALMA.resetCharacters();
             }
-            if (AppraisalTag.instance().isAppraisalTag(name)) {
-                String elcitor = getActionFeatureValue("elicitor", features);
-                elcitor = (elcitor.isEmpty()) ? "Scene" : elcitor;
 
-                AffectInputDocument.AffectInput ai = AppraisalTag.instance().makeAffectInput(activity.getActor(), name, "1.0", elcitor);
+            // appraisal tag input
+            if (AppraisalTag.instance().isAppraisalTag(name)) {
+                String elicitor = getActionFeatureValue("elicitor", features);
+                elicitor = (elicitor.isEmpty()) ? "Scene" : elicitor;
+
+                AffectInputDocument.AffectInput ai = AppraisalTag.instance().makeAffectInput(activity.getActor(), name, "1.0", elicitor);
+                mLogger.message("Processing " + ai.toString());
+                mALMA.processSignal(ai);
+            }
+
+            // pleasure, arousal, and dominance values as input (cf. MindBot)
+            if (name.equalsIgnoreCase("pad")) {
+                String elicitor = getActionFeatureValue("elicitor", features);
+                elicitor = (elicitor.isEmpty()) ? "Situation" : elicitor;
+                String pleasureStr = getActionFeatureValue("p", features);
+                String arousalStr = getActionFeatureValue("a", features);
+                String dominanceStr = getActionFeatureValue("d", features);
+
+                AffectInputDocument.AffectInput ai = AppraisalTag.instance().makePADInput(activity.getActor(), pleasureStr, arousalStr, dominanceStr, "1.0", elicitor);
                 mLogger.message("Processing " + ai.toString());
                 mALMA.processSignal(ai);
             }
@@ -84,7 +102,7 @@ public class ALMAExecutor extends ActivityExecutor implements AffectUpdateListen
 
     @Override
     public void launch() {
-        mLogger.message("Loading ALMA Regulated");
+        mLogger.message("Loading ALMA - 2022 (PAD)");
         if (mALMA == null) {
             // read config
             String sALMACOMP = mProject.getProjectPath() + File.separator + mConfig.getProperty("computation");
@@ -98,7 +116,7 @@ public class ALMAExecutor extends ActivityExecutor implements AffectUpdateListen
             try {
                 mALMA = new AffectManager(sALMACOMP, sALMADEF, true);
             } catch (IOException | XmlException ex) {
-                mLogger.failure("Unable to load ALMA Regulated. ALMA Regulated not available.");
+                mLogger.failure("Unable to load ALMA - 2022 (PAD)");
                 mLogger.failure(ex.getMessage());
             }
             mALMA.addAffectUpdateListener(this);
@@ -130,7 +148,7 @@ public class ALMAExecutor extends ActivityExecutor implements AffectUpdateListen
 
                 LinkedList<AbstractValue> valueList = new LinkedList<>();
 
-                // get the intensity of all active emotions of the character
+                // get the intensity of all active emotions of the user
                 for (EmotionType et : character.getEmotions().getEmotionList()) {
                     if (Float.parseFloat(et.getValue()) > 0.25f) {
                         StringValue sv = new StringValue(et.getName().toString());
@@ -140,7 +158,13 @@ public class ALMAExecutor extends ActivityExecutor implements AffectUpdateListen
 
                 try {
                     ListValue list = new ListValue(valueList);
-                    mProject.setVariable("useremotions", list);
+                    String VSMEntityEmotionlistVar = name + "_emotions";
+
+                    if (mProject.hasVariable(VSMEntityEmotionlistVar)) {
+                        mProject.setVariable(VSMEntityEmotionlistVar, list);
+                    } else {
+                        mLogger.failure(VSMEntityEmotionlistVar + " is not available in model -> simulated emotions will not be updated");
+                    }
                 } catch (Exception e) {
                     // System.out.println("not running");
                 }
