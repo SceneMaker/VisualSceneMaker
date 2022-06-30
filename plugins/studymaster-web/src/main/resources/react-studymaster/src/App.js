@@ -29,7 +29,7 @@ function genTimeStamp() {
  * @author [Chirag Bhuvaneshwara](https://github.com/chiragbhuvaneshwara)
  **/
 function App() {
-    const [webSocket, setWebSocket] = useState(new WebSocket('ws://' + document.location.host + '/ws'));
+    const [webSocket, setWebSocket] = useState(new WebSocket('wss://' + document.location.host + '/ws'));
     const [vsmConnectionStatus, setVsmConnectionStatus] = useState(false);
     const [infoLogContents, setInfoLogContents] = useState({});
     const [informContent, setInformContent] = useState("");
@@ -49,7 +49,7 @@ function App() {
     useEffect(() => {
         console.log("Setting up web socket...");
 
-        let ws = new WebSocket('ws://' + document.location.host + '/ws');
+        let ws = new WebSocket('wss://' + document.location.host + '/ws');
 
         ws.onopen = function () {
             setVsmConnectionStatus(true);
