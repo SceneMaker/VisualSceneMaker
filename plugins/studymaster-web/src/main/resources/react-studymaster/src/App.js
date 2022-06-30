@@ -29,7 +29,8 @@ function genTimeStamp() {
  * @author [Chirag Bhuvaneshwara](https://github.com/chiragbhuvaneshwara)
  **/
 function App() {
-    const [webSocket, setWebSocket] = useState(new WebSocket('wss://' + document.location.host + '/ws'));
+    const proto = document.location.protocol === 'https:'? 'wss://':'ws://';
+    const [webSocket, setWebSocket] = useState(new WebSocket(proto + document.location.host + '/ws'));
     const [vsmConnectionStatus, setVsmConnectionStatus] = useState(false);
     const [infoLogContents, setInfoLogContents] = useState({});
     const [informContent, setInformContent] = useState("");
@@ -49,7 +50,7 @@ function App() {
     useEffect(() => {
         console.log("Setting up web socket...");
 
-        let ws = new WebSocket('wss://' + document.location.host + '/ws');
+        let ws = new WebSocket(proto + document.location.host + '/ws');
 
         ws.onopen = function () {
             setVsmConnectionStatus(true);
@@ -154,7 +155,7 @@ function App() {
         const link = document.querySelector("link[rel*='icon']") || document.createElement('link');
         link.type = 'image/x-icon';
         link.rel = 'shortcut icon';
-        link.href = 'http://scenemaker.dfki.de/images/scenemaker/logo.png';
+        link.href = document.location.protocol +'scenemaker.dfki.de/images/scenemaker/logo.png';
         document.getElementsByTagName('head')[0].appendChild(link);
 
         return () => {
