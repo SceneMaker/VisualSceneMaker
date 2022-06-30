@@ -20,9 +20,7 @@ function genTimeStamp() {
     let timestamp = today.getFullYear() + '-' + pad(today.getMonth() + 1) + '-' + pad(today.getDate()) + "_" +
         pad(today.getHours()) + ":" + pad(today.getMinutes()) + ":" + pad(today.getSeconds()) + ":" + ms;
     return timestamp;
-};
-
-let webSocket;
+}
 
 /**
  * Studymaster web app main page.
@@ -31,6 +29,7 @@ let webSocket;
  * @author [Chirag Bhuvaneshwara](https://github.com/chiragbhuvaneshwara)
  **/
 function App() {
+    const [webSocket, setWebSocket] = useState(new WebSocket('wss://' + document.location.host + '/ws'));
     const [vsmConnectionStatus, setVsmConnectionStatus] = useState(false);
     const [infoLogContents, setInfoLogContents] = useState({});
     const [informContent, setInformContent] = useState("");
@@ -49,9 +48,8 @@ function App() {
 
     useEffect(() => {
         console.log("Setting up web socket...");
-        webSocket = new WebSocket('ws://' + document.location.host + '/ws');
 
-        let ws = webSocket;
+        let ws = new WebSocket('wss://' + document.location.host + '/ws');
 
         ws.onopen = function () {
             setVsmConnectionStatus(true);
@@ -62,7 +60,7 @@ function App() {
 
         };
 
-        ws.onclose = function (msg) {
+        ws.onclose = function () {
             setVsmConnectionStatus(false);
             setUserSubmittedInfo({});
             setInputSheetFieldDetails({});
@@ -151,7 +149,7 @@ function App() {
             }
             setVsmConnectionStatus(true);
         };
-
+        setWebSocket(ws);
         document.title = "VSM StudyMaster";
         const link = document.querySelector("link[rel*='icon']") || document.createElement('link');
         link.type = 'image/x-icon';
@@ -224,7 +222,7 @@ function App() {
             timestamp: inputSheetFieldDetails.timestamp,
         })
         setUserSubmittedInfo(new Map());
-    };
+    }
 
     function sendCancelToVsm() {
         webSocket.send(`VSMMessage#VAR#request_result#CANCEL#` + inputSheetFieldDetails.vm_uid);
@@ -235,7 +233,7 @@ function App() {
         setInformContent("");
         setDispProceedBtn(false);
         setProceedBtnUid("");
-    };
+    }
 
     function sendProceedToVsm() {
         webSocket.send(`VSMMessage#VAR#request_result#PROCEED#` + proceedBtnUid);
@@ -246,7 +244,7 @@ function App() {
         setInformContent("");
         setDispProceedBtn(false);
         setProceedBtnUid("");
-    };
+    }
 
 
     return (
@@ -318,6 +316,6 @@ function App() {
             </div>
         </div>
     );
-};
+}
 
 export default App;
