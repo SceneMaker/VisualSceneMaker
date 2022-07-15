@@ -12,3 +12,5 @@ include 'plugins:reeti'
 include 'plugins:tricatworld'
 include 'plugins:charamel'
 include 'plugins:VLCRemoteController'
+include 'plugins:mithos'
+
