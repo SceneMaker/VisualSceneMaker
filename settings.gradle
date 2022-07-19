@@ -13,4 +13,6 @@ include 'plugins:tricatworld'
 include 'plugins:charamel'
 include 'plugins:VLCRemoteController'
 include 'plugins:mithos'
+include 'plugins:mithos:main'
+findProject(':plugins:mithos:main')?.name = 'main'
 
