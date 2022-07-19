@@ -40,8 +40,9 @@ public class MithosExecutor extends ActivityExecutor {
     @Override
     public void execute(AbstractActivity activity) {
         System.out.println("Mithos Kafka action to be executed");
-
-        producer.send(new ProducerRecord<String, String>(topic, "key_test", "Message test"));
+        String actionTopic = activity.getActor();
+        String message = activity.getText();
+        producer.send(new ProducerRecord<String, String>(actionTopic, "key_test", message));
     }
 
     @Override
