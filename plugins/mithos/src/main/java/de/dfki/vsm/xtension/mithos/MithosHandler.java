@@ -8,6 +8,8 @@ import org.apache.kafka.clients.consumer.Consumer;
 
 import java.io.IOException;
 import java.time.Duration;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Properties;
 
 /**
@@ -37,10 +39,11 @@ public class MithosHandler extends Thread{
         props.put(ConsumerConfig.GROUP_ID_CONFIG, "VSMConsumer");
         props.put("retries", 0);
         props.put("linger.ms", 1);
-        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer");
-        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer");
+        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer");
+        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer");
 
         consumer = new KafkaConsumer<>(props);
+        consumer.subscribe(Arrays.asList(topic.split(",")));
         System.out.println("Mithos Kafka consumer set up");
         super.start();
     }
@@ -52,7 +55,7 @@ public class MithosHandler extends Thread{
 
         System.out.println("Mithos Kafka consumer starts listening");
 
-        while(stop){
+        while(!stop){
             final ConsumerRecords<Long, String> consumerRecords =
                     consumer.poll(duration);
 
