@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SceneFlow id="" name="default" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Tue, 26 Jul 2022 18:06:30" start="S7;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
+  <Define>
+  </Define>
+  <Declare>
+    <VariableDefinition type="Bool" name ="avatar_connected">
+      <BoolLiteral value="true"/>
+    </VariableDefinition>
+    <VariableDefinition type="Bool" name ="avatar_speaking">
+      <BoolLiteral value="false"/>
+    </VariableDefinition>
+    <VariableDefinition type="String" name ="avatar_animation">
+      <StringLiteral><![CDATA[]]></StringLiteral>
+    </VariableDefinition>
+    <VariableDefinition type="String" name ="avatarsystem_status">
+      <StringLiteral><![CDATA[]]></StringLiteral>
+    </VariableDefinition>
+    <VariableDefinition type="Bool" name ="studymaster_connected">
+      <BoolLiteral value="false"/>
+    </VariableDefinition>
+    <VariableDefinition type="String" name ="studymaster_info">
+      <StringLiteral><![CDATA[]]></StringLiteral>
+    </VariableDefinition>
+    <VariableDefinition type="Bool" name ="gui_connected">
+      <BoolLiteral value="false"/>
+    </VariableDefinition>
+    <VariableDefinition type="String" name ="gui_info">
+      <StringLiteral><![CDATA[]]></StringLiteral>
+    </VariableDefinition>
+    <VariableDefinition type="String" name ="turn_utterance">
+      <StringLiteral><![CDATA[]]></StringLiteral>
+    </VariableDefinition>
+    <VariableDefinition type="String" name ="last_utterance">
+      <StringLiteral><![CDATA[]]></StringLiteral>
+    </VariableDefinition>
+    <VariableDefinition type="String" name ="condition">
+      <StringLiteral><![CDATA[]]></StringLiteral>
+    </VariableDefinition>
+    <VariableDefinition type="String" name ="request_result">
+      <StringLiteral><![CDATA[]]></StringLiteral>
+    </VariableDefinition>
+    <VariableDefinition type="String" name ="restart">
+      <StringLiteral><![CDATA[]]></StringLiteral>
+    </VariableDefinition>
+    <VariableDefinition type="String" name ="user_input">
+      <StringLiteral><![CDATA[]]></StringLiteral>
+    </VariableDefinition>
+  </Declare>
+  <Commands>
+  </Commands>
+  <LocalVariableBadge>
+    <Position xPos="11" yPos="13"/>
+  </LocalVariableBadge>
+  <GlobalVariableBadge>
+    <Position xPos="10" yPos="10"/>
+  </GlobalVariableBadge>
+  <Node id="N141" name="blackscreen" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <PlayAction mode="Default">
+        <StringLiteral><![CDATA[[Emmi sequence name='blackscreen']]]></StringLiteral>
+      </PlayAction>
+    </Commands>
+    <TEdge target="N6" start="" timeout="5000">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="269" yPos="269" ctrlXPos="241" ctrlYPos="241"/>
+        <ControlPoint xPos="311" yPos="191" ctrlXPos="338" ctrlYPos="218"/>
+      </Connection>
+    </Graphics>
+    </TEdge>
+    <Graphics>
+      <Position xPos="260" yPos="260"/>
+    </Graphics>
+  </Node>
+  <Node id="N1" name="welcome" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <PlayScene>
+        <StringLiteral><![CDATA[welcome]]></StringLiteral>
+      </PlayScene>
+    </Commands>
+    <EEdge target="N5" start ="">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="559" yPos="178" ctrlXPos="635" ctrlYPos="198"/>
+        <ControlPoint xPos="741" yPos="222" ctrlXPos="664" ctrlYPos="201"/>
+      </Connection>
+    </Graphics>
+    </EEdge>
+    <Graphics>
+      <Position xPos="500" yPos="140"/>
+    </Graphics>
+  </Node>
+  <Node id="N5" name="name" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <PlayScene>
+        <StringLiteral><![CDATA[name]]></StringLiteral>
+      </PlayScene>
+    </Commands>
+    <EEdge target="N1" start ="">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="740" yPos="230" ctrlXPos="661" ctrlYPos="230"/>
+        <ControlPoint xPos="556" yPos="185" ctrlXPos="624" ctrlYPos="224"/>
+      </Connection>
+    </Graphics>
+    </EEdge>
+    <Graphics>
+      <Position xPos="740" yPos="200"/>
+    </Graphics>
+  </Node>
+  <Node id="N6" name="Sequence 1" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <PlayAction mode="Default">
+        <StringLiteral><![CDATA[[Emmi sequence name='Sequence 1']]]></StringLiteral>
+      </PlayAction>
+    </Commands>
+    <TEdge target="N1" start="" timeout="250">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="311" yPos="149" ctrlXPos="338" ctrlYPos="121"/>
+        <ControlPoint xPos="509" yPos="191" ctrlXPos="481" ctrlYPos="218"/>
+      </Connection>
+    </Graphics>
+    </TEdge>
+    <Graphics>
+      <Position xPos="260" yPos="140"/>
+    </Graphics>
+  </Node>
+  <Node id="N2" name="N2" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <TEdge target="N141" start="" timeout="5000">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="199" yPos="402" ctrlXPos="275" ctrlYPos="381"/>
+        <ControlPoint xPos="261" yPos="298" ctrlXPos="184" ctrlYPos="318"/>
+      </Connection>
+    </Graphics>
+    </TEdge>
+    <Graphics>
+      <Position xPos="140" yPos="380"/>
+    </Graphics>
+  </Node>
+  <SuperNode id="S7" name="wait for;agent" comment="" hideLocalVar="false" hideGlobalVar="false" start="N110;">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <IEdge target="N2" start="">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="80" yPos="290" ctrlXPos="119" ctrlYPos="290"/>
+          <ControlPoint xPos="170" yPos="380" ctrlXPos="170" ctrlYPos="340"/>
+        </Connection>
+      </Graphics>
+      <SimpleVariable name="avatar_connected"/>
+    </IEdge>
+    <Graphics>
+      <Position xPos="20" yPos="260"/>
+    </Graphics>
+    <LocalVariableBadge>
+      <Position xPos="10" yPos="10"/>
+    </LocalVariableBadge>
+    <GlobalVariableBadge>
+      <Position xPos="10" yPos="10"/>
+    </GlobalVariableBadge>
+    <Node id="N108" name="History" history="true">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+      </Commands>
+      <Graphics>
+        <Position xPos="140" yPos="140"/>
+      </Graphics>
+    </Node>
+    <Node id="N110" name="wait" history="false">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+      </Commands>
+      <TEdge target="N110" start="" timeout="1000">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="436" yPos="65" ctrlXPos="481" ctrlYPos="40"/>
+          <ControlPoint xPos="431" yPos="71" ctrlXPos="562" ctrlYPos="40"/>
+        </Connection>
+      </Graphics>
+      </TEdge>
+      <Graphics>
+        <Position xPos="380" yPos="20"/>
+      </Graphics>
+    </Node>
+  </SuperNode>
+  <ClassPath>
+  </ClassPath>
+  <InitContext></InitContext>
+</SceneFlow>

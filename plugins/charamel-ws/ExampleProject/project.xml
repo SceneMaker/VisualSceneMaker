@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Project name="Emmi_1.0">
+  <Plugins>
+    <Plugin type="device" name="CharamelWS" class="de.dfki.vsm.xtension.charamelWs.charamelWsExecutor" load="true">
+      <Feature key="sceneflowVar" val="avatar_connected"/>
+      <Feature key="ws_port" val="3030"/>
+      <Feature key="characterSpeaking" val="avatar_speaking"/>
+      <Feature key="wss_port" val="3031"/>
+    </Plugin>
+    <Plugin type="device" name="webpage" class="de.dfki.vsm.xtension.responsiveweb.HtmlGuiWsExecutor" load="true">
+      <Feature key="wss_port" val="4040"/>
+      <Feature key="ws_port" val="4041"/>
+      <Feature key="html_port" val="8080"/>
+      <Feature key="sceneflowStateVar" val="gui_connected"/>
+      <Feature key="sceneflowInfoVar" val="gui_info"/>
+      <Feature key="guifiles" val="gui"/>
+      <Feature key="audiofiles" val="audio"/>
+    </Plugin>
+  </Plugins>
+  <Agents>
+    <Agent name="gui" device="webpage">
+      <Feature key="default" val="./default_gui.html"/>
+      <Feature key="black" val="./black.html"/>
+    </Agent>
+    <Agent name="Emmi" device="CharamelWS">
+      <Feature key="voice" val="Marlene"/>
+    </Agent>
+  </Agents>
+  <Player>
+  </Player>
+</Project>
