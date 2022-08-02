@@ -2,7 +2,6 @@ package de.dfki.vsm.runtime.activity.scheduler;
 
 import de.dfki.vsm.runtime.activity.AbstractActivity;
 import de.dfki.vsm.runtime.activity.AbstractActivity.Type;
-import de.dfki.vsm.runtime.activity.ActionActivity;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 
@@ -20,6 +19,12 @@ public final class ActivityScheduler<T extends AbstractActivity> {
 
     // The list of detected marks
     private final HashMap<String, ActivityWorker<T>> mWorkerMap = new HashMap<>();
+
+    public final AbstractActivity getActivity(String mark) {
+        ActivityWorker<T> worker = mWorkerMap.get(mark);
+        return worker.getmActivity();
+    }
+
 
     // Handle activity feedback
     public final void handle(final String marker) {

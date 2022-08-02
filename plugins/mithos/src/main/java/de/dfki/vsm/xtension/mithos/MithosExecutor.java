@@ -1,17 +1,18 @@
 package de.dfki.vsm.xtension.mithos;
 
+import com.google.gson.Gson;
 import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
 import de.dfki.vsm.runtime.activity.SpeechActivity;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
+import de.dfki.vsm.runtime.activity.scheduler.ActivityWorker;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
+import de.mithos.compint.command.ScenarioScriptCommand;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import de.dfki.vsm.util.WordMapping;
 
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * This plugin uses a kafka server to control an agent-environment and to receive processed userdata.
@@ -23,17 +24,22 @@ import java.util.Properties;
 public class MithosExecutor extends ActivityExecutor {
 
     private final String server;
-    private final String topic;
+    private final String read_topic;
+
+    private final String write_topic;
     KafkaProducer<String, String> producer;
     MithosHandler handler;
     private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
-    private WordMapping mWordMapping;
+    Gson gson = new Gson();
+
+    private final Map<String, ActivityWorker> mActivityWorkerMap = new HashMap<>();
 
     public MithosExecutor(PluginConfig config, RunTimeProject project) {
         super(config, project);
         System.out.println("Mithos Kafka starting");
         server = mConfig.getProperty("server");
-        topic = mConfig.getProperty("topic");
+        read_topic = mConfig.getProperty("read_topic");
+        write_topic = mConfig.getProperty("write_topic");
     }
 
     @Override
@@ -44,44 +50,52 @@ public class MithosExecutor extends ActivityExecutor {
 
     @Override
     public void execute(AbstractActivity activity) {
-        System.out.println("Mithos Kafka action to be executed");
-        String actor = activity.getActor();
-        String command = activity.getText();
+        try {
+            System.out.println("Mithos Kafka action to be executed");
+            String actor = activity.getActor();
+            String command, key;
 
-        if (activity instanceof SpeechActivity) {
-            final SpeechActivity speech_activity = (SpeechActivity) activity;
-            final String speech_text = speech_activity.getTextOnly("$(").trim();
-            final List<String> time_marks = speech_activity.getTimeMarks("$(");
-
-            if (speech_text.isEmpty()) {
-                for (final String tm : time_marks) {
-                    mProject.getRunTimePlayer().getActivityScheduler().handle(tm);
-                    return;
-                }
-            } else {
-                mWordMapping.load(actor, mProject);
-                speech_activity.doPronounciationMapping(mWordMapping);
+            if (activity instanceof SpeechActivity) {
+                final SpeechActivity speech_activity = (SpeechActivity) activity;
+                final List<String> time_marks = speech_activity.getTimeMarks("$(");
                 String aid = mProject.getAgentConfig(actor).getProperty("aid");
 
+                String demarkedText = speech_activity.getText();
+                String activityText;
+                StringBuffer sb;
 
+                for (String mark : time_marks) {
+                    activityText = mPlayer.getActivityScheduler().getActivity(mark).getText();
+                    sb = new StringBuffer(activityText);
+                    sb.insert(1, actor + " ");
+                    demarkedText = demarkedText.replace(mark, sb.toString());
+                    mProject.getRunTimePlayer().getActivityScheduler().handle(mark);
+                }
+                key = "speech_command";
+                command = actor + " " + demarkedText;
+            } else {
+                key = "command";
+                String text = activity.getText();
+                command = text.substring(1, text.length() - 1);
             }
+            String actionID = UUID.randomUUID().toString();
+            ScenarioScriptCommand ssc = new ScenarioScriptCommand("SSC", "VSM", actor, command, actionID);
+            synchronized (mActivityWorkerMap) {
+                producer.send(new ProducerRecord<String, String>(write_topic, key, gson.toJson(ssc)));
+                // organize wait for feedback if (activity instanceof SpeechActivity) {
+                ActivityWorker aw = (ActivityWorker) Thread.currentThread();
+                mActivityWorkerMap.put(actionID, aw);
 
-            producer.send(new ProducerRecord<String,String>(actor, "speech", "text="+speech_activity.getText()));
-
-        } else {
-            producer.send(new ProducerRecord<String, String>(actor, "key_test", command));
+                if (activity.getType() == AbstractActivity.Type.blocking) {
+                    while (mActivityWorkerMap.containsValue(aw)) {
+                        mActivityWorkerMap.wait();
+                    }
+                }
+            }
+        } catch (InterruptedException exc) {
+            mLogger.failure(exc.toString());
         }
     }
-
-    ProducerRecord<String,String> formatSpeechActivity(SpeechActivity speechActivity){
-        String text = speechActivity.getText();
-        String command;
-        List<String> time_marks = speechActivity.getTimeMarks("$(");
-        for(String mark: time_marks){
-
-        }
-    }
-
 
 
     @Override
@@ -97,12 +111,13 @@ public class MithosExecutor extends ActivityExecutor {
         producer = new KafkaProducer<>(props);
         System.out.println("Mithos Kafka producer set up");
 
-        handler = new MithosHandler(server, topic);
+        handler = new MithosHandler(server, read_topic);
         handler.start();
     }
 
     @Override
     public void unload() {
+        //mActivityWorkerMap.notifyAll();
         producer.close();
         handler.abort();
     }
