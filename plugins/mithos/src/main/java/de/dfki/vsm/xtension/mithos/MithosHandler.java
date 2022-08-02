@@ -1,15 +1,13 @@
 package de.dfki.vsm.xtension.mithos;
 
 import de.dfki.vsm.util.log.LOGConsoleLogger;
+import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
-import org.apache.kafka.clients.consumer.Consumer;
 
-import java.io.IOException;
 import java.time.Duration;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Properties;
 
 /**
@@ -69,7 +67,7 @@ public class MithosHandler extends Thread{
 
     public final void abort() {
         stop = true;
-        consumer.close();
+        //consumer.close();
         interrupt();
     }
 }

@@ -54,6 +54,10 @@ public final class ActivityWorker<T extends AbstractActivity> extends Thread {
         mExecutor = executor;
     }
 
+    public T getmActivity() {
+        return mActivity;
+    }
+
     @Override
     public final void run() {
         // Wait for the timeout
