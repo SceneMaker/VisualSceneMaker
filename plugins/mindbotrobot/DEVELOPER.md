@@ -108,10 +108,8 @@ Create a folder for the rosjava workspace, name it how you like, for this tutori
 With the following commands, we create a source folder, and rosjava creates for us a package and a project which contains a Subscriber and a Publisher:
 
 ```
-mkdir mindbot_vsm_ws
-cd mindbot_vsm_ws
-mkdir -p src
-cd src
+mkdir -p mindbot_vsm_ws/src
+cd mindbot_vsm_ws/src
 catkin_create_rosjava_pkg communication_package
 cd ..
 catkin_make
