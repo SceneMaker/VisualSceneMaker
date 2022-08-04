@@ -146,7 +146,7 @@ Now you need to change the following file:
 
     nano -w src/communication_package/CMakeLists.txt
 
-and update the `find_package()` and `catkin_package()` directoves.
+and update the `find_package()` and `catkin_package()` directories.
 Replace the `# Catkin` section:
 
 ```
