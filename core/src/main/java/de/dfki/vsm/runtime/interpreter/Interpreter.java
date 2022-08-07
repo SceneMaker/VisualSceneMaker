@@ -374,7 +374,7 @@ public class Interpreter {
 
             return true;
         } catch (InterpreterError e) {
-            // e.printStackTrace();
+            e.printStackTrace();
             return false;
         } finally {
             unlock();

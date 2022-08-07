@@ -5,8 +5,6 @@ import de.dfki.vsm.util.log.LOGDefaultLogger;
 
 import javax.swing.*;
 import java.io.File;
-import java.net.SocketException;
-import java.net.UnknownHostException;
 
 
 /**
@@ -34,13 +32,7 @@ public final class SceneMaker3 {
                     // Check the options from this argument
                     if (file.exists()) {
                         if (mode.equals("runtime")) {
-                            try {
-                                Core.runtime(file);
-                            } catch (SocketException e) {
-                                e.printStackTrace();
-                            } catch (UnknownHostException e) {
-                                e.printStackTrace();
-                            }
+                            Core.runtime(file);
                         } else if (mode.equalsIgnoreCase("editor")) {
                             editor(file);
                         } else {

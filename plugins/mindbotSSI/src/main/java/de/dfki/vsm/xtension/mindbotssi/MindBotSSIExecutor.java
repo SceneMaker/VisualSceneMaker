@@ -59,19 +59,21 @@ public class MindBotSSIExecutor extends ActivityExecutor  {
 
 
     @Override
-    public void launch() throws SocketException, UnknownHostException {
+    public void launch() {
+
         String hostname = "localhost";
-        InetAddress server = InetAddress.getByName(hostname);
-        this.mSocket = new DatagramSocket(1111, server);
-//this.mSocket.connect(this.address,this.port);
         int port = 1111;
-        mSocket.connect(server, port);
+        mLogger.message("Initializing Datagram connection to host " + hostname + " for port " + port);
 
+        try {
+            InetAddress server = InetAddress.getByName(hostname);
+            this.mSocket = new DatagramSocket(1111, server);
+            //this.mSocket.connect(this.address,this.port);
+            this.mSocket.connect(server, port);
+        } catch(UnknownHostException | SocketException e) {
+            mLogger.failure(e.toString());
+        }
 
-//this.sendStart();
-
-
-        mLogger.message("this is the address " + server + "this is the port" + port);
     }
 
 
@@ -197,17 +199,4 @@ public class MindBotSSIExecutor extends ActivityExecutor  {
         }
     }
 
-    /**
-     * Use as `java TestSSIControl dest_address port_num`
-     * @param args
-     * @throws SocketException
-     */
-
-
-
-
-
-
-
 }
-
