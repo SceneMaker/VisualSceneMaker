@@ -108,10 +108,8 @@ Create a folder for the rosjava workspace, name it how you like, for this tutori
 With the following commands, we create a source folder, and rosjava creates for us a package and a project which contains a Subscriber and a Publisher:
 
 ```
-mkdir mindbot_vsm_ws
-cd mindbot_vsm_ws
-mkdir -p src
-cd src
+mkdir -p mindbot_vsm_ws/src
+cd mindbot_vsm_ws/src
 catkin_create_rosjava_pkg communication_package
 cd ..
 catkin_make
@@ -146,7 +144,7 @@ Now you need to change the following file:
 
     nano -w src/communication_package/CMakeLists.txt
 
-and update the `find_package()` and `catkin_package()` directoves.
+and update the `find_package()` and `catkin_package()` directories.
 Replace the `# Catkin` section:
 
 ```
