@@ -19,14 +19,30 @@ import java.net.*;
 
 public class MindBotSSIExecutor extends ActivityExecutor  {
 
+    DatagramSocket mSocket;
+    // InetAddress address ;
+    // int port = 1111 ;
 
-    // DatagramSocket mSocket;
+    //String hostname="localhost";
+    // InetAddress server = InetAddress.getByName(hostname);
+    //   this.mSocket = new DatagramSocket(1111,server);
 
+    public MindBotSSIExecutor(PluginConfig config,
+                              RunTimeProject project) {
+        super(config, project);
+        //this.mPlugin = new MindBotSSIPlugin(config, project);
+        //  super("Test SSI start invocation");
+    }
+
+
+    @Override
+    public String marker(long id) {
+        return "$" + id;
+    }
 
 
     public void execute(AbstractActivity activity) {
 
-//String PressedKey = "";
         mLogger.message("PRINT"+ activity);
         if(activity.getName().equals("start_recording")) {
 
@@ -38,24 +54,6 @@ public class MindBotSSIExecutor extends ActivityExecutor  {
         }
     }
 
-
-    public MindBotSSIExecutor(PluginConfig config,
-                              RunTimeProject project) {
-        //DatagramSocket mSocket;
-
-        super(config, project);
-        //this.mPlugin = new MindBotSSIPlugin(config, project);
-        //  super("Test SSI start invocation");
-
-    }
-
-    DatagramSocket mSocket;
-    // InetAddress address ;
-    // int port = 1111 ;
-
-    //String hostname="localhost";
-    // InetAddress server = InetAddress.getByName(hostname);
-    //   this.mSocket = new DatagramSocket(1111,server);
 
 
     @Override
@@ -80,49 +78,36 @@ public class MindBotSSIExecutor extends ActivityExecutor  {
 
     @Override
     public void unload() {
-
-        // mSocket.close();
-        // this.sendStop();
         mLogger.message("unloading");
+
+        // this.sendStop();
+        mSocket.close();
     }
 
 
     public void sendStart() {
-
-
         this.sendBytes(
                 new byte[]{0X05, 0X00, 0X00, 0X00}
         );
         this.sendBytes(
                 new byte[]{0X00, 0X00, 0X00, 0X00, 0X65, 0X6e, 0X61, 0X62, 0X6c, 0X65, 0X00}
-
         );
         this.sendBytes(
                 new byte[]{0X06, 0X00, 0X00, 0X00}
-
         );
-
-
     }
+
 
     public void sendStop() {
         this.sendBytes(
                 new byte[]{0X02, 0X00, 0X00, 0X00}
-
         );
         this.sendBytes(
                 new byte[]{0X00, 0X00, 0X00, 0X00, 0X64, 0X69, 0X73, 0X61, 0X62, 0X6c, 0X65, 0X00}
-
         );
         this.sendBytes(
                 new byte[]{0X03, 0X00, 0X00, 0X00}
         );
-    }
-
-
-    @Override
-    public String marker(long id) {
-        return "$" + id;
     }
 
 
@@ -144,8 +129,8 @@ public class MindBotSSIExecutor extends ActivityExecutor  {
 
             System.out.println("sent.");
 
-        } catch (IOException var3) {
-            System.err.println(var3);
+        } catch (IOException e) {
+            mLogger.warning(e.toString());
         }
 
 

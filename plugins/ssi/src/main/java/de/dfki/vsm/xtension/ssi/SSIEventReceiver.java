@@ -19,6 +19,8 @@ import java.util.Arrays;
  */
 final class SSIEventReceiver extends Thread {
 
+    public final int RECV_BUFFER_SIZE = 8192 * 2 ;
+
     // The singelton logger instance
     private final LOGConsoleLogger mLogger
             = LOGConsoleLogger.getInstance();
@@ -130,7 +132,7 @@ final class SSIEventReceiver extends Thread {
     private byte[] recvBytes() {
         try {
             // Construct a byte array
-            final byte[] buffer = new byte[4096];
+            final byte[] buffer = new byte[RECV_BUFFER_SIZE];
             // Construct an UDP packet
             final DatagramPacket packet
                     = new DatagramPacket(buffer, buffer.length);

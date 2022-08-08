@@ -16,6 +16,8 @@ import java.util.Arrays;
  */
 public final class SSIEventSender extends Thread {
 
+    public final int SND_BUFFER_SIZE = 8192 ;
+
     // The singelton logger instance
     private final LOGConsoleLogger mLogger
             = LOGConsoleLogger.getInstance();
@@ -126,7 +128,7 @@ public final class SSIEventSender extends Thread {
     public final String recv() {
         if (mSocket != null) {
             // Create the datagram packet
-            final byte[] buffer = new byte[4096];
+            final byte[] buffer = new byte[SND_BUFFER_SIZE];
             final DatagramPacket packet
                     = new DatagramPacket(buffer, buffer.length);
             // Try to receive new data
@@ -158,7 +160,7 @@ public final class SSIEventSender extends Thread {
     private byte[] recvBytes() {
         try {
             // Construct a byte array
-            final byte[] buffer = new byte[4096];
+            final byte[] buffer = new byte[SND_BUFFER_SIZE];
             // Construct an UDP packet
             final DatagramPacket packet
                     = new DatagramPacket(buffer, buffer.length);

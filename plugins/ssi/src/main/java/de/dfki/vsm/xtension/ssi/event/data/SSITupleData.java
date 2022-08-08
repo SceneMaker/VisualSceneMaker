@@ -17,12 +17,13 @@ import org.w3c.dom.NodeList;
  */
 public final class SSITupleData extends SSIEventData implements XMLParseable, XMLWriteable {
 
-    // The singelton logger instance
+    // The singleton logger instance
     private final LOGConsoleLogger mLogger
             = LOGConsoleLogger.getInstance();
+
     // The tuple data
     private final HashMap<String, String> mTupleMap
-            = new HashMap();
+            = new HashMap<>();
 
     //
     public String get(final String key) {
@@ -36,7 +37,12 @@ public final class SSITupleData extends SSIEventData implements XMLParseable, XM
     // Write the tuple data
     @Override
     public void writeXML(final IOSIndentWriter writer) throws XMLWriteError {
-        // TODO ...
+        writer.println("<map>") ;
+        for(String k: mTupleMap.keySet()) {
+            String v = mTupleMap.get(k);
+            writer.println("<element key=\"" + k + "\" value=\"" + v + "\"") ;
+        }
+        writer.println("</map>") ;
     }
 
     // Parse the tuple data
