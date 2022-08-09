@@ -1,11 +1,12 @@
 package de.dfki.vsm.xtension.mithos;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
-import org.apache.kafka.clients.consumer.Consumer;
-import org.apache.kafka.clients.consumer.ConsumerConfig;
-import org.apache.kafka.clients.consumer.ConsumerRecords;
-import org.apache.kafka.clients.consumer.KafkaConsumer;
+import de.mithos.compint.interaction.InteractionAct;
+import org.apache.kafka.clients.consumer.*;
 
+import java.lang.reflect.Type;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Properties;
@@ -17,17 +18,20 @@ import java.util.Properties;
  * @author Manuel Anglet
  */
 
-public class MithosHandler extends Thread{
+public class MithosHandler<T> extends Thread {
 
     private final String topic;
     private final String server;
-    private  Consumer<Long, String> consumer;
+    private Consumer<Long, String> consumer;
     private boolean stop = false;
     private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
+    private Gson gson = new Gson();
+    private Type jsonClass;
 
-    public MithosHandler(String server, String topic) {
+    public MithosHandler(String server, String topic, Type jsonClass) {
         this.server = server;
         this.topic = topic;
+        this.jsonClass = jsonClass;
     }
 
     @Override
@@ -52,6 +56,7 @@ public class MithosHandler extends Thread{
         Duration duration = Duration.ofMillis(1000);
 
         System.out.println("Mithos Kafka consumer starts listening");
+        mLogger.message("Mithos Kafka consumer starts listening");
 
         while(!stop){
             final ConsumerRecords<Long, String> consumerRecords =
@@ -59,15 +64,27 @@ public class MithosHandler extends Thread{
 
             consumerRecords.forEach(record -> {
                 mLogger.message(record.toString());
+                try {
+                    T jsonObj = gson.fromJson(record.value());
+                } catch (JsonSyntaxException jse) {
+                    mLogger.failure(jse.toString());
+                }
             });
-
             consumer.commitAsync();
         }
+    }
+
+    private void handle(ConsumerRecord<Long, String> record) {
+        gson.fromJson(record, this.T);
     }
 
     public final void abort() {
         stop = true;
         //consumer.close();
         interrupt();
+    }
+
+    private void handle(InteractionAct intAct) {
+
     }
 }
