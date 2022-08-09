@@ -71,19 +71,6 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
                 if(mProject.hasVariable("neutral")) {
                     mProject.setVariable("neutral", neutralVal);
                 }
-
-//                String tupledata = data.toString();
-//                String[] coordss = tupledata.split(",") ;
-//                //String[] coords =  tupledata.split("=", 4);
-//                String[] last_coordss_str = coordss[coordss.length-1].split("=") ;
-//                String[] last_coordss_strr = last_coordss_str[last_coordss_str.length-1].split("}") ;
-//                String[] last_coordss_str2 = coordss[coordss.length - 2].split("=") ;
-//                assert coordss.length == 3 ;
-//                Float stress = Float.parseFloat(last_coordss_str2[1]);
-//                Float neutral = Float.parseFloat(last_coordss_strr[0]);
-//                mLogger.message("The Detected: \t" + stress + "\t" + neutral);
-//                mProject.setVariable("stress", stress);
-//                mProject.setVariable("neutral", neutral);
             }
             else if (sender.equals("video") && event.equals("emotion")) {
                 assert event_entry.getType().equals("MAP") ;
