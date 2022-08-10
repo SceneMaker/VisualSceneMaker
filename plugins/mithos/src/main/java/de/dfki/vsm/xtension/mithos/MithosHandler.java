@@ -3,6 +3,7 @@ package de.dfki.vsm.xtension.mithos;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
+import de.mithos.compint.command.ScenarioScriptFeedback;
 import de.mithos.compint.interaction.InteractionAct;
 import org.apache.kafka.clients.consumer.*;
 
@@ -24,14 +25,16 @@ public class MithosHandler<T> extends Thread {
     private final String server;
     private Consumer<Long, String> consumer;
     private boolean stop = false;
-    private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
+    private final LOGConsoleLogger logger = LOGConsoleLogger.getInstance();
     private Gson gson = new Gson();
     private Type jsonClass;
+    private MithosExecutor executor;
 
-    public MithosHandler(String server, String topic, Type jsonClass) {
+
+    public MithosHandler(String server, String topics, MithosExecutor executor) {
         this.server = server;
-        this.topic = topic;
-        this.jsonClass = jsonClass;
+        this.topic = topics;
+        this.executor = executor;
     }
 
     @Override
@@ -56,27 +59,37 @@ public class MithosHandler<T> extends Thread {
         Duration duration = Duration.ofMillis(1000);
 
         System.out.println("Mithos Kafka consumer starts listening");
-        mLogger.message("Mithos Kafka consumer starts listening");
+        logger.message("Mithos Kafka consumer starts listening");
 
         while(!stop){
             final ConsumerRecords<Long, String> consumerRecords =
                     consumer.poll(duration);
 
+
             consumerRecords.forEach(record -> {
-                mLogger.message(record.toString());
-                try {
-                    T jsonObj = gson.fromJson(record.value());
-                } catch (JsonSyntaxException jse) {
-                    mLogger.failure(jse.toString());
+                        try {
+                            switch (record.topic()) {
+
+                                case "InteractionAct": {
+                                    InteractionAct intAct =
+                                            gson.fromJson(record.value(), InteractionAct.class);
+                                    executor.handle(intAct);
+                                }
+                                case "ScenarioScriptFeedback": {
+                                    ScenarioScriptFeedback sscf =
+                                            gson.fromJson(record.value(), ScenarioScriptFeedback.class);
+                                    executor.handle(sscf);
+                                }
+                            }
+                        } catch (JsonSyntaxException jse) {
+                            logger.failure(jse.toString());
+                        }
+                        logger.message(record.toString());
+                    });
+                    consumer.commitAsync();
                 }
-            });
-            consumer.commitAsync();
-        }
     }
 
-    private void handle(ConsumerRecord<Long, String> record) {
-        gson.fromJson(record, this.T);
-    }
 
     public final void abort() {
         stop = true;
@@ -84,7 +97,6 @@ public class MithosHandler<T> extends Thread {
         interrupt();
     }
 
-    private void handle(InteractionAct intAct) {
 
-    }
+
 }
