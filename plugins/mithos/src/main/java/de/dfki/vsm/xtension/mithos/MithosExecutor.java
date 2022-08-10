@@ -8,7 +8,9 @@ import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
 import de.dfki.vsm.runtime.activity.scheduler.ActivityWorker;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
+import de.mithos.compint.command.Feedback;
 import de.mithos.compint.command.ScenarioScriptCommand;
+import de.mithos.compint.command.ScenarioScriptFeedback;
 import de.mithos.compint.interaction.InteractionAct;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -25,21 +27,21 @@ import java.util.*;
 public class MithosExecutor extends ActivityExecutor {
 
     private final String server;
-    private final String read_topic;
+    private final String read_topics;
 
     private final String write_topic;
     KafkaProducer<String, String> producer;
     MithosHandler handler;
-    private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
+    private final LOGConsoleLogger logger = LOGConsoleLogger.getInstance();
     Gson gson = new Gson();
 
-    private final Map<String, ActivityWorker> mActivityWorkerMap = new HashMap<>();
+    private final Map<String, ActivityWorker> activityWorkerMap = new HashMap<>();
 
     public MithosExecutor(PluginConfig config, RunTimeProject project) {
         super(config, project);
         System.out.println("Mithos Kafka starting");
         server = mConfig.getProperty("server");
-        read_topic = mConfig.getProperty("read_topic");
+        read_topics = mConfig.getProperty("read_topic");
         write_topic = mConfig.getProperty("write_topic");
     }
 
@@ -81,20 +83,20 @@ public class MithosExecutor extends ActivityExecutor {
             }
             String actionID = UUID.randomUUID().toString();
             ScenarioScriptCommand ssc = new ScenarioScriptCommand("SSC", "VSM", actor, command, actionID);
-            synchronized (mActivityWorkerMap) {
+            synchronized (activityWorkerMap) {
                 producer.send(new ProducerRecord<String, String>(write_topic, key, gson.toJson(ssc)));
                 // organize wait for feedback if (activity instanceof SpeechActivity) {
                 ActivityWorker aw = (ActivityWorker) Thread.currentThread();
-                mActivityWorkerMap.put(actionID, aw);
+                activityWorkerMap.put(actionID, aw);
 
                 if (activity.getType() == AbstractActivity.Type.blocking) {
-                    while (mActivityWorkerMap.containsValue(aw)) {
-                        mActivityWorkerMap.wait();
+                    while (activityWorkerMap.containsValue(aw)) {
+                        activityWorkerMap.wait();
                     }
                 }
             }
         } catch (InterruptedException exc) {
-            mLogger.failure(exc.toString());
+            logger.failure(exc.toString());
         }
     }
 
@@ -112,7 +114,7 @@ public class MithosExecutor extends ActivityExecutor {
         producer = new KafkaProducer<>(props);
         System.out.println("Mithos Kafka producer set up");
 
-        handler = new MithosHandler(server, read_topic, InteractionAct.class);
+        handler = new MithosHandler(server, read_topics,this);
         handler.start();
     }
 
@@ -122,4 +124,21 @@ public class MithosExecutor extends ActivityExecutor {
         producer.close();
         handler.abort();
     }
+
+    public void handle(InteractionAct intAct) {
+    }
+
+    public void handle(ScenarioScriptFeedback sscf) {
+        synchronized(activityWorkerMap) {
+            if (sscf.getFeedback().equals(Feedback.SUCCESS)) {
+                activityWorkerMap.remove(sscf.getuID());
+            }
+            else if (sscf.getFeedback().equals(Feedback.FAILIURE)){
+                activityWorkerMap.remove(sscf.getuID());
+                logger.failure("Action "+sscf.getuID() + " failed");
+            }
+            activityWorkerMap.notifyAll();
+        }
+    }
+
 }
