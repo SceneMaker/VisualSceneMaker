@@ -25,7 +25,7 @@ public class MithosHandler<T> extends Thread {
     private final String server;
     private Consumer<Long, String> consumer;
     private boolean stop = false;
-    private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
+    private final LOGConsoleLogger logger = LOGConsoleLogger.getInstance();
     private Gson gson = new Gson();
     private Type jsonClass;
 
@@ -57,11 +57,12 @@ public class MithosHandler<T> extends Thread {
         Duration duration = Duration.ofMillis(1000);
 
         System.out.println("Mithos Kafka consumer starts listening");
-        mLogger.message("Mithos Kafka consumer starts listening");
+        logger.message("Mithos Kafka consumer starts listening");
 
         while(!stop){
             final ConsumerRecords<Long, String> consumerRecords =
                     consumer.poll(duration);
+
 
             consumerRecords.forEach(record -> {
                 handle(record);
@@ -81,7 +82,7 @@ public class MithosHandler<T> extends Thread {
 
             }
         } catch (JsonSyntaxException jse) {
-            mLogger.failure(jse.toString());
+            logger.failure(jse.toString());
         }
     }
 

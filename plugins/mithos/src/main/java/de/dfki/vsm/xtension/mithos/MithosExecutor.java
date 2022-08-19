@@ -29,10 +29,10 @@ public class MithosExecutor extends ActivityExecutor {
     private final String write_topic;
     KafkaProducer<String, String> producer;
     MithosHandler handler;
-    private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
+    private final LOGConsoleLogger logger = LOGConsoleLogger.getInstance();
     Gson gson = new Gson();
 
-    private final Map<String, ActivityWorker> mActivityWorkerMap = new HashMap<>();
+    private final Map<String, ActivityWorker> activityWorkerMap = new HashMap<>();
 
     public MithosExecutor(PluginConfig config, RunTimeProject project) {
         super(config, project);
@@ -80,20 +80,20 @@ public class MithosExecutor extends ActivityExecutor {
             }
             String actionID = UUID.randomUUID().toString();
             ScenarioScriptCommand ssc = new ScenarioScriptCommand("SSC", "VSM", actor, command, actionID);
-            synchronized (mActivityWorkerMap) {
+            synchronized (activityWorkerMap) {
                 producer.send(new ProducerRecord<String, String>(write_topic, key, gson.toJson(ssc)));
                 // organize wait for feedback if (activity instanceof SpeechActivity) {
                 ActivityWorker aw = (ActivityWorker) Thread.currentThread();
-                mActivityWorkerMap.put(actionID, aw);
+                activityWorkerMap.put(actionID, aw);
 
                 if (activity.getType() == AbstractActivity.Type.blocking) {
-                    while (mActivityWorkerMap.containsValue(aw)) {
-                        mActivityWorkerMap.wait();
+                    while (activityWorkerMap.containsValue(aw)) {
+                        activityWorkerMap.wait();
                     }
                 }
             }
         } catch (InterruptedException exc) {
-            mLogger.failure(exc.toString());
+            logger.failure(exc.toString());
         }
     }
 
@@ -121,4 +121,21 @@ public class MithosExecutor extends ActivityExecutor {
         producer.close();
         handler.abort();
     }
+
+    public void handle(InteractionAct intAct) {
+    }
+
+    public void handle(ScenarioScriptFeedback sscf) {
+        synchronized(activityWorkerMap) {
+            if (sscf.getFeedback().equals(Feedback.SUCCESS)) {
+                activityWorkerMap.remove(sscf.getuID());
+            }
+            else if (sscf.getFeedback().equals(Feedback.FAILIURE)){
+                activityWorkerMap.remove(sscf.getuID());
+                logger.failure("Action "+sscf.getuID() + " failed");
+            }
+            activityWorkerMap.notifyAll();
+        }
+    }
+
 }
