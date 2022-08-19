@@ -122,20 +122,5 @@ public class MithosExecutor extends ActivityExecutor {
         handler.abort();
     }
 
-    public void handle(InteractionAct intAct) {
-    }
-
-    public void handle(ScenarioScriptFeedback sscf) {
-        synchronized(activityWorkerMap) {
-            if (sscf.getFeedback().equals(Feedback.SUCCESS)) {
-                activityWorkerMap.remove(sscf.getuID());
-            }
-            else if (sscf.getFeedback().equals(Feedback.FAILIURE)){
-                activityWorkerMap.remove(sscf.getuID());
-                logger.failure("Action "+sscf.getuID() + " failed");
-            }
-            activityWorkerMap.notifyAll();
-        }
-    }
 
 }
