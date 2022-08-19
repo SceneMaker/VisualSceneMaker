@@ -9,7 +9,6 @@ import de.dfki.vsm.runtime.activity.scheduler.ActivityWorker;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
 import de.mithos.compint.command.ScenarioScriptCommand;
-import de.mithos.compint.interaction.InteractionAct;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 
@@ -25,7 +24,7 @@ import java.util.*;
 public class MithosExecutor extends ActivityExecutor {
 
     private final String server;
-    private final String read_topic;
+    private final String read_topics;
 
     private final String write_topic;
     KafkaProducer<String, String> producer;
@@ -39,7 +38,7 @@ public class MithosExecutor extends ActivityExecutor {
         super(config, project);
         System.out.println("Mithos Kafka starting");
         server = mConfig.getProperty("server");
-        read_topic = mConfig.getProperty("read_topic");
+        read_topics = mConfig.getProperty("read_topic");
         write_topic = mConfig.getProperty("write_topic");
     }
 
@@ -112,7 +111,7 @@ public class MithosExecutor extends ActivityExecutor {
         producer = new KafkaProducer<>(props);
         System.out.println("Mithos Kafka producer set up");
 
-        handler = new MithosHandler(server, read_topic, InteractionAct.class);
+        handler = new MithosHandler(server, read_topics);
         handler.start();
     }
 
