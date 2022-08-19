@@ -72,11 +72,21 @@ public class MithosHandler<T> extends Thread {
     }
 
     private void handle(ConsumerRecord<Long, String> record) {
-        mLogger.message(record.toString());
+        logger.message(record.toString());
         try {
             switch (record.topic()) {
                 case "SSF":
                     ScenarioScriptFeedback ssf = gson.fromJson(record.value(), ScenarioScriptFeedback.class);
+/*                    synchronized(activityWorkerMap) {
+                        if (sscf.getFeedback().equals(Feedback.SUCCESS)) {
+                            activityWorkerMap.remove(sscf.getuID());
+                        }
+                        else if (sscf.getFeedback().equals(Feedback.FAILIURE)){
+                            activityWorkerMap.remove(sscf.getuID());
+                            logger.failure("Action "+sscf.getuID() + " failed");
+                        }
+                        activityWorkerMap.notifyAll();
+                    }*/
                 case "InteractionActs":
                     InteractionAct ia = gson.fromJson(record.value(), InteractionAct.class);
 
