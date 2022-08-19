@@ -3,6 +3,7 @@ package de.dfki.vsm.xtension.mithos;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
+import de.mithos.compint.command.ScenarioScriptFeedback;
 import de.mithos.compint.interaction.InteractionAct;
 import org.apache.kafka.clients.consumer.*;
 
@@ -20,7 +21,7 @@ import java.util.Properties;
 
 public class MithosHandler<T> extends Thread {
 
-    private final String topic;
+    private final String[] topics;
     private final String server;
     private Consumer<Long, String> consumer;
     private boolean stop = false;
@@ -28,9 +29,9 @@ public class MithosHandler<T> extends Thread {
     private Gson gson = new Gson();
     private Type jsonClass;
 
-    public MithosHandler(String server, String topic, Type jsonClass) {
+    public MithosHandler(String server, String topics) {
         this.server = server;
-        this.topic = topic;
+        this.topics = topics.split(",");
         this.jsonClass = jsonClass;
     }
 
@@ -45,7 +46,7 @@ public class MithosHandler<T> extends Thread {
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer");
 
         consumer = new KafkaConsumer<>(props);
-        consumer.subscribe(Arrays.asList(topic.split(",")));
+        consumer.subscribe(Arrays.asList(topics));
         System.out.println("Mithos Kafka consumer set up");
         super.start();
     }
@@ -63,19 +64,25 @@ public class MithosHandler<T> extends Thread {
                     consumer.poll(duration);
 
             consumerRecords.forEach(record -> {
-                mLogger.message(record.toString());
-                try {
-                    T jsonObj = gson.fromJson(record.value());
-                } catch (JsonSyntaxException jse) {
-                    mLogger.failure(jse.toString());
-                }
+                handle(record);
             });
             consumer.commitAsync();
         }
     }
 
     private void handle(ConsumerRecord<Long, String> record) {
-        gson.fromJson(record, this.T);
+        mLogger.message(record.toString());
+        try {
+            switch (record.topic()) {
+                case "SSF":
+                    ScenarioScriptFeedback ssf = gson.fromJson(record.value(), ScenarioScriptFeedback.class);
+                case "InteractionActs":
+                    InteractionAct ia = gson.fromJson(record.value(), InteractionAct.class);
+
+            }
+        } catch (JsonSyntaxException jse) {
+            mLogger.failure(jse.toString());
+        }
     }
 
     public final void abort() {
