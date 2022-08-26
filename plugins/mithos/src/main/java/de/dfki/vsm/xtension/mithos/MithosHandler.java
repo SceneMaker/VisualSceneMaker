@@ -21,6 +21,8 @@ import java.util.Properties;
 
 public class MithosHandler<T> extends Thread {
 
+
+    private final MithosExecutor executor;
     private final String[] topics;
     private final String server;
     private Consumer<Long, String> consumer;
@@ -29,10 +31,11 @@ public class MithosHandler<T> extends Thread {
     private Gson gson = new Gson();
     private Type jsonClass;
 
-    public MithosHandler(String server, String topics) {
+    public MithosHandler(String server, String topics, MithosExecutor executor) {
         this.server = server;
         this.topics = topics.split(",");
         this.jsonClass = jsonClass;
+        this.executor = executor;
     }
 
     @Override
@@ -77,18 +80,11 @@ public class MithosHandler<T> extends Thread {
             switch (record.topic()) {
                 case "SSF":
                     ScenarioScriptFeedback ssf = gson.fromJson(record.value(), ScenarioScriptFeedback.class);
-/*                    synchronized(activityWorkerMap) {
-                        if (sscf.getFeedback().equals(Feedback.SUCCESS)) {
-                            activityWorkerMap.remove(sscf.getuID());
-                        }
-                        else if (sscf.getFeedback().equals(Feedback.FAILIURE)){
-                            activityWorkerMap.remove(sscf.getuID());
-                            logger.failure("Action "+sscf.getuID() + " failed");
-                        }
-                        activityWorkerMap.notifyAll();
-                    }*/
+                    executor.process(ssf);
+                    /*                 */
                 case "InteractionActs":
                     InteractionAct ia = gson.fromJson(record.value(), InteractionAct.class);
+                    executor.process(ia);
 
             }
         } catch (JsonSyntaxException jse) {
