@@ -144,10 +144,10 @@ public class MithosExecutor extends ActivityExecutor {
     }
 
     public void process(InteractionAct intAct) {
-        ActKind kind = intAct.kind_ia;
-        if (kind != null) {
-            logger.message("Interaction kind: " + kind);
-            mProject.setVariable("kind_ia", kind.toString());
+        ActKind kindDa = intAct.kind_da;
+        if (kindDa != null) {
+            logger.message("Interaction kind: " + kindDa);
+            mProject.setVariable("kind_da", kindDa.toString());
         }
     }
 }
