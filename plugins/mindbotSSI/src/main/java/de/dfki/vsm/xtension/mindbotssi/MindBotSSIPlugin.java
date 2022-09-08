@@ -65,45 +65,50 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
                 float neutralVal = Float.parseFloat(tupleData.get("neutral")) ;
                 mLogger.message("Got stress/neutral values: \t" + stressVal + "\t" + neutralVal);
 
-                if(mProject.hasVariable("stress")) {
-                    mProject.setVariable("stress", stressVal);
+                if(mProject.hasVariable("ssi-stress")) {
+                    mProject.setVariable("ssi-stress", stressVal);
                 }
-                if(mProject.hasVariable("neutral")) {
-                    mProject.setVariable("neutral", neutralVal);
-                }
+                //if(mProject.hasVariable("neutral")) {
+                //    mProject.setVariable("neutral", neutralVal);
+                //}
             }
             else if (sender.equals("video") && event.equals("emotion")) {
                 assert event_entry.getType().equals("MAP") ;
                 SSITupleData tupleData = (SSITupleData) data ;
-                float painVal = Float.parseFloat(tupleData.get("pain")) ;
-                float noPainVal = Float.parseFloat(tupleData.get("no pain")) ;
-                mLogger.message("Got pain/no-pain values: \t" + painVal + "\t" + noPainVal);
+                mLogger.message("Got emotion+pain+var+arousal values: \t" + tupleData);
 
-                if(mProject.hasVariable("Pain")) {
-                    mProject.setVariable("Pain", painVal);
+                // For each of the variables expected in this map, compose a corresponding
+                // project variable name prepending the "ssi-emotion-" prefix
+                String[] ssiVarNames = {"surprise","pain","happy","sad","neutral","valence","disgust","anger","fear","arousal"} ;
+                for (String ssiVarName: ssiVarNames) {
+                    float ssiVarValue = Float.parseFloat(tupleData.get(ssiVarName)) ;
+                    String projectVarName = "ssi-emotion-" + ssiVarName ;
+                    if(mProject.hasVariable(projectVarName)) {
+                        mProject.setVariable(projectVarName, ssiVarValue);
+                    }
                 }
-                if(mProject.hasVariable("NoPain")) {
-                    mProject.setVariable("NoPain", noPainVal);
-                }
+
             }
-            else if (sender.equals("video") && event.equals("attention")) {
+            else if (sender.equals("video") && event.equals("focus")) {
                 assert event_entry.getType().equals("MAP") ;
                 SSITupleData tupleData = (SSITupleData) data ;
-                float attentionVal = Float.parseFloat(tupleData.get("attention")) ;
-                float noAttentionVal = Float.parseFloat(tupleData.get("no attention")) ;
-                mLogger.message("Got attention/no-attention values: \t" + attentionVal + "\t" + noAttentionVal);
+                mLogger.message("Got video focus values: \t" + tupleData);
 
-                if(mProject.hasVariable("Attention")) {
-                    mProject.setVariable("Attention", attentionVal);
+                // For each of the variables expected in this map, compose a corresponding
+                // project variable name prepending the "ssi-focus-" prefix
+                String[] ssiVarNames = {"away","screen","device"} ;
+                for (String ssiVarName: ssiVarNames) {
+                    float ssiVarValue = Float.parseFloat(tupleData.get(ssiVarName)) ;
+                    String projectVarName = "ssi-focus-" + ssiVarName ;
+                    if(mProject.hasVariable(projectVarName)) {
+                        mProject.setVariable(projectVarName, ssiVarValue);
+                    }
                 }
-                if(mProject.hasVariable("NoAttention")) {
-                    mProject.setVariable("NoAttention", noAttentionVal);
-                }
+
             }
 
         }
 
     } // end handle()
-
 
 }
