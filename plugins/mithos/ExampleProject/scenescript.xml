@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SceneScript lower="0" upper="0">
+    <SceneObject lower="0" upper="69" language="@@" identifier="test">
+        <SceneTurn lower="14" upper="69" speaker="Gaze">
+            <SceneUttr lower="20" upper="48" punct=",">
+                <SceneWord lower="20" upper="25" text="Hello"/>
+                <ActionObject lower="27" upper="33" actor="" name="LookAt">
+                    <ActionFeature lower="34" upper="46" key="target" val="Julia"/>
+                </ActionObject>
+            </SceneUttr>
+            <SceneUttr lower="49" upper="69" punct=".">
+                <SceneWord lower="49" upper="52" text="how"/>
+                <SceneWord lower="53" upper="56" text="are"/>
+                <ActionObject lower="58" upper="63" actor="" name="smile">
+                </ActionObject>
+                <SceneWord lower="65" upper="68" text="you"/>
+            </SceneUttr>
+        </SceneTurn>
+    </SceneObject>
+</SceneScript>

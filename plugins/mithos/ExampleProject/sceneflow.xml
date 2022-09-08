@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SceneFlow id="" name="default" comment="" hideLocalVar="false" hideGlobalVar="false"
+           modifDate="Thu, 8 Sep 2022 19:01:27" start="N1;" context="" package="" xmlns="xml.sceneflow.dfki.de"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <LocalVariableBadge>
+        <Position xPos="10" yPos="10"/>
+    </LocalVariableBadge>
+    <GlobalVariableBadge>
+        <Position xPos="10" yPos="10"/>
+    </GlobalVariableBadge>
+    <Node id="N1" name="N1" history="false">
+        <Define>
+        </Define>
+        <Declare>
+        </Declare>
+        <Commands>
+        </Commands>
+        <TEdge target="N3" start="" timeout="5000">
+            <Graphics>
+                <Connection>
+                    <ControlPoint xPos="210" yPos="165" ctrlXPos="269" ctrlYPos="165"/>
+                    <ControlPoint xPos="302" yPos="333" ctrlXPos="244" ctrlYPos="317"/>
+                </Connection>
+            </Graphics>
+        </TEdge>
+        <Graphics>
+            <Position xPos="120" yPos="120"/>
+        </Graphics>
+    </Node>
+    <Node id="N2" name="N2" history="false">
+        <Define>
+        </Define>
+        <Declare>
+        </Declare>
+        <Commands>
+            <PlayAction mode="Default">
+                <StringLiteral><![CDATA[[Gaze test message]]]></StringLiteral>
+            </PlayAction>
+        </Commands>
+        <TEdge target="N2" start="" timeout="2000">
+            <Graphics>
+                <Connection>
+                    <ControlPoint xPos="447" yPos="122" ctrlXPos="471" ctrlYPos="105"/>
+                    <ControlPoint xPos="478" yPos="153" ctrlXPos="564" ctrlYPos="129"/>
+                </Connection>
+            </Graphics>
+        </TEdge>
+        <Graphics>
+            <Position xPos="390" yPos="120"/>
+        </Graphics>
+    </Node>
+    <Node id="N3" name="N3" history="false">
+        <Define>
+        </Define>
+        <Declare>
+        </Declare>
+        <Commands>
+            <PlayScene>
+                <StringLiteral><![CDATA[test]]></StringLiteral>
+            </PlayScene>
+        </Commands>
+        <TEdge target="N2" start="" timeout="4000">
+            <Graphics>
+                <Connection>
+                    <ControlPoint xPos="357" yPos="302" ctrlXPos="376" ctrlYPos="230"/>
+                    <ControlPoint xPos="435" yPos="210" ctrlXPos="435" ctrlYPos="284"/>
+                </Connection>
+            </Graphics>
+        </TEdge>
+        <Graphics>
+            <Position xPos="300" yPos="300"/>
+        </Graphics>
+    </Node>
+    <ClassPath>
+    </ClassPath>
+    <InitContext></InitContext>
+</SceneFlow>

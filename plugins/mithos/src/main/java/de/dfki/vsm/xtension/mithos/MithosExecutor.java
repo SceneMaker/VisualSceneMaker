@@ -87,9 +87,12 @@ public class MithosExecutor extends ActivityExecutor {
                 command = text.substring(1, text.length() - 1);
             }
             String actionIDString = Long.toString(actID++);
-            ScenarioScriptCommand ssc = new ScenarioScriptCommand("SSC", "VSM", actor, command, actionID);
+            ScenarioScriptCommand ssc = new ScenarioScriptCommand("SSC", "VSM", actor, command, actionIDString);
+            String sscGsonString = gson.toJson(ssc);
+            ProducerRecord<String, String> record = new ProducerRecord<>(write_topic, key, sscGsonString);
+            producer.send(record);
             synchronized (activityWorkerMap) {
-                producer.send(new ProducerRecord<String, String>(write_topic, key, gson.toJson(ssc)));
+                System.out.println("inside the syncblock");
                 // organize wait for feedback if (activity instanceof SpeechActivity) {
                 ActivityWorker aw = (ActivityWorker) Thread.currentThread();
                 activityWorkerMap.put(actionIDString, aw);
@@ -101,6 +104,7 @@ public class MithosExecutor extends ActivityExecutor {
                 }
             }
         } catch (InterruptedException exc) {
+            System.out.println(exc.toString());
             logger.failure(exc.toString());
         }
     }
@@ -144,10 +148,10 @@ public class MithosExecutor extends ActivityExecutor {
     }
 
     public void process(InteractionAct intAct) {
-        ActKind kind = intAct.kind_ia;
-        if (kind != null) {
-            logger.message("Interaction kind: " + kind);
-            mProject.setVariable("kind_ia", kind.toString());
+        ActKind kindDa = intAct.kind_da;
+        if (kindDa != null) {
+            logger.message("Interaction kind: " + kindDa);
+            mProject.setVariable("kind_da", kindDa.toString());
         }
     }
 }

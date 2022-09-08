@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Project name="Mithos">
+    <Plugins>
+        <Plugin type="device" name="Mithos" class="de.dfki.vsm.xtension.mithos.MithosExecutor" load="true">
+            <Feature key="server" val="localhost:9092"/>
+            <Feature key="read_topic" val="SSF,InteractionActs"/>
+            <Feature key="write_topic" val="SSC"/>
+        </Plugin>
+    </Plugins>
+    <Agents>
+        <Agent name="Gaze" device="Mithos">
+        </Agent>
+    </Agents>
+    <Player>
+    </Player>
+</Project>
