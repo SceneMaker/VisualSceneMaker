@@ -45,11 +45,9 @@ public class MindBotSSIExecutor extends ActivityExecutor  {
 
         mLogger.message("PRINT"+ activity);
         if(activity.getName().equals("start_recording")) {
-
             this.sendStart();
-
-        } else if (activity.getName().equals("stop_recording")) {
-
+        }
+        else if (activity.getName().equals("stop_recording")) {
             this.sendStop();
         }
     }

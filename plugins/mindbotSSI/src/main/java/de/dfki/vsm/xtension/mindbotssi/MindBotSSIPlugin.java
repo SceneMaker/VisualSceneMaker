@@ -8,11 +8,18 @@ import de.dfki.vsm.xtension.ssi.event.SSIEventEntry;
 import de.dfki.vsm.xtension.ssi.event.data.SSIEventData;
 import de.dfki.vsm.xtension.ssi.event.data.SSITupleData;
 
+import java.util.*;
+import java.util.stream.DoubleStream;
+
 
 /**
  * @author Fabrizio Nunnari
  */
 public class MindBotSSIPlugin extends SSIRunTimePlugin {
+
+    private static Map<String, List<Float>> emotionHistory;
+    String[] emotionNames;
+
 
     // Construct SSI plugin
     public MindBotSSIPlugin(
@@ -28,6 +35,9 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
     public void launch() {
         mLogger.message("Launching MindBotSSI Plugin...");
         super.launch();
+        emotionNames = new String[]{"surprise", "pain", "happy", "sad", "neutral", "valence", "disgust", "anger", "fear", "arousal"};
+        emotionHistory = new HashMap<>();
+        Arrays.stream(emotionNames).forEach(name->emotionHistory.put(name,new ArrayList<Float>()));
     }
 
     // Unload SSI plugin
@@ -76,17 +86,24 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
                 assert event_entry.getType().equals("MAP") ;
                 SSITupleData tupleData = (SSITupleData) data ;
                 mLogger.message("Got emotion+pain+var+arousal values: \t" + tupleData);
-
                 // For each of the variables expected in this map, compose a corresponding
                 // project variable name prepending the "ssi-emotion-" prefix
-                String[] ssiVarNames = {"surprise","pain","happy","sad","neutral","valence","disgust","anger","fear","arousal"} ;
-                for (String ssiVarName: ssiVarNames) {
-                    float ssiVarValue = Float.parseFloat(tupleData.get(ssiVarName)) ;
-                    String projectVarName = "ssi-emotion-" + ssiVarName ;
+                Arrays.stream(emotionNames).forEach(emotion->{
+                    float ssiVarValue = Float.parseFloat(tupleData.get(emotion)) ;
+                    String projectVarName = "ssi-emotion-" + emotion ;
                     if(mProject.hasVariable(projectVarName)) {
                         mProject.setVariable(projectVarName, ssiVarValue);
                     }
-                }
+                    List<Float> history = emotionHistory.get(emotion);
+                    history.add(ssiVarValue);
+                    double avgD =  history.stream()
+                            .mapToDouble(Float::doubleValue)
+                            .average().orElse(0.0);
+                    String projectAvgVarName = "ssi-emotion-" + emotion+"-avg" ;
+                    if(mProject.hasVariable(projectAvgVarName)) {
+                        mProject.setVariable(projectAvgVarName, (float) avgD);
+                    }
+                });
 
             }
             else if (sender.equals("video") && event.equals("focus")) {
@@ -110,5 +127,10 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
         }
 
     } // end handle()
+
+    public static void resetHistory(){
+        emotionHistory.forEach((s,l)->l.clear());
+    }
+
 
 }
