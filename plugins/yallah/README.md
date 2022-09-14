@@ -134,6 +134,9 @@ This is a subset of the API provided by the YALLAH controllers (see <https://git
 * StopLooking
   * _no parameters_
 
+* SetCameraShot
+  * type: string (one among FULL_SHOT, MEDIUM_SHOT, MEDIUM_CLOSE_UP, FULL_CLOSE_UP, EXTREME_CLOSE_UP)
+
 
 ## Known problems and limitations
 
