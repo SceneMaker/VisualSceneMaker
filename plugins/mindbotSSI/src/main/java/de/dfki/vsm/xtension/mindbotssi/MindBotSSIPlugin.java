@@ -80,8 +80,8 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
                 float neutralVal = Float.parseFloat(tupleData.get("neutral")) ;
                 mLogger.message("Got stress/neutral values: \t" + stressVal + "\t" + neutralVal);
 
-                if(mProject.hasVariable("ssi-stress")) {
-                    mProject.setVariable("ssi-stress", stressVal);
+                if(mProject.hasVariable("ssi_stress")) {
+                    mProject.setVariable("ssi_stress", stressVal);
                 }
                 //if(mProject.hasVariable("neutral")) {
                 //    mProject.setVariable("neutral", neutralVal);
@@ -92,15 +92,15 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
                 SSITupleData tupleData = (SSITupleData) data ;
                 mLogger.message("Got emotion+pain+var+arousal values: \t" + tupleData);
                 // For each of the variables expected in this map, compose a corresponding
-                // project variable name prepending the "ssi-emotion-" prefix
+                // project variable name prepending the "ssi_emotion_" prefix
                 Arrays.stream(emotionNames).forEach(emotion->{
                     float ssiVarValue = Float.parseFloat(tupleData.get(emotion)) ;
-                    String projectVarName = "ssi-emotion-" + emotion ;
+                    String projectVarName = "ssi_emotion_" + emotion ;
                     if(mProject.hasVariable(projectVarName)) {
                         mProject.setVariable(projectVarName, ssiVarValue);
                     }
                     Float avgValue = movingAverage(emotion,ssiVarValue);
-                    String projectAvgVarName = "ssi-emotion-" + emotion+"-avg" ;
+                    String projectAvgVarName = "ssi_emotion_" + emotion+"_avg" ;
                     if(mProject.hasVariable(projectAvgVarName)) {
                         mProject.setVariable(projectAvgVarName,avgValue);
                     }
@@ -113,15 +113,15 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
                 mLogger.message("Got video focus values: \t" + tupleData);
 
                 // For each of the variables expected in this map, compose a corresponding
-                // project variable name prepending the "ssi-focus-" prefix
+                // project variable name prepending the "ssi_focus_" prefix
                 for (String ssiVarName: focusTargets) {
                     float ssiVarValue = Float.parseFloat(tupleData.get(ssiVarName)) ;
-                    String projectVarName = "ssi-focus-" + ssiVarName ;
+                    String projectVarName = "ssi_focus_" + ssiVarName ;
                     if(mProject.hasVariable(projectVarName)) {
                         mProject.setVariable(projectVarName, ssiVarValue);
                     }
                     Float avgValue = movingAverage(ssiVarName,ssiVarValue);
-                    String projectAvgVarName = "ssi-focus-avg" + ssiVarName+"-avg" ;
+                    String projectAvgVarName = "ssi_focus_" + ssiVarName+"_avg" ;
                     if(mProject.hasVariable(projectAvgVarName)) {
                         mProject.setVariable(projectAvgVarName, avgValue);
                     }
@@ -132,12 +132,12 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
                 SSITupleData tupleData = (SSITupleData) data ;
                 mLogger.message("Got kinect fatigue value: \t" + tupleData);
                 float ssiVarValue = Float.parseFloat(tupleData.get("fatigue")) ;
-                String projectVarName = "ssi-fatigue";
+                String projectVarName = "ssi_fatigue";
                 if(mProject.hasVariable(projectVarName)) {
                     mProject.setVariable(projectVarName, ssiVarValue);
                 }
                 Float avgValue = movingAverage("fatigue",ssiVarValue);
-                String projectAvgVarName = "ssi-fatigue-avg" ;
+                String projectAvgVarName = "ssi_fatigue_avg" ;
                 if(mProject.hasVariable(projectAvgVarName)) {
                     mProject.setVariable(projectAvgVarName, avgValue);
                 }
