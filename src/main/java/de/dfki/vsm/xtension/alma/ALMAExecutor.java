@@ -107,11 +107,11 @@ public class ALMAExecutor extends ActivityExecutor implements AffectUpdateListen
             // read config
             String sALMACOMP = mProject.getProjectPath() + File.separator + mConfig.getProperty("computation");
             sALMACOMP = sALMACOMP.replace("\\", "/");
-            mLogger.message("Computation " + sALMACOMP);
+            mLogger.failure("Computation " + sALMACOMP);
 
             String sALMADEF = mProject.getProjectPath() + File.separator + mConfig.getProperty("definition");
             sALMADEF = sALMADEF.replace("\\", "/");
-            mLogger.message("Definition " + sALMACOMP);
+            mLogger.failure("Definition " + sALMADEF);
 
             try {
                 mALMA = new AffectManager(sALMACOMP, sALMADEF, true);

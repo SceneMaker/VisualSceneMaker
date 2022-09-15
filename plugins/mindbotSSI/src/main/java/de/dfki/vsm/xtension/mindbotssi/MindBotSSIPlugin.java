@@ -9,7 +9,6 @@ import de.dfki.vsm.xtension.ssi.event.data.SSIEventData;
 import de.dfki.vsm.xtension.ssi.event.data.SSITupleData;
 
 import java.util.*;
-import java.util.stream.DoubleStream;
 
 
 /**
@@ -17,8 +16,9 @@ import java.util.stream.DoubleStream;
  */
 public class MindBotSSIPlugin extends SSIRunTimePlugin {
 
-    private static Map<String, List<Float>> emotionHistory;
+    private static Map<String, List<Float>> history;
     String[] emotionNames;
+    String[] focusTargets;
 
 
     // Construct SSI plugin
@@ -36,8 +36,13 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
         mLogger.message("Launching MindBotSSI Plugin...");
         super.launch();
         emotionNames = new String[]{"surprise", "pain", "happy", "sad", "neutral", "valence", "disgust", "anger", "fear", "arousal"};
-        emotionHistory = new HashMap<>();
-        Arrays.stream(emotionNames).forEach(name->emotionHistory.put(name,new ArrayList<Float>()));
+        focusTargets = new String[]{"away","screen","device"} ;
+
+        history = new HashMap<>();
+        Arrays.stream(emotionNames).forEach(name-> history.put(name,new ArrayList<Float>()));
+        Arrays.stream(focusTargets).forEach(name-> history.put(name,new ArrayList<Float>()));
+        history.put("fatigue", new ArrayList<Float>());
+
     }
 
     // Unload SSI plugin
@@ -94,14 +99,10 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
                     if(mProject.hasVariable(projectVarName)) {
                         mProject.setVariable(projectVarName, ssiVarValue);
                     }
-                    List<Float> history = emotionHistory.get(emotion);
-                    history.add(ssiVarValue);
-                    double avgD =  history.stream()
-                            .mapToDouble(Float::doubleValue)
-                            .average().orElse(0.0);
+                    Float avgValue = movingAverage(emotion,ssiVarValue);
                     String projectAvgVarName = "ssi-emotion-" + emotion+"-avg" ;
                     if(mProject.hasVariable(projectAvgVarName)) {
-                        mProject.setVariable(projectAvgVarName, (float) avgD);
+                        mProject.setVariable(projectAvgVarName,avgValue);
                     }
                 });
 
@@ -113,23 +114,48 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
 
                 // For each of the variables expected in this map, compose a corresponding
                 // project variable name prepending the "ssi-focus-" prefix
-                String[] ssiVarNames = {"away","screen","device"} ;
-                for (String ssiVarName: ssiVarNames) {
+                for (String ssiVarName: focusTargets) {
                     float ssiVarValue = Float.parseFloat(tupleData.get(ssiVarName)) ;
                     String projectVarName = "ssi-focus-" + ssiVarName ;
                     if(mProject.hasVariable(projectVarName)) {
                         mProject.setVariable(projectVarName, ssiVarValue);
                     }
+                    Float avgValue = movingAverage(ssiVarName,ssiVarValue);
+                    String projectAvgVarName = "ssi-focus-avg" + ssiVarName+"-avg" ;
+                    if(mProject.hasVariable(projectAvgVarName)) {
+                        mProject.setVariable(projectAvgVarName, avgValue);
+                    }
                 }
-
             }
-
+            else if (sender.equals("kinect") && event.equals("fatigue")) {
+                assert event_entry.getType().equals("MAP") ;
+                SSITupleData tupleData = (SSITupleData) data ;
+                mLogger.message("Got kinect fatigue value: \t" + tupleData);
+                float ssiVarValue = Float.parseFloat(tupleData.get("fatigue")) ;
+                String projectVarName = "ssi-fatigue";
+                if(mProject.hasVariable(projectVarName)) {
+                    mProject.setVariable(projectVarName, ssiVarValue);
+                }
+                Float avgValue = movingAverage("fatigue",ssiVarValue);
+                String projectAvgVarName = "ssi-fatigue-avg" ;
+                if(mProject.hasVariable(projectAvgVarName)) {
+                    mProject.setVariable(projectAvgVarName, avgValue);
+                }
+            }
         }
 
     } // end handle()
 
+    private Float movingAverage(String name, Float value){
+        List<Float> history = MindBotSSIPlugin.history.get(name);
+        history.add(value);
+        return (float) history.stream()
+                .mapToDouble(Float::doubleValue)
+                .average().orElse(0.0);
+    }
+
     public static void resetHistory(){
-        emotionHistory.forEach((s,l)->l.clear());
+        history.forEach((s, l)->l.clear());
     }
 
 
