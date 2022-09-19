@@ -36,7 +36,7 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
         mLogger.message("Launching MindBotSSI Plugin...");
         super.launch();
         emotionNames = new String[]{"surprise", "pain", "happy", "sad", "neutral", "valence", "disgust", "anger", "fear", "arousal"};
-        focusTargets = new String[]{"away","screen","device"} ;
+        focusTargets = new String[]{"away", "cobot", "table"} ;
 
         history = new HashMap<>();
         Arrays.stream(emotionNames).forEach(name-> history.put(name,new ArrayList<Float>()));
