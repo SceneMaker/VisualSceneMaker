@@ -66,7 +66,7 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
             mLogger.message(" - sender: " +  event_entry.getSender() + // e.g.: "mouse"
                     "\t event: " + event_entry.getEvent() + // e.g.: "coords"
                     "\t from: " + event_entry.getFrom() + // an integer number (?)
-                    "\t type: " + event_entry.getType() +  // "TUPLE" for coords, or "EMPTY" for clicks
+                    "\t type: " + event_entry.getType() +  // "MAP" for probability distributions, "TUPLE" for coords, or "EMPTY" for clicks
                     "\t state: " + event_entry.getState() +  // "continued" for streamed coords and clicks down, or "completed" for clicks up.
                     "\t data: " + event_entry.getData() );
 
@@ -127,20 +127,30 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
                     }
                 }
             }
-            else if (sender.equals("kinect") && event.equals("fatigue")) {
+            else if (sender.equals("biomech") && event.equals("fatigue")) {
                 assert event_entry.getType().equals("MAP") ;
                 SSITupleData tupleData = (SSITupleData) data ;
                 mLogger.message("Got kinect fatigue value: \t" + tupleData);
-                float ssiVarValue = Float.parseFloat(tupleData.get("fatigue")) ;
+
+                float fatigueValue = Float.parseFloat(tupleData.get("dim#0")) ;
                 String projectVarName = "ssi_fatigue";
                 if(mProject.hasVariable(projectVarName)) {
-                    mProject.setVariable(projectVarName, ssiVarValue);
+                    mProject.setVariable(projectVarName, fatigueValue);
                 }
+
+                float fatigueAvgValue = Float.parseFloat(tupleData.get("dim#1")) ;
+                String projectAvgVarName = "ssi_fatigue_avg";
+                if(mProject.hasVariable(projectAvgVarName)) {
+                    mProject.setVariable(projectAvgVarName, fatigueAvgValue);
+                }
+
+                /*
                 Float avgValue = movingAverage("fatigue",ssiVarValue);
                 String projectAvgVarName = "ssi_fatigue_avg" ;
                 if(mProject.hasVariable(projectAvgVarName)) {
                     mProject.setVariable(projectAvgVarName, avgValue);
                 }
+                 */
             }
         }
 
