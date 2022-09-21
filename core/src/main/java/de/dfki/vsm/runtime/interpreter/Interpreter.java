@@ -374,7 +374,7 @@ public class Interpreter {
 
             return true;
         } catch (InterpreterError e) {
-            e.printStackTrace();
+            // Expected exception. It means that the variable is not defined.
             return false;
         } finally {
             unlock();
