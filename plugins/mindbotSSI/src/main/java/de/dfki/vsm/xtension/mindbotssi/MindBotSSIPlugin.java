@@ -184,5 +184,22 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
         history.forEach((s, l)->l.clear());
     }
 
+    //
+    // Support functions to increase/decrease a variable with fixed steps and clamped to a range
+    //
+
+    public static float varStep = 0.2f ;
+    public static float varMin = 0.0f;
+    public static float varMax = 1.0f;
+
+    public static float decreaseVar(float v) {
+        v = v - varStep;
+        return v < varMin ? varMin : v > varMax ? varMax : v ;
+    }
+
+    public static float increaseVar(float v) {
+        v = v + varStep;
+        return v < varMin ? varMin : v > varMax ? varMax : v ;
+    }
 
 }
