@@ -22,7 +22,7 @@ public class MindbotServiceRequester extends AbstractNodeMain {
     /** This is the maximum time allowed to wait for an `action_done` feedback message.
      * If this time exceeds, the node is anyway unlocked.
      */
-    private final static int ACTION_DONE_TIMEOUT_MILLIS = 30000 ;
+    private final static int ACTION_DONE_TIMEOUT_MILLIS = 60000 ;
 
     // Possible state paths for immediate actions, which do not need to wait for the action_done service invoked:
     // CALLED -> UNREACHABLE
@@ -288,7 +288,6 @@ public class MindbotServiceRequester extends AbstractNodeMain {
                 mRobotFeedback.setActionMessage(this.vsmActionID,"");
             }
 
-
         }
 
 
@@ -339,11 +338,16 @@ public class MindbotServiceRequester extends AbstractNodeMain {
         @Override
         public void onFailure(RemoteException e) {
 
+            System.out.println("onFailure --> action ID="+vsmActionID) ;
+            e.printStackTrace();
+            System.out.println("onFailure <<--") ;
+
             synchronized (actionsState) {
                 actionsState.put(vsmActionID, CallState.UNREACHABLE);
                 mRobotFeedback.setActionState(this.vsmActionID, CallState.UNREACHABLE.toString());
             }
 
+            // TODO -- check. Do we really need to raise this?
             throw new RosRuntimeException(e);
             
         }

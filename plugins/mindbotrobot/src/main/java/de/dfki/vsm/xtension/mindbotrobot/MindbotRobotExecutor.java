@@ -24,6 +24,12 @@ public final class MindbotRobotExecutor extends ActivityExecutor implements Mind
      */
     private final static int ACTION_ABORT_DELAY_MILLIS = 1000 ;
 
+    // TODO -- docs
+    public long STATE_CHECK_DELAY_MILLIS = 1000;
+    // TODO -- docs
+    public long STATE_MAX_DELAY = 5000 ;
+
+
     /** Will listen to the topics exposed by the robot and invoke the callback methods when the values change.
      */
     private MindbotTopicReceiver topicReceiver;
@@ -49,6 +55,39 @@ public final class MindbotRobotExecutor extends ActivityExecutor implements Mind
         return ACTION_MARKER+id ;
     }
 
+    class StateChecker implements Runnable {
+
+        StateChecker() {}
+
+        @Override
+        public void run() {
+
+            boolean exit = false;
+
+            while(!exit) {
+                long lastStateUpdate = topicReceiver.getLastStateUpdate() ;
+
+                if (lastStateUpdate != -1) { // if the State message has never been received, do NOT assume we are already in an error.
+                    long elapsed = System.currentTimeMillis() - lastStateUpdate ;
+                    boolean no_heartbeat = elapsed > STATE_MAX_DELAY ;
+
+                    // System.out.println("Checking State update elapsed=" + elapsed + " to " + no_heartbeat + " Comparing to " + lastStateUpdate) ;
+
+                    if (mProject.hasVariable("robot_no_heartbeat")) {
+                        mProject.setVariable("robot_no_heartbeat", no_heartbeat);
+                    }
+                }
+
+                try {
+                    Thread.sleep(STATE_CHECK_DELAY_MILLIS);
+                } catch (InterruptedException e) {
+                    exit = true ;
+                }
+            }
+        }
+    }
+
+    private Thread _stateCheckerThread = null ;
 
     @Override
     public final void launch() {
@@ -159,7 +198,6 @@ public final class MindbotRobotExecutor extends ActivityExecutor implements Mind
                 if(mProject.hasVariable("robot_ctrl_mode")) {
                     mProject.setVariable("robot_ctrl_mode", new_mode) ;
                 }
-
             }
 
             @Override
@@ -168,13 +206,21 @@ public final class MindbotRobotExecutor extends ActivityExecutor implements Mind
             }
         });
 
-        //
-        // Done.
+        // Setup the thread monitoring the Robot Heartbeat
+        _stateCheckerThread = new Thread(new StateChecker()) ;
+        _stateCheckerThread.start();
+
+        // Done
         mLogger.message("MindBotExecutor launched.");
-    }
+
+    } // launch()
+
 
     @Override
     public final void unload() {
+
+        _stateCheckerThread.interrupt();
+        _stateCheckerThread = null ;
 
         if(nodeMainExecutor!=null) {
             nodeMainExecutor.shutdownNodeMain(topicReceiver);

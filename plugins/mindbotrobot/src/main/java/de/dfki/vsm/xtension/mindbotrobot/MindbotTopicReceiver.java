@@ -73,6 +73,12 @@ public class MindbotTopicReceiver implements NodeMain {
     /** Caches the value of the last received Mode */
     private String _lastMode = null ;
 
+    public long getLastStateUpdate() {
+        return _lastStateUpdate;
+    }
+
+    /** When (in System millis) the last "State" message was received */
+    private long _lastStateUpdate = -1;
 
     @Override
     public GraphName getDefaultNodeName() {
@@ -81,8 +87,16 @@ public class MindbotTopicReceiver implements NodeMain {
 
     @Override
     public void onStart(ConnectedNode connectedNode) {
-        setupSubscribers(connectedNode);
+        // setup Subscribers
+        subscriberTcpState = connectedNode.newSubscriber("/mindbot/robot/tcp_state", geometry_msgs.PoseStamped._TYPE);
+        subscriberCtrlState = connectedNode.newSubscriber("/mindbot/robot/ctrl_state", mindbot_msgs.CtrlState._TYPE);
+        subscriberCtrlMode = connectedNode.newSubscriber("/mindbot/robot/ctrl_mode", mindbot_msgs.CtrlMode._TYPE);
+
+        // and the listeners
         setupListeners();
+
+        // reset last receiving time to an undefined value
+        _lastStateUpdate = -1 ;
     }
 
     @Override
@@ -119,14 +133,8 @@ public class MindbotTopicReceiver implements NodeMain {
         if(_listener != null) {
             _listener.error(throwable.getMessage());
         }
-
     }
 
-    private void setupSubscribers(ConnectedNode connectedNode) {
-        subscriberTcpState = connectedNode.newSubscriber("/mindbot/robot/tcp_state", geometry_msgs.PoseStamped._TYPE);
-        subscriberCtrlState = connectedNode.newSubscriber("/mindbot/robot/ctrl_state", mindbot_msgs.CtrlState._TYPE);
-        subscriberCtrlMode = connectedNode.newSubscriber("/mindbot/robot/ctrl_mode", mindbot_msgs.CtrlMode._TYPE);
-    }
 
     private static boolean _equalPoses(Pose pose1, Pose pose2) {
         Point p1 = pose1.getPosition();
@@ -163,6 +171,10 @@ public class MindbotTopicReceiver implements NodeMain {
 
         subscriberCtrlState.addMessageListener(new MessageListener<mindbot_msgs.CtrlState>() {
             public void onNewMessage(mindbot_msgs.CtrlState message) {
+                // Update the time of last reception
+                _lastStateUpdate = System.currentTimeMillis() ;
+                //System.out.println("Got new state at " + _lastStateUpdate);
+
                 if(_listener == null)
                     return ;
 
