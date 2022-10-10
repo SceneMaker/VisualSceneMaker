@@ -9,8 +9,6 @@ import de.dfki.vsm.xtension.ssi.event.data.SSIEventData;
 import de.dfki.vsm.xtension.ssi.event.data.SSITupleData;
 
 import java.util.*;
-import java.util.function.DoublePredicate;
-import java.util.stream.Stream;
 
 
 /**
@@ -18,7 +16,9 @@ import java.util.stream.Stream;
  */
 public class MindBotSSIPlugin extends SSIRunTimePlugin {
 
-    private static final String[] emotionNames = new String[]{"surprise", "happy", "sad", "neutral", "valence", "disgust", "anger", "fear", "arousal"};
+    static final String[] emotionNames = new String[]{"neutral",
+            "surprise", "happy", "sad",  "disgust", "anger", "fear",
+            "valence", "arousal", "dominance"};
     private static final String[] focusTargets = new String[]{"away", "cobot", "table"} ;
 
 
@@ -33,10 +33,6 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
     public static int TIMED_HISTORY_MAX_AGE_MILLIS = 10 * 1000 ;
 
     public static int TIMED_HISTORY_MIN_SIZE = 30 ;
-
-
-
-
 
 
 
@@ -112,11 +108,15 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
                 SSITupleData tupleData = (SSITupleData) data;
                 mLogger.message("Got emotion+valence+arousal values: \t" + tupleData);
 
+                // HACK! Force the dominance value in the received map
+                //float dominance = DominanceCalculator.computeDominanceArgMax(tupleData, true) ;
+                float dominance = DominanceCalculator.computeDominanceAccumulated(tupleData) ;
+                tupleData.put("dominance", dominance + "");
+
                 // if there is a face detected
                 boolean there_is_face = Arrays.stream(emotionNames).
                         mapToDouble(value -> Double.parseDouble(tupleData.get(value)))
                         .anyMatch(value -> value != 0.0) ;
-
 
                 // For each of the variables expected in this map, compose a corresponding
                 // project variable name prepending the "ssi_emotion_" prefix
