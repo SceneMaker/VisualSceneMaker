@@ -2,12 +2,14 @@ package de.dfki.vsm.xtension.mindbotssi;
 import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 
+import de.dfki.vsm.util.ActivityLogger;
 import de.dfki.vsm.xtension.ssi.SSIRunTimePlugin;
 import de.dfki.vsm.xtension.ssi.event.SSIEventArray;
 import de.dfki.vsm.xtension.ssi.event.SSIEventEntry;
 import de.dfki.vsm.xtension.ssi.event.data.SSIEventData;
 import de.dfki.vsm.xtension.ssi.event.data.SSITupleData;
 
+import java.io.IOException;
 import java.util.*;
 
 
@@ -34,7 +36,8 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
 
     public static int TIMED_HISTORY_MIN_SIZE = 30 ;
 
-
+    static final String[] log_variables = Arrays.stream(emotionNames).map(emotion -> "ssi_emotion_" + emotion + "_avg").toArray(String[]::new);
+    ActivityLogger _activity_logger ;
 
     // Construct SSI plugin
     public MindBotSSIPlugin(
@@ -43,8 +46,8 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
         super(config, project);
         PROJECT_REFERENCE = project;
         thresholdMultilier = Double.parseDouble(config.getProperty("threshold_multilier","1"));
-        mLogger.message("MindSSI plugin constructor...");
 
+        mLogger.message("MindSSI plugin constructed...");
     }
 
     // Launch SSI plugin
@@ -59,6 +62,11 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
         timedHistory.put("fatigue", new LinkedList<TimedFloat>());
         timedHistory.put("pain", new LinkedList<TimedFloat>());
 
+        try {
+            _activity_logger = new ActivityLogger("MindBotSSI", mProject) ;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
     }
 
@@ -66,6 +74,14 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
     @Override
     public void unload() {
         super.unload();
+        try {
+            if(_activity_logger != null) {
+                _activity_logger.close();
+            }
+            _activity_logger = null ;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         mLogger.message("MindBotSSI Plugin unloaded.");
     }
 
@@ -134,6 +150,12 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
                         String projectAvgVarName = "ssi_emotion_" + emotion + "_avg";
                         if (mProject.hasVariable(projectAvgVarName)) {
                             mProject.setVariable(projectAvgVarName, avgValue);
+                        }
+
+                        try {
+                            _activity_logger.logVariables(log_variables);
+                        } catch (IOException e) {
+                            e.printStackTrace();
                         }
                     }
                 });

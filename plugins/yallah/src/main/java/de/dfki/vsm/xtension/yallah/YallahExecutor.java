@@ -10,11 +10,13 @@ import de.dfki.vsm.runtime.activity.SpeechActivity;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
 import de.dfki.vsm.runtime.activity.scheduler.ActivityWorker;
 import de.dfki.vsm.runtime.project.RunTimeProject;
+import de.dfki.vsm.util.ActivityLogger;
 import io.javalin.Javalin;
 import io.javalin.websocket.WsConnectContext;
 import io.javalin.websocket.WsMessageContext;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
@@ -40,6 +42,8 @@ public class YallahExecutor extends ActivityExecutor implements ExportableProper
      */
     private final Map<String, ActivityWorker> mActivityWorkerMap = new HashMap<>();
 
+
+    private ActivityLogger _activityLogger ;
 
     public YallahExecutor(PluginConfig config, RunTimeProject project)
     {
@@ -123,6 +127,11 @@ public class YallahExecutor extends ActivityExecutor implements ExportableProper
                 mLogger.warning("Unrecognized launch method " + lm.toString() );
         }
 
+        try {
+            _activityLogger = new ActivityLogger("YALLAH", mProject) ;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         //
         mLogger.message("YALLAH plugin launched.");
@@ -136,6 +145,16 @@ public class YallahExecutor extends ActivityExecutor implements ExportableProper
         mWebSocketServer.stop();
         mSocketConnectCtx = null ;
 
+
+        if(_activityLogger != null) {
+            try {
+                _activityLogger.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            _activityLogger = null ;
+        }
+
         mLogger.message("YALLAH plugin unloaded.");
     }
 
@@ -145,6 +164,12 @@ public class YallahExecutor extends ActivityExecutor implements ExportableProper
 
         mLogger.message("YALLAH Agent '" + activity.getActor() + "' said: " + activity.getText());
         mLogger.message("Activity name: " + activity.getName() + ", type: " + activity.getType() + ", features: " + activity.getFeatures());
+
+        try {
+            _activityLogger.logActivity(activity);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         if (activity instanceof SpeechActivity) {
             //
