@@ -23,7 +23,7 @@ public class ActivityLogger {
 
         long timestamp = System.currentTimeMillis() ;
         Date now = new Date(timestamp) ;
-        String log_filename = log_prefix + "-" + "activity_log" + now.toString() + ".csv" ;
+        String log_filename = log_prefix + "-" + "activity_log" + "-" + now.toString() + ".csv" ;
         _fw = new FileWriter(log_filename) ;
         _fw.write(header);
         _fw.write("\n");
