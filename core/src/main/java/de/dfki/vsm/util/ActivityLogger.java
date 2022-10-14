@@ -1,14 +1,14 @@
 package de.dfki.vsm.util;
 
-import de.dfki.vsm.model.scenescript.ActionFeature;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.LinkedList;
-import java.util.stream.Stream;
 
 public class ActivityLogger {
 
@@ -21,9 +21,11 @@ public class ActivityLogger {
     public ActivityLogger(String log_prefix, RunTimeProject prj) throws IOException {
         _prj = prj ;
 
-        long timestamp = System.currentTimeMillis() ;
-        Date now = new Date(timestamp) ;
-        String log_filename = log_prefix + "-" + "activity_log" + "-" + now.toString() + ".csv" ;
+        LocalDateTime date = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd-E-HHmmss");
+        String now_str = date.format(formatter) ;
+
+        String log_filename = log_prefix + "-" + "activity_log" + "-" + now_str + ".csv" ;
         _fw = new FileWriter(log_filename) ;
         _fw.write(header);
         _fw.write("\n");
