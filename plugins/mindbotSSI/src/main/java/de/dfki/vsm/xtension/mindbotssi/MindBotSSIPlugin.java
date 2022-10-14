@@ -45,7 +45,7 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
             final RunTimeProject project) {
         super(config, project);
         PROJECT_REFERENCE = project;
-        thresholdMultilier = Double.parseDouble(config.getProperty("threshold_multilier","1"));
+        thresholdMultilier = Double.parseDouble(config.getProperty("threshold_multiplier","1"));
         mLogger.message("MindSSI plugin constructed...");
     }
 
