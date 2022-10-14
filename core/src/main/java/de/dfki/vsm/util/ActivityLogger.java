@@ -62,7 +62,7 @@ public class ActivityLogger {
             variable_values = new LinkedList<>() ;
             for (String var: variable_names) {
                 if(_prj.hasVariable(var)) {
-                    String val = _prj.getValueOf(var).toString() ;
+                    String val = _prj.getValueOf(var).getValue().toString() ;
                     variable_values.add(var + "=" + val) ;
                 }
             }
