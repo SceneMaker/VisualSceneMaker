@@ -1,0 +1,12 @@
+timestamp	date	actor	text	name	type	features	variables
+1665764640624	Fri Oct 14 18:24:00 CEST 2022	Anna	Hello,	speak	blocking		
+1665764645466	Fri Oct 14 18:24:05 CEST 2022	Anna	my Name is Andrea.	speak	blocking		
+1665764650422	Fri Oct 14 18:24:10 CEST 2022	Anna	I will be working with you today.	speak	blocking		
+1665764655391	Fri Oct 14 18:24:15 CEST 2022	Anna	We will assemble some parts together.	speak	blocking		
+1665764658723	Fri Oct 14 18:24:18 CEST 2022	Anna	$219.	speak	blocking		
+1665764658724	Fri Oct 14 18:24:18 CEST 2022	Anna	[TurnTowards x=2.0 y=0.0 z=0.0]	TurnTowards	parallel	x=2.0,y=0.0,z=0.0	
+1665764658729	Fri Oct 14 18:24:18 CEST 2022	Anna	$220.	speak	blocking		
+1665764658730	Fri Oct 14 18:24:18 CEST 2022	Anna	[LookAtPoint x=1.0 y=1.0 z=-1.0]	LookAtPoint	parallel	x=1.0,y=1.0,z=-1.0	
+1665764660266	Fri Oct 14 18:24:20 CEST 2022	Anna	I can,see the same as a normal person can,	speak	blocking		
+1665764665130	Fri Oct 14 18:24:25 CEST 2022	Anna	but due to the noise in here I can't really hear what you say.	speak	blocking		
+1665764670033	Fri Oct 14 18:24:30 CEST 2022	Anna	I guess I will be the one talking then but don't worry I consider myself quite the entertainer.	speak	blocking		

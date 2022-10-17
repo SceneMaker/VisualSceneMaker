@@ -30,6 +30,8 @@ public final class SSITupleData extends SSIEventData implements XMLParseable, XM
         return mTupleMap.get(key);
     }
 
+    public void put(final String key, String val) { mTupleMap.put(key, val); }
+
     // Construct the tuple data
     public SSITupleData() {
     }

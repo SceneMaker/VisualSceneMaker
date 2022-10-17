@@ -2,15 +2,15 @@ package de.dfki.vsm.xtension.mindbotssi;
 import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 
+import de.dfki.vsm.util.ActivityLogger;
 import de.dfki.vsm.xtension.ssi.SSIRunTimePlugin;
 import de.dfki.vsm.xtension.ssi.event.SSIEventArray;
 import de.dfki.vsm.xtension.ssi.event.SSIEventEntry;
 import de.dfki.vsm.xtension.ssi.event.data.SSIEventData;
 import de.dfki.vsm.xtension.ssi.event.data.SSITupleData;
 
+import java.io.IOException;
 import java.util.*;
-import java.util.function.DoublePredicate;
-import java.util.stream.Stream;
 
 
 /**
@@ -18,7 +18,9 @@ import java.util.stream.Stream;
  */
 public class MindBotSSIPlugin extends SSIRunTimePlugin {
 
-    private static final String[] emotionNames = new String[]{"surprise", "happy", "sad", "neutral", "valence", "disgust", "anger", "fear", "arousal"};
+    static final String[] emotionNames = new String[]{"neutral",
+            "surprise", "happy", "sad",  "disgust", "anger", "fear",
+            "valence", "arousal", "dominance"};
     private static final String[] focusTargets = new String[]{"away", "cobot", "table"} ;
 
 
@@ -26,24 +28,25 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
     // Will map a variable to the list of received values. Used to compute the average.
     private static Map<String, LinkedList<TimedFloat>> timedHistory;
 
+    private static RunTimeProject PROJECT_REFERENCE;
+
+    private static double thresholdMultilier;
+
     public static int TIMED_HISTORY_MAX_AGE_MILLIS = 10 * 1000 ;
 
-    public static int TIMED_HISTORY_MIN_SIZE = 30 ;
+    public static int TIMED_HISTORY_MIN_SIZE = 5 ;
 
-    // Will map a variable to the list of received values. Used to compute the average.
-    private static Map<String, List<Float>> history;
-
-
-
-
+    static final String[] log_variables = Arrays.stream(emotionNames).map(emotion -> "ssi_emotion_" + emotion + "_avg").toArray(String[]::new);
+    ActivityLogger _activity_logger ;
 
     // Construct SSI plugin
     public MindBotSSIPlugin(
             final PluginConfig config,
             final RunTimeProject project) {
         super(config, project);
-        mLogger.message("MindSSI plugin constructor...");
-
+        PROJECT_REFERENCE = project;
+        thresholdMultilier = Double.parseDouble(config.getProperty("threshold_multiplier","1"));
+        mLogger.message("MindSSI plugin constructed...");
     }
 
     // Launch SSI plugin
@@ -52,17 +55,17 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
         mLogger.message("Launching MindBotSSI Plugin...");
         super.launch();
 
-        history = new HashMap<>();
-        Arrays.stream(emotionNames).forEach(name-> history.put(name,new ArrayList<Float>()));
-        Arrays.stream(focusTargets).forEach(name-> history.put(name,new ArrayList<Float>()));
-        history.put("fatigue", new ArrayList<Float>());
-        history.put("pain", new ArrayList<Float>());
-
         timedHistory = new HashMap<>();
         Arrays.stream(emotionNames).forEach(name-> timedHistory.put(name,new LinkedList<TimedFloat>()));
         Arrays.stream(focusTargets).forEach(name-> timedHistory.put(name,new LinkedList<TimedFloat>()));
         timedHistory.put("fatigue", new LinkedList<TimedFloat>());
         timedHistory.put("pain", new LinkedList<TimedFloat>());
+
+        try {
+            _activity_logger = new ActivityLogger("MindBotSSI", mProject) ;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
     }
 
@@ -70,6 +73,14 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
     @Override
     public void unload() {
         super.unload();
+        try {
+            if(_activity_logger != null) {
+                _activity_logger.close();
+            }
+            _activity_logger = null ;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         mLogger.message("MindBotSSI Plugin unloaded.");
     }
 
@@ -112,11 +123,15 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
                 SSITupleData tupleData = (SSITupleData) data;
                 mLogger.message("Got emotion+valence+arousal values: \t" + tupleData);
 
+                // HACK! Force the dominance value in the received map
+                //float dominance = DominanceCalculator.computeDominanceArgMax(tupleData, true) ;
+                float dominance = DominanceCalculator.computeDominanceAccumulated(tupleData) ;
+                tupleData.put("dominance", dominance + "");
+
                 // if there is a face detected
                 boolean there_is_face = Arrays.stream(emotionNames).
                         mapToDouble(value -> Double.parseDouble(tupleData.get(value)))
                         .anyMatch(value -> value != 0.0) ;
-
 
                 // For each of the variables expected in this map, compose a corresponding
                 // project variable name prepending the "ssi_emotion_" prefix
@@ -134,6 +149,12 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
                         String projectAvgVarName = "ssi_emotion_" + emotion + "_avg";
                         if (mProject.hasVariable(projectAvgVarName)) {
                             mProject.setVariable(projectAvgVarName, avgValue);
+                        }
+
+                        try {
+                            _activity_logger.logVariables(log_variables);
+                        } catch (IOException e) {
+                            e.printStackTrace();
                         }
                     }
                 });
@@ -257,17 +278,48 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
      * @param value
      * @return
      */
-    private synchronized float timedMovingAverage(String name, float value){
+    private  float timedMovingAverage(String name, float value){
 
         LinkedList<TimedFloat> history = MindBotSSIPlugin.timedHistory.get(name);
-        long now = System.currentTimeMillis();
+        synchronized(history){
+            long now = System.currentTimeMillis();
 
-        // add the new element
-        history.addLast(new TimedFloat(now, value));
-        // and compute the average
-        return (float) history.stream()
-                .mapToDouble(tf -> (double) tf.v)
-                .average().orElse(0.0);
+            // add the new element
+            history.addLast(new TimedFloat(now, value));
+            // and compute the average
+            return (float) history.stream()
+                    .mapToDouble(tf -> (double) tf.v)
+                    .average().orElse(0.0);
+        }
+
+    }
+
+
+    public static void measureBaselines(){
+        for(String name: timedHistory.keySet()){
+            measuringBaseline(name);
+        }
+    }
+
+    private static void measuringBaseline(String name){
+        LinkedList<TimedFloat> history = MindBotSSIPlugin.timedHistory.get(name);
+        synchronized (history){
+
+            Float mean = (float) history.stream()
+                    .mapToDouble(tf -> (double) tf.v)
+                    .average().orElse(0.5);
+            Double variance = history.stream()
+                    .mapToDouble(tf -> Math.pow((double) tf.v - mean,2))
+                    .average().orElse(0.5);
+            Double std = Math.sqrt(variance);
+            if (PROJECT_REFERENCE.hasVariable(name+"_high")) {
+                PROJECT_REFERENCE.setVariable(name+"_high",(float) Math.min(0.9, mean + thresholdMultilier*std));
+            }
+            if (PROJECT_REFERENCE.hasVariable(name+"_low")){
+                PROJECT_REFERENCE.setVariable( name+"_low",(float) Math.max(0.1, mean - thresholdMultilier*std));
+            }
+        }
+
     }
 
     private static class TimedFloat {
@@ -319,18 +371,6 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
         timedHistory.forEach((s, l)->l.clear());
     }
 
-
-    private float movingAverage(String name, Float value){
-        List<Float> history = MindBotSSIPlugin.history.get(name);
-        history.add(value);
-        return (float) history.stream()
-                .mapToDouble(Float::doubleValue)
-                .average().orElse(0.0);
-    }
-
-    public static void resetHistory(){
-        history.forEach((s, l)->l.clear());
-    }
 
     //
     // Support functions to increase/decrease a variable with fixed steps and clamped to a range

@@ -117,6 +117,11 @@ This is a subset of the API provided by the YALLAH controllers (see <https://git
 * PlayAnimationClip
   * name: string
 
+* TurnTowards
+  * x: float
+  * y: float
+  * z: float
+
 * SetCurrentFacialExpression
   * name: string
 
