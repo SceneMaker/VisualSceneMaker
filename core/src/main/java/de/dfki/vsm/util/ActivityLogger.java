@@ -3,6 +3,7 @@ package de.dfki.vsm.util;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -15,18 +16,31 @@ public class ActivityLogger {
     private final RunTimeProject _prj ;
     private final FileWriter _fw ;
 
+    private final static String LOG_DIR = "activity_log" ;
+
     private final static String[] header_names = new String[] {"timestamp", "date", "actor","text","name","type","features","variables"} ;
     private final static String header = String.join("\t", header_names) ;
 
     public ActivityLogger(String log_prefix, RunTimeProject prj) throws IOException {
         _prj = prj ;
 
+        // Ensure that the log subdirectory is created
+        File log_dir = new File(LOG_DIR) ;
+        if(! log_dir.exists()) {
+            boolean created = log_dir.mkdirs();
+            if(! created) {
+                throw new IOException("Couldn't create log dir '" + log_dir + "'") ;
+            }
+        }
+
+        // Compose the nme of the log file
         LocalDateTime date = LocalDateTime.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd-E-HHmmss");
         String now_str = date.format(formatter) ;
 
-        String log_filename = log_prefix + "-" + "activity_log" + "-" + now_str + ".csv" ;
-        _fw = new FileWriter(log_filename) ;
+        // Create the file and its writer
+        File log_file = new File(log_dir, log_prefix + "-" + "activity_log" + "-" + now_str + ".csv") ;
+        _fw = new FileWriter(log_file) ;
         _fw.write(header);
         _fw.write("\n");
         _fw.flush();
@@ -39,6 +53,8 @@ public class ActivityLogger {
 
     public void log(AbstractActivity activity, String[] variable_names) throws IOException {
 
+        //
+        // Gather the information about the activity
         String actor = "";
         String text = "";
         String name = "";
@@ -56,6 +72,8 @@ public class ActivityLogger {
             }
         }
 
+        //
+        // Gather the information about the variables that we want to memorize
         String variables = "";
         LinkedList<String> variable_values ;
         if (variable_names != null) {
@@ -69,7 +87,8 @@ public class ActivityLogger {
             variables = String.join(",", variable_values) ;
         }
 
-
+        //
+        // Write everything on the log as a new line
         long timestamp = System.currentTimeMillis() ;
 
         String line = String.join("\t",

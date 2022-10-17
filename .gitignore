@@ -9,5 +9,12 @@ build/
 !plugins/studymaster-web/src/main/resources/react-studymaster/build
 
 #
+# VSM specific
+# Ignores the default directory containing the output of the vsm.util.ActivityLogger
+activity_log
+
+#
 # MacOS stuff
 .DS_Store
+
+
