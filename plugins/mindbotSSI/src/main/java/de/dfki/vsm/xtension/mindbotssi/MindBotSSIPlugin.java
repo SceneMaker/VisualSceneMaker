@@ -34,7 +34,7 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
 
     public static int TIMED_HISTORY_MAX_AGE_MILLIS = 10 * 1000 ;
 
-    public static int TIMED_HISTORY_MIN_SIZE = 30 ;
+    public static int TIMED_HISTORY_MIN_SIZE = 5 ;
 
     static final String[] log_variables = Arrays.stream(emotionNames).map(emotion -> "ssi_emotion_" + emotion + "_avg").toArray(String[]::new);
     ActivityLogger _activity_logger ;

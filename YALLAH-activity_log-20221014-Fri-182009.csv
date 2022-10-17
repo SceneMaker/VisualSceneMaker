@@ -1,0 +1,55 @@
+timestamp	date	actor	text	name	type	features	variables
+1665764415869	Fri Oct 14 18:20:15 CEST 2022	Anna	Hello,	speak	blocking		
+1665764422273	Fri Oct 14 18:20:22 CEST 2022	Anna	my Name is Andrea.	speak	blocking		
+1665764422726	Fri Oct 14 18:20:22 CEST 2022	Anna	$75.	speak	blocking		
+1665764422727	Fri Oct 14 18:20:22 CEST 2022	Anna	[TurnTowards x=2.0 y=0.0 z=0.0]	TurnTowards	parallel	x=2.0,y=0.0,z=0.0	
+1665764422732	Fri Oct 14 18:20:22 CEST 2022	Anna	$76.	speak	blocking		
+1665764422733	Fri Oct 14 18:20:22 CEST 2022	Anna	[LookAtPoint x=1.0 y=1.0 z=-1.0]	LookAtPoint	parallel	x=1.0,y=1.0,z=-1.0	
+1665764430268	Fri Oct 14 18:20:30 CEST 2022	Anna	I will be working with you today.	speak	blocking		
+1665764437350	Fri Oct 14 18:20:37 CEST 2022	Anna	We will assemble some parts together.	speak	blocking		
+1665764444030	Fri Oct 14 18:20:44 CEST 2022	Anna	I can,see the same as a normal person can,	speak	blocking		
+1665764451795	Fri Oct 14 18:20:51 CEST 2022	Anna	but due to the noise in here I can't really hear what you say.	speak	blocking		
+1665764459241	Fri Oct 14 18:20:59 CEST 2022	Anna	I guess I will be the one talking then but don't worry I consider myself quite the entertainer.	speak	blocking		
+1665764463565	Fri Oct 14 18:21:03 CEST 2022	Anna	$112.	speak	blocking		
+1665764463571	Fri Oct 14 18:21:03 CEST 2022	Anna	[LookAtObject name=Camera]	LookAtObject	parallel	name=Camera	
+1665764463619	Fri Oct 14 18:21:03 CEST 2022	Anna	$113.	speak	blocking		
+1665764463621	Fri Oct 14 18:21:03 CEST 2022	Anna	[TurnTowards x=0.0 y=0.0 z=-2.0]	TurnTowards	parallel	x=0.0,y=0.0,z=-2.0	
+1665764464308	Fri Oct 14 18:21:04 CEST 2022	Anna	$115.	speak	blocking		
+1665764464339	Fri Oct 14 18:21:04 CEST 2022	Anna	[TurnTowards x=0.0 y=0.0 z=-2.0]	TurnTowards	parallel	x=0.0,y=0.0,z=-2.0	
+1665764478840	Fri Oct 14 18:21:18 CEST 2022	Anna	$119.	speak	blocking		
+1665764478841	Fri Oct 14 18:21:18 CEST 2022	Anna	[LookAtObject name=Camera]	LookAtObject	parallel	name=Camera	
+1665764478843	Fri Oct 14 18:21:18 CEST 2022	Anna	Don't $120 worry,	speak	blocking		
+1665764479106	Fri Oct 14 18:21:19 CEST 2022	Anna	[SetCameraShot type='MEDIUM_SHOT']	SetCameraShot	parallel	type=MEDIUM_SHOT	
+1665764485326	Fri Oct 14 18:21:25 CEST 2022	Anna	you are doing $121 great.	speak	blocking		
+1665764485634	Fri Oct 14 18:21:25 CEST 2022	Anna	[PlayAnimationClip name='Thumbs_Up']	PlayAnimationClip	parallel	name=Thumbs_Up	
+1665764504082	Fri Oct 14 18:21:44 CEST 2022	Anna	Are you okay?	speak	blocking		
+1665764510228	Fri Oct 14 18:21:50 CEST 2022	Anna	$124.	speak	blocking		
+1665764510236	Fri Oct 14 18:21:50 CEST 2022	Anna	[TurnTowards x=2.0 y=0.0 z=0.0]	TurnTowards	parallel	x=2.0,y=0.0,z=0.0	
+1665764510246	Fri Oct 14 18:21:50 CEST 2022	Anna	$125.	speak	blocking		
+1665764510262	Fri Oct 14 18:21:50 CEST 2022	Anna	[LookAtPoint x=1.0 y=1.0 z=-1.0]	LookAtPoint	parallel	x=1.0,y=1.0,z=-1.0	
+1665764511608	Fri Oct 14 18:21:51 CEST 2022	Anna	If you have pain we can take a break.	speak	blocking		
+1665764528348	Fri Oct 14 18:22:08 CEST 2022	Anna	Are you okay?	speak	blocking		
+1665764535640	Fri Oct 14 18:22:15 CEST 2022	Anna	If you have pain we can take a break.	speak	blocking		
+1665764553653	Fri Oct 14 18:22:33 CEST 2022	Anna	Are you okay?	speak	blocking		
+1665764555760	Fri Oct 14 18:22:35 CEST 2022	Anna	$161.	speak	blocking		
+1665764555761	Fri Oct 14 18:22:35 CEST 2022	Anna	[LookAtObject name=Camera]	LookAtObject	parallel	name=Camera	
+1665764555765	Fri Oct 14 18:22:35 CEST 2022	Anna	$162.	speak	blocking		
+1665764555766	Fri Oct 14 18:22:35 CEST 2022	Anna	[TurnTowards x=0.0 y=0.0 z=-2.0]	TurnTowards	parallel	x=0.0,y=0.0,z=-2.0	
+1665764556456	Fri Oct 14 18:22:36 CEST 2022	Anna	$164.	speak	blocking		
+1665764556470	Fri Oct 14 18:22:36 CEST 2022	Anna	[TurnTowards x=0.0 y=0.0 z=-2.0]	TurnTowards	parallel	x=0.0,y=0.0,z=-2.0	
+1665764560879	Fri Oct 14 18:22:40 CEST 2022	Anna	If you have pain we can take a break.	speak	blocking		
+1665764573115	Fri Oct 14 18:22:53 CEST 2022	Anna	$170.	speak	blocking		
+1665764573117	Fri Oct 14 18:22:53 CEST 2022	Anna	[TurnTowards x=2.0 y=0.0 z=0.0]	TurnTowards	parallel	x=2.0,y=0.0,z=0.0	
+1665764573119	Fri Oct 14 18:22:53 CEST 2022	Anna	$171.	speak	blocking		
+1665764573120	Fri Oct 14 18:22:53 CEST 2022	Anna	[LookAtPoint x=1.0 y=1.0 z=-1.0]	LookAtPoint	parallel	x=1.0,y=1.0,z=-1.0	
+1665764577652	Fri Oct 14 18:22:57 CEST 2022	Anna	Are you okay?	speak	blocking		
+1665764583308	Fri Oct 14 18:23:03 CEST 2022	Anna	If you have pain we can take a break.	speak	blocking		
+1665764599680	Fri Oct 14 18:23:19 CEST 2022	Anna	Are you okay?	speak	blocking		
+1665764607270	Fri Oct 14 18:23:27 CEST 2022	Anna	If you have pain we can take a break.	speak	blocking		
+1665764620022	Fri Oct 14 18:23:40 CEST 2022	Anna	$207.	speak	blocking		
+1665764620023	Fri Oct 14 18:23:40 CEST 2022	Anna	[LookAtObject name=Camera]	LookAtObject	parallel	name=Camera	
+1665764620025	Fri Oct 14 18:23:40 CEST 2022	Anna	$208.	speak	blocking		
+1665764620026	Fri Oct 14 18:23:40 CEST 2022	Anna	[TurnTowards x=0.0 y=0.0 z=-2.0]	TurnTowards	parallel	x=0.0,y=0.0,z=-2.0	
+1665764620705	Fri Oct 14 18:23:40 CEST 2022	Anna	$210.	speak	blocking		
+1665764620706	Fri Oct 14 18:23:40 CEST 2022	Anna	[TurnTowards x=0.0 y=0.0 z=-2.0]	TurnTowards	parallel	x=0.0,y=0.0,z=-2.0	
+1665764624793	Fri Oct 14 18:23:44 CEST 2022	Anna	Are you okay?	speak	blocking		
