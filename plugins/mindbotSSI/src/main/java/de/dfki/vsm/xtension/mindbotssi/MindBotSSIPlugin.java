@@ -21,6 +21,11 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
     static final String[] emotionNames = new String[]{"neutral",
             "surprise", "happy", "sad",  "disgust", "anger", "fear",
             "valence", "arousal", "dominance"};
+
+    static final String[] ekmanNames = new String[]{"neutral",
+            "surprise", "happy", "sad",  "disgust", "anger", "fear"} ;
+
+
     private static final String[] focusTargets = new String[]{"away", "cobot", "table"} ;
 
 
@@ -34,7 +39,7 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
 
     public static int TIMED_HISTORY_MAX_AGE_MILLIS = 10 * 1000 ;
 
-    public static int TIMED_HISTORY_MIN_SIZE = 5 ;
+    public static int TIMED_HISTORY_MIN_SIZE = 30 ;
 
     static final String[] log_variables = Arrays.stream(emotionNames).map(emotion -> "ssi_emotion_" + emotion + "_avg").toArray(String[]::new);
     ActivityLogger _activity_logger ;
@@ -123,15 +128,19 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
                 SSITupleData tupleData = (SSITupleData) data;
                 mLogger.message("Got emotion+valence+arousal values: \t" + tupleData);
 
-                // HACK! Force the dominance value in the received map
-                //float dominance = DominanceCalculator.computeDominanceArgMax(tupleData, true) ;
-                float dominance = DominanceCalculator.computeDominanceAccumulated(tupleData) ;
-                tupleData.put("dominance", dominance + "");
-
                 // if there is a face detected
-                boolean there_is_face = Arrays.stream(emotionNames).
+                boolean there_is_face = Arrays.stream(ekmanNames).
                         mapToDouble(value -> Double.parseDouble(tupleData.get(value)))
                         .anyMatch(value -> value != 0.0) ;
+
+                // HACK! Force the dominance value in the received map
+                //float dominance = DominanceCalculator.computeDominanceArgMax(tupleData, true) ;
+                float dominance = 0.0f;
+                if(there_is_face) {
+                    dominance = DominanceCalculator.computeDominanceAccumulated(tupleData);
+                }
+                tupleData.put("dominance", dominance + "");
+
 
                 // For each of the variables expected in this map, compose a corresponding
                 // project variable name prepending the "ssi_emotion_" prefix
