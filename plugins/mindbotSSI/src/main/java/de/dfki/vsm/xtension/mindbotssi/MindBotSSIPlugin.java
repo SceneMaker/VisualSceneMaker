@@ -1,5 +1,6 @@
 package de.dfki.vsm.xtension.mindbotssi;
 import de.dfki.vsm.model.project.PluginConfig;
+import de.dfki.vsm.runtime.interpreter.value.AbstractValue;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 
 import de.dfki.vsm.util.ActivityLogger;
@@ -11,6 +12,7 @@ import de.dfki.vsm.xtension.ssi.event.data.SSITupleData;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.logging.Logger;
 
 
 /**
@@ -35,7 +37,7 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
 
     private static RunTimeProject PROJECT_REFERENCE;
 
-    private static double thresholdMultilier;
+    //private static double thresholdMultilier;
 
     public static int TIMED_HISTORY_MAX_AGE_MILLIS = 10 * 1000 ;
 
@@ -50,7 +52,7 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
             final RunTimeProject project) {
         super(config, project);
         PROJECT_REFERENCE = project;
-        thresholdMultilier = Double.parseDouble(config.getProperty("threshold_multiplier","1"));
+        //thresholdMultilier = Double.parseDouble(config.getProperty("threshold_multiplier","1"));
         mLogger.message("MindSSI plugin constructed...");
     }
 
@@ -140,6 +142,19 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
                     dominance = DominanceCalculator.computeDominanceAccumulated(tupleData);
                 }
                 tupleData.put("dominance", dominance + "");
+
+                if(mProject.hasVariable("ssi_face_detected")) {
+                    mProject.setVariable("ssi_face_detected", there_is_face) ;
+                    //System.err.println(there_is_face) ;
+                    //System.err.flush();
+                }
+
+                if(mProject.hasVariable("history_size")) {
+                    int s = timedHistory.get("valence").size();
+                    mProject.setVariable("history_size", s) ;
+                    //System.err.println(s) ;
+                    //System.err.flush();
+                }
 
 
                 // For each of the variables expected in this map, compose a corresponding
@@ -311,6 +326,12 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
     }
 
     private static void measuringBaseline(String name){
+        AbstractValue thresholdMultilier_av = PROJECT_REFERENCE.getValueOf("threshold_multiplier") ;
+        String thresholdMultilier_str = thresholdMultilier_av == null ? "1.0" : thresholdMultilier_av.getValue().toString();
+        float thresholdMultilier = Float.parseFloat(thresholdMultilier_str) ;
+
+        System.err.println("Computing activation ranges with threshold_multiplier="+thresholdMultilier) ;
+
         LinkedList<TimedFloat> history = MindBotSSIPlugin.timedHistory.get(name);
         synchronized (history){
 
@@ -322,10 +343,10 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
                     .average().orElse(0.5);
             Double std = Math.sqrt(variance);
             if (PROJECT_REFERENCE.hasVariable(name+"_high")) {
-                PROJECT_REFERENCE.setVariable(name+"_high",(float) Math.min(0.9, mean + thresholdMultilier*std));
+                PROJECT_REFERENCE.setVariable(name+"_high",(float) Math.min(0.95, mean + thresholdMultilier * std));
             }
             if (PROJECT_REFERENCE.hasVariable(name+"_low")){
-                PROJECT_REFERENCE.setVariable( name+"_low",(float) Math.max(0.1, mean - thresholdMultilier*std));
+                PROJECT_REFERENCE.setVariable( name+"_low",(float) Math.max(0.05, mean - thresholdMultilier * std));
             }
         }
 
@@ -364,6 +385,7 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
 
     public static synchronized boolean isTimedHistoryValid(String name) {
         LinkedList<TimedFloat> h = timedHistory.get(name);
+        //System.err.println("hsize="+h.size()) ;
 
         long now = System.currentTimeMillis() ;
         timedAverageRemoveOldest(h, now);
