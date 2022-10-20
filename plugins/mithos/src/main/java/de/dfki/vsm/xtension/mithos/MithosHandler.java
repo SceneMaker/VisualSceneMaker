@@ -58,10 +58,7 @@ public class MithosHandler<T> extends Thread {
     public void run() {
 
         Duration duration = Duration.ofMillis(1000);
-
-        System.out.println("Mithos Kafka consumer starts listening");
         logger.message("Mithos Kafka consumer starts listening");
-
         while(!stop){
             final ConsumerRecords<Long, String> consumerRecords =
                     consumer.poll(duration);
