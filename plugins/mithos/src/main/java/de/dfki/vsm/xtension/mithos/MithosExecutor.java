@@ -3,6 +3,7 @@ package de.dfki.vsm.xtension.mithos;
 import com.google.gson.Gson;
 import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
+import de.dfki.vsm.runtime.activity.ActionActivity;
 import de.dfki.vsm.runtime.activity.SpeechActivity;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
 import de.dfki.vsm.runtime.activity.scheduler.ActivityWorker;
@@ -15,11 +16,13 @@ import de.mithos.compint.interaction.ActKind;
 import de.mithos.compint.interaction.InteractionAct;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.clients.producer.RecordMetadata;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ExecutionException;
 
 /**
  * This plugin uses a kafka server to control an agent-environment and to receive processed userdata.
@@ -82,6 +85,10 @@ public class MithosExecutor extends ActivityExecutor {
                 key = "speech_command";
                 command = actor + " " + demarkedText;
             } else {
+                ActionActivity aActivity = (ActionActivity) activity;
+                if (aActivity.getContext().equals(ActionActivity.Context.NESTED)) {
+                    return;
+                }
                 key = "command";
                 String text = activity.getText();
                 command = text.substring(1, text.length() - 1);
@@ -89,19 +96,28 @@ public class MithosExecutor extends ActivityExecutor {
             String actionIDString = Long.toString(actID++);
             ScenarioScriptCommand ssc = new ScenarioScriptCommand("SSC", "VSM", actor, command, actionIDString);
             String sscGsonString = gson.toJson(ssc);
-            ProducerRecord<String, String> record = new ProducerRecord<>(write_topic, key, sscGsonString);
-            producer.send(record);
+            ProducerRecord<String, String> record = new ProducerRecord<>(write_topic, 0, key, sscGsonString);
+
+            try {
+                RecordMetadata metaData = producer.send(record).get();
+                System.out.println("sending done");
+                System.out.println(metaData);
+            } catch (ExecutionException e) {
+                System.out.println(e);
+                System.out.println(e.getCause());
+            }
+            producer.flush();
             synchronized (activityWorkerMap) {
                 System.out.println("inside the syncblock");
                 // organize wait for feedback if (activity instanceof SpeechActivity) {
                 ActivityWorker aw = (ActivityWorker) Thread.currentThread();
                 activityWorkerMap.put(actionIDString, aw);
 
-                if (activity.getType() == AbstractActivity.Type.blocking) {
-                    while (activityWorkerMap.containsValue(aw)) {
-                        activityWorkerMap.wait();
-                    }
-                }
+//                if (activity.getType() == AbstractActivity.Type.blocking) {
+//                    while (activityWorkerMap.containsValue(aw)) {
+//                        activityWorkerMap.wait();
+//                    }
+//                }
             }
         } catch (InterruptedException exc) {
             System.out.println(exc.toString());
