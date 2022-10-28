@@ -6,22 +6,18 @@ group 'de.dfki'
 version '4.0.1'
 
 sourceCompatibility = 1.8
-//sourceCompatibility = 11
-//targetCompatibility = 11
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    //
-    // These are always needed
-    //testCompile group: 'junit', name: 'junit', version: '4.12'
     implementation "io.javalin:javalin:3.8.0"
     implementation project(":core")
+    implementation project(":plugins:extensionAPI")
 
     //
     // Other dependencies
     // https://mvnrepository.com/artifact/org.json/json
-    implementation group: 'org.json', name: 'json', version: '20171018'
+    //implementation group: 'org.json', name: 'json', version: '20171018'
 }
