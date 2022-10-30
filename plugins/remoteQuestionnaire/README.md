@@ -7,31 +7,41 @@ This plugin is used to receive the answers of the worker and store them in a loc
 
 ## Configuration
 
-TODO
+Instantiate an agent for the plugin `RemoteQuestionnaire` and set the `port` parameter (default 5002). This is the port where the websocket server with listen for incoming connections.
+
+On the Unity side, check if the corresponding port is the same.
 
 ## Communication protocol
 
-The client sends information to the websocket server as JSON packets.
-Template format is
+The VSM plugin sends requests to answer to a specifiy question as JSON message to the Unity client, with format:
 
 ```JSON
 {
-  "call_id": 2,
-  "user_id": 4,
-  "timestamp":  1632150588496,
-  "question_id": 13,
-  "vote": 5
+  "action_id": "<int>",
+  "command": "question",
+  "parameters": "text=Ti senti in controllo della situazione?"
 }
 ```
 
-where:
+Once the client answers the question, it sends back a JSON message like:
 
-* `call_id` (int) is an incremental index indicating the call number within the runtime session;
-* `user_id` (string) is a unique identifier for the user responding to the question;
-* `timestamp` (int) indicated the moment when the user gave the answer. It is expressed as Unix-time, i.e., the number of milliseconds elapsed from 01.01.1970;
-* `question_id` (int) a unique identifier of the question (For a list of the possible questions, see D5.1, section T5.9)
-* `vote` (int) the answer of the user, in a scale from 0 to 6 (See D5.1, section T5.9 for details)
+
+```JSON
+{
+  "action_id": "<int>",
+  "question_text": "<string>",
+  "answer": "<int>"
+}
+```
+
+(In future, for other commands, the action_id will be the same, but other parameters will likely change)
 
 ## Save format
 
-TODO
+The answers will be logger in CSV files with the following header:
+
+* `action_id` (int) is an incremental index indicating the call number within the runtime session;
+* `timestamp` (int) indicated the moment when the user gave the answer. It is expressed as Unix-time, i.e., the number of milliseconds elapsed from 01.01.1970;
+* `datetime` (string) a more user-friendly formatted version of the timestamp, in yymmdd - hhmmss;
+* `question_text` (string) the text of the question;
+* `answer` (int) the answer of the user, in a scale from 0 to 6.
