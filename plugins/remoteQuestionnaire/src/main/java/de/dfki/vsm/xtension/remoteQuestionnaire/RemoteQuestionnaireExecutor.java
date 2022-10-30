@@ -15,6 +15,8 @@ import io.javalin.websocket.WsConnectContext;
 import io.javalin.websocket.WsMessageContext;
 import org.jetbrains.annotations.NotNull;
 
+import org.json.JSONObject ;
+
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
@@ -35,7 +37,7 @@ public class RemoteQuestionnaireExecutor extends ActivityExecutor implements Exp
     private WsConnectContext mSocketConnectCtx = null;
 
     /** The incremental counter used as unique ID for the sentences to speak, and as thread identifier. */
-    private int mQuestionCounter = 0 ;
+    private int mActionCounter = 0 ;
 
 
     /** The map of activity workers. This is used to keep track of threads waiting for a
@@ -43,7 +45,7 @@ public class RemoteQuestionnaireExecutor extends ActivityExecutor implements Exp
      * The key is a unique identifier of the question.
      * The value is the reference to the thread waiting inside the `execute()` method.
      */
-    private final Map<String, ActivityWorker> mActivityWorkerMap = new HashMap<>();
+    private final Map<Integer, ActivityWorker> mActivityWorkerMap = new HashMap<>();
 
 
     public RemoteQuestionnaireExecutor(PluginConfig config, RunTimeProject project) {
@@ -107,8 +109,6 @@ public class RemoteQuestionnaireExecutor extends ActivityExecutor implements Exp
         });
 
 
-        // TODO -- setup a REST service to get answers from the avatar
-
     }
 
     @Override
@@ -128,7 +128,7 @@ public class RemoteQuestionnaireExecutor extends ActivityExecutor implements Exp
     public void execute(AbstractActivity activity) {
 
         mLogger.message("Agent '" + activity.getActor() + "' said: " + activity.getText());
-        mLogger.message("Activity name: " + activity.getName() + ", type: " + activity.getType() + ", features: " + activity.getFeatures());
+        mLogger.message("Activity name: " + activity.getName() + ", class: " + activity.getClass().toString() + ", type: " + activity.getType() + ", features: " + activity.getFeatures());
 
 
         if (activity instanceof SpeechActivity) {
@@ -142,54 +142,20 @@ public class RemoteQuestionnaireExecutor extends ActivityExecutor implements Exp
 
             mLogger.message("This is a Speech Activity. text only: '" + text_only + "'; punct: '" + punct + "'"
                     + "There are " + time_marks.size() + " time marks") ;
-            time_marks.forEach(mLogger::message);
+            //time_marks.forEach(mLogger::message);
 
             if (text_only.isEmpty()) {
                 //
                 // If text is empty, there is no need to send the marker to the client:
                 // execute all the actions immediately.
-
-                LinkedList<String> timemarks = sa.getTimeMarks(MARKER);
-                for (String tm : timemarks) {
+                for (String tm : time_marks) {
                     mProject.getRunTimePlayer().getActivityScheduler().handle(tm);
                 }
 
             } else {
 
-                //
-                // Send the sentence to the client
-                String text = activity.getText();
+                // Text is ignored
 
-                if (mSocketConnectCtx != null) {
-
-                    String json_string = "{\n"
-                            + "\"type\": \"text\",\n"
-                            + "\"text\": \"" + text + "\",\n"
-                            + "\"id\": \"" + mQuestionCounter + "\"\n"
-                            + "}";
-
-                    mSocketConnectCtx.send(json_string);
-
-                    // Wait for client answer
-                    synchronized (mActivityWorkerMap) {
-                        // organize wait for feedback if (activity instanceof SpeechActivity) {
-                        ActivityWorker cAW = (ActivityWorker) Thread.currentThread();
-                        mActivityWorkerMap.put(mQuestionCounter + "", cAW);
-
-                        // wait until we get notified
-                        while (mActivityWorkerMap.containsValue(cAW)) {
-                            try {
-                                mActivityWorkerMap.wait();
-                            } catch (InterruptedException exc) {
-                                mLogger.failure(exc.toString());
-                            }
-                        }
-
-                        // This must stay in the synch block.
-                        mQuestionCounter++;
-
-                    }
-                }
             }
 
         } else {
@@ -197,11 +163,17 @@ public class RemoteQuestionnaireExecutor extends ActivityExecutor implements Exp
             // It is an [ACTION (with features)]
             // aka [COMMAND (with parameters)]
 
+            // This must stay in the synch block.
+            mActionCounter++;
+
+            int act_local = mActionCounter ;
+
+
             String cmd = activity.getName() ;
             final LinkedList<ActionFeature> features = activity.getFeatures();
 
             StringBuilder json_string = new StringBuilder("{\n"
-                    + "\"type\": \"command\",\n"
+                    + "\"action_id\": " + (mActionCounter +"") + ",\n"
                     + "\"command\": \"" + cmd + "\",\n"
                     + "\"parameters\": \"");
 
@@ -217,7 +189,28 @@ public class RemoteQuestionnaireExecutor extends ActivityExecutor implements Exp
             json_string.append("\"\n" + "}\n");
 
             if(mSocketConnectCtx != null) {
+                mLogger.message("Sending " + json_string);
                 mSocketConnectCtx.send(json_string.toString());
+
+                // Wait for client answer
+                synchronized (mActivityWorkerMap) {
+                    // organize wait for feedback if (activity instanceof SpeechActivity) {
+                    ActivityWorker cAW = (ActivityWorker) Thread.currentThread();
+                    mActivityWorkerMap.put(mActionCounter, cAW);
+
+                    // wait until we get notified
+                    while (mActivityWorkerMap.containsValue(cAW)) {
+                        try {
+                            mActivityWorkerMap.wait();
+                        } catch (InterruptedException exc) {
+                            mLogger.failure(exc.toString());
+                        }
+                    }
+
+                    mLogger.message("Thread wait finished for action_id " + act_local);
+
+                }
+
             }
 
         }
@@ -227,12 +220,39 @@ public class RemoteQuestionnaireExecutor extends ActivityExecutor implements Exp
 
 
     private void handleMessage(@NotNull WsMessageContext wsMessageContext) {
-        // Messages from a client are answers to questions
-        // Get the question ID, and the answer, and log into our file.
+        // Messages from the client is a JSON structure
+        String message = wsMessageContext.message();
+
+        // Convert the message into JSON
+        JSONObject jo = new JSONObject(message) ;
+
+        // Get the action ID and trigger for the action executed
+        int action_id = jo.getInt("action_id") ;
+        // Remove the entry from the map and notify the threads to check again.
+        synchronized (mActivityWorkerMap) {
+            mActivityWorkerMap.remove(action_id);
+            mActivityWorkerMap.notifyAll();
+        }
+
+        // Now check if it was the answer to a question
+        if (jo.has("question_text") )
+        {
+            String text = jo.getString("question_text") ;
+            int answ = jo.getInt("answer") ;
+            mLogger.message("Questionnaire answer: " + text + "/" + answ);
+        }
+
+
+
+
+            // Get the question ID, and the answer, and log into our file.
+
+        // Header:
+        // timestamp, datetime, question_count, question, answer
     }
 
 
-        //
+    //
     // Plugin Properties
     //
 
