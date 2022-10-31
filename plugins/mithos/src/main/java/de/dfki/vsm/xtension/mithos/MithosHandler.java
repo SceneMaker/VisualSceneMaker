@@ -3,7 +3,6 @@ package de.dfki.vsm.xtension.mithos;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
-import de.mithos.compint.command.ScenarioScriptFeedback;
 import de.mithos.compint.interaction.InteractionAct;
 import org.apache.kafka.clients.consumer.*;
 
@@ -43,11 +42,12 @@ public class MithosHandler<T> extends Thread {
         Properties props = new Properties();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, this.server);
         props.put(ConsumerConfig.GROUP_ID_CONFIG, "VSMConsumer");
-        props.put("retries", 0);
-        props.put("linger.ms", 1);
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer");
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer");
-
+        props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "true");
+        props.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, "1");
+        props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
+        props.put(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG, "1000");
         consumer = new KafkaConsumer<>(props);
         consumer.subscribe(Arrays.asList(topics));
         System.out.println("Mithos Kafka consumer set up");
@@ -58,10 +58,15 @@ public class MithosHandler<T> extends Thread {
     public void run() {
 
         Duration duration = Duration.ofMillis(1000);
+
+//        System.out.println("Mithos Kafka consumer starts listening");
         logger.message("Mithos Kafka consumer starts listening");
-        while(!stop){
+
+        while(!stop) {
             final ConsumerRecords<Long, String> consumerRecords =
                     consumer.poll(duration);
+
+//            TODO: fix error on stopping Project. Catch InterruptException?
 
 
             consumerRecords.forEach(record -> {
@@ -76,12 +81,16 @@ public class MithosHandler<T> extends Thread {
         try {
             switch (record.topic()) {
                 case "SSF":
-                    ScenarioScriptFeedback ssf = gson.fromJson(record.value(), ScenarioScriptFeedback.class);
-                    executor.process(ssf);
-                    /*                 */
+//                    ScenarioScriptFeedback ssf = gson.fromJson(record.value(), ScenarioScriptFeedback.class);
+//                    executor.process(ssf);
+                    logger.message("SSF");
+                    break;
+                /*                 */
                 case "InteractionActs":
                     InteractionAct ia = gson.fromJson(record.value(), InteractionAct.class);
                     executor.process(ia);
+                    logger.message("InteractionActs");
+                    break;
 
             }
         } catch (JsonSyntaxException jse) {
