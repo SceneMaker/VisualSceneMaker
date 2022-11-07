@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SceneScript lower="0" upper="0">
+  <SceneObject lower="0" upper="60" language="@@" identifier="ESM1">
+    <SceneTurn lower="14" upper="60" speaker="quest">
+      <SceneUttr lower="22" upper="60" punct=".">
+        <ActionObject lower="22" upper="30" actor="" name="Question">
+          <ActionFeature lower="31" upper="58" key="text" val="'Sei ben concentrato?'"/>
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="62" upper="141" language="@@" identifier="ESM2">
+    <SceneTurn lower="76" upper="141" speaker="quest">
+      <SceneUttr lower="84" upper="141" punct=".">
+        <ActionObject lower="84" upper="92" actor="" name="Question">
+          <ActionFeature lower="93" upper="139" key="text" val="'Ti senti in controllo della situazione?'"/>
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="143" upper="199" language="@@" identifier="ESM3">
+    <SceneTurn lower="157" upper="199" speaker="quest">
+      <SceneUttr lower="165" upper="199" punct=".">
+        <ActionObject lower="165" upper="173" actor="" name="Question">
+          <ActionFeature lower="174" upper="197" key="text" val="'Ti senti felice?'"/>
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="201" upper="258" language="@@" identifier="ESM4">
+    <SceneTurn lower="215" upper="258" speaker="quest">
+      <SceneUttr lower="223" upper="258" punct=".">
+        <ActionObject lower="223" upper="231" actor="" name="Question">
+          <ActionFeature lower="232" upper="256" key="text" val="'Ti senti ansioso?'"/>
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="260" upper="314" language="@@" identifier="ESM5">
+    <SceneTurn lower="274" upper="314" speaker="quest">
+      <SceneUttr lower="282" upper="314" punct=".">
+        <ActionObject lower="282" upper="290" actor="" name="Question">
+          <ActionFeature lower="291" upper="312" key="text" val="'Ti senti solo?'"/>
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="316" upper="375" language="@@" identifier="ESM6">
+    <SceneTurn lower="330" upper="375" speaker="quest">
+      <SceneUttr lower="338" upper="375" punct=".">
+        <ActionObject lower="338" upper="346" actor="" name="Question">
+          <ActionFeature lower="347" upper="373" key="text" val="'Ti senti socievole?'"/>
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="377" upper="433" language="@@" identifier="ESM7">
+    <SceneTurn lower="391" upper="433" speaker="quest">
+      <SceneUttr lower="399" upper="433" punct=".">
+        <ActionObject lower="399" upper="407" actor="" name="Question">
+          <ActionFeature lower="408" upper="431" key="text" val="'Ti senti attivo?'"/>
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="435" upper="493" language="@@" identifier="ESM8">
+    <SceneTurn lower="449" upper="493" speaker="quest">
+      <SceneUttr lower="457" upper="493" punct=".">
+        <ActionObject lower="457" upper="465" actor="" name="Question">
+          <ActionFeature lower="466" upper="491" key="text" val="'Ti senti annoiato?'"/>
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="495" upper="554" language="@@" identifier="ESM9">
+    <SceneTurn lower="509" upper="554" speaker="quest">
+      <SceneUttr lower="517" upper="554" punct=".">
+        <ActionObject lower="517" upper="525" actor="" name="Question">
+          <ActionFeature lower="526" upper="552" key="text" val="'Ti senti coinvolto?'"/>
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="556" upper="616" language="@@" identifier="ESM10">
+    <SceneTurn lower="571" upper="616" speaker="quest">
+      <SceneUttr lower="579" upper="616" punct=".">
+        <ActionObject lower="579" upper="587" actor="" name="Question">
+          <ActionFeature lower="588" upper="614" key="text" val="'Ti senti obbligato?'"/>
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="618" upper="758" language="@@" identifier="ESM11">
+    <SceneTurn lower="633" upper="758" speaker="quest">
+      <SceneUttr lower="641" upper="758" punct=".">
+        <ActionObject lower="641" upper="649" actor="" name="Question">
+          <ActionFeature lower="650" upper="756" key="text" val="'L attività che stai svolgendo è per te stimolante e rappresenta un impegno per esprimerti ed agire?'"/>
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="760" upper="894" language="@@" identifier="ESM12">
+    <SceneTurn lower="775" upper="894" speaker="quest">
+      <SceneUttr lower="783" upper="894" punct=".">
+        <ActionObject lower="783" upper="791" actor="" name="Question">
+          <ActionFeature lower="792" upper="892" key="text" val="'Considerando le tue abilità e capacità personali, sei in grado di far fronte alla situazione?'"/>
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="896" upper="994" language="@@" identifier="ESM13">
+    <SceneTurn lower="911" upper="994" speaker="quest">
+      <SceneUttr lower="919" upper="994" punct=".">
+        <ActionObject lower="919" upper="927" actor="" name="Question">
+          <ActionFeature lower="928" upper="992" key="text" val="'C è qualcosa di importante in gioco per te nell attività?'"/>
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="996" upper="1072" language="@@" identifier="ESM14">
+    <SceneTurn lower="1011" upper="1072" speaker="quest">
+      <SceneUttr lower="1019" upper="1072" punct=".">
+        <ActionObject lower="1019" upper="1027" actor="" name="Question">
+          <ActionFeature lower="1028" upper="1070" key="text" val="'Ti senti soddisfatto con te stesso?'"/>
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+</SceneScript>

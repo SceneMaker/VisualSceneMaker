@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Project name="TestQuestionnaire">
+  <Plugins>
+    <Plugin type="device" name="RemoteQuestionnaire" class="de.dfki.vsm.xtension.remoteQuestionnaire.RemoteQuestionnaireExecutor" load="true">
+      <Feature key="port" val="5002"/>
+    </Plugin>
+  </Plugins>
+  <Agents>
+    <Agent name="quest" device="RemoteQuestionnaire">
+    </Agent>
+  </Agents>
+  <Player>
+  </Player>
+</Project>
