@@ -43,6 +43,7 @@ dependencies {
     implementation project(":plugins:charamel")
     implementation project(":plugins:charamel-ws")
     implementation project(":plugins:extensionAPI")
+    implementation project(":plugins:DialogManager")
 
     implementation 'org.jetbrains:annotations:16.0.2'
     // https://mvnrepository.com/artifact/org.slick2d/slick2d-core
