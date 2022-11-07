@@ -17,10 +17,15 @@ import org.jetbrains.annotations.NotNull;
 
 import org.json.JSONObject ;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Map;
-import java.util.Objects;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAccessor;
+import java.util.*;
 
 
 public class RemoteQuestionnaireExecutor extends ActivityExecutor implements ExportableProperties {
@@ -38,6 +43,23 @@ public class RemoteQuestionnaireExecutor extends ActivityExecutor implements Exp
 
     /** The incremental counter used as unique ID for the sentences to speak, and as thread identifier. */
     private int mActionCounter = 0 ;
+
+
+    /** Directory where the questionnaire logs will be saved. */
+    private final static String LOG_DIR = "questionnaire_answers" ;
+
+    /** Used to write the log. */
+    private FileWriter _fw ;
+
+    /** The formatter for the datetime used in log and in log entries. */
+    DateTimeFormatter _datetime_formatter = DateTimeFormatter.ofPattern("yyyyMMdd-E-HHmmss");
+
+
+
+    /** The header of the questionnaires log. */
+    private final static String[] header_names = new String[] {"timestamp", "datetime", "question_text","answer"} ;
+    private final static String header = String.join("\t", header_names) ;
+
 
 
     /** The map of activity workers. This is used to keep track of threads waiting for a
@@ -63,7 +85,7 @@ public class RemoteQuestionnaireExecutor extends ActivityExecutor implements Exp
         mLogger.message("Questionnaire plugin launching...");
 
         //
-        // Setup the WebSocket server to get messages from a YALLAH application.
+        // Setup the WebSocket server to get messages from a remote application.
         final int port = Integer.parseInt(Objects.requireNonNull(mConfig.getProperty("port")));
         mLogger.message("Starting the WebSocket server on port " + port + "...");
 
@@ -108,12 +130,47 @@ public class RemoteQuestionnaireExecutor extends ActivityExecutor implements Exp
             });
         });
 
+        //
+        // Open the log file
+        // Ensure that the log subdirectory is created
+        File log_dir = new File(LOG_DIR) ;
+        if(! log_dir.exists()) {
+            boolean created = log_dir.mkdirs();
+            if(! created) {
+                mLogger.failure("Couldn't create log dir '" + log_dir + "'"); ;
+            }
+        }
+
+        // Compose the nme of the log file
+        LocalDateTime date = LocalDateTime.now();
+        String now_str = date.format(_datetime_formatter) ;
+
+        // Create the file and its writer
+        File log_file = new File(log_dir, "RemoteQuestionnaire" + "-" + now_str + ".csv") ;
+        try {
+            _fw = new FileWriter(log_file) ;
+            _fw.write(header);
+            _fw.write("\n");
+            _fw.flush();
+        } catch (IOException e) {
+            mLogger.failure("Could not initialize log file writer: " + e);
+        }
 
     }
 
     @Override
     public void unload() {
         mLogger.message("Questionnaire plugin unloading....");
+
+        // Close the log file
+        try {
+            _fw.flush();
+            _fw.close();
+        } catch (IOException e) {
+            mLogger.failure("Exception while closing the log file: " + e);
+        }
+        _fw = null ;
+
 
         // Shutdown the WebSocket server
         mWebSocketServer.stop();
@@ -163,11 +220,7 @@ public class RemoteQuestionnaireExecutor extends ActivityExecutor implements Exp
             // It is an [ACTION (with features)]
             // aka [COMMAND (with parameters)]
 
-            // This must stay in the synch block.
             mActionCounter++;
-
-            int act_local = mActionCounter ;
-
 
             String cmd = activity.getName() ;
             final LinkedList<ActionFeature> features = activity.getFeatures();
@@ -207,7 +260,7 @@ public class RemoteQuestionnaireExecutor extends ActivityExecutor implements Exp
                         }
                     }
 
-                    mLogger.message("Thread wait finished for action_id " + act_local);
+                    // mLogger.message("Thread wait finished for action_id " + act_local);
 
                 }
 
@@ -240,12 +293,28 @@ public class RemoteQuestionnaireExecutor extends ActivityExecutor implements Exp
             String text = jo.getString("question_text") ;
             int answ = jo.getInt("answer") ;
             mLogger.message("Questionnaire answer: " + text + "/" + answ);
+
+            //
+            // Write everything on the log as a new line
+            LocalDateTime now =  LocalDateTime.now() ;
+            long ts = now.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli() ;
+
+            String line = String.join("\t",
+                    ts + "",
+                    now.format(_datetime_formatter),
+                    text,
+                    answ + "") ;
+
+            try {
+                _fw.write(line + "\n");
+                _fw.flush();
+            } catch (IOException e) {
+                mLogger.failure("Exception while adding a line to the log: " + e);
+            }
+
         }
 
 
-
-
-            // Get the question ID, and the answer, and log into our file.
 
         // Header:
         // timestamp, datetime, question_count, question, answer
