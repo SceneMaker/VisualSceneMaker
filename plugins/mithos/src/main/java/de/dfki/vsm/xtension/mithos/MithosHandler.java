@@ -46,7 +46,8 @@ public class MithosHandler<T> extends Thread {
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer");
         props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "true");
         props.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, "1");
-        props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
+//        props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
+        props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
         props.put(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG, "1000");
         consumer = new KafkaConsumer<>(props);
         consumer.subscribe(Arrays.asList(topics));

@@ -41,13 +41,12 @@ public class MithosExecutor extends ActivityExecutor {
     MithosHandler handler;
     private final LOGConsoleLogger logger = LOGConsoleLogger.getInstance();
     Gson gson = new Gson();
-    private long actID = 0;
+    private Integer actID = 0;
 
     private final Map<String, ActivityWorker> activityWorkerMap = new HashMap<>();
 
     public MithosExecutor(PluginConfig config, RunTimeProject project) {
         super(config, project);
-        System.out.println("Mithos Kafka starting");
         server = mConfig.getProperty("server");
         read_topics = mConfig.getProperty("read_topic");
         write_topic = mConfig.getProperty("write_topic");
@@ -93,8 +92,7 @@ public class MithosExecutor extends ActivityExecutor {
                 String text = activity.getText();
                 command = text.substring(1, text.length() - 1);
             }
-            String actionIDString = Long.toString(actID++);
-            ScenarioScriptCommand ssc = new ScenarioScriptCommand("SSC", "VSM", actor, command, actionIDString);
+            ScenarioScriptCommand ssc = new ScenarioScriptCommand(actID++, command);
             String sscGsonString = gson.toJson(ssc);
             ProducerRecord<String, String> record = new ProducerRecord<>(write_topic, 0, key, sscGsonString);
 
@@ -111,7 +109,7 @@ public class MithosExecutor extends ActivityExecutor {
                 System.out.println("inside the syncblock");
                 // organize wait for feedback if (activity instanceof SpeechActivity) {
                 ActivityWorker aw = (ActivityWorker) Thread.currentThread();
-                activityWorkerMap.put(actionIDString, aw);
+                activityWorkerMap.put(Integer.toString(actID), aw);
 
 //                if (activity.getType() == AbstractActivity.Type.blocking) {
 //                    while (activityWorkerMap.containsValue(aw)) {
@@ -153,11 +151,12 @@ public class MithosExecutor extends ActivityExecutor {
 
     public void process(ScenarioScriptFeedback ssf) {
         synchronized (activityWorkerMap) {
-            if (ssf.getFeedback().equals(Feedback.SUCCESS)) {
-                activityWorkerMap.remove(ssf.getuID());
-            } else if (ssf.getFeedback().equals(Feedback.FAILIURE)) {
-                activityWorkerMap.remove(ssf.getuID());
-                logger.failure("Action " + ssf.getuID() + " failed");
+            if (ssf.getFeedback().equals(Feedback.FINISHED)) {
+                activityWorkerMap.remove(ssf.getId());
+            } else if (ssf.getFeedback().equals(Feedback.FAILED) || ssf.getFeedback().equals(Feedback.ABORTED
+            )) {
+                activityWorkerMap.remove(ssf.getId());
+                logger.failure("Action " + ssf.getId() + " failed");
             }
             activityWorkerMap.notifyAll();
         }
