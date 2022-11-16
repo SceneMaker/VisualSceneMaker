@@ -17,4 +17,14 @@
             </SceneUttr>
         </SceneTurn>
     </SceneObject>
+    <SceneObject lower="71" upper="133" language="@@" identifier="tricat">
+        <SceneTurn lower="87" upper="133" speaker="Julia">
+            <SceneUttr lower="94" upper="133" punct=".">
+                <SceneWord lower="94" upper="96" text="Hi"/>
+                <ActionObject lower="98" upper="111" actor="" name="StartSpeaking">
+                    <ActionFeature lower="112" upper="131" key="clip" val="'Greeting.wav'"/>
+                </ActionObject>
+            </SceneUttr>
+        </SceneTurn>
+    </SceneObject>
 </SceneScript>

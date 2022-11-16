@@ -6,9 +6,18 @@
             <Feature key="read_topic" val="SSF,InteractionActs"/>
             <Feature key="write_topic" val="SSC"/>
         </Plugin>
+        <Plugin type="device" name="StudyMaster" class="de.dfki.vsm.xtension.studymasterWeb.WebStudyMasterExecutor"
+                load="true">
+            <Feature key="port" val="8080"/>
+            <Feature key="studymaster_connected_var" val="studymaster_connected"/>
+        </Plugin>
     </Plugins>
     <Agents>
-        <Agent name="Gaze" device="Mithos">
+        <Agent name="Julia" device="Mithos">
+        </Agent>
+        <Agent name="John" device="Mithos">
+        </Agent>
+        <Agent name="Paul" device="Mithos">
         </Agent>
     </Agents>
     <Player>
