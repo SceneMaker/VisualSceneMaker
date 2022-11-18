@@ -3,6 +3,7 @@ package de.dfki.vsm.xtension.mithos;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
+import de.mithos.compint.command.ScenarioScriptFeedback;
 import de.mithos.compint.interaction.InteractionAct;
 import org.apache.kafka.clients.consumer.*;
 
@@ -82,8 +83,8 @@ public class MithosHandler<T> extends Thread {
         try {
             switch (record.topic()) {
                 case "SSF":
-//                    ScenarioScriptFeedback ssf = gson.fromJson(record.value(), ScenarioScriptFeedback.class);
-//                    executor.process(ssf);
+                    ScenarioScriptFeedback ssf = gson.fromJson(record.value(), ScenarioScriptFeedback.class);
+                    executor.process(ssf);
                     logger.message("SSF");
                     break;
                 /*                 */

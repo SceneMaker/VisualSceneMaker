@@ -84,6 +84,7 @@ public class MithosExecutor extends ActivityExecutor {
                 key = "speech_command";
                 command = actor + " " + demarkedText;
             } else {
+
                 ActionActivity aActivity = (ActionActivity) activity;
                 if (aActivity.getContext().equals(ActionActivity.Context.NESTED)) {
                     return;
@@ -91,6 +92,16 @@ public class MithosExecutor extends ActivityExecutor {
                 key = "command";
                 String text = activity.getText();
                 command = text.substring(1, text.length() - 1);
+                command = command.replace('\'', '"');
+                switch (activity.getName()) {
+                    case ("SpeakAndAct"): {
+                    }
+                    case ("StartSpeaking"): {
+                        activity.setType(AbstractActivity.Type.blocking);
+                        break;
+                    }
+                }
+                ;
             }
             ScenarioScriptCommand ssc = new ScenarioScriptCommand(actID++, command);
             String sscGsonString = gson.toJson(ssc);
@@ -111,11 +122,11 @@ public class MithosExecutor extends ActivityExecutor {
                 ActivityWorker aw = (ActivityWorker) Thread.currentThread();
                 activityWorkerMap.put(Integer.toString(actID), aw);
 
-//                if (activity.getType() == AbstractActivity.Type.blocking) {
-//                    while (activityWorkerMap.containsValue(aw)) {
-//                        activityWorkerMap.wait();
-//                    }
-//                }
+                if (activity.getType() == AbstractActivity.Type.blocking) {
+                    while (activityWorkerMap.containsValue(aw)) {
+                        activityWorkerMap.wait();
+                    }
+                }
             }
         } catch (InterruptedException exc) {
             System.out.println(exc.toString());
@@ -150,6 +161,7 @@ public class MithosExecutor extends ActivityExecutor {
 
 
     public void process(ScenarioScriptFeedback ssf) {
+        logger.message("Trying to process ssf");
         synchronized (activityWorkerMap) {
             if (ssf.getFeedback().equals(Feedback.FINISHED)) {
                 activityWorkerMap.remove(ssf.getId());
@@ -158,8 +170,8 @@ public class MithosExecutor extends ActivityExecutor {
                 activityWorkerMap.remove(ssf.getId());
                 logger.failure("Action " + ssf.getId() + " failed");
             }
-            activityWorkerMap.notifyAll();
         }
+        activityWorkerMap.notifyAll();
     }
 
     public void process(InteractionAct intAct) {
