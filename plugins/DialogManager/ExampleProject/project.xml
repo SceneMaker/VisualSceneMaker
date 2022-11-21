@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Project name="EmmA Diary V2">
+<Project name="Ubidenz Dialog Manager Example Project">
   <Plugins>
     <Plugin type="device" name="CharamelWS" class="de.dfki.vsm.xtension.charamelWs.charamelWsExecutor" load="true">
       <Feature key="sceneflowVar" val="avatar_connected"/>
@@ -14,8 +14,6 @@
       <Feature key="vsm_send_port" val="5005"/>
       <Feature key="ssj_rec_host" val="127.0.0.1"/>
       <Feature key="ssj_rec_port" val="5010"/>
-    </Plugin>
-    <Plugin type="device" name="ODPExecutor" class="de.dfki.vsm.xtension.odp.ODPExecutor" load="true">
     </Plugin>
     <Plugin type="device" name="DialogManager" class="de.dfki.vsm.xtension.DialogManager.DialogManagerExecutor" load="true">
     </Plugin>
@@ -37,8 +35,6 @@
   </Plugins>
   <Agents>
     <Agent name="ssj" device="SSJExecutor">
-    </Agent>
-    <Agent name="odp" device="ODPExecutor">
     </Agent>
     <Agent name="gui" device="webpage">
       <Feature key="default" val="./default_gui.html"/>

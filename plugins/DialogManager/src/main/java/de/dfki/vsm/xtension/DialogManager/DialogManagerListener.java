@@ -1,31 +1,7 @@
 package de.dfki.vsm.xtension.DialogManager;
 
-import de.dfki.vsm.util.log.LOGConsoleLogger;
-
 import java.io.IOException;
 import java.net.*;
-import de.dfki.vsm.runtime.project.RunTimeProject;
-import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
-import de.dfki.vsm.model.project.PluginConfig;
-import de.dfki.vsm.runtime.activity.AbstractActivity;
-
-import de.dfki.vsm.model.project.PluginConfig;
-import de.dfki.vsm.runtime.activity.AbstractActivity;
-import de.dfki.vsm.runtime.activity.ActionActivity;
-import de.dfki.vsm.runtime.activity.SpeechActivity;
-import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
-import de.dfki.vsm.runtime.activity.scheduler.ActivityWorker;
-import de.dfki.vsm.runtime.project.RunTimeProject;
-import de.dfki.vsm.util.log.LOGConsoleLogger;
-
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.concurrent.ExecutionException;
-
-
 
 
 /**
@@ -36,11 +12,14 @@ public class DialogManagerListener extends Thread {
     private DatagramSocket udpSocket;
     private int port;
     private final DialogManagerExecutor executor;
+    private boolean keepServerAlive;
+    private String ASR_message;
 
 
-    public DialogManagerListener(int port, DialogManagerExecutor executor) {
+    public DialogManagerListener(int port, DialogManagerExecutor executor, boolean keepServerAlive) {
         this.port = port;
         this.executor = executor;
+        this.keepServerAlive = keepServerAlive;
     }
 
     @Override
@@ -53,6 +32,14 @@ public class DialogManagerListener extends Thread {
         super.start();
     }
 
+    public void killprocess(){
+        this.keepServerAlive = false;
+    }
+
+    public String getASR_message(){
+        return this.ASR_message;
+    }
+
     @Override
     public final void run() {
         try {
@@ -62,7 +49,7 @@ public class DialogManagerListener extends Thread {
         }
         String msg;
 
-        while (true) {
+        while (this.keepServerAlive) {
 
             byte[] buf = new byte[256];
             DatagramPacket packet = new DatagramPacket(buf, buf.length);
@@ -71,12 +58,15 @@ public class DialogManagerListener extends Thread {
             try {
                 udpSocket.receive(packet);
             } catch (IOException e) {
+                System.out.println("Problem");
                 throw new RuntimeException(e);
             }
             msg = new String(packet.getData()).trim();
 
             System.out.println(
                     "Message from " + packet.getAddress().getHostAddress() + ": " + msg);
+
+            ASR_message = msg;
 
             executor.set_transcript(msg);
             System.out.println(executor.get_transcript());

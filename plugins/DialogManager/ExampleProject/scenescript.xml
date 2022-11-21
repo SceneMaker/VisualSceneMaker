@@ -6293,4 +6293,18 @@
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
+  <SceneObject lower="35616" upper="35651" language="@@" identifier="SceneName">
+    <SceneTurn lower="35635" upper="35651" speaker="character">
+      <SceneUttr lower="35646" upper="35651" punct=".">
+        <SceneWord lower="35646" upper="35650" text="Text"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="35653" upper="35688" language="@@" identifier="SceneName">
+    <SceneTurn lower="35672" upper="35688" speaker="character">
+      <SceneUttr lower="35683" upper="35688" punct=".">
+        <SceneWord lower="35683" upper="35687" text="Text"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
 </SceneScript>
