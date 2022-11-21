@@ -9,7 +9,6 @@ import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
 import de.dfki.vsm.runtime.activity.scheduler.ActivityWorker;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
-import de.mithos.compint.command.Feedback;
 import de.mithos.compint.command.ScenarioScriptCommand;
 import de.mithos.compint.command.ScenarioScriptFeedback;
 import de.mithos.compint.interaction.ActKind;
@@ -120,7 +119,7 @@ public class MithosExecutor extends ActivityExecutor {
                 System.out.println("inside the syncblock");
                 // organize wait for feedback if (activity instanceof SpeechActivity) {
                 ActivityWorker aw = (ActivityWorker) Thread.currentThread();
-                activityWorkerMap.put(Integer.toString(actID), aw);
+                activityWorkerMap.put(Integer.toString(actID - 1), aw);
 
                 if (activity.getType() == AbstractActivity.Type.blocking) {
                     while (activityWorkerMap.containsValue(aw)) {
@@ -132,6 +131,7 @@ public class MithosExecutor extends ActivityExecutor {
             System.out.println(exc.toString());
             logger.failure(exc.toString());
         }
+        return;
     }
 
 
@@ -163,15 +163,16 @@ public class MithosExecutor extends ActivityExecutor {
     public void process(ScenarioScriptFeedback ssf) {
         logger.message("Trying to process ssf");
         synchronized (activityWorkerMap) {
-            if (ssf.getFeedback().equals(Feedback.FINISHED)) {
-                activityWorkerMap.remove(ssf.getId());
-            } else if (ssf.getFeedback().equals(Feedback.FAILED) || ssf.getFeedback().equals(Feedback.ABORTED
+            if (ssf.getFeedback().equals("Finished")) {
+                activityWorkerMap.remove(Integer.toString(ssf.getId()));
+            } else if (ssf.getFeedback().equals("Failed") || ssf.getFeedback().equals("Aborted"
             )) {
                 activityWorkerMap.remove(ssf.getId());
                 logger.failure("Action " + ssf.getId() + " failed");
             }
+            activityWorkerMap.notifyAll();
         }
-        activityWorkerMap.notifyAll();
+
     }
 
     public void process(InteractionAct intAct) {
