@@ -314,10 +314,6 @@ public class RemoteQuestionnaireExecutor extends ActivityExecutor implements Exp
 
         }
 
-
-
-        // Header:
-        // timestamp, datetime, question_count, question, answer
     }
 
 
