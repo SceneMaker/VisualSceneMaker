@@ -12,7 +12,6 @@ import de.dfki.vsm.xtension.ssi.event.data.SSITupleData;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.logging.Logger;
 
 
 /**
@@ -37,22 +36,33 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
 
     private static RunTimeProject PROJECT_REFERENCE;
 
-    //private static double thresholdMultilier;
-
     public static int TIMED_HISTORY_MAX_AGE_MILLIS = 10 * 1000 ;
 
     public static int TIMED_HISTORY_MIN_SIZE = 30 ;
 
-    static final String[] log_variables = Arrays.stream(emotionNames).map(emotion -> "ssi_emotion_" + emotion + "_avg").toArray(String[]::new);
+    // static final String[] log_variables_old = Arrays.stream(emotionNames).map(emotion -> "ssi_emotion_" + emotion + "_avg").toArray(String[]::new);
+    static final List<String> log_variables_list = new LinkedList<>() ;
+    static {
+        Collections.addAll(log_variables_list, Arrays.stream(emotionNames).map(emotion -> "ssi_emotion_" + emotion + "_avg").toArray(String[]::new)) ;
+        Collections.addAll(log_variables_list, Arrays.stream(emotionNames).map(emotion -> "ssi_emotion_" + emotion).toArray(String[]::new)) ;
+        Collections.addAll(log_variables_list, "ssi_face_detected") ;
+
+    }
+    static final String[] log_variables = log_variables_list.toArray(new String[]{}) ;
     ActivityLogger _activity_logger ;
+
+
 
     // Construct SSI plugin
     public MindBotSSIPlugin(
             final PluginConfig config,
             final RunTimeProject project) {
+
         super(config, project);
+
+        // Dirty trick, to make the project reference available also into static methods.
         PROJECT_REFERENCE = project;
-        //thresholdMultilier = Double.parseDouble(config.getProperty("threshold_multiplier","1"));
+
         mLogger.message("MindSSI plugin constructed...");
     }
 
@@ -175,13 +185,22 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
                             mProject.setVariable(projectAvgVarName, avgValue);
                         }
 
-                        try {
-                            _activity_logger.logVariables(log_variables);
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
+//                        try {
+//                            _activity_logger.logVariables(log_variables);
+//                        } catch (IOException e) {
+//                            e.printStackTrace();
+//                        }
                     }
                 });
+
+
+                // Log all the registered variables
+                try {
+                    _activity_logger.logVariables(log_variables);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
 
             } else if (sender.equals("video") && event.equals("focus")) {
                 assert event_entry.getType().equals("MAP");
