@@ -45,8 +45,9 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
     static {
         Collections.addAll(log_variables_list, Arrays.stream(emotionNames).map(emotion -> "ssi_emotion_" + emotion + "_avg").toArray(String[]::new)) ;
         Collections.addAll(log_variables_list, Arrays.stream(emotionNames).map(emotion -> "ssi_emotion_" + emotion).toArray(String[]::new)) ;
+        Collections.addAll(log_variables_list, Arrays.stream(focusTargets).map(target -> "ssi_focus_" + target + "_avg").toArray(String[]::new)) ;
+        Collections.addAll(log_variables_list, Arrays.stream(focusTargets).map(target -> "ssi_focus_" + target).toArray(String[]::new)) ;
         Collections.addAll(log_variables_list, "ssi_face_detected") ;
-
     }
     static final String[] log_variables = log_variables_list.toArray(new String[]{}) ;
     ActivityLogger _activity_logger ;
