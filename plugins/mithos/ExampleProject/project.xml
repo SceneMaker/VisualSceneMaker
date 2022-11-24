@@ -1,25 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Project name="Mithos">
-    <Plugins>
-        <Plugin type="device" name="Mithos" class="de.dfki.vsm.xtension.mithos.MithosExecutor" load="true">
-            <Feature key="server" val="localhost:9092"/>
-            <Feature key="read_topic" val="SSF,InteractionActs"/>
-            <Feature key="write_topic" val="SSC"/>
-        </Plugin>
-        <Plugin type="device" name="StudyMaster" class="de.dfki.vsm.xtension.studymasterWeb.WebStudyMasterExecutor"
-                load="true">
-            <Feature key="port" val="8080"/>
-            <Feature key="studymaster_connected_var" val="studymaster_connected"/>
-        </Plugin>
-    </Plugins>
-    <Agents>
-        <Agent name="Julia" device="Mithos">
-        </Agent>
-        <Agent name="John" device="Mithos">
-        </Agent>
-        <Agent name="Paul" device="Mithos">
-        </Agent>
-    </Agents>
-    <Player>
-    </Player>
+  <Plugins>
+    <Plugin type="device" name="Mithos" class="de.dfki.vsm.xtension.mithos.MithosExecutor" load="true">
+      <Feature key="server" val="localhost:9092"/>
+      <Feature key="read_topic" val="SSF,InteractionActs"/>
+      <Feature key="write_topic" val="SSC"/>
+    </Plugin>
+    <Plugin type="device" name="StudyMaster" class="de.dfki.vsm.xtension.studymasterWeb.WebStudyMasterExecutor" load="true">
+      <Feature key="port" val="8080"/>
+      <Feature key="studymaster_connected_var" val="studymaster_connected"/>
+    </Plugin>
+    <Plugin type="device" name="SSI" class="de.dfki.vsm.xtension.ssi.SSICmdExecutor" load="true">
+    </Plugin>
+  </Plugins>
+  <Agents>
+    <Agent name="Julia" device="Mithos">
+    </Agent>
+    <Agent name="John" device="Mithos">
+    </Agent>
+    <Agent name="Paul" device="Mithos">
+    </Agent>
+    <Agent name="ssi" device="SSI">
+    </Agent>
+  </Agents>
+  <Player>
+  </Player>
 </Project>

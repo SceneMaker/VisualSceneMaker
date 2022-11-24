@@ -1,143 +1,162 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<SceneFlow id="" name="default" comment="" hideLocalVar="false" hideGlobalVar="false"
-           modifDate="Wed, 16 Nov 2022 17:27:12" start="N1;" context="" package="" xmlns="xml.sceneflow.dfki.de"
-           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-           xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
+<SceneFlow id="" name="default" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Mon, 21 Nov 2022 16:11:36" start="N1;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
+  <Define>
+  </Define>
+  <Declare>
+    <VariableDefinition type="String" name ="kind_da">
+      <StringLiteral><![CDATA[]]></StringLiteral>
+    </VariableDefinition>
+  </Declare>
+  <Commands>
+  </Commands>
+  <LocalVariableBadge>
+    <Position xPos="10" yPos="10"/>
+  </LocalVariableBadge>
+  <GlobalVariableBadge>
+    <Position xPos="10" yPos="10"/>
+  </GlobalVariableBadge>
+  <Node id="N1" name="N1" history="false">
     <Define>
     </Define>
     <Declare>
-        <VariableDefinition type="String" name="kind_da">
-            <StringLiteral><![CDATA[]]></StringLiteral>
-        </VariableDefinition>
     </Declare>
     <Commands>
     </Commands>
-    <LocalVariableBadge>
-        <Position xPos="10" yPos="10"/>
-    </LocalVariableBadge>
-    <GlobalVariableBadge>
-        <Position xPos="10" yPos="10"/>
-    </GlobalVariableBadge>
-    <Node id="N1" name="N1" history="false">
-        <Define>
-        </Define>
-        <Declare>
-        </Declare>
-        <Commands>
-        </Commands>
-        <TEdge target="N6" start="" timeout="1000">
-            <Graphics>
-                <Connection>
-                    <ControlPoint xPos="187" yPos="204" ctrlXPos="252" ctrlYPos="319"/>
-                    <ControlPoint xPos="143" yPos="486" ctrlXPos="77" ctrlYPos="370"/>
-                </Connection>
-            </Graphics>
-        </TEdge>
-        <Graphics>
-            <Position xPos="120" yPos="120"/>
-        </Graphics>
-    </Node>
-    <Node id="N2" name="N2" history="false">
-        <Define>
-        </Define>
-        <Declare>
-        </Declare>
-        <Commands>
-            <PlayAction mode="Default">
-                <StringLiteral><![CDATA[[Gaze test message]]]></StringLiteral>
-            </PlayAction>
-            <PlayAction mode="Default">
-                <StringLiteral><![CDATA[Julia PlayAnimation id=7]]></StringLiteral>
-            </PlayAction>
-            <PlayAction mode="Default">
-                <StringLiteral><![CDATA[[Julia SitDown target=JuliaChair skip=true]]]></StringLiteral>
-            </PlayAction>
-        </Commands>
-        <Graphics>
-            <Position xPos="660" yPos="120"/>
-        </Graphics>
-    </Node>
-    <Node id="N3" name="N3" history="false">
-        <Define>
-        </Define>
-        <Declare>
-        </Declare>
-        <Commands>
-            <PlayScene>
-                <StringLiteral><![CDATA[tricat]]></StringLiteral>
-            </PlayScene>
-        </Commands>
-        <TEdge target="N3" start="" timeout="2000">
-            <Graphics>
-                <Connection>
-                    <ControlPoint xPos="537" yPos="32" ctrlXPos="561" ctrlYPos="15"/>
-                    <ControlPoint xPos="564" yPos="52" ctrlXPos="642" ctrlYPos="15"/>
-                </Connection>
-            </Graphics>
-        </TEdge>
-        <Graphics>
-            <Position xPos="480" yPos="30"/>
-        </Graphics>
-    </Node>
-    <Node id="N4" name="2" history="false">
-        <Define>
-        </Define>
-        <Declare>
-        </Declare>
-        <Commands>
-            <PlayAction mode="Default">
-                <StringLiteral><![CDATA[[Julia LookAt entity=Player]]]></StringLiteral>
-            </PlayAction>
-        </Commands>
-        <Graphics>
-            <Position xPos="300" yPos="300"/>
-        </Graphics>
-    </Node>
-    <Node id="N5" name="N4" history="false">
-        <Define>
-        </Define>
-        <Declare>
-        </Declare>
-        <Commands>
-            <PlayAction mode="Default">
-                <StringLiteral><![CDATA[[Julia StartSpeaking clip=\"Greeting.wav\"]]]></StringLiteral>
-            </PlayAction>
-        </Commands>
-        <TEdge target="N5" start="" timeout="3000">
-            <Graphics>
-                <Connection>
-                    <ControlPoint xPos="917" yPos="313" ctrlXPos="1011" ctrlYPos="216"/>
-                    <ControlPoint xPos="924" yPos="322" ctrlXPos="1092" ctrlYPos="276"/>
-                </Connection>
-            </Graphics>
-        </TEdge>
-        <Graphics>
-            <Position xPos="840" yPos="300"/>
-        </Graphics>
-    </Node>
-    <Node id="N6" name="N6" history="false">
-        <Define>
-        </Define>
-        <Declare>
-        </Declare>
-        <Commands>
-            <PlayAction mode="Default">
-                <StringLiteral><![CDATA[[Julia PlayAnimation id=12]]]></StringLiteral>
-            </PlayAction>
-        </Commands>
-        <TEdge target="N6" start="" timeout="500">
-            <Graphics>
-                <Connection>
-                    <ControlPoint xPos="177" yPos="482" ctrlXPos="201" ctrlYPos="396"/>
-                    <ControlPoint xPos="204" yPos="502" ctrlXPos="282" ctrlYPos="456"/>
-                </Connection>
-            </Graphics>
-        </TEdge>
-        <Graphics>
-            <Position xPos="120" yPos="480"/>
-        </Graphics>
-    </Node>
-    <ClassPath>
-    </ClassPath>
-    <InitContext></InitContext>
+    <TEdge target="N4" start="" timeout="1000">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="67" yPos="67" ctrlXPos="60" ctrlYPos="83"/>
+        <ControlPoint xPos="347" yPos="207" ctrlXPos="312" ctrlYPos="223"/>
+      </Connection>
+    </Graphics>
+    </TEdge>
+    <Graphics>
+      <Position xPos="46" yPos="46"/>
+    </Graphics>
+  </Node>
+  <Node id="N2" name="N2" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <PlayAction mode="Default">
+        <StringLiteral><![CDATA[[Gaze test message]]]></StringLiteral>
+      </PlayAction>
+      <PlayAction mode="Default">
+        <StringLiteral><![CDATA[Julia PlayAnimation id=7]]></StringLiteral>
+      </PlayAction>
+      <PlayAction mode="Default">
+        <StringLiteral><![CDATA[[Julia SitDown target=JuliaChair skip=true]]]></StringLiteral>
+      </PlayAction>
+    </Commands>
+    <Graphics>
+      <Position xPos="606" yPos="186"/>
+    </Graphics>
+  </Node>
+  <Node id="N3" name="N3" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <PlayScene>
+        <StringLiteral><![CDATA[tricat]]></StringLiteral>
+      </PlayScene>
+    </Commands>
+    <TEdge target="N3" start="" timeout="2000">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="536" yPos="46" ctrlXPos="561" ctrlYPos="15"/>
+        <ControlPoint xPos="571" yPos="55" ctrlXPos="642" ctrlYPos="15"/>
+      </Connection>
+    </Graphics>
+    </TEdge>
+    <Graphics>
+      <Position xPos="466" yPos="46"/>
+    </Graphics>
+  </Node>
+  <Node id="N4" name="2" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <PlayAction mode="Default">
+        <StringLiteral><![CDATA[[ssi start pipe=interview]]]></StringLiteral>
+      </PlayAction>
+    </Commands>
+    <TEdge target="N7" start="" timeout="10000">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="335" yPos="291" ctrlXPos="290" ctrlYPos="316"/>
+        <ControlPoint xPos="177" yPos="361" ctrlXPos="221" ctrlYPos="335"/>
+      </Connection>
+    </Graphics>
+    </TEdge>
+    <Graphics>
+      <Position xPos="326" yPos="186"/>
+    </Graphics>
+  </Node>
+  <Node id="N5" name="N4" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <PlayAction mode="Default">
+        <StringLiteral><![CDATA[[Julia StartSpeaking clip=\"Greeting.wav\"]]]></StringLiteral>
+      </PlayAction>
+    </Commands>
+    <TEdge target="N5" start="" timeout="3000">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="921" yPos="335" ctrlXPos="1011" ctrlYPos="216"/>
+        <ControlPoint xPos="938" yPos="328" ctrlXPos="1092" ctrlYPos="276"/>
+      </Connection>
+    </Graphics>
+    </TEdge>
+    <Graphics>
+      <Position xPos="886" yPos="326"/>
+    </Graphics>
+  </Node>
+  <Node id="N6" name="N6" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <PlayAction mode="Default">
+        <StringLiteral><![CDATA[[Julia PlayAnimation id=12]]]></StringLiteral>
+      </PlayAction>
+    </Commands>
+    <TEdge target="N6" start="" timeout="500">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="207" yPos="487" ctrlXPos="201" ctrlYPos="396"/>
+        <ControlPoint xPos="195" yPos="501" ctrlXPos="282" ctrlYPos="456"/>
+      </Connection>
+    </Graphics>
+    </TEdge>
+    <Graphics>
+      <Position xPos="186" yPos="466"/>
+    </Graphics>
+  </Node>
+  <Node id="N7" name="N7" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <PlayAction mode="Default">
+        <StringLiteral><![CDATA[[ssi stop pipe=interview]]]></StringLiteral>
+      </PlayAction>
+    </Commands>
+    <Graphics>
+      <Position xPos="46" yPos="326"/>
+    </Graphics>
+  </Node>
+  <ClassPath>
+  </ClassPath>
+  <InitContext></InitContext>
 </SceneFlow>
