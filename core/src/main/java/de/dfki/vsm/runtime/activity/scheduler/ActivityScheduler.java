@@ -45,7 +45,7 @@ public final class ActivityScheduler<T extends AbstractActivity> {
             mWorkerMap.remove(marker).start();
         }
         //}
-    }
+}
 
     public final boolean hasMarker(final String marker) {
         return mWorkerMap.containsKey(marker) ;
