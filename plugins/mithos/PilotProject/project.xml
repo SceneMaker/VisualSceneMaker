@@ -24,6 +24,8 @@
     </Agent>
     <Agent name="ssi" device="SSI">
     </Agent>
+    <Agent name="Mithos" device="Kafka">
+    </Agent>
   </Agents>
   <Player>
   </Player>
