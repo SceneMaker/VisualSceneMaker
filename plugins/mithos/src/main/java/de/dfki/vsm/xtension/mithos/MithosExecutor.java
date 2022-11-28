@@ -117,6 +117,7 @@ public class MithosExecutor extends ActivityExecutor {
                         break;
                     }
                     case ("LogInteraction"):{
+                        activity.setType(AbstractActivity.Type.parallel);
                         String name = (String) mProject.getValueOf("name").getValue();
                         Integer interaction_count = (int) mProject.getValueOf("interaction_count").getValue();
                         Integer phase = (int) mProject.getValueOf("phase").getValue();
