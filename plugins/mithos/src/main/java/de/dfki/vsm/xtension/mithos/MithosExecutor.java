@@ -13,6 +13,7 @@ import de.mithos.compint.command.ScenarioScriptCommand;
 import de.mithos.compint.command.ScenarioScriptFeedback;
 import de.mithos.compint.interaction.ActKind;
 import de.mithos.compint.interaction.InteractionAct;
+import de.mithos.compint.log.VSMPilotLog;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
@@ -36,7 +37,8 @@ public class MithosExecutor extends ActivityExecutor {
     private final String read_topics;
 
     private final String write_topic;
-    KafkaProducer<String, String> producer;
+    private final String log_topic;
+    private KafkaProducer<String, String> producer;
     MithosHandler handler;
     private final LOGConsoleLogger logger = LOGConsoleLogger.getInstance();
     Gson gson = new Gson();
@@ -49,6 +51,12 @@ public class MithosExecutor extends ActivityExecutor {
         server = mConfig.getProperty("server");
         read_topics = mConfig.getProperty("read_topic");
         write_topic = mConfig.getProperty("write_topic");
+        if (mConfig.containsKey("log_topic")) {
+            log_topic = mConfig.getProperty("log_topic");
+        }
+        else {
+            log_topic="VSMLog";
+        }
     }
 
     @Override
@@ -63,6 +71,7 @@ public class MithosExecutor extends ActivityExecutor {
             System.out.println("Mithos Kafka action to be executed");
             String actor = activity.getActor();
             String command, key;
+            ProducerRecord<String,String> record = null;
 
             if (activity instanceof SpeechActivity) {
                 final SpeechActivity speech_activity = (SpeechActivity) activity;
@@ -82,13 +91,17 @@ public class MithosExecutor extends ActivityExecutor {
                 }
                 key = "speech_command";
                 command = actor + " " + demarkedText;
+                activity.setType(AbstractActivity.Type.blocking);
+                ScenarioScriptCommand ssc = new ScenarioScriptCommand(actID++, command);
+                String sscGsonString = gson.toJson(ssc);
+                key = "command";
+                record = new ProducerRecord<>(write_topic, 0, key, sscGsonString);
             } else {
 
                 ActionActivity aActivity = (ActionActivity) activity;
                 if (aActivity.getContext().equals(ActionActivity.Context.NESTED)) {
                     return;
                 }
-                key = "command";
                 String text = activity.getText();
                 command = text.substring(1, text.length() - 1);
                 command = command.replace('\'', '"');
@@ -97,22 +110,35 @@ public class MithosExecutor extends ActivityExecutor {
                     }
                     case ("StartSpeaking"): {
                         activity.setType(AbstractActivity.Type.blocking);
+                        ScenarioScriptCommand ssc = new ScenarioScriptCommand(actID++, command);
+                        String sscGsonString = gson.toJson(ssc);
+                        key = "command";
+                        record = new ProducerRecord<>(write_topic, 0, key, sscGsonString);
+                        break;
+                    }
+                    case ("LogInteraction"):{
+                        String name = (String) mProject.getValueOf("name").getValue();
+                        Integer interaction_count = (int) mProject.getValueOf("interaction_count").getValue();
+                        Integer phase = (int) mProject.getValueOf("phase").getValue();
+                        Integer relationship_lvl = (int) mProject.getValueOf("relationship_lvl").getValue();
+                        Integer task_lvl = (int) mProject.getValueOf("task_lvl").getValue();
+                        VSMPilotLog logEntry = new VSMPilotLog(name,interaction_count,phase,relationship_lvl,task_lvl);
+                        String logEntryGsonString = gson.toJson(logEntry);
+                        key = "log";
+                        record = new ProducerRecord<>(log_topic, 0, key, logEntryGsonString);
                         break;
                     }
                 }
                 ;
             }
-            ScenarioScriptCommand ssc = new ScenarioScriptCommand(actID++, command);
-            String sscGsonString = gson.toJson(ssc);
-            ProducerRecord<String, String> record = new ProducerRecord<>(write_topic, 0, key, sscGsonString);
-
+            if(record != null){
             try {
                 RecordMetadata metaData = producer.send(record).get();
-                System.out.println("sending done");
-                System.out.println(metaData);
+                logger.message("sending done");
+                logger.message(metaData.toString());
             } catch (ExecutionException e) {
-                System.out.println(e);
-                System.out.println(e.getCause());
+                logger.failure(e.toString());
+                logger.failure(e.getCause().toString());
             }
             producer.flush();
             synchronized (activityWorkerMap) {
@@ -127,6 +153,7 @@ public class MithosExecutor extends ActivityExecutor {
                     }
                 }
             }
+        }
         } catch (InterruptedException exc) {
             System.out.println(exc.toString());
             logger.failure(exc.toString());
@@ -182,4 +209,6 @@ public class MithosExecutor extends ActivityExecutor {
             mProject.setVariable("kind_da", kindDa.toString());
         }
     }
+
+
 }
