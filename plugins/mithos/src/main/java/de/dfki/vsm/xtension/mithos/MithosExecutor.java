@@ -105,56 +105,55 @@ public class MithosExecutor extends ActivityExecutor {
                 String text = activity.getText();
                 command = text.substring(1, text.length() - 1);
                 command = command.replace('\'', '"');
-                switch (activity.getName()) {
-                    case ("SpeakAndAct"): {
-                    }
-                    case ("StartSpeaking"): {
-                        activity.setType(AbstractActivity.Type.blocking);
-                        ScenarioScriptCommand ssc = new ScenarioScriptCommand(actID++, command);
-                        String sscGsonString = gson.toJson(ssc);
-                        key = "command";
-                        record = new ProducerRecord<>(write_topic, 0, key, sscGsonString);
-                        break;
-                    }
-                    case ("LogInteraction"):{
-                        activity.setType(AbstractActivity.Type.parallel);
-                        String name = (String) mProject.getValueOf("name").getValue();
-                        Integer interaction_count = (int) mProject.getValueOf("interaction_count").getValue();
-                        Integer phase = (int) mProject.getValueOf("phase").getValue();
-                        Integer relationship_lvl = (int) mProject.getValueOf("relationship_lvl").getValue();
-                        Integer task_lvl = (int) mProject.getValueOf("task_lvl").getValue();
-                        VSMPilotLog logEntry = new VSMPilotLog(name,interaction_count,phase,relationship_lvl,task_lvl);
-                        String logEntryGsonString = gson.toJson(logEntry);
-                        key = "log";
-                        record = new ProducerRecord<>(log_topic, 0, key, logEntryGsonString);
-                        break;
-                    }
+                if (activity.getName().equals("LogInteraction")) {
+                    activity.setType(AbstractActivity.Type.parallel);
+                    String name = (String) mProject.getValueOf("name").getValue();
+                    Integer interaction_count = (int) mProject.getValueOf("interaction_count").getValue();
+                    Integer phase = (int) mProject.getValueOf("phase").getValue();
+                    Integer relationship_lvl = (int) mProject.getValueOf("relationship_lvl").getValue();
+                    Integer task_lvl = (int) mProject.getValueOf("task_lvl").getValue();
+                    VSMPilotLog logEntry = new VSMPilotLog(name, interaction_count, phase, relationship_lvl, task_lvl);
+                    String logEntryGsonString = gson.toJson(logEntry);
+                    key = "log";
+                    record = new ProducerRecord<>(log_topic, 0, key, logEntryGsonString);
+                } else if (activity.getName().equals("SpeakAndAct") || activity.getName().equals("StartSpeaking")) {
+                    activity.setType(AbstractActivity.Type.blocking);
+                    ScenarioScriptCommand ssc = new ScenarioScriptCommand(actID++, command);
+                    String sscGsonString = gson.toJson(ssc);
+                    key = "command";
+                    record = new ProducerRecord<>(write_topic, 0, key, sscGsonString);
+                } else {
+                    activity.setType(AbstractActivity.Type.parallel);
+                    ScenarioScriptCommand ssc = new ScenarioScriptCommand(actID++, command);
+                    String sscGsonString = gson.toJson(ssc);
+                    key = "command";
+                    record = new ProducerRecord<>(write_topic, 0, key, sscGsonString);
                 }
-                ;
             }
-            if(record != null){
-            try {
-                RecordMetadata metaData = producer.send(record).get();
-                logger.message("sending done");
-                logger.message(metaData.toString());
-            } catch (ExecutionException e) {
-                logger.failure(e.toString());
-                logger.failure(e.getCause().toString());
-            }
-            producer.flush();
-            synchronized (activityWorkerMap) {
-                System.out.println("inside the syncblock");
-                // organize wait for feedback if (activity instanceof SpeechActivity) {
-                ActivityWorker aw = (ActivityWorker) Thread.currentThread();
-                activityWorkerMap.put(Integer.toString(actID - 1), aw);
 
-                if (activity.getType() == AbstractActivity.Type.blocking) {
-                    while (activityWorkerMap.containsValue(aw)) {
-                        activityWorkerMap.wait();
+                    try {
+                        RecordMetadata metaData = producer.send(record).get();
+                        logger.message("sending done");
+                        logger.message(metaData.toString());
+                    } catch (ExecutionException e) {
+                        logger.failure(e.toString());
+                        logger.failure(e.getCause().toString());
                     }
-                }
-            }
-        }
+                    producer.flush();
+                    synchronized (activityWorkerMap) {
+                        System.out.println("inside the syncblock");
+                        // organize wait for feedback if (activity instanceof SpeechActivity) {
+                        ActivityWorker aw = (ActivityWorker) Thread.currentThread();
+                        activityWorkerMap.put(Integer.toString(actID - 1), aw);
+
+                        if (activity.getType() == AbstractActivity.Type.blocking) {
+                            while (activityWorkerMap.containsValue(aw)) {
+                                activityWorkerMap.wait();
+                            }
+                        }
+                    }
+
+
         } catch (InterruptedException exc) {
             System.out.println(exc.toString());
             logger.failure(exc.toString());
