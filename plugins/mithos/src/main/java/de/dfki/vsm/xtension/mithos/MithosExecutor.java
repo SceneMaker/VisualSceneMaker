@@ -109,7 +109,7 @@ public class MithosExecutor extends ActivityExecutor {
                     activity.setType(AbstractActivity.Type.parallel);
                     String name = (String) mProject.getValueOf("name").getValue();
                     Integer interaction_count = (int) mProject.getValueOf("interaction_count").getValue();
-                    Integer phase = (int) mProject.getValueOf("phase").getValue();
+                    String phase = (String) mProject.getValueOf("phase").getValue();
                     Integer relationship_lvl = (int) mProject.getValueOf("relationship_lvl").getValue();
                     Integer task_lvl = (int) mProject.getValueOf("task_lvl").getValue();
                     VSMPilotLog logEntry = new VSMPilotLog(name, interaction_count, phase, relationship_lvl, task_lvl);

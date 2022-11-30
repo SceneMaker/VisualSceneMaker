@@ -9,53 +9,82 @@
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="115" upper="202" language="@@" identifier="InformParticipantInfoFill">
-    <SceneTurn lower="150" upper="202" speaker="web">
-      <SceneUttr lower="156" upper="202" punct=".">
-        <ActionObject lower="156" upper="162" actor="" name="INFORM">
-          <ActionFeature lower="163" upper="200" key="value" val="'Fill participant information.'"/>
-        </ActionObject>
-      </SceneUttr>
-    </SceneTurn>
-  </SceneObject>
-  <SceneObject lower="204" upper="351" language="@@" identifier="RequestParticipantInfo">
-    <SceneTurn lower="236" upper="351" speaker="web">
-      <SceneUttr lower="242" upper="351" punct=".">
-        <ActionObject lower="242" upper="249" actor="" name="REQUEST">
-          <ActionFeature lower="250" upper="282" key="var" val="'ID;weight;gender;graduated'"/>
-          <ActionFeature lower="283" upper="315" key="value" val="'Enter ID;in kg;m,f,d;1,2'"/>
-          <ActionFeature lower="316" upper="349" key="type" val="'text;number;radio;checkbox'"/>
-        </ActionObject>
-      </SceneUttr>
-    </SceneTurn>
-  </SceneObject>
-  <SceneObject lower="353" upper="441" language="@@" identifier="InformStartExp">
-    <SceneTurn lower="377" upper="441" speaker="web">
-      <SceneUttr lower="383" upper="441" punct=".">
-        <ActionObject lower="383" upper="390" actor="" name="PROCEED">
-          <ActionFeature lower="391" upper="439" key="value" val="'Start experiment by clicking the button.'"/>
-        </ActionObject>
-      </SceneUttr>
-    </SceneTurn>
-  </SceneObject>
-  <SceneObject lower="443" upper="496" language="@@" identifier="InformPhase0">
-    <SceneTurn lower="465" upper="496" speaker="web">
-      <SceneUttr lower="471" upper="496" punct=".">
-        <ActionObject lower="471" upper="477" actor="" name="INFORM">
-          <ActionFeature lower="478" upper="494" key="value" val="'Phase 0.'"/>
-        </ActionObject>
-      </SceneUttr>
-    </SceneTurn>
-  </SceneObject>
-  <SceneObject lower="498" upper="611" language="@@" identifier="RequestConflictInterpretation">
-    <SceneTurn lower="537" upper="611" speaker="web">
-      <SceneUttr lower="543" upper="611" punct=".">
-        <ActionObject lower="543" upper="550" actor="" name="REQUEST">
-          <ActionFeature lower="551" upper="579" key="var" val="'conflict_interpreation'"/>
-          <ActionFeature lower="580" upper="596" key="value" val="'Good,Bad'"/>
-          <ActionFeature lower="597" upper="609" key="type" val="'radio'"/>
-        </ActionObject>
-      </SceneUttr>
-    </SceneTurn>
-  </SceneObject>
+    <SceneObject lower="115" upper="202" language="@@" identifier="InformParticipantInfoFill">
+        <SceneTurn lower="150" upper="202" speaker="web">
+            <SceneUttr lower="156" upper="202" punct=".">
+                <ActionObject lower="156" upper="162" actor="" name="INFORM">
+                    <ActionFeature lower="163" upper="200" key="value" val="'Fill participant information.'"/>
+                </ActionObject>
+            </SceneUttr>
+        </SceneTurn>
+    </SceneObject>
+    <SceneObject lower="204" upper="311" language="@@" identifier="RequestParticipantInfo">
+        <SceneTurn lower="236" upper="311" speaker="web">
+            <SceneUttr lower="242" upper="311" punct=".">
+                <ActionObject lower="242" upper="249" actor="" name="REQUEST">
+                    <ActionFeature lower="250" upper="260" key="var" val="'name'"/>
+                    <ActionFeature lower="261" upper="297" key="value" val="'Enter participants pseudonym'"/>
+                    <ActionFeature lower="298" upper="309" key="type" val="'text'"/>
+                </ActionObject>
+            </SceneUttr>
+        </SceneTurn>
+    </SceneObject>
+    <SceneObject lower="313" upper="401" language="@@" identifier="InformStartExp">
+        <SceneTurn lower="337" upper="401" speaker="web">
+            <SceneUttr lower="343" upper="401" punct=".">
+                <ActionObject lower="343" upper="350" actor="" name="PROCEED">
+                    <ActionFeature lower="351" upper="399" key="value"
+                                   val="'Start experiment by clicking the button.'"/>
+                </ActionObject>
+            </SceneUttr>
+        </SceneTurn>
+    </SceneObject>
+    <SceneObject lower="403" upper="465" language="@@" identifier="InformPhase1">
+        <SceneTurn lower="425" upper="465" speaker="web">
+            <SceneUttr lower="431" upper="465" punct=".">
+                <ActionObject lower="431" upper="437" actor="" name="INFORM">
+                    <ActionFeature lower="438" upper="463" key="value" val="'Phase 1: Greeting'"/>
+                </ActionObject>
+            </SceneUttr>
+        </SceneTurn>
+    </SceneObject>
+    <SceneObject lower="467" upper="530" language="@@" identifier="InformPhase2">
+        <SceneTurn lower="489" upper="530" speaker="web">
+            <SceneUttr lower="495" upper="530" punct=".">
+                <ActionObject lower="495" upper="501" actor="" name="INFORM">
+                    <ActionFeature lower="502" upper="528" key="value" val="'Phase 2: Adressing'"/>
+                </ActionObject>
+            </SceneUttr>
+        </SceneTurn>
+    </SceneObject>
+    <SceneObject lower="532" upper="595" language="@@" identifier="InformPhase3">
+        <SceneTurn lower="554" upper="595" speaker="web">
+            <SceneUttr lower="560" upper="595" punct=".">
+                <ActionObject lower="560" upper="566" actor="" name="INFORM">
+                    <ActionFeature lower="567" upper="593" key="value" val="'Phase 3: Including'"/>
+                </ActionObject>
+            </SceneUttr>
+        </SceneTurn>
+    </SceneObject>
+    <SceneObject lower="597" upper="658" language="@@" identifier="InformPhase4">
+        <SceneTurn lower="619" upper="658" speaker="web">
+            <SceneUttr lower="625" upper="658" punct=".">
+                <ActionObject lower="625" upper="631" actor="" name="INFORM">
+                    <ActionFeature lower="632" upper="656" key="value" val="'Phase 4: Solving'"/>
+                </ActionObject>
+            </SceneUttr>
+        </SceneTurn>
+    </SceneObject>
+    <SceneObject lower="660" upper="841" language="@@" identifier="RequestConflictInterpretation">
+        <SceneTurn lower="699" upper="841" speaker="web">
+            <SceneUttr lower="705" upper="841" punct=".">
+                <ActionObject lower="705" upper="712" actor="" name="REQUEST">
+                    <ActionFeature lower="713" upper="776" key="var"
+                                   val="'relationship_interpretation;task_interpretation;phase_tmp'"/>
+                    <ActionFeature lower="777" upper="814" key="value" val="'Good,Bad;Good,Bad;P1,P2,P3,P4'"/>
+                    <ActionFeature lower="815" upper="839" key="type" val="'radio;radio;radio'"/>
+                </ActionObject>
+            </SceneUttr>
+        </SceneTurn>
+    </SceneObject>
 </SceneScript>

@@ -2,15 +2,16 @@
 <Project name="Mithos Pilot Study">
   <Plugins>
     <Plugin type="device" name="webstudymaster" class="de.dfki.vsm.xtension.studymasterWeb.WebStudyMasterExecutor" load="true">
-      <Feature key="port" val="8080"/>
+      <Feature key="port" val="8086"/>
       <Feature key="studymaster_connected_var" val="studymaster_connected"/>
     </Plugin>
     <Plugin type="device" name="Kafka" class="de.dfki.vsm.xtension.mithos.MithosExecutor" load="true">
       <Feature key="server" val="localhost:9092"/>
       <Feature key="read_topic" val="SSF,InteractionActs"/>
-      <Feature key="write_topic" val="SSC,VSM_log"/>
+      <Feature key="write_topic" val="SSC"/>
     </Plugin>
     <Plugin type="device" name="SSI" class="de.dfki.vsm.xtension.ssi.SSICmdExecutor" load="true">
+      <Feature key="pipes" val="interview:127.0.0.1:1111,similarity_recorder:192.168.199.6:1111"/>
     </Plugin>
   </Plugins>
   <Agents>
@@ -25,6 +26,8 @@
     <Agent name="ssi" device="SSI">
     </Agent>
     <Agent name="Mithos" device="Kafka">
+    </Agent>
+    <Agent name="Alex" device="Kafka">
     </Agent>
   </Agents>
   <Player>

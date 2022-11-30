@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <SceneFlow id="" name="default" comment="" hideLocalVar="false" hideGlobalVar="false"
-           modifDate="Fri, 4 Nov 2022 17:06:17" start="N1;" context="" package="" xmlns="xml.sceneflow.dfki.de"
+           modifDate="Mon, 28 Nov 2022 18:31:36" start="N1;" context="" package="" xmlns="xml.sceneflow.dfki.de"
            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
            xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
     <Define>
@@ -13,14 +13,14 @@
             <StringLiteral><![CDATA[]]></StringLiteral>
         </VariableDefinition>
         <VariableDefinition type="String" name="gender">
-      <StringLiteral><![CDATA[]]></StringLiteral>
-    </VariableDefinition>
-    <VariableDefinition type="String" name ="graduated">
-      <StringLiteral><![CDATA[]]></StringLiteral>
-    </VariableDefinition>
-    <VariableDefinition type="String" name ="weight">
-      <StringLiteral><![CDATA[]]></StringLiteral>
-    </VariableDefinition>
+            <StringLiteral><![CDATA[]]></StringLiteral>
+        </VariableDefinition>
+        <VariableDefinition type="String" name="graduated">
+            <StringLiteral><![CDATA[]]></StringLiteral>
+        </VariableDefinition>
+        <VariableDefinition type="String" name="weight">
+            <StringLiteral><![CDATA[]]></StringLiteral>
+        </VariableDefinition>
         <VariableDefinition type="String" name="request_result">
             <StringLiteral><![CDATA[]]></StringLiteral>
         </VariableDefinition>
@@ -33,14 +33,11 @@
         <VariableDefinition type="String" name="intensity">
             <StringLiteral><![CDATA[]]></StringLiteral>
         </VariableDefinition>
-        <VariableDefinition type="String" name="studymaster_connected">
-            <StringLiteral><![CDATA[]]></StringLiteral>
-        </VariableDefinition>
     </Declare>
   <Commands>
   </Commands>
   <LocalVariableBadge>
-    <Position xPos="1395" yPos="3"/>
+      <Position xPos="694" yPos="43"/>
   </LocalVariableBadge>
   <GlobalVariableBadge>
     <Position xPos="10" yPos="10"/>
@@ -76,7 +73,7 @@
     </Graphics>
     <Text style="color:blue">
         Start.
-        Open http://localhost:8080 to see the GUI
+        Open http://localhost:8086 to see the GUI
     </Text>
   </Comment>
   <Comment>
