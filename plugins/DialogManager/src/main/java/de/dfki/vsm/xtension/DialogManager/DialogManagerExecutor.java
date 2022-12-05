@@ -35,7 +35,7 @@ public class DialogManagerExecutor extends ActivityExecutor {
 
     @Override
     public void launch() {
-        DialogManagerListener client = new DialogManagerListener(port, this, true);
+        client = new DialogManagerListener(port, this, true);
         client.start();
         asr_res_var = mConfig.getProperty(sASR_RES_VAR, sASR_RES_VAR_DEFAULT);
     }
