@@ -58,18 +58,40 @@ public class SSJExecutor extends ActivityExecutor implements SSJEventHandler
         }
         else if ("event".equalsIgnoreCase(name))
         {
+            // Default event values
+            String eventName = "output";
+            String eventState = "completed";
+
             List<ActionFeature> features = activity.getFeatures();
 
             SSJTupleData tupleData = new SSJTupleData();
 
             for (ActionFeature feature : features)
             {
-                tupleData.set(feature.getKey(), feature.getVal());
+                String key = feature.getKey();
+                String value = feature.getVal();
+
+                // Only if key and value is not empty
+                if (key != null && !key.isEmpty() && value != null && !value.isEmpty())
+                {
+                    if (key.equalsIgnoreCase("name"))
+                    {
+                        eventName = value;
+                    }
+                    else if (key.equalsIgnoreCase("state") && (value.equalsIgnoreCase("CONTINUED") || value.equalsIgnoreCase("COMPLETED")))
+                    {
+                        eventState = value;
+                    }
+                    else
+                    {
+                        tupleData.set(key, value);
+                    }
+                }
             }
 
             long currentTime = System.currentTimeMillis();
 
-            SSJEventEntry entry = new SSJEventEntry("vsm", "output", String.valueOf(currentTime - startTime), "1", "1.0", "map", "completed", "-1");
+            SSJEventEntry entry = new SSJEventEntry("vsm", eventName, String.valueOf(currentTime - startTime), "1", "1.0", "map", eventState, "-1");
             entry.setData(tupleData);
 
             SSJEventArray eventArray = new SSJEventArray("1.0");
