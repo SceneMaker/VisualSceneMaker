@@ -131,8 +131,10 @@ public class MithosExecutor extends ActivityExecutor {
         Integer interaction_count = (int) mProject.getValueOf("interaction_count").getValue();
         String phase = (String) mProject.getValueOf("phase").getValue();
         Integer relationship_lvl = (int) mProject.getValueOf("relationship_lvl").getValue();
+        String affection_interpretation = (String) mProject.getValueOf("affection_interpretation").getValue();
+        String freedom_interpretation = (String) mProject.getValueOf("freedom_interpretation").getValue();
         Integer task_lvl = (int) mProject.getValueOf("task_lvl").getValue();
-        VSMPilotLog logEntry = new VSMPilotLog(name, interaction_count, phase, relationship_lvl, task_lvl);
+        VSMPilotLog logEntry = new VSMPilotLog(name,interaction_count,phase,relationship_lvl,affection_interpretation,freedom_interpretation,task_lvl);
         String logEntryGsonString = gson.toJson(logEntry);
         ProducerRecord<String, String> record = new ProducerRecord<>(log_topic, 0, "Log", logEntryGsonString);
         sendRecord(record);
