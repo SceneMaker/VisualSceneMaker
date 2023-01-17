@@ -219,9 +219,9 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
                 if (there_is_face) {
 
                     float[] VAD_values = new float[] {
-                            Float.parseFloat(tupleData.get("ssi_emotion_valence")),
-                            Float.parseFloat(tupleData.get("ssi_emotion_arousal")),
-                            Float.parseFloat(tupleData.get("ssi_emotion_dominance")),
+                            Float.parseFloat(tupleData.get("valence")),
+                            Float.parseFloat(tupleData.get("arousal")),
+                            Float.parseFloat(tupleData.get("dominance")),
                     } ;
 
                     long now = System.currentTimeMillis() ;
@@ -329,7 +329,7 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
         for(int i=0 ; i < ACTIVATION_VARIABLES.length ; i++) {
             String calibration_var = "calibration_" + ACTIVATION_VARIABLES[i];
             if(PROJECT_REFERENCE.hasVariable(calibration_var)) {
-                PROJECT_REFERENCE.setVariable(calibration_var, calibration_medians[i] + "") ;
+                PROJECT_REFERENCE.setVariable(calibration_var, calibration_medians[i]) ;
             }
         }
 
