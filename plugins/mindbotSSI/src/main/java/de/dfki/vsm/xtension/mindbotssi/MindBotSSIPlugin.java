@@ -1,6 +1,6 @@
 package de.dfki.vsm.xtension.mindbotssi;
+
 import de.dfki.vsm.model.project.PluginConfig;
-import de.dfki.vsm.runtime.interpreter.value.AbstractValue;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 
 import de.dfki.vsm.util.ActivityLogger;
@@ -14,6 +14,10 @@ import java.io.IOException;
 import java.util.*;
 
 
+import de.dfki.vsm.xtension.mindbotssi.ThresholdActivationCalculator.ThresholdPair ;
+
+import javax.print.attribute.standard.Media;
+
 /**
  * @author Fabrizio Nunnari
  */
@@ -26,26 +30,48 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
     static final String[] ekmanNames = new String[]{"neutral",
             "surprise", "happy", "sad",  "disgust", "anger", "fear"} ;
 
-
     private static final String[] focusTargets = new String[]{"away", "cobot", "table"} ;
 
 
-    //
-    // Will map a variable to the list of received values. Used to compute the average.
-    private static Map<String, LinkedList<TimedFloat>> timedHistory;
+    // Calibration values 3.0, calibrating on the "Slow task" section after filtering with median on the last 5 frames
+    private final static float RMSE_V_LO = -0.09855826509377788f ;
+    private final static float RMSE_V_HI = 0.13843901708496958f;
+    private final static float RMSE_A_LO = -0.1338607261206554f ;
+    private final static float RMSE_A_HI = 0.0715044268674914f ;
+    private final static float RMSE_D_LO = -0.020320960538339015f ;
+    private final static float RMSE_D_HI = 0.05254249940970949f ;
+
+    private final static String[] ACTIVATION_VARIABLES = { "valence", "arousal", "dominance" } ;
+
+    private final static float RMSE_MULTIPLIER = 2.5f ;
+
+    private final static float RAW_VAD_HISTORY_SIZE_SECS = 15 ;
+    private final static float FILTERED_VAD_HISTORY_SIZE_SECS = 60 ;
+
+    private final static float MEDIAN_FILTER_SECS = 1.0f ;
+
+    /** This is the queue for raw VAD values, used to compute the calibration values
+     * as well as the short-term denoise filtering.
+     */
+    private static TimedHistory rawVADtimedHistory ;
+
+    /** This is the queue for "low-pass" filtered VAD values, used to check for threshold activations. */
+    private static TimedHistory filteredVADtimedHistory ;
+
+    private static int TIMED_HISTORY_MIN_SIZE = 5 ;
+
+    /** Used to check for the activation of thresholds. */
+    private ThresholdActivationCalculator activationCalculator ;
 
     private static RunTimeProject PROJECT_REFERENCE;
 
-    public static int TIMED_HISTORY_MAX_AGE_MILLIS = 10 * 1000 ;
-
-    public static int TIMED_HISTORY_MIN_SIZE = 30 ;
 
     // static final String[] log_variables_old = Arrays.stream(emotionNames).map(emotion -> "ssi_emotion_" + emotion + "_avg").toArray(String[]::new);
     static final List<String> log_variables_list = new LinkedList<>() ;
     static {
-        Collections.addAll(log_variables_list, Arrays.stream(emotionNames).map(emotion -> "ssi_emotion_" + emotion + "_avg").toArray(String[]::new)) ;
+        // Collections.addAll(log_variables_list, Arrays.stream(emotionNames).map(emotion -> "ssi_emotion_" + emotion + "_avg").toArray(String[]::new)) ;
         Collections.addAll(log_variables_list, Arrays.stream(emotionNames).map(emotion -> "ssi_emotion_" + emotion).toArray(String[]::new)) ;
-        Collections.addAll(log_variables_list, Arrays.stream(focusTargets).map(target -> "ssi_focus_" + target + "_avg").toArray(String[]::new)) ;
+        // Collections.addAll(log_variables_list, Arrays.stream(focusTargets).map(target -> "ssi_focus_" + target + "_avg").toArray(String[]::new)) ;
         Collections.addAll(log_variables_list, Arrays.stream(focusTargets).map(target -> "ssi_focus_" + target).toArray(String[]::new)) ;
         Collections.addAll(log_variables_list, "ssi_face_detected") ;
     }
@@ -73,11 +99,19 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
         mLogger.message("Launching MindBotSSI Plugin...");
         super.launch();
 
-        timedHistory = new HashMap<>();
-        Arrays.stream(emotionNames).forEach(name-> timedHistory.put(name,new LinkedList<TimedFloat>()));
-        Arrays.stream(focusTargets).forEach(name-> timedHistory.put(name,new LinkedList<TimedFloat>()));
-        timedHistory.put("fatigue", new LinkedList<TimedFloat>());
-        timedHistory.put("pain", new LinkedList<TimedFloat>());
+        //
+        // Setup all the stuff needed to filter the signal and compute threshold activations
+        rawVADtimedHistory = new TimedHistory(RAW_VAD_HISTORY_SIZE_SECS) ;
+        filteredVADtimedHistory = new TimedHistory(FILTERED_VAD_HISTORY_SIZE_SECS);
+
+        ThresholdPair[] thresholds = new ThresholdPair[] {
+                new ThresholdPair(RMSE_V_LO, RMSE_V_HI),
+                new ThresholdPair(RMSE_A_LO, RMSE_A_HI),
+                new ThresholdPair(RMSE_D_LO, RMSE_D_HI)
+        } ;
+        assert thresholds.length == ACTIVATION_VARIABLES.length ;
+
+        activationCalculator = new ThresholdActivationCalculator(filteredVADtimedHistory, thresholds, RMSE_MULTIPLIER) ;
 
         try {
             _activity_logger = new ActivityLogger("MindBotSSI", mProject) ;
@@ -153,6 +187,8 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
                     dominance = DominanceCalculator.computeDominanceAccumulated(tupleData);
                 }
                 tupleData.put("dominance", dominance + "");
+                // end HACK. From now on, it is AS IF we received dominance from SSI
+                //
 
                 if(mProject.hasVariable("ssi_face_detected")) {
                     mProject.setVariable("ssi_face_detected", there_is_face) ;
@@ -161,7 +197,8 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
                 }
 
                 if(mProject.hasVariable("history_size")) {
-                    int s = timedHistory.get("valence").size();
+                    int s = rawVADtimedHistory.historySize() ;
+                    //int s = timedHistory.get("valence").size();
                     mProject.setVariable("history_size", s) ;
                     //System.err.println(s) ;
                     //System.err.flush();
@@ -177,22 +214,40 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
                         mProject.setVariable(projectVarName, ssiVarValue);
                     }
 
-                    timedAverageRemoveOldest(emotion);
-
-                    if (there_is_face) {
-                        float avgValue = timedMovingAverage(emotion, ssiVarValue);
-                        String projectAvgVarName = "ssi_emotion_" + emotion + "_avg";
-                        if (mProject.hasVariable(projectAvgVarName)) {
-                            mProject.setVariable(projectAvgVarName, avgValue);
-                        }
-
-//                        try {
-//                            _activity_logger.logVariables(log_variables);
-//                        } catch (IOException e) {
-//                            e.printStackTrace();
-//                        }
-                    }
                 });
+
+                if (there_is_face) {
+
+                    float[] VAD_values = new float[] {
+                            Float.parseFloat(tupleData.get("ssi_emotion_valence")),
+                            Float.parseFloat(tupleData.get("ssi_emotion_arousal")),
+                            Float.parseFloat(tupleData.get("ssi_emotion_dominance")),
+                    } ;
+
+                    long now = System.currentTimeMillis() ;
+
+                    // Append the raw data to the full queue
+                    rawVADtimedHistory.appendData(now, VAD_values);
+                    // Extract a few recent samples for median computation
+                    TimedHistory filter_buffer = rawVADtimedHistory.extractMostRecent(MEDIAN_FILTER_SECS) ;
+                    // Compute the median over the recent buffer
+                    float[] medianVAD = MedianCalculator.computeMedians(filter_buffer) ;
+
+                    //
+                    // Calibrate according to the calibration data
+                    //
+                    // TODO
+
+                    // Append the filtered data to the queue
+                    filteredVADtimedHistory.appendData(medianVAD);
+                    // check for activations in the filtered queue
+                    String activation_code = activationCalculator.triggersAreActivated();
+
+                    if(mProject.hasVariable("VAD_activation_code")) {
+                        mProject.setVariable("VAD_activation_code", activation_code) ;
+                    }
+
+                }
 
 
                 // Log all the registered variables
@@ -221,17 +276,8 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
                     if (mProject.hasVariable(projectVarName)) {
                         mProject.setVariable(projectVarName, ssiVarValue);
                     }
-
-                    timedAverageRemoveOldest(ssiVarName);
-
-                    if (there_is_face) {
-                        float avgValue = timedMovingAverage(ssiVarName, ssiVarValue);
-                        String projectAvgVarName = "ssi_focus_" + ssiVarName + "_avg";
-                        if (mProject.hasVariable(projectAvgVarName)) {
-                            mProject.setVariable(projectAvgVarName, avgValue);
-                        }
-                    }
                 }
+
 
             } else if (sender.equals("biomech") && event.equals("fatigue")) {
                 assert event_entry.getType().equals("MAP");
@@ -251,13 +297,6 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
                     mProject.setVariable(projectAvgVarName, fatigueAvgValue);
                 }
 
-                /*
-                 Float avgValue = movingAverage("fatigue",ssiVarValue);
-                 String projectAvgVarName = "ssi_fatigue_avg" ;
-                 if(mProject.hasVariable(projectAvgVarName)) {
-                 mProject.setVariable(projectAvgVarName, avgValue);
-                 }
-                 */
 
             } else if (sender.equals("video") && event.equals("pain")) {
                 assert event_entry.getType().equals("MAP");
@@ -272,17 +311,6 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
                     mProject.setVariable("ssi_pain", painValue);
                 }
 
-                timedAverageRemoveOldest("pain");
-
-                // if there is a face detected
-                if (there_is_face) {
-                    // float avgPainValue = movingAverage("pain", painValue);
-                    float avgPainValue = timedMovingAverage("pain", painValue) ;
-                    if (mProject.hasVariable("ssi_pain_avg")) {
-                        mProject.setVariable("ssi_pain_avg", avgPainValue);
-                    }
-                }
-
             }
 
         } // end for(...)
@@ -290,109 +318,30 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
     } // end handle()
 
 
-    private static void timedAverageRemoveOldest(String name) {
-        timedAverageRemoveOldest(timedHistory.get(name));
-    }
-
-    private static void timedAverageRemoveOldest(LinkedList<TimedFloat> history) {
-        timedAverageRemoveOldest(history, System.currentTimeMillis());
-    }
-
-    private static synchronized void timedAverageRemoveOldest(LinkedList<TimedFloat> history, long now) {
-
-        // Remove all "old" elements
-        while(history.size() > 0) {
-            TimedFloat f = history.getFirst();
-            // If the first element is too old, remove it
-            if(now - f.t > TIMED_HISTORY_MAX_AGE_MILLIS) {
-                history.removeFirst() ;
-            } else {
-                // if it is young enough, we can stop here.
-                break ;
-            }
-        }
-
-    }
-
-    /** Adds a value to the history of the specified category, and computes the average.
-     * Additionally, each added value is associated to a time stamp. After adding a new value, all values
-     * older than a given "age" will be removed before computing the average.
-     *
-     * @param name
-     * @param value
-     * @return
-     */
-    private  float timedMovingAverage(String name, float value){
-
-        LinkedList<TimedFloat> history = MindBotSSIPlugin.timedHistory.get(name);
-        synchronized(history){
-            long now = System.currentTimeMillis();
-
-            // add the new element
-            history.addLast(new TimedFloat(now, value));
-            // and compute the average
-            return (float) history.stream()
-                    .mapToDouble(tf -> (double) tf.v)
-                    .average().orElse(0.0);
-        }
-
-    }
 
 
     public static void measureBaselines(){
-        for(String name: timedHistory.keySet()){
-            measuringBaseline(name);
-        }
-    }
 
-    private static void measuringBaseline(String name){
-        AbstractValue thresholdMultilier_av = PROJECT_REFERENCE.getValueOf("threshold_multiplier") ;
-        String thresholdMultilier_str = thresholdMultilier_av == null ? "1.0" : thresholdMultilier_av.getValue().toString();
-        float thresholdMultilier = Float.parseFloat(thresholdMultilier_str) ;
+        // Compute the median of the values in the threshold activation history
+        float[] calibration_medians = MedianCalculator.computeMedians(rawVADtimedHistory) ;
 
-        System.err.println("Computing activation ranges with threshold_multiplier="+thresholdMultilier) ;
-
-        LinkedList<TimedFloat> history = MindBotSSIPlugin.timedHistory.get(name);
-        synchronized (history){
-
-            Float mean = (float) history.stream()
-                    .mapToDouble(tf -> (double) tf.v)
-                    .average().orElse(0.5);
-            Double variance = history.stream()
-                    .mapToDouble(tf -> Math.pow((double) tf.v - mean,2))
-                    .average().orElse(0.5);
-            Double std = Math.sqrt(variance);
-            if (PROJECT_REFERENCE.hasVariable(name+"_high")) {
-                PROJECT_REFERENCE.setVariable(name+"_high",(float) Math.min(0.95, mean + thresholdMultilier * std));
-            }
-            if (PROJECT_REFERENCE.hasVariable(name+"_low")){
-                PROJECT_REFERENCE.setVariable( name+"_low",(float) Math.max(0.05, mean - thresholdMultilier * std));
+        // Set the proper variables
+        for(int i=0 ; i < ACTIVATION_VARIABLES.length ; i++) {
+            String calibration_var = "calibration_" + ACTIVATION_VARIABLES[i];
+            if(PROJECT_REFERENCE.hasVariable(calibration_var)) {
+                PROJECT_REFERENCE.setVariable(calibration_var, calibration_medians[i] + "") ;
             }
         }
 
-    }
-
-    private static class TimedFloat {
-        /* Value */
-        float v;
-        /* Timestamp in milliseconds */
-        long t;
-        TimedFloat(long t, float v) {
-            this.t = t ;
-            this.v = v ;
-        }
-        TimedFloat(float v) {
-            this(System.currentTimeMillis(), v) ;
-        }
     }
 
 
     public static int getTimedHistoryMaxAgeMillis() {
-        return TIMED_HISTORY_MAX_AGE_MILLIS;
+        return (int)filteredVADtimedHistory.getTimeWindowSizeMillis();
     }
 
     public static void setTimedHistoryMaxAgeMillis(int timedHistoryMaxAgeMillis) {
-        TIMED_HISTORY_MAX_AGE_MILLIS = timedHistoryMaxAgeMillis;
+        filteredVADtimedHistory.setTimeWindowSizeMillis(timedHistoryMaxAgeMillis);
     }
 
     public static int getTimedHistoryMinSize() {
@@ -403,23 +352,13 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
         TIMED_HISTORY_MIN_SIZE = timedHistoryMinSize;
     }
 
-    public static synchronized boolean isTimedHistoryValid(String name) {
-        LinkedList<TimedFloat> h = timedHistory.get(name);
-        //System.err.println("hsize="+h.size()) ;
-
-        long now = System.currentTimeMillis() ;
-        timedAverageRemoveOldest(h, now);
-        assert h.size() == 0 || (now - h.getFirst().t) <= TIMED_HISTORY_MAX_AGE_MILLIS;
-
-        return h.size() >= TIMED_HISTORY_MIN_SIZE ;
-    }
-
-    public static boolean isTimedHistoryValid() {
-        return isTimedHistoryValid("pain") ;
+    public static synchronized boolean isTimedHistoryValid() {
+        return filteredVADtimedHistory.historySize() >= TIMED_HISTORY_MIN_SIZE ;
     }
 
     public static synchronized void resetTimedHistory() {
-        timedHistory.forEach((s, l)->l.clear());
+        rawVADtimedHistory.clearDataHistory();
+        filteredVADtimedHistory.clearDataHistory();
     }
 
 
