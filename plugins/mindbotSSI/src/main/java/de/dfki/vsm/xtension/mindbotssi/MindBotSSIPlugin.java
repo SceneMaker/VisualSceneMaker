@@ -1,6 +1,7 @@
 package de.dfki.vsm.xtension.mindbotssi;
 
 import de.dfki.vsm.model.project.PluginConfig;
+import de.dfki.vsm.runtime.interpreter.value.FloatValue;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 
 import de.dfki.vsm.util.ActivityLogger;
@@ -15,8 +16,6 @@ import java.util.*;
 
 
 import de.dfki.vsm.xtension.mindbotssi.ThresholdActivationCalculator.ThresholdPair ;
-
-import javax.print.attribute.standard.Media;
 
 /**
  * @author Fabrizio Nunnari
@@ -41,9 +40,7 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
     private final static float RMSE_D_LO = -0.020320960538339015f ;
     private final static float RMSE_D_HI = 0.05254249940970949f ;
 
-    private final static String[] ACTIVATION_VARIABLES = { "valence", "arousal", "dominance" } ;
-
-    private final static float RMSE_MULTIPLIER = 2.5f ;
+    private final static String[] VAD_VARIABLES = { "valence", "arousal", "dominance" } ;
 
     private final static float RAW_VAD_HISTORY_SIZE_SECS = 15 ;
     private final static float FILTERED_VAD_HISTORY_SIZE_SECS = 60 ;
@@ -73,6 +70,8 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
         Collections.addAll(log_variables_list, Arrays.stream(emotionNames).map(emotion -> "ssi_emotion_" + emotion).toArray(String[]::new)) ;
         // Collections.addAll(log_variables_list, Arrays.stream(focusTargets).map(target -> "ssi_focus_" + target + "_avg").toArray(String[]::new)) ;
         Collections.addAll(log_variables_list, Arrays.stream(focusTargets).map(target -> "ssi_focus_" + target).toArray(String[]::new)) ;
+        Collections.addAll(log_variables_list, Arrays.stream(VAD_VARIABLES).map(target -> "calibration_" + target).toArray(String[]::new)) ;
+        Collections.addAll(log_variables_list, "threshold_multiplier") ;
         Collections.addAll(log_variables_list, "ssi_face_detected") ;
     }
     static final String[] log_variables = log_variables_list.toArray(new String[]{}) ;
@@ -109,9 +108,9 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
                 new ThresholdPair(RMSE_A_LO, RMSE_A_HI),
                 new ThresholdPair(RMSE_D_LO, RMSE_D_HI)
         } ;
-        assert thresholds.length == ACTIVATION_VARIABLES.length ;
+        assert thresholds.length == VAD_VARIABLES.length ;
 
-        activationCalculator = new ThresholdActivationCalculator(filteredVADtimedHistory, thresholds, RMSE_MULTIPLIER) ;
+        activationCalculator = new ThresholdActivationCalculator(filteredVADtimedHistory, thresholds) ;
 
         try {
             _activity_logger = new ActivityLogger("MindBotSSI", mProject) ;
@@ -236,12 +235,27 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
                     //
                     // Calibrate according to the calibration data
                     //
-                    // TODO
+                    //
+                    float [] calibrated_VAD = new float[VAD_VARIABLES.length] ;
+                    for (int i=0 ; i<VAD_VARIABLES.length ; i++) {
+                        if(mProject.hasVariable("calibration_"+VAD_VARIABLES[i])) {
+                            float val = ((FloatValue)mProject.getValueOf("calibration_"+VAD_VARIABLES[i])).floatValue() ;
+                            calibrated_VAD[i] = medianVAD[i] - val ;
+                        } else {
+                            calibrated_VAD[i] = medianVAD[i] - 0.5f ;
+                        }
+                    }
 
                     // Append the filtered data to the queue
-                    filteredVADtimedHistory.appendData(medianVAD);
+                    filteredVADtimedHistory.appendData(calibrated_VAD);
+                    // System.out.println(now + "\t" + filteredVADtimedHistory.historySize());
                     // check for activations in the filtered queue
-                    String activation_code = activationCalculator.triggersAreActivated();
+                    float threshold_mult = 1.0f;
+                    if(mProject.hasVariable( "threshold_multiplier")) {
+                        FloatValue fv = (FloatValue)mProject.getValueOf("threshold_multiplier") ;
+                        threshold_mult = fv.floatValue();
+                    }
+                    String activation_code = activationCalculator.triggersAreActivated(threshold_mult);
 
                     if(mProject.hasVariable("VAD_activation_code")) {
                         mProject.setVariable("VAD_activation_code", activation_code) ;
@@ -326,8 +340,8 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
         float[] calibration_medians = MedianCalculator.computeMedians(rawVADtimedHistory) ;
 
         // Set the proper variables
-        for(int i=0 ; i < ACTIVATION_VARIABLES.length ; i++) {
-            String calibration_var = "calibration_" + ACTIVATION_VARIABLES[i];
+        for(int i = 0; i < VAD_VARIABLES.length ; i++) {
+            String calibration_var = "calibration_" + VAD_VARIABLES[i];
             if(PROJECT_REFERENCE.hasVariable(calibration_var)) {
                 PROJECT_REFERENCE.setVariable(calibration_var, calibration_medians[i]) ;
             }
