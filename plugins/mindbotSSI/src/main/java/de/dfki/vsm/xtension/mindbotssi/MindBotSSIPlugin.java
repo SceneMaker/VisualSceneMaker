@@ -71,7 +71,9 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
         // Collections.addAll(log_variables_list, Arrays.stream(focusTargets).map(target -> "ssi_focus_" + target + "_avg").toArray(String[]::new)) ;
         Collections.addAll(log_variables_list, Arrays.stream(focusTargets).map(target -> "ssi_focus_" + target).toArray(String[]::new)) ;
         Collections.addAll(log_variables_list, Arrays.stream(VAD_VARIABLES).map(target -> "calibration_" + target).toArray(String[]::new)) ;
+        Collections.addAll(log_variables_list, Arrays.stream(VAD_VARIABLES).map(target -> "filtered_" + target).toArray(String[]::new)) ;
         Collections.addAll(log_variables_list, "threshold_multiplier") ;
+        Collections.addAll(log_variables_list,"VAD_activation_code") ;
         Collections.addAll(log_variables_list, "ssi_face_detected") ;
     }
     static final String[] log_variables = log_variables_list.toArray(new String[]{}) ;
@@ -230,7 +232,12 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
                     // Extract a few recent samples for median computation
                     TimedHistory filter_buffer = rawVADtimedHistory.extractMostRecent(MEDIAN_FILTER_SECS) ;
                     // Compute the median over the recent buffer
-                    float[] medianVAD = MedianCalculator.computeMedians(filter_buffer) ;
+                    float[] filteredVAD = MedianCalculator.computeMedians(filter_buffer) ;
+                    for (int i=0 ; i<VAD_VARIABLES.length ; i++) {
+                        if (mProject.hasVariable("filtered_" + VAD_VARIABLES[i])) {
+                            mProject.setVariable("filtered_" + VAD_VARIABLES[i], filteredVAD[i]);
+                        }
+                    }
 
                     //
                     // Calibrate according to the calibration data
@@ -240,9 +247,9 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
                     for (int i=0 ; i<VAD_VARIABLES.length ; i++) {
                         if(mProject.hasVariable("calibration_"+VAD_VARIABLES[i])) {
                             float val = ((FloatValue)mProject.getValueOf("calibration_"+VAD_VARIABLES[i])).floatValue() ;
-                            calibrated_VAD[i] = medianVAD[i] - val ;
+                            calibrated_VAD[i] = filteredVAD[i] - val ;
                         } else {
-                            calibrated_VAD[i] = medianVAD[i] - 0.5f ;
+                            calibrated_VAD[i] = filteredVAD[i] - 0.5f ;
                         }
                     }
 
