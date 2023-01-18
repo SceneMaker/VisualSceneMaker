@@ -37,7 +37,9 @@ public class ThresholdActivationCalculator {
 
         int num_vars = thresholds.length ;
 
+        // Initialize the activation code to empty strings by default
         String[] threshold_codes = new String[num_vars];
+        Arrays.fill(threshold_codes, "");
 
         // For each variable (or threshold pair), we will scan the data history
         for(int var_num=0 ; var_num < num_vars ; var_num++) {
@@ -61,14 +63,7 @@ public class ThresholdActivationCalculator {
 
         }
 
-        // If at least one of the elements of the analysis is still null,
-        // then we don't report anything.
-        if(Arrays.stream(threshold_codes).anyMatch(Objects::isNull)) {
-            // System.out.println("thMul " + thresholdsMultiplier + "\tcode ''") ;
-            return "" ;
-        }
-
-        // Else, compose the return code
+        // Serialize the activation codes into a single string
         StringBuilder out = new StringBuilder();
         for(String threshold_res : threshold_codes) {
             assert threshold_res != null ;
