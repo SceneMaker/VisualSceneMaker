@@ -217,6 +217,12 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
 
                 });
 
+                // Clean the history also if the face is not detected.
+                // otherwise the queue will be always "valid", because its size doesn't decrease
+                long now = System.currentTimeMillis() ;
+                rawVADtimedHistory.removeOldSamples(now);
+                filteredVADtimedHistory.removeOldSamples(now);
+
                 if (there_is_face) {
 
                     float[] VAD_values = new float[] {
@@ -225,7 +231,6 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
                             Float.parseFloat(tupleData.get("dominance")),
                     } ;
 
-                    long now = System.currentTimeMillis() ;
 
                     // Append the raw data to the full queue
                     rawVADtimedHistory.appendData(now, VAD_values);

@@ -35,6 +35,8 @@ public class TimedHistory {
      */
     public void appendData(long t, float[] new_data) {
 
+        removeOldSamples(t);
+
         TimedFloats new_entry = new TimedFloats(t, new_data) ;
 
         // Runtime consistency check
@@ -47,12 +49,18 @@ public class TimedHistory {
 
         dataHistory.add(new_entry) ;
 
+    }
 
+    public void removeOldSamples() {
+        removeOldSamples(System.currentTimeMillis());
+    }
+
+    public void removeOldSamples(long now) {
         // Remove all "old" elements
         while(dataHistory.size() > 0) {
             TimedFloats oldest_entry = dataHistory.getFirst();
             // If the first element is too old, remove it
-            if(t - oldest_entry.t > timeWindowSizeMillis) {
+            if(now - oldest_entry.t > timeWindowSizeMillis) {
                 dataHistory.removeFirst() ;
             } else {
                 // if it is young enough, we can stop here.
