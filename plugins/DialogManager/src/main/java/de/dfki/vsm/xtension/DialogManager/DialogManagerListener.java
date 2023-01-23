@@ -9,15 +9,15 @@ import java.net.*;
  */
 public class DialogManagerListener extends Thread {
 
-    private DatagramSocket udpSocket;
-    private int port;
+    private DatagramSocket get_socket;
+    private int get_port;
     private final DialogManagerExecutor executor;
     private boolean keepServerAlive;
     private String ASR_message;
 
 
-    public DialogManagerListener(int port, DialogManagerExecutor executor, boolean keepServerAlive) {
-        this.port = port;
+    public DialogManagerListener(int get_port, DialogManagerExecutor executor, boolean keepServerAlive) {
+        this.get_port = get_port;
         this.executor = executor;
         this.keepServerAlive = keepServerAlive;
     }
@@ -25,7 +25,7 @@ public class DialogManagerListener extends Thread {
     @Override
     public final void start() {
         try {
-            this.udpSocket = new DatagramSocket(this.port);
+            this.get_socket = new DatagramSocket(this.get_port);
         } catch (SocketException e) {
             throw new RuntimeException(e);
         }
@@ -33,6 +33,7 @@ public class DialogManagerListener extends Thread {
     }
 
     public void killprocess(){
+        get_socket.close();
         this.keepServerAlive = false;
     }
 
@@ -56,7 +57,7 @@ public class DialogManagerListener extends Thread {
 
             // blocks until a packet is received
             try {
-                udpSocket.receive(packet);
+                get_socket.receive(packet);
             } catch (IOException e) {
                 System.out.println("Problem");
                 throw new RuntimeException(e);
