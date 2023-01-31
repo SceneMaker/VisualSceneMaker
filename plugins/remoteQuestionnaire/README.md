@@ -18,6 +18,19 @@ A client is implemented as Unity package.
 
 Instantiate an agent for the plugin `RemoteQuestionnaire` and set the `port` parameter (default 5002). This is the port where the websocket server with listen for incoming connections.
 
+![Example configuration](MindBot-VSM-ConfigureQuestionnairePlugin.png)
+
+Questions can be triggered through a scene text:
+
+```
+scene @@ ESM1
+quest: [Question text='Sei ben concentrato?'].
+
+scene @@ ESM2
+quest: [Question text='Ti senti in controllo della situazione?'].
+```
+
+
 ## Communication protocol
 
 The VSM plugin sends requests to answer to a specific question as JSON message to the client, with the format:
