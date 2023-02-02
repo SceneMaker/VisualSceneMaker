@@ -42,8 +42,9 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
 
     private final static String[] VAD_VARIABLES = { "valence", "arousal", "dominance" } ;
 
-    private final static float RAW_VAD_HISTORY_SIZE_SECS = 15 ;
-    private final static float FILTERED_VAD_HISTORY_SIZE_SECS = 60 ;
+    private final static float RAW_VAD_HISTORY_MAX_SIZE_SECS = 15 ;
+    private final static float FILTERED_VAD_HISTORY_MAX_SIZE_SECS = 60 ;
+    private final static float PAIN_HISTORY_MAX_SIZE_SECS = 60 ;
 
     private final static float MEDIAN_FILTER_SECS = 1.0f ;
 
@@ -75,10 +76,10 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
         Collections.addAll(log_variables_list, Arrays.stream(focusTargets).map(target -> "ssi_focus_" + target).toArray(String[]::new)) ;
         Collections.addAll(log_variables_list, Arrays.stream(VAD_VARIABLES).map(target -> "calibration_" + target).toArray(String[]::new)) ;
         Collections.addAll(log_variables_list, Arrays.stream(VAD_VARIABLES).map(target -> "filtered_" + target).toArray(String[]::new)) ;
-        Collections.addAll(log_variables_list, "threshold_multiplier") ;
+        Collections.addAll(log_variables_list, "VAD_threshold_multiplier") ;
         Collections.addAll(log_variables_list,"VAD_activation_code") ;
         Collections.addAll(log_variables_list,"ssi_fatigue", "ssi_fatigue_avg");
-        Collections.addAll(log_variables_list,"ssi_pain", "pain_activation_code");
+        Collections.addAll(log_variables_list,"ssi_pain", "pain_activation_code", "pain_activation_threshold");
         Collections.addAll(log_variables_list, "ssi_face_detected") ;
     }
     static final String[] log_variables = log_variables_list.toArray(new String[]{}) ;
@@ -107,8 +108,8 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
 
         //
         // Setup all the stuff needed to filter the signal and compute threshold activations
-        rawVADhistory = new TimedHistory(RAW_VAD_HISTORY_SIZE_SECS) ;
-        filteredVADhistory = new TimedHistory(FILTERED_VAD_HISTORY_SIZE_SECS);
+        rawVADhistory = new TimedHistory(RAW_VAD_HISTORY_MAX_SIZE_SECS) ;
+        filteredVADhistory = new TimedHistory(FILTERED_VAD_HISTORY_MAX_SIZE_SECS);
 
         ThresholdPair[] thresholds = new ThresholdPair[] {
                 new ThresholdPair(RMSE_V_LO, RMSE_V_HI),
@@ -119,7 +120,7 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
 
         VADactivationCalculator = new ThresholdActivationCalculator(filteredVADhistory, thresholds) ;
 
-        painHistory = new TimedHistory(FILTERED_VAD_HISTORY_SIZE_SECS) ;
+        painHistory = new TimedHistory(PAIN_HISTORY_MAX_SIZE_SECS) ;
         painActivationCalculator = new ThresholdActivationCalculator(painHistory,
                 new ThresholdPair[] {new ThresholdPair(-0.1f, 0.8f)} ) ;
 
@@ -150,7 +151,7 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
     // Handle SSI event array
     @Override
     public void handle(final SSIEventArray array) {
-        //   mLogger.message("Got SSI message array of size " + array.size());
+        // mLogger.message("Got SSI message array of size " + array.size());
 
         long now = System.currentTimeMillis() ;
 
@@ -160,12 +161,14 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
 
             // Print information about the received message
             // For example, the event was produced from address "coords@mouse" or "click@mouse"
+/*
             mLogger.message(" - sender: " + event_entry.getSender() + // e.g.: "mouse"
                     "\t event: " + event_entry.getEvent() + // e.g.: "coords"
                     "\t from: " + event_entry.getFrom() + // an integer number (?)
                     "\t type: " + event_entry.getType() +  // "MAP" for probability distributions, "TUPLE" for coords, or "EMPTY" for clicks
                     "\t state: " + event_entry.getState() +  // "continued" for streamed coords and clicks down, or "completed" for clicks up.
                     "\t data: " + event_entry.getData());
+*/
 
             String sender = event_entry.getSender();
             String event = event_entry.getEvent();
@@ -186,7 +189,7 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
             } else if (sender.equals("video") && event.equals("emotion")) {
                 assert event_entry.getType().equals("MAP");
                 SSITupleData tupleData = (SSITupleData) data;
-                mLogger.message("Got emotion+valence+arousal values: \t" + tupleData);
+                // mLogger.message("Got emotion+valence+arousal values: \t" + tupleData);
 
                 // if there is a face detected
                 boolean there_is_face = Arrays.stream(ekmanNames).
@@ -274,8 +277,8 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
                     // System.out.println(now + "\t" + filteredVADtimedHistory.historySize());
                     // check for activations in the filtered queue
                     float threshold_mult = 1.0f;
-                    if(mProject.hasVariable( "threshold_multiplier")) {
-                        FloatValue fv = (FloatValue)mProject.getValueOf("threshold_multiplier") ;
+                    if(mProject.hasVariable( "VAD_threshold_multiplier")) {
+                        FloatValue fv = (FloatValue)mProject.getValueOf("VAD_threshold_multiplier") ;
                         threshold_mult = fv.floatValue();
                     }
                     String activation_code = VADactivationCalculator.triggersAreActivated(threshold_mult);
@@ -298,7 +301,7 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
             } else if (sender.equals("video") && event.equals("focus")) {
                 assert event_entry.getType().equals("MAP");
                 SSITupleData tupleData = (SSITupleData) data;
-                mLogger.message("Got video focus values: \t" + tupleData);
+                // mLogger.message("Got video focus values: \t" + tupleData);
 
                 // if there is a face detected
                 boolean there_is_face = Arrays.stream(focusTargets).
@@ -349,8 +352,17 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
                 }
 
                 painHistory.appendData(now, new float[] {painValue});
-                String pain_activation_code = painActivationCalculator.triggersAreActivated(1.0f);
+
+                // Compute the pain activation threshold
+                float pain_threshold_mult = 1.0f;
+                if(mProject.hasVariable( "pain_activation_threshold")) {
+                    FloatValue fv = (FloatValue)mProject.getValueOf("pain_activation_threshold") ;
+                    pain_threshold_mult = fv.floatValue();
+                }
+
+                String pain_activation_code = painActivationCalculator.triggersAreActivated(pain_threshold_mult);
                 if(mProject.hasVariable("pain_activation_code")) {
+                    System.out.println("Pain threshold="+pain_threshold_mult+"\t code '"+pain_activation_code+"'");
                     mProject.setVariable("pain_activation_code", pain_activation_code) ;
                 }
 
