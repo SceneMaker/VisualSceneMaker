@@ -1,5 +1,7 @@
 package de.dfki.vsm.xtension.DialogManager;
 
+import de.dfki.vsm.util.log.LOGDefaultLogger;
+
 import java.io.IOException;
 import java.net.*;
 
@@ -14,12 +16,14 @@ public class DialogManagerListener extends Thread {
     private final DialogManagerExecutor executor;
     private boolean keepServerAlive;
     private String ASR_message;
+    private LOGDefaultLogger mLogger;
 
 
-    public DialogManagerListener(int get_port, DialogManagerExecutor executor, boolean keepServerAlive) {
+    public DialogManagerListener(int get_port, LOGDefaultLogger mLogger, DialogManagerExecutor executor, boolean keepServerAlive) {
         this.get_port = get_port;
         this.executor = executor;
         this.keepServerAlive = keepServerAlive;
+        this.mLogger = mLogger;
     }
 
     @Override
@@ -27,7 +31,7 @@ public class DialogManagerListener extends Thread {
         try {
             this.get_socket = new DatagramSocket(this.get_port);
         } catch (SocketException e) {
-            throw new RuntimeException(e);
+            mLogger.failure("Failed to create socket: " + e);
         }
         super.start();
     }
@@ -46,7 +50,7 @@ public class DialogManagerListener extends Thread {
         try {
             System.out.println("-- Running Server at " + InetAddress.getLocalHost() + "--");
         } catch (UnknownHostException e) {
-            throw new RuntimeException(e);
+            mLogger.failure("Failed to run server: " + e);
         }
         String msg;
 
@@ -58,20 +62,19 @@ public class DialogManagerListener extends Thread {
             // blocks until a packet is received
             try {
                 get_socket.receive(packet);
+
+                msg = new String(packet.getData()).trim();
+
+                System.out.println(
+                        "Message from " + packet.getAddress().getHostAddress() + ": " + msg);
+
+                ASR_message = msg;
+
+                executor.set_transcript(msg);
+                System.out.println(executor.get_transcript());
             } catch (IOException e) {
-                System.out.println("Problem");
-                throw new RuntimeException(e);
+                mLogger.failure("Error while receiving packet: " + e);
             }
-            msg = new String(packet.getData()).trim();
-
-            System.out.println(
-                    "Message from " + packet.getAddress().getHostAddress() + ": " + msg);
-
-            ASR_message = msg;
-
-            executor.set_transcript(msg);
-            System.out.println(executor.get_transcript());
-
         }
     }
 }

@@ -44,15 +44,13 @@ public class DialogManagerExecutor extends ActivityExecutor {
 
     @Override
     public void launch() {
-        listener = new DialogManagerListener(get_port, this, true);
+        listener = new DialogManagerListener(get_port, mLogger, this, true);
         listener.start();
 
         try {
             sender = new DialogManagerSender(post_port, post_address);
-        } catch (SocketException e) {
-            throw new RuntimeException(e);
-        } catch (UnknownHostException e) {
-            throw new RuntimeException(e);
+        } catch (SocketException | UnknownHostException e) {
+            mLogger.failure("Failed to create DialogManagerSender: " + e);
         }
 
         asr_res_var = mConfig.getProperty(sASR_RES_VAR, sASR_RES_VAR_DEFAULT);
