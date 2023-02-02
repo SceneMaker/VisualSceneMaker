@@ -341,7 +341,7 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
             } else if (sender.equals("video") && event.equals("pain")) {
                 assert event_entry.getType().equals("MAP");
                 SSITupleData tupleData = (SSITupleData) data;
-                mLogger.message("Got pain data: \t" + tupleData);
+                // mLogger.message("Got pain data: \t" + tupleData);
 
                 float painValue = Float.parseFloat(tupleData.get("pain"));
                 float noPainValue = Float.parseFloat(tupleData.get("no pain")) ;
@@ -362,7 +362,7 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
 
                 String pain_activation_code = painActivationCalculator.triggersAreActivated(pain_threshold_mult);
                 if(mProject.hasVariable("pain_activation_code")) {
-                    System.out.println("Pain threshold="+pain_threshold_mult+"\t code '"+pain_activation_code+"'");
+                    // System.out.println("Pain threshold="+pain_threshold_mult+"\t code '"+pain_activation_code+"'");
                     mProject.setVariable("pain_activation_code", pain_activation_code) ;
                 }
 
