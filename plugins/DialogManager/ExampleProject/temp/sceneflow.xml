@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SceneFlow id="" name="default" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Thu, 12 Jan 2023 13:50:18" start="N2;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
+  <Define>
+  </Define>
+  <Declare>
+    <VariableDefinition type="String" name ="appContext">
+      <StringLiteral><![CDATA[Home]]></StringLiteral>
+    </VariableDefinition>
+    <VariableDefinition type="Bool" name ="avatar_connected">
+      <BoolLiteral value="false"/>
+    </VariableDefinition>
+    <VariableDefinition type="Bool" name ="gui_connected">
+      <BoolLiteral value="false"/>
+    </VariableDefinition>
+    <VariableDefinition type="String" name ="gui_info">
+      <StringLiteral><![CDATA[]]></StringLiteral>
+    </VariableDefinition>
+    <VariableDefinition type="Bool" name ="userActive">
+      <BoolLiteral value="false"/>
+    </VariableDefinition>
+    <VariableDefinition type="Bool" name ="user_speaking">
+      <BoolLiteral value="false"/>
+    </VariableDefinition>
+    <VariableDefinition type="Bool" name ="avatar_speaking">
+      <BoolLiteral value="false"/>
+    </VariableDefinition>
+    <VariableDefinition type="String" name ="turn_utterance">
+      <StringLiteral><![CDATA[]]></StringLiteral>
+    </VariableDefinition>
+    <VariableDefinition type="Bool" name ="reset">
+      <BoolLiteral value="false"/>
+    </VariableDefinition>
+    <VariableDefinition type="String" name ="debug">
+      <StringLiteral><![CDATA[]]></StringLiteral>
+    </VariableDefinition>
+    <VariableDefinition type="String" name ="asr_result">
+      <StringLiteral><![CDATA[]]></StringLiteral>
+    </VariableDefinition>
+    <VariableDefinition type="Float" name ="faceX">
+      <FloatLiteral value="0.0"/>
+    </VariableDefinition>
+    <VariableDefinition type="Float" name ="faceY">
+      <FloatLiteral value="0.0"/>
+    </VariableDefinition>
+    <VariableDefinition type="Float" name ="valence">
+      <FloatLiteral value="0.0"/>
+    </VariableDefinition>
+    <VariableDefinition type="Float" name ="arousal">
+      <FloatLiteral value="0.0"/>
+    </VariableDefinition>
+    <VariableDefinition type="Float" name ="noise">
+      <FloatLiteral value="0.0"/>
+    </VariableDefinition>
+    <VariableDefinition type="Float" name ="voice">
+      <FloatLiteral value="0.0"/>
+    </VariableDefinition>
+    <VariableDefinition type="Float" name ="mouthOpen">
+      <FloatLiteral value="0.0"/>
+    </VariableDefinition>
+  </Declare>
+  <Commands>
+  </Commands>
+  <LocalVariableBadge>
+    <Position xPos="15" yPos="104"/>
+  </LocalVariableBadge>
+  <GlobalVariableBadge>
+    <Position xPos="10" yPos="10"/>
+  </GlobalVariableBadge>
+  <Node id="N1218" name="N1218" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <Assignment>
+        <SimpleVariable name="asr_result"/>
+        <Expression>
+          <StringLiteral><![CDATA[]]></StringLiteral>
+        </Expression>
+      </Assignment>
+    </Commands>
+    <EEdge target="N2" start ="">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="498" yPos="563" ctrlXPos="498" ctrlYPos="530"/>
+        <ControlPoint xPos="498" yPos="433" ctrlXPos="498" ctrlYPos="465"/>
+      </Connection>
+    </Graphics>
+    </EEdge>
+    <Graphics>
+      <Position xPos="433" yPos="563"/>
+    </Graphics>
+  </Node>
+  <Node id="N1219" name="stopASR" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <PlayAction mode="Default">
+        <StringLiteral><![CDATA[[ssj event name=user state=completed]]]></StringLiteral>
+      </PlayAction>
+      <PlayAction mode="Default">
+        <StringLiteral><![CDATA[[asr event action=stop_ASR]]]></StringLiteral>
+      </PlayAction>
+    </Commands>
+    <EEdge target="N3" start ="">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="1018" yPos="433" ctrlXPos="1018" ctrlYPos="465"/>
+        <ControlPoint xPos="1018" yPos="563" ctrlXPos="1018" ctrlYPos="530"/>
+      </Connection>
+    </Graphics>
+    </EEdge>
+    <Graphics>
+      <Position xPos="953" yPos="303"/>
+    </Graphics>
+  </Node>
+  <Node id="N1" name="N1212" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <TEdge target="N1" start="" timeout="1000">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="385" yPos="2255" ctrlXPos="419" ctrlYPos="2129"/>
+        <ControlPoint xPos="424" yPos="2285" ctrlXPos="536" ctrlYPos="2219"/>
+      </Connection>
+    </Graphics>
+    </TEdge>
+    <Graphics>
+      <Position xPos="303" yPos="2253"/>
+    </Graphics>
+  </Node>
+  <Node id="N2" name="startASR" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <PlayAction mode="Default">
+        <StringLiteral><![CDATA[[asr event action=start_ASR]]]></StringLiteral>
+      </PlayAction>
+      <PlayAction mode="Default">
+        <StringLiteral><![CDATA[[ssj event name=user state=continued]]]></StringLiteral>
+      </PlayAction>
+    </Commands>
+    <TEdge target="N1219" start="" timeout="10000">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="563" yPos="368" ctrlXPos="725" ctrlYPos="368"/>
+        <ControlPoint xPos="953" yPos="368" ctrlXPos="790" ctrlYPos="368"/>
+      </Connection>
+    </Graphics>
+    </TEdge>
+    <Graphics>
+      <Position xPos="433" yPos="303"/>
+    </Graphics>
+  </Node>
+  <Node id="N3" name="N3" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <PlayScene>
+        <StringLiteral><![CDATA[asr_mimic]]></StringLiteral>
+        <StructExpression>
+          <Assignment>
+            <SimpleVariable name="asr_res"/>
+            <Expression>
+              <SimpleVariable name="asr_result"/>
+            </Expression>
+          </Assignment>
+        </StructExpression>
+      </PlayScene>
+    </Commands>
+    <EEdge target="N1218" start ="">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="953" yPos="628" ctrlXPos="790" ctrlYPos="628"/>
+        <ControlPoint xPos="563" yPos="628" ctrlXPos="725" ctrlYPos="628"/>
+      </Connection>
+    </Graphics>
+    </EEdge>
+    <Graphics>
+      <Position xPos="953" yPos="563"/>
+    </Graphics>
+  </Node>
+  <Node id="N4" name="startASR" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <PlayAction mode="Default">
+        <StringLiteral><![CDATA[[asr event action=start_ASR]]]></StringLiteral>
+      </PlayAction>
+    </Commands>
+    <TEdge target="N4" start="" timeout="1000">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="385" yPos="45" ctrlXPos="419" ctrlYPos="19"/>
+        <ControlPoint xPos="424" yPos="75" ctrlXPos="536" ctrlYPos="19"/>
+      </Connection>
+    </Graphics>
+    </TEdge>
+    <Graphics>
+      <Position xPos="303" yPos="43"/>
+    </Graphics>
+  </Node>
+  <Node id="N6" name="startASR" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <PlayScene>
+        <StringLiteral><![CDATA[start_asr]]></StringLiteral>
+      </PlayScene>
+    </Commands>
+    <TEdge target="N6" start="" timeout="1000">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="934" yPos="62" ctrlXPos="1069" ctrlYPos="15"/>
+        <ControlPoint xPos="944" yPos="75" ctrlXPos="1186" ctrlYPos="15"/>
+      </Connection>
+    </Graphics>
+    </TEdge>
+    <Graphics>
+      <Position xPos="823" yPos="43"/>
+    </Graphics>
+  </Node>
+  <UserCommands>
+    <UserCommand name="newCommand" classname ="java.lang.System.out" method="println">
+      <ArgumentDefinition name="text" type="java.lang.String"/>
+    </UserCommand>
+  </UserCommands>
+  <ClassPath>
+  </ClassPath>
+  <InitContext></InitContext>
+</SceneFlow>
