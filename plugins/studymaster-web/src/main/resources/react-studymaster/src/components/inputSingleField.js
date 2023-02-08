@@ -1,5 +1,5 @@
 import {Row} from "react-bootstrap";
-import React, {useState} from "react";
+import React, {useState, useEffect} from "react";
 import {FormHelperText, TextField} from "@mui/material";
 import RadioGroup from '@mui/material/RadioGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
@@ -37,6 +37,7 @@ function GenerateInputFieldWithType(props, updateUserSubmittedInfo, formContents
     }
 
     const [checkBoxState, setCheckBoxState] = useState(values.reduce((a, v) => ({...a, [v]: false}), {}));
+    const [radioCurrSelectVal, setRadioCurrSelectVal] = useState("");
 
     function checkboxArrContainsObj(a, obj) {
 
@@ -152,18 +153,19 @@ function GenerateInputFieldWithType(props, updateUserSubmittedInfo, formContents
                         >
                             <RadioGroup
                                 aria-label={formContents.variable[currIdx]}
-                                name="radio-buttons-group"
+                                name={"radio-buttons-group-"+formContents.variable[currIdx]}
                             >
 
                                 {values.map((option) =>
                                     <Form.Check
                                         key={option}
-                                        name={"group1"}
+                                        name={"group-"+formContents.variable[currIdx]}
                                         type={"radio"}
                                         label={option}
                                         value={option || ''}
-                                        checked={props.userSubmittedInfo[variable] === option || false}
+                                        checked={radioCurrSelectVal === option}
                                         onChange={e => {
+                                            setRadioCurrSelectVal(e.target.value);
                                             updateUserSubmittedInfo(variable, e.target.value);
                                             props.webSocket.send(`VSMMessage#VAR#${variable}#${e.target.value}`);
                                         }}

@@ -11,6 +11,24 @@ This plugin uses an embedded Javalin web server to serve the web pages, and
 a web application built with React to show the information.
 The communication between the web GUI and the VSM plugin is done via Websockets.
 
+# NOTE: Plugin has been updated with a revamped React GUI. Please take a look at the example project to understand the current functionality. 
+# Many new features have been implemented such as:
+* Redesigned GUI with two areas:
+  * Information area on the top where the studymaster can be informed about current states
+  * Form input area below where the studymaster will be requested to fill in info
+* Developer tools (tracks VSM variables and allows cmd log downloads), 
+* INFORM is a VSM non-blocking cmd providing info to the studymaster in the information area
+* PROCEED is a VSM blocking cmd that will wait for a button click in the GUI to proceed in the VSM project
+* REQUEST is also a VSM blocking cmd and functions similar to the previous version. Supported request fields are: 
+  * Text input
+  * Number input
+  * Radio button input (select one from many options)
+  * Checkbox button input (slect none or any from many options)
+  * slider input 
+* NOTE: All above fields updated in the GUI will also be updated in the VSM in real-time.
+* In case you want to wait for the studymaster to submit the form to proceed, please use the `request_result` variable as in the Example Project.
+* NOTE: `go_var` is now deprecated and all it's functionality is removed.
+
 ## How to use it
 
 * Open the project preferences
