@@ -74,23 +74,22 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
     private ThresholdActivationCalculator painActivationCalculator ;
 
     /** Compose the list of variables that will be logged. */
-    // TODO -- adjust variables visibillity
-    static final List<String> log_variables_list = new LinkedList<>() ;
+    private static final List<String> LOG_VARIABLES_LIST = new LinkedList<>() ;
     static {
-        Collections.addAll(log_variables_list, Arrays.stream(emotionNames).map(emotion -> "ssi_emotion_" + emotion).toArray(String[]::new)) ;
-        Collections.addAll(log_variables_list, Arrays.stream(focusTargets).map(target -> "ssi_focus_" + target).toArray(String[]::new)) ;
-        Collections.addAll(log_variables_list, Arrays.stream(VAD_VARIABLES).map(target -> "calibration_" + target).toArray(String[]::new)) ;
-        Collections.addAll(log_variables_list, Arrays.stream(VAD_VARIABLES).map(target -> "filtered_" + target).toArray(String[]::new)) ;
-        Collections.addAll(log_variables_list, "VAD_threshold_multiplier") ;
-        Collections.addAll(log_variables_list,"VAD_activation_code") ;
-        Collections.addAll(log_variables_list,"ssi_fatigue", "ssi_fatigue_avg");
-        Collections.addAll(log_variables_list,"ssi_pain", "pain_activation_code", "pain_activation_threshold");
-        Collections.addAll(log_variables_list, "ssi_face_detected") ;
+        Collections.addAll(LOG_VARIABLES_LIST, Arrays.stream(emotionNames).map(emotion -> "ssi_emotion_" + emotion).toArray(String[]::new)) ;
+        Collections.addAll(LOG_VARIABLES_LIST, Arrays.stream(focusTargets).map(target -> "ssi_focus_" + target).toArray(String[]::new)) ;
+        Collections.addAll(LOG_VARIABLES_LIST, Arrays.stream(VAD_VARIABLES).map(target -> "calibration_" + target).toArray(String[]::new)) ;
+        Collections.addAll(LOG_VARIABLES_LIST, Arrays.stream(VAD_VARIABLES).map(target -> "filtered_" + target).toArray(String[]::new)) ;
+        Collections.addAll(LOG_VARIABLES_LIST, "VAD_threshold_multiplier") ;
+        Collections.addAll(LOG_VARIABLES_LIST,"VAD_activation_code") ;
+        Collections.addAll(LOG_VARIABLES_LIST,"ssi_fatigue", "ssi_fatigue_avg");
+        Collections.addAll(LOG_VARIABLES_LIST,"ssi_pain", "pain_activation_code", "pain_activation_threshold");
+        Collections.addAll(LOG_VARIABLES_LIST, "ssi_face_detected") ;
     }
-    static final String[] log_variables = log_variables_list.toArray(new String[]{}) ;
+    private static final String[] LOG_VARIABLES = LOG_VARIABLES_LIST.toArray(new String[]{}) ;
 
     /** This will write the log of the variable values. */
-    ActivityLogger _activity_logger ;
+    private ActivityLogger _activity_logger ;
 
 
     // Construct SSI plugin
@@ -316,7 +315,7 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
 
                 // Log all the registered variables
                 try {
-                    _activity_logger.logVariables(log_variables);
+                    _activity_logger.logVariables(LOG_VARIABLES);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
