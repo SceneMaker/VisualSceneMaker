@@ -51,28 +51,33 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
     /** This is the queue for raw VAD values, used to compute the calibration values
      * as well as the short-term denoise filtering.
      */
-    private static TimedHistory rawVADhistory;
+    private TimedHistory rawVADhistory;
 
     /** This is the queue for "low-pass" filtered VAD values, used to check for threshold activations. */
-    private static TimedHistory filteredVADhistory;
+    private TimedHistory filteredVADhistory;
 
     private static int TIMED_HISTORY_MIN_SIZE = 5 ;
 
     /** Used to check for the activation of thresholds. */
     private ThresholdActivationCalculator VADactivationCalculator;
 
+    /** Will be set by the constructor.
+     * Dirty hack to get reference to the running instance from static methods visible to the scene flow.
+     */
+    private static MindBotSSIPlugin CURRENT_INSTANCE;
     private static RunTimeProject PROJECT_REFERENCE;
 
+
     /** Use to keep track of the pain value. */
-    private static TimedHistory painHistory ;
+    private TimedHistory rawPainHistory;
+    private TimedHistory filteredPainHistory;
     private ThresholdActivationCalculator painActivationCalculator ;
 
-    // static final String[] log_variables_old = Arrays.stream(emotionNames).map(emotion -> "ssi_emotion_" + emotion + "_avg").toArray(String[]::new);
+    /** Compose the list of variables that will be logged. */
+    // TODO -- adjust variables visibillity
     static final List<String> log_variables_list = new LinkedList<>() ;
     static {
-        // Collections.addAll(log_variables_list, Arrays.stream(emotionNames).map(emotion -> "ssi_emotion_" + emotion + "_avg").toArray(String[]::new)) ;
         Collections.addAll(log_variables_list, Arrays.stream(emotionNames).map(emotion -> "ssi_emotion_" + emotion).toArray(String[]::new)) ;
-        // Collections.addAll(log_variables_list, Arrays.stream(focusTargets).map(target -> "ssi_focus_" + target + "_avg").toArray(String[]::new)) ;
         Collections.addAll(log_variables_list, Arrays.stream(focusTargets).map(target -> "ssi_focus_" + target).toArray(String[]::new)) ;
         Collections.addAll(log_variables_list, Arrays.stream(VAD_VARIABLES).map(target -> "calibration_" + target).toArray(String[]::new)) ;
         Collections.addAll(log_variables_list, Arrays.stream(VAD_VARIABLES).map(target -> "filtered_" + target).toArray(String[]::new)) ;
@@ -83,8 +88,9 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
         Collections.addAll(log_variables_list, "ssi_face_detected") ;
     }
     static final String[] log_variables = log_variables_list.toArray(new String[]{}) ;
-    ActivityLogger _activity_logger ;
 
+    /** This will write the log of the variable values. */
+    ActivityLogger _activity_logger ;
 
 
     // Construct SSI plugin
@@ -96,6 +102,7 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
 
         // Dirty trick, to make the project reference available also into static methods.
         PROJECT_REFERENCE = project;
+        CURRENT_INSTANCE = this ;
 
         mLogger.message("MindSSI plugin constructed...");
     }
@@ -120,8 +127,9 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
 
         VADactivationCalculator = new ThresholdActivationCalculator(filteredVADhistory, thresholds) ;
 
-        painHistory = new TimedHistory(PAIN_HISTORY_MAX_SIZE_SECS) ;
-        painActivationCalculator = new ThresholdActivationCalculator(painHistory,
+        rawPainHistory = new TimedHistory(PAIN_HISTORY_MAX_SIZE_SECS) ;
+        filteredPainHistory = new TimedHistory(PAIN_HISTORY_MAX_SIZE_SECS) ;
+        painActivationCalculator = new ThresholdActivationCalculator(filteredPainHistory,
                 new ThresholdPair[] {new ThresholdPair(-0.1f, 0.8f)} ) ;
 
         try {
@@ -234,8 +242,11 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
 
                 // Clean the history also if the face is not detected.
                 // otherwise the queue will be always "valid", because its size doesn't decrease
-                rawVADhistory.removeOldSamples(now);
-                filteredVADhistory.removeOldSamples(now);
+                // synch because the scene flow is doing the same through static methods
+                synchronized (this) {
+                    rawVADhistory.removeOldSamples(now);
+                    filteredVADhistory.removeOldSamples(now);
+                }
 
                 if (there_is_face) {
 
@@ -246,10 +257,15 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
                     } ;
 
 
-                    // Append the raw data to the full queue
-                    rawVADhistory.appendData(now, VAD_values);
-                    // Extract a few recent samples for median computation
-                    TimedHistory filter_buffer = rawVADhistory.extractMostRecent(MEDIAN_FILTER_SECS) ;
+                    //
+                    // Low-pass filter for the raw signals
+                    TimedHistory filter_buffer ;
+                    synchronized (this) {
+                        // Append the raw data to the full queue
+                        rawVADhistory.appendData(now, VAD_values);
+                        // Extract a few recent samples for median computation
+                        filter_buffer = rawVADhistory.extractMostRecent(MEDIAN_FILTER_SECS);
+                    }
                     // Compute the median over the recent buffer
                     float[] filteredVAD = MedianCalculator.computeMedians(filter_buffer) ;
                     for (int i=0 ; i<VAD_VARIABLES.length ; i++) {
@@ -259,8 +275,7 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
                     }
 
                     //
-                    // Calibrate according to the calibration data
-                    //
+                    // Center according to the calibration data
                     //
                     float [] calibrated_VAD = new float[VAD_VARIABLES.length] ;
                     for (int i=0 ; i<VAD_VARIABLES.length ; i++) {
@@ -272,16 +287,25 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
                         }
                     }
 
-                    // Append the filtered data to the queue
-                    filteredVADhistory.appendData(calibrated_VAD);
+                    //
+                    // Compute the activation threshold according to the filtered queue
+                    //
+
                     // System.out.println(now + "\t" + filteredVADtimedHistory.historySize());
-                    // check for activations in the filtered queue
+                    // First, retrieve the acivation multiplier
                     float threshold_mult = 1.0f;
                     if(mProject.hasVariable( "VAD_threshold_multiplier")) {
                         FloatValue fv = (FloatValue)mProject.getValueOf("VAD_threshold_multiplier") ;
                         threshold_mult = fv.floatValue();
                     }
-                    String activation_code = VADactivationCalculator.triggersAreActivated(threshold_mult);
+
+                    String activation_code ;
+                    synchronized (this) {
+                        // Append the filtered data to the queue
+                        filteredVADhistory.appendData(calibrated_VAD);
+                        // this following line is also in the synch section, because it references the filtered history.
+                        activation_code = VADactivationCalculator.triggersAreActivated(threshold_mult);
+                    }
 
                     if(mProject.hasVariable("VAD_activation_code")) {
                         mProject.setVariable("VAD_activation_code", activation_code) ;
@@ -345,41 +369,86 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
 
                 float painValue = Float.parseFloat(tupleData.get("pain"));
                 float noPainValue = Float.parseFloat(tupleData.get("no pain")) ;
-                // boolean there_is_face = painValue != 0.0f || noPainValue != 0.0f ;
+                boolean there_is_face = painValue != 0.0f || noPainValue != 0.0f ;
 
                 if (mProject.hasVariable("ssi_pain")) {
                     mProject.setVariable("ssi_pain", painValue);
                 }
 
-                painHistory.appendData(now, new float[] {painValue});
-
-                // Compute the pain activation threshold
-                float pain_threshold_mult = 1.0f;
-                if(mProject.hasVariable( "pain_activation_threshold")) {
-                    FloatValue fv = (FloatValue)mProject.getValueOf("pain_activation_threshold") ;
-                    pain_threshold_mult = fv.floatValue();
+                // Clean the history also if the face is not detected.
+                // otherwise the queue will be always "valid", because its size doesn't decrease
+                // synch because the scene flow is doing the same through static methods
+                synchronized (this) {
+                    rawPainHistory.removeOldSamples(now);
+                    filteredPainHistory.removeOldSamples(now);
                 }
 
-                String pain_activation_code = painActivationCalculator.triggersAreActivated(pain_threshold_mult);
-                if(mProject.hasVariable("pain_activation_code")) {
-                    // System.out.println("Pain threshold="+pain_threshold_mult+"\t code '"+pain_activation_code+"'");
-                    mProject.setVariable("pain_activation_code", pain_activation_code) ;
-                }
+                if (there_is_face) {
 
+                    //
+                    // Low-pass filter for the raw signals
+                    TimedHistory filter_buffer ;
+                    synchronized (this) {
+                        // Append the raw data to the full queue
+                        rawPainHistory.appendData(now, new float[]{painValue});
+                        filter_buffer = rawPainHistory.extractMostRecent(MEDIAN_FILTER_SECS);
+                    }
+                    // Compute the median over the recent buffer
+                    float[] filterRes = MedianCalculator.computeMedians(filter_buffer) ;
+                    assert filterRes.length == 1 ;
+                    float filteredPain = filterRes[0] ;
+                    if (mProject.hasVariable("filtered_pain")) {
+                        mProject.setVariable("filtered_pain", filteredPain);
+                    }
+
+                    //
+                    // Compute the activation threshold according to the filtered queue
+                    //
+
+                    // Compute the pain activation threshold
+                    float pain_threshold_mult = 1.0f;
+                    if (mProject.hasVariable("pain_activation_threshold")) {
+                        FloatValue fv = (FloatValue) mProject.getValueOf("pain_activation_threshold");
+                        pain_threshold_mult = fv.floatValue();
+                    }
+
+                    String pain_activation_code;
+                    synchronized (this) {
+                        filteredPainHistory.appendData(now, new float[]{painValue});
+                        pain_activation_code = painActivationCalculator.triggersAreActivated(pain_threshold_mult);
+                    }
+
+                    if (mProject.hasVariable("pain_activation_code")) {
+                        // System.out.println("Pain threshold="+pain_threshold_mult+"\t code '"+pain_activation_code+"'");
+                        mProject.setVariable("pain_activation_code", pain_activation_code);
+                    }
+
+                }
 
             }
 
-        } // end for(...)
+        } // end for(...) - iteration on event list
 
     } // end handle()
 
 
+    private synchronized void _resetTimedHistory() {
+        rawVADhistory.clearDataHistory();
+        filteredVADhistory.clearDataHistory();
+        rawPainHistory.clearDataHistory();
+        filteredPainHistory.clearDataHistory();
+    }
 
 
-    public static void measureBaselines(){
+    /** Computes the median of the raw variables history queue and set the values on the project variables "calibration_*"
+     */
+    private synchronized void _measureBaselines(){
 
         // Compute the median of the values in the threshold activation history
         float[] calibration_medians = MedianCalculator.computeMedians(rawVADhistory) ;
+
+        // There are as many medians as the number of VAD variables
+        assert calibration_medians.length == VAD_VARIABLES.length ;
 
         // Set the proper variables
         for(int i = 0; i < VAD_VARIABLES.length ; i++) {
@@ -391,31 +460,46 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
 
     }
 
+    public synchronized boolean _isTimedHistoryValid() {
+        return filteredVADhistory.historySize() >= TIMED_HISTORY_MIN_SIZE ;
+    }
+
+
+    //
+    // STATIC methods, visible from the project
+    //
 
     public static int getTimedHistoryMaxAgeMillis() {
-        return (int) filteredVADhistory.getTimeWindowSizeMillis();
+        // TODO -- verfy it is used in the project
+        //return (int) filteredVADhistory.getTimeWindowSizeMillis();
+        return 0 ;
     }
 
     public static void setTimedHistoryMaxAgeMillis(int timedHistoryMaxAgeMillis) {
-        filteredVADhistory.setTimeWindowSizeMillis(timedHistoryMaxAgeMillis);
+        // TODO -- verfy it is used in the project
+        //filteredVADhistory.setTimeWindowSizeMillis(timedHistoryMaxAgeMillis);
     }
 
     public static int getTimedHistoryMinSize() {
+        // TODO -- verfy it is used in the project
         return TIMED_HISTORY_MIN_SIZE;
     }
 
     public static void setTimedHistoryMinSize(int timedHistoryMinSize) {
+        // TODO -- verfy it is used in the project
         TIMED_HISTORY_MIN_SIZE = timedHistoryMinSize;
     }
 
-    public static synchronized boolean isTimedHistoryValid() {
-        return filteredVADhistory.historySize() >= TIMED_HISTORY_MIN_SIZE ;
+    public static boolean isTimedHistoryValid() {
+        return CURRENT_INSTANCE._isTimedHistoryValid();
     }
 
-    public static synchronized void resetTimedHistory() {
-        rawVADhistory.clearDataHistory();
-        filteredVADhistory.clearDataHistory();
-        painHistory.clearDataHistory();
+    public static void resetTimedHistory() {
+        CURRENT_INSTANCE._resetTimedHistory();
+    }
+
+    public static void measureBaselines() {
+        CURRENT_INSTANCE._measureBaselines();
     }
 
 
