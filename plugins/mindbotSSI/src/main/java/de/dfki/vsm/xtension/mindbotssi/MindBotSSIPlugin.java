@@ -431,6 +431,8 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
     } // end handle()
 
 
+    /** Empty all o the time histories for raw and filtered data for all emotions and pain.
+     */
     private synchronized void _resetTimedHistory() {
         rawVADhistory.clearDataHistory();
         filteredVADhistory.clearDataHistory();
@@ -439,7 +441,7 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
     }
 
 
-    /** Computes the median of the raw variables history queue and set the values on the project variables "calibration_*"
+    /** Computes the median of the raw VAD variables from the history queue and set the values on the project variables "calibration_*"
      */
     private synchronized void _measureBaselines(){
 
@@ -459,6 +461,10 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
 
     }
 
+    /** A time hostory of varibales is "valid" if it contains at least a minimal amount of samples.
+     *
+     * @return True is the history contains a minimal amount of samples.
+     */
     public synchronized boolean _isTimedHistoryValid() {
         return filteredVADhistory.historySize() >= TIMED_HISTORY_MIN_SIZE ;
     }
@@ -467,27 +473,6 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
     //
     // STATIC methods, visible from the project
     //
-
-    public static int getTimedHistoryMaxAgeMillis() {
-        // TODO -- verfy it is used in the project
-        //return (int) filteredVADhistory.getTimeWindowSizeMillis();
-        return 0 ;
-    }
-
-    public static void setTimedHistoryMaxAgeMillis(int timedHistoryMaxAgeMillis) {
-        // TODO -- verfy it is used in the project
-        //filteredVADhistory.setTimeWindowSizeMillis(timedHistoryMaxAgeMillis);
-    }
-
-    public static int getTimedHistoryMinSize() {
-        // TODO -- verfy it is used in the project
-        return TIMED_HISTORY_MIN_SIZE;
-    }
-
-    public static void setTimedHistoryMinSize(int timedHistoryMinSize) {
-        // TODO -- verfy it is used in the project
-        TIMED_HISTORY_MIN_SIZE = timedHistoryMinSize;
-    }
 
     public static boolean isTimedHistoryValid() {
         return CURRENT_INSTANCE._isTimedHistoryValid();
