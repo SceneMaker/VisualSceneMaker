@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Project name="Ubidenz Dialog Manager Example Project">
+<Project name="Ubidenz Dialog Manager Temp Project">
   <Plugins>
     <Plugin type="device" name="CharamelWS" class="de.dfki.vsm.xtension.charamelWs.charamelWsExecutor" load="true">
       <Feature key="sceneflowVar" val="avatar_connected"/>
@@ -36,6 +36,15 @@
   <Agents>
     <Agent name="ssj" device="SSJExecutor">
     </Agent>
+    <Agent name="lydia" device="CharamelWS">
+      <Feature key="voice" val="Marlene"/>
+    </Agent>
+    <Agent name="um" device="usermodel">
+    </Agent>
+    <Agent name="time" device="timer">
+    </Agent>
+    <Agent name="asr" device="DialogManager">
+    </Agent>
     <Agent name="gui" device="webpage">
       <Feature key="default" val="./default_gui.html"/>
       <Feature key="help" val="./help_gui.html"/>
@@ -57,13 +66,6 @@
       <Feature key="audio" val="./audio_gui.html"/>
       <Feature key="yesno" val="./confirmation.html"/>
       <Feature key="yesno_username" val="./confirmation_username_gui.html"/>
-    </Agent>
-    <Agent name="lydia" device="CharamelWS">
-      <Feature key="voice" val="Marlene"/>
-    </Agent>
-    <Agent name="um" device="usermodel">
-    </Agent>
-    <Agent name="time" device="timer">
     </Agent>
   </Agents>
   <Player>

@@ -67,6 +67,8 @@ public class DialogManagerListener extends Thread {
 
                 System.out.println(
                         "Message from " + packet.getAddress().getHostAddress() + ": " + msg);
+                System.out.println(
+                        "Type of msg : " + (msg.getClass()));
 
                 ASR_message = msg;
 

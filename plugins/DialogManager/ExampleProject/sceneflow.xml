@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<SceneFlow id="" name="default" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Mo., 5 Dez. 2022 18:43:24" start="N2;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
+<SceneFlow id="" name="default" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Thu, 9 Feb 2023 12:16:57" start="N7;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
   <Define>
   </Define>
   <Declare>
@@ -36,6 +36,9 @@
     <VariableDefinition type="String" name ="asr_result">
       <StringLiteral><![CDATA[]]></StringLiteral>
     </VariableDefinition>
+    <VariableDefinition type="String" name ="asr_full">
+      <StringLiteral><![CDATA[]]></StringLiteral>
+    </VariableDefinition>
     <VariableDefinition type="Float" name ="faceX">
       <FloatLiteral value="0.0"/>
     </VariableDefinition>
@@ -61,168 +64,40 @@
   <Commands>
   </Commands>
   <LocalVariableBadge>
-    <Position xPos="115" yPos="438"/>
+    <Position xPos="15" yPos="104"/>
   </LocalVariableBadge>
   <GlobalVariableBadge>
     <Position xPos="10" yPos="10"/>
   </GlobalVariableBadge>
-  <Node id="N1211" name="Mimic" history="false">
+  <Node id="N1218" name="delayBecauseStillSpeaking" history="false">
     <Define>
     </Define>
     <Declare>
     </Declare>
     <Commands>
-      <PlayScene>
-        <StringLiteral><![CDATA[asr_mimic]]></StringLiteral>
-        <StructExpression>
-          <Assignment>
-            <SimpleVariable name="asr_res"/>
-            <Expression>
-              <SimpleVariable name="asr_result"/>
-            </Expression>
-          </Assignment>
-        </StructExpression>
-      </PlayScene>
-    </Commands>
-    <EEdge target="N1215" start ="">
-    <Graphics>
-      <Connection>
-        <ControlPoint xPos="1148" yPos="303" ctrlXPos="1148" ctrlYPos="335"/>
-        <ControlPoint xPos="1148" yPos="433" ctrlXPos="1148" ctrlYPos="400"/>
-      </Connection>
-    </Graphics>
-    </EEdge>
-    <Graphics>
-      <Position xPos="1083" yPos="173"/>
-    </Graphics>
-  </Node>
-  <Node id="N1212" name="N1212" history="false">
-    <Define>
-    </Define>
-    <Declare>
-    </Declare>
-    <Commands>
-    </Commands>
-    <CEdge target="N1214" start="">
-      <Graphics>
-        <Connection>
-          <ControlPoint xPos="693" yPos="238" ctrlXPos="725" ctrlYPos="238"/>
-          <ControlPoint xPos="823" yPos="238" ctrlXPos="790" ctrlYPos="238"/>
-        </Connection>
-      </Graphics>
-      <Neq>
+      <Assignment>
         <SimpleVariable name="asr_result"/>
-        <StringLiteral><![CDATA[]]></StringLiteral>
-      </Neq>
-    </CEdge>
-    <TEdge target="N1212" start="" timeout="500">
+        <Expression>
+          <StringLiteral><![CDATA[]]></StringLiteral>
+        </Expression>
+      </Assignment>
+      <Assignment>
+        <SimpleVariable name="asr_full"/>
+        <Expression>
+          <StringLiteral><![CDATA[]]></StringLiteral>
+        </Expression>
+      </Assignment>
+    </Commands>
+    <TEdge target="N2" start="" timeout="1000">
     <Graphics>
       <Connection>
-        <ControlPoint xPos="645" yPos="175" ctrlXPos="679" ctrlYPos="49"/>
-        <ControlPoint xPos="684" yPos="205" ctrlXPos="796" ctrlYPos="139"/>
+        <ControlPoint xPos="758" yPos="433" ctrlXPos="758" ctrlYPos="400"/>
+        <ControlPoint xPos="758" yPos="303" ctrlXPos="758" ctrlYPos="335"/>
       </Connection>
     </Graphics>
     </TEdge>
     <Graphics>
-      <Position xPos="563" yPos="173"/>
-    </Graphics>
-  </Node>
-  <Node id="N1214" name="N1214" history="false">
-    <Define>
-    </Define>
-    <Declare>
-    </Declare>
-    <Commands>
-      <PlayAction mode="Default">
-        <ArrayExpression>
-          <StringLiteral><![CDATA[gui muteMic]]></StringLiteral>
-        </ArrayExpression>
-      </PlayAction>
-    </Commands>
-    <EEdge target="N1211" start ="">
-    <Graphics>
-      <Connection>
-        <ControlPoint xPos="953" yPos="238" ctrlXPos="985" ctrlYPos="238"/>
-        <ControlPoint xPos="1083" yPos="238" ctrlXPos="1050" ctrlYPos="238"/>
-      </Connection>
-    </Graphics>
-    </EEdge>
-    <Graphics>
-      <Position xPos="823" yPos="173"/>
-    </Graphics>
-  </Node>
-  <Node id="N1215" name="N1215" history="false">
-    <Define>
-    </Define>
-    <Declare>
-    </Declare>
-    <Commands>
-      <PlayAction mode="Default">
-        <ArrayExpression>
-          <StringLiteral><![CDATA[gui openMic]]></StringLiteral>
-        </ArrayExpression>
-      </PlayAction>
-    </Commands>
-    <EEdge target="N1213" start ="">
-    <Graphics>
-      <Connection>
-        <ControlPoint xPos="1083" yPos="498" ctrlXPos="985" ctrlYPos="498"/>
-        <ControlPoint xPos="823" yPos="498" ctrlXPos="920" ctrlYPos="498"/>
-      </Connection>
-    </Graphics>
-    </EEdge>
-    <Graphics>
-      <Position xPos="1083" yPos="433"/>
-    </Graphics>
-  </Node>
-  <Node id="N1213" name="N1213" history="false">
-    <Define>
-    </Define>
-    <Declare>
-    </Declare>
-    <Commands>
-      <Assignment>
-        <SimpleVariable name="asr_result"/>
-        <Expression>
-          <StringLiteral><![CDATA[]]></StringLiteral>
-        </Expression>
-      </Assignment>
-    </Commands>
-    <EEdge target="N1212" start ="">
-    <Graphics>
-      <Connection>
-        <ControlPoint xPos="726" yPos="442" ctrlXPos="702" ctrlYPos="400"/>
-        <ControlPoint xPos="660" yPos="294" ctrlXPos="683" ctrlYPos="335"/>
-      </Connection>
-    </Graphics>
-    </EEdge>
-    <Graphics>
       <Position xPos="693" yPos="433"/>
-    </Graphics>
-  </Node>
-  <Node id="N1218" name="N1218" history="false">
-    <Define>
-    </Define>
-    <Declare>
-    </Declare>
-    <Commands>
-      <Assignment>
-        <SimpleVariable name="asr_result"/>
-        <Expression>
-          <StringLiteral><![CDATA[]]></StringLiteral>
-        </Expression>
-      </Assignment>
-    </Commands>
-    <EEdge target="N2" start ="">
-    <Graphics>
-      <Connection>
-        <ControlPoint xPos="368" yPos="953" ctrlXPos="368" ctrlYPos="920"/>
-        <ControlPoint xPos="368" yPos="823" ctrlXPos="368" ctrlYPos="855"/>
-      </Connection>
-    </Graphics>
-    </EEdge>
-    <Graphics>
-      <Position xPos="303" yPos="953"/>
     </Graphics>
   </Node>
   <Node id="N1219" name="stopASR" history="false">
@@ -232,69 +107,22 @@
     </Declare>
     <Commands>
       <PlayAction mode="Default">
+        <StringLiteral><![CDATA[[asr event action=stop_ASR]]]></StringLiteral>
+      </PlayAction>
+      <PlayAction mode="Default">
         <StringLiteral><![CDATA[[ssj event name=user state=completed]]]></StringLiteral>
       </PlayAction>
     </Commands>
     <EEdge target="N3" start ="">
     <Graphics>
       <Connection>
-        <ControlPoint xPos="888" yPos="823" ctrlXPos="888" ctrlYPos="855"/>
-        <ControlPoint xPos="888" yPos="953" ctrlXPos="888" ctrlYPos="920"/>
+        <ControlPoint xPos="1538" yPos="303" ctrlXPos="1538" ctrlYPos="335"/>
+        <ControlPoint xPos="1538" yPos="433" ctrlXPos="1538" ctrlYPos="400"/>
       </Connection>
     </Graphics>
     </EEdge>
     <Graphics>
-      <Position xPos="844" yPos="684"/>
-    </Graphics>
-  </Node>
-  <Node id="N1220" name="N1212" history="false">
-    <Define>
-    </Define>
-    <Declare>
-    </Declare>
-    <Commands>
-    </Commands>
-    <CEdge target="N1219" start="">
-      <Graphics>
-        <Connection>
-          <ControlPoint xPos="693" yPos="758" ctrlXPos="790" ctrlYPos="758"/>
-          <ControlPoint xPos="823" yPos="758" ctrlXPos="725" ctrlYPos="758"/>
-        </Connection>
-      </Graphics>
-      <Neq>
-        <SimpleVariable name="asr_result"/>
-        <StringLiteral><![CDATA[]]></StringLiteral>
-      </Neq>
-    </CEdge>
-    <TEdge target="N1220" start="" timeout="200">
-    <Graphics>
-      <Connection>
-        <ControlPoint xPos="645" yPos="695" ctrlXPos="679" ctrlYPos="569"/>
-        <ControlPoint xPos="684" yPos="725" ctrlXPos="796" ctrlYPos="659"/>
-      </Connection>
-    </Graphics>
-    </TEdge>
-    <Graphics>
-      <Position xPos="563" yPos="693"/>
-    </Graphics>
-  </Node>
-  <Node id="N1" name="N1212" history="false">
-    <Define>
-    </Define>
-    <Declare>
-    </Declare>
-    <Commands>
-    </Commands>
-    <TEdge target="N1" start="" timeout="1000">
-    <Graphics>
-      <Connection>
-        <ControlPoint xPos="385" yPos="2255" ctrlXPos="419" ctrlYPos="2129"/>
-        <ControlPoint xPos="424" yPos="2285" ctrlXPos="536" ctrlYPos="2219"/>
-      </Connection>
-    </Graphics>
-    </TEdge>
-    <Graphics>
-      <Position xPos="303" yPos="2253"/>
+      <Position xPos="1473" yPos="173"/>
     </Graphics>
   </Node>
   <Node id="N2" name="startASR" history="false">
@@ -304,19 +132,22 @@
     </Declare>
     <Commands>
       <PlayAction mode="Default">
+        <StringLiteral><![CDATA[[asr event action=start_ASR]]]></StringLiteral>
+      </PlayAction>
+      <PlayAction mode="Default">
         <StringLiteral><![CDATA[[ssj event name=user state=continued]]]></StringLiteral>
       </PlayAction>
     </Commands>
-    <EEdge target="N1220" start ="">
+    <EEdge target="N5" start ="">
     <Graphics>
       <Connection>
-        <ControlPoint xPos="433" yPos="758" ctrlXPos="465" ctrlYPos="758"/>
-        <ControlPoint xPos="563" yPos="758" ctrlXPos="530" ctrlYPos="758"/>
+        <ControlPoint xPos="823" yPos="238" ctrlXPos="855" ctrlYPos="238"/>
+        <ControlPoint xPos="953" yPos="238" ctrlXPos="920" ctrlYPos="238"/>
       </Connection>
     </Graphics>
     </EEdge>
     <Graphics>
-      <Position xPos="303" yPos="693"/>
+      <Position xPos="693" yPos="173"/>
     </Graphics>
   </Node>
   <Node id="N3" name="N3" history="false">
@@ -331,41 +162,155 @@
           <Assignment>
             <SimpleVariable name="asr_res"/>
             <Expression>
-              <SimpleVariable name="asr_result"/>
+              <SimpleVariable name="asr_full"/>
             </Expression>
           </Assignment>
         </StructExpression>
       </PlayScene>
     </Commands>
-    <EEdge target="N5" start ="">
+    <EEdge target="N1218" start ="">
     <Graphics>
       <Connection>
-        <ControlPoint xPos="823" yPos="1018" ctrlXPos="725" ctrlYPos="1018"/>
-        <ControlPoint xPos="693" yPos="1018" ctrlXPos="790" ctrlYPos="1018"/>
+        <ControlPoint xPos="1473" yPos="498" ctrlXPos="1310" ctrlYPos="498"/>
+        <ControlPoint xPos="823" yPos="498" ctrlXPos="985" ctrlYPos="498"/>
       </Connection>
     </Graphics>
     </EEdge>
     <Graphics>
-      <Position xPos="844" yPos="944"/>
+      <Position xPos="1473" yPos="433"/>
     </Graphics>
   </Node>
-  <Node id="N5" name="N5" history="false">
+  <Node id="N5" name="waitForResult" history="false">
     <Define>
     </Define>
     <Declare>
     </Declare>
     <Commands>
     </Commands>
-    <TEdge target="N1218" start="" timeout="5000">
+    <TEdge target="N5" start="" timeout="1000">
     <Graphics>
       <Connection>
-        <ControlPoint xPos="563" yPos="1018" ctrlXPos="530" ctrlYPos="1018"/>
-        <ControlPoint xPos="433" yPos="1018" ctrlXPos="465" ctrlYPos="1018"/>
+        <ControlPoint xPos="1035" yPos="175" ctrlXPos="1069" ctrlYPos="49"/>
+        <ControlPoint xPos="1074" yPos="205" ctrlXPos="1186" ctrlYPos="139"/>
+      </Connection>
+    </Graphics>
+    </TEdge>
+    <IEdge target="N1" start="">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="1083" yPos="238" ctrlXPos="1115" ctrlYPos="238"/>
+          <ControlPoint xPos="1213" yPos="238" ctrlXPos="1180" ctrlYPos="238"/>
+        </Connection>
+      </Graphics>
+      <Neq>
+        <SimpleVariable name="asr_result"/>
+        <StringLiteral><![CDATA[]]></StringLiteral>
+      </Neq>
+    </IEdge>
+    <Graphics>
+      <Position xPos="953" yPos="173"/>
+    </Graphics>
+  </Node>
+  <Node id="N7" name="waitForAvatar" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <CEdge target="N8" start="">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="303" yPos="498" ctrlXPos="335" ctrlYPos="498"/>
+          <ControlPoint xPos="433" yPos="498" ctrlXPos="400" ctrlYPos="498"/>
+        </Connection>
+      </Graphics>
+      <Eq>
+        <SimpleVariable name="avatar_connected"/>
+        <BoolLiteral value="true"/>
+      </Eq>
+    </CEdge>
+    <TEdge target="N7" start="" timeout="1000">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="255" yPos="435" ctrlXPos="289" ctrlYPos="309"/>
+        <ControlPoint xPos="294" yPos="465" ctrlXPos="406" ctrlYPos="399"/>
       </Connection>
     </Graphics>
     </TEdge>
     <Graphics>
-      <Position xPos="563" yPos="953"/>
+      <Position xPos="173" yPos="433"/>
+    </Graphics>
+  </Node>
+  <Node id="N8" name="startDialog" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <PlayScene>
+        <StringLiteral><![CDATA[start_dialog]]></StringLiteral>
+      </PlayScene>
+    </Commands>
+    <EEdge target="N1218" start ="">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="563" yPos="498" ctrlXPos="595" ctrlYPos="498"/>
+        <ControlPoint xPos="693" yPos="498" ctrlXPos="660" ctrlYPos="498"/>
+      </Connection>
+    </Graphics>
+    </EEdge>
+    <Graphics>
+      <Position xPos="433" yPos="433"/>
+    </Graphics>
+  </Node>
+  <Node id="N1" name="N1" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <Assignment>
+        <SimpleVariable name="asr_full"/>
+        <Expression>
+          <Add>
+            <Add>
+              <SimpleVariable name="asr_full"/>
+              <StringLiteral><![CDATA[ ]]></StringLiteral>
+            </Add>
+            <SimpleVariable name="asr_result"/>
+          </Add>
+        </Expression>
+      </Assignment>
+      <Assignment>
+        <SimpleVariable name="asr_result"/>
+        <Expression>
+          <StringLiteral><![CDATA[]]></StringLiteral>
+        </Expression>
+      </Assignment>
+    </Commands>
+    <TEdge target="N1219" start="" timeout="2000">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="1343" yPos="238" ctrlXPos="1505" ctrlYPos="238"/>
+        <ControlPoint xPos="1473" yPos="238" ctrlXPos="1310" ctrlYPos="238"/>
+      </Connection>
+    </Graphics>
+    </TEdge>
+    <IEdge target="N5" start="">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="1215" yPos="255" ctrlXPos="1183" ctrlYPos="263"/>
+          <ControlPoint xPos="1081" yPos="255" ctrlXPos="1112" ctrlYPos="263"/>
+        </Connection>
+      </Graphics>
+      <Gt>
+        <SimpleVariable name="voice"/>
+        <FloatLiteral value="0.5"/>
+      </Gt>
+    </IEdge>
+    <Graphics>
+      <Position xPos="1213" yPos="173"/>
     </Graphics>
   </Node>
   <UserCommands>
