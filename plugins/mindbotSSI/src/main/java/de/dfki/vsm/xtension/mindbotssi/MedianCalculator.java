@@ -9,14 +9,11 @@ public class MedianCalculator {
 
         LinkedList<TimedFloats> dataHistory = history.dataHistory;
 
-        if(dataHistory.size() == 0) {
-            return new float[] {Float.NaN} ;
-        }
-
         int nVariables = history.getNumVariables() ;
 
         // Prepare the buffer for the results of the median on each variable
         float[] medians = new float[nVariables] ;
+        for(int i=0 ; i<medians.length; i++) { medians[i] = Float.NaN ; }
 
         // Compute the medians for each variable
         for(int var_num=0 ; var_num < nVariables ; var_num++) {
@@ -36,6 +33,10 @@ public class MedianCalculator {
 
 
     public static double median(double[] values) {
+
+        if(values.length == 0) {
+            return Double.NaN ;
+        }
 
         double[] sorted_value = values.clone() ;
         Arrays.sort(sorted_value);

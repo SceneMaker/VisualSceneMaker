@@ -114,8 +114,8 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
 
         //
         // Setup all the stuff needed to filter the signal and compute threshold activations
-        rawVADhistory = new TimedHistory(RAW_VAD_HISTORY_MAX_SIZE_SECS) ;
-        filteredVADhistory = new TimedHistory(FILTERED_VAD_HISTORY_MAX_SIZE_SECS);
+        rawVADhistory = new TimedHistory(VAD_VARIABLES.length, RAW_VAD_HISTORY_MAX_SIZE_SECS) ;
+        filteredVADhistory = new TimedHistory(VAD_VARIABLES.length, FILTERED_VAD_HISTORY_MAX_SIZE_SECS);
 
         ThresholdPair[] thresholds = new ThresholdPair[] {
                 new ThresholdPair(RMSE_V_LO, RMSE_V_HI),
@@ -126,8 +126,8 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
 
         VADactivationCalculator = new ThresholdActivationCalculator(filteredVADhistory, thresholds) ;
 
-        rawPainHistory = new TimedHistory(PAIN_HISTORY_MAX_SIZE_SECS) ;
-        filteredPainHistory = new TimedHistory(PAIN_HISTORY_MAX_SIZE_SECS) ;
+        rawPainHistory = new TimedHistory(1, PAIN_HISTORY_MAX_SIZE_SECS) ;
+        filteredPainHistory = new TimedHistory(1, PAIN_HISTORY_MAX_SIZE_SECS) ;
         painActivationCalculator = new ThresholdActivationCalculator(filteredPainHistory,
                 new ThresholdPair[] {new ThresholdPair(-0.1f, 0.8f)} ) ;
 

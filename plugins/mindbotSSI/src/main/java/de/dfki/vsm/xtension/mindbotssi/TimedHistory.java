@@ -10,15 +10,16 @@ public class TimedHistory {
     private long timeWindowSizeMillis ;
 
     public int getNumVariables() {
-        return nVariables;
+        return _nVariables;
     }
 
     /** Caches the number of variables in each history entry.
      * Will be initialized at the first entry inserted, and future entries will be checked for consistent size.
       */
-    private int nVariables = 0 ;
+    private int _nVariables = 0 ;
 
-    public TimedHistory(float window_size_secs) {
+    public TimedHistory(int num_vars, float window_size_secs) {
+        _nVariables = num_vars ;
         this.timeWindowSizeMillis = (long)window_size_secs * 1000L ;
     }
 
@@ -35,17 +36,17 @@ public class TimedHistory {
      */
     public void appendData(long t, float[] new_data) {
 
+        // Runtime consistency check
+        if(new_data.length != _nVariables) {
+            throw new RuntimeException("The number of variables in the new sample (" + new_data.length + ")" +
+                    " do not match the expected one (" + _nVariables +")") ;
+        }
+
         removeOldSamples(t);
 
         TimedFloats new_entry = new TimedFloats(t, new_data) ;
 
-        // Runtime consistency check
-        if(dataHistory.size()==0) {
-            nVariables = new_entry.vs.length ;
-        } else if(new_entry.vs.length != nVariables) {
-            throw new RuntimeException("Number of variables in the new sample (" + new_entry.vs.length + ")" +
-                    "doesn't match the one of previous samples (" + nVariables + ")") ;
-        }
+        assert _nVariables == new_entry.vs.length ;
 
         dataHistory.add(new_entry) ;
 
@@ -86,7 +87,7 @@ public class TimedHistory {
     public TimedHistory extractMostRecent(float range_secs) {
         long range_millis = (long)(range_secs * 1000.f) ;
 
-        TimedHistory out = new TimedHistory(range_secs) ;
+        TimedHistory out = new TimedHistory(_nVariables, range_secs) ;
 
         if(dataHistory.size() > 0) {
             // copy the most recent data into the output
