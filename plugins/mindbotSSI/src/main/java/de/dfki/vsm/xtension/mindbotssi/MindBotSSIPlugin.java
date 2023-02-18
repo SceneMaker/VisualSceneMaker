@@ -11,6 +11,7 @@ import de.dfki.vsm.xtension.ssi.event.SSIEventEntry;
 import de.dfki.vsm.xtension.ssi.event.data.SSIEventData;
 import de.dfki.vsm.xtension.ssi.event.data.SSITupleData;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
@@ -22,14 +23,21 @@ import de.dfki.vsm.xtension.mindbotssi.ThresholdActivationCalculator.ThresholdPa
  */
 public class MindBotSSIPlugin extends SSIRunTimePlugin {
 
-    static final String[] emotionNames = new String[]{"neutral",
+    /** Will be set by the constructor.
+     * Dirty hack to get reference to the running instance from static methods visible to the scene flow.
+     */
+    private static MindBotSSIPlugin CURRENT_INSTANCE;
+    private static RunTimeProject PROJECT_REFERENCE;
+
+
+    private static final String[] EMOTION_NAMES = new String[]{"neutral",
             "surprise", "happy", "sad",  "disgust", "anger", "fear",
             "valence", "arousal", "dominance"};
 
-    static final String[] ekmanNames = new String[]{"neutral",
+    private static final String[] EKMAN_NAMES = new String[]{"neutral",
             "surprise", "happy", "sad",  "disgust", "anger", "fear"} ;
 
-    private static final String[] focusTargets = new String[]{"away", "cobot", "table"} ;
+    private static final String[] FOCUS_TARGETS = new String[]{"away", "cobot", "table"} ;
 
 
     // Calibration values 3.0, calibrating on the "Slow task" section after filtering with median on the last 5 frames
@@ -61,12 +69,6 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
     /** Used to check for the activation of thresholds. */
     private ThresholdActivationCalculator VADactivationCalculator;
 
-    /** Will be set by the constructor.
-     * Dirty hack to get reference to the running instance from static methods visible to the scene flow.
-     */
-    private static MindBotSSIPlugin CURRENT_INSTANCE;
-    private static RunTimeProject PROJECT_REFERENCE;
-
 
     /** Use to keep track of the pain value. */
     private TimedHistory rawPainHistory;
@@ -76,8 +78,8 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
     /** Compose the list of variables that will be logged. */
     private static final List<String> LOG_VARIABLES_LIST = new LinkedList<>() ;
     static {
-        Collections.addAll(LOG_VARIABLES_LIST, Arrays.stream(emotionNames).map(emotion -> "ssi_emotion_" + emotion).toArray(String[]::new)) ;
-        Collections.addAll(LOG_VARIABLES_LIST, Arrays.stream(focusTargets).map(target -> "ssi_focus_" + target).toArray(String[]::new)) ;
+        Collections.addAll(LOG_VARIABLES_LIST, Arrays.stream(EMOTION_NAMES).map(emotion -> "ssi_emotion_" + emotion).toArray(String[]::new)) ;
+        Collections.addAll(LOG_VARIABLES_LIST, Arrays.stream(FOCUS_TARGETS).map(target -> "ssi_focus_" + target).toArray(String[]::new)) ;
         Collections.addAll(LOG_VARIABLES_LIST, Arrays.stream(VAD_VARIABLES).map(target -> "calibration_" + target).toArray(String[]::new)) ;
         Collections.addAll(LOG_VARIABLES_LIST, Arrays.stream(VAD_VARIABLES).map(target -> "filtered_" + target).toArray(String[]::new)) ;
         Collections.addAll(LOG_VARIABLES_LIST, "VAD_threshold_multiplier") ;
@@ -87,6 +89,11 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
         Collections.addAll(LOG_VARIABLES_LIST, "ssi_face_detected") ;
     }
     private static final String[] LOG_VARIABLES = LOG_VARIABLES_LIST.toArray(new String[]{}) ;
+
+    /** The scheduler that can be inquired on when to activate the ESM. */
+    private ESMscheduler _esmScheduler;
+
+    private final static String ESM_SCHEDULE_FILENAME = "ESM_schedule.csv" ;
 
     /** This will write the log of the variable values. */
     private ActivityLogger _activity_logger ;
@@ -131,9 +138,22 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
         painActivationCalculator = new ThresholdActivationCalculator(filteredPainHistory,
                 new ThresholdPair[] {new ThresholdPair(-0.1f, 0.8f)} ) ;
 
+
+        // INIT ESM
+
+        try {
+            _esmScheduler = new ESMscheduler(new File(ESM_SCHEDULE_FILENAME)) ;
+            _esmScheduler.skipOldEntries();
+        } catch (IOException e) {
+            mLogger.failure("Exception while initializing the ESM scheduler: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        // INIT THE LOGGER
         try {
             _activity_logger = new ActivityLogger("MindBotSSI", mProject) ;
         } catch (IOException e) {
+            mLogger.failure("Exception while initializing the logger: " + e.getMessage());
             e.printStackTrace();
         }
 
@@ -199,7 +219,7 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
                 // mLogger.message("Got emotion+valence+arousal values: \t" + tupleData);
 
                 // if there is a face detected
-                boolean there_is_face = Arrays.stream(ekmanNames).
+                boolean there_is_face = Arrays.stream(EKMAN_NAMES).
                         mapToDouble(value -> Double.parseDouble(tupleData.get(value)))
                         .anyMatch(value -> value != 0.0) ;
 
@@ -230,7 +250,7 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
 
                 // For each of the variables expected in this map, compose a corresponding
                 // project variable name prepending the "ssi_emotion_" prefix
-                Arrays.stream(emotionNames).forEach(emotion -> {
+                Arrays.stream(EMOTION_NAMES).forEach(emotion -> {
                     float ssiVarValue = Float.parseFloat(tupleData.get(emotion));
                     String projectVarName = "ssi_emotion_" + emotion;
                     if (mProject.hasVariable(projectVarName)) {
@@ -327,13 +347,13 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
                 // mLogger.message("Got video focus values: \t" + tupleData);
 
                 // if there is a face detected
-                boolean there_is_face = Arrays.stream(focusTargets).
+                boolean there_is_face = Arrays.stream(FOCUS_TARGETS).
                         mapToDouble(value -> Double.parseDouble(tupleData.get(value)))
                         .anyMatch(value -> value != 0.0) ;
 
                 // For each of the variables expected in this map, compose a corresponding
                 // project variable name prepending the "ssi_focus_" prefix
-                for (String ssiVarName : focusTargets) {
+                for (String ssiVarName : FOCUS_TARGETS) {
                     float ssiVarValue = Float.parseFloat(tupleData.get(ssiVarName));
                     String projectVarName = "ssi_focus_" + ssiVarName;
                     if (mProject.hasVariable(projectVarName)) {
@@ -486,6 +506,12 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
         CURRENT_INSTANCE._measureBaselines();
     }
 
+    //
+    // Static methods for ESM schedule query
+    //
+    public static boolean shallDisplayESM() {
+        return CURRENT_INSTANCE._esmScheduler.nextItemReached() ;
+    }
 
     //
     // Support functions to increase/decrease a variable with fixed steps and clamped to a range

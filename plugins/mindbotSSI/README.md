@@ -56,3 +56,30 @@ The stress pipeline gives a single value in range [0.0,1.0]:
 ```
 Float ssi-stress = 0.0
 ```
+
+## ESM management
+
+There is a static method to check if it is time to visualize the ESM.
+It is a general-purpose scheduler that reads a table of activation date/time.
+The constructor takes as input the reference to a File with the scheduling times.
+
+   public ESMscheduler(File schedule_file) throws IOException { ... }
+
+The table of programmed events is a CSV file with the following format:
+
+```
+day,time
+24.09.2022,11:14
+24.09.2022,20:58
+25.09.2022,9:37
+15.02.2023,16:52
+15.02.2023,20:58
+``` 
+
+The methods:
+* `public void skipOldEntries()` is supposed to be invoked immediately after construction, in order to discard old events.
+* `public boolean nextItemReached()` returns True if a new entry should be executed, or if the list has been exhausted.
+
+In the SSI plugin:
+* `public static boolean shallDisplayESM()` is a static method (invoking `nextItemReached`) that can be used from the project as function.
+* IMPORTANT!!! There MUST be a file called `ESM_schedule.csv` in the VSM working directory when starting the project.
