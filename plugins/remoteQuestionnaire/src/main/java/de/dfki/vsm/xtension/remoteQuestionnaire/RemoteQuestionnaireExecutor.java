@@ -226,17 +226,18 @@ public class RemoteQuestionnaireExecutor extends ActivityExecutor implements Exp
             final LinkedList<ActionFeature> features = activity.getFeatures();
 
             StringBuilder json_string = new StringBuilder("{\n"
-                    + "\"action_id\": " + (mActionCounter +"") + ",\n"
+                    + "\"action_id\": " + (mActionCounter+"") + ",\n"
                     + "\"command\": \"" + cmd + "\",\n"
                     + "\"parameters\": \"");
 
             // The Action "features" are actually the parameters.
+            // compose a comma-separated list of pairs: name=value,name=value, ...
             for (int i = 0, featuresSize = features.size(); i < featuresSize; i++) {
                 ActionFeature af = features.get(i);
 
                 json_string.append(af.getKey()).append("=").append(af.getValNoQuotes());
                 // Add a comma only if it is not the last element
-                if (i < featuresSize-1) json_string.append(",");
+                if (i < featuresSize-1) json_string.append("|");
             }
 
             json_string.append("\"\n" + "}\n");

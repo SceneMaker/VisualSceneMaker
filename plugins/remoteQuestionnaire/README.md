@@ -20,7 +20,17 @@ Instantiate an agent for the plugin `RemoteQuestionnaire` and set the `port` par
 
 ![Example configuration](MindBot-VSM-ConfigureQuestionnairePlugin.png)
 
-Questions can be triggered through a scene text:
+## Usage
+
+You can dynamically set the labels you like through the `SetLabels` action. Labels must be separated by a semi-column. E.g.:
+
+```
+scene em InitESMlabels
+quest: [SetLabels labels='assolutamente\nno;pochissimo;poco;abbastanza;molto;moltissimo;al\nmassimo'].
+```
+
+ 
+Questions can be triggered through the `Question` scene action:
 
 ```
 scene @@ ESM1
@@ -33,13 +43,15 @@ quest: [Question text='Ti senti in controllo della situazione?'].
 
 ## Communication protocol
 
+### Question
+
 The VSM plugin sends requests to answer to a specific question as JSON message to the client, with the format:
 
 ```JSON
 {
-  "action_id": "<int>",
-  "command": "question",
-  "parameters": "text=<string>"
+  "action_id": 123,
+  "command": "Question",
+  "parameters": "text=Do you like me?"
 }
 ```
 
@@ -47,16 +59,38 @@ Once the client answers the question, it sends back a JSON message like:
 
 ```JSON
 {
-  "action_id": "<int>",
-  "question_text": "<string>",
-  "answer": "<int>"
+  "action_id": 123,
+  "question_text": "Do you like me?",
+  "answer": 2
 }
 ```
 
-Where the `question_text` is supposed to be the same text displayed to the user,
-and the `answer` an integer from, e.g., 0 to 6 (for 7-level Liker scales) indicating the chosen answer.
+Where
+* the `action_id` is the same passed with the Question request;
+* the `question_text` is supposed to be the same text displayed to the user;
+* and the `answer` an integer from, e.g., 0 to 6 (for 7-level Liker scales) indicating the chosen answer.
 
-(In the future, for other commands, the action_id will stay, but other parameters will likely change)
+### SetLabels
+
+For setting labels, the message format is:
+
+```JSON
+{
+  "action_id": 123456,
+  "command": "SetLabels",
+  "parameters": "labels=not at all;somewhat not;a little; neutral;a bit;somewhat yes;a lot"
+}
+```
+
+The client sets the labels and answer with a simple message with no additional information:
+
+```JSON
+{
+  "action_id": 123456,
+}
+```
+
+Where the `action_id` is the same passed with the SetLabels request.
 
 ## Save format
 
@@ -76,4 +110,6 @@ timestamp	datetime	question_text	answer
 
 ## TODO
 
-* A command to set the number of answers and their labels
+* The command to set the labels is still limited to keep the default number of items (7). A more flexible version should be able to dynamically instantiate labels and buttons and layout them.
+
+
