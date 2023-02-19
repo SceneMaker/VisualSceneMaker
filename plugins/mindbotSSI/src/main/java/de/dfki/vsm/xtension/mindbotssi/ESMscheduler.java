@@ -22,7 +22,7 @@ import java.util.ListIterator;
 public class ESMscheduler {
 
     /** The list of time entries of he schedule. */
-    private final LinkedList<LocalDateTime> _schedule = new LinkedList() ;
+    private final LinkedList<LocalDateTime> _schedule = new LinkedList<>() ;
 
     /** Iterator pointing to the element that we are currently waiting for.
      * If the whole schedule has been consumed, the iterator will be pointing at the end of the line, and hasNext() is false.
@@ -61,8 +61,8 @@ public class ESMscheduler {
     }
 
 
-    /** Returns the entry in which the scheduler is waiting for.
-     * @return
+    /** Returns the entry on which the scheduler is waiting for.
+     * @return the entry on which the scheduler is waiting for.
      */
     public LocalDateTime waitingFor() {
         return _currentWaitingEntry ;
@@ -125,18 +125,15 @@ public class ESMscheduler {
 
     /** A static main method to test the functionalities fo this class.
      *
-     * @param argv
-     * @throws IOException
-     * @throws InterruptedException
      */
     public static void main(String[] argv) throws IOException, InterruptedException {
 
         ESMscheduler es = new ESMscheduler(new File("ESM_schedule.csv")) ;
-        System.out.println("") ;
+        System.out.println() ;
 
         System.out.println("Current scheduled item: " + es._currentWaitingEntry) ;
 
-        System.out.println("") ;
+        System.out.println() ;
 
         System.out.println("Skipping old entries") ;
         es.skipOldEntries();
