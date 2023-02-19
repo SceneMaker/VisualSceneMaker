@@ -49,7 +49,7 @@ public class ESMscheduler {
             //System.out.println("line: " + line) ;
 
             LocalDateTime ldt = LocalDateTime.parse(line, DateTimeFormatter.ofPattern("dd.MM.yyyy,H:mm"));
-            System.out.println("Parsed: "+ldt) ;
+            // System.out.println("Parsed: "+ldt) ;
             _schedule.add(ldt) ;
         }
 
@@ -72,14 +72,14 @@ public class ESMscheduler {
      */
     public void skipOldEntries() {
         LocalDateTime now = LocalDateTime.now() ;
-        System.out.println("Comparing with " + now) ;
+        // System.out.println("Comparing with " + now) ;
 
         if(_currentWaitingEntry == null) {
             return ;
         }
 
         while(_currentWaitingEntry.isBefore(now)) {
-            System.out.println("Skipping entry " + _currentWaitingEntry) ;
+            // System.out.println("Skipping entry " + _currentWaitingEntry) ;
 
             if(_currentWaitingIterator.hasNext()) {
                 _currentWaitingEntry = _currentWaitingIterator.next();
@@ -100,6 +100,7 @@ public class ESMscheduler {
     public boolean nextItemReached() {
         LocalDateTime now = LocalDateTime.now() ;
 
+        // If not schedule is loaded, or if we are already at the end, then nothing to report
         if (_currentWaitingEntry == null) {
             return false ;
         }

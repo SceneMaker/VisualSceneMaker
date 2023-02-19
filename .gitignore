@@ -12,6 +12,7 @@ build/
 # VSM specific
 # Ignores the default directory containing the output of the vsm.util.ActivityLogger
 activity_log
+questionnaire_answers
 
 #
 # MacOS stuff

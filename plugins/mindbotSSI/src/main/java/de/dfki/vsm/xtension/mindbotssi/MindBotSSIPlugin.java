@@ -18,6 +18,8 @@ import java.util.*;
 
 import de.dfki.vsm.xtension.mindbotssi.ThresholdActivationCalculator.ThresholdPair ;
 
+import javax.swing.*;
+
 /**
  * @author Fabrizio Nunnari
  */
@@ -147,6 +149,11 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
         } catch (IOException e) {
             mLogger.failure("Exception while initializing the ESM scheduler: " + e.getMessage());
             e.printStackTrace();
+
+            JOptionPane.showMessageDialog(null,
+                    "Exception loading file " + ESM_SCHEDULE_FILENAME,
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE);
         }
 
         // INIT THE LOGGER
@@ -155,6 +162,11 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
         } catch (IOException e) {
             mLogger.failure("Exception while initializing the logger: " + e.getMessage());
             e.printStackTrace();
+
+            JOptionPane.showMessageDialog(null,
+                    "Exception initializing the activity logger!",
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE);
         }
 
     }
