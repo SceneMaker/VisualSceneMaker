@@ -146,12 +146,12 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
         try {
             _esmScheduler = new ESMscheduler(new File(ESM_SCHEDULE_FILENAME)) ;
             _esmScheduler.skipOldEntries();
-        } catch (IOException e) {
+        } catch (Exception e) {
             mLogger.failure("Exception while initializing the ESM scheduler: " + e.getMessage());
             e.printStackTrace();
 
             JOptionPane.showMessageDialog(null,
-                    "Exception loading file " + ESM_SCHEDULE_FILENAME,
+                    "Exception loading file " + ESM_SCHEDULE_FILENAME + ":\n" + e.getMessage(),
                     "Error",
                     JOptionPane.ERROR_MESSAGE);
         }
