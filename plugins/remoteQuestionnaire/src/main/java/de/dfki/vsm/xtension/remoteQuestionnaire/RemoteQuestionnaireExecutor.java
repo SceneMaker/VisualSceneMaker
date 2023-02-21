@@ -52,7 +52,7 @@ public class RemoteQuestionnaireExecutor extends ActivityExecutor implements Exp
     private FileWriter _fw ;
 
     /** The formatter for the datetime used in log and in log entries. */
-    DateTimeFormatter _datetime_formatter = DateTimeFormatter.ofPattern("yyyyMMdd-E-HHmmss");
+    DateTimeFormatter _datetime_formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy,HH:mm");
 
 
 
