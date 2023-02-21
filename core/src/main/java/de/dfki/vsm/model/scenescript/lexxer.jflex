@@ -161,7 +161,8 @@ PLACEHOLDER     = [$]
 // Punctuations
 PUNCTUATION     = [\.\?!,;]
 // Characters
-CHARACTER       = [a-zA-Z\u00e4\u00c4\u00f6\u00d6\u00fc\u00dc\u00df\u0040\u00b5\u00C0\u00C1\u00C2\u00C6\u00C7\u00C8\u00C9\u00CA\u00CB\u00CE\u00CF\u00D4\u00D6\u00E0\u00E2\u00E6\u00E7\u00E8\u00E9\u00EA\u00EB\u00EE\u00EF\u00F4\u00F6\u00FB\u00FC\u00FF]
+// See: https://en.wikipedia.org/wiki/List_of_Unicode_characters
+CHARACTER       = [a-zA-Z\u00e4\u00c4\u00f6\u00d6\u00fc\u00dc\u00df\u0040\u00b4\u00b5\u00C0\u00C1\u00C2\u00C6\u00C7\u00C8\u00C9\u00CA\u00CB\u00CE\u00CF\u00D4\u00D6\u00E0\u00E2\u00E6\u00E7\u00E8\u00E9\u00EA\u00EB\u00EC\u00EE\u00EF\u00F2\u00F4\u00F6\u00F9\u00FB\u00FC\u00FF]
 // Specials
 SPECIAL = [!?$%&#/=~_:;,]|\\|\.|\+|\*|\-|\||\[|\]|\(|\)//'
 // Whitespaces
