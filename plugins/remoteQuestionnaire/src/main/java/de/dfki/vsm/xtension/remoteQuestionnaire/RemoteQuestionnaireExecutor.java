@@ -52,7 +52,8 @@ public class RemoteQuestionnaireExecutor extends ActivityExecutor implements Exp
     private FileWriter _fw ;
 
     /** The formatter for the datetime used in log and in log entries. */
-    DateTimeFormatter _datetime_formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy,HH:mm");
+    DateTimeFormatter _file_datetime_formatter = DateTimeFormatter.ofPattern("yyyyMMdd-E-HHmmss");
+    DateTimeFormatter _entry_datetime_formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy,HH:mm");
 
 
 
@@ -141,9 +142,9 @@ public class RemoteQuestionnaireExecutor extends ActivityExecutor implements Exp
             }
         }
 
-        // Compose the nme of the log file
+        // Compose the name of the log file
         LocalDateTime date = LocalDateTime.now();
-        String now_str = date.format(_datetime_formatter) ;
+        String now_str = date.format(_file_datetime_formatter) ;
 
         // Create the file and its writer
         File log_file = new File(log_dir, "RemoteQuestionnaire" + "-" + now_str + ".csv") ;
@@ -302,7 +303,7 @@ public class RemoteQuestionnaireExecutor extends ActivityExecutor implements Exp
 
             String line = String.join("\t",
                     ts + "",
-                    now.format(_datetime_formatter),
+                    now.format(_entry_datetime_formatter),
                     text,
                     answ + "") ;
 
