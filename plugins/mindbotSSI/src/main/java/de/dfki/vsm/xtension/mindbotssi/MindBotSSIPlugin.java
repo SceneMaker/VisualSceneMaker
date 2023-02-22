@@ -377,7 +377,7 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
             } else if (sender.equals("biomech") && event.equals("fatigue")) {
                 assert event_entry.getType().equals("MAP");
                 SSITupleData tupleData = (SSITupleData) data;
-                mLogger.message("Got kinect fatigue value: \t" + tupleData);
+                // mLogger.message("Got kinect fatigue value: \t" + tupleData);
 
                 float fatigueValue = Float.parseFloat(tupleData.get("dim#0"));
                 String projectVarName = "ssi_fatigue";
@@ -534,12 +534,20 @@ public class MindBotSSIPlugin extends SSIRunTimePlugin {
     public static float varMax = 1.0f;
 
     public static float decreaseVar(float v) {
-        v = v - varStep;
+        return decreaseVar(v, varStep) ;
+    }
+
+    public static float decreaseVar(float v, float step) {
+        v = v - step;
         return v < varMin ? varMin : v > varMax ? varMax : v ;
     }
 
     public static float increaseVar(float v) {
-        v = v + varStep;
+        return increaseVar(v, varStep) ;
+    }
+
+    public static float increaseVar(float v, float step) {
+        v = v + step;
         return v < varMin ? varMin : v > varMax ? varMax : v ;
     }
 
