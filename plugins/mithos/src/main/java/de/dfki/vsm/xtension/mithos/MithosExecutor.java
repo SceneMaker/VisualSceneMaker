@@ -91,7 +91,8 @@ public class MithosExecutor extends ActivityExecutor {
             logger.message("start waiting on tricat with " + id);
             while (activityWorkerMap.containsValue(aw)) {
                 try {
-                    activityWorkerMap.wait();
+                    activityWorkerMap.wait(1000);
+                    logger.message("still waiting on tricat with " + id);
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }

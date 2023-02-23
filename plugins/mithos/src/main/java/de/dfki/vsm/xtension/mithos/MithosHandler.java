@@ -85,7 +85,7 @@ public class MithosHandler<T> extends Thread {
                 case "SSF":
                     ScenarioScriptFeedback ssf = gson.fromJson(record.value(), ScenarioScriptFeedback.class);
                     executor.process(ssf);
-                    logger.message("SSF");
+                    logger.message(record.value());
                     break;
                 /*                 */
                 case "InteractionActs":

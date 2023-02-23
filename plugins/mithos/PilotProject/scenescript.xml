@@ -65,24 +65,26 @@
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="597" upper="658" language="@@" identifier="InformPhase4">
-    <SceneTurn lower="619" upper="658" speaker="web">
-      <SceneUttr lower="625" upper="658" punct=".">
-        <ActionObject lower="625" upper="631" actor="" name="INFORM">
-          <ActionFeature lower="632" upper="656" key="value" val="'Phase 4: Solving'"/>
-        </ActionObject>
-      </SceneUttr>
-    </SceneTurn>
-  </SceneObject>
-  <SceneObject lower="660" upper="929" language="@@" identifier="RequesConflictInterpretation">
-    <SceneTurn lower="698" upper="929" speaker="web">
-      <SceneUttr lower="704" upper="929" punct=".">
-        <ActionObject lower="704" upper="711" actor="" name="REQUEST">
-          <ActionFeature lower="712" upper="795" key="var" val="'affection_interpretation;freedom_interpretation;task_interpretation;phase_tmp'"/>
-          <ActionFeature lower="796" upper="896" key="value" val="'Ja,Nein,Keine Entschedieung möglich;Ja,Nein,Keine Entschedieung möglich;Good,Bad;P1,P2,P3,P4'"/>
-          <ActionFeature lower="897" upper="927" key="type" val="'radio;radio;radio;radio'"/>
-        </ActionObject>
-      </SceneUttr>
-    </SceneTurn>
-  </SceneObject>
+    <SceneObject lower="597" upper="658" language="@@" identifier="InformPhase4">
+        <SceneTurn lower="619" upper="658" speaker="web">
+            <SceneUttr lower="625" upper="658" punct=".">
+                <ActionObject lower="625" upper="631" actor="" name="INFORM">
+                    <ActionFeature lower="632" upper="656" key="value" val="'Phase 4: Solving'"/>
+                </ActionObject>
+            </SceneUttr>
+        </SceneTurn>
+    </SceneObject>
+    <SceneObject lower="660" upper="892" language="@@" identifier="RequestConflictInterpretation">
+        <SceneTurn lower="699" upper="892" speaker="web">
+            <SceneUttr lower="705" upper="892" punct=".">
+                <ActionObject lower="705" upper="712" actor="" name="REQUEST">
+                    <ActionFeature lower="713" upper="796" key="var"
+                                   val="'affection_interpretation;freedom_interpretation;task_interpretation;phase_tmp'"/>
+                    <ActionFeature lower="797" upper="859" key="value"
+                                   val="'Yes,No,Undecided;Yes,No,Undecided;Good,Bad;P1,P2,P3,P4'"/>
+                    <ActionFeature lower="860" upper="890" key="type" val="'radio;radio;radio;radio'"/>
+                </ActionObject>
+            </SceneUttr>
+        </SceneTurn>
+    </SceneObject>
 </SceneScript>
