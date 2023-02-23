@@ -150,6 +150,12 @@ public class MithosExecutor extends ActivityExecutor {
             sendLogEntry();
             return;
         }
+        if (actionActivity.getName().equals("LogMsg")) {
+            actionActivity.setType(AbstractActivity.Type.parallel);
+            String message = actionActivity.get("msg");
+            sendLogMsg(message);
+            return;
+        }
 
         String text = actionActivity.getText();
         String command = text.substring(1, text.length() - 1);
@@ -165,6 +171,11 @@ public class MithosExecutor extends ActivityExecutor {
             actionActivity.setType(AbstractActivity.Type.parallel);
             sendRecord(record);
         }
+    }
+
+    private void sendLogMsg(String message) {
+        ProducerRecord<String, String> record = new ProducerRecord<>(log_topic, 0, "LogMessage", message);
+        sendRecord(record);
     }
 
 
