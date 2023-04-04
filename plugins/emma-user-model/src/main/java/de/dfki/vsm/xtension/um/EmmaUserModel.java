@@ -586,6 +586,20 @@ public class EmmaUserModel extends ActivityExecutor {
                 mLogger.warning("No user specified, diary log entry will not be stored.");
             }
         }
+        if (name.equalsIgnoreCase("calculateStats"))
+        {
+            this.calculateStats(activity.get("context"));
+        }
+
+    }
+
+    private void calculateStats(String context) {
+        JSONArray diary = mUser.getJSONArray("diary");
+        if (diary.length() > 0 && context.equals("")) {
+            float mean = calculateMean(diary,context);
+            this.mProject.setVariable("mean",mean);
+            this.mProject.setVariable("sd",calculateSD(diary,context,mean));
+        }
     }
 
     // set also overrides previously set values.
@@ -707,6 +721,46 @@ public class EmmaUserModel extends ActivityExecutor {
                 }
             }
         }
+    }
+
+    private Float calculateMean(JSONArray diary, String context) {
+            mLogger.message("Calculating mean on " + context);
+            int count = 0;
+            int sum = 0;
+            for (int i = 0; i < diary.length(); i++) {
+                JSONObject diaryItem = diary.getJSONObject(i);
+
+                // not every entry is an emotion entry; collect only those.
+                if(diaryItem.has("context")){
+                    if(diaryItem.get("context").equals(context) && diaryItem.has("log")){
+                        sum += Integer.valueOf((String) diaryItem.get("log"));
+                        count++;
+                    }
+                }
+            }
+           return (float) sum/count;
+
+    }
+
+    private Float calculateSD(JSONArray diary, String context, float mean) {
+
+            mLogger.message("Calculating mean on " + context);
+
+            int count = 0;
+            double sum = 0;
+            for (int i = 0; i < diary.length(); i++) {
+                JSONObject diaryItem = diary.getJSONObject(i);
+
+                // not every entry is an emotion entry; collect only those.
+                if(diaryItem.has("context")){
+                    if(diaryItem.get("context").equals(context) && diaryItem.has("log")){
+                        sum = sum + Math.pow(Double.valueOf((String) diaryItem.get("log"))-mean,2.0);
+                        count++;
+                    }
+                }
+            }
+            return (float) Math.sqrt(sum/count);
+
     }
 
     private void diaryDaysManagement() {
