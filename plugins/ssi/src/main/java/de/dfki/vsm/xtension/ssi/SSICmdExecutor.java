@@ -22,7 +22,7 @@ import java.util.Map;
  * @author Gregor Mehlmann
  */
 public final class SSICmdExecutor extends ActivityExecutor implements ExportableProperties {
-
+                                                                                                                                                                                      
     // The SSI receiver data
     private final String mLogHost;
     private final String mLogPort;

@@ -6,7 +6,7 @@
 package de.dfki.vsm.xtension.responsiveweb;
 
 import de.dfki.vsm.model.project.PluginConfig;
-import de.dfki.vsm.model.scenescript.ActionFeature;
+import de.dfki.vsm.model.scenescript.*;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
 import de.dfki.vsm.runtime.activity.SpeechActivity;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
@@ -30,6 +30,7 @@ import java.util.*;
 /**
  * @author Lenny Händler, Patrick Gebhard
  */
+
 public class HtmlGuiWsExecutor extends ActivityExecutor {
     // The map of activity worker
     private final Map<String, ActivityWorker> mActivityWorkerMap = new HashMap<>();
@@ -213,7 +214,56 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
             } else {
                 mLogger.warning("No gui command with CMD markers send ...");
             }
-        } else {
+
+            SceneTurn sceneTurn = sa.getSceneTurn();
+            LinkedList<SceneUttr> uttrList = sceneTurn.getUttrList();
+
+            /**StringBuilder textForBroadcast = new StringBuilder();
+            for (SceneUttr uttr : uttrList) {
+                textForBroadcast.append(uttr.getText()).append(" ");
+            }
+
+            //Formatting command for GUI
+            String showTextOnScreenCmd = "setGenericText$" + textForBroadcast.toString();
+            broadcast(showTextOnScreenCmd);
+             */
+
+            for (SceneUttr uttr : uttrList) {
+                LinkedList<UttrElement> uttrElements = uttr.getWordList();
+                String sceneWordText = null;  // Variable to keep the scene word text
+                for (UttrElement uttrElement : uttrElements) {
+                    // If SceneWord, capture the text
+                    if (uttrElement instanceof SceneWord) {
+                        SceneWord sceneWord = (SceneWord) uttrElement;
+                        sceneWordText = sceneWord.getText();
+                    }
+                    // If ActionObject, process the features
+                    if (uttrElement instanceof ActionObject) {
+                        ActionObject actionObject = (ActionObject) uttrElement;
+                        LinkedList<ActionFeature> actionFeatures = actionObject.getFeatureList();
+                        for (ActionFeature actionFeature : actionFeatures) {
+                            String featureKey = actionFeature.getKey();
+                            String featureValue = actionFeature.getValNoQuotes();
+
+                            switch (featureKey) {
+                                case "question":
+                                    String questionCmd = "setQuestionText$ " + featureValue;
+                                    broadcast(questionCmd);
+                                    break;
+                                case "options":
+                                    // Concatenate the sceneWordText if it is not null
+                                    String optionsValue = (sceneWordText != null ? sceneWordText + " " : "") + featureValue;
+                                    String optionsCmd = "setOptionsText$ " + optionsValue;
+                                    broadcast(optionsCmd);
+                                    break;
+                                default:
+                                    break;
+                            }
+                        }
+                    }
+                }
+            }
+        }else {
             final String name = activity.getName();
             //final LinkedList<ActionFeature> features = activity.getFeatures();
 
@@ -226,6 +276,9 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
                     value = "";
                 }
                 broadcast(element + sCmdSeperatorChar + value);
+            } else if (name.equalsIgnoreCase("refresh")) {
+                String refreshCmd = "refreshGui$";
+                broadcast(refreshCmd);
             } else if (name.equalsIgnoreCase("setMoodGraph") ||
                     name.equalsIgnoreCase("setWorkHrsGraph")) {
                 String element = activity.get("element");
