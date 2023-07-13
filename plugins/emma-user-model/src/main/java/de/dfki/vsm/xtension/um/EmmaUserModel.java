@@ -19,7 +19,8 @@ import java.util.*;
 
 
 /**
- * Created by Patrick
+ * Created by Patrick,
+ * Adapted by Chirag Bhuvaneshwara
  */
 public class EmmaUserModel extends ActivityExecutor {
 
@@ -39,6 +40,12 @@ public class EmmaUserModel extends ActivityExecutor {
     // The system logger
     protected final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
 
+    private int[] mSelectedLowestHighestQuestionnaireOptions = {Integer.MAX_VALUE, Integer.MIN_VALUE}; // [<lowest>, <highest>] ==> [0,3]
+    private String[] mSelectedLowestHighestQuestionnaireSubOptions = {"", ""}; // [<lowest>, <highest>] ==> ["a", "b"]
+
+//    private int[] mPreviousSelectedQuestions = {};
+
+    ArrayList mPreviousSelectedQuestions = new ArrayList<>(Arrays.asList(1,3));
     private enum EmotionDiaryDays {
         Mo(0), Di(1), Mi(2), Do(3), Fr(4), Sa(5), So(6);
 
@@ -149,6 +156,8 @@ public class EmmaUserModel extends ActivityExecutor {
 
         // load creates a new user model, if there is no user with the specific name.
         if (name.equalsIgnoreCase("load")) {
+            mLogger.message("Loading Logs!!!!");
+
             if ((activity.get("name") != null)) {
                 String userName = activity.get("name");
                 mUser = loadUserData(userName);
@@ -173,9 +182,9 @@ public class EmmaUserModel extends ActivityExecutor {
 
         // PlayAction("[um currentday]") stores the number of the current day in a sceneflow var (mVSM_CurrentDiaryDay)
         if (name.equalsIgnoreCase("currentday")) {
-                 if (mProject.hasVariable(mVSM_CurrentDiaryDay)) {
-                        mProject.setVariable(mVSM_CurrentDiaryDay, mDiaryDays.size());
-                    }
+            if (mProject.hasVariable(mVSM_CurrentDiaryDay)) {
+                mProject.setVariable(mVSM_CurrentDiaryDay, mDiaryDays.size());
+            }
         }
 
         // PlayAction("[um diaryday no=0]") stores a day string (e.g., "2. November 2020")
@@ -586,21 +595,40 @@ public class EmmaUserModel extends ActivityExecutor {
                 mLogger.warning("No user specified, diary log entry will not be stored.");
             }
         }
-        if (name.equalsIgnoreCase("calculateStats"))
-        {
+
+        if (name.equalsIgnoreCase("calculateStats")) {
             this.calculateStats(activity.get("context"));
         }
 
+        if (name.equalsIgnoreCase("randGenQuestionNum")) {
+            mLogger.message("Generating random questionnaire question number");
+            this.identifyHighestLowestQuestionnaireOption(activity.get("context"));
+            this.randGenQuestionNum(activity.get("context"), activity.get("level"));
+            if (mPreviousSelectedQuestions.size() == 2){
+                this.resetHighestLowestQuestionnaireOptions();
+            }
+        }
+
+        if (name.equalsIgnoreCase("loadSelectedQuestionnaireOption")) {
+            mLogger.message("Loading questionnaire selected options for question number " + activity.get("frage_n"));
+            this.loadSelectedQuestionnaireOptionForQ(activity.get("context"), activity.get("frage_n"));
+        }
+
+        if (name.equalsIgnoreCase("resetHighestLowestQuestionnaireOptions")){
+            mLogger.message("Resetting internal variables for random question selection.");
+            this.resetHighestLowestQuestionnaireOptions();
+        }
     }
 
     private void calculateStats(String context) {
         JSONArray diary = mUser.getJSONArray("diary");
-        if (diary.length() > 0 && context.equals("")) {
-            float mean = calculateMean(diary,context);
-            this.mProject.setVariable("mean",mean);
-            this.mProject.setVariable("sd",calculateSD(diary,context,mean));
+        if (diary.length() > 0 && !context.equals("")) {
+            float mean = calculateMean(diary, context);
+            this.mProject.setVariable("mean", mean);
+            this.mProject.setVariable("sd", calculateSD(diary, context, mean));
         }
     }
+
 
     // set also overrides previously set values.
     private void setUserValue(String key, AbstractActivity activity) {
@@ -723,43 +751,215 @@ public class EmmaUserModel extends ActivityExecutor {
         }
     }
 
-    private Float calculateMean(JSONArray diary, String context) {
-            mLogger.message("Calculating mean on " + context);
-            int count = 0;
-            int sum = 0;
-            for (int i = 0; i < diary.length(); i++) {
-                JSONObject diaryItem = diary.getJSONObject(i);
+    private void loadSelectedQuestionnaireOptionForQ(String context, String frage_n) {
+        JSONArray diary = mUser.getJSONArray("diary");
 
-                // not every entry is an emotion entry; collect only those.
-                if(diaryItem.has("context")){
-                    if(diaryItem.get("context").equals(context) && diaryItem.has("log")){
-                        sum += Integer.valueOf((String) diaryItem.get("log"));
-                        count++;
+        mLogger.message("Identifying lowest and highest selected option from: " + context + "for frage_n= " + frage_n);
+
+        for (int i = 0; i < diary.length(); i++) {
+            JSONObject diaryItem = diary.getJSONObject(i);
+
+            // not every entry is for the context of Ubidenz Questionnaire; collect only those.
+            if (diaryItem.has("context")) {
+                if (diaryItem.get("context").equals(context) && diaryItem.has("log")) {
+
+
+                    String q_n_diary = ((String) diaryItem.get("producer"));
+
+                    if (q_n_diary.equals(frage_n)) {
+                        String antwort_option = ((String) diaryItem.get("log"));
+                        mLogger.message("For Frage number " + frage_n + " the selected option was: " + antwort_option);
+                        this.mProject.setVariable("antwort_option", antwort_option);
+                        break;
                     }
                 }
             }
-           return (float) sum/count;
+        }
+    }
+
+    private void resetHighestLowestQuestionnaireOptions() {
+        mSelectedLowestHighestQuestionnaireOptions = new int[]{Integer.MAX_VALUE, Integer.MIN_VALUE}; // [<lowest>, <highest>] ==> [0,3]
+        mSelectedLowestHighestQuestionnaireSubOptions = new String[]{"", ""}; // [<lowest>, <highest>] ==> ["a", "b"]
+        mPreviousSelectedQuestions = new ArrayList<>(Arrays.asList(1,3));
+    }
+
+    private void identifyHighestLowestQuestionnaireOption(String context) {
+        JSONArray diary = mUser.getJSONArray("diary");
+
+        mLogger.message("Identifying lowest and highest selected option from: " + context);
+        List<String> levels = new ArrayList<String>() {{
+            add("lowest");
+            add("highest");
+        }};
+        for (String level : levels) {
+            for (int i = 0; i < diary.length(); i++) {
+                JSONObject diaryItem = diary.getJSONObject(i);
+
+                // not every entry is for the context of Ubidenz Questionnaire; collect only those.
+                if (diaryItem.has("context")) {
+                    if (diaryItem.get("context").equals(context) && diaryItem.has("log")) {
+                        // Splitting the string into number and alphabet parts
+                        int optionNumberPart = Integer.valueOf(((String) diaryItem.get("log")).replaceAll("[^0-9]", ""));
+                        String optionAlphabetPart = ((String) diaryItem.get("log")).replaceAll("[^A-Za-z]", "");
+
+                        if (level.equals("highest")) {
+                            if (optionNumberPart < mSelectedLowestHighestQuestionnaireOptions[0]) {
+                                mSelectedLowestHighestQuestionnaireOptions[0] = optionNumberPart;
+                                mSelectedLowestHighestQuestionnaireSubOptions[0] = optionAlphabetPart;
+                            }
+                        } else {
+                            if (optionNumberPart > mSelectedLowestHighestQuestionnaireOptions[1]) {
+                                mSelectedLowestHighestQuestionnaireOptions[1] = optionNumberPart;
+                                mSelectedLowestHighestQuestionnaireSubOptions[1] = optionAlphabetPart;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        mLogger.message("Lowest and highest option in " + context + " are: " + Arrays.toString(mSelectedLowestHighestQuestionnaireOptions));
+    }
+
+    private void randGenQuestionNum(String context, String level) {
+
+        JSONArray diary = mUser.getJSONArray("diary");
+
+        mLogger.message("Selecting random question from " + level + " selected options in the context of " + context);
+        int answer_val;
+        List<Integer> possibleQuestionSetHighest = new ArrayList<Integer>();
+        List<Integer> possibleQuestionSetLowest = new ArrayList<Integer>();
+        for (int i = 0; i < diary.length(); i++) {
+            JSONObject diaryItem = diary.getJSONObject(i);
+
+            // not every entry is for the context of Ubidenz Questionnaire; collect only those.
+            if (diaryItem.has("context")) {
+                if (diaryItem.get("context").equals(context) && diaryItem.has("log")) {
+
+
+                    if (level.equals("highest")) {
+                        // Splitting the string into number and alphabet parts
+                        answer_val = Integer.valueOf(((String) diaryItem.get("log")).replaceAll("[^0-9]", ""));
+                        if (answer_val == mSelectedLowestHighestQuestionnaireOptions[1]) {
+                            possibleQuestionSetHighest.add(Integer.valueOf((String) diaryItem.get("producer")));
+                        }
+                    } else {
+                        // Splitting the string into number and alphabet parts
+                        answer_val = Integer.valueOf(((String) diaryItem.get("log")).replaceAll("[^0-9]", ""));
+                        if (answer_val == mSelectedLowestHighestQuestionnaireOptions[0]) {
+                            possibleQuestionSetLowest.add(Integer.valueOf((String) diaryItem.get("producer")));
+                        }
+                    }
+                }
+            }
+        }
+
+//            TODO: Send one question number and associated selected option number. ==> Currently sending only one question number randomly.
+//            Best solution: Collect all questions and associated answers in a dict
+//            Go through the dict and find the highest value and lowest value
+//            Form a sub dict with all entries with highest/lowest value
+//            Return one question and associated answer with highest value and one for lowest value
+
+        Random rand = new Random();
+        if (level.equals("highest")) {
+
+            int randomHighestOptionQ;
+            do {
+                int randomHighestOptionQPos = rand.nextInt(possibleQuestionSetHighest.size());
+                randomHighestOptionQ = possibleQuestionSetHighest.get(randomHighestOptionQPos);
+            } while (mPreviousSelectedQuestions.contains(randomHighestOptionQ));
+//            int randomHighestOptionQPos = rand.nextInt(possibleQuestionSetHighest.size());
+//            int randomHighestOptionQ = possibleQuestionSetHighest.get(randomHighestOptionQPos);
+            mPreviousSelectedQuestions.add(randomHighestOptionQ);
+
+            for (int i = 0; i < diary.length(); i++) {
+                JSONObject diaryItem = diary.getJSONObject(i);
+
+                // not every entry is for the context of Ubidenz Questionnaire; collect only those.
+                if (diaryItem.has("context")) {
+                    if (diaryItem.get("context").equals(context) && diaryItem.has("log")) {
+
+                        if (diaryItem.get("producer").equals(Integer.toString(randomHighestOptionQ))) {
+                            String optionAlphabetPart = ((String) diaryItem.get("log")).replaceAll("[^A-Za-z]", "");
+                            mSelectedLowestHighestQuestionnaireSubOptions[1] = optionAlphabetPart;
+                        }
+                    }
+                }
+            }
+            String antwort_option = Integer.toString(mSelectedLowestHighestQuestionnaireOptions[1]) + mSelectedLowestHighestQuestionnaireSubOptions[1];
+
+            this.mProject.setVariable("frage_n", randomHighestOptionQ);
+            this.mProject.setVariable("antwort_option", antwort_option);
+        } else {
+            int randomLowestOptionQ;
+            do {
+                int randomLowestOptionQPos = rand.nextInt(possibleQuestionSetLowest.size());
+                randomLowestOptionQ = possibleQuestionSetLowest.get(randomLowestOptionQPos);
+            } while (mPreviousSelectedQuestions.contains(randomLowestOptionQ));
+
+//            int randomLowestOptionQPos = rand.nextInt(possibleQuestionSetLowest.size());
+//            int randomLowestOptionQ = possibleQuestionSetLowest.get(randomLowestOptionQPos);
+            mPreviousSelectedQuestions.add(randomLowestOptionQ);
+
+
+            for (int i = 0; i < diary.length(); i++) {
+                JSONObject diaryItem = diary.getJSONObject(i);
+
+                // not every entry is for the context of Ubidenz Questionnaire; collect only those.
+                if (diaryItem.has("context")) {
+                    if (diaryItem.get("context").equals(context) && diaryItem.has("log")) {
+
+                        if (diaryItem.get("producer").equals(Integer.toString(randomLowestOptionQ))) {
+                            String optionAlphabetPart = ((String) diaryItem.get("log")).replaceAll("[^A-Za-z]", "");
+                            mSelectedLowestHighestQuestionnaireSubOptions[0] = optionAlphabetPart;
+                        }
+                    }
+                }
+            }
+            String antwort_option = Integer.toString(mSelectedLowestHighestQuestionnaireOptions[0]) + mSelectedLowestHighestQuestionnaireSubOptions[0];
+
+            this.mProject.setVariable("frage_n", randomLowestOptionQ);
+            this.mProject.setVariable("antwort_option", antwort_option);
+        }
+
+    }
+
+    private Float calculateMean(JSONArray diary, String context) {
+        mLogger.message("Calculating mean on " + context);
+        int count = 0;
+        int sum = 0;
+        for (int i = 0; i < diary.length(); i++) {
+            JSONObject diaryItem = diary.getJSONObject(i);
+
+            // not every entry is for the context of Ubidenz Questionnaire; collect only those.
+            if (diaryItem.has("context")) {
+                if (diaryItem.get("context").equals(context) && diaryItem.has("log")) {
+                    sum += Integer.valueOf((String) diaryItem.get("log"));
+                    count++;
+                }
+            }
+        }
+        return (float) sum / count;
 
     }
 
     private Float calculateSD(JSONArray diary, String context, float mean) {
 
-            mLogger.message("Calculating mean on " + context);
+        mLogger.message("Calculating mean on " + context);
 
-            int count = 0;
-            double sum = 0;
-            for (int i = 0; i < diary.length(); i++) {
-                JSONObject diaryItem = diary.getJSONObject(i);
+        int count = 0;
+        double sum = 0;
+        for (int i = 0; i < diary.length(); i++) {
+            JSONObject diaryItem = diary.getJSONObject(i);
 
-                // not every entry is an emotion entry; collect only those.
-                if(diaryItem.has("context")){
-                    if(diaryItem.get("context").equals(context) && diaryItem.has("log")){
-                        sum = sum + Math.pow(Double.valueOf((String) diaryItem.get("log"))-mean,2.0);
-                        count++;
-                    }
+            // not every entry is for the context of Ubidenz Questionnaire; collect only those.
+            if (diaryItem.has("context")) {
+                if (diaryItem.get("context").equals(context) && diaryItem.has("log")) {
+                    sum = sum + Math.pow(Double.valueOf((String) diaryItem.get("log")) - mean, 2.0);
+                    count++;
                 }
             }
-            return (float) Math.sqrt(sum/count);
+        }
+        return (float) Math.sqrt(sum / count);
 
     }
 
