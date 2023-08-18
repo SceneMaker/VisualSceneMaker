@@ -480,6 +480,10 @@ public class charamelWsExecutor extends ActivityExecutor {
                 broadcast(new TimeLine(new WaveCommand()));
                 break;
             }
+            case "welcome": {
+                broadcast(new TimeLine(new WelcomeCommand()));
+                break;
+            }
             case "sequence": {
                 String sequenceName = getActionFeatureValue("name", f);
                 broadcast(new SequenceCommand(sequenceName));

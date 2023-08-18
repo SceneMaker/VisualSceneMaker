@@ -230,12 +230,13 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
 
             for (SceneUttr uttr : uttrList) {
                 LinkedList<UttrElement> uttrElements = uttr.getWordList();
-                String sceneWordText = null;  // Variable to keep the scene word text
+                String sceneWordText = "";  // Variable to keep the scene word text
                 for (UttrElement uttrElement : uttrElements) {
                     // If SceneWord, capture the text
+
                     if (uttrElement instanceof SceneWord) {
                         SceneWord sceneWord = (SceneWord) uttrElement;
-                        sceneWordText = sceneWord.getText();
+                        sceneWordText += sceneWord.getText() + " ";
                     }
                     // If ActionObject, process the features
                     if (uttrElement instanceof ActionObject) {
