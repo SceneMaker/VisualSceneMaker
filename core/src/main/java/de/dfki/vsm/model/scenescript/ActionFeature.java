@@ -70,7 +70,7 @@ public class ActionFeature extends ScriptEntity {
      *
      * @return The value of the action feature.
      */
-    public final String getVal() {
+    public final String         getVal() {
         return mVal;
     }
 
