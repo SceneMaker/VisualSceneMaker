@@ -13,7 +13,7 @@ import java.net.Socket;
 public class SmartjacketExecutor extends ActivityExecutor {
 
     Socket writeSocket;
-    int writePort = 4001;
+    int writePort = 7867;
     private DataOutputStream outStream;
 
 
@@ -71,6 +71,10 @@ public class SmartjacketExecutor extends ActivityExecutor {
         mLogger.message("SmartJacket plugin ready");
     }
 
+
+    public void onReceipt(String msg, Session session){
+        session.getBasicRemote().sendText("got your message ");
+    }
 
     @Override
     public void unload() {
