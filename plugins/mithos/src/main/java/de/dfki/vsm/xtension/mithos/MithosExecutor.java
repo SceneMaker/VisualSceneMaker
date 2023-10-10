@@ -12,6 +12,7 @@ import de.dfki.vsm.util.log.LOGConsoleLogger;
 import de.mithos.compint.command.ScenarioScriptCommand;
 import de.mithos.compint.command.ScenarioScriptFeedback;
 import de.mithos.compint.interaction.ActKind;
+import de.mithos.compint.interaction.AppraisalTag;
 import de.mithos.compint.interaction.InteractionAct;
 import de.mithos.compint.log.VSMPilotLog;
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -229,10 +230,15 @@ public class MithosExecutor extends ActivityExecutor {
     }
 
     public void process(InteractionAct intAct) {
-        ActKind kindDa = intAct.kind_da;
-        if (kindDa != null) {
-            logger.message("Interaction kind: " + kindDa);
-            mProject.setVariable("kind_da", kindDa.toString());
+        ActKind intent = intAct.intent;
+        if (intent != null) {
+            logger.message("Interaction kind: " + intent);
+            mProject.setVariable("intent", intent.name());
+        }
+        AppraisalTag appraisalTag = intAct.appraisalTag;
+        if (appraisalTag != null) {
+            logger.message("Appraisal Tag : " + appraisalTag);
+            mProject.setVariable("appraisalTag", appraisalTag.name());
         }
     }
 
