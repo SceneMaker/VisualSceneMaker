@@ -37,7 +37,7 @@ public class MithosExecutor extends ActivityExecutor {
     private final String read_topics;
 
     private final String write_topic;
-    private final String log_topic;
+    private final String interaction_log_topic, message_log_topic;
     private KafkaProducer<String, String> producer;
     MithosHandler handler;
     private final LOGConsoleLogger logger = LOGConsoleLogger.getInstance();
@@ -51,11 +51,15 @@ public class MithosExecutor extends ActivityExecutor {
         server = mConfig.getProperty("server");
         read_topics = mConfig.getProperty("read_topic");
         write_topic = mConfig.getProperty("write_topic");
-        if (mConfig.containsKey("log_topic")) {
-            log_topic = mConfig.getProperty("log_topic");
+        if (mConfig.containsKey("interaction_timeline_log_topic")) {
+            interaction_log_topic = mConfig.getProperty("interaction_timeline_log_topic");
+        } else {
+            interaction_log_topic = "InteractionVSMLog";
         }
-        else {
-            log_topic = "VSMLog";
+        if (mConfig.containsKey("interaction_timeline_log_topic")) {
+            message_log_topic = mConfig.getProperty("message_log_topic");
+        } else {
+            message_log_topic = "MessageVSMLog";
         }
     }
 
@@ -138,7 +142,7 @@ public class MithosExecutor extends ActivityExecutor {
         Integer task_lvl = (int) mProject.getValueOf("task_lvl").getValue();
         VSMPilotLog logEntry = new VSMPilotLog(name,interaction_count,phase,relationship_lvl,affection_interpretation,freedom_interpretation,task_lvl);
         String logEntryGsonString = gson.toJson(logEntry);
-        ProducerRecord<String, String> record = new ProducerRecord<>(log_topic, 0, "Log", logEntryGsonString);
+        ProducerRecord<String, String> record = new ProducerRecord<>(interaction_log_topic, 0, "Log", logEntryGsonString);
         sendRecord(record);
     }
 
@@ -175,7 +179,7 @@ public class MithosExecutor extends ActivityExecutor {
     }
 
     private void sendLogMsg(String message) {
-        ProducerRecord<String, String> record = new ProducerRecord<>(log_topic, 0, "LogMessage", message);
+        ProducerRecord<String, String> record = new ProducerRecord<>(message_log_topic, 0, "LogMessage", message);
         sendRecord(record);
     }
 
