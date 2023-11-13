@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>  
+<emotionml xmlns="http://www.w3.org/2009/10/emotionml">
+  
+    <vocabulary type="category" id="alma-occ-categories">
+        <item name="admiration"/>
+        <item name="anger"/>
+        <item name="disappointment"/>
+        <item name="distress"/>
+        <item name="disliking"/> <!-- in alma occ disliking replaces the
+				-- hate occ emotion -->
+        <item name="fear"/>
+        <item name="fears-confirmed"/>
+        <item name="gloating"/>
+        <item name="gratification"/>
+        <item name="gratitude"/>
+        <item name="happy-for"/>
+        <item name="hate"/> <!-- In alma occ hate is a compound --
+			      -- emotion of disliking and reproach -->
+        <item name="hope"/>
+        <item name="joy"/>
+        <item name="liking"/> <!-- in alma occ liking replaces the
+				-- love occ emotion -->
+        <item name="love"/> <!-- In alma occ love is a compound --
+			      -- emotion of liking and admiration -->
+        <item name="pity"/>
+        <item name="pride"/>
+        <item name="relief"/>
+        <item name="remorse"/>
+        <item name="reproach"/>
+        <item name="resentment"/>
+        <item name="satisfaction"/>
+        <item name="shame"/>
+    </vocabulary>    
+    
+</emotionml>

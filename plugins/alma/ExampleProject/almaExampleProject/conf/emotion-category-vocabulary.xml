@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8"?>  
+<emotionml xmlns="http://www.w3.org/2009/10/emotionml">
+
+    <!-- CATEGORIES -->
+
+    <vocabulary type="category" id="big6">
+        <item name="anger" />
+        <item name="disgust"/>
+        <item name="fear"/>
+        <item name="happiness"/>
+        <item name="sadness"/>
+        <item name="surprise"/>
+    </vocabulary>
+
+    <vocabulary type="category" id="everyday-categories">
+        <item name="affectionate"/>
+        <item name="afraid"/>
+        <item name="amused"/>
+        <item name="angry"/>
+        <item name="bored"/>
+        <item name="confident"/>
+        <item name="content"/>
+        <item name="disappointed"/>
+        <item name="excited"/>
+        <item name="happy"/>
+        <item name="interested"/>
+        <item name="loving"/>
+        <item name="pleased"/>
+        <item name="relaxed"/>
+        <item name="sad"/>
+        <item name="satisfied"/>
+        <item name="worried"/>        
+    </vocabulary>
+  
+    <vocabulary type="category" id="occ-categories">
+        <item name="admiration"/>
+        <item name="anger"/>
+        <item name="disappointment"/>
+        <item name="distress"/>
+        <item name="fear"/>
+        <item name="fears-confirmed"/>
+        <item name="gloating"/>
+        <item name="gratification"/>
+        <item name="gratitude"/>
+        <item name="happy-for"/>
+        <item name="hate"/>
+        <item name="hope"/>
+        <item name="joy"/>
+        <item name="love"/>
+        <item name="pity"/>
+        <item name="pride"/>
+        <item name="relief"/>
+        <item name="remorse"/>
+        <item name="reproach"/>
+        <item name="resentment"/>
+        <item name="satisfaction"/>
+        <item name="shame"/>
+    </vocabulary>    
+    
+    <vocabulary type="category" id="fsre-categories">
+        <item name="anger"/>
+        <item name="anxiety"/>
+        <item name="being-hurt"/>
+        <item name="compassion"/>
+        <item name="contempt"/>
+        <item name="contentment"/>
+        <item name="despair"/>
+        <item name="disappointment"/>
+        <item name="disgust"/>
+        <item name="fear"/>
+        <item name="guilt"/>
+        <item name="happiness"/>
+        <item name="hate"/>
+        <item name="interest"/>
+        <item name="irritation"/>
+        <item name="jealousy"/>
+        <item name="joy"/>
+        <item name="love"/>
+        <item name="pleasure"/>
+        <item name="pride"/>
+        <item name="sadness"/>
+        <item name="shame"/>
+        <item name="stress"/>
+        <item name="surprise"/>
+    </vocabulary>
+
+    <vocabulary type="category" id="frijda-categories">
+        <item name="anger"/>
+        <item name="arrogance"/>
+        <item name="desire"/>
+        <item name="disgust"/>
+        <item name="enjoyment"/>
+        <item name="fear"/>
+        <item name="humility"/>
+        <item name="indifference"/>
+        <item name="interest"/>
+        <item name="resignation"/>
+        <item name="shock"/>
+        <item name="surprise"/>
+    </vocabulary>
+  
+    <!-- DIMENSIONS -->
+    
+    <vocabulary type="dimension" id="pad-dimensions">
+        <item name="pleasure"/>
+        <item name="arousal"/>
+        <item name="dominance"/>
+    </vocabulary>
+  
+    <vocabulary type="dimension" id="fsre-dimensions">
+        <item name="valence"/>
+        <item name="potency"/>
+        <item name="arousal"/>
+        <item name="unpredictability"/>
+    </vocabulary>
+ 
+    <vocabulary type="dimension" id="intensity-dimension">
+        <item name="intensity"/>
+    </vocabulary>
+ 
+    <!-- APPRAISALS -->
+  
+    <vocabulary type="appraisal" id="occ-appraisals">
+        <item name="desirability"/> <item name="praiseworthiness"/>
+        <Item name="appealingness"/>
+        <Item name="desirability-for-other"/>
+        <Item name="deservingness"/> <item name="liking"/>
+        <Item name="likelihood"/> <Item name="effort"/>
+        <item name="strength-of-identification"/>
+        <item name="expectation-of-deviation"/>
+        <item name="familiarity"/>
+    </vocabulary>
+  
+    <vocabulary type="appraisal" id="scherer-appraisals">
+        <item name="suddenness"/>
+        <item name="familiarity"/>
+        <item name="predictability"/>
+        <item name="intrinsic-pleasantness"/>
+        <item name="relevance-person"/>
+        <item name="relevance-relationship"/>
+        <item name="relevance-social-order"/>
+        <item name="outcome-probability"/>
+        <item name="consonant-with-expectation"/>
+        <item name="goal-conduciveness"/>
+        <item name="urgency"/>
+        <item name="agent-self"/>
+        <item name="agent-other"/>
+        <item name="agent-nature"/>
+        <item name="cause-intentional"/>
+        <item name="control"/>
+        <item name="power"/>
+        <item name="adjustment-possible"/>
+        <item name="norm-compatibility"/>
+        <item name="self-compatibility"/>
+    </vocabulary>
+  
+    <vocabulary type="appraisal" id="ema-appraisals">
+        <item name="relevance"/>
+        <item name="desirability"/>
+        <item name="agency"/>
+        <item name="blame"/>
+        <item name="likelihood"/>
+        <item name="unexpectedness"/>
+        <item name="urgency"/>
+        <item name="ego-involvement"/>
+        <item name="controllability"/>
+        <item name="changeability"/>
+        <item name="power"/>
+        <item name="adaptability"/>
+    </vocabulary>
+ 
+    <!-- ACTION TENDENCIES -->
+    
+    <vocabulary type="action-tendency" id="frijda-action-tendencies">
+        <item name="approach"/>
+        <item name="avoidance"/>
+        <item name="being-with"/>
+        <item name="attending"/>
+        <item name="rejecting"/>
+        <item name="nonattending"/>
+        <item name="agonistic"/>
+        <item name="interrupting"/>
+        <item name="dominating"/>
+        <item name="submitting"/>
+    </vocabulary>
+	
+</emotionml>

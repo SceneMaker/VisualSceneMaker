@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<AffectDefinition xmlns="xml.affect.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.affect.de ../xsd/Affect.xsd">
+	<CharacterAffect name="New Character" docu="New Character" monitored="false">
+		<PersonalitySpecification derived="false" emotioninfluence="0.2"  openness="0.0" conscientiousness="0.0" extraversion="0.0" agreeableness="0.0" neurotism="0.0"/>
+		<MoodSpecification decaytime="60000" decayperiod="500" neurotismstability="false"/>
+		<EmotionSpecification decaytime="20000" decayperiod="500" decayfunction="linear" baseline="0.5"/>
+		<Appraisal>
+			<Basic>
+				<GoodActOther praiseworthiness="0.5" agency="other"/>
+				<BadActSelf praiseworthiness="-0.5" agency="self"/>
+				<BadLikelyFutureEvent desirability="-0.5" likelihood="0.5"/>
+				<BadActOther praiseworthiness="-0.5" agency="other"/>
+				<GoodEventForGoodOther desirability="0.5" liking="0.5" agency="other"/>
+				<BadEventForGoodOther desirability="-0.5" liking="0.5" agency="other"/>
+				<GoodUnlikelyFutureEvent desirability="0.5" likelihood="-0.5"/>
+				<GoodActSelf praiseworthiness="0.5" agency="self"/>
+				<NastyThing appealingness="-0.5"/>
+				<BadUnlikelyFutureEvent desirability="-0.5" likelihood="-0.5"/>
+				<EventDisconfirmed realization="false"/>
+				<GoodEventForBadOther desirability="0.5" liking="-0.5" agency="other"/>
+				<NiceThing appealingness="0.5"/>
+				<BadEvent desirability="-0.5"/>
+				<GoodLikelyFutureEvent desirability="0.5" likelihood="0.5"/>
+				<EventConfirmed realization="true"/>
+				<GoodEvent desirability="0.5"/>
+				<BadEventForBadOther desirability="-0.5" liking="-0.5" agency="other"/>
+			</Basic>
+		</Appraisal>
+	</CharacterAffect>
+</AffectDefinition>

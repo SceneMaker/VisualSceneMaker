@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SceneScript lower="0" upper="0">
+  <SceneObject lower="0" upper="71" language="@@" identifier="Scene1">
+    <SceneTurn lower="16" upper="71" speaker="Anne">
+      <SceneUttr lower="22" upper="30" punct=",">
+        <SceneWord lower="22" upper="27" text="Scene"/>
+        <SceneWord lower="28" upper="29" text="1"/>
+      </SceneUttr>
+      <SceneUttr lower="31" upper="36" punct=",">
+        <SceneWord lower="31" upper="35" text="good"/>
+      </SceneUttr>
+      <SceneUttr lower="38" upper="71" punct=".">
+        <ActionObject lower="38" upper="55" actor="Anne" name="GoodActSelf">
+          <ActionFeature lower="56" upper="69" key="intensity" val="0.8"/>
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="73" upper="143" language="@@" identifier="Scene2">
+    <SceneTurn lower="89" upper="143" speaker="Anne">
+      <SceneUttr lower="95" upper="103" punct=",">
+        <SceneWord lower="95" upper="100" text="Scene"/>
+        <SceneWord lower="101" upper="102" text="2"/>
+      </SceneUttr>
+      <SceneUttr lower="104" upper="108" punct=",">
+        <SceneWord lower="104" upper="107" text="bad"/>
+      </SceneUttr>
+      <SceneUttr lower="110" upper="143" punct="!">
+        <ActionObject lower="110" upper="127" actor="Anne" name="BadActOther">
+          <ActionFeature lower="128" upper="141" key="intensity" val="0.8"/>
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+</SceneScript>

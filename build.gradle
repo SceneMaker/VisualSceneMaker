@@ -32,6 +32,7 @@ dependencies {
     implementation project(":plugins:studymaster-web")
     implementation project(":plugins:decad")
     implementation project(":plugins:yallah")
+    implementation project(":plugins:alma")
     implementation project(":plugins:ssi")
     implementation project(":plugins:reeti")
     implementation project(":plugins:tricatworld")

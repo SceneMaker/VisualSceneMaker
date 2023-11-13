@@ -18,15 +18,16 @@ import de.dfki.vsm.runtime.activity.AbstractActivity;
 import de.dfki.vsm.runtime.activity.SpeechActivity;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
 import de.dfki.vsm.runtime.interpreter.value.AbstractValue;
-import de.dfki.vsm.runtime.interpreter.value.ListValue;
+import de.dfki.vsm.runtime.interpreter.value.FloatValue;
 import de.dfki.vsm.runtime.interpreter.value.StringValue;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
+import org.apache.xmlbeans.XmlException;
+//import org.apache.xmlbeans.XmlException;
+
 import java.io.File;
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.LinkedList;
-import org.apache.xmlbeans.XmlException;
 
 /**
  *
@@ -117,38 +118,81 @@ public class ALMAExecutor extends ActivityExecutor implements AffectUpdateListen
     @Override
     public void update(AffectUpdateEvent event) {
         AffectOutputDocument aod = event.getUpdate();
-
-        try {
+         try {
             for (AffectOutputDocument.AffectOutput.CharacterAffect character : aod.getAffectOutput().getCharacterAffectList()) {
-                // access cached data or create new cache
-                String name = character.getName();
-                String emotion = character.getDominantEmotion().getName().toString();
-                double eIntensity = Double.parseDouble(character.getDominantEmotion().getValue());
-                String mood = character.getMood().getMoodword().toString();
-                String mIntensity = character.getMood().getIntensity().toString();
-                String mTendency = character.getMoodTendency().getMoodword().toString();
+                logCharacterUpdate(character, true);
+                //TODO MABY AUTOMATICALLY ADD CHARACTER VARS TO VSM?
+
+
+                StringValue dominatnEmotion = new StringValue(character.getDominantEmotion().getName().toString());
+
+                //gettiong  PAP values from character, casting them to VSM type and collect them to vars
+                FloatValue P = new FloatValue((float) character.getMood().getPleasure());
+                FloatValue A = new FloatValue((float) character.getMood().getArousal());
+                FloatValue D = new FloatValue((float) character.getMood().getDominance());
+
+
+                //update project vars accordingly
+                String emotionName = character.getName()+ "Emotion";
+                String pName = character.getName()+"P";
+                String aName = character.getName()+"A";
+                String dName = character.getName()+"D";
+
+                mProject.setVariable(emotionName,dominatnEmotion );
+                mProject.setVariable(pName,P );
+                mProject.setVariable(aName,A );
+                mProject.setVariable(dName,D );
+
 
                 LinkedList<AbstractValue> valueList = new LinkedList<>();
 
                 // get the intensity of all active emotions of the character
                 for (EmotionType et : character.getEmotions().getEmotionList()) {
                     if (Float.parseFloat(et.getValue()) > 0.25f) {
-                        StringValue sv = new StringValue(et.getName().toString());
-                        valueList.add(sv);
-                    }
-                }
+                        String sv = et.getName().toString();
+                        valueList.add(new StringValue(sv));
 
-                try {
-                    ListValue list = new ListValue(valueList);
-                    mProject.setVariable("useremotions", list);
-                } catch (Exception e) {
-                    // System.out.println("not running");
+                    }
                 }
             }
         } catch (Exception e) {
             mLogger.failure("Exception during affect update");
         }
     }
+
+    // print character attributes With Logger.
+    // Priority level is set to message, if not shown, set LOG_LEVELs in enviroment to ALL
+    //bool detailed is used to set the deteil level of the print
+    private void logCharacterUpdate(AffectOutputDocument.AffectOutput.CharacterAffect character, boolean detailed){
+        // access cached data or create new cache
+        String name = character.getName();
+        String emotion = character.getDominantEmotion().getName().toString();
+        double eIntensity = Double.parseDouble(character.getDominantEmotion().getValue());
+        String mood = character.getMood().getMoodword().toString();
+        String mIntensity = character.getMood().getIntensity().toString();
+        String mTendency = character.getMoodTendency().getMoodword().toString();
+
+        //steing message for logger updatre message
+        String updateInfo = ">>> Character Update\n";
+        updateInfo +=   "  Character Name: "+ name + "\n";
+        updateInfo +=   "  Strongest Emotion: " + emotion + " " +eIntensity + "\n";
+
+        if(detailed){
+            updateInfo +=   "  All Emotions:\n";
+            for (EmotionType et : character.getEmotions().getEmotionList()) {
+                updateInfo +=   "      " + et.getName() + " has value:" +et.getValue() + "\n";
+            }
+        }
+        updateInfo +=   "  Mood: " + mIntensity+ " " + mood  + " with tendency towards " + mTendency + "\n";
+
+        if(detailed){
+            updateInfo +=   "    (P,A,D) = (" +character.getMood().getPleasure()+", " +character.getMood().getArousal()+ ", "+character.getMood().getDominance()+",)";
+        }
+
+        mLogger.message( updateInfo);
+    }
+
+
     // get the value of a feature (added PG) - quick and dirty
 
     private final String getActionFeatureValue(String name, LinkedList<ActionFeature> features) {
