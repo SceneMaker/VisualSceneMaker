@@ -6,15 +6,16 @@ import de.dfki.vsm.runtime.activity.SpeechActivity;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.xtension.sockets.SocketClient;
+import de.dfki.vsm.xtension.sockets.SocketHandler;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 
-public class SmartjacketExecutor extends ActivityExecutor implements Ex{
+public class SmartjacketExecutor extends ActivityExecutor implements SocketHandler {
 
-    Socket writeSocket;
-    int writePort = 7867;
+    SocketClient socket;
+    int port = 7867;
     private DataOutputStream outStream;
 
 
@@ -32,59 +33,27 @@ public class SmartjacketExecutor extends ActivityExecutor implements Ex{
         if (activity instanceof SpeechActivity || activity == null) {
             return;
         }
-
-        String cmd = "";
         switch (activity.getName()) {
             case "vibrate":
-                //TODO
-
-        }
-        if(!cmd.equals("")){
-            try {
-                outStream.writeChars("go");
-                mLogger.message("send command \""+cmd+"\" to SmartJacket");
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+                socket.send("GO@@");
         }
 
     }
 
     @Override
     public void launch() {
-        while (writeSocket == null) {
-            try {
-                // Create the socket
-                writeSocket = new SocketClient(this, writePort);
-            } catch (final IOException exc) {
-                mLogger.failure(exc.toString());
-            }
-
-        }
-        while (outStream == null) {
-            try {
-                outStream = new DataOutputStream(writeSocket.getOutputStream());
-                outStream.flush();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
+        socket = new SocketClient(this, port);
         mLogger.message("SmartJacket plugin ready");
-    }
-
-
-    public void onReceipt(String msg, Session session){
-        session.getBasicRemote().sendText("got your message ");
     }
 
     @Override
     public void unload() {
-        try {
-            outStream.flush();
-            outStream.close();
-            writeSocket.close();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        socket.abort();
+    }
+
+    @Override
+    public boolean handle(String msg) {
+        mLogger.message("received: " + msg);
+        return true;
     }
 }
