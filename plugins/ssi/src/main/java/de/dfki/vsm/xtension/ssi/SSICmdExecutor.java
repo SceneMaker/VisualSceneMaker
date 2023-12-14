@@ -40,14 +40,54 @@ public final class SSICmdExecutor extends ActivityExecutor implements Exportable
             final PluginConfig config,
             final RunTimeProject project) {
         super(config, project);
-        mLogVar = mConfig.getProperty("logvar");
-        mLogHost = mConfig.getProperty("loghost");
-        mLogPort = mConfig.getProperty("logport");
-        mSSIPipe = mConfig.getProperty("pipes").split(",");
-        mBroadcasting = Boolean.valueOf(mConfig.getProperty("broadcast")); // 9.6.17 add by PG
-        mBroadCastPort = mConfig.getProperty("broadcastport"); // 9.6.17 add by PG
-        mListenToStudyMaster = Boolean.valueOf(mConfig.getProperty("listentostudymaster")); // 9.6.17 add by PG
-        mStudyMasterPort = mConfig.getProperty("studymasterport"); // 9.6.17 add by PG
+        if(mConfig.containsKey("logvar")) {
+            mLogVar = mConfig.getProperty("logvar");
+        }
+        else{
+            mLogVar = "SSIMessages";
+        }
+        if(mConfig.containsKey("loghost")) {
+            mLogHost = mConfig.getProperty("loghost");
+        }
+        else{
+            mLogHost = "127.0.0.1";
+        }
+        if(mConfig.containsKey("logport")) {
+            mLogPort = mConfig.getProperty("logport");
+        }
+        else{
+            mLogPort = "8989";
+        }
+        if(mConfig.containsKey("pipes")) {
+            mSSIPipe = mConfig.getProperty("pipes").split(",");
+        }
+        else{
+            mSSIPipe = new String[]{"interview:127.0.0.1:1111"};
+        }
+        if(mConfig.containsKey("broadcast")) {
+            mBroadcasting = Boolean.valueOf(mConfig.getProperty("broadcast"));
+        }
+        else{
+            mBroadcasting = false;
+        }
+        if(mConfig.containsKey("broadcastport")){
+            mBroadCastPort = mConfig.getProperty("broadcastport");
+        }
+        else{
+            mBroadCastPort = "9898";
+        }
+        if(mConfig.containsKey("listentostudymaster")){
+            mListenToStudyMaster = Boolean.parseBoolean(mConfig.getProperty("listentostudymaster"));
+        }
+        else{
+            mListenToStudyMaster = false;
+        }
+        if(mConfig.containsKey("studymasterport")) {
+            mStudyMasterPort = mConfig.getProperty("studymasterport");
+        }
+        else {
+            mStudyMasterPort = "9898";
+        }
     }
 
     // Get marker syntax

@@ -1,6 +1,7 @@
 package de.dfki.vsm.runtime.activity;
 
 import de.dfki.vsm.model.scenescript.ActionFeature;
+
 import java.util.HashMap;
 import java.util.LinkedList;
 
@@ -18,21 +19,29 @@ public final class ActionActivity extends AbstractActivity {
         SINGLE
     }
 
+    public void setContext(Context context) {
+        this.mContext = context;
+    }
+
     // TODO: The context of the activity is either nested or standalone
     // If nested, then the actor is optional and otherwise mandatory, so
     // maybe we need another enumeration with the type of the context
-    private final Context mContext = Context.NESTED;
+    private Context mContext = Context.NESTED;
 
     // The textual representation
     protected final String mText;
 
+    public Context getContext() {
+        return mContext;
+    }
+
     // Construct the activity
     public ActionActivity( // (added PG)
-            final String actor,
-            final String name,
-            final String text,
-            final LinkedList<ActionFeature> featureList,
-            final HashMap<String, String> substitutions) {
+                           final String actor,
+                           final String name,
+                           final String text,
+                           final LinkedList<ActionFeature> featureList,
+                           final HashMap<String, String> substitutions) {
         super(Type.parallel, actor, name, featureList, substitutions);
         // Initialize the text
         mText = text;

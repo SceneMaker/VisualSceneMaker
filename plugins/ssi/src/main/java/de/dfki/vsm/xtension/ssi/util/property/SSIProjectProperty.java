@@ -65,7 +65,7 @@ public class SSIProjectProperty implements ExportableProperties {
                 false,
                 new BooleanRenderer());
 
-        ProjectProperty studymasterport = new ProjectProperty("broadcastport",
+        ProjectProperty studymasterport = new ProjectProperty("studymasterport",
                 "Port on which StudyMaster receives messages.");
         ProjectValueProperty studymasterportVP = new ProjectValueProperty(ValueTYPE.NUMERIC,
                 9898,

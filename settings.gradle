@@ -13,3 +13,5 @@ include 'plugins:tricatworld'
 include 'plugins:charamel'
 include 'plugins:VLCRemoteController'
 include 'plugins:smartjacket'
+include 'plugins:sockets'
+
