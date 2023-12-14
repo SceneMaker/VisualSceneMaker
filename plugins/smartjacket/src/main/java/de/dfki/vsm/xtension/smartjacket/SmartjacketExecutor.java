@@ -43,6 +43,7 @@ public class SmartjacketExecutor extends ActivityExecutor implements SocketHandl
     @Override
     public void launch() {
         socket = new SocketClient(this, port);
+        socket.start();
         mLogger.message("SmartJacket plugin ready");
     }
 
