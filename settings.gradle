@@ -15,4 +15,6 @@ include 'plugins:VLCRemoteController'
 include 'plugins:mithos'
 include 'plugins:mithos:main'
 findProject(':plugins:mithos:main')?.name = 'main'
+include 'plugins:sockets'
+findProject(':plugins:sockets')?.name = 'sockets'
 
