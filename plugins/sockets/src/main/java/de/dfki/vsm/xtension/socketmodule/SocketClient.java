@@ -22,7 +22,7 @@ public class SocketClient extends Thread {
     // The client socket
     private Socket socket;
     // The socket streams
-    private OutputStreamWriter outStream;
+    private OutputStreamWriter outWriter;
     private BufferedReader inReader;
     // The termination flag
     private boolean done = false;
@@ -64,8 +64,8 @@ public class SocketClient extends Thread {
         }
 
         try {
-            outStream = new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8);
-            outStream.flush();
+            outWriter = new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8);
+            outWriter.flush();
             InputStreamReader inputStream = new InputStreamReader(socket.getInputStream(),StandardCharsets.UTF_8);
             BufferedReader inReader = new BufferedReader(inputStream);
         } catch (final IOException exc) {
@@ -95,7 +95,7 @@ public class SocketClient extends Thread {
     // Send some message
     public boolean send(final String string) {
         try {
-            outStream.write(string);
+            outWriter.write(string);
             return true;
         } catch (IOException e) {
             logger.failure(e.toString());
