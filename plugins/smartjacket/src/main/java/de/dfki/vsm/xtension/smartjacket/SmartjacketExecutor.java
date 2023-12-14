@@ -5,12 +5,13 @@ import de.dfki.vsm.runtime.activity.AbstractActivity;
 import de.dfki.vsm.runtime.activity.SpeechActivity;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
 import de.dfki.vsm.runtime.project.RunTimeProject;
+import de.dfki.vsm.xtension.sockets.SocketClient;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 
-public class SmartjacketExecutor extends ActivityExecutor {
+public class SmartjacketExecutor extends ActivityExecutor implements Ex{
 
     Socket writeSocket;
     int writePort = 7867;
@@ -34,9 +35,9 @@ public class SmartjacketExecutor extends ActivityExecutor {
 
         String cmd = "";
         switch (activity.getName()) {
-            case "overtake":
-                //TODO: replace placeholder
-                cmd = "go";
+            case "vibrate":
+                //TODO
+
         }
         if(!cmd.equals("")){
             try {
@@ -54,7 +55,7 @@ public class SmartjacketExecutor extends ActivityExecutor {
         while (writeSocket == null) {
             try {
                 // Create the socket
-                writeSocket = new Socket("localhost", writePort);
+                writeSocket = new SocketClient(this, writePort);
             } catch (final IOException exc) {
                 mLogger.failure(exc.toString());
             }

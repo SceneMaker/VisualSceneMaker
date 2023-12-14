@@ -1,4 +1,4 @@
-package de.dfki.vsm.xtension.socketmodule;
+package de.dfki.vsm.xtension.sockets;
 
 import de.dfki.vsm.util.log.LOGConsoleLogger;
 
