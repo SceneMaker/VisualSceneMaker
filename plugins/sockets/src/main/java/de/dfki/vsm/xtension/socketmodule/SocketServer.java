@@ -14,50 +14,25 @@ import java.nio.charset.StandardCharsets;
 /**
  * @author Manuel Anglet
  */
-public class SocketServer extends Thread {
-
-    // The logger instance
-    private final LOGConsoleLogger logger = LOGConsoleLogger.getInstance();
-    // The executor instance
-    private final SocketHandler executor;
-    private final String host;
-
-    int port;
+public class SocketServer extends AbsJavaSocket {
 
     private ServerSocket server;
     private Socket client;
-    // The socket streams
-    private OutputStreamWriter outWriter;
-    private BufferedReader inReader;
-    // The termination flag
-    private boolean done = false;
 
-
-    // Create the client thread
     public SocketServer(SocketHandler executor, int port) {
-        // Initialize the socket
-        this.executor = executor;
-        this.port = port;
-        this.host = "localhost";
+        super(executor, port);
     }
 
     public SocketServer(SocketHandler executor, String host, int port) {
-        // Initialize the socket
-        this.executor = executor;
-        this.port = port;
-        this.host = host;
+        super(executor, host, port);
     }
 
+
     // Start the client thread
-    @Override
-    public void start() {
+
+    public void connect() {
         try {
-            server = new ServerSocket(port);
             client = server.accept();
-        } catch (final IOException exc) {
-            logger.failure(exc.toString());
-        }
-        try {
             outWriter = new OutputStreamWriter(client.getOutputStream(), StandardCharsets.UTF_8);
             outWriter.flush();
             InputStreamReader inputStream = new InputStreamReader(client.getInputStream(), StandardCharsets.UTF_8);
@@ -65,7 +40,6 @@ public class SocketServer extends Thread {
         } catch (final IOException exc) {
             logger.failure(exc.toString());
         }
-        super.start();
     }
 
     // Abort the client thread
@@ -89,27 +63,17 @@ public class SocketServer extends Thread {
         interrupt();
     }
 
-    // Receive some message
-    public final String recv() throws IOException {
-        return inReader.readLine();
-    }
-
-    // Send some message
-    public final boolean send(final String string) {
-        try {
-            outWriter.write(string);
-            return true;
-        } catch (IOException e) {
-            logger.failure(e.toString());
-            return false;
-        }
-
-    }
-
-
     @Override
     public final void run() {
+        try {
+            server = new ServerSocket(port);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         while (!done) {
+            while (client == null || !client.isConnected()) {
+                connect();
+            }
             final String message;
             try {
                 message = inReader.readLine();
