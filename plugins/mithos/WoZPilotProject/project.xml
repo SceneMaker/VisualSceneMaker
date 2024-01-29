@@ -2,7 +2,7 @@
 <Project name="Mithos Pilot Study">
   <Plugins>
     <Plugin type="device" name="webstudymaster" class="de.dfki.vsm.xtension.studymasterWeb.WebStudyMasterExecutor" load="true">
-      <Feature key="port" val="8086"/>
+      <Feature key="port" val="8081"/>
       <Feature key="studymaster_connected_var" val="studymaster_connected"/>
     </Plugin>
     <Plugin type="device" name="Kafka" class="de.dfki.vsm.xtension.mithos.MithosExecutor" load="true">
@@ -11,7 +11,7 @@
       <Feature key="write_topic" val="SSC"/>
     </Plugin>
     <Plugin type="device" name="SSI" class="de.dfki.vsm.xtension.ssi.SSICmdExecutor" load="true">
-      <Feature key="pipes" val="interview:127.0.0.1:1111,similarity_recorder:192.168.199.6:1111"/>
+      <Feature key="pipes" val="interview:127.0.0.1:1111,similarity_recorder:192.168.199.6:1111,polar:192.168.199.20:1111"/>
     </Plugin>
   </Plugins>
   <Agents>
