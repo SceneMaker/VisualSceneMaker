@@ -21,7 +21,6 @@ import de.dfki.vsm.util.log.LOGConsoleLogger;
 import io.javalin.Javalin;
 import io.javalin.websocket.WsCloseContext;
 import io.javalin.websocket.WsConnectContext;
-
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -136,10 +135,13 @@ public class WebStudyMasterExecutor extends ActivityExecutor implements EventLis
         mRequestResultVar = mConfig.getProperty(sREQUEST_RESULT_VAR, sREQUEST_RESULT_VAR_DEFAULT);
         mSceneflowGoVar = mConfig.getProperty(sGO_VAR, sGO_VAR_DEFAULT);
 
+        mLastInformMessage = null;
+        mLastRequestMessage = null;
+
         // Start the HTTP server
         mHttpServer = Javalin.create(config -> {
             config.addStaticFiles("/react-studymaster/build");
-            config.enforceSsl = true;
+            config.enforceSsl = false;
         }).start(http_port);
 
         // Set callbacks to manage WebSocket events
@@ -164,6 +166,9 @@ public class WebStudyMasterExecutor extends ActivityExecutor implements EventLis
         }
         mWebsockets.clear();
         mHttpServer.stop();
+
+        mLastInformMessage = null;
+        mLastRequestMessage = null;
     }
 
 
