@@ -22,12 +22,14 @@ import de.dfki.vsm.runtime.interpreter.value.FloatValue;
 import de.dfki.vsm.runtime.interpreter.value.StringValue;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
+import jdk.nashorn.internal.runtime.Debug;
 import org.apache.xmlbeans.XmlException;
 //import org.apache.xmlbeans.XmlException;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.LinkedList;
+import java.util.*;
 
 /**
  *
@@ -51,7 +53,6 @@ public class ALMAExecutor extends ActivityExecutor implements AffectUpdateListen
 
     @Override
     public void execute(AbstractActivity activity) {
-
         if (activity instanceof SpeechActivity) {
             SpeechActivity sa = (SpeechActivity) activity;
             String text = sa.getTextOnly("$(").trim();
@@ -72,11 +73,42 @@ public class ALMAExecutor extends ActivityExecutor implements AffectUpdateListen
                 mLogger.message("Reset affect processing for  " + activity.getActor());
                 mALMA.resetCharacters();
             }
+            //case for appraisalTagList
+            if(name.equalsIgnoreCase("AffectList")){
+                String appraisal_list_name = getActionFeatureValue("list", features);
+                String appraisal_list_s = (String) mProject.getValueOf(appraisal_list_name).getValue();
+                mLogger.message("AffectList with list string: " +appraisal_list_s + " on actor "+ activity.getActor());
+                if(appraisal_list_s == ""){return;}
+                List<String> appraisal_list = new ArrayList<>(Arrays.asList(appraisal_list_s.split(";")));
+
+                for (String affectString : appraisal_list) {
+                    String[] affect = affectString.split(",");
+
+                    AffectInputDocument.AffectInput ai;
+                    switch (affect.length){
+                        case 3:
+                            ai = AppraisalTag.instance().makeAffectInput(activity.getActor(), affect[0], affect[1], affect[2]);
+                            mLogger.message("Processing " + ai.toString());
+                            mALMA.processSignal(ai);
+                            break;
+                        case 2:
+                            ai = AppraisalTag.instance().makeAffectInput(activity.getActor(), affect[0], affect[1], "Scene");
+                            mLogger.message("Processing " + ai.toString());
+                            mALMA.processSignal(ai);
+                            break;
+                        default:
+                            mLogger.failure("Partially Incorrect Appraisal List format in: " + affect);
+                    }
+                }
+            }
             if (AppraisalTag.instance().isAppraisalTag(name)) {
                 String elcitor = getActionFeatureValue("elicitor", features);
                 elcitor = (elcitor.isEmpty()) ? "Scene" : elcitor;
 
-                AffectInputDocument.AffectInput ai = AppraisalTag.instance().makeAffectInput(activity.getActor(), name, "1.0", elcitor);
+                String intensity = getActionFeatureValue("intensity", features);
+                intensity = (intensity.isEmpty()) ? "1" : intensity;
+
+                AffectInputDocument.AffectInput ai = AppraisalTag.instance().makeAffectInput(activity.getActor(), name, intensity, elcitor);
                 mLogger.message("Processing " + ai.toString());
                 mALMA.processSignal(ai);
             }
@@ -120,7 +152,7 @@ public class ALMAExecutor extends ActivityExecutor implements AffectUpdateListen
         AffectOutputDocument aod = event.getUpdate();
          try {
             for (AffectOutputDocument.AffectOutput.CharacterAffect character : aod.getAffectOutput().getCharacterAffectList()) {
-                logCharacterUpdate(character, true);
+                //logCharacterUpdate(character, true);
                 //TODO MABY AUTOMATICALLY ADD CHARACTER VARS TO VSM?
 
 
@@ -146,14 +178,14 @@ public class ALMAExecutor extends ActivityExecutor implements AffectUpdateListen
 
                 LinkedList<AbstractValue> valueList = new LinkedList<>();
 
+                //NOTE no longer used, allows to get the all emotion above a cairtein treshhold
                 // get the intensity of all active emotions of the character
-                for (EmotionType et : character.getEmotions().getEmotionList()) {
-                    if (Float.parseFloat(et.getValue()) > 0.25f) {
-                        String sv = et.getName().toString();
-                        valueList.add(new StringValue(sv));
-
-                    }
-                }
+//                for (EmotionType et : character.getEmotions().getEmotionList()) {
+//                    if (Float.parseFloat(et.getValue()) > 0.25f) {
+//                        String sv = et.getName().toString();
+//                        valueList.add(new StringValue(sv));
+//                    }
+//                }
             }
         } catch (Exception e) {
             mLogger.failure("Exception during affect update");
