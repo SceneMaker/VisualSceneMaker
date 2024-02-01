@@ -1,14 +1,10 @@
-package de.dfki.vsm.xtension.socketmodule;
+package de.dfki.vsm.xtension.sockets;
 
 import de.dfki.vsm.util.log.LOGConsoleLogger;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.nio.charset.StandardCharsets;
 
 
 /**
@@ -19,7 +15,7 @@ abstract class AbsJavaSocket extends Thread {
     // The logger instance
     final LOGConsoleLogger logger = LOGConsoleLogger.getInstance();
     // The executor instance
-    final SocketHandler executor;
+    final VSMSocketHandler executor;
     final String host;
 
     int port;
@@ -32,7 +28,7 @@ abstract class AbsJavaSocket extends Thread {
 
 
     // Create the client thread
-    public AbsJavaSocket(SocketHandler executor, int port) {
+    public AbsJavaSocket(VSMSocketHandler executor, int port) {
         super();
         // Initialize the socket
         this.executor = executor;
@@ -40,7 +36,7 @@ abstract class AbsJavaSocket extends Thread {
         this.host = "localhost";
     }
 
-    public AbsJavaSocket(SocketHandler executor, String host, int port) {
+    public AbsJavaSocket(VSMSocketHandler executor, String host, int port) {
         super();
         // Initialize the socket
         this.executor = executor;
