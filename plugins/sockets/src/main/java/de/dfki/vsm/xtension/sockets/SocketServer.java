@@ -1,6 +1,4 @@
-package de.dfki.vsm.xtension.socketmodule;
-
-import de.dfki.vsm.util.log.LOGConsoleLogger;
+package de.dfki.vsm.xtension.sockets;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -19,11 +17,11 @@ public class SocketServer extends AbsJavaSocket {
     private ServerSocket server;
     private Socket client;
 
-    public SocketServer(SocketHandler executor, int port) {
+    public SocketServer(VSMSocketHandler executor, int port) {
         super(executor, port);
     }
 
-    public SocketServer(SocketHandler executor, String host, int port) {
+    public SocketServer(VSMSocketHandler executor, String host, int port) {
         super(executor, host, port);
     }
 
