@@ -48,7 +48,8 @@ public class DialogManagerListener extends Thread {
     @Override
     public final void run() {
         try {
-            System.out.println("-- Running Server at " + InetAddress.getLocalHost() + "--");
+            // employee-dynamic-59-197.sb.dfki.de/172.16.59.197
+            System.out.println("-- Running Server at " + InetAddress.getLocalHost() + "-- -------------");
         } catch (UnknownHostException e) {
             mLogger.failure("Failed to run server: " + e);
         }

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<SceneFlow id="" name="default" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Wed, 12 Jul 2023 17:03:18" start="S3;S7;N7;S2;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
+<SceneFlow id="" name="default" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Thu, 1 Feb 2024 17:42:31" start="S3;S7;N7;S2;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
   <Define>
   </Define>
   <Declare>
@@ -319,7 +319,7 @@
       </PlayAction>
     </Commands>
     <Graphics>
-      <Position xPos="1066" yPos="426"/>
+      <Position xPos="1066" yPos="346"/>
     </Graphics>
   </Node>
   <SuperNode id="S1" name="Frage_n" comment="" hideLocalVar="false" hideGlobalVar="false" start="N107;">

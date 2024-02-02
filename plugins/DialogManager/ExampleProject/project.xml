@@ -1,12 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Project name="Ubidenz Dialog Manager Temp Project">
   <Plugins>
-    <Plugin type="device" name="CharamelWS" class="de.dfki.vsm.xtension.charamelWs.charamelWsExecutor" load="true">
-      <Feature key="sceneflowVar" val="avatar_connected"/>
-      <Feature key="ws_port" val="3030"/>
-      <Feature key="characterSpeaking" val="avatar_speaking"/>
-      <Feature key="wss_port" val="3031"/>
-    </Plugin>
     <Plugin type="device" name="SSJExecutor" class="de.dfki.vsm.xtension.ssj.SSJExecutor" load="true">
       <Feature key="vsm_rec_host" val="127.0.0.1"/>
       <Feature key="vsm_rec_port" val="5000"/>
@@ -15,7 +9,17 @@
       <Feature key="ssj_rec_host" val="127.0.0.1"/>
       <Feature key="ssj_rec_port" val="5010"/>
     </Plugin>
+    <Plugin type="device" name="CharamelWS" class="de.dfki.vsm.xtension.charamelWs.charamelWsExecutor" load="true">
+      <Feature key="sceneflowVar" val="avatar_connected"/>
+      <Feature key="ws_port" val="3030"/>
+      <Feature key="characterSpeaking" val="avatar_speaking"/>
+      <Feature key="wss_port" val="3031"/>
+    </Plugin>
     <Plugin type="device" name="DialogManager" class="de.dfki.vsm.xtension.DialogManager.DialogManagerExecutor" load="true">
+    </Plugin>
+    <Plugin type="device" name="SIAHomeConnection" class="de.dfki.vsm.xtension.SIAHomeConnection.SIAHomeConnectionExecutor" load="true">
+      <Feature key="rec_host" val="127.0.0.1"/>
+      <Feature key="rec_port" val="9700"/>
     </Plugin>
     <Plugin type="device" name="webpage" class="de.dfki.vsm.xtension.responsiveweb.HtmlGuiWsExecutor" load="true">
       <Feature key="wss_port" val="4040"/>
