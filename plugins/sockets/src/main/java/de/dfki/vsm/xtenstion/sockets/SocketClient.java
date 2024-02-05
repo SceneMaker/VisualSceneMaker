@@ -21,7 +21,7 @@ public class SocketClient extends AbsJavaSocket {
     }
 
 
-    public void connect() {
+    void connect() {
         try {
             socket = new Socket(host, port);
 

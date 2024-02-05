@@ -28,7 +28,7 @@ public class SocketServer extends AbsJavaSocket {
 
     // Start the client thread
 
-    public void connect() {
+    void connect() {
         try {
             client = server.accept();
             outWriter = new OutputStreamWriter(client.getOutputStream(), StandardCharsets.UTF_8);

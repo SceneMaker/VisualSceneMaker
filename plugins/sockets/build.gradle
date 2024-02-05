@@ -15,4 +15,5 @@ dependencies {
     testImplementation group: 'junit', name: 'junit', version: '4.12'
     implementation project(":core")
     implementation project(":plugins:extensionAPI")
+    implementation group: 'io.socket', name: 'socket.io-client', version: '1.0.0'
 }

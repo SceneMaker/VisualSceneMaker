@@ -53,7 +53,7 @@ abstract class AbsJavaSocket extends Thread {
     // Abort the client thread
     abstract public  void abort() ;
 
-    abstract public  void connect() ;
+    abstract void connect() ;
 
     // Send some message
     public boolean send(final String message) {
