@@ -13,8 +13,10 @@ public class VehiclesHandler implements VSMSocketHandler {
     Gson gson = new Gson();
     protected final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
 
+    SocketClient client;
+
     public VehiclesHandler(RunTimeProject project, int port){
-        SocketClient client = new SocketClient(this, port);
+        client = new SocketClient(this, port);
         client.start();
         this.mProject = project;
         mLogger.message("started Vehicles Handler");
@@ -27,5 +29,7 @@ public class VehiclesHandler implements VSMSocketHandler {
         mProject.setVariable("speed",(float)speed);
         return true;
     }
-
+    public void unload(){
+        client.abort();
+    }
 }

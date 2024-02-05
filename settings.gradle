@@ -18,5 +18,6 @@ include 'plugins:tricatworld'
 include 'plugins:charamel'
 include 'plugins:VLCRemoteController'
 include 'plugins:DriveSimulator'
+include 'plugins:sockets'
 findProject(':plugins:DriveSimulator')?.name = 'DriveSimulator'
 
