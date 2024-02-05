@@ -8,6 +8,11 @@ import de.dfki.vsm.xtension.sockets.SocketClient;
 import de.dfki.vsm.xtension.sockets.VSMSocketHandler;
 
 public class DriveSimulatorExecutor  extends ActivityExecutor implements VSMSocketHandler {
+
+    VehiclesHandler vehiclesClient;
+    ConstructionHandler constructionClient;
+
+
     public DriveSimulatorExecutor(PluginConfig config, RunTimeProject project) {
         super(config, project);
     }
@@ -24,13 +29,14 @@ public class DriveSimulatorExecutor  extends ActivityExecutor implements VSMSock
 
     @Override
     public void launch() {
-        SocketClient vehiclesClient = new SocketClient(this, 9988);
-
+        vehiclesClient = new VehiclesHandler(mProject, 9988);
+        constructionClient = new ConstructionHandler(mProject, 9989);
     }
 
     @Override
     public void unload() {
-
+        vehiclesClient.unload();
+        constructionClient.unload();
     }
 
     @Override
