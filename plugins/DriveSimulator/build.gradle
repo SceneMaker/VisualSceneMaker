@@ -1,0 +1,25 @@
+plugins {
+    id 'java'
+}
+
+group 'de.dfki'
+version '4.0.2-charamel-ws-rc4'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+
+    implementation project(path: ':plugins:sockets')
+    testImplementation group: 'junit', name: 'junit', version: '4.12'
+    implementation project(":core")
+    implementation project(":plugins:extensionAPI")
+    implementation group: 'com.google.code.gson', name: 'gson', version: '2.7'
+}
+
+test {
+    useJUnitPlatform()
+}
