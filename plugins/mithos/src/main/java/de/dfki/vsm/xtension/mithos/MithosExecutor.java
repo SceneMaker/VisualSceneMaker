@@ -154,7 +154,7 @@ public class MithosExecutor extends ActivityExecutor {
     }
 
     private void sendDialogueLogEntry(String DialogueAct) {
-        String actor = (String) mProject.getValueOf("name").getValue();
+        String actor = "Student";
 
         try {
             ActKind intent = ActKind.valueOf(DialogueAct);
