@@ -6,30 +6,24 @@ import de.dfki.vsm.xtension.DriveSimulator.gson.VehiclesData;
 import de.dfki.vsm.xtension.sockets.SocketClient;
 import de.dfki.vsm.xtension.sockets.VSMSocketHandler;
 import com.google.gson.Gson;
+import io.socket.emitter.Emitter;
 
-public class VehiclesHandler implements VSMSocketHandler {
+public class VehiclesHandler implements Emitter.Listener {
 
     private final RunTimeProject mProject;
     Gson gson = new Gson();
     protected final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
 
-    SocketClient client;
 
-    public VehiclesHandler(RunTimeProject project, int port){
-        client = new SocketClient(this, port);
-        client.start();
+    public VehiclesHandler(RunTimeProject project){
         this.mProject = project;
         mLogger.message("started Vehicles Handler");
     }
 
     @Override
-    public boolean handle(String msg) {
-        VehiclesData vData = gson.fromJson(msg, VehiclesData.class);
+    public void call(Object... args) {
+        VehiclesData vData = gson.fromJson((String)args[0],VehiclesData.class);
         double speed = vData.getEgoVehicle().getSpeed();
         mProject.setVariable("speed",(float)speed);
-        return true;
-    }
-    public void unload(){
-        client.abort();
     }
 }
