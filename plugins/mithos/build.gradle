@@ -14,7 +14,8 @@ dependencies {
     testImplementation group: 'junit', name: 'junit', version: '4.12'
     implementation project(":plugins:extensionAPI")
     implementation project(":core")
-    implementation files('lib/interface-0.0.1.jar')
+    //implementation files('lib/interface-0.0.1.jar')
+    implementation files('lib/interface-0.0.2.jar')
     // https://mvnrepository.com/artifact/org.apache.kafka/kafka-clients
     implementation group: 'org.apache.kafka', name: 'kafka-clients', version: '3.2.0'
     // https://mvnrepository.com/artifact/com.google.code.gson/gson

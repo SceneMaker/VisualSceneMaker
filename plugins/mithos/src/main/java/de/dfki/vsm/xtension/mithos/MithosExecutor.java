@@ -13,16 +13,14 @@ import de.mithos.compint.command.ScenarioScriptCommand;
 import de.mithos.compint.command.ScenarioScriptFeedback;
 import de.mithos.compint.interaction.ActKind;
 import de.mithos.compint.interaction.AppraisalTag;
+import de.mithos.compint.interaction.Emotion;
 import de.mithos.compint.interaction.InteractionAct;
 import de.mithos.compint.log.VSMPilotLog;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * This plugin uses a kafka server to control an agent-environment and to receive processed userdata.
@@ -45,6 +43,8 @@ public class MithosExecutor extends ActivityExecutor {
     private Integer actID = 0;
 
     private final Map<String, ActivityWorker> activityWorkerMap = new HashMap<>();
+    private long speakingTimeBegin;
+    private long speakingTimeEnd;
 
     public MithosExecutor(PluginConfig config, RunTimeProject project) {
         super(config, project);
@@ -147,14 +147,30 @@ public class MithosExecutor extends ActivityExecutor {
         ProducerRecord<String, String> record = new ProducerRecord<>(interaction_log_topic, 0, "Log", logEntryGsonString);
         sendRecord(record);
     }
+
     private void sendLogMsg(String message) {
         ProducerRecord<String, String> record = new ProducerRecord<>(message_log_topic, 0, "LogMessage", message);
         sendRecord(record);
     }
 
     private void sendDialogueLogEntry(String DialogueAct) {
-        ProducerRecord<String, String> record = new ProducerRecord<>(student_dialogue_act_log_topic, 0, "LogStudentDialogueAct", DialogueAct);
-        sendRecord(record);
+        String actor = (String) mProject.getValueOf("name").getValue();
+
+        try {
+            ActKind intent = ActKind.valueOf(DialogueAct);
+            List<String> addressees = new ArrayList<>();
+            addressees.add("Teacher");
+            Emotion nullEmotion = new Emotion(0, 0, 0, speakingTimeBegin, speakingTimeEnd);
+            InteractionAct studentIntAct = new InteractionAct(intent, actor, addressees, nullEmotion, speakingTimeBegin,
+                    speakingTimeEnd);
+            String studentIntActString = gson.toJson(studentIntAct);
+            ProducerRecord<String, String> record = new ProducerRecord<>(student_dialogue_act_log_topic, 0,
+                    "LogStudentDialogueAct", studentIntActString);
+            sendRecord(record);
+        } catch (IllegalArgumentException e) {
+            // Handle the case where the provided color argument is not valid
+            mLogger.failure("Invalid Dialogue Act: " + DialogueAct);
+        }
     }
 
     private void executeActionActivity(ActionActivity actionActivity) {
@@ -188,7 +204,9 @@ public class MithosExecutor extends ActivityExecutor {
         ProducerRecord<String, String> record = new ProducerRecord<>(write_topic, 0, "Command", sscGsonString);
         if (actionActivity.getName().equals("SpeakAndAct") || actionActivity.getName().equals("StartSpeaking")) {
             actionActivity.setType(AbstractActivity.Type.blocking);
+            speakingTimeBegin = System.nanoTime();
             sendRecordAndWait(record, id);
+            speakingTimeEnd = System.nanoTime();
         } else {
             actionActivity.setType(AbstractActivity.Type.parallel);
             sendRecord(record);
