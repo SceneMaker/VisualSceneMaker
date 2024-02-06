@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Project name="Mithos Pilot Study">
+  <Plugins>
+    <Plugin type="device" name="webstudymaster" class="de.dfki.vsm.xtension.studymasterWeb.WebStudyMasterExecutor" load="true">
+      <Feature key="port" val="8081"/>
+      <Feature key="studymaster_connected_var" val="studymaster_connected"/>
+    </Plugin>
+    <Plugin type="device" name="Kafka" class="de.dfki.vsm.xtension.mithos.MithosExecutor" load="true">
+      <Feature key="server" val="localhost:9092"/>
+      <Feature key="read_topic" val="SSF,InteractionActs"/>
+      <Feature key="write_topic" val="SSC"/>
+    </Plugin>
+    <Plugin type="device" name="SSI" class="de.dfki.vsm.xtension.ssi.SSICmdExecutor" load="true">
+      <Feature key="pipes" val="interview:127.0.0.1:1111,similarity_recorder:192.168.199.6:1111,polar:192.168.199.20:1111"/>
+    </Plugin>
+    <Plugin type="device" name="Alma" class="de.dfki.vsm.xtension.alma.ALMAExecutor" load="true">
+      <Feature key="computation" val="conf/AffectComputationMithos.aml"/>
+      <Feature key="definition" val="conf/AffectDefinitionMithos.aml"/>
+    </Plugin>
+  </Plugins>
+  <Agents>
+    <Agent name="web" device="webstudymaster">
+    </Agent>
+    <Agent name="Julia" device="Kafka">
+    </Agent>
+    <Agent name="John" device="Kafka">
+    </Agent>
+    <Agent name="Paul" device="Kafka">
+    </Agent>
+    <Agent name="ssi" device="SSI">
+    </Agent>
+    <Agent name="Mithos" device="Kafka">
+    </Agent>
+    <Agent name="Alex" device="Kafka">
+    </Agent>
+    <Agent name="AlmaAlex" device="Alma">
+    </Agent>
+    <Agent name="AlmaTeacher" device="Alma">
+    </Agent>
+  </Agents>
+  <Player>
+  </Player>
+</Project>
