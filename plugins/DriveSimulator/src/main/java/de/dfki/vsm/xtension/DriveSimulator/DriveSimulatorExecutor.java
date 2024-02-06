@@ -11,7 +11,7 @@ public class DriveSimulatorExecutor  extends ActivityExecutor implements VSMSock
 
     VehiclesHandler vehiclesClient;
     ConstructionHandler constructionClient;
-
+    SocketIOClient socket;
 
     public DriveSimulatorExecutor(PluginConfig config, RunTimeProject project) {
         super(config, project);
@@ -29,14 +29,14 @@ public class DriveSimulatorExecutor  extends ActivityExecutor implements VSMSock
 
     @Override
     public void launch() {
-        vehiclesClient = new VehiclesHandler(mProject, 9988);
-        constructionClient = new ConstructionHandler(mProject, 9989);
+        socket = new SocketIOClient("localhost","5000");
+        socket.addListener("VEHICLES", new VehiclesHandler(mProject));
+        socket.addListener("distance",new ConstructionHandler(mProject));
     }
 
     @Override
     public void unload() {
-        vehiclesClient.unload();
-        constructionClient.unload();
+        socket.abort();
     }
 
     @Override
