@@ -1,15 +1,27 @@
 package de.dfki.vsm.xtension.DriveSimulator.gson;
 
 public class Vehicle {
-    private int id;
-    private double distance;
-    private double distToRef;
-    private double roadS;
-    private int laneId;
-    private double speed;
-    private double length;
-    private double width;
-    private double height;
+    int id;
+    double distance;
+    double distToRef;
+    double roadS;
+    int laneId;
+    double speed;
+    double length;
+    double width;
+    double height;
+
+    public Vehicle(int id, double distance, double distToRef, double roadS, int laneId, double speed, double length, double width, double height) {
+        this.id = id;
+        this.distance = distance;
+        this.distToRef = distToRef;
+        this.roadS = roadS;
+        this.laneId = laneId;
+        this.speed = speed;
+        this.length = length;
+        this.width = width;
+        this.height = height;
+    }
 
     public int getId() {
         return id;
