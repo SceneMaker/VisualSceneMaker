@@ -6,25 +6,40 @@ import io.socket.emitter.Emitter;
 
 import java.net.URISyntaxException;
 
-public class SocketIOClient {
+public class SocketIOClient extends AbsJavaSocket {
+    Socket socket;
 
-    public static void main(String[] args) {
+    public SocketIOClient(Emitter.Listener listener, int port) {
+        super(executor, port);
+    }
+
+    public SocketIOClient(VSMSocketHandler executor, String host, int port) {
+        super(executor, host, port);
+    }
+
+    @Override
+    public void abort() {
+
+    }
+
+    @Override
+    void connect() {
         try {
             // Connect to the Socket.IO server
-            Socket socket = IO.socket("http://your-socket-io-server-url");
+            socket = IO.socket(host+":"+port);
 
             // Set up event listeners
             socket.on(Socket.EVENT_CONNECT, new Emitter.Listener() {
                 @Override
                 public void call(Object... args) {
-                    System.out.println("Connected to Socket.IO server");
+                    logger.message("Connected to Socket.IO server");
                 }
             });
 
             socket.on(Socket.EVENT_DISCONNECT, new Emitter.Listener() {
                 @Override
                 public void call(Object... args) {
-                    System.out.println("Disconnected from Socket.IO server");
+                    logger.message("Disconnected from Socket.IO server");
                 }
             });
 
@@ -33,7 +48,7 @@ public class SocketIOClient {
                 public void call(Object... args) {
                     // Handle incoming data
                     String data = (String) args[0];
-                    System.out.println("Received data: " + data);
+                    logger.message("Received data: " + data);
                 }
             });
 
