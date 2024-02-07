@@ -4,6 +4,7 @@ import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
 import de.dfki.vsm.runtime.project.RunTimeProject;
+import de.dfki.vsm.util.log.LOGDefaultLogger;
 import de.dfki.vsm.xtension.sockets.SocketClient;
 import de.dfki.vsm.xtension.sockets.VSMSocketHandler;
 
@@ -12,6 +13,8 @@ public class DriveSimulatorExecutor  extends ActivityExecutor implements VSMSock
     VehiclesHandler vehiclesClient;
     ConstructionHandler constructionClient;
     SocketIOClient socket;
+
+    protected final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
 
     public DriveSimulatorExecutor(PluginConfig config, RunTimeProject project) {
         super(config, project);
@@ -30,8 +33,13 @@ public class DriveSimulatorExecutor  extends ActivityExecutor implements VSMSock
     @Override
     public void launch() {
         socket = new SocketIOClient("localhost","5000");
+
         socket.addListener("VEHICLES", new VehiclesHandler(mProject));
-        socket.addListener("distance",new ConstructionHandler(mProject));
+
+        while (!socket.isConnected()){
+            mLogger.message("Trying to connect to DriveSimulator Socket");
+            socket.connect();
+        }
     }
 
     @Override

@@ -23,6 +23,9 @@ public class Vehicle {
         this.height = height;
     }
 
+    public Vehicle() {
+    }
+
     public int getId() {
         return id;
     }

@@ -12,6 +12,9 @@ public class SocketIOClient {
     protected final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
     Socket socket;
 
+
+    boolean connected;
+
     public SocketIOClient(String host, String port) {
         try {
             socket = IO.socket(host+":"+port);
@@ -19,6 +22,7 @@ public class SocketIOClient {
             socket.on(Socket.EVENT_CONNECT, new Emitter.Listener() {
                 @Override
                 public void call(Object... args) {
+                    connected=true;
                     mLogger.message("Connected to the server");
                 }
             });
@@ -39,4 +43,9 @@ public class SocketIOClient {
     public void abort(){
         socket.close();
     }
+
+    public boolean isConnected() {
+        return connected;
+    }
+
 }

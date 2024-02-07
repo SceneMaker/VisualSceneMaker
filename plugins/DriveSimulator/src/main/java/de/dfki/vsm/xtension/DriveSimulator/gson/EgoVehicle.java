@@ -11,6 +11,7 @@ public class EgoVehicle extends Vehicle {
     private double laneOffset;
 
     public EgoVehicle(int id, double distance, double distToRef, double roadS, int laneId, double speed, double length, double width, double height, int apStatus, int indicator, int frontVehicleId, double desiredSpeed, double speedLimit, double brake, double throttle, double laneOffset) {
+        super();
         this.id = id;
         this.distance = distance;
         this.distToRef = distToRef;
