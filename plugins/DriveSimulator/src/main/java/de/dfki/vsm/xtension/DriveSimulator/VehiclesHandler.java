@@ -2,6 +2,7 @@ package de.dfki.vsm.xtension.DriveSimulator;
 
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
+import de.dfki.vsm.xtension.DriveSimulator.gson.EgoVehicle;
 import de.dfki.vsm.xtension.DriveSimulator.gson.VehiclesData;
 import de.dfki.vsm.xtension.sockets.SocketClient;
 import de.dfki.vsm.xtension.sockets.VSMSocketHandler;
@@ -22,8 +23,8 @@ public class VehiclesHandler implements Emitter.Listener {
 
     @Override
     public void call(Object... args) {
-        VehiclesData vData = gson.fromJson((String)args[0],VehiclesData.class);
-        double speed = vData.getEgoVehicle().getSpeed();
+        EgoVehicle ego = gson.fromJson((String)args[0], EgoVehicle.class);
+        double speed = ego.getSpeed();
         mProject.setVariable("speed",(float)speed);
     }
 }
