@@ -34,7 +34,7 @@ public class DriveSimulatorExecutor  extends ActivityExecutor implements VSMSock
     public void launch() {
         socket = new SocketIOClient("localhost","5000");
 
-        socket.addListener("VEHICLES", new VehiclesHandler(mProject));
+        socket.addListener("ego", new VehiclesHandler(mProject));
 
         while (!socket.isConnected()){
             mLogger.message("Trying to connect to DriveSimulator Socket");
