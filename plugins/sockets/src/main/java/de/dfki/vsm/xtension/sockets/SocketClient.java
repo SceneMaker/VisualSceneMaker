@@ -28,7 +28,7 @@ public class SocketClient extends AbsJavaSocket {
             outWriter = new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8);
             outWriter.flush();
             InputStreamReader inputStream = new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8);
-            BufferedReader inReader = new BufferedReader(inputStream);
+            inReader = new BufferedReader(inputStream);
         } catch (final IOException exc) {
             logger.failure(exc.toString());
         }
