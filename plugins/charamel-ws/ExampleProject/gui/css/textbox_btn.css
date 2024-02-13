@@ -1,0 +1,17 @@
+.em_button > button {
+    background: none transparent;
+    background-size: contain;
+    background-repeat: no-repeat;
+    border: none;
+    width: 6vw;
+    height: 4vh;
+    cursor: pointer
+}
+
+.em_button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /*display: inline-block;*/
+    margin: 3vh
+}

@@ -156,11 +156,7 @@ public final class CharamelSSIPlugin extends SSIRunTimePlugin {
                             if (mUseJPL) {
                                 // TODO 
                             } else {
-                                if (variable.equalsIgnoreCase("UserIsWaving")) {
-                                    mProject.setVariable(variable, true);
-                                } else {
-                                    mProject.setVariable(variable, false);
-                                }
+                                mProject.setVariable(variable, variable.equalsIgnoreCase("UserIsWaving"));
                             }
                         } else if (event.getState().equalsIgnoreCase("continued")) {
                             //mLogger.message("User started " + variable);

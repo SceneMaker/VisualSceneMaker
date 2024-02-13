@@ -1,19 +1,16 @@
 package de.dfki.vsm.xtension.tricatworld.xml.command.object;
 
-import de.dfki.vsm.xtension.tricatworld.xml.command.object.action.MoveTo;
-import de.dfki.vsm.xtension.tricatworld.xml.command.object.action.SoundAmbient;
-import de.dfki.vsm.xtension.tricatworld.xml.command.object.action.charamel.CharamelAction;
-import de.dfki.vsm.xtension.tricatworld.xml.command.object.action.AmbientLight;
-import de.dfki.vsm.xtension.tricatworld.xml.command.object.action.TriCatWorldActObject;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
-import de.dfki.vsm.util.xml.XMLParseAction;
-import de.dfki.vsm.util.xml.XMLParseError;
-import de.dfki.vsm.util.xml.XMLParseable;
-import de.dfki.vsm.util.xml.XMLWriteError;
-import de.dfki.vsm.util.xml.XMLWriteable;
-import java.io.ByteArrayOutputStream;
+import de.dfki.vsm.util.xml.*;
+import de.dfki.vsm.xtension.tricatworld.xml.command.object.action.AmbientLight;
+import de.dfki.vsm.xtension.tricatworld.xml.command.object.action.MoveTo;
+import de.dfki.vsm.xtension.tricatworld.xml.command.object.action.SoundAmbient;
+import de.dfki.vsm.xtension.tricatworld.xml.command.object.action.TriCatWorldActObject;
+import de.dfki.vsm.xtension.tricatworld.xml.command.object.action.charamel.CharamelAction;
 import org.w3c.dom.Element;
+
+import java.io.ByteArrayOutputStream;
 
 /**
  * @author Patrick Gebhard

@@ -12,7 +12,6 @@ import de.dfki.vsm.xtension.ssi.SSIRunTimePlugin;
 import de.dfki.vsm.xtension.ssi.event.SSIEventArray;
 import de.dfki.vsm.xtension.ssi.event.SSIEventEntry;
 import de.dfki.vsm.xtension.ssi.event.data.SSIEventData;
-import de.dfki.vsm.xtension.ssi.event.data.SSIStringData;
 
 /**
  *
