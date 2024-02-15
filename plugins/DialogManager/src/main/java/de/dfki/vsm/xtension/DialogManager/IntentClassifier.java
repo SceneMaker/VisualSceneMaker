@@ -6,6 +6,11 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+import de.dfki.vsm.util.tpl.Tuple;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 public class IntentClassifier {
     DialogManagerExecutor executor;
     IntentClassifier() {
@@ -52,7 +57,7 @@ public class IntentClassifier {
             in.close();
 
             // Print the response
-            System.out.println("Response: " + response.toString());
+            Tuple<String, String> intent = parseJson(response.toString());
 
             // Close the connection
             connection.disconnect();
@@ -61,4 +66,31 @@ public class IntentClassifier {
             e.printStackTrace();
         }
     }
+
+    public Tuple<String, String> parseJson(String jsonResponse) {
+        String intent = "";
+        String nameValue = "";
+        try {
+            // Parse JSON response
+            JSONObject jsonObject = new JSONObject(jsonResponse);
+
+            // Fetch intent
+            JSONObject intentObject = jsonObject.getJSONObject("intent");
+            intent = intentObject.getString("name");
+
+
+            if (intent.equals("give_name")) {
+                JSONArray entitiesArray = jsonObject.getJSONArray("entities");
+                JSONObject nameEntity = entitiesArray.getJSONObject(0); // Assuming there's only one entity
+                nameValue = nameEntity.getString("value");
+            }
+
+            // Print intent
+            System.out.println("Intent: " + intent);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return new Tuple(intent, nameValue);
+    }
 }
+
