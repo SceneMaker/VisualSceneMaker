@@ -22,15 +22,19 @@ public class DialogManagerExecutor extends ActivityExecutor {
      * @param config  Plugin configuration, as it can be set via the extensions settings, or manually via xml.
      * @param project The running project the plugin is applied to.
      */
-    public DialogManagerExecutor(PluginConfig config, RunTimeProject project) {
+    public DialogManagerExecutor(PluginConfig config, RunTimeProject project)
+    {
         super(config, project);
     }
 
     DialogManagerListener listener;
     DialogManagerSender sender;
+
     private String asr_res_var;
     private static final String sASR_RES_VAR = "asr_result_var";
     private static final String sASR_RES_VAR_DEFAULT = "asr_result";
+
+    IntentClassifier intentClassifier;
 
 
     private int get_port = 50000; // Fixed port at which the UDP socket is created for ASR input
@@ -45,6 +49,7 @@ public class DialogManagerExecutor extends ActivityExecutor {
     @Override
     public void launch() {
         listener = new DialogManagerListener(get_port, mLogger, this, true);
+        intentClassifier = new IntentClassifier();
         listener.start();
 
         try {
@@ -85,8 +90,6 @@ public class DialogManagerExecutor extends ActivityExecutor {
                 }
             }
         }
-
-
     }
 
     public void set_transcript(String asr_result) {
@@ -101,5 +104,7 @@ public class DialogManagerExecutor extends ActivityExecutor {
     public String get_transcript() {
         return mProject.getValueOf("asr_result").toString();
     }
+
+
 
 }

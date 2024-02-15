@@ -72,6 +72,10 @@ public class DialogManagerListener extends Thread {
                 ASR_message = msg;
 
                 executor.set_transcript(msg);
+
+                executor.intentClassifier.getIntent(msg);
+
+
                 System.out.println(executor.get_transcript());
             } catch (IOException e) {
                 mLogger.failure("Error while receiving packet: " + e);
