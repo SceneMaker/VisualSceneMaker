@@ -1,4 +1,4 @@
-package de.dfki.vsm.xtension.DialogManager;
+package de.dfki.vsm.xtension.RASAIntentClassifier;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
@@ -11,11 +11,12 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class IntentClassifier {
-    DialogManagerExecutor executor;
-    IntentClassifier() {
+public class RASAIntentClassifier {
+    RASAIntentClassifier() {
     }
-    public void getIntent(String text) {
+    public Tuple<String, String> getIntent(String text) {
+        Tuple<String, String> intent = new Tuple<>("", "");
+
         try {
             // Define the URL
             URL url = new URL("https://www.dfki.de/ubidenz/model/parse");
@@ -57,7 +58,7 @@ public class IntentClassifier {
             in.close();
 
             // Print the response
-            Tuple<String, String> intent = parseJson(response.toString());
+             intent = parseJson(response.toString());
 
             // Close the connection
             connection.disconnect();
@@ -65,6 +66,7 @@ public class IntentClassifier {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        return intent;
     }
 
     public Tuple<String, String> parseJson(String jsonResponse) {

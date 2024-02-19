@@ -48,6 +48,7 @@ public class SIAHomeConnectionJSONHandler extends AbstractHandler {
             // Handle everything inside the scene-maker!
 
 
+
             // Write the response JSON to the response body
             response.setStatus(HttpServletResponse.SC_OK);
             response.getWriter().println(responseJson.toString());

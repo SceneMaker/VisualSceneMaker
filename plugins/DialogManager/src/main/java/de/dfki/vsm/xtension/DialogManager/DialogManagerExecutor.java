@@ -34,8 +34,6 @@ public class DialogManagerExecutor extends ActivityExecutor {
     private static final String sASR_RES_VAR = "asr_result_var";
     private static final String sASR_RES_VAR_DEFAULT = "asr_result";
 
-    IntentClassifier intentClassifier;
-
 
     private int get_port = 50000; // Fixed port at which the UDP socket is created for ASR input
     private int post_port = 50001; // Fixed port at which the UDP socket is created for sending VSM cmds to app
@@ -49,7 +47,6 @@ public class DialogManagerExecutor extends ActivityExecutor {
     @Override
     public void launch() {
         listener = new DialogManagerListener(get_port, mLogger, this, true);
-        intentClassifier = new IntentClassifier();
         listener.start();
 
         try {
