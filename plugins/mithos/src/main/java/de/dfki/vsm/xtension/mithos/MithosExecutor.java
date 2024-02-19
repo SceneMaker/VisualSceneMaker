@@ -13,16 +13,14 @@ import de.mithos.compint.command.ScenarioScriptCommand;
 import de.mithos.compint.command.ScenarioScriptFeedback;
 import de.mithos.compint.interaction.ActKind;
 import de.mithos.compint.interaction.AppraisalTag;
+import de.mithos.compint.interaction.Emotion;
 import de.mithos.compint.interaction.InteractionAct;
 import de.mithos.compint.log.VSMPilotLog;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * This plugin uses a kafka server to control an agent-environment and to receive processed userdata.
@@ -37,7 +35,7 @@ public class MithosExecutor extends ActivityExecutor {
     private final String read_topics;
 
     private final String write_topic;
-    private final String interaction_log_topic, message_log_topic;
+    private final String interaction_log_topic, student_dialogue_act_log_topic, message_log_topic;
     private KafkaProducer<String, String> producer;
     MithosHandler handler;
     private final LOGConsoleLogger logger = LOGConsoleLogger.getInstance();
@@ -45,6 +43,8 @@ public class MithosExecutor extends ActivityExecutor {
     private Integer actID = 0;
 
     private final Map<String, ActivityWorker> activityWorkerMap = new HashMap<>();
+    private long speakingTimeBegin;
+    private long speakingTimeEnd;
 
     public MithosExecutor(PluginConfig config, RunTimeProject project) {
         super(config, project);
@@ -61,6 +61,8 @@ public class MithosExecutor extends ActivityExecutor {
         } else {
             message_log_topic = "MessageVSMLog";
         }
+
+        student_dialogue_act_log_topic = "StudentDialogueActVSMLog";
     }
 
     @Override
@@ -132,7 +134,7 @@ public class MithosExecutor extends ActivityExecutor {
         sendRecordAndWait(record, id);
     }
 
-    private void sendLogEntry() {
+    private void sendInteractionLogEntry() {
         String name = (String) mProject.getValueOf("name").getValue();
         Integer interaction_count = (int) mProject.getValueOf("interaction_count").getValue();
         String phase = (String) mProject.getValueOf("phase").getValue();
@@ -140,10 +142,35 @@ public class MithosExecutor extends ActivityExecutor {
         String affection_interpretation = (String) mProject.getValueOf("affection_interpretation").getValue();
         String freedom_interpretation = (String) mProject.getValueOf("freedom_interpretation").getValue();
         Integer task_lvl = (int) mProject.getValueOf("task_lvl").getValue();
-        VSMPilotLog logEntry = new VSMPilotLog(name,interaction_count,phase,relationship_lvl,affection_interpretation,freedom_interpretation,task_lvl);
+        VSMPilotLog logEntry = new VSMPilotLog(name, interaction_count, phase, relationship_lvl, affection_interpretation, freedom_interpretation, task_lvl);
         String logEntryGsonString = gson.toJson(logEntry);
         ProducerRecord<String, String> record = new ProducerRecord<>(interaction_log_topic, 0, "Log", logEntryGsonString);
         sendRecord(record);
+    }
+
+    private void sendLogMsg(String message) {
+        ProducerRecord<String, String> record = new ProducerRecord<>(message_log_topic, 0, "LogMessage", message);
+        sendRecord(record);
+    }
+
+    private void sendDialogueLogEntry(String DialogueAct) {
+        String actor = "Student";
+
+        try {
+            ActKind intent = ActKind.valueOf(DialogueAct);
+            List<String> addressees = new ArrayList<>();
+            addressees.add("Teacher");
+            Emotion nullEmotion = new Emotion(0, 0, 0, speakingTimeBegin, speakingTimeEnd);
+            InteractionAct studentIntAct = new InteractionAct(intent, actor, addressees, nullEmotion, speakingTimeBegin,
+                    speakingTimeEnd);
+            String studentIntActString = gson.toJson(studentIntAct);
+            ProducerRecord<String, String> record = new ProducerRecord<>(student_dialogue_act_log_topic, 0,
+                    "LogStudentDialogueAct", studentIntActString);
+            sendRecord(record);
+        } catch (IllegalArgumentException e) {
+            // Handle the case where the provided color argument is not valid
+            mLogger.failure("Invalid Dialogue Act: " + DialogueAct);
+        }
     }
 
     private void executeActionActivity(ActionActivity actionActivity) {
@@ -152,13 +179,19 @@ public class MithosExecutor extends ActivityExecutor {
         }
         if (actionActivity.getName().equals("LogInteraction")) {
             actionActivity.setType(AbstractActivity.Type.parallel);
-            sendLogEntry();
+            sendInteractionLogEntry();
             return;
         }
         if (actionActivity.getName().equals("LogMsg")) {
             actionActivity.setType(AbstractActivity.Type.parallel);
             String message = actionActivity.get("msg");
             sendLogMsg(message);
+            return;
+        }
+        if (actionActivity.getName().equals("LogStudentDialogueAct")) {
+            actionActivity.setType(AbstractActivity.Type.parallel);
+            String DialogueAct = actionActivity.get("DA");
+            sendDialogueLogEntry(DialogueAct);
             return;
         }
 
@@ -171,18 +204,14 @@ public class MithosExecutor extends ActivityExecutor {
         ProducerRecord<String, String> record = new ProducerRecord<>(write_topic, 0, "Command", sscGsonString);
         if (actionActivity.getName().equals("SpeakAndAct") || actionActivity.getName().equals("StartSpeaking")) {
             actionActivity.setType(AbstractActivity.Type.blocking);
+            speakingTimeBegin = System.nanoTime();
             sendRecordAndWait(record, id);
+            speakingTimeEnd = System.nanoTime();
         } else {
             actionActivity.setType(AbstractActivity.Type.parallel);
             sendRecord(record);
         }
     }
-
-    private void sendLogMsg(String message) {
-        ProducerRecord<String, String> record = new ProducerRecord<>(message_log_topic, 0, "LogMessage", message);
-        sendRecord(record);
-    }
-
 
     @Override
     public void execute(AbstractActivity activity) {
@@ -192,7 +221,6 @@ public class MithosExecutor extends ActivityExecutor {
             executeActionActivity((ActionActivity) activity);
         }
     }
-
 
 
     @Override
