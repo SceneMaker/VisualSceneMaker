@@ -11,7 +11,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class RASAIntentClassifier{
+public class RASAIntentClassifier extends Thread{
 
     RASAIntentClassifier() {
 
@@ -69,6 +69,11 @@ public class RASAIntentClassifier{
             e.printStackTrace();
         }
         return intent;
+    }
+
+    @Override
+    public final void start() {
+        super.start();
     }
 
     public Tuple<String, String> parseJson(String jsonResponse) {

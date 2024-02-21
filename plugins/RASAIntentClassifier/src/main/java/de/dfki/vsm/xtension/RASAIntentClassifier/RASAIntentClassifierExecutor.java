@@ -36,14 +36,13 @@ public class RASAIntentClassifierExecutor extends ActivityExecutor {
     public void launch() {
         // Initialize the event receiver
         intentClassifier = new RASAIntentClassifier();
+        intentClassifier.start();
 
         rasa_intent_var = mConfig.getProperty(sRASA_INTENT_VAR, sRASA_EVENT_DEFAULT);
     }
 
-
     @Override
     public void unload() {
-
     }
     @Override
     public void execute(AbstractActivity activity) {
