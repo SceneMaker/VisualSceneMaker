@@ -11,11 +11,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class RASAIntentClassifier extends Thread{
+public class RASAIntentClassifier {
 
     RASAIntentClassifier() {
-
     }
+
     public Tuple<String, String> getIntent(String text) {
         Tuple<String, String> intent = new Tuple<>("", "");
 
@@ -71,10 +71,10 @@ public class RASAIntentClassifier extends Thread{
         return intent;
     }
 
-    @Override
-    public final void start() {
-        super.start();
-    }
+//    @Override
+//    public final void start() {
+//        super.start();
+//    }
 
     public Tuple<String, String> parseJson(String jsonResponse) {
         String intent = "";

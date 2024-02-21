@@ -36,7 +36,6 @@ public class RASAIntentClassifierExecutor extends ActivityExecutor {
     public void launch() {
         // Initialize the event receiver
         intentClassifier = new RASAIntentClassifier();
-        intentClassifier.start();
 
         rasa_intent_var = mConfig.getProperty(sRASA_INTENT_VAR, sRASA_EVENT_DEFAULT);
     }
@@ -48,11 +47,24 @@ public class RASAIntentClassifierExecutor extends ActivityExecutor {
     public void execute(AbstractActivity activity) {
         final String action_name = activity.getName();
         final LinkedList<ActionFeature> features = activity.getFeatures();
-        mLogger.message(features.toString());
-        // Fetch the `asr_full` text from the VSM
-        // For simple demo we are using the following template
 
-        //String asr_full = "Ja. Ja. Ja.";
+        // For simple demo we are using the following template
+        for (ActionFeature feature : features) {
+            String key = feature.getKey();
+            String value = feature.getVal();
+
+            // Only if key and value is not empty
+            if (key != null && !key.isEmpty() && value != null && !value.isEmpty()) {
+                if (key.equalsIgnoreCase("action")) {
+                    fetchIntent();
+                } else {
+                    mLogger.failure("Unknown key value supplied to DialogManager plugin.");
+                }
+            }
+        }
+    }
+
+    void fetchIntent() {
         String asr_full = get_transcript();
 
         // Then call the intent classifier to send a request to the RASA classifier server

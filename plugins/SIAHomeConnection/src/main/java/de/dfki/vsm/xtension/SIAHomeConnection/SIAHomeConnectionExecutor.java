@@ -13,7 +13,7 @@ public class SIAHomeConnectionExecutor extends ActivityExecutor {
     private static final String sBHOME_EVENT_VAR = "bhome_event_var";
     private static final String sBHOME_EVENT_DEFAULT = "bhome_event";
 
-    private Server server;
+    private SIAHomeConnectionServerThread server;
 
     private String bhome_event_var;
 
@@ -41,8 +41,8 @@ public class SIAHomeConnectionExecutor extends ActivityExecutor {
         final String rlport = mConfig.getProperty("rec_port"); // Receiver Local Port (VSM receiver port)
 
         // Initialize the event receiver
-        server = new Server(Integer.parseInt(rlport));
-        server.setHandler(new SIAHomeConnectionJSONHandler(this));
+        int rlPort = Integer.parseInt(rlport);
+        server = new SIAHomeConnectionServerThread(new SIAHomeConnectionJSONHandler(), rlPort);
 
         // Start the server here
         try {
@@ -57,7 +57,8 @@ public class SIAHomeConnectionExecutor extends ActivityExecutor {
 
     @Override
     public void unload() {
-
+        server.interrupt();
+        server.server.destroy();
     }
 //public void set_app_intent(String asr_result) {
 //

@@ -12,10 +12,7 @@ import org.json.JSONObject;
 
 
 public class SIAHomeConnectionJSONHandler extends AbstractHandler {
-    private SIAHomeConnectionExecutor executor;
-    SIAHomeConnectionJSONHandler(SIAHomeConnectionExecutor executor) {
-        this.executor = executor;
-    }
+    SIAHomeConnectionJSONHandler() {}
 
     @Override
     public void handle(String target, Request baseRequest,
