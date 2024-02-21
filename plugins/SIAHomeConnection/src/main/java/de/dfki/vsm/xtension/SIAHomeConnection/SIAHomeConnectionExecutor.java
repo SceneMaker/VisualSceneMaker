@@ -29,7 +29,7 @@ public class SIAHomeConnectionExecutor extends ActivityExecutor {
     public void execute(AbstractActivity activity) {
         final String action_name = activity.getName();
         if (action_name.equals("speak"))
-            mLogger.message("intent val in set_app_intent(): " + mProject.getValueOf("app_intent").toString());
+            mLogger.message("bhome event val" + mProject.getValueOf("bhome_event").toString());
 
     }
 

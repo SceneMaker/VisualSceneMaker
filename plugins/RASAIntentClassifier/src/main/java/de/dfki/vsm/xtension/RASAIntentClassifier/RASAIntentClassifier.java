@@ -11,8 +11,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class RASAIntentClassifier {
+public class RASAIntentClassifier{
+
     RASAIntentClassifier() {
+
     }
     public Tuple<String, String> getIntent(String text) {
         Tuple<String, String> intent = new Tuple<>("", "");
@@ -85,6 +87,10 @@ public class RASAIntentClassifier {
                 JSONArray entitiesArray = jsonObject.getJSONArray("entities");
                 JSONObject nameEntity = entitiesArray.getJSONObject(0); // Assuming there's only one entity
                 nameValue = nameEntity.getString("value");
+            } else if (intent.equals("affirm")) {
+                nameValue = "true";
+            } else if (intent.equals("deny")) {
+                nameValue = "false";
             }
 
             // Print intent
