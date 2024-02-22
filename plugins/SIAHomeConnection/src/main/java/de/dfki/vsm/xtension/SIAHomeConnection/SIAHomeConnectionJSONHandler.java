@@ -13,6 +13,7 @@ import org.json.JSONObject;
 
 public class SIAHomeConnectionJSONHandler extends AbstractHandler {
     SIAHomeConnectionJSONHandler() {}
+    private SIAHomeConnectionExecutor execute;
 
     @Override
     public void handle(String target, Request baseRequest,
@@ -38,12 +39,14 @@ public class SIAHomeConnectionJSONHandler extends AbstractHandler {
             // Process the JSON request
             String bhome_event = requestJson.getString("event");
 
+            System.out.println("[SIAHome]: bhome_event: " + bhome_event);
+
             // Create a response JSON object
             JSONObject responseJson = new JSONObject();
             responseJson.put("message", "Agent received the event: " + bhome_event);
 
             // Handle everything inside the scene-maker!
-
+            set_app_intent(bhome_event);
 
 
             // Write the response JSON to the response body
@@ -58,4 +61,9 @@ public class SIAHomeConnectionJSONHandler extends AbstractHandler {
     }
 
     // Private functions to handle VSM stuffs
+    public void set_app_intent(String event) {
+        execute.set_app_intent(event);
+
+    }
+
 }

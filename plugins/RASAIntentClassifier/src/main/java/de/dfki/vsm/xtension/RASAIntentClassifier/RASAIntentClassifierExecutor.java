@@ -23,7 +23,7 @@ public class RASAIntentClassifierExecutor extends ActivityExecutor {
 
     private String rasa_intent_var;
 
-    private RASAIntentClassifier intentClassifier;
+    RASAIntentClassifier intentClassifier;
 
 
     @Override
@@ -35,6 +35,8 @@ public class RASAIntentClassifierExecutor extends ActivityExecutor {
     @Override
     public void launch() {
         // Initialize the event receiver
+        mLogger.message("[RASAIntentClassifier]: Starting RASA Agent.");
+        System.out.println("[RASAIntentClassifier]: Starting RASA Agent.");
         intentClassifier = new RASAIntentClassifier();
 
         rasa_intent_var = mConfig.getProperty(sRASA_INTENT_VAR, sRASA_EVENT_DEFAULT);
@@ -42,6 +44,7 @@ public class RASAIntentClassifierExecutor extends ActivityExecutor {
 
     @Override
     public void unload() {
+
     }
     @Override
     public void execute(AbstractActivity activity) {
@@ -64,21 +67,23 @@ public class RASAIntentClassifierExecutor extends ActivityExecutor {
         }
     }
 
-    void fetchIntent() {
+    public void fetchIntent() {
         String asr_full = get_transcript();
 
         // Then call the intent classifier to send a request to the RASA classifier server
         Tuple<String, String> intent = intentClassifier.getIntent(asr_full);
 
         String intent_type = intent.getFirst();
-        String intent_value = intent.getSecond();
+        String intent_value = intent.getSecond().toString();
         String intent_name = "";
         if (intent_type.equals("give_name")) {
             intent_name = "user_name";
         } else if (intent_type.equals("affirm") || intent_type.equals("deny")) {
             intent_name = "rasa_intent";
         }
-        set_vsm_variable(intent_name, intent_value);
+        set_vsm_variable(intent_name.toString(), intent_value.toString());
+
+        System.out.println("[RASAIntentClassifier]: Message " + intent_name + " " + intent_value);
     }
 
 
@@ -87,14 +92,20 @@ public class RASAIntentClassifierExecutor extends ActivityExecutor {
     public void set_vsm_variable(String name, String value) {
 
         if (mProject.hasVariable(name)) {
-            mLogger.message(name +"var detected");
+            mLogger.message(name + "var detected");
         }
         mLogger.message(name + "in set_rasa_intent(): " + value);
-        mProject.setVariable( name, value);
+        if (name.equals("user_name")) {
+            mProject.setVariable("user_name", value);
+        } else if (name.equals("rasa_intent")) {
+            mProject.setVariable("rasa_intent", value);
+        }
     }
 
     public String get_transcript() {
-        return mProject.getValueOf("asr_full").toString();
+        String value = mProject.getValueOf("asr_full").getValue().toString();
+        System.out.println("ASR Full: " + value);
+        return value;
     }
 
 }

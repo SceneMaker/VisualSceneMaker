@@ -28,7 +28,7 @@ public class SIAHomeConnectionExecutor extends ActivityExecutor {
     @Override
     public void execute(AbstractActivity activity) {
         final String action_name = activity.getName();
-        if (action_name.equals("speak"))
+        if (action_name.equals("event_call"))
             mLogger.message("bhome event val" + mProject.getValueOf("bhome_event").toString());
 
     }
@@ -60,16 +60,15 @@ public class SIAHomeConnectionExecutor extends ActivityExecutor {
         server.interrupt();
         server.server.destroy();
     }
-//public void set_app_intent(String asr_result) {
-//
-//        if (mProject.hasVariable("app_intent")) {
-//            mLogger.message("app_intent var detected");
-//        }
-//        mLogger.message("ASR val in set_transcript(): " + asr_result);
-//        mProject.setVariable("app_intent", asr_result);
-//    }
-//
-//    public String get_app_intent() {
-//        return mProject.getValueOf("app_intent").toString();
-//    }
+    public void set_app_intent(String event) {
+
+        if (mProject.hasVariable("bhome_event")) {
+            mLogger.message("app_intent var detected");
+        }
+        mLogger.message("event val in set_app_intent(): " + event);
+        mProject.setVariable("bhome_event", event);
+
+    }
+
+
 }
