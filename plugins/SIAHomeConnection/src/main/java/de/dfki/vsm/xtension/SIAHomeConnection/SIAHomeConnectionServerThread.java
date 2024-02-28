@@ -13,11 +13,14 @@ import java.net.*;
 public class SIAHomeConnectionServerThread extends Thread {
     private SIAHomeConnectionJSONHandler handler;
     public Server server;
+
+
     private int port;
 
     SIAHomeConnectionServerThread(SIAHomeConnectionJSONHandler handler, int port) {
         this.handler = handler;
         this.port = port;
+
     }
 
     @Override
@@ -30,6 +33,8 @@ public class SIAHomeConnectionServerThread extends Thread {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+
+
     }
 
 }

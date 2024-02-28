@@ -12,8 +12,10 @@ import org.json.JSONObject;
 
 
 public class SIAHomeConnectionJSONHandler extends AbstractHandler {
-    SIAHomeConnectionJSONHandler() {}
-    private SIAHomeConnectionExecutor execute;
+    SIAHomeConnectionJSONHandler(SIAHomeConnectionExecutor executor) {
+        this.executor = executor;
+    }
+    private SIAHomeConnectionExecutor executor;
 
     @Override
     public void handle(String target, Request baseRequest,
@@ -30,7 +32,6 @@ public class SIAHomeConnectionJSONHandler extends AbstractHandler {
         response.setHeader("Access-Control-Allow-Headers", "x-requested-with");
 
         // Only handle POST Requests
-        // Only handle POST requests
         if (request.getMethod().equalsIgnoreCase("POST")) {
             // Read JSON request from the request body
             String requestBody = request.getReader().lines().collect(Collectors.joining());
@@ -38,15 +39,37 @@ public class SIAHomeConnectionJSONHandler extends AbstractHandler {
 
             // Process the JSON request
             String bhome_event = requestJson.getString("event");
+            String wakeUpToday = requestJson.getString("createdAt");
+            String sleepYesterday = requestJson.getString("sleepAt");
+            String wakeUpYesterday = requestJson.getString("wakeUpAt");
+            Boolean nightActivity = requestJson.getBoolean("activityAt");
+            String userName = requestJson.getString("firstName");
 
             System.out.println("[SIAHome]: bhome_event: " + bhome_event);
+            System.out.println("[SIAHome]: wakeUpToday: " + wakeUpToday);
+            System.out.println("[SIAHome]: sleepYesterday: " + sleepYesterday);
+            System.out.println("[SIAHome]: wakeUpYesterday: " + wakeUpYesterday);
+            System.out.println("[SIAHome]: nightActivity: " + nightActivity);
+            System.out.println("[SIAHome]: user_name: " + userName);
 
             // Create a response JSON object
             JSONObject responseJson = new JSONObject();
             responseJson.put("message", "Agent received the event: " + bhome_event);
+            responseJson.put("message", "Agent received the wakeUpToday: " + wakeUpToday);
+            responseJson.put("message", "Agent received the sleepYesterday: " + sleepYesterday);
+            responseJson.put("message", "Agent received the wakeUpYesterday: " + wakeUpYesterday);
+            responseJson.put("message", "Agent received the event: " +  nightActivity);
+            responseJson.put("message", "Agent received the user_name: " + userName);
+
 
             // Handle everything inside the scene-maker!
-            set_app_intent(bhome_event);
+
+            executor.setVariable("bhome_event", bhome_event);
+            executor.setVariable("wakeUpToday", wakeUpToday);
+            executor.setVariable("sleepYesterday", sleepYesterday);
+            executor.setVariable("wakeUpYesterday", wakeUpYesterday);
+            executor.setVariable("nightActivity", nightActivity.toString());
+            executor.setVariable("user_name", userName);
 
 
             // Write the response JSON to the response body
@@ -58,12 +81,6 @@ public class SIAHomeConnectionJSONHandler extends AbstractHandler {
             response.setStatus(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
             baseRequest.setHandled(true);
         }
-    }
-
-    // Private functions to handle VSM stuffs
-    public void set_app_intent(String event) {
-        execute.set_app_intent(event);
-
     }
 
 }
