@@ -30,7 +30,7 @@ function genTimeStamp() {
  **/
 function App() {
     const proto = document.location.protocol === 'https:'? 'wss://':'ws://';
-    const [webSocket, setWebSocket] = useState(null);
+    const [webSocket, setWebSocket] = useState({});
     const [vsmConnectionStatus, setVsmConnectionStatus] = useState(false);
     const [infoLogContents, setInfoLogContents] = useState({});
     const [informContent, setInformContent] = useState("");
