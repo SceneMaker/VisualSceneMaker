@@ -33,8 +33,6 @@
     </Agent>
     <Agent name="Alex" device="Kafka">
     </Agent>
-    <Agent name="AlmaAlex" device="Alma">
-    </Agent>
     <Agent name="AlmaTeacher" device="Alma">
     </Agent>
   </Agents>
