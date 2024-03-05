@@ -47,10 +47,10 @@ function App() {
         setUserSubmittedInfo(items);
     };
 
+    let ws = new WebSocket(proto + document.location.host + '/ws');
+
     useEffect(() => {
         console.log("Setting up web socket...");
-
-        let ws = new WebSocket(proto + document.location.host + '/ws');
 
         ws.onopen = function () {
             setVsmConnectionStatus(true);
