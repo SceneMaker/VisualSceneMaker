@@ -16,6 +16,7 @@ import de.dfki.vsm.runtime.activity.SpeechActivity;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
 import de.dfki.vsm.runtime.activity.scheduler.ActivityWorker;
 import de.dfki.vsm.runtime.interpreter.value.StringValue;
+import de.dfki.vsm.runtime.player.RunTimePlayer;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
 import io.javalin.Javalin;
@@ -101,6 +102,9 @@ public class WebStudyMasterExecutor extends ActivityExecutor implements EventLis
     private String mLastRequestMessage;
     private String mLastInformMessage;
 
+    // Variable required to see whether project is being unloaded in order to maintain the "studymaster_connected" variable in VSM, when not unloading
+    private boolean unloading = false;
+
 
     public synchronized Long getVMUtteranceId() {
         return ++sUtteranceId;
@@ -148,7 +152,7 @@ public class WebStudyMasterExecutor extends ActivityExecutor implements EventLis
         mHttpServer.ws("/ws", ws -> {
             ws.onConnect(this::addWs);
             ws.onMessage(ctx -> this.handleGUIMessage(ctx.message()));
-            ws.onClose(this::removeWs);
+            ws.onClose(ctx -> this.removeWs(ctx));
             ws.onError(ctx -> mLogger.failure("WebSocket Error: " + ctx.error()));
         });
     }
@@ -157,14 +161,13 @@ public class WebStudyMasterExecutor extends ActivityExecutor implements EventLis
     @Override
     public void unload() {
 
+        unloading = true;
+
         EventDispatcher.getInstance().remove(this);
 
-        for (WsConnectContext ws : mWebsockets) {
-            if (ws.session.isOpen()) {
-                ws.session.close();
-            }
-        }
         mWebsockets.clear();
+        mLogger.message("Total number of web sockets: " + this.mWebsockets.size());
+
         mHttpServer.stop();
 
         mLastInformMessage = null;
@@ -206,7 +209,6 @@ public class WebStudyMasterExecutor extends ActivityExecutor implements EventLis
 
     }
 
-
     /**
      * Invoked when a websocket connection is closed (web app is closed, or timeout?).
      */
@@ -216,14 +218,11 @@ public class WebStudyMasterExecutor extends ActivityExecutor implements EventLis
         mLogger.message("Total number of web sockets: " + this.mWebsockets.size());
 
         // Set the GUIState variable to false if there are no more GUI connections.
-        if (mWebsockets.size() == 0) {
+        if (mWebsockets.isEmpty() && (!unloading)) {
             if (mProject.hasVariable(mGUIConnectedVar)) {
                 mProject.setVariable(mGUIConnectedVar, false);
             }
         }
-
-//        mLastInformMessage = null; // In case a previous inform was still active.
-//        mLastRequestMessage = null; // In case a previous request was still active.
     }
 
 
