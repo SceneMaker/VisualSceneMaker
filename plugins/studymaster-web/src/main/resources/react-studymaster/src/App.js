@@ -30,7 +30,7 @@ function genTimeStamp() {
  **/
 function App() {
     const proto = document.location.protocol === 'https:'? 'wss://':'ws://';
-    const [webSocket, setWebSocket] = useState(new WebSocket(proto + document.location.host + '/ws'));
+    const [webSocket, setWebSocket] = useState(null);
     const [vsmConnectionStatus, setVsmConnectionStatus] = useState(false);
     const [infoLogContents, setInfoLogContents] = useState({});
     const [informContent, setInformContent] = useState("");
@@ -47,9 +47,10 @@ function App() {
         setUserSubmittedInfo(items);
     };
 
-    let ws = new WebSocket(proto + document.location.host + '/ws');
 
     useEffect(() => {
+
+        let ws = new WebSocket(proto + document.location.host + '/ws');
         console.log("Setting up web socket...");
 
         ws.onopen = function () {

@@ -179,7 +179,15 @@ public class WebStudyMasterExecutor extends ActivityExecutor implements EventLis
         ws.session.setIdleTimeout(Long.MAX_VALUE);
 
         mLogger.message("New WebSocket connection made.");
-        this.mWebsockets.add(ws);
+//        this.mWebsockets.add(ws);
+        if (!this.mWebsockets.contains(ws)) {
+            // If not present, add it to the ArrayList
+            this.mWebsockets.add(ws);
+            mLogger.message("WebSocket added to mWebsockets");
+        } else {
+            mLogger.message("WebSocket already present in mWebsockets");
+        }
+
         mLogger.message("Total number of web sockets: " + this.mWebsockets.size());
 
         // Update the connection status
