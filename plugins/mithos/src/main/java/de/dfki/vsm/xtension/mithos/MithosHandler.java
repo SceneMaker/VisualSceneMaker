@@ -2,6 +2,7 @@ package de.dfki.vsm.xtension.mithos;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
+import de.dfki.vsm.event.EventDispatcher;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
 import de.mithos.compint.command.ScenarioScriptFeedback;
 import de.mithos.compint.interaction.InteractionAct;
@@ -64,7 +65,7 @@ public class MithosHandler<T> extends Thread {
 //        System.out.println("Mithos Kafka consumer starts listening");
         logger.message("Mithos Kafka consumer starts listening");
 
-        while(!stop) {
+        while (!stop) {
             final ConsumerRecords<Long, String> consumerRecords =
                     consumer.poll(duration);
 
@@ -76,6 +77,7 @@ public class MithosHandler<T> extends Thread {
             });
             consumer.commitAsync();
         }
+        consumer.close();
     }
 
     private void handle(ConsumerRecord<Long, String> record) {
@@ -101,12 +103,16 @@ public class MithosHandler<T> extends Thread {
     }
 
     public final void abort() {
+
         stop = true;
-        //consumer.close();
-        interrupt();
+//        while (stop) {
+//            consumer.close();
+//        interrupt();
+//                break;
+//        }
     }
 
-    private void handle(InteractionAct intAct) {
-
-    }
+//    private void handle(InteractionAct intAct) {
+//
+//    }
 }

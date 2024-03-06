@@ -1,6 +1,7 @@
 package de.dfki.vsm.xtension.mithos;
 
 import com.google.gson.Gson;
+import de.dfki.vsm.event.EventDispatcher;
 import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
 import de.dfki.vsm.runtime.activity.ActionActivity;
@@ -11,16 +12,15 @@ import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
 import de.mithos.compint.command.ScenarioScriptCommand;
 import de.mithos.compint.command.ScenarioScriptFeedback;
-import de.mithos.compint.interaction.ActKind;
-import de.mithos.compint.interaction.AppraisalTag;
-import de.mithos.compint.interaction.Emotion;
-import de.mithos.compint.interaction.InteractionAct;
+import de.mithos.compint.interaction.*;
 import de.mithos.compint.log.VSMPilotLog;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
 
 import java.util.*;
+
+import static de.mithos.compint.interaction.AppraisalTag.*;
 
 /**
  * This plugin uses a kafka server to control an agent-environment and to receive processed userdata.
@@ -63,6 +63,19 @@ public class MithosExecutor extends ActivityExecutor {
         }
 
         student_dialogue_act_log_topic = "StudentDialogueActVSMLog";
+    }
+
+    private void sendTempIntAct() {
+        ActKind iaIntent = ActKind.ConventionalOpening;
+        String actor = "Teacher";
+        List<String> addressees = new ArrayList<>();
+        Emotion emotion = new Emotion(0,0,0,0,10);
+        InteractionActBuilder iAB = new InteractionActBuilder(iaIntent, actor, addressees, emotion, 0, 10);
+        iAB.addAppraisalTag(GoodActSelf);
+        InteractionAct iA = iAB.getInteractionAct();
+        String iAGsonString = gson.toJson(iA);
+        ProducerRecord<String, String> record = new ProducerRecord<>("InteractionActs", 0, "iA", iAGsonString);
+        sendRecord(record);
     }
 
     @Override
@@ -154,7 +167,8 @@ public class MithosExecutor extends ActivityExecutor {
     }
 
     private void sendDialogueLogEntry(String DialogueAct) {
-        String actor = "Student";
+        sendTempIntAct();
+        String actor = "Student_Alex";
 
         try {
             ActKind intent = ActKind.valueOf(DialogueAct);
