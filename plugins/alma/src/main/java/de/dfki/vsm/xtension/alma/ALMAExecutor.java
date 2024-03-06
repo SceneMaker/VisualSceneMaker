@@ -96,7 +96,7 @@ public class ALMAExecutor extends ActivityExecutor implements AffectUpdateListen
         if (activity instanceof PauseActivity)
         {
             //TODO
-            mLogger.message("Pause was called");
+            mLogger.message("Pause was called, NOT IMPLEMENTED");
         }
 
         if (activity instanceof ActionActivity) {
@@ -109,7 +109,6 @@ public class ALMAExecutor extends ActivityExecutor implements AffectUpdateListen
             }
 
             if(name.equalsIgnoreCase("UpdateVars")){
-                //TODO
                 mLogger.message("Update Vars was called");
 
                 executeUpdateVars(activity);
@@ -184,6 +183,11 @@ public class ALMAExecutor extends ActivityExecutor implements AffectUpdateListen
                     break;
                 case 2:
                     ai = AppraisalTag.instance().makeAffectInput(activity.getActor(), affect[0], affect[1], "Scene");
+                    mLogger.message("Processing " + ai.toString());
+                    mALMA.processSignal(ai);
+                    break;
+                case 1:
+                    ai = AppraisalTag.instance().makeAffectInput(activity.getActor(), affect[0], "1", "Scene");
                     mLogger.message("Processing " + ai.toString());
                     mALMA.processSignal(ai);
                     break;

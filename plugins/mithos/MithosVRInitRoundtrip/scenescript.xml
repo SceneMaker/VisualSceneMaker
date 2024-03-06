@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SceneScript lower="0" upper="0">
+  <SceneObject lower="0" upper="112" language="@@" identifier="InformStartData">
+    <SceneTurn lower="25" upper="112" speaker="web">
+      <SceneUttr lower="31" upper="112" punct=".">
+        <ActionObject lower="31" upper="38" actor="" name="PROCEED">
+          <ActionFeature lower="39" upper="110" key="value" val="'Once ready click button to collect some data about participant.'"/>
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="114" upper="201" language="@@" identifier="InformParticipantInfoFill">
+    <SceneTurn lower="149" upper="201" speaker="web">
+      <SceneUttr lower="155" upper="201" punct=".">
+        <ActionObject lower="155" upper="161" actor="" name="INFORM">
+          <ActionFeature lower="162" upper="199" key="value" val="'Fill participant information.'"/>
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="203" upper="310" language="@@" identifier="RequestParticipantInfo">
+    <SceneTurn lower="235" upper="310" speaker="web">
+      <SceneUttr lower="241" upper="310" punct=".">
+        <ActionObject lower="241" upper="248" actor="" name="REQUEST">
+          <ActionFeature lower="249" upper="259" key="var" val="'name'"/>
+          <ActionFeature lower="260" upper="296" key="value" val="'Enter participants pseudonym'"/>
+          <ActionFeature lower="297" upper="308" key="type" val="'text'"/>
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="312" upper="400" language="@@" identifier="InformStartExp">
+    <SceneTurn lower="336" upper="400" speaker="web">
+      <SceneUttr lower="342" upper="400" punct=".">
+        <ActionObject lower="342" upper="349" actor="" name="PROCEED">
+          <ActionFeature lower="350" upper="398" key="value" val="'Start experiment by clicking the button.'"/>
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+</SceneScript>
