@@ -22,49 +22,38 @@
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="380" upper="670" language="@@" identifier="RequestUserInfo3">
-    <SceneTurn lower="406" upper="670" speaker="web">
-      <SceneUttr lower="412" upper="670" punct=".">
-        <ActionObject lower="412" upper="419" actor="" name="REQUEST">
-          <ActionFeature lower="420" upper="510" key="var" val="'name;surname;weight;weight2;gender;gender2;graduated;graduated2;intensity;intensity2'"/>
-          <ActionFeature lower="511" upper="593" key="value" val="'Enter name;Enter surname;in kg;in kg;m,f,d;m,f,d;1,2;1,2;low,high;low,high'"/>
-          <ActionFeature lower="594" upper="668" key="type" val="'text;text;number;number;radio;radio;checkbox;checkbox;slider;slider'"/>
+  <SceneObject lower="380" upper="443" language="@@" identifier="InformFill">
+    <SceneTurn lower="400" upper="443" speaker="web">
+      <SceneUttr lower="406" upper="443" punct=".">
+        <ActionObject lower="406" upper="412" actor="" name="INFORM">
+          <ActionFeature lower="413" upper="441" key="value" val="'Please fill the form'"/>
         </ActionObject>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="672" upper="735" language="@@" identifier="InformFill">
-    <SceneTurn lower="692" upper="735" speaker="web">
-      <SceneUttr lower="698" upper="735" punct=".">
-        <ActionObject lower="698" upper="704" actor="" name="INFORM">
-          <ActionFeature lower="705" upper="733" key="value" val="'Please fill the form'"/>
+  <SceneObject lower="445" upper="547" language="@@" identifier="InformProceed">
+    <SceneTurn lower="468" upper="547" speaker="web">
+      <SceneUttr lower="474" upper="547" punct=".">
+        <ActionObject lower="474" upper="481" actor="" name="PROCEED">
+          <ActionFeature lower="482" upper="545" key="value" val="'Please press the proceed button to go to the next step.'"/>
         </ActionObject>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="737" upper="839" language="@@" identifier="InformProceed">
-    <SceneTurn lower="760" upper="839" speaker="web">
-      <SceneUttr lower="766" upper="839" punct=".">
-        <ActionObject lower="766" upper="773" actor="" name="PROCEED">
-          <ActionFeature lower="774" upper="837" key="value" val="'Please press the proceed button to go to the next step.'"/>
+  <SceneObject lower="549" upper="613" language="@@" identifier="InformNewForm">
+    <SceneTurn lower="572" upper="613" speaker="web">
+      <SceneUttr lower="578" upper="613" punct=".">
+        <ActionObject lower="578" upper="584" actor="" name="INFORM">
+          <ActionFeature lower="585" upper="611" key="value" val="'New form coming up'"/>
         </ActionObject>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="841" upper="905" language="@@" identifier="InformNewForm">
-    <SceneTurn lower="864" upper="905" speaker="web">
-      <SceneUttr lower="870" upper="905" punct=".">
-        <ActionObject lower="870" upper="876" actor="" name="INFORM">
-          <ActionFeature lower="877" upper="903" key="value" val="'New form coming up'"/>
-        </ActionObject>
-      </SceneUttr>
-    </SceneTurn>
-  </SceneObject>
-  <SceneObject lower="907" upper="987" language="@@" identifier="InformWelcome">
-    <SceneTurn lower="930" upper="987" speaker="web">
-      <SceneUttr lower="936" upper="987" punct=".">
-        <ActionObject lower="936" upper="942" actor="" name="INFORM">
-          <ActionFeature lower="943" upper="985" key="value" val="'The Welcome Phase has been started'"/>
+  <SceneObject lower="615" upper="695" language="@@" identifier="InformWelcome">
+    <SceneTurn lower="638" upper="695" speaker="web">
+      <SceneUttr lower="644" upper="695" punct=".">
+        <ActionObject lower="644" upper="650" actor="" name="INFORM">
+          <ActionFeature lower="651" upper="693" key="value" val="'The Welcome Phase has been started'"/>
         </ActionObject>
       </SceneUttr>
     </SceneTurn>
