@@ -21,7 +21,7 @@ import org.w3c.dom.Element;
  */
 public class InitJointAnimation extends TriCatWorldActObject implements XMLParseable, XMLWriteable {
 
-    private String mJointName;
+    private final String mJointName;
     private String mCharameAvatarId = "1";
     // The logger instance
     private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();

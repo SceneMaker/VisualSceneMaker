@@ -24,7 +24,7 @@ import org.w3c.dom.Element;
  */
 public class Sad extends CharamelActObject implements XMLParseable, XMLWriteable {
 
-    private String mIntentsity;
+    private final String mIntentsity;
     private String mCharameAvatarId = "1";
     // The logger instance
     private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();

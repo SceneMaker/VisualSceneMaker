@@ -1,6 +1,6 @@
 # Visual Scene Maker Master Version
 
-(c) 2003-18. All rights reserved
+(c) 2003-21. All rights reserved
 
 ### Download the current version at: https://github.com/SceneMaker/VisualSceneMaker/releases
 

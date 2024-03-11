@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SceneScript lower="0" upper="0">
+  <SceneObject lower="0" upper="40" language="@@" identifier="RequestUserInfo">
+    <SceneTurn lower="25" upper="40" speaker="sia">
+      <SceneUttr lower="31" upper="40" punct=".">
+        <ActionObject lower="31" upper="38" actor="" name="REQUEST">
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+</SceneScript>

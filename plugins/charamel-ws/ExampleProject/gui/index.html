@@ -1,0 +1,50 @@
+<html>
+<head>
+    <script src="./js/wsclient.js"></script>
+    <script>
+        var ws_protocol = "ws";
+        var ws_hostname = "localhost";
+        var ws_port = "4041";
+        var ws_endpoint ="/ws";
+    </script>
+<!--    <meta name="viewport" content="width=device-width, initial-scale=.05">-->
+    <style>
+        /* Portrait */
+        @media screen
+        and (device-width: 393px)
+        and (device-height: 851px)
+        and (-webkit-device-pixel-ratio: 2.75)
+        and (orientation: portrait) {
+
+            iframe, body{
+                width: 393px;
+                height: 851px;
+            }
+
+        }
+
+        @media screen
+        and (device-width: 768px)
+        and (device-height: 1024px)
+        and (-webkit-device-pixel-ratio: 2.08)
+        and (orientation: portrait) {
+
+            iframe, body{
+                width: 768px;
+                height: 1024px;
+            }
+
+        }
+
+        iframe, body{
+            width: 100%;
+            height: 100%;
+        }
+
+    </style>
+</head>
+<body onload="connect()">
+  <iframe id="gui" name="GUI" src="./default_gui.html" frameborder="0" style="position: fixed; left:0px; top:0px; z-index:-1"></iframe>
+  <iframe id="emma" name="ACG" src='https://emmi.vuppetmaster.de/dev/emmi/studie?server=ws://127.0.0.1:3030/ws' style=" position:fixed; left:0px; top:0px; z-index:1" ></iframe>
+</body>
+</html>

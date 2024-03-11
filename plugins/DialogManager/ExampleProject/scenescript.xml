@@ -1,0 +1,2712 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SceneScript lower="0" upper="0">
+  <SceneObject lower="0" upper="45" language="de" identifier="start_asr">
+    <SceneTurn lower="19" upper="45" speaker="asr">
+      <SceneUttr lower="25" upper="45" punct=".">
+        <ActionObject lower="25" upper="30" actor="" name="event">
+          <ActionFeature lower="31" upper="43" key="action" val="start"/>
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="47" upper="82" language="de" identifier="asr_mimic">
+    <SceneTurn lower="66" upper="82" speaker="lydia">
+      <SceneUttr lower="73" upper="82" punct=".">
+        <SceneParam lower="73" upper="81" name="asr_res"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="84" upper="118" language="de" identifier="willkommen1">
+    <SceneTurn lower="105" upper="118" speaker="lydia">
+      <SceneUttr lower="112" upper="118" punct=".">
+        <SceneWord lower="112" upper="117" text="hello"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="120" upper="1033" language="de" identifier="willkommen">
+    <SceneTurn lower="140" upper="191" speaker="lydia">
+      <SceneUttr lower="147" upper="191" punct="!">
+        <SceneWord lower="147" upper="155" text="Herzlich"/>
+        <SceneWord lower="156" upper="166" text="Willkommen"/>
+        <ActionObject lower="168" upper="172" actor="" name="wave">
+        </ActionObject>
+        <SceneWord lower="174" upper="176" text="zu"/>
+        <SceneWord lower="177" upper="183" text="dieser"/>
+        <SceneWord lower="184" upper="190" text="Studie"/>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="192" upper="299" speaker="lydia">
+      <SceneUttr lower="199" upper="299" punct=".">
+        <SceneWord lower="199" upper="202" text="Ich"/>
+        <SceneWord lower="203" upper="206" text="bin"/>
+        <SceneWord lower="207" upper="212" text="LYDIA"/>
+        <ActionObject lower="214" upper="217" actor="" name="nod">
+        </ActionObject>
+        <SceneWord lower="219" upper="223" text="eine"/>
+        <SceneWord lower="224" upper="232" text="autonome"/>
+        <SceneWord lower="233" upper="242" text="virtuelle"/>
+        <SceneWord lower="243" upper="254" text="Assistentin"/>
+        <SceneWord lower="255" upper="258" text="für"/>
+        <SceneWord lower="259" upper="262" text="ein"/>
+        <SceneWord lower="263" upper="275" text="interaktives"/>
+        <SceneWord lower="276" upper="289" text="Wohlbefindens"/>
+        <SceneWord lower="290" upper="298" text="Tagebuch"/>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="300" upper="427" speaker="lydia">
+      <SceneUttr lower="307" upper="427" punct=".">
+        <SceneWord lower="307" upper="312" text="Durch"/>
+        <SceneWord lower="313" upper="329" text="fortschrittliche"/>
+        <SceneWord lower="330" upper="341" text="Technologie"/>
+        <SceneWord lower="342" upper="346" text="kann"/>
+        <SceneWord lower="347" upper="350" text="ich"/>
+        <SceneWord lower="351" upper="354" text="mit"/>
+        <SceneWord lower="355" upper="363" text="Menschen"/>
+        <SceneWord lower="364" upper="376" text="interagieren"/>
+        <SceneWord lower="377" upper="382" text="Ihnen"/>
+        <SceneWord lower="383" upper="390" text="zuhören"/>
+        <SceneWord lower="391" upper="394" text="und"/>
+        <SceneWord lower="395" upper="399" text="mich"/>
+        <SceneWord lower="400" upper="403" text="auf"/>
+        <SceneWord lower="404" upper="408" text="Ihre"/>
+        <SceneWord lower="409" upper="416" text="Gefühle"/>
+        <SceneWord lower="417" upper="426" text="einlassen"/>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="428" upper="598" speaker="lydia">
+      <SceneUttr lower="435" upper="598" punct=".">
+        <SceneWord lower="435" upper="437" text="In"/>
+        <SceneWord lower="438" upper="444" text="dieser"/>
+        <SceneWord lower="445" upper="451" text="Studie"/>
+        <SceneWord lower="452" upper="458" text="möchte"/>
+        <SceneWord lower="459" upper="462" text="ich"/>
+        <SceneWord lower="463" upper="466" text="mit"/>
+        <SceneWord lower="467" upper="472" text="Ihnen"/>
+        <SceneWord lower="473" upper="478" text="meine"/>
+        <SceneWord lower="479" upper="483" text="neue"/>
+        <SceneWord lower="484" upper="492" text="Funktion"/>
+        <SceneWord lower="493" upper="496" text="für"/>
+        <SceneWord lower="497" upper="500" text="ein"/>
+        <SceneWord lower="501" upper="511" text="virtuelles"/>
+        <SceneWord lower="512" upper="520" text="Tagebuch"/>
+        <SceneWord lower="521" upper="527" text="testen"/>
+        <SceneWord lower="528" upper="531" text="bei"/>
+        <SceneWord lower="532" upper="535" text="der"/>
+        <SceneWord lower="536" upper="539" text="ich"/>
+        <SceneWord lower="540" upper="545" text="Ihnen"/>
+        <SceneWord lower="546" upper="552" text="einige"/>
+        <SceneWord lower="553" upper="559" text="Fragen"/>
+        <SceneWord lower="560" upper="564" text="dazu"/>
+        <SceneWord lower="565" upper="571" text="stelle"/>
+        <SceneWord lower="572" upper="575" text="wie"/>
+        <SceneWord lower="576" upper="578" text="es"/>
+        <SceneWord lower="579" upper="584" text="Ihnen"/>
+        <SceneWord lower="585" upper="592" text="aktuell"/>
+        <SceneWord lower="593" upper="597" text="geht"/>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="599" upper="772" speaker="lydia">
+      <SceneUttr lower="606" upper="664" punct=".">
+        <SceneWord lower="606" upper="611" text="Diese"/>
+        <SceneWord lower="612" upper="618" text="Fragen"/>
+        <SceneWord lower="619" upper="625" text="können"/>
+        <SceneWord lower="626" upper="629" text="Sie"/>
+        <SceneWord lower="630" upper="633" text="auf"/>
+        <SceneWord lower="634" upper="639" text="einer"/>
+        <SceneWord lower="640" upper="651" text="Zahlenskala"/>
+        <SceneWord lower="652" upper="663" text="beantworten"/>
+      </SceneUttr>
+      <SceneUttr lower="665" upper="715" punct=".">
+        <SceneWord lower="665" upper="668" text="Die"/>
+        <SceneWord lower="669" upper="679" text="jeweiligen"/>
+        <SceneWord lower="680" upper="695" text="Antwortoptionen"/>
+        <SceneWord lower="696" upper="700" text="lese"/>
+        <SceneWord lower="701" upper="704" text="ich"/>
+        <SceneWord lower="705" upper="710" text="Ihnen"/>
+        <SceneWord lower="711" upper="714" text="vor"/>
+      </SceneUttr>
+      <SceneUttr lower="716" upper="772" punct=".">
+        <SceneWord lower="716" upper="719" text="Die"/>
+        <SceneWord lower="720" upper="726" text="Fragen"/>
+        <SceneWord lower="727" upper="733" text="werden"/>
+        <SceneWord lower="734" upper="738" text="auch"/>
+        <SceneWord lower="739" upper="742" text="auf"/>
+        <SceneWord lower="743" upper="746" text="dem"/>
+        <SceneWord lower="747" upper="757" text="Bildschirm"/>
+        <SceneWord lower="758" upper="760" text="zu"/>
+        <SceneWord lower="761" upper="766" text="lesen"/>
+        <SceneWord lower="767" upper="771" text="sein"/>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="773" upper="897" speaker="lydia">
+      <SceneUttr lower="780" upper="843" punct=".">
+        <SceneWord lower="780" upper="782" text="Es"/>
+        <SceneWord lower="783" upper="787" text="kann"/>
+        <SceneWord lower="788" upper="797" text="vorkommen"/>
+        <SceneWord lower="798" upper="802" text="dass"/>
+        <SceneWord lower="803" upper="806" text="ich"/>
+        <SceneWord lower="807" upper="813" text="einmal"/>
+        <SceneWord lower="814" upper="819" text="etwas"/>
+        <SceneWord lower="820" upper="825" text="nicht"/>
+        <SceneWord lower="826" upper="833" text="richtig"/>
+        <SceneWord lower="834" upper="842" text="verstehe"/>
+      </SceneUttr>
+      <SceneUttr lower="844" upper="897" punct=".">
+        <SceneWord lower="844" upper="848" text="Dann"/>
+        <SceneWord lower="849" upper="854" text="werde"/>
+        <SceneWord lower="855" upper="858" text="ich"/>
+        <SceneWord lower="859" upper="862" text="Sie"/>
+        <SceneWord lower="863" upper="869" text="bitten"/>
+        <SceneWord lower="870" upper="873" text="die"/>
+        <SceneWord lower="874" upper="881" text="Antwort"/>
+        <SceneWord lower="882" upper="884" text="zu"/>
+        <SceneWord lower="885" upper="896" text="wiederholen"/>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="898" upper="1033" speaker="lydia">
+      <SceneUttr lower="905" upper="1033" punct=".">
+        <SceneWord lower="905" upper="911" text="Sollte"/>
+        <SceneWord lower="912" upper="915" text="ich"/>
+        <SceneWord lower="916" upper="921" text="Ihnen"/>
+        <SceneWord lower="922" upper="926" text="eine"/>
+        <SceneWord lower="927" upper="933" text="andere"/>
+        <SceneWord lower="934" upper="937" text="als"/>
+        <SceneWord lower="938" upper="941" text="die"/>
+        <SceneWord lower="942" upper="945" text="von"/>
+        <SceneWord lower="946" upper="951" text="Ihnen"/>
+        <SceneWord lower="952" upper="963" text="ausgewählte"/>
+        <SceneWord lower="964" upper="971" text="Antwort"/>
+        <SceneWord lower="972" upper="984" text="zurückmelden"/>
+        <SceneWord lower="985" upper="991" text="fahren"/>
+        <SceneWord lower="992" upper="995" text="Sie"/>
+        <SceneWord lower="996" upper="1001" text="bitte"/>
+        <SceneWord lower="1002" upper="1009" text="einfach"/>
+        <SceneWord lower="1010" upper="1013" text="mit"/>
+        <SceneWord lower="1014" upper="1017" text="dem"/>
+        <SceneWord lower="1018" upper="1027" text="Interview"/>
+        <SceneWord lower="1028" upper="1032" text="fort"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="1035" upper="1188" language="de" identifier="frage_agreement">
+    <SceneTurn lower="1060" upper="1188" speaker="lydia">
+      <SceneUttr lower="1067" upper="1150" punct=",">
+        <SceneWord lower="1067" upper="1071" text="Sind"/>
+        <SceneWord lower="1072" upper="1075" text="Sie"/>
+        <SceneWord lower="1076" upper="1082" text="bereit"/>
+        <SceneWord lower="1083" upper="1086" text="mir"/>
+        <SceneWord lower="1087" upper="1090" text="ein"/>
+        <SceneWord lower="1091" upper="1095" text="paar"/>
+        <SceneWord lower="1096" upper="1102" text="Fragen"/>
+        <SceneWord lower="1103" upper="1105" text="zu"/>
+        <SceneWord lower="1106" upper="1111" text="Ihrem"/>
+        <SceneWord lower="1112" upper="1121" text="aktuellen"/>
+        <SceneWord lower="1122" upper="1134" text="Wohlbefinden"/>
+        <SceneWord lower="1135" upper="1137" text="zu"/>
+        <SceneWord lower="1138" upper="1149" text="beantworten"/>
+      </SceneUttr>
+      <SceneUttr lower="1151" upper="1188" punct=".">
+        <SceneWord lower="1151" upper="1156" text="bitte"/>
+        <SceneWord lower="1157" upper="1166" text="antworten"/>
+        <SceneWord lower="1167" upper="1170" text="Sie"/>
+        <SceneWord lower="1171" upper="1174" text="mit"/>
+        <SceneWord lower="1175" upper="1177" text="Ja"/>
+        <SceneWord lower="1178" upper="1182" text="oder"/>
+        <SceneWord lower="1183" upper="1187" text="Nein"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="1190" upper="1306" language="de" identifier="end">
+    <SceneTurn lower="1203" upper="1306" speaker="lydia">
+      <SceneUttr lower="1210" upper="1215" punct=".">
+        <SceneWord lower="1210" upper="1214" text="Okay"/>
+      </SceneUttr>
+      <SceneUttr lower="1216" upper="1306" punct=".">
+        <SceneWord lower="1216" upper="1219" text="Ich"/>
+        <SceneWord lower="1220" upper="1225" text="würde"/>
+        <SceneWord lower="1226" upper="1230" text="mich"/>
+        <SceneWord lower="1231" upper="1237" text="freuen"/>
+        <SceneWord lower="1238" upper="1242" text="wenn"/>
+        <SceneWord lower="1243" upper="1246" text="ich"/>
+        <SceneWord lower="1247" upper="1250" text="ein"/>
+        <SceneWord lower="1251" upper="1259" text="andermal"/>
+        <SceneWord lower="1260" upper="1263" text="mit"/>
+        <SceneWord lower="1264" upper="1269" text="Ihnen"/>
+        <SceneWord lower="1270" upper="1274" text="über"/>
+        <SceneWord lower="1275" upper="1278" text="Ihr"/>
+        <SceneWord lower="1279" upper="1291" text="Wohlbefinden"/>
+        <SceneWord lower="1292" upper="1300" text="sprechen"/>
+        <SceneWord lower="1301" upper="1305" text="kann"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="1308" upper="1462" language="de" identifier="ending">
+    <SceneTurn lower="1324" upper="1462" speaker="lydia">
+      <SceneUttr lower="1331" upper="1374" punct=".">
+        <SceneWord lower="1331" upper="1337" text="Vielen"/>
+        <SceneWord lower="1338" upper="1342" text="Dank"/>
+        <SceneWord lower="1343" upper="1346" text="für"/>
+        <SceneWord lower="1347" upper="1350" text="das"/>
+        <SceneWord lower="1351" upper="1362" text="Beantworten"/>
+        <SceneWord lower="1363" upper="1366" text="der"/>
+        <SceneWord lower="1367" upper="1373" text="Fragen"/>
+      </SceneUttr>
+      <SceneUttr lower="1375" upper="1409" punct=".">
+        <SceneWord lower="1375" upper="1378" text="Das"/>
+        <SceneWord lower="1379" upper="1388" text="Interview"/>
+        <SceneWord lower="1389" upper="1392" text="ist"/>
+        <SceneWord lower="1393" upper="1400" text="hiermit"/>
+        <SceneWord lower="1401" upper="1403" text="zu"/>
+        <SceneWord lower="1404" upper="1408" text="Ende"/>
+      </SceneUttr>
+      <SceneUttr lower="1410" upper="1462" punct=".">
+        <SceneWord lower="1410" upper="1413" text="Ich"/>
+        <SceneWord lower="1414" upper="1419" text="würde"/>
+        <SceneWord lower="1420" upper="1424" text="mich"/>
+        <SceneWord lower="1425" upper="1431" text="freuen"/>
+        <SceneWord lower="1432" upper="1435" text="Sie"/>
+        <SceneWord lower="1436" upper="1440" text="bald"/>
+        <SceneWord lower="1441" upper="1454" text="wiederzusehen"/>
+        <ActionObject lower="1456" upper="1460" actor="" name="wave">
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="1464" upper="1608" language="de" identifier="frage_1">
+    <SceneTurn lower="1481" upper="1608" speaker="lydia">
+      <SceneUttr lower="1488" upper="1532" punct=".">
+        <SceneWord lower="1488" upper="1491" text="Bei"/>
+        <SceneWord lower="1492" upper="1495" text="der"/>
+        <SceneWord lower="1496" upper="1502" text="ersten"/>
+        <SceneWord lower="1503" upper="1508" text="Frage"/>
+        <SceneWord lower="1509" upper="1513" text="geht"/>
+        <SceneWord lower="1514" upper="1516" text="es"/>
+        <SceneWord lower="1517" upper="1519" text="um"/>
+        <SceneWord lower="1520" upper="1531" text="Traurigkeit"/>
+      </SceneUttr>
+      <SceneUttr lower="1533" upper="1608" punct="?">
+        <SceneWord lower="1533" upper="1536" text="Wie"/>
+        <SceneWord lower="1537" upper="1542" text="haben"/>
+        <SceneWord lower="1543" upper="1546" text="Sie"/>
+        <SceneWord lower="1547" upper="1551" text="sich"/>
+        <SceneWord lower="1552" upper="1554" text="in"/>
+        <SceneWord lower="1555" upper="1558" text="den"/>
+        <SceneWord lower="1559" upper="1566" text="letzten"/>
+        <SceneWord lower="1567" upper="1571" text="zwei"/>
+        <SceneWord lower="1572" upper="1578" text="Wochen"/>
+        <SceneWord lower="1579" upper="1593" text="einschließlich"/>
+        <SceneWord lower="1594" upper="1599" text="heute"/>
+        <SceneWord lower="1600" upper="1607" text="gefühlt"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="1610" upper="1914" language="de" identifier="gui_frage_1">
+    <SceneTurn lower="1631" upper="1914" speaker="gui">
+      <SceneUttr lower="1636" upper="1914" punct=".">
+        <SceneWord lower="1636" upper="1647" text="Traurigkeit"/>
+        <ActionObject lower="1649" upper="1669" actor="" name="setQuestionnaireText">
+          <ActionFeature lower="1670" upper="1756" key="question" val="'Wie haben Sie sich in den letzten zwei Wochen einschließlich heute gefühlt?'"/>
+          <ActionFeature lower="1757" upper="1912" key="options" val="'0. Ich bin nicht traurig. 1. Ich bin oft traurig. 2. Ich bin ständig traurig. 3. Ich bin so traurig oder unglücklich, dass ich es nicht aushalte.'"/>
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="1916" upper="1974" language="de" identifier="frage_1_option_0">
+    <SceneTurn lower="1942" upper="1974" speaker="lydia">
+      <SceneUttr lower="1949" upper="1951" punct=".">
+        <SceneWord lower="1949" upper="1950" text="0"/>
+      </SceneUttr>
+      <SceneUttr lower="1952" upper="1974" punct=".">
+        <SceneWord lower="1952" upper="1955" text="Ich"/>
+        <SceneWord lower="1956" upper="1959" text="bin"/>
+        <SceneWord lower="1960" upper="1965" text="nicht"/>
+        <SceneWord lower="1966" upper="1973" text="traurig"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="1976" upper="2032" language="de" identifier="frage_1_option_1">
+    <SceneTurn lower="2002" upper="2032" speaker="lydia">
+      <SceneUttr lower="2009" upper="2011" punct=".">
+        <SceneWord lower="2009" upper="2010" text="1"/>
+      </SceneUttr>
+      <SceneUttr lower="2012" upper="2032" punct=".">
+        <SceneWord lower="2012" upper="2015" text="Ich"/>
+        <SceneWord lower="2016" upper="2019" text="bin"/>
+        <SceneWord lower="2020" upper="2023" text="oft"/>
+        <SceneWord lower="2024" upper="2031" text="traurig"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="2034" upper="2094" language="de" identifier="frage_1_option_2">
+    <SceneTurn lower="2060" upper="2094" speaker="lydia">
+      <SceneUttr lower="2067" upper="2069" punct=".">
+        <SceneWord lower="2067" upper="2068" text="2"/>
+      </SceneUttr>
+      <SceneUttr lower="2070" upper="2094" punct=".">
+        <SceneWord lower="2070" upper="2073" text="Ich"/>
+        <SceneWord lower="2074" upper="2077" text="bin"/>
+        <SceneWord lower="2078" upper="2085" text="ständig"/>
+        <SceneWord lower="2086" upper="2093" text="traurig"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="2096" upper="2196" language="de" identifier="frage_1_option_3">
+    <SceneTurn lower="2122" upper="2196" speaker="lydia">
+      <SceneUttr lower="2129" upper="2131" punct=".">
+        <SceneWord lower="2129" upper="2130" text="3"/>
+      </SceneUttr>
+      <SceneUttr lower="2132" upper="2168" punct=",">
+        <SceneWord lower="2132" upper="2135" text="Ich"/>
+        <SceneWord lower="2136" upper="2139" text="bin"/>
+        <SceneWord lower="2140" upper="2142" text="so"/>
+        <SceneWord lower="2143" upper="2150" text="traurig"/>
+        <SceneWord lower="2151" upper="2155" text="oder"/>
+        <SceneWord lower="2156" upper="2167" text="unglücklich"/>
+      </SceneUttr>
+      <SceneUttr lower="2169" upper="2196" punct=".">
+        <SceneWord lower="2169" upper="2173" text="dass"/>
+        <SceneWord lower="2174" upper="2177" text="ich"/>
+        <SceneWord lower="2178" upper="2180" text="es"/>
+        <SceneWord lower="2181" upper="2186" text="nicht"/>
+        <SceneWord lower="2187" upper="2195" text="aushalte"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="2198" upper="2280" language="de" identifier="frage_acknowledge_0">
+    <SceneTurn lower="2227" upper="2280" speaker="lydia">
+      <SceneUttr lower="2234" upper="2280" punct=".">
+        <SceneWord lower="2234" upper="2236" text="Du"/>
+        <SceneWord lower="2237" upper="2241" text="hast"/>
+        <SceneWord lower="2242" upper="2245" text="die"/>
+        <SceneWord lower="2246" upper="2252" text="option"/>
+        <SceneParam lower="2253" upper="2268" name="antwort_option"/>
+        <SceneWord lower="2269" upper="2279" text="ausgewählt"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="2282" upper="2361" language="de" identifier="frage_acknowledge_1">
+    <SceneTurn lower="2311" upper="2361" speaker="lydia">
+      <SceneUttr lower="2318" upper="2361" punct=".">
+        <SceneWord lower="2318" upper="2321" text="Die"/>
+        <SceneWord lower="2322" upper="2333" text="ausgewählte"/>
+        <SceneWord lower="2334" upper="2340" text="Option"/>
+        <SceneWord lower="2341" upper="2344" text="ist"/>
+        <SceneParam lower="2345" upper="2360" name="antwort_option"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="2363" upper="2417" language="de" identifier="frage_acknowledge_2">
+    <SceneTurn lower="2392" upper="2417" speaker="lydia">
+      <SceneUttr lower="2399" upper="2417" punct=".">
+        <SceneWord lower="2399" upper="2404" text="Deine"/>
+        <SceneWord lower="2405" upper="2412" text="Antwort"/>
+        <SceneWord lower="2413" upper="2416" text="ist"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="2419" upper="2486" language="de" identifier="frage_acknowledge_3">
+    <SceneTurn lower="2448" upper="2486" speaker="lydia">
+      <SceneUttr lower="2455" upper="2486" punct=".">
+        <SceneWord lower="2455" upper="2462" text="Antwort"/>
+        <SceneWord lower="2463" upper="2469" text="Nummer"/>
+        <SceneParam lower="2470" upper="2485" name="antwort_option"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="2488" upper="2561" language="de" identifier="frage_connections_1_1">
+    <SceneTurn lower="2519" upper="2561" speaker="lydia">
+      <SceneUttr lower="2526" upper="2561" punct=".">
+        <SceneWord lower="2526" upper="2529" text="Die"/>
+        <SceneWord lower="2530" upper="2537" text="nächste"/>
+        <SceneWord lower="2538" upper="2543" text="Frage"/>
+        <SceneWord lower="2544" upper="2551" text="bezieht"/>
+        <SceneWord lower="2552" upper="2556" text="sich"/>
+        <SceneWord lower="2557" upper="2560" text="auf"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="2563" upper="2720" language="de" identifier="frage_connections_1_2">
+    <SceneTurn lower="2594" upper="2720" speaker="lydia">
+      <SceneUttr lower="2601" upper="2642" punct=",">
+        <SceneWord lower="2601" upper="2607" text="Welche"/>
+        <SceneWord lower="2608" upper="2611" text="der"/>
+        <SceneWord lower="2612" upper="2620" text="Aussagen"/>
+        <SceneWord lower="2621" upper="2631" text="beschreibt"/>
+        <SceneWord lower="2632" upper="2634" text="am"/>
+        <SceneWord lower="2635" upper="2641" text="besten"/>
+      </SceneUttr>
+      <SceneUttr lower="2643" upper="2683" punct=",">
+        <SceneWord lower="2643" upper="2646" text="wie"/>
+        <SceneWord lower="2647" upper="2650" text="Sie"/>
+        <SceneWord lower="2651" upper="2655" text="sich"/>
+        <SceneWord lower="2656" upper="2658" text="in"/>
+        <SceneWord lower="2659" upper="2662" text="den"/>
+        <SceneWord lower="2663" upper="2670" text="letzten"/>
+        <SceneWord lower="2671" upper="2675" text="zwei"/>
+        <SceneWord lower="2676" upper="2682" text="Wochen"/>
+      </SceneUttr>
+      <SceneUttr lower="2684" upper="2705" punct=",">
+        <SceneWord lower="2684" upper="2698" text="einschließlich"/>
+        <SceneWord lower="2699" upper="2704" text="heute"/>
+      </SceneUttr>
+      <SceneUttr lower="2706" upper="2720" punct="?">
+        <SceneWord lower="2706" upper="2713" text="gefühlt"/>
+        <SceneWord lower="2714" upper="2719" text="haben"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="2722" upper="2795" language="de" identifier="frage_connections_2_1">
+    <SceneTurn lower="2753" upper="2795" speaker="lydia">
+      <SceneUttr lower="2760" upper="2795" punct=".">
+        <SceneWord lower="2760" upper="2766" text="Kommen"/>
+        <SceneWord lower="2767" upper="2770" text="wir"/>
+        <SceneWord lower="2771" upper="2774" text="zur"/>
+        <SceneWord lower="2775" upper="2783" text="nächsten"/>
+        <SceneWord lower="2784" upper="2789" text="Frage"/>
+        <SceneWord lower="2790" upper="2794" text="über"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="2797" upper="2856" language="de" identifier="frage_connections_2_2">
+    <SceneTurn lower="2828" upper="2856" speaker="lydia">
+      <SceneUttr lower="2835" upper="2856" punct="?">
+        <SceneWord lower="2835" upper="2838" text="Was"/>
+        <SceneWord lower="2839" upper="2844" text="passt"/>
+        <SceneWord lower="2845" upper="2847" text="am"/>
+        <SceneWord lower="2848" upper="2855" text="ehesten"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="2858" upper="2926" language="de" identifier="frage_connections_3_1">
+    <SceneTurn lower="2889" upper="2926" speaker="lydia">
+      <SceneUttr lower="2896" upper="2908" punct=".">
+        <SceneWord lower="2896" upper="2902" text="Vielen"/>
+        <SceneWord lower="2903" upper="2907" text="Dank"/>
+      </SceneUttr>
+      <SceneUttr lower="2909" upper="2926" punct=".">
+        <SceneWord lower="2909" upper="2914" text="Jetzt"/>
+        <SceneWord lower="2915" upper="2919" text="geht"/>
+        <SceneWord lower="2920" upper="2922" text="es"/>
+        <SceneWord lower="2923" upper="2925" text="um"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="2928" upper="2966" language="de" identifier="frage_nachfrage">
+    <SceneTurn lower="2953" upper="2966" speaker="lydia">
+      <SceneUttr lower="2960" upper="2966" punct="?">
+        <SceneWord lower="2960" upper="2965" text="Warum"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="2968" upper="3008" language="de" identifier="frage_nachfrage_ok">
+    <SceneTurn lower="2996" upper="3008" speaker="lydia">
+      <SceneUttr lower="3003" upper="3008" punct=".">
+        <SceneWord lower="3003" upper="3007" text="Okay"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="3010" upper="3048" language="de" identifier="weiderholen">
+    <SceneTurn lower="3031" upper="3048" speaker="lydia">
+      <SceneUttr lower="3038" upper="3048" punct="?">
+        <SceneWord lower="3038" upper="3041" text="Wie"/>
+        <SceneWord lower="3042" upper="3047" text="Bitte"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="3050" upper="3086" language="de" identifier="frage_2">
+    <SceneTurn lower="3067" upper="3086" speaker="lydia">
+      <SceneUttr lower="3074" upper="3086" punct=".">
+        <SceneWord lower="3074" upper="3085" text="Pessimismus"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="3088" upper="3486" language="de" identifier="gui_frage_2">
+    <SceneTurn lower="3109" upper="3486" speaker="gui">
+      <SceneUttr lower="3114" upper="3486" punct=".">
+        <SceneWord lower="3114" upper="3125" text="Pessimismus"/>
+        <ActionObject lower="3127" upper="3147" actor="" name="setQuestionnaireText">
+          <ActionFeature lower="3148" upper="3234" key="question" val="'Wie haben Sie sich in den letzten zwei Wochen einschließlich heute gefühlt?'"/>
+          <ActionFeature lower="3235" upper="3484" key="options" val="'0. Ich sehe nicht mutlos in die Zukunft. 1. Ich sehe mutloser in die Zukunft als sonst. 2. Ich bin mutlos und erwarte nicht, dass meine Situation besser wird. 3. Ich glaube, dass meine Zukunft hoffnungslos ist und nur noch schlechter wird.'"/>
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="3488" upper="3561" language="de" identifier="frage_2_option_0">
+    <SceneTurn lower="3514" upper="3561" speaker="lydia">
+      <SceneUttr lower="3521" upper="3523" punct=".">
+        <SceneWord lower="3521" upper="3522" text="0"/>
+      </SceneUttr>
+      <SceneUttr lower="3524" upper="3561" punct=".">
+        <SceneWord lower="3524" upper="3527" text="Ich"/>
+        <SceneWord lower="3528" upper="3532" text="sehe"/>
+        <SceneWord lower="3533" upper="3538" text="nicht"/>
+        <SceneWord lower="3539" upper="3545" text="mutlos"/>
+        <SceneWord lower="3546" upper="3548" text="in"/>
+        <SceneWord lower="3549" upper="3552" text="die"/>
+        <SceneWord lower="3553" upper="3560" text="Zukunft"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="3563" upper="3642" language="de" identifier="frage_2_option_1">
+    <SceneTurn lower="3589" upper="3642" speaker="lydia">
+      <SceneUttr lower="3596" upper="3598" punct=".">
+        <SceneWord lower="3596" upper="3597" text="1"/>
+      </SceneUttr>
+      <SceneUttr lower="3599" upper="3642" punct=".">
+        <SceneWord lower="3599" upper="3602" text="Ich"/>
+        <SceneWord lower="3603" upper="3607" text="sehe"/>
+        <SceneWord lower="3608" upper="3616" text="mutloser"/>
+        <SceneWord lower="3617" upper="3619" text="in"/>
+        <SceneWord lower="3620" upper="3623" text="die"/>
+        <SceneWord lower="3624" upper="3631" text="Zukunft"/>
+        <SceneWord lower="3632" upper="3635" text="als"/>
+        <SceneWord lower="3636" upper="3641" text="sonst"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="3644" upper="3747" language="de" identifier="frage_2_option_2">
+    <SceneTurn lower="3670" upper="3747" speaker="lydia">
+      <SceneUttr lower="3677" upper="3679" punct=".">
+        <SceneWord lower="3677" upper="3678" text="2"/>
+      </SceneUttr>
+      <SceneUttr lower="3680" upper="3713" punct=",">
+        <SceneWord lower="3680" upper="3683" text="Ich"/>
+        <SceneWord lower="3684" upper="3687" text="bin"/>
+        <SceneWord lower="3688" upper="3694" text="mutlos"/>
+        <SceneWord lower="3695" upper="3698" text="und"/>
+        <SceneWord lower="3699" upper="3706" text="erwarte"/>
+        <SceneWord lower="3707" upper="3712" text="nicht"/>
+      </SceneUttr>
+      <SceneUttr lower="3714" upper="3747" punct=".">
+        <SceneWord lower="3714" upper="3718" text="dass"/>
+        <SceneWord lower="3719" upper="3724" text="meine"/>
+        <SceneWord lower="3725" upper="3734" text="Situation"/>
+        <SceneWord lower="3735" upper="3741" text="besser"/>
+        <SceneWord lower="3742" upper="3746" text="wird"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="3749" upper="3862" language="de" identifier="frage_2_option_3">
+    <SceneTurn lower="3775" upper="3862" speaker="lydia">
+      <SceneUttr lower="3782" upper="3784" punct=".">
+        <SceneWord lower="3782" upper="3783" text="3"/>
+      </SceneUttr>
+      <SceneUttr lower="3785" upper="3796" punct=",">
+        <SceneWord lower="3785" upper="3788" text="Ich"/>
+        <SceneWord lower="3789" upper="3795" text="glaube"/>
+      </SceneUttr>
+      <SceneUttr lower="3797" upper="3862" punct=".">
+        <SceneWord lower="3797" upper="3801" text="dass"/>
+        <SceneWord lower="3802" upper="3807" text="meine"/>
+        <SceneWord lower="3808" upper="3815" text="Zukunft"/>
+        <SceneWord lower="3816" upper="3828" text="hoffnungslos"/>
+        <SceneWord lower="3829" upper="3832" text="ist"/>
+        <SceneWord lower="3833" upper="3836" text="und"/>
+        <SceneWord lower="3837" upper="3840" text="nur"/>
+        <SceneWord lower="3841" upper="3845" text="noch"/>
+        <SceneWord lower="3846" upper="3856" text="schlechter"/>
+        <SceneWord lower="3857" upper="3861" text="wird"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="3864" upper="3905" language="de" identifier="frage_3">
+    <SceneTurn lower="3881" upper="3905" speaker="lydia">
+      <SceneUttr lower="3888" upper="3905" punct=".">
+        <SceneWord lower="3888" upper="3904" text="Versagensgefühle"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="3907" upper="4272" language="de" identifier="gui_frage_3">
+    <SceneTurn lower="3928" upper="4272" speaker="gui">
+      <SceneUttr lower="3933" upper="4272" punct=".">
+        <SceneWord lower="3933" upper="3949" text="Versagensgefühle"/>
+        <ActionObject lower="3951" upper="3971" actor="" name="setQuestionnaireText">
+          <ActionFeature lower="3972" upper="4058" key="question" val="'Wie haben Sie sich in den letzten zwei Wochen einschließlich heute gefühlt?'"/>
+          <ActionFeature lower="4059" upper="4270" key="options" val="'0. Ich fühle mich nicht als Versager. 1. Ich habe häufiger Versagensgefühle. 2. Wenn ich zurückblicke, sehe ich eine Menge Fehlschläge. 3. Ich habe das Gefühl, als Mensch ein völliger Versager zu sein.'"/>
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="4274" upper="4344" language="de" identifier="frage_3_option_0">
+    <SceneTurn lower="4300" upper="4344" speaker="lydia">
+      <SceneUttr lower="4307" upper="4309" punct=".">
+        <SceneWord lower="4307" upper="4308" text="0"/>
+      </SceneUttr>
+      <SceneUttr lower="4310" upper="4344" punct=".">
+        <SceneWord lower="4310" upper="4313" text="Ich"/>
+        <SceneWord lower="4314" upper="4319" text="fühle"/>
+        <SceneWord lower="4320" upper="4324" text="mich"/>
+        <SceneWord lower="4325" upper="4330" text="nicht"/>
+        <SceneWord lower="4331" upper="4334" text="als"/>
+        <SceneWord lower="4335" upper="4343" text="Versager"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="4346" upper="4417" language="de" identifier="frage_3_option_1">
+    <SceneTurn lower="4372" upper="4417" speaker="lydia">
+      <SceneUttr lower="4379" upper="4381" punct=".">
+        <SceneWord lower="4379" upper="4380" text="1"/>
+      </SceneUttr>
+      <SceneUttr lower="4382" upper="4417" punct=".">
+        <SceneWord lower="4382" upper="4385" text="Ich"/>
+        <SceneWord lower="4386" upper="4390" text="habe"/>
+        <SceneWord lower="4391" upper="4399" text="häufiger"/>
+        <SceneWord lower="4400" upper="4416" text="Versagensgefühle"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="4419" upper="4510" language="de" identifier="frage_3_option_2">
+    <SceneTurn lower="4445" upper="4510" speaker="lydia">
+      <SceneUttr lower="4452" upper="4454" punct=".">
+        <SceneWord lower="4452" upper="4453" text="2"/>
+      </SceneUttr>
+      <SceneUttr lower="4455" upper="4477" punct=",">
+        <SceneWord lower="4455" upper="4459" text="Wenn"/>
+        <SceneWord lower="4460" upper="4463" text="ich"/>
+        <SceneWord lower="4464" upper="4476" text="zurückblicke"/>
+      </SceneUttr>
+      <SceneUttr lower="4478" upper="4510" punct=".">
+        <SceneWord lower="4478" upper="4482" text="sehe"/>
+        <SceneWord lower="4483" upper="4486" text="ich"/>
+        <SceneWord lower="4487" upper="4491" text="eine"/>
+        <SceneWord lower="4492" upper="4497" text="Menge"/>
+        <SceneWord lower="4498" upper="4509" text="Fehlschläge"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="4512" upper="4610" language="de" identifier="frage_3_option_3">
+    <SceneTurn lower="4538" upper="4610" speaker="lydia">
+      <SceneUttr lower="4545" upper="4547" punct=".">
+        <SceneWord lower="4545" upper="4546" text="3"/>
+      </SceneUttr>
+      <SceneUttr lower="4548" upper="4568" punct=",">
+        <SceneWord lower="4548" upper="4551" text="Ich"/>
+        <SceneWord lower="4552" upper="4556" text="habe"/>
+        <SceneWord lower="4557" upper="4560" text="das"/>
+        <SceneWord lower="4561" upper="4567" text="Gefühl"/>
+      </SceneUttr>
+      <SceneUttr lower="4569" upper="4610" punct=".">
+        <SceneWord lower="4569" upper="4572" text="als"/>
+        <SceneWord lower="4573" upper="4579" text="Mensch"/>
+        <SceneWord lower="4580" upper="4583" text="ein"/>
+        <SceneWord lower="4584" upper="4592" text="völliger"/>
+        <SceneWord lower="4593" upper="4601" text="Versager"/>
+        <SceneWord lower="4602" upper="4604" text="zu"/>
+        <SceneWord lower="4605" upper="4609" text="sein"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="4612" upper="4655" language="de" identifier="frage_4">
+    <SceneTurn lower="4629" upper="4655" speaker="lydia">
+      <SceneUttr lower="4636" upper="4655" punct=".">
+        <SceneWord lower="4636" upper="4643" text="Verlust"/>
+        <SceneWord lower="4644" upper="4647" text="von"/>
+        <SceneWord lower="4648" upper="4654" text="Freude"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="4657" upper="5093" language="de" identifier="gui_frage_4">
+    <SceneTurn lower="4678" upper="5093" speaker="gui">
+      <SceneUttr lower="4683" upper="5093" punct=".">
+        <SceneWord lower="4683" upper="4690" text="Verlust"/>
+        <SceneWord lower="4691" upper="4694" text="von"/>
+        <SceneWord lower="4695" upper="4701" text="Freude"/>
+        <ActionObject lower="4703" upper="4723" actor="" name="setQuestionnaireText">
+          <ActionFeature lower="4724" upper="4810" key="question" val="'Wie haben Sie sich in den letzten zwei Wochen einschließlich heute gefühlt?'"/>
+          <ActionFeature lower="4811" upper="5091" key="options" val="'0. Ich kann die Dinge genauso gut genießen wie früher. 1. Ich kann die Dinge nicht mehr so genießen wie früher. 2. Dinge die mir früher Freude gemacht haben kann ich kaum mehr genießen. 3. Dinge die mir früher Freude gemacht haben kann ich überhaupt nicht mehr genießen.'"/>
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="5095" upper="5182" language="de" identifier="frage_4_option_0">
+    <SceneTurn lower="5121" upper="5182" speaker="lydia">
+      <SceneUttr lower="5128" upper="5130" punct=".">
+        <SceneWord lower="5128" upper="5129" text="0"/>
+      </SceneUttr>
+      <SceneUttr lower="5131" upper="5182" punct=".">
+        <SceneWord lower="5131" upper="5134" text="Ich"/>
+        <SceneWord lower="5135" upper="5139" text="kann"/>
+        <SceneWord lower="5140" upper="5143" text="die"/>
+        <SceneWord lower="5144" upper="5149" text="Dinge"/>
+        <SceneWord lower="5150" upper="5157" text="genauso"/>
+        <SceneWord lower="5158" upper="5161" text="gut"/>
+        <SceneWord lower="5162" upper="5170" text="genießen"/>
+        <SceneWord lower="5171" upper="5174" text="wie"/>
+        <SceneWord lower="5175" upper="5181" text="früher"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="5184" upper="5273" language="de" identifier="frage_4_option_1">
+    <SceneTurn lower="5210" upper="5273" speaker="lydia">
+      <SceneUttr lower="5217" upper="5219" punct=".">
+        <SceneWord lower="5217" upper="5218" text="1"/>
+      </SceneUttr>
+      <SceneUttr lower="5220" upper="5273" punct=".">
+        <SceneWord lower="5220" upper="5223" text="Ich"/>
+        <SceneWord lower="5224" upper="5228" text="kann"/>
+        <SceneWord lower="5229" upper="5232" text="die"/>
+        <SceneWord lower="5233" upper="5238" text="Dinge"/>
+        <SceneWord lower="5239" upper="5244" text="nicht"/>
+        <SceneWord lower="5245" upper="5249" text="mehr"/>
+        <SceneWord lower="5250" upper="5252" text="so"/>
+        <SceneWord lower="5253" upper="5261" text="genießen"/>
+        <SceneWord lower="5262" upper="5265" text="wie"/>
+        <SceneWord lower="5266" upper="5272" text="früher"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="5275" upper="5383" language="de" identifier="frage_4_option_2">
+    <SceneTurn lower="5301" upper="5383" speaker="lydia">
+      <SceneUttr lower="5308" upper="5310" punct=".">
+        <SceneWord lower="5308" upper="5309" text="2"/>
+      </SceneUttr>
+      <SceneUttr lower="5311" upper="5317" punct=",">
+        <SceneWord lower="5311" upper="5316" text="Dinge"/>
+      </SceneUttr>
+      <SceneUttr lower="5318" upper="5354" punct=",">
+        <SceneWord lower="5318" upper="5321" text="die"/>
+        <SceneWord lower="5322" upper="5325" text="mir"/>
+        <SceneWord lower="5326" upper="5332" text="früher"/>
+        <SceneWord lower="5333" upper="5339" text="Freude"/>
+        <SceneWord lower="5340" upper="5347" text="gemacht"/>
+        <SceneWord lower="5348" upper="5353" text="haben"/>
+      </SceneUttr>
+      <SceneUttr lower="5355" upper="5383" punct=".">
+        <SceneWord lower="5355" upper="5359" text="kann"/>
+        <SceneWord lower="5360" upper="5363" text="ich"/>
+        <SceneWord lower="5364" upper="5368" text="kaum"/>
+        <SceneWord lower="5369" upper="5373" text="mehr"/>
+        <SceneWord lower="5374" upper="5382" text="genießen"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="5385" upper="5504" language="de" identifier="frage_4_option_3">
+    <SceneTurn lower="5411" upper="5504" speaker="lydia">
+      <SceneUttr lower="5418" upper="5420" punct=".">
+        <SceneWord lower="5418" upper="5419" text="3"/>
+      </SceneUttr>
+      <SceneUttr lower="5421" upper="5427" punct=",">
+        <SceneWord lower="5421" upper="5426" text="Dinge"/>
+      </SceneUttr>
+      <SceneUttr lower="5428" upper="5464" punct=",">
+        <SceneWord lower="5428" upper="5431" text="die"/>
+        <SceneWord lower="5432" upper="5435" text="mir"/>
+        <SceneWord lower="5436" upper="5442" text="früher"/>
+        <SceneWord lower="5443" upper="5449" text="Freude"/>
+        <SceneWord lower="5450" upper="5457" text="gemacht"/>
+        <SceneWord lower="5458" upper="5463" text="haben"/>
+      </SceneUttr>
+      <SceneUttr lower="5465" upper="5504" punct=".">
+        <SceneWord lower="5465" upper="5469" text="kann"/>
+        <SceneWord lower="5470" upper="5473" text="ich"/>
+        <SceneWord lower="5474" upper="5483" text="überhaupt"/>
+        <SceneWord lower="5484" upper="5489" text="nicht"/>
+        <SceneWord lower="5490" upper="5494" text="mehr"/>
+        <SceneWord lower="5495" upper="5503" text="genießen"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="5506" upper="5544" language="de" identifier="frage_5">
+    <SceneTurn lower="5523" upper="5544" speaker="lydia">
+      <SceneUttr lower="5530" upper="5544" punct=".">
+        <SceneWord lower="5530" upper="5543" text="Schuldgefühle"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="5546" upper="5913" language="de" identifier="gui_frage_5">
+    <SceneTurn lower="5567" upper="5913" speaker="gui">
+      <SceneUttr lower="5572" upper="5913" punct=".">
+        <SceneWord lower="5572" upper="5585" text="Schuldgefühle"/>
+        <ActionObject lower="5587" upper="5607" actor="" name="setQuestionnaireText">
+          <ActionFeature lower="5608" upper="5694" key="question" val="'Wie haben Sie sich in den letzten zwei Wochen einschließlich heute gefühlt?'"/>
+          <ActionFeature lower="5695" upper="5911" key="options" val="'0. Ich habe keine besonderen Schuldgefühle. 1. Ich habe oft Schuldgefühle wegen Dingen die ich getan habe oder hätte tun sollen. 2. Ich habe die meiste Zeit Schuldgefühle. 3. Ich habe ständig Schuldgefühle.'"/>
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="5915" upper="5991" language="de" identifier="frage_5_option_0">
+    <SceneTurn lower="5941" upper="5991" speaker="lydia">
+      <SceneUttr lower="5948" upper="5950" punct=".">
+        <SceneWord lower="5948" upper="5949" text="0"/>
+      </SceneUttr>
+      <SceneUttr lower="5951" upper="5991" punct=".">
+        <SceneWord lower="5951" upper="5954" text="Ich"/>
+        <SceneWord lower="5955" upper="5959" text="habe"/>
+        <SceneWord lower="5960" upper="5965" text="keine"/>
+        <SceneWord lower="5966" upper="5976" text="besonderen"/>
+        <SceneWord lower="5977" upper="5990" text="Schuldgefühle"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="5993" upper="6111" language="de" identifier="frage_5_option_1">
+    <SceneTurn lower="6019" upper="6111" speaker="lydia">
+      <SceneUttr lower="6026" upper="6028" punct=".">
+        <SceneWord lower="6026" upper="6027" text="1"/>
+      </SceneUttr>
+      <SceneUttr lower="6029" upper="6069" punct=",">
+        <SceneWord lower="6029" upper="6032" text="Ich"/>
+        <SceneWord lower="6033" upper="6037" text="habe"/>
+        <SceneWord lower="6038" upper="6041" text="oft"/>
+        <SceneWord lower="6042" upper="6055" text="Schuldgefühle"/>
+        <SceneWord lower="6056" upper="6061" text="wegen"/>
+        <SceneWord lower="6062" upper="6068" text="Dingen"/>
+      </SceneUttr>
+      <SceneUttr lower="6070" upper="6111" punct=".">
+        <SceneWord lower="6070" upper="6073" text="die"/>
+        <SceneWord lower="6074" upper="6077" text="ich"/>
+        <SceneWord lower="6078" upper="6083" text="getan"/>
+        <SceneWord lower="6084" upper="6088" text="habe"/>
+        <SceneWord lower="6089" upper="6093" text="oder"/>
+        <SceneWord lower="6094" upper="6099" text="hätte"/>
+        <SceneWord lower="6100" upper="6103" text="tun"/>
+        <SceneWord lower="6104" upper="6110" text="sollen"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="6113" upper="6188" language="de" identifier="frage_5_option_2">
+    <SceneTurn lower="6139" upper="6188" speaker="lydia">
+      <SceneUttr lower="6146" upper="6148" punct=".">
+        <SceneWord lower="6146" upper="6147" text="2"/>
+      </SceneUttr>
+      <SceneUttr lower="6149" upper="6188" punct=".">
+        <SceneWord lower="6149" upper="6152" text="Ich"/>
+        <SceneWord lower="6153" upper="6157" text="habe"/>
+        <SceneWord lower="6158" upper="6161" text="die"/>
+        <SceneWord lower="6162" upper="6168" text="meiste"/>
+        <SceneWord lower="6169" upper="6173" text="Zeit"/>
+        <SceneWord lower="6174" upper="6187" text="Schuldgefühle"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="6190" upper="6257" language="de" identifier="frage_5_option_3">
+    <SceneTurn lower="6216" upper="6257" speaker="lydia">
+      <SceneUttr lower="6223" upper="6225" punct=".">
+        <SceneWord lower="6223" upper="6224" text="3"/>
+      </SceneUttr>
+      <SceneUttr lower="6226" upper="6257" punct=".">
+        <SceneWord lower="6226" upper="6229" text="Ich"/>
+        <SceneWord lower="6230" upper="6234" text="habe"/>
+        <SceneWord lower="6235" upper="6242" text="ständig"/>
+        <SceneWord lower="6243" upper="6256" text="Schuldgefühle"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="6259" upper="6302" language="de" identifier="frage_6">
+    <SceneTurn lower="6276" upper="6302" speaker="lydia">
+      <SceneUttr lower="6283" upper="6302" punct=".">
+        <SceneWord lower="6283" upper="6301" text="Bestrafungsgefühle"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="6304" upper="6656" language="de" identifier="gui_frage_6">
+    <SceneTurn lower="6325" upper="6656" speaker="gui">
+      <SceneUttr lower="6330" upper="6656" punct=".">
+        <SceneWord lower="6330" upper="6348" text="Bestrafungsgefühle"/>
+        <ActionObject lower="6350" upper="6370" actor="" name="setQuestionnaireText">
+          <ActionFeature lower="6371" upper="6457" key="question" val="'Wie haben Sie sich in den letzten zwei Wochen einschließlich heute gefühlt?'"/>
+          <ActionFeature lower="6458" upper="6654" key="options" val="'0. Ich habe nicht das Gefühl für etwas bestraft zu sein. 1. Ich habe das Gefühl vielleicht bestraft zu werden. 2. Ich erwarte bestraft zu werden. 3. Ich habe das Gefühl bestraft zu sein.'"/>
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="6658" upper="6748" language="de" identifier="frage_6_option_0">
+    <SceneTurn lower="6684" upper="6748" speaker="lydia">
+      <SceneUttr lower="6691" upper="6693" punct=".">
+        <SceneWord lower="6691" upper="6692" text="0"/>
+      </SceneUttr>
+      <SceneUttr lower="6694" upper="6720" punct=",">
+        <SceneWord lower="6694" upper="6697" text="Ich"/>
+        <SceneWord lower="6698" upper="6702" text="habe"/>
+        <SceneWord lower="6703" upper="6708" text="nicht"/>
+        <SceneWord lower="6709" upper="6712" text="das"/>
+        <SceneWord lower="6713" upper="6719" text="Gefühl"/>
+      </SceneUttr>
+      <SceneUttr lower="6721" upper="6748" punct=".">
+        <SceneWord lower="6721" upper="6724" text="für"/>
+        <SceneWord lower="6725" upper="6730" text="etwas"/>
+        <SceneWord lower="6731" upper="6739" text="bestraft"/>
+        <SceneWord lower="6740" upper="6742" text="zu"/>
+        <SceneWord lower="6743" upper="6747" text="sein"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="6750" upper="6837" language="de" identifier="frage_6_option_1">
+    <SceneTurn lower="6776" upper="6837" speaker="lydia">
+      <SceneUttr lower="6783" upper="6785" punct=".">
+        <SceneWord lower="6783" upper="6784" text="1"/>
+      </SceneUttr>
+      <SceneUttr lower="6786" upper="6806" punct=",">
+        <SceneWord lower="6786" upper="6789" text="Ich"/>
+        <SceneWord lower="6790" upper="6794" text="habe"/>
+        <SceneWord lower="6795" upper="6798" text="das"/>
+        <SceneWord lower="6799" upper="6805" text="Gefühl"/>
+      </SceneUttr>
+      <SceneUttr lower="6807" upper="6837" punct=".">
+        <SceneWord lower="6807" upper="6817" text="vielleicht"/>
+        <SceneWord lower="6818" upper="6826" text="bestraft"/>
+        <SceneWord lower="6827" upper="6829" text="zu"/>
+        <SceneWord lower="6830" upper="6836" text="werden"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="6839" upper="6907" language="de" identifier="frage_6_option_2">
+    <SceneTurn lower="6865" upper="6907" speaker="lydia">
+      <SceneUttr lower="6872" upper="6874" punct=".">
+        <SceneWord lower="6872" upper="6873" text="2"/>
+      </SceneUttr>
+      <SceneUttr lower="6875" upper="6887" punct=",">
+        <SceneWord lower="6875" upper="6878" text="Ich"/>
+        <SceneWord lower="6879" upper="6886" text="erwarte"/>
+      </SceneUttr>
+      <SceneUttr lower="6888" upper="6907" punct=".">
+        <SceneWord lower="6888" upper="6896" text="bestraft"/>
+        <SceneWord lower="6897" upper="6899" text="zu"/>
+        <SceneWord lower="6900" upper="6906" text="werden"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="6909" upper="6983" language="de" identifier="frage_6_option_3">
+    <SceneTurn lower="6935" upper="6983" speaker="lydia">
+      <SceneUttr lower="6942" upper="6944" punct=".">
+        <SceneWord lower="6942" upper="6943" text="3"/>
+      </SceneUttr>
+      <SceneUttr lower="6945" upper="6965" punct=",">
+        <SceneWord lower="6945" upper="6948" text="Ich"/>
+        <SceneWord lower="6949" upper="6953" text="habe"/>
+        <SceneWord lower="6954" upper="6957" text="das"/>
+        <SceneWord lower="6958" upper="6964" text="Gefühl"/>
+      </SceneUttr>
+      <SceneUttr lower="6966" upper="6983" punct=".">
+        <SceneWord lower="6966" upper="6974" text="bestraft"/>
+        <SceneWord lower="6975" upper="6977" text="zu"/>
+        <SceneWord lower="6978" upper="6982" text="sein"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="6985" upper="7025" language="de" identifier="frage_7">
+    <SceneTurn lower="7002" upper="7025" speaker="lydia">
+      <SceneUttr lower="7009" upper="7025" punct=".">
+        <SceneWord lower="7009" upper="7024" text="Selbstablehnung"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="7027" upper="7334" language="de" identifier="gui_frage_7">
+    <SceneTurn lower="7048" upper="7334" speaker="gui">
+      <SceneUttr lower="7053" upper="7334" punct=".">
+        <SceneWord lower="7053" upper="7068" text="Selbstablehnung"/>
+        <ActionObject lower="7070" upper="7090" actor="" name="setQuestionnaireText">
+          <ActionFeature lower="7091" upper="7177" key="question" val="'Wie haben Sie sich in den letzten zwei Wochen einschließlich heute gefühlt?'"/>
+          <ActionFeature lower="7178" upper="7332" key="options" val="'0. Ich halte von mir genauso viel wie immer. 1. Ich habe Vertrauen in mich verloren. 2. Ich bin von mir enttäuscht. 3. Ich lehne mich völlig ab.'"/>
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="7336" upper="7413" language="de" identifier="frage_7_option_0">
+    <SceneTurn lower="7362" upper="7413" speaker="lydia">
+      <SceneUttr lower="7369" upper="7371" punct=".">
+        <SceneWord lower="7369" upper="7370" text="0"/>
+      </SceneUttr>
+      <SceneUttr lower="7372" upper="7413" punct=".">
+        <SceneWord lower="7372" upper="7375" text="Ich"/>
+        <SceneWord lower="7376" upper="7381" text="halte"/>
+        <SceneWord lower="7382" upper="7385" text="von"/>
+        <SceneWord lower="7386" upper="7389" text="mir"/>
+        <SceneWord lower="7390" upper="7397" text="genauso"/>
+        <SceneWord lower="7398" upper="7402" text="viel"/>
+        <SceneWord lower="7403" upper="7406" text="wie"/>
+        <SceneWord lower="7407" upper="7412" text="immer"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="7415" upper="7487" language="de" identifier="frage_7_option_1">
+    <SceneTurn lower="7441" upper="7487" speaker="lydia">
+      <SceneUttr lower="7448" upper="7450" punct=".">
+        <SceneWord lower="7448" upper="7449" text="1"/>
+      </SceneUttr>
+      <SceneUttr lower="7451" upper="7487" punct=".">
+        <SceneWord lower="7451" upper="7454" text="Ich"/>
+        <SceneWord lower="7455" upper="7459" text="habe"/>
+        <SceneWord lower="7460" upper="7469" text="Vertrauen"/>
+        <SceneWord lower="7470" upper="7472" text="in"/>
+        <SceneWord lower="7473" upper="7477" text="mich"/>
+        <SceneWord lower="7478" upper="7486" text="verloren"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="7489" upper="7552" language="de" identifier="frage_7_option_2">
+    <SceneTurn lower="7515" upper="7552" speaker="lydia">
+      <SceneUttr lower="7522" upper="7524" punct=".">
+        <SceneWord lower="7522" upper="7523" text="2"/>
+      </SceneUttr>
+      <SceneUttr lower="7525" upper="7552" punct=".">
+        <SceneWord lower="7525" upper="7528" text="Ich"/>
+        <SceneWord lower="7529" upper="7532" text="bin"/>
+        <SceneWord lower="7533" upper="7536" text="von"/>
+        <SceneWord lower="7537" upper="7540" text="mir"/>
+        <SceneWord lower="7541" upper="7551" text="enttäuscht"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="7554" upper="7615" language="de" identifier="frage_7_option_3">
+    <SceneTurn lower="7580" upper="7615" speaker="lydia">
+      <SceneUttr lower="7587" upper="7589" punct=".">
+        <SceneWord lower="7587" upper="7588" text="3"/>
+      </SceneUttr>
+      <SceneUttr lower="7590" upper="7615" punct=".">
+        <SceneWord lower="7590" upper="7593" text="Ich"/>
+        <SceneWord lower="7594" upper="7599" text="lehne"/>
+        <SceneWord lower="7600" upper="7604" text="mich"/>
+        <SceneWord lower="7605" upper="7611" text="völlig"/>
+        <SceneWord lower="7612" upper="7614" text="ab"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="7617" upper="7656" language="de" identifier="frage_8">
+    <SceneTurn lower="7634" upper="7656" speaker="lydia">
+      <SceneUttr lower="7641" upper="7656" punct=".">
+        <SceneWord lower="7641" upper="7655" text="Selbstvorwürfe"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="7658" upper="8029" language="de" identifier="gui_frage_8">
+    <SceneTurn lower="7679" upper="8029" speaker="gui">
+      <SceneUttr lower="7684" upper="8029" punct=".">
+        <SceneWord lower="7684" upper="7698" text="Selbstvorwürfe"/>
+        <ActionObject lower="7700" upper="7720" actor="" name="setQuestionnaireText">
+          <ActionFeature lower="7721" upper="7807" key="question" val="'Wie haben Sie sich in den letzten zwei Wochen einschließlich heute gefühlt?'"/>
+          <ActionFeature lower="7808" upper="8027" key="options" val="'0. Ich kritisiere oder tadele mich nicht mehr als sonst. 1. Ich bin mir gegenüber kritischer als sonst. 2. Ich kritisiere mich für all meine Mängel. 3. Ich gebe mir die Schuld für alles Schlimme, was passiert.'"/>
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="8031" upper="8120" language="de" identifier="frage_8_option_0">
+    <SceneTurn lower="8057" upper="8120" speaker="lydia">
+      <SceneUttr lower="8064" upper="8066" punct=".">
+        <SceneWord lower="8064" upper="8065" text="0"/>
+      </SceneUttr>
+      <SceneUttr lower="8067" upper="8120" punct=".">
+        <SceneWord lower="8067" upper="8070" text="Ich"/>
+        <SceneWord lower="8071" upper="8081" text="kritisiere"/>
+        <SceneWord lower="8082" upper="8086" text="oder"/>
+        <SceneWord lower="8087" upper="8093" text="tadele"/>
+        <SceneWord lower="8094" upper="8098" text="mich"/>
+        <SceneWord lower="8099" upper="8104" text="nicht"/>
+        <SceneWord lower="8105" upper="8109" text="mehr"/>
+        <SceneWord lower="8110" upper="8113" text="als"/>
+        <SceneWord lower="8114" upper="8119" text="sonst"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="8122" upper="8201" language="de" identifier="frage_8_option_1">
+    <SceneTurn lower="8148" upper="8201" speaker="lydia">
+      <SceneUttr lower="8155" upper="8157" punct=".">
+        <SceneWord lower="8155" upper="8156" text="1"/>
+      </SceneUttr>
+      <SceneUttr lower="8158" upper="8201" punct=".">
+        <SceneWord lower="8158" upper="8161" text="Ich"/>
+        <SceneWord lower="8162" upper="8165" text="bin"/>
+        <SceneWord lower="8166" upper="8169" text="mir"/>
+        <SceneWord lower="8170" upper="8179" text="gegenüber"/>
+        <SceneWord lower="8180" upper="8190" text="kritischer"/>
+        <SceneWord lower="8191" upper="8194" text="als"/>
+        <SceneWord lower="8195" upper="8200" text="sonst"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="8203" upper="8280" language="de" identifier="frage_8_option_2">
+    <SceneTurn lower="8229" upper="8280" speaker="lydia">
+      <SceneUttr lower="8236" upper="8238" punct=".">
+        <SceneWord lower="8236" upper="8237" text="2"/>
+      </SceneUttr>
+      <SceneUttr lower="8239" upper="8280" punct=".">
+        <SceneWord lower="8239" upper="8242" text="Ich"/>
+        <SceneWord lower="8243" upper="8253" text="kritisiere"/>
+        <SceneWord lower="8254" upper="8258" text="mich"/>
+        <SceneWord lower="8259" upper="8262" text="für"/>
+        <SceneWord lower="8263" upper="8266" text="all"/>
+        <SceneWord lower="8267" upper="8272" text="meine"/>
+        <SceneWord lower="8273" upper="8279" text="Mängel"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="8282" upper="8375" language="de" identifier="frage_8_option_3">
+    <SceneTurn lower="8308" upper="8375" speaker="lydia">
+      <SceneUttr lower="8315" upper="8317" punct=".">
+        <SceneWord lower="8315" upper="8316" text="3"/>
+      </SceneUttr>
+      <SceneUttr lower="8318" upper="8361" punct=",">
+        <SceneWord lower="8318" upper="8321" text="Ich"/>
+        <SceneWord lower="8322" upper="8326" text="gebe"/>
+        <SceneWord lower="8327" upper="8330" text="mir"/>
+        <SceneWord lower="8331" upper="8334" text="die"/>
+        <SceneWord lower="8335" upper="8341" text="Schuld"/>
+        <SceneWord lower="8342" upper="8345" text="für"/>
+        <SceneWord lower="8346" upper="8351" text="alles"/>
+        <SceneWord lower="8352" upper="8360" text="Schlimme"/>
+      </SceneUttr>
+      <SceneUttr lower="8362" upper="8375" punct=".">
+        <SceneWord lower="8362" upper="8365" text="was"/>
+        <SceneWord lower="8366" upper="8374" text="passiert"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="8377" upper="8518" language="de" identifier="frage_8_enquire">
+    <SceneTurn lower="8402" upper="8518" speaker="lydia">
+      <SceneUttr lower="8409" upper="8433" punct=",">
+        <SceneWord lower="8409" upper="8412" text="Ich"/>
+        <SceneWord lower="8413" upper="8419" text="möchte"/>
+        <SceneWord lower="8420" upper="8425" text="gerne"/>
+        <SceneWord lower="8426" upper="8432" text="wissen"/>
+      </SceneUttr>
+      <SceneUttr lower="8434" upper="8458" punct=".">
+        <SceneWord lower="8434" upper="8439" text="warum"/>
+        <SceneWord lower="8440" upper="8442" text="du"/>
+        <SceneWord lower="8443" upper="8447" text="dich"/>
+        <SceneWord lower="8448" upper="8450" text="so"/>
+        <SceneWord lower="8451" upper="8457" text="fühlst"/>
+      </SceneUttr>
+      <SceneUttr lower="8459" upper="8518" punct="?">
+        <SceneWord lower="8459" upper="8465" text="Welche"/>
+        <SceneWord lower="8466" upper="8474" text="Gedanken"/>
+        <SceneWord lower="8475" upper="8479" text="oder"/>
+        <SceneWord lower="8480" upper="8487" text="Gefühle"/>
+        <SceneWord lower="8488" upper="8495" text="hattest"/>
+        <SceneWord lower="8496" upper="8498" text="du"/>
+        <SceneWord lower="8499" upper="8502" text="bei"/>
+        <SceneWord lower="8503" upper="8509" text="deiner"/>
+        <SceneWord lower="8510" upper="8517" text="Antwort"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="8520" upper="8563" language="de" identifier="frage_9">
+    <SceneTurn lower="8537" upper="8563" speaker="lydia">
+      <SceneUttr lower="8544" upper="8563" punct=".">
+        <SceneWord lower="8544" upper="8562" text="Selbstmordgedanken"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="8565" upper="8946" language="de" identifier="gui_frage_9">
+    <SceneTurn lower="8586" upper="8946" speaker="gui">
+      <SceneUttr lower="8591" upper="8946" punct=".">
+        <SceneWord lower="8591" upper="8609" text="Selbstmordgedanken"/>
+        <ActionObject lower="8611" upper="8631" actor="" name="setQuestionnaireText">
+          <ActionFeature lower="8632" upper="8718" key="question" val="'Wie haben Sie sich in den letzten zwei Wochen einschließlich heute gefühlt?'"/>
+          <ActionFeature lower="8719" upper="8944" key="options" val="'0. Ich denke nicht daran mir etwas anzutun. 1. Ich denke manchmal an Selbstmord aber ich würde es nicht tun. 2. Ich möchte mich am liebsten umbringen. 3. Ich würde mich umbringen wenn ich die Gelegenheit dazu hätte.'"/>
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="8948" upper="9025" language="de" identifier="frage_9_option_0">
+    <SceneTurn lower="8974" upper="9025" speaker="lydia">
+      <SceneUttr lower="8981" upper="8983" punct=".">
+        <SceneWord lower="8981" upper="8982" text="0"/>
+      </SceneUttr>
+      <SceneUttr lower="8984" upper="9006" punct=",">
+        <SceneWord lower="8984" upper="8987" text="Ich"/>
+        <SceneWord lower="8988" upper="8993" text="denke"/>
+        <SceneWord lower="8994" upper="8999" text="nicht"/>
+        <SceneWord lower="9000" upper="9005" text="daran"/>
+      </SceneUttr>
+      <SceneUttr lower="9007" upper="9025" punct=".">
+        <SceneWord lower="9007" upper="9010" text="mir"/>
+        <SceneWord lower="9011" upper="9016" text="etwas"/>
+        <SceneWord lower="9017" upper="9024" text="anzutun"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="9027" upper="9125" language="de" identifier="frage_9_option_1">
+    <SceneTurn lower="9053" upper="9125" speaker="lydia">
+      <SceneUttr lower="9060" upper="9062" punct=".">
+        <SceneWord lower="9060" upper="9061" text="1"/>
+      </SceneUttr>
+      <SceneUttr lower="9063" upper="9096" punct=",">
+        <SceneWord lower="9063" upper="9066" text="Ich"/>
+        <SceneWord lower="9067" upper="9072" text="denke"/>
+        <SceneWord lower="9073" upper="9081" text="manchmal"/>
+        <SceneWord lower="9082" upper="9084" text="an"/>
+        <SceneWord lower="9085" upper="9095" text="Selbstmord"/>
+      </SceneUttr>
+      <SceneUttr lower="9097" upper="9125" punct=".">
+        <SceneWord lower="9097" upper="9101" text="aber"/>
+        <SceneWord lower="9102" upper="9105" text="ich"/>
+        <SceneWord lower="9106" upper="9111" text="würde"/>
+        <SceneWord lower="9112" upper="9114" text="es"/>
+        <SceneWord lower="9115" upper="9120" text="nicht"/>
+        <SceneWord lower="9121" upper="9124" text="tun"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="9127" upper="9201" language="de" identifier="frage_9_option_2">
+    <SceneTurn lower="9153" upper="9201" speaker="lydia">
+      <SceneUttr lower="9160" upper="9162" punct=".">
+        <SceneWord lower="9160" upper="9161" text="2"/>
+      </SceneUttr>
+      <SceneUttr lower="9163" upper="9201" punct=".">
+        <SceneWord lower="9163" upper="9166" text="Ich"/>
+        <SceneWord lower="9167" upper="9173" text="möchte"/>
+        <SceneWord lower="9174" upper="9178" text="mich"/>
+        <SceneWord lower="9179" upper="9181" text="am"/>
+        <SceneWord lower="9182" upper="9190" text="liebsten"/>
+        <SceneWord lower="9191" upper="9200" text="umbringen"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="9203" upper="9301" language="de" identifier="frage_9_option_3">
+    <SceneTurn lower="9229" upper="9301" speaker="lydia">
+      <SceneUttr lower="9236" upper="9238" punct=".">
+        <SceneWord lower="9236" upper="9237" text="3"/>
+      </SceneUttr>
+      <SceneUttr lower="9239" upper="9264" punct=",">
+        <SceneWord lower="9239" upper="9242" text="Ich"/>
+        <SceneWord lower="9243" upper="9248" text="würde"/>
+        <SceneWord lower="9249" upper="9253" text="mich"/>
+        <SceneWord lower="9254" upper="9263" text="umbringen"/>
+      </SceneUttr>
+      <SceneUttr lower="9265" upper="9301" punct=".">
+        <SceneWord lower="9265" upper="9269" text="wenn"/>
+        <SceneWord lower="9270" upper="9273" text="ich"/>
+        <SceneWord lower="9274" upper="9277" text="die"/>
+        <SceneWord lower="9278" upper="9289" text="Gelegenheit"/>
+        <SceneWord lower="9290" upper="9294" text="dazu"/>
+        <SceneWord lower="9295" upper="9300" text="hätte"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="9303" upper="9335" language="de" identifier="frage_10">
+    <SceneTurn lower="9321" upper="9335" speaker="lydia">
+      <SceneUttr lower="9328" upper="9335" punct=".">
+        <SceneWord lower="9328" upper="9334" text="Weinen"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="9337" upper="9648" language="de" identifier="gui_frage_10">
+    <SceneTurn lower="9359" upper="9648" speaker="gui">
+      <SceneUttr lower="9364" upper="9648" punct=".">
+        <SceneWord lower="9364" upper="9370" text="Weinen"/>
+        <ActionObject lower="9372" upper="9392" actor="" name="setQuestionnaireText">
+          <ActionFeature lower="9393" upper="9479" key="question" val="'Wie haben Sie sich in den letzten zwei Wochen einschließlich heute gefühlt?'"/>
+          <ActionFeature lower="9480" upper="9646" key="options" val="'0. Ich weine nicht öfter als früher. 1. Ich weine jetzt mehr als früher. 2. Ich weine beim geringsten Anlass. 3. Ich möchte gern weinen aber ich kann nicht.'"/>
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="9650" upper="9720" language="de" identifier="frage_10_option_0">
+    <SceneTurn lower="9677" upper="9720" speaker="lydia">
+      <SceneUttr lower="9684" upper="9686" punct=".">
+        <SceneWord lower="9684" upper="9685" text="0"/>
+      </SceneUttr>
+      <SceneUttr lower="9687" upper="9720" punct=".">
+        <SceneWord lower="9687" upper="9690" text="Ich"/>
+        <SceneWord lower="9691" upper="9696" text="weine"/>
+        <SceneWord lower="9697" upper="9702" text="nicht"/>
+        <SceneWord lower="9703" upper="9708" text="öfter"/>
+        <SceneWord lower="9709" upper="9712" text="als"/>
+        <SceneWord lower="9713" upper="9719" text="früher"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="9722" upper="9791" language="de" identifier="frage_10_option_1">
+    <SceneTurn lower="9749" upper="9791" speaker="lydia">
+      <SceneUttr lower="9756" upper="9758" punct=".">
+        <SceneWord lower="9756" upper="9757" text="1"/>
+      </SceneUttr>
+      <SceneUttr lower="9759" upper="9791" punct=".">
+        <SceneWord lower="9759" upper="9762" text="Ich"/>
+        <SceneWord lower="9763" upper="9768" text="weine"/>
+        <SceneWord lower="9769" upper="9774" text="jetzt"/>
+        <SceneWord lower="9775" upper="9779" text="mehr"/>
+        <SceneWord lower="9780" upper="9783" text="als"/>
+        <SceneWord lower="9784" upper="9790" text="früher"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="9793" upper="9863" language="de" identifier="frage_10_option_2">
+    <SceneTurn lower="9820" upper="9863" speaker="lydia">
+      <SceneUttr lower="9827" upper="9829" punct=".">
+        <SceneWord lower="9827" upper="9828" text="2"/>
+      </SceneUttr>
+      <SceneUttr lower="9830" upper="9863" punct=".">
+        <SceneWord lower="9830" upper="9833" text="Ich"/>
+        <SceneWord lower="9834" upper="9839" text="weine"/>
+        <SceneWord lower="9840" upper="9844" text="beim"/>
+        <SceneWord lower="9845" upper="9855" text="geringsten"/>
+        <SceneWord lower="9856" upper="9862" text="Anlass"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="9865" upper="9946" language="de" identifier="frage_10_option_3">
+    <SceneTurn lower="9892" upper="9946" speaker="lydia">
+      <SceneUttr lower="9899" upper="9901" punct=".">
+        <SceneWord lower="9899" upper="9900" text="3"/>
+      </SceneUttr>
+      <SceneUttr lower="9902" upper="9925" punct=",">
+        <SceneWord lower="9902" upper="9905" text="Ich"/>
+        <SceneWord lower="9906" upper="9912" text="möchte"/>
+        <SceneWord lower="9913" upper="9917" text="gern"/>
+        <SceneWord lower="9918" upper="9924" text="weinen"/>
+      </SceneUttr>
+      <SceneUttr lower="9926" upper="9946" punct=".">
+        <SceneWord lower="9926" upper="9930" text="aber"/>
+        <SceneWord lower="9931" upper="9934" text="ich"/>
+        <SceneWord lower="9935" upper="9939" text="kann"/>
+        <SceneWord lower="9940" upper="9945" text="nicht"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="9948" upper="9980" language="de" identifier="frage_11">
+    <SceneTurn lower="9966" upper="9980" speaker="lydia">
+      <SceneUttr lower="9973" upper="9980" punct=".">
+        <SceneWord lower="9973" upper="9979" text="Unruhe"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="9982" upper="10342" language="de" identifier="gui_frage_11">
+    <SceneTurn lower="10004" upper="10342" speaker="gui">
+      <SceneUttr lower="10009" upper="10342" punct=".">
+        <SceneWord lower="10009" upper="10015" text="Unruhe"/>
+        <ActionObject lower="10017" upper="10037" actor="" name="setQuestionnaireText">
+          <ActionFeature lower="10038" upper="10124" key="question" val="'Wie haben Sie sich in den letzten zwei Wochen einschließlich heute gefühlt?'"/>
+          <ActionFeature lower="10125" upper="10340" key="options" val="'0. Ich bin nicht unruhiger als sonst. 1. Ich bin unruhiger als sonst. 2. Ich bin so unruhig dass es mir schwerfällt still zu sitzen. 3. Ich bin so unruhig dass ich mich ständig bewegen oder etwas tun muss.'"/>
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="10344" upper="10415" language="de" identifier="frage_11_option_0">
+    <SceneTurn lower="10371" upper="10415" speaker="lydia">
+      <SceneUttr lower="10378" upper="10380" punct=".">
+        <SceneWord lower="10378" upper="10379" text="0"/>
+      </SceneUttr>
+      <SceneUttr lower="10381" upper="10415" punct=".">
+        <SceneWord lower="10381" upper="10384" text="Ich"/>
+        <SceneWord lower="10385" upper="10388" text="bin"/>
+        <SceneWord lower="10389" upper="10394" text="nicht"/>
+        <SceneWord lower="10395" upper="10404" text="unruhiger"/>
+        <SceneWord lower="10405" upper="10408" text="als"/>
+        <SceneWord lower="10409" upper="10414" text="sonst"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="10417" upper="10482" language="de" identifier="frage_11_option_1">
+    <SceneTurn lower="10444" upper="10482" speaker="lydia">
+      <SceneUttr lower="10451" upper="10453" punct=".">
+        <SceneWord lower="10451" upper="10452" text="1"/>
+      </SceneUttr>
+      <SceneUttr lower="10454" upper="10482" punct=".">
+        <SceneWord lower="10454" upper="10457" text="Ich"/>
+        <SceneWord lower="10458" upper="10461" text="bin"/>
+        <SceneWord lower="10462" upper="10471" text="unruhiger"/>
+        <SceneWord lower="10472" upper="10475" text="als"/>
+        <SceneWord lower="10476" upper="10481" text="sonst"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="10484" upper="10582" language="de" identifier="frage_11_option_2">
+    <SceneTurn lower="10511" upper="10582" speaker="lydia">
+      <SceneUttr lower="10518" upper="10520" punct=".">
+        <SceneWord lower="10518" upper="10519" text="2"/>
+      </SceneUttr>
+      <SceneUttr lower="10521" upper="10540" punct=",">
+        <SceneWord lower="10521" upper="10524" text="Ich"/>
+        <SceneWord lower="10525" upper="10528" text="bin"/>
+        <SceneWord lower="10529" upper="10531" text="so"/>
+        <SceneWord lower="10532" upper="10539" text="unruhig"/>
+      </SceneUttr>
+      <SceneUttr lower="10541" upper="10565" punct=",">
+        <SceneWord lower="10541" upper="10545" text="dass"/>
+        <SceneWord lower="10546" upper="10548" text="es"/>
+        <SceneWord lower="10549" upper="10552" text="mir"/>
+        <SceneWord lower="10553" upper="10564" text="schwerfällt"/>
+      </SceneUttr>
+      <SceneUttr lower="10566" upper="10582" punct=".">
+        <SceneWord lower="10566" upper="10571" text="still"/>
+        <SceneWord lower="10572" upper="10574" text="zu"/>
+        <SceneWord lower="10575" upper="10581" text="sitzen"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="10584" upper="10691" language="de" identifier="frage_11_option_3">
+    <SceneTurn lower="10611" upper="10691" speaker="lydia">
+      <SceneUttr lower="10618" upper="10620" punct=".">
+        <SceneWord lower="10618" upper="10619" text="3"/>
+      </SceneUttr>
+      <SceneUttr lower="10621" upper="10640" punct=",">
+        <SceneWord lower="10621" upper="10624" text="Ich"/>
+        <SceneWord lower="10625" upper="10628" text="bin"/>
+        <SceneWord lower="10629" upper="10631" text="so"/>
+        <SceneWord lower="10632" upper="10639" text="unruhig"/>
+      </SceneUttr>
+      <SceneUttr lower="10641" upper="10691" punct=".">
+        <SceneWord lower="10641" upper="10645" text="dass"/>
+        <SceneWord lower="10646" upper="10649" text="ich"/>
+        <SceneWord lower="10650" upper="10654" text="mich"/>
+        <SceneWord lower="10655" upper="10662" text="ständig"/>
+        <SceneWord lower="10663" upper="10670" text="bewegen"/>
+        <SceneWord lower="10671" upper="10675" text="oder"/>
+        <SceneWord lower="10676" upper="10681" text="etwas"/>
+        <SceneWord lower="10682" upper="10685" text="tun"/>
+        <SceneWord lower="10686" upper="10690" text="muss"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="10693" upper="10737" language="de" identifier="frage_12">
+    <SceneTurn lower="10711" upper="10737" speaker="lydia">
+      <SceneUttr lower="10718" upper="10737" punct=".">
+        <SceneWord lower="10718" upper="10736" text="Interessensverlust"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="10739" upper="11223" language="de" identifier="gui_frage_12">
+    <SceneTurn lower="10761" upper="11223" speaker="gui">
+      <SceneUttr lower="10766" upper="11223" punct=".">
+        <SceneWord lower="10766" upper="10784" text="Interessensverlust"/>
+        <ActionObject lower="10786" upper="10806" actor="" name="setQuestionnaireText">
+          <ActionFeature lower="10807" upper="10893" key="question" val="'Wie haben Sie sich in den letzten zwei Wochen einschließlich heute gefühlt?'"/>
+          <ActionFeature lower="10894" upper="11221" key="options" val="'0. Ich habe das Interesse an anderen Menschen oder an Tätigkeiten nicht verloren. 1. Ich habe weniger Interesse an anderen Menschen oder an Dingen als sonst. 2. Ich habe das Interesse an anderen Menschen oder an Dingen zum größten Teil verloren. 3. Es fällt mir schwer mich überhaupt für irgendetwas zu interessieren.'"/>
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="11225" upper="11340" language="de" identifier="frage_12_option_0">
+    <SceneTurn lower="11252" upper="11340" speaker="lydia">
+      <SceneUttr lower="11259" upper="11261" punct=".">
+        <SceneWord lower="11259" upper="11260" text="0"/>
+      </SceneUttr>
+      <SceneUttr lower="11262" upper="11340" punct=".">
+        <SceneWord lower="11262" upper="11265" text="Ich"/>
+        <SceneWord lower="11266" upper="11270" text="habe"/>
+        <SceneWord lower="11271" upper="11274" text="das"/>
+        <SceneWord lower="11275" upper="11284" text="Interesse"/>
+        <SceneWord lower="11285" upper="11287" text="an"/>
+        <SceneWord lower="11288" upper="11295" text="anderen"/>
+        <SceneWord lower="11296" upper="11304" text="Menschen"/>
+        <SceneWord lower="11305" upper="11309" text="oder"/>
+        <SceneWord lower="11310" upper="11312" text="an"/>
+        <SceneWord lower="11313" upper="11324" text="Tätigkeiten"/>
+        <SceneWord lower="11325" upper="11330" text="nicht"/>
+        <SceneWord lower="11331" upper="11339" text="verloren"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="11342" upper="11451" language="de" identifier="frage_12_option_1">
+    <SceneTurn lower="11369" upper="11451" speaker="lydia">
+      <SceneUttr lower="11376" upper="11378" punct=".">
+        <SceneWord lower="11376" upper="11377" text="1"/>
+      </SceneUttr>
+      <SceneUttr lower="11379" upper="11451" punct=".">
+        <SceneWord lower="11379" upper="11382" text="Ich"/>
+        <SceneWord lower="11383" upper="11387" text="habe"/>
+        <SceneWord lower="11388" upper="11395" text="weniger"/>
+        <SceneWord lower="11396" upper="11405" text="Interesse"/>
+        <SceneWord lower="11406" upper="11408" text="an"/>
+        <SceneWord lower="11409" upper="11416" text="anderen"/>
+        <SceneWord lower="11417" upper="11425" text="Menschen"/>
+        <SceneWord lower="11426" upper="11430" text="oder"/>
+        <SceneWord lower="11431" upper="11433" text="an"/>
+        <SceneWord lower="11434" upper="11440" text="Dingen"/>
+        <SceneWord lower="11441" upper="11444" text="als"/>
+        <SceneWord lower="11445" upper="11450" text="sonst"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="11453" upper="11574" language="de" identifier="frage_12_option_2">
+    <SceneTurn lower="11480" upper="11574" speaker="lydia">
+      <SceneUttr lower="11487" upper="11489" punct=".">
+        <SceneWord lower="11487" upper="11488" text="2"/>
+      </SceneUttr>
+      <SceneUttr lower="11490" upper="11574" punct=".">
+        <SceneWord lower="11490" upper="11493" text="Ich"/>
+        <SceneWord lower="11494" upper="11498" text="habe"/>
+        <SceneWord lower="11499" upper="11502" text="das"/>
+        <SceneWord lower="11503" upper="11512" text="Interesse"/>
+        <SceneWord lower="11513" upper="11515" text="an"/>
+        <SceneWord lower="11516" upper="11523" text="anderen"/>
+        <SceneWord lower="11524" upper="11532" text="Menschen"/>
+        <SceneWord lower="11533" upper="11537" text="oder"/>
+        <SceneWord lower="11538" upper="11540" text="an"/>
+        <SceneWord lower="11541" upper="11547" text="Dingen"/>
+        <SceneWord lower="11548" upper="11551" text="zum"/>
+        <SceneWord lower="11552" upper="11559" text="größten"/>
+        <SceneWord lower="11560" upper="11564" text="Teil"/>
+        <SceneWord lower="11565" upper="11573" text="verloren"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="11576" upper="11682" language="de" identifier="frage_12_option_3">
+    <SceneTurn lower="11603" upper="11682" speaker="lydia">
+      <SceneUttr lower="11610" upper="11612" punct=".">
+        <SceneWord lower="11610" upper="11611" text="3"/>
+      </SceneUttr>
+      <SceneUttr lower="11613" upper="11633" punct=",">
+        <SceneWord lower="11613" upper="11615" text="Es"/>
+        <SceneWord lower="11616" upper="11621" text="fällt"/>
+        <SceneWord lower="11622" upper="11625" text="mir"/>
+        <SceneWord lower="11626" upper="11632" text="schwer"/>
+      </SceneUttr>
+      <SceneUttr lower="11634" upper="11682" punct=".">
+        <SceneWord lower="11634" upper="11638" text="mich"/>
+        <SceneWord lower="11639" upper="11648" text="überhaupt"/>
+        <SceneWord lower="11649" upper="11652" text="für"/>
+        <SceneWord lower="11653" upper="11664" text="irgendetwas"/>
+        <SceneWord lower="11665" upper="11667" text="zu"/>
+        <SceneWord lower="11668" upper="11681" text="interessieren"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="11684" upper="11729" language="de" identifier="frage_13">
+    <SceneTurn lower="11702" upper="11729" speaker="lydia">
+      <SceneUttr lower="11709" upper="11729" punct=".">
+        <SceneWord lower="11709" upper="11728" text="Entschlussfähigkeit"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="11731" upper="12129" language="de" identifier="gui_frage_13">
+    <SceneTurn lower="11753" upper="12129" speaker="gui">
+      <SceneUttr lower="11758" upper="12129" punct=".">
+        <SceneWord lower="11758" upper="11777" text="Entschlussfähigkeit"/>
+        <ActionObject lower="11779" upper="11799" actor="" name="setQuestionnaireText">
+          <ActionFeature lower="11800" upper="11886" key="question" val="'Wie haben Sie sich in den letzten zwei Wochen einschließlich heute gefühlt?'"/>
+          <ActionFeature lower="11887" upper="12127" key="options" val="'0. Ich bin so entschlussfreudig wie immer. 1. Es fällt mir schwerer als sonst Entscheidungen zu treffen. 2. Es fällt mir sehr viel schwerer als sonst Entscheidungen zu treffen. 3. Ich habe Mühe überhaupt Entscheidungen zu treffen.'"/>
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="12131" upper="12207" language="de" identifier="frage_13_option_0">
+    <SceneTurn lower="12158" upper="12207" speaker="lydia">
+      <SceneUttr lower="12165" upper="12167" punct=".">
+        <SceneWord lower="12165" upper="12166" text="0"/>
+      </SceneUttr>
+      <SceneUttr lower="12168" upper="12207" punct=".">
+        <SceneWord lower="12168" upper="12171" text="Ich"/>
+        <SceneWord lower="12172" upper="12175" text="bin"/>
+        <SceneWord lower="12176" upper="12178" text="so"/>
+        <SceneWord lower="12179" upper="12196" text="entschlussfreudig"/>
+        <SceneWord lower="12197" upper="12200" text="wie"/>
+        <SceneWord lower="12201" upper="12206" text="immer"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="12209" upper="12305" language="de" identifier="frage_13_option_1">
+    <SceneTurn lower="12236" upper="12305" speaker="lydia">
+      <SceneUttr lower="12243" upper="12245" punct=".">
+        <SceneWord lower="12243" upper="12244" text="1"/>
+      </SceneUttr>
+      <SceneUttr lower="12246" upper="12278" punct=",">
+        <SceneWord lower="12246" upper="12248" text="Es"/>
+        <SceneWord lower="12249" upper="12254" text="fällt"/>
+        <SceneWord lower="12255" upper="12258" text="mir"/>
+        <SceneWord lower="12259" upper="12267" text="schwerer"/>
+        <SceneWord lower="12268" upper="12271" text="als"/>
+        <SceneWord lower="12272" upper="12277" text="sonst"/>
+      </SceneUttr>
+      <SceneUttr lower="12279" upper="12305" punct=".">
+        <SceneWord lower="12279" upper="12293" text="Entscheidungen"/>
+        <SceneWord lower="12294" upper="12296" text="zu"/>
+        <SceneWord lower="12297" upper="12304" text="treffen"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="12307" upper="12413" language="de" identifier="frage_13_option_2">
+    <SceneTurn lower="12334" upper="12413" speaker="lydia">
+      <SceneUttr lower="12341" upper="12343" punct=".">
+        <SceneWord lower="12341" upper="12342" text="2"/>
+      </SceneUttr>
+      <SceneUttr lower="12344" upper="12386" punct=",">
+        <SceneWord lower="12344" upper="12346" text="Es"/>
+        <SceneWord lower="12347" upper="12352" text="fällt"/>
+        <SceneWord lower="12353" upper="12356" text="mir"/>
+        <SceneWord lower="12357" upper="12361" text="sehr"/>
+        <SceneWord lower="12362" upper="12366" text="viel"/>
+        <SceneWord lower="12367" upper="12375" text="schwerer"/>
+        <SceneWord lower="12376" upper="12379" text="als"/>
+        <SceneWord lower="12380" upper="12385" text="sonst"/>
+      </SceneUttr>
+      <SceneUttr lower="12387" upper="12413" punct=".">
+        <SceneWord lower="12387" upper="12401" text="Entscheidungen"/>
+        <SceneWord lower="12402" upper="12404" text="zu"/>
+        <SceneWord lower="12405" upper="12412" text="treffen"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="12415" upper="12503" language="de" identifier="frage_13_option_3">
+    <SceneTurn lower="12442" upper="12503" speaker="lydia">
+      <SceneUttr lower="12449" upper="12451" punct=".">
+        <SceneWord lower="12449" upper="12450" text="3"/>
+      </SceneUttr>
+      <SceneUttr lower="12452" upper="12466" punct=",">
+        <SceneWord lower="12452" upper="12455" text="Ich"/>
+        <SceneWord lower="12456" upper="12460" text="habe"/>
+        <SceneWord lower="12461" upper="12465" text="Mühe"/>
+      </SceneUttr>
+      <SceneUttr lower="12467" upper="12503" punct=".">
+        <SceneWord lower="12467" upper="12476" text="überhaupt"/>
+        <SceneWord lower="12477" upper="12491" text="Entscheidungen"/>
+        <SceneWord lower="12492" upper="12494" text="zu"/>
+        <SceneWord lower="12495" upper="12502" text="treffen"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="12505" upper="12544" language="de" identifier="frage_14">
+    <SceneTurn lower="12523" upper="12544" speaker="lydia">
+      <SceneUttr lower="12530" upper="12544" punct=".">
+        <SceneWord lower="12530" upper="12543" text="Wertlosigkeit"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="12546" upper="12906" language="de" identifier="gui_frage_14">
+    <SceneTurn lower="12568" upper="12906" speaker="gui">
+      <SceneUttr lower="12573" upper="12906" punct=".">
+        <SceneWord lower="12573" upper="12586" text="Wertlosigkeit"/>
+        <ActionObject lower="12588" upper="12608" actor="" name="setQuestionnaireText">
+          <ActionFeature lower="12609" upper="12695" key="question" val="'Wie haben Sie sich in den letzten zwei Wochen einschließlich heute gefühlt?'"/>
+          <ActionFeature lower="12696" upper="12904" key="options" val="'0. Ich fühle mich nicht wertlos. 1. Ich halte mich für weniger wertvoll und nützlich als sonst. 2. Verglichen mit anderen Menschen fühle ich mich viel weniger wert. 3. Ich fühle mich völlig wertlos.'"/>
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="12908" upper="12974" language="de" identifier="frage_14_option_0">
+    <SceneTurn lower="12935" upper="12974" speaker="lydia">
+      <SceneUttr lower="12942" upper="12944" punct=".">
+        <SceneWord lower="12942" upper="12943" text="0"/>
+      </SceneUttr>
+      <SceneUttr lower="12945" upper="12974" punct=".">
+        <SceneWord lower="12945" upper="12948" text="Ich"/>
+        <SceneWord lower="12949" upper="12954" text="fühle"/>
+        <SceneWord lower="12955" upper="12959" text="mich"/>
+        <SceneWord lower="12960" upper="12965" text="nicht"/>
+        <SceneWord lower="12966" upper="12973" text="wertlos"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="12976" upper="13072" language="de" identifier="frage_14_option_1">
+    <SceneTurn lower="13003" upper="13072" speaker="lydia">
+      <SceneUttr lower="13010" upper="13012" punct=".">
+        <SceneWord lower="13010" upper="13011" text="1"/>
+      </SceneUttr>
+      <SceneUttr lower="13013" upper="13072" punct=".">
+        <SceneWord lower="13013" upper="13016" text="Ich"/>
+        <SceneWord lower="13017" upper="13022" text="halte"/>
+        <SceneWord lower="13023" upper="13027" text="mich"/>
+        <SceneWord lower="13028" upper="13031" text="für"/>
+        <SceneWord lower="13032" upper="13039" text="weniger"/>
+        <SceneWord lower="13040" upper="13048" text="wertvoll"/>
+        <SceneWord lower="13049" upper="13052" text="und"/>
+        <SceneWord lower="13053" upper="13061" text="nützlich"/>
+        <SceneWord lower="13062" upper="13065" text="als"/>
+        <SceneWord lower="13066" upper="13071" text="sonst"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="13074" upper="13176" language="de" identifier="frage_14_option_2">
+    <SceneTurn lower="13101" upper="13176" speaker="lydia">
+      <SceneUttr lower="13108" upper="13110" punct=".">
+        <SceneWord lower="13108" upper="13109" text="2"/>
+      </SceneUttr>
+      <SceneUttr lower="13111" upper="13176" punct=".">
+        <SceneWord lower="13111" upper="13121" text="Verglichen"/>
+        <SceneWord lower="13122" upper="13125" text="mit"/>
+        <SceneWord lower="13126" upper="13133" text="anderen"/>
+        <SceneWord lower="13134" upper="13142" text="Menschen"/>
+        <SceneWord lower="13143" upper="13148" text="fühle"/>
+        <SceneWord lower="13149" upper="13152" text="ich"/>
+        <SceneWord lower="13153" upper="13157" text="mich"/>
+        <SceneWord lower="13158" upper="13162" text="viel"/>
+        <SceneWord lower="13163" upper="13170" text="weniger"/>
+        <SceneWord lower="13171" upper="13175" text="wert"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="13178" upper="13245" language="de" identifier="frage_14_option_3">
+    <SceneTurn lower="13205" upper="13245" speaker="lydia">
+      <SceneUttr lower="13212" upper="13214" punct=".">
+        <SceneWord lower="13212" upper="13213" text="3"/>
+      </SceneUttr>
+      <SceneUttr lower="13215" upper="13245" punct=".">
+        <SceneWord lower="13215" upper="13218" text="Ich"/>
+        <SceneWord lower="13219" upper="13224" text="fühle"/>
+        <SceneWord lower="13225" upper="13229" text="mich"/>
+        <SceneWord lower="13230" upper="13236" text="völlig"/>
+        <SceneWord lower="13237" upper="13244" text="wertlos"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="13247" upper="13287" language="de" identifier="frage_15">
+    <SceneTurn lower="13265" upper="13287" speaker="lydia">
+      <SceneUttr lower="13272" upper="13287" punct=".">
+        <SceneWord lower="13272" upper="13286" text="Energieverlust"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="13289" upper="13655" language="de" identifier="gui_frage_15">
+    <SceneTurn lower="13311" upper="13655" speaker="gui">
+      <SceneUttr lower="13316" upper="13655" punct=".">
+        <SceneWord lower="13316" upper="13330" text="Energieverlust"/>
+        <ActionObject lower="13332" upper="13352" actor="" name="setQuestionnaireText">
+          <ActionFeature lower="13353" upper="13439" key="question" val="'Wie haben Sie sich in den letzten zwei Wochen einschließlich heute gefühlt?'"/>
+          <ActionFeature lower="13440" upper="13653" key="options" val="'0. Ich habe so viel Energie wie immer. 1. Ich habe weniger Energie als sonst. 2. Ich habe so wenig Energie dass ich kaum noch etwas schaffe. 3. Ich habe keine Energie mehr um überhaupt noch etwas zu tun.'"/>
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="13657" upper="13729" language="de" identifier="frage_15_option_0">
+    <SceneTurn lower="13684" upper="13729" speaker="lydia">
+      <SceneUttr lower="13691" upper="13693" punct=".">
+        <SceneWord lower="13691" upper="13692" text="0"/>
+      </SceneUttr>
+      <SceneUttr lower="13694" upper="13729" punct=".">
+        <SceneWord lower="13694" upper="13697" text="Ich"/>
+        <SceneWord lower="13698" upper="13702" text="habe"/>
+        <SceneWord lower="13703" upper="13705" text="so"/>
+        <SceneWord lower="13706" upper="13710" text="viel"/>
+        <SceneWord lower="13711" upper="13718" text="Energie"/>
+        <SceneWord lower="13719" upper="13722" text="wie"/>
+        <SceneWord lower="13723" upper="13728" text="immer"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="13731" upper="13803" language="de" identifier="frage_15_option_1">
+    <SceneTurn lower="13758" upper="13803" speaker="lydia">
+      <SceneUttr lower="13765" upper="13767" punct=".">
+        <SceneWord lower="13765" upper="13766" text="1"/>
+      </SceneUttr>
+      <SceneUttr lower="13768" upper="13803" punct=".">
+        <SceneWord lower="13768" upper="13771" text="Ich"/>
+        <SceneWord lower="13772" upper="13776" text="habe"/>
+        <SceneWord lower="13777" upper="13784" text="weniger"/>
+        <SceneWord lower="13785" upper="13792" text="Energie"/>
+        <SceneWord lower="13793" upper="13796" text="als"/>
+        <SceneWord lower="13797" upper="13802" text="sonst"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="13805" upper="13902" language="de" identifier="frage_15_option_2">
+    <SceneTurn lower="13832" upper="13902" speaker="lydia">
+      <SceneUttr lower="13839" upper="13841" punct=".">
+        <SceneWord lower="13839" upper="13840" text="2"/>
+      </SceneUttr>
+      <SceneUttr lower="13842" upper="13868" punct=",">
+        <SceneWord lower="13842" upper="13845" text="Ich"/>
+        <SceneWord lower="13846" upper="13850" text="habe"/>
+        <SceneWord lower="13851" upper="13853" text="so"/>
+        <SceneWord lower="13854" upper="13859" text="wenig"/>
+        <SceneWord lower="13860" upper="13867" text="Energie"/>
+      </SceneUttr>
+      <SceneUttr lower="13869" upper="13902" punct=".">
+        <SceneWord lower="13869" upper="13873" text="dass"/>
+        <SceneWord lower="13874" upper="13877" text="ich"/>
+        <SceneWord lower="13878" upper="13882" text="kaum"/>
+        <SceneWord lower="13883" upper="13887" text="noch"/>
+        <SceneWord lower="13888" upper="13893" text="etwas"/>
+        <SceneWord lower="13894" upper="13901" text="schaffe"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="13904" upper="14001" language="de" identifier="frage_15_option_3">
+    <SceneTurn lower="13931" upper="14001" speaker="lydia">
+      <SceneUttr lower="13938" upper="13940" punct=".">
+        <SceneWord lower="13938" upper="13939" text="3"/>
+      </SceneUttr>
+      <SceneUttr lower="13941" upper="13969" punct=",">
+        <SceneWord lower="13941" upper="13944" text="Ich"/>
+        <SceneWord lower="13945" upper="13949" text="habe"/>
+        <SceneWord lower="13950" upper="13955" text="keine"/>
+        <SceneWord lower="13956" upper="13963" text="Energie"/>
+        <SceneWord lower="13964" upper="13968" text="mehr"/>
+      </SceneUttr>
+      <SceneUttr lower="13970" upper="14001" punct=".">
+        <SceneWord lower="13970" upper="13972" text="um"/>
+        <SceneWord lower="13973" upper="13982" text="überhaupt"/>
+        <SceneWord lower="13983" upper="13987" text="noch"/>
+        <SceneWord lower="13988" upper="13993" text="etwas"/>
+        <SceneWord lower="13994" upper="13996" text="zu"/>
+        <SceneWord lower="13997" upper="14000" text="tun"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="14003" upper="14063" language="de" identifier="frage_16">
+    <SceneTurn lower="14021" upper="14063" speaker="lydia">
+      <SceneUttr lower="14028" upper="14063" punct=".">
+        <SceneWord lower="14028" upper="14039" text="Veränderung"/>
+        <SceneWord lower="14040" upper="14043" text="der"/>
+        <SceneWord lower="14044" upper="14062" text="Schlafgewohnheiten"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="14065" upper="14582" language="de" identifier="gui_frage_16">
+    <SceneTurn lower="14087" upper="14582" speaker="gui">
+      <SceneUttr lower="14092" upper="14582" punct=".">
+        <SceneWord lower="14092" upper="14105" text="Veränderungen"/>
+        <SceneWord lower="14106" upper="14109" text="der"/>
+        <SceneWord lower="14110" upper="14128" text="Schlafgewohnheiten"/>
+        <ActionObject lower="14130" upper="14150" actor="" name="setQuestionnaireText">
+          <ActionFeature lower="14151" upper="14237" key="question" val="'Wie haben Sie sich in den letzten zwei Wochen einschließlich heute gefühlt?'"/>
+          <ActionFeature lower="14238" upper="14580" key="options" val="'0. Meine Schlafgewohnheiten haben sich nicht verändert. 1. Ich schlafe etwas mehr als sonst. 2. Ich schlafe etwas weniger als sonst. 3. Ich schlafe viel mehr als sonst. 4. Ich schlafe viel weniger als sonst. 5. Ich schlafe fast den ganzen Tag. 6. Ich wache 1-2 Stunden früher auf als gewöhnlich und kann dann nicht mehr einschlafen.'"/>
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="14584" upper="14673" language="de" identifier="frage_16_option_0">
+    <SceneTurn lower="14611" upper="14673" speaker="lydia">
+      <SceneUttr lower="14618" upper="14620" punct=".">
+        <SceneWord lower="14618" upper="14619" text="0"/>
+      </SceneUttr>
+      <SceneUttr lower="14621" upper="14673" punct=".">
+        <SceneWord lower="14621" upper="14626" text="Meine"/>
+        <SceneWord lower="14627" upper="14645" text="Schlafgewohnheiten"/>
+        <SceneWord lower="14646" upper="14651" text="haben"/>
+        <SceneWord lower="14652" upper="14656" text="sich"/>
+        <SceneWord lower="14657" upper="14662" text="nicht"/>
+        <SceneWord lower="14663" upper="14672" text="verändert"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="14675" upper="14745" language="de" identifier="frage_16_option_1">
+    <SceneTurn lower="14702" upper="14745" speaker="lydia">
+      <SceneUttr lower="14709" upper="14711" punct=".">
+        <SceneWord lower="14709" upper="14710" text="1"/>
+      </SceneUttr>
+      <SceneUttr lower="14712" upper="14745" punct=".">
+        <SceneWord lower="14712" upper="14715" text="Ich"/>
+        <SceneWord lower="14716" upper="14723" text="schlafe"/>
+        <SceneWord lower="14724" upper="14729" text="etwas"/>
+        <SceneWord lower="14730" upper="14734" text="mehr"/>
+        <SceneWord lower="14735" upper="14738" text="als"/>
+        <SceneWord lower="14739" upper="14744" text="sonst"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="14747" upper="14820" language="de" identifier="frage_16_option_2">
+    <SceneTurn lower="14774" upper="14820" speaker="lydia">
+      <SceneUttr lower="14781" upper="14783" punct=".">
+        <SceneWord lower="14781" upper="14782" text="2"/>
+      </SceneUttr>
+      <SceneUttr lower="14784" upper="14820" punct=".">
+        <SceneWord lower="14784" upper="14787" text="Ich"/>
+        <SceneWord lower="14788" upper="14795" text="schlafe"/>
+        <SceneWord lower="14796" upper="14801" text="etwas"/>
+        <SceneWord lower="14802" upper="14809" text="weniger"/>
+        <SceneWord lower="14810" upper="14813" text="als"/>
+        <SceneWord lower="14814" upper="14819" text="sonst"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="14822" upper="14891" language="de" identifier="frage_16_option_3">
+    <SceneTurn lower="14849" upper="14891" speaker="lydia">
+      <SceneUttr lower="14856" upper="14858" punct=".">
+        <SceneWord lower="14856" upper="14857" text="3"/>
+      </SceneUttr>
+      <SceneUttr lower="14859" upper="14891" punct=".">
+        <SceneWord lower="14859" upper="14862" text="Ich"/>
+        <SceneWord lower="14863" upper="14870" text="schlafe"/>
+        <SceneWord lower="14871" upper="14875" text="viel"/>
+        <SceneWord lower="14876" upper="14880" text="mehr"/>
+        <SceneWord lower="14881" upper="14884" text="als"/>
+        <SceneWord lower="14885" upper="14890" text="sonst"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="14893" upper="14965" language="de" identifier="frage_16_option_4">
+    <SceneTurn lower="14920" upper="14965" speaker="lydia">
+      <SceneUttr lower="14927" upper="14929" punct=".">
+        <SceneWord lower="14927" upper="14928" text="4"/>
+      </SceneUttr>
+      <SceneUttr lower="14930" upper="14965" punct=".">
+        <SceneWord lower="14930" upper="14933" text="Ich"/>
+        <SceneWord lower="14934" upper="14941" text="schlafe"/>
+        <SceneWord lower="14942" upper="14946" text="viel"/>
+        <SceneWord lower="14947" upper="14954" text="weniger"/>
+        <SceneWord lower="14955" upper="14958" text="als"/>
+        <SceneWord lower="14959" upper="14964" text="sonst"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="14967" upper="15036" language="de" identifier="frage_16_option_5">
+    <SceneTurn lower="14994" upper="15036" speaker="lydia">
+      <SceneUttr lower="15001" upper="15003" punct=".">
+        <SceneWord lower="15001" upper="15002" text="5"/>
+      </SceneUttr>
+      <SceneUttr lower="15004" upper="15036" punct=".">
+        <SceneWord lower="15004" upper="15007" text="Ich"/>
+        <SceneWord lower="15008" upper="15015" text="schlafe"/>
+        <SceneWord lower="15016" upper="15020" text="fast"/>
+        <SceneWord lower="15021" upper="15024" text="den"/>
+        <SceneWord lower="15025" upper="15031" text="ganzen"/>
+        <SceneWord lower="15032" upper="15035" text="Tag"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="15038" upper="15161" language="de" identifier="frage_16_option_6">
+    <SceneTurn lower="15065" upper="15161" speaker="lydia">
+      <SceneUttr lower="15072" upper="15074" punct=".">
+        <SceneWord lower="15072" upper="15073" text="6"/>
+      </SceneUttr>
+      <SceneUttr lower="15075" upper="15161" punct=".">
+        <SceneWord lower="15075" upper="15078" text="Ich"/>
+        <SceneWord lower="15079" upper="15084" text="wache"/>
+        <SceneWord lower="15085" upper="15086" text="1"/>
+        <SceneWord lower="15087" upper="15089" text="-2"/>
+        <SceneWord lower="15090" upper="15097" text="Stunden"/>
+        <SceneWord lower="15098" upper="15104" text="früher"/>
+        <SceneWord lower="15105" upper="15108" text="auf"/>
+        <SceneWord lower="15109" upper="15112" text="als"/>
+        <SceneWord lower="15113" upper="15123" text="gewöhnlich"/>
+        <SceneWord lower="15124" upper="15127" text="und"/>
+        <SceneWord lower="15128" upper="15132" text="kann"/>
+        <SceneWord lower="15133" upper="15137" text="dann"/>
+        <SceneWord lower="15138" upper="15143" text="nicht"/>
+        <SceneWord lower="15144" upper="15148" text="mehr"/>
+        <SceneWord lower="15149" upper="15160" text="einschlafen"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="15163" upper="15200" language="de" identifier="frage_17">
+    <SceneTurn lower="15181" upper="15200" speaker="lydia">
+      <SceneUttr lower="15188" upper="15200" punct=".">
+        <SceneWord lower="15188" upper="15199" text="Reizbarkeit"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="15202" upper="15503" language="de" identifier="gui_frage_17">
+    <SceneTurn lower="15224" upper="15503" speaker="gui">
+      <SceneUttr lower="15229" upper="15503" punct=".">
+        <SceneWord lower="15229" upper="15240" text="Reizbarkeit"/>
+        <ActionObject lower="15242" upper="15262" actor="" name="setQuestionnaireText">
+          <ActionFeature lower="15263" upper="15349" key="question" val="'Wie haben Sie sich in den letzten zwei Wochen einschließlich heute gefühlt?'"/>
+          <ActionFeature lower="15350" upper="15501" key="options" val="'0. Ich bin nicht reizbarer als sonst. 1. Ich bin reizbarer als sonst. 2. Ich bin viel reizbarer als sonst. 3. Ich fühle mich dauernd gereizt.'"/>
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="15505" upper="15576" language="de" identifier="frage_17_option_0">
+    <SceneTurn lower="15532" upper="15576" speaker="lydia">
+      <SceneUttr lower="15539" upper="15541" punct=".">
+        <SceneWord lower="15539" upper="15540" text="0"/>
+      </SceneUttr>
+      <SceneUttr lower="15542" upper="15576" punct=".">
+        <SceneWord lower="15542" upper="15545" text="Ich"/>
+        <SceneWord lower="15546" upper="15549" text="bin"/>
+        <SceneWord lower="15550" upper="15555" text="nicht"/>
+        <SceneWord lower="15556" upper="15565" text="reizbarer"/>
+        <SceneWord lower="15566" upper="15569" text="als"/>
+        <SceneWord lower="15570" upper="15575" text="sonst"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="15578" upper="15643" language="de" identifier="frage_17_option_1">
+    <SceneTurn lower="15605" upper="15643" speaker="lydia">
+      <SceneUttr lower="15612" upper="15614" punct=".">
+        <SceneWord lower="15612" upper="15613" text="1"/>
+      </SceneUttr>
+      <SceneUttr lower="15615" upper="15643" punct=".">
+        <SceneWord lower="15615" upper="15618" text="Ich"/>
+        <SceneWord lower="15619" upper="15622" text="bin"/>
+        <SceneWord lower="15623" upper="15632" text="reizbarer"/>
+        <SceneWord lower="15633" upper="15636" text="als"/>
+        <SceneWord lower="15637" upper="15642" text="sonst"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="15645" upper="15715" language="de" identifier="frage_17_option_2">
+    <SceneTurn lower="15672" upper="15715" speaker="lydia">
+      <SceneUttr lower="15679" upper="15681" punct=".">
+        <SceneWord lower="15679" upper="15680" text="2"/>
+      </SceneUttr>
+      <SceneUttr lower="15682" upper="15715" punct=".">
+        <SceneWord lower="15682" upper="15685" text="Ich"/>
+        <SceneWord lower="15686" upper="15689" text="bin"/>
+        <SceneWord lower="15690" upper="15694" text="viel"/>
+        <SceneWord lower="15695" upper="15704" text="reizbarer"/>
+        <SceneWord lower="15705" upper="15708" text="als"/>
+        <SceneWord lower="15709" upper="15714" text="sonst"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="15717" upper="15785" language="de" identifier="frage_17_option_3">
+    <SceneTurn lower="15744" upper="15785" speaker="lydia">
+      <SceneUttr lower="15751" upper="15753" punct=".">
+        <SceneWord lower="15751" upper="15752" text="3"/>
+      </SceneUttr>
+      <SceneUttr lower="15754" upper="15785" punct=".">
+        <SceneWord lower="15754" upper="15757" text="Ich"/>
+        <SceneWord lower="15758" upper="15763" text="fühle"/>
+        <SceneWord lower="15764" upper="15768" text="mich"/>
+        <SceneWord lower="15769" upper="15776" text="dauernd"/>
+        <SceneWord lower="15777" upper="15784" text="gereizt"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="15787" upper="15839" language="de" identifier="frage_18">
+    <SceneTurn lower="15805" upper="15839" speaker="lydia">
+      <SceneUttr lower="15812" upper="15839" punct=".">
+        <SceneWord lower="15812" upper="15825" text="Veränderungen"/>
+        <SceneWord lower="15826" upper="15829" text="des"/>
+        <SceneWord lower="15830" upper="15838" text="Appetits"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="15841" upper="16309" language="de" identifier="gui_frage_18">
+    <SceneTurn lower="15863" upper="16309" speaker="gui">
+      <SceneUttr lower="15868" upper="16309" punct=".">
+        <SceneWord lower="15868" upper="15881" text="Veränderungen"/>
+        <SceneWord lower="15882" upper="15885" text="des"/>
+        <SceneWord lower="15886" upper="15894" text="Appetits"/>
+        <ActionObject lower="15896" upper="15916" actor="" name="setQuestionnaireText">
+          <ActionFeature lower="15917" upper="16003" key="question" val="'Wie haben Sie sich in den letzten zwei Wochen einschließlich heute gefühlt?'"/>
+          <ActionFeature lower="16004" upper="16307" key="options" val="'0. Mein Appetit hat sich nicht verändert. 1. Mein Appetit ist etwas schlechter als sonst. 2. Mein Appetit ist etwas größer als sonst. 3. Mein Appetit ist viel schlechter als sonst. 4. Mein Appetit ist viel größer als sonst. 5. Ich habe überhaupt keinen Appetit. 6. Ich habe ständig Heißhunger.'"/>
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="16311" upper="16386" language="de" identifier="frage_18_option_0">
+    <SceneTurn lower="16338" upper="16386" speaker="lydia">
+      <SceneUttr lower="16345" upper="16347" punct=".">
+        <SceneWord lower="16345" upper="16346" text="0"/>
+      </SceneUttr>
+      <SceneUttr lower="16348" upper="16386" punct=".">
+        <SceneWord lower="16348" upper="16352" text="Mein"/>
+        <SceneWord lower="16353" upper="16360" text="Appetit"/>
+        <SceneWord lower="16361" upper="16364" text="hat"/>
+        <SceneWord lower="16365" upper="16369" text="sich"/>
+        <SceneWord lower="16370" upper="16375" text="nicht"/>
+        <SceneWord lower="16376" upper="16385" text="verändert"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="16388" upper="16469" language="de" identifier="frage_18_option_1">
+    <SceneTurn lower="16415" upper="16469" speaker="lydia">
+      <SceneUttr lower="16422" upper="16424" punct=".">
+        <SceneWord lower="16422" upper="16423" text="1"/>
+      </SceneUttr>
+      <SceneUttr lower="16425" upper="16469" punct=".">
+        <SceneWord lower="16425" upper="16429" text="Mein"/>
+        <SceneWord lower="16430" upper="16437" text="Appetit"/>
+        <SceneWord lower="16438" upper="16441" text="ist"/>
+        <SceneWord lower="16442" upper="16447" text="etwas"/>
+        <SceneWord lower="16448" upper="16458" text="schlechter"/>
+        <SceneWord lower="16459" upper="16462" text="als"/>
+        <SceneWord lower="16463" upper="16468" text="sonst"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="16471" upper="16548" language="de" identifier="frage_18_option_2">
+    <SceneTurn lower="16498" upper="16548" speaker="lydia">
+      <SceneUttr lower="16505" upper="16507" punct=".">
+        <SceneWord lower="16505" upper="16506" text="2"/>
+      </SceneUttr>
+      <SceneUttr lower="16508" upper="16548" punct=".">
+        <SceneWord lower="16508" upper="16512" text="Mein"/>
+        <SceneWord lower="16513" upper="16520" text="Appetit"/>
+        <SceneWord lower="16521" upper="16524" text="ist"/>
+        <SceneWord lower="16525" upper="16530" text="etwas"/>
+        <SceneWord lower="16531" upper="16537" text="größer"/>
+        <SceneWord lower="16538" upper="16541" text="als"/>
+        <SceneWord lower="16542" upper="16547" text="sonst"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="16550" upper="16630" language="de" identifier="frage_18_option_3">
+    <SceneTurn lower="16577" upper="16630" speaker="lydia">
+      <SceneUttr lower="16584" upper="16586" punct=".">
+        <SceneWord lower="16584" upper="16585" text="3"/>
+      </SceneUttr>
+      <SceneUttr lower="16587" upper="16630" punct=".">
+        <SceneWord lower="16587" upper="16591" text="Mein"/>
+        <SceneWord lower="16592" upper="16599" text="Appetit"/>
+        <SceneWord lower="16600" upper="16603" text="ist"/>
+        <SceneWord lower="16604" upper="16608" text="viel"/>
+        <SceneWord lower="16609" upper="16619" text="schlechter"/>
+        <SceneWord lower="16620" upper="16623" text="als"/>
+        <SceneWord lower="16624" upper="16629" text="sonst"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="16632" upper="16708" language="de" identifier="frage_18_option_4">
+    <SceneTurn lower="16659" upper="16708" speaker="lydia">
+      <SceneUttr lower="16666" upper="16668" punct=".">
+        <SceneWord lower="16666" upper="16667" text="4"/>
+      </SceneUttr>
+      <SceneUttr lower="16669" upper="16708" punct=".">
+        <SceneWord lower="16669" upper="16673" text="Mein"/>
+        <SceneWord lower="16674" upper="16681" text="Appetit"/>
+        <SceneWord lower="16682" upper="16685" text="ist"/>
+        <SceneWord lower="16686" upper="16690" text="viel"/>
+        <SceneWord lower="16691" upper="16697" text="größer"/>
+        <SceneWord lower="16698" upper="16701" text="als"/>
+        <SceneWord lower="16702" upper="16707" text="sonst"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="16710" upper="16781" language="de" identifier="frage_18_option_5">
+    <SceneTurn lower="16737" upper="16781" speaker="lydia">
+      <SceneUttr lower="16744" upper="16746" punct=".">
+        <SceneWord lower="16744" upper="16745" text="5"/>
+      </SceneUttr>
+      <SceneUttr lower="16747" upper="16781" punct=".">
+        <SceneWord lower="16747" upper="16750" text="Ich"/>
+        <SceneWord lower="16751" upper="16755" text="habe"/>
+        <SceneWord lower="16756" upper="16765" text="überhaupt"/>
+        <SceneWord lower="16766" upper="16772" text="keinen"/>
+        <SceneWord lower="16773" upper="16780" text="Appetit"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="16783" upper="16848" language="de" identifier="frage_18_option_6">
+    <SceneTurn lower="16810" upper="16848" speaker="lydia">
+      <SceneUttr lower="16817" upper="16819" punct=".">
+        <SceneWord lower="16817" upper="16818" text="6"/>
+      </SceneUttr>
+      <SceneUttr lower="16820" upper="16848" punct=".">
+        <SceneWord lower="16820" upper="16823" text="Ich"/>
+        <SceneWord lower="16824" upper="16828" text="habe"/>
+        <SceneWord lower="16829" upper="16836" text="ständig"/>
+        <SceneWord lower="16837" upper="16847" text="Heißhunger"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="16850" upper="16903" language="de" identifier="frage_19">
+    <SceneTurn lower="16868" upper="16903" speaker="lydia">
+      <SceneUttr lower="16875" upper="16903" punct=".">
+        <SceneWord lower="16875" upper="16902" text="Konzentrationsschwierigkeit"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="16905" upper="17319" language="de" identifier="gui_frage_19">
+    <SceneTurn lower="16927" upper="17319" speaker="gui">
+      <SceneUttr lower="16932" upper="17319" punct=".">
+        <SceneWord lower="16932" upper="16961" text="Konzentrationsschwierigkeiten"/>
+        <ActionObject lower="16963" upper="16983" actor="" name="setQuestionnaireText">
+          <ActionFeature lower="16984" upper="17070" key="question" val="'Wie haben Sie sich in den letzten zwei Wochen einschließlich heute gefühlt?'"/>
+          <ActionFeature lower="17071" upper="17317" key="options" val="'0. Ich kann mich so gut konzentrieren wie immer. 1. Ich kann mich nicht mehr so gut konzentrieren wie sonst. 2. Es fällt mir schwer mich längere Zeit auf irgendetwas zu konzentrieren. 3. Ich kann mich überhaupt nicht mehr konzentrieren.'"/>
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="17321" upper="17403" language="de" identifier="frage_19_option_0">
+    <SceneTurn lower="17348" upper="17403" speaker="lydia">
+      <SceneUttr lower="17355" upper="17357" punct=".">
+        <SceneWord lower="17355" upper="17356" text="0"/>
+      </SceneUttr>
+      <SceneUttr lower="17358" upper="17403" punct=".">
+        <SceneWord lower="17358" upper="17361" text="Ich"/>
+        <SceneWord lower="17362" upper="17366" text="kann"/>
+        <SceneWord lower="17367" upper="17371" text="mich"/>
+        <SceneWord lower="17372" upper="17374" text="so"/>
+        <SceneWord lower="17375" upper="17378" text="gut"/>
+        <SceneWord lower="17379" upper="17392" text="konzentrieren"/>
+        <SceneWord lower="17393" upper="17396" text="wie"/>
+        <SceneWord lower="17397" upper="17402" text="immer"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="17405" upper="17498" language="de" identifier="frage_19_option_1">
+    <SceneTurn lower="17432" upper="17498" speaker="lydia">
+      <SceneUttr lower="17439" upper="17441" punct=".">
+        <SceneWord lower="17439" upper="17440" text="1"/>
+      </SceneUttr>
+      <SceneUttr lower="17442" upper="17498" punct=".">
+        <SceneWord lower="17442" upper="17445" text="Ich"/>
+        <SceneWord lower="17446" upper="17450" text="kann"/>
+        <SceneWord lower="17451" upper="17455" text="mich"/>
+        <SceneWord lower="17456" upper="17461" text="nicht"/>
+        <SceneWord lower="17462" upper="17466" text="mehr"/>
+        <SceneWord lower="17467" upper="17469" text="so"/>
+        <SceneWord lower="17470" upper="17473" text="gut"/>
+        <SceneWord lower="17474" upper="17487" text="konzentrieren"/>
+        <SceneWord lower="17488" upper="17491" text="wie"/>
+        <SceneWord lower="17492" upper="17497" text="sonst"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="17500" upper="17609" language="de" identifier="frage_19_option_2">
+    <SceneTurn lower="17527" upper="17609" speaker="lydia">
+      <SceneUttr lower="17534" upper="17536" punct=".">
+        <SceneWord lower="17534" upper="17535" text="2"/>
+      </SceneUttr>
+      <SceneUttr lower="17537" upper="17557" punct=",">
+        <SceneWord lower="17537" upper="17539" text="Es"/>
+        <SceneWord lower="17540" upper="17545" text="fällt"/>
+        <SceneWord lower="17546" upper="17549" text="mir"/>
+        <SceneWord lower="17550" upper="17556" text="schwer"/>
+      </SceneUttr>
+      <SceneUttr lower="17558" upper="17609" punct=".">
+        <SceneWord lower="17558" upper="17562" text="mich"/>
+        <SceneWord lower="17563" upper="17570" text="längere"/>
+        <SceneWord lower="17571" upper="17575" text="Zeit"/>
+        <SceneWord lower="17576" upper="17579" text="auf"/>
+        <SceneWord lower="17580" upper="17591" text="irgendetwas"/>
+        <SceneWord lower="17592" upper="17594" text="zu"/>
+        <SceneWord lower="17595" upper="17608" text="konzentrieren"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="17611" upper="17697" language="de" identifier="frage_19_option_3">
+    <SceneTurn lower="17638" upper="17697" speaker="lydia">
+      <SceneUttr lower="17645" upper="17647" punct=".">
+        <SceneWord lower="17645" upper="17646" text="3"/>
+      </SceneUttr>
+      <SceneUttr lower="17648" upper="17697" punct=".">
+        <SceneWord lower="17648" upper="17651" text="Ich"/>
+        <SceneWord lower="17652" upper="17656" text="kann"/>
+        <SceneWord lower="17657" upper="17661" text="mich"/>
+        <SceneWord lower="17662" upper="17671" text="überhaupt"/>
+        <SceneWord lower="17672" upper="17677" text="nicht"/>
+        <SceneWord lower="17678" upper="17682" text="mehr"/>
+        <SceneWord lower="17683" upper="17696" text="konzentrieren"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="17699" upper="17750" language="de" identifier="frage_20">
+    <SceneTurn lower="17717" upper="17750" speaker="lydia">
+      <SceneUttr lower="17724" upper="17750" punct=".">
+        <SceneWord lower="17724" upper="17732" text="Ermüdung"/>
+        <SceneWord lower="17733" upper="17737" text="oder"/>
+        <SceneWord lower="17738" upper="17749" text="Erschöpfung"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="17752" upper="18184" language="de" identifier="gui_frage_20">
+    <SceneTurn lower="17774" upper="18184" speaker="gui">
+      <SceneUttr lower="17779" upper="18184" punct=".">
+        <SceneWord lower="17779" upper="17787" text="Ermüdung"/>
+        <SceneWord lower="17788" upper="17792" text="oder"/>
+        <SceneWord lower="17793" upper="17804" text="Erschöpfung"/>
+        <ActionObject lower="17806" upper="17826" actor="" name="setQuestionnaireText">
+          <ActionFeature lower="17827" upper="17913" key="question" val="'Wie haben Sie sich in den letzten zwei Wochen einschließlich heute gefühlt?'"/>
+          <ActionFeature lower="17914" upper="18182" key="options" val="'0. Ich fühle mich nicht müder oder erschöpfter als sonst. 1. Ich werde schneller müde oder erschöpft als sonst. 2. Für viele Dinge die ich üblicherweise tue bin ich zu müde oder erschöpft. 3. Ich bin so müde oder erschöpft dass ich fast nichts mehr tun kann.'"/>
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="18186" upper="18277" language="de" identifier="frage_20_option_0">
+    <SceneTurn lower="18213" upper="18277" speaker="lydia">
+      <SceneUttr lower="18220" upper="18222" punct=".">
+        <SceneWord lower="18220" upper="18221" text="0"/>
+      </SceneUttr>
+      <SceneUttr lower="18223" upper="18277" punct=".">
+        <SceneWord lower="18223" upper="18226" text="Ich"/>
+        <SceneWord lower="18227" upper="18232" text="fühle"/>
+        <SceneWord lower="18233" upper="18237" text="mich"/>
+        <SceneWord lower="18238" upper="18243" text="nicht"/>
+        <SceneWord lower="18244" upper="18249" text="müder"/>
+        <SceneWord lower="18250" upper="18254" text="oder"/>
+        <SceneWord lower="18255" upper="18266" text="erschöpfter"/>
+        <SceneWord lower="18267" upper="18270" text="als"/>
+        <SceneWord lower="18271" upper="18276" text="sonst"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="18279" upper="18366" language="de" identifier="frage_20_option_1">
+    <SceneTurn lower="18306" upper="18366" speaker="lydia">
+      <SceneUttr lower="18313" upper="18315" punct=".">
+        <SceneWord lower="18313" upper="18314" text="1"/>
+      </SceneUttr>
+      <SceneUttr lower="18316" upper="18366" punct=".">
+        <SceneWord lower="18316" upper="18319" text="Ich"/>
+        <SceneWord lower="18320" upper="18325" text="werde"/>
+        <SceneWord lower="18326" upper="18335" text="schneller"/>
+        <SceneWord lower="18336" upper="18340" text="müde"/>
+        <SceneWord lower="18341" upper="18345" text="oder"/>
+        <SceneWord lower="18346" upper="18355" text="erschöpft"/>
+        <SceneWord lower="18356" upper="18359" text="als"/>
+        <SceneWord lower="18360" upper="18365" text="sonst"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="18368" upper="18480" language="de" identifier="frage_20_option_2">
+    <SceneTurn lower="18395" upper="18480" speaker="lydia">
+      <SceneUttr lower="18402" upper="18404" punct=".">
+        <SceneWord lower="18402" upper="18403" text="2"/>
+      </SceneUttr>
+      <SceneUttr lower="18405" upper="18421" punct=",">
+        <SceneWord lower="18405" upper="18408" text="Für"/>
+        <SceneWord lower="18409" upper="18414" text="viele"/>
+        <SceneWord lower="18415" upper="18420" text="Dinge"/>
+      </SceneUttr>
+      <SceneUttr lower="18422" upper="18448" punct=",">
+        <SceneWord lower="18422" upper="18425" text="die"/>
+        <SceneWord lower="18426" upper="18429" text="ich"/>
+        <SceneWord lower="18430" upper="18443" text="üblicherweise"/>
+        <SceneWord lower="18444" upper="18447" text="tue"/>
+      </SceneUttr>
+      <SceneUttr lower="18449" upper="18480" punct=".">
+        <SceneWord lower="18449" upper="18452" text="bin"/>
+        <SceneWord lower="18453" upper="18456" text="ich"/>
+        <SceneWord lower="18457" upper="18459" text="zu"/>
+        <SceneWord lower="18460" upper="18464" text="müde"/>
+        <SceneWord lower="18465" upper="18469" text="oder"/>
+        <SceneWord lower="18470" upper="18479" text="erschöpft"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="18482" upper="18586" language="de" identifier="frage_20_option_3">
+    <SceneTurn lower="18509" upper="18586" speaker="lydia">
+      <SceneUttr lower="18516" upper="18518" punct=".">
+        <SceneWord lower="18516" upper="18517" text="3"/>
+      </SceneUttr>
+      <SceneUttr lower="18519" upper="18550" punct=",">
+        <SceneWord lower="18519" upper="18522" text="Ich"/>
+        <SceneWord lower="18523" upper="18526" text="bin"/>
+        <SceneWord lower="18527" upper="18529" text="so"/>
+        <SceneWord lower="18530" upper="18534" text="müde"/>
+        <SceneWord lower="18535" upper="18539" text="oder"/>
+        <SceneWord lower="18540" upper="18549" text="erschöpft"/>
+      </SceneUttr>
+      <SceneUttr lower="18551" upper="18586" punct=".">
+        <SceneWord lower="18551" upper="18555" text="dass"/>
+        <SceneWord lower="18556" upper="18559" text="ich"/>
+        <SceneWord lower="18560" upper="18564" text="fast"/>
+        <SceneWord lower="18565" upper="18571" text="nichts"/>
+        <SceneWord lower="18572" upper="18576" text="mehr"/>
+        <SceneWord lower="18577" upper="18580" text="tun"/>
+        <SceneWord lower="18581" upper="18585" text="kann"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="18588" upper="18644" language="de" identifier="frage_21">
+    <SceneTurn lower="18606" upper="18644" speaker="lydia">
+      <SceneUttr lower="18613" upper="18644" punct=".">
+        <SceneWord lower="18613" upper="18620" text="Verlust"/>
+        <SceneWord lower="18621" upper="18623" text="an"/>
+        <SceneWord lower="18624" upper="18633" text="sexuellem"/>
+        <SceneWord lower="18634" upper="18643" text="Interesse"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="18646" upper="19075" language="de" identifier="gui_frage_21">
+    <SceneTurn lower="18668" upper="19075" speaker="gui">
+      <SceneUttr lower="18673" upper="19075" punct=".">
+        <SceneWord lower="18673" upper="18680" text="Verlust"/>
+        <SceneWord lower="18681" upper="18683" text="an"/>
+        <SceneWord lower="18684" upper="18693" text="sexuellem"/>
+        <SceneWord lower="18694" upper="18703" text="Interesse"/>
+        <ActionObject lower="18705" upper="18725" actor="" name="setQuestionnaireText">
+          <ActionFeature lower="18726" upper="18812" key="question" val="'Wie haben Sie sich in den letzten zwei Wochen einschließlich heute gefühlt?'"/>
+          <ActionFeature lower="18813" upper="19073" key="options" val="'0. Mein Interesse an Sexualität hat sich in letzter Zeit nicht verändert. 1. Ich interessiere mich weniger für Sexualität als früher. 2. Ich interessiere mich jetzt viel weniger für Sexualität. 3. Ich habe das Interesse an Sexualität völlig verloren.'"/>
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="19077" upper="19184" language="de" identifier="frage_21_option_0">
+    <SceneTurn lower="19104" upper="19184" speaker="lydia">
+      <SceneUttr lower="19111" upper="19113" punct=".">
+        <SceneWord lower="19111" upper="19112" text="0"/>
+      </SceneUttr>
+      <SceneUttr lower="19114" upper="19184" punct=".">
+        <SceneWord lower="19114" upper="19118" text="Mein"/>
+        <SceneWord lower="19119" upper="19128" text="Interesse"/>
+        <SceneWord lower="19129" upper="19131" text="an"/>
+        <SceneWord lower="19132" upper="19142" text="Sexualität"/>
+        <SceneWord lower="19143" upper="19146" text="hat"/>
+        <SceneWord lower="19147" upper="19151" text="sich"/>
+        <SceneWord lower="19152" upper="19154" text="in"/>
+        <SceneWord lower="19155" upper="19162" text="letzter"/>
+        <SceneWord lower="19163" upper="19167" text="Zeit"/>
+        <SceneWord lower="19168" upper="19173" text="nicht"/>
+        <SceneWord lower="19174" upper="19183" text="verändert"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="19186" upper="19279" language="de" identifier="frage_21_option_1">
+    <SceneTurn lower="19213" upper="19279" speaker="lydia">
+      <SceneUttr lower="19220" upper="19222" punct=".">
+        <SceneWord lower="19220" upper="19221" text="1"/>
+      </SceneUttr>
+      <SceneUttr lower="19223" upper="19279" punct=".">
+        <SceneWord lower="19223" upper="19226" text="Ich"/>
+        <SceneWord lower="19227" upper="19239" text="interessiere"/>
+        <SceneWord lower="19240" upper="19244" text="mich"/>
+        <SceneWord lower="19245" upper="19252" text="weniger"/>
+        <SceneWord lower="19253" upper="19256" text="für"/>
+        <SceneWord lower="19257" upper="19267" text="Sexualität"/>
+        <SceneWord lower="19268" upper="19271" text="als"/>
+        <SceneWord lower="19272" upper="19278" text="früher"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="19281" upper="19374" language="de" identifier="frage_21_option_2">
+    <SceneTurn lower="19308" upper="19374" speaker="lydia">
+      <SceneUttr lower="19315" upper="19317" punct=".">
+        <SceneWord lower="19315" upper="19316" text="2"/>
+      </SceneUttr>
+      <SceneUttr lower="19318" upper="19374" punct=".">
+        <SceneWord lower="19318" upper="19321" text="Ich"/>
+        <SceneWord lower="19322" upper="19334" text="interessiere"/>
+        <SceneWord lower="19335" upper="19339" text="mich"/>
+        <SceneWord lower="19340" upper="19345" text="jetzt"/>
+        <SceneWord lower="19346" upper="19350" text="viel"/>
+        <SceneWord lower="19351" upper="19358" text="weniger"/>
+        <SceneWord lower="19359" upper="19362" text="für"/>
+        <SceneWord lower="19363" upper="19373" text="Sexualität"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="19376" upper="19466" language="de" identifier="frage_21_option_3">
+    <SceneTurn lower="19403" upper="19466" speaker="lydia">
+      <SceneUttr lower="19410" upper="19412" punct=".">
+        <SceneWord lower="19410" upper="19411" text="3"/>
+      </SceneUttr>
+      <SceneUttr lower="19413" upper="19466" punct=".">
+        <SceneWord lower="19413" upper="19416" text="Ich"/>
+        <SceneWord lower="19417" upper="19421" text="habe"/>
+        <SceneWord lower="19422" upper="19425" text="das"/>
+        <SceneWord lower="19426" upper="19435" text="Interesse"/>
+        <SceneWord lower="19436" upper="19438" text="an"/>
+        <SceneWord lower="19439" upper="19449" text="Sexualität"/>
+        <SceneWord lower="19450" upper="19456" text="völlig"/>
+        <SceneWord lower="19457" upper="19465" text="verloren"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="19468" upper="19526" language="de" identifier="frage_nachfrage_ok">
+    <SceneTurn lower="19496" upper="19526" speaker="lydia">
+      <SceneUttr lower="19503" upper="19526" punct=".">
+        <SceneWord lower="19503" upper="19508" text="Danke"/>
+        <SceneWord lower="19509" upper="19512" text="für"/>
+        <SceneWord lower="19513" upper="19517" text="Ihre"/>
+        <SceneWord lower="19518" upper="19525" text="Antwort"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="19528" upper="19904" language="de" identifier="nachfrage_intro">
+    <SceneTurn lower="19553" upper="19604" speaker="lydia">
+      <SceneUttr lower="19560" upper="19604" punct="!">
+        <SceneWord lower="19560" upper="19566" text="Vielen"/>
+        <SceneWord lower="19567" upper="19571" text="Dank"/>
+        <SceneWord lower="19572" upper="19575" text="für"/>
+        <SceneWord lower="19576" upper="19579" text="die"/>
+        <SceneWord lower="19580" upper="19592" text="Beantwortung"/>
+        <SceneWord lower="19593" upper="19596" text="der"/>
+        <SceneWord lower="19597" upper="19603" text="Fragen"/>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="19605" upper="19711" speaker="lydia">
+      <SceneUttr lower="19612" upper="19711" punct=".">
+        <SceneWord lower="19612" upper="19617" text="Jetzt"/>
+        <SceneWord lower="19618" upper="19630" text="interessiere"/>
+        <SceneWord lower="19631" upper="19635" text="mich"/>
+        <SceneWord lower="19636" upper="19640" text="noch"/>
+        <SceneWord lower="19641" upper="19646" text="dafür"/>
+        <SceneWord lower="19647" upper="19652" text="warum"/>
+        <SceneWord lower="19653" upper="19658" text="genau"/>
+        <SceneWord lower="19659" upper="19662" text="Sie"/>
+        <SceneWord lower="19663" upper="19672" text="Antworten"/>
+        <SceneWord lower="19673" upper="19676" text="auf"/>
+        <SceneWord lower="19677" upper="19686" text="bestimmte"/>
+        <SceneWord lower="19687" upper="19693" text="Fragen"/>
+        <SceneWord lower="19694" upper="19704" text="ausgewählt"/>
+        <SceneWord lower="19705" upper="19710" text="haben"/>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="19712" upper="19904" speaker="lydia">
+      <SceneUttr lower="19719" upper="19904" punct=".">
+        <SceneWord lower="19719" upper="19723" text="Wenn"/>
+        <SceneWord lower="19724" upper="19727" text="ich"/>
+        <SceneWord lower="19728" upper="19734" text="hierzu"/>
+        <SceneWord lower="19735" upper="19744" text="nachfrage"/>
+        <SceneWord lower="19745" upper="19749" text="lade"/>
+        <SceneWord lower="19750" upper="19753" text="ich"/>
+        <SceneWord lower="19754" upper="19757" text="Sie"/>
+        <SceneWord lower="19758" upper="19762" text="dazu"/>
+        <SceneWord lower="19763" upper="19766" text="ein"/>
+        <SceneWord lower="19767" upper="19770" text="mir"/>
+        <SceneWord lower="19771" upper="19775" text="mehr"/>
+        <SceneWord lower="19776" upper="19779" text="von"/>
+        <SceneWord lower="19780" upper="19785" text="Ihren"/>
+        <SceneWord lower="19786" upper="19794" text="Gedanken"/>
+        <SceneWord lower="19795" upper="19798" text="und"/>
+        <SceneWord lower="19799" upper="19807" text="Gefühlen"/>
+        <SceneWord lower="19808" upper="19810" text="zu"/>
+        <SceneWord lower="19811" upper="19819" text="erzählen"/>
+        <SceneWord lower="19820" upper="19823" text="von"/>
+        <SceneWord lower="19824" upper="19827" text="dem"/>
+        <SceneWord lower="19828" upper="19831" text="was"/>
+        <SceneWord lower="19832" upper="19834" text="in"/>
+        <SceneWord lower="19835" upper="19840" text="Ihnen"/>
+        <SceneWord lower="19841" upper="19852" text="vorgegangen"/>
+        <SceneWord lower="19853" upper="19856" text="ist"/>
+        <SceneWord lower="19857" upper="19860" text="als"/>
+        <SceneWord lower="19861" upper="19864" text="Sie"/>
+        <SceneWord lower="19865" upper="19870" text="diese"/>
+        <SceneWord lower="19871" upper="19880" text="bestimmte"/>
+        <SceneWord lower="19881" upper="19888" text="Antwort"/>
+        <SceneWord lower="19889" upper="19897" text="auswählt"/>
+        <SceneWord lower="19898" upper="19903" text="haben"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="19906" upper="20035" language="de" identifier="frage_1_enquire">
+    <SceneTurn lower="19931" upper="20017" speaker="lydia">
+      <SceneUttr lower="19938" upper="20017" punct=".">
+        <SceneWord lower="19938" upper="19941" text="Bei"/>
+        <SceneWord lower="19942" upper="19945" text="der"/>
+        <SceneWord lower="19946" upper="19951" text="Frage"/>
+        <SceneWord lower="19952" upper="19956" text="nach"/>
+        <SceneWord lower="19957" upper="19968" text="Traurigkeit"/>
+        <SceneWord lower="19969" upper="19974" text="haben"/>
+        <SceneWord lower="19975" upper="19978" text="Sie"/>
+        <SceneWord lower="19979" upper="19982" text="die"/>
+        <SceneWord lower="19983" upper="19989" text="Option"/>
+        <SceneParam lower="19990" upper="20005" name="antwort_option"/>
+        <SceneWord lower="20006" upper="20016" text="ausgewählt"/>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="20018" upper="20035" speaker="lydia">
+      <SceneUttr lower="20025" upper="20035" punct=".">
+        <SceneWord lower="20025" upper="20030" text="Diese"/>
+        <SceneWord lower="20031" upper="20034" text="war"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="20037" upper="20129" language="de" identifier="frage_1_enquire_q">
+    <SceneTurn lower="20064" upper="20129" speaker="lydia">
+      <SceneUttr lower="20071" upper="20129" punct="?">
+        <SceneWord lower="20071" upper="20077" text="Welche"/>
+        <SceneWord lower="20078" upper="20086" text="Gedanken"/>
+        <SceneWord lower="20087" upper="20091" text="oder"/>
+        <SceneWord lower="20092" upper="20099" text="Gefühle"/>
+        <SceneWord lower="20100" upper="20106" text="hatten"/>
+        <SceneWord lower="20107" upper="20110" text="Sie"/>
+        <SceneWord lower="20111" upper="20114" text="bei"/>
+        <SceneWord lower="20115" upper="20120" text="Ihrer"/>
+        <SceneWord lower="20121" upper="20128" text="Antwort"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="20131" upper="20237" language="de" identifier="frage_3_enquire">
+    <SceneTurn lower="20156" upper="20237" speaker="lydia">
+      <SceneUttr lower="20163" upper="20237" punct=".">
+        <SceneWord lower="20163" upper="20166" text="Bei"/>
+        <SceneWord lower="20167" upper="20170" text="der"/>
+        <SceneWord lower="20171" upper="20176" text="Frage"/>
+        <SceneWord lower="20177" upper="20181" text="nach"/>
+        <SceneWord lower="20182" upper="20199" text="Versagensgefühlen"/>
+        <SceneWord lower="20200" upper="20205" text="haben"/>
+        <SceneWord lower="20206" upper="20209" text="Sie"/>
+        <SceneWord lower="20210" upper="20213" text="die"/>
+        <SceneWord lower="20214" upper="20220" text="Option"/>
+        <SceneParam lower="20221" upper="20236" name="antwort_option"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="20239" upper="20387" language="de" identifier="frage_3_enquire_q">
+    <SceneTurn lower="20266" upper="20284" speaker="lydia">
+      <SceneUttr lower="20273" upper="20284" punct=".">
+        <SceneWord lower="20273" upper="20283" text="Ausgewählt"/>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="20285" upper="20387" speaker="lydia">
+      <SceneUttr lower="20292" upper="20387" punct=".">
+        <SceneWord lower="20292" upper="20295" text="Ich"/>
+        <SceneWord lower="20296" upper="20302" text="möchte"/>
+        <SceneWord lower="20303" upper="20308" text="gerne"/>
+        <SceneWord lower="20309" upper="20315" text="wissen"/>
+        <SceneWord lower="20316" upper="20321" text="warum"/>
+        <SceneWord lower="20322" upper="20325" text="Sie"/>
+        <SceneWord lower="20326" upper="20330" text="sich"/>
+        <SceneWord lower="20331" upper="20333" text="so"/>
+        <SceneWord lower="20334" upper="20340" text="fühlen"/>
+        <SceneWord lower="20341" upper="20344" text="und"/>
+        <SceneWord lower="20345" upper="20351" text="welche"/>
+        <SceneWord lower="20352" upper="20360" text="Gedanken"/>
+        <SceneWord lower="20361" upper="20364" text="Sie"/>
+        <SceneWord lower="20365" upper="20368" text="bei"/>
+        <SceneWord lower="20369" upper="20372" text="der"/>
+        <SceneWord lower="20373" upper="20379" text="Fragen"/>
+        <SceneWord lower="20380" upper="20386" text="hatten"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="20389" upper="20485" language="de" identifier="frage_rand1_enquire">
+    <SceneTurn lower="20418" upper="20485" speaker="lydia">
+      <SceneUttr lower="20425" upper="20470" punct=".">
+        <SceneWord lower="20425" upper="20428" text="Ich"/>
+        <SceneWord lower="20429" upper="20435" text="möchte"/>
+        <SceneWord lower="20436" upper="20439" text="nun"/>
+        <SceneWord lower="20440" upper="20445" text="etwas"/>
+        <SceneWord lower="20446" upper="20450" text="mehr"/>
+        <SceneWord lower="20451" upper="20453" text="zu"/>
+        <SceneParam lower="20454" upper="20462" name="frage_n"/>
+        <SceneWord lower="20463" upper="20469" text="wissen"/>
+      </SceneUttr>
+      <SceneUttr lower="20471" upper="20485" punct=".">
+        <SceneWord lower="20471" upper="20474" text="Das"/>
+        <SceneWord lower="20475" upper="20480" text="Thema"/>
+        <SceneWord lower="20481" upper="20484" text="war"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="20487" upper="20562" language="de" identifier="frage_rand1_enquire_2">
+    <SceneTurn lower="20518" upper="20562" speaker="lydia">
+      <SceneUttr lower="20525" upper="20562" punct=".">
+        <SceneWord lower="20525" upper="20528" text="Sie"/>
+        <SceneWord lower="20529" upper="20534" text="haben"/>
+        <SceneWord lower="20535" upper="20538" text="die"/>
+        <SceneWord lower="20539" upper="20545" text="Option"/>
+        <SceneParam lower="20546" upper="20561" name="antwort_option"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="20564" upper="20677" language="de" identifier="frage_rand1_enquire_q">
+    <SceneTurn lower="20595" upper="20613" speaker="lydia">
+      <SceneUttr lower="20602" upper="20613" punct=".">
+        <SceneWord lower="20602" upper="20612" text="Ausgewählt"/>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="20614" upper="20677" speaker="lydia">
+      <SceneUttr lower="20621" upper="20677" punct="?">
+        <SceneWord lower="20621" upper="20624" text="Was"/>
+        <SceneWord lower="20625" upper="20630" text="waren"/>
+        <SceneWord lower="20631" upper="20635" text="ihre"/>
+        <SceneWord lower="20636" upper="20644" text="Gedanken"/>
+        <SceneWord lower="20645" upper="20649" text="oder"/>
+        <SceneWord lower="20650" upper="20657" text="Gefühle"/>
+        <SceneWord lower="20658" upper="20661" text="bei"/>
+        <SceneWord lower="20662" upper="20668" text="dieser"/>
+        <SceneWord lower="20669" upper="20676" text="Antwort"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="20679" upper="20778" language="de" identifier="frage_rand2_enquire">
+    <SceneTurn lower="20708" upper="20778" speaker="lydia">
+      <SceneUttr lower="20715" upper="20763" punct=".">
+        <SceneWord lower="20715" upper="20721" text="Kommen"/>
+        <SceneWord lower="20722" upper="20725" text="wir"/>
+        <SceneWord lower="20726" upper="20729" text="als"/>
+        <SceneWord lower="20730" upper="20737" text="letztes"/>
+        <SceneWord lower="20738" upper="20742" text="noch"/>
+        <SceneWord lower="20743" upper="20750" text="genauer"/>
+        <SceneWord lower="20751" upper="20753" text="zu"/>
+        <SceneParam lower="20754" upper="20762" name="frage_n"/>
+      </SceneUttr>
+      <SceneUttr lower="20764" upper="20778" punct=".">
+        <SceneWord lower="20764" upper="20767" text="Das"/>
+        <SceneWord lower="20768" upper="20773" text="Thema"/>
+        <SceneWord lower="20774" upper="20777" text="war"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="20780" upper="20844" language="de" identifier="frage_rand2_enquire_2">
+    <SceneTurn lower="20811" upper="20844" speaker="lydia">
+      <SceneUttr lower="20818" upper="20844" punct=".">
+        <SceneWord lower="20818" upper="20821" text="Sie"/>
+        <SceneWord lower="20822" upper="20827" text="haben"/>
+        <SceneParam lower="20828" upper="20843" name="antwort_option"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="20846" upper="20994" language="de" identifier="frage_rand2_enquire_q">
+    <SceneTurn lower="20877" upper="20894" speaker="lydia">
+      <SceneUttr lower="20884" upper="20894" punct=".">
+        <SceneWord lower="20884" upper="20893" text="Angegeben"/>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="20895" upper="20994" speaker="lydia">
+      <SceneUttr lower="20902" upper="20994" punct=".">
+        <SceneWord lower="20902" upper="20908" text="Können"/>
+        <SceneWord lower="20909" upper="20912" text="Sie"/>
+        <SceneWord lower="20913" upper="20916" text="mir"/>
+        <SceneWord lower="20917" upper="20922" text="sagen"/>
+        <SceneWord lower="20923" upper="20928" text="warum"/>
+        <SceneWord lower="20929" upper="20932" text="Sie"/>
+        <SceneWord lower="20933" upper="20937" text="sich"/>
+        <SceneWord lower="20938" upper="20940" text="so"/>
+        <SceneWord lower="20941" upper="20947" text="fühlen"/>
+        <SceneWord lower="20948" upper="20951" text="und"/>
+        <SceneWord lower="20952" upper="20958" text="welche"/>
+        <SceneWord lower="20959" upper="20967" text="Gedanken"/>
+        <SceneWord lower="20968" upper="20971" text="Sie"/>
+        <SceneWord lower="20972" upper="20975" text="bei"/>
+        <SceneWord lower="20976" upper="20979" text="der"/>
+        <SceneWord lower="20980" upper="20986" text="Fragen"/>
+        <SceneWord lower="20987" upper="20993" text="hatten"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+</SceneScript>

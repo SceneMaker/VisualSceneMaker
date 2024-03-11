@@ -5,9 +5,10 @@ import de.dfki.vsm.util.log.LOGConsoleLogger;
 import de.dfki.vsm.util.xml.XMLParseAction;
 import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLWriteError;
+import org.w3c.dom.Element;
+
 import java.util.ArrayList;
 import java.util.TreeSet;
-import org.w3c.dom.Element;
 
 /**
  * @author Gregor Mehlmann

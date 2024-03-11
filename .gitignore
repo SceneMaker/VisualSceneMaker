@@ -5,6 +5,7 @@ tmp/
 /log/stickman.log
 .idea/*
 .gradle
+# Ignoring all build directories
 build/
 !plugins/studymaster-web/src/main/resources/react-studymaster/build
 

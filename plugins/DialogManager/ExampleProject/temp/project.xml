@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Project name="Ubidenz Dialog Manager Temp Project">
+  <Plugins>
+    <Plugin type="device" name="CharamelWS" class="de.dfki.vsm.xtension.charamelWs.charamelWsExecutor" load="true">
+      <Feature key="sceneflowVar" val="avatar_connected"/>
+      <Feature key="ws_port" val="3030"/>
+      <Feature key="characterSpeaking" val="avatar_speaking"/>
+      <Feature key="wss_port" val="3031"/>
+    </Plugin>
+    <Plugin type="device" name="SSJExecutor" class="de.dfki.vsm.xtension.ssj.SSJExecutor" load="true">
+      <Feature key="vsm_rec_host" val="127.0.0.1"/>
+      <Feature key="vsm_rec_port" val="5000"/>
+      <Feature key="vsm_send_host" val="127.0.0.1"/>
+      <Feature key="vsm_send_port" val="5005"/>
+      <Feature key="ssj_rec_host" val="127.0.0.1"/>
+      <Feature key="ssj_rec_port" val="5010"/>
+    </Plugin>
+    <Plugin type="device" name="DialogManager" class="de.dfki.vsm.xtension.DialogManager.DialogManagerExecutor" load="true">
+    </Plugin>
+    <Plugin type="device" name="webpage" class="de.dfki.vsm.xtension.responsiveweb.HtmlGuiWsExecutor" load="true">
+      <Feature key="wss_port" val="4040"/>
+      <Feature key="ws_port" val="4041"/>
+      <Feature key="html_port" val="8080"/>
+      <Feature key="sceneflowStateVar" val="gui_connected"/>
+      <Feature key="sceneflowInfoVar" val="gui_info"/>
+      <Feature key="guifiles" val="gui"/>
+      <Feature key="audiofiles" val="audio"/>
+    </Plugin>
+    <Plugin type="device" name="usermodel" class="de.dfki.vsm.xtension.um.EmmaUserModel" load="true">
+      <Feature key="umdir" val="um"/>
+      <Feature key="umfile" val="EMMA_UM_3_3.json"/>
+    </Plugin>
+    <Plugin type="device" name="timer" class="de.dfki.vsm.xtension.timer.TimerExecutor" load="true">
+    </Plugin>
+  </Plugins>
+  <Agents>
+    <Agent name="ssj" device="SSJExecutor">
+    </Agent>
+    <Agent name="lydia" device="CharamelWS">
+      <Feature key="voice" val="Marlene"/>
+    </Agent>
+    <Agent name="um" device="usermodel">
+    </Agent>
+    <Agent name="time" device="timer">
+    </Agent>
+    <Agent name="asr" device="DialogManager">
+    </Agent>
+    <Agent name="gui" device="webpage">
+      <Feature key="default" val="./default_gui.html"/>
+      <Feature key="help" val="./help_gui.html"/>
+      <Feature key="username" val="./username_gui.html"/>
+      <Feature key="worktime" val="./ui_arbeitszeit.html"/>
+      <Feature key="moodgraph" val="./ui_stimmungsbarometer.html"/>
+      <Feature key="slider" val="./slider_gui.html"/>
+      <Feature key="emotion" val="./emotion_gui.html"/>
+      <Feature key="diarynav" val="./days_gui.html"/>
+      <Feature key="conv" val="./conv_gui.html"/>
+      <Feature key="bubbles_lowerhalf" val="./conv_lowerhalf_gui.html"/>
+      <Feature key="profile" val="./profile_gui.html"/>
+      <Feature key="nofunc" val="./ui_nofunction.html"/>
+      <Feature key="nofunc_calendar" val="./ui_nofunction_calendar.html"/>
+      <Feature key="nofunc_chat" val="./ui_nofunction_chat.html"/>
+      <Feature key="nofunc_phone" val="./ui_nofunction_phone.html"/>
+      <Feature key="nofunc_socialcontacts" val="./ui_nofunction_socialcontacts.html"/>
+      <Feature key="nofunc_timelog" val="./ui_nofunction_timelog.html"/>
+      <Feature key="audio" val="./audio_gui.html"/>
+      <Feature key="yesno" val="./confirmation.html"/>
+      <Feature key="yesno_username" val="./confirmation_username_gui.html"/>
+    </Agent>
+  </Agents>
+  <Player>
+  </Player>
+</Project>

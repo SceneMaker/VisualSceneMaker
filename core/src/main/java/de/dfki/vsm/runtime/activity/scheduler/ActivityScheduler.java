@@ -47,8 +47,12 @@ public final class ActivityScheduler<T extends AbstractActivity> {
         //}
 }
 
-    public final boolean hasMarker(final String marker) {
-        return mWorkerMap.containsKey(marker) ;
+
+    //Check if there is an marker / activity.
+    public boolean hasMarker(String marker) {
+        synchronized (mWorkerMap) {
+            return mWorkerMap.containsKey(marker);
+        }
     }
 
     // Schedule an activity on an executor with a timeout
