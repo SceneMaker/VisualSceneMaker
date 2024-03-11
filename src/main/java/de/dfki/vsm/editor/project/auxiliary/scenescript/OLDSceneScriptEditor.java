@@ -5,6 +5,7 @@ import de.dfki.vsm.editor.AddButton;
 import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.editor.SceneElementDisplay;
 import de.dfki.vsm.editor.project.EditorProject;
+import de.dfki.vsm.editor.project.auxiliary.LLM.LLMPanel;
 import de.dfki.vsm.editor.project.auxiliary.functions.FunctionsEditor;
 import de.dfki.vsm.editor.util.autocompletation.PluginProvider;
 import de.dfki.vsm.event.EventDispatcher;
@@ -71,13 +72,14 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
     private final ImageIcon ICON_PIN_ROLLOVER = ResourceLoader.loadImageIcon("/res/img/pin_blue.png");
     //PIN status
     private boolean pinPricked = false;
-    
+
     private SearchFunctionInScene search_function_in_scene;
 
     // The current project data
     private final EditorProject mEditorProject;
     private final EditorConfig mEditorConfig;
     private final SceneScript mSceneScript;
+    private final LLMPanel mLLMPanel;
     public static final int MAX_LINE_BREAKERS_ALLOWED = 2;
 
     //
@@ -130,12 +132,12 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
         Box bxTop = Box.createHorizontalBox();
         bxTop.add(mGesticonButton);
         //bxTop.add(Box.createHorizontalGlue());
-        
+
         // Add search function
         search_function_in_scene = new SearchFunctionInScene(mEditorPane);
         search_function_in_scene.createSearchBox(bxTop);
         registerKeyBindingsForSearch();
-        
+
         //
         scriptSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
         scriptSplitPane.setDividerSize(2);
@@ -156,9 +158,11 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
         mScriptTabPanel.add(bxTop);
         mScriptTabPanel.add(bxBottom);
 
+        mLLMPanel = new LLMPanel();
         addTab("Scenes        ", mScriptTabPanel);
+        addTab("LLM Editor        ", mLLMPanel);
         addTab("Functions     ", mFunctionEditor);
-        
+
 //        addTab("DialogAct [Experimental]", mDialogActEditor);
 
         // Add search function
@@ -474,7 +478,7 @@ public final class OLDSceneScriptEditor extends JPanel implements DocumentListen
             // changes of the user interface in
             // various editor subcomponents
             EditorInstance.getInstance().refresh();
-            
+
             // Update
             if(!result) {
                 mEditorPane.setBackground(Color.YELLOW.brighter());
