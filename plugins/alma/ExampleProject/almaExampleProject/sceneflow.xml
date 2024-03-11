@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SceneFlow id="" name="default" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Mo., 13 Nov. 2023 13:14:59" start="N1;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
+  <Define>
+  </Define>
+  <Declare>
+    <VariableDefinition type="String" name ="AnneEmotion">
+      <StringLiteral><![CDATA[]]></StringLiteral>
+    </VariableDefinition>
+    <VariableDefinition type="Float" name ="AnneP">
+      <FloatLiteral value="0.0"/>
+    </VariableDefinition>
+    <VariableDefinition type="Float" name ="AnneA">
+      <FloatLiteral value="0.0"/>
+    </VariableDefinition>
+    <VariableDefinition type="Float" name ="AnneD">
+      <FloatLiteral value="0.0"/>
+    </VariableDefinition>
+    <VariableDefinition type="String" name ="BobEmotion">
+      <StringLiteral><![CDATA[]]></StringLiteral>
+    </VariableDefinition>
+    <VariableDefinition type="Float" name ="BobP">
+      <FloatLiteral value="0.0"/>
+    </VariableDefinition>
+    <VariableDefinition type="Float" name ="BobA">
+      <FloatLiteral value="0.0"/>
+    </VariableDefinition>
+    <VariableDefinition type="Float" name ="BobD">
+      <FloatLiteral value="0.0"/>
+    </VariableDefinition>
+    <VariableDefinition type="Bool" name ="testlist">
+      <ArrayExpression>
+        <FloatLiteral value="1.1"/>
+        <StringLiteral><![CDATA[test]]></StringLiteral>
+        <IntLiteral value="0"/>
+      </ArrayExpression>
+    </VariableDefinition>
+  </Declare>
+  <Commands>
+  </Commands>
+  <LocalVariableBadge>
+    <Position xPos="79" yPos="87"/>
+  </LocalVariableBadge>
+  <GlobalVariableBadge>
+    <Position xPos="10" yPos="10"/>
+  </GlobalVariableBadge>
+  <Node id="N1" name="N1" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <TEdge target="N2" start="" timeout="2000">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="390" yPos="75" ctrlXPos="412" ctrlYPos="75"/>
+        <ControlPoint xPos="480" yPos="75" ctrlXPos="457" ctrlYPos="75"/>
+      </Connection>
+    </Graphics>
+    </TEdge>
+    <Graphics>
+      <Position xPos="300" yPos="30"/>
+    </Graphics>
+  </Node>
+  <Node id="N2" name="N2" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <PlayScene>
+        <StringLiteral><![CDATA[Scene1]]></StringLiteral>
+      </PlayScene>
+    </Commands>
+    <TEdge target="N5" start="" timeout="2000">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="568" yPos="87" ctrlXPos="599" ctrlYPos="95"/>
+        <ControlPoint xPos="693" yPos="122" ctrlXPos="684" ctrlYPos="90"/>
+      </Connection>
+    </Graphics>
+    </TEdge>
+    <Graphics>
+      <Position xPos="480" yPos="30"/>
+    </Graphics>
+  </Node>
+  <Node id="N3" name="N3" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <TEdge target="N4" start="" timeout="2000">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="480" yPos="345" ctrlXPos="457" ctrlYPos="345"/>
+        <ControlPoint xPos="390" yPos="255" ctrlXPos="412" ctrlYPos="255"/>
+      </Connection>
+    </Graphics>
+    </TEdge>
+    <Graphics>
+      <Position xPos="480" yPos="300"/>
+    </Graphics>
+  </Node>
+  <Node id="N4" name="N4" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <PlayScene>
+        <StringLiteral><![CDATA[Scene2]]></StringLiteral>
+      </PlayScene>
+    </Commands>
+    <TEdge target="N1" start="" timeout="2000">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="345" yPos="210" ctrlXPos="345" ctrlYPos="187"/>
+        <ControlPoint xPos="345" yPos="120" ctrlXPos="345" ctrlYPos="142"/>
+      </Connection>
+    </Graphics>
+    </TEdge>
+    <Graphics>
+      <Position xPos="300" yPos="210"/>
+    </Graphics>
+  </Node>
+  <Node id="N5" name="N5" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <IEdge target="N3" start="">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="673" yPos="197" ctrlXPos="649" ctrlYPos="220"/>
+          <ControlPoint xPos="525" yPos="300" ctrlXPos="525" ctrlYPos="266"/>
+        </Connection>
+      </Graphics>
+      <ParenExpression>
+        <Eq>
+          <SimpleVariable name="AnneEmotion"/>
+          <StringLiteral><![CDATA[Pride]]></StringLiteral>
+        </Eq>
+      </ParenExpression>
+    </IEdge>
+    <Graphics>
+      <Position xPos="660" yPos="120"/>
+    </Graphics>
+  </Node>
+  <ClassPath>
+  </ClassPath>
+  <InitContext></InitContext>
+</SceneFlow>

@@ -1,0 +1,150 @@
+
+#box{
+     overflow: scroll !important;
+    -webkit-overflow-scrolling: touch;
+}
+html {
+  scroll-behavior: smooth;
+}
+
+
+
+body {
+
+  background-repeat:no-repeat;
+  box-sizing:border-box;
+  font-family:sans-serif;
+  margin:2em;
+  min-height:100vh;
+}
+
+p {
+  max-width:44em;
+}
+
+.container1{
+  display:flex;
+  flex-wrap:wrap;
+
+
+
+}
+
+.container {
+  background-color:white;
+  border:solid .1em top grey;
+  border-radius:.5em;
+  box-sizing:border-box;
+  flex:0 0 30%;
+  height:240px;
+  width: 2000px;
+  bottom: 40px;
+
+  position: absolute;
+
+
+
+  margin:.5em;
+  overflow:auto;
+}
+
+.item {
+  background-color:lightgray;
+  margin:.25em;
+  padding:.5em;
+}
+
+#wrapper {
+  position: absolute;
+  top: 80px;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  z-index: 10;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+h1{
+  height: 50px;
+  text-align: center;
+}
+div {
+  width: 100%;
+  height: 100%;
+
+}
+#scroller {
+  position: absolute;
+  z-index: 1;
+}
+#chat {
+    width: 100%;
+
+}
+
+.bubble{
+    background-color: #F2F2F2;
+
+    box-shadow: 0 0 6px #B2B2B2;
+    display: block;
+    padding: 5px 10px;
+    position: absolute;
+    vertical-align: top;
+    min-width: auto;
+    word-wrap: break-word;
+    font-size: 85%;
+    clear: both;
+}
+
+.bubble {
+  position: relative;
+  font-family: sans-serif;
+  font-size: 18px;
+  line-height: 24px;
+  width: auto;
+  height: auto;
+  background: #fff;
+
+  padding: 24px;
+  text-align: center;
+  color: #000;
+}
+.bubble::before {
+    background-color: #F2F2F2;
+    content: "\00a0";
+    display: block;
+    height: 10px;
+    width: auto;
+    position: absolute;
+    top: 13px;
+    -moz-transform:    rotate( 29deg ) skew( -35deg );
+    -ms-transform:     rotate( 29deg ) skew( -35deg );
+    -o-transform:      rotate( 29deg ) skew( -35deg );
+    -webkit-transform: rotate( 29deg ) skew( -35deg );
+    transform:         rotate( 29deg ) skew( -35deg );
+    width:  20px;
+}
+.emma {
+    float: left;
+    background-color: #76b190;
+    margin: 5px 45px 5px 20px;
+}
+
+.emma::before {
+    box-shadow: -2px 2px 2px 0 rgba( 178, 178, 178, .4 );
+    left: -10px;
+    background-color: #76b190;
+}
+
+.user {
+    margin: 5px 20px 5px 45px;
+    float: right;
+    background-color: #aea85a;
+}
+
+.user::before {
+    box-shadow: 2px -2px 2px 0 rgba( 178, 178, 178, .4 );
+    right: -10px;
+    background-color: #aea85a;
+}

@@ -1,0 +1,406 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<AffectDefinition xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="xml.affect.de" xsi:schemaLocation="xml.affect.de Affect.xsd">
+  <CharacterAffect name="Sven" monitored="false" docu="Sven is a 15 year old student">
+    <PersonalitySpecification emotioninfluence="0.2" openness="-0.3" conscientiousness="-0.1" extraversion="0.6" agreeableness="-0.2" neurotism="-0.5"/>
+    <MoodSpecification decaytime="600000" decayperiod="500" neurotismstability="true"/>
+    <EmotionSpecification decaytime="20000" decayperiod="500" decayfunction="linear" baseline="0.4"/>
+    <Appraisal>
+      <Basic>
+        <GoodActOther praiseworthiness="0.5" agency="other"/>
+        <BadActSelf praiseworthiness="-0.3" agency="self"/>
+        <BadLikelyFutureEvent desirability="-1.0" likelihood="0.4"/>
+        <BadActOther praiseworthiness="-1.0" agency="other"/>
+        <GoodEventForGoodOther desirability="0.6" liking="0.6" agency="other"/>
+        <BadEventForGoodOther desirability="-0.2" liking="0.6" agency="other"/>
+        <GoodUnlikelyFutureEvent desirability="0.9" likelihood="-0.3"/>
+        <GoodActSelf praiseworthiness="1.0" agency="self"/>
+        <NastyThing appealingness="-1.0"/>
+        <BadUnlikelyFutureEvent desirability="-1.0" likelihood="-0.3"/>
+        <EventDisconfirmed realization="false"/>
+        <GoodEventForBadOther desirability="0.6" liking="-0.6" agency="other"/>
+        <NiceThing appealingness="1.0"/>
+        <BadEvent desirability="-0.5"/>
+        <GoodLikelyFutureEvent desirability="0.9" likelihood="0.7"/>
+        <EventConfirmed realization="true"/>
+        <GoodEvent desirability="1.0"/>
+        <BadEventForBadOther desirability="-0.7" liking="-0.6" agency="other"/>
+      </Basic>
+      <SelfAct type="Attack">
+        <GoodEvent desirability="0.4"/>
+        <GoodActSelf praiseworthiness="0.6" agency="self"/>
+      </SelfAct>
+      <SelfAct type="Regret">
+        <BadEvent desirability="-0.7"/>
+        <GoodActSelf praiseworthiness="0.8" agency="self"/>
+      </SelfAct>
+      <SelfAct type="BadJoke">
+        <BadEvent desirability="-0.2"/>
+        <BadActSelf praiseworthiness="-0.3" agency="self"/>
+      </SelfAct>
+      <SelfAct type="Tease">
+        <GoodActSelf praiseworthiness="0.8" agency="self"/>
+      </SelfAct>
+      <SelfAct type="Mock">
+        <GoodEvent desirability="0.3"/>
+        <GoodActSelf praiseworthiness="0.6" agency="self"/>
+      </SelfAct>
+      <SelfAct type="Excuse">
+        <GoodEvent desirability="0.3"/>
+        <BadActSelf praiseworthiness="-0.2" agency="self"/>
+      </SelfAct>
+      <SelfAct type="Congratulate">
+        <GoodActSelf praiseworthiness="0.9" agency="self"/>
+      </SelfAct>
+      <SelfAct type="Boast">
+        <GoodEvent desirability="0.7"/>
+        <GoodActSelf praiseworthiness="0.8" agency="self"/>
+      </SelfAct>
+      <SelfAct type="Sulk">
+        <BadEvent desirability="-0.4"/>
+        <BadActSelf praiseworthiness="-0.3" agency="self"/>
+      </SelfAct>
+      <SelfAct type="GoodJoke">
+        <GoodEvent desirability="1.0"/>
+        <GoodActSelf praiseworthiness="1.0" agency="self"/>
+      </SelfAct>
+      <SelfAct type="Defend">
+        <BadEvent desirability="-0.8"/>
+        <BadActOther praiseworthiness="-0.3" agency="other"/>
+      </SelfAct>
+      <DirectAct type="GiveHope" performer="Valerie">
+        <GoodLikelyFutureEvent desirability="0.3" likelihood="0.6"/>
+        <GoodActOther praiseworthiness="0.2" agency="other"/>
+      </DirectAct>
+      <DirectAct type="Calm" performer="Valerie">
+        <BadEvent desirability="-0.5"/>
+      </DirectAct>
+      <DirectAct type="Criticize" performer="Valerie">
+        <BadEvent desirability="-0.9"/>
+        <BadActOther praiseworthiness="-0.2" agency="other"/>
+      </DirectAct>
+      <DirectAct type="Reproach" performer="Valerie">
+        <BadEvent desirability="-0.9"/>
+        <BadActOther praiseworthiness="-0.7" agency="other"/>
+      </DirectAct>
+      <DirectAct type="Congratulate" performer="Valerie">
+        <GoodEvent desirability="0.7"/>
+        <GoodActSelf praiseworthiness="0.7" agency="self"/>
+      </DirectAct>
+      <DirectAct type="Encourage" performer="Valerie">
+        <GoodEvent desirability="0.2"/>
+        <GoodActOther praiseworthiness="0.6" agency="other"/>
+      </DirectAct>
+      <DirectAct type="Confirm" performer="Valerie">
+        <EventConfirmed realization="true"/>
+      </DirectAct>
+      <DirectAct type="Chide" performer="Valerie">
+        <BadEvent desirability="-0.8"/>
+        <BadActOther praiseworthiness="-0.2" agency="other"/>
+      </DirectAct>
+      <DirectAct type="Correct" performer="Valerie">
+        <BadEvent desirability="-0.7"/>
+      </DirectAct>
+      <DirectAct type="Disconfirm" performer="Valerie">
+        <EventDisconfirmed realization="false"/>
+      </DirectAct>
+      <DirectAct type="Console" performer="Valerie">
+        <GoodEvent desirability="0.3"/>
+      </DirectAct>
+      <IndirectAct type="Admire" performer="Valerie">
+        <BadEvent desirability="-0.9"/>
+        <GoodActOther praiseworthiness="0.2" agency="other"/>
+      </IndirectAct>
+    </Appraisal>
+  </CharacterAffect>
+  <CharacterAffect name="Valerie" monitored="false" docu="Valerie is 32 year old teacher">
+    <PersonalitySpecification emotioninfluence="0.2" openness="0.4" conscientiousness="0.8" extraversion="0.6" agreeableness="0.3" neurotism="0.4"/>
+    <MoodSpecification decaytime="600000" decayperiod="500" neurotismstability="true"/>
+    <EmotionSpecification decaytime="20000" decayperiod="500" decayfunction="linear" baseline="0.4"/>
+    <Appraisal>
+      <Basic>
+        <GoodEvent desirability="0.7"/>
+        <GoodEventForGoodOther agency="other" desirability="0.7" liking="0.8"/>
+        <GoodEventForBadOther agency="other" desirability="0.7" liking="-0.8"/>
+        <BadEvent desirability="-0.7"/>
+        <BadEventForGoodOther agency="other" desirability="-0.2" liking="0.8"/>
+        <BadEventForBadOther agency="other" desirability="-0.2" liking="-0.8"/>
+        <GoodLikelyFutureEvent desirability="0.8" likelihood="0.2"/>
+        <GoodUnlikelyFutureEvent desirability="0.9" likelihood="-1.0"/>
+        <BadLikelyFutureEvent desirability="-1.0" likelihood="1.0"/>
+        <BadUnlikelyFutureEvent desirability="-1.0" likelihood="-0.5"/>
+        <EventConfirmed realization="true"/>
+        <EventDisconfirmed realization="false"/>
+        <GoodActSelf agency="self" praiseworthiness="0.4"/>
+        <GoodActOther agency="other" praiseworthiness="0.5"/>
+        <BadActSelf agency="self" praiseworthiness="-0.9"/>
+        <BadActOther agency="other" praiseworthiness="-0.7"/>
+        <NiceThing appealingness="0.6"/>
+        <NastyThing appealingness="-0.6"/>
+      </Basic>
+      <SelfAct type="Calm">
+        <GoodActSelf agency="self" praiseworthiness="0.5"/>
+      </SelfAct>
+      <SelfAct type="Chide">
+        <BadEvent desirability="-0.8"/>
+      </SelfAct>
+      <SelfAct type="Confirm">
+        <GoodEvent desirability="0.3"/>
+      </SelfAct>
+      <SelfAct type="Congratulate">
+        <GoodEvent desirability="0.7"/>
+        <GoodActSelf agency="self" praiseworthiness="0.7"/>
+      </SelfAct>
+      <SelfAct type="Console">
+        <BadEvent desirability="-0.4"/>
+        <GoodActSelf agency="self" praiseworthiness="0.5"/>
+      </SelfAct>
+      <SelfAct type="Correct">
+        <BadEventForGoodOther agency="other" desirability="-0.3" liking="0.5"/>
+        <GoodActSelf agency="self" praiseworthiness="0.2"/>
+      </SelfAct>
+      <SelfAct type="Criticize">
+        <BadEvent desirability="-0.9"/>
+        <GoodActSelf agency="self" praiseworthiness="0.4"/>
+      </SelfAct>
+      <SelfAct type="Disconfirm">
+        <BadEvent desirability="-0.3"/>
+      </SelfAct>
+      <SelfAct type="Encourage">
+        <BadEvent desirability="-0.3"/>
+        <GoodActSelf agency="self" praiseworthiness="0.4"/>
+      </SelfAct>
+      <SelfAct type="GiveHope">
+        <GoodActSelf agency="self" praiseworthiness="0.3"/>
+      </SelfAct>
+      <SelfAct type="Reproach">
+        <BadActSelf agency="self" praiseworthiness="-0.5"/>
+        <BadActOther agency="other" praiseworthiness="-0.7"/>
+      </SelfAct>
+      <DirectAct type="Attack" performer="Sven">
+        <BadEvent desirability="-0.5"/>
+        <BadActOther agency="other" praiseworthiness="-0.3"/>
+      </DirectAct>
+      <DirectAct type="BadJoke" performer="Sven">
+        <BadEvent desirability="-0.8"/>
+      </DirectAct>
+      <DirectAct type="Boast" performer="Sven">
+        <BadEvent desirability="-0.5"/>
+        <BadActOther agency="other" praiseworthiness="-0.6"/>
+      </DirectAct>
+      <DirectAct type="Defend" performer="Sven">
+        <BadEvent desirability="-0.8"/>
+        <BadActOther agency="other" praiseworthiness="-0.3"/>
+      </DirectAct>
+      <DirectAct type="Excuse" performer="Sven">
+        <GoodActOther agency="other" praiseworthiness="0.6"/>
+      </DirectAct>
+      <DirectAct type="GoodJoke" performer="Sven">
+        <BadEvent desirability="-0.3"/>
+        <GoodActOther agency="other" praiseworthiness="0.2"/>
+      </DirectAct>
+      <DirectAct type="Mock" performer="Sven">
+        <BadEvent desirability="-0.8"/>
+      </DirectAct>
+      <DirectAct type="Regret" performer="Sven">
+        <GoodEvent desirability="0.7"/>
+        <BadActOther agency="other" praiseworthiness="-0.2"/>
+      </DirectAct>
+      <DirectAct type="Sulk" performer="Sven">
+        <BadEvent desirability="-0.4"/>
+        <BadActSelf agency="self" praiseworthiness="-0.3"/>
+      </DirectAct>
+      <DirectAct type="Tease" performer="Sven">
+        <BadActOther agency="other" praiseworthiness="-0.5"/>
+      </DirectAct>
+      <SelfEmotion emotion="Reproach">
+        <BadEvent desirability="-0.3"/>
+      </SelfEmotion>
+    </Appraisal>
+  </CharacterAffect>
+  <CharacterAffect name="User" docu="A student around 15 years">
+    <PersonalitySpecification emotioninfluence="0.2" derived="true" openness="0.0" conscientiousness="0.0" extraversion="0.0" agreeableness="0.0" neurotism="0.0"/>
+    <MoodSpecification decaytime="600000" decayperiod="500" neurotismstability="false"/>
+    <EmotionSpecification decaytime="20000" decayperiod="500" decayfunction="linear" baseline="0.4"/>
+    <Appraisal>
+      <Basic>
+        <GoodEvent desirability="1.0"/>
+        <GoodEventForGoodOther agency="other" desirability="0.7" liking="0.5"/>
+        <GoodEventForBadOther agency="other" desirability="0.7" liking="-0.5"/>
+        <BadEvent desirability="-0.5"/>
+        <BadEventForGoodOther agency="other" desirability="-0.2" liking="0.5"/>
+        <BadEventForBadOther agency="other" desirability="-0.7" liking="-0.5"/>
+        <GoodLikelyFutureEvent desirability="1.0" likelihood="0.8"/>
+        <GoodUnlikelyFutureEvent desirability="1.0" likelihood="0.0"/>
+        <BadLikelyFutureEvent desirability="-1.0" likelihood="0.3"/>
+        <BadUnlikelyFutureEvent desirability="-1.0" likelihood="-1.0"/>
+        <EventConfirmed realization="true"/>
+        <EventDisconfirmed realization="false"/>
+        <GoodActSelf agency="self" praiseworthiness="0.8"/>
+        <GoodActOther agency="other" praiseworthiness="0.5"/>
+        <BadActSelf agency="self" praiseworthiness="-0.6"/>
+        <BadActOther agency="other" praiseworthiness="-0.9"/>
+        <NiceThing appealingness="0.7"/>
+        <NastyThing appealingness="-0.6"/>
+      </Basic>
+      <DirectAct type="Congratulate" performer="Sven">
+        <GoodActSelf agency="self" praiseworthiness="0.9"/>
+      </DirectAct>
+    </Appraisal>
+  </CharacterAffect>
+  <CharacterAffect name="Moderator" docu="A funny neandertal man">
+    <PersonalitySpecification emotioninfluence="0.2" derived="true" openness="0.0" conscientiousness="0.0" extraversion="0.0" agreeableness="0.0" neurotism="0.0"/>
+    <MoodSpecification decaytime="600000" decayperiod="500" neurotismstability="false"/>
+    <EmotionSpecification decaytime="20000" decayperiod="500" decayfunction="linear" baseline="0.4"/>
+    <Appraisal>
+      <Basic>
+        <GoodEvent desirability="1.0"/>
+        <GoodEventForGoodOther agency="other" desirability="0.7" liking="0.5"/>
+        <GoodEventForBadOther agency="other" desirability="0.7" liking="-0.5"/>
+        <BadEvent desirability="-0.5"/>
+        <BadEventForGoodOther agency="other" desirability="-0.2" liking="0.5"/>
+        <BadEventForBadOther agency="other" desirability="-0.7" liking="-0.5"/>
+        <GoodLikelyFutureEvent desirability="1.0" likelihood="0.8"/>
+        <GoodUnlikelyFutureEvent desirability="1.0" likelihood="0.0"/>
+        <BadLikelyFutureEvent desirability="-1.0" likelihood="0.3"/>
+        <BadUnlikelyFutureEvent desirability="-1.0" likelihood="-1.0"/>
+        <EventConfirmed realization="true"/>
+        <EventDisconfirmed realization="false"/>
+        <GoodActSelf agency="self" praiseworthiness="0.8"/>
+        <GoodActOther agency="other" praiseworthiness="0.5"/>
+        <BadActSelf agency="self" praiseworthiness="-0.6"/>
+        <BadActOther agency="other" praiseworthiness="-0.9"/>
+        <NiceThing appealingness="0.7"/>
+        <NastyThing appealingness="-0.6"/>
+      </Basic>
+      <DirectAct type="Congratulate" performer="Sven">
+        <GoodActSelf agency="self" praiseworthiness="0.9"/>
+      </DirectAct>
+    </Appraisal>
+  </CharacterAffect>
+  <CharacterAffect name="Patrick" docu="http://www.blogthings.com/thefivefactorpersonalitytest/outcome.php  Extroversion:  You have high extroversion. You are outgoing and engaging, with both strangers and friends. You truly enjoy being with people and bring energy into any situation. Enthusiastic and fun, you're the first to say &quot;let's go!&quot;  Conscientiousness:  You have high conscientiousness. Intelligent and reliable, you tend to succeed in life. Most things in your life are organized and planned well. But you borderline on being a total perfectionist.  Agreeableness:  You have medium agreeableness. You're generally a friendly and trusting person. But you also have a healthy dose of cynicism. You get along well with others, as long as they play fair.  Neuroticism:  You have low neuroticism. You are very emotionally stable and mentally together. Only the greatest setbacks upset you, and you bounce back quickly. Overall, you are typically calm and relaxed - making others feel secure.  Openness to experience:  Your openness to new experiences is high. In life, you tend to be an early adopter of all new things and ideas. You'll try almost anything interesting, and you're constantly pushing your own limits. A great connoisseir of art and beauty, you can find the positive side of almost anything.  Extroversion:  You have high extroversion. You are outgoing and engaging, with both strangers and friends. You truly enjoy being with people and bring energy into any situation. Enthusiastic and fun, you're the first to say &quot;let's go!&quot;  Conscientiousness:  You have high conscientiousness. Intelligent and reliable, you tend to succeed in life. Most things in your life are organized and planned well. But you borderline on being a total perfectionist.  Agreeableness:  You have medium agreeableness. You're generally a friendly and trusting person. But you also have a healthy dose of cynicism. You get along well with others, as long as they play fair.  Neuroticism:  You have low neuroticism. You are very emotionally stable and mentally together. Only the greatest setbacks upset you, and you bounce back quickly. Overall, you are typically calm and relaxed - making others feel secure.  Openness to experience:  Your openness to new experiences is high. In life, you tend to be an early adopter of all new things and ideas. You'll try almost anything interesting, and you're constantly pushing your own limits. A great connoisseir of art and beauty, you can find the positive side of almost anything." monitored="false">
+    <PersonalitySpecification derived="false" emotioninfluence="0.20" openness="0.8" conscientiousness="0.8" extraversion="0.8" agreeableness="0.0" neurotism="-0.8"/>
+    <MoodSpecification decaytime="60000" decayperiod="500" neurotismstability="false"/>
+    <EmotionSpecification decaytime="20000" decayperiod="500" decayfunction="linear" baseline="0.5"/>
+    <Appraisal>
+      <Basic>
+        <GoodActOther praiseworthiness="0.5" agency="other"/>
+        <BadActSelf praiseworthiness="-0.5" agency="self"/>
+        <BadLikelyFutureEvent desirability="-0.5" likelihood="0.5"/>
+        <BadActOther praiseworthiness="-0.5" agency="other"/>
+        <GoodEventForGoodOther desirability="0.5" liking="0.5" agency="other"/>
+        <BadEventForGoodOther desirability="-0.5" liking="0.5" agency="other"/>
+        <GoodUnlikelyFutureEvent desirability="0.5" likelihood="-0.5"/>
+        <GoodActSelf praiseworthiness="0.5" agency="self"/>
+        <NastyThing appealingness="-0.5"/>
+        <BadUnlikelyFutureEvent desirability="-0.5" likelihood="-0.5"/>
+        <EventDisconfirmed realization="false"/>
+        <GoodEventForBadOther desirability="0.5" liking="-0.5" agency="other"/>
+        <NiceThing appealingness="0.5"/>
+        <BadEvent desirability="-0.5"/>
+        <GoodLikelyFutureEvent desirability="0.5" likelihood="0.5"/>
+        <EventConfirmed realization="true"/>
+        <GoodEvent desirability="0.5"/>
+        <BadEventForBadOther desirability="-0.5" liking="-0.5" agency="other"/>
+      </Basic>
+    </Appraisal>
+  </CharacterAffect>
+  <CharacterAffect name="Martin" docu="http://www.blogthings.com/thefivefactorpersonalitytest/
+
+Extroversion:
+
+You have medium extroversion.
+You're not the life of the party, but you do show up for the party.
+Sometimes you are full of energy and open to new social experiences.
+But you also need to hibernate and enjoy your &quot;down time.&quot;
+
+Conscientiousness:
+
+You have medium conscientiousness.
+You're generally good at balancing work and play.
+When you need to buckle down, you can usually get tasks done.
+But you've been known to goof off when you know you can get away with it.
+
+Agreeableness:
+
+You have low agreeableness.
+Your self interest comes first, and others come later, if at all.
+In general, you feel that people are not to be trusted.
+And you're skeptical that anyone else really feels differently.
+
+Neuroticism:
+
+You have low neuroticism.
+You are very emotionally stable and mentally together.
+Only the greatest setbacks upset you, and you bounce back quickly.
+Overall, you are typically calm and relaxed - making others feel secure.
+
+Openness to experience:
+
+Your openness to new experiences is high.
+In life, you tend to be an early adopter of all new things and ideas.
+You'll try almost anything interesting, and you're constantly pushing
+your own limits.
+A great connoisseir of art and beauty, you can find the positive side of
+almost anything." monitored="false">
+    <PersonalitySpecification derived="false" emotioninfluence="0.20" openness="0.8" conscientiousness="0.0" extraversion="0.0" agreeableness="-0.8" neurotism="-0.8"/>
+    <MoodSpecification decaytime="60000" decayperiod="500" neurotismstability="false"/>
+    <EmotionSpecification decaytime="20000" decayperiod="500" decayfunction="linear" baseline="0.5"/>
+    <Appraisal>
+      <Basic>
+        <GoodActOther praiseworthiness="0.5" agency="other"/>
+        <BadActSelf praiseworthiness="-0.5" agency="self"/>
+        <BadLikelyFutureEvent desirability="-0.5" likelihood="0.5"/>
+        <BadActOther praiseworthiness="-0.5" agency="other"/>
+        <GoodEventForGoodOther desirability="0.5" liking="0.5" agency="other"/>
+        <BadEventForGoodOther desirability="-0.5" liking="0.5" agency="other"/>
+        <GoodUnlikelyFutureEvent desirability="0.5" likelihood="-0.5"/>
+        <GoodActSelf praiseworthiness="0.5" agency="self"/>
+        <NastyThing appealingness="-0.5"/>
+        <BadUnlikelyFutureEvent desirability="-0.5" likelihood="-0.5"/>
+        <EventDisconfirmed realization="false"/>
+        <GoodEventForBadOther desirability="0.5" liking="-0.5" agency="other"/>
+        <NiceThing appealingness="0.5"/>
+        <BadEvent desirability="-0.5"/>
+        <GoodLikelyFutureEvent desirability="0.5" likelihood="0.5"/>
+        <EventConfirmed realization="true"/>
+        <GoodEvent desirability="0.5"/>
+        <BadEventForBadOther desirability="-0.5" liking="-0.5" agency="other"/>
+      </Basic>
+    </Appraisal>
+  </CharacterAffect>
+  <GroupAffect name="Schulklasse" characters="Sven,Valerie,User" monitored="false" docu="Virtuelle Lehrerin, virtueller Schüler, realer Schüler als Gruppe">
+    <MoodSpecification decaytime="120000" decayperiod="500"/>
+    <EmotionSpecification decaytime="20000" decayperiod="500" decayfunction="linear"/>
+    <Appraisal>
+      <Basic>
+        <GoodEvent desirability="1.0"/>
+        <GoodEventForGoodOther agency="other" desirability="1.0" liking="1.0"/>
+        <GoodEventForBadOther agency="other" desirability="1.0" liking="-1.0"/>
+        <BadEvent desirability="-1.0"/>
+        <BadEventForGoodOther agency="other" desirability="-1.0" liking="1.0"/>
+        <BadEventForBadOther agency="other" desirability="-1.0" liking="-1.0"/>
+        <GoodLikelyFutureEvent desirability="1.0" likelihood="1.0"/>
+        <GoodUnlikelyFutureEvent desirability="1.0" likelihood="-1.0"/>
+        <BadLikelyFutureEvent desirability="-1.0" likelihood="1.0"/>
+        <BadUnlikelyFutureEvent desirability="-1.0" likelihood="-1.0"/>
+        <EventConfirmed realization="true"/>
+        <EventDisconfirmed realization="false"/>
+        <GoodActSelf agency="self" praiseworthiness="1.0"/>
+        <GoodActOther agency="other" praiseworthiness="1.0"/>
+        <BadActSelf agency="self" praiseworthiness="-1.0"/>
+        <BadActOther agency="other" praiseworthiness="-1.0"/>
+        <NiceThing appealingness="1.0"/>
+        <NastyThing appealingness="-1.0"/>
+      </Basic>
+      <IndirectAct type="Attack" performer="Sven">
+        <BadEvent desirability="-0.8"/>
+      </IndirectAct>
+      <IndirectAct type="BadJoke" performer="Sven">
+        <BadEvent desirability="-0.4"/>
+      </IndirectAct>
+      <IndirectAct type="Calm" performer="Valerie">
+        <GoodEvent desirability="0.8"/>
+      </IndirectAct>
+    </Appraisal>
+  </GroupAffect>
+</AffectDefinition>

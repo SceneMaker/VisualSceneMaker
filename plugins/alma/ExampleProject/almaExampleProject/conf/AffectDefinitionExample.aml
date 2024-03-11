@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<AffectDefinition xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="xml.affect.de" xsi:schemaLocation="xml.affect.de Affect.xsd">
+  <CharacterAffect name="Anne" docu="New Character" monitored="false">
+    <PersonalitySpecification derived="false" emotioninfluence="0.20" openness="-0.8" conscientiousness="-0.8" extraversion="1.0" agreeableness="0.8" neurotism="0.3"/>
+    <MoodSpecification decaytime="600000" decayperiod="250" neurotismstability="false"/>
+    <EmotionSpecification decaytime="20000" decayperiod="500" decayfunction="linear" baseline="0.5"/>
+    <Appraisal>
+      <Basic>
+        <GoodActOther praiseworthiness="0.5" agency="other"/>
+        <EventDisconfirmed realization="false"/>
+        <GoodEvent desirability="0.5"/>
+        <GoodActSelf praiseworthiness="0.5" agency="self"/>
+        <BadEvent desirability="-0.5"/>
+        <BadLikelyFutureEvent desirability="-0.5" likelihood="0.5"/>
+        <NiceThing appealingness="0.5"/>
+        <BadEventForGoodOther desirability="-0.5" liking="0.5" agency="other"/>
+        <BadUnlikelyFutureEvent desirability="-0.5" likelihood="-0.5"/>
+        <GoodLikelyFutureEvent desirability="0.5" likelihood="0.5"/>
+        <BadEventForBadOther desirability="-0.5" liking="-0.5" agency="other"/>
+        <NastyThing appealingness="-0.5"/>
+        <EventConfirmed realization="true"/>
+        <BadActSelf praiseworthiness="-0.5" agency="self"/>
+        <GoodEventForBadOther desirability="0.5" liking="-0.5" agency="other"/>
+        <GoodUnlikelyFutureEvent desirability="0.5" likelihood="-0.5"/>
+        <GoodEventForGoodOther desirability="0.5" liking="0.5" agency="other"/>
+        <BadActOther praiseworthiness="-0.5" agency="other"/>
+      </Basic>
+    </Appraisal>
+  </CharacterAffect>
+  <CharacterAffect name="Bob" docu="New Character" monitored="false">
+    <PersonalitySpecification derived="false" emotioninfluence="0.2" openness="0.0" conscientiousness="0.0" extraversion="0.0" agreeableness="0.0" neurotism="0.0"/>
+    <MoodSpecification decaytime="60000" decayperiod="500" neurotismstability="false"/>
+    <EmotionSpecification decaytime="20000" decayperiod="500" decayfunction="linear" baseline="0.5"/>
+    <Appraisal>
+      <Basic>
+        <GoodActOther praiseworthiness="0.5" agency="other"/>
+        <BadActSelf praiseworthiness="-0.5" agency="self"/>
+        <BadLikelyFutureEvent desirability="-0.5" likelihood="0.5"/>
+        <BadActOther praiseworthiness="-0.5" agency="other"/>
+        <GoodEventForGoodOther desirability="0.5" liking="0.5" agency="other"/>
+        <BadEventForGoodOther desirability="-0.5" liking="0.5" agency="other"/>
+        <GoodUnlikelyFutureEvent desirability="0.5" likelihood="-0.5"/>
+        <GoodActSelf praiseworthiness="0.5" agency="self"/>
+        <NastyThing appealingness="-0.5"/>
+        <BadUnlikelyFutureEvent desirability="-0.5" likelihood="-0.5"/>
+        <EventDisconfirmed realization="false"/>
+        <GoodEventForBadOther desirability="0.5" liking="-0.5" agency="other"/>
+        <NiceThing appealingness="0.5"/>
+        <BadEvent desirability="-0.5"/>
+        <GoodLikelyFutureEvent desirability="0.5" likelihood="0.5"/>
+        <EventConfirmed realization="true"/>
+        <GoodEvent desirability="0.5"/>
+        <BadEventForBadOther desirability="-0.5" liking="-0.5" agency="other"/>
+      </Basic>
+    </Appraisal>
+  </CharacterAffect>
+  <GroupAffect name="The Two" characters="Anne,Bob" monitored="false" docu="">
+    <MoodSpecification decaytime="60000" decayperiod="500"/>
+    <EmotionSpecification decaytime="20000" decayperiod="500" decayfunction="linear"/>
+    <Appraisal>
+      <Basic>
+        <GoodEvent desirability="0.5"/>
+        <GoodEventForGoodOther desirability="0.5" liking="0.5" agency="other"/>
+        <GoodEventForBadOther desirability="0.5" liking="-0.5" agency="other"/>
+        <BadEvent desirability="-0.5"/>
+        <BadEventForGoodOther desirability="-0.5" liking="0.5" agency="other"/>
+        <BadEventForBadOther desirability="-0.5" liking="-0.5" agency="other"/>
+        <GoodLikelyFutureEvent desirability="0.5" likelihood="-0.5"/>
+        <GoodUnlikelyFutureEvent/>
+        <BadLikelyFutureEvent desirability="-0.5" likelihood="-0.5"/>
+        <BadUnlikelyFutureEvent/>
+        <EventConfirmed realization="true"/>
+        <EventDisconfirmed realization="false"/>
+        <GoodActSelf praiseworthiness="0.5" agency="self"/>
+        <GoodActOther praiseworthiness="0.5" agency="other"/>
+        <BadActSelf praiseworthiness="-0.5" agency="self"/>
+        <BadActOther praiseworthiness="-0.5" agency="other"/>
+        <NiceThing appealingness="0.5"/>
+        <NastyThing appealingness="-0.5"/>
+      </Basic>
+    </Appraisal>
+  </GroupAffect>
+</AffectDefinition>

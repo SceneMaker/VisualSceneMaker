@@ -90,7 +90,7 @@ public class CharamelHandler extends Thread {
             mLogger.message("new Msg (tag: " + msgTag + " status: " + statusTag + " Length: " + msgLen + ")");
             byte[] msg = new byte[msgLen];
             dInStream.readFully(msg);
-            return new String(msg, "UTF-8");
+            return new String(msg, StandardCharsets.UTF_8);
         } catch (IOException ex) {
             mLogger.warning(ex.toString());
             return null;

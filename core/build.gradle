@@ -13,7 +13,9 @@ if(!project.hasProperty('flavor')){
 
     println("Building jar for ANDROID")
 }
-
+compileJava{
+   //options.release = 8
+}
 repositories {
     mavenCentral()
     maven { url "https://repo.spring.io/libs-release" }

@@ -150,7 +150,7 @@ public final class BINUtilities {
         final String string = Integer.toString(value, 16).toUpperCase();
 
         if (string.charAt(0) == '-') {
-            return "-0X" + string.substring(1, string.length()) + "S";
+            return "-0X" + string.substring(1) + "S";
         } else {
             return "0X" + string + "S";
         }
@@ -160,7 +160,7 @@ public final class BINUtilities {
         final String string = Integer.toString(value, 16).toUpperCase();
 
         if (string.charAt(0) == '-') {
-            return "-0X" + string.substring(1, string.length());
+            return "-0X" + string.substring(1);
         } else {
             return "0X" + string;
         }
@@ -170,7 +170,7 @@ public final class BINUtilities {
         final String string = Long.toString(value, 16).toUpperCase();
 
         if (string.charAt(0) == '-') {
-            return "-0X" + string.substring(1, string.length()) + "L";
+            return "-0X" + string.substring(1) + "L";
         } else {
             return "0X" + string + "L";
         }
@@ -183,7 +183,7 @@ public final class BINUtilities {
         final String string = Integer.toString(value, 8).toUpperCase();
 
         if (string.charAt(0) == '-') {
-            return "-0" + string.substring(1, string.length()) + "S";
+            return "-0" + string.substring(1) + "S";
         } else {
             return "0" + string + "S";
         }
@@ -193,7 +193,7 @@ public final class BINUtilities {
         final String string = Integer.toString(value, 8).toUpperCase();
 
         if (string.charAt(0) == '-') {
-            return "-0" + string.substring(1, string.length());
+            return "-0" + string.substring(1);
         } else {
             return "0" + string;
         }
@@ -203,7 +203,7 @@ public final class BINUtilities {
         final String string = Long.toString(value, 8).toUpperCase();
 
         if (string.charAt(0) == '-') {
-            return "-0" + string.substring(1, string.length()) + "L";
+            return "-0" + string.substring(1) + "L";
         } else {
             return "0" + string + "L";
         }

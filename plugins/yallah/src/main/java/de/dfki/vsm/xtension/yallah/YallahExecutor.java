@@ -20,7 +20,7 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Objects;
 
-public class YallahExecutor extends ActivityExecutor implements ExportableProperties {
+class YallahExecutor extends ActivityExecutor implements ExportableProperties {
 
     /** The properties of ths plugin. */
     private final YallahProperties mYallahProperties = new YallahProperties() ;

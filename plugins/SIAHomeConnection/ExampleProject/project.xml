@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Project name="Ubidenz Dialog Manager Temp Project">
+  <Plugins>
+    <Plugin type="device" name="SIAHomeConnection" class="de.dfki.vsm.xtension.SIAHomeConnection.SIAHomeConnectionExecutor" load="true">
+    </Plugin>
+  </Plugins>
+  <Agents>
+    <Agent name="sia" device="SIAHomeConnection">
+    </Agent>
+  </Agents>
+  <Player>
+  </Player>
+</Project>

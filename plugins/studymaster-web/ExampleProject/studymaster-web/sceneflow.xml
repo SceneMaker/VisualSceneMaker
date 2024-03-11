@@ -1,40 +1,52 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<SceneFlow id="" name="default" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Wed, 30 Mar 2022 00:03:19" start="N1;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
+<SceneFlow id="" name="default" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Tue, 5 Mar 2024 14:52:45" start="N1;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
   <Define>
   </Define>
   <Declare>
-    <VariableDefinition type="String" name ="name">
-      <StringLiteral><![CDATA[]]></StringLiteral>
-    </VariableDefinition>
-    <VariableDefinition type="String" name ="surname">
-      <StringLiteral><![CDATA[]]></StringLiteral>
-    </VariableDefinition>
-    <VariableDefinition type="String" name ="gender">
-      <StringLiteral><![CDATA[]]></StringLiteral>
-    </VariableDefinition>
-    <VariableDefinition type="String" name ="graduated">
-      <StringLiteral><![CDATA[]]></StringLiteral>
-    </VariableDefinition>
-    <VariableDefinition type="String" name ="weight">
-      <StringLiteral><![CDATA[]]></StringLiteral>
-    </VariableDefinition>
-    <VariableDefinition type="String" name ="request_result">
-      <StringLiteral><![CDATA[]]></StringLiteral>
-    </VariableDefinition>
     <VariableDefinition type="Bool" name ="studymaster_connected">
       <BoolLiteral value="false"/>
     </VariableDefinition>
     <VariableDefinition type="String" name ="studymaster_info">
       <StringLiteral><![CDATA[]]></StringLiteral>
     </VariableDefinition>
+    <VariableDefinition type="String" name ="request_result">
+      <StringLiteral><![CDATA[]]></StringLiteral>
+    </VariableDefinition>
+    <VariableDefinition type="String" name ="name">
+      <StringLiteral><![CDATA[]]></StringLiteral>
+    </VariableDefinition>
+    <VariableDefinition type="String" name ="surname">
+      <StringLiteral><![CDATA[]]></StringLiteral>
+    </VariableDefinition>
+    <VariableDefinition type="String" name ="weight">
+      <StringLiteral><![CDATA[]]></StringLiteral>
+    </VariableDefinition>
+    <VariableDefinition type="String" name ="weight2">
+      <StringLiteral><![CDATA[]]></StringLiteral>
+    </VariableDefinition>
+    <VariableDefinition type="String" name ="gender">
+      <StringLiteral><![CDATA[]]></StringLiteral>
+    </VariableDefinition>
+    <VariableDefinition type="String" name ="gender2">
+      <StringLiteral><![CDATA[]]></StringLiteral>
+    </VariableDefinition>
+    <VariableDefinition type="String" name ="graduated">
+      <StringLiteral><![CDATA[]]></StringLiteral>
+    </VariableDefinition>
+    <VariableDefinition type="String" name ="graduated2">
+      <StringLiteral><![CDATA[]]></StringLiteral>
+    </VariableDefinition>
     <VariableDefinition type="String" name ="intensity">
+      <StringLiteral><![CDATA[]]></StringLiteral>
+    </VariableDefinition>
+    <VariableDefinition type="String" name ="intensity2">
       <StringLiteral><![CDATA[]]></StringLiteral>
     </VariableDefinition>
   </Declare>
   <Commands>
   </Commands>
   <LocalVariableBadge>
-    <Position xPos="1395" yPos="3"/>
+    <Position xPos="1394" yPos="3"/>
   </LocalVariableBadge>
   <GlobalVariableBadge>
     <Position xPos="10" yPos="10"/>
@@ -61,7 +73,7 @@
     </Graphics>
     <Text style="color:blue">
       User clicked Cancel.
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              Reset result action and loop back for another request.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  Reset result action and loop back for another request.
     </Text>
   </Comment>
   <Comment>
@@ -70,7 +82,7 @@
     </Graphics>
     <Text style="color:blue">
       Start.
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      Open http://localhost:8080 to see the GUI
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          Open http://localhost:8080 to see the GUI
     </Text>
   </Comment>
   <Comment>
@@ -199,7 +211,7 @@
     </Declare>
     <Commands>
       <PlayScene>
-        <StringLiteral><![CDATA[RequestUserInfo]]></StringLiteral>
+        <StringLiteral><![CDATA[RequestUserInfo3]]></StringLiteral>
       </PlayScene>
     </Commands>
     <CEdge target="N3" start="">
@@ -217,8 +229,8 @@
     <CEdge target="N1" start="">
       <Graphics>
         <Connection>
-          <ControlPoint xPos="1067" yPos="316" ctrlXPos="808" ctrlYPos="485"/>
-          <ControlPoint xPos="186" yPos="306" ctrlXPos="492" ctrlYPos="537"/>
+          <ControlPoint xPos="1067" yPos="316" ctrlXPos="368" ctrlYPos="701"/>
+          <ControlPoint xPos="186" yPos="306" ctrlXPos="606" ctrlYPos="306"/>
         </Connection>
       </Graphics>
       <Eq>

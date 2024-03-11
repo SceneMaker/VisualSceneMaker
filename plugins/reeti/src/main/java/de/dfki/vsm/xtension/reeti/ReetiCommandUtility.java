@@ -22,7 +22,7 @@ import java.util.logging.Logger;
 public class ReetiCommandUtility {
 
     // used to adjust the value of command.
-    private static HashMap<String, String> valRecord = new HashMap<>();
+    private static final HashMap<String, String> valRecord = new HashMap<>();
 
     // Receive the feedback from opencv to adjust the action of reeti
     private static DatagramSocket serverSocket;

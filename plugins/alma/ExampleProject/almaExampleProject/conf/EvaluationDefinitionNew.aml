@@ -1,0 +1,594 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<AffectDefinition xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="xml.affect.de" xsi:schemaLocation="xml.affect.de ../xsd/Affect.xsd">
+  <CharacterAffect name="Anne" monitored="false" docu="Testperson A">
+    <PersonalitySpecification derived="false" emotioninfluence="0.20" openness="0.1" conscientiousness="0.2" extraversion="0.5" agreeableness="0.3" neurotism="-0.3"/>
+    <MoodSpecification decaytime="60000" decayperiod="500" neurotismstability="false"/>
+    <EmotionSpecification decaytime="60000" decayperiod="500" decayfunction="hyperbolic" baseline="0.5"/>
+    <Appraisal>
+      <Basic>
+        <GoodActOther praiseworthiness="0.5" agency="other"/>
+        <BadActSelf praiseworthiness="-0.5" agency="self"/>
+        <BadLikelyFutureEvent desirability="-0.5" likelihood="0.5"/>
+        <BadActOther praiseworthiness="-0.8" agency="other"/>
+        <GoodEventForGoodOther desirability="0.5" liking="0.5" agency="other"/>
+        <BadEventForGoodOther desirability="-0.5" liking="0.5" agency="other"/>
+        <GoodUnlikelyFutureEvent desirability="0.5" likelihood="-0.5"/>
+        <GoodActSelf praiseworthiness="0.5" agency="self"/>
+        <NastyThing appealingness="-0.8"/>
+        <BadUnlikelyFutureEvent desirability="-0.5" likelihood="-0.5"/>
+        <EventDisconfirmed realization="false"/>
+        <GoodEventForBadOther desirability="0.5" liking="-0.5" agency="other"/>
+        <NiceThing appealingness="0.5"/>
+        <BadEvent desirability="-0.5"/>
+        <GoodLikelyFutureEvent desirability="0.5" likelihood="0.5"/>
+        <EventConfirmed realization="true"/>
+        <GoodEvent desirability="0.5"/>
+        <BadEventForBadOther desirability="-0.5" liking="-0.5" agency="other"/>
+      </Basic>
+      <SelfAct type="Regret">
+        <BadActSelf praiseworthiness="-0.8" agency="self"/>
+      </SelfAct>
+      <SelfAct type="Accuse">
+        <BadActOther praiseworthiness="-0.7" agency="other"/>
+      </SelfAct>
+      <SelfAct type="ChargeStupidity">
+        <BadActOther praiseworthiness="-0.8" agency="other"/>
+      </SelfAct>
+      <SelfAct type="PraiseAction">
+        <GoodActOther praiseworthiness="0.5" agency="other"/>
+      </SelfAct>
+      <SelfAct type="LowerArtworkMichelangelo">
+        <NastyThing appealingness="-0.5"/>
+      </SelfAct>
+      <SelfAct type="Thank">
+        <GoodActOther praiseworthiness="0.7" agency="other"/>
+      </SelfAct>
+      <SelfAct type="BringGoodNews">
+        <GoodEventForGoodOther desirability="0.5" liking="0.5" agency="other"/>
+      </SelfAct>
+      <SelfAct type="CrazyAboutSwedenBeauty">
+        <NiceThing appealingness="0.7"/>
+      </SelfAct>
+      <SelfAct type="OfferGood">
+        <GoodActSelf praiseworthiness="0.6" agency="self"/>
+      </SelfAct>
+      <SelfAct type="Console">
+        <BadEventForGoodOther desirability="-0.8" liking="0.7" agency="other"/>
+      </SelfAct>
+      <SelfAct type="Attack">
+        <BadActOther praiseworthiness="-0.8" agency="other"/>
+      </SelfAct>
+      <SelfAct type="ConfirmFact">
+        <EventConfirmed realization="true"/>
+      </SelfAct>
+      <SelfAct type="ConfirmConcern">
+        <EventConfirmed realization="true"/>
+      </SelfAct>
+      <SelfAct type="Tease">
+        <BadEventForBadOther desirability="-0.5" liking="-0.5" agency="other"/>
+      </SelfAct>
+      <SelfAct type="GiveHope">
+        <GoodActSelf praiseworthiness="0.3" agency="self"/>
+      </SelfAct>
+      <SelfAct type="NegCommentObject">
+        <NastyThing appealingness="-0.7"/>
+      </SelfAct>
+      <SelfAct type="Condemn">
+        <BadActOther praiseworthiness="-0.9" agency="other"/>
+      </SelfAct>
+      <SelfAct type="Excuse">
+        <BadEvent desirability="-0.2"/>
+        <BadActSelf praiseworthiness="-0.2" agency="self"/>
+      </SelfAct>
+      <SelfAct type="ThreatenBad">
+        <BadEvent desirability="-0.7"/>
+        <BadActOther praiseworthiness="-0.7" agency="other"/>
+      </SelfAct>
+      <SelfAct type="Chide">
+        <BadActOther praiseworthiness="-0.8" agency="other"/>
+      </SelfAct>
+      <SelfAct type="Admire">
+        <GoodActOther praiseworthiness="0.8" agency="other"/>
+      </SelfAct>
+      <SelfAct type="Insult">
+        <BadActOther praiseworthiness="-0.8" agency="other"/>
+      </SelfAct>
+      <SelfAct type="Blame">
+        <BadEvent desirability="-0.2"/>
+        <BadActOther praiseworthiness="-0.3" agency="other"/>
+      </SelfAct>
+      <SelfAct type="DiffuseConcern">
+        <GoodActSelf praiseworthiness="0.7" agency="self"/>
+      </SelfAct>
+      <SelfAct type="ConjureBad">
+        <BadActOther praiseworthiness="-0.8" agency="other"/>
+      </SelfAct>
+      <SelfAct type="RetractAccuse">
+        <BadEvent desirability="-0.4"/>
+        <BadActSelf praiseworthiness="-0.3" agency="self"/>
+      </SelfAct>
+      <SelfAct type="Defend">
+        <GoodActSelf praiseworthiness="0.3" agency="self"/>
+      </SelfAct>
+      <SelfAct type="WishGood">
+        <GoodEventForGoodOther desirability="0.7" liking="0.6" agency="other"/>
+      </SelfAct>
+      <SelfAct type="BringBadNews">
+        <BadEventForGoodOther desirability="-0.7" liking="0.6" agency="other"/>
+      </SelfAct>
+      <SelfAct type="ConfirmOffer">
+        <EventConfirmed realization="true"/>
+        <GoodActSelf praiseworthiness="0.7" agency="self"/>
+      </SelfAct>
+      <SelfAct type="ConfirmConjuredBad">
+        <EventConfirmed realization="true"/>
+      </SelfAct>
+      <SelfAct type="Calm">
+        <GoodActSelf praiseworthiness="0.7" agency="self"/>
+      </SelfAct>
+      <SelfAct type="RequestHelp">
+        <BadEvent desirability="-0.4"/>
+      </SelfAct>
+      <SelfAct type="PosCommentObject">
+        <NiceThing appealingness="0.7"/>
+      </SelfAct>
+      <SelfAct type="Encourage">
+        <GoodActSelf praiseworthiness="0.7" agency="self"/>
+      </SelfAct>
+      <SelfAct type="RevealGuild">
+        <BadActSelf praiseworthiness="-0.7" agency="self"/>
+      </SelfAct>
+      <DirectAct type="PraiseAction" performer="Bruno">
+        <GoodActSelf praiseworthiness="0.5" agency="self"/>
+      </DirectAct>
+      <DirectAct type="BringGoodNews" performer="Bruno">
+        <EventConfirmed realization="true"/>
+      </DirectAct>
+      <DirectAct type="Console" performer="Bruno">
+        <GoodActOther praiseworthiness="0.6" agency="other"/>
+      </DirectAct>
+      <DirectAct type="Attack" performer="Bruno">
+        <BadLikelyFutureEvent desirability="-0.8" likelihood="0.3"/>
+      </DirectAct>
+      <DirectAct type="ReviseDoWrong" performer="Clementine">
+        <EventDisconfirmed realization="false"/>
+        <GoodActSelf praiseworthiness="0.1" agency="self"/>
+      </DirectAct>
+      <DirectAct type="ReviseDoWrong" performer="Bruno">
+        <EventDisconfirmed realization="false"/>
+        <GoodActSelf praiseworthiness="0.1" agency="self"/>
+      </DirectAct>
+      <DirectAct type="ConfirmConcern" performer="Clementine">
+        <EventConfirmed realization="true"/>
+      </DirectAct>
+      <DirectAct type="ConfirmConcern" performer="Bruno">
+        <EventConfirmed realization="true"/>
+      </DirectAct>
+      <DirectAct type="GiveHope" performer="Bruno">
+        <GoodLikelyFutureEvent desirability="0.7" likelihood="0.7"/>
+        <GoodActOther praiseworthiness="0.3" agency="other"/>
+      </DirectAct>
+      <DirectAct type="Excuse" performer="Bruno">
+        <BadEvent desirability="-0.7"/>
+      </DirectAct>
+      <DirectAct type="AnnounceConcern" performer="Anne">
+        <BadLikelyFutureEvent desirability="-0.8" likelihood="0.7"/>
+      </DirectAct>
+      <DirectAct type="AnnounceConcern" performer="Bruno">
+        <BadActOther praiseworthiness="-0.2" agency="other"/>
+      </DirectAct>
+      <DirectAct type="Condemn" performer="Bruno">
+        <EventConfirmed realization="true"/>
+        <BadActSelf praiseworthiness="-0.9" agency="self"/>
+      </DirectAct>
+      <DirectAct type="Chide" performer="Clementine">
+        <BadLikelyFutureEvent desirability="-1.0" likelihood="1.0"/>
+      </DirectAct>
+      <DirectAct type="Chide" performer="Bruno">
+        <BadLikelyFutureEvent desirability="-1.0" likelihood="1.0"/>
+      </DirectAct>
+      <DirectAct type="Confirm" performer="Bruno">
+        <EventConfirmed realization="true"/>
+      </DirectAct>
+      <DirectAct type="Admire" performer="Bruno">
+        <GoodActOther praiseworthiness="0.9" agency="other"/>
+      </DirectAct>
+      <DirectAct type="PointToUgliness" performer="Bruno">
+        <BadActOther praiseworthiness="-0.2" agency="other"/>
+        <NastyThing appealingness="-1.0"/>
+      </DirectAct>
+      <DirectAct type="Insult" performer="Clementine">
+        <BadActOther praiseworthiness="-0.8" agency="other"/>
+      </DirectAct>
+      <DirectAct type="Insult" performer="Bruno">
+        <BadActOther praiseworthiness="-0.5" agency="other"/>
+      </DirectAct>
+      <DirectAct type="DiffuseConcern" performer="Clementine">
+        <EventDisconfirmed realization="false"/>
+      </DirectAct>
+      <DirectAct type="ConcedeStupidity" performer="Bruno">
+        <BadActOther praiseworthiness="-0.9" agency="other"/>
+      </DirectAct>
+      <DirectAct type="FaithIn" performer="Bruno">
+        <GoodLikelyFutureEvent desirability="0.6" likelihood="0.6"/>
+      </DirectAct>
+      <DirectAct type="Delight" performer="Bruno">
+        <GoodEvent desirability="0.5"/>
+      </DirectAct>
+      <DirectAct type="Boast" performer="Clementine">
+        <GoodEventForBadOther desirability="0.7" liking="-0.6" agency="other"/>
+      </DirectAct>
+      <DirectAct type="Boast" performer="Bruno">
+        <GoodEventForBadOther desirability="0.8" liking="-0.3" agency="other"/>
+      </DirectAct>
+      <DirectAct type="CompareWithBetter" performer="Bruno">
+        <BadEventForGoodOther desirability="-0.3" liking="0.6" agency="other"/>
+      </DirectAct>
+      <DirectAct type="Defend" performer="Clementine">
+        <BadActOther praiseworthiness="-0.6" agency="other"/>
+      </DirectAct>
+      <DirectAct type="Defend" performer="Bruno">
+        <BadEvent desirability="-0.4"/>
+        <BadActOther praiseworthiness="-0.3" agency="other"/>
+      </DirectAct>
+      <DirectAct type="WishGood" performer="Bruno">
+        <GoodEvent desirability="0.5"/>
+      </DirectAct>
+      <DirectAct type="BringBadNews" performer="Bruno">
+        <EventDisconfirmed realization="false"/>
+      </DirectAct>
+      <DirectAct type="ProvideHelp" performer="Bruno">
+        <GoodActOther praiseworthiness="0.6" agency="other"/>
+      </DirectAct>
+      <DirectAct type="Approve" performer="Bruno">
+        <EventConfirmed realization="true"/>
+      </DirectAct>
+      <DirectAct type="PosCommentObject" performer="Bruno">
+        <GoodActOther praiseworthiness="0.2" agency="other"/>
+      </DirectAct>
+      <DirectAct type="PosCommentSituation" performer="Bruno">
+        <GoodEvent desirability="0.5"/>
+      </DirectAct>
+    </Appraisal>
+  </CharacterAffect>
+  <CharacterAffect name="Bruno" monitored="false" docu="Testperson B">
+    <PersonalitySpecification derived="false" emotioninfluence="0.20" openness="0.4" conscientiousness="-0.2" extraversion="0.2" agreeableness="-0.2" neurotism="-0.3"/>
+    <MoodSpecification decaytime="60000" decayperiod="500" neurotismstability="false"/>
+    <EmotionSpecification decaytime="20000" decayperiod="500" decayfunction="hyperbolic" baseline="0.5"/>
+    <Appraisal>
+      <Basic>
+        <GoodActOther praiseworthiness="0.5" agency="other"/>
+        <BadActSelf praiseworthiness="-0.8" agency="self"/>
+        <BadLikelyFutureEvent desirability="-0.5" likelihood="0.5"/>
+        <BadActOther praiseworthiness="-0.6" agency="other"/>
+        <GoodEventForGoodOther desirability="0.5" liking="0.5" agency="other"/>
+        <BadEventForGoodOther desirability="-0.7" liking="0.7" agency="other"/>
+        <GoodUnlikelyFutureEvent desirability="0.5" likelihood="-0.5"/>
+        <GoodActSelf praiseworthiness="0.8" agency="self"/>
+        <NastyThing appealingness="-0.5"/>
+        <BadUnlikelyFutureEvent desirability="-0.6" likelihood="-0.5"/>
+        <EventDisconfirmed realization="false"/>
+        <GoodEventForBadOther desirability="0.5" liking="-0.5" agency="other"/>
+        <NiceThing appealingness="0.7"/>
+        <BadEvent desirability="-0.6"/>
+        <GoodLikelyFutureEvent desirability="0.5" likelihood="0.5"/>
+        <EventConfirmed realization="true"/>
+        <GoodEvent desirability="0.8"/>
+        <BadEventForBadOther desirability="-0.7" liking="-0.5" agency="other"/>
+      </Basic>
+      <SelfAct type="PraiseAction">
+        <GoodActOther praiseworthiness="0.8" agency="other"/>
+      </SelfAct>
+      <SelfAct type="DenyOwnConfidence">
+        <BadActSelf praiseworthiness="-0.8" agency="self"/>
+      </SelfAct>
+      <SelfAct type="Thank">
+        <GoodEvent desirability="0.7"/>
+        <GoodActOther praiseworthiness="0.7" agency="other"/>
+      </SelfAct>
+      <SelfAct type="BringGoodNews">
+        <GoodEventForGoodOther desirability="0.8" liking="0.6" agency="other"/>
+      </SelfAct>
+      <SelfAct type="Console">
+        <BadEventForGoodOther desirability="-0.9" liking="0.9" agency="other"/>
+        <GoodActSelf praiseworthiness="0.3" agency="self"/>
+      </SelfAct>
+      <SelfAct type="Attack">
+        <BadActOther praiseworthiness="-0.8" agency="other"/>
+      </SelfAct>
+      <SelfAct type="ReviseDoWrong">
+        <GoodEvent desirability="0.7"/>
+      </SelfAct>
+      <SelfAct type="ConfirmConcern">
+        <EventConfirmed realization="true"/>
+      </SelfAct>
+      <SelfAct type="GiveHope">
+        <GoodLikelyFutureEvent desirability="0.6" likelihood="0.5"/>
+        <GoodActSelf praiseworthiness="0.5" agency="self"/>
+      </SelfAct>
+      <SelfAct type="Excuse">
+        <BadActSelf praiseworthiness="-0.6" agency="self"/>
+      </SelfAct>
+      <SelfAct type="Condemn">
+        <BadActOther praiseworthiness="-1.0" agency="other"/>
+      </SelfAct>
+      <SelfAct type="AnnounceConcern">
+        <BadUnlikelyFutureEvent desirability="-0.9" likelihood="-0.2"/>
+      </SelfAct>
+      <SelfAct type="Confirm">
+        <GoodEvent desirability="0.8"/>
+      </SelfAct>
+      <SelfAct type="Chide">
+        <BadEvent desirability="-0.5"/>
+        <BadLikelyFutureEvent desirability="-0.5" likelihood="0.5"/>
+      </SelfAct>
+      <SelfAct type="Admire">
+        <GoodActOther praiseworthiness="0.8" agency="other"/>
+      </SelfAct>
+      <SelfAct type="PointToUgliness">
+        <GoodActSelf praiseworthiness="0.2" agency="self"/>
+        <NastyThing appealingness="-0.9"/>
+      </SelfAct>
+      <SelfAct type="Insult">
+        <BadEvent desirability="-0.5"/>
+        <GoodActSelf praiseworthiness="0.8" agency="self"/>
+      </SelfAct>
+      <SelfAct type="FaithIn">
+        <GoodEvent desirability="0.3"/>
+        <GoodActSelf praiseworthiness="0.2" agency="self"/>
+      </SelfAct>
+      <SelfAct type="ConcedeStupidity">
+        <BadActSelf praiseworthiness="-0.9" agency="self"/>
+      </SelfAct>
+      <SelfAct type="Delight">
+        <GoodEventForGoodOther desirability="0.5" liking="0.5" agency="other"/>
+      </SelfAct>
+      <SelfAct type="Boast">
+        <GoodActSelf praiseworthiness="0.5" agency="self"/>
+      </SelfAct>
+      <SelfAct type="CompareWithBetter">
+        <GoodEventForBadOther desirability="0.6" liking="-0.6" agency="other"/>
+      </SelfAct>
+      <SelfAct type="Defend">
+        <GoodActSelf praiseworthiness="0.7" agency="self"/>
+      </SelfAct>
+      <SelfAct type="WishGood">
+        <GoodEventForGoodOther desirability="0.5" liking="0.6" agency="other"/>
+      </SelfAct>
+      <SelfAct type="BringBadNews">
+        <BadEventForGoodOther desirability="-0.5" liking="0.5" agency="other"/>
+      </SelfAct>
+      <SelfAct type="ProvideHelp">
+        <GoodActSelf praiseworthiness="0.8" agency="self"/>
+      </SelfAct>
+      <SelfAct type="Approve">
+        <GoodEvent desirability="0.2"/>
+      </SelfAct>
+      <SelfAct type="PosCommentObject">
+        <NiceThing appealingness="0.8"/>
+      </SelfAct>
+      <SelfAct type="PosCommentSituation">
+        <GoodEventForGoodOther desirability="0.5" liking="0.5" agency="other"/>
+      </SelfAct>
+      <DirectAct type="Regret" performer="Anne">
+        <BadActOther praiseworthiness="-0.8" agency="other"/>
+      </DirectAct>
+      <DirectAct type="Accuse" performer="Anne">
+        <BadLikelyFutureEvent desirability="-0.8" likelihood="0.8"/>
+      </DirectAct>
+      <DirectAct type="PraiseAction" performer="Anne">
+        <GoodActSelf praiseworthiness="0.3" agency="self"/>
+      </DirectAct>
+      <DirectAct type="ChargeStupidity" performer="Anne">
+        <BadEvent desirability="-0.9"/>
+      </DirectAct>
+      <DirectAct type="LowerArtworkMichelangelo" performer="Anne">
+        <NiceThing appealingness="0.7"/>
+      </DirectAct>
+      <DirectAct type="Thank" performer="Anne">
+        <GoodActSelf praiseworthiness="0.7" agency="self"/>
+      </DirectAct>
+      <DirectAct type="BringGoodNews" performer="Anne">
+        <GoodEvent desirability="0.5"/>
+      </DirectAct>
+      <DirectAct type="CrazyAboutSwedenBeauty" performer="Anne">
+        <GoodEventForGoodOther desirability="0.7" liking="0.7" agency="other"/>
+      </DirectAct>
+      <DirectAct type="OfferGood" performer="Anne">
+        <GoodLikelyFutureEvent desirability="0.7" likelihood="0.5"/>
+        <GoodActOther praiseworthiness="0.3" agency="other"/>
+      </DirectAct>
+      <DirectAct type="Console" performer="Anne">
+        <BadEvent desirability="-0.6"/>
+        <GoodActOther praiseworthiness="0.1" agency="other"/>
+      </DirectAct>
+      <DirectAct type="ConfirmFact" performer="Anne">
+        <EventConfirmed realization="true"/>
+      </DirectAct>
+      <DirectAct type="ConfirmConcern" performer="Anne">
+        <EventConfirmed realization="true"/>
+      </DirectAct>
+      <DirectAct type="Tease" performer="Anne">
+        <BadActOther praiseworthiness="-0.5" agency="other"/>
+      </DirectAct>
+      <DirectAct type="GiveHope" performer="Anne">
+        <GoodLikelyFutureEvent desirability="0.7" likelihood="0.5"/>
+        <GoodActOther praiseworthiness="0.2" agency="other"/>
+      </DirectAct>
+      <DirectAct type="NegCommentObject" performer="Anne">
+        <NiceThing appealingness="0.5"/>
+      </DirectAct>
+      <DirectAct type="AnnounceConcern" performer="Anne">
+        <BadLikelyFutureEvent desirability="-0.8" likelihood="0.6"/>
+      </DirectAct>
+      <DirectAct type="ThreatenBad" performer="Anne">
+        <BadEvent desirability="-0.8"/>
+      </DirectAct>
+      <DirectAct type="Chide" performer="Anne">
+        <BadActSelf praiseworthiness="-0.8" agency="self"/>
+      </DirectAct>
+      <DirectAct type="ConfirmBad" performer="Anne">
+        <EventConfirmed realization="true"/>
+        <BadActOther praiseworthiness="-0.7" agency="other"/>
+      </DirectAct>
+      <DirectAct type="Admire" performer="Anne">
+        <GoodActSelf praiseworthiness="0.9" agency="self"/>
+      </DirectAct>
+      <DirectAct type="Insult" performer="Anne">
+        <BadEvent desirability="-0.5"/>
+      </DirectAct>
+      <DirectAct type="Blame" performer="Anne">
+        <BadActOther praiseworthiness="-0.8" agency="other"/>
+      </DirectAct>
+      <DirectAct type="DiffuseConcern" performer="Anne">
+        <EventDisconfirmed realization="false"/>
+        <GoodActOther praiseworthiness="0.2" agency="other"/>
+      </DirectAct>
+      <DirectAct type="ConjureBad" performer="Anne">
+        <BadActOther praiseworthiness="-0.8" agency="other"/>
+      </DirectAct>
+      <DirectAct type="RetractAccuse" performer="Anne">
+        <EventDisconfirmed realization="false"/>
+        <GoodActSelf praiseworthiness="0.3" agency="self"/>
+      </DirectAct>
+      <DirectAct type="Defend" performer="Anne">
+        <BadEvent desirability="-0.8"/>
+      </DirectAct>
+      <DirectAct type="WishGood" performer="Anne">
+        <GoodEvent desirability="0.6"/>
+      </DirectAct>
+      <DirectAct type="BringBadNews" performer="Anne">
+        <EventDisconfirmed realization="false"/>
+      </DirectAct>
+      <DirectAct type="ConfirmOffer" performer="Anne">
+        <EventConfirmed realization="true"/>
+      </DirectAct>
+      <DirectAct type="ConfirmConjuredBad" performer="Anne">
+        <EventConfirmed realization="true"/>
+        <BadActOther praiseworthiness="-0.9" agency="other"/>
+      </DirectAct>
+      <DirectAct type="Calm" performer="Anne">
+        <GoodActOther praiseworthiness="0.3" agency="other"/>
+      </DirectAct>
+      <DirectAct type="ProvideHelp" performer="Anne">
+        <BadEvent desirability="-0.8"/>
+        <BadActSelf praiseworthiness="-0.6" agency="self"/>
+      </DirectAct>
+      <DirectAct type="RequestHelp" performer="Anne">
+        <GoodEvent desirability="0.4"/>
+      </DirectAct>
+      <DirectAct type="PosCommentObject" performer="Anne">
+        <GoodEventForGoodOther desirability="0.4" liking="0.7" agency="other"/>
+      </DirectAct>
+      <DirectAct type="Encourage" performer="Anne">
+        <GoodLikelyFutureEvent desirability="0.8" likelihood="0.7"/>
+        <GoodActOther praiseworthiness="0.5" agency="other"/>
+      </DirectAct>
+      <DirectAct type="RevealGuild" performer="Anne">
+        <BadEvent desirability="-0.4"/>
+      </DirectAct>
+      <IndirectAct type="Insult" performer="Clementine">
+        <BadEvent desirability="-0.7"/>
+        <BadActOther praiseworthiness="-0.7" agency="other"/>
+      </IndirectAct>
+    </Appraisal>
+  </CharacterAffect>
+  <CharacterAffect name="Clementine" monitored="false" docu="">
+    <PersonalitySpecification derived="false" emotioninfluence="0.20" openness="0.3" conscientiousness="-0.2" extraversion="-0.1" agreeableness="0.3" neurotism="0.1"/>
+    <MoodSpecification decaytime="60000" decayperiod="500" neurotismstability="false"/>
+    <EmotionSpecification decaytime="20000" decayperiod="500" decayfunction="hyperbolic" baseline="0.5"/>
+    <Appraisal>
+      <Basic>
+        <GoodActOther praiseworthiness="0.5" agency="other"/>
+        <BadActSelf praiseworthiness="-0.5" agency="self"/>
+        <BadLikelyFutureEvent desirability="-0.5" likelihood="0.5"/>
+        <BadActOther praiseworthiness="-0.5" agency="other"/>
+        <GoodEventForGoodOther desirability="0.5" liking="0.5" agency="other"/>
+        <BadEventForGoodOther desirability="-0.5" liking="0.5" agency="other"/>
+        <GoodUnlikelyFutureEvent desirability="0.5" likelihood="-0.5"/>
+        <GoodActSelf praiseworthiness="0.5" agency="self"/>
+        <NastyThing appealingness="-0.5"/>
+        <BadUnlikelyFutureEvent desirability="-0.5" likelihood="-0.5"/>
+        <EventDisconfirmed realization="false"/>
+        <GoodEventForBadOther desirability="0.5" liking="-0.5" agency="other"/>
+        <NiceThing appealingness="0.5"/>
+        <BadEvent desirability="-0.5"/>
+        <GoodLikelyFutureEvent desirability="0.5" likelihood="0.5"/>
+        <EventConfirmed realization="true"/>
+        <GoodEvent desirability="0.5"/>
+        <BadEventForBadOther desirability="-0.5" liking="-0.5" agency="other"/>
+      </Basic>
+      <SelfAct type="ReviseDoWrong">
+        <GoodEvent desirability="0.7"/>
+      </SelfAct>
+      <SelfAct type="WishGood">
+        <GoodEventForGoodOther desirability="0.6" liking="0.6" agency="other"/>
+      </SelfAct>
+      <SelfAct type="Insult">
+        <GoodActSelf praiseworthiness="0.6" agency="self"/>
+      </SelfAct>
+      <SelfAct type="ConfirmConcern">
+        <BadEvent desirability="-0.6"/>
+        <BadActOther praiseworthiness="-0.7" agency="other"/>
+      </SelfAct>
+      <SelfAct type="DiffuseConcern">
+        <GoodEvent desirability="0.4"/>
+      </SelfAct>
+      <SelfAct type="Boast">
+        <GoodActSelf praiseworthiness="0.7" agency="self"/>
+      </SelfAct>
+      <SelfAct type="Chide">
+        <BadEvent desirability="-0.5"/>
+      </SelfAct>
+      <SelfAct type="Defend">
+        <GoodActSelf praiseworthiness="0.8" agency="self"/>
+      </SelfAct>
+      <DirectAct type="Attack" performer="Anne">
+        <BadActOther praiseworthiness="-0.6" agency="other"/>
+      </DirectAct>
+      <DirectAct type="Insult" performer="Anne">
+        <BadActOther praiseworthiness="-0.8" agency="other"/>
+      </DirectAct>
+      <DirectAct type="LowerArtworkMichelangelo" performer="Anne">
+        <BadActOther praiseworthiness="-0.6" agency="other"/>
+      </DirectAct>
+      <DirectAct type="Tease" performer="Anne">
+        <BadActOther praiseworthiness="-0.7" agency="other"/>
+      </DirectAct>
+      <DirectAct type="Condemn" performer="Anne">
+        <BadEvent desirability="-0.7"/>
+        <BadActOther praiseworthiness="-0.7" agency="other"/>
+      </DirectAct>
+      <IndirectAct type="Insult" performer="Bruno">
+        <BadEvent desirability="-0.9"/>
+        <BadActOther praiseworthiness="-0.8" agency="other"/>
+      </IndirectAct>
+    </Appraisal>
+  </CharacterAffect>
+  <GroupAffect name="A Group of Characters" characters="Anne,Bruno,Clementine" monitored="false" docu="">
+    <MoodSpecification decaytime="60000" decayperiod="500"/>
+    <EmotionSpecification decaytime="20000" decayperiod="500" decayfunction="linear"/>
+    <Appraisal>
+      <Basic>
+        <GoodActOther praiseworthiness="0.5" agency="other"/>
+        <BadActSelf praiseworthiness="-0.5" agency="self"/>
+        <BadLikelyFutureEvent desirability="-0.5" likelihood="0.5"/>
+        <BadActOther praiseworthiness="-0.5" agency="other"/>
+        <GoodEventForGoodOther desirability="0.5" liking="0.5" agency="other"/>
+        <BadEventForGoodOther desirability="-0.5" liking="0.5" agency="other"/>
+        <GoodUnlikelyFutureEvent desirability="0.5" likelihood="-0.5"/>
+        <GoodActSelf praiseworthiness="0.5" agency="self"/>
+        <NastyThing appealingness="-0.5"/>
+        <BadUnlikelyFutureEvent desirability="-0.5" likelihood="-0.5"/>
+        <EventDisconfirmed realization="false"/>
+        <GoodEventForBadOther desirability="0.5" liking="-0.5" agency="other"/>
+        <NiceThing appealingness="0.5"/>
+        <BadEvent desirability="-0.5"/>
+        <GoodLikelyFutureEvent desirability="0.5" likelihood="0.5"/>
+        <EventConfirmed realization="true"/>
+        <GoodEvent desirability="0.5"/>
+        <BadEventForBadOther desirability="-0.5" liking="-0.5" agency="other"/>
+      </Basic>
+    </Appraisal>
+  </GroupAffect>
+</AffectDefinition>

@@ -7,11 +7,7 @@ package de.dfki.vsm.xtension.tricatworld.xml.feedback.object;
 
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
-import de.dfki.vsm.util.xml.XMLParseAction;
-import de.dfki.vsm.util.xml.XMLParseError;
-import de.dfki.vsm.util.xml.XMLParseable;
-import de.dfki.vsm.util.xml.XMLWriteError;
-import de.dfki.vsm.util.xml.XMLWriteable;
+import de.dfki.vsm.util.xml.*;
 import org.w3c.dom.Element;
 
 /**
