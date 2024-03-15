@@ -30,6 +30,7 @@ dependencies {
     implementation group: 'org.jetbrains', name: 'annotations', version: '17.0.0'
     // https://mvnrepository.com/artifact/javax.xml.bind/jaxb-api
     implementation group: 'javax.xml.bind', name: 'jaxb-api', version: '2.4.0-b180830.0359'
+    implementation 'com.google.code.gson:gson:2.8.8'
 
 }
 
