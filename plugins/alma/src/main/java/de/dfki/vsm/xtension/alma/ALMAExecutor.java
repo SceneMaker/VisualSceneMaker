@@ -13,6 +13,7 @@ import de.affect.util.AppraisalTag;
 import de.affect.xml.AffectInputDocument;
 import de.affect.xml.AffectOutputDocument;
 import de.affect.xml.EmotionType;
+import de.dfki.vsm.model.project.AgentConfig;
 import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.model.scenescript.ActionFeature;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
@@ -96,7 +97,9 @@ public class ALMAExecutor extends ActivityExecutor implements AffectUpdateListen
         if (activity instanceof PauseActivity)
         {
             //TODO
-            mLogger.message("Pause was called, NOT IMPLEMENTED");
+            mLogger.warning("Pause was called, NOT IMPLEMENTED");
+            mALMA.pauseAffectComputation();
+            mLogger.message("alma was paused");
         }
 
         if (activity instanceof ActionActivity) {
@@ -127,6 +130,7 @@ public class ALMAExecutor extends ActivityExecutor implements AffectUpdateListen
     }
 
     //given the names for P, A, D and strongest emotion Variables, update them accordingly
+    //update:  variable names are when not given are taken from agent properties
     private void executeUpdateVars(AbstractActivity activity) {
         //find alma characte belonging to activity
         CharacterManager character = mALMA.getCharacterByName(activity.getActor().toString());
@@ -137,6 +141,23 @@ public class ALMAExecutor extends ActivityExecutor implements AffectUpdateListen
         String name_D = getActionFeatureValue("D", activity.getFeatures()).replace("'", "");
         String name_emotion = getActionFeatureValue("emotion", activity.getFeatures()).replace("'", "");
 
+        //TODO DELETE
+        mLogger.message(name_P + " " + name_A + " " + name_D + " " + name_emotion + " ");
+        //when features not given in function call try getting them form agent definition
+        if(name_P.isEmpty() || name_A.isEmpty() || name_D.isEmpty() || name_emotion.isEmpty()){
+            AgentConfig agentConfig = mProject.getAgentConfig(character.getName());
+
+            name_P = agentConfig.getProperty("P");
+            name_A = agentConfig.getProperty("A");
+            name_D = agentConfig.getProperty("D");
+            name_emotion = agentConfig.getProperty("emotion");
+
+            //TODO DELETE
+            mLogger.message(name_P + " " + name_A + " " + name_D + " " + name_emotion + " ");
+            if(name_P == null || name_A == null  || name_D == null || name_emotion == null ){
+                mLogger.failure("P A D and emotion variable name must be defined for update function. Do this over the function call or the agent definition");
+            }
+        }
         //get valjues from alma
         StringValue dominatnEmotion = new StringValue(character.getCurrentEmotions().getDominantEmotion().toString());
         FloatValue P = new FloatValue((float) character.getCurrentMood().getPleasure());

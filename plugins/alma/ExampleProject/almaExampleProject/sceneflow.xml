@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<SceneFlow id="" name="default" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Mo., 13 Nov. 2023 13:14:59" start="N1;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
+<SceneFlow id="" name="default" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Mo., 18 März 2024 12:01:15" start="N1;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
   <Define>
   </Define>
   <Declare>
@@ -33,6 +33,12 @@
         <StringLiteral><![CDATA[test]]></StringLiteral>
         <IntLiteral value="0"/>
       </ArrayExpression>
+    </VariableDefinition>
+    <VariableDefinition type="String" name ="affectList">
+      <StringLiteral><![CDATA[]]></StringLiteral>
+    </VariableDefinition>
+    <VariableDefinition type="Float" name ="x">
+      <FloatLiteral value="0.0"/>
     </VariableDefinition>
   </Declare>
   <Commands>
@@ -68,15 +74,24 @@
     <Declare>
     </Declare>
     <Commands>
-      <PlayScene>
-        <StringLiteral><![CDATA[Scene1]]></StringLiteral>
-      </PlayScene>
+      <Assignment>
+        <SimpleVariable name="affectList"/>
+        <Expression>
+          <StringLiteral><![CDATA[GoodActSelf,0.666;BadActOther,0.69;]]></StringLiteral>
+        </Expression>
+      </Assignment>
+      <Assignment>
+        <SimpleVariable name="x"/>
+        <Expression>
+          <SimpleVariable name="AnneP"/>
+        </Expression>
+      </Assignment>
     </Commands>
-    <TEdge target="N5" start="" timeout="2000">
+    <TEdge target="N6" start="" timeout="1000">
     <Graphics>
       <Connection>
-        <ControlPoint xPos="568" yPos="87" ctrlXPos="599" ctrlYPos="95"/>
-        <ControlPoint xPos="693" yPos="122" ctrlXPos="684" ctrlYPos="90"/>
+        <ControlPoint xPos="570" yPos="75" ctrlXPos="592" ctrlYPos="75"/>
+        <ControlPoint xPos="750" yPos="75" ctrlXPos="727" ctrlYPos="75"/>
       </Connection>
     </Graphics>
     </TEdge>
@@ -131,23 +146,42 @@
     <Declare>
     </Declare>
     <Commands>
+      <PlayAction mode="Default">
+        <StringLiteral><![CDATA[[Anne AffectList list=affectList]]]></StringLiteral>
+      </PlayAction>
     </Commands>
-    <IEdge target="N3" start="">
-      <Graphics>
-        <Connection>
-          <ControlPoint xPos="673" yPos="197" ctrlXPos="649" ctrlYPos="220"/>
-          <ControlPoint xPos="525" yPos="300" ctrlXPos="525" ctrlYPos="266"/>
-        </Connection>
-      </Graphics>
-      <ParenExpression>
-        <Eq>
-          <SimpleVariable name="AnneEmotion"/>
-          <StringLiteral><![CDATA[Pride]]></StringLiteral>
-        </Eq>
-      </ParenExpression>
-    </IEdge>
+    <TEdge target="N3" start="" timeout="1000">
     <Graphics>
-      <Position xPos="660" yPos="120"/>
+      <Connection>
+        <ControlPoint xPos="666" yPos="277" ctrlXPos="637" ctrlYPos="293"/>
+        <ControlPoint xPos="564" yPos="322" ctrlXPos="592" ctrlYPos="305"/>
+      </Connection>
+    </Graphics>
+    </TEdge>
+    <Graphics>
+      <Position xPos="660" yPos="210"/>
+    </Graphics>
+  </Node>
+  <Node id="N6" name="N6" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <PlayAction mode="Default">
+        <StringLiteral><![CDATA[[Anne UpdateVars]]]></StringLiteral>
+      </PlayAction>
+    </Commands>
+    <TEdge target="N5" start="" timeout="1000">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="795" yPos="120" ctrlXPos="795" ctrlYPos="142"/>
+        <ControlPoint xPos="705" yPos="210" ctrlXPos="705" ctrlYPos="187"/>
+      </Connection>
+    </Graphics>
+    </TEdge>
+    <Graphics>
+      <Position xPos="750" yPos="30"/>
     </Graphics>
   </Node>
   <ClassPath>

@@ -4,12 +4,18 @@
     <Plugin type="device" name="Alma" class="de.dfki.vsm.xtension.alma.ALMAExecutor" load="true">
       <Feature key="computation" val="conf/AffectComputationExample.aml"/>
       <Feature key="definition" val="conf/AffectDefinitionExample.aml"/>
+      <Feature key="affectUpdate" val="false"/>
     </Plugin>
   </Plugins>
   <Agents>
     <Agent name="Anne" device="Alma">
+      <Feature key="P" val="AnneP"/>
+      <Feature key="A" val="AnneA"/>
+      <Feature key="D" val="AnneD"/>
+      <Feature key="emotion" val="AnneEmotion"/>
     </Agent>
     <Agent name="Bob" device="Alma">
+      <Feature key="Test" val="bob hat Keinen string"/>
     </Agent>
   </Agents>
   <Player>
