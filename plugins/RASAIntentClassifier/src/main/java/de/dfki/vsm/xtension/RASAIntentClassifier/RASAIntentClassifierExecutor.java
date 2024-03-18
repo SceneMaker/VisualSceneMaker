@@ -74,14 +74,16 @@ public class RASAIntentClassifierExecutor extends ActivityExecutor {
         Tuple<String, String> intent = intentClassifier.getIntent(asr_full);
 
         String intent_type = intent.getFirst();
-        String intent_value = intent.getSecond().toString();
+        String intent_value = intent.getSecond();
         String intent_name = "";
         if (intent_type.equals("give_name")) {
             intent_name = "user_name";
+            setVariable("user_name", intent_value);
         } else if (intent_type.equals("affirm") || intent_type.equals("deny")) {
             intent_name = "rasa_intent";
+            setVariable("rasa_intent", intent_value);
         }
-        set_vsm_variable(intent_name.toString(), intent_value.toString());
+        //setVariable(intent_name, intent_value);
 
         System.out.println("[RASAIntentClassifier]: Message " + intent_name + " " + intent_value);
     }
@@ -100,6 +102,10 @@ public class RASAIntentClassifierExecutor extends ActivityExecutor {
         } else if (name.equals("rasa_intent")) {
             mProject.setVariable("rasa_intent", value);
         }
+    }
+
+    public void setVariable(String varName, String val) {
+        mProject.setVariable(varName, val);
     }
 
     public String get_transcript() {
