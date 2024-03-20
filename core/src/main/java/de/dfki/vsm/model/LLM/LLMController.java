@@ -58,6 +58,12 @@ public class LLMController {
             reader.close();
             connection.disconnect();
             mLogger.message("ConversationID: " + conversation_id);
+            String primer = "Visual Scene Maker is an app that allows to generate a character interaction in different scenarios. One of the critical part of the app is the Scene which allows the users to define the interaction. I want to give you a scene with some instructions and i want you to generate multiple versions of that scene according to the instructions i give you. The scenes are written as in a theater script.\n" +
+                    "The first line is the header just copy it from the given and put a that counts them behind the name(no blanks name1 name2 ...) The terms in [] are agent animations, use the ones from the given scene as you see fit but do not add others unless instructed to. " +
+                    "Also only use the Agent names that are mentioned in the given scene.\n" +
+                    "\n" +
+                    "Only output the scene and NOT anything else.";
+            getLLMResponse(primer);
             return;
         } catch (Exception e) {
             e.printStackTrace();
