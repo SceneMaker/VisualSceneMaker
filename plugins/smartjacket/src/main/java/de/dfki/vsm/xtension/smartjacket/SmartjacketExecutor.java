@@ -7,6 +7,7 @@ import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.xtension.sockets.SocketClient;
 import de.dfki.vsm.xtension.sockets.SocketHandler;
+import de.dfki.vsm.xtension.ssi.SSIEventSender;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -17,10 +18,11 @@ public class SmartjacketExecutor extends ActivityExecutor implements SocketHandl
     SocketClient socket;
     int port = 7867;
     private DataOutputStream outStream;
-
+private SSIEventSender ssiEventSender;
 
     public SmartjacketExecutor(PluginConfig config, RunTimeProject project) {
         super(config, project);
+        ssiEventSender = new SSIEventSender("localhost",4101,"127.0.0.1",4102);
     }
 
     @Override
@@ -36,6 +38,8 @@ public class SmartjacketExecutor extends ActivityExecutor implements SocketHandl
         switch (activity.getName()) {
             case "vibrate":
                 socket.send("GO@@");
+            case "logVibration":
+                ssiEventSender.sendString("vibration@jacket");
         }
 
     }
