@@ -44,6 +44,14 @@ abstract class AbsJavaSocket extends Thread {
         this.host = host;
     }
 
+    public AbsJavaSocket(VSMSocketHandler executor, String host) {
+        super();
+        // Initialize the socket
+        this.executor = executor;
+        this.port = 0000;
+        this.host = host;
+    }
+
     // Start the client thread
     @Override
     public void start() {
