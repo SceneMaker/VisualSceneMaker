@@ -17,7 +17,11 @@ import de.mithos.compint.log.VSMPilotLog;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
+import org.apache.kafka.common.protocol.types.Field;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.*;
 
 import static de.mithos.compint.interaction.AppraisalTag.*;
@@ -167,7 +171,7 @@ public class MithosExecutor extends ActivityExecutor {
     }
 
     private void sendDialogueLogEntry(String DialogueAct) {
-        sendTempIntAct();
+        //sendTempIntAct();
         String actor = "Student_Alex";
 
         try {
@@ -289,4 +293,85 @@ public class MithosExecutor extends ActivityExecutor {
     }
 
 
+    public void process(Emotion emotion) {
+        List<List<String>> csv = readCSV("plugins/mithos/data/PAD_to_emotion.csv", ",");
+
+        double[] padValues = {emotion.getValence(), emotion.getArousal(), emotion.getDominance()};
+        String em_to_pad = "UNDEFINED";
+
+        for (List<String> line : csv) {
+
+            double[] tableValues = {new Double(line.get(1)), new Double(line.get(2)), new Double(line.get(3))};
+            double cosineSimilarity = cosineSimilarity(tableValues, padValues);
+            mLogger.warning("calculate CosSim: in line: " + line.get(1) + " " + line.get(2) + " " + line.get(3) + " inCAll" + padValues[0] + " " + padValues[1] + " " + padValues[2] + " out: " + cosineSimilarity);
+            line.add(String.valueOf(cosineSimilarity));
+        }
+
+        for (List<String> line : csv) {
+            String toPrint = "|";
+
+            for (String s : line) {
+                toPrint = toPrint + s + " | ";
+
+            }
+            mLogger.warning(toPrint);
+        }
+
+        double max_similarity = -1.0;
+        for (List<String> line : csv) {
+            double cur_sim = (new Double(line.get(8)));
+            if(cur_sim >= max_similarity){
+                max_similarity = cur_sim;
+                em_to_pad = line.get(0);
+            }
+        }
+
+        mLogger.warning("Similar emotion is: " + em_to_pad);
+    }
+
+
+    //function used to read the csv files containing the tables for the PAD to eomotion and Appraisal tag to emotion mapping
+    private List<List<String>> readCSV(String csvFile, String csvSplitBy){
+        String line = "";
+        List<List<String>> csvData = new ArrayList<>();
+
+        try (BufferedReader br = new BufferedReader(new FileReader(csvFile))) {
+            while ((line = br.readLine()) != null) {
+                // Split the line by comma
+                List<String> data = new ArrayList<String>();
+                String[] array = line.split(csvSplitBy);
+
+                for (String s:array) {
+                    data.add(s);
+                }
+
+                csvData.add(data);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return csvData;
+    }
+
+    // Function to calculate cosine similarity
+    private double cosineSimilarity(double[] vectorA, double[] vectorB) {
+        double dotProduct = 0;
+        double magnitudeA = 0;
+        double magnitudeB = 0;
+
+        for (int i = 0; i < vectorA.length; i++) {
+            dotProduct += vectorA[i] * vectorB[i];            magnitudeA += Math.pow(vectorA[i], 2);
+            magnitudeB += Math.pow(vectorB[i], 2);
+        }
+
+        magnitudeA = Math.sqrt(magnitudeA);
+        magnitudeB = Math.sqrt(magnitudeB);
+
+        if (magnitudeA == 0 || magnitudeB == 0) {
+            return 0; // to handle division by zero
+        }
+
+        return dotProduct / (magnitudeA * magnitudeB);
+}
 }

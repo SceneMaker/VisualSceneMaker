@@ -1,0 +1,31 @@
+Appraisal Tag,Emotion
+GoodEvent,Joy
+GoodEventForGoodOther,HappyFor
+GoodEventForBadOther,Resentment
+BadEvent,Distress
+BadEventForGoodOther,Pity
+BadEventForBadOther,Gloating
+GoodLikelyFutureEvent,Hope
++ EventConfirmed,Satisfaction
++ EventDisconfirmed,Disappointment
+GoodUnlikelyFutureEvent,Hope
++ EventConfirmed,Satisfaction
++ EventDisconfirmed,Disappointment
+BadLikelyFutureEvent,Fear
++ EventConfirmed,FearsConfirmed
++ EventDisconfirmed,Relief
+BadUnlikelyFutureEvent,Fear
++ EventConfirmed,FearsConfirmed
++ EventDisconfirmed,Relief
+GoodActSelf,Pride
+GoodActOther,Admiration
+BadActSelf,Shame
+BadActOther,Reproach
+GoodEvent + GoodActSelf,Gratification
+GoodEvent + GoodActOther,Gratitude
+BadEvent + BadActSelf,Remorse
+BadEvent + BadActOther,Anger
+NiceThing,Liking
+NastyThing,Disliking
+GoodActOther + NiceThing,Love
+BadActOther + NastyThing,Hate

@@ -1,17 +1,19 @@
 package de.dfki.vsm.xtension.mithos;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import de.dfki.vsm.event.EventDispatcher;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
 import de.mithos.compint.command.ScenarioScriptFeedback;
+import de.mithos.compint.interaction.Emotion;
 import de.mithos.compint.interaction.InteractionAct;
 import org.apache.kafka.clients.consumer.*;
 
 import java.lang.reflect.Type;
 import java.time.Duration;
-import java.util.Arrays;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * This plugin uses a kafka server to control an agent-environment and to receive processed userdata.
@@ -81,7 +83,7 @@ public class MithosHandler<T> extends Thread {
     }
 
     private void handle(ConsumerRecord<Long, String> record) {
-        logger.message(record.toString());
+        //logger.message(record.value().toString());
         try {
             switch (record.topic()) {
                 case "SSF":
@@ -94,6 +96,14 @@ public class MithosHandler<T> extends Thread {
                     InteractionAct ia = gson.fromJson(record.value(), InteractionAct.class);
                     executor.process(ia);
                     logger.message("InteractionActs");
+                    break;
+                case "PAD":
+                    //TODO delte
+                    logger.message(record.value().replace('"', ' '));
+                    //Note line above does not work like in the other cases, because we don't have timeBegin and timeEnd of the Emotion CLass
+                    Emotion emotion = gson.fromJson(record.value().replace('"',' '), Emotion.class);//TODO probably time is missing in record.value
+                    executor.process(emotion);
+                    logger.message("PADAct");
                     break;
 
             }
