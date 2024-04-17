@@ -13,5 +13,6 @@ include 'plugins:tricatworld'
 include 'plugins:charamel'
 include 'plugins:VLCRemoteController'
 include 'plugins:sockets'
+include 'plugins:smartjacket'
 findProject(':plugins:sockets')?.name = 'sockets'
 

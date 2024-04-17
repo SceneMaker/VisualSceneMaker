@@ -39,6 +39,7 @@ dependencies {
     implementation project(":plugins:VLCRemoteController")
     implementation project(":plugins:extensionAPI")
     implementation project(":plugins:sockets")
+    implementation project(":plugins:smartjacket")
 
 
     implementation 'org.jetbrains:annotations:16.0.2'

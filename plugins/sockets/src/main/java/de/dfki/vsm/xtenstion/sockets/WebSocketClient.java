@@ -62,4 +62,12 @@ public class WebSocketClient extends AbsJavaSocket {
             mLogger.failure(e.toString());
         }
     }
+
+    @Override
+    public void start() {
+        connect();
+        super.start();
+    }
+
+
 }
