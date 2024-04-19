@@ -99,4 +99,8 @@ public class SIAHomeConnectionExecutor extends ActivityExecutor {
         mProject.setVariable(varName, val);
     }
 
+    public String getVariable() {
+        return mProject.getValueOf("timeout_response").toString();
+    }
+
 }
