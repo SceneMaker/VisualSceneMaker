@@ -80,17 +80,17 @@ public class SIAHomeConnectionJSONHandler extends AbstractHandler {
                 Boolean timeout_response = ((Boolean) this.executor.getVariable());
                 period.incrementAndGet();
                 System.out.println("Timeout is: " + timeout_response + " " + period);
-                if (!timeout_response || period.get() == 5) {
+                if (!timeout_response || period.get() == 120) {
                     // If it's been 120 seconds and the flag is still true, set the response to a timeout response
                     responseJson.put("message", "Timeout");
                     // Cancel the task
                     futureHolder[0].cancel(false);
                     executorService.shutdown();
-                }e
+                }
             }, 0, 1, TimeUnit.SECONDS);
 
             try {
-                executorService.awaitTermination(10, TimeUnit.SECONDS);
+                executorService.awaitTermination(120, TimeUnit.SECONDS);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
