@@ -7,6 +7,11 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import org.json.JSONObject;
 
@@ -63,6 +68,33 @@ public class SIAHomeConnectionJSONHandler extends AbstractHandler {
 
 
             // Handle everything inside the scene-maker!
+            // Create a ScheduledExecutorService
+            ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
+
+            ScheduledFuture<?>[] futureHolder = new ScheduledFuture<?>[1];
+            AtomicInteger period = new AtomicInteger(0);
+
+            // Schedule a task to check the timeout_response flag every second for 120 seconds
+            futureHolder[0] = executorService.scheduleAtFixedRate(() -> {
+                // Check if the timeout_response flag is true
+                Boolean timeout_response = ((Boolean) this.executor.getVariable());
+                period.incrementAndGet();
+                System.out.println("Timeout is: " + timeout_response + " " + period);
+                if (!timeout_response || period.get() == 5) {
+                    // If it's been 120 seconds and the flag is still true, set the response to a timeout response
+                    responseJson.put("message", "Timeout");
+                    // Cancel the task
+                    futureHolder[0].cancel(false);
+                    executorService.shutdown();
+                }e
+            }, 0, 1, TimeUnit.SECONDS);
+
+            try {
+                executorService.awaitTermination(10, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+
 
             executor.setVariable("bhome_event", bhome_event);
             executor.setVariable("wakeUpToday", wakeUpToday);
@@ -70,7 +102,6 @@ public class SIAHomeConnectionJSONHandler extends AbstractHandler {
             executor.setVariable("wakeUpYesterday", wakeUpYesterday);
             executor.setVariable("nightActivity", nightActivity.toString());
             executor.setVariable("user_name", userName);
-
 
             // Write the response JSON to the response body
             response.setStatus(HttpServletResponse.SC_OK);
