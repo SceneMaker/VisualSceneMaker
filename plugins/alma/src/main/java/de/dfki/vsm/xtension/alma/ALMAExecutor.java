@@ -167,6 +167,7 @@ public class ALMAExecutor extends ActivityExecutor implements AffectUpdateListen
     private void executeAffectList(AbstractActivity activity) {
         String appraisal_list_name = getActionFeatureValue("list", activity.getFeatures());
         String appraisal_list_s = (String) mProject.getValueOf(appraisal_list_name).getValue();
+        mProject.setVariable(appraisal_list_name, "");
         mLogger.message("AffectList with list string: " +appraisal_list_s + " on actor "+ activity.getActor());
         if(appraisal_list_s == ""){return;}
         List<String> appraisal_list = new ArrayList<>(Arrays.asList(appraisal_list_s.split(";")));
@@ -195,6 +196,8 @@ public class ALMAExecutor extends ActivityExecutor implements AffectUpdateListen
                     mLogger.failure("Partially Incorrect Appraisal List format in: " + affect);
             }
         }
+
+
     }
 
     //this method handles the execution of speech activities
@@ -235,7 +238,6 @@ public class ALMAExecutor extends ActivityExecutor implements AffectUpdateListen
                 FloatValue P = new FloatValue((float) character.getMood().getPleasure());
                 FloatValue A = new FloatValue((float) character.getMood().getArousal());
                 FloatValue D = new FloatValue((float) character.getMood().getDominance());
-
 
                 //update project vars accordingly
                 String emotionName = character.getName()+ "Emotion";

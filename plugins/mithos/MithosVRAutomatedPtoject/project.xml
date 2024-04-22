@@ -7,7 +7,7 @@
     </Plugin>
     <Plugin type="device" name="Kafka" class="de.dfki.vsm.xtension.mithos.MithosExecutor" load="true">
       <Feature key="server" val="localhost:9092"/>
-      <Feature key="read_topic" val="SSF,InteractionActs"/>
+      <Feature key="read_topic" val="SSF,InteractionActs,PAD"/>
       <Feature key="write_topic" val="SSC"/>
     </Plugin>
     <Plugin type="device" name="SSI" class="de.dfki.vsm.xtension.ssi.SSICmdExecutor" load="true">

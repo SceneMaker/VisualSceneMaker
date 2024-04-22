@@ -294,39 +294,58 @@ public class MithosExecutor extends ActivityExecutor {
 
 
     public void process(Emotion emotion) {
-        List<List<String>> csv = readCSV("plugins/mithos/data/PAD_to_emotion.csv", ",");
+        //finding the closes emotion with cosin similarity
+        String cosestEmotion = "UNDEFINED";
+
+        List<List<String>> padToEm = readCSV("plugins/mithos/data/PAD_to_emotion.csv", ",");
 
         double[] padValues = {emotion.getValence(), emotion.getArousal(), emotion.getDominance()};
-        String em_to_pad = "UNDEFINED";
 
-        for (List<String> line : csv) {
+        //TODO DELETE for testing purpose
+        //padValues = new double[]{0.6, 0.45, 0.45};// results in pride not gratification
+        //padValues = new double[]{-0.51,0.59,0.25};// results in pride not gratification
+        double max_similarity = -1.0;
+
+        for (List<String> line : padToEm) {
 
             double[] tableValues = {new Double(line.get(1)), new Double(line.get(2)), new Double(line.get(3))};
             double cosineSimilarity = cosineSimilarity(tableValues, padValues);
-            mLogger.warning("calculate CosSim: in line: " + line.get(1) + " " + line.get(2) + " " + line.get(3) + " inCAll" + padValues[0] + " " + padValues[1] + " " + padValues[2] + " out: " + cosineSimilarity);
-            line.add(String.valueOf(cosineSimilarity));
-        }
+            //mLogger.message("calculate CosSim: in line: " + line.get(1) + " " + line.get(2) + " " + line.get(3) + " inCAll" + padValues[0] + " " + padValues[1] + " " + padValues[2] + " out: " + cosineSimilarity);
 
-        for (List<String> line : csv) {
-            String toPrint = "|";
-
-            for (String s : line) {
-                toPrint = toPrint + s + " | ";
-
-            }
-            mLogger.warning(toPrint);
-        }
-
-        double max_similarity = -1.0;
-        for (List<String> line : csv) {
-            double cur_sim = (new Double(line.get(8)));
-            if(cur_sim >= max_similarity){
-                max_similarity = cur_sim;
-                em_to_pad = line.get(0);
+            if(cosineSimilarity >= max_similarity){
+                max_similarity = cosineSimilarity;
+                cosestEmotion = line.get(0);
             }
         }
 
-        mLogger.warning("Similar emotion is: " + em_to_pad);
+
+        //fiding the Appraisal tag
+        List<List<String>> emToApp = readCSV("plugins/mithos/data/Emotion_to_appraisaltag.csv", ",");
+        String appraisalTags = "UNDEFINED";
+        for (List<String> line : emToApp) {
+            if(line.get(1).equals(cosestEmotion)){
+                appraisalTags = line.get(0);
+                break;
+            }
+        }
+
+        if (appraisalTags == "UNDEFINED") {
+            mLogger.warning("WARNING no matching AppraisalTag found for Emotion " + cosestEmotion);
+            return;
+        }
+        mLogger.message("For PAD: " + padValues.toString() + " closes emotion is: " + cosestEmotion + " resulting in APPRAISAL TAG: " + appraisalTags);
+
+        String[] appraisalTagList = appraisalTags.replace(" " ,  "").split("\\+");
+
+        String affectList = (String) mProject.getValueOf("affectList").getValue();
+        for (String tag : appraisalTagList) {
+            //mProject.setVariable("")
+            if (!(tag.equals(""))) {
+                affectList = affectList  + tag + ";";
+            }
+        }
+
+        mProject.setVariable("affectList", affectList);
     }
 
 
@@ -350,6 +369,24 @@ public class MithosExecutor extends ActivityExecutor {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+
+        //enable logging of reading
+        boolean print = false;
+        if(print){
+            String toPrint = "|";
+            for (List<String> csvLine : csvData) {
+
+
+                for (String s : csvLine) {
+                    toPrint = toPrint + s + " | ";
+
+                }
+                toPrint = toPrint + "\n";
+            }
+            mLogger.message(toPrint);
+        }
+
 
         return csvData;
     }
