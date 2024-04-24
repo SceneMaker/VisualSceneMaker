@@ -48,7 +48,7 @@ public class WebSocketClient extends AbsJavaSocket {
         try {
             session.close();
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            mLogger.failure(e.toString());
         }
     }
 
