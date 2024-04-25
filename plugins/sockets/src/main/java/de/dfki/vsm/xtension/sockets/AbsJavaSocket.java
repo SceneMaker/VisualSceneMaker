@@ -44,6 +44,7 @@ abstract class AbsJavaSocket extends Thread {
         this.host = host;
     }
 
+
     // Start the client thread
     @Override
     public void start() {

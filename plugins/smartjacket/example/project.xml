@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Project name="SmartJacketExample">
+  <Plugins>
+    <Plugin type="device" name="SmartJacket" class="de.dfki.vsm.xtension.smartjacket.SmartjacketExecutor" load="true">
+    </Plugin>
+  </Plugins>
+  <Agents>
+    <Agent name="Jacket" device="SmartJacket">
+    </Agent>
+  </Agents>
+  <Player>
+  </Player>
+</Project>

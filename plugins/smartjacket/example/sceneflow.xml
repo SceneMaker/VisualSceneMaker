@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SceneFlow id="" name="default" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Mi, 17 Apr 2024 18:51:04" start="N1;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
+  <Define>
+  </Define>
+  <Declare>
+  </Declare>
+  <Commands>
+  </Commands>
+  <LocalVariableBadge>
+    <Position xPos="10" yPos="10"/>
+  </LocalVariableBadge>
+  <GlobalVariableBadge>
+    <Position xPos="10" yPos="10"/>
+  </GlobalVariableBadge>
+  <Node id="N1" name="N1" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <TEdge target="N3" start="" timeout="2000">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="204" yPos="162" ctrlXPos="170" ctrlYPos="39"/>
+        <ControlPoint xPos="522" yPos="476" ctrlXPos="399" ctrlYPos="509"/>
+      </Connection>
+    </Graphics>
+    </TEdge>
+    <Graphics>
+      <Position xPos="160" yPos="160"/>
+    </Graphics>
+  </Node>
+  <Node id="N2" name="N2" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <PlayAction mode="Default">
+        <StringLiteral><![CDATA[[Jacket logVibration]]]></StringLiteral>
+      </PlayAction>
+    </Commands>
+    <TEdge target="N2" start="" timeout="1000">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="610" yPos="168" ctrlXPos="670" ctrlYPos="64"/>
+        <ControlPoint xPos="638" yPos="204" ctrlXPos="754" ctrlYPos="172"/>
+      </Connection>
+    </Graphics>
+    </TEdge>
+    <Graphics>
+      <Position xPos="520" yPos="160"/>
+    </Graphics>
+  </Node>
+  <Node id="N3" name="N3" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <PlayAction mode="Default">
+        <StringLiteral><![CDATA[[Jacket vibrate]]]></StringLiteral>
+      </PlayAction>
+    </Commands>
+    <TEdge target="N3" start="" timeout="1000">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="596" yPos="402" ctrlXPos="628" ctrlYPos="286"/>
+        <ControlPoint xPos="632" yPos="430" ctrlXPos="736" ctrlYPos="370"/>
+      </Connection>
+    </Graphics>
+    </TEdge>
+    <Graphics>
+      <Position xPos="520" yPos="400"/>
+    </Graphics>
+  </Node>
+  <ClassPath>
+  </ClassPath>
+  <InitContext></InitContext>
+</SceneFlow>
