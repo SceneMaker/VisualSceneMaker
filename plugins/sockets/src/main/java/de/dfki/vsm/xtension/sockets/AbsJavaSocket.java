@@ -30,7 +30,6 @@ abstract class AbsJavaSocket extends Thread {
     // Create the client thread
     public AbsJavaSocket(VSMSocketHandler executor, int port) {
         super();
-        // Initialize the socket
         this.executor = executor;
         this.port = port;
         this.host = "localhost";
@@ -38,12 +37,17 @@ abstract class AbsJavaSocket extends Thread {
 
     public AbsJavaSocket(VSMSocketHandler executor, String host, int port) {
         super();
-        // Initialize the socket
         this.executor = executor;
         this.port = port;
         this.host = host;
     }
 
+    public AbsJavaSocket(VSMSocketHandler executor, String host) {
+        super();
+        this.executor = executor;
+        this.port = 0000;
+        this.host = host;
+    }
 
     // Start the client thread
     @Override

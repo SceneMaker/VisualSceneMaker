@@ -6,7 +6,7 @@ import de.dfki.vsm.runtime.activity.SpeechActivity;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.xtension.ssi.SSIEventSender;
-import de.dfki.vsm.xtenstion.sockets.VSMSocketHandler;
+import de.dfki.vsm.xtension.sockets.VSMSocketHandler;
 import de.dfki.vsm.xtension.sockets.WebSocketClient;
 
 import java.io.DataOutputStream;
