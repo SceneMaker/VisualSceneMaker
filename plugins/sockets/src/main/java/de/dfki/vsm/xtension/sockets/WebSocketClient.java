@@ -15,14 +15,14 @@ public class WebSocketClient extends AbsJavaSocket {
     private final LOGConsoleLogger mLogger
             = LOGConsoleLogger.getInstance();
 
-    public WebSocketClient(VSMSocketHandler executor,String uri) {
-        super(executor,uri);
+    public WebSocketClient(VSMSocketHandler executor, String uri) {
+        super(executor, uri);
         this.uri = uri;
     }
 
     @OnOpen
     public void onOpen(Session session) {
-       mLogger.message("Connected to server");
+        mLogger.message("Connected to server");
         this.session = session;
     }
 
@@ -55,11 +55,15 @@ public class WebSocketClient extends AbsJavaSocket {
     @Override
     public void connect() {
         WebSocketContainer container = ContainerProvider.getWebSocketContainer();
-        try {
-            Session session = container.connectToServer(WebSocketClient.class, URI.create(uri));
-            onOpen(session);
-        } catch (Exception e) {
-            mLogger.failure(e.toString());
+        while (session == null) {
+
+            try {
+                Session session = container.connectToServer(WebSocketClient.class, URI.create(uri));
+                onOpen(session);
+            } catch (Exception e) {
+                mLogger.failure(e.toString());
+            }
+
         }
     }
 
