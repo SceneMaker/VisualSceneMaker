@@ -5,15 +5,16 @@ import de.dfki.vsm.runtime.activity.AbstractActivity;
 import de.dfki.vsm.runtime.activity.SpeechActivity;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
 import de.dfki.vsm.runtime.project.RunTimeProject;
+import de.dfki.vsm.xtension.sockets.OkHTTPWebSocketClient;
 import de.dfki.vsm.xtension.ssi.SSIEventSender;
 import de.dfki.vsm.xtension.sockets.VSMSocketHandler;
-import de.dfki.vsm.xtension.sockets.WebSocketClient;
+import de.dfki.vsm.xtension.sockets.JavalinWebSocketClient;
 
 import java.io.DataOutputStream;
 
 public class SmartjacketExecutor extends ActivityExecutor implements VSMSocketHandler {
 
-    WebSocketClient socket;
+    OkHTTPWebSocketClient socket;
 
     private String uri="ws://127.0.0.1:7867/jacket";
     private DataOutputStream outStream;
@@ -48,7 +49,7 @@ private SSIEventSender ssiEventSender;
     @Override
     public void launch() {
         System.out.println( "launch smartjacket");
-        socket = new WebSocketClient(this, uri);
+        socket = new OkHTTPWebSocketClient(this, uri);
         socket.start();
         mLogger.message("SmartJacket plugin ready");
     }

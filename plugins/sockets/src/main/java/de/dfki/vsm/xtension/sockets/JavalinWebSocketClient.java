@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.net.URI;
 
 @ClientEndpoint
-public class WebSocketClient extends AbsJavaSocket {
+public class JavalinWebSocketClient extends AbsJavaSocket {
 
     private Session session;
     private String uri;
@@ -15,7 +15,7 @@ public class WebSocketClient extends AbsJavaSocket {
     private final LOGConsoleLogger mLogger
             = LOGConsoleLogger.getInstance();
 
-    public WebSocketClient(VSMSocketHandler executor, String uri) {
+    public JavalinWebSocketClient(VSMSocketHandler executor, String uri) {
         super(executor, uri);
         this.uri = uri;
     }
