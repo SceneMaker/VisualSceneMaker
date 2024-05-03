@@ -16,5 +16,7 @@ dependencies {
     implementation project(":core")
     implementation project(":plugins:extensionAPI")
     implementation 'javax.websocket:javax.websocket-api:1.1'
-    implementation group: 'org.glassfish.tyrus.bundles', name: 'tyrus-standalone-client', version: '1.9'
+    implementation 'io.javalin:javalin:3.13.9'
+    //implementation 'org.glassfish.tyrus:tyrus-client:1.13.1'
+    //implementation group: 'org.glassfish.tyrus.bundles', name: 'tyrus-standalone-client', version: '1.9'
 }

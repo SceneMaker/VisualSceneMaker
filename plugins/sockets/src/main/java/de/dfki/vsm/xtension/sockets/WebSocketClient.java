@@ -54,16 +54,11 @@ public class WebSocketClient extends AbsJavaSocket {
 
     @Override
     public void connect() {
-        WebSocketContainer container = ContainerProvider.getWebSocketContainer();
-        while (session == null) {
-
-            try {
-                Session session = container.connectToServer(WebSocketClient.class, URI.create(uri));
-                onOpen(session);
-            } catch (Exception e) {
-                mLogger.failure(e.toString());
-            }
-
+        try {
+            WebSocketContainer container = ContainerProvider.getWebSocketContainer();
+            Session session = container.connectToServer(WebSocketClientEndpoint.class, URI.create(uri));
+        } catch (Exception e) {
+            mLogger.failure(e.toString());
         }
     }
 
@@ -74,4 +69,18 @@ public class WebSocketClient extends AbsJavaSocket {
     }
 
 
+
+    @ClientEndpoint
+    public class WebSocketClientEndpoint {
+
+        @OnOpen
+        public void onOpen(Session session) {
+            System.out.println("Connected to server.");
+        }
+
+        @OnMessage
+        public void onMessage(String message) {
+            System.out.println("Received message: " + message);
+        }
+    }
 }

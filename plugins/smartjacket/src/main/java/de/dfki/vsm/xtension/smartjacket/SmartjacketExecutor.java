@@ -21,7 +21,8 @@ private SSIEventSender ssiEventSender;
 
     public SmartjacketExecutor(PluginConfig config, RunTimeProject project) {
         super(config, project);
-        ssiEventSender = new SSIEventSender("localhost",4101,"127.0.0.1",4102);
+        System.out.println( "construct smartjacket");
+        //ssiEventSender = new SSIEventSender("localhost",4101,"127.0.0.1",4102);
     }
 
     @Override
@@ -31,6 +32,7 @@ private SSIEventSender ssiEventSender;
 
     @Override
     public void execute(AbstractActivity activity) {
+        System.out.println( "execute smartjacket activity");
         if (activity instanceof SpeechActivity || activity == null) {
             return;
         }
@@ -45,6 +47,7 @@ private SSIEventSender ssiEventSender;
 
     @Override
     public void launch() {
+        System.out.println( "launch smartjacket");
         socket = new WebSocketClient(this, uri);
         socket.start();
         mLogger.message("SmartJacket plugin ready");
