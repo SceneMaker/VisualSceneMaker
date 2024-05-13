@@ -213,6 +213,11 @@ public class MithosExecutor extends ActivityExecutor {
             return;
         }
 
+        if (actionActivity.getName().equals("GetConflictResolution")) {
+            executeGetConflictResolution();
+            return;
+        }
+
         String text = actionActivity.getText();
         String command = text.substring(1, text.length() - 1);
         command = command.replace('\'', '"');
@@ -229,6 +234,62 @@ public class MithosExecutor extends ActivityExecutor {
             actionActivity.setType(AbstractActivity.Type.parallel);
             sendRecord(record);
         }
+    }
+
+    public void executeGetConflictResolution(){
+        mLogger.message("executeGetConflictResolution");
+        String emotionListString = (String) mProject.getValueOf("TeacherEmotionList").getValue();
+        mProject.setVariable("TeacherEmotionList","" );
+
+        String[] emotions = emotionListString.split(";");
+
+        //count emotion appearances, store result in Hashmap
+        Map<String, Integer> countMap = new HashMap<String,Integer>();
+        for (String emotion : emotions){
+            if (countMap.containsKey(emotion)){
+                countMap.put(emotion,countMap.get(emotion) +1);
+            }else {
+                countMap.put(emotion,1);
+            }
+        }
+
+        //get the n most counted emotions
+        int n = 2;
+        ArrayList<String> nStrongesEmotions = new ArrayList<>();
+
+
+        List<Map.Entry<String, Integer>> countList = new ArrayList<>(countMap.entrySet());
+        countList.sort((entry1, entry2) -> entry2.getValue().compareTo(entry1.getValue()));
+
+        for( int i = 0; i <n && i < countList.size(); i++ ){
+            nStrongesEmotions.add(countList.get(i).getKey());
+        }
+
+        //TESTING CAN BE DELETED
+        //nStrongesEmotions = new ArrayList<>();
+        //nStrongesEmotions.add("Joy");
+        //nStrongesEmotions.add("Fear");
+
+        Collections.sort(nStrongesEmotions);
+        //given the two most frequent emotions pick the conflict resolution
+        String confRes = "problemsolving";//default value when no match is found
+        List<List<String>> csvData = readCSV("plugins/mithos/data/OCCEmotion_to_ConflictResolution.csv", ",");
+        for (List<String> row : csvData){
+            ArrayList<String> tableVal = new ArrayList<>();
+            tableVal.add(row.get(0));
+            if(!Objects.equals(row.get(1), "")){
+                tableVal.add(row.get(1));
+            }
+            Collections.sort(tableVal);
+            if(tableVal.equals(nStrongesEmotions)){
+                confRes = row.get(2);
+            }
+
+        }
+        mLogger.message(confRes);
+
+        //TODO maby make function parameter, to not have name hardcoded
+        mProject.setVariable("ConflictResolutionStyle",confRes);
     }
 
     @Override
@@ -292,63 +353,17 @@ public class MithosExecutor extends ActivityExecutor {
         }
     }
 
-
     public void process(Emotion emotion) {
-        //finding the closes emotion with cosin similarity
-        String cosestEmotion = "UNDEFINED";
-
-        List<List<String>> padToEm = readCSV("plugins/mithos/data/PAD_to_emotion.csv", ",");
-
         double[] padValues = {emotion.getValence(), emotion.getArousal(), emotion.getDominance()};
+        String padString = padValues[0] + "," + padValues[1] + "," + padValues[2];
 
-        //TODO DELETE for testing purpose
-        //padValues = new double[]{0.6, 0.45, 0.45};// results in pride not gratification
-        //padValues = new double[]{-0.51,0.59,0.25};// results in pride not gratification
-        double max_similarity = -1.0;
-
-        for (List<String> line : padToEm) {
-
-            double[] tableValues = {new Double(line.get(1)), new Double(line.get(2)), new Double(line.get(3))};
-            double cosineSimilarity = cosineSimilarity(tableValues, padValues);
-            //mLogger.message("calculate CosSim: in line: " + line.get(1) + " " + line.get(2) + " " + line.get(3) + " inCAll" + padValues[0] + " " + padValues[1] + " " + padValues[2] + " out: " + cosineSimilarity);
-
-            if(cosineSimilarity >= max_similarity){
-                max_similarity = cosineSimilarity;
-                cosestEmotion = line.get(0);
-            }
-        }
-
-
-        //fiding the Appraisal tag
-        List<List<String>> emToApp = readCSV("plugins/mithos/data/Emotion_to_appraisaltag.csv", ",");
-        String appraisalTags = "UNDEFINED";
-        for (List<String> line : emToApp) {
-            if(line.get(1).equals(cosestEmotion)){
-                appraisalTags = line.get(0);
-                break;
-            }
-        }
-
-        if (appraisalTags == "UNDEFINED") {
-            mLogger.warning("WARNING no matching AppraisalTag found for Emotion " + cosestEmotion);
-            return;
-        }
-        mLogger.message("For PAD: " + padValues.toString() + " closes emotion is: " + cosestEmotion + " resulting in APPRAISAL TAG: " + appraisalTags);
-
-        String[] appraisalTagList = appraisalTags.replace(" " ,  "").split("\\+");
-
-        String affectList = (String) mProject.getValueOf("affectList").getValue();
-        for (String tag : appraisalTagList) {
-            //mProject.setVariable("")
-            if (!(tag.equals(""))) {
-                affectList = affectList  + tag + ";";
-            }
-        }
-
-        mProject.setVariable("affectList", affectList);
+        String padAffectList = (String) mProject.getValueOf("padAffectList").getValue();
+        padAffectList = padAffectList  + padString + ";";
+        mProject.setVariable("padAffectList", padAffectList);
     }
 
 
+    //used by getConflict resoluton
     //function used to read the csv files containing the tables for the PAD to eomotion and Appraisal tag to emotion mapping
     private List<List<String>> readCSV(String csvFile, String csvSplitBy){
         String line = "";
@@ -363,21 +378,16 @@ public class MithosExecutor extends ActivityExecutor {
                 for (String s:array) {
                     data.add(s);
                 }
-
                 csvData.add(data);
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-
         //enable logging of reading
-        boolean print = false;
+        boolean print = true;
         if(print){
             String toPrint = "|";
             for (List<String> csvLine : csvData) {
-
-
                 for (String s : csvLine) {
                     toPrint = toPrint + s + " | ";
 
@@ -386,29 +396,7 @@ public class MithosExecutor extends ActivityExecutor {
             }
             mLogger.message(toPrint);
         }
-
-
         return csvData;
     }
 
-    // Function to calculate cosine similarity
-    private double cosineSimilarity(double[] vectorA, double[] vectorB) {
-        double dotProduct = 0;
-        double magnitudeA = 0;
-        double magnitudeB = 0;
-
-        for (int i = 0; i < vectorA.length; i++) {
-            dotProduct += vectorA[i] * vectorB[i];            magnitudeA += Math.pow(vectorA[i], 2);
-            magnitudeB += Math.pow(vectorB[i], 2);
-        }
-
-        magnitudeA = Math.sqrt(magnitudeA);
-        magnitudeB = Math.sqrt(magnitudeB);
-
-        if (magnitudeA == 0 || magnitudeB == 0) {
-            return 0; // to handle division by zero
-        }
-
-        return dotProduct / (magnitudeA * magnitudeB);
-}
 }

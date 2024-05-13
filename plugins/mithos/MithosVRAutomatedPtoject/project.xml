@@ -35,6 +35,8 @@
     </Agent>
     <Agent name="AlmaTeacher" device="Alma">
     </Agent>
+    <Agent name="Bob" device="Alma">
+    </Agent>
   </Agents>
   <Player>
   </Player>

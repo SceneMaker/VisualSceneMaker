@@ -24,11 +24,11 @@ import de.dfki.vsm.runtime.interpreter.value.FloatValue;
 import de.dfki.vsm.runtime.interpreter.value.StringValue;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
+import de.dfki.vsm.util.tpl.Tuple;
 import org.apache.xmlbeans.XmlException;
 //import org.apache.xmlbeans.XmlException;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.util.LinkedList;
 import java.util.*;
 
@@ -73,10 +73,8 @@ public class ALMAExecutor extends ActivityExecutor implements AffectUpdateListen
                 mLogger.failure(ex.getMessage());
             }
 
-            Boolean toggleAffectUpdate = Boolean.parseBoolean(mConfig.getProperty("affectUpdate"));
-            if(toggleAffectUpdate){
-                mALMA.addAffectUpdateListener(this);
-            }
+            mALMA.addAffectUpdateListener(this);
+
 
         } else {
             mALMA.startRealtimeOutput(mALMA.getDocumentManager().getAffectComputationParams());
@@ -116,9 +114,15 @@ public class ALMAExecutor extends ActivityExecutor implements AffectUpdateListen
 
             //case for appraisalTagList
             if(name.equalsIgnoreCase("AffectList")){
-                executeAffectList(activity);
+                executeAffectInputList(activity);
                 return;
             }
+            //case for padList
+            if(name.equalsIgnoreCase("PADInput")){
+                executePADInputList(activity);
+                return;
+            }
+
             if (AppraisalTag.instance().isAppraisalTag(name)) {
                 executeAppraisalTag(activity);
                 return;
@@ -137,17 +141,26 @@ public class ALMAExecutor extends ActivityExecutor implements AffectUpdateListen
         String name_D = getActionFeatureValue("D", activity.getFeatures()).replace("'", "");
         String name_emotion = getActionFeatureValue("emotion", activity.getFeatures()).replace("'", "");
 
+
         //get valjues from alma
-        StringValue dominatnEmotion = new StringValue(character.getCurrentEmotions().getDominantEmotion().toString());
         FloatValue P = new FloatValue((float) character.getCurrentMood().getPleasure());
         FloatValue A = new FloatValue((float) character.getCurrentMood().getArousal());
         FloatValue D = new FloatValue((float) character.getCurrentMood().getDominance());
+
+        float[] pad = new float[]{(float) character.getCurrentMood().getPleasure(), (float) character.getCurrentMood().getArousal(), (float) character.getCurrentMood().getDominance()};
+        String dominatnEmotion = getEmotions(pad);
+
+        String curEmotionList = (String) mProject.getValueOf("TeacherEmotionList").getValue();
+
+        curEmotionList = curEmotionList  + dominatnEmotion + ";";
+        //mLogger.message(curEmotionList);
+
 
         //assign values to according variables in VCM
         mProject.setVariable(name_P,P );
         mProject.setVariable(name_A,A );
         mProject.setVariable(name_D,D );
-        mProject.setVariable(name_emotion,dominatnEmotion );
+        mProject.setVariable("TeacherEmotionList", curEmotionList);
     }
 
     private void executeAppraisalTag(AbstractActivity activity) {
@@ -164,17 +177,83 @@ public class ALMAExecutor extends ActivityExecutor implements AffectUpdateListen
         mALMA.processSignal(ai);
     }
 
-    private void executeAffectList(AbstractActivity activity) {
-        String appraisal_list_name = getActionFeatureValue("list", activity.getFeatures());
-        String appraisal_list_s = (String) mProject.getValueOf(appraisal_list_name).getValue();
-        mProject.setVariable(appraisal_list_name, "");
-        mLogger.message("AffectList with list string: " +appraisal_list_s + " on actor "+ activity.getActor());
-        if(appraisal_list_s == ""){return;}
-        List<String> appraisal_list = new ArrayList<>(Arrays.asList(appraisal_list_s.split(";")));
+    //Process a PADInputList
+    //called from within VCM by PlayAction ( "[CHARACKERNAME PADList list=LISTNAME]" )
+    //in VCM there should be a string variable defined with the same name as in the action call
+    //The string can be defined in the following ways(note n o space):
+    //1. "P,A,D;P,A,D;......"
+    //2. "P,A,D,INTESNITY;P,A,D,INTESNITY;P,A,D,INTESNITY;P,A,D,INTESNITY;P,A,D,INTESNITY;....."
+    //3. "P,A,D,INTESNITY,ELICITOR;P,A,D,ELICITOR,INTESNITY,ELICITOR;P,A,D,ELICITOR,INTESNITY,ELICITOR;....."
+    //the function the creates a corresponding AffectInput and sends it to ALMA
+    //Default values for intensity is 1 and for elicitor "Scene", all unelegantly set within the code
+    private void executePADInputList(AbstractActivity activity) {
 
+        //load vsm variable(name defined by list) contents into local variable appraisal_list_s
+        String pad_list_name = getActionFeatureValue("list", activity.getFeatures());
+        String pad_list_s = (String) mProject.getValueOf(pad_list_name).getValue();
+
+        mProject.setVariable(pad_list_name, "");
+        mLogger.message("PAD list with list string: " + pad_list_s + " on actor " + activity.getActor());
+
+        if (pad_list_s == "") {
+            return;
+        }
+
+        //split string by ; to create list and loop over all the emlements
+        List<String> appraisal_list = new ArrayList<>(Arrays.asList(pad_list_s.split(";")));
         for (String affectString : appraisal_list) {
             String[] affect = affectString.split(",");
 
+            //logToFile(affect[0]);
+
+            AffectInputDocument.AffectInput ai;
+            switch (affect.length) {
+                case 5:
+                    ai = AppraisalTag.instance().makePADInput(activity.getActor(),affect[0],affect[1],affect[2], affect[3], affect[4]);
+                    mLogger.message("Processing " + ai.toString());
+                    mALMA.processSignal(ai);
+                    break;
+                case 4:
+                    ai = AppraisalTag.instance().makePADInput(activity.getActor(),affect[0],affect[1],affect[2],  affect[3], "Bob");
+                    mLogger.message("Processing " + ai.toString());
+                    mALMA.processSignal(ai);
+                    break;
+                case 3:
+                    ai = AppraisalTag.instance().makePADInput(activity.getActor(),affect[0],affect[1],affect[2], "1", "Bob");
+                    mLogger.message("Processing " + ai.toString());
+                    mALMA.processSignal(ai);
+                    break;
+                default:
+                    mLogger.failure("Partially Incorrect Appraisal List format in: " + affect);
+            }
+        }
+    }
+
+    //Process a AffectInputList
+    //called from within VCM by PlayAction ( "[CHARACKERNAME AffectList list=LISTNAME]" ) example PlayAction("[AlmaTeacher AffectList list=affectList]")
+    //in VCM there should be a string variable defined with the same name as in the action call
+    //The string can be defined in the following ways:
+    //1. "APPRAISALTAG;APPRAISALTAG;APPRAISALTAG;APPRAISALTAG;APPRAISALTAG;......"
+    //2. "APPRAISALTAG,INTESNITY;APPRAISALTAG,INTESNITY;APPRAISALTAG,INTESNITY;APPRAISALTAG,INTESNITY;APPRAISALTAG,INTESNITY;....."
+    //3. "APPRAISALTAG,INTESNITY,ELICITOR;APPRAISALTAG,ELICITOR,INTESNITY,ELICITOR;APPRAISALTAG,ELICITOR,INTESNITY,ELICITOR;....."
+    //the function the creates a corresponding AffectInput and sends it to ALMA
+    //Default values for intensity is 1 and for elicitor "Scene", all unelegantly set within the code
+    private void executeAffectInputList(AbstractActivity activity) {
+        //load vsm variable(name defined by list) contents into local variable appraisal_list_s
+        String appraisal_list_name = getActionFeatureValue("list", activity.getFeatures());
+        String appraisal_list_s = (String) mProject.getValueOf(appraisal_list_name).getValue();
+
+        mProject.setVariable(appraisal_list_name, "");
+        mLogger.message("AffectList with list string: " +appraisal_list_s + " on actor "+ activity.getActor());
+
+        if(appraisal_list_s == ""){return;}//if list empty do nothing
+
+        //split string by ; to create list and loop over all the emlements
+        List<String> appraisal_list = new ArrayList<>(Arrays.asList(appraisal_list_s.split(";")));
+        for (String affectString : appraisal_list) {
+            String[] affect = affectString.split(",");
+
+            //logToFile(affect[0]);
             AffectInputDocument.AffectInput ai;
             switch (affect.length) {
                 case 3:
@@ -188,8 +267,9 @@ public class ALMAExecutor extends ActivityExecutor implements AffectUpdateListen
                     mALMA.processSignal(ai);
                     break;
                 case 1:
-                    ai = AppraisalTag.instance().makeAffectInput(activity.getActor(), affect[0], "1", "Scene");
+                    ai = AppraisalTag.instance().makeAffectInput(activity.getActor(), "GoodEvent", "1", "Scene");
                     mLogger.message("Processing " + ai.toString());
+
                     mALMA.processSignal(ai);
                     break;
                 default:
@@ -231,8 +311,11 @@ public class ALMAExecutor extends ActivityExecutor implements AffectUpdateListen
                 //logCharacterUpdate(character, true);
                 //TODO MABY AUTOMATICALLY ADD CHARACTER VARS TO VSM?
 
+                //TODO DELETE
+                if (Objects.equals(character.getName(), "Bob")) {
+                    return;
+                }
 
-                StringValue dominatnEmotion = new StringValue(character.getDominantEmotion().getName().toString());
 
                 //gettiong  PAP values from character, casting them to VSM type and collect them to vars
                 FloatValue P = new FloatValue((float) character.getMood().getPleasure());
@@ -245,7 +328,7 @@ public class ALMAExecutor extends ActivityExecutor implements AffectUpdateListen
                 String aName = character.getName()+"A";
                 String dName = character.getName()+"D";
 
-                mProject.setVariable(emotionName,dominatnEmotion );
+                //mProject.setVariable(emotionName,dominatnEmotion );
                 mProject.setVariable(pName,P );
                 mProject.setVariable(aName,A );
                 mProject.setVariable(dName,D );
@@ -287,6 +370,16 @@ public class ALMAExecutor extends ActivityExecutor implements AffectUpdateListen
         mLogger.message( updateInfo);
     }
 
+    //logs string to a file
+    public static void logToFile(String message) {
+        try(PrintWriter writer = new PrintWriter( new FileWriter( "appraisalLog.txt" , true))) {
+            writer.println(message);
+        }
+        catch
+        (IOException e) {
+            System.err.println("Error writing to log file: "+ e.getMessage());
+        }
+    }
 
     // get the value of a feature (added PG) - quick and dirty
 
@@ -297,6 +390,92 @@ public class ALMAExecutor extends ActivityExecutor implements AffectUpdateListen
             }
         }
         return "";
+    }
+
+    private String getEmotions(float[] padValues){
+        List<List<String>> padToEm = readCSV("plugins/mithos/data/PAD_to_emotion.csv", ",");
+
+        //whe search the highest cosine similarity and emotion wiht this:
+        double max_similarity = -1.0;
+        String cosestEmotion = "UNDEFINED";
+
+
+        for (List<String> line : padToEm) {
+            String emotion = (line.get(1));
+            float emP = new Float(line.get(1));
+            float emA = new Float(line.get(2));
+            float emD = new Float(line.get(3));
+            float[] emPAD = {emP,emA,emD};
+
+
+            Double cosineSimilarity = cosineSimilarity(emPAD, padValues);
+
+            if(cosineSimilarity >= max_similarity){
+                max_similarity = cosineSimilarity;
+                cosestEmotion = line.get(0);
+            }
+        }
+
+
+        return cosestEmotion;
+    }
+
+    //used by getEmotion
+    //function used to read the csv files containing the tables for the PAD to eomotion and Appraisal tag to emotion mapping
+    private List<List<String>> readCSV(String csvFile, String csvSplitBy){
+        String line = "";
+        List<List<String>> csvData = new ArrayList<>();
+
+        try (BufferedReader br = new BufferedReader(new FileReader(csvFile))) {
+            while ((line = br.readLine()) != null) {
+                // Split the line by comma
+                List<String> data = new ArrayList<String>();
+                String[] array = line.split(csvSplitBy);
+
+                for (String s:array) {
+                    data.add(s);
+                }
+                csvData.add(data);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        //enable logging of reading
+        boolean print = false;
+        if(print){
+            String toPrint = "|";
+            for (List<String> csvLine : csvData) {
+                for (String s : csvLine) {
+                    toPrint = toPrint + s + " | ";
+
+                }
+                toPrint = toPrint + "\n";
+            }
+            mLogger.message(toPrint);
+        }
+        return csvData;
+    }
+
+    // Function to calculate cosine similarity
+    private double cosineSimilarity(float[] vectorA, float[] vectorB) {
+        double dotProduct = 0;
+        double magnitudeA = 0;
+        double magnitudeB = 0;
+
+        for (int i = 0; i < vectorA.length; i++) {
+            dotProduct += vectorA[i] * vectorB[i];
+            magnitudeA += Math.pow(vectorA[i], 2);
+            magnitudeB += Math.pow(vectorB[i], 2);
+        }
+
+        magnitudeA = Math.sqrt(magnitudeA);
+        magnitudeB = Math.sqrt(magnitudeB);
+
+        if (magnitudeA == 0 || magnitudeB == 0) {
+            return 0; // to handle division by zero
+        }
+
+        return (float)dotProduct / (magnitudeA * magnitudeB);
     }
 
 }
