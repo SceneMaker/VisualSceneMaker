@@ -1,13 +1,13 @@
 package de.dfki.vsm.xtension.ssi;
 
+import de.dfki.vsm.extensionAPI.ExportableProperties;
+import de.dfki.vsm.extensionAPI.ProjectProperty;
+import de.dfki.vsm.extensionAPI.value.ProjectValueProperty;
 import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
 import de.dfki.vsm.runtime.interpreter.value.StringValue;
 import de.dfki.vsm.runtime.project.RunTimeProject;
-import de.dfki.vsm.extensionAPI.ExportableProperties;
-import de.dfki.vsm.extensionAPI.ProjectProperty;
-import de.dfki.vsm.extensionAPI.value.ProjectValueProperty;
 import de.dfki.vsm.xtension.ssi.logger.SSILoggerMessage;
 import de.dfki.vsm.xtension.ssi.util.property.SSIProjectProperty;
 
@@ -22,7 +22,7 @@ import java.util.Map;
  * @author Gregor Mehlmann
  */
 public final class SSICmdExecutor extends ActivityExecutor implements ExportableProperties {
-
+                                                                                                                                                                                      
     // The SSI receiver data
     private final String mLogHost;
     private final String mLogPort;
@@ -33,7 +33,7 @@ public final class SSICmdExecutor extends ActivityExecutor implements Exportable
     private final String mStudyMasterPort;  // 9.6.17 add by PG
     private final String[] mSSIPipe;
     private StudyMasterReceiverThread mSMReceiver; // 9.6.17 add by PG
-    private ExportableProperties exportableProperties = new SSIProjectProperty();
+    private final ExportableProperties exportableProperties = new SSIProjectProperty();
 
     // Construct executor
     public SSICmdExecutor(

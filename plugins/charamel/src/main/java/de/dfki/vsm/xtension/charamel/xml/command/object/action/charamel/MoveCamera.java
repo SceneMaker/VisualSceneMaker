@@ -21,7 +21,15 @@ public class MoveCamera extends CharamelActObject implements XMLParseable, XMLWr
 
     // The logger instance
     private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
-    private String posX, posY, posZ, lookX, lookZ, lookY, upX, upY, upZ;
+    private final String posX;
+    private final String posY;
+    private final String posZ;
+    private String lookX;
+    private String lookZ;
+    private String lookY;
+    private String upX;
+    private String upY;
+    private String upZ;
     private String mCharameAvatarId = "1";
 
     // TODO cai_request sub element String mValue = "";

@@ -20,9 +20,7 @@ function genTimeStamp() {
     let timestamp = today.getFullYear() + '-' + pad(today.getMonth() + 1) + '-' + pad(today.getDate()) + "_" +
         pad(today.getHours()) + ":" + pad(today.getMinutes()) + ":" + pad(today.getSeconds()) + ":" + ms;
     return timestamp;
-};
-
-let webSocket;
+}
 
 /**
  * Studymaster web app main page.
@@ -31,6 +29,8 @@ let webSocket;
  * @author [Chirag Bhuvaneshwara](https://github.com/chiragbhuvaneshwara)
  **/
 function App() {
+    const proto = document.location.protocol === 'https:'? 'wss://':'ws://';
+    const [webSocket, setWebSocket] = useState({});
     const [vsmConnectionStatus, setVsmConnectionStatus] = useState(false);
     const [infoLogContents, setInfoLogContents] = useState({});
     const [informContent, setInformContent] = useState("");
@@ -47,11 +47,11 @@ function App() {
         setUserSubmittedInfo(items);
     };
 
-    useEffect(() => {
-        console.log("Setting up web socket...");
-        webSocket = new WebSocket('ws://' + document.location.host + '/ws');
 
-        let ws = webSocket;
+    useEffect(() => {
+
+        let ws = new WebSocket(proto + document.location.host + '/ws');
+        console.log("Setting up web socket...");
 
         ws.onopen = function () {
             setVsmConnectionStatus(true);
@@ -62,7 +62,7 @@ function App() {
 
         };
 
-        ws.onclose = function (msg) {
+        ws.onclose = function () {
             setVsmConnectionStatus(false);
             setUserSubmittedInfo({});
             setInputSheetFieldDetails({});
@@ -151,12 +151,12 @@ function App() {
             }
             setVsmConnectionStatus(true);
         };
-
+        setWebSocket(ws);
         document.title = "VSM StudyMaster";
         const link = document.querySelector("link[rel*='icon']") || document.createElement('link');
         link.type = 'image/x-icon';
         link.rel = 'shortcut icon';
-        link.href = 'http://scenemaker.dfki.de/images/scenemaker/logo.png';
+        link.href = document.location.protocol +'scenemaker.dfki.de/images/scenemaker/logo.png';
         document.getElementsByTagName('head')[0].appendChild(link);
 
         return () => {
@@ -224,7 +224,7 @@ function App() {
             timestamp: inputSheetFieldDetails.timestamp,
         })
         setUserSubmittedInfo(new Map());
-    };
+    }
 
     function sendCancelToVsm() {
         webSocket.send(`VSMMessage#VAR#request_result#CANCEL#` + inputSheetFieldDetails.vm_uid);
@@ -235,7 +235,7 @@ function App() {
         setInformContent("");
         setDispProceedBtn(false);
         setProceedBtnUid("");
-    };
+    }
 
     function sendProceedToVsm() {
         webSocket.send(`VSMMessage#VAR#request_result#PROCEED#` + proceedBtnUid);
@@ -246,7 +246,7 @@ function App() {
         setInformContent("");
         setDispProceedBtn(false);
         setProceedBtnUid("");
-    };
+    }
 
 
     return (
@@ -318,6 +318,6 @@ function App() {
             </div>
         </div>
     );
-};
+}
 
 export default App;

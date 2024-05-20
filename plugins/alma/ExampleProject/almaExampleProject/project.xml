@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Project name="AlmaExampleProject">
+  <Plugins>
+    <Plugin type="device" name="Alma" class="de.dfki.vsm.xtension.alma.ALMAExecutor" load="true">
+      <Feature key="computation" val="conf/AffectComputationExample.aml"/>
+      <Feature key="definition" val="conf/AffectDefinitionExample.aml"/>
+    </Plugin>
+  </Plugins>
+  <Agents>
+    <Agent name="Anne" device="Alma">
+    </Agent>
+    <Agent name="Bob" device="Alma">
+    </Agent>
+  </Agents>
+  <Player>
+  </Player>
+</Project>

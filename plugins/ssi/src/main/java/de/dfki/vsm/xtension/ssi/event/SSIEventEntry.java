@@ -7,8 +7,9 @@ import de.dfki.vsm.util.xml.XMLWriteError;
 import de.dfki.vsm.xtension.ssi.event.data.SSIEventData;
 import de.dfki.vsm.xtension.ssi.event.data.SSIStringData;
 import de.dfki.vsm.xtension.ssi.event.data.SSITupleData;
-import java.util.Locale;
 import org.w3c.dom.Element;
+
+import java.util.Locale;
 
 /**
  * @author Gregor Mehlmann

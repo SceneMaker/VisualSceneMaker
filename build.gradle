@@ -30,15 +30,25 @@ dependencies {
     implementation fileTree(dir: 'lib', include: "*.jar")
     implementation project(":plugins:AndroidGui")
     implementation project(":plugins:studymaster-web")
+    implementation project(":plugins:emma-user-model")
     implementation project(":plugins:decad")
+    implementation project(":plugins:htmlgui-ws")
+    implementation project(":plugins:odp")
     implementation project(":plugins:yallah")
+    implementation project(":plugins:alma")
     implementation project(":plugins:ssi")
+    implementation project(":plugins:ssj")
     implementation project(":plugins:reeti")
+    implementation project(":plugins:timer")
     implementation project(":plugins:tricatworld")
     implementation project(":plugins:charamel")
-    implementation project(":plugins:VLCRemoteController")
+    implementation project(":plugins:charamel-ws")
     implementation project(":plugins:extensionAPI")
+    implementation project(":plugins:DialogManager")
+    implementation project(":plugins:SIAHomeConnection")
 
+    implementation project(":plugins:sockets")
+    implementation project(":plugins:DriveSimulator")
     implementation 'org.jetbrains:annotations:16.0.2'
     // https://mvnrepository.com/artifact/org.slick2d/slick2d-core
     implementation group: 'org.slick2d', name: 'slick2d-core', version: '1.0.2' // needed for documentation
