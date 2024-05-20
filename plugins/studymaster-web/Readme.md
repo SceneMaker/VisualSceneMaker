@@ -5,7 +5,7 @@ The goal of this plugin is to provide a system to watch the status and interact 
 The main features are:
 
 * Present web forms (which can optionally block the scene flow execution) to allow users inputting data;
-* (IN PROGRESS) Visualize the value of global variables.
+* Visualize the value of global variables.
 
 This plugin uses an embedded Javalin web server to serve the web pages, and 
 a web application built with React to show the information.
