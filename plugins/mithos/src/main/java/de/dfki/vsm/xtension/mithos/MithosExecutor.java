@@ -286,10 +286,45 @@ public class MithosExecutor extends ActivityExecutor {
             }
 
         }
-        mLogger.message(confRes);
+        mProject.setVariable("ConflictResolutionStyle",confRes);
+        mLogger.message("confRes " + confRes);
+
+        //fin change to relationshipLvl
+        int deltaRelLvl = 0;
+
+        switch (confRes){
+            case "smoothing":
+                deltaRelLvl = -1;
+                break;
+            case "withdrawing":
+                deltaRelLvl = +1;
+                break;
+            case "forcing":
+                deltaRelLvl = +1;
+                break;
+            case "problemsolving":
+                deltaRelLvl = -1;
+                break;
+            default:
+                mLogger.failure("This conflict resolution is not defined!");
+        }
 
         //TODO maby make function parameter, to not have name hardcoded
-        mProject.setVariable("ConflictResolutionStyle",confRes);
+        int relLvl = (int) mProject.getValueOf("rel_lvl_automated_suggestion").getValue();
+
+
+
+
+        int nextRelLevel = relLvl + deltaRelLvl;
+
+        //making shure level stays in range
+        int upperBound = 4;
+        int lowerBound = -2;
+        nextRelLevel = Math.max(lowerBound, Math.min(nextRelLevel, upperBound));
+
+        mLogger.message("nextRelLevel " + nextRelLevel);
+        mProject.setVariable("rel_lvl_automated_suggestion",nextRelLevel);
+
     }
 
     @Override
@@ -349,17 +384,36 @@ public class MithosExecutor extends ActivityExecutor {
         AppraisalTag appraisalTag = intAct.appraisalTag;
         if (appraisalTag != null) {
             logger.message("Appraisal Tag : " + appraisalTag);
-            mProject.setVariable("appraisalTag", appraisalTag.name());
+            String appraisalList = (String) mProject.getValueOf("appraisalTag").getValue();
+            appraisalList = appraisalList + appraisalTag.name() + ";";
+            mProject.setVariable("appraisalTag", appraisalList);
         }
+
+        int taskLvl = (int) mProject.getValueOf("task_lvl_automated_suggestion").getValue();
+
+        if(intAct.taskFocus){
+            taskLvl++;
+        }else {
+            taskLvl--;
+        }
+
+        int upperBound = 4;
+        int lowerBound = -2;
+
+        taskLvl  = Math.max(lowerBound, Math.min(taskLvl, upperBound));
+
+        mLogger.message("taskLvl: " + taskLvl);
+        mProject.setVariable("task_lvl_automated_suggestion",taskLvl);
+
+
+        mProject.setVariable("new_interpretation",true);
     }
 
     public void process(Emotion emotion) {
         double[] padValues = {emotion.getValence(), emotion.getArousal(), emotion.getDominance()};
         String padString = padValues[0] + "," + padValues[1] + "," + padValues[2];
-
-        String padAffectList = (String) mProject.getValueOf("padAffectList").getValue();
-        padAffectList = padAffectList  + padString + ";";
-        mProject.setVariable("padAffectList", padAffectList);
+        String padAffectList = padString + ";";
+        mProject.setVariable("padAffectToolBox", padAffectList);
     }
 
 

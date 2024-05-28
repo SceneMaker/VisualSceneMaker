@@ -7,8 +7,7 @@ import com.google.gson.JsonSyntaxException;
 import de.dfki.vsm.event.EventDispatcher;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
 import de.mithos.compint.command.ScenarioScriptFeedback;
-import de.mithos.compint.interaction.Emotion;
-import de.mithos.compint.interaction.InteractionAct;
+import de.mithos.compint.interaction.*;
 import org.apache.kafka.clients.consumer.*;
 
 import java.lang.reflect.Type;
@@ -93,13 +92,14 @@ public class MithosHandler<T> extends Thread {
                     break;
                 /*                 */
                 case "InteractionActs":
+                    //TODO DELETE
+                    logger.message("InteractionAct json: " + record.value());
                     InteractionAct ia = gson.fromJson(record.value(), InteractionAct.class);
+
                     executor.process(ia);
                     logger.message("InteractionActs");
                     break;
                 case "PAD":
-                    //TODO delte
-                    logger.message(record.value().replace('"', ' '));
                     //Note line above does not work like in the other cases, because we don't have timeBegin and timeEnd of the Emotion CLass
                     Emotion emotion = gson.fromJson(record.value().replace('"',' '), Emotion.class);//TODO probably time is missing in record.value
                     executor.process(emotion);
