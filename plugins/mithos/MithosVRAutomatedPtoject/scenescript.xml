@@ -112,22 +112,33 @@
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="1174" upper="1283" language="@@" identifier="RequestConflictInterpretationAutomated">
-    <SceneTurn lower="1222" upper="1283" speaker="web">
-      <SceneUttr lower="1228" upper="1283" punct=".">
-        <ActionObject lower="1228" upper="1235" actor="" name="REQUEST">
-          <ActionFeature lower="1236" upper="1251" key="var" val="'phase_tmp'"/>
-          <ActionFeature lower="1252" upper="1268" key="value" val="'P2,P3,P4'"/>
-          <ActionFeature lower="1269" upper="1281" key="type" val="'radio'"/>
+  <SceneObject lower="1174" upper="1285" language="@@" identifier="RequestConflictInterpretationAutomatedOG">
+    <SceneTurn lower="1224" upper="1285" speaker="web">
+      <SceneUttr lower="1230" upper="1285" punct=".">
+        <ActionObject lower="1230" upper="1237" actor="" name="REQUEST">
+          <ActionFeature lower="1238" upper="1253" key="var" val="'phase_tmp'"/>
+          <ActionFeature lower="1254" upper="1270" key="value" val="'P2,P3,P4'"/>
+          <ActionFeature lower="1271" upper="1283" key="type" val="'radio'"/>
         </ActionObject>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="1285" upper="1366" language="@@" identifier="ApplyAffectList">
-    <SceneTurn lower="1310" upper="1366" speaker="AlmaTeacher">
-      <SceneUttr lower="1324" upper="1366" punct=".">
-        <ActionObject lower="1324" upper="1347" actor="AlmaTeacher" name="AffectList">
-          <ActionParam lower="1348" upper="1364" key="list" val="affectList"/>
+  <SceneObject lower="1287" upper="1392" language="@@" identifier="RequestConflictInterpretationAutomated">
+    <SceneTurn lower="1335" upper="1392" speaker="web">
+      <SceneUttr lower="1341" upper="1392" punct=".">
+        <ActionObject lower="1341" upper="1348" actor="" name="REQUEST">
+          <ActionFeature lower="1349" upper="1360" key="var" val="'phase'"/>
+          <ActionFeature lower="1361" upper="1377" key="value" val="'P2,P3,P4'"/>
+          <ActionFeature lower="1378" upper="1390" key="type" val="'radio'"/>
+        </ActionObject>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="1394" upper="1475" language="@@" identifier="ApplyAffectList">
+    <SceneTurn lower="1419" upper="1475" speaker="AlmaTeacher">
+      <SceneUttr lower="1433" upper="1475" punct=".">
+        <ActionObject lower="1433" upper="1456" actor="AlmaTeacher" name="AffectList">
+          <ActionParam lower="1457" upper="1473" key="list" val="affectList"/>
         </ActionObject>
       </SceneUttr>
     </SceneTurn>

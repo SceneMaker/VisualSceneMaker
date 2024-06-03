@@ -73,7 +73,14 @@ public class ALMAExecutor extends ActivityExecutor implements AffectUpdateListen
                 mLogger.failure(ex.getMessage());
             }
 
-            mALMA.addAffectUpdateListener(this);
+            //variable used if ALMA should automatically update the VCM variables off all Characters
+            String sAutoUpdate = mConfig.getProperty("autoUpdate");
+            if(sAutoUpdate.equals("true")){
+                mALMA.addAffectUpdateListener(this);
+                mLogger.message("ALMA autoUpdate enabled, alma will frequently update the Characters variables in VCM");
+            }else {
+                mLogger.message("ALMA autoUpdate disabled, alma will NOT frequently update the Characters variables in VCM. Updates only happen when the UpdateVars command iss called in VCM");
+            }
 
 
         } else {
@@ -302,33 +309,26 @@ public class ALMAExecutor extends ActivityExecutor implements AffectUpdateListen
 
     //this function is called by ALMA each time an affect update is happening
     //this function updates for each character the corresponding VSM variables
-    // the 4 variables should be named and initialised in the VCM accordingly for each caracter
+    // the 4 variables should be named and initialised in the VCM accordingly for each character
     @Override
     public void update(AffectUpdateEvent event) {
         AffectOutputDocument aod = event.getUpdate();
          try {
             for (AffectOutputDocument.AffectOutput.CharacterAffect character : aod.getAffectOutput().getCharacterAffectList()) {
+                mLogger.message("ALMA automatic update event");
+
                 //logCharacterUpdate(character, true);
-                //TODO MABY AUTOMATICALLY ADD CHARACTER VARS TO VSM?
 
-                //TODO DELETE
-                if (Objects.equals(character.getName(), "Bob")) {
-                    return;
-                }
-
-
-                //gettiong  PAP values from character, casting them to VSM type and collect them to vars
+                //getting the PAD values from the character, casting them to VSM type and collect them to vars
                 FloatValue P = new FloatValue((float) character.getMood().getPleasure());
                 FloatValue A = new FloatValue((float) character.getMood().getArousal());
                 FloatValue D = new FloatValue((float) character.getMood().getDominance());
 
                 //update project vars accordingly
-                String emotionName = character.getName()+ "Emotion";
                 String pName = character.getName()+"P";
                 String aName = character.getName()+"A";
                 String dName = character.getName()+"D";
 
-                //mProject.setVariable(emotionName,dominatnEmotion );
                 mProject.setVariable(pName,P );
                 mProject.setVariable(aName,A );
                 mProject.setVariable(dName,D );
@@ -338,51 +338,7 @@ public class ALMAExecutor extends ActivityExecutor implements AffectUpdateListen
         }
     }
 
-    // print character attributes With Logger.
-    // Priority level is set to message, if not shown, set LOG_LEVELs in enviroment to ALL
-    //bool detailed is used to set the deteil level of the print
-    private void logCharacterUpdate(AffectOutputDocument.AffectOutput.CharacterAffect character, boolean detailed){
-        // access cached data or create new cache
-        String name = character.getName();
-        String emotion = character.getDominantEmotion().getName().toString();
-        double eIntensity = Double.parseDouble(character.getDominantEmotion().getValue());
-        String mood = character.getMood().getMoodword().toString();
-        String mIntensity = character.getMood().getIntensity().toString();
-        String mTendency = character.getMoodTendency().getMoodword().toString();
-
-        //steing message for logger updatre message
-        String updateInfo = ">>> Character Update\n";
-        updateInfo +=   "  Character Name: "+ name + "\n";
-        updateInfo +=   "  Strongest Emotion: " + emotion + " " +eIntensity + "\n";
-
-        if(detailed){
-            updateInfo +=   "  All Emotions:\n";
-            for (EmotionType et : character.getEmotions().getEmotionList()) {
-                updateInfo +=   "      " + et.getName() + " has value:" +et.getValue() + "\n";
-            }
-        }
-        updateInfo +=   "  Mood: " + mIntensity+ " " + mood  + " with tendency towards " + mTendency + "\n";
-
-        if(detailed){
-            updateInfo +=   "    (P,A,D) = (" +character.getMood().getPleasure()+", " +character.getMood().getArousal()+ ", "+character.getMood().getDominance()+",)";
-        }
-
-        mLogger.message( updateInfo);
-    }
-
-    //logs string to a file
-    public static void logToFile(String message) {
-        try(PrintWriter writer = new PrintWriter( new FileWriter( "appraisalLog.txt" , true))) {
-            writer.println(message);
-        }
-        catch
-        (IOException e) {
-            System.err.println("Error writing to log file: "+ e.getMessage());
-        }
-    }
-
     // get the value of a feature (added PG) - quick and dirty
-
     private final String getActionFeatureValue(String name, LinkedList<ActionFeature> features) {
         for (ActionFeature af : features) {
             if (af.getKey().equalsIgnoreCase(name)) {
@@ -392,6 +348,10 @@ public class ALMAExecutor extends ActivityExecutor implements AffectUpdateListen
         return "";
     }
 
+    //used to determine the currently strongest emotion, using the current PAD value of the ALMA character and the cosign similarity to the possible emotions
+    //note, this function is only necessary if P A D values are used as Input for ALMA
+    //when appraisal-tags are used strongestEmotion() can be called on an alma character. (when PAD values are usd as inutp, this function will allways return Physical)
+    //
     private String getEmotions(float[] padValues){
         List<List<String>> padToEm = readCSV("plugins/mithos/data/PAD_to_emotion.csv", ",");
 
@@ -478,4 +438,47 @@ public class ALMAExecutor extends ActivityExecutor implements AffectUpdateListen
         return (float)dotProduct / (magnitudeA * magnitudeB);
     }
 
+///Some log functions
+    //logs string to a file used for debugging, can be deleted
+    public static void logToFile(String message) {
+        try(PrintWriter writer = new PrintWriter( new FileWriter( "appraisalLog.txt" , true))) {
+            writer.println(message);
+        }
+        catch
+        (IOException e) {
+            System.err.println("Error writing to log file: "+ e.getMessage());
+        }
+    }
+
+    // print character attributes With Logger.
+    // Priority level is set to message, if not shown, set LOG_LEVELs in enviroment to ALL
+    //bool detailed is used to set the deteil level of the print
+    private void logCharacterUpdate(AffectOutputDocument.AffectOutput.CharacterAffect character, boolean detailed){
+        // access cached data or create new cache
+        String name = character.getName();
+        String emotion = character.getDominantEmotion().getName().toString();
+        double eIntensity = Double.parseDouble(character.getDominantEmotion().getValue());
+        String mood = character.getMood().getMoodword().toString();
+        String mIntensity = character.getMood().getIntensity().toString();
+        String mTendency = character.getMoodTendency().getMoodword().toString();
+
+        //steing message for logger updatre message
+        String updateInfo = ">>> Character Update\n";
+        updateInfo +=   "  Character Name: "+ name + "\n";
+        updateInfo +=   "  Strongest Emotion: " + emotion + " " +eIntensity + "\n";
+
+        if(detailed){
+            updateInfo +=   "  All Emotions:\n";
+            for (EmotionType et : character.getEmotions().getEmotionList()) {
+                updateInfo +=   "      " + et.getName() + " has value:" +et.getValue() + "\n";
+            }
+        }
+        updateInfo +=   "  Mood: " + mIntensity+ " " + mood  + " with tendency towards " + mTendency + "\n";
+
+        if(detailed){
+            updateInfo +=   "    (P,A,D) = (" +character.getMood().getPleasure()+", " +character.getMood().getArousal()+ ", "+character.getMood().getDominance()+",)";
+        }
+
+        mLogger.message( updateInfo);
+    }
 }

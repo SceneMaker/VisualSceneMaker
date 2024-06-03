@@ -16,6 +16,7 @@
     <Plugin type="device" name="Alma" class="de.dfki.vsm.xtension.alma.ALMAExecutor" load="true">
       <Feature key="computation" val="conf/AffectComputationMithos.aml"/>
       <Feature key="definition" val="conf/AffectDefinitionMithos.aml"/>
+      <Feature key="autoUpdate" val="false"/>
     </Plugin>
   </Plugins>
   <Agents>
@@ -34,8 +35,6 @@
     <Agent name="Alex" device="Kafka">
     </Agent>
     <Agent name="AlmaTeacher" device="Alma">
-    </Agent>
-    <Agent name="Bob" device="Alma">
     </Agent>
   </Agents>
   <Player>

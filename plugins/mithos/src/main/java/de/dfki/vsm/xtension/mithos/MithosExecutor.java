@@ -224,6 +224,9 @@ public class MithosExecutor extends ActivityExecutor {
         Integer id = nextId();
         ScenarioScriptCommand ssc = new ScenarioScriptCommand(id, command);
         String sscGsonString = gson.toJson(ssc);
+        //TODO DELETE
+        mLogger.warning(sscGsonString);
+
         ProducerRecord<String, String> record = new ProducerRecord<>(write_topic, 0, "Command", sscGsonString);
         if (actionActivity.getName().equals("SpeakAndAct") || actionActivity.getName().equals("StartSpeaking")) {
             actionActivity.setType(AbstractActivity.Type.blocking);
@@ -286,7 +289,7 @@ public class MithosExecutor extends ActivityExecutor {
             }
 
         }
-        mProject.setVariable("ConflictResolutionStyle",confRes);
+        mProject.setVariable("IntermediateConflictResolutionStyle",confRes);
         mLogger.message("confRes " + confRes);
 
         //fin change to relationshipLvl
@@ -375,6 +378,7 @@ public class MithosExecutor extends ActivityExecutor {
 
     }
 
+    //processes Interaction Act send by Semvox
     public void process(InteractionAct intAct) {
         ActKind intent = intAct.intent;
         if (intent != null) {
@@ -407,6 +411,20 @@ public class MithosExecutor extends ActivityExecutor {
 
 
         mProject.setVariable("new_interpretation",true);
+    }
+
+    //given a list of social norms, sort them according to TODO
+    private List<SocialNorm> orderSocialNorms(List<SocialNorm> socialNorms){
+        mLogger.warning("orderSocialNorms: not implemented yet!");
+        //TODO
+        return socialNorms;
+    }
+
+    //given a list of social norms, sort them according to TODO
+    private List<SocialNorm> addSaliencyToSocialNorms(List<SocialNorm> socialNorms){
+        mLogger.warning("addSaliencyToSocialNorms: not implemented yet!");
+        //TODO
+        return socialNorms;
     }
 
     public void process(Emotion emotion) {
