@@ -316,8 +316,8 @@ public class MithosExecutor extends ActivityExecutor {
             }
 
         }
-        mProject.setVariable("IntermediateConflictResolutionStyle",confRes);
-        mProject.setVariable("IntermediateConflict",confRes);
+        mProject.setVariable("ConflictResolutionStyle",confRes);
+        mProject.setVariable("ConflictType",conf);
         mLogger.message("confRes " + confRes);
 
         //fin change to relationshipLvl
@@ -413,13 +413,14 @@ public class MithosExecutor extends ActivityExecutor {
             logger.message("Interaction kind: " + intent);
             mProject.setVariable("intent", intent.name());
         }
-        AppraisalTag appraisalTag = intAct.appraisalTag;
+
+        /*AppraisalTag appraisalTag = intAct.appraisalTag;
         if (appraisalTag != null) {
             logger.message("Appraisal Tag : " + appraisalTag);
             String appraisalList = (String) mProject.getValueOf("appraisalTag").getValue();
             appraisalList = appraisalList + appraisalTag.name() + ";";
             mProject.setVariable("appraisalTag", appraisalList);
-        }
+        }*/
 
         int taskLvl = (int) mProject.getValueOf("task_lvl_automated_suggestion").getValue();
 
@@ -434,11 +435,28 @@ public class MithosExecutor extends ActivityExecutor {
 
         taskLvl  = Math.max(lowerBound, Math.min(taskLvl, upperBound));
 
+        String conflictType = String.valueOf(mProject.getValueOf("IntermediateConflict"));//TODO CHECK POSSIBLE ISSUE WITH CONFLICT NOT BEING UP TO DATE
+        String appraisalList = processSocialNorms(conflictType,intAct.socialNorms);
+
+        mProject.setVariable("appraisalTagsSemvox",appraisalList);
+
+
         mLogger.message("taskLvl: " + taskLvl);
         mProject.setVariable("task_lvl_automated_suggestion",taskLvl);
-
-
         mProject.setVariable("new_interpretation",true);
+    }
+
+    private String processSocialNorms(String conflictType, List<SocialNorm> socialNorms){
+        socialNorms = orderSocialNorms(conflictType,socialNorms);
+        socialNorms = addSaliencyToSocialNorms(socialNorms);
+
+        String appraisalList = "";
+
+        for (SocialNorm norm : socialNorms){
+            appraisalList = appraisalList + norm.getAppraisalTag() + "," + norm.getSaliency() + ";";
+        }
+
+        return appraisalList;
     }
 
     //given a list of social norms, sort them according to TODO
