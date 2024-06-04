@@ -224,8 +224,6 @@ public class MithosExecutor extends ActivityExecutor {
         Integer id = nextId();
         ScenarioScriptCommand ssc = new ScenarioScriptCommand(id, command);
         String sscGsonString = gson.toJson(ssc);
-        //TODO DELETE
-        mLogger.warning(sscGsonString);
 
         ProducerRecord<String, String> record = new ProducerRecord<>(write_topic, 0, "Command", sscGsonString);
         if (actionActivity.getName().equals("SpeakAndAct") || actionActivity.getName().equals("StartSpeaking")) {
@@ -239,6 +237,8 @@ public class MithosExecutor extends ActivityExecutor {
         }
     }
 
+    //determines given the emotionList the current conflict and conflict resolution style, these are written in corresponding VCM vars
+    //also sets the ne relationship level automatically //TODO make rel level change seperate function
     public void executeGetConflictResolution(){
         mLogger.message("executeGetConflictResolution");
         String emotionListString = (String) mProject.getValueOf("TeacherEmotionList").getValue();
@@ -301,6 +301,7 @@ public class MithosExecutor extends ActivityExecutor {
         Collections.sort(nStrongesEmotions);
         //given the two most frequent emotions pick the conflict resolution
         String confRes = "problemsolving";//default value when no match is found
+        String conf = "noConflict";
         List<List<String>> csvData = readCSV("plugins/mithos/data/OCCEmotion_to_ConflictResolution.csv", ",");
         for (List<String> row : csvData){
             ArrayList<String> tableVal = new ArrayList<>();
@@ -311,10 +312,12 @@ public class MithosExecutor extends ActivityExecutor {
             Collections.sort(tableVal);
             if(tableVal.equals(nStrongesEmotions)){
                 confRes = row.get(2);
+                conf = row.get(3);
             }
 
         }
         mProject.setVariable("IntermediateConflictResolutionStyle",confRes);
+        mProject.setVariable("IntermediateConflict",confRes);
         mLogger.message("confRes " + confRes);
 
         //fin change to relationshipLvl
@@ -440,12 +443,54 @@ public class MithosExecutor extends ActivityExecutor {
 
     //given a list of social norms, sort them according to TODO
     //order is from most to least important
-    private List<SocialNorm> orderSocialNorms(List<SocialNorm> socialNorms){
-        mLogger.warning("orderSocialNorms: not implemented yet!");
-        //TODO
-        return socialNorms;
-    }
+    private List<SocialNorm> orderSocialNorms(String conflict, List<SocialNorm> socialNorms){
+        List<List<String>> csvData = readCSV("plugins/mithos/data/Conflict_to_socialNormOrder.csv", ",");
 
+        Map<String, Integer> priorityMapForConflict = new HashMap<String,Integer>();
+
+        for (List<String> row : csvData){
+            String rowConflict = row.get(0);
+            //find conflict of which the ordering should be considered and create a map from norm to priority
+            if(Objects.equals(rowConflict, conflict)){
+                int priority = 1;
+                for(int i = 1; i < row.size(); i = i+2){
+                    String norm = row.get(i);
+                    //TODO INCLUDE THIS
+                    String ref = row.get(i+1);//to whom the norm applies t = techer, s = student, b = both
+
+                    priorityMapForConflict.put(norm,priority);
+                    priority++;
+                }
+                break;
+            }
+        }
+
+        //assign priorities to given list
+        Map<SocialNorm, Integer> priorityMap = new HashMap<SocialNorm,Integer>();
+        for(SocialNorm norm : socialNorms){
+            if(priorityMapForConflict.containsKey(norm.getName())){
+                priorityMap.put(norm, priorityMapForConflict.get(norm.getName()));
+            }else{
+                priorityMap.put(norm, 1000);//NOTE this line assumes that there are no more than 1000 social norms(should be a correct assumption)
+            }
+        }
+
+        //sorting
+        //sort emotions by appearance
+        List<Map.Entry<SocialNorm, Integer>> prioList = new ArrayList<>(priorityMap.entrySet());
+        prioList.sort((entry1, entry2) -> entry1.getValue().compareTo(entry2.getValue()));
+
+        //extract lsit
+        List<SocialNorm> retList = new ArrayList<SocialNorm>();
+        for (Map.Entry<SocialNorm, Integer> entry : prioList){
+            retList.add(entry.getKey());
+        }
+
+        for(SocialNorm s : retList){
+            System.out.print(s.getName()+ " ");
+        }
+        return retList;
+    }
     //given a list of social norms ordered from least to most important
     //assign saliency linearly from 1 to 0.3 in equidistant order
     private List<SocialNorm> addSaliencyToSocialNorms(List<SocialNorm> socialNorms){

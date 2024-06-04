@@ -1,0 +1,12 @@
+Individuation,Freedom (patience),t,Professional behavior,t,Task oriented,t,Conforming behavior,s,Rules of classroom (no phone/no noise),s
+Dependency,Greeting - greet back,b,Questions - answers back,b,Encourages Task and participation,t,Participation with the teacher,s
+Submission,Greeting - greet back,t,Questions - answers back,t,Professional behavior,t,Conforming behavior,s,Rules of classroom (no phone/no noise),s,Greeting - greet back,s,Questions - answers back,s
+Control,Conforming behavior,s,Rules of classroom (no phone/no noise),s,Greeting - greet back,s,Questions - answers back,s,Participation with the teacher,s,Professional behavior,t,Task oriented,t,Greeting - greet back,t,Questions - answers back,t
+Care,Greeting - greet back,s,Questions - answers back,s,Conforming behavior,s,Rules of classroom (no phone/no noise),s,Participation with the teacher,s
+Autarky,Empathy,t,Questions - answers back,t,Greeting - greet back,t,Professional behavior,t,Encourages Task and participation,t
+PassiveMode,Greeting - greet back,t,Questions - answers back,t,Professional behavior,t,Encourages Task and participation,t
+ActiveMode
+SelfBlame,Questions - answers back,t,Greeting - greet back,t,Professional behavior,t,Encourages Task and participation,t,Empathy,t,Freedom (patience),t
+BlameOfObject,Greeting - greet back,s,Questions - answers back,s,Conforming behavior,s,Rules of classroom (no phone/no noise),s
+ActiveOedipal
+PassiveOedipal
