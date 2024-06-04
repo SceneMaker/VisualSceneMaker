@@ -245,6 +245,8 @@ public class MithosExecutor extends ActivityExecutor {
         mProject.setVariable("TeacherEmotionList","" );
 
         String[] emotions = emotionListString.split(";");
+        int count = emotions.length;
+
 
         //count emotion appearances, store result in Hashmap
         Map<String, Integer> countMap = new HashMap<String,Integer>();
@@ -256,17 +258,40 @@ public class MithosExecutor extends ActivityExecutor {
             }
         }
 
-        //get the n most counted emotions
-        int n = 2;
+        //get the 2 most counted emotions
+        //TODO finetune
+        double only_treashhold = 0.8; //min precentage treashhold at which one emotion is considered to be the only emotion
+        double duo_treashhold = 0.2; //min precentage treashhold at which second emotion is considered
+        //if both treashold are not met only strongest(most appearing) emotions is considered
+
         ArrayList<String> nStrongesEmotions = new ArrayList<>();
 
-
+        //sort emotions by appearance
         List<Map.Entry<String, Integer>> countList = new ArrayList<>(countMap.entrySet());
         countList.sort((entry1, entry2) -> entry2.getValue().compareTo(entry1.getValue()));
 
-        for( int i = 0; i <n && i < countList.size(); i++ ){
-            nStrongesEmotions.add(countList.get(i).getKey());
+        if(countList.size() == 1){
+            Map.Entry<String, Integer> mostAppearedEmotiom = countList.get(0);
+            double mostAppearedEmotiomPercentage = mostAppearedEmotiom.getValue() / count;
+            nStrongesEmotions.add(mostAppearedEmotiom.getKey());
         }
+        if(countList.size() > 1){
+            Map.Entry<String, Integer> mostAppearedEmotiom = countList.get(0);
+            double mostAppearedEmotiomPercentage = (double) mostAppearedEmotiom.getValue() / (double) count;
+
+            Map.Entry<String, Integer> secondMostAppearedEmotiom = countList.get(1);
+            double secondMostAppearedEmotiomPercentage = (double) secondMostAppearedEmotiom.getValue() / (double) count;
+
+            if(mostAppearedEmotiomPercentage > only_treashhold){
+                nStrongesEmotions.add(mostAppearedEmotiom.getKey());
+            } else if (secondMostAppearedEmotiomPercentage > duo_treashhold) {
+                nStrongesEmotions.add(mostAppearedEmotiom.getKey());
+                nStrongesEmotions.add(secondMostAppearedEmotiom.getKey());
+            }else{
+                nStrongesEmotions.add(mostAppearedEmotiom.getKey());
+            }
+        }
+
 
         //TESTING CAN BE DELETED
         //nStrongesEmotions = new ArrayList<>();
@@ -414,16 +439,39 @@ public class MithosExecutor extends ActivityExecutor {
     }
 
     //given a list of social norms, sort them according to TODO
+    //order is from most to least important
     private List<SocialNorm> orderSocialNorms(List<SocialNorm> socialNorms){
         mLogger.warning("orderSocialNorms: not implemented yet!");
         //TODO
         return socialNorms;
     }
 
-    //given a list of social norms, sort them according to TODO
+    //given a list of social norms ordered from least to most important
+    //assign saliency linearly from 1 to 0.3 in equidistant order
     private List<SocialNorm> addSaliencyToSocialNorms(List<SocialNorm> socialNorms){
-        mLogger.warning("addSaliencyToSocialNorms: not implemented yet!");
-        //TODO
+        double maxSaliency = 1;
+        double minSaliency = 0.3;
+
+        if (socialNorms.size() == 0){
+            return socialNorms;
+        }
+        if (socialNorms.size() == 1){
+            socialNorms.get(0).setSaliency(1);
+            return socialNorms;
+        }
+
+        int n = socialNorms.size();
+
+        //diffrence in saliancy
+        double delta = (maxSaliency-minSaliency)/(n-1);
+
+        double cur_saliancy = 1.0;
+
+        for (int i = 0; i < n; i++){
+            socialNorms.get(i).setSaliency(cur_saliancy);
+            cur_saliancy -= delta;
+        }
+
         return socialNorms;
     }
 
