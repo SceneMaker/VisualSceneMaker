@@ -69,18 +69,18 @@ public class MithosExecutor extends ActivityExecutor {
         student_dialogue_act_log_topic = "StudentDialogueActVSMLog";
     }
 
-    private void sendTempIntAct() {
-        ActKind iaIntent = ActKind.ConventionalOpening;
-        String actor = "Teacher";
-        List<String> addressees = new ArrayList<>();
-        Emotion emotion = new Emotion(0,0,0,0,10);
-        InteractionActBuilder iAB = new InteractionActBuilder(iaIntent, actor, addressees, emotion, 0, 10);
-        iAB.addAppraisalTag(GoodActSelf);
-        InteractionAct iA = iAB.getInteractionAct();
-        String iAGsonString = gson.toJson(iA);
-        ProducerRecord<String, String> record = new ProducerRecord<>("InteractionActs", 0, "iA", iAGsonString);
-        sendRecord(record);
-    }
+//    private void sendTempIntAct() {
+//        ActKind iaIntent = ActKind.ConventionalOpening;
+//        String actor = "Teacher";
+//        List<String> addressees = new ArrayList<>();
+//        Emotion emotion = new Emotion(0,0,0,0,10);
+//        InteractionActBuilder iAB = new InteractionActBuilder(iaIntent, actor, addressees, emotion, 0, 10);
+//        iAB.addAppraisalTag(GoodActSelf);
+//        InteractionAct iA = iAB.getInteractionAct();
+//        String iAGsonString = gson.toJson(iA);
+//        ProducerRecord<String, String> record = new ProducerRecord<>("InteractionActs", 0, "iA", iAGsonString);
+//        sendRecord(record);
+//    }
 
     @Override
     public String marker(long id) {
@@ -413,6 +413,13 @@ public class MithosExecutor extends ActivityExecutor {
             logger.message("Interaction kind: " + intent);
             mProject.setVariable("intent", intent.name());
         }
+
+        if (intAct.phase != null) {
+            String ph = "P" + intAct.phase.toString();
+            logger.message("Detected Interaction Phase is: " + ph);
+            mProject.setVariable("phase", ph);
+        }
+
 
         /*AppraisalTag appraisalTag = intAct.appraisalTag;
         if (appraisalTag != null) {
