@@ -229,7 +229,9 @@ public class MithosExecutor extends ActivityExecutor {
         if (actionActivity.getName().equals("SpeakAndAct") || actionActivity.getName().equals("StartSpeaking")) {
             actionActivity.setType(AbstractActivity.Type.blocking);
             speakingTimeBegin = System.nanoTime();
+            mProject.setVariable("ProcessAffectToolbox",false );
             sendRecordAndWait(record, id);
+            mProject.setVariable("ProcessAffectToolbox",true );
             speakingTimeEnd = System.nanoTime();
         } else {
             actionActivity.setType(AbstractActivity.Type.parallel);
