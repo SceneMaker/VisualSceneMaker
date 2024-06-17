@@ -1,0 +1,22 @@
+id,SocialNorm,Reference,Obligation
+so_1_01,Encourages Task and participation,t,React student raised hand
+so_1_02,Empathy,t,Evaluate student statements
+so_1_03,Encourages Task and participation,t,Praise student answer
+so_1_04,Encourages Task and participation,t,Praise student relevant question
+so_1_05,Task oriented,t,Address student answers
+so_1_06,Questions - answers back,t,Answer student question
+so_4_01,Greeting - greet bac,t,Greet students
+so_4_02,Encourages Task and participation,t,Keep eye contact by talking to students
+so_3_01,Encourages Task and participation,t,Add questions about the used approach
+so_3_02,Empathy,t,Empathically support students
+so_5_01,Task oriented,t,Infringements of rules need to be addressed
+so_5_02,Encourages Task and participation,t,Praise for obeying rules
+so_c_t_01,Professional behavior,t,The teacher should never threaten the student(s)
+so_std_1_01,Rules of classroom (no phone/no noise),s,Not use devices
+so_std_1_02,Greeting - greet back,s,Greet teacher
+so_std_1_03,Questions - answers back,s,Answer questions
+so_std_1_04,Conforming behavior,s,Be compliant
+so_std_2_01,Conforming behavior,s,Sitdown when the class starts
+so_std_2_02,Conforming behavior,s,Raise hand before speaking
+
+

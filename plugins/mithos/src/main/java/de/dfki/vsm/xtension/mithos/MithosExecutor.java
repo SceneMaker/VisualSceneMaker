@@ -1,7 +1,6 @@
 package de.dfki.vsm.xtension.mithos;
 
 import com.google.gson.Gson;
-import de.dfki.vsm.event.EventDispatcher;
 import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
 import de.dfki.vsm.runtime.activity.ActionActivity;
@@ -17,14 +16,11 @@ import de.mithos.compint.log.VSMPilotLog;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
-import org.apache.kafka.common.protocol.types.Field;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
-
-import static de.mithos.compint.interaction.AppraisalTag.*;
 
 /**
  * This plugin uses a kafka server to control an agent-environment and to receive processed userdata.
@@ -187,7 +183,7 @@ public class MithosExecutor extends ActivityExecutor {
             sendRecord(record);
         } catch (IllegalArgumentException e) {
             // Handle the case where the provided color argument is not valid
-            mLogger.failure("Invalid Dialogue Act: " + DialogueAct);
+            logger.failure("Invalid Dialogue Act: " + DialogueAct);
         }
     }
 
@@ -229,9 +225,9 @@ public class MithosExecutor extends ActivityExecutor {
         if (actionActivity.getName().equals("SpeakAndAct") || actionActivity.getName().equals("StartSpeaking")) {
             actionActivity.setType(AbstractActivity.Type.blocking);
             speakingTimeBegin = System.nanoTime();
-            mProject.setVariable("ProcessAffectToolbox",false );
+            mProject.setVariable("processAffectToolbox",false );
             sendRecordAndWait(record, id);
-            mProject.setVariable("ProcessAffectToolbox",true );
+            mProject.setVariable("processAffectToolbox",true );
             speakingTimeEnd = System.nanoTime();
         } else {
             actionActivity.setType(AbstractActivity.Type.parallel);
@@ -242,7 +238,7 @@ public class MithosExecutor extends ActivityExecutor {
     //determines given the emotionList the current conflict and conflict resolution style, these are written in corresponding VCM vars
     //also sets the ne relationship level automatically //TODO make rel level change seperate function
     public void executeGetConflictResolution(){
-        mLogger.message("executeGetConflictResolution");
+        logger.message("executeGetConflictResolution");
         String emotionListString = (String) mProject.getValueOf("TeacherEmotionList").getValue();
         mProject.setVariable("TeacherEmotionList","" );
 
@@ -320,7 +316,7 @@ public class MithosExecutor extends ActivityExecutor {
         }
         mProject.setVariable("ConflictResolutionStyle",confRes);
         mProject.setVariable("ConflictType",conf);
-        mLogger.message("confRes " + confRes);
+        logger.message("confRes " + confRes);
 
         //fin change to relationshipLvl
         int deltaRelLvl = 0;
@@ -339,7 +335,7 @@ public class MithosExecutor extends ActivityExecutor {
                 deltaRelLvl = -1;
                 break;
             default:
-                mLogger.failure("This conflict resolution is not defined!");
+                logger.failure("This conflict resolution is not defined!");
         }
 
         //TODO maby make function parameter, to not have name hardcoded
@@ -355,7 +351,7 @@ public class MithosExecutor extends ActivityExecutor {
         int lowerBound = -2;
         nextRelLevel = Math.max(lowerBound, Math.min(nextRelLevel, upperBound));
 
-        mLogger.message("nextRelLevel " + nextRelLevel);
+        logger.message("nextRelLevel " + nextRelLevel);
         mProject.setVariable("rel_lvl_automated_suggestion",nextRelLevel);
 
     }
@@ -410,6 +406,8 @@ public class MithosExecutor extends ActivityExecutor {
 
     //processes Interaction Act send by Semvox
     public void process(InteractionAct intAct) {
+        //TODO DELTE
+        logger.warning("|||||||||||||||||||process interactio0n act");
         ActKind intent = intAct.intent;
         if (intent != null) {
             logger.message("Interaction kind: " + intent);
@@ -421,7 +419,6 @@ public class MithosExecutor extends ActivityExecutor {
             logger.message("Detected Interaction Phase is: " + ph);
             mProject.setVariable("phase", ph);
         }
-
 
         /*AppraisalTag appraisalTag = intAct.appraisalTag;
         if (appraisalTag != null) {
@@ -450,13 +447,24 @@ public class MithosExecutor extends ActivityExecutor {
         mProject.setVariable("appraisalTagsSemvox",appraisalList);
 
 
-        mLogger.message("taskLvl: " + taskLvl);
+        logger.message("taskLvl: " + taskLvl);
         mProject.setVariable("task_lvl_automated_suggestion",taskLvl);
         mProject.setVariable("new_interpretation",true);
+
+//        TODO: Check logic
+        int interaction_count = (int) mProject.getValueOf("interaction_count").getValue();
+        interaction_count = interaction_count + 1;
+        mProject.setVariable("interaction_count",interaction_count);
     }
 
     private String processSocialNorms(String conflictType, List<SocialNorm> socialNorms){
-        socialNorms = orderSocialNorms(conflictType,socialNorms);
+        //TODO DELTE
+        logger.message("process social norm");
+
+
+        Map<SocialNorm, Integer> priorityMap = getPriorityMap(conflictType,socialNorms);
+        socialNorms = orderByPriorityMap(socialNorms,priorityMap);
+        //socialNorms = addSaliencyToSocialNorms(socialNorms,priorityMap);
         socialNorms = addSaliencyToSocialNorms(socialNorms);
 
         String appraisalList = "";
@@ -468,25 +476,64 @@ public class MithosExecutor extends ActivityExecutor {
         return appraisalList;
     }
 
-    //given a list of social norms, sort them according to TODO
-    //order is from most to least important
-    private List<SocialNorm> orderSocialNorms(String conflict, List<SocialNorm> socialNorms){
+    private List<SocialNorm> orderByPriorityMap(List<SocialNorm> socialNorms, Map<SocialNorm, Integer> priorityMap) {
+        //sorting
+        //sort emotions by appearance
+        List<Map.Entry<SocialNorm, Integer>> prioList = new ArrayList<>(priorityMap.entrySet());
+        prioList.sort((entry1, entry2) -> entry1.getValue().compareTo(entry2.getValue()));
+
+        //TODO DELTE
+        logger.message("resulting order, given social norms:");
+        //extract lsit
+        List<SocialNorm> retList = new ArrayList<SocialNorm>();
+        for (Map.Entry<SocialNorm, Integer> entry : prioList){
+            //TODO DELTE
+            logger.message(entry.getKey().getName());
+
+            retList.add(entry.getKey());
+        }
+
+        return retList;
+    }
+
+    //given a list of social norms, give a priority Map according to config
+    private Map<SocialNorm, Integer> getPriorityMap(String conflict, List<SocialNorm> socialNorms){
         List<List<String>> csvData = readCSV("plugins/mithos/data/Conflict_to_socialNormOrder.csv", ",");
 
+        //grete priority list of all norms according to config file
         Map<String, Integer> priorityMapForConflict = new HashMap<String,Integer>();
 
+        //TODO DELTE
+        logger.message("Preocess Social Norms with conflict style " + conflict);
+
+        //is the ordering by Whom the SN refer to(true) or by a direct ordering of social norms(false)
+        boolean orderByReference = false;
+
+        //TODO DELTE
+        logger.message("Determined ordering is");
         for (List<String> row : csvData){
             String rowConflict = row.get(0);
             //find conflict of which the ordering should be considered and create a map from norm to priority
             if(Objects.equals(rowConflict, conflict)){
+
+                //In this case there is no specific ordering of norms but to whom the norms belong
+                if (row.get(1) == "s>t"){
+                    //TODO DELTE
+                    logger.message("s>t");
+                    orderByReference = true;
+                    break;
+                }
+
                 int priority = 1;
                 for(int i = 1; i < row.size(); i = i+2){
                     String norm = row.get(i);
-                    //TODO INCLUDE THIS
-                    String ref = row.get(i+1);//to whom the norm applies t = techer, s = student, b = both
+                    //TODO DELTE
+                    logger.message(norm);
+                    String ref = row.get(i+1);//to whom the norm applies in regards to the config file t = techer, s = student, b = both
 
                     priorityMapForConflict.put(norm,priority);
                     priority++;
+
                 }
                 break;
             }
@@ -494,32 +541,104 @@ public class MithosExecutor extends ActivityExecutor {
 
         //assign priorities to given list
         Map<SocialNorm, Integer> priorityMap = new HashMap<SocialNorm,Integer>();
-        for(SocialNorm norm : socialNorms){
-            if(priorityMapForConflict.containsKey(norm.getName())){
-                priorityMap.put(norm, priorityMapForConflict.get(norm.getName()));
-            }else{
-                priorityMap.put(norm, 1000);//NOTE this line assumes that there are no more than 1000 social norms(should be a correct assumption)
+
+        //order by reference, so social norms student > social norms teacher
+        if(orderByReference){
+            for(SocialNorm norm : socialNorms){
+                Boolean normIsStudent = getSocialNormReft(norm.getName());
+                if (normIsStudent) {
+                    priorityMap.put(norm, 1);
+                }else{
+                    priorityMap.put(norm, 2);
+                }
+            }
+        }else{
+            for(SocialNorm norm : socialNorms){
+                String name = getSocialNormName(norm.getName());//map from semvox id to social norm
+                if(priorityMapForConflict.containsKey(name)){
+                    priorityMap.put(norm, priorityMapForConflict.get(name));
+                }else{
+                    priorityMap.put(norm, 1000);//NOTE this line assumes that there are no more than 1000 social norms(should be a correct assumption)
+                }
             }
         }
 
-        //sorting
-        //sort emotions by appearance
-        List<Map.Entry<SocialNorm, Integer>> prioList = new ArrayList<>(priorityMap.entrySet());
-        prioList.sort((entry1, entry2) -> entry1.getValue().compareTo(entry2.getValue()));
-
-        //extract lsit
-        List<SocialNorm> retList = new ArrayList<SocialNorm>();
-        for (Map.Entry<SocialNorm, Integer> entry : prioList){
-            retList.add(entry.getKey());
-        }
-
-        for(SocialNorm s : retList){
-            System.out.print(s.getName()+ " ");
-        }
-        return retList;
+        return priorityMap;
     }
-    //given a list of social norms ordered from least to most important
+
+    private Boolean getSocialNormReft(String name) {
+        List<List<String>> csvData = readCSV("plugins/mithos/data/SemvoxID_SocialNorm.csv", ",");
+
+        for (List<String> row : csvData){
+            if (row.get(0) == name){
+                if (row.get(2) == "s") {
+                    return true;
+                }else if (row.get(2) == "t"){
+                    return false;
+                }else {
+                    logger.failure("NO matching social norm found for semvox social norm name");
+                    return false;
+                }
+            }
+        }
+        logger.failure("NO matching social norm found for semvox social norm name");
+        return false;
+    }
+
+    private String getSocialNormName(String name) {
+        List<List<String>> csvData = readCSV("plugins/mithos/data/SemvoxID_SocialNorm.csv", ",");
+
+        for (List<String> row : csvData){
+            if (Objects.equals(row.get(0), name)){
+                return row.get(1);
+            }
+        }
+        logger.warning("NO matching social norm found for semvox social norm name");
+        return "";
+    }
+
+    //given a list of social norms ORDERED from least to most important
     //assign saliency linearly from 1 to 0.3 in equidistant order
+    private List<SocialNorm> addSaliencyToSocialNorms(List<SocialNorm> socialNorms, Map<SocialNorm, Integer> priorityMap){
+        double maxSaliency = 1;
+        double minSaliency = 0.3;
+
+        if (socialNorms.size() == 0){
+            return socialNorms;
+        }
+        if (socialNorms.size() == 1){
+            socialNorms.get(0).setSaliency(1);
+            return socialNorms;
+        }
+
+        //determine number of individual priorities
+        int n = new HashSet<>(priorityMap.values()).size();//TODO TO MAKIE IT WORK ADJUST FOR NUMBER OF PRIORITIES AND NOT NUMBER OF SALIENCIES
+
+        //diffrence in saliancy
+        double delta = (maxSaliency-minSaliency)/(n-1);
+
+        double cur_saliancy = 1.0;
+        int cur_priority = priorityMap.get(socialNorms.get(0));
+
+        for (int i = 0; i < n; i++){
+            SocialNorm socialNorm = socialNorms.get(i);
+            if(!priorityMap.containsKey(socialNorm)){
+                logger.failure("MithosExecutor addSaliencyToSocialNorms: NO priority was assigned to social norm!");
+            }else{
+                if(priorityMap.get(socialNorm) == cur_priority){
+                    socialNorm.setSaliency(cur_saliancy);
+                }else{
+                    cur_priority = priorityMap.get(socialNorm);
+                    cur_saliancy -= delta;
+                    socialNorm.setSaliency(cur_saliancy);
+                }
+            }
+        }
+        return socialNorms;
+    }
+
+    //given a list of social norms ordered from least to most important and a prioritz mapping
+    //assign saliency linearly from 1 to 0.3 in equidistant order according to prioritz mapping
     private List<SocialNorm> addSaliencyToSocialNorms(List<SocialNorm> socialNorms){
         double maxSaliency = 1;
         double minSaliency = 0.3;
@@ -586,7 +705,7 @@ public class MithosExecutor extends ActivityExecutor {
                 }
                 toPrint = toPrint + "\n";
             }
-            mLogger.message(toPrint);
+            logger.message(toPrint);
         }
         return csvData;
     }
