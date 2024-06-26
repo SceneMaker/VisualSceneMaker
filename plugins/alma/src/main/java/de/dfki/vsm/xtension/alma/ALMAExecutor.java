@@ -21,16 +21,16 @@ import de.dfki.vsm.runtime.activity.PauseActivity;
 import de.dfki.vsm.runtime.activity.SpeechActivity;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
 import de.dfki.vsm.runtime.interpreter.value.FloatValue;
-import de.dfki.vsm.runtime.interpreter.value.StringValue;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
-import de.dfki.vsm.util.tpl.Tuple;
 import org.apache.xmlbeans.XmlException;
 //import org.apache.xmlbeans.XmlException;
 
 import java.io.*;
 import java.util.LinkedList;
 import java.util.*;
+
+import static de.affect.emotion.EmotionType.Shame;
 
 /**
  *
@@ -157,6 +157,10 @@ public class ALMAExecutor extends ActivityExecutor implements AffectUpdateListen
         float[] pad = new float[]{(float) character.getCurrentMood().getPleasure(), (float) character.getCurrentMood().getArousal(), (float) character.getCurrentMood().getDominance()};
         String dominatnEmotion = getEmotions(pad);
 
+        if (dominatnEmotion == "UNDEFINED"){
+            return;
+        }
+
         String curEmotionList = (String) mProject.getValueOf("TeacherEmotionList").getValue();
 
         curEmotionList = curEmotionList  + dominatnEmotion + ";";
@@ -168,6 +172,9 @@ public class ALMAExecutor extends ActivityExecutor implements AffectUpdateListen
         mProject.setVariable(name_A,A );
         mProject.setVariable(name_D,D );
         mProject.setVariable("TeacherEmotionList", curEmotionList);
+
+
+        logToFile("TeacherPADtoEmotion.txt", "Teacher emotion: " + dominatnEmotion + " <---   " +P.getValue() + " : " + A.getValue()+ " : " + D.getValue() );
     }
 
     private void executeAppraisalTag(AbstractActivity activity) {
@@ -212,28 +219,56 @@ public class ALMAExecutor extends ActivityExecutor implements AffectUpdateListen
             String[] affect = affectString.split(",");
 
             //logToFile(affect[0]);
+            if(!(affect[0].equals("0.0") && affect[1].equals("0.0") && affect[2].equals("0.0"))){
+                AffectInputDocument.AffectInput ai;
+                switch (affect.length) {
+                    case 5:
+                        ai = AppraisalTag.instance().makePADInput(activity.getActor(),affect[0],affect[1],affect[2], affect[3], affect[4]);
+                        mLogger.message("Processing " + ai.toString());
+                        mALMA.processSignal(ai);
+                        break;
+                    case 4:
+                        ai = AppraisalTag.instance().makePADInput(activity.getActor(),affect[0],affect[1],affect[2],  affect[3], "Bob");
+                        mLogger.message("Processing " + ai.toString());
+                        mALMA.processSignal(ai);
+                        break;
+                    case 3:
+                        String intensity = "1.0";//getPADInputIntensity(affect[0],affect[1],affect[2]);
 
-            AffectInputDocument.AffectInput ai;
-            switch (affect.length) {
-                case 5:
-                    ai = AppraisalTag.instance().makePADInput(activity.getActor(),affect[0],affect[1],affect[2], affect[3], affect[4]);
-                    mLogger.message("Processing " + ai.toString());
-                    mALMA.processSignal(ai);
-                    break;
-                case 4:
-                    ai = AppraisalTag.instance().makePADInput(activity.getActor(),affect[0],affect[1],affect[2],  affect[3], "Bob");
-                    mLogger.message("Processing " + ai.toString());
-                    mALMA.processSignal(ai);
-                    break;
-                case 3:
-                    ai = AppraisalTag.instance().makePADInput(activity.getActor(),affect[0],affect[1],affect[2], "1", "Bob");
-                    mLogger.message("Processing " + ai.toString());
-                    mALMA.processSignal(ai);
-                    break;
-                default:
-                    mLogger.failure("Partially Incorrect Appraisal List format in: " + affect);
+                        float[] pad = {Float.parseFloat(affect[0]),Float.parseFloat(affect[1]),Float.parseFloat(affect[2])};
+                        String padEmotion = getEmotions(pad);
+                        logToFile("AffectInput.txt", padEmotion + " <---  Intsity: " + intensity +   "     P:A:D " +affect[0] + " : " + affect[1]+ " : " +affect[2] );
+
+                        ai = AppraisalTag.instance().makePADInput(activity.getActor(),affect[0],affect[1],affect[2], intensity, "Bob");
+                        //mLogger.message("Processing " + ai.toString());
+                        mALMA.processSignal(ai);
+                        break;
+                    default:
+                        mLogger.failure("Partially Incorrect Appraisal List format in: " + affect);
+                }
             }
         }
+    }
+
+    private String getPADInputIntensity(String sP , String sA, String sD) {
+        //these emotions get an intesity of 1
+        //TODO keep this list updated
+        String[] priorityEmotionList = {"Fear","Hate","Anger","Shame","Joy","Disappointment","Distress","Sorry-For","Remorse"};
+    
+        float[] pad = {Float.parseFloat(sP),Float.parseFloat(sA),Float.parseFloat(sD)};
+        String padEmotion = getEmotions(pad);
+
+
+        for(String emotion : priorityEmotionList ){
+            if(padEmotion.equals(emotion)){
+                mLogger.message("For Emotion " + padEmotion + " return intesity 1");
+                return "1.0";
+            }
+        }
+
+        mLogger.message("For Emotion " + padEmotion + " return intesity 0,5");
+
+        return "0.5";
     }
 
     //Process a AffectInputList
@@ -355,13 +390,13 @@ public class ALMAExecutor extends ActivityExecutor implements AffectUpdateListen
     private String getEmotions(float[] padValues){
         List<List<String>> padToEm = readCSV("plugins/mithos/data/PAD_to_emotion.csv", ",");
 
-        //whe search the highest cosine similarity and emotion wiht this:
+        //we search the highest cosine similarity and emotion withs this:
         double max_similarity = -1.0;
         String cosestEmotion = "UNDEFINED";
 
 
         for (List<String> line : padToEm) {
-            String emotion = (line.get(1));
+            String emotion = (line.get(0));
             float emP = new Float(line.get(1));
             float emA = new Float(line.get(2));
             float emD = new Float(line.get(3));
@@ -440,8 +475,8 @@ public class ALMAExecutor extends ActivityExecutor implements AffectUpdateListen
 
 ///Some log functions
     //logs string to a file used for debugging, can be deleted
-    public static void logToFile(String message) {
-        try(PrintWriter writer = new PrintWriter( new FileWriter( "appraisalLog.txt" , true))) {
+    public static void logToFile(String filename, String message) {
+        try(PrintWriter writer = new PrintWriter( new FileWriter( filename , true))) {
             writer.println(message);
         }
         catch

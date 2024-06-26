@@ -82,7 +82,7 @@ public class MithosHandler<T> extends Thread {
     }
 
     private void handle(ConsumerRecord<Long, String> record) {
-        logger.message(record.value().toString());
+        //logger.message(record.value().toString());
         try {
             switch (record.topic()) {
                 case "SSF":
@@ -102,11 +102,9 @@ public class MithosHandler<T> extends Thread {
                     logger.message("InteractionActs");
                     break;
                 case "PAD":
-                    logger.message("PAD");
                     //Note line above does not work like in the other cases, because we don't have timeBegin and timeEnd of the Emotion CLass
-                    Emotion emotion = gson.fromJson(record.value().replace('"',' '), Emotion.class);//TODO probably time is missing in record.value
+                    Emotion emotion = gson.fromJson(record.value().replace('"',' ').replace("pleasure", "valence"), Emotion.class);//TODO probably time is missing in record.value
                     executor.process(emotion);
-                    logger.message("PADAct");
                     break;
 
             }

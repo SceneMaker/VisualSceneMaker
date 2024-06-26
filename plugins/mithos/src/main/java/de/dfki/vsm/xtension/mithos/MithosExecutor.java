@@ -2,6 +2,7 @@ package de.dfki.vsm.xtension.mithos;
 
 import com.google.gson.Gson;
 import de.dfki.vsm.model.project.PluginConfig;
+import de.dfki.vsm.model.scenescript.ActionFeature;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
 import de.dfki.vsm.runtime.activity.ActionActivity;
 import de.dfki.vsm.runtime.activity.SpeechActivity;
@@ -199,9 +200,10 @@ public class MithosExecutor extends ActivityExecutor {
         if (actionActivity.getName().equals("LogMsg")) {
             actionActivity.setType(AbstractActivity.Type.parallel);
             String message = actionActivity.get("msg");
+
             sendLogMsg(message);
-            return;
         }
+
         if (actionActivity.getName().equals("LogStudentDialogueAct")) {
             actionActivity.setType(AbstractActivity.Type.parallel);
             String DialogueAct = actionActivity.get("DA");
@@ -361,10 +363,42 @@ public class MithosExecutor extends ActivityExecutor {
         if (activity instanceof SpeechActivity) {
             executeSpeechActivity((SpeechActivity) activity);
         } else if (activity instanceof ActionActivity) {
+            final String name = activity.getName();
+
+            if (name.equalsIgnoreCase("customLog")) {
+                mLogger.message("Executing CustomLog");
+                sendcustomLog(activity);
+                return;
+            }
+
             executeActionActivity((ActionActivity) activity);
         }
     }
 
+    private void sendcustomLog(AbstractActivity activity) {
+        LinkedList<ActionFeature> features = activity.getFeatures();
+
+
+        String msgVar = getActionFeatureValue("msg", features);//var name of intended message
+        String msg = (String) mProject.getValueOf(msgVar).getValue().toString();//content of var, intendet message
+        String topic = getActionFeatureValue("topic", features);//kafka topic where msg will be written
+
+
+        if(Objects.nonNull(msg) && Objects.nonNull(msgVar) &&  Objects.nonNull(topic)){
+            ProducerRecord<String, String> record = new ProducerRecord<>(topic, 0, msgVar, msg);
+            sendRecord(record);
+        }
+    }
+
+    // get the value of a feature (added PG) - quick and dirty
+    private final String getActionFeatureValue(String name, LinkedList<ActionFeature> features) {
+        for (ActionFeature af : features) {
+            if (af.getKey().equalsIgnoreCase(name)) {
+                return af.getVal();
+            }
+        }
+        return "";
+    }
 
     @Override
     public void launch() {
@@ -406,8 +440,6 @@ public class MithosExecutor extends ActivityExecutor {
 
     //processes Interaction Act send by Semvox
     public void process(InteractionAct intAct) {
-        //TODO DELTE
-        logger.warning("|||||||||||||||||||process interactio0n act");
         ActKind intent = intAct.intent;
         if (intent != null) {
             logger.message("Interaction kind: " + intent);
@@ -431,9 +463,9 @@ public class MithosExecutor extends ActivityExecutor {
         int taskLvl = (int) mProject.getValueOf("task_lvl_automated_suggestion").getValue();
 
         if(intAct.taskFocus){
-            taskLvl++;
-        }else {
             taskLvl--;
+        }else {
+            taskLvl++;
         }
 
         int upperBound = 4;
@@ -441,13 +473,15 @@ public class MithosExecutor extends ActivityExecutor {
 
         taskLvl  = Math.max(lowerBound, Math.min(taskLvl, upperBound));
 
-        String conflictType = String.valueOf(mProject.getValueOf("IntermediateConflict"));//TODO CHECK POSSIBLE ISSUE WITH CONFLICT NOT BEING UP TO DATE
+        logger.message("taskLvl: " + taskLvl);
+
+
+        String conflictType = (String) mProject.getValueOf("ConflictType").getValue();//TODO CHECK POSSIBLE ISSUE WITH CONFLICT NOT BEING UP TO DATE
         String appraisalList = processSocialNorms(conflictType,intAct.socialNorms);
 
         mProject.setVariable("appraisalTagsSemvox",appraisalList);
 
 
-        logger.message("taskLvl: " + taskLvl);
         mProject.setVariable("task_lvl_automated_suggestion",taskLvl);
         mProject.setVariable("new_interpretation",true);
 
@@ -459,13 +493,15 @@ public class MithosExecutor extends ActivityExecutor {
 
     private String processSocialNorms(String conflictType, List<SocialNorm> socialNorms){
         //TODO DELTE
-        logger.message("process social norm");
+        logger.message("processSocialNorms:\n ConflictType = " + conflictType + "\n socialNorms: " + socialNorms.toString());
 
 
         Map<SocialNorm, Integer> priorityMap = getPriorityMap(conflictType,socialNorms);
         socialNorms = orderByPriorityMap(socialNorms,priorityMap);
         //socialNorms = addSaliencyToSocialNorms(socialNorms,priorityMap);
         socialNorms = addSaliencyToSocialNorms(socialNorms);
+
+        logger.message("social Norm Priority List: " + socialNorms.toString());
 
         String appraisalList = "";
 
@@ -638,7 +674,7 @@ public class MithosExecutor extends ActivityExecutor {
     }
 
     //given a list of social norms ordered from least to most important and a prioritz mapping
-    //assign saliency linearly from 1 to 0.3 in equidistant order according to prioritz mapping
+    //assign saliency linearly from 1 to 0.3 in steps of 0.1, when more then 7 stay at 0.3
     private List<SocialNorm> addSaliencyToSocialNorms(List<SocialNorm> socialNorms){
         double maxSaliency = 1;
         double minSaliency = 0.3;
@@ -654,22 +690,33 @@ public class MithosExecutor extends ActivityExecutor {
         int n = socialNorms.size();
 
         //diffrence in saliancy
-        double delta = (maxSaliency-minSaliency)/(n-1);
+        double delta = 0.1;
 
         double cur_saliancy = 1.0;
 
         for (int i = 0; i < n; i++){
             socialNorms.get(i).setSaliency(cur_saliancy);
-            cur_saliancy -= delta;
+            if (cur_saliancy >= 0.3){
+                cur_saliancy -= delta;
+            }
         }
 
         return socialNorms;
     }
 
+    //Add affectToolBox PAD input to VCM variable
+    //Ignore zero unout
     public void process(Emotion emotion) {
         double[] padValues = {emotion.getValence(), emotion.getArousal(), emotion.getDominance()};
+        if(padValues[0] == 0.0 && padValues[1] == 0.0  && padValues[2] == 0.0 ){
+            return;
+        }
+        logger.message("PAD");
+
+        String padList = (String) mProject.getValueOf("padAffectToolBox").getValue();
+
         String padString = padValues[0] + "," + padValues[1] + "," + padValues[2];
-        String padAffectList = padString + ";";
+        String padAffectList = padList + padString + ";";
         mProject.setVariable("padAffectToolBox", padAffectList);
     }
 
@@ -695,7 +742,7 @@ public class MithosExecutor extends ActivityExecutor {
             e.printStackTrace();
         }
         //enable logging of reading
-        boolean print = true;
+        boolean print = false;
         if(print){
             String toPrint = "|";
             for (List<String> csvLine : csvData) {
