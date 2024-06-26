@@ -475,16 +475,19 @@ public class ALMAExecutor extends ActivityExecutor implements AffectUpdateListen
 
 ///Some log functions
     //logs string to a file used for debugging, can be deleted
+private static Boolean logToFile = false;
+    //logs string to a file used for debugging, can be deleted
     public static void logToFile(String filename, String message) {
-        try(PrintWriter writer = new PrintWriter( new FileWriter( filename , true))) {
-            writer.println(message);
-        }
-        catch
-        (IOException e) {
-            System.err.println("Error writing to log file: "+ e.getMessage());
+        if(logToFile){
+            try(PrintWriter writer = new PrintWriter( new FileWriter( filename , true))) {
+                writer.println(message);
+            }
+            catch
+            (IOException e) {
+                System.err.println("Error writing to log file: "+ e.getMessage());
+            }
         }
     }
-
     // print character attributes With Logger.
     // Priority level is set to message, if not shown, set LOG_LEVELs in enviroment to ALL
     //bool detailed is used to set the deteil level of the print

@@ -18,9 +18,7 @@ import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
 
 /**
@@ -506,6 +504,7 @@ public class MithosExecutor extends ActivityExecutor {
         String appraisalList = "";
 
         for (SocialNorm norm : socialNorms){
+            logToFile("appliedSocialNorms", "Norm: " + norm.getName() + " Appraisal Tag " + norm.getAppraisalTag()+ " Saliancy: " + norm.getSaliency());
             appraisalList = appraisalList + norm.getAppraisalTag() + "," + norm.getSaliency() + ";";
         }
 
@@ -757,4 +756,18 @@ public class MithosExecutor extends ActivityExecutor {
         return csvData;
     }
 
+    private static Boolean logToFile = false;
+
+    //logs string to a file used for debugging, can be deleted
+    public static void logToFile(String filename, String message) {
+        if(logToFile){
+            try(PrintWriter writer = new PrintWriter( new FileWriter( filename , true))) {
+                writer.println(message);
+            }
+            catch
+            (IOException e) {
+                System.err.println("Error writing to log file: "+ e.getMessage());
+            }
+        }
+    }
 }
