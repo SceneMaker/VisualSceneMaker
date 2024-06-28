@@ -233,7 +233,7 @@ public class ALMAExecutor extends ActivityExecutor implements AffectUpdateListen
                         mALMA.processSignal(ai);
                         break;
                     case 3:
-                        String intensity = "1.0";//getPADInputIntensity(affect[0],affect[1],affect[2]);
+                        String intensity = "0.8";//getPADInputIntensity(affect[0],affect[1],affect[2]);
 
                         float[] pad = {Float.parseFloat(affect[0]),Float.parseFloat(affect[1]),Float.parseFloat(affect[2])};
                         String padEmotion = getEmotions(pad);

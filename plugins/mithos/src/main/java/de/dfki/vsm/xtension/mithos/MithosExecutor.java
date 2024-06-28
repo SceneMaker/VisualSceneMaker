@@ -214,6 +214,14 @@ public class MithosExecutor extends ActivityExecutor {
             return;
         }
 
+        if (actionActivity.getName().equals("ChoicePick")) {
+
+            String node = actionActivity.get("node");
+            String choice = actionActivity.get("choice");
+            choicePick(node, choice);
+            return;
+        }
+
         String text = actionActivity.getText();
         String command = text.substring(1, text.length() - 1);
         command = command.replace('\'', '"');
@@ -235,12 +243,136 @@ public class MithosExecutor extends ActivityExecutor {
         }
     }
 
+
+    Dictionary<String, List<String>> choices = new Hashtable<>();
+    private void choicePick(String node, String choice) {
+        List<String> prevChoices = choices.get(node);
+        choices.remove(node);
+        Random random = new Random();
+
+        //getting possible actions
+        int optionCount = Integer.parseInt(choice);
+        List<String> options = new ArrayList<>();
+
+        for (int i = 0; i < optionCount; i++) {
+            options.add(String.valueOf((char) ('a' + i)));
+        }
+
+
+        if (prevChoices != null){
+            //todo check if maximum is reached, then reset
+            if(prevChoices.size() >= optionCount){//list full do as if empty
+                int randomIndex = random.nextInt(options.size());
+                String pick =  options.get(randomIndex);
+
+
+                mProject.setVariable("reactionChoice","pick" );
+                choices.put(node, Arrays.asList(pick));
+            }else {
+                options.removeAll(prevChoices);
+                int randomIndex = random.nextInt(options.size());
+                String pick =  options.get(randomIndex);
+
+                mProject.setVariable("reactionChoice","pick" );
+                prevChoices.add(pick);
+                choices.put(node, prevChoices);
+
+            }
+            //ret remaining choises
+        } else {
+            //never been to this state pick random an add
+            int randomIndex = random.nextInt(options.size());
+            String pick =  options.get(randomIndex);
+
+            mProject.setVariable("reactionChoice","pick" );
+            choices.put(node, Arrays.asList(pick));
+        }
+
+    }
+
+
     //determines given the emotionList the current conflict and conflict resolution style, these are written in corresponding VCM vars
     //also sets the ne relationship level automatically //TODO make rel level change seperate function
     public void executeGetConflictResolution(){
         logger.message("executeGetConflictResolution");
         String emotionListString = (String) mProject.getValueOf("TeacherEmotionList").getValue();
         mProject.setVariable("TeacherEmotionList","" );
+
+
+        ArrayList<String> nStrongesEmotions = getNStrongestEmotions(emotionListString);
+
+        //given the two most frequent emotions pick the conflict type and new conflict type
+        int deltaRelLvl = -1;
+        String conf = "noConflict";
+
+        //Go over OCC Emotio0n to conflict resolution file to get delta rel level
+        List<List<String>> csvData = readCSV("plugins/mithos/data/OCCEmotion_to_ConflictResolution.csv", ",");
+        for (List<String> row : csvData){
+            ArrayList<String> tableVal = new ArrayList<>();
+            tableVal.add(row.get(0));
+            if(!Objects.equals(row.get(1), "")){
+                tableVal.add(row.get(1));
+            }
+            Collections.sort(tableVal);
+            if(tableVal.equals(nStrongesEmotions)){
+                conf = row.get(3);
+                deltaRelLvl = Integer.parseInt(row.get(4));
+            }
+        }
+        mProject.setVariable("rel_lvl_automated_suggestion",deltaRelLvl);
+        mProject.setVariable("ConflictType",conf);
+
+
+        //get the last task level change from VCM
+        int deltaTaskLvl = (int) mProject.getValueOf("task_lvl_automated_suggestion").getValue();
+
+        //find conflict resolution style
+        String confRes  ="";
+
+        if(deltaRelLvl == -1 && deltaTaskLvl == -1){
+            confRes = "problemsolving";
+        } else if (deltaRelLvl == -1 && deltaTaskLvl == 1) {
+            confRes = "smoothing";
+        }
+        else if (deltaRelLvl == 1 && deltaTaskLvl == -1) {
+            confRes = "forcing";
+        }
+        else if (deltaRelLvl == 1 && deltaTaskLvl == 1) {
+            confRes = "withdrawing";
+        }else{
+            mLogger.warning("not supposed to e here");
+            return;
+        }
+
+
+        mProject.setVariable("ConflictResolutionStyle",confRes);
+        logger.message("confRes " + confRes);
+
+
+        //apply changes to rel and task revel
+        int taskLvl = deltaTaskLvl + (int) mProject.getValueOf("task_lvl").getValue();
+        int relLvl = deltaRelLvl    + (int) mProject.getValueOf("relationship_lvl").getValue();
+
+        taskLvl = checkBounds(taskLvl,4,-2);
+        relLvl = checkBounds(relLvl,4,-2);
+
+        mProject.setVariable("task_lvl",taskLvl);
+        logger.message("task_lvl " + taskLvl);
+
+        mProject.setVariable("relationship_lvl",relLvl);
+        logger.message("relationship_lvl " + relLvl);
+
+
+        String phase = (String) mProject.getValueOf("phase").getValue();
+        logToFile("getConfRes.txt","Phase: " + phase +" task_lvl : " + taskLvl + " relationship_lvl : " + relLvl +" confRes : " + confRes + " ConfType: " + conf + " Emotions: " +emotionListString);
+
+    }
+
+    private int checkBounds(int n, int upperBound, int lowerBound) {
+        return  Math.max(lowerBound, Math.min(n, upperBound));
+    }
+
+    private ArrayList<String> getNStrongestEmotions(String emotionListString) {
 
         String[] emotions = emotionListString.split(";");
         int count = emotions.length;
@@ -258,15 +390,17 @@ public class MithosExecutor extends ActivityExecutor {
 
         //get the 2 most counted emotions
         //TODO finetune
-        double only_treashhold = 0.8; //min precentage treashhold at which one emotion is considered to be the only emotion
-        double duo_treashhold = 0.2; //min precentage treashhold at which second emotion is considered
+        double only_treashhold = 0.65; //min precentage treashhold at which one emotion is considered to be the only emotion
+        double duo_treashhold = 0.35; //min precentage treashhold at which second emotion is considered
         //if both treashold are not met only strongest(most appearing) emotions is considered
 
-        ArrayList<String> nStrongesEmotions = new ArrayList<>();
+
 
         //sort emotions by appearance
         List<Map.Entry<String, Integer>> countList = new ArrayList<>(countMap.entrySet());
         countList.sort((entry1, entry2) -> entry2.getValue().compareTo(entry1.getValue()));
+
+        ArrayList<String> nStrongesEmotions = new ArrayList<>();
 
         if(countList.size() == 1){
             Map.Entry<String, Integer> mostAppearedEmotiom = countList.get(0);
@@ -290,70 +424,9 @@ public class MithosExecutor extends ActivityExecutor {
             }
         }
 
-
-        //TESTING CAN BE DELETED
-        //nStrongesEmotions = new ArrayList<>();
-        //nStrongesEmotions.add("Joy");
-        //nStrongesEmotions.add("Fear");
-
         Collections.sort(nStrongesEmotions);
-        //given the two most frequent emotions pick the conflict resolution
-        String confRes = "problemsolving";//default value when no match is found
-        String conf = "noConflict";
-        List<List<String>> csvData = readCSV("plugins/mithos/data/OCCEmotion_to_ConflictResolution.csv", ",");
-        for (List<String> row : csvData){
-            ArrayList<String> tableVal = new ArrayList<>();
-            tableVal.add(row.get(0));
-            if(!Objects.equals(row.get(1), "")){
-                tableVal.add(row.get(1));
-            }
-            Collections.sort(tableVal);
-            if(tableVal.equals(nStrongesEmotions)){
-                confRes = row.get(2);
-                conf = row.get(3);
-            }
 
-        }
-        mProject.setVariable("ConflictResolutionStyle",confRes);
-        mProject.setVariable("ConflictType",conf);
-        logger.message("confRes " + confRes);
-
-        //fin change to relationshipLvl
-        int deltaRelLvl = 0;
-
-        switch (confRes){
-            case "smoothing":
-                deltaRelLvl = -1;
-                break;
-            case "withdrawing":
-                deltaRelLvl = +1;
-                break;
-            case "forcing":
-                deltaRelLvl = +1;
-                break;
-            case "problemsolving":
-                deltaRelLvl = -1;
-                break;
-            default:
-                logger.failure("This conflict resolution is not defined!");
-        }
-
-        //TODO maby make function parameter, to not have name hardcoded
-        int relLvl = (int) mProject.getValueOf("rel_lvl_automated_suggestion").getValue();
-
-
-
-
-        int nextRelLevel = relLvl + deltaRelLvl;
-
-        //making shure level stays in range
-        int upperBound = 4;
-        int lowerBound = -2;
-        nextRelLevel = Math.max(lowerBound, Math.min(nextRelLevel, upperBound));
-
-        logger.message("nextRelLevel " + nextRelLevel);
-        mProject.setVariable("rel_lvl_automated_suggestion",nextRelLevel);
-
+        return nStrongesEmotions;
     }
 
     @Override
@@ -458,20 +531,14 @@ public class MithosExecutor extends ActivityExecutor {
             mProject.setVariable("appraisalTag", appraisalList);
         }*/
 
-        int taskLvl = (int) mProject.getValueOf("task_lvl_automated_suggestion").getValue();
-
+        int taskLvl = 0;//(int) mProject.getValueOf("task_lvl_automated_suggestion").getValue();
         if(intAct.taskFocus){
-            taskLvl--;
+            taskLvl = -1;
         }else {
-            taskLvl++;
+            taskLvl = 1;
         }
 
-        int upperBound = 4;
-        int lowerBound = -2;
-
-        taskLvl  = Math.max(lowerBound, Math.min(taskLvl, upperBound));
-
-        logger.message("taskLvl: " + taskLvl);
+        logger.message("IA task level: " + taskLvl);
 
 
         String conflictType = (String) mProject.getValueOf("ConflictType").getValue();//TODO CHECK POSSIBLE ISSUE WITH CONFLICT NOT BEING UP TO DATE
@@ -483,7 +550,6 @@ public class MithosExecutor extends ActivityExecutor {
         mProject.setVariable("task_lvl_automated_suggestion",taskLvl);
         mProject.setVariable("new_interpretation",true);
 
-//        TODO: Check logic
         int interaction_count = (int) mProject.getValueOf("interaction_count").getValue();
         interaction_count = interaction_count + 1;
         mProject.setVariable("interaction_count",interaction_count);
