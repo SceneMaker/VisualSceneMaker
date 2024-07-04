@@ -8,6 +8,22 @@ Anger,Joy,Defiant Aggressiveness,Control,forcing,+1
 Gratification,,Defiant Aggressiveness,Control,forcing,+1
 Pride,,Defiant Aggressiveness,Control,forcing,+1
 Disappointment,Distress,Internal Emptiness,Care,withdrawing,+1
-Sorry-For??
 Pity,,Worry,Autarky,smoothing,-1
 HappyFor,,Worry,Autarky,smoothing,-1
+Shame,,Shame,PassiveMode,smoothing,-1
+Anger,,Narcissistic Anger,ActiveMode,forcing,+1
+Hate,,Narcissistic Anger,ActiveMode,forcing,+1
+Remorse,,Guilt,SelfBlame,smoothing,-1
+Hate,,Narcissistic Anger,ActiveMode,forcing,+1
+Anger,,Anger,BlameOfObject,forcing,+1
+Reproach,,Anger,BlameOfObject,forcing,+1
+Gloating,,Anger,BlameOfObject,forcing,+1
+Joy,,Changing Emotions,ActiveOedipal,forcing,???????
+Satisfaction,,Changing Emotions,ActiveOedipal,forcing,???????
+Liking,,Changing Emotions,ActiveOedipal,forcing,???????
+Relief,,Changing Emotions,ActiveOedipal,forcing,???????
+Love,,Changing Emotions,ActiveOedipal,forcing,???????
+Distress,,Changing Emotions,ActiveOedipal,forcing,???????
+Disliking,,Changing Emotions,ActiveOedipal,forcing,???????
+Shame,Fear,Shyness,PassiveOedipal,smoothing,-1
+
