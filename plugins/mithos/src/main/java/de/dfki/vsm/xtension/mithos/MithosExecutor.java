@@ -200,6 +200,7 @@ public class MithosExecutor extends ActivityExecutor {
             String message = actionActivity.get("msg");
 
             sendLogMsg(message);
+            return;
         }
 
         if (actionActivity.getName().equals("LogStudentDialogueAct")) {
@@ -238,8 +239,9 @@ public class MithosExecutor extends ActivityExecutor {
             mProject.setVariable("processAffectToolbox",true );
             speakingTimeEnd = System.nanoTime();
         } else {
-            actionActivity.setType(AbstractActivity.Type.parallel);
-            sendRecord(record);
+            //sit down command
+           actionActivity.setType(AbstractActivity.Type.parallel);
+           sendRecord(record);
         }
     }
 
@@ -316,7 +318,7 @@ public class MithosExecutor extends ActivityExecutor {
             Collections.sort(tableVal);
             if(tableVal.equals(nStrongesEmotions)){
                 conf = row.get(3);
-                deltaRelLvl = Integer.parseInt(row.get(4));
+                deltaRelLvl = Integer.parseInt(row.get(5));
             }
         }
         mProject.setVariable("rel_lvl_automated_suggestion",deltaRelLvl);

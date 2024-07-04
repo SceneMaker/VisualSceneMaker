@@ -1,11 +1,13 @@
-Fear,,withdrawing,Dependency,1
-Hate,,smoothing,Individuation,-1
-Anger,Shame,withdrawing,Submission,+1
-Anger,Joy,forcing,Control,+1
-Disappointment,Distress,smoothing,Care,-1
-Sorry-For,,withdrawing,Autarky,+1
-Shame,,smoothing,PassiveMode,-1
-Anger,,forcing,ActiveMode,+1
-Remorse,,forcing,SelfBlame,+1
-Anger,Distress,smoothing,BlameOfObject,-1
-Shame,Fear,withdrawing,PassiveOedipal,+1
+Fear,,Strong Fear,Dependency,smoothing,-1
+FearsConfirmed,,Strong Fear,Dependency,smoothing,-1
+Resentment,,Strong Aversion + Anxiety,Individuation,withdrawing,+1
+Anger,Shame,Helpless Rage,Submission,withdrawing,+1
+Admiration,,Helpless Rage,Submission,withdrawing,+1
+Gratitude,,Helpless Rage,Submission,withdrawing,+1
+Anger,Joy,Defiant Aggressiveness,Control,forcing,+1
+Gratification,,Defiant Aggressiveness,Control,forcing,+1
+Pride,,Defiant Aggressiveness,Control,forcing,+1
+Disappointment,Distress,Internal Emptiness,Care,withdrawing,+1
+Sorry-For??
+Pity,,Worry,Autarky,smoothing,-1
+HappyFor,,Worry,Autarky,smoothing,-1
