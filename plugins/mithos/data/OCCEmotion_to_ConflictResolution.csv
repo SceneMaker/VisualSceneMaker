@@ -18,12 +18,12 @@ Hate,,Narcissistic Anger,ActiveMode,forcing,+1
 Anger,,Anger,BlameOfObject,forcing,+1
 Reproach,,Anger,BlameOfObject,forcing,+1
 Gloating,,Anger,BlameOfObject,forcing,+1
-Joy,,Changing Emotions,ActiveOedipal,forcing,???????
-Satisfaction,,Changing Emotions,ActiveOedipal,forcing,???????
-Liking,,Changing Emotions,ActiveOedipal,forcing,???????
-Relief,,Changing Emotions,ActiveOedipal,forcing,???????
-Love,,Changing Emotions,ActiveOedipal,forcing,???????
-Distress,,Changing Emotions,ActiveOedipal,forcing,???????
-Disliking,,Changing Emotions,ActiveOedipal,forcing,???????
+Joy,,Changing Emotions,ActiveOedipal,forcing,+1
+Satisfaction,,Changing Emotions,ActiveOedipal,forcing,+1
+Liking,,Changing Emotions,ActiveOedipal,forcing,+1
+Relief,,Changing Emotions,ActiveOedipal,forcing,+1
+Love,,Changing Emotions,ActiveOedipal,forcing,+1
+Distress,,Changing Emotions,ActiveOedipal,forcing,+1
+Disliking,,Changing Emotions,ActiveOedipal,forcing,+1
 Shame,Fear,Shyness,PassiveOedipal,smoothing,-1
 
