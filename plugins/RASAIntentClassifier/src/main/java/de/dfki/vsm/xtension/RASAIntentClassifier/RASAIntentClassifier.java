@@ -18,6 +18,7 @@ public class RASAIntentClassifier {
 
     public Tuple<String, String> getIntent(String text) {
         Tuple<String, String> intent = new Tuple<>("", "");
+        System.out.println("RASA getIntent");
 
         try {
             // Define the URL
@@ -28,6 +29,7 @@ public class RASAIntentClassifier {
 
             // Set request method to POST
             connection.setRequestMethod("POST");
+            System.out.println("RASA try");
 
             // Set request headers
             connection.setRequestProperty("Content-Type", "application/json");
@@ -47,7 +49,7 @@ public class RASAIntentClassifier {
 
             // Get the response code
             int responseCode = connection.getResponseCode();
-            System.out.println("Response Code: " + responseCode);
+            System.out.println("RASA Response Code: " + responseCode);
 
             // Read the response from the server
             BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
@@ -68,6 +70,7 @@ public class RASAIntentClassifier {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        System.out.println("RASA return");
         return intent;
     }
 
@@ -77,6 +80,7 @@ public class RASAIntentClassifier {
 //    }
 
     public Tuple<String, String> parseJson(String jsonResponse) {
+        System.out.println("RASA parse Json");
         String intent = "";
         String nameValue = "";
         try {
@@ -92,6 +96,15 @@ public class RASAIntentClassifier {
                 JSONArray entitiesArray = jsonObject.getJSONArray("entities");
                 JSONObject nameEntity = entitiesArray.getJSONObject(0); // Assuming there's only one entity
                 nameValue = nameEntity.getString("value");
+                System.out.println("[RASAIntentClassifier]: Message give_name " + nameValue);
+            } else if (intent.equals("give_activity")) {
+                JSONArray entitiesArray = jsonObject.getJSONArray("entities");
+                JSONObject nameEntity = entitiesArray.getJSONObject(0); // Assuming there's only one entity
+                nameValue = nameEntity.getString("entity");
+            } else if (intent.equals("give_mood")) {
+                JSONArray entitiesArray = jsonObject.getJSONArray("entities");
+                JSONObject nameEntity = entitiesArray.getJSONObject(0); // Assuming there's only one entity
+                nameValue = nameEntity.getString("entity");
             } else if (intent.equals("affirm")) {
                 nameValue = "true";
             } else if (intent.equals("deny")) {

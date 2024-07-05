@@ -109,9 +109,9 @@ public class EmmaUserModel extends ActivityExecutor {
         final String name = activity.getName();
         if (name.equalsIgnoreCase("set")) {
             setUserValue("name", activity);
-            setUserValue("introduction", activity);
-            setUserValue("meditation", activity);
-//            setUserValue("break", activity);
+            setUserValue("rasa_intent", activity);
+            setUserValue("rasa_value", activity);
+            setUserValue("value", activity);
 //            setUserValue("type", activity);
 //            setUserValue("therapy", activity);
 //            setUserValue("icd", activity);
@@ -1135,9 +1135,9 @@ public class EmmaUserModel extends ActivityExecutor {
         // initial user data
         user.put("name", name);
         user.put("id", id);
-        user.put("introduction", "unknown");
-        user.put("diarymenu", "unknown");
-        user.put("meditation", "unknown");
+        user.put("rasa_intent", "unknown");
+        user.put("rasa_value", "unknown");
+        user.put("value", "unknown");
 //        user.put("break", "unknown");
 //        user.put("type", "unknown");
 //        user.put("therapy", "unknown");

@@ -49,6 +49,7 @@ public class RASAIntentClassifierExecutor extends ActivityExecutor {
     @Override
     public void execute(AbstractActivity activity) {
         final String action_name = activity.getName();
+        mLogger.message("the action_name is:" + action_name);
         final LinkedList<ActionFeature> features = activity.getFeatures();
 
         // For simple demo we are using the following template
@@ -60,6 +61,7 @@ public class RASAIntentClassifierExecutor extends ActivityExecutor {
             if (key != null && !key.isEmpty() && value != null && !value.isEmpty()) {
                 if (key.equalsIgnoreCase("action")) {
                     fetchIntent();
+                    mLogger.message("the message is fetched!");
                 } else {
                     mLogger.failure("Unknown key value supplied to DialogManager plugin.");
                 }
@@ -75,17 +77,17 @@ public class RASAIntentClassifierExecutor extends ActivityExecutor {
 
         String intent_type = intent.getFirst();
         String intent_value = intent.getSecond();
-        String intent_name = "";
+
         if (intent_type.equals("give_name")) {
-            intent_name = "user_name";
+            setVariable("rasa_intent", intent_type);
             setVariable("user_name", intent_value);
-        } else if (intent_type.equals("affirm") || intent_type.equals("deny")) {
-            intent_name = "rasa_intent";
-            setVariable("rasa_intent", intent_value);
+        } else {
+            setVariable("rasa_intent", intent_type);
+            setVariable("rasa_value", intent_value);
         }
         //setVariable(intent_name, intent_value);
 
-        System.out.println("[RASAIntentClassifier]: Message " + intent_name + " " + intent_value);
+        mLogger.message("[RASAIntentClassifier]: Message " + intent_type + " " + intent_value);
     }
 
 
@@ -105,7 +107,9 @@ public class RASAIntentClassifierExecutor extends ActivityExecutor {
     }
 
     public void setVariable(String varName, String val) {
+
         mProject.setVariable(varName, val);
+        mLogger.message("[RASAIntentClassifier]: Message " + varName + " " + val);
     }
 
     public String get_transcript() {

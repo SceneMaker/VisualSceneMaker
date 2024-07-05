@@ -80,12 +80,12 @@ public class SIAHomeConnectionExecutor extends ActivityExecutor {
         }
     }
 
-    @Override
-    public void unload() {
-        server.interrupt();
-        server.server.destroy();
-    }
-    public void set_app_intent(String event) {
+        @Override
+        public void unload() {
+            server.interrupt();
+            server.server.destroy();
+        }
+        public void set_app_intent(String event) {
 
         if (mProject.hasVariable("bhome_event")) {
             mLogger.message("app_intent var detected");
