@@ -21,6 +21,7 @@ import org.apache.kafka.clients.producer.RecordMetadata;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -49,7 +50,7 @@ public class MithosExecutor extends ActivityExecutor {
     private long speakingTimeBegin;
     private long speakingTimeEnd;
     private HashMap<String, Integer> leadAffectCount = new HashMap<>();    //lead affect count, used by log to file in unload function
-    private static String fileLogFolder;//subfolder in which log to file saves. In constructor set to current time
+    private static String fileLogFolder = "";//subfolder in which log to file saves. In constructor set to current time
 
     public MithosExecutor(PluginConfig config, RunTimeProject project) {
         super(config, project);
@@ -69,7 +70,6 @@ public class MithosExecutor extends ActivityExecutor {
 
         student_dialogue_act_log_topic = "StudentDialogueActVSMLog";
 
-        fileLogFolder = Instant.now().toString();
     }
 
 //    private void sendTempIntAct() {
@@ -852,8 +852,14 @@ public class MithosExecutor extends ActivityExecutor {
 
     //logs string to a file used for debugging, can be deleted
     public static void logToFile(String filename, String message) {
+        if(Objects.equals(fileLogFolder, "")){
+            Calendar cal = Calendar.getInstance();
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
+            fileLogFolder = "C:\\Projekte\\MITHOS2024VRAutomated\\vsm\\VSMData\\" + sdf.format(cal.getTime());
+        }
+
         if(logToFile){
-            String directory = "C:\\Projekte\\MITHOS2024VRAutomated\\vsm\\VSMData\\" + fileLogFolder;
+            String directory = fileLogFolder;
 
             try {
                 Files.createDirectories(Paths.get(directory));
