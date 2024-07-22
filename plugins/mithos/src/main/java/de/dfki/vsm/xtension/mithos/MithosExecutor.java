@@ -48,8 +48,8 @@ public class MithosExecutor extends ActivityExecutor {
     private final Map<String, ActivityWorker> activityWorkerMap = new HashMap<>();
     private long speakingTimeBegin;
     private long speakingTimeEnd;
-
-    private HashMap<String, Integer> leadAffectCount = new HashMap<>();
+    private HashMap<String, Integer> leadAffectCount = new HashMap<>();    //lead affect count, used by log to file in unload function
+    private static String fileLogFolder;//subfolder in which log to file saves. In constructor set to current time
 
     public MithosExecutor(PluginConfig config, RunTimeProject project) {
         super(config, project);
@@ -68,6 +68,8 @@ public class MithosExecutor extends ActivityExecutor {
         }
 
         student_dialogue_act_log_topic = "StudentDialogueActVSMLog";
+
+        fileLogFolder = Instant.now().toString();
     }
 
 //    private void sendTempIntAct() {
@@ -504,7 +506,7 @@ public class MithosExecutor extends ActivityExecutor {
         producer.close();
         handler.abort();
 
-        //write lead affect count to file
+        //count and sort lead affect appearences
         leadAffectCount = leadAffectCount.entrySet().stream()
                 .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
                 .collect(Collectors.toMap(
@@ -513,7 +515,7 @@ public class MithosExecutor extends ActivityExecutor {
                         (e1, e2) -> e1,
                         LinkedHashMap::new
                 ));
-
+        //write to file
         leadAffectCount.forEach((key, value) -> logToFile("CountLeadAffect.txt",key + " : " + value));
     }
 
@@ -851,7 +853,7 @@ public class MithosExecutor extends ActivityExecutor {
     //logs string to a file used for debugging, can be deleted
     public static void logToFile(String filename, String message) {
         if(logToFile){
-            String directory = "C:\\Projekte\\MITHOS2024VRAutomated\\vsm\\VSMData";
+            String directory = "C:\\Projekte\\MITHOS2024VRAutomated\\vsm\\VSMData\\" + fileLogFolder;
 
             try {
                 Files.createDirectories(Paths.get(directory));
