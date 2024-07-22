@@ -19,7 +19,11 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.time.Instant;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * This plugin uses a kafka server to control an agent-environment and to receive processed userdata.
@@ -44,6 +48,8 @@ public class MithosExecutor extends ActivityExecutor {
     private final Map<String, ActivityWorker> activityWorkerMap = new HashMap<>();
     private long speakingTimeBegin;
     private long speakingTimeEnd;
+
+    private HashMap<String, Integer> leadAffectCount = new HashMap<>();
 
     public MithosExecutor(PluginConfig config, RunTimeProject project) {
         super(config, project);
@@ -306,6 +312,7 @@ public class MithosExecutor extends ActivityExecutor {
         //given the two most frequent emotions pick the conflict type and new conflict type
         int deltaRelLvl = -1;
         String conf = "noConflict";
+        String leadAffect = "noLeadAffect";
 
         //Go over OCC Emotio0n to conflict resolution file to get delta rel level
         List<List<String>> csvData = readCSV("plugins/mithos/data/OCCEmotion_to_ConflictResolution.csv", ",");
@@ -317,8 +324,10 @@ public class MithosExecutor extends ActivityExecutor {
             }
             Collections.sort(tableVal);
             if(tableVal.equals(nStrongesEmotions)){
+                leadAffect = row.get(2);
                 conf = row.get(3);
                 deltaRelLvl = Integer.parseInt(row.get(5));
+                break;
             }
         }
         mProject.setVariable("rel_lvl_automated_suggestion",deltaRelLvl);
@@ -343,7 +352,7 @@ public class MithosExecutor extends ActivityExecutor {
             confRes = "withdrawing";
         }else{
             mLogger.warning("not supposed to e here");
-            return;
+            confRes = "Error";
         }
 
 
@@ -364,10 +373,11 @@ public class MithosExecutor extends ActivityExecutor {
         mProject.setVariable("relationship_lvl",relLvl);
         logger.message("relationship_lvl " + relLvl);
 
-
+        String curTime = Instant.now().toString();
         String phase = (String) mProject.getValueOf("phase").getValue();
-        logToFile("getConfRes.txt","Phase: " + phase +" task_lvl : " + taskLvl + " relationship_lvl : " + relLvl +" confRes : " + confRes + " ConfType: " + conf + " Emotions: " +emotionListString);
-
+        logToFile("PhaseAndLevel.txt",curTime + "    Phase: " + phase +" task_lvl : " + taskLvl + " relationship_lvl : " + relLvl);
+        logToFile("LeadAffectAndCO.txt","LeadAffectAndCO: " + curTime + "     confRes : " + confRes + " ConfType: " + conf + "LeadAffect: " + leadAffect);
+        leadAffectCount.merge(leadAffect,1,Integer::sum);
     }
 
     private int checkBounds(int n, int upperBound, int lowerBound) {
@@ -493,6 +503,18 @@ public class MithosExecutor extends ActivityExecutor {
         //mActivityWorkerMap.notifyAll();
         producer.close();
         handler.abort();
+
+        //write lead affect count to file
+        leadAffectCount = leadAffectCount.entrySet().stream()
+                .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        Map.Entry::getValue,
+                        (e1, e2) -> e1,
+                        LinkedHashMap::new
+                ));
+
+        leadAffectCount.forEach((key, value) -> logToFile("CountLeadAffect.txt",key + " : " + value));
     }
 
 
@@ -572,7 +594,7 @@ public class MithosExecutor extends ActivityExecutor {
         String appraisalList = "";
 
         for (SocialNorm norm : socialNorms){
-            logToFile("appliedSocialNorms", "Norm: " + norm.getName() + " Appraisal Tag " + norm.getAppraisalTag()+ " Saliancy: " + norm.getSaliency());
+            logToFile("appliedSocialNorms.txt", "Norm: " + norm.getName() + " Appraisal Tag " + norm.getAppraisalTag()+ " Saliancy: " + norm.getSaliency());
             appraisalList = appraisalList + norm.getAppraisalTag() + "," + norm.getSaliency() + ";";
         }
 
@@ -824,12 +846,20 @@ public class MithosExecutor extends ActivityExecutor {
         return csvData;
     }
 
-    private static Boolean logToFile = false;
+    private static Boolean logToFile = true;
 
     //logs string to a file used for debugging, can be deleted
     public static void logToFile(String filename, String message) {
         if(logToFile){
-            try(PrintWriter writer = new PrintWriter( new FileWriter( filename , true))) {
+            String directory = "C:\\Projekte\\MITHOS2024VRAutomated\\vsm\\VSMData";
+
+            try {
+                Files.createDirectories(Paths.get(directory));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+
+            try(PrintWriter writer = new PrintWriter( new FileWriter( new File(directory, filename), true))) {
                 writer.println(message);
             }
             catch

@@ -27,6 +27,8 @@ import org.apache.xmlbeans.XmlException;
 //import org.apache.xmlbeans.XmlException;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.LinkedList;
 import java.util.*;
 
@@ -475,11 +477,19 @@ public class ALMAExecutor extends ActivityExecutor implements AffectUpdateListen
 
 ///Some log functions
     //logs string to a file used for debugging, can be deleted
-private static Boolean logToFile = false;
+private static Boolean logToFile = true;
     //logs string to a file used for debugging, can be deleted
     public static void logToFile(String filename, String message) {
         if(logToFile){
-            try(PrintWriter writer = new PrintWriter( new FileWriter( filename , true))) {
+            String directory = "C:\\Projekte\\MITHOS2024VRAutomated\\vsm\\VSMData";
+
+            try {
+                Files.createDirectories(Paths.get(directory));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+
+            try(PrintWriter writer = new PrintWriter( new FileWriter( new File(directory, filename), true))) {
                 writer.println(message);
             }
             catch
