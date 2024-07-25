@@ -10,6 +10,7 @@ import de.dfki.vsm.util.tpl.Tuple;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import java.nio.charset.StandardCharsets;
 
 public class RASAIntentClassifier {
 
@@ -30,6 +31,7 @@ public class RASAIntentClassifier {
             // Set request method to POST
             connection.setRequestMethod("POST");
             System.out.println("RASA try");
+            System.out.println(text);
 
             // Set request headers
             connection.setRequestProperty("Content-Type", "application/json");
@@ -40,16 +42,22 @@ public class RASAIntentClassifier {
 
             // Create the JSON request body
             String requestBody = "{\"text\": \"" + text +"\"}";
+            byte[] requestBodyBytes = requestBody.getBytes(StandardCharsets.UTF_8);
 
             // Write the request body to the connection
             DataOutputStream outputStream = new DataOutputStream(connection.getOutputStream());
-            outputStream.writeBytes(requestBody);
+            outputStream.write(requestBodyBytes);
             outputStream.flush();
             outputStream.close();
 
             // Get the response code
             int responseCode = connection.getResponseCode();
             System.out.println("RASA Response Code: " + responseCode);
+
+            if (responseCode == 500) {
+                return new Tuple<>("error", "repeat");
+            }
+
 
             // Read the response from the server
             BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));

@@ -280,6 +280,9 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
             } else if (name.equalsIgnoreCase("refresh")) {
                 String refreshCmd = "refreshGui$";
                 broadcast(refreshCmd);
+            } else if (name.equalsIgnoreCase("selectTime")){
+                String selectTimeCmd = "selectTime$";
+                broadcast(selectTimeCmd);
             } else if (name.equalsIgnoreCase("setMoodGraph") ||
                     name.equalsIgnoreCase("setWorkHrsGraph")) {
                 String element = activity.get("element");
