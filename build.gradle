@@ -18,6 +18,12 @@ repositories {
     maven { url "https://repo.spring.io/libs-release" }
 }
 
+subprojects.forEach { project ->
+    project.tasks.withType(JavaCompile) {
+        options.compilerArgs += ['-Xlint:deprecation']
+    }
+}
+
 javafx {
     modules = [ 'javafx.controls', 'javafx.graphics', 'javafx.fxml', 'javafx.swing' ]
 }

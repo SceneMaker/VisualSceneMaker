@@ -77,11 +77,16 @@ public class ALMAExecutor extends ActivityExecutor implements AffectUpdateListen
 
             //variable used if ALMA should automatically update the VCM variables off all Characters
             String sAutoUpdate = mConfig.getProperty("autoUpdate");
-            if(sAutoUpdate.equals("true")){
-                mALMA.addAffectUpdateListener(this);
-                mLogger.message("ALMA autoUpdate enabled, alma will frequently update the Characters variables in VCM");
-            }else {
-                mLogger.message("ALMA autoUpdate disabled, alma will NOT frequently update the Characters variables in VCM. Updates only happen when the UpdateVars command iss called in VCM");
+
+            if(sAutoUpdate != null)
+                if(sAutoUpdate.equals("true")){
+                    mALMA.addAffectUpdateListener(this);
+                    mLogger.message("ALMA autoUpdate enabled, alma will frequently update the Characters variables in VCM");
+                }else {
+                    mLogger.message("ALMA autoUpdate disabled, alma will NOT frequently update the Characters variables in VCM. Updates only happen when the UpdateVars command iss called in VCM");
+                }
+            else{
+                mLogger.message("ALMA autoUpdate disabled, DISABLED AS DEFAULT VALUE USED");
             }
 
 
@@ -390,7 +395,7 @@ public class ALMAExecutor extends ActivityExecutor implements AffectUpdateListen
     //when appraisal-tags are used strongestEmotion() can be called on an alma character. (when PAD values are usd as inutp, this function will allways return Physical)
     //
     private String getEmotions(float[] padValues){
-        List<List<String>> padToEm = readCSV("plugins/mithos/data/PAD_to_emotion.csv", ",");
+        List<List<String>> padToEm = readCSV("PAD_to_emotion.csv", ",");
 
         //we search the highest cosine similarity and emotion withs this:
         double max_similarity = -1.0;
@@ -417,13 +422,20 @@ public class ALMAExecutor extends ActivityExecutor implements AffectUpdateListen
         return cosestEmotion;
     }
 
-    //used by getEmotion
     //function used to read the csv files containing the tables for the PAD to eomotion and Appraisal tag to emotion mapping
     private List<List<String>> readCSV(String csvFile, String csvSplitBy){
         String line = "";
         List<List<String>> csvData = new ArrayList<>();
 
-        try (BufferedReader br = new BufferedReader(new FileReader(csvFile))) {
+        try (
+                InputStream inputStream = getClass().getClassLoader().getResourceAsStream(csvFile);
+                BufferedReader br = new BufferedReader(new InputStreamReader(inputStream))
+        ) {
+            // Check if the resource was found
+            if (inputStream == null) {
+                throw new FileNotFoundException("Resource not found: " + csvFile);
+            }
+
             while ((line = br.readLine()) != null) {
                 // Split the line by comma
                 List<String> data = new ArrayList<String>();

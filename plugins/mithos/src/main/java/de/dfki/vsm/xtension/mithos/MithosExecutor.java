@@ -317,7 +317,7 @@ public class MithosExecutor extends ActivityExecutor {
         String leadAffect = "noLeadAffect";
 
         //Go over OCC Emotio0n to conflict resolution file to get delta rel level
-        List<List<String>> csvData = readCSV("plugins/mithos/data/OCCEmotion_to_ConflictResolution.csv", ",");
+        List<List<String>> csvData = readCSV("OCCEmotion_to_ConflictResolution.csv", ",");
         for (List<String> row : csvData){
             ArrayList<String> tableVal = new ArrayList<>();
             tableVal.add(row.get(0));
@@ -625,7 +625,7 @@ public class MithosExecutor extends ActivityExecutor {
 
     //given a list of social norms, give a priority Map according to config
     private Map<SocialNorm, Integer> getPriorityMap(String conflict, List<SocialNorm> socialNorms){
-        List<List<String>> csvData = readCSV("plugins/mithos/data/Conflict_to_socialNormOrder.csv", ",");
+        List<List<String>> csvData = readCSV("Conflict_to_socialNormOrder.csv", ",");
 
         //grete priority list of all norms according to config file
         Map<String, Integer> priorityMapForConflict = new HashMap<String,Integer>();
@@ -694,7 +694,7 @@ public class MithosExecutor extends ActivityExecutor {
     }
 
     private Boolean getSocialNormReft(String name) {
-        List<List<String>> csvData = readCSV("plugins/mithos/data/SemvoxID_SocialNorm.csv", ",");
+        List<List<String>> csvData = readCSV("SemvoxID_SocialNorm.csv", ",");
 
         for (List<String> row : csvData){
             if (row.get(0) == name){
@@ -713,7 +713,7 @@ public class MithosExecutor extends ActivityExecutor {
     }
 
     private String getSocialNormName(String name) {
-        List<List<String>> csvData = readCSV("plugins/mithos/data/SemvoxID_SocialNorm.csv", ",");
+        List<List<String>> csvData = readCSV("SemvoxID_SocialNorm.csv", ",");
 
         for (List<String> row : csvData){
             if (Objects.equals(row.get(0), name)){
@@ -818,7 +818,15 @@ public class MithosExecutor extends ActivityExecutor {
         String line = "";
         List<List<String>> csvData = new ArrayList<>();
 
-        try (BufferedReader br = new BufferedReader(new FileReader(csvFile))) {
+        try (
+                InputStream inputStream = getClass().getClassLoader().getResourceAsStream(csvFile);
+                BufferedReader br = new BufferedReader(new InputStreamReader(inputStream))
+        ) {
+            // Check if the resource was found
+            if (inputStream == null) {
+                throw new FileNotFoundException("Resource not found: " + csvFile);
+            }
+
             while ((line = br.readLine()) != null) {
                 // Split the line by comma
                 List<String> data = new ArrayList<String>();
@@ -848,7 +856,7 @@ public class MithosExecutor extends ActivityExecutor {
         return csvData;
     }
 
-    private static Boolean logToFile = true;
+    private static Boolean logToFile = false;
 
     //logs string to a file used for debugging, can be deleted
     public static void logToFile(String filename, String message) {
