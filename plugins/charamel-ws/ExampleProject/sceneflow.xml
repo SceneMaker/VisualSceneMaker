@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<SceneFlow id="" name="default" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Tue, 26 Jul 2022 18:06:30" start="S7;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
+<SceneFlow id="" name="default" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Fri, 29 Nov 2024 15:19:50" start="S7;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
   <Define>
   </Define>
   <Declare>
     <VariableDefinition type="Bool" name ="avatar_connected">
-      <BoolLiteral value="true"/>
+      <BoolLiteral value="false"/>
     </VariableDefinition>
     <VariableDefinition type="Bool" name ="avatar_speaking">
       <BoolLiteral value="false"/>
@@ -89,13 +89,13 @@
     <EEdge target="N5" start ="">
     <Graphics>
       <Connection>
-        <ControlPoint xPos="559" yPos="178" ctrlXPos="635" ctrlYPos="198"/>
+        <ControlPoint xPos="619" yPos="118" ctrlXPos="695" ctrlYPos="138"/>
         <ControlPoint xPos="741" yPos="222" ctrlXPos="664" ctrlYPos="201"/>
       </Connection>
     </Graphics>
     </EEdge>
     <Graphics>
-      <Position xPos="500" yPos="140"/>
+      <Position xPos="560" yPos="80"/>
     </Graphics>
   </Node>
   <Node id="N5" name="name" history="false">
@@ -112,7 +112,7 @@
     <Graphics>
       <Connection>
         <ControlPoint xPos="740" yPos="230" ctrlXPos="661" ctrlYPos="230"/>
-        <ControlPoint xPos="556" yPos="185" ctrlXPos="624" ctrlYPos="224"/>
+        <ControlPoint xPos="616" yPos="125" ctrlXPos="684" ctrlYPos="164"/>
       </Connection>
     </Graphics>
     </EEdge>
@@ -130,11 +130,11 @@
         <StringLiteral><![CDATA[[Emmi sequence name='Sequence 1']]]></StringLiteral>
       </PlayAction>
     </Commands>
-    <TEdge target="N1" start="" timeout="250">
+    <TEdge target="N5" start="" timeout="250">
     <Graphics>
       <Connection>
-        <ControlPoint xPos="311" yPos="149" ctrlXPos="338" ctrlYPos="121"/>
-        <ControlPoint xPos="509" yPos="191" ctrlXPos="481" ctrlYPos="218"/>
+        <ControlPoint xPos="311" yPos="149" ctrlXPos="448" ctrlYPos="15"/>
+        <ControlPoint xPos="762" yPos="259" ctrlXPos="709" ctrlYPos="449"/>
       </Connection>
     </Graphics>
     </TEdge>
@@ -207,7 +207,7 @@
       <TEdge target="N110" start="" timeout="1000">
       <Graphics>
         <Connection>
-          <ControlPoint xPos="436" yPos="65" ctrlXPos="481" ctrlYPos="40"/>
+          <ControlPoint xPos="436" yPos="65" ctrlXPos="474" ctrlYPos="45"/>
           <ControlPoint xPos="431" yPos="71" ctrlXPos="562" ctrlYPos="40"/>
         </Connection>
       </Graphics>
