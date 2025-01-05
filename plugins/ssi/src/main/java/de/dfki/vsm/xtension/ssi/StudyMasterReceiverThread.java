@@ -6,8 +6,8 @@
 package de.dfki.vsm.xtension.ssi;
 
 import de.dfki.vsm.util.log.LOGConsoleLogger;
-import de.dfki.vsm.xtension.ssi.SSICmdExecutor;
 import de.dfki.vsm.xtension.ssi.logger.SSILoggerMessage;
+
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -22,8 +22,8 @@ import java.util.Arrays;
  */
 public class StudyMasterReceiverThread extends Thread {
 
-    private int mPort;
-    private SSICmdExecutor mExecutor;
+    private final int mPort;
+    private final SSICmdExecutor mExecutor;
     private boolean mRunning = true;
     private DatagramSocket mSocket;
 

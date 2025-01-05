@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SceneScript lower="0" upper="0">
+  <SceneObject lower="0" upper="177" language="de" identifier="welcome">
+    <SceneTurn lower="17" upper="177" speaker="Emmi">
+      <SceneUttr lower="23" upper="65" punct=",">
+        <SceneWord lower="23" upper="31" text="Herzlich"/>
+        <SceneWord lower="32" upper="42" text="Willkommen"/>
+        <ActionObject lower="44" upper="49" actor="" name="happy">
+          <ActionFeature lower="50" upper="63" key="intensity" val="0.5"/>
+        </ActionObject>
+      </SceneUttr>
+      <SceneUttr lower="66" upper="76" punct=",">
+        <SceneWord lower="66" upper="69" text="wie"/>
+        <SceneWord lower="70" upper="75" text="schön"/>
+      </SceneUttr>
+      <SceneUttr lower="77" upper="94" punct=".">
+        <SceneWord lower="77" upper="81" text="dass"/>
+        <SceneWord lower="82" upper="85" text="Sie"/>
+        <SceneWord lower="86" upper="88" text="da"/>
+        <SceneWord lower="89" upper="93" text="sind"/>
+      </SceneUttr>
+      <SceneUttr lower="95" upper="108" punct=",">
+        <SceneWord lower="95" upper="98" text="Ich"/>
+        <SceneWord lower="99" upper="102" text="bin"/>
+        <SceneWord lower="103" upper="107" text="Emmi"/>
+      </SceneUttr>
+      <SceneUttr lower="109" upper="132" punct=".">
+        <SceneWord lower="109" upper="112" text="ein"/>
+        <SceneWord lower="113" upper="122" text="autonomes"/>
+        <SceneWord lower="123" upper="131" text="Fahrzeug"/>
+      </SceneUttr>
+      <SceneUttr lower="133" upper="177" punct="?">
+        <SceneWord lower="133" upper="136" text="Und"/>
+        <SceneWord lower="137" upper="140" text="wie"/>
+        <SceneWord lower="141" upper="147" text="heißen"/>
+        <SceneWord lower="148" upper="151" text="Sie"/>
+        <ActionObject lower="153" upper="158" actor="" name="happy">
+          <ActionFeature lower="159" upper="170" key="intensity" val="0"/>
+        </ActionObject>
+        <SceneWord lower="172" upper="176" text="tell"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="179" upper="527" language="de" identifier="name">
+    <SceneTurn lower="193" upper="366" speaker="Emmi">
+      <SceneUttr lower="199" upper="231" punct=".">
+        <SceneWord lower="199" upper="204" text="Hallo"/>
+        <ActionObject lower="206" upper="211" actor="" name="happy">
+          <ActionFeature lower="212" upper="225" key="intensity" val="0.5"/>
+        </ActionObject>
+        <SceneWord lower="227" upper="230" text="you"/>
+      </SceneUttr>
+      <SceneUttr lower="232" upper="259" punct=".">
+        <SceneWord lower="232" upper="237" text="Schön"/>
+        <SceneWord lower="238" upper="241" text="Sie"/>
+        <SceneWord lower="242" upper="248" text="kennen"/>
+        <SceneWord lower="249" upper="251" text="zu"/>
+        <SceneWord lower="252" upper="258" text="lernen"/>
+      </SceneUttr>
+      <SceneUttr lower="260" upper="297" punct=",">
+        <SceneWord lower="260" upper="267" text="Während"/>
+        <SceneWord lower="268" upper="271" text="der"/>
+        <SceneWord lower="272" upper="277" text="Fahrt"/>
+        <SceneWord lower="278" upper="281" text="bin"/>
+        <SceneWord lower="282" upper="285" text="ich"/>
+        <SceneWord lower="286" upper="289" text="für"/>
+        <SceneWord lower="290" upper="293" text="Sie"/>
+        <SceneWord lower="294" upper="296" text="da"/>
+      </SceneUttr>
+      <SceneUttr lower="298" upper="330" punct=",">
+        <SceneWord lower="298" upper="304" text="melden"/>
+        <SceneWord lower="305" upper="308" text="Sie"/>
+        <SceneWord lower="309" upper="313" text="sich"/>
+        <SceneWord lower="314" upper="321" text="einfach"/>
+        <SceneWord lower="322" upper="325" text="bei"/>
+        <SceneWord lower="326" upper="329" text="mir"/>
+      </SceneUttr>
+      <SceneUttr lower="331" upper="366" punct=".">
+        <SceneWord lower="331" upper="336" text="falls"/>
+        <SceneWord lower="337" upper="340" text="Sie"/>
+        <SceneWord lower="341" upper="347" text="Fragen"/>
+        <SceneWord lower="348" upper="351" text="und"/>
+        <SceneWord lower="352" upper="359" text="Wünsche"/>
+        <SceneWord lower="360" upper="365" text="haben"/>
+      </SceneUttr>
+    </SceneTurn><SceneTurn lower="367" upper="527" speaker="Emmi">
+      <SceneUttr lower="373" upper="422" punct=",">
+        <SceneWord lower="373" upper="376" text="Ich"/>
+        <SceneWord lower="377" upper="381" text="kann"/>
+        <SceneWord lower="382" upper="387" text="Ihnen"/>
+        <SceneWord lower="388" upper="391" text="zum"/>
+        <SceneWord lower="392" upper="400" text="Beispiel"/>
+        <SceneWord lower="401" upper="403" text="in"/>
+        <SceneWord lower="404" upper="412" text="Echtzeit"/>
+        <SceneWord lower="413" upper="421" text="erklären"/>
+      </SceneUttr>
+      <SceneUttr lower="423" upper="449" punct=".">
+        <SceneWord lower="423" upper="426" text="wie"/>
+        <SceneWord lower="427" upper="430" text="ich"/>
+        <SceneWord lower="431" upper="434" text="die"/>
+        <SceneWord lower="435" upper="440" text="Fahrt"/>
+        <SceneWord lower="441" upper="448" text="steuere"/>
+      </SceneUttr>
+      <SceneUttr lower="451" upper="527" punct="?">
+        <ActionObject lower="451" upper="456" actor="" name="happy">
+          <ActionFeature lower="457" upper="468" key="intensity" val="0"/>
+        </ActionObject>
+        <SceneWord lower="470" upper="474" text="Sind"/>
+        <SceneWord lower="475" upper="478" text="Sie"/>
+        <SceneWord lower="479" upper="484" text="schon"/>
+        <SceneWord lower="485" upper="488" text="mal"/>
+        <SceneWord lower="489" upper="492" text="mit"/>
+        <SceneWord lower="493" upper="498" text="einem"/>
+        <SceneWord lower="499" upper="508" text="autonomen"/>
+        <SceneWord lower="509" upper="517" text="Fahrzeug"/>
+        <SceneWord lower="518" upper="526" text="gefahren"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+</SceneScript>

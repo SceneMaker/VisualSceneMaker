@@ -21,7 +21,7 @@ import org.w3c.dom.Element;
  */
 public class ConfigureJointAnimation extends TriCatWorldActObject implements XMLParseable, XMLWriteable {
 
-    private String mJointName;
+    private final String mJointName;
     private String mFactor = "1.0";
     private String mInterpolation = "500";
     private String mCharameAvatarId = "1";
