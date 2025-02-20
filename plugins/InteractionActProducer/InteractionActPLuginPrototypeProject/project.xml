@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Project name="newINteractionActTester">
+  <Plugins>
+    <Plugin type="device" name="test" class="de.dfki.vsm.xtension.InteractionActProducer.InteractionActProducerExecutor" load="true">
+      <Feature key="server" val="localhost:9092"/>
+      <Feature key="read_topic" val="STT"/>
+      <Feature key="write_topic" val="InteractionActs"/>
+    </Plugin>
+  </Plugins>
+  <Agents>
+    <Agent name="IAP" device="test">
+    </Agent>
+  </Agents>
+  <Player>
+  </Player>
+</Project>
