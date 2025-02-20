@@ -14,5 +14,6 @@ include 'plugins:charamel'
 include 'plugins:VLCRemoteController'
 include 'plugins:mithos'
 include 'plugins:mithos:main'
+include 'plugins:InteractionActProducer'
 findProject(':plugins:mithos:main')?.name = 'main'
 

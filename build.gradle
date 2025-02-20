@@ -46,6 +46,7 @@ dependencies {
     implementation project(":plugins:VLCRemoteController")
     implementation project(":plugins:extensionAPI")
     implementation project(":plugins:mithos")
+    implementation project(":plugins:InteractionActProducer")
 
 
     implementation 'org.jetbrains:annotations:16.0.2'
