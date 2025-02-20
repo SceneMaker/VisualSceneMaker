@@ -29,6 +29,7 @@ import org.apache.xmlbeans.XmlException;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
 import java.util.LinkedList;
 import java.util.*;
 
@@ -53,10 +54,17 @@ public class ALMAExecutor extends ActivityExecutor implements AffectUpdateListen
     public synchronized String marker(long id) {
         return "$(" + id + ")";
     }
+    private static String fileLogFolder = "";//subfolder in which log to file saves. In constructor set to current time
 
 
     @Override
     public void launch() {
+        if (fileLogFolder.equals("")){
+            Calendar cal = Calendar.getInstance();
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd_HH-mm");
+            fileLogFolder = "C:\\Projekte\\MITHOS2024VRAutomated\\vsm\\VSMData\\" + sdf.format(cal.getTime());
+
+        }
         mLogger.message("Loading ALMA Regulated");
         if (mALMA == null) {
             // read config
@@ -489,19 +497,25 @@ public class ALMAExecutor extends ActivityExecutor implements AffectUpdateListen
 
 ///Some log functions
     //logs string to a file used for debugging, can be deleted
-private static Boolean logToFile = true;
+private static final Boolean logToFile = true;
     //logs string to a file used for debugging, can be deleted
-    public static void logToFile(String filename, String message) {
+    public void logToFile(String filename, String message) {
         if(logToFile){
-            String directory = "C:\\Projekte\\MITHOS2024VRAutomated\\vsm\\VSMData";
+            if (fileLogFolder.equals("")){
+                Calendar cal = Calendar.getInstance();
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd_HH-mm");
+                fileLogFolder = "C:\\Projekte\\MITHOS2024VRAutomated\\vsm\\VSMData\\" + sdf.format(cal.getTime());
+
+            }
+
 
             try {
-                Files.createDirectories(Paths.get(directory));
+                Files.createDirectories(Paths.get(fileLogFolder));
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
 
-            try(PrintWriter writer = new PrintWriter( new FileWriter( new File(directory, filename), true))) {
+            try(PrintWriter writer = new PrintWriter( new FileWriter( new File(fileLogFolder, filename), true))) {
                 writer.println(message);
             }
             catch

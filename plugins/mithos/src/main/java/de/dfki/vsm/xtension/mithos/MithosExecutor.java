@@ -487,6 +487,12 @@ public class MithosExecutor extends ActivityExecutor {
 
     @Override
     public void launch() {
+        if (fileLogFolder.equals("")){
+            Calendar cal = Calendar.getInstance();
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd_HH-mm");
+            fileLogFolder = "C:\\Projekte\\MITHOS2024VRAutomated\\vsm\\VSMData\\" + sdf.format(cal.getTime());
+        }
+
         Properties props = new Properties();
         props.put("bootstrap.servers", server);
         props.put("acks", "all");
@@ -856,26 +862,24 @@ public class MithosExecutor extends ActivityExecutor {
         return csvData;
     }
 
-    private static Boolean logToFile = false;
-
+    private static Boolean logToFile = true;
     //logs string to a file used for debugging, can be deleted
-    public static void logToFile(String filename, String message) {
-        if(Objects.equals(fileLogFolder, "")){
-            Calendar cal = Calendar.getInstance();
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
-            fileLogFolder = "C:\\Projekte\\MITHOS2024VRAutomated\\vsm\\VSMData\\" + sdf.format(cal.getTime());
-        }
-
+    public void logToFile(String filename, String message) {
         if(logToFile){
-            String directory = fileLogFolder;
+            if (fileLogFolder.equals("")){
+                Calendar cal = Calendar.getInstance();
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd_HH-mm");
+                fileLogFolder = "C:\\Projekte\\MITHOS2024VRAutomated\\vsm\\VSMData\\" + sdf.format(cal.getTime());
+            }
+
 
             try {
-                Files.createDirectories(Paths.get(directory));
+                Files.createDirectories(Paths.get(fileLogFolder));
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
 
-            try(PrintWriter writer = new PrintWriter( new FileWriter( new File(directory, filename), true))) {
+            try(PrintWriter writer = new PrintWriter( new FileWriter( new File(fileLogFolder, filename), true))) {
                 writer.println(message);
             }
             catch
