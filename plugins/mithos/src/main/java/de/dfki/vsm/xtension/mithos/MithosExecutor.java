@@ -52,6 +52,8 @@ public class MithosExecutor extends ActivityExecutor {
     private HashMap<String, Integer> leadAffectCount = new HashMap<>();    //lead affect count, used by log to file in unload function
     private static String fileLogFolder = "";//subfolder in which log to file saves. In constructor set to current time
 
+    private int deltaTaskLvl;
+
     public MithosExecutor(PluginConfig config, RunTimeProject project) {
         super(config, project);
         server = mConfig.getProperty("server");
@@ -248,8 +250,8 @@ public class MithosExecutor extends ActivityExecutor {
             speakingTimeEnd = System.nanoTime();
         } else {
             //sit down command
-           actionActivity.setType(AbstractActivity.Type.parallel);
-           sendRecord(record);
+            actionActivity.setType(AbstractActivity.Type.parallel);
+            sendRecord(record);
         }
     }
 
@@ -332,12 +334,8 @@ public class MithosExecutor extends ActivityExecutor {
                 break;
             }
         }
-        mProject.setVariable("rel_lvl_automated_suggestion",deltaRelLvl);
+
         mProject.setVariable("ConflictType",conf);
-
-
-        //get the last task level change from VCM
-        int deltaTaskLvl = (int) mProject.getValueOf("task_lvl_automated_suggestion").getValue();
 
         //find conflict resolution style
         String confRes  ="";
@@ -363,16 +361,14 @@ public class MithosExecutor extends ActivityExecutor {
 
 
         //apply changes to rel and task revel
-        int taskLvl = deltaTaskLvl + (int) mProject.getValueOf("task_lvl").getValue();
-        int relLvl = deltaRelLvl    + (int) mProject.getValueOf("relationship_lvl").getValue();
+        setNextLevel("task_lvl", "task_lvl_automated_suggestion", deltaTaskLvl);
 
-        taskLvl = checkBounds(taskLvl,4,-2);
-        relLvl = checkBounds(relLvl,4,-2);
+        setNextLevel("relationship_lvl", "rel_lvl_automated_suggestion", deltaRelLvl);
 
-        mProject.setVariable("task_lvl",taskLvl);
-        logger.message("task_lvl " + taskLvl);
 
-        mProject.setVariable("relationship_lvl",relLvl);
+        //logging of stuff
+        int relLvl = (int) mProject.getValueOf("relationship_lvl").getValue();
+        int taskLvl = (int) mProject.getValueOf("task_lvl").getValue();
         logger.message("relationship_lvl " + relLvl);
 
         String curTime = Instant.now().toString();
@@ -380,6 +376,36 @@ public class MithosExecutor extends ActivityExecutor {
         logToFile("PhaseAndLevel.txt",curTime + "    Phase: " + phase +" task_lvl : " + taskLvl + " relationship_lvl : " + relLvl);
         logToFile("LeadAffectAndCO.txt","LeadAffectAndCO: " + curTime + "     confRes : " + confRes + " ConfType: " + conf + "LeadAffect: " + leadAffect);
         leadAffectCount.merge(leadAffect,1,Integer::sum);
+    }
+
+    //Sets the rel or task level variables in VCM
+    //INput name of the variable to be set, the current name of the automatedsuggsted level variable and the current change
+    //NOTE for the permanent exhubition the taks and relationship level change is halved, so a automated suggested levelv of 2 is needed to increse the actual level by 1
+    private void setNextLevel(String levlName, String automatedLevlName, int delta){
+        int level =  (int) mProject.getValueOf(levlName).getValue();
+        int suggestedLevel =  (int) mProject.getValueOf(automatedLevlName).getValue();
+
+        suggestedLevel = suggestedLevel + delta;
+
+
+        //increse level
+        if(suggestedLevel >= 2){
+            level++;
+            level = checkBounds(level,4,-2);
+
+            suggestedLevel = 0;
+        }
+        //decrese level
+        if (delta <= -1) {
+            level--;
+            level = checkBounds(level,4,-2);
+
+            suggestedLevel = 0;
+        }
+
+        mProject.setVariable(levlName,level);
+        mProject.setVariable(automatedLevlName,suggestedLevel);
+
     }
 
     private int checkBounds(int n, int upperBound, int lowerBound) {
@@ -578,8 +604,7 @@ public class MithosExecutor extends ActivityExecutor {
 
         mProject.setVariable("appraisalTagsSemvox",appraisalList);
 
-
-        mProject.setVariable("task_lvl_automated_suggestion",taskLvl);
+        deltaTaskLvl = taskLvl;
         mProject.setVariable("new_interpretation",true);
 
         int interaction_count = (int) mProject.getValueOf("interaction_count").getValue();
