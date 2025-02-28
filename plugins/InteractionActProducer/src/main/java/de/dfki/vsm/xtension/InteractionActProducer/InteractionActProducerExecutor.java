@@ -10,8 +10,14 @@ import de.dfki.vsm.runtime.activity.AbstractActivity;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
+import com.google.gson.Gson;
+import de.mithos.compint.interaction.ActKind;
+import de.mithos.compint.interaction.Emotion;
+import de.mithos.compint.interaction.InteractionAct;
 
-
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 
 
 /**
@@ -23,6 +29,8 @@ import de.dfki.vsm.util.log.LOGConsoleLogger;
 public class InteractionActProducerExecutor extends ActivityExecutor {
     private final LOGConsoleLogger mLogger = LOGConsoleLogger.getInstance();
     private KafkaHandler handler;
+
+    private Gson gson = new Gson();
 
     private final String server;
     private final String read_topics;
@@ -60,13 +68,16 @@ public class InteractionActProducerExecutor extends ActivityExecutor {
 
     //Method is called when KafkaHandler resieves a new STT entry
     //Currently Dummy FUnction, just writes dummy to InteractionAct topic
-    public void handleSTT(String content){
+    public void handleSTT(String contentSTT){
 
-        mLogger.message("Executor reseived STT: " + content);
+        mLogger.message("Executor reseived STT: " + contentSTT);
 
         //TODO add logic here
+        InteractionAct ia = new InteractionAct(ActKind.ConventionalOpening, new ArrayList(),  new Emotion(0,0,0,0,0), 0,0);
 
-        handler.sendToKafka(write_topic, "testDummy", "Test Content");
+        String ia_s = gson.toJson(ia);
+
+        handler.sendToKafka(write_topic, ia_s, ia.toString());
     }
     @Override
     public void unload() {
