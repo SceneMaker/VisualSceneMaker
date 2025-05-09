@@ -485,6 +485,41 @@ public class charamelWsExecutor extends ActivityExecutor {
                 broadcast(new SequenceCommand(sequenceName));
                 break;
             }
+            case "greet": {
+                String nr = getActionFeatureValue("nr", f);
+                nr = nr.isEmpty() ? "1" : nr;
+                nr = (Integer.parseInt(nr)<10) ? "0"+nr : nr;
+                broadcast(new TimeLine(new GreetCommand(nr)));
+                break;
+            }
+            case "yes": {
+                String nr = getActionFeatureValue("nr", f);
+                nr = nr.isEmpty() ? "1" : nr;
+                nr = (Integer.parseInt(nr)<10) ? "0"+nr : nr;
+                broadcast(new TimeLine(new YesCommand(nr)));
+                break;
+            }
+            case "speaking": {
+                String nr = getActionFeatureValue("nr", f);
+                nr = nr.isEmpty() ? "1" : nr;
+                nr = (Integer.parseInt(nr)<10) ? "0"+nr : nr;
+                broadcast(new TimeLine(new SpeakingCommand(nr)));
+                break;
+            }
+            case "pointL": {
+                String nr = getActionFeatureValue("nr", f);
+                nr = nr.isEmpty() ? "1" : nr;
+                nr = (Integer.parseInt(nr)<10) ? "0"+nr : nr;
+                broadcast(new TimeLine(new PointLCommand(nr)));
+                break;
+            }
+            case "pointR": {
+                String nr = getActionFeatureValue("nr", f);
+                nr = nr.isEmpty() ? "1" : nr;
+                nr = (Integer.parseInt(nr)<10) ? "0"+nr : nr;
+                broadcast(new TimeLine(new PointRCommand(nr)));
+                break;
+            }
         }
     }
 
