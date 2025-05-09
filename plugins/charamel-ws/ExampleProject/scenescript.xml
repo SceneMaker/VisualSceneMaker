@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SceneScript lower="0" upper="0">
+  <SceneObject lower="0" upper="65" language="en" identifier="welcome">
+    <SceneTurn lower="17" upper="65" speaker="Mika">
+      <SceneUttr lower="23" upper="46" punct=".">
+        <SceneWord lower="23" upper="28" text="Hello"/>
+        <SceneWord lower="29" upper="36" text="welcome"/>
+        <SceneWord lower="37" upper="45" text="collegue"/>
+      </SceneUttr>
+      <SceneUttr lower="47" upper="65" punct="?">
+        <SceneWord lower="47" upper="50" text="How"/>
+        <SceneWord lower="51" upper="54" text="are"/>
+        <SceneWord lower="55" upper="58" text="you"/>
+        <SceneWord lower="59" upper="64" text="doing"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="67" upper="164" language="en" identifier="name">
+    <SceneTurn lower="81" upper="164" speaker="Mika">
+      <SceneUttr lower="87" upper="97" punct=".">
+        <SceneWord lower="87" upper="92" text="Hello"/>
+        <SceneWord lower="93" upper="96" text="you"/>
+      </SceneUttr>
+      <SceneUttr lower="98" upper="135" punct=".">
+        <SceneWord lower="98" upper="101" text="Let"/>
+        <SceneWord lower="102" upper="104" text="me"/>
+        <SceneWord lower="105" upper="109" text="know"/>
+        <SceneWord lower="110" upper="114" text="what"/>
+        <SceneWord lower="115" upper="116" text="I"/>
+        <SceneWord lower="117" upper="120" text="can"/>
+        <SceneWord lower="121" upper="125" text="help"/>
+        <SceneWord lower="126" upper="129" text="you"/>
+        <SceneWord lower="130" upper="134" text="with"/>
+      </SceneUttr>
+      <SceneUttr lower="136" upper="164" punct="?">
+        <SceneWord lower="136" upper="138" text="If"/>
+        <SceneWord lower="139" upper="144" text="there"/>
+        <SceneWord lower="145" upper="147" text="is"/>
+        <SceneWord lower="148" upper="156" text="anything"/>
+        <SceneWord lower="157" upper="159" text="at"/>
+        <SceneWord lower="160" upper="163" text="all"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="166" upper="234" language="en" identifier="praise">
+    <SceneTurn lower="182" upper="234" speaker="Mika">
+      <SceneUttr lower="188" upper="234" punct=".">
+        <SceneWord lower="188" upper="191" text="You"/>
+        <SceneWord lower="192" upper="195" text="are"/>
+        <SceneWord lower="196" upper="201" text="doing"/>
+        <SceneWord lower="202" upper="207" text="great"/>
+        <ActionObject lower="209" upper="214" actor="" name="smile">
+          <ActionFeature lower="215" upper="228" key="intensity" val="1.5"/>
+        </ActionObject>
+        <SceneWord lower="230" upper="233" text="Job"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="236" upper="271" language="en" identifier="help">
+    <SceneTurn lower="250" upper="271" speaker="Mika">
+      <SceneUttr lower="256" upper="271" punct=".">
+        <SceneWord lower="256" upper="262" text="Please"/>
+        <SceneWord lower="263" upper="267" text="help"/>
+        <SceneWord lower="268" upper="270" text="me"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+</SceneScript>

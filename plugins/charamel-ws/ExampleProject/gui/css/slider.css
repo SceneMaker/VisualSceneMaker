@@ -1,0 +1,74 @@
+.sliderbox {
+    bottom: 10vh;
+    background-color: #006451;
+}
+
+input[type="range"] {
+    -webkit-appearance: none; /* Override default CSS styles */
+    appearance: none;
+    height: 1vh; /* Specified height */
+    background: #0ebc98; /* Grey background */
+    outline: none; /* Remove outline */
+    opacity: 0.7; /* Set transparency (for mouse-over effects on hover) */
+    -webkit-transition: .2s; /* 0.2 seconds transition on hover */
+    transition: opacity .2s;
+    border-radius: 2vh / 1vh;
+    width: 90%;
+}
+
+/* Special styling for WebKit/Blink */
+input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    height: 2vh;
+    width: 2vh;
+    border: solid #000000;
+    border-width: 0 1vw 1vw 0;
+    display: inline-block;
+    /*padding: 15px;*/
+    transform: rotate(-45deg);
+    -webkit-transform: rotate(-45deg);
+    background-size: contain;
+    background-repeat: no-repeat;
+    cursor: pointer;
+}
+
+/* All the same stuff for Firefox */
+input[type=range]::-moz-range-thumb {
+    -webkit-appearance: none;
+    height: 20px;
+    width: 20px;
+    border: solid #000000;
+    border-width: 0 15px 15px 0;
+    display: inline-block;
+    padding: 15px;
+    transform: rotate(-45deg);
+    -webkit-transform: rotate(-45deg);
+    background-size: contain;
+    background-repeat: no-repeat;
+    cursor: pointer;
+}
+
+/* All the same stuff for IE */
+input[type=range]::-ms-thumb {
+    -webkit-appearance: none;
+    height: 20px;
+    width: 20px;
+    border: solid #000000;
+    border-width: 0 15px 15px 0;
+    display: inline-block;
+    padding: 15px;
+    transform: rotate(-45deg);
+    -webkit-transform: rotate(-45deg);
+    background-size: contain;
+    background-repeat: no-repeat;
+    cursor: pointer;
+}
+
+
+#steplist option {
+    position: relative;
+    background: white;
+    top: 18px;
+    border-left: 1px solid black;
+    border-right: 1px solid black;
+}
