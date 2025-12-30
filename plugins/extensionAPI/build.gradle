@@ -6,12 +6,13 @@ plugins {
 group 'de.dfki'
 version '4.0.1'
 
-sourceCompatibility = 1.8
+sourceCompatibility = JavaVersion.VERSION_21
 
 repositories {
     mavenCentral()
 }
 javafx {
+    version = '21'
     modules = [ 'javafx.controls', 'javafx.graphics', 'javafx.fxml', 'javafx.swing' ]
 }
 dependencies {

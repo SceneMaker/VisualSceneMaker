@@ -1,8 +1,8 @@
 plugins {
     id 'java'
-    id 'org.openjfx.javafxplugin' version '0.0.10'
+    id 'org.openjfx.javafxplugin' version '0.0.13'
     id 'net.nemerosa.versioning' version '3.0.0'
-    id 'com.github.johnrengelman.shadow' version '5.0.0'
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
 }
 javadoc { options.encoding = 'UTF-8' }
 
@@ -11,7 +11,18 @@ allprojects {
     version = versioning.info.lastTag
 }
 
-sourceCompatibility = 1.8
+sourceCompatibility = JavaVersion.VERSION_21
+targetCompatibility = JavaVersion.VERSION_21
+
+subprojects {
+    plugins.withId('java') {
+        java {
+            toolchain {
+                languageVersion = JavaLanguageVersion.of(21)
+            }
+        }
+    }
+}
 
 repositories {
     mavenCentral()
@@ -19,6 +30,7 @@ repositories {
 }
 
 javafx {
+    version = '21'
     modules = [ 'javafx.controls', 'javafx.graphics', 'javafx.fxml', 'javafx.swing' ]
 }
 
@@ -82,6 +94,9 @@ dependencies {
     implementation group: 'com.nativelibs4java', name: 'bridj', version: '0.7.0'
 }
 java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
     withJavadocJar()
     withSourcesJar()
 }
