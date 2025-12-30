@@ -5,8 +5,8 @@ plugins {
 group 'de.dfki'
 version '1.0.0'
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+sourceCompatibility = JavaVersion.VERSION_21
+targetCompatibility = JavaVersion.VERSION_21
 
 
 repositories {

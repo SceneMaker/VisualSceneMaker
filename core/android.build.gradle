@@ -1,6 +1,6 @@
 plugins {
     id 'java'
-    id 'net.nemerosa.versioning' version '2.8.2'
+    id 'net.nemerosa.versioning' version '3.0.0'
 }
 group 'de.dfki.vsm'
 version '4.0.0'
@@ -11,8 +11,8 @@ repositories {
 }
 
 apply plugin: 'java'
-targetCompatibility = 1.8
-sourceCompatibility = 1.8
+targetCompatibility = JavaVersion.VERSION_21
+sourceCompatibility = JavaVersion.VERSION_21
 
 dependencies {
     implementation files('../lib/JCup.jar')
@@ -26,7 +26,7 @@ dependencies {
 
 jar {
     from {
-        (configurations.runtime).collect {
+        (configurations.runtimeClasspath).collect {
             it.isDirectory() ? it : zipTree(it)
         }
     }
@@ -39,4 +39,3 @@ jar {
     }
     duplicatesStrategy = 'exclude'
 }
-

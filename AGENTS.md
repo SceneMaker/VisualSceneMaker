@@ -10,7 +10,7 @@ The main application lives under `src/main/java` with resources in `src/main/res
 - `./gradlew clean` removes build outputs before a fresh build.
 
 ## Coding Style & Naming Conventions
-Use Java 8 syntax (`sourceCompatibility = 1.8`). Follow the existing code style: 4-space indentation, braces on the same line, and standard Java naming (classes in `PascalCase`, methods/fields in `camelCase`, constants in `UPPER_SNAKE_CASE`). Keep package names under `de.dfki.vsm.*`. There is no enforced formatter; match the surrounding file.
+Use Java 21 syntax (`sourceCompatibility = JavaVersion.VERSION_21`). Follow the existing code style: 4-space indentation, braces on the same line, and standard Java naming (classes in `PascalCase`, methods/fields in `camelCase`, constants in `UPPER_SNAKE_CASE`). Keep package names under `de.dfki.vsm.*`. There is no enforced formatter; match the surrounding file.
 
 ## Testing Guidelines
 Tests use JUnit (both 4 and 5 dependencies are present) and live in `src/test/java`. Name tests with the `*Test.java` suffix and keep helper fakes in `src/test/java/fakes`. Some plugins include their own test assets (for example, `plugins/studymaster-web/...`); follow their local README files if you touch them.
