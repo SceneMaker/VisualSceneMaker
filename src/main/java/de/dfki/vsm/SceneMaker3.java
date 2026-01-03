@@ -2,6 +2,7 @@ package de.dfki.vsm;
 
 import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
+import de.dfki.vsm.web.WebUiServer;
 
 import javax.swing.*;
 import java.io.File;
@@ -18,6 +19,11 @@ public final class SceneMaker3 {
 
     // Start SceneMaker3 in a specific mode
     public static void main(final String[] args) {
+        try {
+            WebUiServer.getInstance().start();
+        } catch (Exception exc) {
+            sLogger.warning("Warning: Cannot start Web UI server: " + exc.getMessage());
+        }
         // Let Java Swing do the work for us
         SwingUtilities.invokeLater(() -> {
             // Check if we have at least one argument

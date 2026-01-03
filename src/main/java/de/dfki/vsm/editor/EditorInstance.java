@@ -664,6 +664,33 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
 
     }
 
+    public final boolean closeProject(final ProjectEditor editor, final boolean saveIfDirty) {
+        if (editor == null || editor.getEditorProject() == null) {
+            mLogger.failure("Error: Cannot close a bad project editor");
+            return false;
+        }
+
+        if (editor.getEditorProject().hasChanged() && saveIfDirty) {
+            save(editor);
+        }
+
+        if (editor.getEditorProject().isRunning()) {
+            stop(editor.getEditorProject());
+        }
+
+        editor.close();
+        mProjectEditors.remove(editor);
+
+        if (mProjectEditors.getTabCount() == 0) {
+            setContentPane(mWelcomeScreen);
+            mEditorMenuBar.setVisible(false);
+        }
+
+        refresh();
+        System.gc();
+        return true;
+    }
+
     // Save all project editors
     public final void saveAll() {
         for (int i = 0; i < mProjectEditors.getTabCount(); i++) {

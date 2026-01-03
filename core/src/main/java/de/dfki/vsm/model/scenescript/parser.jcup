@@ -57,7 +57,7 @@ parser code {:
 
     // Handle An Error 
     @Override
-    public final void syntax_error(final Symbol symbol) {
+    public void syntax_error(final Symbol symbol) {
       final Object object = symbol.value;
       if(object instanceof SyntaxDocToken) {
         SyntaxDocToken token = (SyntaxDocToken)object;
@@ -68,7 +68,7 @@ parser code {:
     }
     // Handle An Error  
     @Override
-    public final void unrecovered_syntax_error(final Symbol symbol) throws Exception {
+    public void unrecovered_syntax_error(final Symbol symbol) throws Exception {
       final Object object = symbol.value;
       if(object instanceof SyntaxDocToken) {
         final SyntaxDocToken token = (SyntaxDocToken)object;
