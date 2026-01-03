@@ -56,9 +56,19 @@ p {
 .panel {
   background: var(--panel);
   border-radius: 16px;
-  padding: 1.5rem;
+  --panel-pad: 1.5rem;
+  padding: var(--panel-pad);
   border: 1px solid var(--stroke);
   box-shadow: var(--shadow);
+}
+
+.panel-wide {
+  --wide-side-margin: 0.75rem;
+  width: calc(100vw - (2 * var(--wide-side-margin)));
+  margin-left: calc(50% - 50vw + var(--wide-side-margin));
+  margin-right: calc(50% - 50vw + var(--wide-side-margin));
+  grid-column: 1 / -1;
+  box-sizing: border-box;
 }
 
 .connect {
@@ -87,6 +97,7 @@ input {
   font-size: 0.95rem;
   background: #ffffff;
   color: var(--ink);
+  box-sizing: border-box;
 }
 
 select {
@@ -96,6 +107,7 @@ select {
   font-size: 0.95rem;
   background: #ffffff;
   color: var(--ink);
+  box-sizing: border-box;
 }
 
 textarea {
@@ -108,6 +120,7 @@ textarea {
   background: #ffffff;
   color: var(--ink);
   resize: vertical;
+  box-sizing: border-box;
 }
 
 .search {
@@ -260,14 +273,15 @@ summary {
 }
 
 .scene-list {
-  max-height: 320px;
   overflow: auto;
   border: 1px solid var(--stroke);
   border-radius: 12px;
   background: var(--panel-soft);
-  padding: 0.6rem;
+  padding: 0.25rem;
   display: grid;
-  gap: 0.6rem;
+  gap: 0.25rem;
+  min-height: 0;
+  height: 100%;
 }
 
 .scene-group {
@@ -561,12 +575,20 @@ summary {
 }
 
 .sceneflow-panel {
+  --sf-side-width: 280px;
+  --sf-gap: 1rem;
+  --sf-panel-pad: var(--panel-pad);
+  --sf-side-margin: 0.75rem;
+  --sf-viewport-width: calc(100vw - (2 * var(--sf-side-margin)));
+  --sf-canvas-width: calc(var(--sf-viewport-width) - (2 * var(--sf-panel-pad)) - (2 * var(--sf-side-width)) - (2 * var(--sf-gap)));
+  --sf-canvas-height: var(--sf-canvas-width);
   grid-column: 1 / -1;
   user-select: none;
   -webkit-user-select: none;
-  width: 100vw;
-  margin-left: calc(50% - 50vw - var(--page-pad));
-  margin-right: calc(50% - 50vw - var(--page-pad));
+  width: var(--sf-viewport-width);
+  margin-left: calc(50% - 50vw + var(--sf-side-margin));
+  margin-right: calc(50% - 50vw + var(--sf-side-margin));
+  box-sizing: border-box;
 }
 
 .sceneflow-toolbar {
@@ -595,8 +617,9 @@ summary {
 
 .sceneflow-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 280px;
-  gap: 1rem;
+  grid-template-columns: var(--sf-side-width) minmax(0, 1fr) var(--sf-side-width);
+  gap: var(--sf-gap);
+  height: var(--sf-canvas-height);
   align-items: stretch;
 }
 
@@ -605,14 +628,135 @@ summary {
   gap: 0.6rem;
 }
 
+.sceneflow-blocks {
+  background: var(--panel-soft);
+  border: 1px dashed var(--stroke);
+  border-radius: 14px;
+  padding: 1rem;
+  height: 100%;
+  min-height: 0;
+  overflow: auto;
+  display: grid;
+  gap: 1.2rem;
+  align-content: stretch;
+  grid-template-rows: auto 1fr;
+  box-sizing: border-box;
+}
+
+.blocks-section {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.blocks-section--icons {
+  gap: 0.4rem;
+}
+
+.blocks-section--scenes {
+  gap: 0.25rem;
+  min-height: 0;
+  grid-template-rows: auto auto auto 1fr;
+}
+
+.sceneflow-blocks .search {
+  margin: 0.25rem 0;
+}
+
+.block-section-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.blocks-grid {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.blocks-grid--icons {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.4rem;
+}
+
+.block-icon {
+  border: 1px solid var(--stroke);
+  border-radius: 10px;
+  height: 44px;
+  padding: 0;
+  background: #ffffff;
+  color: var(--ink);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.block-icon svg {
+  width: 20px;
+  height: 20px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.block-icon .block-icon-text {
+  fill: currentColor;
+  stroke: none;
+  font-size: 7px;
+  font-weight: 700;
+  font-family: "Space Grotesk", "IBM Plex Sans", "Segoe UI", sans-serif;
+}
+
+.block-icon:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
+}
+
+.block-icon:active {
+  cursor: grabbing;
+}
+
+.block-icon.active {
+  border-color: #2f6b3a;
+  background: rgba(47, 107, 58, 0.12);
+  color: #2a5d33;
+}
+
+.block-icon:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+  box-shadow: none;
+  transform: none;
+}
+
+.scene-selector {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.25rem;
+  align-items: center;
+}
+
+.scene-selector select {
+  width: 100%;
+}
+
+.edge-hint {
+  font-size: 0.82rem;
+}
+
 .sceneflow-container {
   border: 4px solid var(--sf-frame-color, var(--stroke));
   border-radius: 14px;
   background: #f9f6ed;
   overflow: hidden;
   position: relative;
-  min-height: 420px;
-  max-height: 520px;
+  height: 100%;
+  box-sizing: border-box;
   user-select: none;
   -webkit-user-select: none;
 }
@@ -653,6 +797,7 @@ summary {
   width: 100%;
   height: 100%;
   overflow: auto;
+  min-height: 0;
 }
 
 .sceneflow-inspector {
@@ -660,11 +805,12 @@ summary {
   border: 1px dashed var(--stroke);
   border-radius: 14px;
   padding: 1rem;
-  min-height: 420px;
   height: 100%;
+  min-height: 0;
   overflow: auto;
   user-select: text;
   -webkit-user-select: text;
+  box-sizing: border-box;
 }
 
 .sceneflow-inspector .inspector-title {
@@ -1059,12 +1205,16 @@ summary {
   background-image: radial-gradient(var(--sf-grid-color, rgba(170, 170, 170, 0.45)) 1px, transparent 1px);
   background-size: var(--sf-grid-x, 24px) var(--sf-grid-y, 24px);
   background-position: var(--sf-grid-offset-x, 0px) var(--sf-grid-offset-y, 0px);
-  cursor: grab;
+  cursor: pointer;
   touch-action: none;
   user-select: none;
   -webkit-user-select: none;
   position: relative;
   z-index: 1;
+}
+
+.sceneflow-canvas.shift-pan {
+  cursor: grab;
 }
 
 .sceneflow-canvas.panning {

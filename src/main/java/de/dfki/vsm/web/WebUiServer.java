@@ -1047,7 +1047,9 @@ public final class WebUiServer {
                         if (nodeName != null && !nodeName.isBlank()) {
                             dataNode.setName(nodeName);
                         }
-                        dataNode.setGraphics(new NodeGraphics((int) Math.round(x), (int) Math.round(y)));
+                        int clampedX = clampPositive((int) Math.round(x));
+                        int clampedY = clampPositive((int) Math.round(y));
+                        dataNode.setGraphics(new NodeGraphics(clampedX, clampedY));
                         if (dataNode instanceof SuperNode) {
                             BasicNode history = new BasicNode();
                             history.setHistoryNodeFlag(true);
@@ -2140,6 +2142,7 @@ public final class WebUiServer {
                         WorkSpacePanel workSpace = editor.getSceneFlowEditor().getWorkSpace();
                         SceneFlowManager manager = editor.getSceneFlowEditor().getSceneFlowManager();
                         Point coordinate = new Point((int) Math.round(x), (int) Math.round(y));
+                        coordinate = clampPointToPositive(coordinate);
                         CreateCommentAction action = new CreateCommentAction(workSpace, coordinate);
                         action.run();
                         SuperNode active = manager.getCurrentActiveSuperNode();
@@ -2217,7 +2220,9 @@ public final class WebUiServer {
                         CommentBoundary rect = graphics.getRectangle();
                         int nextWidth = width > 0 ? width : (rect != null ? rect.getWidth() : 100);
                         int nextHeight = height > 0 ? height : (rect != null ? rect.getHeight() : 100);
-                        graphics.setRectangle(new CommentBoundary((int) Math.round(x), (int) Math.round(y), nextWidth, nextHeight));
+                        int clampedX = clampPositive((int) Math.round(x));
+                        int clampedY = clampPositive((int) Math.round(y));
+                        graphics.setRectangle(new CommentBoundary(clampedX, clampedY, nextWidth, nextHeight));
                         Comment guiComment = findCommentComponent(workSpace, badge);
                         if (guiComment != null) {
                             CommentBoundary next = graphics.getRectangle();
@@ -3603,6 +3608,17 @@ public final class WebUiServer {
         return Double.isFinite(value);
     }
 
+    private int clampPositive(int value) {
+        return Math.max(1, value);
+    }
+
+    private Point clampPointToPositive(Point input) {
+        if (input == null) {
+            return null;
+        }
+        return new Point(clampPositive(input.x), clampPositive(input.y));
+    }
+
     private void moveNode(WorkSpacePanel workSpace, Node node, Point target, boolean snap) {
         if (workSpace == null || node == null || target == null) {
             return;
@@ -3622,6 +3638,7 @@ public final class WebUiServer {
                 finalTarget = gridTarget;
             }
         }
+        finalTarget = clampPointToPositive(finalTarget);
         Point delta = new Point(finalTarget.x - current.x, finalTarget.y - current.y);
         node.resetLocation(finalTarget);
         NodeGraphics graphics = node.getDataNode().getGraphics();
