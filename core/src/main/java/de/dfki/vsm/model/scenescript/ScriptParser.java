@@ -206,7 +206,7 @@ public class ScriptParser extends java_cup.runtime.lr_parser {
 
     // Handle An Error 
     @Override
-    public final void syntax_error(final Symbol symbol) {
+    public void syntax_error(final Symbol symbol) {
       final Object object = symbol.value;
       if(object instanceof SyntaxDocToken) {
         SyntaxDocToken token = (SyntaxDocToken)object;
@@ -217,7 +217,7 @@ public class ScriptParser extends java_cup.runtime.lr_parser {
     }
     // Handle An Error  
     @Override
-    public final void unrecovered_syntax_error(final Symbol symbol) throws Exception {
+    public void unrecovered_syntax_error(final Symbol symbol) throws Exception {
       final Object object = symbol.value;
       if(object instanceof SyntaxDocToken) {
         final SyntaxDocToken token = (SyntaxDocToken)object;
@@ -1181,4 +1181,3 @@ class CUP$ScriptParser$actions {
         }
     }
 }
-

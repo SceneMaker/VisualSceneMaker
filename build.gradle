@@ -57,6 +57,7 @@ dependencies {
     implementation project(":plugins:extensionAPI")
     implementation project(":plugins:sockets")
     implementation project(":plugins:DriveSimulator")
+    implementation "io.javalin:javalin:3.8.0"
     implementation 'org.jetbrains:annotations:16.0.2'
     // https://mvnrepository.com/artifact/org.slick2d/slick2d-core
     implementation group: 'org.slick2d', name: 'slick2d-core', version: '1.0.2' // needed for documentation
@@ -116,4 +117,78 @@ jar {
                 'Last-Tag': versioning.info.lastTag
         )
     }
+}
+
+import java.util.Locale
+
+def webUiDir = file("web-ui")
+def isWindows = System.getProperty("os.name").toLowerCase(Locale.ROOT).contains("windows")
+def defaultNpmCmd = isWindows ? "npm.cmd" : "npm"
+def npmCommand = project.findProperty("npmCommand") ?: defaultNpmCmd
+def skipWebUi = project.hasProperty("skipWebUi") && !"false".equalsIgnoreCase(project.property("skipWebUi").toString())
+def webUiSkipLogged = false
+
+def npmAvailable = {
+    def cmd = npmCommand.toString()
+    File cmdFile = new File(cmd)
+    if (cmdFile.isAbsolute()) {
+        return cmdFile.exists()
+    }
+    def pathEnv = System.getenv("PATH")
+    if (pathEnv == null || pathEnv.isBlank()) {
+        return false
+    }
+    def separator = java.util.regex.Pattern.quote(File.pathSeparator)
+    return pathEnv.split(separator).any { new File(it, cmd).exists() }
+}
+
+def shouldRunWebUiTasks = {
+    if (!webUiDir.exists() || !file("${webUiDir}/package.json").exists()) {
+        if (!webUiSkipLogged) {
+            logger.lifecycle("Skipping web UI build: web-ui package.json not found.")
+            webUiSkipLogged = true
+        }
+        return false
+    }
+    if (skipWebUi) {
+        if (!webUiSkipLogged) {
+            logger.lifecycle("Skipping web UI build: skipWebUi=true.")
+            webUiSkipLogged = true
+        }
+        return false
+    }
+    if (!npmAvailable()) {
+        if (!webUiSkipLogged) {
+            logger.warn("Skipping web UI build: npm not found. Install Node.js or set -PnpmCommand=/path/to/npm.")
+            webUiSkipLogged = true
+        }
+        return false
+    }
+    return true
+}
+
+tasks.register("webUiInstall", Exec) {
+    workingDir webUiDir
+    commandLine npmCommand, "install"
+    inputs.file(file("${webUiDir}/package.json"))
+    outputs.dir(file("${webUiDir}/node_modules"))
+    onlyIf { shouldRunWebUiTasks() }
+}
+
+tasks.register("webUiBuild", Exec) {
+    workingDir webUiDir
+    commandLine npmCommand, "run", "build"
+    dependsOn tasks.named("webUiInstall")
+    inputs.dir(file("${webUiDir}/src"))
+    inputs.file(file("${webUiDir}/index.html"))
+    inputs.file(file("${webUiDir}/vite.config.js"))
+    inputs.file(file("${webUiDir}/svelte.config.js"))
+    inputs.file(file("${webUiDir}/package.json"))
+    outputs.dir(file("src/main/resources/web-ui"))
+    onlyIf { shouldRunWebUiTasks() }
+}
+
+processResources.dependsOn tasks.named("webUiBuild")
+tasks.named("sourcesJar") {
+    dependsOn tasks.named("webUiBuild")
 }

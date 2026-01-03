@@ -5,6 +5,11 @@ tmp/
 /log/stickman.log
 .idea/*
 .gradle
+# Web UI tooling
+web-ui/node_modules/
+web-ui/.svelte-kit/
+web-ui/.vite/
+web-ui/dist/
 # Ignoring all build directories
 build/
 !plugins/studymaster-web/src/main/resources/react-studymaster/build
