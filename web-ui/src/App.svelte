@@ -26,6 +26,8 @@
   let statusMessage = "";
 
   const SCENE_DRAG_TYPE = "application/x-vsm-scene";
+  const BLOCK_DRAG_TYPE = "application/x-vsm-block";
+  const SCENE_LANGUAGE_ALL = "__all__";
 
   let projects = [];
   let selectedProjectId = localStorage.getItem("vsm_project_id") || "";
@@ -61,6 +63,7 @@
   let scriptEditorRef;
   let scriptScenes = [];
   let scriptScenesFilter = "";
+  let scriptScenesLanguage = SCENE_LANGUAGE_ALL;
   let scriptScenesError = "";
   let scriptScenesLoading = false;
   let scriptElements = { acticon: [], gesticon: [], visicon: [] };
@@ -177,7 +180,8 @@
   $: startNodes = sceneFlow?.nodes ? sceneFlow.nodes.filter((node) => node.isStart && !node.isHistory) : [];
   $: sceneFlowFrameColor = superNodeFrameColor(sceneFlow);
   $: sceneFlowFrameStyle = `--sf-frame-color:${sceneFlowFrameColor};`;
-  $: filteredScriptScenes = filterSceneLanguages(scriptScenes, scriptScenesFilter);
+  $: filteredScriptScenes = filterSceneLanguages(scriptScenes, scriptScenesFilter, scriptScenesLanguage);
+  $: sceneLanguageOptions = sceneLanguageOptionList(scriptScenes);
   $: filteredScriptElements = filterScriptElements(scriptElements, scriptElementsFilter);
 
   $: if (selectedNode && selectedNode.id !== nodeDraftId) {
@@ -876,6 +880,12 @@
     return `PlayScene("${escaped}")`;
   }
 
+  function startBlockDrag(event, payload) {
+    if (!event?.dataTransfer || !payload) return;
+    event.dataTransfer.setData(BLOCK_DRAG_TYPE, JSON.stringify(payload));
+    event.dataTransfer.effectAllowed = "copy";
+  }
+
   function startSceneDrag(event, group, language) {
     if (!event?.dataTransfer || !group?.name) return;
     const payload = {
@@ -955,6 +965,24 @@
     await addSceneCommandToNode(response.nodeId, payload.name, { selectNode: true });
   }
 
+  async function handleBlockDrop(payload) {
+    if (!payload || !selectedProjectId) return;
+    if (payload.kind === "node") {
+      await createSceneFlowNode(payload.nodeType || "Basic", { x: payload.x, y: payload.y });
+      return;
+    }
+    if (payload.kind === "comment") {
+      await createSceneFlowComment({ x: payload.x, y: payload.y });
+      return;
+    }
+    if (payload.kind === "edge") {
+      edgeCreateType = payload.edgeType || "EEDGE";
+      edgeCreateMode = true;
+      edgeCreateSourceId = payload.targetNodeId || "";
+      sceneFlowSelection = edgeCreateSourceId ? { type: "node", id: edgeCreateSourceId } : null;
+    }
+  }
+
   async function handleCommandSceneDrop(event) {
     const payload = parseSceneDrop(event);
     if (!payload?.name || !nodeEditorTarget?.id) return;
@@ -967,11 +995,33 @@
     return groups.reduce((total, group) => total + (group?.count ?? 0), 0);
   }
 
-  function filterSceneLanguages(languages, query) {
+  function sceneLanguageOptionList(languages) {
+    if (!Array.isArray(languages)) {
+      return [{ value: SCENE_LANGUAGE_ALL, label: "All" }];
+    }
+    const options = languages.map((lang) => {
+      const value = lang?.language ?? "";
+      return { value, label: sceneLanguageLabel(value) };
+    });
+    const unique = new Map();
+    options.forEach((opt) => {
+      if (!unique.has(opt.value)) {
+        unique.set(opt.value, opt);
+      }
+    });
+    return [{ value: SCENE_LANGUAGE_ALL, label: "All" }, ...Array.from(unique.values())];
+  }
+
+  function filterSceneLanguages(languages, query, languageFilter) {
     if (!Array.isArray(languages)) return [];
+    const langFilter = languageFilter ?? SCENE_LANGUAGE_ALL;
+    const filteredLanguages =
+      langFilter && langFilter !== SCENE_LANGUAGE_ALL
+        ? languages.filter((lang) => (lang?.language ?? "") === langFilter)
+        : languages;
     const needle = (query || "").trim().toLowerCase();
-    if (!needle) return languages;
-    return languages
+    if (!needle) return filteredLanguages;
+    return filteredLanguages
       .map((lang) => {
         const groups = Array.isArray(lang.groups) ? lang.groups : [];
         const filtered = groups.filter((group) => (group?.name || "").toLowerCase().includes(needle));
@@ -1722,9 +1772,9 @@
     }
   }
 
-  async function createSceneFlowNode(nodeType) {
+  async function createSceneFlowNode(nodeType, position = null) {
     if (!selectedProjectId) return;
-    const center = sceneFlowCenter();
+    const center = position || sceneFlowCenter();
     await runSceneFlowCommand("SceneFlow.Node.Create", {
       projectId: selectedProjectId,
       nodeType,
@@ -1733,9 +1783,9 @@
     });
   }
 
-  async function createSceneFlowComment() {
+  async function createSceneFlowComment(position = null) {
     if (!selectedProjectId) return;
-    const center = sceneFlowCenter();
+    const center = position || sceneFlowCenter();
     await runSceneFlowCommand("SceneFlow.Comment.Create", {
       projectId: selectedProjectId,
       x: center.x,
@@ -1759,6 +1809,19 @@
     if (!edgeCreateMode) {
       sceneFlowSelection = null;
     }
+  }
+
+  function startEdgeCreate(type) {
+    if (edgeCreateMode && edgeCreateType === type) {
+      edgeCreateMode = false;
+      edgeCreateSourceId = "";
+      sceneFlowSelection = null;
+      return;
+    }
+    edgeCreateType = type;
+    edgeCreateMode = true;
+    edgeCreateSourceId = "";
+    sceneFlowSelection = null;
   }
 
   async function handleEdgePick(nodeId) {
@@ -2324,277 +2387,6 @@
       </div>
     </section>
 
-    <section class="panel script-panel">
-      <header class="panel-title">
-        <h2>Scene Script</h2>
-        <div class="badge subtle">
-          {selectedProject ? selectedProject.name : "No project selected"}
-        </div>
-      </header>
-      <div class="script-toolbar">
-        <button type="button" class="ghost" on:click={() => loadScript(selectedProjectId)} disabled={!selectedProject}>
-          Reload
-        </button>
-        <button
-          type="button"
-          class="primary"
-          on:click={applyScript}
-          disabled={!selectedProject || !wsConnected || !scriptDirty}
-        >
-          Apply
-        </button>
-        <button
-          type="button"
-          class="ghost"
-          on:click={() => scriptEditorRef?.openSearch()}
-          disabled={!selectedProject}
-        >
-          Search
-        </button>
-        <button
-          type="button"
-          class="ghost"
-          on:click={() => scriptEditorRef?.jumpToPreviousDiagnostic()}
-          disabled={!selectedProject || scriptDiagnostics.length === 0}
-        >
-          Prev issue
-        </button>
-        <button
-          type="button"
-          class="ghost"
-          on:click={() => scriptEditorRef?.jumpToNextDiagnostic()}
-          disabled={!selectedProject || scriptDiagnostics.length === 0}
-        >
-          Next issue
-        </button>
-        {#if scriptVersion !== null}
-          <span class="muted">v{scriptVersion}</span>
-        {/if}
-        {#if scriptDirty}
-          <span class="muted">Unsaved edits</span>
-        {/if}
-      </div>
-      {#if !selectedProject}
-        <p class="muted">Select a project to edit the scene script.</p>
-      {:else}
-        <ScriptEditor
-          bind:this={scriptEditorRef}
-          value={scriptDraft}
-          readOnly={!selectedProject}
-          hasServerError={!scriptParseOk}
-          diagnostics={scriptDiagnostics}
-          onChange={(value) => {
-            scriptDraft = value;
-            scheduleScriptDiagnostics();
-          }}
-        />
-      {/if}
-      {#if scriptStatus}
-        <p class="status">{scriptStatus}</p>
-      {/if}
-      {#if scriptError}
-        <p class="error">{scriptError}</p>
-      {/if}
-    </section>
-
-    <section class="panel">
-      <header class="panel-title">
-        <h2>Scenes</h2>
-        <button
-          type="button"
-          class="ghost"
-          on:click={() => loadScriptScenes(selectedProjectId)}
-          disabled={!selectedProject}
-        >
-          Reload
-        </button>
-      </header>
-      <input
-        class="search"
-        placeholder="Filter scenes"
-        bind:value={scriptScenesFilter}
-        disabled={!selectedProject}
-      />
-      {#if !selectedProject}
-        <p class="muted">Select a project to view scenes.</p>
-      {:else if scriptScenesLoading}
-        <p class="muted">Loading scenes...</p>
-      {:else if scriptScenesError}
-        <p class="error">{scriptScenesError}</p>
-      {:else if filteredScriptScenes.length === 0}
-        <p class="muted">No scenes found.</p>
-      {:else}
-        <div class="scene-list">
-          {#each filteredScriptScenes as lang}
-            <div class="scene-group">
-              <div class="scene-group-title">
-                <span>{sceneLanguageLabel(lang.language)}</span>
-                <span class="scene-count">{sceneGroupTotal(lang.groups)}</span>
-              </div>
-              <div class="scene-items" role="list">
-                {#each lang.groups as group}
-                  <div
-                    class="scene-item"
-                    role="listitem"
-                  >
-                    <div class="scene-item-main">
-                      <span
-                        class="scene-drag-handle"
-                        draggable="true"
-                        on:dragstart={(event) => startSceneDrag(event, group, lang.language)}
-                        role="button"
-                        tabindex="0"
-                        aria-label={`Drag scene ${group.name}`}
-                        title="Drag scene"
-                      >
-                        <svg
-                          class="scene-drag-icon"
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke-width="1.5"
-                          stroke="currentColor"
-                          aria-hidden="true"
-                        >
-                          <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"
-                          />
-                        </svg>
-                      </span>
-                      <span class="scene-name">{group.name}</span>
-                    </div>
-                    <span class="scene-count">{group.count}</span>
-                  </div>
-                {/each}
-              </div>
-            </div>
-          {/each}
-        </div>
-      {/if}
-    </section>
-
-    <section class="panel">
-      <header class="panel-title">
-        <h2>Script Elements</h2>
-        <button
-          type="button"
-          class="ghost"
-          on:click={() => loadScriptElements(selectedProjectId)}
-          disabled={!selectedProject}
-        >
-          Reload
-        </button>
-      </header>
-      <input
-        class="search"
-        placeholder="Filter elements"
-        bind:value={scriptElementsFilter}
-        disabled={!selectedProject}
-      />
-      {#if !selectedProject}
-        <p class="muted">Select a project to view script elements.</p>
-      {:else if scriptElementsLoading}
-        <p class="muted">Loading script elements...</p>
-      {:else if scriptElementsError}
-        <p class="error">{scriptElementsError}</p>
-      {:else}
-        <div class="element-list">
-          <details class="element-category" open>
-            <summary>Acticon ({countActicon(filteredScriptElements.acticon)})</summary>
-            {#if filteredScriptElements.acticon.length === 0}
-              <p class="muted">No actions found.</p>
-            {:else}
-              <div class="element-items">
-                {#each filteredScriptElements.acticon as action}
-                  <div class="element-row">
-                    <div class="element-main">
-                      <span class="element-name">{action?.name || "Action"}</span>
-                      {#if action?.script}
-                        <span class="element-script" title={action.script}>{action.script}</span>
-                      {/if}
-                    </div>
-                    <button
-                      type="button"
-                      class="ghost"
-                      on:click={() => insertScriptSnippet(action?.script)}
-                      disabled={!action?.script}
-                    >
-                      Insert
-                    </button>
-                  </div>
-                {/each}
-              </div>
-            {/if}
-          </details>
-          <details class="element-category">
-            <summary>Gesticon ({countGesticon(filteredScriptElements.gesticon)})</summary>
-            {#if filteredScriptElements.gesticon.length === 0}
-              <p class="muted">No gestures found.</p>
-            {:else}
-              {#each filteredScriptElements.gesticon as agent}
-                <div class="element-group">
-                  <div class="element-group-title">
-                    <span>{agent?.agent || "Agent"}</span>
-                    <span class="scene-count">{agent?.gestures?.length || 0}</span>
-                  </div>
-                  <div class="element-items">
-                    {#each agent?.gestures || [] as gesture}
-                      {@const meta = gestureMeta(gesture)}
-                      <div class="element-row">
-                        <div class="element-main">
-                          <span class="element-name">{gestureLabel(gesture)}</span>
-                          {#if meta}
-                            <span class="element-meta">{meta}</span>
-                          {/if}
-                        </div>
-                        <button
-                          type="button"
-                          class="ghost"
-                          on:click={() => insertScriptSnippet(gesture?.script)}
-                          disabled={!gesture?.script}
-                        >
-                          Insert
-                        </button>
-                      </div>
-                    {/each}
-                  </div>
-                </div>
-              {/each}
-            {/if}
-          </details>
-          <details class="element-category">
-            <summary>Visicon ({countVisicon(filteredScriptElements.visicon)})</summary>
-            {#if filteredScriptElements.visicon.length === 0}
-              <p class="muted">No visemes found.</p>
-            {:else}
-              {#each filteredScriptElements.visicon as agent}
-                <div class="element-group">
-                  <div class="element-group-title">
-                    <span>{agent?.agent || "Agent"}</span>
-                    <span class="scene-count">{agent?.visemes?.length || 0}</span>
-                  </div>
-                  <div class="element-items">
-                    {#each agent?.visemes || [] as viseme}
-                      <div class="element-row">
-                        <div class="element-main">
-                          <span class="element-name">{viseme?.key || "Viseme"}</span>
-                          {#if viseme?.value}
-                            <span class="element-meta">{viseme.value}</span>
-                          {/if}
-                        </div>
-                      </div>
-                    {/each}
-                  </div>
-                </div>
-              {/each}
-            {/if}
-          </details>
-        </div>
-      {/if}
-    </section>
-
     <section class="panel sceneflow-panel">
       <header class="panel-title">
         <h2>SceneFlow</h2>
@@ -2719,6 +2511,247 @@
         <p class="muted">Select a project to view the SceneFlow graph.</p>
       {:else if sceneFlow}
         <div class="sceneflow-layout">
+          <aside class="sceneflow-blocks">
+            <div class="blocks-section blocks-section--icons">
+              <div class="blocks-grid blocks-grid--icons">
+                <button
+                  type="button"
+                  class="block-icon"
+                  title="Supernode"
+                  aria-label="Supernode"
+                  draggable="true"
+                  on:click={() => createSceneFlowNode("Super")}
+                  on:dragstart={(event) => startBlockDrag(event, { kind: "node", nodeType: "Super" })}
+                  disabled={!selectedProject || !wsConnected || sceneFlowBusy}
+                >
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <rect x="4" y="4" width="16" height="16" rx="2" />
+                    <rect x="8" y="8" width="8" height="8" rx="1" />
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  class="block-icon"
+                  title="Node"
+                  aria-label="Node"
+                  draggable="true"
+                  on:click={() => createSceneFlowNode("Basic")}
+                  on:dragstart={(event) => startBlockDrag(event, { kind: "node", nodeType: "Basic" })}
+                  disabled={!selectedProject || !wsConnected || sceneFlowBusy}
+                >
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <circle cx="12" cy="12" r="7" />
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  class="block-icon"
+                  title="Comment"
+                  aria-label="Comment"
+                  draggable="true"
+                  on:click={createSceneFlowComment}
+                  on:dragstart={(event) => startBlockDrag(event, { kind: "comment" })}
+                  disabled={!selectedProject || !wsConnected || sceneFlowBusy}
+                >
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M6 6h12a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H10l-4 3v-3H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z" />
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  class="block-icon"
+                  class:active={edgeCreateMode && edgeCreateType === "EEDGE"}
+                  title="Epsilon edge"
+                  aria-label="Epsilon edge"
+                  draggable="true"
+                  on:click={() => startEdgeCreate("EEDGE")}
+                  on:dragstart={(event) => startBlockDrag(event, { kind: "edge", edgeType: "EEDGE" })}
+                  disabled={!sceneFlow || !wsConnected || sceneFlowBusy}
+                >
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M4 12h11" />
+                    <path d="M11 7l5 5-5 5" />
+                    <text class="block-icon-text" x="5" y="9">E</text>
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  class="block-icon"
+                  class:active={edgeCreateMode && edgeCreateType === "PEDGE"}
+                  title="Probabilistic edge"
+                  aria-label="Probabilistic edge"
+                  draggable="true"
+                  on:click={() => startEdgeCreate("PEDGE")}
+                  on:dragstart={(event) => startBlockDrag(event, { kind: "edge", edgeType: "PEDGE" })}
+                  disabled={!sceneFlow || !wsConnected || sceneFlowBusy}
+                >
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M4 12h11" />
+                    <path d="M11 7l5 5-5 5" />
+                    <text class="block-icon-text" x="5" y="9">P</text>
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  class="block-icon"
+                  class:active={edgeCreateMode && edgeCreateType === "FEDGE"}
+                  title="Fork edge"
+                  aria-label="Fork edge"
+                  draggable="true"
+                  on:click={() => startEdgeCreate("FEDGE")}
+                  on:dragstart={(event) => startBlockDrag(event, { kind: "edge", edgeType: "FEDGE" })}
+                  disabled={!sceneFlow || !wsConnected || sceneFlowBusy}
+                >
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M4 12h11" />
+                    <path d="M11 7l5 5-5 5" />
+                    <text class="block-icon-text" x="5" y="9">F</text>
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  class="block-icon"
+                  class:active={edgeCreateMode && edgeCreateType === "CEDGE"}
+                  title="Conditional edge"
+                  aria-label="Conditional edge"
+                  draggable="true"
+                  on:click={() => startEdgeCreate("CEDGE")}
+                  on:dragstart={(event) => startBlockDrag(event, { kind: "edge", edgeType: "CEDGE" })}
+                  disabled={!sceneFlow || !wsConnected || sceneFlowBusy}
+                >
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M4 12h11" />
+                    <path d="M11 7l5 5-5 5" />
+                    <text class="block-icon-text" x="5" y="9">C</text>
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  class="block-icon"
+                  class:active={edgeCreateMode && edgeCreateType === "TEDGE"}
+                  title="Timeout edge"
+                  aria-label="Timeout edge"
+                  draggable="true"
+                  on:click={() => startEdgeCreate("TEDGE")}
+                  on:dragstart={(event) => startBlockDrag(event, { kind: "edge", edgeType: "TEDGE" })}
+                  disabled={!sceneFlow || !wsConnected || sceneFlowBusy}
+                >
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M4 12h11" />
+                    <path d="M11 7l5 5-5 5" />
+                    <text class="block-icon-text" x="5" y="9">T</text>
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  class="block-icon"
+                  class:active={edgeCreateMode && edgeCreateType === "IEDGE"}
+                  title="Interruptive edge"
+                  aria-label="Interruptive edge"
+                  draggable="true"
+                  on:click={() => startEdgeCreate("IEDGE")}
+                  on:dragstart={(event) => startBlockDrag(event, { kind: "edge", edgeType: "IEDGE" })}
+                  disabled={!sceneFlow || !wsConnected || sceneFlowBusy}
+                >
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M4 12h11" />
+                    <path d="M11 7l5 5-5 5" />
+                    <text class="block-icon-text" x="5" y="9">I</text>
+                  </svg>
+                </button>
+              </div>
+              {#if edgeCreateMode}
+                <p class="muted edge-hint">
+                  {edgeCreateSourceId
+                    ? `Edge ${edgeTypeLabel(edgeCreateType)}: pick target node`
+                    : `Edge ${edgeTypeLabel(edgeCreateType)}: pick source node`}
+                </p>
+              {/if}
+            </div>
+            <div class="blocks-section blocks-section--scenes">
+              <div class="block-section-title">Scenes</div>
+              <div class="scene-selector">
+                <select
+                  bind:value={scriptScenesLanguage}
+                  disabled={!selectedProject}
+                  aria-label="Scene language"
+                >
+                  {#each sceneLanguageOptions as option}
+                    <option value={option.value}>{option.label}</option>
+                  {/each}
+                </select>
+                <button
+                  type="button"
+                  class="ghost"
+                  on:click={() => loadScriptScenes(selectedProjectId)}
+                  disabled={!selectedProject}
+                >
+                  Reload
+                </button>
+              </div>
+              <input
+                class="search"
+                placeholder="Filter scenes"
+                bind:value={scriptScenesFilter}
+                disabled={!selectedProject}
+              />
+              {#if !selectedProject}
+                <p class="muted">Select a project to view scenes.</p>
+              {:else if scriptScenesLoading}
+                <p class="muted">Loading scenes...</p>
+              {:else if scriptScenesError}
+                <p class="error">{scriptScenesError}</p>
+              {:else if filteredScriptScenes.length === 0}
+                <p class="muted">No scenes found.</p>
+              {:else}
+                <div class="scene-list">
+                  {#each filteredScriptScenes as lang}
+                    <div class="scene-group">
+                      <div class="scene-group-title">
+                        <span>{sceneLanguageLabel(lang.language)}</span>
+                        <span class="scene-count">{sceneGroupTotal(lang.groups)}</span>
+                      </div>
+                      <div class="scene-items" role="list">
+                        {#each lang.groups as group}
+                          <div class="scene-item" role="listitem">
+                            <div class="scene-item-main">
+                              <span
+                                class="scene-drag-handle"
+                                draggable="true"
+                                on:dragstart={(event) => startSceneDrag(event, group, lang.language)}
+                                role="button"
+                                tabindex="0"
+                                aria-label={`Drag scene ${group.name}`}
+                                title="Drag scene"
+                              >
+                                <svg
+                                  class="scene-drag-icon"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                  stroke-width="1.5"
+                                  stroke="currentColor"
+                                  aria-hidden="true"
+                                >
+                                  <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"
+                                  />
+                                </svg>
+                              </span>
+                              <span class="scene-name">{group.name}</span>
+                            </div>
+                            <span class="scene-count">{group.count}</span>
+                          </div>
+                        {/each}
+                      </div>
+                    </div>
+                  {/each}
+                </div>
+              {/if}
+            </div>
+          </aside>
           <div class="sceneflow-container" style={sceneFlowFrameStyle}>
             <div class="sceneflow-scroll">
               <SceneFlowView
@@ -2741,6 +2774,8 @@
                 onEdgePick={handleEdgePick}
                 onSceneDrop={handleSceneFlowSceneDrop}
                 sceneDragType={SCENE_DRAG_TYPE}
+                onBlockDrop={handleBlockDrop}
+                blockDragType={BLOCK_DRAG_TYPE}
                 showCommandText={sceneFlowShowCmdText}
                 onCommandOpen={openCmdDialog}
               />
@@ -3153,13 +3188,85 @@
               </div>
             {/if}
           </aside>
-          <p class="muted sceneflow-hint">Drag to pan, scroll to zoom, drag nodes/comments to move, double click a super node to drill down.</p>
         </div>
       {:else}
         <p class="muted">No SceneFlow data loaded yet.</p>
       {/if}
       {#if sceneFlowError}
         <p class="error">{sceneFlowError}</p>
+      {/if}
+    </section>
+
+    <section class="panel script-panel panel-wide">
+      <header class="panel-title">
+        <h2>Scene Script</h2>
+        <div class="badge subtle">
+          {selectedProject ? selectedProject.name : "No project selected"}
+        </div>
+      </header>
+      <div class="script-toolbar">
+        <button type="button" class="ghost" on:click={() => loadScript(selectedProjectId)} disabled={!selectedProject}>
+          Reload
+        </button>
+        <button
+          type="button"
+          class="primary"
+          on:click={applyScript}
+          disabled={!selectedProject || !wsConnected || !scriptDirty}
+        >
+          Apply
+        </button>
+        <button
+          type="button"
+          class="ghost"
+          on:click={() => scriptEditorRef?.openSearch()}
+          disabled={!selectedProject}
+        >
+          Search
+        </button>
+        <button
+          type="button"
+          class="ghost"
+          on:click={() => scriptEditorRef?.jumpToPreviousDiagnostic()}
+          disabled={!selectedProject || scriptDiagnostics.length === 0}
+        >
+          Prev issue
+        </button>
+        <button
+          type="button"
+          class="ghost"
+          on:click={() => scriptEditorRef?.jumpToNextDiagnostic()}
+          disabled={!selectedProject || scriptDiagnostics.length === 0}
+        >
+          Next issue
+        </button>
+        {#if scriptVersion !== null}
+          <span class="muted">v{scriptVersion}</span>
+        {/if}
+        {#if scriptDirty}
+          <span class="muted">Unsaved edits</span>
+        {/if}
+      </div>
+      {#if !selectedProject}
+        <p class="muted">Select a project to edit the scene script.</p>
+      {:else}
+        <ScriptEditor
+          bind:this={scriptEditorRef}
+          value={scriptDraft}
+          readOnly={!selectedProject}
+          hasServerError={!scriptParseOk}
+          diagnostics={scriptDiagnostics}
+          onChange={(value) => {
+            scriptDraft = value;
+            scheduleScriptDiagnostics();
+          }}
+        />
+      {/if}
+      {#if scriptStatus}
+        <p class="status">{scriptStatus}</p>
+      {/if}
+      {#if scriptError}
+        <p class="error">{scriptError}</p>
       {/if}
     </section>
   </div>

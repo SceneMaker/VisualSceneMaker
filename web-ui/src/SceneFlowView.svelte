@@ -1,5 +1,5 @@
 <script>
-  import { tick } from "svelte";
+  import { onDestroy, onMount, tick } from "svelte";
   export let snapshot = null;
   export let onNavigate = null;
   export let onNodeMove = null;
@@ -12,6 +12,8 @@
   export let onEdgePick = null;
   export let onSceneDrop = null;
   export let sceneDragType = "application/x-vsm-scene";
+  export let onBlockDrop = null;
+  export let blockDragType = "application/x-vsm-block";
   export let showCommandText = true;
   export let onCommandOpen = null;
   export let worldBox = null;
@@ -22,6 +24,7 @@
 
   const DEFAULT_NODE_SIZE = 90;
   const DEFAULT_FONT_SIZE = 16;
+  const MIN_WORLD_COORD = 1;
   const COLORS = {
     node: "#7d7d7d",
     history: "#ffffff",
@@ -84,10 +87,19 @@
   $: gridY = Math.max(8, baseNodeSize * gridScaleY);
   $: gridOriginX = gridNodeWidth / 2 + gridNodeWidth / 3;
   $: gridOriginY = gridNodeHeight / 2 + gridNodeHeight / 3;
-  $: gridScreenX = gridX * zoomLevel;
-  $: gridScreenY = gridY * zoomLevel;
-  $: gridOffsetX = (gridOriginX - ((baseBox && Number.isFinite(baseBox.x)) ? baseBox.x : 0) - panX - gridX / 2) * zoomLevel;
-  $: gridOffsetY = (gridOriginY - ((baseBox && Number.isFinite(baseBox.y)) ? baseBox.y : 0) - panY - gridY / 2) * zoomLevel;
+  $: viewWidth = baseBox ? baseBox.width / zoomLevel : 1;
+  $: viewHeight = baseBox ? baseBox.height / zoomLevel : 1;
+  $: scaleX = viewWidth ? canvasWidth / viewWidth : zoomLevel;
+  $: scaleY = viewHeight ? canvasHeight / viewHeight : zoomLevel;
+  $: uniformScale = Math.min(scaleX, scaleY);
+  $: viewOffsetX = (canvasWidth - viewWidth * uniformScale) / 2;
+  $: viewOffsetY = (canvasHeight - viewHeight * uniformScale) / 2;
+  $: gridScreenX = gridX * uniformScale;
+  $: gridScreenY = gridY * uniformScale;
+  $: viewOriginX = ((baseBox && Number.isFinite(baseBox.x)) ? baseBox.x : 0) + panX;
+  $: viewOriginY = ((baseBox && Number.isFinite(baseBox.y)) ? baseBox.y : 0) + panY;
+  $: gridOffsetX = (gridOriginX - viewOriginX - gridX / 2) * uniformScale + viewOffsetX;
+  $: gridOffsetY = (gridOriginY - viewOriginY - gridY / 2) * uniformScale + viewOffsetY;
   $: svgStyle = [
     `--sf-node-stroke:${nodeStrokeWidth.toFixed(2)}px`,
     `--sf-edge-stroke:${edgeStrokeWidth.toFixed(2)}px`,
@@ -101,11 +113,17 @@
     `--sf-comment-text:${COLORS.commentText}`
   ].join(";");
 
+  let viewportSize = { width: 0, height: 0 };
+  let viewportObserver = null;
+
   $: bounds = computeBounds(nodes, edges, comments, showCommandText);
   $: baseBox = bounds.box;
   $: viewBox = viewBoxString(baseBox, zoomLevel, panX, panY);
-  $: canvasWidth = Math.max(minCanvasWidth, bounds.width);
-  $: canvasHeight = Math.max(minCanvasHeight, bounds.height);
+  $: canvasWidth = Math.max(minCanvasWidth, bounds.width, viewportSize.width || 0);
+  $: canvasHeight = Math.max(minCanvasHeight, bounds.height, viewportSize.height || 0);
+  $: if (baseBox) {
+    clampPanToNonNegative();
+  }
 
   let svgEl;
   let stageEl;
@@ -113,6 +131,7 @@
   let panX = 0;
   let panY = 0;
   let isPanning = false;
+  let shiftDown = false;
   let selectedNodeId = null;
   let selectedEdgeId = null;
   let selectedCommentId = null;
@@ -171,6 +190,32 @@
   $: commentEditorStyle = editingCommentScreenRect
     ? `left:${editingCommentScreenRect.x}px; top:${editingCommentScreenRect.y}px; width:${editingCommentScreenRect.w}px; height:${editingCommentScreenRect.h}px;`
     : "";
+
+  function updateViewportSize() {
+    const host = stageEl?.parentElement;
+    if (!host) return;
+    const rect = host.getBoundingClientRect();
+    if (!rect.width || !rect.height) return;
+    viewportSize = { width: rect.width, height: rect.height };
+  }
+
+  onMount(async () => {
+    await tick();
+    updateViewportSize();
+    const host = stageEl?.parentElement;
+    if (!host || typeof ResizeObserver === "undefined") return;
+    viewportObserver = new ResizeObserver(() => {
+      updateViewportSize();
+    });
+    viewportObserver.observe(host);
+  });
+
+  onDestroy(() => {
+    if (viewportObserver) {
+      viewportObserver.disconnect();
+      viewportObserver = null;
+    }
+  });
 
   $: if (selection && snapshot) {
     const exists =
@@ -242,10 +287,10 @@
 
     const width = maxX - minX;
     const height = maxY - minY;
-    const boxX = minX - padding;
-    const boxY = minY - padding;
-    const boxW = Math.max(200, width + padding * 2);
-    const boxH = Math.max(200, height + padding * 2);
+    const boxX = 0;
+    const boxY = 0;
+    const boxW = Math.max(200, maxX + padding - boxX);
+    const boxH = Math.max(200, maxY + padding - boxY);
     return {
       box: {
         x: boxX,
@@ -326,6 +371,7 @@
       const height = baseBox.height / zoomLevel;
       panX = centerX - width / 2 - baseBox.x;
       panY = centerY - height / 2 - baseBox.y;
+      clampPanToNonNegative();
       return;
     }
     const relX = clamp(anchor.relX ?? 0.5, 0, 1);
@@ -337,6 +383,7 @@
     const newY = anchor.y - relY * height;
     panX = newX - baseBox.x;
     panY = newY - baseBox.y;
+    clampPanToNonNegative();
   }
 
   export function zoomIn() {
@@ -351,6 +398,7 @@
     zoomLevel = 1;
     panX = 0;
     panY = 0;
+    clampPanToNonNegative();
   }
 
   export function centerOn(x, y) {
@@ -359,6 +407,19 @@
     const height = baseBox.height / zoomLevel;
     panX = x - width / 2 - baseBox.x;
     panY = y - height / 2 - baseBox.y;
+    clampPanToNonNegative();
+  }
+
+  function clampPanToNonNegative() {
+    if (!baseBox) return;
+    const minX = -baseBox.x;
+    const minY = -baseBox.y;
+    if (Number.isFinite(minX)) {
+      panX = Math.max(panX, minX);
+    }
+    if (Number.isFinite(minY)) {
+      panY = Math.max(panY, minY);
+    }
   }
 
   function focusStage() {
@@ -407,10 +468,20 @@
         onRedo();
       }
     }
+    if (key === "Shift") {
+      shiftDown = true;
+    }
+  }
+
+  function handleStageKeyup(event) {
+    if (event.key === "Shift") {
+      shiftDown = false;
+    }
   }
 
   function startPan(event) {
     if (event.button !== 0 || !svgEl) return;
+    if (!event.shiftKey) return;
     focusStage();
     if (editingCommentId && !event.target?.closest?.(".comment-editor")) {
       commitCommentEdit();
@@ -441,6 +512,7 @@
     const dy = (event.clientY - panStart.y) * scaleY;
     panX = panOrigin.x - dx;
     panY = panOrigin.y - dy;
+    clampPanToNonNegative();
   }
 
   function endPan(event) {
@@ -460,6 +532,10 @@
     if (editingCommentId) {
       commitCommentEdit();
     }
+    if (!event.shiftKey) {
+      return;
+    }
+    event.preventDefault();
     if (!svgEl) {
       setZoom(zoomLevel);
       return;
@@ -1210,6 +1286,18 @@
     return null;
   }
 
+  function parseBlockDrop(event) {
+    const data = event?.dataTransfer;
+    if (!data) return null;
+    const raw = data.getData(blockDragType);
+    if (!raw) return null;
+    try {
+      return JSON.parse(raw);
+    } catch (err) {
+      return null;
+    }
+  }
+
   function findNodeAt(world) {
     if (!world) return null;
     for (let i = nodes.length - 1; i >= 0; i -= 1) {
@@ -1234,8 +1322,13 @@
     return types.includes(sceneDragType) || types.includes("text/plain");
   }
 
+  function isBlockDrag(event) {
+    const types = Array.from(event?.dataTransfer?.types || []);
+    return types.includes(blockDragType);
+  }
+
   function handleSceneDragOver(event) {
-    if (!isSceneDrag(event)) return;
+    if (!isSceneDrag(event) && !isBlockDrag(event)) return;
     event.preventDefault();
     if (event.dataTransfer) {
       event.dataTransfer.dropEffect = "copy";
@@ -1243,17 +1336,35 @@
   }
 
   function handleSceneDrop(event) {
+    if (isBlockDrag(event)) {
+      const payload = parseBlockDrop(event);
+      if (!payload) return;
+      event.preventDefault();
+      const world = eventToWorld(event);
+      const clamped = clampWorldPoint(world);
+      const target = findNodeAt(world);
+      if (typeof onBlockDrop === "function") {
+        onBlockDrop({
+          ...payload,
+          x: clamped.x,
+          y: clamped.y,
+          targetNodeId: target?.id || ""
+        });
+      }
+      return;
+    }
     const payload = parseSceneDrop(event);
     if (!payload || !payload.name) return;
     event.preventDefault();
     const world = eventToWorld(event);
+    const clamped = clampWorldPoint(world);
     const target = findNodeAt(world);
     if (typeof onSceneDrop === "function") {
       onSceneDrop({
         name: payload.name,
         language: payload.language || "",
-        x: world.x,
-        y: world.y,
+        x: clamped.x,
+        y: clamped.y,
         targetNodeId: target?.id || ""
       });
     }
@@ -1315,6 +1426,14 @@
     return {
       x: view.x + relX * view.width,
       y: view.y + relY * view.height
+    };
+  }
+
+  function clampWorldPoint(point) {
+    if (!point) return { x: MIN_WORLD_COORD, y: MIN_WORLD_COORD };
+    return {
+      x: Math.max(MIN_WORLD_COORD, point.x ?? 0),
+      y: Math.max(MIN_WORLD_COORD, point.y ?? 0)
     };
   }
 
@@ -1474,10 +1593,17 @@
     }
     const nextX = dragState.originX + dx;
     const nextY = dragState.originY + dy;
+    let clampedX = nextX;
+    let clampedY = nextY;
+    if (dragState.type === "node" || dragState.type === "comment") {
+      const clamped = clampWorldPoint({ x: nextX, y: nextY });
+      clampedX = clamped.x;
+      clampedY = clamped.y;
+    }
     dragState = {
       ...dragState,
-      x: nextX,
-      y: nextY,
+      x: clampedX,
+      y: clampedY,
       moved: dragState.moved || Math.hypot(dx, dy) > dragThreshold
     };
   }
@@ -1562,15 +1688,18 @@
     on:pointercancel={endPan}
     on:dragover={handleSceneDragOver}
     on:drop={handleSceneDrop}
-    on:wheel|preventDefault={handleWheel}
+    on:wheel={handleWheel}
     on:click={clearSelection}
     on:keydown={handleStageKeydown}
+    on:keyup={handleStageKeyup}
+    on:blur={() => (shiftDown = false)}
   tabindex="-1"
   role="presentation"
 >
   <svg
     class="sceneflow-canvas"
     class:panning={isPanning}
+    class:shift-pan={shiftDown && !isPanning}
     class:dragging={dragState}
     viewBox={viewBox}
     width={canvasWidth}
@@ -1803,7 +1932,13 @@
         {/if}
           {#if cmdLayout}
           {#if showCommandText}
-            <g class="node-commands" on:dblclick|stopPropagation={() => handleCommandOpen(node)}>
+            <g
+              class="node-commands"
+              role="button"
+              tabindex="0"
+              aria-label={`Edit commands for ${node?.name || node?.id || "node"}`}
+              on:dblclick|stopPropagation={() => handleCommandOpen(node)}
+            >
               <rect
                 class="node-command-box"
                 x={cmdLayout.x}
@@ -1827,7 +1962,13 @@
               </text>
             </g>
           {:else}
-            <g class="node-command-dots" on:dblclick|stopPropagation={() => handleCommandOpen(node)}>
+            <g
+              class="node-command-dots"
+              role="button"
+              tabindex="0"
+              aria-label={`Edit commands for ${node?.name || node?.id || "node"}`}
+              on:dblclick|stopPropagation={() => handleCommandOpen(node)}
+            >
               {#each cmdLayout.dots as dot}
                 <circle class="node-command-dot" cx={dot.cx} cy={dot.cy} r={dot.r} />
               {/each}
