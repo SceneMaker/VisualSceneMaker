@@ -50,6 +50,7 @@
     paused: "Paused",
     stopped: "Stopped"
   };
+  const EDGE_ACTIVITY_MS = 650;
 
   function clampSceneFlowZoom(value) {
     return Math.min(SCENEFLOW_ZOOM_MAX, Math.max(SCENEFLOW_ZOOM_MIN, value));
@@ -372,6 +373,13 @@
   let runtimeLoading = false;
   let lastRuntimeProjectId = "";
   let runtimeValues = {};
+  let runtimeInitialValues = {};
+  let runtimeInitialProjectId = "";
+  let runtimeInitialState = "stopped";
+  let activityNodeCounts = new Map();
+  let activityEdgeHits = new Map();
+  let activityNodeIds = [];
+  let activityEdgeList = [];
   let varBadgeState = loadVarBadgeState();
   let varBadgeDrag = null;
   let sceneFlowContainerEl;
@@ -521,6 +529,8 @@
   $: runtimeLocals = Array.isArray(runtimeInfo?.localVariables) ? runtimeInfo.localVariables : [];
   $: runtimeRootVars = runtimeGlobals.length ? runtimeGlobals : runtimeLocals;
   $: runtimeDisplayGlobals = isSceneFlowRoot ? runtimeRootVars : runtimeGlobals;
+  $: activityNodeIds = Array.from(activityNodeCounts.keys());
+  $: activityEdgeList = Array.from(activityEdgeHits.values());
   $: runtimeCanPlay = wsConnected && !!selectedProjectId && (runtimeState === "stopped" || runtimeState === "paused");
   $: runtimeCanPause = wsConnected && !!selectedProjectId && runtimeState === "running";
   $: runtimeCanStop = wsConnected && !!selectedProjectId && runtimeState !== "stopped";
@@ -754,6 +764,11 @@
     runtimeLoading = false;
     lastRuntimeProjectId = "";
     runtimeValues = {};
+    runtimeInitialValues = {};
+    runtimeInitialProjectId = "";
+    runtimeInitialState = "stopped";
+    activityNodeCounts = new Map();
+    activityEdgeHits = new Map();
   }
 
   async function connectAll() {
@@ -1023,6 +1038,7 @@
     sceneFlowSelection = null;
     sceneFlowMultiSelection = [];
     edgeCreateSourceId = "";
+    clearSceneFlowActivity();
     try {
       const query = superNodeId ? `?superNodeId=${encodeURIComponent(superNodeId)}` : "";
       const data = await apiGet(`/api/v1/projects/${projectId}/sceneflow${query}`);
@@ -1044,12 +1060,42 @@
       const data = await apiGet(`/api/v1/projects/${projectId}/runtime`);
       runtimeInfo = data;
       applyRuntimeValuesFromData(data);
+      captureRuntimeInitialValues(data, projectId);
     } catch (err) {
       runtimeError = err.message || "Failed to load runtime.";
       runtimeInfo = null;
     } finally {
       runtimeLoading = false;
     }
+  }
+
+  function captureRuntimeInitialValues(data, projectId) {
+    if (!data || !projectId) return;
+    if (runtimeInitialProjectId !== projectId) {
+      runtimeInitialProjectId = projectId;
+      runtimeInitialState = "stopped";
+      runtimeInitialValues = {};
+    }
+    const state = data.state || "stopped";
+    if (state === "stopped") {
+      runtimeInitialState = state;
+      runtimeInitialValues = {};
+      return;
+    }
+    if (runtimeInitialState !== "stopped" && Object.keys(runtimeInitialValues).length) {
+      runtimeInitialState = state;
+      return;
+    }
+    const updates = {};
+    const globals = Array.isArray(data.globalVariables) ? data.globalVariables : [];
+    const locals = Array.isArray(data.localVariables) ? data.localVariables : [];
+    for (const entry of [...globals, ...locals]) {
+      const name = (entry?.name || "").trim();
+      if (!name || entry?.value === undefined || entry?.value === null) continue;
+      updates[name] = normalizeRuntimeValue(entry.value);
+    }
+    runtimeInitialValues = updates;
+    runtimeInitialState = state;
   }
 
   function applyRuntimeValuesFromData(data) {
@@ -1079,6 +1125,82 @@
     }
   }
 
+  function clearSceneFlowActivity() {
+    activityNodeCounts = new Map();
+    activityEdgeHits = new Map();
+  }
+
+  function activityProjectMatches(payload) {
+    const projectId = payload?.projectId;
+    return !projectId || projectId === selectedProjectId;
+  }
+
+  function resolveActivityNodeId(payload) {
+    if (!sceneFlow?.nodes) return "";
+    const nodeId = (payload?.nodeId || "").trim();
+    const parentId = (payload?.parentId || "").trim();
+    const visible = new Set(sceneFlow.nodes.map((node) => node.id));
+    if (nodeId && visible.has(nodeId)) return nodeId;
+    if (parentId && visible.has(parentId)) return parentId;
+    return "";
+  }
+
+  function resolveActivityEdgeId(payload) {
+    if (!sceneFlow?.edges) return "";
+    const edgeId = (payload?.edgeId || "").trim();
+    if (edgeId && sceneFlow.edges.some((edge) => edge.id === edgeId)) {
+      return edgeId;
+    }
+    const sourceId = (payload?.sourceId || "").trim();
+    const targetId = (payload?.targetId || "").trim();
+    const edgeType = (payload?.edgeType || "").trim();
+    if (!sourceId || !targetId) return "";
+    const match = sceneFlow.edges.find((edge) => {
+      if (edge.sourceId !== sourceId || edge.targetId !== targetId) {
+        return false;
+      }
+      if (!edgeType) return true;
+      return (edge.type || "") === edgeType;
+    });
+    return match?.id || "";
+  }
+
+  function incrementActivityNode(nodeId) {
+    if (!nodeId) return;
+    const next = new Map(activityNodeCounts);
+    const count = next.get(nodeId) || 0;
+    next.set(nodeId, count + 1);
+    activityNodeCounts = next;
+  }
+
+  function decrementActivityNode(nodeId) {
+    if (!nodeId) return;
+    const next = new Map(activityNodeCounts);
+    const count = next.get(nodeId);
+    if (!count) return;
+    if (count <= 1) {
+      next.delete(nodeId);
+    } else {
+      next.set(nodeId, count - 1);
+    }
+    activityNodeCounts = next;
+  }
+
+  function registerEdgeActivity(edgeId) {
+    if (!edgeId) return;
+    const ts = Date.now();
+    const next = new Map(activityEdgeHits);
+    next.set(edgeId, { id: edgeId, ts });
+    activityEdgeHits = next;
+    setTimeout(() => {
+      const current = activityEdgeHits.get(edgeId);
+      if (!current || current.ts !== ts) return;
+      const updated = new Map(activityEdgeHits);
+      updated.delete(edgeId);
+      activityEdgeHits = updated;
+    }, EDGE_ACTIVITY_MS);
+  }
+
   function refreshRuntimeVars(target) {
     if (!selectedProjectId) return;
     if (target?.type === "Super") {
@@ -1097,6 +1219,7 @@
     sceneFlowSelection = null;
     sceneFlowMultiSelection = [];
     edgeCreateSourceId = "";
+    clearSceneFlowActivity();
     try {
       const data = await apiPost(`/api/v1/projects/${selectedProjectId}/sceneflow/navigate`, {
         superNodeId: targetId
@@ -1268,6 +1391,35 @@
           }
         }
       }
+      if (message.name === "SceneFlow.Node.Started") {
+        if (!activityProjectMatches(message.payload)) return;
+        const nodeId = resolveActivityNodeId(message.payload);
+        if (nodeId) {
+          incrementActivityNode(nodeId);
+        }
+      }
+      if (message.name === "SceneFlow.Node.Stopped") {
+        if (!activityProjectMatches(message.payload)) return;
+        const nodeId = resolveActivityNodeId(message.payload);
+        if (nodeId) {
+          decrementActivityNode(nodeId);
+        }
+      }
+      if (message.name === "SceneFlow.Edge.Executed") {
+        if (!activityProjectMatches(message.payload)) return;
+        const superNodeId = (message.payload?.superNodeId || "").trim();
+        if (superNodeId && superNodeId !== (sceneFlow?.superNodeId || "")) {
+          return;
+        }
+        const edgeId = resolveActivityEdgeId(message.payload);
+        if (edgeId) {
+          registerEdgeActivity(edgeId);
+        }
+      }
+      if (message.name === "SceneFlow.Runtime.Stopped") {
+        if (!activityProjectMatches(message.payload)) return;
+        clearSceneFlowActivity();
+      }
       if (message.name === "SceneFlow.PathChanged" && message.payload?.projectId === selectedProjectId) {
         loadSceneFlow(selectedProjectId, message.payload?.superNodeId || "");
       }
@@ -1419,10 +1571,14 @@
     const type = (def.type || "").trim();
     const name = (def.name || "").trim();
     const expr = (def.expr || "").trim();
-    const value = normalizeRuntimeValue(runtimeValues[name] ?? def.value);
+    const hasLiveValue = Object.prototype.hasOwnProperty.call(runtimeValues, name);
+    const value = normalizeRuntimeValue(hasLiveValue ? runtimeValues[name] : def.value);
+    const initial = normalizeRuntimeValue(runtimeInitialValues[name]);
+    const showInitial = hasLiveValue && initial !== "" && value !== initial;
     const head = [type, name].filter(Boolean).join(" ");
     if (value) {
-      return head ? `${head} = ${value}` : value;
+      const displayValue = showInitial ? `${value} (${initial})` : value;
+      return head ? `${head} = ${displayValue}` : displayValue;
     }
     if (!expr) return head;
     if (!head) return expr;
@@ -3692,6 +3848,8 @@
                 bind:multiSelection={sceneFlowMultiSelection}
                 config={configDraft}
                 snapshot={sceneFlow}
+                activityNodes={activityNodeIds}
+                activityEdges={activityEdgeList}
                 onNavigate={navigateSceneFlow}
                 onNodeMove={moveSceneFlowNode}
                 onCommentUpdate={updateSceneFlowComment}

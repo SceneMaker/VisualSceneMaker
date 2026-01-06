@@ -63,6 +63,11 @@ import de.dfki.vsm.model.scenescript.ScriptDiagnostics;
 import de.dfki.vsm.event.EventDispatcher;
 import de.dfki.vsm.event.EventListener;
 import de.dfki.vsm.event.EventObject;
+import de.dfki.vsm.event.event.EdgeExecutedEvent;
+import de.dfki.vsm.event.event.NodeExecutedEvent;
+import de.dfki.vsm.event.event.NodeStartedEvent;
+import de.dfki.vsm.event.event.NodeTerminatedEvent;
+import de.dfki.vsm.event.event.SceneStoppedEvent;
 import de.dfki.vsm.event.event.VariableChangedEvent;
 import de.dfki.vsm.model.visicon.VisiconAgent;
 import de.dfki.vsm.model.visicon.VisiconConfig;
@@ -200,26 +205,131 @@ public final class WebUiServer implements EventListener {
 
     @Override
     public void update(EventObject event) {
-        if (!(event instanceof VariableChangedEvent)) {
+        if (event instanceof VariableChangedEvent) {
+            Tuple<String, String> pair = ((VariableChangedEvent) event).getVarValue();
+            if (pair == null) {
+                return;
+            }
+            String name = pair.getFirst();
+            if (name == null || name.isBlank()) {
+                return;
+            }
+            String value = sanitizeVariableValue(pair.getSecond());
+            JSONObject payload = new JSONObject();
+            payload.put("name", name);
+            payload.put("value", value);
+            addProjectId(payload);
+            broadcastEvent("Runtime.VariableChanged", payload, null);
             return;
         }
-        Tuple<String, String> pair = ((VariableChangedEvent) event).getVarValue();
-        if (pair == null) {
+        if (event instanceof SceneStoppedEvent) {
+            JSONObject payload = new JSONObject();
+            addProjectId(payload);
+            broadcastEvent("SceneFlow.Runtime.Stopped", payload, null);
             return;
         }
-        String name = pair.getFirst();
-        if (name == null || name.isBlank()) {
+        if (event instanceof NodeStartedEvent) {
+            BasicNode node = ((NodeStartedEvent) event).getNode();
+            JSONObject payload = nodeActivityPayload(node);
+            broadcastEvent("SceneFlow.Node.Started", payload, null);
             return;
         }
-        String value = sanitizeVariableValue(pair.getSecond());
-        JSONObject payload = new JSONObject();
-        payload.put("name", name);
-        payload.put("value", value);
+        if (event instanceof NodeExecutedEvent || event instanceof NodeTerminatedEvent) {
+            BasicNode node = event instanceof NodeExecutedEvent
+                    ? ((NodeExecutedEvent) event).getNode()
+                    : ((NodeTerminatedEvent) event).getNode();
+            JSONObject payload = nodeActivityPayload(node);
+            broadcastEvent("SceneFlow.Node.Stopped", payload, null);
+            return;
+        }
+        if (event instanceof EdgeExecutedEvent) {
+            AbstractEdge edge = ((EdgeExecutedEvent) event).getEdge();
+            JSONObject payload = edgeActivityPayload(edge);
+            broadcastEvent("SceneFlow.Edge.Executed", payload, null);
+            return;
+        }
+    }
+
+    private void addProjectId(JSONObject payload) {
         String projectId = resolveVariableProjectId();
-        if (projectId != null) {
+        if (projectId != null && !projectId.isBlank()) {
             payload.put("projectId", projectId);
         }
-        broadcastEvent("Runtime.VariableChanged", payload, null);
+    }
+
+    private JSONObject nodeActivityPayload(BasicNode node) {
+        JSONObject payload = new JSONObject();
+        if (node != null) {
+            payload.put("nodeId", node.getId());
+            SuperNode parent = node.getParentNode();
+            if (parent != null) {
+                payload.put("parentId", parent.getId());
+            }
+        }
+        addProjectId(payload);
+        return payload;
+    }
+
+    private JSONObject edgeActivityPayload(AbstractEdge edge) {
+        JSONObject payload = new JSONObject();
+        if (edge != null) {
+            String sourceId = edge.getSourceUnid();
+            if (sourceId == null || sourceId.isBlank()) {
+                sourceId = edge.getSourceNode() != null ? edge.getSourceNode().getId() : "";
+            }
+            String targetId = edge.getTargetUnid();
+            if (targetId == null || targetId.isBlank()) {
+                targetId = edge.getTargetNode() != null ? edge.getTargetNode().getId() : "";
+            }
+            if (sourceId != null && !sourceId.isBlank()) {
+                payload.put("sourceId", sourceId);
+            }
+            if (targetId != null && !targetId.isBlank()) {
+                payload.put("targetId", targetId);
+            }
+            payload.put("edgeType", edgeType(edge));
+            SuperNode owner = resolveEdgeOwner(edge);
+            if (owner != null) {
+                payload.put("superNodeId", owner.getId());
+                String edgeId = edgeActivityId(edge, owner);
+                if (edgeId != null) {
+                    payload.put("edgeId", edgeId);
+                }
+            }
+        }
+        addProjectId(payload);
+        return payload;
+    }
+
+    private SuperNode resolveEdgeOwner(AbstractEdge edge) {
+        if (edge == null) {
+            return null;
+        }
+        BasicNode source = edge.getSourceNode();
+        if (source != null && source.getParentNode() != null) {
+            return source.getParentNode();
+        }
+        BasicNode target = edge.getTargetNode();
+        if (target != null && target.getParentNode() != null) {
+            return target.getParentNode();
+        }
+        return null;
+    }
+
+    private String edgeActivityId(AbstractEdge edge, SuperNode owner) {
+        if (edge == null || owner == null) {
+            return null;
+        }
+        int index = 0;
+        for (BasicNode node : owner.getNodeAndSuperNodeList()) {
+            for (AbstractEdge candidate : node.getEdgeList()) {
+                if (candidate == edge) {
+                    return "E" + index;
+                }
+                index += 1;
+            }
+        }
+        return null;
     }
 
     private String resolveVariableProjectId() {

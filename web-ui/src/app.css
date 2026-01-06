@@ -1636,6 +1636,25 @@ summary {
   pointer-events: none;
 }
 
+.edge-activity {
+  fill: none;
+  stroke: rgba(246, 0, 0, 0.7);
+  stroke-width: calc(var(--sf-edge-stroke, 3px) * 2.2);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  pointer-events: none;
+  animation: edge-activity 0.65s ease-out forwards;
+}
+
+.edge-activity-head {
+  fill: rgba(246, 0, 0, 0.7);
+  stroke: rgba(246, 0, 0, 0.7);
+  stroke-width: calc(var(--sf-edge-stroke, 3px) * 0.6);
+  stroke-linejoin: round;
+  pointer-events: none;
+  animation: edge-activity 0.65s ease-out forwards;
+}
+
 .edge-label {
   font-size: var(--sf-font-size, 16px);
   fill: var(--edge-color, #827d78);
@@ -1673,6 +1692,11 @@ summary {
   fill: var(--node-fill, #7d7d7d);
   stroke: transparent;
   stroke-width: var(--sf-node-stroke, 3px);
+}
+
+.node-activity {
+  fill: rgba(246, 0, 0, 0.4);
+  pointer-events: none;
 }
 
 .node-super {
@@ -1758,6 +1782,15 @@ summary {
 .node-alt-start-sign polygon {
   fill: none;
   stroke: #c0c0c0;
+}
+
+@keyframes edge-activity {
+  from {
+    opacity: 0.85;
+  }
+  to {
+    opacity: 0;
+  }
 }
 
 .comment.selected .comment-rect {
