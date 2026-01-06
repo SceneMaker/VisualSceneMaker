@@ -1,5 +1,5 @@
 <script>
-  import { tick } from "svelte";
+  import { tick, onMount } from "svelte";
   import SceneFlowMiniMap from "./SceneFlowMiniMap.svelte";
   import SceneFlowView from "./SceneFlowView.svelte";
   import ScriptEditor from "./ScriptEditor.svelte";
@@ -7,7 +7,9 @@
   import IconChevronUp from "./icons/IconChevronUp.svelte";
   import IconPencil from "./icons/IconPencil.svelte";
   import IconPlus from "./icons/IconPlus.svelte";
+  import IconPause from "./icons/IconPause.svelte";
   import IconStart from "./icons/IconStart.svelte";
+  import IconStop from "./icons/IconStop.svelte";
   import IconTrash from "./icons/IconTrash.svelte";
 
   const clientId = (() => {
@@ -24,10 +26,284 @@
   let info = null;
   let error = "";
   let statusMessage = "";
+  let sessionReady = false;
 
   const SCENE_DRAG_TYPE = "application/x-vsm-scene";
   const BLOCK_DRAG_TYPE = "application/x-vsm-block";
   const SCENE_LANGUAGE_ALL = "__all__";
+  const SCENEFLOW_ROOT_ID = "__root__";
+  const SCENEFLOW_ZOOM_KEY = "vsm_scene_flow_zoom";
+  const SCENEFLOW_ZOOM_MIN = 0.3;
+  const SCENEFLOW_ZOOM_MAX = 3.5;
+  const DEFAULT_VAR_BADGE_STATE = {
+    visible: true,
+    global: { x: 16, y: 12, w: 240, h: 150 },
+    local: { x: 16, y: 190, w: 240, h: 150 }
+  };
+  const VAR_BADGE_COOKIE = "vsm_var_badges";
+  const VAR_BADGE_MIN_WIDTH = 180;
+  const VAR_BADGE_MIN_HEIGHT = 90;
+  const VAR_BADGE_HANDLE_SIZE = 18;
+  const VAR_BADGE_HANDLE_PATH = buildVarBadgeHandlePath(VAR_BADGE_HANDLE_SIZE);
+  const RUNTIME_STATE_LABELS = {
+    running: "Running",
+    paused: "Paused",
+    stopped: "Stopped"
+  };
+
+  function clampSceneFlowZoom(value) {
+    return Math.min(SCENEFLOW_ZOOM_MAX, Math.max(SCENEFLOW_ZOOM_MIN, value));
+  }
+
+  function buildVarBadgeHandlePath(handleSize) {
+    const outerRadius = Math.max(4, handleSize - 0.5);
+    const thickness = Math.max(2, Math.min(3, outerRadius * 0.22));
+    const innerRadius = outerRadius - thickness * 3;
+    const outerStartX = handleSize;
+    const outerStartY = handleSize - outerRadius;
+    const outerEndX = handleSize - outerRadius;
+    const outerEndY = handleSize;
+    const innerStartX = handleSize - innerRadius;
+    const innerStartY = handleSize;
+    const innerEndX = handleSize;
+    const innerEndY = handleSize - innerRadius;
+    return `M ${outerStartX} ${outerStartY} A ${outerRadius} ${outerRadius} 0 0 1 ${outerEndX} ${outerEndY} L ${innerStartX} ${innerStartY} A ${innerRadius} ${innerRadius} 0 0 0 ${innerEndX} ${innerEndY} Z`;
+  }
+
+  function readCookie(name) {
+    if (typeof document === "undefined") return "";
+    const parts = document.cookie.split(";").map((part) => part.trim());
+    for (const part of parts) {
+      if (!part.startsWith(`${name}=`)) continue;
+      return part.slice(name.length + 1);
+    }
+    return "";
+  }
+
+  function writeCookie(name, value, maxAgeSeconds = 31536000) {
+    if (typeof document === "undefined") return;
+    document.cookie = `${name}=${value}; path=/; max-age=${maxAgeSeconds}; samesite=lax`;
+  }
+
+  function cloneBadgeState(state) {
+    return JSON.parse(JSON.stringify(state));
+  }
+
+  function normalizeBadgeRect(rect, fallback) {
+    const x = Number.isFinite(rect?.x) ? rect.x : fallback.x;
+    const y = Number.isFinite(rect?.y) ? rect.y : fallback.y;
+    const w = Number.isFinite(rect?.w) ? rect.w : fallback.w;
+    const h = Number.isFinite(rect?.h) ? rect.h : fallback.h;
+    return {
+      x,
+      y,
+      w: Math.max(VAR_BADGE_MIN_WIDTH, w),
+      h: Math.max(VAR_BADGE_MIN_HEIGHT, h)
+    };
+  }
+
+  function normalizeVarBadgeState(state) {
+    const fallback = cloneBadgeState(DEFAULT_VAR_BADGE_STATE);
+    return {
+      visible: state?.visible !== undefined ? !!state.visible : fallback.visible,
+      global: normalizeBadgeRect(state?.global, fallback.global),
+      local: normalizeBadgeRect(state?.local, fallback.local)
+    };
+  }
+
+  function loadVarBadgeState() {
+    const raw = readCookie(VAR_BADGE_COOKIE);
+    if (!raw) {
+      return cloneBadgeState(DEFAULT_VAR_BADGE_STATE);
+    }
+    try {
+      const parsed = JSON.parse(decodeURIComponent(raw));
+      return normalizeVarBadgeState(parsed);
+    } catch (err) {
+      return cloneBadgeState(DEFAULT_VAR_BADGE_STATE);
+    }
+  }
+
+  function persistVarBadgeState(state) {
+    const payload = encodeURIComponent(JSON.stringify(state));
+    writeCookie(VAR_BADGE_COOKIE, payload);
+  }
+
+  function clampBadgeRect(rect, bounds) {
+    if (!bounds) return rect;
+    const width = Math.min(Math.max(VAR_BADGE_MIN_WIDTH, rect.w), Math.max(VAR_BADGE_MIN_WIDTH, bounds.width));
+    const height = Math.min(Math.max(VAR_BADGE_MIN_HEIGHT, rect.h), Math.max(VAR_BADGE_MIN_HEIGHT, bounds.height));
+    const maxX = Math.max(0, bounds.width - width);
+    const maxY = Math.max(0, bounds.height - height);
+    const x = Math.min(Math.max(0, rect.x), maxX);
+    const y = Math.min(Math.max(0, rect.y), maxY);
+    return { x, y, w: width, h: height };
+  }
+
+  function updateVarBadgeRect(key, rect, commit) {
+    if (!key || !varBadgeState[key]) return;
+    const next = {
+      ...varBadgeState,
+      [key]: {
+        ...varBadgeState[key],
+        ...rect
+      }
+    };
+    varBadgeState = next;
+    if (commit) {
+      persistVarBadgeState(next);
+    }
+  }
+
+  function varBadgeStyle(key) {
+    const rect = varBadgeState[key];
+    if (!rect) return "";
+    return `left:${rect.x}px; top:${rect.y}px; width:${rect.w}px; height:${rect.h}px;`;
+  }
+
+  function toggleVarBadges() {
+    const next = { ...varBadgeState, visible: !varBadgeState.visible };
+    varBadgeState = next;
+    persistVarBadgeState(next);
+  }
+
+  function startVarBadgeMove(event, key) {
+    if (!isPrimaryPointer(event) || !sceneFlowContainerEl) return;
+    const badge = varBadgeState[key];
+    if (!badge) return;
+    event.preventDefault();
+    event.stopPropagation();
+    varBadgeDrag = {
+      key,
+      mode: "move",
+      lastClientX: event.clientX,
+      lastClientY: event.clientY
+    };
+  }
+
+  function handleVarBadgePointerDown(event, key) {
+    if (!event) return;
+    if (varBadgeDrag) return;
+    const target = event.target;
+    if (target?.closest?.(".sceneflow-var-content")) return;
+    if (target?.closest?.(".var-resize-handle")) return;
+    startVarBadgeMove(event, key);
+  }
+
+  function isPrimaryPointer(event) {
+    if (!event) return false;
+    if (event.isPrimary === false) return false;
+    if (event.button === undefined) return true;
+    return event.button === 0;
+  }
+
+  function startVarBadgeResize(event, key) {
+    if (!isPrimaryPointer(event) || !sceneFlowContainerEl) return;
+    const badge = varBadgeState[key];
+    if (!badge) return;
+    event.preventDefault();
+    event.stopPropagation();
+    varBadgeDrag = {
+      key,
+      mode: "resize",
+      lastClientX: event.clientX,
+      lastClientY: event.clientY
+    };
+  }
+
+  function handleVarBadgePointerMove(event) {
+    if (!varBadgeDrag || !sceneFlowContainerEl) return;
+    event.preventDefault();
+    const key = varBadgeDrag.key;
+    const current = varBadgeState[key];
+    if (!current || !Number.isFinite(event.clientX) || !Number.isFinite(event.clientY)) {
+      return;
+    }
+    const dx = event.clientX - varBadgeDrag.lastClientX;
+    const dy = event.clientY - varBadgeDrag.lastClientY;
+    varBadgeDrag.lastClientX = event.clientX;
+    varBadgeDrag.lastClientY = event.clientY;
+    const bounds = sceneFlowContainerEl.getBoundingClientRect();
+    if (varBadgeDrag.mode === "move") {
+      const next = clampBadgeRect(
+        {
+          x: current.x + dx,
+          y: current.y + dy,
+          w: current.w,
+          h: current.h
+        },
+        bounds
+      );
+      updateVarBadgeRect(key, next, false);
+    } else if (varBadgeDrag.mode === "resize") {
+      const next = clampBadgeRect(
+        {
+          x: current.x,
+          y: current.y,
+          w: current.w + dx,
+          h: current.h + dy
+        },
+        bounds
+      );
+      updateVarBadgeRect(key, next, false);
+    }
+  }
+
+  function handleVarBadgePointerUp(event) {
+    if (!varBadgeDrag) return;
+    varBadgeDrag = null;
+    persistVarBadgeState(varBadgeState);
+  }
+
+  function badgeKeyFromTarget(target) {
+    const badgeEl = target?.closest?.(".sceneflow-var-badge");
+    if (!badgeEl) return null;
+    const key = badgeEl.dataset?.badge;
+    if (key === "global" || key === "local") {
+      return key;
+    }
+    return null;
+  }
+
+  function handleVarBadgeDocumentDown(event) {
+    if (!varBadgeState?.visible) return;
+    const key = badgeKeyFromTarget(event?.target);
+    if (!key) return;
+    const isHandle = event.target?.closest?.(".var-resize-handle");
+    const isContent = event.target?.closest?.(".sceneflow-var-content");
+    if (isHandle) {
+      startVarBadgeResize(event, key);
+    } else if (!isContent) {
+      startVarBadgeMove(event, key);
+    }
+  }
+
+  onMount(() => {
+    const downHandler = (event) => handleVarBadgeDocumentDown(event);
+    const moveHandler = (event) => handleVarBadgePointerMove(event);
+    const upHandler = (event) => handleVarBadgePointerUp(event);
+    document.addEventListener("mousedown", downHandler, true);
+    document.addEventListener("mousemove", moveHandler, true);
+    document.addEventListener("mouseup", upHandler, true);
+    document.addEventListener("pointermove", moveHandler, true);
+    document.addEventListener("pointerup", upHandler, true);
+    document.addEventListener("pointercancel", upHandler, true);
+    return () => {
+      document.removeEventListener("mousedown", downHandler, true);
+      document.removeEventListener("mousemove", moveHandler, true);
+      document.removeEventListener("mouseup", upHandler, true);
+      document.removeEventListener("pointermove", moveHandler, true);
+      document.removeEventListener("pointerup", upHandler, true);
+      document.removeEventListener("pointercancel", upHandler, true);
+    };
+  });
+
+  function readSceneFlowZoom() {
+    const raw = localStorage.getItem(SCENEFLOW_ZOOM_KEY);
+    const parsed = raw ? Number(raw) : NaN;
+    if (!Number.isFinite(parsed)) return 1;
+    return clampSceneFlowZoom(parsed);
+  }
 
   let projects = [];
   let selectedProjectId = localStorage.getItem("vsm_project_id") || "";
@@ -70,21 +346,35 @@
   let scriptElementsFilter = "";
   let scriptElementsError = "";
   let scriptElementsLoading = false;
+  const SELECTION_PREVIEW_LIMIT = 6;
 
   let sceneFlow = null;
   let sceneFlowError = "";
   let sceneFlowLoading = false;
   let lastSceneFlowProjectId = "";
   let sceneFlowRef;
-  let sceneFlowZoom = 1;
+  let sceneFlowZoom = readSceneFlowZoom();
   let sceneFlowWorldBox = null;
   let sceneFlowViewBox = null;
   let sceneFlowSelection = null;
+  let sceneFlowMultiSelection = [];
+  let sceneFlowClipboard = null;
+  let sceneFlowPasteIndex = 0;
+  let sceneFlowDuplicateIndex = 0;
+  let sceneFlowDuplicateKey = "";
   let sceneFlowFrameColor = "#7d7d7d";
   let sceneFlowFrameStyle = "";
   let sceneFlowSnap = true;
   let sceneFlowShowCmdText = true;
   let sceneFlowBusy = false;
+  let runtimeInfo = null;
+  let runtimeError = "";
+  let runtimeLoading = false;
+  let lastRuntimeProjectId = "";
+  let runtimeValues = {};
+  let varBadgeState = loadVarBadgeState();
+  let varBadgeDrag = null;
+  let sceneFlowContainerEl;
   let edgeCreateMode = false;
   let edgeCreateSourceId = "";
   let edgeCreateType = "EEDGE";
@@ -101,6 +391,15 @@
   let superNodeStartLocked = false;
   let nodeEditError = "";
   let edgeEditError = "";
+  let pEdgeDrafts = [];
+  let pEdgeGroup = [];
+  let pEdgeDraftKey = "";
+  let pEdgeSourceId = "";
+  let pEdgeError = "";
+  let pEdgeGroupKey = "";
+  let pEdgeSum = 0;
+  let pEdgeValid = true;
+  let pEdgeDirty = false;
   let superNodeDraft = null;
   let superNodeDraftId = "";
   let superNodeEditError = "";
@@ -161,6 +460,35 @@
       ? sceneFlow.nodes.find((node) => node.id === selectedEdge.targetId)
       : null;
   $: edgeAltStartEnabled = selectedEdgeTarget?.type === "Super";
+  $: selectionList =
+    Array.isArray(sceneFlowMultiSelection) && sceneFlowMultiSelection.length
+      ? sceneFlowMultiSelection
+      : sceneFlowSelection
+        ? [sceneFlowSelection]
+        : [];
+  $: multiSelectionActive = selectionList.length > 1;
+  $: selectionNodeMap = new Map((sceneFlow?.nodes || []).map((node) => [node.id, node]));
+  $: selectionEdgeMap = new Map((sceneFlow?.edges || []).map((edge) => [edge.id, edge]));
+  $: selectionCommentMap = new Map((sceneFlow?.comments || []).map((comment) => [comment.id, comment]));
+  $: selectionNodes = selectionList
+    .filter((item) => item.type === "node")
+    .map((item) => selectionNodeMap.get(item.id))
+    .filter(Boolean);
+  $: selectionEdges = selectionList
+    .filter((item) => item.type === "edge")
+    .map((item) => selectionEdgeMap.get(item.id))
+    .filter(Boolean);
+  $: selectionComments = selectionList
+    .filter((item) => item.type === "comment")
+    .map((item) => selectionCommentMap.get(item.id))
+    .filter(Boolean);
+  $: selectionNodePreview = selectionNodes.slice(0, SELECTION_PREVIEW_LIMIT);
+  $: selectionNodeRemaining = Math.max(0, selectionNodes.length - selectionNodePreview.length);
+  $: selectionCommentPreview = selectionComments.slice(0, SELECTION_PREVIEW_LIMIT);
+  $: selectionCommentRemaining = Math.max(0, selectionComments.length - selectionCommentPreview.length);
+  $: selectionNodeSummary = selectionNodes.length ? nodeTypeSummary(selectionNodes) : "";
+  $: selectionEdgeSummary = selectionEdges.length ? edgeTypeSummary(selectionEdges) : "";
+  $: selectionStartCount = selectionNodes.filter((node) => node.isStart).length;
   $: nodeEditorTarget =
     sceneFlowSelection?.type === "node"
       ? selectedNode
@@ -177,9 +505,28 @@
   $: nodeEditorTypeCatalog = Array.isArray(nodeEditorTarget?.typeCatalog) ? nodeEditorTarget.typeCatalog : [];
   $: currentSuperName =
     sceneFlow?.path?.length ? sceneFlow.path[sceneFlow.path.length - 1] : sceneFlow?.superNodeId || "SceneFlow";
+  $: sceneFlowPathNodes = Array.isArray(sceneFlow?.pathNodes) ? sceneFlow.pathNodes : [];
   $: startNodes = sceneFlow?.nodes ? sceneFlow.nodes.filter((node) => node.isStart && !node.isHistory) : [];
   $: sceneFlowFrameColor = superNodeFrameColor(sceneFlow);
   $: sceneFlowFrameStyle = `--sf-frame-color:${sceneFlowFrameColor};`;
+  $: activePathNode = sceneFlowPathNodes.length ? sceneFlowPathNodes[sceneFlowPathNodes.length - 1] : null;
+  $: isSceneFlowRoot =
+    activePathNode?.isRoot === true ||
+    sceneFlow?.superNodeData?.isRoot === true ||
+    sceneFlowPathNodes.length === 1;
+  $: showLocalVarBadge = !!sceneFlow && !isSceneFlowRoot;
+  $: runtimeState = selectedProject?.runtimeState || runtimeInfo?.state || "stopped";
+  $: runtimeStateLabel = RUNTIME_STATE_LABELS[runtimeState] || runtimeState;
+  $: runtimeGlobals = Array.isArray(runtimeInfo?.globalVariables) ? runtimeInfo.globalVariables : [];
+  $: runtimeLocals = Array.isArray(runtimeInfo?.localVariables) ? runtimeInfo.localVariables : [];
+  $: runtimeRootVars = runtimeGlobals.length ? runtimeGlobals : runtimeLocals;
+  $: runtimeDisplayGlobals = isSceneFlowRoot ? runtimeRootVars : runtimeGlobals;
+  $: runtimeCanPlay = wsConnected && !!selectedProjectId && (runtimeState === "stopped" || runtimeState === "paused");
+  $: runtimeCanPause = wsConnected && !!selectedProjectId && runtimeState === "running";
+  $: runtimeCanStop = wsConnected && !!selectedProjectId && runtimeState !== "stopped";
+  $: runtimePlayLabel = runtimeState === "paused" ? "Resume" : "Start";
+  $: infoRevision = info?.revision || info?.buildRevision || info?.build || info?.version || "unknown";
+  $: infoBuildDate = info?.buildDate || info?.buildTime || "unknown";
   $: filteredScriptScenes = filterSceneLanguages(scriptScenes, scriptScenesFilter, scriptScenesLanguage);
   $: sceneLanguageOptions = sceneLanguageOptionList(scriptScenes);
   $: filteredScriptElements = filterScriptElements(scriptElements, scriptElementsFilter);
@@ -301,7 +648,7 @@
       return (edgeDraft.condition ?? "") !== (selectedEdge.condition ?? "") || altDirty;
     }
     if (selectedEdge.type === "PEDGE") {
-      return String(edgeDraft.probability ?? "") !== String(selectedEdge.probability ?? "") || altDirty;
+      return altDirty;
     }
     if (selectedEdge.type === "TEDGE") {
       return String(edgeDraft.timeoutMs ?? "") !== String(selectedEdge.timeoutMs ?? "") || altDirty;
@@ -309,16 +656,53 @@
     return altDirty;
   })();
 
+  $: pEdgeGroup =
+    selectedEdge?.type === "PEDGE" && selectedEdge.sourceId
+      ? (sceneFlow?.edges || []).filter(
+          (edge) => edge.type === "PEDGE" && edge.sourceId === selectedEdge.sourceId
+        )
+      : [];
+  $: pEdgeGroupKey = selectedEdge?.type === "PEDGE" ? pEdgeGroup.map((edge) => edge.id).join("|") : "";
+  $: if (selectedEdge?.type === "PEDGE") {
+    const sourceId = selectedEdge.sourceId || "";
+    if (sourceId !== pEdgeSourceId || pEdgeGroupKey !== pEdgeDraftKey) {
+      syncPEdgeDrafts();
+    }
+  } else if (pEdgeDrafts.length || pEdgeSourceId) {
+    resetPEdgeDrafts();
+  }
+  $: {
+    const validation = validatePEdgeDrafts(pEdgeDrafts);
+    pEdgeSum = validation.sum;
+    pEdgeValid = validation.valid;
+  }
+  $: pEdgeDirty = isPEdgeDirty(pEdgeDrafts, pEdgeGroup);
+
+  $: if (Number.isFinite(sceneFlowZoom)) {
+    const clamped = clampSceneFlowZoom(sceneFlowZoom);
+    if (clamped !== sceneFlowZoom) {
+      sceneFlowZoom = clamped;
+    }
+    localStorage.setItem(SCENEFLOW_ZOOM_KEY, clamped.toFixed(3));
+  }
+
   $: if (selectedProjectId && selectedProjectId !== localStorage.getItem("vsm_project_id")) {
     localStorage.setItem("vsm_project_id", selectedProjectId);
   }
 
-  $: if (selectedProjectId && selectedProjectId !== lastConfigProjectId) {
+  $: if (!sessionReady) {
+    lastConfigProjectId = "";
+    lastScriptProjectId = "";
+    lastSceneFlowProjectId = "";
+    lastRuntimeProjectId = "";
+  }
+
+  $: if (sessionReady && selectedProjectId && selectedProjectId !== lastConfigProjectId) {
     lastConfigProjectId = selectedProjectId;
     loadConfig(selectedProjectId);
   }
 
-  $: if (selectedProjectId && selectedProjectId !== lastScriptProjectId) {
+  $: if (sessionReady && selectedProjectId && selectedProjectId !== lastScriptProjectId) {
     lastScriptProjectId = selectedProjectId;
     scriptDiagRequestId += 1;
     if (scriptDiagTimer) {
@@ -330,9 +714,14 @@
     loadScriptElements(selectedProjectId);
   }
 
-  $: if (selectedProjectId && selectedProjectId !== lastSceneFlowProjectId) {
+  $: if (sessionReady && selectedProjectId && selectedProjectId !== lastSceneFlowProjectId) {
     lastSceneFlowProjectId = selectedProjectId;
     loadSceneFlow(selectedProjectId);
+  }
+  $: if (sessionReady && selectedProjectId && selectedProjectId !== lastRuntimeProjectId) {
+    lastRuntimeProjectId = selectedProjectId;
+    runtimeValues = {};
+    loadRuntime(selectedProjectId);
   }
 
   $: if (!selectedProjectId) {
@@ -357,24 +746,41 @@
     sceneFlowError = "";
     sceneFlowLoading = false;
     sceneFlowSelection = null;
+    sceneFlowMultiSelection = [];
     edgeCreateMode = false;
     edgeCreateSourceId = "";
+    runtimeInfo = null;
+    runtimeError = "";
+    runtimeLoading = false;
+    lastRuntimeProjectId = "";
+    runtimeValues = {};
   }
 
   async function connectAll() {
     error = "";
     statusMessage = "";
+    sessionReady = false;
     try {
       await loadInfo();
       await Promise.all([loadProjects(), loadPreferences()]);
-      connectWs();
+      const wsOk = await connectWs();
+      if (!wsOk) {
+        error = wsError || "WebSocket connection failed.";
+        return;
+      }
+      sessionReady = true;
       if (selectedProjectId) {
+        lastConfigProjectId = selectedProjectId;
+        lastScriptProjectId = selectedProjectId;
+        lastSceneFlowProjectId = selectedProjectId;
+        lastRuntimeProjectId = selectedProjectId;
         await Promise.all([
           loadConfig(selectedProjectId),
           loadScript(selectedProjectId),
           loadScriptScenes(selectedProjectId),
           loadScriptElements(selectedProjectId),
-          loadSceneFlow(selectedProjectId)
+          loadSceneFlow(selectedProjectId),
+          loadRuntime(selectedProjectId)
         ]);
       }
     } catch (err) {
@@ -385,6 +791,15 @@
   async function loadInfo() {
     info = await apiGet("/api/v1/info");
     localStorage.setItem("vsm_token", token);
+  }
+
+  async function refreshInfo() {
+    error = "";
+    try {
+      await loadInfo();
+    } catch (err) {
+      error = err.message || "Failed to load server info.";
+    }
   }
 
   async function loadProjects() {
@@ -606,11 +1021,13 @@
     sceneFlowError = "";
     sceneFlowLoading = true;
     sceneFlowSelection = null;
+    sceneFlowMultiSelection = [];
     edgeCreateSourceId = "";
     try {
       const query = superNodeId ? `?superNodeId=${encodeURIComponent(superNodeId)}` : "";
       const data = await apiGet(`/api/v1/projects/${projectId}/sceneflow${query}`);
       sceneFlow = data;
+      loadRuntime(projectId);
     } catch (err) {
       sceneFlowError = err.message || "Failed to load SceneFlow.";
       sceneFlow = null;
@@ -619,16 +1036,73 @@
     }
   }
 
+  async function loadRuntime(projectId) {
+    if (!projectId) return;
+    runtimeError = "";
+    runtimeLoading = true;
+    try {
+      const data = await apiGet(`/api/v1/projects/${projectId}/runtime`);
+      runtimeInfo = data;
+      applyRuntimeValuesFromData(data);
+    } catch (err) {
+      runtimeError = err.message || "Failed to load runtime.";
+      runtimeInfo = null;
+    } finally {
+      runtimeLoading = false;
+    }
+  }
+
+  function applyRuntimeValuesFromData(data) {
+    if (!data) return;
+    const updates = {};
+    const globals = Array.isArray(data.globalVariables) ? data.globalVariables : [];
+    const locals = Array.isArray(data.localVariables) ? data.localVariables : [];
+    for (const entry of [...globals, ...locals]) {
+      const name = (entry?.name || "").trim();
+      if (!name || entry?.value === undefined || entry?.value === null) continue;
+      updates[name] = normalizeRuntimeValue(entry.value);
+    }
+    if (Object.keys(updates).length) {
+      runtimeValues = { ...runtimeValues, ...updates };
+    }
+  }
+
+  async function runRuntimeCommand(command) {
+    if (!selectedProjectId) return;
+    runtimeError = "";
+    try {
+      await sendCommand(command, { projectId: selectedProjectId });
+      await loadProjects();
+      loadRuntime(selectedProjectId);
+    } catch (err) {
+      runtimeError = err.message || "Failed to update runtime.";
+    }
+  }
+
+  function refreshRuntimeVars(target) {
+    if (!selectedProjectId) return;
+    if (target?.type === "Super") {
+      loadRuntime(selectedProjectId);
+    }
+  }
+
   async function navigateSceneFlow(superNodeId) {
-    if (!selectedProjectId || !superNodeId) return;
-    if (sceneFlow?.superNodeId === superNodeId) return;
+    if (!selectedProjectId) return;
+    const targetId = superNodeId && superNodeId.trim() ? superNodeId : SCENEFLOW_ROOT_ID;
+    const currentId =
+      sceneFlow?.superNodeId && sceneFlow.superNodeId.trim() ? sceneFlow.superNodeId : SCENEFLOW_ROOT_ID;
+    if (currentId === targetId) return;
     sceneFlowError = "";
     sceneFlowLoading = true;
     sceneFlowSelection = null;
+    sceneFlowMultiSelection = [];
     edgeCreateSourceId = "";
     try {
-      const data = await apiPost(`/api/v1/projects/${selectedProjectId}/sceneflow/navigate`, { superNodeId });
+      const data = await apiPost(`/api/v1/projects/${selectedProjectId}/sceneflow/navigate`, {
+        superNodeId: targetId
+      });
       sceneFlow = data;
+      loadRuntime(selectedProjectId);
     } catch (err) {
       sceneFlowError = err.message || "Failed to navigate SceneFlow.";
     } finally {
@@ -637,7 +1111,7 @@
   }
 
   function scheduleScriptDiagnostics() {
-    if (!selectedProjectId || !token) return;
+    if (!sessionReady || !selectedProjectId || !token) return;
     if (scriptDiagTimer) {
       clearTimeout(scriptDiagTimer);
     }
@@ -668,23 +1142,45 @@
     if (ws) {
       ws.close();
     }
-    if (!token) {
+    const needsToken = info?.tokenRequired === true;
+    if (!token && needsToken) {
       wsConnected = false;
-      return;
+      wsError = "Missing or invalid token.";
+      return Promise.resolve(false);
     }
     return new Promise((resolve) => {
+      let settled = false;
+      const finish = (ok) => {
+        if (settled) return;
+        settled = true;
+        resolve(ok);
+      };
       const protocol = location.protocol === "https:" ? "wss" : "ws";
-      const url = `${protocol}://${location.host}/ws?token=${encodeURIComponent(token)}`;
+      const baseUrl = `${protocol}://${location.host}/ws`;
+      const url = token ? `${baseUrl}?token=${encodeURIComponent(token)}` : baseUrl;
       ws = new WebSocket(url);
       ws.onopen = () => {
         wsConnected = true;
-        resolve();
+        finish(true);
       };
-      ws.onclose = () => {
+      ws.onclose = (event) => {
         wsConnected = false;
+        const reason = (event?.reason || "").toLowerCase();
+        if (event?.code === 1008 || reason.includes("unauthorized")) {
+          const message = "Missing or invalid token.";
+          wsError = message;
+          error = message;
+          sessionReady = false;
+          if (token) {
+            token = "";
+            localStorage.removeItem("vsm_token");
+          }
+        }
+        finish(false);
       };
       ws.onerror = () => {
         wsError = "WebSocket connection failed.";
+        finish(false);
       };
       ws.onmessage = (event) => handleWsMessage(event.data);
     });
@@ -702,7 +1198,8 @@
       if (!entry) return;
       pending.delete(message.id);
       if (message.type === "error") {
-        entry.reject(new Error(message.name || "Request failed"));
+        const detail = message.payload?.message;
+        entry.reject(new Error(detail || message.name || "Request failed"));
       } else {
         entry.resolve(message.payload || {});
       }
@@ -738,6 +1235,38 @@
         scriptParseOk = true;
         scriptStatus = "Script updated from another editor.";
         loadScriptScenes(selectedProjectId);
+      }
+      if (message.name === "Runtime.StateChanged") {
+        loadProjects();
+        if (message.payload?.projectId === selectedProjectId) {
+          loadRuntime(selectedProjectId);
+        }
+      }
+      if (message.name === "Runtime.VariableChanged") {
+        const payload = message.payload || {};
+        const name = (payload.name || "").trim();
+        if (!name || payload.value === undefined || payload.value === null) {
+          return;
+        }
+        const value = normalizeRuntimeValue(payload.value);
+        runtimeValues = { ...runtimeValues, [name]: value };
+        if (runtimeInfo) {
+          const updateList = (list) => {
+            if (!Array.isArray(list)) return list;
+            let updated = false;
+            const next = list.map((entry) => {
+              if (!entry || entry.name !== name) return entry;
+              updated = true;
+              return { ...entry, value };
+            });
+            return updated ? next : list;
+          };
+          const globals = updateList(runtimeInfo.globalVariables);
+          const locals = updateList(runtimeInfo.localVariables);
+          if (globals !== runtimeInfo.globalVariables || locals !== runtimeInfo.localVariables) {
+            runtimeInfo = { ...runtimeInfo, globalVariables: globals, localVariables: locals };
+          }
+        }
       }
       if (message.name === "SceneFlow.PathChanged" && message.payload?.projectId === selectedProjectId) {
         loadSceneFlow(selectedProjectId, message.payload?.superNodeId || "");
@@ -786,6 +1315,22 @@
       ...options,
       headers
     });
+    if (response.status === 401) {
+      const text = await response.text();
+      const message = text || "Missing or invalid token";
+      error = message;
+      wsError = message;
+      sessionReady = false;
+      if (ws) {
+        ws.close();
+      }
+      wsConnected = false;
+      if (token) {
+        token = "";
+        localStorage.removeItem("vsm_token");
+      }
+      throw new Error(message);
+    }
     if (!response.ok) {
       const text = await response.text();
       throw new Error(text || response.statusText);
@@ -862,6 +1407,223 @@
     if (!node) return "";
     const name = (node.name || "").trim();
     return name || node.id || "";
+  }
+
+  function normalizeRuntimeValue(value) {
+    if (value === null || value === undefined) return "";
+    return String(value).replace(/#[a-zA-Z]#/g, "");
+  }
+
+  function runtimeVarLine(def) {
+    if (!def) return "";
+    const type = (def.type || "").trim();
+    const name = (def.name || "").trim();
+    const expr = (def.expr || "").trim();
+    const value = normalizeRuntimeValue(runtimeValues[name] ?? def.value);
+    const head = [type, name].filter(Boolean).join(" ");
+    if (value) {
+      return head ? `${head} = ${value}` : value;
+    }
+    if (!expr) return head;
+    if (!head) return expr;
+    return `${head} = ${expr}`;
+  }
+
+  function nodeTypeSummary(nodes) {
+    if (!Array.isArray(nodes) || !nodes.length) return "";
+    let basicCount = 0;
+    let superCount = 0;
+    nodes.forEach((node) => {
+      if (node?.type === "Super") {
+        superCount += 1;
+      } else {
+        basicCount += 1;
+      }
+    });
+    const parts = [];
+    if (basicCount) parts.push(`${basicCount} basic`);
+    if (superCount) parts.push(`${superCount} super`);
+    return parts.join(", ");
+  }
+
+  function edgeTypeSummary(edges) {
+    if (!Array.isArray(edges) || !edges.length) return "";
+    const order = ["EEDGE", "CEDGE", "PEDGE", "TEDGE", "FEDGE", "IEDGE"];
+    const labels = {
+      EEDGE: "epsilon",
+      CEDGE: "conditional",
+      PEDGE: "probabilistic",
+      TEDGE: "timeout",
+      FEDGE: "fork",
+      IEDGE: "interrupt"
+    };
+    const counts = new Map();
+    edges.forEach((edge) => {
+      const type = edge?.type || "EEDGE";
+      counts.set(type, (counts.get(type) || 0) + 1);
+    });
+    const parts = [];
+    order.forEach((type) => {
+      const count = counts.get(type);
+      if (count) {
+        const label = labels[type] || type.toLowerCase();
+        parts.push(`${count} ${label}`);
+      }
+    });
+    return parts.join(", ");
+  }
+
+  function commentLabel(comment, index) {
+    const text = (comment?.text || "").trim().replace(/\s+/g, " ");
+    if (!text) return `Comment ${index + 1}`;
+    if (text.length <= 32) return text;
+    return `${text.slice(0, 32)}...`;
+  }
+
+  function pEdgeTargetLabel(edge) {
+    if (!edge) return "";
+    const target = sceneFlow?.nodes?.find((node) => node.id === edge.targetId) || null;
+    return displayNodeName(target) || edge.targetId || edge.id || "";
+  }
+
+  function validatePEdgeDrafts(drafts) {
+    let sum = 0;
+    let valid = true;
+    for (const draft of drafts || []) {
+      const raw = String(draft?.value ?? "").trim();
+      if (!raw) {
+        valid = false;
+        continue;
+      }
+      const parsed = Number.parseInt(raw, 10);
+      if (!Number.isFinite(parsed) || parsed < 0 || parsed > 100) {
+        valid = false;
+        continue;
+      }
+      sum += parsed;
+    }
+    return { sum, valid };
+  }
+
+  function isPEdgeDirty(drafts, group) {
+    if (!drafts?.length || !group?.length) return false;
+    const byId = new Map(group.map((edge) => [edge.id, edge]));
+    for (const draft of drafts) {
+      const edge = byId.get(draft.edgeId);
+      if (!edge) return true;
+      const current = String(edge.probability ?? "").trim();
+      const next = String(draft.value ?? "").trim();
+      if (current !== next) return true;
+    }
+    return false;
+  }
+
+  function syncPEdgeDrafts() {
+    if (!selectedEdge || selectedEdge.type !== "PEDGE") {
+      resetPEdgeDrafts();
+      return;
+    }
+    pEdgeSourceId = selectedEdge.sourceId || "";
+    pEdgeDraftKey = pEdgeGroupKey;
+    pEdgeDrafts =
+      (pEdgeGroup || []).map((edge) => ({
+        edgeId: edge.id,
+        targetId: edge.targetId || "",
+        label: pEdgeTargetLabel(edge),
+        value: String(edge.probability ?? 0)
+      })) || [];
+    pEdgeError = "";
+  }
+
+  function resetPEdgeDrafts() {
+    pEdgeDrafts = [];
+    pEdgeDraftKey = "";
+    pEdgeSourceId = "";
+    pEdgeError = "";
+  }
+
+  function updatePEdgeDraft(edgeId, value) {
+    pEdgeError = "";
+    pEdgeDrafts = pEdgeDrafts.map((draft) =>
+      draft.edgeId === edgeId ? { ...draft, value } : draft
+    );
+  }
+
+  function normalizePEdgeDrafts() {
+    pEdgeError = "";
+    if (!pEdgeDrafts.length) return;
+    const entries = pEdgeDrafts.map((draft) => {
+      const parsed = Number.parseInt(String(draft.value ?? "").trim(), 10);
+      return Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
+    });
+    const sum = entries.reduce((total, value) => total + value, 0);
+    if (sum <= 0) {
+      pEdgeError = "Enter positive probabilities to normalize.";
+      return;
+    }
+    const raw = entries.map((value) => (value / sum) * 100);
+    const floored = raw.map((value) => Math.floor(value));
+    let remainder = 100 - floored.reduce((total, value) => total + value, 0);
+    const order = raw
+      .map((value, index) => ({ index, frac: value - Math.floor(value) }))
+      .sort((a, b) => b.frac - a.frac);
+    const next = [...floored];
+    let cursor = 0;
+    while (remainder > 0 && order.length) {
+      next[order[cursor % order.length].index] += 1;
+      remainder -= 1;
+      cursor += 1;
+    }
+    pEdgeDrafts = pEdgeDrafts.map((draft, index) => ({
+      ...draft,
+      value: String(next[index] ?? 0)
+    }));
+  }
+
+  function uniformPEdgeDrafts() {
+    pEdgeError = "";
+    const count = pEdgeDrafts.length;
+    if (!count) return;
+    const base = Math.floor(100 / count);
+    let remainder = 100 % count;
+    pEdgeDrafts = pEdgeDrafts.map((draft, index) => {
+      const value = base + (remainder > 0 ? 1 : 0);
+      if (remainder > 0) remainder -= 1;
+      return { ...draft, value: String(value) };
+    });
+  }
+
+  async function applyPEdgeGroup() {
+    pEdgeError = "";
+    if (!selectedProjectId || !selectedEdge || selectedEdge.type !== "PEDGE") return;
+    const parsed = pEdgeDrafts.map((draft) => ({
+      edgeId: draft.edgeId,
+      targetId: draft.targetId,
+      probability: Number.parseInt(String(draft.value ?? "").trim(), 10)
+    }));
+    if (parsed.some((entry) => !Number.isFinite(entry.probability))) {
+      pEdgeError = "Probability must be a number.";
+      return;
+    }
+    if (parsed.some((entry) => entry.probability < 0 || entry.probability > 100)) {
+      pEdgeError = "Probabilities must be between 0 and 100.";
+      return;
+    }
+    const sum = parsed.reduce((total, entry) => total + entry.probability, 0);
+    if (sum !== 100) {
+      pEdgeError = `Total probability must be 100%. Current sum: ${sum}%.`;
+      return;
+    }
+    const response = await runSceneFlowCommand("SceneFlow.Edge.PEdge.UpdateGroup", {
+      projectId: selectedProjectId,
+      sourceId: selectedEdge.sourceId,
+      updates: parsed
+    });
+    if (!response) {
+      pEdgeError = sceneFlowError || "Failed to update probabilities.";
+      return;
+    }
+    syncPEdgeDrafts();
   }
 
   function edgeTypeLabel(type) {
@@ -943,6 +1705,7 @@
     });
     if (response && selectNode) {
       sceneFlowSelection = { type: "node", id: nodeId };
+      sceneFlowMultiSelection = [{ type: "node", id: nodeId }];
     }
   }
 
@@ -980,6 +1743,7 @@
       edgeCreateMode = true;
       edgeCreateSourceId = payload.targetNodeId || "";
       sceneFlowSelection = edgeCreateSourceId ? { type: "node", id: edgeCreateSourceId } : null;
+      sceneFlowMultiSelection = edgeCreateSourceId ? [{ type: "node", id: edgeCreateSourceId }] : [];
     }
   }
 
@@ -988,6 +1752,153 @@
     if (!payload?.name || !nodeEditorTarget?.id) return;
     event.preventDefault();
     await addSceneCommandToNode(nodeEditorTarget.id, payload.name);
+  }
+
+  function sceneFlowSelectionList() {
+    if (Array.isArray(sceneFlowMultiSelection) && sceneFlowMultiSelection.length) {
+      return sceneFlowMultiSelection;
+    }
+    return sceneFlowSelection ? [sceneFlowSelection] : [];
+  }
+
+  function selectionKey(list) {
+    if (!Array.isArray(list) || !list.length) return "";
+    return list
+      .map((entry) => `${entry.type}:${entry.id}`)
+      .sort()
+      .join("|");
+  }
+
+  async function copySceneFlowSelection() {
+    if (!sceneFlow || !selectedProjectId) return;
+    const selectionList = sceneFlowSelectionList();
+    if (!selectionList.length) return;
+    const nodeIds = selectionList.filter((item) => item.type === "node").map((item) => item.id);
+    const commentIds = selectionList.filter((item) => item.type === "comment").map((item) => item.id);
+    if (!nodeIds.length && !commentIds.length) return;
+    const nodeMap = new Map((sceneFlow.nodes || []).map((node) => [node.id, node]));
+    const commentMap = new Map((sceneFlow.comments || []).map((comment) => [comment.id, comment]));
+    const nodes = nodeIds.map((id) => nodeMap.get(id)).filter((node) => node && !node.isHistory);
+    const comments = commentIds
+      .map((id) => commentMap.get(id))
+      .filter(Boolean)
+      .map((comment) => ({
+        id: comment.id,
+        text: comment.text || "",
+        x: comment.rect?.x ?? 0,
+        y: comment.rect?.y ?? 0,
+        w: comment.rect?.w ?? 120,
+        h: comment.rect?.h ?? 90
+      }));
+    let minX = Infinity;
+    let minY = Infinity;
+    nodes.forEach((node) => {
+      minX = Math.min(minX, node.graphics?.x ?? 0);
+      minY = Math.min(minY, node.graphics?.y ?? 0);
+    });
+    comments.forEach((comment) => {
+      minX = Math.min(minX, comment.x);
+      minY = Math.min(minY, comment.y);
+    });
+    if (!Number.isFinite(minX) || !Number.isFinite(minY)) {
+      return;
+    }
+    const copiedNodeIds = nodes.map((node) => node.id);
+    sceneFlowClipboard = {
+      nodeIds: copiedNodeIds,
+      comments,
+      origin: { x: minX, y: minY }
+    };
+    sceneFlowPasteIndex = 0;
+    if (copiedNodeIds.length) {
+      const response = await runSceneFlowCommand("SceneFlow.Selection.Copy", {
+        projectId: selectedProjectId,
+        nodeIds: copiedNodeIds
+      });
+      if (!response) {
+        sceneFlowClipboard.nodeIds = [];
+      }
+    }
+  }
+
+  async function pasteSceneFlowSelectionWithOffset(dx, dy) {
+    if (!sceneFlowClipboard || !selectedProjectId) return;
+    const newSelections = [];
+
+    if (sceneFlowClipboard.nodeIds?.length) {
+      const response = await runSceneFlowCommand("SceneFlow.Selection.Paste", {
+        projectId: selectedProjectId,
+        dx,
+        dy
+      });
+      if (!response) {
+        return;
+      }
+      const nodeIds = Array.isArray(response.nodeIds) ? response.nodeIds : [];
+      nodeIds.forEach((id) => {
+        if (id) {
+          newSelections.push({ type: "node", id });
+        }
+      });
+    }
+
+    for (const comment of sceneFlowClipboard.comments || []) {
+      const response = await runSceneFlowCommand("SceneFlow.Comment.Create", {
+        projectId: selectedProjectId,
+        x: comment.x + dx,
+        y: comment.y + dy,
+        width: comment.w,
+        height: comment.h,
+        text: comment.text || ""
+      });
+      const newId = response?.commentId;
+      if (newId) {
+        newSelections.push({ type: "comment", id: newId });
+      }
+    }
+
+    if (newSelections.length) {
+      sceneFlowSelection = newSelections[0];
+      sceneFlowMultiSelection = newSelections;
+    }
+  }
+
+  async function pasteSceneFlowSelection() {
+    if (!sceneFlowClipboard || !selectedProjectId) return;
+    const view = sceneFlowViewBox;
+    const center = view
+      ? { x: view.x + view.width / 2, y: view.y + view.height / 2 }
+      : sceneFlowCenter();
+    const offset = 24 * sceneFlowPasteIndex;
+    const dx = center.x - sceneFlowClipboard.origin.x + offset;
+    const dy = center.y - sceneFlowClipboard.origin.y + offset;
+    sceneFlowPasteIndex += 1;
+    await pasteSceneFlowSelectionWithOffset(dx, dy);
+  }
+
+  async function cutSceneFlowSelection() {
+    if (!selectedProjectId || sceneFlowBusy) return;
+    const selectionList = sceneFlowSelectionList();
+    if (!selectionList.length) return;
+    await copySceneFlowSelection();
+    await deleteSceneFlowSelection();
+  }
+
+  async function duplicateSceneFlowSelection() {
+    if (!selectedProjectId || sceneFlowBusy) return;
+    const selectionList = sceneFlowSelectionList();
+    if (!selectionList.length) return;
+    const hasCopyable = selectionList.some((entry) => entry.type === "node" || entry.type === "comment");
+    if (!hasCopyable) return;
+    const key = selectionKey(selectionList);
+    if (key !== sceneFlowDuplicateKey) {
+      sceneFlowDuplicateKey = key;
+      sceneFlowDuplicateIndex = 0;
+    }
+    await copySceneFlowSelection();
+    const offset = 24 * (sceneFlowDuplicateIndex + 1);
+    sceneFlowDuplicateIndex += 1;
+    await pasteSceneFlowSelectionWithOffset(offset, offset);
   }
 
   function sceneGroupTotal(groups) {
@@ -1413,6 +2324,7 @@
       return;
     }
     resetVarDefEditor();
+    refreshRuntimeVars(nodeEditorTarget);
   }
 
   async function moveVarDef(index, direction) {
@@ -1420,12 +2332,16 @@
     if (!nodeEditorVarDefs[index]) return null;
     const target = index + direction;
     if (target < 0 || target >= nodeEditorVarDefs.length) return null;
-    return await runSceneFlowCommand("SceneFlow.Node.VarDef.Move", {
+    const response = await runSceneFlowCommand("SceneFlow.Node.VarDef.Move", {
       projectId: selectedProjectId,
       nodeId: nodeEditorTarget.id,
       from: index,
       to: target
     });
+    if (response) {
+      refreshRuntimeVars(nodeEditorTarget);
+    }
+    return response;
   }
 
   async function moveSelectedVarDef(direction) {
@@ -1458,6 +2374,7 @@
       nodeId: nodeEditorTarget.id,
       index
     });
+    refreshRuntimeVars(nodeEditorTarget);
     if (varDefEditIndex === index) {
       resetVarDefEditor();
     }
@@ -1480,6 +2397,7 @@
     if (!targetId && !nodeEditorTarget) return;
     if (nodeId && (sceneFlowSelection?.type !== "node" || sceneFlowSelection.id !== nodeId)) {
       sceneFlowSelection = { type: "node", id: nodeId };
+      sceneFlowMultiSelection = [{ type: "node", id: nodeId }];
       await tick();
     }
     cmdDialogOpen = true;
@@ -1808,6 +2726,7 @@
     edgeCreateSourceId = "";
     if (!edgeCreateMode) {
       sceneFlowSelection = null;
+      sceneFlowMultiSelection = [];
     }
   }
 
@@ -1816,12 +2735,14 @@
       edgeCreateMode = false;
       edgeCreateSourceId = "";
       sceneFlowSelection = null;
+      sceneFlowMultiSelection = [];
       return;
     }
     edgeCreateType = type;
     edgeCreateMode = true;
     edgeCreateSourceId = "";
     sceneFlowSelection = null;
+    sceneFlowMultiSelection = [];
   }
 
   async function handleEdgePick(nodeId) {
@@ -1829,17 +2750,20 @@
     if (!edgeCreateSourceId) {
       edgeCreateSourceId = nodeId;
       sceneFlowSelection = { type: "node", id: nodeId };
+      sceneFlowMultiSelection = [{ type: "node", id: nodeId }];
       return;
     }
     if (edgeCreateSourceId === nodeId) {
       edgeCreateSourceId = "";
       sceneFlowSelection = null;
+      sceneFlowMultiSelection = [];
       return;
     }
     await createSceneFlowEdge(edgeCreateSourceId, nodeId);
     edgeCreateSourceId = "";
     edgeCreateMode = false;
     sceneFlowSelection = null;
+    sceneFlowMultiSelection = [];
   }
 
   async function moveSceneFlowNode(nodeId, x, y, snap) {
@@ -2111,19 +3035,7 @@
         fields.condition = condition;
       }
     } else if (type === "PEDGE") {
-      const raw = String(edgeDraft.probability ?? "").trim();
-      const parsed = Number.parseInt(raw, 10);
-      if (!Number.isFinite(parsed)) {
-        edgeEditError = "Probability must be a number.";
-        return;
-      }
-      if (parsed < 0 || parsed > 100) {
-        edgeEditError = "Probability must be between 0 and 100.";
-        return;
-      }
-      if (parsed !== (selectedEdge.probability ?? 0)) {
-        fields.probability = parsed;
-      }
+      // Probability edits are managed via the probability manager.
     } else if (type === "TEDGE") {
       const raw = String(edgeDraft.timeoutMs ?? "").trim();
       const parsed = Number.parseInt(raw, 10);
@@ -2169,29 +3081,34 @@
   }
 
   async function deleteSceneFlowSelection() {
-    if (!selectedProjectId || !sceneFlowSelection) return;
-    const { type, id } = sceneFlowSelection;
-    if (type === "node") {
-      await runSceneFlowCommand("SceneFlow.Node.Delete", { projectId: selectedProjectId, nodeId: id });
-      sceneFlowSelection = null;
-      return;
+    if (!selectedProjectId || sceneFlowBusy) return;
+    const selectionList = sceneFlowSelectionList();
+    if (!selectionList.length) return;
+    const selection = sceneFlowSelection;
+    sceneFlowSelection = null;
+    sceneFlowMultiSelection = [];
+    const nodeIds = selectionList.filter((item) => item.type === "node").map((item) => item.id);
+    const commentIds = selectionList.filter((item) => item.type === "comment").map((item) => item.id);
+    const edgeIds = selectionList.filter((item) => item.type === "edge").map((item) => item.id);
+
+    for (const nodeId of nodeIds) {
+      await runSceneFlowCommand("SceneFlow.Node.Delete", { projectId: selectedProjectId, nodeId });
     }
-    if (type === "comment") {
-      await runSceneFlowCommand("SceneFlow.Comment.Delete", { projectId: selectedProjectId, commentId: id });
-      sceneFlowSelection = null;
-      return;
+    for (const commentId of commentIds) {
+      await runSceneFlowCommand("SceneFlow.Comment.Delete", { projectId: selectedProjectId, commentId });
     }
-    if (type === "edge") {
-      const edge = sceneFlow?.edges?.find((entry) => entry.id === id);
-      const payload = { projectId: selectedProjectId, edgeId: id };
-      if (edge?.sourceId) {
-        payload.sourceId = edge.sourceId;
+    if (!nodeIds.length) {
+      for (const edgeId of edgeIds) {
+        const edge = sceneFlow?.edges?.find((entry) => entry.id === edgeId);
+        const payload = { projectId: selectedProjectId, edgeId };
+        if (edge?.sourceId) {
+          payload.sourceId = edge.sourceId;
+        }
+        if (edge?.targetId) {
+          payload.targetId = edge.targetId;
+        }
+        await runSceneFlowCommand("SceneFlow.Edge.Delete", payload);
       }
-      if (edge?.targetId) {
-        payload.targetId = edge.targetId;
-      }
-      await runSceneFlowCommand("SceneFlow.Edge.Delete", payload);
-      sceneFlowSelection = null;
     }
   }
 
@@ -2204,13 +3121,54 @@
     if (!selectedProjectId) return;
     await runSceneFlowCommand("SceneFlow.Redo", { projectId: selectedProjectId });
   }
+
+  function isEditableTarget(target) {
+    if (!target) return false;
+    const tag = target.tagName ? target.tagName.toLowerCase() : "";
+    if (tag === "input" || tag === "textarea" || tag === "select") return true;
+    return !!target.isContentEditable;
+  }
+
+  function handleGlobalKeydown(event) {
+    if (!event) return;
+    if (isEditableTarget(event.target)) return;
+    const key = event.key;
+    const isMod = event.metaKey || event.ctrlKey;
+    if (isMod && key.toLowerCase() === "z") {
+      event.preventDefault();
+      if (event.shiftKey) {
+        redoSceneFlow();
+      } else {
+        undoSceneFlow();
+      }
+      return;
+    }
+    if (isMod && key.toLowerCase() === "y") {
+      event.preventDefault();
+      redoSceneFlow();
+      return;
+    }
+    if ((key === "Delete" || key === "Backspace") && sceneFlowSelectionList().length) {
+      event.preventDefault();
+      deleteSceneFlowSelection();
+      return;
+    }
+    if (key === "Escape" && edgeCreateMode) {
+      edgeCreateMode = false;
+      edgeCreateSourceId = "";
+      sceneFlowSelection = null;
+      sceneFlowMultiSelection = [];
+    }
+  }
 </script>
+
+<svelte:window on:keydown={handleGlobalKeydown} />
 
 <main>
   <header class="hero">
     <div>
       <h1>Visual SceneMaker Web UI</h1>
-      <p>Preferences and project dialogs are live. Use the token to connect to the editor.</p>
+      <p>Revision {infoRevision} Build date {infoBuildDate}</p>
     </div>
     <div class="badge">
       <span class:ok={wsConnected}>WS {wsConnected ? "connected" : "offline"}</span>
@@ -2224,7 +3182,7 @@
     </div>
     <div class="row">
       <button type="button" class="primary" on:click={connectAll}>Connect</button>
-      <button type="button" class="ghost" on:click={loadInfo}>Refresh Info</button>
+      <button type="button" class="ghost" on:click={refreshInfo}>Refresh Info</button>
     </div>
     {#if info}
       <div class="info">
@@ -2406,50 +3364,6 @@
         <button
           type="button"
           class="ghost"
-          on:click={() => createSceneFlowNode("Basic")}
-          disabled={!selectedProject || !wsConnected || sceneFlowBusy}
-        >
-          Add node
-        </button>
-        <button
-          type="button"
-          class="ghost"
-          on:click={() => createSceneFlowNode("Super")}
-          disabled={!selectedProject || !wsConnected || sceneFlowBusy}
-        >
-          Add super
-        </button>
-        <button
-          type="button"
-          class="ghost"
-          on:click={createSceneFlowComment}
-          disabled={!selectedProject || !wsConnected || sceneFlowBusy}
-        >
-          Add comment
-        </button>
-        <button
-          type="button"
-          class="ghost"
-          class:active={edgeCreateMode}
-          on:click={toggleEdgeCreateMode}
-          disabled={!selectedProject || !wsConnected || sceneFlowBusy || !sceneFlow}
-        >
-          Add edge
-        </button>
-        <label class="toggle edge-type">
-          <span>Edge type</span>
-          <select bind:value={edgeCreateType} disabled={!sceneFlow || !wsConnected || sceneFlowBusy}>
-            <option value="EEDGE">Epsilon</option>
-            <option value="CEDGE">Conditional</option>
-            <option value="IEDGE">Interruptive</option>
-            <option value="PEDGE">Probability</option>
-            <option value="TEDGE">Timeout</option>
-            <option value="FEDGE">Fork</option>
-          </select>
-        </label>
-        <button
-          type="button"
-          class="ghost"
           on:click={deleteSceneFlowSelection}
           disabled={!sceneFlowSelection || sceneFlowBusy}
         >
@@ -2461,50 +3375,65 @@
         <button type="button" class="ghost" on:click={redoSceneFlow} disabled={!wsConnected || sceneFlowBusy}>
           Redo
         </button>
-        <label class="toggle">
-          <input type="checkbox" bind:checked={sceneFlowSnap} disabled={!sceneFlow} />
-          <span>Snap</span>
-        </label>
-        <button
-          type="button"
-          class="ghost"
-          on:click={() => sceneFlowRef?.zoomOut()}
-          disabled={!sceneFlow}
-        >
-          Zoom out
-        </button>
-        <button
-          type="button"
-          class="ghost"
-          on:click={() => sceneFlowRef?.zoomIn()}
-          disabled={!sceneFlow}
-        >
-          Zoom in
-        </button>
-        <button
-          type="button"
-          class="ghost"
-          on:click={() => sceneFlowRef?.fitToView()}
-          disabled={!sceneFlow}
-        >
-          Fit
-        </button>
-        {#if sceneFlow}
-          <span class="muted">Zoom {Math.round(sceneFlowZoom * 100)}%</span>
-        {/if}
-        {#if edgeCreateMode}
-          <span class="muted">
-            Edge {edgeTypeLabel(edgeCreateType)}: {edgeCreateSourceId ? `source ${edgeCreateSourceId} → pick target` : "pick source node"}
-          </span>
-        {/if}
-        {#if sceneFlow?.path?.length}
-          <span class="muted">Path: {sceneFlow.path.join(" / ")}</span>
-        {/if}
-        {#if sceneFlow?.revision}
-          <span class="muted">rev {sceneFlow.revision}</span>
-        {/if}
-        {#if sceneFlowLoading}
-          <span class="muted">Loading...</span>
+        <div class="runtime-controls">
+          <span class={`runtime-state ${runtimeState}`}>{runtimeStateLabel}</span>
+          <button
+            type="button"
+            class="ghost icon-button"
+            on:click={() => runRuntimeCommand("Runtime.Play")}
+            disabled={!runtimeCanPlay}
+            aria-label={runtimePlayLabel}
+            title={runtimePlayLabel}
+          >
+            <IconStart className="icon" />
+          </button>
+          <button
+            type="button"
+            class="ghost icon-button"
+            on:click={() => runRuntimeCommand("Runtime.Pause")}
+            disabled={!runtimeCanPause}
+            aria-label="Pause"
+            title="Pause"
+          >
+            <IconPause className="icon" />
+          </button>
+          <button
+            type="button"
+            class="ghost icon-button danger"
+            on:click={() => runRuntimeCommand("Runtime.Stop")}
+            disabled={!runtimeCanStop}
+            aria-label="Stop"
+            title="Stop"
+          >
+            <IconStop className="icon" />
+          </button>
+        </div>
+        {#if sceneFlowPathNodes.length || sceneFlow?.path?.length}
+          <div class="sceneflow-breadcrumbs-row">
+            {#if sceneFlowPathNodes.length}
+              <nav class="sceneflow-breadcrumbs" aria-label="SceneFlow path">
+                {#each sceneFlowPathNodes as node, idx}
+                  {#if idx > 0}
+                    <span class="crumb-sep">/</span>
+                  {/if}
+                  {#if idx < sceneFlowPathNodes.length - 1}
+                    <button
+                      type="button"
+                      class="crumb"
+                      on:click={() => navigateSceneFlow(node.id || SCENEFLOW_ROOT_ID)}
+                      disabled={!wsConnected || sceneFlowBusy}
+                    >
+                      {node.name || "SceneFlow"}
+                    </button>
+                  {:else}
+                    <span class="crumb-current">{node.name || "SceneFlow"}</span>
+                  {/if}
+                {/each}
+              </nav>
+            {:else}
+              <span class="muted">Path: {sceneFlow.path.join(" / ")}</span>
+            {/if}
+          </div>
         {/if}
       </div>
       {#if !selectedProject}
@@ -2752,7 +3681,7 @@
               {/if}
             </div>
           </aside>
-          <div class="sceneflow-container" style={sceneFlowFrameStyle}>
+          <div class="sceneflow-container" style={sceneFlowFrameStyle} bind:this={sceneFlowContainerEl}>
             <div class="sceneflow-scroll">
               <SceneFlowView
                 bind:this={sceneFlowRef}
@@ -2760,6 +3689,7 @@
                 bind:worldBox={sceneFlowWorldBox}
                 bind:viewBoxState={sceneFlowViewBox}
                 bind:selection={sceneFlowSelection}
+                bind:multiSelection={sceneFlowMultiSelection}
                 config={configDraft}
                 snapshot={sceneFlow}
                 onNavigate={navigateSceneFlow}
@@ -2771,6 +3701,8 @@
                 onRedo={redoSceneFlow}
                 snapToGrid={sceneFlowSnap}
                 edgeCreateMode={edgeCreateMode}
+                edgeCreateSourceId={edgeCreateSourceId}
+                edgeCreateType={edgeCreateType}
                 onEdgePick={handleEdgePick}
                 onSceneDrop={handleSceneFlowSceneDrop}
                 sceneDragType={SCENE_DRAG_TYPE}
@@ -2778,26 +3710,277 @@
                 blockDragType={BLOCK_DRAG_TYPE}
                 showCommandText={sceneFlowShowCmdText}
                 onCommandOpen={openCmdDialog}
+                onCopySelection={copySceneFlowSelection}
+                onPasteSelection={pasteSceneFlowSelection}
+                onCutSelection={cutSceneFlowSelection}
+                onDuplicateSelection={duplicateSceneFlowSelection}
               />
             </div>
-            <button
-              type="button"
-              class="sceneflow-cmd-toggle"
-              class:active={sceneFlowShowCmdText}
-              on:click={() => (sceneFlowShowCmdText = !sceneFlowShowCmdText)}
-              aria-pressed={sceneFlowShowCmdText}
-            >
-              show cmds
-            </button>
-            <SceneFlowMiniMap
-              snapshot={sceneFlow}
-              worldBox={sceneFlowWorldBox}
-              viewBox={sceneFlowViewBox}
-              onCenter={(x, y) => sceneFlowRef?.centerOn(x, y)}
-            />
+            <div class="sceneflow-toggles">
+              <button
+                type="button"
+                class="sceneflow-toggle"
+                class:active={sceneFlowSnap}
+                on:click={() => (sceneFlowSnap = !sceneFlowSnap)}
+                aria-pressed={sceneFlowSnap}
+                disabled={!sceneFlow}
+              >
+                grid snap
+              </button>
+              <button
+                type="button"
+                class="sceneflow-toggle"
+                class:active={varBadgeState.visible}
+                on:click={toggleVarBadges}
+                aria-pressed={varBadgeState.visible}
+                disabled={!sceneFlow}
+              >
+                show vars
+              </button>
+              <button
+                type="button"
+                class="sceneflow-toggle"
+                class:active={sceneFlowShowCmdText}
+                on:click={() => (sceneFlowShowCmdText = !sceneFlowShowCmdText)}
+                aria-pressed={sceneFlowShowCmdText}
+              >
+                show cmds
+              </button>
+            </div>
+            {#if varBadgeState.visible}
+              <div
+                class="sceneflow-var-badge"
+                style:left={`${varBadgeState.global?.x ?? 0}px`}
+                style:top={`${varBadgeState.global?.y ?? 0}px`}
+                style:width={`${varBadgeState.global?.w ?? VAR_BADGE_MIN_WIDTH}px`}
+                style:height={`${varBadgeState.global?.h ?? VAR_BADGE_MIN_HEIGHT}px`}
+                data-badge="global"
+                on:pointerdown|stopPropagation={(event) => handleVarBadgePointerDown(event, "global")}
+                on:mousedown|stopPropagation={(event) => handleVarBadgePointerDown(event, "global")}
+                role="presentation"
+              >
+                <div class="sceneflow-var-title">
+                  <span>Variables</span>
+                </div>
+                <div class="sceneflow-var-content">
+                  <div class="sceneflow-var-list">
+                    {#if runtimeError}
+                      <span class="error">{runtimeError}</span>
+                    {:else if runtimeLoading}
+                      <span class="muted">Loading...</span>
+                    {:else if runtimeDisplayGlobals.length === 0}
+                      <span class="muted">No variables.</span>
+                    {:else}
+                      {#each runtimeDisplayGlobals as variable}
+                        <div class="sceneflow-var-row" title={runtimeVarLine(variable)}>
+                          {runtimeVarLine(variable) || variable?.name || "Variable"}
+                        </div>
+                      {/each}
+                    {/if}
+                  </div>
+                </div>
+                <svg
+                  class="var-resize-handle"
+                  viewBox={`0 0 ${VAR_BADGE_HANDLE_SIZE} ${VAR_BADGE_HANDLE_SIZE}`}
+                  aria-hidden="true"
+                  on:pointerdown|stopPropagation={(event) => startVarBadgeResize(event, "global")}
+                  on:mousedown|stopPropagation={(event) => startVarBadgeResize(event, "global")}
+                >
+                  <path class="var-resize-fill" d={VAR_BADGE_HANDLE_PATH} />
+                </svg>
+              </div>
+              {#if showLocalVarBadge}
+                <div
+                  class="sceneflow-var-badge"
+                  style:left={`${varBadgeState.local?.x ?? 0}px`}
+                  style:top={`${varBadgeState.local?.y ?? 0}px`}
+                  style:width={`${varBadgeState.local?.w ?? VAR_BADGE_MIN_WIDTH}px`}
+                  style:height={`${varBadgeState.local?.h ?? VAR_BADGE_MIN_HEIGHT}px`}
+                  data-badge="local"
+                  on:pointerdown|stopPropagation={(event) => handleVarBadgePointerDown(event, "local")}
+                  on:mousedown|stopPropagation={(event) => handleVarBadgePointerDown(event, "local")}
+                  role="presentation"
+                >
+                  <div class="sceneflow-var-title">
+                    <span>Local variables</span>
+                    <span class="muted">{currentSuperName}</span>
+                  </div>
+                  <div class="sceneflow-var-content">
+                    <div class="sceneflow-var-list">
+                      {#if runtimeError}
+                        <span class="error">{runtimeError}</span>
+                      {:else if runtimeLoading}
+                        <span class="muted">Loading...</span>
+                      {:else if runtimeLocals.length === 0}
+                        <span class="muted">No local variables.</span>
+                      {:else}
+                        {#each runtimeLocals as variable}
+                          <div class="sceneflow-var-row" title={runtimeVarLine(variable)}>
+                            {runtimeVarLine(variable) || variable?.name || "Variable"}
+                          </div>
+                        {/each}
+                      {/if}
+                    </div>
+                  </div>
+                  <svg
+                    class="var-resize-handle"
+                    viewBox={`0 0 ${VAR_BADGE_HANDLE_SIZE} ${VAR_BADGE_HANDLE_SIZE}`}
+                    aria-hidden="true"
+                    on:pointerdown|stopPropagation={(event) => startVarBadgeResize(event, "local")}
+                    on:mousedown|stopPropagation={(event) => startVarBadgeResize(event, "local")}
+                  >
+                    <path class="var-resize-fill" d={VAR_BADGE_HANDLE_PATH} />
+                  </svg>
+                </div>
+              {/if}
+            {/if}
+            <div class="sceneflow-navigator">
+              <div class="sceneflow-zoom-controls">
+                {#if sceneFlow}
+                  <span class="sceneflow-zoom-label">{Math.round(sceneFlowZoom * 100)}%</span>
+                {/if}
+                <button
+                  type="button"
+                  class="sceneflow-zoom-button"
+                  on:click={() => sceneFlowRef?.zoomIn()}
+                  disabled={!sceneFlow}
+                  aria-label="Zoom in"
+                  title="Zoom in"
+                >
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <line x1="12" y1="5" x2="12" y2="19" />
+                    <line x1="5" y1="12" x2="19" y2="12" />
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  class="sceneflow-zoom-button"
+                  on:click={() => sceneFlowRef?.zoomOut()}
+                  disabled={!sceneFlow}
+                  aria-label="Zoom out"
+                  title="Zoom out"
+                >
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <line x1="5" y1="12" x2="19" y2="12" />
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  class="sceneflow-zoom-button"
+                  on:click={() => sceneFlowRef?.fitToView()}
+                  disabled={!sceneFlow}
+                  aria-label="Fit to view"
+                  title="Fit to view"
+                >
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" />
+                  </svg>
+                </button>
+              </div>
+              <SceneFlowMiniMap
+                snapshot={sceneFlow}
+                worldBox={sceneFlowWorldBox}
+                viewBox={sceneFlowViewBox}
+                onCenter={(x, y) => sceneFlowRef?.centerOn(x, y)}
+              />
+            </div>
           </div>
           <aside class="sceneflow-inspector">
-            {#if sceneFlowSelection?.type === "node" && selectedNode && nodeDraft}
+            {#if multiSelectionActive}
+              <h3 class="inspector-title">Selection ({selectionList.length})</h3>
+              <div class="inspector-meta">
+                <div class="inspector-row">
+                  <span>Nodes</span>
+                  <span>
+                    {selectionNodes.length
+                      ? `${selectionNodes.length}${selectionNodeSummary ? ` (${selectionNodeSummary})` : ""}`
+                      : "0"}
+                  </span>
+                </div>
+                <div class="inspector-row">
+                  <span>Edges</span>
+                  <span>
+                    {selectionEdges.length
+                      ? `${selectionEdges.length}${selectionEdgeSummary ? ` (${selectionEdgeSummary})` : ""}`
+                      : "0"}
+                  </span>
+                </div>
+                <div class="inspector-row">
+                  <span>Comments</span>
+                  <span>{selectionComments.length || 0}</span>
+                </div>
+                {#if selectionNodes.length}
+                  <div class="inspector-row">
+                    <span>Start nodes</span>
+                    <span>{selectionStartCount ? selectionStartCount : "None"}</span>
+                  </div>
+                {/if}
+              </div>
+              {#if selectionNodePreview.length}
+                <div class="definition-section">
+                  <header class="definition-header">
+                    <h4>Nodes</h4>
+                    <span class="muted">{selectionNodes.length}</span>
+                  </header>
+                  <div class="definition-list">
+                    {#each selectionNodePreview as node}
+                      <div class="definition-row">
+                        <span>{displayNodeName(node)}</span>
+                        <span class="muted">{node.type === "Super" ? "Super" : "Basic"}</span>
+                      </div>
+                    {/each}
+                    {#if selectionNodeRemaining > 0}
+                      <div class="definition-row muted">+ {selectionNodeRemaining} more</div>
+                    {/if}
+                  </div>
+                </div>
+              {/if}
+              {#if selectionCommentPreview.length}
+                <div class="definition-section">
+                  <header class="definition-header">
+                    <h4>Comments</h4>
+                    <span class="muted">{selectionComments.length}</span>
+                  </header>
+                  <div class="definition-list">
+                    {#each selectionCommentPreview as comment, index}
+                      <div class="definition-row">
+                        <span>{commentLabel(comment, index)}</span>
+                        <span class="muted">
+                          {comment.rect?.w ?? 0} x {comment.rect?.h ?? 0}
+                        </span>
+                      </div>
+                    {/each}
+                    {#if selectionCommentRemaining > 0}
+                      <div class="definition-row muted">+ {selectionCommentRemaining} more</div>
+                    {/if}
+                  </div>
+                </div>
+              {/if}
+              <div class="actions">
+                <button type="button" class="ghost" on:click={copySceneFlowSelection} disabled={!wsConnected || sceneFlowBusy}>
+                  Copy
+                </button>
+                <button type="button" class="ghost" on:click={cutSceneFlowSelection} disabled={!wsConnected || sceneFlowBusy}>
+                  Cut
+                </button>
+                <button
+                  type="button"
+                  class="ghost"
+                  on:click={duplicateSceneFlowSelection}
+                  disabled={!wsConnected || sceneFlowBusy}
+                >
+                  Duplicate
+                </button>
+                <button
+                  type="button"
+                  class="ghost"
+                  on:click={deleteSceneFlowSelection}
+                  disabled={!wsConnected || sceneFlowBusy}
+                >
+                  Delete
+                </button>
+              </div>
+            {:else if sceneFlowSelection?.type === "node" && selectedNode && nodeDraft}
               <div class="node-header">
                 <input
                   class="node-title-input"
@@ -2835,8 +4018,57 @@
                   <label for="edge-condition">Condition</label>
                   <input id="edge-condition" bind:value={edgeDraft.condition} />
                 {:else if selectedEdge.type === "PEDGE"}
-                  <label for="edge-probability">Probability (0-100)</label>
-                  <input id="edge-probability" type="number" min="0" max="100" bind:value={edgeDraft.probability} />
+                  <div class="prob-manager">
+                    <div class="prob-header">
+                      <span>Probabilities</span>
+                      <span class="prob-sum" class:ok={pEdgeValid && pEdgeSum === 100}>
+                        {pEdgeValid ? `Sum ${pEdgeSum}%` : "Sum --"}
+                      </span>
+                    </div>
+                    <div class="def-table prob-table">
+                      <div class="def-list prob-list">
+                        {#if pEdgeDrafts.length === 0}
+                          <div class="def-empty">No probability edges yet.</div>
+                        {:else}
+                          {#each pEdgeDrafts as draft}
+                            <div class="def-row prob-row" class:selected={draft.edgeId === selectedEdge.id}>
+                              <span class="prob-label">{draft.label}</span>
+                              <input
+                                class="prob-input"
+                                type="number"
+                                min="0"
+                                max="100"
+                                value={draft.value}
+                                on:input={(event) => updatePEdgeDraft(draft.edgeId, event.currentTarget.value)}
+                              />
+                            </div>
+                          {/each}
+                        {/if}
+                      </div>
+                      <div class="def-actions prob-actions">
+                        <button type="button" class="ghost" on:click={normalizePEdgeDrafts} disabled={!pEdgeDrafts.length}>
+                          Normalize
+                        </button>
+                        <button type="button" class="ghost" on:click={uniformPEdgeDrafts} disabled={!pEdgeDrafts.length}>
+                          Uniform
+                        </button>
+                        <button
+                          type="button"
+                          class="primary"
+                          on:click={applyPEdgeGroup}
+                          disabled={!wsConnected || sceneFlowBusy || !pEdgeDirty || !pEdgeValid || pEdgeSum !== 100}
+                        >
+                          Apply
+                        </button>
+                        <button type="button" class="ghost" on:click={syncPEdgeDrafts} disabled={!pEdgeDirty}>
+                          Reset
+                        </button>
+                      </div>
+                    </div>
+                    {#if pEdgeError}
+                      <p class="error">{pEdgeError}</p>
+                    {/if}
+                  </div>
                 {:else if selectedEdge.type === "TEDGE"}
                   <label for="edge-timeout">Timeout (ms)</label>
                   <input id="edge-timeout" type="number" min="0" bind:value={edgeDraft.timeoutMs} />
@@ -2923,7 +4155,7 @@
               {/if}
             {/if}
 
-            {#if nodeEditorTarget}
+            {#if nodeEditorTarget && !multiSelectionActive}
               <div class="definition-section">
                 <header class="definition-header">
                   <h4>Type definitions</h4>
@@ -3192,8 +4424,30 @@
       {:else}
         <p class="muted">No SceneFlow data loaded yet.</p>
       {/if}
-      {#if sceneFlowError}
-        <p class="error">{sceneFlowError}</p>
+      {#if sceneFlowError || runtimeError || edgeCreateMode || sceneFlowLoading || sceneFlow?.revision}
+        <div class="sceneflow-status">
+          <div class="sceneflow-status-left">
+            {#if sceneFlowError}
+              <span class="error">{sceneFlowError}</span>
+            {/if}
+            {#if runtimeError}
+              <span class="error">{runtimeError}</span>
+            {/if}
+            {#if edgeCreateMode}
+              <span class="muted">
+                Edge {edgeTypeLabel(edgeCreateType)}: {edgeCreateSourceId ? `source ${edgeCreateSourceId} → pick target` : "pick source node"}
+              </span>
+            {/if}
+            {#if sceneFlowLoading}
+              <span class="muted">Loading...</span>
+            {/if}
+          </div>
+          <div class="sceneflow-status-right">
+            {#if sceneFlow?.revision}
+              <span class="muted">rev {sceneFlow.revision}</span>
+            {/if}
+          </div>
+        </div>
       {/if}
     </section>
 
@@ -3246,6 +4500,39 @@
         {#if scriptDirty}
           <span class="muted">Unsaved edits</span>
         {/if}
+        <div class="runtime-controls">
+          <span class={`runtime-state ${runtimeState}`}>{runtimeStateLabel}</span>
+          <button
+            type="button"
+            class="ghost icon-button"
+            on:click={() => runRuntimeCommand("Runtime.Play")}
+            disabled={!runtimeCanPlay}
+            aria-label={runtimePlayLabel}
+            title={runtimePlayLabel}
+          >
+            <IconStart className="icon" />
+          </button>
+          <button
+            type="button"
+            class="ghost icon-button"
+            on:click={() => runRuntimeCommand("Runtime.Pause")}
+            disabled={!runtimeCanPause}
+            aria-label="Pause"
+            title="Pause"
+          >
+            <IconPause className="icon" />
+          </button>
+          <button
+            type="button"
+            class="ghost icon-button danger"
+            on:click={() => runRuntimeCommand("Runtime.Stop")}
+            disabled={!runtimeCanStop}
+            aria-label="Stop"
+            title="Stop"
+          >
+            <IconStop className="icon" />
+          </button>
+        </div>
       </div>
       {#if !selectedProject}
         <p class="muted">Select a project to edit the scene script.</p>

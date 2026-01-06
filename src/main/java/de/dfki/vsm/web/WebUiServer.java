@@ -60,9 +60,14 @@ import de.dfki.vsm.model.sceneflow.glue.command.expression.record.StructExpressi
 import de.dfki.vsm.model.scenescript.SceneObject;
 import de.dfki.vsm.model.scenescript.SceneScript;
 import de.dfki.vsm.model.scenescript.ScriptDiagnostics;
+import de.dfki.vsm.event.EventDispatcher;
+import de.dfki.vsm.event.EventListener;
+import de.dfki.vsm.event.EventObject;
+import de.dfki.vsm.event.event.VariableChangedEvent;
 import de.dfki.vsm.model.visicon.VisiconAgent;
 import de.dfki.vsm.model.visicon.VisiconConfig;
 import de.dfki.vsm.model.visicon.VisiconViseme;
+import de.dfki.vsm.runtime.interpreter.value.AbstractValue;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 import de.dfki.vsm.util.tpl.Tuple;
@@ -84,11 +89,16 @@ import javax.swing.undo.UndoManager;
 import java.awt.Component;
 import java.awt.Point;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.InetAddress;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -98,23 +108,45 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
+import java.util.jar.Attributes;
+import java.util.jar.Manifest;
 
-public final class WebUiServer {
+public final class WebUiServer implements EventListener {
 
     private static final WebUiServer INSTANCE = new WebUiServer();
     private static final int DEFAULT_PORT = 8090;
     private static final String API_PREFIX = "/api/v1";
+    private static final String ROOT_SUPERNODE_ID = "__root__";
 
     private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
     private final SecureRandom mRandom = new SecureRandom();
     private final Set<WsContext> mSockets = ConcurrentHashMap.newKeySet();
+    private final ExecutorService mBroadcastExecutor = Executors.newSingleThreadExecutor(r -> {
+        Thread thread = new Thread(r, "WebUiServer-Broadcast");
+        thread.setDaemon(true);
+        return thread;
+    });
+    private final Map<String, SceneFlowClipboard> mSceneFlowClipboard = new ConcurrentHashMap<>();
 
     private Javalin mApp;
     private String mToken;
     private int mPort;
     private boolean mStarted;
+    private volatile String mLastRuntimeProjectId;
+
+    private static final class SceneFlowClipboard {
+        private final String projectId;
+        private final List<BasicNode> nodes;
+
+        private SceneFlowClipboard(String projectId, List<BasicNode> nodes) {
+            this.projectId = projectId;
+            this.nodes = nodes;
+        }
+    }
 
     public static WebUiServer getInstance() {
         return INSTANCE;
@@ -149,6 +181,7 @@ public final class WebUiServer {
 
         mApp.start(mPort);
         mStarted = true;
+        EventDispatcher.getInstance().register(this);
 
         logStartup();
 
@@ -159,8 +192,38 @@ public final class WebUiServer {
         if (!mStarted || mApp == null) {
             return;
         }
+        EventDispatcher.getInstance().remove(this);
         mApp.stop();
+        mBroadcastExecutor.shutdownNow();
         mStarted = false;
+    }
+
+    @Override
+    public void update(EventObject event) {
+        if (!(event instanceof VariableChangedEvent)) {
+            return;
+        }
+        Tuple<String, String> pair = ((VariableChangedEvent) event).getVarValue();
+        if (pair == null) {
+            return;
+        }
+        String name = pair.getFirst();
+        if (name == null || name.isBlank()) {
+            return;
+        }
+        String value = sanitizeVariableValue(pair.getSecond());
+        JSONObject payload = new JSONObject();
+        payload.put("name", name);
+        payload.put("value", value);
+        String projectId = resolveVariableProjectId();
+        if (projectId != null) {
+            payload.put("projectId", projectId);
+        }
+        broadcastEvent("Runtime.VariableChanged", payload, null);
+    }
+
+    private String resolveVariableProjectId() {
+        return mLastRuntimeProjectId;
     }
 
     public String getToken() {
@@ -221,9 +284,37 @@ public final class WebUiServer {
         json.put("name", "VisualSceneMaker");
         json.put("port", mPort);
         json.put("tokenRequired", mToken != null && !mToken.isEmpty());
-        json.put("version", WebUiServer.class.getPackage().getImplementationVersion());
-        json.put("build", WebUiServer.class.getPackage().getImplementationVersion());
+        String version = WebUiServer.class.getPackage().getImplementationVersion();
+        String build = manifestAttribute("build");
+        String revision = manifestAttribute("Build-Revision");
+        String buildDate = manifestAttribute("Build-Date");
+        json.put("version", version);
+        json.put("build", build != null ? build : version);
+        if (revision != null) {
+            json.put("revision", revision);
+            json.put("buildRevision", revision);
+        }
+        if (buildDate != null) {
+            json.put("buildDate", buildDate);
+        }
         writeJson(ctx, json);
+    }
+
+    private String manifestAttribute(String name) {
+        if (name == null || name.isBlank()) {
+            return null;
+        }
+        try (InputStream input = WebUiServer.class.getResourceAsStream("/META-INF/MANIFEST.MF")) {
+            if (input == null) {
+                return null;
+            }
+            Manifest manifest = new Manifest(input);
+            Attributes attrs = manifest.getMainAttributes();
+            String value = attrs.getValue(name);
+            return (value == null || value.isBlank()) ? null : value;
+        } catch (IOException exc) {
+            return null;
+        }
     }
 
     private void handleProjectsList(Context ctx) {
@@ -529,7 +620,13 @@ public final class WebUiServer {
                 return null;
             }
             SceneFlow sceneFlow = editor.getEditorProject().getSceneFlow();
-            List<SuperNode> path = findPathToSuperNode(sceneFlow, superNodeId);
+            List<SuperNode> path;
+            if (ROOT_SUPERNODE_ID.equals(superNodeId)) {
+                path = new ArrayList<>();
+                path.add(sceneFlow);
+            } else {
+                path = findPathToSuperNode(sceneFlow, superNodeId);
+            }
             if (path == null) {
                 return new JSONObject().put("error", "SUPER_NODE_NOT_FOUND");
             }
@@ -702,6 +799,7 @@ public final class WebUiServer {
 
     private void handleRuntime(Context ctx) {
         String projectId = ctx.pathParam("id");
+        mLastRuntimeProjectId = projectId;
         JSONObject response = callOnEdt(() -> {
             EditorInstance instance = EditorInstance.getInstance();
             ProjectEditor editor = findProjectEditorById(projectId, instance);
@@ -992,7 +1090,13 @@ public final class WebUiServer {
                             return null;
                         }
                         SceneFlow sceneFlow = editor.getEditorProject().getSceneFlow();
-                        List<SuperNode> path = findPathToSuperNode(sceneFlow, superNodeId);
+                        List<SuperNode> path;
+                        if (ROOT_SUPERNODE_ID.equals(superNodeId)) {
+                            path = new ArrayList<>();
+                            path.add(sceneFlow);
+                        } else {
+                            path = findPathToSuperNode(sceneFlow, superNodeId);
+                        }
                         if (path == null) {
                             return new JSONObject().put("error", "SUPER_NODE_NOT_FOUND");
                         }
@@ -1069,6 +1173,7 @@ public final class WebUiServer {
                         JSONObject payloadResp = new JSONObject();
                         payloadResp.put("nodeId", nodeId);
                         payloadResp.put("snapshot", sceneFlowSnapshot(editor, manager.getCurrentActiveSuperNode()));
+                        appendDirty(editor, payloadResp);
                         return payloadResp;
                     });
                     if (response == null) {
@@ -1118,6 +1223,7 @@ public final class WebUiServer {
                         return;
                     }
                     sendResponse(ctx, requestId, name, response);
+                    broadcastDirtyIfPresent(response, projectId, sourceClientId);
                     return;
                 }
                 case "SceneFlow.Node.Update": {
@@ -1254,6 +1360,352 @@ public final class WebUiServer {
                     sendResponse(ctx, requestId, name, response);
                     return;
                 }
+                case "SceneFlow.Selection.Copy": {
+                    String projectId = body.optString("projectId", null);
+                    JSONArray nodeIds = body.optJSONArray("nodeIds");
+                    if (projectId == null || projectId.isBlank() || nodeIds == null) {
+                        sendError(ctx, requestId, "BAD_REQUEST", "Missing projectId or nodeIds");
+                        return;
+                    }
+                    if (sourceClientId == null || sourceClientId.isBlank()) {
+                        sendError(ctx, requestId, "CLIENT_ID_REQUIRED", "Missing sourceClientId");
+                        return;
+                    }
+                    JSONObject response = callOnEdt(() -> {
+                        EditorInstance instance = EditorInstance.getInstance();
+                        ProjectEditor editor = findProjectEditorById(projectId, instance);
+                        if (editor == null) {
+                            return null;
+                        }
+                        SceneFlowManager manager = editor.getSceneFlowEditor().getSceneFlowManager();
+                        SuperNode active = manager.getCurrentActiveSuperNode();
+                        List<BasicNode> copies = new ArrayList<>();
+                        for (int i = 0; i < nodeIds.length(); i++) {
+                            String id = nodeIds.optString(i, "").trim();
+                            if (id.isEmpty()) {
+                                continue;
+                            }
+                            BasicNode node = resolveNodeById(active, id);
+                            if (node == null || node.isHistoryNode()) {
+                                continue;
+                            }
+                            BasicNode copy = node.getCopy();
+                            if (copy != null) {
+                                copies.add(copy);
+                            }
+                        }
+                        if (copies.isEmpty()) {
+                            return new JSONObject().put("error", "NODE_NOT_FOUND");
+                        }
+                        mSceneFlowClipboard.put(sourceClientId, new SceneFlowClipboard(projectId, copies));
+                        return new JSONObject().put("count", copies.size());
+                    });
+                    if (response == null) {
+                        sendError(ctx, requestId, "PROJECT_NOT_FOUND", "Project not found");
+                        return;
+                    }
+                    if (response.has("error")) {
+                        sendError(ctx, requestId, response.getString("error"), "No nodes to copy");
+                        return;
+                    }
+                    sendResponse(ctx, requestId, name, response);
+                    return;
+                }
+                case "SceneFlow.Selection.Paste": {
+                    String projectId = body.optString("projectId", null);
+                    double dxRaw = body.has("dx") ? body.optDouble("dx", Double.NaN) : Double.NaN;
+                    double dyRaw = body.has("dy") ? body.optDouble("dy", Double.NaN) : Double.NaN;
+                    if (projectId == null || projectId.isBlank() || !isFinite(dxRaw) || !isFinite(dyRaw)) {
+                        sendError(ctx, requestId, "BAD_REQUEST", "Missing projectId or offset");
+                        return;
+                    }
+                    if (sourceClientId == null || sourceClientId.isBlank()) {
+                        sendError(ctx, requestId, "CLIENT_ID_REQUIRED", "Missing sourceClientId");
+                        return;
+                    }
+                    JSONObject response = callOnEdt(() -> {
+                        EditorInstance instance = EditorInstance.getInstance();
+                        ProjectEditor editor = findProjectEditorById(projectId, instance);
+                        if (editor == null) {
+                            return null;
+                        }
+                        SceneFlowClipboard clipboard = mSceneFlowClipboard.get(sourceClientId);
+                        if (clipboard == null || clipboard.nodes == null || clipboard.nodes.isEmpty()) {
+                            return new JSONObject().put("error", "CLIPBOARD_EMPTY");
+                        }
+                        List<BasicNode> nodes = new ArrayList<>();
+                        for (BasicNode stored : clipboard.nodes) {
+                            if (stored == null) {
+                                continue;
+                            }
+                            BasicNode copy = stored.getCopy();
+                            if (copy != null) {
+                                nodes.add(copy);
+                            }
+                        }
+                        if (nodes.isEmpty()) {
+                            return new JSONObject().put("error", "CLIPBOARD_EMPTY");
+                        }
+                        Point min = minNodePosition(nodes);
+                        int dx = (int) Math.round(dxRaw);
+                        int dy = (int) Math.round(dyRaw);
+                        if (min != null) {
+                            if (min.x + dx < 1) {
+                                dx += 1 - (min.x + dx);
+                            }
+                            if (min.y + dy < 1) {
+                                dy += 1 - (min.y + dy);
+                            }
+                        }
+                        Map<BasicNode, String> oldIds = new IdentityHashMap<>();
+                        for (BasicNode node : nodes) {
+                            collectNodeIdsRecursive(node, oldIds);
+                        }
+                        SceneFlowManager manager = editor.getSceneFlowEditor().getSceneFlowManager();
+                        manager.getIDManager().reassignAllIDs(new HashSet<>(nodes));
+                        Map<String, String> idMap = new HashMap<>();
+                        for (Map.Entry<BasicNode, String> entry : oldIds.entrySet()) {
+                            BasicNode node = entry.getKey();
+                            String oldId = entry.getValue();
+                            if (node != null && oldId != null && !oldId.isBlank()) {
+                                idMap.put(oldId, node.getId());
+                            }
+                        }
+                        SuperNode activeSuperNode = manager.getCurrentActiveSuperNode();
+                        Set<String> allowedTargetIds = new HashSet<>(idMap.values());
+                        HashMap<String, BasicNode> startBefore = new HashMap<>(activeSuperNode.getStartNodeMap());
+                        Set<String> startIds = new HashSet<>();
+                        for (Map.Entry<BasicNode, String> entry : oldIds.entrySet()) {
+                            String oldId = entry.getValue();
+                            if (oldId == null || oldId.isBlank()) {
+                                continue;
+                            }
+                            if (startBefore.containsKey(oldId)) {
+                                String newId = idMap.get(oldId);
+                                if (newId != null && !newId.isBlank()) {
+                                    startIds.add(newId);
+                                }
+                            }
+                        }
+                        for (BasicNode node : nodes) {
+                            normalizeEdgeIdsRecursive(node, allowedTargetIds);
+                        }
+                        for (BasicNode node : nodes) {
+                            remapAltStartMapsRecursive(node, idMap);
+                        }
+                        for (BasicNode node : nodes) {
+                            normalizeSuperNodesRecursive(node);
+                        }
+                        for (BasicNode node : nodes) {
+                            offsetNodeGraphics(node, dx, dy);
+                        }
+                        WorkSpacePanel workSpace = editor.getSceneFlowEditor().getWorkSpace();
+                        Map<BasicNode, ArrayList<GuargedEdge>> cEdges = new HashMap<>();
+                        Map<BasicNode, ArrayList<RandomEdge>> pEdges = new HashMap<>();
+                        Map<BasicNode, ArrayList<ForkingEdge>> fEdges = new HashMap<>();
+                        Map<BasicNode, ArrayList<InterruptEdge>> iEdges = new HashMap<>();
+                        Map<BasicNode, AbstractEdge> defaultEdges = new HashMap<>();
+                        for (BasicNode node : nodes) {
+                            if (node.hasEdge()) {
+                                switch (node.getFlavour()) {
+                                    case CNODE: {
+                                        ArrayList<GuargedEdge> edges = filterEdgesForCopy(node.getCEdgeList(), node.getId(), allowedTargetIds);
+                                        cEdges.put(node, edges);
+                                        node.removeAllCEdges();
+                                        if (node.hasDEdge()) {
+                                            AbstractEdge edge = node.getDedge();
+                                            if (normalizeEdgeForCopy(edge, node.getId(), allowedTargetIds)) {
+                                                defaultEdges.put(node, edge);
+                                            }
+                                            node.removeDEdge();
+                                        }
+                                        break;
+                                    }
+                                    case PNODE: {
+                                        ArrayList<RandomEdge> edges = filterEdgesForCopy(node.getPEdgeList(), node.getId(), allowedTargetIds);
+                                        pEdges.put(node, edges);
+                                        node.removeAllPEdges();
+                                        break;
+                                    }
+                                    case FNODE: {
+                                        ArrayList<ForkingEdge> edges = filterEdgesForCopy(node.getFEdgeList(), node.getId(), allowedTargetIds);
+                                        fEdges.put(node, edges);
+                                        node.removeAllFEdges();
+                                        break;
+                                    }
+                                    case INODE: {
+                                        ArrayList<InterruptEdge> edges = filterEdgesForCopy(node.getIEdgeList(), node.getId(), allowedTargetIds);
+                                        iEdges.put(node, edges);
+                                        node.removeAllIEdges();
+                                        if (node.hasDEdge()) {
+                                            AbstractEdge edge = node.getDedge();
+                                            if (normalizeEdgeForCopy(edge, node.getId(), allowedTargetIds)) {
+                                                defaultEdges.put(node, edge);
+                                            }
+                                            node.removeDEdge();
+                                        }
+                                        break;
+                                    }
+                                    case TNODE:
+                                    case ENODE:
+                                    case NONE: {
+                                        if (node.hasDEdge()) {
+                                            AbstractEdge edge = node.getDedge();
+                                            if (normalizeEdgeForCopy(edge, node.getId(), allowedTargetIds)) {
+                                                defaultEdges.put(node, edge);
+                                            }
+                                            node.removeDEdge();
+                                        }
+                                        break;
+                                    }
+                                    default:
+                                        break;
+                                }
+                            }
+                        }
+                        for (Map.Entry<BasicNode, ArrayList<GuargedEdge>> entry : cEdges.entrySet()) {
+                            for (GuargedEdge edge : entry.getValue()) {
+                                offsetEdgeGraphics(edge, dx, dy);
+                            }
+                        }
+                        for (Map.Entry<BasicNode, ArrayList<RandomEdge>> entry : pEdges.entrySet()) {
+                            for (RandomEdge edge : entry.getValue()) {
+                                offsetEdgeGraphics(edge, dx, dy);
+                            }
+                        }
+                        for (Map.Entry<BasicNode, ArrayList<ForkingEdge>> entry : fEdges.entrySet()) {
+                            for (ForkingEdge edge : entry.getValue()) {
+                                offsetEdgeGraphics(edge, dx, dy);
+                            }
+                        }
+                        for (Map.Entry<BasicNode, ArrayList<InterruptEdge>> entry : iEdges.entrySet()) {
+                            for (InterruptEdge edge : entry.getValue()) {
+                                offsetEdgeGraphics(edge, dx, dy);
+                            }
+                        }
+                        for (Map.Entry<BasicNode, AbstractEdge> entry : defaultEdges.entrySet()) {
+                            offsetEdgeGraphics(entry.getValue(), dx, dy);
+                        }
+                        JSONArray newNodeIds = new JSONArray();
+                        Map<String, BasicNode> createdNodes = new HashMap<>();
+                        for (BasicNode node : nodes) {
+                            CreateNodeAction action = new CreateNodeAction(workSpace, node);
+                            action.run();
+                            Node guiNode = workSpace.getNode(node.getId());
+                            if (guiNode != null) {
+                                guiNode.getDataNode().setGraphics(new NodeGraphics(guiNode.getX(), guiNode.getY()));
+                            }
+                            newNodeIds.put(node.getId());
+                            createdNodes.put(node.getId(), node);
+                        }
+                        if (!startIds.isEmpty()) {
+                            for (String startId : startIds) {
+                                BasicNode dataNode = createdNodes.get(startId);
+                                if (dataNode == null) {
+                                    continue;
+                                }
+                                Node guiNode = workSpace.getNode(startId);
+                                updateStartFlag(dataNode, guiNode, true);
+                            }
+                            HashMap<String, BasicNode> startAfter = new HashMap<>(activeSuperNode.getStartNodeMap());
+                            if (!startBefore.equals(startAfter)) {
+                                UndoManager undoManager = editor.getSceneFlowEditor().getUndoManager();
+                                undoManager.addEdit(new AbstractUndoableEdit() {
+                                    @Override
+                                    public void undo() throws CannotUndoException {
+                                        super.undo();
+                                        applyStartMap(workSpace, activeSuperNode, startBefore);
+                                        workSpace.revalidate();
+                                        workSpace.repaint(100);
+                                    }
+
+                                    @Override
+                                    public void redo() throws CannotRedoException {
+                                        super.redo();
+                                        applyStartMap(workSpace, activeSuperNode, startAfter);
+                                        workSpace.revalidate();
+                                        workSpace.repaint(100);
+                                    }
+
+                                    @Override
+                                    public String getUndoPresentationName() {
+                                        return "Undo Update Start Nodes";
+                                    }
+
+                                    @Override
+                                    public String getRedoPresentationName() {
+                                        return "Redo Update Start Nodes";
+                                    }
+                                });
+                                UndoAction.getInstance().refreshUndoState();
+                                RedoAction.getInstance().refreshRedoState();
+                            }
+                        }
+                        for (BasicNode node : nodes) {
+                            if (cEdges.containsKey(node)) {
+                                for (GuargedEdge edge : cEdges.get(node)) {
+                                    Node source = workSpace.getNode(node.getId());
+                                    Node target = workSpace.getNode(edge.getTargetUnid());
+                                    if (source != null && target != null) {
+                                        new CreateEdgeAction(workSpace, source, target, edge, Edge.TYPE.CEDGE).run();
+                                    }
+                                }
+                            }
+                            if (pEdges.containsKey(node)) {
+                                for (RandomEdge edge : pEdges.get(node)) {
+                                    Node source = workSpace.getNode(node.getId());
+                                    Node target = workSpace.getNode(edge.getTargetUnid());
+                                    if (source != null && target != null) {
+                                        new CreateEdgeAction(workSpace, source, target, edge, Edge.TYPE.PEDGE).run();
+                                    }
+                                }
+                            }
+                            if (fEdges.containsKey(node)) {
+                                for (ForkingEdge edge : fEdges.get(node)) {
+                                    Node source = workSpace.getNode(node.getId());
+                                    Node target = workSpace.getNode(edge.getTargetUnid());
+                                    if (source != null && target != null) {
+                                        new CreateEdgeAction(workSpace, source, target, edge, Edge.TYPE.FEDGE).run();
+                                    }
+                                }
+                            }
+                            if (iEdges.containsKey(node)) {
+                                for (InterruptEdge edge : iEdges.get(node)) {
+                                    Node source = workSpace.getNode(node.getId());
+                                    Node target = workSpace.getNode(edge.getTargetUnid());
+                                    if (source != null && target != null) {
+                                        new CreateEdgeAction(workSpace, source, target, edge, Edge.TYPE.IEDGE).run();
+                                    }
+                                }
+                            }
+                            if (defaultEdges.containsKey(node)) {
+                                AbstractEdge edge = defaultEdges.get(node);
+                                Node source = workSpace.getNode(node.getId());
+                                Node target = edge != null ? workSpace.getNode(edge.getTargetUnid()) : null;
+                                if (source != null && target != null && edge != null) {
+                                    Edge.TYPE edgeType = edge instanceof TimeoutEdge ? Edge.TYPE.TEDGE : Edge.TYPE.EEDGE;
+                                    new CreateEdgeAction(workSpace, source, target, edge, edgeType).run();
+                                }
+                            }
+                        }
+                        JSONObject payloadResp = new JSONObject();
+                        payloadResp.put("nodeIds", newNodeIds);
+                        payloadResp.put("snapshot", sceneFlowSnapshot(editor, manager.getCurrentActiveSuperNode()));
+                        appendDirty(editor, payloadResp);
+                        return payloadResp;
+                    });
+                    if (response == null) {
+                        sendError(ctx, requestId, "PROJECT_NOT_FOUND", "Project not found");
+                        return;
+                    }
+                    if (response.has("error")) {
+                        sendError(ctx, requestId, response.getString("error"), "Clipboard empty");
+                        return;
+                    }
+                    sendResponse(ctx, requestId, name, response);
+                    broadcastDirtyIfPresent(response, projectId, sourceClientId);
+                    return;
+                }
                 case "SceneFlow.Node.TypeDef.Add": {
                     String projectId = body.optString("projectId", null);
                     String nodeId = body.optString("nodeId", "");
@@ -1313,6 +1765,7 @@ public final class WebUiServer {
                         RedoAction.getInstance().refreshRedoState();
                         JSONObject payloadResp = new JSONObject();
                         payloadResp.put("snapshot", sceneFlowSnapshot(editor, active));
+                        appendDirty(editor, payloadResp);
                         return payloadResp;
                     });
                     if (response == null) {
@@ -1324,6 +1777,7 @@ public final class WebUiServer {
                         return;
                     }
                     sendResponse(ctx, requestId, name, response);
+                    broadcastDirtyIfPresent(response, projectId, sourceClientId);
                     return;
                 }
                 case "SceneFlow.Node.TypeDef.Update": {
@@ -1388,6 +1842,7 @@ public final class WebUiServer {
                         RedoAction.getInstance().refreshRedoState();
                         JSONObject payloadResp = new JSONObject();
                         payloadResp.put("snapshot", sceneFlowSnapshot(editor, active));
+                        appendDirty(editor, payloadResp);
                         return payloadResp;
                     });
                     if (response == null) {
@@ -1399,6 +1854,7 @@ public final class WebUiServer {
                         return;
                     }
                     sendResponse(ctx, requestId, name, response);
+                    broadcastDirtyIfPresent(response, projectId, sourceClientId);
                     return;
                 }
                 case "SceneFlow.Node.TypeDef.Delete": {
@@ -1456,6 +1912,7 @@ public final class WebUiServer {
                         RedoAction.getInstance().refreshRedoState();
                         JSONObject payloadResp = new JSONObject();
                         payloadResp.put("snapshot", sceneFlowSnapshot(editor, active));
+                        appendDirty(editor, payloadResp);
                         return payloadResp;
                     });
                     if (response == null) {
@@ -1467,6 +1924,7 @@ public final class WebUiServer {
                         return;
                     }
                     sendResponse(ctx, requestId, name, response);
+                    broadcastDirtyIfPresent(response, projectId, sourceClientId);
                     return;
                 }
                 case "SceneFlow.Node.TypeDef.Move": {
@@ -1496,7 +1954,10 @@ public final class WebUiServer {
                             return new JSONObject().put("error", "TYPEDEF_NOT_FOUND");
                         }
                         if (from == to) {
-                            return new JSONObject().put("snapshot", sceneFlowSnapshot(editor, active));
+                            JSONObject payloadResp = new JSONObject();
+                            payloadResp.put("snapshot", sceneFlowSnapshot(editor, active));
+                            appendDirty(editor, payloadResp);
+                            return payloadResp;
                         }
                         List<DataTypeDefinition> before = copyTypeDefList(list);
                         DataTypeDefinition entry = list.remove(from);
@@ -1530,6 +1991,7 @@ public final class WebUiServer {
                         RedoAction.getInstance().refreshRedoState();
                         JSONObject payloadResp = new JSONObject();
                         payloadResp.put("snapshot", sceneFlowSnapshot(editor, active));
+                        appendDirty(editor, payloadResp);
                         return payloadResp;
                     });
                     if (response == null) {
@@ -1541,6 +2003,7 @@ public final class WebUiServer {
                         return;
                     }
                     sendResponse(ctx, requestId, name, response);
+                    broadcastDirtyIfPresent(response, projectId, sourceClientId);
                     return;
                 }
                 case "SceneFlow.Node.VarDef.Add": {
@@ -1602,6 +2065,7 @@ public final class WebUiServer {
                         RedoAction.getInstance().refreshRedoState();
                         JSONObject payloadResp = new JSONObject();
                         payloadResp.put("snapshot", sceneFlowSnapshot(editor, active));
+                        appendDirty(editor, payloadResp);
                         return payloadResp;
                     });
                     if (response == null) {
@@ -1613,6 +2077,7 @@ public final class WebUiServer {
                         return;
                     }
                     sendResponse(ctx, requestId, name, response);
+                    broadcastDirtyIfPresent(response, projectId, sourceClientId);
                     return;
                 }
                 case "SceneFlow.Node.VarDef.Update": {
@@ -1677,6 +2142,7 @@ public final class WebUiServer {
                         RedoAction.getInstance().refreshRedoState();
                         JSONObject payloadResp = new JSONObject();
                         payloadResp.put("snapshot", sceneFlowSnapshot(editor, active));
+                        appendDirty(editor, payloadResp);
                         return payloadResp;
                     });
                     if (response == null) {
@@ -1688,6 +2154,7 @@ public final class WebUiServer {
                         return;
                     }
                     sendResponse(ctx, requestId, name, response);
+                    broadcastDirtyIfPresent(response, projectId, sourceClientId);
                     return;
                 }
                 case "SceneFlow.Node.VarDef.Delete": {
@@ -1745,6 +2212,7 @@ public final class WebUiServer {
                         RedoAction.getInstance().refreshRedoState();
                         JSONObject payloadResp = new JSONObject();
                         payloadResp.put("snapshot", sceneFlowSnapshot(editor, active));
+                        appendDirty(editor, payloadResp);
                         return payloadResp;
                     });
                     if (response == null) {
@@ -1756,6 +2224,7 @@ public final class WebUiServer {
                         return;
                     }
                     sendResponse(ctx, requestId, name, response);
+                    broadcastDirtyIfPresent(response, projectId, sourceClientId);
                     return;
                 }
                 case "SceneFlow.Node.VarDef.Move": {
@@ -1785,7 +2254,10 @@ public final class WebUiServer {
                             return new JSONObject().put("error", "VARDEF_NOT_FOUND");
                         }
                         if (from == to) {
-                            return new JSONObject().put("snapshot", sceneFlowSnapshot(editor, active));
+                            JSONObject payloadResp = new JSONObject();
+                            payloadResp.put("snapshot", sceneFlowSnapshot(editor, active));
+                            appendDirty(editor, payloadResp);
+                            return payloadResp;
                         }
                         List<VariableDefinition> before = copyVarDefList(list);
                         VariableDefinition entry = list.remove(from);
@@ -1819,6 +2291,7 @@ public final class WebUiServer {
                         RedoAction.getInstance().refreshRedoState();
                         JSONObject payloadResp = new JSONObject();
                         payloadResp.put("snapshot", sceneFlowSnapshot(editor, active));
+                        appendDirty(editor, payloadResp);
                         return payloadResp;
                     });
                     if (response == null) {
@@ -1830,6 +2303,7 @@ public final class WebUiServer {
                         return;
                     }
                     sendResponse(ctx, requestId, name, response);
+                    broadcastDirtyIfPresent(response, projectId, sourceClientId);
                     return;
                 }
                 case "SceneFlow.Node.Cmd.Add": {
@@ -1891,6 +2365,7 @@ public final class WebUiServer {
                         RedoAction.getInstance().refreshRedoState();
                         JSONObject payloadResp = new JSONObject();
                         payloadResp.put("snapshot", sceneFlowSnapshot(editor, active));
+                        appendDirty(editor, payloadResp);
                         return payloadResp;
                     });
                     if (response == null) {
@@ -1902,6 +2377,7 @@ public final class WebUiServer {
                         return;
                     }
                     sendResponse(ctx, requestId, name, response);
+                    broadcastDirtyIfPresent(response, projectId, sourceClientId);
                     return;
                 }
                 case "SceneFlow.Node.Cmd.Update": {
@@ -1966,6 +2442,7 @@ public final class WebUiServer {
                         RedoAction.getInstance().refreshRedoState();
                         JSONObject payloadResp = new JSONObject();
                         payloadResp.put("snapshot", sceneFlowSnapshot(editor, active));
+                        appendDirty(editor, payloadResp);
                         return payloadResp;
                     });
                     if (response == null) {
@@ -1977,6 +2454,7 @@ public final class WebUiServer {
                         return;
                     }
                     sendResponse(ctx, requestId, name, response);
+                    broadcastDirtyIfPresent(response, projectId, sourceClientId);
                     return;
                 }
                 case "SceneFlow.Node.Cmd.Delete": {
@@ -2034,6 +2512,7 @@ public final class WebUiServer {
                         RedoAction.getInstance().refreshRedoState();
                         JSONObject payloadResp = new JSONObject();
                         payloadResp.put("snapshot", sceneFlowSnapshot(editor, active));
+                        appendDirty(editor, payloadResp);
                         return payloadResp;
                     });
                     if (response == null) {
@@ -2045,6 +2524,7 @@ public final class WebUiServer {
                         return;
                     }
                     sendResponse(ctx, requestId, name, response);
+                    broadcastDirtyIfPresent(response, projectId, sourceClientId);
                     return;
                 }
                 case "SceneFlow.Node.Cmd.Move": {
@@ -2074,7 +2554,10 @@ public final class WebUiServer {
                             return new JSONObject().put("error", "COMMAND_NOT_FOUND");
                         }
                         if (from == to) {
-                            return new JSONObject().put("snapshot", sceneFlowSnapshot(editor, active));
+                            JSONObject payloadResp = new JSONObject();
+                            payloadResp.put("snapshot", sceneFlowSnapshot(editor, active));
+                            appendDirty(editor, payloadResp);
+                            return payloadResp;
                         }
                         List<Command> before = copyCommandList(list);
                         Command entry = list.remove(from);
@@ -2108,6 +2591,7 @@ public final class WebUiServer {
                         RedoAction.getInstance().refreshRedoState();
                         JSONObject payloadResp = new JSONObject();
                         payloadResp.put("snapshot", sceneFlowSnapshot(editor, active));
+                        appendDirty(editor, payloadResp);
                         return payloadResp;
                     });
                     if (response == null) {
@@ -2119,6 +2603,7 @@ public final class WebUiServer {
                         return;
                     }
                     sendResponse(ctx, requestId, name, response);
+                    broadcastDirtyIfPresent(response, projectId, sourceClientId);
                     return;
                 }
                 case "SceneFlow.Comment.Create": {
@@ -2355,10 +2840,13 @@ public final class WebUiServer {
                             }
                             case PEDGE: {
                                 RandomEdge pedge = new RandomEdge();
-                                if (sourceNode.getDataNode().getPEdgeList().isEmpty()) {
-                                    pedge.setProbability(100);
-                                } else {
-                                    pedge.setProbability(50);
+                                BasicNode sourceData = sourceNode.getDataNode();
+                                if (sourceData != null) {
+                                    int sum = sumProbabilities(sourceData, null);
+                                    int remaining = Math.max(0, 100 - sum);
+                                    int defaultProb = sourceData.getPEdgeList().isEmpty() ? 100 : 50;
+                                    int desired = remaining > 0 ? Math.min(defaultProb, remaining) : 0;
+                                    pedge.setProbability(desired);
                                 }
                                 dataEdge = pedge;
                                 break;
@@ -2494,6 +2982,119 @@ public final class WebUiServer {
                     sendResponse(ctx, requestId, name, response);
                     return;
                 }
+                case "SceneFlow.Edge.PEdge.UpdateGroup": {
+                    String projectId = body.optString("projectId", null);
+                    String sourceId = body.optString("sourceId", null);
+                    JSONArray updates = body.optJSONArray("updates");
+                    if (projectId == null || projectId.isBlank()
+                            || sourceId == null || sourceId.isBlank()
+                            || updates == null) {
+                        sendError(ctx, requestId, "BAD_REQUEST", "Missing projectId, sourceId, or updates");
+                        return;
+                    }
+                    JSONObject response = callOnEdt(() -> {
+                        EditorInstance instance = EditorInstance.getInstance();
+                        ProjectEditor editor = findProjectEditorById(projectId, instance);
+                        if (editor == null) {
+                            return null;
+                        }
+                        WorkSpacePanel workSpace = editor.getSceneFlowEditor().getWorkSpace();
+                        SceneFlowManager manager = editor.getSceneFlowEditor().getSceneFlowManager();
+                        SuperNode active = manager.getCurrentActiveSuperNode();
+                        BasicNode sourceNode = resolveNodeById(active, sourceId);
+                        if (sourceNode == null) {
+                            return new JSONObject().put("error", "NODE_NOT_FOUND");
+                        }
+                        List<RandomEdge> edges = sourceNode.getPEdgeList();
+                        if (edges.isEmpty()) {
+                            return new JSONObject().put("error", "EDGE_NOT_FOUND");
+                        }
+                        Map<RandomEdge, Integer> updateMap = new LinkedHashMap<>();
+                        for (int i = 0; i < updates.length(); i++) {
+                            JSONObject entry = updates.optJSONObject(i);
+                            if (entry == null) {
+                                return new JSONObject().put("error", "INVALID_PAYLOAD").put("message", "Invalid edge update.");
+                            }
+                            String edgeId = entry.optString("edgeId", "");
+                            String targetId = entry.optString("targetId", "");
+                            RandomEdge edge = resolvePEdgeForSource(active, sourceNode, edgeId, targetId);
+                            if (edge == null) {
+                                return new JSONObject().put("error", "EDGE_NOT_FOUND");
+                            }
+                            if (updateMap.containsKey(edge)) {
+                                return new JSONObject().put("error", "DUPLICATE_EDGE").put("message", "Duplicate edge entry.");
+                            }
+                            Object raw = entry.opt("probability");
+                            int probability;
+                            try {
+                                probability = Integer.parseInt(String.valueOf(raw));
+                            } catch (NumberFormatException ex) {
+                                return new JSONObject().put("error", "INVALID_PROBABILITY").put("message", "Probability must be a number.");
+                            }
+                            if (probability < 0 || probability > 100) {
+                                return new JSONObject().put("error", "INVALID_PROBABILITY").put("message", "Probability must be between 0 and 100.");
+                            }
+                            updateMap.put(edge, probability);
+                        }
+                        if (updateMap.size() != edges.size()) {
+                            return new JSONObject().put("error", "EDGE_COUNT_MISMATCH").put("message", "Provide probabilities for all P-edges.");
+                        }
+                        int sum = 0;
+                        for (int probability : updateMap.values()) {
+                            sum += probability;
+                        }
+                        if (sum != 100) {
+                            return new JSONObject().put("error", "PROBABILITY_SUM_INVALID").put("message", "Total probability must be 100%.");
+                        }
+                        Map<RandomEdge, Integer> before = new LinkedHashMap<>();
+                        for (RandomEdge edge : edges) {
+                            before.put(edge, edge.getProbability());
+                        }
+                        applyPEdgeProbabilities(workSpace, updateMap);
+                        UndoManager undoManager = editor.getSceneFlowEditor().getUndoManager();
+                        Map<RandomEdge, Integer> after = new LinkedHashMap<>(updateMap);
+                        undoManager.addEdit(new AbstractUndoableEdit() {
+                            @Override
+                            public void undo() throws CannotUndoException {
+                                super.undo();
+                                applyPEdgeProbabilities(workSpace, before);
+                            }
+
+                            @Override
+                            public void redo() throws CannotRedoException {
+                                super.redo();
+                                applyPEdgeProbabilities(workSpace, after);
+                            }
+
+                            @Override
+                            public String getUndoPresentationName() {
+                                return "Undo Update Probabilities";
+                            }
+
+                            @Override
+                            public String getRedoPresentationName() {
+                                return "Redo Update Probabilities";
+                            }
+                        });
+                        UndoAction.getInstance().refreshUndoState();
+                        RedoAction.getInstance().refreshRedoState();
+                        JSONObject payloadResp = new JSONObject();
+                        payloadResp.put("snapshot", sceneFlowSnapshot(editor, active));
+                        appendDirty(editor, payloadResp);
+                        return payloadResp;
+                    });
+                    if (response == null) {
+                        sendError(ctx, requestId, "PROJECT_NOT_FOUND", "Project not found");
+                        return;
+                    }
+                    if (response.has("error")) {
+                        sendError(ctx, requestId, response.getString("error"), response.optString("message", "Probability update failed"));
+                        return;
+                    }
+                    sendResponse(ctx, requestId, name, response);
+                    broadcastDirtyIfPresent(response, projectId, sourceClientId);
+                    return;
+                }
                 case "SceneFlow.Edge.Delete": {
                     String projectId = body.optString("projectId", null);
                     String edgeId = body.optString("edgeId", null);
@@ -2592,6 +3193,7 @@ public final class WebUiServer {
                         sendError(ctx, requestId, "BAD_REQUEST", "Missing projectId");
                         return;
                     }
+                    mLastRuntimeProjectId = projectId;
                     boolean ok = callOnEdt(() -> runRuntimeCommand(projectId, name));
                     if (!ok) {
                         sendError(ctx, requestId, "RUNTIME_FAILED", "Failed to change runtime state");
@@ -2749,13 +3351,32 @@ public final class WebUiServer {
         snapshot.put("superNode", superNodeJson);
 
         JSONArray path = new JSONArray();
+        JSONArray pathNodesJson = new JSONArray();
         List<SuperNode> pathNodes = findPathToSuperNode(manager.getSceneFlow(), superNode.getId());
+        if (superNode.getParentNode() == null && (pathNodes == null || pathNodes.isEmpty())) {
+            pathNodes = new ArrayList<>();
+            pathNodes.add(superNode);
+        }
         if (pathNodes != null) {
             for (SuperNode node : pathNodes) {
-                path.put(node.getName());
+                String nodeName = node.getName();
+                if (nodeName == null || nodeName.isBlank()) {
+                    nodeName = "SceneFlow";
+                }
+                String nodeId = node.getId();
+                if (nodeId == null || nodeId.isBlank()) {
+                    nodeId = ROOT_SUPERNODE_ID;
+                }
+                path.put(nodeName);
+                JSONObject pathEntry = new JSONObject();
+                pathEntry.put("id", nodeId);
+                pathEntry.put("name", nodeName);
+                pathEntry.put("isRoot", node.getParentNode() == null);
+                pathNodesJson.put(pathEntry);
             }
         }
         snapshot.put("path", path);
+        snapshot.put("pathNodes", pathNodesJson);
 
         Set<String> altStartIds = collectAltStartIds(manager, superNode);
         JSONObject superNodeData = nodeToJson(superNode, superNode, altStartIds, config);
@@ -2799,6 +3420,11 @@ public final class WebUiServer {
         json.put("isStart", superNode.getStartNodeMap().containsKey(node.getId()));
         json.put("isAltStart", altStartIds.contains(node.getId()));
         json.put("isHistory", node.isHistoryNode());
+        int childCount = 0;
+        if (node instanceof SuperNode) {
+            childCount = ((SuperNode) node).getNodeAndSuperNodeList().size();
+        }
+        json.put("childCount", childCount);
 
         JSONObject graphics = new JSONObject();
         int x = 0;
@@ -3366,25 +3992,47 @@ public final class WebUiServer {
         }
         JSONArray globals = new JSONArray();
         for (VariableDefinition def : project.getSceneFlow().getVarDefList()) {
-            globals.put(variableToJson(def, typeMap, "global"));
+            globals.put(variableToJson(def, typeMap, "global", project));
         }
         JSONArray locals = new JSONArray();
         for (VariableDefinition def : current.getVarDefList()) {
-            locals.put(variableToJson(def, typeMap, "local"));
+            locals.put(variableToJson(def, typeMap, "local", project));
         }
         response.put("globalVariables", globals);
         response.put("localVariables", locals);
         return response;
     }
 
-    private JSONObject variableToJson(VariableDefinition def, Map<String, DataTypeDefinition> typeMap, String scope) {
+    private JSONObject variableToJson(VariableDefinition def, Map<String, DataTypeDefinition> typeMap, String scope, RunTimeProject project) {
         JSONObject json = new JSONObject();
         json.put("name", def.getName());
         json.put("type", def.getType());
         json.put("typeFlavor", resolveTypeFlavor(def.getType(), typeMap));
         json.put("expr", def.getExp() != null ? def.getExp().getConcreteSyntax() : "");
         json.put("scope", scope);
+        String value = resolveVariableValue(project, def.getName());
+        if (value != null) {
+            json.put("value", value);
+        }
         return json;
+    }
+
+    private String resolveVariableValue(RunTimeProject project, String name) {
+        if (project == null || name == null || name.isBlank()) {
+            return null;
+        }
+        AbstractValue value = project.getValueOf(name);
+        if (value == null) {
+            return null;
+        }
+        return sanitizeVariableValue(value.getConcreteSyntax());
+    }
+
+    private String sanitizeVariableValue(String value) {
+        if (value == null) {
+            return null;
+        }
+        return value.replaceAll("#[a-zA-Z]#", "");
     }
 
     private String resolveTypeFlavor(String type, Map<String, DataTypeDefinition> typeMap) {
@@ -3457,6 +4105,9 @@ public final class WebUiServer {
     private SuperNode resolveSuperNode(SceneFlow sceneFlow, String superNodeId) {
         if (superNodeId == null || superNodeId.isBlank()) {
             return null;
+        }
+        if (ROOT_SUPERNODE_ID.equals(superNodeId)) {
+            return sceneFlow;
         }
         List<SuperNode> path = findPathToSuperNode(sceneFlow, superNodeId);
         if (path == null || path.isEmpty()) {
@@ -3583,6 +4234,21 @@ public final class WebUiServer {
         ctx.send(response.toString());
     }
 
+    private void appendDirty(ProjectEditor editor, JSONObject payload) {
+        if (editor == null || payload == null || editor.getEditorProject() == null) {
+            return;
+        }
+        payload.put("dirty", editor.getEditorProject().hasChanged());
+    }
+
+    private void broadcastDirtyIfPresent(JSONObject response, String projectId, String sourceClientId) {
+        if (response == null || projectId == null || projectId.isBlank() || !response.has("dirty")) {
+            return;
+        }
+        boolean dirty = response.optBoolean("dirty", false);
+        broadcastEvent("Project.DirtyChanged", new JSONObject().put("projectId", projectId).put("dirty", dirty), sourceClientId);
+    }
+
     private void broadcastEvent(String name, JSONObject payload, String sourceClientId) {
         JSONObject event = new JSONObject();
         event.put("type", "event");
@@ -3595,13 +4261,20 @@ public final class WebUiServer {
     }
 
     private void broadcast(JSONObject message) {
-        for (WsContext ctx : new ArrayList<>(mSockets)) {
-            try {
-                ctx.send(message.toString());
-            } catch (Exception e) {
-                mSockets.remove(ctx);
-            }
+        if (mBroadcastExecutor.isShutdown()) {
+            return;
         }
+        final String payload = message.toString();
+        mBroadcastExecutor.execute(() -> {
+            for (WsContext ctx : new ArrayList<>(mSockets)) {
+                try {
+                    ctx.send(payload);
+                } catch (Exception e) {
+                    mSockets.remove(ctx);
+                    mLogger.warning("Web UI WS send failed: " + e.getMessage());
+                }
+            }
+        });
     }
 
     private boolean isFinite(double value) {
@@ -3907,7 +4580,11 @@ public final class WebUiServer {
             try {
                 parsed = GlueParser.run(expressionText.trim());
             } catch (Exception ex) {
-                parsed = null;
+                if (error != null) {
+                    String msg = ex.getMessage();
+                    error.append(msg != null && !msg.isBlank() ? msg : "Expression parse failed.");
+                }
+                return null;
             }
             if (!(parsed instanceof Expression)) {
                 if (error != null) {
@@ -3932,7 +4609,11 @@ public final class WebUiServer {
         try {
             parsed = GlueParser.run(text);
         } catch (Exception ex) {
-            parsed = null;
+            if (error != null) {
+                String msg = ex.getMessage();
+                error.append(msg != null && !msg.isBlank() ? msg : "Command parse failed.");
+            }
+            return null;
         }
         if (parsed == null) {
             if (error != null) {
@@ -4005,6 +4686,60 @@ public final class WebUiServer {
             return ((RandomEdge) dataEdge).getProbability();
         }
         return null;
+    }
+
+    private int normalizeProbabilityValue(int probability) {
+        return probability == Integer.MIN_VALUE ? 0 : probability;
+    }
+
+    private BasicNode resolveEdgeSourceNode(AbstractEdge dataEdge, SuperNode active) {
+        if (dataEdge == null) {
+            return null;
+        }
+        BasicNode sourceNode = dataEdge.getSourceNode();
+        if (sourceNode == null && active != null && dataEdge.getSourceUnid() != null) {
+            sourceNode = active.getChildNodeById(dataEdge.getSourceUnid());
+        }
+        return sourceNode;
+    }
+
+    private int sumProbabilities(BasicNode sourceNode, AbstractEdge exclude) {
+        if (sourceNode == null) {
+            return 0;
+        }
+        int sum = 0;
+        for (RandomEdge edge : sourceNode.getPEdgeList()) {
+            if (edge == null || edge == exclude) {
+                continue;
+            }
+            sum += normalizeProbabilityValue(edge.getProbability());
+        }
+        return sum;
+    }
+
+    private void applyPEdgeProbabilities(WorkSpacePanel workSpace, Map<RandomEdge, Integer> values) {
+        if (values == null || values.isEmpty()) {
+            return;
+        }
+        for (Map.Entry<RandomEdge, Integer> entry : values.entrySet()) {
+            RandomEdge edge = entry.getKey();
+            if (edge == null) {
+                continue;
+            }
+            int probability = entry.getValue() != null ? entry.getValue() : 0;
+            edge.setProbability(probability);
+        }
+        if (workSpace != null) {
+            for (RandomEdge edge : values.keySet()) {
+                Edge guiEdge = findGuiEdgeByData(workSpace, edge);
+                if (guiEdge != null) {
+                    guiEdge.update();
+                    guiEdge.repaint(100);
+                }
+            }
+            workSpace.revalidate();
+            workSpace.repaint(100);
+        }
     }
 
     private Long edgeTimeout(AbstractEdge dataEdge) {
@@ -4233,6 +4968,15 @@ public final class WebUiServer {
             if (probability < 0 || probability > 100) {
                 return "Probability must be between 0 and 100.";
             }
+            BasicNode sourceNode = resolveEdgeSourceNode(dataEdge, active);
+            if (sourceNode != null) {
+                int sumOther = sumProbabilities(sourceNode, dataEdge);
+                int total = sumOther + probability;
+                if (total != 100) {
+                    int remaining = Math.max(0, 100 - sumOther);
+                    return "Total probability must be 100%. Remaining: " + remaining + ".";
+                }
+            }
             ((RandomEdge) dataEdge).setProbability(probability);
         }
         if (fields.has("timeoutMs")) {
@@ -4304,6 +5048,226 @@ public final class WebUiServer {
             dataEdge.setAltMap(altMap);
         }
         return null;
+    }
+
+    private Point minNodePosition(List<BasicNode> nodes) {
+        if (nodes == null || nodes.isEmpty()) {
+            return null;
+        }
+        int minX = Integer.MAX_VALUE;
+        int minY = Integer.MAX_VALUE;
+        for (BasicNode node : nodes) {
+            if (node == null) {
+                continue;
+            }
+            NodeGraphics graphics = node.getGraphics();
+            NodePosition pos = graphics != null ? graphics.getPosition() : null;
+            int x = pos != null ? pos.getXPos() : 0;
+            int y = pos != null ? pos.getYPos() : 0;
+            if (x < minX) {
+                minX = x;
+            }
+            if (y < minY) {
+                minY = y;
+            }
+        }
+        if (minX == Integer.MAX_VALUE || minY == Integer.MAX_VALUE) {
+            return null;
+        }
+        return new Point(minX, minY);
+    }
+
+    private void collectNodeIdsRecursive(BasicNode node, Map<BasicNode, String> mapping) {
+        if (node == null || mapping == null) {
+            return;
+        }
+        mapping.put(node, node.getId());
+        if (node instanceof SuperNode) {
+            for (BasicNode child : ((SuperNode) node).getNodeAndSuperNodeList()) {
+                collectNodeIdsRecursive(child, mapping);
+            }
+        }
+    }
+
+    private void remapAltStartMapsRecursive(BasicNode node, Map<String, String> idMap) {
+        if (node == null || idMap == null) {
+            return;
+        }
+        for (AbstractEdge edge : node.getEdgeList()) {
+            if (edge == null || edge.getAltMap() == null || edge.getAltMap().isEmpty()) {
+                continue;
+            }
+            Map<Tuple<String, BasicNode>, Tuple<String, BasicNode>> remapped = new LinkedHashMap<>();
+            for (Map.Entry<Tuple<String, BasicNode>, Tuple<String, BasicNode>> entry : edge.getAltMap().entrySet()) {
+                Tuple<String, BasicNode> start = entry.getKey();
+                Tuple<String, BasicNode> alt = entry.getValue();
+                String startId = start != null ? start.getFirst() : "";
+                String altId = alt != null ? alt.getFirst() : "";
+                String newStartId = idMap.getOrDefault(startId, startId);
+                String newAltId = idMap.getOrDefault(altId, altId);
+                Tuple<String, BasicNode> startCopy = new Tuple<>(newStartId, start != null ? start.getSecond() : null);
+                Tuple<String, BasicNode> altCopy = new Tuple<>(newAltId, alt != null ? alt.getSecond() : null);
+                remapped.put(startCopy, altCopy);
+            }
+            edge.setAltMap(remapped);
+        }
+        if (node instanceof SuperNode) {
+            for (BasicNode child : ((SuperNode) node).getNodeAndSuperNodeList()) {
+                remapAltStartMapsRecursive(child, idMap);
+            }
+        }
+    }
+
+    private void normalizeSuperNodesRecursive(BasicNode node) {
+        if (!(node instanceof SuperNode)) {
+            return;
+        }
+        SuperNode superNode = (SuperNode) node;
+        superNode.establishTargetNodes();
+        superNode.establishStartNodes();
+        superNode.establishAltStartNodes();
+        for (SuperNode child : superNode.getSuperNodeList()) {
+            normalizeSuperNodesRecursive(child);
+        }
+    }
+
+    private void offsetNodeGraphics(BasicNode node, int dx, int dy) {
+        if (node == null) {
+            return;
+        }
+        NodeGraphics graphics = node.getGraphics();
+        if (graphics == null) {
+            graphics = new NodeGraphics();
+            node.setGraphics(graphics);
+        }
+        NodePosition pos = graphics.getPosition();
+        int x = pos != null ? pos.getXPos() : 0;
+        int y = pos != null ? pos.getYPos() : 0;
+        graphics.setPosition(x + dx, y + dy);
+    }
+
+    private void offsetEdgeGraphics(AbstractEdge edge, int dx, int dy) {
+        if (edge == null) {
+            return;
+        }
+        EdgeGraphics graphics = edge.getGraphics();
+        if (graphics == null) {
+            return;
+        }
+        EdgeArrow arrow = graphics.getConnection();
+        if (arrow == null || arrow.getPointList() == null) {
+            return;
+        }
+        for (EdgePoint point : arrow.getPointList()) {
+            if (point == null) {
+                continue;
+            }
+            int x = point.getXPos();
+            int y = point.getYPos();
+            int cx = point.getCtrlXPos();
+            int cy = point.getCtrlYPos();
+            if (x != Integer.MIN_VALUE) {
+                point.setXPos(x + dx);
+            }
+            if (y != Integer.MIN_VALUE) {
+                point.setYPos(y + dy);
+            }
+            if (cx != Integer.MIN_VALUE) {
+                point.setCtrlXPos(cx + dx);
+            }
+            if (cy != Integer.MIN_VALUE) {
+                point.setCtrlYPos(cy + dy);
+            }
+        }
+    }
+
+    private void applyStartMap(WorkSpacePanel workSpace, SuperNode superNode, Map<String, BasicNode> desired) {
+        if (workSpace == null || superNode == null) {
+            return;
+        }
+        for (Node node : workSpace.getNodes()) {
+            if (node == null) {
+                continue;
+            }
+            BasicNode dataNode = node.getDataNode();
+            if (dataNode == null || dataNode.getParentNode() != superNode) {
+                continue;
+            }
+            boolean shouldStart = desired != null && desired.containsKey(dataNode.getId());
+            updateStartFlag(dataNode, node, shouldStart);
+        }
+    }
+
+    private boolean normalizeEdgeForCopy(AbstractEdge edge, String sourceId, Set<String> allowedTargets) {
+        if (edge == null) {
+            return false;
+        }
+        String targetId = edge.getTargetUnid();
+        if (targetId == null || targetId.isBlank()) {
+            BasicNode targetNode = edge.getTargetNode();
+            if (targetNode != null) {
+                targetId = targetNode.getId();
+                edge.setTargetUnid(targetId);
+            }
+        }
+        edge.setSourceUnid(sourceId == null ? "" : sourceId);
+        if (targetId == null || targetId.isBlank()) {
+            return false;
+        }
+        return allowedTargets == null || allowedTargets.contains(targetId);
+    }
+
+    private <T extends AbstractEdge> ArrayList<T> filterEdgesForCopy(
+            List<T> edges,
+            String sourceId,
+            Set<String> allowedTargets) {
+        ArrayList<T> filtered = new ArrayList<>();
+        if (edges == null) {
+            return filtered;
+        }
+        for (T edge : edges) {
+            if (normalizeEdgeForCopy(edge, sourceId, allowedTargets)) {
+                filtered.add(edge);
+            }
+        }
+        return filtered;
+    }
+
+    private void normalizeEdgeIdsRecursive(BasicNode node, Set<String> allowedTargets) {
+        if (node == null) {
+            return;
+        }
+        String sourceId = node.getId();
+        normalizeEdgeList(node.getCEdgeList(), sourceId, allowedTargets);
+        normalizeEdgeList(node.getPEdgeList(), sourceId, allowedTargets);
+        normalizeEdgeList(node.getFEdgeList(), sourceId, allowedTargets);
+        normalizeEdgeList(node.getIEdgeList(), sourceId, allowedTargets);
+        if (node.hasDEdge()) {
+            if (!normalizeEdgeForCopy(node.getDedge(), sourceId, allowedTargets)) {
+                node.removeDEdge();
+            }
+        }
+        if (node instanceof SuperNode) {
+            for (BasicNode child : ((SuperNode) node).getNodeAndSuperNodeList()) {
+                normalizeEdgeIdsRecursive(child, allowedTargets);
+            }
+        }
+    }
+
+    private <T extends AbstractEdge> void normalizeEdgeList(
+            List<T> edges,
+            String sourceId,
+            Set<String> allowedTargets) {
+        if (edges == null) {
+            return;
+        }
+        Iterator<T> iterator = edges.iterator();
+        while (iterator.hasNext()) {
+            T edge = iterator.next();
+            if (!normalizeEdgeForCopy(edge, sourceId, allowedTargets)) {
+                iterator.remove();
+            }
+        }
     }
 
     private CommentBadge resolveCommentById(SuperNode superNode, String commentId) {
@@ -4389,6 +5353,41 @@ public final class WebUiServer {
                     target = edge.getTargetNode() != null ? edge.getTargetNode().getId() : "";
                 }
                 if (sourceId.equals(source) && targetId.equals(target)) {
+                    return edge;
+                }
+            }
+        }
+        return null;
+    }
+
+    private RandomEdge resolvePEdgeForSource(
+            SuperNode superNode,
+            BasicNode sourceNode,
+            String edgeId,
+            String targetId) {
+        if (sourceNode == null) {
+            return null;
+        }
+        if (edgeId != null && !edgeId.isBlank()) {
+            AbstractEdge resolved = resolveEdgeById(superNode, edgeId);
+            if (resolved instanceof RandomEdge) {
+                RandomEdge pedge = (RandomEdge) resolved;
+                BasicNode edgeSource = resolveEdgeSourceNode(pedge, superNode);
+                if (edgeSource != null && edgeSource.equals(sourceNode)) {
+                    return pedge;
+                }
+            }
+        }
+        if (targetId != null && !targetId.isBlank()) {
+            for (RandomEdge edge : sourceNode.getPEdgeList()) {
+                if (edge == null) {
+                    continue;
+                }
+                String target = edge.getTargetUnid();
+                if ((target == null || target.isBlank()) && edge.getTargetNode() != null) {
+                    target = edge.getTargetNode().getId();
+                }
+                if (targetId.equals(target)) {
                     return edge;
                 }
             }
