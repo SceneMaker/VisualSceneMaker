@@ -113,6 +113,7 @@ jar {
                 'Main-Class': 'de.dfki.vsm.SceneMaker3',
                 'build' : versioning.info.build,
                 'Build-Revision': versioning.info.commit,
+                'Build-Date': new Date().format("yyyy-MM-dd HH:mm:ss"),
                 'Full-Version': versioning.info.full,
                 'Last-Tag': versioning.info.lastTag
         )

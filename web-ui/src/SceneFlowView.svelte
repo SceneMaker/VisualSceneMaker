@@ -28,6 +28,8 @@
   export let onPasteSelection = null;
   export let onCutSelection = null;
   export let onDuplicateSelection = null;
+  export let activityNodes = [];
+  export let activityEdges = [];
 
   const DEFAULT_NODE_SIZE = 90;
   const DEFAULT_FONT_SIZE = 16;
@@ -76,6 +78,15 @@
   $: gridScaleX = readNumber(config?.grid_x ?? config?.["grid_x"], 1);
   $: gridScaleY = readNumber(config?.grid_y ?? config?.["grid_y"], 1);
   $: gridEnabled = readBoolean(config?.grid ?? config?.["grid"], true);
+  $: activityEnabled = readBoolean(config?.visualization ?? config?.["visualization"], true);
+  $: activityNodeSet = activityEnabled ? new Set(activityNodes || []) : new Set();
+  $: activityEdgeMap = activityEnabled
+    ? new Map(
+        (activityEdges || [])
+          .filter((entry) => entry && entry.id)
+          .map((entry) => [entry.id, entry])
+      )
+    : new Map();
   $: baseNodeSize = nodeWidth || guessNodeSize(nodes) || DEFAULT_NODE_SIZE;
   $: nodeStrokeWidth = Math.max(1, baseNodeSize / 25);
   $: edgeStrokeWidth = Math.max(1, baseNodeSize / 30) * 1.34;
@@ -143,6 +154,9 @@
   let selectedNodeId = null;
   let selectedEdgeId = null;
   let selectedCommentId = null;
+  let activityNodeSet = new Set();
+  let activityEdgeMap = new Map();
+  let activityEnabled = true;
   let selectedNodeIds = new Set();
   let selectedCommentIds = new Set();
   let selectionBox = null;
@@ -2485,6 +2499,7 @@
       {@const arrow = edgeArrow(edge, dragState)}
       {@const arrowPathData = arrow ? arrowPath(arrow) : ""}
       {@const path = edgePath(edge, dragState, arrow)}
+      {@const activity = activityEdgeMap.get(edge.id)}
       <g
         class="edge-group"
         class:selected={isSelected}
@@ -2511,6 +2526,14 @@
             <path class="edge-head-glow" d={arrowPathData} filter="url(#sf-selected-glow)" />
           {/if}
           <path class="edge-head" style={`--edge-color:${color}`} d={arrowPathData} />
+        {/if}
+        {#if activity}
+          {#key activity.ts}
+            <path class="edge-activity" d={path} />
+            {#if arrow}
+              <path class="edge-activity-head" d={arrowPathData} />
+            {/if}
+          {/key}
         {/if}
         {#if isSelected}
           {@const controls = edgeControlPoints(edge, dragState)}
@@ -2574,6 +2597,7 @@
       {@const stroke = darkenColor(fill, 0.25)}
       {@const isEnd = !outgoing.has(node.id)}
       {@const isSelected = selectedNodeIds.has(node.id)}
+      {@const isActive = activityNodeSet.has(node.id)}
       {@const sign = startSignMetrics(w)}
       {@const signGap = Math.max(4, Math.round(w * 0.06))}
       {@const signX = -sign.width - sign.stroke * 2 - signGap}
@@ -2601,6 +2625,7 @@
         tabindex="0"
         style={`--node-fill:${fill}; --node-text:${textColor}; --node-stroke:${stroke}`}
         class:selected={isSelected}
+        class:active={isActive}
         class:edge-source={edgeCreateMode && edgeCreateSourceId === node.id}
         class:edge-target={edgeCreateMode && edgeCreateHoverId === node.id && edgeCreateHoverId !== edgeCreateSourceId}
         class:edge-target-invalid={edgeCreateMode && edgeCreateHoverId === node.id && edgeCreateHoverId === edgeCreateSourceId}
@@ -2633,6 +2658,13 @@
             ry={h / 2}
             filter={isSelected ? "url(#sf-selected-glow)" : null}
           />
+        {/if}
+        {#if isActive}
+          {#if node.type === "Super"}
+            <path class="node-activity" d={superNodePath(w, h)} />
+          {:else}
+            <ellipse class="node-activity" cx={w / 2} cy={h / 2} rx={w / 2} ry={h / 2} />
+          {/if}
         {/if}
         {#if label}
           <text class="node-title">
