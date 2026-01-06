@@ -27,12 +27,46 @@
     : "0 0 200 200";
   $: viewport = computeViewport(worldBox, viewBox);
 
-  function nodeCenter(node) {
+  function superNodeScale(node) {
+    const count = Number.isFinite(node?.childCount) ? node.childCount : 0;
+    const steps = Math.max(0, Math.floor(count / 5));
+    return 1 + steps * 0.05;
+  }
+
+  function nodeSize(node) {
+    const width = node?.size?.w ?? 160;
+    const height = node?.size?.h ?? 60;
+    if (node?.type !== "Super") {
+      return { w: width, h: height };
+    }
+    const scale = superNodeScale(node);
+    return { w: width * scale, h: height * scale };
+  }
+
+  function nodeVisualOffset(node) {
+    if (node?.type !== "Super") {
+      return { x: 0, y: 0 };
+    }
+    const baseWidth = node?.size?.w ?? 160;
+    const baseHeight = node?.size?.h ?? 60;
+    const scaled = nodeSize(node);
+    return {
+      x: (baseWidth - scaled.w) / 2,
+      y: (baseHeight - scaled.h) / 2
+    };
+  }
+
+  function nodeRenderPosition(node) {
     const x = node.graphics?.x ?? 0;
     const y = node.graphics?.y ?? 0;
-    const w = node.size?.w ?? 160;
-    const h = node.size?.h ?? 60;
-    return { x: x + w / 2, y: y + h / 2 };
+    const offset = nodeVisualOffset(node);
+    return { x: x + offset.x, y: y + offset.y };
+  }
+
+  function nodeCenter(node) {
+    const pos = nodeRenderPosition(node);
+    const { w, h } = nodeSize(node);
+    return { x: pos.x + w / 2, y: pos.y + h / 2 };
   }
 
   function edgeLine(edge) {
@@ -130,10 +164,12 @@
     </g>
     <g class="mini-nodes">
       {#each nodes as node (node.id)}
-        {@const x = node.graphics?.x ?? 0}
-        {@const y = node.graphics?.y ?? 0}
-        {@const w = node.size?.w ?? 160}
-        {@const h = node.size?.h ?? 60}
+        {@const pos = nodeRenderPosition(node)}
+        {@const x = pos.x}
+        {@const y = pos.y}
+        {@const size = nodeSize(node)}
+        {@const w = size.w}
+        {@const h = size.h}
         {#if node.type === "Super"}
           <rect class="mini-node" x={x} y={y} width={w} height={h} fill={nodeFill(node)} rx="6" />
         {:else}
