@@ -110,10 +110,12 @@ import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoManager;
 import java.awt.Component;
 import java.awt.Point;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
+import java.net.URLConnection;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -412,11 +414,13 @@ public final class WebUiServer implements EventListener {
     }
 
     private void registerRoutes() {
+        mApp.get("/images/*", this::handleImage);
         mApp.get(API_PREFIX + "/token", this::handleToken);
         mApp.get(API_PREFIX + "/info", this::handleInfo);
 
         mApp.get(API_PREFIX + "/projects", this::handleProjectsList);
         mApp.get(API_PREFIX + "/projects/recent", this::handleRecentProjects);
+        mApp.post(API_PREFIX + "/projects/recent/remove", this::handleRecentProjectRemove);
         mApp.get(API_PREFIX + "/projects/samples", ctx -> handleStaticProjectList(ctx, PreferencesDesktop.sSAMPLE_PROJECTS));
         mApp.get(API_PREFIX + "/projects/tutorials", ctx -> handleStaticProjectList(ctx, PreferencesDesktop.sTUTORIALS_PROJECTS));
         mApp.post(API_PREFIX + "/projects/open", this::handleOpenProject);
@@ -447,6 +451,31 @@ public final class WebUiServer implements EventListener {
         mApp.get(API_PREFIX + "/fs/list", this::handleFsList);
 
         mApp.get("/", ctx -> ctx.redirect("/index.html"));
+    }
+
+    private void handleImage(Context ctx) {
+        String path = ctx.path();
+        if (path == null || !path.startsWith("/images/") || path.contains("..")) {
+            ctx.status(404);
+            return;
+        }
+        try (InputStream input = WebUiServer.class.getResourceAsStream(path)) {
+            if (input == null) {
+                ctx.status(404);
+                return;
+            }
+            byte[] bytes = input.readAllBytes();
+            String contentType = URLConnection.guessContentTypeFromName(path);
+            if (contentType == null && path.endsWith(".svg")) {
+                contentType = "image/svg+xml";
+            }
+            if (contentType != null) {
+                ctx.contentType(contentType);
+            }
+            ctx.result(new ByteArrayInputStream(bytes));
+        } catch (IOException exc) {
+            ctx.status(500);
+        }
     }
 
     private void registerWebSocket() {
@@ -553,6 +582,19 @@ public final class WebUiServer implements EventListener {
         }
         JSONObject response = new JSONObject();
         response.put("projects", recent);
+        writeJson(ctx, response);
+    }
+
+    private void handleRecentProjectRemove(Context ctx) {
+        JSONObject body = readJsonBody(ctx);
+        String path = body.optString("path", null);
+        if (path == null || path.isBlank()) {
+            writeError(ctx, 400, "BAD_REQUEST", "Missing recent project path");
+            return;
+        }
+        boolean removed = removeRecentProject(path);
+        JSONObject response = new JSONObject();
+        response.put("removed", removed);
         writeJson(ctx, response);
     }
 
@@ -3775,6 +3817,11 @@ public final class WebUiServer implements EventListener {
         if (path != null && path.isBlank()) {
             path = null;
         }
+        boolean systemPath = isSystemDirectory(path);
+        boolean sampleProject = isUnderDirectory(path, PreferencesDesktop.sSAMPLE_PROJECTS);
+        boolean tutorialProject = isUnderDirectory(path, PreferencesDesktop.sTUTORIALS_PROJECTS);
+        boolean jarPath = isJarPath(path);
+        boolean saveAsOnly = project.isPending() || !systemPath || jarPath || sampleProject || tutorialProject;
         String runtimeState = project.isRunning()
                 ? (project.isPaused() ? "paused" : "running")
                 : "stopped";
@@ -3793,8 +3840,88 @@ public final class WebUiServer implements EventListener {
         json.put("runtimeState", runtimeState);
         json.put("activeSuperNodeId", activeSuperNodeId);
         json.put("pending", project.isPending());
+        json.put("saveAsOnly", saveAsOnly);
         json.put("config", config);
         return json;
+    }
+
+    private boolean removeRecentProject(String targetPath) {
+        if (targetPath == null || targetPath.isBlank()) {
+            return false;
+        }
+        List<String> paths = new ArrayList<>();
+        List<String> names = new ArrayList<>();
+        List<String> dates = new ArrayList<>();
+        boolean removed = false;
+        for (int i = 0; i <= PreferencesDesktop.sMAX_RECENT_PROJECTS; i++) {
+            String path = PreferencesDesktop.getProperty("recentproject." + i + ".path");
+            String name = PreferencesDesktop.getProperty("recentproject." + i + ".name");
+            String date = PreferencesDesktop.getProperty("recentproject." + i + ".date");
+            if (path == null || name == null) {
+                continue;
+            }
+            if (path.equals(targetPath)) {
+                removed = true;
+                continue;
+            }
+            paths.add(path);
+            names.add(name);
+            dates.add(date);
+        }
+        for (int i = 0; i <= PreferencesDesktop.sMAX_RECENT_PROJECTS; i++) {
+            PreferencesDesktop.removeProperty("recentproject." + i + ".path");
+            PreferencesDesktop.removeProperty("recentproject." + i + ".name");
+            PreferencesDesktop.removeProperty("recentproject." + i + ".date");
+        }
+        int count = Math.min(paths.size(), PreferencesDesktop.sMAX_RECENT_PROJECTS + 1);
+        for (int i = 0; i < count; i++) {
+            PreferencesDesktop.setProperty("recentproject." + i + ".path", paths.get(i));
+            PreferencesDesktop.setProperty("recentproject." + i + ".name", names.get(i));
+            String date = dates.get(i);
+            if (date != null) {
+                PreferencesDesktop.setProperty("recentproject." + i + ".date", date);
+            }
+        }
+        PreferencesDesktop.save();
+        callOnEdt(() -> {
+            EditorInstance.getInstance().clearRecentProjects();
+            return null;
+        });
+        return removed;
+    }
+
+    private boolean isSystemDirectory(String path) {
+        if (path == null || path.isBlank() || isJarPath(path)) {
+            return false;
+        }
+        File dir = new File(path);
+        return dir.exists() && dir.isDirectory();
+    }
+
+    private boolean isJarPath(String path) {
+        if (path == null || path.isBlank()) {
+            return false;
+        }
+        String lower = path.toLowerCase(Locale.ROOT);
+        return lower.startsWith("jar:")
+                || lower.contains(".jar!")
+                || lower.contains(".jar/")
+                || lower.contains(".jar\\")
+                || lower.endsWith(".jar");
+    }
+
+    private boolean isUnderDirectory(String path, String basePath) {
+        if (path == null || path.isBlank() || basePath == null || basePath.isBlank()) {
+            return false;
+        }
+        File base = new File(basePath).getAbsoluteFile();
+        File target = new File(path).getAbsoluteFile();
+        String basePathAbs = base.getAbsolutePath();
+        String targetPathAbs = target.getAbsolutePath();
+        if (targetPathAbs.equals(basePathAbs)) {
+            return true;
+        }
+        return targetPathAbs.startsWith(basePathAbs + File.separator);
     }
 
     private JSONObject sceneFlowSnapshot(ProjectEditor editor, SuperNode superNode) {

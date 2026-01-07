@@ -30,6 +30,10 @@
   let error = "";
   let statusMessage = "";
   let sessionReady = false;
+  let showEditor = false;
+  let projectLoadAttempted = false;
+  let projectLoadProjectId = "";
+  let showTokenSection = false;
 
   const SCENE_DRAG_TYPE = "application/x-vsm-scene";
   const BLOCK_DRAG_TYPE = "application/x-vsm-block";
@@ -78,6 +82,204 @@
     "Courier New",
     "SF Mono"
   ];
+  const REV_WORDS_A = [
+    "amber",
+    "ancient",
+    "brisk",
+    "calm",
+    "candid",
+    "clever",
+    "cool",
+    "copper",
+    "coral",
+    "crisp",
+    "daring",
+    "dawn",
+    "dusk",
+    "eager",
+    "ember",
+    "faint",
+    "feral",
+    "fine",
+    "fresh",
+    "gentle",
+    "glad",
+    "gold",
+    "grand",
+    "green",
+    "hazy",
+    "icy",
+    "jade",
+    "keen",
+    "kind",
+    "lively",
+    "lunar",
+    "mellow",
+    "mild",
+    "moss",
+    "neat",
+    "nimble",
+    "noble",
+    "ocean",
+    "olive",
+    "opal",
+    "peach",
+    "quick",
+    "quiet",
+    "rapid",
+    "raven",
+    "royal",
+    "sage",
+    "sharp",
+    "shy",
+    "silent",
+    "silver",
+    "small",
+    "solid",
+    "soft",
+    "solar",
+    "still",
+    "stone",
+    "storm",
+    "swift",
+    "tender",
+    "vivid",
+    "warm",
+    "wild",
+    "young"
+  ];
+  const REV_WORDS_B = [
+    "ash",
+    "azure",
+    "blue",
+    "bold",
+    "brass",
+    "breeze",
+    "bronze",
+    "cedar",
+    "charm",
+    "clear",
+    "cloud",
+    "coast",
+    "comet",
+    "creek",
+    "dawn",
+    "delta",
+    "drift",
+    "dune",
+    "echo",
+    "ember",
+    "field",
+    "flame",
+    "flash",
+    "frost",
+    "gale",
+    "glade",
+    "grove",
+    "harbor",
+    "hill",
+    "horizon",
+    "isle",
+    "lake",
+    "leaf",
+    "light",
+    "maple",
+    "mist",
+    "moon",
+    "night",
+    "nova",
+    "oak",
+    "orbit",
+    "pearl",
+    "pine",
+    "plain",
+    "plume",
+    "rain",
+    "reed",
+    "ridge",
+    "river",
+    "shore",
+    "sky",
+    "snow",
+    "spark",
+    "spring",
+    "star",
+    "stone",
+    "surf",
+    "tide",
+    "trail",
+    "vale",
+    "wave",
+    "wind",
+    "wood",
+    "zenith"
+  ];
+  const REV_WORDS_C = [
+    "anchor",
+    "arc",
+    "atlas",
+    "beacon",
+    "blade",
+    "bloom",
+    "breeze",
+    "bridge",
+    "brook",
+    "canyon",
+    "circle",
+    "cloud",
+    "crest",
+    "crown",
+    "dawn",
+    "delta",
+    "ember",
+    "fern",
+    "field",
+    "flame",
+    "flare",
+    "forest",
+    "garden",
+    "glen",
+    "grove",
+    "harbor",
+    "haven",
+    "hill",
+    "horizon",
+    "isle",
+    "key",
+    "lagoon",
+    "light",
+    "meadow",
+    "mirror",
+    "mountain",
+    "nest",
+    "oak",
+    "ocean",
+    "orchard",
+    "path",
+    "peak",
+    "pine",
+    "river",
+    "root",
+    "rose",
+    "salt",
+    "shadow",
+    "shore",
+    "sky",
+    "spark",
+    "spring",
+    "star",
+    "stone",
+    "storm",
+    "summit",
+    "sun",
+    "tide",
+    "vale",
+    "valley",
+    "wave",
+    "wild",
+    "wind",
+    "wood"
+  ];
 
   function clampSceneFlowZoom(value) {
     return Math.min(SCENEFLOW_ZOOM_MAX, Math.max(SCENEFLOW_ZOOM_MIN, value));
@@ -96,6 +298,93 @@
     const innerEndX = handleSize;
     const innerEndY = handleSize - innerRadius;
     return `M ${outerStartX} ${outerStartY} A ${outerRadius} ${outerRadius} 0 0 1 ${outerEndX} ${outerEndY} L ${innerStartX} ${innerStartY} A ${innerRadius} ${innerRadius} 0 0 0 ${innerEndX} ${innerEndY} Z`;
+  }
+
+  function revisionSlug(revision) {
+    if (!revision || revision === "unknown") return "unknown";
+    const hex = String(revision).replace(/[^0-9a-f]/gi, "").toLowerCase();
+    if (!hex) return "unknown";
+    const padded = hex.padEnd(6, "0");
+    const a = parseInt(padded.slice(0, 2), 16);
+    const b = parseInt(padded.slice(2, 4), 16);
+    const c = parseInt(padded.slice(4, 6), 16);
+    const w1 = REV_WORDS_A[a % REV_WORDS_A.length];
+    const w2 = REV_WORDS_B[b % REV_WORDS_B.length];
+    const w3 = REV_WORDS_C[c % REV_WORDS_C.length];
+    return `${w1}-${w2}-${w3}`;
+  }
+
+  function middleEllipsis(text, maxChars = 32) {
+    const value = (text ?? "").toString();
+    if (value.length <= maxChars) return value;
+    if (maxChars <= 5) return value.slice(0, maxChars);
+    const keep = maxChars - 3;
+    const head = Math.ceil(keep / 2);
+    const tail = Math.floor(keep / 2);
+    return `${value.slice(0, head)}...${value.slice(value.length - tail)}`;
+  }
+
+  function fitMiddleEllipsis(node, params) {
+    let text = params?.text ?? "";
+    let rafId = null;
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    let observer = null;
+
+    const schedule = () => {
+      if (rafId !== null) return;
+      rafId = requestAnimationFrame(update);
+    };
+
+    const update = () => {
+      rafId = null;
+      if (!node) return;
+      const full = (text ?? "").toString();
+      const maxWidth = node.clientWidth;
+      if (!maxWidth) {
+        node.textContent = full;
+        return;
+      }
+      const style = getComputedStyle(node);
+      ctx.font = style.font || `${style.fontSize} ${style.fontFamily}`;
+      if (ctx.measureText(full).width <= maxWidth) {
+        node.textContent = full;
+        return;
+      }
+      const ellipsis = "...";
+      let low = 1;
+      let high = full.length;
+      let best = full;
+      while (low <= high) {
+        const keep = Math.floor((low + high) / 2);
+        const leftCount = Math.ceil(keep / 2);
+        const rightCount = Math.max(1, keep - leftCount);
+        const candidate =
+          full.slice(0, leftCount) + ellipsis + full.slice(full.length - rightCount);
+        if (ctx.measureText(candidate).width <= maxWidth) {
+          best = candidate;
+          low = keep + 1;
+        } else {
+          high = keep - 1;
+        }
+      }
+      node.textContent = best;
+    };
+
+    observer = new ResizeObserver(schedule);
+    observer.observe(node);
+    schedule();
+
+    return {
+      update(newParams) {
+        text = newParams?.text ?? "";
+        schedule();
+      },
+      destroy() {
+        if (observer) observer.disconnect();
+        if (rafId !== null) cancelAnimationFrame(rafId);
+      }
+    };
   }
 
   function readCookie(name) {
@@ -336,13 +625,19 @@
   let projects = [];
   let selectedProjectId = localStorage.getItem("vsm_project_id") || "";
   let recent = [];
-  let samples = [];
+  let recentLoaded = false;
+  let recentLoading = false;
+  let recentError = "";
+  let recentFailureOpen = false;
+  let recentFailureProject = null;
+  let recentFailureMessage = "";
   let tutorials = [];
 
   let openPath = "";
   let newName = "";
   let newBaseDir = "";
   let saveAsPath = "";
+  let saveAsDialogOpen = false;
 
   let preferences = {};
   let prefDraft = {};
@@ -351,6 +646,9 @@
   let config = {};
   let configDraft = {};
   let configSaved = null;
+  let configLoading = false;
+  let configLoaded = false;
+  let configError = "";
   let lastConfigProjectId = "";
   let projectConfigDialogOpen = false;
   let projectConfig = null;
@@ -380,6 +678,8 @@
   let scriptVersion = null;
   let scriptStatus = "";
   let scriptError = "";
+  let scriptLoading = false;
+  let scriptLoaded = false;
   let scriptParseOk = true;
   let scriptDiagnostics = [];
   let scriptDiagTimer = null;
@@ -391,15 +691,18 @@
   let scriptScenesLanguage = SCENE_LANGUAGE_ALL;
   let scriptScenesError = "";
   let scriptScenesLoading = false;
+  let scriptScenesLoaded = false;
   let scriptElements = { acticon: [], gesticon: [], visicon: [] };
   let scriptElementsFilter = "";
   let scriptElementsError = "";
   let scriptElementsLoading = false;
+  let scriptElementsLoaded = false;
   const SELECTION_PREVIEW_LIMIT = 6;
 
   let sceneFlow = null;
   let sceneFlowError = "";
   let sceneFlowLoading = false;
+  let sceneFlowLoaded = false;
   let lastSceneFlowProjectId = "";
   let sceneFlowRef;
   let sceneFlowZoom = readSceneFlowZoom();
@@ -419,6 +722,7 @@
   let runtimeInfo = null;
   let runtimeError = "";
   let runtimeLoading = false;
+  let runtimeLoaded = false;
   let lastRuntimeProjectId = "";
   let runtimeValues = {};
   let runtimeInitialValues = {};
@@ -477,6 +781,8 @@
   let cmdInlineDrafts = [];
   let cmdDialogNodeId = "";
   let lastNodeDefsId = "";
+  let loadConfirmOpen = false;
+  let loadConfirmReasons = [];
 
   const edgeTypeLabels = {
     EEDGE: "Epsilon",
@@ -593,6 +899,39 @@
     projectConfigSelection = { type: "project" };
   }
   $: scriptDirty = scriptDraft !== scriptText;
+  $: configDirty = Object.keys(diffValues(config, configDraft)).length > 0;
+  $: projectConfigDirty =
+    projectConfigDraft && projectConfig ? JSON.stringify(projectConfigDraft) !== JSON.stringify(projectConfig) : false;
+  $: projectLoadErrors = buildProjectLoadErrors();
+  $: projectLoadComplete =
+    !!selectedProjectId &&
+    configLoaded &&
+    scriptLoaded &&
+    scriptScenesLoaded &&
+    scriptElementsLoaded &&
+    sceneFlowLoaded &&
+    runtimeLoaded &&
+    !configError &&
+    !scriptError &&
+    !scriptScenesError &&
+    !scriptElementsError &&
+    !sceneFlowError &&
+    !runtimeError;
+  $: projectLoadPending =
+    projectLoadAttempted &&
+    !projectLoadComplete &&
+    (configLoading ||
+      scriptLoading ||
+      scriptScenesLoading ||
+      scriptElementsLoading ||
+      sceneFlowLoading ||
+      runtimeLoading);
+  $: if (projectLoadComplete && !showEditor) {
+    showEditor = true;
+  }
+  $: if (!sessionReady || !selectedProjectId) {
+    showEditor = false;
+  }
   $: selectedNode = sceneFlowSelection?.type === "node" ? sceneFlow?.nodes?.find((node) => node.id === sceneFlowSelection.id) : null;
   $: selectedEdge = sceneFlowSelection?.type === "edge" ? sceneFlow?.edges?.find((edge) => edge.id === sceneFlowSelection.id) : null;
   $: selectedComment =
@@ -677,7 +1016,22 @@
   $: runtimeCanStop = wsConnected && !!selectedProjectId && runtimeState !== "stopped";
   $: runtimePlayLabel = runtimeState === "paused" ? "Resume" : "Start";
   $: infoRevision = info?.revision || info?.buildRevision || info?.build || info?.version || "unknown";
+  $: infoRevisionSlug = revisionSlug(infoRevision);
   $: infoBuildDate = info?.buildDate || info?.buildTime || "unknown";
+  $: projectRequiresSaveAs = (() => {
+    if (!selectedProject) return false;
+    if (selectedProject.saveAsOnly !== undefined) {
+      return selectedProject.saveAsOnly === true;
+    }
+    return !selectedProject.path || selectedProject.pending === true;
+  })();
+  $: {
+    if (typeof document !== "undefined") {
+      const status = wsConnected ? "connected" : "offline";
+      const projectLabel = showEditor && selectedProject?.name ? ` — ${selectedProject.name}` : "";
+      document.title = `Visual SceneMaker Web ${projectLabel} (${status})`;
+    }
+  }
   $: filteredScriptScenes = filterSceneLanguages(scriptScenes, scriptScenesFilter, scriptScenesLanguage);
   $: sceneLanguageOptions = sceneLanguageOptionList(scriptScenes);
   $: filteredScriptElements = filterScriptElements(scriptElements, scriptElementsFilter);
@@ -847,6 +1201,16 @@
     lastScriptProjectId = "";
     lastSceneFlowProjectId = "";
     lastRuntimeProjectId = "";
+    resetProjectLoadState();
+    projectLoadAttempted = false;
+    projectLoadProjectId = "";
+  }
+
+  $: if (sessionReady && selectedProjectId && selectedProjectId !== projectLoadProjectId) {
+    projectLoadProjectId = selectedProjectId;
+    projectLoadAttempted = true;
+    showEditor = false;
+    resetProjectLoadState();
   }
 
   $: if (sessionReady && selectedProjectId && selectedProjectId !== lastConfigProjectId) {
@@ -911,22 +1275,31 @@
     runtimeInitialState = "stopped";
     activityNodeCounts = new Map();
     activityEdgeHits = new Map();
+    resetProjectLoadState();
+    projectLoadAttempted = false;
+    projectLoadProjectId = "";
+    showEditor = false;
   }
 
-  async function connectAll() {
+  $: if (!showEditor && wsConnected && !recentLoaded && !recentLoading) {
+    loadRecent();
+  }
+
+  async function connectAll({ allowTokenRetry = true } = {}) {
     error = "";
     statusMessage = "";
     sessionReady = false;
     try {
       await fetchLocalToken();
       await loadInfo();
-      await Promise.all([loadProjects(), loadPreferences()]);
+      await Promise.all([loadProjects(), loadPreferences(), loadRecent(), loadTutorials()]);
       const wsOk = await connectWs();
       if (!wsOk) {
         error = wsError || "WebSocket connection failed.";
         return;
       }
       sessionReady = true;
+      showTokenSection = false;
       if (selectedProjectId) {
         lastConfigProjectId = selectedProjectId;
         lastScriptProjectId = selectedProjectId;
@@ -942,7 +1315,17 @@
         ]);
       }
     } catch (err) {
-      error = err.message || "Failed to connect.";
+      const message = err?.message || "Failed to connect.";
+      const tokenIssue = /token/i.test(message);
+      if (allowTokenRetry && tokenIssue && isLocalHost()) {
+        token = "";
+        localStorage.removeItem("vsm_token");
+        const refreshed = await fetchLocalToken();
+        if (refreshed) {
+          return connectAll({ allowTokenRetry: false });
+        }
+      }
+      error = message;
     }
   }
 
@@ -968,6 +1351,12 @@
       return false;
     }
     return false;
+  }
+
+  function isLocalHost() {
+    if (typeof window === "undefined") return false;
+    const host = window.location.hostname;
+    return host === "localhost" || host === "127.0.0.1" || host === "::1";
   }
 
   async function autoConnectIfLocal() {
@@ -1007,13 +1396,17 @@
   }
 
   async function loadRecent() {
-    const data = await apiGet("/api/v1/projects/recent");
-    recent = data.projects || [];
-  }
-
-  async function loadSamples() {
-    const data = await apiGet("/api/v1/projects/samples");
-    samples = data.projects || [];
+    recentLoading = true;
+    recentError = "";
+    try {
+      const data = await apiGet("/api/v1/projects/recent");
+      recent = data.projects || [];
+      recentLoaded = true;
+    } catch (err) {
+      recentError = err.message || "Failed to load recent projects.";
+    } finally {
+      recentLoading = false;
+    }
   }
 
   async function loadTutorials() {
@@ -1023,9 +1416,24 @@
 
   async function openProject(path) {
     if (!path) return;
-    await apiPost("/api/v1/projects/open", { path });
+    const response = await apiPost("/api/v1/projects/open", { path });
     openPath = "";
+    if (response?.projectId) {
+      selectedProjectId = response.projectId;
+    }
     await loadProjects();
+    await loadRecent();
+  }
+
+  async function openRecentProject(project) {
+    if (!project?.path) return;
+    try {
+      await openProject(project.path);
+    } catch (err) {
+      recentFailureProject = project;
+      recentFailureMessage = err?.message || "Failed to open recent project.";
+      recentFailureOpen = true;
+    }
   }
 
   async function createProject() {
@@ -1034,23 +1442,39 @@
     if (newBaseDir) {
       payload.baseDir = newBaseDir;
     }
-    await apiPost("/api/v1/projects", payload);
+    const response = await apiPost("/api/v1/projects", payload);
     newName = "";
     newBaseDir = "";
+    if (response?.projectId) {
+      selectedProjectId = response.projectId;
+    }
     await loadProjects();
+    await loadRecent();
   }
 
   async function saveProject(projectId) {
     if (!projectId) return;
-    await apiPost(`/api/v1/projects/${projectId}/save`, {});
-    await loadProjects();
+    try {
+      await apiPost(`/api/v1/projects/${projectId}/save`, {});
+      await loadProjects();
+      await loadRecent();
+    } catch (err) {
+      const message = err?.message || "Failed to save project.";
+      const needsSaveAs = /save-as|save as|pending|no path/i.test(message);
+      statusMessage = message;
+      if (needsSaveAs) {
+        openSaveAsDialog();
+      }
+    }
   }
 
-  async function saveAsProject(projectId) {
-    if (!projectId || !saveAsPath) return;
-    await apiPost(`/api/v1/projects/${projectId}/save-as`, { path: saveAsPath });
+  async function saveAsProject(projectId, overridePath) {
+    const targetPath = overridePath || saveAsPath;
+    if (!projectId || !targetPath) return;
+    await apiPost(`/api/v1/projects/${projectId}/save-as`, { path: targetPath });
     saveAsPath = "";
     await loadProjects();
+    await loadRecent();
   }
 
   async function closeProject(projectId) {
@@ -1108,10 +1532,29 @@
 
   async function loadConfig(projectId) {
     if (!projectId) return;
-    const data = await apiGet(`/api/v1/projects/${projectId}/config`);
-    config = data.config || {};
-    configDraft = { ...config };
-    configSaved = null;
+    configLoading = true;
+    configError = "";
+    configLoaded = false;
+    try {
+      const data = await apiGet(`/api/v1/projects/${projectId}/config`);
+      if (projectId !== selectedProjectId) {
+        return;
+      }
+      config = data.config || {};
+      configDraft = { ...config };
+      configSaved = null;
+      configLoaded = true;
+    } catch (err) {
+      if (projectId !== selectedProjectId) {
+        return;
+      }
+      configError = err.message || "Failed to load preferences.";
+      configLoaded = false;
+    } finally {
+      if (projectId === selectedProjectId) {
+        configLoading = false;
+      }
+    }
   }
 
   async function applyConfig() {
@@ -1626,18 +2069,32 @@
 
   async function loadScript(projectId) {
     if (!projectId) return;
+    scriptLoading = true;
     scriptError = "";
     scriptStatus = "";
     scriptParseOk = true;
+    scriptLoaded = false;
     try {
       const data = await apiGet(`/api/v1/projects/${projectId}/script`);
+      if (projectId !== selectedProjectId) {
+        return;
+      }
       scriptText = data.text || "";
       scriptDraft = scriptText;
       scriptVersion = data.version ?? null;
       scriptDiagnostics = data.parseErrors || [];
       scriptParseOk = data.parseOk !== false;
+      scriptLoaded = true;
     } catch (err) {
+      if (projectId !== selectedProjectId) {
+        return;
+      }
       scriptError = err.message || "Failed to load script.";
+      scriptLoaded = false;
+    } finally {
+      if (projectId === selectedProjectId) {
+        scriptLoading = false;
+      }
     }
   }
 
@@ -1645,14 +2102,25 @@
     if (!projectId) return;
     scriptScenesError = "";
     scriptScenesLoading = true;
+    scriptScenesLoaded = false;
     try {
       const data = await apiGet(`/api/v1/projects/${projectId}/script/scenes`);
+      if (projectId !== selectedProjectId) {
+        return;
+      }
       scriptScenes = Array.isArray(data.languages) ? data.languages : [];
+      scriptScenesLoaded = true;
     } catch (err) {
+      if (projectId !== selectedProjectId) {
+        return;
+      }
       scriptScenesError = err.message || "Failed to load scenes.";
       scriptScenes = [];
+      scriptScenesLoaded = false;
     } finally {
-      scriptScenesLoading = false;
+      if (projectId === selectedProjectId) {
+        scriptScenesLoading = false;
+      }
     }
   }
 
@@ -1660,18 +2128,29 @@
     if (!projectId) return;
     scriptElementsError = "";
     scriptElementsLoading = true;
+    scriptElementsLoaded = false;
     try {
       const data = await apiGet(`/api/v1/projects/${projectId}/script/elements`);
+      if (projectId !== selectedProjectId) {
+        return;
+      }
       scriptElements = {
         acticon: Array.isArray(data.acticon) ? data.acticon : [],
         gesticon: Array.isArray(data.gesticon) ? data.gesticon : [],
         visicon: Array.isArray(data.visicon) ? data.visicon : []
       };
+      scriptElementsLoaded = true;
     } catch (err) {
+      if (projectId !== selectedProjectId) {
+        return;
+      }
       scriptElementsError = err.message || "Failed to load script elements.";
       scriptElements = { acticon: [], gesticon: [], visicon: [] };
+      scriptElementsLoaded = false;
     } finally {
-      scriptElementsLoading = false;
+      if (projectId === selectedProjectId) {
+        scriptElementsLoading = false;
+      }
     }
   }
 
@@ -1726,6 +2205,7 @@
     if (!projectId) return;
     sceneFlowError = "";
     sceneFlowLoading = true;
+    sceneFlowLoaded = false;
     sceneFlowSelection = null;
     sceneFlowMultiSelection = [];
     edgeCreateSourceId = "";
@@ -1733,13 +2213,23 @@
     try {
       const query = superNodeId ? `?superNodeId=${encodeURIComponent(superNodeId)}` : "";
       const data = await apiGet(`/api/v1/projects/${projectId}/sceneflow${query}`);
+      if (projectId !== selectedProjectId) {
+        return;
+      }
       sceneFlow = data;
+      sceneFlowLoaded = true;
       loadRuntime(projectId);
     } catch (err) {
+      if (projectId !== selectedProjectId) {
+        return;
+      }
       sceneFlowError = err.message || "Failed to load SceneFlow.";
       sceneFlow = null;
+      sceneFlowLoaded = false;
     } finally {
-      sceneFlowLoading = false;
+      if (projectId === selectedProjectId) {
+        sceneFlowLoading = false;
+      }
     }
   }
 
@@ -1747,16 +2237,27 @@
     if (!projectId) return;
     runtimeError = "";
     runtimeLoading = true;
+    runtimeLoaded = false;
     try {
       const data = await apiGet(`/api/v1/projects/${projectId}/runtime`);
+      if (projectId !== selectedProjectId) {
+        return;
+      }
       runtimeInfo = data;
       applyRuntimeValuesFromData(data);
       captureRuntimeInitialValues(data, projectId);
+      runtimeLoaded = true;
     } catch (err) {
+      if (projectId !== selectedProjectId) {
+        return;
+      }
       runtimeError = err.message || "Failed to load runtime.";
       runtimeInfo = null;
+      runtimeLoaded = false;
     } finally {
-      runtimeLoading = false;
+      if (projectId === selectedProjectId) {
+        runtimeLoading = false;
+      }
     }
   }
 
@@ -2022,6 +2523,11 @@
       ws = new WebSocket(url);
       ws.onopen = () => {
         wsConnected = true;
+        recentLoaded = false;
+        recentError = "";
+        if (!showEditor) {
+          loadRecent();
+        }
         finish(true);
       };
       ws.onclose = (event) => {
@@ -2264,6 +2770,130 @@
       }
     }
     return diff;
+  }
+
+  function resetProjectLoadState() {
+    configLoading = false;
+    configLoaded = false;
+    configError = "";
+    scriptLoading = false;
+    scriptLoaded = false;
+    scriptScenesLoaded = false;
+    scriptElementsLoaded = false;
+    sceneFlowLoaded = false;
+    runtimeLoaded = false;
+    scriptError = "";
+    scriptScenesError = "";
+    scriptElementsError = "";
+    sceneFlowError = "";
+    runtimeError = "";
+  }
+
+  function buildProjectLoadErrors() {
+    const errors = [];
+    if (configError) {
+      errors.push({ section: "Preferences", message: configError });
+    }
+    if (scriptError) {
+      errors.push({ section: "Scene Script", message: scriptError });
+    }
+    if (scriptScenesError) {
+      errors.push({ section: "Scenes", message: scriptScenesError });
+    }
+    if (scriptElementsError) {
+      errors.push({ section: "Script Elements", message: scriptElementsError });
+    }
+    if (sceneFlowError) {
+      errors.push({ section: "SceneFlow", message: sceneFlowError });
+    }
+    if (runtimeError) {
+      errors.push({ section: "Runtime", message: runtimeError });
+    }
+    return errors;
+  }
+
+  function collectUnsavedReasons() {
+    const reasons = [];
+    if (selectedProject?.dirty) {
+      reasons.push("SceneFlow: graph edits are not saved.");
+    }
+    if (scriptDirty) {
+      reasons.push("Scene Script: unapplied edits.");
+    }
+    if (configDirty) {
+      reasons.push("Preferences: edits are not applied.");
+    } else if (configSaved === false) {
+      reasons.push("Preferences: applied but not saved to the project.");
+    }
+    if (projectConfigDirty) {
+      reasons.push("Project settings: edits are not applied.");
+    } else if (projectConfigPending) {
+      reasons.push("Project settings: applied but not saved to project.xml.");
+    }
+    return Array.from(new Set(reasons));
+  }
+
+  async function returnToLanding(closeProjectOnServer = false) {
+    loadConfirmOpen = false;
+    loadConfirmReasons = [];
+    const projectId = selectedProjectId;
+    if (closeProjectOnServer && projectId) {
+      await closeProject(projectId);
+      return;
+    }
+    selectedProjectId = "";
+    showEditor = false;
+    projectLoadAttempted = false;
+    projectLoadProjectId = "";
+    resetProjectLoadState();
+    recentLoaded = false;
+  }
+
+  function cancelLoadConfirm() {
+    loadConfirmOpen = false;
+    loadConfirmReasons = [];
+  }
+
+  async function confirmReturnToLanding() {
+    await returnToLanding(true);
+  }
+
+  function requestReturnToLanding() {
+    const reasons = collectUnsavedReasons();
+    if (reasons.length) {
+      loadConfirmReasons = reasons;
+      loadConfirmOpen = true;
+      return;
+    }
+    returnToLanding(true);
+  }
+
+  function openSaveAsDialog() {
+    saveAsPath = "";
+    saveAsDialogOpen = true;
+  }
+
+  function closeSaveAsDialog() {
+    saveAsDialogOpen = false;
+  }
+
+  async function confirmSaveAs() {
+    const target = saveAsPath;
+    if (!target) return;
+    await saveAsProject(selectedProjectId, target);
+    saveAsDialogOpen = false;
+  }
+
+  async function removeRecentProject(path) {
+    if (!path) return;
+    await apiPost("/api/v1/projects/recent/remove", { path });
+    await loadRecent();
+  }
+
+  function closeRecentFailureDialog() {
+    recentFailureOpen = false;
+    recentFailureProject = null;
+    recentFailureMessage = "";
   }
 
   function filterKeyValues(values, filter) {
@@ -4182,52 +4812,68 @@
 <svelte:window on:keydown={handleGlobalKeydown} />
 
 <main>
-  <header class="hero">
-    <div>
-      <h1>Visual SceneMaker Web UI</h1>
-      <p>Revision {infoRevision} Build date {infoBuildDate}</p>
-    </div>
-    <div class="badge">
-      <span class:ok={wsConnected}>WS {wsConnected ? "connected" : "offline"}</span>
-    </div>
-  </header>
-
-  <section class="panel connect">
-    <div class="field">
-      <label for="token">Token</label>
-      <input id="token" placeholder="Paste token from server log" bind:value={token} />
-    </div>
-    <p class="muted">
-      Localhost auto-fetches tokens from `/api/v1/token`. For LAN access, use the token printed on server start.
-      Flags: `--allow-lan` to bind 0.0.0.0, `--no-browser` to disable auto-open.
-    </p>
-    <div class="row">
-      <button type="button" class="primary" on:click={connectAll}>Connect</button>
-      <button type="button" class="ghost" on:click={refreshInfo}>Refresh Info</button>
-    </div>
-    {#if info}
-      <div class="info">
-        <div>Server: {info.name}</div>
-        <div>Port: {info.port}</div>
-        <div>Token required: {info.tokenRequired ? "yes" : "no"}</div>
+  {#if !showEditor}
+    <header class="hero">
+      <div class="hero-brand">
+        <img class="hero-logo" src="/images/vsm_logo.svg" alt="Visual SceneMaker" />
+        <div>
+          <h1>Visual SceneMaker Web</h1>
+        <p>
+          Revision <span title={infoRevision}>{infoRevisionSlug}</span>&nbsp;•&nbsp;Build date {infoBuildDate}
+        </p>
+        </div>
       </div>
+      <button
+        type="button"
+        class="badge badge-toggle"
+        on:click={() => (showTokenSection = !showTokenSection)}
+        aria-pressed={showTokenSection}
+        aria-label="Toggle token entry"
+        title="Toggle token entry"
+      >
+        <span class:ok={wsConnected}>{wsConnected ? "connected" : "offline"}</span>
+      </button>
+    </header>
+
+    {#if showTokenSection}
+      <section class="panel connect">
+        <div class="field">
+          <label for="token">Token</label>
+          <input id="token" placeholder="Paste token from server log" bind:value={token} />
+        </div>
+        <p class="muted">
+          Localhost auto-fetches tokens from `/api/v1/token`. For LAN access, use the token printed on server start.
+          Flags: `--allow-lan` to bind 0.0.0.0, `--no-browser` to disable auto-open.
+        </p>
+        <div class="row">
+          <button type="button" class="primary" on:click={connectAll}>Connect</button>
+          <button type="button" class="ghost" on:click={refreshInfo}>Refresh Info</button>
+        </div>
+        {#if info}
+          <div class="info">
+            <div>Server: {info.name}</div>
+            <div>Port: {info.port}</div>
+            <div>Token required: {info.tokenRequired ? "yes" : "no"}</div>
+          </div>
+        {/if}
+        {#if error}
+          <p class="error">{error}</p>
+        {/if}
+        {#if wsError}
+          <p class="error">{wsError}</p>
+        {/if}
+        {#if statusMessage}
+          <p class="status">{statusMessage}</p>
+        {/if}
+      </section>
     {/if}
-    {#if error}
-      <p class="error">{error}</p>
-    {/if}
-    {#if wsError}
-      <p class="error">{wsError}</p>
-    {/if}
-    {#if statusMessage}
-      <p class="status">{statusMessage}</p>
-    {/if}
-  </section>
+  {/if}
 
   <div class="grid">
+    {#if !showEditor}
     <section class="panel">
       <header class="panel-title">
         <h2>Projects</h2>
-        <button type="button" class="ghost" on:click={loadProjects}>Refresh</button>
       </header>
 
       <div class="project-list">
@@ -4251,44 +4897,22 @@
         {/each}
       </div>
 
-      <div class="actions">
-        <button type="button" on:click={() => activateProject(selectedProjectId)} disabled={!selectedProjectId || !wsConnected}>
-          Activate
-        </button>
-        <button type="button" on:click={() => saveProject(selectedProjectId)} disabled={!selectedProjectId}>
-          Save
-        </button>
-        <button type="button" on:click={() => closeProject(selectedProjectId)} disabled={!selectedProjectId}>
-          Close
-        </button>
-      </div>
-
-      <details class="stack" on:toggle={(e) => e.currentTarget.open && loadRecent()}>
-        <summary>Open Recent</summary>
-        {#each recent as project}
-          <button type="button" on:click={() => openProject(project.path)}>
-            {project.name}
-          </button>
-        {/each}
-      </details>
-
-      <details class="stack" on:toggle={(e) => e.currentTarget.open && loadSamples()}>
-        <summary>Open Sample</summary>
-        {#each samples as project}
-          <button type="button" on:click={() => openProject(project.path)}>
-            {project.name}
-          </button>
-        {/each}
-      </details>
-
-      <details class="stack" on:toggle={(e) => e.currentTarget.open && loadTutorials()}>
-        <summary>Open Tutorial</summary>
-        {#each tutorials as project}
-          <button type="button" on:click={() => openProject(project.path)}>
-            {project.name}
-          </button>
-        {/each}
-      </details>
+      {#if projectLoadAttempted}
+        {#if projectLoadErrors.length}
+          <div class="project-load-errors">
+            <div class="project-load-title">Project load failed</div>
+            <ul>
+              {#each projectLoadErrors as entry}
+                <li>
+                  <strong>{entry.section}:</strong> {entry.message}
+                </li>
+              {/each}
+            </ul>
+          </div>
+        {:else if projectLoadPending}
+          <p class="muted">Loading project data...</p>
+        {/if}
+      {/if}
 
       <div class="stack">
         <label for="open-path">Open by path</label>
@@ -4306,17 +4930,47 @@
         <button type="button" on:click={createProject}>Create</button>
       </div>
 
-      <div class="stack">
-        <label for="save-as-path">Save as path</label>
-        <div class="row">
-          <input id="save-as-path" placeholder="/abs/path/to/project" bind:value={saveAsPath} />
-          <button type="button" on:click={() => saveAsProject(selectedProjectId)} disabled={!selectedProjectId}>
-            Save As
-          </button>
-        </div>
-      </div>
     </section>
+    <section class="panel">
+        <header class="panel-title">
+          <h2>Recent projects</h2>
+        </header>
+        <div class="project-list">
+          {#if recentLoading}
+            <p class="muted">Loading recent projects...</p>
+          {:else if recentError}
+            <p class="error">{recentError}</p>
+          {:else if recent.length === 0}
+            <p class="muted">No recent projects.</p>
+          {:else}
+            {#each recent as project}
+              <button type="button" on:click={() => openRecentProject(project)}>
+                <span>{project.name}</span>
+                <span class="meta">{project.date || ""}</span>
+              </button>
+            {/each}
+          {/if}
+        </div>
+      </section>
+      <section class="panel">
+        <header class="panel-title">
+          <h2>Tutorials</h2>
+        </header>
+        <div class="project-list">
+          {#if tutorials.length === 0}
+            <p class="muted">No tutorials available.</p>
+          {:else}
+            {#each tutorials as project}
+              <button type="button" on:click={() => openProject(project.path)}>
+                <span>{project.name}</span>
+              </button>
+            {/each}
+          {/if}
+        </div>
+      </section>
+    {/if}
 
+    {#if showEditor}
     <section class="panel sceneflow-panel">
       <header class="panel-title">
         <h2>SceneFlow</h2>
@@ -4325,6 +4979,33 @@
         </div>
       </header>
       <div class="sceneflow-toolbar">
+        <button
+          type="button"
+          class="ghost danger"
+          on:click={requestReturnToLanding}
+          disabled={!selectedProject}
+        >
+          Close
+        </button>
+        {#if projectRequiresSaveAs}
+          <button
+            type="button"
+            class="ghost"
+            on:click={openSaveAsDialog}
+            disabled={!selectedProject}
+          >
+            Save As
+          </button>
+        {:else}
+          <button
+            type="button"
+            class="ghost"
+            on:click={() => saveProject(selectedProjectId)}
+            disabled={!selectedProject}
+          >
+            Save
+          </button>
+        {/if}
         <button
           type="button"
           class="ghost"
@@ -4663,7 +5344,11 @@
                                   />
                                 </svg>
                               </span>
-                              <span class="scene-name">{group.name}</span>
+                              <span
+                                class="scene-name"
+                                title={group.name}
+                                use:fitMiddleEllipsis={{ text: group.name }}
+                              ></span>
                             </div>
                             <span class="scene-count">{group.count}</span>
                           </div>
@@ -5562,9 +6247,96 @@
       {/if}
       {#if scriptError}
         <p class="error">{scriptError}</p>
-    {/if}
+      {/if}
   </section>
+    {/if}
   </div>
+
+  {#if loadConfirmOpen}
+    <button
+      type="button"
+      class="modal-backdrop"
+      on:click|self={cancelLoadConfirm}
+      aria-label="Close dialog"
+    >
+      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="load-confirm-title">
+        <h3 id="load-confirm-title">Close project?</h3>
+        <div class="modal-body">
+          <p>Closing will discard unsaved changes in these areas:</p>
+          <ul class="load-confirm-list">
+            {#each loadConfirmReasons as reason}
+              <li>{reason}</li>
+            {/each}
+          </ul>
+        </div>
+        <div class="row">
+          <button type="button" class="ghost" on:click={cancelLoadConfirm}>Cancel</button>
+          <button type="button" class="danger" on:click={confirmReturnToLanding}>Close</button>
+        </div>
+      </div>
+    </button>
+  {/if}
+
+  {#if saveAsDialogOpen}
+    <button
+      type="button"
+      class="modal-backdrop"
+      on:click|self={closeSaveAsDialog}
+      aria-label="Close dialog"
+    >
+      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="save-as-title">
+        <h3 id="save-as-title">Save project as</h3>
+        <div class="modal-body">
+          <label for="save-as-path">Save to path</label>
+          <input
+            id="save-as-path"
+            placeholder="/abs/path/to/project"
+            bind:value={saveAsPath}
+          />
+          <p class="muted">Choose a new folder for this project.</p>
+        </div>
+        <div class="row">
+          <button type="button" class="ghost" on:click={closeSaveAsDialog}>Cancel</button>
+          <button type="button" class="primary" on:click={confirmSaveAs} disabled={!saveAsPath}>Save As</button>
+        </div>
+      </div>
+    </button>
+  {/if}
+
+  {#if recentFailureOpen}
+    <button
+      type="button"
+      class="modal-backdrop"
+      on:click|self={closeRecentFailureDialog}
+      aria-label="Close dialog"
+    >
+      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="recent-failure-title">
+        <h3 id="recent-failure-title">Cannot open recent project</h3>
+        <div class="modal-body">
+          <p>{recentFailureMessage || "The project could not be opened."}</p>
+          {#if recentFailureProject}
+            <div class="stack">
+              <div><strong>{recentFailureProject.name}</strong></div>
+              <div class="muted">{recentFailureProject.path}</div>
+            </div>
+          {/if}
+        </div>
+        <div class="row">
+          <button type="button" class="ghost" on:click={closeRecentFailureDialog}>Cancel</button>
+          <button
+            type="button"
+            class="danger"
+            on:click={async () => {
+              await removeRecentProject(recentFailureProject?.path);
+              closeRecentFailureDialog();
+            }}
+          >
+            Remove from recent
+          </button>
+        </div>
+      </div>
+    </button>
+  {/if}
 
   {#if projectConfigDialogOpen}
     <button

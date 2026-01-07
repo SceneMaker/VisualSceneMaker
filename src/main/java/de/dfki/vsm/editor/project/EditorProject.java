@@ -95,6 +95,8 @@ public class EditorProject extends RunTimeProject {
         }
         // First set the project file 
         mProjectFile = base;
+        // Update the project path for save-as targets
+        setProjectPath(base.getPath());
         // And then save the project
         return write();
     }

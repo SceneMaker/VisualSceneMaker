@@ -92,3 +92,7 @@ Next
 7) Cutover prep.
    - Swing editor deprecation toggle.
    - Documentation + release checklist.
+8) Android headless hosting feasibility.
+   - Refactor web server to depend only on core/runtime (no Swing/editor classes).
+   - Identify Android-compatible HTTP/WebSocket server alternative to Javalin/Jetty.
+   - Package web UI assets for Android (classpath/assets) and define launch flags.
