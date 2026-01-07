@@ -8,8 +8,6 @@ import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -206,15 +204,17 @@ public final class PreferencesDesktop extends Preferences {
             UIManager.put("TabbedPane.tabAreaBackground", new Color(100, 100, 100));
 
             // paint a nice doc icon when os is mac
-            if (isMac()) {
-                final Class appClass = Class.forName("com.apple.eawt.Application");
-                // Get the application and the method to set the dock icon
-                final Object app = appClass.getMethod("getApplication", new Class[]{}).invoke(null);
-                final Method setDockIconImage = appClass.getMethod("setDockIconImage", Image.class);
-                // Set the dock icon to the logo of Visual Scene Maker 3
-                setDockIconImage.invoke(app, ICON_SCENEMAKER_DOC.getImage());
+            if (isMac() && Taskbar.isTaskbarSupported()) {
+                Taskbar taskbar = Taskbar.getTaskbar();
+                if (taskbar.isSupported(Taskbar.Feature.ICON_IMAGE)) {
+                    taskbar.setIconImage(ICON_SCENEMAKER_DOC.getImage());
+                }
             }
-        } catch (final ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException | NoSuchMethodException | SecurityException | IllegalArgumentException | InvocationTargetException exc) {
+        } catch (final ClassNotFoundException
+                 | InstantiationException
+                 | IllegalAccessException
+                 | UnsupportedLookAndFeelException
+                 | RuntimeException exc) {
             LOGDefaultLogger.getInstance().failure("Error: " + exc.getMessage());
         }
     }

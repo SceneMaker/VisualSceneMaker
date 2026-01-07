@@ -1,24 +1,24 @@
 :root {
   color-scheme: light;
   font-family: "Space Grotesk", "IBM Plex Sans", "Segoe UI", sans-serif;
-  --bg: #efece2;
+  --bg: #f6f3ee;
   --panel: #ffffff;
-  --panel-soft: #f8f6ef;
-  --ink: #1c1b15;
-  --muted: #6b6459;
-  --accent: #2e5d3a;
-  --accent-soft: #cce0c9;
-  --stroke: #e3ded1;
+  --panel-soft: #f5f7fb;
+  --ink: #1f2328;
+  --muted: #4f5864;
+  --accent: #5b8edc;
+  --accent-soft: #d6e2f6;
+  --stroke: #e3ddd4;
+  --button: #5b8edc;
+  --button-pressed: #416aa6;
+  --danger: #e26d5a;
   --shadow: 0 16px 40px rgba(0, 0, 0, 0.08);
 }
 
 body {
   margin: 0;
   min-height: 100vh;
-  background:
-    radial-gradient(circle at 10% 20%, #fef8ec 0%, transparent 60%),
-    radial-gradient(circle at 90% 0%, #d7e6d0 0%, transparent 50%),
-    linear-gradient(135deg, #f1ede2 0%, #f5f2ea 40%, #f0ece1 100%);
+  background: var(--bg);
   color: var(--ink);
 }
 
@@ -36,6 +36,22 @@ main {
   justify-content: space-between;
   gap: 1rem;
   margin-bottom: 2rem;
+}
+
+.hero-brand {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex: 1;
+  justify-content: left;
+  text-align: left;
+  vertical-align: center;
+}
+
+.hero-logo {
+  width: 120px;
+  height: 120px;
+  object-fit: contain;
 }
 
 h1 {
@@ -152,9 +168,9 @@ textarea {
 button {
   padding: 0.55rem 1.1rem;
   border-radius: 10px;
-  border: 1px solid var(--stroke);
-  background: var(--panel-soft);
-  color: var(--ink);
+  border: 1px solid var(--button);
+  background: var(--button);
+  color: #ffffff;
   font-weight: 600;
   cursor: pointer;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -165,6 +181,11 @@ button:hover {
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
 }
 
+button:active {
+  background: var(--button-pressed);
+  border-color: var(--button-pressed);
+}
+
 button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
@@ -172,18 +193,25 @@ button:disabled {
 }
 
 button.primary {
-  background: var(--accent);
+  background: var(--button);
   color: #ffffff;
-  border: none;
+  border-color: var(--button);
+}
+
+button.primary:active {
+  background: var(--button-pressed);
+  border-color: var(--button-pressed);
 }
 
 button.ghost {
   background: transparent;
+  color: var(--ink);
+  border-color: var(--stroke);
 }
 
 button.ghost.active {
   background: var(--accent-soft);
-  border-color: #a7c9a4;
+  border-color: var(--accent);
 }
 
 button.icon-button {
@@ -195,7 +223,7 @@ button.icon-button {
   align-items: center;
   justify-content: center;
   line-height: 1;
-  color: #111111;
+  color: var(--ink);
 }
 
 button.icon-button .icon {
@@ -204,8 +232,21 @@ button.icon-button .icon {
 }
 
 button.icon-button.danger {
-  color: #111111;
-  border-color: rgba(163, 38, 38, 0.4);
+  color: #ffffff;
+  background: var(--danger);
+  border-color: var(--danger);
+}
+
+button.danger,
+button.ghost.danger {
+  background: var(--danger);
+  border-color: var(--danger);
+  color: #ffffff;
+}
+
+button.danger:active,
+button.ghost.danger:active {
+  filter: brightness(0.92);
 }
 
 .project-list {
@@ -276,12 +317,13 @@ summary {
   overflow: auto;
   border: 1px solid var(--stroke);
   border-radius: 12px;
-  background: var(--panel-soft);
+  background: #ffffff;
   padding: 0.25rem;
   display: grid;
   gap: 0.25rem;
   min-height: 0;
   height: 100%;
+  align-content: start;
 }
 
 .scene-group {
@@ -290,12 +332,13 @@ summary {
   padding: 0.5rem 0.6rem;
   display: grid;
   gap: 0.5rem;
+  align-content: start;
 }
 
 .scene-group-title {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   font-weight: 600;
   font-size: 0.85rem;
   color: var(--muted);
@@ -306,14 +349,21 @@ summary {
 .scene-items {
   display: grid;
   gap: 0.35rem;
+  align-content: start;
 }
 
 .scene-item {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   font-size: 0.9rem;
   color: var(--text);
+  padding: 0.15rem 0;
+  border-radius: 0;
+}
+
+.scene-item:nth-child(even) {
+  background: #f8f6f2;
 }
 
 .scene-item-main {
@@ -321,6 +371,7 @@ summary {
   align-items: center;
   gap: 0.5rem;
   min-width: 0;
+  flex: 1;
 }
 
 .scene-drag-handle {
@@ -353,14 +404,15 @@ summary {
 }
 
 .scene-name {
-  overflow: hidden;
-  text-overflow: ellipsis;
+  flex: 1;
+  min-width: 0;
   white-space: nowrap;
 }
 
 .scene-count {
   font-size: 0.8rem;
   color: var(--muted);
+  margin-left: 0.5rem;
 }
 
 .element-list {
@@ -784,7 +836,7 @@ summary {
 }
 
 .sceneflow-blocks {
-  background: var(--panel-soft);
+  background: #e7e1d8;
   border: 1px dashed var(--stroke);
   border-radius: 14px;
   padding: 1rem;
@@ -932,8 +984,8 @@ summary {
   justify-content: center;
   font-size: 0.78rem;
   font-weight: 600;
-  color: var(--muted);
-  background: rgba(255, 255, 255, 0.9);
+  color: var(--ink);
+  background: #ffffff;
   border: 1px solid var(--stroke);
   border-radius: 999px;
   padding: 0.25rem 0.8rem;
@@ -945,8 +997,8 @@ summary {
 
 .sceneflow-toggle.active {
   color: #ffffff;
-  background: #2f6b3a;
-  border-color: #2f6b3a;
+  background: #416aa6;
+  border-color: #416aa6;
 }
 
 .sceneflow-toggle:disabled {
@@ -958,7 +1010,7 @@ summary {
 .sceneflow-var-badge {
   position: absolute;
   z-index: 4;
-  background: #dcdcdc;
+  background: #f8f6f2;
   border: none;
   border-radius: 10px;
   padding: 0.5rem 0.6rem;
@@ -1050,7 +1102,7 @@ summary {
 }
 
 .sceneflow-inspector {
-  background: var(--panel-soft);
+  background: #e7e1d8;
   border: 1px dashed var(--stroke);
   border-radius: 14px;
   padding: 1rem;
@@ -2109,6 +2161,10 @@ summary {
   background-image: radial-gradient(var(--sf-grid-color, rgba(170, 170, 170, 0.45)) 1px, transparent 1px);
   background-size: var(--sf-grid-x, 24px) var(--sf-grid-y, 24px);
   background-position: var(--sf-grid-offset-x, 0px) var(--sf-grid-offset-y, 0px);
+  --sf-selection-color: #5b8fdc;
+  --sf-selection-stroke: calc(var(--sf-edge-stroke, 3px) * 1.4);
+  --sf-selection-glow: calc(var(--sf-edge-stroke, 3px) * 2.6);
+  --sf-selection-head: calc(var(--sf-edge-stroke, 3px) * 0.6);
   cursor: pointer;
   touch-action: none;
   user-select: none;
@@ -2194,13 +2250,13 @@ summary {
 }
 
 .comment.selected .comment-resize-fill {
-  stroke: #b52d0d;
+  stroke: var(--sf-selection-color, #5b8fdc);
   stroke-width: 2;
-  fill: #b52d0d;
+  fill: var(--sf-selection-color, #5b8fdc);
 }
 
 .comment-resize-line {
-  stroke: #b52d0d;
+  stroke: var(--sf-selection-color, #5b8fdc);
   stroke-width: 2.5;
   stroke-linecap: round;
   pointer-events: none;
@@ -2215,7 +2271,7 @@ summary {
 
 .edge-timeout-progress {
   fill: none;
-  stroke: rgba(246, 0, 0, 0.7);
+  stroke: #e84a4f;
   stroke-width: calc(var(--sf-edge-stroke, 3px) * 2.2);
   stroke-linecap: round;
   stroke-linejoin: round;
@@ -2225,8 +2281,8 @@ summary {
 
 .edge-glow {
   fill: none;
-  stroke: #b52d0d;
-  stroke-width: calc(var(--sf-edge-stroke, 3px) * 2.6);
+  stroke: var(--sf-selection-color, #5b8fdc);
+  stroke-width: var(--sf-selection-glow, 7px);
   stroke-linecap: round;
   stroke-linejoin: round;
   opacity: 0.55;
@@ -2268,7 +2324,7 @@ summary {
 }
 
 .edge-group.selected .edge {
-  stroke-width: calc(var(--sf-edge-stroke, 3px) * 1.4);
+  stroke-width: var(--sf-selection-stroke, 4px);
 }
 
 .edge-head {
@@ -2280,9 +2336,9 @@ summary {
 }
 
 .edge-head-glow {
-  fill: #b52d0d;
-  stroke: #b52d0d;
-  stroke-width: calc(var(--sf-edge-stroke, 3px) * 0.6);
+  fill: var(--sf-selection-color, #5b8fdc);
+  stroke: var(--sf-selection-color, #5b8fdc);
+  stroke-width: var(--sf-selection-head, 2px);
   stroke-linejoin: round;
   opacity: 0.55;
   pointer-events: none;
@@ -2290,7 +2346,7 @@ summary {
 
 .edge-activity {
   fill: none;
-  stroke: rgba(246, 0, 0, 0.7);
+  stroke: #e84a4f;
   stroke-width: calc(var(--sf-edge-stroke, 3px) * 2.2);
   stroke-linecap: round;
   stroke-linejoin: round;
@@ -2299,8 +2355,8 @@ summary {
 }
 
 .edge-activity-head {
-  fill: rgba(246, 0, 0, 0.7);
-  stroke: rgba(246, 0, 0, 0.7);
+  fill: #e84a4f;
+  stroke: #e84a4f;
   stroke-width: calc(var(--sf-edge-stroke, 3px) * 0.6);
   stroke-linejoin: round;
   pointer-events: none;
@@ -2347,7 +2403,7 @@ summary {
 }
 
 .node-activity {
-  fill: rgba(246, 0, 0, 0.4);
+  fill: rgba(232, 74, 79, 0.4);
   pointer-events: none;
 }
 
@@ -2361,8 +2417,8 @@ summary {
 }
 
 .node.selected .node-shape {
-  stroke: #b52d0d;
-  stroke-width: 2;
+  stroke: var(--sf-selection-color, #5b8fdc);
+  stroke-width: var(--sf-selection-stroke, 4px);
   stroke-dasharray: none;
 }
 
@@ -2388,7 +2444,7 @@ summary {
 }
 
 .node.selected.end .node-shape {
-  stroke: #b52d0d;
+  stroke: var(--sf-selection-color, #5b8fdc);
 }
 
 .node.history .node-shape {
@@ -2427,8 +2483,8 @@ summary {
 }
 
 .node-start-sign polygon {
-  fill: #b52d0d;
-  stroke: #b52d0d;
+  fill: #e84a4f;
+  stroke: #e84a4f;
 }
 
 .node-alt-start-sign polygon {
@@ -2446,8 +2502,8 @@ summary {
 }
 
 .comment.selected .comment-rect {
-  stroke: #b52d0d;
-  stroke-width: 2;
+  stroke: var(--sf-selection-color, #5b8fdc);
+  stroke-width: var(--sf-selection-stroke, 4px);
 }
 
 .sceneflow-navigator {
@@ -2562,6 +2618,25 @@ summary {
   border: 1px solid var(--stroke);
 }
 
+button.badge {
+  background: var(--panel-soft);
+  border: 1px solid var(--stroke);
+  color: var(--muted);
+  cursor: pointer;
+  box-shadow: none;
+  transform: none;
+}
+
+button.badge:hover {
+  box-shadow: none;
+  transform: none;
+}
+
+button.badge:active {
+  background: var(--panel);
+  border-color: var(--stroke);
+}
+
 .badge span {
   font-size: 0.85rem;
   color: var(--muted);
@@ -2591,6 +2666,39 @@ summary {
 .status {
   color: var(--accent);
   margin-top: 0.4rem;
+}
+
+.project-load-errors {
+  margin-top: 1rem;
+  padding: 0.75rem;
+  border-radius: 12px;
+  border: 1px solid rgba(163, 38, 38, 0.2);
+  background: #fff5f5;
+  color: #8a2b2b;
+  font-size: 0.9rem;
+}
+
+.project-load-title {
+  font-weight: 600;
+  margin-bottom: 0.35rem;
+}
+
+.project-load-errors ul {
+  margin: 0.35rem 0 0 1.1rem;
+  padding: 0;
+}
+
+.project-load-errors li {
+  margin: 0.2rem 0;
+}
+
+.load-confirm-list {
+  margin: 0.5rem 0 0 1.1rem;
+  padding: 0;
+}
+
+.load-confirm-list li {
+  margin: 0.25rem 0;
 }
 
 .muted {

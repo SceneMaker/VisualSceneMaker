@@ -36,22 +36,22 @@
   const DEFAULT_FONT_SIZE = 16;
   const MIN_WORLD_COORD = 1;
   const COLORS = {
-    node: "#7d7d7d",
+    node: "#7a7d81",
     history: "#ffffff",
     text: "#ffffff",
     textHistory: "#000000",
-    startSign: "#b52d0d",
+    startSign: "#e84a4f",
     altStartSign: "#c0c0c0",
-    selected: "#b52d0d",
+    selected: "#5b8fdc",
     commentFill: "rgba(200, 200, 200, 0.78)",
     commentText: "rgba(75, 75, 75, 0.5)",
     edges: {
-      eedge: "#827d78",
-      fedge: "#234d67",
-      tedge: "#543f1d",
-      cedge: "#988e34",
-      pedge: "#2a6723",
-      iedge: "#983434"
+      eedge: "#7a7d81",
+      fedge: "#5b8edc",
+      tedge: "#b07a5a",
+      cedge: "#f7d77a",
+      pedge: "#5bae7a",
+      iedge: "#e26d5a"
     }
   };
 
@@ -1381,11 +1381,11 @@
   function edgeLabel(edge) {
     if (edge.condition) return edge.condition;
     if (edge.probability !== undefined && edge.probability !== null) {
-      return `p=${edge.probability}`;
+      return `${edge.probability}`;
     }
-    if (edge.timeoutExpr) return `t=${edge.timeoutExpr}`;
+    if (edge.timeoutExpr) return `${edge.timeoutExpr}(ms)`;
     if (edge.timeoutMs !== undefined && edge.timeoutMs !== null) {
-      return `t=${edge.timeoutMs}ms`;
+      return `${edge.timeoutMs}ms`;
     }
     return "";
   }
@@ -2431,7 +2431,7 @@
       height={baseBox ? baseBox.height + 600 : 1200}
       color-interpolation-filters="sRGB"
     >
-      <feDropShadow dx="0" dy="0" stdDeviation="5" flood-color="#b52d0d" flood-opacity="0.8" />
+      <feDropShadow dx="0" dy="0" stdDeviation="5" flood-color={COLORS.selected} flood-opacity="0.8" />
     </filter>
     {#each comments as comment (comment.id)}
       {@const rect = commentRect(comment, dragState)}
