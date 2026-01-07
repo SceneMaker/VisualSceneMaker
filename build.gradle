@@ -101,10 +101,26 @@ java {
     withJavadocJar()
     withSourcesJar()
 }
+def includeJavaFxRuntime = project.hasProperty("includeJavaFx") &&
+        !"false".equalsIgnoreCase(project.property("includeJavaFx").toString())
+def runtimeClasspathForJar = {
+    def files = configurations.runtimeClasspath
+    if (includeJavaFxRuntime) {
+        return files
+    }
+    return files.filter { file ->
+        if (file.isDirectory()) {
+            return true
+        }
+        def name = file.name
+        def lower = name.toLowerCase()
+        return !(lower.startsWith("javafx-") || lower.contains("javafx") || name.contains("JFX"))
+    }
+}
 jar {
     duplicatesStrategy = 'exclude'
     from {
-            (configurations.runtimeClasspath).collect {
+            runtimeClasspathForJar().collect {
             it.isDirectory() ? it : zipTree(it)
         }
     }

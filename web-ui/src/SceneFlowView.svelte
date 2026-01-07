@@ -30,6 +30,7 @@
   export let onDuplicateSelection = null;
   export let activityNodes = [];
   export let activityEdges = [];
+  export let timeoutEdges = [];
 
   const DEFAULT_NODE_SIZE = 90;
   const DEFAULT_FONT_SIZE = 16;
@@ -87,17 +88,25 @@
           .map((entry) => [entry.id, entry])
       )
     : new Map();
+  $: timeoutEdgeMap = activityEnabled
+    ? new Map(
+        (timeoutEdges || [])
+          .filter((entry) => entry && entry.id)
+          .map((entry) => [entry.id, entry])
+      )
+    : new Map();
   $: baseNodeSize = nodeWidth || guessNodeSize(nodes) || DEFAULT_NODE_SIZE;
   $: nodeStrokeWidth = Math.max(1, baseNodeSize / 25);
   $: edgeStrokeWidth = Math.max(1, baseNodeSize / 30) * 1.34;
-  $: fontSize = workspaceFontSize || Math.max(10, Math.round(baseNodeSize * 0.18));
-  $: labelLineHeight = Math.max(10, Math.round(fontSize * 1.15));
-  $: commandFontSize = Math.max(9, Math.round(fontSize * 0.85));
-  $: commandLineHeight = Math.max(10, Math.round(commandFontSize * 1.25));
-  $: commandPaddingX = Math.max(6, Math.round(commandFontSize * 0.5));
-  $: commandPaddingY = Math.max(4, Math.round(commandFontSize * 0.35));
-  $: commandGap = Math.max(4, Math.round(commandFontSize * 0.5));
-  $: commandCornerRadius = Math.max(4, Math.round(commandFontSize * 0.6));
+  $: fontSize = Number.isFinite(workspaceFontSize) && workspaceFontSize > 0
+    ? workspaceFontSize
+    : Math.max(10, Math.round(baseNodeSize * 0.18));
+  $: labelLineHeight = Math.max(10, Math.round(fontSize * 1.2));
+  $: commandLineHeight = labelLineHeight;
+  $: commandPaddingX = Math.max(6, Math.round(fontSize * 0.5));
+  $: commandPaddingY = Math.max(4, Math.round(fontSize * 0.35));
+  $: commandGap = Math.max(4, Math.round(fontSize * 0.5));
+  $: commandCornerRadius = Math.max(4, Math.round(fontSize * 0.6));
   $: commentMinSize = Math.max(50, Math.round(baseNodeSize * 0.5));
   $: showNodeIds = readBoolean(config?.shownodeid ?? config?.["shownodeid"], true);
   $: gridNodeWidth = nodeWidth || baseNodeSize;
@@ -156,7 +165,10 @@
   let selectedCommentId = null;
   let activityNodeSet = new Set();
   let activityEdgeMap = new Map();
+  let timeoutEdgeMap = new Map();
   let activityEnabled = true;
+  let timeoutNow = Date.now();
+  let timeoutFrame = null;
   let selectedNodeIds = new Set();
   let selectedCommentIds = new Set();
   let selectionBox = null;
@@ -284,7 +296,29 @@
       viewportObserver.disconnect();
       viewportObserver = null;
     }
+    stopTimeoutTicker();
   });
+
+  function startTimeoutTicker() {
+    if (timeoutFrame) return;
+    const tick = () => {
+      timeoutNow = Date.now();
+      timeoutFrame = requestAnimationFrame(tick);
+    };
+    timeoutFrame = requestAnimationFrame(tick);
+  }
+
+  function stopTimeoutTicker() {
+    if (!timeoutFrame) return;
+    cancelAnimationFrame(timeoutFrame);
+    timeoutFrame = null;
+  }
+
+  $: if (activityEnabled && timeoutEdges && timeoutEdges.length > 0) {
+    startTimeoutTicker();
+  } else {
+    stopTimeoutTicker();
+  }
 
   $: if (selection && snapshot) {
     const exists =
@@ -999,7 +1033,7 @@
   function nodeCommandDotsLayout(node, w, h) {
     const count = nodeCommandLines(node).length;
     if (!count) return null;
-    const size = commandFontSize || fontSize || 12;
+    const size = fontSize || 12;
     const radius = Math.max(3, Math.round(size * 0.33)) * 2;
     const gap = Math.max(4, Math.round(radius * 0.9));
     const totalWidth = count * radius * 2 + (count - 1) * gap;
@@ -1086,7 +1120,7 @@
   function nodeCommandLayout(node, w, h) {
     const lines = nodeCommandLines(node);
     if (!lines.length) return null;
-    const size = commandFontSize || fontSize || 12;
+    const size = fontSize || 12;
     const padY = commandPaddingY || 4;
     const padX = commandPaddingX || 6;
     const gap = commandGap || 4;
@@ -1354,6 +1388,21 @@
       return `t=${edge.timeoutMs}ms`;
     }
     return "";
+  }
+
+  function timeoutEdgeProgress(entry, now) {
+    if (!entry || !Number.isFinite(entry.timeoutMs) || entry.timeoutMs <= 0) {
+      return null;
+    }
+    const startedAt = Number(entry.startedAt);
+    if (!Number.isFinite(startedAt)) {
+      return null;
+    }
+    const progress = (now - startedAt) / entry.timeoutMs;
+    if (progress <= 0 || progress >= 1) {
+      return null;
+    }
+    return Math.min(1, Math.max(0, progress));
   }
 
   function edgeLabelPos(edge, drag) {
@@ -2500,6 +2549,8 @@
       {@const arrowPathData = arrow ? arrowPath(arrow) : ""}
       {@const path = edgePath(edge, dragState, arrow)}
       {@const activity = activityEdgeMap.get(edge.id)}
+      {@const timeoutEntry = timeoutEdgeMap.get(edge.id)}
+      {@const timeoutProgress = edge.type === "TEDGE" ? timeoutEdgeProgress(timeoutEntry, timeoutNow) : null}
       <g
         class="edge-group"
         class:selected={isSelected}
@@ -2521,6 +2572,16 @@
           style={`--edge-color:${color}`}
           d={path}
         />
+        {#if timeoutProgress !== null}
+          <path
+            class="edge-timeout-progress"
+            style={`--edge-color:${baseColor}`}
+            d={path}
+            pathLength="1"
+            stroke-dasharray="1"
+            stroke-dashoffset={1 - timeoutProgress}
+          />
+        {/if}
         {#if arrow}
           {#if isSelected}
             <path class="edge-head-glow" d={arrowPathData} filter="url(#sf-selected-glow)" />

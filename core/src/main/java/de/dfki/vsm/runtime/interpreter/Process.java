@@ -7,16 +7,24 @@ import de.dfki.vsm.event.event.EdgeExecutedEvent;
 import de.dfki.vsm.event.event.NodeExecutedEvent;
 import de.dfki.vsm.event.event.NodeStartedEvent;
 import de.dfki.vsm.event.event.NodeTerminatedEvent;
+import de.dfki.vsm.event.event.TimeoutEdgeStartedEvent;
 import de.dfki.vsm.model.sceneflow.chart.BasicNode;
 import de.dfki.vsm.model.sceneflow.chart.SuperNode;
 import de.dfki.vsm.model.sceneflow.chart.edge.*;
 import de.dfki.vsm.model.sceneflow.glue.command.Command;
+import de.dfki.vsm.model.sceneflow.glue.command.Expression;
 import de.dfki.vsm.model.sceneflow.glue.command.definition.VariableDefinition;
 import de.dfki.vsm.runtime.interpreter.error.InterpreterError;
 import de.dfki.vsm.runtime.interpreter.event.TerminationEvent;
 import de.dfki.vsm.runtime.interpreter.signal.InterruptionSignal;
 import de.dfki.vsm.runtime.interpreter.signal.TerminationSignal;
+import de.dfki.vsm.runtime.interpreter.value.AbstractValue;
 import de.dfki.vsm.runtime.interpreter.value.BooleanValue;
+import de.dfki.vsm.runtime.interpreter.value.DoubleValue;
+import de.dfki.vsm.runtime.interpreter.value.FloatValue;
+import de.dfki.vsm.runtime.interpreter.value.IntValue;
+import de.dfki.vsm.runtime.interpreter.value.LongValue;
+import de.dfki.vsm.runtime.interpreter.value.StringValue;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 
 import java.util.ArrayList;
@@ -50,6 +58,8 @@ public class Process extends java.lang.Thread {
 	private final Environment mEnvironment;
 	private final int mLevel;
 	private long mNodeTime;
+	private TimeoutEdge mNodeTimeoutEdge = null;
+	private long mNodeTimeoutMs = Long.MIN_VALUE;
 	private final Process mParentThread;
 	private Interpreter mInterpreter;
 
@@ -218,6 +228,11 @@ public class Process extends java.lang.Thread {
 		processVarDefList();
 
 		/*
+		 * Resolve dynamic timeout edge values
+		 */
+		prepareTimeoutEdge();
+
+		/*
 		 * Start the thread
 		 */
 		super.start();
@@ -379,6 +394,11 @@ public class Process extends java.lang.Thread {
 		processVarDefList();
 
 		/*
+		 * Resolve dynamic timeout edge values
+		 */
+		prepareTimeoutEdge();
+
+		/*
 		 * Process the on exit commands of the new current node
 		 */
 		// processOnExitCommandList();
@@ -459,6 +479,11 @@ public class Process extends java.lang.Thread {
 		 * Process the variable definitions of the new current node
 		 */
 		processVarDefList();
+
+		/*
+		 * Resolve dynamic timeout edge values
+		 */
+		prepareTimeoutEdge();
 
 		/*
 		 * Process the on exit commands of the new current node
@@ -605,8 +630,15 @@ public class Process extends java.lang.Thread {
 
 						if (dedge instanceof TimeoutEdge) {
 							TimeoutEdge tedge = (TimeoutEdge) dedge;
+							long timeoutMs = (mNodeTimeoutEdge == tedge && mNodeTimeoutMs >= 0)
+									? mNodeTimeoutMs
+									: resolveTimeoutMs(tedge);
+							if (mNodeTimeoutEdge != tedge) {
+								mNodeTimeoutEdge = tedge;
+								mNodeTimeoutMs = timeoutMs;
+							}
 
-							if ((java.lang.System.currentTimeMillis() - mNodeTime) >= tedge.getTimeout()) {
+							if ((java.lang.System.currentTimeMillis() - mNodeTime) >= timeoutMs) {
 								nextEdge = tedge;
 
 								break;
@@ -942,6 +974,81 @@ public class Process extends java.lang.Thread {
 		for (InterruptEdge iedge : mCurrentNode.getIEdgeList()) {
 			mTimeoutManager.startTimeoutHandler(iedge.getCondition(), mEnvironment);
 		}
+
+		AbstractEdge dedge = mCurrentNode.getDedge();
+		if (dedge instanceof TimeoutEdge) {
+			Expression expr = ((TimeoutEdge) dedge).getExpression();
+			if (expr != null) {
+				mTimeoutManager.startTimeoutHandler(expr, mEnvironment);
+			}
+		}
+	}
+
+	private void prepareTimeoutEdge() {
+		mNodeTimeoutEdge = null;
+		mNodeTimeoutMs = Long.MIN_VALUE;
+
+		AbstractEdge dedge = mCurrentNode != null ? mCurrentNode.getDedge() : null;
+		if (!(dedge instanceof TimeoutEdge)) {
+			return;
+		}
+		TimeoutEdge tedge = (TimeoutEdge) dedge;
+		long timeoutMs = resolveTimeoutMs(tedge);
+		mNodeTimeoutEdge = tedge;
+		mNodeTimeoutMs = timeoutMs;
+		if (timeoutMs > 0) {
+			EventDispatcher.getInstance().convey(new TimeoutEdgeStartedEvent(this, tedge, timeoutMs, mNodeTime));
+		}
+	}
+
+	private long resolveTimeoutMs(TimeoutEdge edge) {
+		if (edge == null) {
+			return 0;
+		}
+		Long expressionValue = null;
+		Expression expr = edge.getExpression();
+		if (expr != null) {
+			try {
+				AbstractValue value = mEvaluator.evaluate(expr, mEnvironment);
+				expressionValue = coerceTimeoutMs(value);
+			} catch (InterpreterError exc) {
+				mLogger.warning("Timeout expression evaluation failed: " + exc.getMessage());
+			}
+		}
+		if (expressionValue != null && expressionValue >= 0) {
+			return expressionValue;
+		}
+		long fallback = edge.getTimeout();
+		if (fallback < 0) {
+			return 0;
+		}
+		return fallback;
+	}
+
+	private Long coerceTimeoutMs(AbstractValue value) {
+		if (value == null) {
+			return null;
+		}
+		if (value instanceof IntValue) {
+			return (long) ((IntValue) value).getValue();
+		}
+		if (value instanceof LongValue) {
+			return ((LongValue) value).getValue();
+		}
+		if (value instanceof FloatValue) {
+			return (long) Math.round(((FloatValue) value).floatValue());
+		}
+		if (value instanceof DoubleValue) {
+			return (long) Math.round(((DoubleValue) value).doubleValue());
+		}
+		if (value instanceof StringValue) {
+			try {
+				return java.lang.Long.parseLong(((StringValue) value).getValue());
+			} catch (NumberFormatException ignored) {
+				return null;
+			}
+		}
+		return null;
 	}
 
 	/**

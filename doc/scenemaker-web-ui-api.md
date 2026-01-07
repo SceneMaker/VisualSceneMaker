@@ -8,6 +8,7 @@ multiple simultaneous editors with optimistic concurrency control.
 ## Principles
 - Server: Javalin in core, serving static UI + JSON/WS APIs.
 - LAN: bind to `0.0.0.0` (configurable).
+- Startup: default binds `127.0.0.1`; use `--allow-lan` to expose LAN, `--no-browser` to disable auto-open.
 - Auth: bearer token required for HTTP and WebSocket.
 - Concurrency: optimistic. All mutations include revision/version; conflicts
   return a fresh snapshot and an error response.
@@ -18,12 +19,15 @@ multiple simultaneous editors with optimistic concurrency control.
 - HTTP: `Authorization: Bearer <token>`
 - WebSocket: `ws://host:port/ws?token=<token>`
 - Token is generated on startup (or configured) and logged on server side.
+- Exception: `GET /api/v1/token` is unauthenticated but restricted to localhost.
 
 ## HTTP API
 
 ### Session
 - `GET /api/v1/info`
   - Returns version/build, server capabilities, token requirement.
+- `GET /api/v1/token`
+  - Localhost only. Returns `{ "token": "...", "tokenRequired": true|false }` for bootstrap.
 
 ### Projects
 - `GET /api/v1/projects`
@@ -71,6 +75,13 @@ multiple simultaneous editors with optimistic concurrency control.
   - EditorConfig (per-project).
 - `GET /api/v1/preferences`
   - Global PreferencesDesktop values.
+
+### Devices
+- `GET /api/v1/devices`
+  - Returns available device/plugin classes (short name + class name).
+- `GET /api/v1/projects/{id}/project-config/keys?device=DeviceName&scope=plugin|agent`
+  - Returns required/optional key hints exported by the device plugin.
+  - Optional: `className=fully.qualified.ClassName` to resolve keys by class instead of device name.
 
 ### Runtime
 - `GET /api/v1/projects/{id}/runtime`

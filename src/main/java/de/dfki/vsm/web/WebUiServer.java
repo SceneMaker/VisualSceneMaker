@@ -18,11 +18,18 @@ import de.dfki.vsm.editor.project.EditorProject;
 import de.dfki.vsm.editor.project.ProjectEditor;
 import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
 import de.dfki.vsm.editor.util.SceneFlowManager;
+import de.dfki.vsm.extensionAPI.ExportableProperties;
+import de.dfki.vsm.extensionAPI.ProjectProperty;
 import de.dfki.vsm.model.acticon.ActiconAction;
 import de.dfki.vsm.model.acticon.ActiconConfig;
+import de.dfki.vsm.model.config.ConfigFeature;
 import de.dfki.vsm.model.gesticon.GesticonAgent;
 import de.dfki.vsm.model.gesticon.GesticonGesture;
+import de.dfki.vsm.model.project.AgentConfig;
 import de.dfki.vsm.model.project.EditorConfig;
+import de.dfki.vsm.model.project.PlayerConfig;
+import de.dfki.vsm.model.project.PluginConfig;
+import de.dfki.vsm.model.project.ProjectConfig;
 import de.dfki.vsm.model.sceneflow.chart.BasicNode;
 import de.dfki.vsm.model.sceneflow.chart.SceneFlow;
 import de.dfki.vsm.model.sceneflow.chart.SuperNode;
@@ -57,6 +64,7 @@ import de.dfki.vsm.model.sceneflow.glue.command.expression.literal.IntLiteral;
 import de.dfki.vsm.model.sceneflow.glue.command.expression.literal.StringLiteral;
 import de.dfki.vsm.model.sceneflow.glue.command.expression.record.ArrayExpression;
 import de.dfki.vsm.model.sceneflow.glue.command.expression.record.StructExpression;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.variable.SimpleVariable;
 import de.dfki.vsm.model.scenescript.SceneObject;
 import de.dfki.vsm.model.scenescript.SceneScript;
 import de.dfki.vsm.model.scenescript.ScriptDiagnostics;
@@ -67,15 +75,21 @@ import de.dfki.vsm.event.event.EdgeExecutedEvent;
 import de.dfki.vsm.event.event.NodeExecutedEvent;
 import de.dfki.vsm.event.event.NodeStartedEvent;
 import de.dfki.vsm.event.event.NodeTerminatedEvent;
+import de.dfki.vsm.event.event.ProjectChangedEvent;
 import de.dfki.vsm.event.event.SceneStoppedEvent;
+import de.dfki.vsm.event.event.TimeoutEdgeStartedEvent;
 import de.dfki.vsm.event.event.VariableChangedEvent;
 import de.dfki.vsm.model.visicon.VisiconAgent;
 import de.dfki.vsm.model.visicon.VisiconConfig;
 import de.dfki.vsm.model.visicon.VisiconViseme;
 import de.dfki.vsm.runtime.interpreter.value.AbstractValue;
+import de.dfki.vsm.runtime.plugin.RunTimePlugin;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 import de.dfki.vsm.util.tpl.Tuple;
+import de.dfki.vsm.util.xml.XMLUtilities;
+import de.dfki.vsm.xtesting.NewPropertyManager.exceptions.NotExportableInterface;
+import de.dfki.vsm.xtesting.NewPropertyManager.util.ExtensionsFromJar;
 import io.javalin.Javalin;
 import io.javalin.http.Context;
 import io.javalin.http.UnauthorizedResponse;
@@ -84,6 +98,9 @@ import io.javalin.websocket.WsConnectContext;
 import io.javalin.websocket.WsContext;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.reflections.Reflections;
+import org.reflections.scanners.SubTypesScanner;
+import org.reflections.util.ConfigurationBuilder;
 
 import javax.swing.JTabbedPane;
 import javax.swing.SwingUtilities;
@@ -129,6 +146,8 @@ public final class WebUiServer implements EventListener {
 
     private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
     private final SecureRandom mRandom = new SecureRandom();
+    private boolean mAllowExternal = false;
+    private String mBindHost = "127.0.0.1";
     private final Set<WsContext> mSockets = ConcurrentHashMap.newKeySet();
     private final ExecutorService mBroadcastExecutor = Executors.newSingleThreadExecutor(r -> {
         Thread thread = new Thread(r, "WebUiServer-Broadcast");
@@ -142,6 +161,18 @@ public final class WebUiServer implements EventListener {
     private int mPort;
     private boolean mStarted;
     private volatile String mLastRuntimeProjectId;
+    private volatile List<DeviceEntry> mAvailableDevices;
+    private volatile List<String> mExportablePropertyClassNames;
+
+    private static final class DeviceEntry {
+        private final String name;
+        private final String className;
+
+        private DeviceEntry(String name, String className) {
+            this.name = name;
+            this.className = className;
+        }
+    }
 
     private static final class SceneFlowClipboard {
         private final String projectId;
@@ -157,6 +188,14 @@ public final class WebUiServer implements EventListener {
         return INSTANCE;
     }
 
+    public synchronized void setAllowExternal(boolean allowExternal) {
+        mAllowExternal = allowExternal;
+    }
+
+    public synchronized String getLocalUrl() {
+        return "http://127.0.0.1:" + mPort + "/";
+    }
+
     public synchronized void start() {
         if (mStarted) {
             return;
@@ -164,6 +203,7 @@ public final class WebUiServer implements EventListener {
 
         mPort = Integer.parseInt(System.getProperty("vsm.web.port", Integer.toString(DEFAULT_PORT)));
         mToken = resolveToken();
+        mBindHost = mAllowExternal ? "0.0.0.0" : "127.0.0.1";
 
         mApp = Javalin.create(config -> {
             if (WebUiServer.class.getResource("/web-ui") != null) {
@@ -172,6 +212,9 @@ public final class WebUiServer implements EventListener {
                 mLogger.warning("Warning: Web UI static resources not found on classpath (/web-ui).");
             }
         });
+
+        loadAvailableDeviceCache();
+        loadExportablePropertyCache();
 
         mApp.before(ctx -> {
             if (requiresAuth(ctx.path())) {
@@ -184,7 +227,7 @@ public final class WebUiServer implements EventListener {
         registerRoutes();
         registerWebSocket();
 
-        mApp.start(mPort);
+        mApp.start(mBindHost, mPort);
         mStarted = true;
         EventDispatcher.getInstance().register(this);
 
@@ -246,6 +289,34 @@ public final class WebUiServer implements EventListener {
             AbstractEdge edge = ((EdgeExecutedEvent) event).getEdge();
             JSONObject payload = edgeActivityPayload(edge);
             broadcastEvent("SceneFlow.Edge.Executed", payload, null);
+            return;
+        }
+        if (event instanceof ProjectChangedEvent) {
+            JSONObject payload = callOnEdt(() -> {
+                EditorInstance instance = EditorInstance.getInstance();
+                ProjectEditor editor = instance.getSelectedProjectEditor();
+                if (editor == null || editor.getEditorProject() == null) {
+                    return null;
+                }
+                JSONObject config = configToJson(editor.getEditorProject());
+                config.put("projectId", projectIdFor(editor));
+                return config;
+            });
+            if (payload != null) {
+                broadcastEvent("Config.Changed", payload, null);
+            }
+            return;
+        }
+        if (event instanceof TimeoutEdgeStartedEvent) {
+            TimeoutEdgeStartedEvent timeoutEvent = (TimeoutEdgeStartedEvent) event;
+            TimeoutEdge edge = timeoutEvent.getEdge();
+            if (edge == null) {
+                return;
+            }
+            JSONObject payload = edgeActivityPayload(edge);
+            payload.put("timeoutMs", timeoutEvent.getTimeoutMs());
+            payload.put("startedAt", timeoutEvent.getStartedAt());
+            broadcastEvent("SceneFlow.Timeout.Started", payload, null);
             return;
         }
     }
@@ -341,6 +412,7 @@ public final class WebUiServer implements EventListener {
     }
 
     private void registerRoutes() {
+        mApp.get(API_PREFIX + "/token", this::handleToken);
         mApp.get(API_PREFIX + "/info", this::handleInfo);
 
         mApp.get(API_PREFIX + "/projects", this::handleProjectsList);
@@ -365,6 +437,9 @@ public final class WebUiServer implements EventListener {
         mApp.get(API_PREFIX + "/projects/:id/functions", this::handleFunctions);
         mApp.get(API_PREFIX + "/projects/:id/types", this::handleTypes);
         mApp.get(API_PREFIX + "/projects/:id/config", this::handleConfig);
+        mApp.get(API_PREFIX + "/projects/:id/project-config", this::handleProjectConfig);
+        mApp.get(API_PREFIX + "/projects/:id/project-config/keys", this::handleProjectConfigKeys);
+        mApp.get(API_PREFIX + "/devices", this::handleAvailableDevices);
         mApp.get(API_PREFIX + "/preferences", this::handlePreferences);
         mApp.get(API_PREFIX + "/projects/:id/runtime", this::handleRuntime);
 
@@ -407,6 +482,17 @@ public final class WebUiServer implements EventListener {
         if (buildDate != null) {
             json.put("buildDate", buildDate);
         }
+        writeJson(ctx, json);
+    }
+
+    private void handleToken(Context ctx) {
+        if (!isLocalRequest(ctx)) {
+            writeError(ctx, 403, "FORBIDDEN", "Token is only available on localhost");
+            return;
+        }
+        JSONObject json = new JSONObject();
+        json.put("token", mToken != null ? mToken : "");
+        json.put("tokenRequired", mToken != null && !mToken.isEmpty());
         writeJson(ctx, json);
     }
 
@@ -900,6 +986,251 @@ public final class WebUiServer implements EventListener {
             return;
         }
         writeJson(ctx, response);
+    }
+
+    private void handleProjectConfig(Context ctx) {
+        String projectId = ctx.pathParam("id");
+        JSONObject response = callOnEdt(() -> {
+            EditorInstance instance = EditorInstance.getInstance();
+            ProjectEditor editor = findProjectEditorById(projectId, instance);
+            if (editor == null) {
+                return null;
+            }
+            return projectConfigToJson(editor.getEditorProject());
+        });
+        if (response == null) {
+            writeError(ctx, 404, "PROJECT_NOT_FOUND", "Project not found");
+            return;
+        }
+        writeJson(ctx, response);
+    }
+
+    private void handleProjectConfigKeys(Context ctx) {
+        String projectId = ctx.pathParam("id");
+        String deviceName = ctx.queryParam("device");
+        String className = ctx.queryParam("className");
+        String scope = ctx.queryParam("scope");
+        if ((deviceName == null || deviceName.isBlank()) && (className == null || className.isBlank())) {
+            writeError(ctx, 400, "BAD_REQUEST", "Missing device or className");
+            return;
+        }
+        boolean agentScope = "agent".equalsIgnoreCase(scope);
+        JSONObject response = callOnEdt(() -> {
+            EditorInstance instance = EditorInstance.getInstance();
+            ProjectEditor editor = findProjectEditorById(projectId, instance);
+            if (editor == null || editor.getEditorProject() == null) {
+                return null;
+            }
+            EditorProject project = editor.getEditorProject();
+            PluginConfig plugin = null;
+            if (className != null && !className.isBlank()) {
+                String resolvedName = (deviceName == null || deviceName.isBlank()) ? className : deviceName;
+                plugin = new PluginConfig("device", resolvedName, className, true, new ArrayList<>());
+            } else {
+                plugin = project.getProjectConfig().getPluginConfig(deviceName);
+                if (plugin == null) {
+                    JSONObject error = new JSONObject();
+                    error.put("status", 404);
+                    error.put("error", "DEVICE_NOT_FOUND");
+                    error.put("message", "Device not found");
+                    return error;
+                }
+            }
+            return exportableKeysToJson(project, plugin, agentScope);
+        });
+        if (response == null) {
+            writeError(ctx, 404, "PROJECT_NOT_FOUND", "Project not found");
+            return;
+        }
+        if (response.has("status")) {
+            int status = response.optInt("status", 400);
+            writeError(ctx, status, response.optString("error", "ERROR"), response.optString("message", "Error"));
+            return;
+        }
+        writeJson(ctx, response);
+    }
+
+    private void handleAvailableDevices(Context ctx) {
+        List<DeviceEntry> cached = mAvailableDevices;
+        if (cached == null) {
+            cached = loadAvailableDeviceCache();
+        }
+        JSONArray devices = new JSONArray();
+        for (DeviceEntry entry : cached) {
+            JSONObject device = new JSONObject();
+            device.put("name", entry.name);
+            device.put("className", entry.className);
+            devices.put(device);
+        }
+        JSONObject response = new JSONObject();
+        response.put("devices", devices);
+        writeJson(ctx, response);
+    }
+
+    private List<DeviceEntry> loadAvailableDeviceCache() {
+        List<DeviceEntry> entries = new ArrayList<>();
+        try {
+            ExtensionsFromJar extensions = new ExtensionsFromJar("de.dfki.vsm.xtension", false);
+            extensions.loadExtensions();
+            ArrayList<String> names = extensions.getActivitiesShortNames();
+            ArrayList<String> classes = extensions.getActivitiesLongName();
+            int count = Math.min(names.size(), classes.size());
+            Set<String> seen = new HashSet<>();
+            for (int i = 0; i < count; i++) {
+                String name = names.get(i);
+                String className = classes.get(i);
+                if (className == null || className.isBlank() || !seen.add(className)) {
+                    continue;
+                }
+                entries.add(new DeviceEntry(name == null ? "" : name, className));
+            }
+            entries.sort(Comparator.comparing(entry -> entry.name, String.CASE_INSENSITIVE_ORDER));
+        } catch (Exception exc) {
+            mLogger.warning("Warning: Failed to scan available devices: " + exc.getMessage());
+        }
+        mAvailableDevices = entries;
+        return entries;
+    }
+
+    private void loadExportablePropertyCache() {
+        List<String> classes = new ArrayList<>();
+        try {
+            Reflections reflections = new Reflections(new ConfigurationBuilder()
+                    .forPackages("de.dfki.vsm.xtension")
+                    .addScanners(new SubTypesScanner(false))
+                    .setExpandSuperTypes(false));
+            Set<Class<? extends ExportableProperties>> types = reflections.getSubTypesOf(ExportableProperties.class);
+            for (Class<? extends ExportableProperties> type : types) {
+                if (RunTimePlugin.class.isAssignableFrom(type)) {
+                    continue;
+                }
+                if (!hasNoArgConstructor(type)) {
+                    continue;
+                }
+                classes.add(type.getName());
+            }
+            classes.sort(String.CASE_INSENSITIVE_ORDER);
+        } catch (Exception exc) {
+            mLogger.warning("Warning: Failed to scan exportable properties: " + exc.getMessage());
+        }
+        mExportablePropertyClassNames = classes;
+    }
+
+    private boolean hasNoArgConstructor(Class<?> type) {
+        try {
+            type.getDeclaredConstructor();
+            return true;
+        } catch (NoSuchMethodException exc) {
+            return false;
+        }
+    }
+
+    private JSONObject exportableKeysToJson(EditorProject project, PluginConfig plugin, boolean agentScope) {
+        JSONObject response = new JSONObject();
+        response.put("device", plugin.getPluginName());
+        response.put("className", plugin.getClassName());
+        response.put("scope", agentScope ? "agent" : "plugin");
+        JSONArray required = new JSONArray();
+        JSONArray optional = new JSONArray();
+        try {
+            ExportableProperties exportable = resolveExportableProperties(project, plugin);
+            Map<ProjectProperty, ?> props = agentScope
+                    ? exportable.getExportableAgentProperties()
+                    : exportable.getExportableProperties();
+            List<JSONObject> requiredList = new ArrayList<>();
+            List<JSONObject> optionalList = new ArrayList<>();
+            if (props != null) {
+                for (ProjectProperty property : props.keySet()) {
+                    if (property == null || property.getName() == null) {
+                        continue;
+                    }
+                    JSONObject entry = new JSONObject();
+                    entry.put("name", property.getName());
+                    String desc = property.getDescription();
+                    if (desc != null && !desc.isBlank()) {
+                        entry.put("description", desc);
+                    }
+                    if (property.isRequired()) {
+                        requiredList.add(entry);
+                    } else {
+                        optionalList.add(entry);
+                    }
+                }
+            }
+            Comparator<JSONObject> byName = Comparator.comparing(
+                    item -> item.optString("name", ""),
+                    String.CASE_INSENSITIVE_ORDER);
+            requiredList.sort(byName);
+            optionalList.sort(byName);
+            for (JSONObject entry : requiredList) {
+                required.put(entry);
+            }
+            for (JSONObject entry : optionalList) {
+                optional.put(entry);
+            }
+            response.put("supported", true);
+        } catch (NotExportableInterface exc) {
+            response.put("supported", false);
+        } catch (Exception exc) {
+            response.put("supported", false);
+            response.put("error", "EXPORTABLE_FAILED");
+            response.put("message", exc.getMessage());
+        }
+        response.put("required", required);
+        response.put("optional", optional);
+        return response;
+    }
+
+    private ExportableProperties resolveExportableProperties(EditorProject project, PluginConfig plugin) throws Exception {
+        String className = plugin.getClassName();
+        if (className == null || className.isBlank()) {
+            throw new NotExportableInterface("Missing plugin class name");
+        }
+        String pluginPackage = className.contains(".")
+                ? className.substring(0, className.lastIndexOf('.'))
+                : "";
+        String pluginSimple = className.contains(".")
+                ? className.substring(className.lastIndexOf('.') + 1)
+                : className;
+        String baseToken = pluginSimple;
+        String[] suffixes = {"CmdExecutor", "Executor", "RunTimePlugin", "Plugin"};
+        for (String suffix : suffixes) {
+            if (baseToken.endsWith(suffix)) {
+                baseToken = baseToken.substring(0, baseToken.length() - suffix.length());
+                break;
+            }
+        }
+        String baseTokenLower = baseToken.toLowerCase(Locale.ROOT);
+        List<String> candidates = new ArrayList<>();
+        List<String> cached = mExportablePropertyClassNames;
+        if (cached == null || cached.isEmpty()) {
+            loadExportablePropertyCache();
+            cached = mExportablePropertyClassNames;
+        }
+        if (cached != null) {
+            for (String entry : cached) {
+                if (pluginPackage.isEmpty() || entry.startsWith(pluginPackage)) {
+                    candidates.add(entry);
+                }
+            }
+        }
+        if (candidates.isEmpty()) {
+            throw new NotExportableInterface("No exportable property class found");
+        }
+        String chosen = null;
+        for (String entry : candidates) {
+            String simple = entry.substring(entry.lastIndexOf('.') + 1).toLowerCase(Locale.ROOT);
+            if (!baseTokenLower.isEmpty() && simple.contains(baseTokenLower)) {
+                chosen = entry;
+                break;
+            }
+        }
+        if (chosen == null) {
+            chosen = candidates.get(0);
+        }
+        Class<?> propClass = Class.forName(chosen);
+        Object instance = propClass.getDeclaredConstructor().newInstance();
+        return (ExportableProperties) instance;
     }
 
     private void handlePreferences(Context ctx) {
@@ -3015,9 +3346,11 @@ public final class WebUiServer implements EventListener {
                         Expression oldCondition = copyExpression(edgeCondition(dataEdge));
                         Integer oldProbability = edgeProbability(dataEdge);
                         Long oldTimeout = edgeTimeout(dataEdge);
+                        Expression oldTimeoutExpr = copyExpression(edgeTimeoutExpression(dataEdge));
                         Map<Tuple<String, BasicNode>, Tuple<String, BasicNode>> oldAltMap = copyAltStartMap(dataEdge.getAltMap());
                         List<EdgePoint> oldPoints = copyEdgePoints(dataEdge.getGraphics() != null ? dataEdge.getGraphics().getConnection() : null);
                         String oldConditionText = edgeConditionSyntax(oldCondition);
+                        String oldTimeoutExprText = expressionSyntax(oldTimeoutExpr);
                         String oldAltSignature = altMapSignature(oldAltMap);
                         String oldPointsSignature = edgePointsSignature(oldPoints);
 
@@ -3028,15 +3361,18 @@ public final class WebUiServer implements EventListener {
                         Expression newCondition = copyExpression(edgeCondition(dataEdge));
                         Integer newProbability = edgeProbability(dataEdge);
                         Long newTimeout = edgeTimeout(dataEdge);
+                        Expression newTimeoutExpr = copyExpression(edgeTimeoutExpression(dataEdge));
                         Map<Tuple<String, BasicNode>, Tuple<String, BasicNode>> newAltMap = copyAltStartMap(dataEdge.getAltMap());
                         List<EdgePoint> newPoints = copyEdgePoints(dataEdge.getGraphics() != null ? dataEdge.getGraphics().getConnection() : null);
                         String newConditionText = edgeConditionSyntax(newCondition);
+                        String newTimeoutExprText = expressionSyntax(newTimeoutExpr);
                         String newAltSignature = altMapSignature(newAltMap);
                         String newPointsSignature = edgePointsSignature(newPoints);
 
                         boolean changed = !Objects.equals(oldConditionText, newConditionText)
                                 || !Objects.equals(oldProbability, newProbability)
                                 || !Objects.equals(oldTimeout, newTimeout)
+                                || !Objects.equals(oldTimeoutExprText, newTimeoutExprText)
                                 || !Objects.equals(oldAltSignature, newAltSignature)
                                 || !Objects.equals(oldPointsSignature, newPointsSignature);
                         Edge guiEdge = findGuiEdgeByData(workSpace, dataEdge);
@@ -3052,14 +3388,14 @@ public final class WebUiServer implements EventListener {
                                 @Override
                                 public void undo() throws CannotUndoException {
                                     super.undo();
-                                    applyEdgeState(dataEdge, oldCondition, oldProbability, oldTimeout, oldAltMap, workSpace);
+                                    applyEdgeState(dataEdge, oldCondition, oldProbability, oldTimeout, oldTimeoutExpr, oldAltMap, workSpace);
                                     applyEdgePointState(dataEdge, oldPoints, workSpace);
                                 }
 
                                 @Override
                                 public void redo() throws CannotRedoException {
                                     super.redo();
-                                    applyEdgeState(dataEdge, newCondition, newProbability, newTimeout, newAltMap, workSpace);
+                                    applyEdgeState(dataEdge, newCondition, newProbability, newTimeout, newTimeoutExpr, newAltMap, workSpace);
                                     applyEdgePointState(dataEdge, newPoints, workSpace);
                                 }
 
@@ -3343,6 +3679,22 @@ public final class WebUiServer implements EventListener {
                     }
                     sendResponse(ctx, requestId, name, response);
                     broadcastEvent("Config.Changed", response.put("projectId", projectId), sourceClientId);
+                    return;
+                }
+                case "ProjectConfig.Update": {
+                    String projectId = body.optString("projectId", null);
+                    JSONObject configPayload = body.optJSONObject("config");
+                    if (projectId == null || projectId.isBlank() || configPayload == null) {
+                        sendError(ctx, requestId, "BAD_REQUEST", "Missing projectId or config");
+                        return;
+                    }
+                    JSONObject response = callOnEdt(() -> applyProjectConfigUpdate(projectId, configPayload));
+                    if (response.has("error")) {
+                        sendError(ctx, requestId, response.getString("error"), response.optString("message", "Failed to update project config"));
+                        return;
+                    }
+                    sendResponse(ctx, requestId, name, response);
+                    broadcastEvent("ProjectConfig.Changed", response.put("projectId", projectId), sourceClientId);
                     return;
                 }
                 case "Script.Update": {
@@ -3954,6 +4306,76 @@ public final class WebUiServer implements EventListener {
         return response;
     }
 
+    private JSONArray configFeaturesToJson(List<ConfigFeature> features) {
+        JSONArray list = new JSONArray();
+        if (features == null) {
+            return list;
+        }
+        for (ConfigFeature feature : features) {
+            if (feature == null) {
+                continue;
+            }
+            JSONObject entry = new JSONObject();
+            entry.put("key", feature.getKey());
+            entry.put("value", feature.getValue());
+            list.put(entry);
+        }
+        return list;
+    }
+
+    private ArrayList<ConfigFeature> configFeaturesFromJson(JSONArray features) {
+        ArrayList<ConfigFeature> list = new ArrayList<>();
+        if (features == null) {
+            return list;
+        }
+        for (int i = 0; i < features.length(); i++) {
+            JSONObject entry = features.optJSONObject(i);
+            if (entry == null) {
+                continue;
+            }
+            String key = entry.optString("key", "");
+            String value = entry.optString("value", "");
+            if (key.isBlank()) {
+                continue;
+            }
+            list.add(new ConfigFeature("Feature", key, value));
+        }
+        return list;
+    }
+
+    private JSONObject projectConfigToJson(EditorProject project) {
+        ProjectConfig projectConfig = project.getProjectConfig();
+        JSONObject config = new JSONObject();
+        config.put("name", projectConfig.getProjectName());
+        JSONArray plugins = new JSONArray();
+        for (PluginConfig plugin : projectConfig.getPluginConfigList()) {
+            JSONObject entry = new JSONObject();
+            entry.put("type", plugin.getPluginType());
+            entry.put("name", plugin.getPluginName());
+            entry.put("className", plugin.getClassName());
+            entry.put("load", plugin.isMarkedtoLoad());
+            entry.put("features", configFeaturesToJson(plugin.getEntryList()));
+            plugins.put(entry);
+        }
+        JSONArray agents = new JSONArray();
+        for (AgentConfig agent : projectConfig.getAgentConfigList()) {
+            JSONObject entry = new JSONObject();
+            entry.put("name", agent.getAgentName());
+            entry.put("device", agent.getDeviceName());
+            entry.put("features", configFeaturesToJson(agent.getEntryList()));
+            agents.put(entry);
+        }
+        JSONObject player = new JSONObject();
+        PlayerConfig playerConfig = projectConfig.getPlayerConfig();
+        player.put("features", configFeaturesToJson(playerConfig.getEntryList()));
+        config.put("plugins", plugins);
+        config.put("agents", agents);
+        config.put("player", player);
+        JSONObject response = new JSONObject();
+        response.put("config", config);
+        return response;
+    }
+
     private JSONObject preferencesToJson() {
         JSONObject prefs = new JSONObject();
         for (Object keyObj : PreferencesDesktop.getKeySet()) {
@@ -4030,6 +4452,95 @@ public final class WebUiServer implements EventListener {
         }
         editor.refresh();
         JSONObject response = configToJson(project);
+        response.put("saved", saved);
+        response.put("pending", pending);
+        return response;
+    }
+
+    private boolean writeProjectConfig(EditorProject project) {
+        File base = project.getProjectFile();
+        if (base == null) {
+            return false;
+        }
+        if (!base.exists() && !base.mkdirs()) {
+            return false;
+        }
+        File file = new File(base, "project.xml");
+        try {
+            if (!file.exists() && !file.createNewFile()) {
+                return false;
+            }
+        } catch (IOException exc) {
+            return false;
+        }
+        return XMLUtilities.writeToXMLFile(project.getProjectConfig(), file, "UTF-8");
+    }
+
+    private JSONObject applyProjectConfigUpdate(String projectId, JSONObject payload) {
+        EditorInstance instance = EditorInstance.getInstance();
+        ProjectEditor editor = findProjectEditorById(projectId, instance);
+        if (editor == null || editor.getEditorProject() == null) {
+            JSONObject error = new JSONObject();
+            error.put("error", "PROJECT_NOT_FOUND");
+            error.put("message", "Project not found");
+            return error;
+        }
+        EditorProject project = editor.getEditorProject();
+        ProjectConfig config = project.getProjectConfig();
+        String name = payload.optString("name", config.getProjectName());
+        config.setProjectName(name);
+
+        List<PluginConfig> pluginList = config.getPluginConfigList();
+        pluginList.clear();
+        JSONArray plugins = payload.optJSONArray("plugins");
+        if (plugins != null) {
+            for (int i = 0; i < plugins.length(); i++) {
+                JSONObject entry = plugins.optJSONObject(i);
+                if (entry == null) {
+                    continue;
+                }
+                String type = entry.optString("type", "device");
+                String pluginName = entry.optString("name", "");
+                String className = entry.optString("className", "");
+                boolean load = entry.optBoolean("load", true);
+                ArrayList<ConfigFeature> features = configFeaturesFromJson(entry.optJSONArray("features"));
+                pluginList.add(new PluginConfig(type, pluginName, className, load, features));
+            }
+        }
+
+        List<AgentConfig> agentList = config.getAgentConfigList();
+        agentList.clear();
+        JSONArray agents = payload.optJSONArray("agents");
+        if (agents != null) {
+            for (int i = 0; i < agents.length(); i++) {
+                JSONObject entry = agents.optJSONObject(i);
+                if (entry == null) {
+                    continue;
+                }
+                String agentName = entry.optString("name", "");
+                String device = entry.optString("device", "");
+                ArrayList<ConfigFeature> features = configFeaturesFromJson(entry.optJSONArray("features"));
+                agentList.add(new AgentConfig(agentName, device, features));
+            }
+        }
+
+        PlayerConfig player = config.getPlayerConfig();
+        player.getEntryList().clear();
+        JSONObject playerPayload = payload.optJSONObject("player");
+        ArrayList<ConfigFeature> playerFeatures = configFeaturesFromJson(
+                playerPayload != null ? playerPayload.optJSONArray("features") : null);
+        player.getEntryList().addAll(playerFeatures);
+
+        boolean saved = false;
+        boolean pending = false;
+        File base = project.getProjectFile();
+        if (base != null && base.exists()) {
+            saved = writeProjectConfig(project);
+        } else {
+            pending = true;
+        }
+        editor.refresh();
+        JSONObject response = projectConfigToJson(project);
         response.put("saved", saved);
         response.put("pending", pending);
         return response;
@@ -4777,12 +5288,39 @@ public final class WebUiServer implements EventListener {
         return null;
     }
 
+    private boolean isIntVarDefined(SuperNode active, String name) {
+        if (active == null || name == null || name.isBlank()) {
+            return false;
+        }
+        for (VariableDefinition def : active.getVarDefList()) {
+            if (def == null) {
+                continue;
+            }
+            String defName = def.getName();
+            String defType = def.getType();
+            if (defName == null || defType == null) {
+                continue;
+            }
+            if (name.equals(defName) && "int".equalsIgnoreCase(defType.trim())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private Expression edgeCondition(AbstractEdge dataEdge) {
         if (dataEdge instanceof GuargedEdge) {
             return ((GuargedEdge) dataEdge).getCondition();
         }
         if (dataEdge instanceof InterruptEdge) {
             return ((InterruptEdge) dataEdge).getCondition();
+        }
+        return null;
+    }
+
+    private Expression edgeTimeoutExpression(AbstractEdge dataEdge) {
+        if (dataEdge instanceof TimeoutEdge) {
+            return ((TimeoutEdge) dataEdge).getExpression();
         }
         return null;
     }
@@ -4860,6 +5398,10 @@ public final class WebUiServer implements EventListener {
     }
 
     private String edgeConditionSyntax(Expression expr) {
+        return expressionSyntax(expr);
+    }
+
+    private String expressionSyntax(Expression expr) {
         if (expr == null) {
             return "";
         }
@@ -4999,6 +5541,7 @@ public final class WebUiServer implements EventListener {
             Expression condition,
             Integer probability,
             Long timeout,
+            Expression timeoutExpr,
             Map<Tuple<String, BasicNode>, Tuple<String, BasicNode>> altMap,
             WorkSpacePanel workSpace) {
         if (dataEdge == null) {
@@ -5013,14 +5556,16 @@ public final class WebUiServer implements EventListener {
         if (dataEdge instanceof RandomEdge && probability != null) {
             ((RandomEdge) dataEdge).setProbability(probability);
         }
-        if (dataEdge instanceof TimeoutEdge && timeout != null) {
-            if (timeout >= 0) {
+        if (dataEdge instanceof TimeoutEdge) {
+            TimeoutEdge timeoutEdge = (TimeoutEdge) dataEdge;
+            if (timeout != null && timeout >= 0) {
                 try {
-                    ((TimeoutEdge) dataEdge).setTimeout(timeout);
+                    timeoutEdge.setTimeout(timeout);
                 } catch (NumberFormatException ex) {
                     mLogger.warning("Invalid timeout during undo/redo: " + ex.getMessage());
                 }
             }
+            timeoutEdge.setExpression(timeoutExpr != null ? timeoutExpr.getCopy() : null);
         }
         if (altMap != null) {
             dataEdge.setAltMap(copyAltStartMap(altMap));
@@ -5088,6 +5633,34 @@ public final class WebUiServer implements EventListener {
                 }
             }
             ((RandomEdge) dataEdge).setProbability(probability);
+        }
+        if (fields.has("timeoutExpr")) {
+            if (!(dataEdge instanceof TimeoutEdge)) {
+                return "Timeout is not supported for this edge type.";
+            }
+            String input = fields.optString("timeoutExpr", "").trim();
+            TimeoutEdge timeoutEdge = (TimeoutEdge) dataEdge;
+            if (input.isEmpty()) {
+                timeoutEdge.setExpression(null);
+            } else {
+                Command parsed;
+                try {
+                    parsed = GlueParser.run(input);
+                } catch (Exception ex) {
+                    return "Timeout expression parse failed.";
+                }
+                if (!(parsed instanceof Expression)) {
+                    return "Timeout expression parse failed.";
+                }
+                if (!(parsed instanceof SimpleVariable)) {
+                    return "Timeout expression must be an integer variable.";
+                }
+                String varName = ((SimpleVariable) parsed).getName();
+                if (!isIntVarDefined(active, varName)) {
+                    return "Timeout expression must be an integer sceneflow variable.";
+                }
+                timeoutEdge.setExpression((Expression) parsed);
+            }
         }
         if (fields.has("timeoutMs")) {
             if (!(dataEdge instanceof TimeoutEdge)) {
@@ -5518,6 +6091,9 @@ public final class WebUiServer implements EventListener {
     }
 
     private boolean requiresAuth(String path) {
+        if ((API_PREFIX + "/token").equals(path)) {
+            return false;
+        }
         return path.startsWith("/api/") || path.startsWith("/ws");
     }
 
@@ -5536,6 +6112,17 @@ public final class WebUiServer implements EventListener {
 
     private boolean tokenMatches(String token) {
         return mToken == null || mToken.isEmpty() || mToken.equals(token);
+    }
+
+    private boolean isLocalRequest(Context ctx) {
+        String ip = ctx.ip();
+        if (ip == null || ip.isBlank()) {
+            return false;
+        }
+        if (ip.startsWith("127.") || ip.equals("::1") || ip.equals("0:0:0:0:0:0:0:1")) {
+            return true;
+        }
+        return ip.startsWith("::ffff:127.");
     }
 
     private String extractBearerToken(String header) {
@@ -5571,13 +6158,18 @@ public final class WebUiServer implements EventListener {
     }
 
     private void logStartup() {
-        String host = "localhost";
-        try {
-            host = InetAddress.getLocalHost().getHostAddress();
-        } catch (Exception ignored) {
+        String host = "127.0.0.1";
+        String lanHost = null;
+        if (mAllowExternal) {
+            try {
+                lanHost = InetAddress.getLocalHost().getHostAddress();
+            } catch (Exception ignored) {
+            }
         }
-
         mLogger.message("Web UI server started on http://" + host + ":" + mPort + "/");
+        if (lanHost != null && !lanHost.isBlank()) {
+            mLogger.message("Web UI LAN access enabled at http://" + lanHost + ":" + mPort + "/");
+        }
         if (mToken != null && !mToken.isEmpty()) {
             mLogger.message("Web UI token: " + mToken);
         }

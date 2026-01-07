@@ -10,6 +10,7 @@ Legend:
 - Web UI stack: Svelte + Vite.
 - Server: Javalin in core (`de.dfki.vsm.web`), started from `SceneMaker3`.
 - LAN access: token enforced for `/api` and `/ws` only.
+- Startup: binds to `127.0.0.1` by default; `--allow-lan` enables `0.0.0.0`. Auto-opens the browser unless `--no-browser`.
 - Graph editing: custom SVG/Canvas (no external graph lib).
 - Code editor: CodeMirror 6.
 - Swing editor remains for reference only (no sync work).

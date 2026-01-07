@@ -5,7 +5,12 @@ import de.dfki.vsm.util.log.LOGDefaultLogger;
 import de.dfki.vsm.web.WebUiServer;
 
 import javax.swing.*;
+import java.awt.Desktop;
+import java.awt.GraphicsEnvironment;
 import java.io.File;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -19,20 +24,38 @@ public final class SceneMaker3 {
 
     // Start SceneMaker3 in a specific mode
     public static void main(final String[] args) {
+        boolean allowLan = false;
+        boolean openBrowser = true;
+        List<String> remaining = new ArrayList<>();
+        for (String arg : args) {
+            if ("--allow-lan".equalsIgnoreCase(arg) || "--allow-external".equalsIgnoreCase(arg)) {
+                allowLan = true;
+            } else if ("--no-browser".equalsIgnoreCase(arg)) {
+                openBrowser = false;
+            } else {
+                remaining.add(arg);
+            }
+        }
+        String[] effectiveArgs = remaining.toArray(new String[0]);
         try {
-            WebUiServer.getInstance().start();
+            WebUiServer server = WebUiServer.getInstance();
+            server.setAllowExternal(allowLan);
+            server.start();
+            if (openBrowser) {
+                openBrowser(server.getLocalUrl());
+            }
         } catch (Exception exc) {
             sLogger.warning("Warning: Cannot start Web UI server: " + exc.getMessage());
         }
         // Let Java Swing do the work for us
         SwingUtilities.invokeLater(() -> {
             // Check if we have at least one argument
-            if (args.length > 0) {
-                if (args.length == 2) {
+            if (effectiveArgs.length > 0) {
+                if (effectiveArgs.length == 2) {
                     // Read the first command line argument
-                    final String mode = args[0];
+                    final String mode = effectiveArgs[0];
                     // Get the project file name argument
-                    final String name = args[1];
+                    final String name = effectiveArgs[1];
                     // Create the project configuration
                     final File file = new File(name);
                     // Check the options from this argument
@@ -152,11 +175,29 @@ public final class SceneMaker3 {
 
     // Print usage when usage error happened
     private static void usage() {
-        sLogger.failure("Error: Usage: [runtime|editor] [filename]");
+        sLogger.failure("Error: Usage: [--allow-lan] [--no-browser] [runtime|editor] [filename]");
     }
 
     // Print error when a file error happened
     private static void error(final File file) {
         sLogger.failure("Error: Cannot find file '" + file.getAbsolutePath() + "'");
+    }
+
+    private static void openBrowser(String url) {
+        if (url == null || url.isBlank()) {
+            return;
+        }
+        if (GraphicsEnvironment.isHeadless() || !Desktop.isDesktopSupported()) {
+            return;
+        }
+        Desktop desktop = Desktop.getDesktop();
+        if (!desktop.isSupported(Desktop.Action.BROWSE)) {
+            return;
+        }
+        try {
+            desktop.browse(new URI(url));
+        } catch (Exception exc) {
+            sLogger.warning("Warning: Cannot open browser: " + exc.getMessage());
+        }
     }
 }
