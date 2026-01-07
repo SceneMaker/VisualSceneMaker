@@ -82,8 +82,12 @@ public class TimeoutEdge extends AbstractEdge {
 
     // TODO:
     public TimeoutEdge getCopy() {
-        return new TimeoutEdge(mTargetUnid, mSourceUnid, mTargetNode, mSourceNode, mGraphics.getCopy(), getCopyOfCmdList(),
-                         getCopyOfAltStartNodeMap(), mTimeout);
+        TimeoutEdge copy = new TimeoutEdge(mTargetUnid, mSourceUnid, mTargetNode, mSourceNode, mGraphics.getCopy(), getCopyOfCmdList(),
+                getCopyOfAltStartNodeMap(), mTimeout);
+        if (mExpression != null) {
+            copy.setExpression(mExpression.getCopy());
+        }
+        return copy;
     }
 
     public void writeXML(de.dfki.vsm.util.ios.IOSIndentWriter out) throws XMLWriteError {
@@ -97,10 +101,14 @@ public class TimeoutEdge extends AbstractEdge {
             start.append(startNodeData.getFirst()).append("/").append(altStartNodeData.getFirst()).append(";");
         }
 
-        out.println("<TEdge target=\"" + mTargetUnid + "\" start=\"" + start + "\" timeout=\"" + mTimeout + "\">");
+        out.println("<TEdge target=\"" + mTargetUnid + "\" start=\"" + start + "\" timeout=\"" + mTimeout + "\">").push();
 
         if (mGraphics != null) {
             mGraphics.writeXML(out);
+        }
+
+        if (mExpression != null) {
+            mExpression.writeXML(out);
         }
 
         if (!mCmdList.isEmpty()) {
@@ -113,12 +121,21 @@ public class TimeoutEdge extends AbstractEdge {
             out.pop().println("</Commands>");
         }
 
-        out.println("</TEdge>");
+        out.pop().println("</TEdge>");
     }
 
     public void parseXML(Element element) throws XMLParseError {
         mTargetUnid  = element.getAttribute("target");
-        mTimeout = java.lang.Long.valueOf(element.getAttribute("timeout"));
+        String timeoutAttr = element.getAttribute("timeout");
+        if (timeoutAttr != null && !timeoutAttr.isBlank()) {
+            try {
+                mTimeout = java.lang.Long.parseLong(timeoutAttr);
+            } catch (NumberFormatException ignored) {
+                mTimeout = Long.MIN_VALUE;
+            }
+        } else {
+            mTimeout = Long.MIN_VALUE;
+        }
 
         String[] altStartNodes = element.getAttribute("start").split(";");
 
@@ -148,9 +165,7 @@ public class TimeoutEdge extends AbstractEdge {
                         }
                     });
                 } else {
-                    throw new XMLParseError(null,
-                                            "Cannot parse an element with tag \"" + tag
-                                            + "\" into a child of a TEdge!");
+                    mExpression = Expression.parse(element);
                 }
             }
         });

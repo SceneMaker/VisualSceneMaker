@@ -4,6 +4,8 @@ import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
 import de.dfki.vsm.runtime.plugin.RunTimePlugin;
 import de.dfki.vsm.util.log.LOGConsoleLogger;
 import org.reflections.Reflections;
+import org.reflections.scanners.SubTypesScanner;
+import org.reflections.util.ConfigurationBuilder;
 
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -32,8 +34,11 @@ public class ExtensionsFromJar {
     }
 
     public void loadExtensions() {
-        new Reflections(packageName)
-                .getSubTypesOf(RunTimePlugin.class).stream()
+        Reflections reflections = new Reflections(new ConfigurationBuilder()
+                .forPackages(packageName)
+                .addScanners(new SubTypesScanner(false))
+                .setExpandSuperTypes(false));
+        reflections.getSubTypesOf(RunTimePlugin.class).stream()
                 .filter(aClass -> !Modifier.isAbstract(aClass.getModifiers()) &&
                         !Modifier.isInterface(aClass.getModifiers()))
                 .forEach(aClass -> {
@@ -56,7 +61,11 @@ public class ExtensionsFromJar {
      * Checks if a specific class is a subclass of the ActivityExecutor class
      */
     public boolean isClassAnActivityExecutor(String className) {
-        return new Reflections(packageName).getSubTypesOf(ActivityExecutor.class).stream()
+        Reflections reflections = new Reflections(new ConfigurationBuilder()
+                .forPackages(packageName)
+                .addScanners(new SubTypesScanner(false))
+                .setExpandSuperTypes(false));
+        return reflections.getSubTypesOf(ActivityExecutor.class).stream()
                 .anyMatch(aClass -> aClass.getCanonicalName().equals(className));
     }
 

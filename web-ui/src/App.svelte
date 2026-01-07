@@ -5,8 +5,10 @@
   import ScriptEditor from "./ScriptEditor.svelte";
   import IconChevronDown from "./icons/IconChevronDown.svelte";
   import IconChevronUp from "./icons/IconChevronUp.svelte";
+  import IconGear from "./icons/IconGear.svelte";
   import IconPencil from "./icons/IconPencil.svelte";
   import IconPlus from "./icons/IconPlus.svelte";
+  import IconPuzzle from "./icons/IconPuzzle.svelte";
   import IconPause from "./icons/IconPause.svelte";
   import IconStart from "./icons/IconStart.svelte";
   import IconStop from "./icons/IconStop.svelte";
@@ -23,6 +25,7 @@
   })();
 
   let token = localStorage.getItem("vsm_token") || "";
+  let autoConnectAttempted = false;
   let info = null;
   let error = "";
   let statusMessage = "";
@@ -51,6 +54,30 @@
     stopped: "Stopped"
   };
   const EDGE_ACTIVITY_MS = 650;
+  const PREF_NODE_DEFAULT = 90;
+  const PREF_GRID_DEFAULT = 1;
+  const PREF_WORKSPACE_FONT_DEFAULT = 11;
+  const PREF_SCRIPT_FONT_DEFAULT = "Monospaced";
+  const PREF_SCRIPT_FONT_SIZE_DEFAULT = 16;
+  const PREF_NODE_MIN = 20;
+  const PREF_NODE_MAX = 200;
+  const PREF_GRID_MIN = 1;
+  const PREF_GRID_MAX = 8;
+  const PREF_FONT_MIN = 8;
+  const PREF_FONT_MAX = 16;
+  const SCRIPT_FONT_OPTIONS = [
+    "Monospaced",
+    "IBM Plex Mono",
+    "Fira Code",
+    "Fira Mono",
+    "JetBrains Mono",
+    "Source Code Pro",
+    "Menlo",
+    "Monaco",
+    "Consolas",
+    "Courier New",
+    "SF Mono"
+  ];
 
   function clampSceneFlowZoom(value) {
     return Math.min(SCENEFLOW_ZOOM_MAX, Math.max(SCENEFLOW_ZOOM_MIN, value));
@@ -323,9 +350,30 @@
 
   let config = {};
   let configDraft = {};
-  let configFilter = "";
   let configSaved = null;
   let lastConfigProjectId = "";
+  let projectConfigDialogOpen = false;
+  let projectConfig = null;
+  let projectConfigDraft = null;
+  let projectConfigLoading = false;
+  let projectConfigError = "";
+  let projectConfigSaved = null;
+  let projectConfigPending = false;
+  let projectConfigSelection = { type: "project" };
+  let projectConfigNewPlugin = { name: "", className: "", type: "device", load: true };
+  let projectConfigNewAgent = { name: "", device: "" };
+  let projectConfigNewFeature = { key: "", value: "" };
+  let availableDevices = [];
+  let availableDevicesLoading = false;
+  let availableDevicesError = "";
+  let exportableKeyCache = {};
+  let exportableKeyLoading = {};
+  let exportableKeyError = {};
+  let prefsDialogOpen = false;
+  let prefsDialogDraft = null;
+  let prefsDialogError = "";
+  let prefsDialogBusy = false;
+  let prefsPreviewStyle = "";
 
   let scriptText = "";
   let scriptDraft = "";
@@ -380,6 +428,8 @@
   let activityEdgeHits = new Map();
   let activityNodeIds = [];
   let activityEdgeList = [];
+  let timeoutEdgeRuns = new Map();
+  let timeoutEdgeList = [];
   let varBadgeState = loadVarBadgeState();
   let varBadgeDrag = null;
   let sceneFlowContainerEl;
@@ -455,7 +505,93 @@
 
   $: selectedProject = projects.find((p) => p.projectId === selectedProjectId) || null;
   $: filteredPrefs = filterKeyValues(prefDraft, prefFilter);
-  $: filteredConfig = filterKeyValues(configDraft, configFilter);
+  $: projectConfigView = normalizeProjectConfig(projectConfigDraft || projectConfig || {});
+  $: projectConfigPlugins = projectConfigView.plugins;
+  $: projectConfigAgents = projectConfigView.agents;
+  $: projectConfigPlayer = projectConfigView.player;
+  $: projectConfigAgentsByPlugin = projectConfigPlugins.map((plugin) =>
+    projectConfigAgents
+      .map((agent, agentIndex) => (agent.device === plugin.name ? { agent, agentIndex } : null))
+      .filter(Boolean)
+  );
+  $: selectedProjectPlugin =
+    projectConfigSelection?.type === "plugin"
+      ? projectConfigPlugins[projectConfigSelection.pluginIndex]
+      : null;
+  $: selectedProjectAgent =
+    projectConfigSelection?.type === "agent"
+      ? projectConfigAgents[projectConfigSelection.agentIndex]
+      : null;
+  $: selectedProjectAgentPluginIndex =
+    projectConfigSelection?.type === "agent" && selectedProjectAgent
+      ? projectConfigPlugins.findIndex((plugin) => plugin.name === selectedProjectAgent.device)
+      : -1;
+  $: selectedProjectAgentPlugin =
+    selectedProjectAgentPluginIndex >= 0 ? projectConfigPlugins[selectedProjectAgentPluginIndex] : null;
+  $: activeProjectPluginIndex =
+    projectConfigSelection?.type === "plugin"
+      ? projectConfigSelection.pluginIndex
+      : projectConfigSelection?.type === "agent"
+        ? selectedProjectAgentPluginIndex
+        : -1;
+  $: activeProjectPlugin = activeProjectPluginIndex >= 0 ? projectConfigPlugins[activeProjectPluginIndex] : null;
+  $: if (!projectConfigNewAgent.device && projectConfigPlugins.length) {
+    projectConfigNewAgent = { ...projectConfigNewAgent, device: projectConfigPlugins[0].name || "" };
+  }
+  $: selectedProjectPluginKeys =
+    selectedProjectPlugin?.className || selectedProjectPlugin?.name
+      ? exportableKeyCache[
+          keyHintId(selectedProjectPlugin.name, "plugin", selectedProjectPlugin.className)
+        ]
+      : null;
+  $: selectedProjectAgentKeys =
+    selectedProjectAgent?.device || activeProjectPlugin?.className
+      ? exportableKeyCache[
+          keyHintId(selectedProjectAgent?.device || "", "agent", activeProjectPlugin?.className || "")
+        ]
+      : null;
+  $: pluginKeyOptions = keyHintOptions(selectedProjectPluginKeys);
+  $: agentKeyOptions = keyHintOptions(selectedProjectAgentKeys);
+  $: selectedProjectPluginKeysLoading =
+    selectedProjectPlugin?.className || selectedProjectPlugin?.name
+      ? exportableKeyLoading[
+          keyHintId(selectedProjectPlugin.name, "plugin", selectedProjectPlugin.className)
+        ]
+      : false;
+  $: selectedProjectAgentKeysLoading =
+    selectedProjectAgent?.device || activeProjectPlugin?.className
+      ? exportableKeyLoading[
+          keyHintId(selectedProjectAgent?.device || "", "agent", activeProjectPlugin?.className || "")
+        ]
+      : false;
+  $: selectedProjectPluginKeysError =
+    selectedProjectPlugin?.className || selectedProjectPlugin?.name
+      ? exportableKeyError[
+          keyHintId(selectedProjectPlugin.name, "plugin", selectedProjectPlugin.className)
+        ]
+      : "";
+  $: selectedProjectAgentKeysError =
+    selectedProjectAgent?.device || activeProjectPlugin?.className
+      ? exportableKeyError[
+          keyHintId(selectedProjectAgent?.device || "", "agent", activeProjectPlugin?.className || "")
+        ]
+      : "";
+  $: if (
+    projectConfigSelection?.type === "plugin" &&
+    (projectConfigSelection.pluginIndex == null ||
+      projectConfigSelection.pluginIndex < 0 ||
+      projectConfigSelection.pluginIndex >= projectConfigPlugins.length)
+  ) {
+    projectConfigSelection = { type: "project" };
+  }
+  $: if (
+    projectConfigSelection?.type === "agent" &&
+    (projectConfigSelection.agentIndex == null ||
+      projectConfigSelection.agentIndex < 0 ||
+      projectConfigSelection.agentIndex >= projectConfigAgents.length)
+  ) {
+    projectConfigSelection = { type: "project" };
+  }
   $: scriptDirty = scriptDraft !== scriptText;
   $: selectedNode = sceneFlowSelection?.type === "node" ? sceneFlow?.nodes?.find((node) => node.id === sceneFlowSelection.id) : null;
   $: selectedEdge = sceneFlowSelection?.type === "edge" ? sceneFlow?.edges?.find((edge) => edge.id === sceneFlowSelection.id) : null;
@@ -507,6 +643,10 @@
   $: nodeEditorTypeDefs = Array.isArray(nodeEditorTarget?.typeDefs) ? nodeEditorTarget.typeDefs : [];
   $: nodeEditorVarDefs = Array.isArray(nodeEditorTarget?.varDefs) ? nodeEditorTarget.varDefs : [];
   $: nodeEditorCommands = Array.isArray(nodeEditorTarget?.commands) ? nodeEditorTarget.commands : [];
+  $: sceneFlowVarDefs = Array.isArray(sceneFlow?.superNodeData?.varDefs) ? sceneFlow.superNodeData.varDefs : [];
+  $: sceneFlowIntVarNames = sceneFlowVarDefs
+    .filter((def) => (def?.type || "").trim().toLowerCase() === "int" && (def?.name || "").trim())
+    .map((def) => (def.name || "").trim());
   $: nodeEditorTypeOptions = Array.isArray(nodeEditorTarget?.typeOptions)
     ? nodeEditorTarget.typeOptions
     : ["Int", "Bool", "Float", "String"];
@@ -531,6 +671,7 @@
   $: runtimeDisplayGlobals = isSceneFlowRoot ? runtimeRootVars : runtimeGlobals;
   $: activityNodeIds = Array.from(activityNodeCounts.keys());
   $: activityEdgeList = Array.from(activityEdgeHits.values());
+  $: timeoutEdgeList = Array.from(timeoutEdgeRuns.values());
   $: runtimeCanPlay = wsConnected && !!selectedProjectId && (runtimeState === "stopped" || runtimeState === "paused");
   $: runtimeCanPause = wsConnected && !!selectedProjectId && runtimeState === "running";
   $: runtimeCanStop = wsConnected && !!selectedProjectId && runtimeState !== "stopped";
@@ -540,6 +681,7 @@
   $: filteredScriptScenes = filterSceneLanguages(scriptScenes, scriptScenesFilter, scriptScenesLanguage);
   $: sceneLanguageOptions = sceneLanguageOptionList(scriptScenes);
   $: filteredScriptElements = filterScriptElements(scriptElements, scriptElementsFilter);
+  $: prefsPreviewStyle = buildPrefsPreviewStyle(prefsDialogDraft);
 
   $: if (selectedNode && selectedNode.id !== nodeDraftId) {
     nodeDraftId = selectedNode.id;
@@ -626,7 +768,7 @@
     edgeDraft = {
       condition: selectedEdge.condition ?? "",
       probability: selectedEdge.probability !== undefined ? String(selectedEdge.probability) : "",
-      timeoutMs: selectedEdge.timeoutMs !== undefined ? String(selectedEdge.timeoutMs) : "",
+      timeoutSpec: edgeTimeoutSpec(selectedEdge),
       altStartText: formatAltStartMap(selectedEdge)
     };
     edgeEditError = "";
@@ -661,7 +803,7 @@
       return altDirty;
     }
     if (selectedEdge.type === "TEDGE") {
-      return String(edgeDraft.timeoutMs ?? "") !== String(selectedEdge.timeoutMs ?? "") || altDirty;
+      return edgeTimeoutSpec(selectedEdge) !== String(edgeDraft.timeoutSpec ?? "") || altDirty;
     }
     return altDirty;
   })();
@@ -776,6 +918,7 @@
     statusMessage = "";
     sessionReady = false;
     try {
+      await fetchLocalToken();
       await loadInfo();
       await Promise.all([loadProjects(), loadPreferences()]);
       const wsOk = await connectWs();
@@ -807,6 +950,41 @@
     info = await apiGet("/api/v1/info");
     localStorage.setItem("vsm_token", token);
   }
+
+  async function fetchLocalToken() {
+    if (token) return false;
+    try {
+      const response = await fetch("/api/v1/token");
+      if (!response.ok) {
+        return false;
+      }
+      const data = await response.json();
+      if (data?.token) {
+        token = data.token;
+        localStorage.setItem("vsm_token", token);
+        return true;
+      }
+    } catch (err) {
+      return false;
+    }
+    return false;
+  }
+
+  async function autoConnectIfLocal() {
+    if (autoConnectAttempted) return;
+    autoConnectAttempted = true;
+    if (!token) {
+      const fetched = await fetchLocalToken();
+      if (!fetched) {
+        return;
+      }
+    }
+    await connectAll();
+  }
+
+  onMount(() => {
+    autoConnectIfLocal();
+  });
 
   async function refreshInfo() {
     error = "";
@@ -906,6 +1084,26 @@
     preferences = response.preferences || {};
     prefDraft = { ...preferences };
     statusMessage = "Preferences updated.";
+    if (
+      selectedProjectId &&
+      Object.prototype.hasOwnProperty.call(values, "workspace_fontsize")
+    ) {
+      const workspaceSize = values.workspace_fontsize;
+      if (workspaceSize !== undefined && workspaceSize !== null) {
+        const normalized = String(workspaceSize);
+        const current = config?.workspace_fontsize ?? "";
+        configDraft = { ...configDraft, workspace_fontsize: normalized };
+        if (String(current) !== normalized) {
+          const configResponse = await sendCommand("Config.Update", {
+            projectId: selectedProjectId,
+            values: { workspace_fontsize: normalized }
+          });
+          config = configResponse.config || {};
+          configDraft = { ...config };
+          configSaved = configResponse.saved === true;
+        }
+      }
+    }
   }
 
   async function loadConfig(projectId) {
@@ -931,6 +1129,499 @@
     configDraft = { ...config };
     configSaved = response.saved === true;
     statusMessage = response.pending ? "Config stored; save the project to persist." : "Config updated.";
+  }
+
+  async function loadProjectConfig(projectId) {
+    if (!projectId) return;
+    projectConfigLoading = true;
+    projectConfigError = "";
+    try {
+      const data = await apiGet(`/api/v1/projects/${projectId}/project-config`);
+      projectConfig = normalizeProjectConfig(data.config || {});
+      projectConfigDraft = cloneProjectConfig(projectConfig);
+      projectConfigSaved = data.saved ?? null;
+      projectConfigPending = data.pending === true;
+    } catch (err) {
+      projectConfigError = err.message || "Failed to load project config.";
+    } finally {
+      projectConfigLoading = false;
+    }
+  }
+
+  async function loadAvailableDevices() {
+    availableDevicesLoading = true;
+    availableDevicesError = "";
+    try {
+      const data = await apiGet("/api/v1/devices");
+      const list = Array.isArray(data.devices) ? data.devices : [];
+      availableDevices = list
+        .map((device) => ({
+          name: device?.name ?? "",
+          className: device?.className ?? ""
+        }))
+        .filter((device) => device.className);
+    } catch (err) {
+      availableDevicesError = err.message || "Failed to load device list.";
+    } finally {
+      availableDevicesLoading = false;
+    }
+  }
+
+  function keyHintId(deviceName, scope, className = "") {
+    const key = (className || "").trim() || (deviceName || "").trim();
+    return `${scope}:${key}`;
+  }
+
+  async function loadExportableKeys(deviceName, scope, className = "") {
+    const trimmedDevice = (deviceName || "").trim();
+    const trimmedClass = (className || "").trim();
+    if (!selectedProjectId || (!trimmedDevice && !trimmedClass)) return;
+    const id = keyHintId(trimmedDevice, scope, trimmedClass);
+    if (exportableKeyCache[id] || exportableKeyLoading[id]) {
+      return;
+    }
+    exportableKeyLoading = { ...exportableKeyLoading, [id]: true };
+    exportableKeyError = { ...exportableKeyError, [id]: "" };
+    try {
+      const params = new URLSearchParams();
+      if (trimmedDevice) {
+        params.set("device", trimmedDevice);
+      }
+      if (trimmedClass) {
+        params.set("className", trimmedClass);
+      }
+      params.set("scope", scope);
+      const data = await apiGet(`/api/v1/projects/${selectedProjectId}/project-config/keys?${params.toString()}`);
+      exportableKeyCache = { ...exportableKeyCache, [id]: data };
+    } catch (err) {
+      exportableKeyError = { ...exportableKeyError, [id]: err.message || "Failed to load keys." };
+    } finally {
+      exportableKeyLoading = { ...exportableKeyLoading, [id]: false };
+    }
+  }
+
+  async function applyProjectConfig() {
+    if (!selectedProjectId || !projectConfigDraft) return;
+    projectConfigError = "";
+    try {
+      const response = await sendCommand("ProjectConfig.Update", {
+        projectId: selectedProjectId,
+        config: projectConfigDraft
+      });
+      projectConfig = normalizeProjectConfig(response.config || {});
+      projectConfigDraft = cloneProjectConfig(projectConfig);
+      projectConfigSaved = response.saved ?? null;
+      projectConfigPending = response.pending === true;
+    } catch (err) {
+      projectConfigError = err.message || "Failed to update project config.";
+    }
+  }
+
+  function openProjectConfigDialog() {
+    if (!selectedProjectId) return;
+    projectConfigDialogOpen = true;
+    projectConfigSelection = { type: "project" };
+    projectConfigError = "";
+    projectConfigSaved = null;
+    projectConfigPending = false;
+    loadProjectConfig(selectedProjectId);
+    loadAvailableDevices();
+  }
+
+  $: if (projectConfigDialogOpen && (selectedProjectPlugin?.className || selectedProjectPlugin?.name)) {
+    loadExportableKeys(selectedProjectPlugin.name, "plugin", selectedProjectPlugin.className);
+  }
+
+  $: if (projectConfigDialogOpen && (selectedProjectAgent?.device || activeProjectPlugin?.className)) {
+    loadExportableKeys(selectedProjectAgent?.device || "", "agent", activeProjectPlugin?.className || "");
+  }
+
+  function closeProjectConfigDialog() {
+    projectConfigDialogOpen = false;
+    projectConfigError = "";
+    projectConfigSelection = { type: "project" };
+    projectConfigNewPlugin = { name: "", className: "", type: "device", load: true };
+    projectConfigNewAgent = { name: "", device: "" };
+    projectConfigNewFeature = { key: "", value: "" };
+  }
+
+  function selectProjectConfig(selection) {
+    projectConfigSelection = selection;
+    projectConfigError = "";
+    projectConfigNewFeature = { key: "", value: "" };
+    if (selection?.type === "plugin") {
+      const plugin = projectConfigPlugins[selection.pluginIndex];
+      if (plugin?.name) {
+        projectConfigNewAgent = { ...projectConfigNewAgent, device: plugin.name };
+      }
+    }
+  }
+
+  function updateProjectName(value) {
+    projectConfigDraft = {
+      ...projectConfigDraft,
+      name: value
+    };
+  }
+
+  function updatePluginField(index, field, value) {
+    const plugins = projectConfigPlugins.map((plugin, idx) =>
+      idx === index ? { ...plugin, [field]: value } : plugin
+    );
+    projectConfigDraft = {
+      ...projectConfigDraft,
+      plugins
+    };
+  }
+
+  function updatePluginName(index, value) {
+    const plugins = [...projectConfigPlugins];
+    const current = plugins[index];
+    if (!current) return;
+    const oldName = current.name;
+    plugins[index] = { ...current, name: value };
+    const agents = projectConfigAgents.map((agent) =>
+      agent.device === oldName ? { ...agent, device: value } : agent
+    );
+    projectConfigDraft = {
+      ...projectConfigDraft,
+      plugins,
+      agents
+    };
+  }
+
+  function updateAgentField(index, field, value) {
+    const agents = projectConfigAgents.map((agent, idx) =>
+      idx === index ? { ...agent, [field]: value } : agent
+    );
+    projectConfigDraft = {
+      ...projectConfigDraft,
+      agents
+    };
+  }
+
+  function updateFeatureList(list, index, field, value) {
+    return list.map((feature, idx) =>
+      idx === index ? { ...feature, [field]: value } : feature
+    );
+  }
+
+  function updatePluginFeature(pluginIndex, featureIndex, field, value) {
+    const plugins = [...projectConfigPlugins];
+    const plugin = plugins[pluginIndex];
+    if (!plugin) return;
+    const features = updateFeatureList(plugin.features, featureIndex, field, value);
+    plugins[pluginIndex] = { ...plugin, features };
+    projectConfigDraft = { ...projectConfigDraft, plugins };
+  }
+
+  function updateAgentFeature(agentIndex, featureIndex, field, value) {
+    const agents = [...projectConfigAgents];
+    const agent = agents[agentIndex];
+    if (!agent) return;
+    const features = updateFeatureList(agent.features, featureIndex, field, value);
+    agents[agentIndex] = { ...agent, features };
+    projectConfigDraft = { ...projectConfigDraft, agents };
+  }
+
+  function updatePlayerFeature(featureIndex, field, value) {
+    const features = updateFeatureList(projectConfigPlayer.features, featureIndex, field, value);
+    projectConfigDraft = {
+      ...projectConfigDraft,
+      player: { features }
+    };
+  }
+
+  function addFeatureToSelection() {
+    const key = (projectConfigNewFeature.key || "").trim();
+    if (!key) {
+      projectConfigError = "Feature key is required.";
+      return;
+    }
+    const value = projectConfigNewFeature.value ?? "";
+    if (projectConfigSelection.type === "plugin") {
+      const pluginIndex = projectConfigSelection.pluginIndex;
+      const plugin = projectConfigPlugins[pluginIndex];
+      if (!plugin) return;
+      const features = [...plugin.features, { key, value }];
+      const plugins = [...projectConfigPlugins];
+      plugins[pluginIndex] = { ...plugin, features };
+      projectConfigDraft = { ...projectConfigDraft, plugins };
+    } else if (projectConfigSelection.type === "agent") {
+      const agentIndex = projectConfigSelection.agentIndex;
+      const agent = projectConfigAgents[agentIndex];
+      if (!agent) return;
+      const features = [...agent.features, { key, value }];
+      const agents = [...projectConfigAgents];
+      agents[agentIndex] = { ...agent, features };
+      projectConfigDraft = { ...projectConfigDraft, agents };
+    } else if (projectConfigSelection.type === "player") {
+      const features = [...projectConfigPlayer.features, { key, value }];
+      projectConfigDraft = {
+        ...projectConfigDraft,
+        player: { features }
+      };
+    }
+    projectConfigNewFeature = { key: "", value: "" };
+    projectConfigError = "";
+  }
+
+  function removePluginFeature(pluginIndex, featureIndex) {
+    const plugins = [...projectConfigPlugins];
+    const plugin = plugins[pluginIndex];
+    if (!plugin) return;
+    const features = plugin.features.filter((_, idx) => idx !== featureIndex);
+    plugins[pluginIndex] = { ...plugin, features };
+    projectConfigDraft = { ...projectConfigDraft, plugins };
+  }
+
+  function removeAgentFeature(agentIndex, featureIndex) {
+    const agents = [...projectConfigAgents];
+    const agent = agents[agentIndex];
+    if (!agent) return;
+    const features = agent.features.filter((_, idx) => idx !== featureIndex);
+    agents[agentIndex] = { ...agent, features };
+    projectConfigDraft = { ...projectConfigDraft, agents };
+  }
+
+  function removePlayerFeature(featureIndex) {
+    const features = projectConfigPlayer.features.filter((_, idx) => idx !== featureIndex);
+    projectConfigDraft = {
+      ...projectConfigDraft,
+      player: { features }
+    };
+  }
+
+  function addPlugin() {
+    const name = (projectConfigNewPlugin.name || "").trim();
+    const className = (projectConfigNewPlugin.className || "").trim();
+    const type = (projectConfigNewPlugin.type || "device").trim() || "device";
+    if (!name || !className) {
+      projectConfigError = "Device name and class are required.";
+      return;
+    }
+    if (projectConfigPlugins.some((plugin) => plugin.name === name)) {
+      projectConfigError = "Device name already exists.";
+      return;
+    }
+    const next = {
+      name,
+      className,
+      type,
+      load: projectConfigNewPlugin.load !== false,
+      features: []
+    };
+    const plugins = [...projectConfigPlugins, next];
+    projectConfigDraft = { ...projectConfigDraft, plugins };
+    projectConfigNewPlugin = { name: "", className: "", type: "device", load: true };
+    selectProjectConfig({ type: "plugin", pluginIndex: plugins.length - 1 });
+  }
+
+  function addAgent(deviceOverride) {
+    const name = (projectConfigNewAgent.name || "").trim();
+    const device = (deviceOverride || projectConfigNewAgent.device || "").trim();
+    if (!name || !device) {
+      projectConfigError = "Agent name and device are required.";
+      return;
+    }
+    if (projectConfigAgents.some((agent) => agent.name === name)) {
+      projectConfigError = "Agent name already exists.";
+      return;
+    }
+    const agent = {
+      name,
+      device,
+      features: []
+    };
+    const agents = [...projectConfigAgents, agent];
+    projectConfigDraft = { ...projectConfigDraft, agents };
+    projectConfigNewAgent = { name: "", device };
+    selectProjectConfig({ type: "agent", agentIndex: agents.length - 1 });
+  }
+
+  function removePlugin(index) {
+    const plugin = projectConfigPlugins[index];
+    if (!plugin) return;
+    const plugins = projectConfigPlugins.filter((_, idx) => idx !== index);
+    const agents = projectConfigAgents.filter((agent) => agent.device !== plugin.name);
+    projectConfigDraft = { ...projectConfigDraft, plugins, agents };
+    if (projectConfigSelection.type === "plugin" && projectConfigSelection.pluginIndex === index) {
+      projectConfigSelection = { type: "project" };
+    }
+  }
+
+  function removeAgent(index) {
+    const agents = projectConfigAgents.filter((_, idx) => idx !== index);
+    projectConfigDraft = { ...projectConfigDraft, agents };
+    if (projectConfigSelection.type === "agent" && projectConfigSelection.agentIndex === index) {
+      projectConfigSelection = { type: "project" };
+    }
+  }
+
+  function readConfigValue(key, fallback) {
+    if (Object.prototype.hasOwnProperty.call(configDraft, key)) {
+      const value = configDraft[key];
+      if (value !== undefined && value !== null && value !== "") {
+        return value;
+      }
+    }
+    if (Object.prototype.hasOwnProperty.call(config, key)) {
+      const value = config[key];
+      if (value !== undefined && value !== null && value !== "") {
+        return value;
+      }
+    }
+    return fallback;
+  }
+
+  function readConfigInt(key, fallback) {
+    const raw = readConfigValue(key, fallback);
+    const parsed = Number.parseInt(raw, 10);
+    return Number.isFinite(parsed) ? parsed : fallback;
+  }
+
+  function readConfigBool(key, fallback) {
+    const raw = readConfigValue(key, fallback);
+    if (raw === undefined || raw === null || raw === "") return fallback;
+    if (typeof raw === "boolean") return raw;
+    return String(raw).toLowerCase() === "true";
+  }
+
+  function readConfigString(key, fallback) {
+    const raw = readConfigValue(key, fallback);
+    if (raw === undefined || raw === null) return fallback;
+    const text = String(raw).trim();
+    return text ? text : fallback;
+  }
+
+  function normalizeConfigValue(value) {
+    if (value === undefined || value === null) return "";
+    return String(value);
+  }
+
+  function parsePrefsInt(value, min, max, label) {
+    const parsed = Number.parseInt(String(value).trim(), 10);
+    if (!Number.isFinite(parsed)) {
+      prefsDialogError = `${label} must be a number.`;
+      return null;
+    }
+    if (parsed < min || parsed > max) {
+      prefsDialogError = `${label} must be between ${min} and ${max}.`;
+      return null;
+    }
+    return parsed;
+  }
+
+  function quoteFontFamily(font) {
+    const trimmed = String(font || "").trim();
+    const cleaned = trimmed.replace(/["]/g, "");
+    if (!cleaned) return `"${PREF_SCRIPT_FONT_DEFAULT}"`;
+    return `"${cleaned}"`;
+  }
+
+  function buildPrefsPreviewStyle(draft) {
+    if (!draft) return "";
+    const size = Number.parseInt(String(draft.scriptFontSize || ""), 10);
+    const fontSize = Number.isFinite(size) ? size : PREF_SCRIPT_FONT_SIZE_DEFAULT;
+    const family = quoteFontFamily(draft.scriptFontType);
+    return `font-family:${family}, monospace; font-size:${fontSize}px;`;
+  }
+
+  function openPrefsDialog() {
+    if (!selectedProjectId) return;
+    const width = readConfigInt("node_width", PREF_NODE_DEFAULT);
+    const height = readConfigInt("node_height", width);
+    const nodeSize = width || height || PREF_NODE_DEFAULT;
+    prefsDialogDraft = {
+      nodeSize: String(nodeSize),
+      gridScale: String(readConfigInt("grid_x", PREF_GRID_DEFAULT)),
+      workspaceFontSize: String(readConfigInt("workspace_fontsize", PREF_WORKSPACE_FONT_DEFAULT)),
+      drawGrid: readConfigBool("grid", true),
+      activityVisualization: readConfigBool("visualization", true),
+      activityTrace: readConfigBool("visualizationtrace", true),
+      showNodeId: readConfigBool("shownodeid", true),
+      scriptFontType: readConfigString("scriptfonttype", PREF_SCRIPT_FONT_DEFAULT),
+      scriptFontSize: String(readConfigInt("scriptfonsize", PREF_SCRIPT_FONT_SIZE_DEFAULT))
+    };
+    prefsDialogError = "";
+    prefsDialogOpen = true;
+  }
+
+  function closePrefsDialog() {
+    prefsDialogOpen = false;
+    prefsDialogDraft = null;
+    prefsDialogError = "";
+  }
+
+  async function applyPrefsDialog() {
+    if (!selectedProjectId || !prefsDialogDraft) return;
+    prefsDialogError = "";
+    const nodeSize = parsePrefsInt(prefsDialogDraft.nodeSize, PREF_NODE_MIN, PREF_NODE_MAX, "Node size");
+    if (nodeSize === null) return;
+    const gridScale = parsePrefsInt(prefsDialogDraft.gridScale, PREF_GRID_MIN, PREF_GRID_MAX, "Grid scale");
+    if (gridScale === null) return;
+    const workspaceFontSize = parsePrefsInt(
+      prefsDialogDraft.workspaceFontSize,
+      PREF_FONT_MIN,
+      PREF_FONT_MAX,
+      "Workspace font size"
+    );
+    if (workspaceFontSize === null) return;
+    const scriptFontSize = parsePrefsInt(
+      prefsDialogDraft.scriptFontSize,
+      PREF_FONT_MIN,
+      PREF_FONT_MAX,
+      "Script font size"
+    );
+    if (scriptFontSize === null) return;
+    const scriptFontType = String(prefsDialogDraft.scriptFontType || "").trim();
+    if (!scriptFontType) {
+      prefsDialogError = "Script font type is required.";
+      return;
+    }
+    const changes = {};
+    const addChange = (key, value) => {
+      const next = String(value);
+      const current = normalizeConfigValue(config?.[key]);
+      if (current !== next) {
+        changes[key] = next;
+      }
+    };
+    addChange("node_width", nodeSize);
+    addChange("node_height", nodeSize);
+    addChange("grid_x", gridScale);
+    addChange("grid_y", gridScale);
+    addChange("workspace_fontsize", workspaceFontSize);
+    addChange("grid", prefsDialogDraft.drawGrid);
+    addChange("visualization", prefsDialogDraft.activityVisualization);
+    addChange("visualizationtrace", prefsDialogDraft.activityTrace);
+    addChange("shownodeid", prefsDialogDraft.showNodeId);
+    addChange("scriptfonsize", scriptFontSize);
+    addChange("scriptfonttype", scriptFontType);
+    if (!Object.keys(changes).length) {
+      prefsDialogError = "No changes to apply.";
+      return;
+    }
+    prefsDialogBusy = true;
+    try {
+      const response = await sendCommand("Config.Update", {
+        projectId: selectedProjectId,
+        values: changes
+      });
+      if (response?.config) {
+        config = response.config;
+      }
+      configDraft = { ...configDraft, ...changes };
+      configSaved = response?.saved === true;
+      statusMessage = response?.pending
+        ? "Config stored; save the project to persist."
+        : "Config updated.";
+      closePrefsDialog();
+    } catch (err) {
+      prefsDialogError = err.message || "Failed to update preferences.";
+    } finally {
+      prefsDialogBusy = false;
+    }
   }
 
   async function loadScript(projectId) {
@@ -1128,6 +1819,7 @@
   function clearSceneFlowActivity() {
     activityNodeCounts = new Map();
     activityEdgeHits = new Map();
+    timeoutEdgeRuns = new Map();
   }
 
   function activityProjectMatches(payload) {
@@ -1199,6 +1891,52 @@
       updated.delete(edgeId);
       activityEdgeHits = updated;
     }, EDGE_ACTIVITY_MS);
+  }
+
+  function registerTimeoutEdge(edgeId, startedAt, timeoutMs) {
+    if (!edgeId) return;
+    const resolvedTimeout = Number(timeoutMs);
+    if (!Number.isFinite(resolvedTimeout) || resolvedTimeout <= 0) {
+      return;
+    }
+    const resolvedStart = Number.isFinite(Number(startedAt)) ? Number(startedAt) : Date.now();
+    const next = new Map(timeoutEdgeRuns);
+    next.set(edgeId, { id: edgeId, startedAt: resolvedStart, timeoutMs: resolvedTimeout });
+    timeoutEdgeRuns = next;
+    const removalStart = resolvedStart;
+    setTimeout(() => {
+      const current = timeoutEdgeRuns.get(edgeId);
+      if (!current || current.startedAt !== removalStart) return;
+      const updated = new Map(timeoutEdgeRuns);
+      updated.delete(edgeId);
+      timeoutEdgeRuns = updated;
+    }, resolvedTimeout + 50);
+  }
+
+  function clearTimeoutEdge(edgeId) {
+    if (!edgeId) return;
+    if (!timeoutEdgeRuns.has(edgeId)) return;
+    const next = new Map(timeoutEdgeRuns);
+    next.delete(edgeId);
+    timeoutEdgeRuns = next;
+  }
+
+  function clearTimeoutEdgesForNode(nodeId) {
+    if (!nodeId || !sceneFlow?.edges?.length) return;
+    const tedgeIds = sceneFlow.edges
+      .filter((edge) => edge.type === "TEDGE" && edge.sourceId === nodeId)
+      .map((edge) => edge.id);
+    if (tedgeIds.length === 0) return;
+    const next = new Map(timeoutEdgeRuns);
+    let changed = false;
+    for (const edgeId of tedgeIds) {
+      if (next.delete(edgeId)) {
+        changed = true;
+      }
+    }
+    if (changed) {
+      timeoutEdgeRuns = next;
+    }
   }
 
   function refreshRuntimeVars(target) {
@@ -1339,8 +2077,20 @@
         prefDraft = { ...preferences };
       }
       if (message.name === "Config.Changed" && message.payload?.config) {
+        if (message.payload?.projectId && message.payload.projectId !== selectedProjectId) {
+          return;
+        }
         config = message.payload.config;
         configDraft = { ...config };
+      }
+      if (message.name === "ProjectConfig.Changed" && message.payload?.config) {
+        if (message.payload?.projectId && message.payload.projectId !== selectedProjectId) {
+          return;
+        }
+        projectConfig = normalizeProjectConfig(message.payload.config);
+        if (!projectConfigDialogOpen) {
+          projectConfigDraft = cloneProjectConfig(projectConfig);
+        }
       }
       if (message.name === "Script.Changed" && message.payload?.projectId === selectedProjectId) {
         if (message.sourceClientId && message.sourceClientId === clientId) {
@@ -1403,6 +2153,7 @@
         const nodeId = resolveActivityNodeId(message.payload);
         if (nodeId) {
           decrementActivityNode(nodeId);
+          clearTimeoutEdgesForNode(nodeId);
         }
       }
       if (message.name === "SceneFlow.Edge.Executed") {
@@ -1413,7 +2164,22 @@
         }
         const edgeId = resolveActivityEdgeId(message.payload);
         if (edgeId) {
-          registerEdgeActivity(edgeId);
+          if ((message.payload?.edgeType || "") === "TEDGE") {
+            clearTimeoutEdge(edgeId);
+          } else {
+            registerEdgeActivity(edgeId);
+          }
+        }
+      }
+      if (message.name === "SceneFlow.Timeout.Started") {
+        if (!activityProjectMatches(message.payload)) return;
+        const superNodeId = (message.payload?.superNodeId || "").trim();
+        if (superNodeId && superNodeId !== (sceneFlow?.superNodeId || "")) {
+          return;
+        }
+        const edgeId = resolveActivityEdgeId(message.payload);
+        if (edgeId) {
+          registerTimeoutEdge(edgeId, message.payload?.startedAt, message.payload?.timeoutMs);
         }
       }
       if (message.name === "SceneFlow.Runtime.Stopped") {
@@ -1507,6 +2273,62 @@
     return entries.filter(([key, value]) => {
       return key.toLowerCase().includes(query) || String(value).toLowerCase().includes(query);
     });
+  }
+
+  function normalizeConfigFeatures(features) {
+    if (!Array.isArray(features)) return [];
+    return features.map((feature) => ({
+      key: feature?.key ?? "",
+      value: feature?.value ?? ""
+    }));
+  }
+
+  function normalizeProjectConfig(config) {
+    const safe = config || {};
+    return {
+      name: safe.name ?? "",
+      plugins: Array.isArray(safe.plugins)
+        ? safe.plugins.map((plugin) => ({
+            type: plugin?.type ?? "device",
+            name: plugin?.name ?? "",
+            className: plugin?.className ?? "",
+            load: plugin?.load !== false,
+            features: normalizeConfigFeatures(plugin?.features)
+          }))
+        : [],
+      agents: Array.isArray(safe.agents)
+        ? safe.agents.map((agent) => ({
+            name: agent?.name ?? "",
+            device: agent?.device ?? "",
+            features: normalizeConfigFeatures(agent?.features)
+          }))
+        : [],
+      player: {
+        features: normalizeConfigFeatures(safe.player?.features)
+      }
+    };
+  }
+
+  function keyHintOptions(keys) {
+    if (!keys || keys.supported === false) return [];
+    const required = Array.isArray(keys.required)
+      ? keys.required.map((entry) => ({ ...entry, kind: "required" }))
+      : [];
+    const optional = Array.isArray(keys.optional)
+      ? keys.optional.map((entry) => ({ ...entry, kind: "optional" }))
+      : [];
+    return [...required, ...optional];
+  }
+
+  function keyHintLabel(entry) {
+    if (!entry) return "";
+    const desc = (entry.description || "").trim();
+    const prefix = entry.kind === "required" ? "required" : "optional";
+    return desc ? `${prefix}: ${desc}` : prefix;
+  }
+
+  function cloneProjectConfig(config) {
+    return JSON.parse(JSON.stringify(config));
   }
 
   function formatAltStartMap(edge) {
@@ -1627,6 +2449,26 @@
       }
     });
     return parts.join(", ");
+  }
+
+  function edgeTimeoutSpec(edge) {
+    if (!edge) return "";
+    const expr = (edge.timeoutExpr ?? "").trim();
+    if (expr) return expr;
+    if (edge.timeoutMs !== undefined && edge.timeoutMs !== null) {
+      return String(edge.timeoutMs);
+    }
+    return "";
+  }
+
+  function isTimeoutNumber(value) {
+    return /^\d+$/.test(String(value || "").trim());
+  }
+
+  function isTimeoutVarName(value) {
+    const name = String(value || "").trim();
+    if (!name) return false;
+    return sceneFlowIntVarNames.includes(name);
   }
 
   function commentLabel(comment, index) {
@@ -3104,7 +3946,7 @@
     edgeDraft = {
       condition: selectedEdge.condition ?? "",
       probability: selectedEdge.probability !== undefined ? String(selectedEdge.probability) : "",
-      timeoutMs: selectedEdge.timeoutMs !== undefined ? String(selectedEdge.timeoutMs) : "",
+      timeoutSpec: edgeTimeoutSpec(selectedEdge),
       altStartText: formatAltStartMap(selectedEdge)
     };
     edgeEditError = "";
@@ -3193,18 +4035,37 @@
     } else if (type === "PEDGE") {
       // Probability edits are managed via the probability manager.
     } else if (type === "TEDGE") {
-      const raw = String(edgeDraft.timeoutMs ?? "").trim();
-      const parsed = Number.parseInt(raw, 10);
-      if (!Number.isFinite(parsed)) {
-        edgeEditError = "Timeout must be a number.";
+      const raw = String(edgeDraft.timeoutSpec ?? "").trim();
+      if (!raw) {
+        edgeEditError = "Timeout is required.";
         return;
       }
-      if (parsed < 0) {
-        edgeEditError = "Timeout must be >= 0.";
-        return;
-      }
-      if (parsed !== (selectedEdge.timeoutMs ?? 0)) {
-        fields.timeoutMs = parsed;
+      if (isTimeoutNumber(raw)) {
+        const parsed = Number.parseInt(raw, 10);
+        if (!Number.isFinite(parsed)) {
+          edgeEditError = "Timeout must be a number.";
+          return;
+        }
+        if (parsed < 0) {
+          edgeEditError = "Timeout must be >= 0.";
+          return;
+        }
+        if (parsed !== (selectedEdge.timeoutMs ?? 0)) {
+          fields.timeoutMs = parsed;
+        }
+        if (selectedEdge.timeoutExpr) {
+          fields.timeoutExpr = "";
+        }
+      } else {
+        if (!isTimeoutVarName(raw)) {
+          edgeEditError = sceneFlowIntVarNames.length
+            ? "Timeout must be an integer sceneflow variable."
+            : "No integer sceneflow variables defined.";
+          return;
+        }
+        if (raw !== (selectedEdge.timeoutExpr ?? "")) {
+          fields.timeoutExpr = raw;
+        }
       }
     } else {
       edgeEditError = "Selected edge has no editable fields yet.";
@@ -3336,6 +4197,10 @@
       <label for="token">Token</label>
       <input id="token" placeholder="Paste token from server log" bind:value={token} />
     </div>
+    <p class="muted">
+      Localhost auto-fetches tokens from `/api/v1/token`. For LAN access, use the token printed on server start.
+      Flags: `--allow-lan` to bind 0.0.0.0, `--no-browser` to disable auto-open.
+    </p>
     <div class="row">
       <button type="button" class="primary" on:click={connectAll}>Connect</button>
       <button type="button" class="ghost" on:click={refreshInfo}>Refresh Info</button>
@@ -3452,55 +4317,6 @@
       </div>
     </section>
 
-    <section class="panel">
-      <header class="panel-title">
-        <h2>Preferences</h2>
-        <button type="button" class="ghost" on:click={loadPreferences}>Reload</button>
-      </header>
-      <input class="search" placeholder="Filter preferences" bind:value={prefFilter} />
-      <div class="kv-list">
-        {#each filteredPrefs as [key, value]}
-          <div class="kv-row">
-            <span>{key}</span>
-            <input bind:value={prefDraft[key]} />
-          </div>
-        {/each}
-      </div>
-      <div class="actions">
-        <button type="button" class="primary" on:click={applyPreferences} disabled={!wsConnected}>Apply</button>
-      </div>
-    </section>
-
-    <section class="panel">
-      <header class="panel-title">
-        <h2>Project Config</h2>
-        <div class="badge subtle">
-          {selectedProject ? selectedProject.name : "No project selected"}
-        </div>
-      </header>
-      <input class="search" placeholder="Filter config" bind:value={configFilter} disabled={!selectedProject} />
-      <div class="kv-list">
-        {#if !selectedProject}
-          <p class="muted">Select a project to edit config.</p>
-        {:else}
-          {#each filteredConfig as [key, value]}
-            <div class="kv-row">
-              <span>{key}</span>
-              <input bind:value={configDraft[key]} />
-            </div>
-          {/each}
-        {/if}
-      </div>
-      <div class="actions">
-        <button type="button" class="primary" on:click={applyConfig} disabled={!selectedProject || !wsConnected}>
-          Apply
-        </button>
-        {#if configSaved !== null}
-          <span class="muted">{configSaved ? "Saved" : "Pending save"}</span>
-        {/if}
-      </div>
-    </section>
-
     <section class="panel sceneflow-panel">
       <header class="panel-title">
         <h2>SceneFlow</h2>
@@ -3566,6 +4382,26 @@
         </div>
         {#if sceneFlowPathNodes.length || sceneFlow?.path?.length}
           <div class="sceneflow-breadcrumbs-row">
+            <button
+              type="button"
+              class="sceneflow-gear"
+              on:click={openProjectConfigDialog}
+              disabled={!selectedProject || !wsConnected}
+              aria-label="Open project modules"
+              title="Project modules"
+            >
+              <IconPuzzle className="icon" />
+            </button>
+            <button
+              type="button"
+              class="sceneflow-gear"
+              on:click={openPrefsDialog}
+              disabled={!selectedProject || !wsConnected}
+              aria-label="Open preferences"
+              title="Preferences"
+            >
+              <IconGear className="icon" />
+            </button>
             {#if sceneFlowPathNodes.length}
               <nav class="sceneflow-breadcrumbs" aria-label="SceneFlow path">
                 {#each sceneFlowPathNodes as node, idx}
@@ -3587,7 +4423,9 @@
                 {/each}
               </nav>
             {:else}
-              <span class="muted">Path: {sceneFlow.path.join(" / ")}</span>
+              <div class="sceneflow-breadcrumbs">
+                <span class="muted">Path: {sceneFlow.path.join(" / ")}</span>
+              </div>
             {/if}
           </div>
         {/if}
@@ -3850,6 +4688,7 @@
                 snapshot={sceneFlow}
                 activityNodes={activityNodeIds}
                 activityEdges={activityEdgeList}
+                timeoutEdges={timeoutEdgeList}
                 onNavigate={navigateSceneFlow}
                 onNodeMove={moveSceneFlowNode}
                 onCommentUpdate={updateSceneFlowComment}
@@ -4228,8 +5067,19 @@
                     {/if}
                   </div>
                 {:else if selectedEdge.type === "TEDGE"}
-                  <label for="edge-timeout">Timeout (ms)</label>
-                  <input id="edge-timeout" type="number" min="0" bind:value={edgeDraft.timeoutMs} />
+                  <label for="edge-timeout">Timeout (ms or int variable)</label>
+                  <input
+                    id="edge-timeout"
+                    type="text"
+                    list="edge-timeout-vars"
+                    placeholder="1000 or timeout_ms"
+                    bind:value={edgeDraft.timeoutSpec}
+                  />
+                  <datalist id="edge-timeout-vars">
+                    {#each sceneFlowIntVarNames as varName}
+                      <option value={varName}></option>
+                    {/each}
+                  </datalist>
                 {:else}
                   <p class="muted">No editable fields for this edge type yet.</p>
                 {/if}
@@ -4712,9 +5562,744 @@
       {/if}
       {#if scriptError}
         <p class="error">{scriptError}</p>
-      {/if}
-    </section>
+    {/if}
+  </section>
   </div>
+
+  {#if projectConfigDialogOpen}
+    <button
+      type="button"
+      class="modal-backdrop"
+      on:click|self={closeProjectConfigDialog}
+      aria-label="Close dialog"
+    >
+      <div class="modal project-config-modal" role="dialog" aria-modal="true" aria-labelledby="project-config-title">
+        <div class="project-config-header">
+          <div class="project-config-title">
+            <span class="project-config-icon">
+              <IconPuzzle className="icon" />
+            </span>
+            <div>
+              <h3 id="project-config-title">Project settings</h3>
+              <span class="muted">Stored in project.xml</span>
+            </div>
+          </div>
+          <div class="project-config-header-actions">
+            <button
+              type="button"
+              class="ghost"
+              on:click={() => loadProjectConfig(selectedProjectId)}
+              disabled={!selectedProject || projectConfigLoading}
+            >
+              Reload
+            </button>
+          </div>
+        </div>
+        <div class="project-config-body">
+          <aside class="project-config-tree">
+            <button
+              type="button"
+              class="project-config-tree-item root"
+              class:active={projectConfigSelection.type === "project"}
+              on:click={() => selectProjectConfig({ type: "project" })}
+            >
+              <span>{projectConfigView.name || "Project"}</span>
+            </button>
+            <div class="project-config-tree-section">
+              <button
+                type="button"
+                class="project-config-tree-item"
+                class:active={projectConfigSelection.type === "devices"}
+                on:click={() => selectProjectConfig({ type: "devices" })}
+              >
+                <span>Devices</span>
+              </button>
+              {#if projectConfigPlugins.length === 0}
+                <p class="muted">No devices configured.</p>
+              {:else}
+                {#each projectConfigPlugins as plugin, pluginIndex}
+                  <button
+                    type="button"
+                    class="project-config-tree-item plugin"
+                    class:active={
+                      projectConfigSelection.type === "plugin" && projectConfigSelection.pluginIndex === pluginIndex
+                    }
+                    on:click={() => selectProjectConfig({ type: "plugin", pluginIndex })}
+                  >
+                    <span>{plugin.name || "Unnamed device"}</span>
+                  </button>
+                  <div class="project-config-tree-children">
+                    {#each projectConfigAgentsByPlugin[pluginIndex] as entry}
+                      <button
+                        type="button"
+                        class="project-config-tree-item agent"
+                        class:active={
+                          projectConfigSelection.type === "agent" &&
+                          projectConfigSelection.agentIndex === entry.agentIndex
+                        }
+                        on:click={() => selectProjectConfig({ type: "agent", agentIndex: entry.agentIndex })}
+                      >
+                        <span>{entry.agent.name || "Unnamed agent"}</span>
+                      </button>
+                    {/each}
+                  </div>
+                {/each}
+              {/if}
+              <button
+                type="button"
+                class="project-config-tree-add"
+                on:click={() => selectProjectConfig({ type: "devices" })}
+              >
+                + Add device
+              </button>
+            </div>
+          </aside>
+          <section class="project-config-main">
+            {#if !selectedProject}
+              <p class="muted">Select a project to edit settings.</p>
+            {:else if projectConfigLoading}
+              <p class="muted">Loading project settings...</p>
+            {:else if projectConfigError}
+              <p class="error">{projectConfigError}</p>
+            {:else}
+              {#if projectConfigSelection.type === "project"}
+                <div class="project-config-panel">
+                  <div class="project-config-panel-header">
+                    <h4>Project</h4>
+                    <span class="muted">project.xml</span>
+                  </div>
+                  <div class="project-config-grid">
+                    <label for="project-name-input">Project name</label>
+                    <input
+                      id="project-name-input"
+                      value={projectConfigView.name}
+                      on:input={(event) => updateProjectName(event.target.value)}
+                    />
+                  </div>
+                  <div class="project-config-meta">
+                    <span>{projectConfigPlugins.length} devices</span>
+                    <span>{projectConfigAgents.length} agents</span>
+                  </div>
+                </div>
+              {:else if projectConfigSelection.type === "devices"}
+                <div class="project-config-panel">
+                  <div class="project-config-panel-header">
+                    <h4>Add device</h4>
+                    <span class="muted">Plugins loaded by this project</span>
+                  </div>
+                  <div class="project-config-grid">
+                    <label for="device-name">Device name</label>
+                    <input id="device-name" bind:value={projectConfigNewPlugin.name} />
+                    <label for="device-class-select">Available devices</label>
+                    <select
+                      id="device-class-select"
+                      value={projectConfigNewPlugin.className}
+                      disabled={availableDevicesLoading || availableDevices.length === 0}
+                      on:change={(event) => {
+                        projectConfigNewPlugin = { ...projectConfigNewPlugin, className: event.target.value };
+                      }}
+                    >
+                      <option value="">Select a device class</option>
+                      {#each availableDevices as device}
+                        <option value={device.className}>{device.name}</option>
+                      {/each}
+                    </select>
+                    <label for="device-class">Class</label>
+                    <input
+                      id="device-class"
+                      list="device-class-list"
+                      bind:value={projectConfigNewPlugin.className}
+                      placeholder={availableDevicesLoading ? "Loading devices..." : "Select or enter class"}
+                    />
+                  </div>
+                  {#if availableDevicesError}
+                    <p class="error">{availableDevicesError}</p>
+                  {/if}
+                  <div class="actions">
+                    <button type="button" class="ghost" on:click={addPlugin}>Add device</button>
+                  </div>
+                </div>
+              {:else if projectConfigSelection.type === "plugin" && selectedProjectPlugin}
+                <div class="project-config-panel">
+                  <div class="project-config-panel-header">
+                    <div>
+                      <h4>Device</h4>
+                      <span class="muted">{selectedProjectPlugin.name || "Unnamed device"}</span>
+                    </div>
+                    <button type="button" class="ghost danger" on:click={() => removePlugin(projectConfigSelection.pluginIndex)}>
+                      Delete
+                    </button>
+                  </div>
+                  <div class="project-config-info-grid">
+                    <div class="project-config-info-row">
+                      <label for="plugin-name" class="project-config-info-label">Device name</label>
+                      <input
+                        id="plugin-name"
+                        value={selectedProjectPlugin.name}
+                        on:input={(event) => updatePluginName(projectConfigSelection.pluginIndex, event.target.value)}
+                      />
+                    </div>
+                    <div class="project-config-info-row">
+                      <label for="plugin-class-select" class="project-config-info-label">Available devices</label>
+                      <select
+                        id="plugin-class-select"
+                        value={selectedProjectPlugin.className}
+                        disabled={availableDevicesLoading || availableDevices.length === 0}
+                        on:change={(event) =>
+                          updatePluginField(projectConfigSelection.pluginIndex, "className", event.target.value)
+                        }
+                      >
+                        <option value="">Select a device class</option>
+                        {#each availableDevices as device}
+                          <option value={device.className}>{device.name}</option>
+                        {/each}
+                      </select>
+                    </div>
+                    <div class="project-config-info-row">
+                      <label for="plugin-class" class="project-config-info-label">Class</label>
+                      <input
+                        id="plugin-class"
+                        list="device-class-list"
+                        value={selectedProjectPlugin.className}
+                        on:input={(event) => updatePluginField(projectConfigSelection.pluginIndex, "className", event.target.value)}
+                      />
+                    </div>
+                    <label class="project-config-toggle">
+                      <input
+                        type="checkbox"
+                        checked={selectedProjectPlugin.load}
+                        on:change={(event) =>
+                          updatePluginField(projectConfigSelection.pluginIndex, "load", event.target.checked)
+                        }
+                      />
+                      <span>Load plugin</span>
+                    </label>
+                  </div>
+                  <div class="project-config-table">
+                    <div class="project-config-table-header">
+                      <span>Key</span>
+                      <span>Value</span>
+                      <span></span>
+                    </div>
+                    {#if selectedProjectPlugin.features.length === 0}
+                      <div class="project-config-table-empty">No entries yet.</div>
+                    {:else}
+                      {#each selectedProjectPlugin.features as feature, featureIndex}
+                        <div class="project-config-table-row">
+                          <input
+                            list="plugin-key-hints"
+                            value={feature.key}
+                            placeholder="key"
+                            on:input={(event) =>
+                              updatePluginFeature(
+                                projectConfigSelection.pluginIndex,
+                                featureIndex,
+                                "key",
+                                event.target.value
+                              )
+                            }
+                          />
+                          <input
+                            value={feature.value}
+                            placeholder="value"
+                            on:input={(event) =>
+                              updatePluginFeature(
+                                projectConfigSelection.pluginIndex,
+                                featureIndex,
+                                "value",
+                                event.target.value
+                              )
+                            }
+                          />
+                          <button
+                            type="button"
+                            class="ghost icon-button danger"
+                            on:click={() => removePluginFeature(projectConfigSelection.pluginIndex, featureIndex)}
+                          >
+                            <IconTrash className="icon" />
+                          </button>
+                        </div>
+                      {/each}
+                    {/if}
+                    <div class="project-config-table-add">
+                      <input list="plugin-key-hints" placeholder="key" bind:value={projectConfigNewFeature.key} />
+                      <input placeholder="value" bind:value={projectConfigNewFeature.value} />
+                      <button type="button" class="ghost" on:click={addFeatureToSelection}>Add</button>
+                    </div>
+                    <datalist id="plugin-key-hints">
+                      {#each pluginKeyOptions as option}
+                        <option value={option.name} label={keyHintLabel(option)}>{option.name}</option>
+                      {/each}
+                    </datalist>
+                  </div>
+                  {#if selectedProjectPluginKeysLoading}
+                    <p class="muted">Loading key hints...</p>
+                  {:else if selectedProjectPluginKeysError}
+                    <p class="error">{selectedProjectPluginKeysError}</p>
+                  {:else if selectedProjectPluginKeys}
+                    {#if selectedProjectPluginKeys.supported === false}
+                      <p class="muted">No key hints provided by this extension.</p>
+                    {:else}
+                      <div class="project-config-keylist">
+                        <div class="project-config-keylist-title">Key hints</div>
+                        <div class="project-config-keygrid">
+                          <div>
+                            <div class="project-config-key-title">Required</div>
+                            {#if selectedProjectPluginKeys.required?.length}
+                              <div class="project-config-key-list">
+                                {#each selectedProjectPluginKeys.required as entry}
+                                  <div class="project-config-key-item">
+                                    <span>{entry.name}</span>
+                                    {#if entry.description}
+                                      <span class="project-config-key-desc">{entry.description}</span>
+                                    {/if}
+                                  </div>
+                                {/each}
+                              </div>
+                            {:else}
+                              <div class="muted">None</div>
+                            {/if}
+                          </div>
+                          <div>
+                            <div class="project-config-key-title">Optional</div>
+                            {#if selectedProjectPluginKeys.optional?.length}
+                              <div class="project-config-key-list">
+                                {#each selectedProjectPluginKeys.optional as entry}
+                                  <div class="project-config-key-item">
+                                    <span>{entry.name}</span>
+                                    {#if entry.description}
+                                      <span class="project-config-key-desc">{entry.description}</span>
+                                    {/if}
+                                  </div>
+                                {/each}
+                              </div>
+                            {:else}
+                              <div class="muted">None</div>
+                            {/if}
+                          </div>
+                        </div>
+                      </div>
+                    {/if}
+                  {/if}
+                  <div class="project-config-agent-add">
+                    <div class="project-config-agent-add-title">Add agent</div>
+                    <div class="project-config-agent-add-row">
+                      <input placeholder="Agent name" bind:value={projectConfigNewAgent.name} />
+                      <button type="button" class="ghost" on:click={() => addAgent(selectedProjectPlugin.name)}>
+                        Add
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              {:else if projectConfigSelection.type === "agent" && selectedProjectAgent}
+                <div class="project-config-panel">
+                  <div class="project-config-panel-header">
+                    <div>
+                      <h4>Agent</h4>
+                      <span class="muted">{selectedProjectAgent.name || "Unnamed agent"}</span>
+                    </div>
+                    <button type="button" class="ghost danger" on:click={() => removeAgent(projectConfigSelection.agentIndex)}>
+                      Delete
+                    </button>
+                  </div>
+                  <div class="project-config-info-grid">
+                    <div class="project-config-info-row">
+                      <label for="agent-name-edit" class="project-config-info-label">Agent name</label>
+                      <input
+                        id="agent-name-edit"
+                        value={selectedProjectAgent.name}
+                        on:input={(event) => updateAgentField(projectConfigSelection.agentIndex, "name", event.target.value)}
+                      />
+                    </div>
+                    <div class="project-config-info-row">
+                      <label for="agent-device-edit" class="project-config-info-label">Device</label>
+                      <select
+                        id="agent-device-edit"
+                        value={selectedProjectAgent.device}
+                        on:change={(event) => updateAgentField(projectConfigSelection.agentIndex, "device", event.target.value)}
+                      >
+                        {#each projectConfigPlugins as plugin}
+                          <option value={plugin.name}>{plugin.name}</option>
+                        {/each}
+                      </select>
+                    </div>
+                    <div class="project-config-info-row">
+                      <span class="project-config-info-label">Class</span>
+                      <span class="project-config-info-value">{activeProjectPlugin?.className || "Unknown"}</span>
+                    </div>
+                    <label class="project-config-toggle">
+                      <input
+                        type="checkbox"
+                        checked={activeProjectPlugin?.load ?? true}
+                        disabled={activeProjectPluginIndex < 0}
+                        on:change={(event) => {
+                          if (activeProjectPluginIndex >= 0) {
+                            updatePluginField(activeProjectPluginIndex, "load", event.target.checked);
+                          }
+                        }}
+                      />
+                      <span>Load plugin</span>
+                    </label>
+                  </div>
+                  <div class="project-config-table">
+                    <div class="project-config-table-header">
+                      <span>Key</span>
+                      <span>Value</span>
+                      <span></span>
+                    </div>
+                    {#if selectedProjectAgent.features.length === 0}
+                      <div class="project-config-table-empty">No entries yet.</div>
+                    {:else}
+                      {#each selectedProjectAgent.features as feature, featureIndex}
+                        <div class="project-config-table-row">
+                          <input
+                            list="agent-key-hints"
+                            value={feature.key}
+                            placeholder="key"
+                            on:input={(event) =>
+                              updateAgentFeature(projectConfigSelection.agentIndex, featureIndex, "key", event.target.value)
+                            }
+                          />
+                          <input
+                            value={feature.value}
+                            placeholder="value"
+                            on:input={(event) =>
+                              updateAgentFeature(projectConfigSelection.agentIndex, featureIndex, "value", event.target.value)
+                            }
+                          />
+                          <button
+                            type="button"
+                            class="ghost icon-button danger"
+                            on:click={() => removeAgentFeature(projectConfigSelection.agentIndex, featureIndex)}
+                          >
+                            <IconTrash className="icon" />
+                          </button>
+                        </div>
+                      {/each}
+                    {/if}
+                    <div class="project-config-table-add">
+                      <input list="agent-key-hints" placeholder="key" bind:value={projectConfigNewFeature.key} />
+                      <input placeholder="value" bind:value={projectConfigNewFeature.value} />
+                      <button type="button" class="ghost" on:click={addFeatureToSelection}>Add</button>
+                    </div>
+                    <datalist id="agent-key-hints">
+                      {#each agentKeyOptions as option}
+                        <option value={option.name} label={keyHintLabel(option)}>{option.name}</option>
+                      {/each}
+                    </datalist>
+                  </div>
+                  {#if selectedProjectAgentKeysLoading}
+                    <p class="muted">Loading key hints...</p>
+                  {:else if selectedProjectAgentKeysError}
+                    <p class="error">{selectedProjectAgentKeysError}</p>
+                  {:else if selectedProjectAgentKeys}
+                    {#if selectedProjectAgentKeys.supported === false}
+                      <p class="muted">No key hints provided by this extension.</p>
+                    {:else}
+                      <div class="project-config-keylist">
+                        <div class="project-config-keylist-title">Key hints</div>
+                        <div class="project-config-keygrid">
+                          <div>
+                            <div class="project-config-key-title">Required</div>
+                            {#if selectedProjectAgentKeys.required?.length}
+                              <div class="project-config-key-list">
+                                {#each selectedProjectAgentKeys.required as entry}
+                                  <div class="project-config-key-item">
+                                    <span>{entry.name}</span>
+                                    {#if entry.description}
+                                      <span class="project-config-key-desc">{entry.description}</span>
+                                    {/if}
+                                  </div>
+                                {/each}
+                              </div>
+                            {:else}
+                              <div class="muted">None</div>
+                            {/if}
+                          </div>
+                          <div>
+                            <div class="project-config-key-title">Optional</div>
+                            {#if selectedProjectAgentKeys.optional?.length}
+                              <div class="project-config-key-list">
+                                {#each selectedProjectAgentKeys.optional as entry}
+                                  <div class="project-config-key-item">
+                                    <span>{entry.name}</span>
+                                    {#if entry.description}
+                                      <span class="project-config-key-desc">{entry.description}</span>
+                                    {/if}
+                                  </div>
+                                {/each}
+                              </div>
+                            {:else}
+                              <div class="muted">None</div>
+                            {/if}
+                          </div>
+                        </div>
+                      </div>
+                    {/if}
+                  {/if}
+                </div>
+              {:else if projectConfigSelection.type === "player"}
+                <div class="project-config-panel">
+                  <div class="project-config-panel-header">
+                    <h4>Player</h4>
+                    <span class="muted">Runtime player properties</span>
+                  </div>
+                  <div class="project-config-table">
+                    <div class="project-config-table-header">
+                      <span>Key</span>
+                      <span>Value</span>
+                      <span></span>
+                    </div>
+                    {#if projectConfigPlayer.features.length === 0}
+                      <div class="project-config-table-empty">No entries yet.</div>
+                    {:else}
+                      {#each projectConfigPlayer.features as feature, featureIndex}
+                        <div class="project-config-table-row">
+                          <input
+                            value={feature.key}
+                            placeholder="key"
+                            on:input={(event) => updatePlayerFeature(featureIndex, "key", event.target.value)}
+                          />
+                          <input
+                            value={feature.value}
+                            placeholder="value"
+                            on:input={(event) => updatePlayerFeature(featureIndex, "value", event.target.value)}
+                          />
+                          <button type="button" class="ghost icon-button danger" on:click={() => removePlayerFeature(featureIndex)}>
+                            <IconTrash className="icon" />
+                          </button>
+                        </div>
+                      {/each}
+                    {/if}
+                    <div class="project-config-table-add">
+                      <input placeholder="key" bind:value={projectConfigNewFeature.key} />
+                      <input placeholder="value" bind:value={projectConfigNewFeature.value} />
+                      <button type="button" class="ghost" on:click={addFeatureToSelection}>Add</button>
+                    </div>
+                  </div>
+                </div>
+              {/if}
+            {/if}
+          </section>
+        </div>
+        <datalist id="device-class-list">
+          {#each availableDevices as device}
+            <option value={device.className} label={device.name}>{device.name}</option>
+          {/each}
+        </datalist>
+        <div class="project-config-footer">
+          <div class="project-config-status">
+            {#if projectConfigError}
+              <span class="error">{projectConfigError}</span>
+            {/if}
+            {#if projectConfigSaved !== null}
+              <span class="muted">
+                {projectConfigSaved ? "Saved" : projectConfigPending ? "Pending save" : "Not saved"}
+              </span>
+            {/if}
+          </div>
+          <div class="actions">
+            <button
+              type="button"
+              class="primary"
+              on:click={applyProjectConfig}
+              disabled={!selectedProject || !wsConnected || !projectConfigDraft}
+            >
+              Apply
+            </button>
+            <button type="button" class="ghost" on:click={closeProjectConfigDialog}>Close</button>
+          </div>
+        </div>
+      </div>
+    </button>
+  {/if}
+
+  {#if prefsDialogOpen && prefsDialogDraft}
+    <button
+      type="button"
+      class="modal-backdrop"
+      on:click|self={closePrefsDialog}
+      aria-label="Close dialog"
+    >
+      <div class="modal prefs-modal" role="dialog" aria-modal="true" aria-labelledby="prefs-dialog-title">
+        <div class="prefs-header">
+          <div class="prefs-title">
+            <span class="prefs-title-icon">
+              <IconGear className="icon" />
+            </span>
+            <div>
+              <h3 id="prefs-dialog-title">Preferences</h3>
+              <span class="prefs-subtitle">
+                Applies to {selectedProject ? selectedProject.name : "the active project"}
+              </span>
+            </div>
+          </div>
+        </div>
+        <div class="prefs-body">
+          <section class="prefs-card">
+            <header class="prefs-card-header">
+              <h4>Visual appearance</h4>
+              <span class="muted">Workspace sizing and visibility.</span>
+            </header>
+            <div class="prefs-group">
+              <div class="prefs-group-title">Sizing</div>
+              <div class="prefs-rows">
+                <div class="prefs-row">
+                  <div class="prefs-field">
+                    <label for="pref-node-size">Node size</label>
+                    <span class="prefs-help">Base size for nodes and supernodes.</span>
+                  </div>
+                  <div class="prefs-control">
+                    <div class="prefs-number">
+                      <input
+                        id="pref-node-size"
+                        type="number"
+                        min={PREF_NODE_MIN}
+                        max={PREF_NODE_MAX}
+                        step="2"
+                        bind:value={prefsDialogDraft.nodeSize}
+                      />
+                      <span>px</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="prefs-row">
+                  <div class="prefs-field">
+                    <label for="pref-grid-scale">Grid scale</label>
+                    <span class="prefs-help">Spacing multiplier for snap points.</span>
+                  </div>
+                  <div class="prefs-control">
+                    <div class="prefs-number">
+                      <input
+                        id="pref-grid-scale"
+                        type="number"
+                        min={PREF_GRID_MIN}
+                        max={PREF_GRID_MAX}
+                        step="1"
+                        bind:value={prefsDialogDraft.gridScale}
+                      />
+                      <span>x</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="prefs-row">
+                  <div class="prefs-field">
+                    <label for="pref-workspace-font">Workspace font size</label>
+                    <span class="prefs-help">Canvas labels and edge text size.</span>
+                  </div>
+                  <div class="prefs-control">
+                    <div class="prefs-number">
+                      <input
+                        id="pref-workspace-font"
+                        type="number"
+                        min={PREF_FONT_MIN}
+                        max={PREF_FONT_MAX}
+                        step="1"
+                        bind:value={prefsDialogDraft.workspaceFontSize}
+                      />
+                      <span>pt</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="prefs-group">
+              <div class="prefs-group-title">Display</div>
+              <div class="prefs-toggles">
+                <label class="pref-toggle">
+                  <input type="checkbox" bind:checked={prefsDialogDraft.drawGrid} />
+                  <span class="pref-toggle-indicator" aria-hidden="true"></span>
+                  <span class="pref-toggle-label">Draw grid</span>
+                </label>
+                <label class="pref-toggle">
+                  <input type="checkbox" bind:checked={prefsDialogDraft.activityVisualization} />
+                  <span class="pref-toggle-indicator" aria-hidden="true"></span>
+                  <span class="pref-toggle-label">Activity visualization</span>
+                </label>
+                <label class="pref-toggle">
+                  <input type="checkbox" bind:checked={prefsDialogDraft.activityTrace} />
+                  <span class="pref-toggle-indicator" aria-hidden="true"></span>
+                  <span class="pref-toggle-label">Activity trace</span>
+                </label>
+                <label class="pref-toggle">
+                  <input type="checkbox" bind:checked={prefsDialogDraft.showNodeId} />
+                  <span class="pref-toggle-indicator" aria-hidden="true"></span>
+                  <span class="pref-toggle-label">Draw node ID</span>
+                </label>
+              </div>
+            </div>
+          </section>
+          <section class="prefs-card">
+            <header class="prefs-card-header">
+              <h4>Script options</h4>
+              <span class="muted">Editor font and preview.</span>
+            </header>
+            <div class="prefs-group">
+              <div class="prefs-rows">
+                <div class="prefs-row">
+                  <div class="prefs-field">
+                    <label for="pref-script-font">Script font</label>
+                    <span class="prefs-help">Mono font family for the script editor.</span>
+                  </div>
+                  <div class="prefs-control">
+                    <input
+                      id="pref-script-font"
+                      class="prefs-input"
+                      list="script-font-options"
+                      bind:value={prefsDialogDraft.scriptFontType}
+                    />
+                  </div>
+                </div>
+                <div class="prefs-row">
+                  <div class="prefs-field">
+                    <label for="pref-script-font-size">Script font size</label>
+                    <span class="prefs-help">Size used by the script editor.</span>
+                  </div>
+                  <div class="prefs-control">
+                    <div class="prefs-number">
+                      <input
+                        id="pref-script-font-size"
+                        type="number"
+                        min={PREF_FONT_MIN}
+                        max={PREF_FONT_MAX}
+                        step="1"
+                        bind:value={prefsDialogDraft.scriptFontSize}
+                      />
+                      <span>pt</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="prefs-preview" style={prefsPreviewStyle}>
+              // sample script line
+            </div>
+            <datalist id="script-font-options">
+              {#each SCRIPT_FONT_OPTIONS as option}
+                <option value={option}>{option}</option>
+              {/each}
+            </datalist>
+          </section>
+        </div>
+        <div class="actions">
+          <button
+            type="button"
+            class="primary"
+            on:click={applyPrefsDialog}
+            disabled={!wsConnected || prefsDialogBusy}
+          >
+            Apply
+          </button>
+          <button type="button" class="ghost" on:click={closePrefsDialog} disabled={prefsDialogBusy}>
+            Cancel
+          </button>
+        </div>
+        {#if prefsDialogError}
+          <p class="error">{prefsDialogError}</p>
+        {/if}
+      </div>
+    </button>
+  {/if}
 
   {#if typeDefDraft}
     <button
