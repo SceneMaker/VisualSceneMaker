@@ -62,6 +62,40 @@ multiple simultaneous editors with optimistic concurrency control.
   - Scene groups by language.
 - `GET /api/v1/projects/{id}/script/elements`
   - Gesticon/Acticon/Visicon lists for DnD.
+  - Response shape:
+    ```json
+    {
+      "acticon": [
+        { "name": "Smile", "script": "Smile()" }
+      ],
+      "gesticon": [
+        {
+          "agent": "Agent",
+          "icon": "agent.png",
+          "gestures": [
+            {
+              "character": "A",
+              "animName": "Wave",
+              "animPath": "path/to/anim",
+              "category": "Gesture",
+              "blendable": true,
+              "duration": 1200,
+              "script": "Gesture(Agent, Wave)"
+            }
+          ]
+        }
+      ],
+      "visicon": [
+        {
+          "agent": "Agent",
+          "icon": "agent.png",
+          "visemes": [
+            { "key": "AA", "value": "aa" }
+          ]
+        }
+      ]
+    }
+    ```
 
 ### Functions
 - `GET /api/v1/projects/{id}/functions`
@@ -75,6 +109,41 @@ multiple simultaneous editors with optimistic concurrency control.
   - EditorConfig (per-project).
 - `GET /api/v1/preferences`
   - Global PreferencesDesktop values.
+- `GET /api/v1/projects/{id}/project-config`
+  - Project settings (devices, agents, player).
+  - Response shape:
+    ```json
+    {
+      "config": {
+        "name": "ProjectName",
+        "plugins": [
+          {
+            "type": "device",
+            "name": "DeviceName",
+            "className": "de.dfki.vsm.xtension.SomeDevice",
+            "load": true,
+            "features": [
+              { "key": "host", "value": "127.0.0.1" }
+            ]
+          }
+        ],
+        "agents": [
+          {
+            "name": "AgentName",
+            "device": "DeviceName",
+            "features": [
+              { "key": "voice", "value": "default" }
+            ]
+          }
+        ],
+        "player": {
+          "features": [
+            { "key": "fps", "value": "30" }
+          ]
+        }
+      }
+    }
+    ```
 
 ### Devices
 - `GET /api/v1/devices`
@@ -82,6 +151,21 @@ multiple simultaneous editors with optimistic concurrency control.
 - `GET /api/v1/projects/{id}/project-config/keys?device=DeviceName&scope=plugin|agent`
   - Returns required/optional key hints exported by the device plugin.
   - Optional: `className=fully.qualified.ClassName` to resolve keys by class instead of device name.
+  - Response shape:
+    ```json
+    {
+      "device": "DeviceName",
+      "className": "de.dfki.vsm.xtension.SomeDevice",
+      "scope": "plugin",
+      "supported": true,
+      "required": [
+        { "name": "host", "description": "Remote host address" }
+      ],
+      "optional": [
+        { "name": "port", "description": "Remote port" }
+      ]
+    }
+    ```
 
 ### Runtime
 - `GET /api/v1/projects/{id}/runtime`
@@ -106,6 +190,33 @@ All WS messages use a shared envelope:
 }
 ```
 
+## Remote Core Connection Flow (Desktop UI)
+Goal: run the core on an Android device and use the desktop UI as a client-only
+editor that connects to the remote core.
+
+### Client-only mode
+- Start the desktop UI with `--connect http://<host>:<port>` (no local core).
+- Optional `--token <token>` can be provided to skip manual entry.
+
+### Handshake and auth
+1) Desktop calls `GET /api/v1/info` to confirm protocol and token requirements.
+2) If token is required:
+   - Option A (manual): Android UI shows token; user pastes into desktop.
+   - Option B (pairing): Android shows a short pairing code; desktop sends:
+     `POST /api/v1/session/pair` with `{ "code": "123456" }`
+     and receives `{ "token": "..." }`.
+3) Desktop opens WebSocket:
+   `ws://<host>:<port>/ws?token=...`
+
+### Session lifecycle
+- On connect: server sends `system.hello`.
+- Client subscribes to channels and requests snapshots.
+- On disconnect: client retries with backoff and re-subscribes.
+
+### Guarantees
+- No project files are loaded locally in client-only mode.
+- All project operations are remote (`project.load/save/...`).
+
 ### Commands (client -> server)
 
 #### Project
@@ -124,6 +235,10 @@ All WS messages use a shared envelope:
   - `{ "projectId": "p1", "revision": 42, "nodeId": "N1", "fields": { ... } }`
 - `SceneFlow.Node.Move`
   - `{ "projectId": "p1", "revision": 42, "moves": [{ "nodeId": "N1", "x": 120, "y": 220 }] }`
+- `SceneFlow.Node.Size.Set`
+  - `{ "projectId": "p1", "revision": 42, "nodeId": "N1", "size": { "w": 120, "h": 90 } }`
+- `SceneFlow.Node.Anchor.Set`
+  - `{ "projectId": "p1", "revision": 42, "nodeId": "N1", "anchor": { "x": 200, "y": 180 } }`
 - `SceneFlow.Node.Delete`
   - `{ "projectId": "p1", "revision": 42, "nodeId": "N1" }`
 - `SceneFlow.Node.TypeDef.Add|Update|Delete|Move`
@@ -145,6 +260,10 @@ All WS messages use a shared envelope:
   - `{ "projectId": "p1", "revision": 42, "type": "EEDGE|TEDGE|CEDGE|PEDGE|IEDGE|FEDGE", "sourceId": "N1", "targetId": "N2", "points": [...] }`
 - `SceneFlow.Edge.Update`
   - `{ "projectId": "p1", "revision": 42, "edgeId": "E1", "fields": { ... } }`
+- `SceneFlow.Edge.ControlPoints.Set`
+  - `{ "projectId": "p1", "revision": 42, "edgeId": "E1", "controlPoints": [{ "x": 140, "y": 210 }, { "x": 200, "y": 260 }] }`
+- `SceneFlow.Edge.Label.Set`
+  - `{ "projectId": "p1", "revision": 42, "edgeId": "E1", "labelPosition": { "x": 180, "y": 220 } }`
 - `SceneFlow.Edge.Delete`
   - `{ "projectId": "p1", "revision": 42, "edgeId": "E1" }`
 - `SceneFlow.Comment.Create|Update|Delete`
