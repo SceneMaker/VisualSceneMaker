@@ -34,13 +34,8 @@
   let projectLoadAttempted = false;
   let projectLoadProjectId = "";
   let showTokenSection = false;
-  const protocolParam =
-    typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("protocol") : "";
-  const storedProtocol = typeof localStorage !== "undefined" ? localStorage.getItem("vsm_protocol") : "";
-  const useUiProtocol =
-    protocolParam === "ui" || protocolParam === "v1" || storedProtocol === "ui" || storedProtocol === "v1";
-  const protocolBadgeText = useUiProtocol ? "Protocol UI" : "Protocol Legacy";
-  const protocolBadgeTitle = useUiProtocol ? "UI protocol (v1)" : "Legacy protocol";
+  const protocolBadgeText = "Protocol UI";
+  const protocolBadgeTitle = "UI protocol (v1)";
 
   const SCENE_DRAG_TYPE = "application/x-vsm-scene";
   const AGENT_DRAG_TYPE = "application/x-vsm-agent";
@@ -1082,6 +1077,8 @@
   $: deviceAgentNames = extractDeviceAgents(projectConfigAgents);
   $: agentGroups = buildAgentGroups(sceneAgentNames, deviceAgentNames);
   $: prefsPreviewStyle = buildPrefsPreviewStyle(prefsDialogDraft);
+  $: projectConfigDirty =
+    projectConfigFingerprint(projectConfigDraft) !== projectConfigFingerprint(projectConfig);
 
   $: if (selectedNode && selectedNode.id !== nodeDraftId) {
     nodeDraftId = selectedNode.id;
@@ -1705,6 +1702,10 @@
   async function applyProjectConfig() {
     if (!selectedProjectId || !projectConfigDraft) return;
     projectConfigError = "";
+    if (!projectConfigDirty) {
+      projectConfigError = "No project configuration changes to apply.";
+      return;
+    }
     try {
       const response = await sendCommand("ProjectConfig.Update", {
         projectId: selectedProjectId,
@@ -2632,114 +2633,10 @@
       return;
     }
     if (message.type === "event") {
-      if (useUiProtocol && message.event) {
+      if (message.event) {
         handleUiProtocolEvent(message);
-        return;
       }
-      if (
-        ["Project.Opened", "Project.Closed", "Project.Activated", "Project.DirtyChanged"].includes(message.name)
-      ) {
-        loadProjects();
-      }
-      if (message.name === "Preferences.Changed" && message.payload?.preferences) {
-        preferences = message.payload.preferences;
-        prefDraft = { ...preferences };
-      }
-      if (message.name === "Config.Changed" && message.payload?.config) {
-        if (message.payload?.projectId && message.payload.projectId !== selectedProjectId) {
-          return;
-        }
-        config = message.payload.config;
-        configDraft = { ...config };
-      }
-      if (message.name === "ProjectConfig.Changed" && message.payload?.config) {
-        if (message.payload?.projectId && message.payload.projectId !== selectedProjectId) {
-          return;
-        }
-        projectConfig = normalizeProjectConfig(message.payload.config);
-        if (!projectConfigDialogOpen) {
-          projectConfigDraft = cloneProjectConfig(projectConfig);
-        }
-      }
-      if (message.name === "Script.Changed" && message.payload?.projectId === selectedProjectId) {
-        if (message.sourceClientId && message.sourceClientId === clientId) {
-          return;
-        }
-        if (scriptDirty) {
-          scriptStatus = "Script changed on server. Reload to sync.";
-          return;
-        }
-        scriptText = message.payload.text || "";
-        scriptDraft = scriptText;
-        if (message.payload.version !== undefined) {
-          scriptVersion = message.payload.version;
-        }
-        scriptParseOk = true;
-        scriptStatus = "Script updated from another editor.";
-        loadScriptScenes(selectedProjectId);
-      }
-      if (message.name === "Runtime.StateChanged") {
-        loadProjects();
-        if (message.payload?.projectId === selectedProjectId) {
-          loadRuntime(selectedProjectId);
-        }
-      }
-      if (message.name === "Runtime.VariableChanged") {
-        const payload = message.payload || {};
-        const name = (payload.name || "").trim();
-        if (!name || payload.value === undefined || payload.value === null) {
-          return;
-        }
-        applyRuntimeVarUpdate(name, payload.value);
-      }
-      if (message.name === "SceneFlow.Node.Started") {
-        if (!activityProjectMatches(message.payload)) return;
-        const nodeId = resolveActivityNodeId(message.payload);
-        if (nodeId) {
-          incrementActivityNode(nodeId);
-        }
-      }
-      if (message.name === "SceneFlow.Node.Stopped") {
-        if (!activityProjectMatches(message.payload)) return;
-        const nodeId = resolveActivityNodeId(message.payload);
-        if (nodeId) {
-          decrementActivityNode(nodeId);
-          clearTimeoutEdgesForNode(nodeId);
-        }
-      }
-      if (message.name === "SceneFlow.Edge.Executed") {
-        if (!activityProjectMatches(message.payload)) return;
-        const superNodeId = (message.payload?.superNodeId || "").trim();
-        if (superNodeId && superNodeId !== (sceneFlow?.superNodeId || "")) {
-          return;
-        }
-        const edgeId = resolveActivityEdgeId(message.payload);
-        if (edgeId) {
-          if ((message.payload?.edgeType || "") === "TEDGE") {
-            clearTimeoutEdge(edgeId);
-          } else {
-            registerEdgeActivity(edgeId);
-          }
-        }
-      }
-      if (message.name === "SceneFlow.Timeout.Started") {
-        if (!activityProjectMatches(message.payload)) return;
-        const superNodeId = (message.payload?.superNodeId || "").trim();
-        if (superNodeId && superNodeId !== (sceneFlow?.superNodeId || "")) {
-          return;
-        }
-        const edgeId = resolveActivityEdgeId(message.payload);
-        if (edgeId) {
-          registerTimeoutEdge(edgeId, message.payload?.startedAt, message.payload?.timeoutMs);
-        }
-      }
-      if (message.name === "SceneFlow.Runtime.Stopped") {
-        if (!activityProjectMatches(message.payload)) return;
-        clearSceneFlowActivity();
-      }
-      if (message.name === "SceneFlow.PathChanged" && message.payload?.projectId === selectedProjectId) {
-        loadSceneFlow(selectedProjectId, message.payload?.superNodeId || "");
-      }
+      return;
     }
   }
 
@@ -2747,8 +2644,17 @@
     const payload = message.payload || {};
     const eventName = message.event;
     if (!eventName) return;
+    if (eventName === "system.preferences" && payload?.preferences) {
+      preferences = payload.preferences;
+      prefDraft = { ...preferences };
+      return;
+    }
     if (eventName === "project.dirty") {
       applyProtocolDirty(payload);
+      return;
+    }
+    if (eventName === "project.loaded" || eventName === "project.saved" || eventName === "project.closed") {
+      loadProjects();
       return;
     }
     if (eventName === "project.config") {
@@ -2800,10 +2706,15 @@
       return;
     }
     if (eventName === "runtime.state") {
-      if (!payload?.projectId || payload.projectId === selectedProjectId) {
-        if (selectedProjectId) {
-          loadRuntime(selectedProjectId);
-        }
+      if (payload?.projectId && payload.projectId !== selectedProjectId) {
+        return;
+      }
+      const status = (payload.status || payload.state || "").toLowerCase();
+      if (status === "stopped") {
+        clearSceneFlowActivity();
+      }
+      if (selectedProjectId) {
+        loadRuntime(selectedProjectId);
       }
       return;
     }
@@ -2812,6 +2723,15 @@
       const nodeId = resolveActivityNodeId(payload);
       if (nodeId) {
         incrementActivityNode(nodeId);
+      }
+      return;
+    }
+    if (eventName === "runtime.nodeStopped") {
+      if (!activityProjectMatches(payload)) return;
+      const nodeId = resolveActivityNodeId(payload);
+      if (nodeId) {
+        decrementActivityNode(nodeId);
+        clearTimeoutEdgesForNode(nodeId);
       }
       return;
     }
@@ -3237,6 +3157,14 @@
 
   function cloneProjectConfig(config) {
     return JSON.parse(JSON.stringify(config));
+  }
+
+  function projectConfigFingerprint(config) {
+    try {
+      return JSON.stringify(config || {});
+    } catch (err) {
+      return "";
+    }
   }
 
   function formatAltStartMap(edge) {
@@ -4991,7 +4919,9 @@
 
   async function updateSceneFlowEdgeControl(edgeId, handle, cx, cy) {
     if (!selectedProjectId || !edgeId) return;
-    if (!Number.isFinite(cx) || !Number.isFinite(cy)) return;
+    const isBend = handle === "bend";
+    const isReset = handle === "reset";
+    if (!isBend && !isReset && (!Number.isFinite(cx) || !Number.isFinite(cy))) return;
     const previous = sceneFlow;
     let nextPoints = null;
     if (sceneFlow?.edges?.length) {
@@ -5003,13 +4933,33 @@
         if (points.length < 2) {
           return edge;
         }
-        const idx = handle === "ctrl1" ? 0 : points.length - 1;
-        const target = points[idx] || {};
-        points[idx] = {
-          ...target,
-          cx,
-          cy
-        };
+        if (isReset) {
+          for (let i = 0; i < points.length; i += 1) {
+            points[i] = { ...points[i], cx: points[i].x, cy: points[i].y };
+          }
+        } else if (isBend) {
+          const dx = Number.isFinite(cx) ? cx : 0;
+          const dy = Number.isFinite(cy) ? cy : 0;
+          const lastIdx = points.length - 1;
+          points[0] = {
+            ...points[0],
+            cx: (points[0].cx ?? points[0].x) + dx,
+            cy: (points[0].cy ?? points[0].y) + dy
+          };
+          points[lastIdx] = {
+            ...points[lastIdx],
+            cx: (points[lastIdx].cx ?? points[lastIdx].x) + dx,
+            cy: (points[lastIdx].cy ?? points[lastIdx].y) + dy
+          };
+        } else {
+          const idx = handle === "ctrl1" ? 0 : points.length - 1;
+          const target = points[idx] || {};
+          points[idx] = {
+            ...target,
+            cx,
+            cy
+          };
+        }
         nextPoints = points;
         return {
           ...edge,
@@ -5032,6 +4982,11 @@
     if (!response?.snapshot && previous) {
       sceneFlow = previous;
     }
+  }
+
+  async function resetEdgeCurve() {
+    if (!selectedEdge) return;
+    await updateSceneFlowEdgeControl(selectedEdge.id, "reset", 0, 0);
   }
 
   async function toggleNodeStart() {
@@ -6572,6 +6527,9 @@
                 {/if}
               </div>
               <div class="actions">
+                <button type="button" class="ghost" on:click={resetEdgeCurve} disabled={!wsConnected || sceneFlowBusy}>
+                  Straighten
+                </button>
                 <button type="button" class="primary" on:click={applyEdgeEdits} disabled={!edgeDirty || !wsConnected}>
                   Apply
                 </button>
@@ -7658,6 +7616,9 @@
             {#if projectConfigError}
               <span class="error">{projectConfigError}</span>
             {/if}
+            {#if !projectConfigError && !projectConfigDirty}
+              <span class="muted">No pending changes</span>
+            {/if}
             {#if projectConfigSaved !== null}
               <span class="muted">
                 {projectConfigSaved ? "Saved" : projectConfigPending ? "Pending save" : "Not saved"}
@@ -7669,7 +7630,7 @@
               type="button"
               class="primary"
               on:click={applyProjectConfig}
-              disabled={!selectedProject || !wsConnected || !projectConfigDraft}
+              disabled={!selectedProject || !wsConnected || !projectConfigDraft || !projectConfigDirty}
             >
               Apply
             </button>

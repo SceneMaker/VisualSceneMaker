@@ -1426,6 +1426,25 @@
     return { x: 0, y: 0 };
   }
 
+  function edgeMidPoint(edge, drag) {
+    const pts = edgePoints(edge, drag);
+    if (pts.length >= 2) {
+      const start = pts[0];
+      const end = pts[pts.length - 1];
+      const ctrl1 = safeCtrl(start);
+      const ctrl2 = safeCtrl(end);
+      return cubicPointAt(start, ctrl1, ctrl2, end, 0.5);
+    }
+    const source = nodeMap.get(edge.sourceId);
+    const target = nodeMap.get(edge.targetId);
+    if (source && target) {
+      const s = nodeCenter(source, drag);
+      const t = nodeCenter(target, drag);
+      return { x: (s.x + t.x) / 2, y: (s.y + t.y) / 2 };
+    }
+    return null;
+  }
+
   function edgeControlPoints(edge, drag) {
     const pts = edgePoints(edge, drag);
     if (pts.length < 2) return null;
@@ -2125,6 +2144,32 @@
     }
   }
 
+  function startEdgeBendDrag(event, edge, controls) {
+    if (!edge || event.button !== 0) return;
+    if (edgeCreateMode) return;
+    if (!controls) return;
+    event.preventDefault();
+    focusStage();
+    selectEdge(edge.id);
+    const world = eventToWorld(event);
+    dragState = {
+      type: "edge-bend",
+      id: edge.id,
+      originCtrl1: { x: controls.ctrl1.x, y: controls.ctrl1.y },
+      originCtrl2: { x: controls.ctrl2.x, y: controls.ctrl2.y },
+      dx: 0,
+      dy: 0,
+      startX: world.x,
+      startY: world.y,
+      moved: false,
+      pointerId: event.pointerId
+    };
+    const captureEl = stageEl || svgEl;
+    if (captureEl) {
+      captureEl.setPointerCapture(event.pointerId);
+    }
+  }
+
   function updateDrag(event) {
     if (!dragState || dragState.pointerId !== event.pointerId) return;
     const world = eventToWorld(event);
@@ -2146,6 +2191,15 @@
         ...dragState,
         cx: world.x,
         cy: world.y,
+        moved: dragState.moved || Math.hypot(dx, dy) > dragThreshold
+      };
+      return;
+    }
+    if (dragState.type === "edge-bend") {
+      dragState = {
+        ...dragState,
+        dx,
+        dy,
         moved: dragState.moved || Math.hypot(dx, dy) > dragThreshold
       };
       return;
@@ -2232,6 +2286,11 @@
     if (finished.type === "edge-control" && typeof onEdgeControlUpdate === "function") {
       onEdgeControlUpdate(finished.id, finished.handle, finished.cx, finished.cy);
     }
+    if (finished.type === "edge-bend" && typeof onEdgeControlUpdate === "function") {
+      const dx = finished.dx ?? 0;
+      const dy = finished.dy ?? 0;
+      onEdgeControlUpdate(finished.id, "bend", dx, dy);
+    }
   }
 
   function edgePoints(edge, drag) {
@@ -2310,6 +2369,19 @@
         const next = { ...nextPoints[idx], cx: activeDrag.cx, cy: activeDrag.cy };
         nextPoints = nextPoints.map((pt, index) => (index === idx ? next : pt));
       }
+    }
+    if (activeDrag?.type === "edge-bend" && activeDrag.id === edge.id) {
+      const dx = activeDrag.dx ?? 0;
+      const dy = activeDrag.dy ?? 0;
+      const originCtrl1 = activeDrag.originCtrl1;
+      const originCtrl2 = activeDrag.originCtrl2;
+      const lastIdx = nextPoints.length - 1;
+      nextPoints = nextPoints.map((pt, index) => {
+        if (index !== 0 && index !== lastIdx) return pt;
+        const origin = index === 0 ? originCtrl1 : originCtrl2;
+        if (!origin) return pt;
+        return { ...pt, cx: origin.x + dx, cy: origin.y + dy };
+      });
     }
     const adjusted = applyEdgeOffsets(nextPoints, edge);
     return adjustEdgeEndpoints(adjusted, edge, drag);
@@ -2600,6 +2672,11 @@
       {@const activity = activityEdgeMap.get(edge.id)}
       {@const timeoutEntry = timeoutEdgeMap.get(edge.id)}
       {@const timeoutProgress = edge.type === "TEDGE" ? timeoutEdgeProgress(timeoutEntry, timeoutNow) : null}
+      {@const controls = isSelected ? edgeControlPoints(edge, dragState) : null}
+      {@const handleRadius = isSelected ? Math.max(5, Math.round(baseNodeSize * 0.08)) : 0}
+      {@const anchorRadius = isSelected ? Math.max(3, Math.round(handleRadius * 0.55)) : 0}
+      {@const bendRadius = isSelected ? Math.max(5, Math.round(handleRadius * 0.9)) : 0}
+      {@const bendPos = controls ? edgeMidPoint(edge, dragState) : null}
       <g
         class="edge-group"
         class:selected={isSelected}
@@ -2646,9 +2723,21 @@
           {/key}
         {/if}
         {#if isSelected}
-          {@const controls = edgeControlPoints(edge, dragState)}
-          {@const handleRadius = Math.max(5, Math.round(baseNodeSize * 0.08))}
           {#if controls}
+            <circle
+              class="edge-anchor"
+              cx={controls.start.x}
+              cy={controls.start.y}
+              r={anchorRadius}
+              style={`--edge-color:${color}`}
+            />
+            <circle
+              class="edge-anchor"
+              cx={controls.end.x}
+              cy={controls.end.y}
+              r={anchorRadius}
+              style={`--edge-color:${color}`}
+            />
             <path
               class="edge-control-line"
               d={`M ${controls.start.x} ${controls.start.y} L ${controls.ctrl1.x} ${controls.ctrl1.y}`}
@@ -2687,6 +2776,16 @@
           >
             {label}
           </text>
+        {/if}
+        {#if isSelected && controls && bendPos}
+          <circle
+            class="edge-bend-handle"
+            cx={bendPos.x}
+            cy={bendPos.y}
+            r={bendRadius}
+            style={`--edge-color:${color}`}
+            on:pointerdown|stopPropagation={(event) => startEdgeBendDrag(event, edge, controls)}
+          />
         {/if}
       </g>
     {/each}

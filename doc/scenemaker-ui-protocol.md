@@ -146,6 +146,16 @@ Event: `system.auth`
 }
 ```
 
+Event: `system.preferences`
+```
+{
+  "preferences": {
+    "workspace_fontsize": "11",
+    "node_width": "90"
+  }
+}
+```
+
 ### project
 Event: `project.loaded`
 ```
@@ -162,8 +172,16 @@ Event: `project.loaded`
 Event: `project.saved`
 ```
 {
+  "projectId": "p123",
   "path": "/abs/path",
   "dirty": false
+}
+```
+
+Event: `project.closed`
+```
+{
+  "projectId": "p123"
 }
 ```
 
@@ -407,6 +425,11 @@ Event: `runtime.nodeActive`
 { "nodeId": "N1" }
 ```
 
+Event: `runtime.nodeStopped`
+```
+{ "nodeId": "N1" }
+```
+
 Event: `runtime.edgeActive`
 ```
 { "edgeId": "E1" }
@@ -540,21 +563,34 @@ Script elements object:
 ## Event stream (S2C)
 Events are domain-level, not UI-specific.
 - Runtime: `runtime.started`, `runtime.stopped`, `runtime.state`, `runtime.nodeActive`,
-  `runtime.edgeActive`, `runtime.timeoutProgress`.
+  `runtime.nodeStopped`, `runtime.edgeActive`, `runtime.timeoutProgress`.
 - Sceneflow: `sceneflow.snapshot`, `sceneflow.nodeAdded`, `sceneflow.nodeUpdated`,
   `sceneflow.edgeAdded`, `sceneflow.edgeUpdated`, `sceneflow.selection`.
 - Variables: `vars.snapshot`, `vars.updated`.
 - Diagnostics: `script.errors`, `script.warnings`.
-- Project: `project.loaded`, `project.saved`, `project.dirty`.
+- Project: `project.loaded`, `project.saved`, `project.closed`, `project.dirty`.
+- System: `system.hello`, `system.auth`, `system.preferences`.
 
 Snapshot vs delta:
 - UI receives a `snapshot` on first subscribe.
 - Subsequent changes are deltas to reduce payload.
 
 Event stream payloads (detailed):
+- `system.preferences`
+  ```
+  { "preferences": { "workspace_fontsize": "11", "node_width": "90" } }
+  ```
 - `project.loaded`
   ```
   { "project": { "id": "p1", "name": "Example", "path": "/abs/path", "dirty": false } }
+  ```
+- `project.saved`
+  ```
+  { "projectId": "p1", "path": "/abs/path", "dirty": false }
+  ```
+- `project.closed`
+  ```
+  { "projectId": "p1" }
   ```
 - `project.dirty`
   ```
@@ -599,6 +635,18 @@ Event stream payloads (detailed):
 - `runtime.state`
   ```
   { "status": "running|paused|stopped", "activeNodeId": "N1", "activeEdgeId": "E1" }
+  ```
+- `runtime.nodeActive`
+  ```
+  { "nodeId": "N1" }
+  ```
+- `runtime.nodeStopped`
+  ```
+  { "nodeId": "N1" }
+  ```
+- `runtime.edgeActive`
+  ```
+  { "edgeId": "E1" }
   ```
 - `runtime.timeoutProgress`
   ```
