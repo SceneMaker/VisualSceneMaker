@@ -13,9 +13,17 @@ allprojects {
 
 subprojects {
     plugins.withId('java') {
-        java {
-            toolchain {
-                languageVersion = JavaLanguageVersion.of(21)
+        def isCoreOrPlugin = project.path == ':core' || project.path.startsWith(':plugins:')
+        if (!isCoreOrPlugin) {
+            java {
+                toolchain {
+                    languageVersion = JavaLanguageVersion.of(21)
+                }
+            }
+        }
+        if (isCoreOrPlugin) {
+            tasks.withType(JavaCompile).configureEach {
+                options.release = 17
             }
         }
     }

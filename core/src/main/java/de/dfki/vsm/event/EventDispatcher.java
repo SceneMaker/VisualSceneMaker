@@ -1,5 +1,6 @@
 package de.dfki.vsm.event;
 
+import de.dfki.vsm.ui.protocol.UiProtocol;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 
 import java.util.Timer;
@@ -36,6 +37,7 @@ public final class EventDispatcher {
     public final static synchronized EventDispatcher getInstance() {
         if (sInstance == null) {
             sInstance = new EventDispatcher();
+            UiProtocol.ensureBridge(sInstance);
         }
         return sInstance;
     }

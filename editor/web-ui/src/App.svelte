@@ -34,6 +34,13 @@
   let projectLoadAttempted = false;
   let projectLoadProjectId = "";
   let showTokenSection = false;
+  const protocolParam =
+    typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("protocol") : "";
+  const storedProtocol = typeof localStorage !== "undefined" ? localStorage.getItem("vsm_protocol") : "";
+  const useUiProtocol =
+    protocolParam === "ui" || protocolParam === "v1" || storedProtocol === "ui" || storedProtocol === "v1";
+  const protocolBadgeText = useUiProtocol ? "Protocol UI" : "Protocol Legacy";
+  const protocolBadgeTitle = useUiProtocol ? "UI protocol (v1)" : "Legacy protocol";
 
   const SCENE_DRAG_TYPE = "application/x-vsm-scene";
   const AGENT_DRAG_TYPE = "application/x-vsm-agent";
@@ -1005,6 +1012,9 @@
   $: selectionNodeSummary = selectionNodes.length ? nodeTypeSummary(selectionNodes) : "";
   $: selectionEdgeSummary = selectionEdges.length ? edgeTypeSummary(selectionEdges) : "";
   $: selectionStartCount = selectionNodes.filter((node) => node.isStart).length;
+  $: selectionHasMovableNodes = selectionNodes.length > 1;
+  $: selectionCanDistribute = selectionNodes.length > 2;
+  $: selectionCanToggleStart = selectionNodes.some((node) => !node.isHistory);
   $: nodeEditorTarget =
     sceneFlowSelection?.type === "node"
       ? selectedNode
@@ -2622,6 +2632,10 @@
       return;
     }
     if (message.type === "event") {
+      if (useUiProtocol && message.event) {
+        handleUiProtocolEvent(message);
+        return;
+      }
       if (
         ["Project.Opened", "Project.Closed", "Project.Activated", "Project.DirtyChanged"].includes(message.name)
       ) {
@@ -2676,25 +2690,7 @@
         if (!name || payload.value === undefined || payload.value === null) {
           return;
         }
-        const value = normalizeRuntimeValue(payload.value);
-        runtimeValues = { ...runtimeValues, [name]: value };
-        if (runtimeInfo) {
-          const updateList = (list) => {
-            if (!Array.isArray(list)) return list;
-            let updated = false;
-            const next = list.map((entry) => {
-              if (!entry || entry.name !== name) return entry;
-              updated = true;
-              return { ...entry, value };
-            });
-            return updated ? next : list;
-          };
-          const globals = updateList(runtimeInfo.globalVariables);
-          const locals = updateList(runtimeInfo.localVariables);
-          if (globals !== runtimeInfo.globalVariables || locals !== runtimeInfo.localVariables) {
-            runtimeInfo = { ...runtimeInfo, globalVariables: globals, localVariables: locals };
-          }
-        }
+        applyRuntimeVarUpdate(name, payload.value);
       }
       if (message.name === "SceneFlow.Node.Started") {
         if (!activityProjectMatches(message.payload)) return;
@@ -2743,6 +2739,239 @@
       }
       if (message.name === "SceneFlow.PathChanged" && message.payload?.projectId === selectedProjectId) {
         loadSceneFlow(selectedProjectId, message.payload?.superNodeId || "");
+      }
+    }
+  }
+
+  function handleUiProtocolEvent(message) {
+    const payload = message.payload || {};
+    const eventName = message.event;
+    if (!eventName) return;
+    if (eventName === "project.dirty") {
+      applyProtocolDirty(payload);
+      return;
+    }
+    if (eventName === "project.config") {
+      if (payload.projectId && payload.projectId !== selectedProjectId) return;
+      const configPayload =
+        payload.config || (payload.plugins || payload.agents || payload.player ? payload : null);
+      if (configPayload) {
+        projectConfig = normalizeProjectConfig(configPayload);
+        if (!projectConfigDialogOpen) {
+          projectConfigDraft = cloneProjectConfig(projectConfig);
+        }
+        projectConfigLoading = false;
+        projectConfigError = "";
+      }
+      return;
+    }
+    if (eventName === "script.snapshot") {
+      applyScriptSnapshot(payload);
+      return;
+    }
+    if (eventName === "script.elements") {
+      if (payload.projectId && payload.projectId !== selectedProjectId) return;
+      const elementsPayload =
+        payload.elements || (payload.acticon || payload.gesticon || payload.visicon ? payload : null);
+      if (elementsPayload) {
+        scriptElements = {
+          acticon: Array.isArray(elementsPayload.acticon) ? elementsPayload.acticon : [],
+          gesticon: Array.isArray(elementsPayload.gesticon) ? elementsPayload.gesticon : [],
+          visicon: Array.isArray(elementsPayload.visicon) ? elementsPayload.visicon : []
+        };
+        scriptElementsLoaded = true;
+        scriptElementsLoading = false;
+        scriptElementsError = "";
+      }
+      return;
+    }
+    if (eventName === "sceneflow.snapshot") {
+      applySceneFlowSnapshot(payload);
+      return;
+    }
+    if (eventName === "sceneflow.edgeUpdated") {
+      if (selectedProjectId) {
+        loadSceneFlow(selectedProjectId, sceneFlow?.superNodeId || "");
+      }
+      return;
+    }
+    if (eventName === "sceneflow.selection") {
+      applyProtocolSelection(payload.selection);
+      return;
+    }
+    if (eventName === "runtime.state") {
+      if (!payload?.projectId || payload.projectId === selectedProjectId) {
+        if (selectedProjectId) {
+          loadRuntime(selectedProjectId);
+        }
+      }
+      return;
+    }
+    if (eventName === "runtime.nodeActive") {
+      if (!activityProjectMatches(payload)) return;
+      const nodeId = resolveActivityNodeId(payload);
+      if (nodeId) {
+        incrementActivityNode(nodeId);
+      }
+      return;
+    }
+    if (eventName === "runtime.edgeActive") {
+      if (!activityProjectMatches(payload)) return;
+      const edgeType = normalizeProtocolEdgeType(payload.edgeType);
+      const edgeId = resolveActivityEdgeId({ ...payload, edgeType });
+      if (edgeId) {
+        if (edgeType === "TEDGE") {
+          registerTimeoutEdge(edgeId, payload.startedAt, payload.timeoutMs);
+        } else {
+          registerEdgeActivity(edgeId);
+        }
+      }
+      return;
+    }
+    if (eventName === "runtime.timeoutProgress") {
+      if (!activityProjectMatches(payload)) return;
+      const edgeType = normalizeProtocolEdgeType(payload.edgeType);
+      const edgeId = resolveActivityEdgeId({ ...payload, edgeType });
+      if (edgeId) {
+        const startedAt =
+          payload.startedAt ??
+          (Number.isFinite(payload.elapsedMs) ? Date.now() - Number(payload.elapsedMs) : undefined);
+        registerTimeoutEdge(edgeId, startedAt, payload.timeoutMs);
+      }
+      return;
+    }
+    if (eventName === "vars.updated") {
+      const items = Array.isArray(payload.variables) ? payload.variables : [];
+      if (items.length) {
+        for (const item of items) {
+          const name = (item?.name || "").trim();
+          if (name) {
+            applyRuntimeVarUpdate(name, item.value);
+          }
+        }
+        return;
+      }
+      const name = (payload.name || "").trim();
+      if (name) {
+        applyRuntimeVarUpdate(name, payload.value);
+      }
+    }
+  }
+
+  function applySceneFlowSnapshot(payload) {
+    const snapshot = payload?.snapshot || payload;
+    if (!snapshot || !snapshot.nodes || !snapshot.edges) return;
+    if (snapshot.projectId && snapshot.projectId !== selectedProjectId) return;
+    sceneFlow = snapshot;
+    sceneFlowError = "";
+    sceneFlowLoaded = true;
+    sceneFlowLoading = false;
+    sceneFlowSelection = null;
+    sceneFlowMultiSelection = [];
+    edgeCreateSourceId = "";
+    clearSceneFlowActivity();
+    if (selectedProjectId) {
+      loadRuntime(selectedProjectId);
+    }
+  }
+
+  function applyScriptSnapshot(payload) {
+    const snapshot = payload?.snapshot || payload;
+    if (!snapshot) return;
+    if (snapshot.projectId && snapshot.projectId !== selectedProjectId) return;
+    if (snapshot.text !== undefined) {
+      scriptText = snapshot.text || "";
+      scriptDraft = scriptText;
+    }
+    if (snapshot.version !== undefined) {
+      scriptVersion = snapshot.version;
+    }
+    scriptDiagnostics = Array.isArray(snapshot.parseErrors) ? snapshot.parseErrors : [];
+    scriptParseOk = snapshot.parseOk !== false;
+    scriptError = "";
+    scriptStatus = "";
+    scriptLoaded = true;
+    scriptLoading = false;
+    if (selectedProjectId) {
+      loadScriptScenes(selectedProjectId);
+    }
+  }
+
+  function applyProtocolDirty(payload) {
+    loadProjects();
+    if (!selectedProjectId) return;
+    const areas = Array.isArray(payload?.areas) ? payload.areas : [];
+    const hasArea = (value) => !areas.length || areas.includes(value);
+    if (hasArea("sceneflow")) {
+      loadSceneFlow(selectedProjectId, sceneFlow?.superNodeId || "");
+    }
+    if (hasArea("script")) {
+      loadScript(selectedProjectId);
+      loadScriptScenes(selectedProjectId);
+      loadScriptElements(selectedProjectId);
+    }
+    if (hasArea("config")) {
+      loadConfig(selectedProjectId);
+      loadProjectConfig(selectedProjectId);
+    }
+  }
+
+  function applyProtocolSelection(selection) {
+    const nodes = Array.isArray(selection?.nodes) ? selection.nodes : [];
+    const edges = Array.isArray(selection?.edges) ? selection.edges : [];
+    const comments = Array.isArray(selection?.comments) ? selection.comments : [];
+    const list = [
+      ...nodes.map((id) => ({ type: "node", id })),
+      ...edges.map((id) => ({ type: "edge", id })),
+      ...comments.map((id) => ({ type: "comment", id }))
+    ];
+    sceneFlowMultiSelection = list;
+    sceneFlowSelection = list.length ? list[0] : null;
+  }
+
+  function normalizeProtocolEdgeType(edgeType) {
+    const normalized = (edgeType || "").trim().toLowerCase();
+    if (!normalized) return "";
+    if (normalized === "eedge" || normalized === "cedge" || normalized === "pedge" || normalized === "iedge" || normalized === "tedge" || normalized === "fedge") {
+      return normalized.toUpperCase();
+    }
+    switch (normalized) {
+      case "epsilon":
+        return "EEDGE";
+      case "conditional":
+        return "CEDGE";
+      case "probabilistic":
+        return "PEDGE";
+      case "interruptive":
+        return "IEDGE";
+      case "timeout":
+        return "TEDGE";
+      case "fork":
+        return "FEDGE";
+      default:
+        return "";
+    }
+  }
+
+  function applyRuntimeVarUpdate(name, rawValue) {
+    if (!name) return;
+    const value = normalizeRuntimeValue(rawValue);
+    runtimeValues = { ...runtimeValues, [name]: value };
+    if (runtimeInfo) {
+      const updateList = (list) => {
+        if (!Array.isArray(list)) return list;
+        let updated = false;
+        const next = list.map((entry) => {
+          if (!entry || entry.name !== name) return entry;
+          updated = true;
+          return { ...entry, value };
+        });
+        return updated ? next : list;
+      };
+      const globals = updateList(runtimeInfo.globalVariables);
+      const locals = updateList(runtimeInfo.localVariables);
+      if (globals !== runtimeInfo.globalVariables || locals !== runtimeInfo.localVariables) {
+        runtimeInfo = { ...runtimeInfo, globalVariables: globals, localVariables: locals };
       }
     }
   }
@@ -4497,6 +4726,27 @@
     };
   }
 
+  function nodeScaledSize(node) {
+    const baseWidth = Number.isFinite(node?.size?.w) ? node.size.w : PREF_NODE_DEFAULT;
+    const baseHeight = Number.isFinite(node?.size?.h) ? node.size.h : baseWidth;
+    if (node?.type !== "Super") {
+      return { w: baseWidth, h: baseHeight };
+    }
+    const count = Number.isFinite(node?.childCount) ? node.childCount : 0;
+    const steps = Math.max(0, Math.floor(count / 5));
+    const scale = 1 + steps * 0.05;
+    return { w: baseWidth * scale, h: baseHeight * scale };
+  }
+
+  function nodeBounds(node) {
+    const x = Number.isFinite(node?.graphics?.x) ? node.graphics.x : 0;
+    const y = Number.isFinite(node?.graphics?.y) ? node.graphics.y : 0;
+    const size = nodeScaledSize(node);
+    const cx = x + size.w / 2;
+    const cy = y + size.h / 2;
+    return { x, y, w: size.w, h: size.h, cx, cy };
+  }
+
   async function runSceneFlowCommand(name, payload) {
     if (!selectedProjectId) return null;
     sceneFlowError = "";
@@ -4512,6 +4762,80 @@
       return null;
     } finally {
       sceneFlowBusy = false;
+    }
+  }
+
+  async function alignSelectedNodes(mode) {
+    if (!selectedProjectId || !selectionHasMovableNodes || !wsConnected || sceneFlowBusy) return;
+    const items = selectionNodes.map((node) => ({ node, bounds: nodeBounds(node) }));
+    if (items.length < 2) return;
+    const xs = items.map((entry) => entry.bounds.x);
+    const ys = items.map((entry) => entry.bounds.y);
+    const rights = items.map((entry) => entry.bounds.x + entry.bounds.w);
+    const bottoms = items.map((entry) => entry.bounds.y + entry.bounds.h);
+    const centersX = items.map((entry) => entry.bounds.cx);
+    const centersY = items.map((entry) => entry.bounds.cy);
+    let targetX = null;
+    let targetY = null;
+    if (mode === "left") targetX = Math.min(...xs);
+    if (mode === "right") targetX = Math.max(...rights);
+    if (mode === "center") targetX = (Math.min(...centersX) + Math.max(...centersX)) / 2;
+    if (mode === "top") targetY = Math.min(...ys);
+    if (mode === "bottom") targetY = Math.max(...bottoms);
+    if (mode === "middle") targetY = (Math.min(...centersY) + Math.max(...centersY)) / 2;
+    for (const entry of items) {
+      const bounds = entry.bounds;
+      let nextX = bounds.x;
+      let nextY = bounds.y;
+      if (targetX !== null) {
+        nextX = mode === "right" ? targetX - bounds.w : targetX - bounds.w / 2;
+        if (mode === "left") {
+          nextX = targetX;
+        }
+      }
+      if (targetY !== null) {
+        nextY = mode === "bottom" ? targetY - bounds.h : targetY - bounds.h / 2;
+        if (mode === "top") {
+          nextY = targetY;
+        }
+      }
+      if (nextX !== bounds.x || nextY !== bounds.y) {
+        await moveSceneFlowNode(entry.node.id, nextX, nextY, sceneFlowSnap);
+      }
+    }
+  }
+
+  async function distributeSelectedNodes(axis) {
+    if (!selectedProjectId || !selectionCanDistribute || !wsConnected || sceneFlowBusy) return;
+    const items = selectionNodes.map((node) => ({ node, bounds: nodeBounds(node) }));
+    if (items.length < 3) return;
+    const key = axis === "y" ? "cy" : "cx";
+    items.sort((a, b) => a.bounds[key] - b.bounds[key]);
+    const first = items[0].bounds[key];
+    const last = items[items.length - 1].bounds[key];
+    const gap = (last - first) / (items.length - 1);
+    if (!Number.isFinite(gap)) return;
+    for (let i = 1; i < items.length - 1; i += 1) {
+      const entry = items[i];
+      const targetCenter = first + gap * i;
+      const bounds = entry.bounds;
+      const nextX = axis === "x" ? targetCenter - bounds.w / 2 : bounds.x;
+      const nextY = axis === "y" ? targetCenter - bounds.h / 2 : bounds.y;
+      if (nextX !== bounds.x || nextY !== bounds.y) {
+        await moveSceneFlowNode(entry.node.id, nextX, nextY, sceneFlowSnap);
+      }
+    }
+  }
+
+  async function setSelectedNodesStart(value) {
+    if (!selectedProjectId || !selectionNodes.length || !wsConnected || sceneFlowBusy) return;
+    const updates = selectionNodes.filter((node) => !node.isHistory && node.isStart !== value);
+    for (const node of updates) {
+      await runSceneFlowCommand("SceneFlow.Node.Update", {
+        projectId: selectedProjectId,
+        nodeId: node.id,
+        fields: { isStart: value }
+      });
     }
   }
 
@@ -5020,16 +5344,19 @@
         </p>
         </div>
       </div>
-      <button
-        type="button"
-        class="badge badge-toggle"
-        on:click={() => (showTokenSection = !showTokenSection)}
-        aria-pressed={showTokenSection}
-        aria-label="Toggle token entry"
-        title="Toggle token entry"
-      >
-        <span class:ok={wsConnected}>{wsConnected ? "connected" : "offline"}</span>
-      </button>
+      <div class="hero-status">
+        <button
+          type="button"
+          class="badge badge-toggle"
+          on:click={() => (showTokenSection = !showTokenSection)}
+          aria-pressed={showTokenSection}
+          aria-label="Toggle token entry"
+          title="Toggle token entry"
+        >
+          <span class:ok={wsConnected}>{wsConnected ? "connected" : "offline"}</span>
+        </button>
+        <div class="badge subtle protocol-badge" title={protocolBadgeTitle}>{protocolBadgeText}</div>
+      </div>
     </header>
 
     {#if showTokenSection}
@@ -5171,8 +5498,11 @@
     <section class="panel sceneflow-panel">
       <header class="panel-title">
         <h2>SceneFlow</h2>
-        <div class="badge subtle">
-          {selectedProject ? selectedProject.name : "No project selected"}
+        <div class="panel-badges">
+          <div class="badge subtle">
+            {selectedProject ? selectedProject.name : "No project selected"}
+          </div>
+          <div class="badge subtle protocol-badge" title={protocolBadgeTitle}>{protocolBadgeText}</div>
         </div>
       </header>
       <div class="sceneflow-toolbar">
@@ -6021,6 +6351,108 @@
                   Delete
                 </button>
               </div>
+              {#if selectionNodes.length}
+                <div class="definition-section">
+                  <header class="definition-header">
+                    <h4>Arrange</h4>
+                    <span class="muted">{selectionNodes.length} nodes</span>
+                  </header>
+                  <div class="stack">
+                    <div class="row">
+                      <span class="arrange-label">Align X</span>
+                      <button
+                        type="button"
+                        class="ghost"
+                        on:click={() => alignSelectedNodes("left")}
+                        disabled={!selectionHasMovableNodes || !wsConnected || sceneFlowBusy}
+                      >
+                        Left
+                      </button>
+                      <button
+                        type="button"
+                        class="ghost"
+                        on:click={() => alignSelectedNodes("center")}
+                        disabled={!selectionHasMovableNodes || !wsConnected || sceneFlowBusy}
+                      >
+                        Center
+                      </button>
+                      <button
+                        type="button"
+                        class="ghost"
+                        on:click={() => alignSelectedNodes("right")}
+                        disabled={!selectionHasMovableNodes || !wsConnected || sceneFlowBusy}
+                      >
+                        Right
+                      </button>
+                    </div>
+                    <div class="row">
+                      <span class="arrange-label">Align Y</span>
+                      <button
+                        type="button"
+                        class="ghost"
+                        on:click={() => alignSelectedNodes("top")}
+                        disabled={!selectionHasMovableNodes || !wsConnected || sceneFlowBusy}
+                      >
+                        Top
+                      </button>
+                      <button
+                        type="button"
+                        class="ghost"
+                        on:click={() => alignSelectedNodes("middle")}
+                        disabled={!selectionHasMovableNodes || !wsConnected || sceneFlowBusy}
+                      >
+                        Middle
+                      </button>
+                      <button
+                        type="button"
+                        class="ghost"
+                        on:click={() => alignSelectedNodes("bottom")}
+                        disabled={!selectionHasMovableNodes || !wsConnected || sceneFlowBusy}
+                      >
+                        Bottom
+                      </button>
+                    </div>
+                    <div class="row">
+                      <span class="arrange-label">Distribute</span>
+                      <button
+                        type="button"
+                        class="ghost"
+                        on:click={() => distributeSelectedNodes("x")}
+                        disabled={!selectionCanDistribute || !wsConnected || sceneFlowBusy}
+                      >
+                        Horizontal
+                      </button>
+                      <button
+                        type="button"
+                        class="ghost"
+                        on:click={() => distributeSelectedNodes("y")}
+                        disabled={!selectionCanDistribute || !wsConnected || sceneFlowBusy}
+                      >
+                        Vertical
+                      </button>
+                    </div>
+                    <div class="row">
+                      <span class="arrange-label">Start</span>
+                      <button
+                        type="button"
+                        class="ghost"
+                        on:click={() => setSelectedNodesStart(true)}
+                        disabled={!selectionCanToggleStart || !wsConnected || sceneFlowBusy}
+                      >
+                        Set
+                      </button>
+                      <button
+                        type="button"
+                        class="ghost"
+                        on:click={() => setSelectedNodesStart(false)}
+                        disabled={!selectionCanToggleStart || !wsConnected || sceneFlowBusy}
+                      >
+                        Clear
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              {/if}
             {:else if sceneFlowSelection?.type === "node" && selectedNode && nodeDraft}
               <div class="node-header">
                 <input
@@ -6506,8 +6938,11 @@
     <section class="panel script-panel panel-wide">
       <header class="panel-title">
         <h2>Scene Script</h2>
-        <div class="badge subtle">
-          {selectedProject ? selectedProject.name : "No project selected"}
+        <div class="panel-badges">
+          <div class="badge subtle">
+            {selectedProject ? selectedProject.name : "No project selected"}
+          </div>
+          <div class="badge subtle protocol-badge" title={protocolBadgeTitle}>{protocolBadgeText}</div>
         </div>
       </header>
       <div class="script-toolbar">

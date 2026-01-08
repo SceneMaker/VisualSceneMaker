@@ -85,6 +85,11 @@ import de.dfki.vsm.model.visicon.VisiconViseme;
 import de.dfki.vsm.runtime.interpreter.value.AbstractValue;
 import de.dfki.vsm.runtime.plugin.RunTimePlugin;
 import de.dfki.vsm.runtime.project.RunTimeProject;
+import de.dfki.vsm.ui.protocol.UiEvent;
+import de.dfki.vsm.ui.protocol.UiEventBus;
+import de.dfki.vsm.ui.protocol.UiEventListener;
+import de.dfki.vsm.ui.protocol.UiChannel;
+import de.dfki.vsm.ui.protocol.UiProtocol;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 import de.dfki.vsm.util.tpl.Tuple;
 import de.dfki.vsm.util.xml.XMLUtilities;
@@ -139,7 +144,7 @@ import java.util.function.Supplier;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
-public final class WebUiServer implements EventListener {
+public final class WebUiServer implements EventListener, UiEventListener {
 
     private static final WebUiServer INSTANCE = new WebUiServer();
     private static final int DEFAULT_PORT = 8090;
@@ -151,6 +156,7 @@ public final class WebUiServer implements EventListener {
     private boolean mAllowExternal = false;
     private String mBindHost = "127.0.0.1";
     private final Set<WsContext> mSockets = ConcurrentHashMap.newKeySet();
+    private final UiEventBus mUiEventBus = UiProtocol.getEventBus();
     private final ExecutorService mBroadcastExecutor = Executors.newSingleThreadExecutor(r -> {
         Thread thread = new Thread(r, "WebUiServer-Broadcast");
         thread.setDaemon(true);
@@ -232,6 +238,8 @@ public final class WebUiServer implements EventListener {
         mApp.start(mBindHost, mPort);
         mStarted = true;
         EventDispatcher.getInstance().register(this);
+        mUiEventBus.addListener(this);
+        updateUiProtocolActive();
 
         logStartup();
 
@@ -243,6 +251,8 @@ public final class WebUiServer implements EventListener {
             return;
         }
         EventDispatcher.getInstance().remove(this);
+        mUiEventBus.removeListener(this);
+        mUiEventBus.setActive(false);
         mApp.stop();
         mBroadcastExecutor.shutdownNow();
         mStarted = false;
@@ -321,6 +331,147 @@ public final class WebUiServer implements EventListener {
             broadcastEvent("SceneFlow.Timeout.Started", payload, null);
             return;
         }
+    }
+
+    @Override
+    public void onEvent(UiEvent event) {
+        if (event == null) {
+            return;
+        }
+        JSONObject message = new JSONObject();
+        message.put("type", "event");
+        message.put("v", event.getVersion());
+        if (event.getId() != null && !event.getId().isBlank()) {
+            message.put("id", event.getId());
+        }
+        if (event.getChannel() != null) {
+            message.put("channel", event.getChannel().name().toLowerCase(Locale.ROOT));
+        }
+        message.put("event", event.getEvent());
+        message.put("ts", event.getTimestamp());
+        message.put("seq", event.getSequence());
+        message.put("payload", wrapPayload(event.getPayload()));
+        broadcast(message);
+    }
+
+    private Object wrapPayload(Object payload) {
+        if (payload == null) {
+            return new JSONObject();
+        }
+        Object wrapped = JSONObject.wrap(payload);
+        return wrapped == null ? new JSONObject() : wrapped;
+    }
+
+    private void updateUiProtocolActive() {
+        mUiEventBus.setActive(!mSockets.isEmpty());
+    }
+
+    private void emitUiProjectState(String projectId) {
+        if (projectId == null || projectId.isBlank()) {
+            return;
+        }
+        emitUiProjectConfig(projectId);
+        emitUiScriptSnapshot(projectId);
+        emitUiScriptElements(projectId);
+        emitUiSceneFlowSnapshot(projectId, null);
+    }
+
+    private void emitUiProjectConfig(String projectId) {
+        if (projectId == null || projectId.isBlank()) {
+            return;
+        }
+        mUiEventBus.emitLazy(() -> {
+            JSONObject payload = callOnEdt(() -> {
+                EditorInstance instance = EditorInstance.getInstance();
+                ProjectEditor editor = findProjectEditorById(projectId, instance);
+                if (editor == null || editor.getEditorProject() == null) {
+                    return null;
+                }
+                JSONObject response = projectConfigToJson(editor.getEditorProject());
+                response.put("projectId", projectId);
+                return response;
+            });
+            if (payload == null) {
+                return null;
+            }
+            return UiEvent.create(UiChannel.PROJECT, "project.config", payload);
+        });
+    }
+
+    private void emitUiScriptSnapshot(String projectId) {
+        if (projectId == null || projectId.isBlank()) {
+            return;
+        }
+        mUiEventBus.emitLazy(() -> {
+            JSONObject payload = callOnEdt(() -> {
+                EditorInstance instance = EditorInstance.getInstance();
+                ProjectEditor editor = findProjectEditorById(projectId, instance);
+                if (editor == null || editor.getEditorProject() == null) {
+                    return null;
+                }
+                return scriptSnapshotToJson(editor.getEditorProject(), projectId);
+            });
+            if (payload == null) {
+                return null;
+            }
+            return UiEvent.create(UiChannel.SCRIPT, "script.snapshot", payload);
+        });
+    }
+
+    private void emitUiScriptElements(String projectId) {
+        if (projectId == null || projectId.isBlank()) {
+            return;
+        }
+        mUiEventBus.emitLazy(() -> {
+            JSONObject payload = callOnEdt(() -> {
+                EditorInstance instance = EditorInstance.getInstance();
+                ProjectEditor editor = findProjectEditorById(projectId, instance);
+                if (editor == null || editor.getEditorProject() == null) {
+                    return null;
+                }
+                JSONObject elements = scriptElementsToJson(editor.getEditorProject());
+                JSONObject response = new JSONObject();
+                response.put("projectId", projectId);
+                response.put("elements", elements);
+                return response;
+            });
+            if (payload == null) {
+                return null;
+            }
+            return UiEvent.create(UiChannel.SCRIPT, "script.elements", payload);
+        });
+    }
+
+    private void emitUiSceneFlowSnapshot(String projectId, String superNodeId) {
+        if (projectId == null || projectId.isBlank()) {
+            return;
+        }
+        mUiEventBus.emitLazy(() -> {
+            JSONObject payload = callOnEdt(() -> {
+                EditorInstance instance = EditorInstance.getInstance();
+                ProjectEditor editor = findProjectEditorById(projectId, instance);
+                if (editor == null || editor.getEditorProject() == null) {
+                    return null;
+                }
+                SceneFlowManager manager = editor.getSceneFlowEditor().getSceneFlowManager();
+                SuperNode superNode = resolveSuperNode(editor.getEditorProject().getSceneFlow(), superNodeId);
+                if (superNode == null) {
+                    superNode = manager.getCurrentActiveSuperNode();
+                }
+                return sceneFlowSnapshot(editor, superNode);
+            });
+            if (payload == null) {
+                return null;
+            }
+            return UiEvent.create(UiChannel.SCENEFLOW, "sceneflow.snapshot", payload);
+        });
+    }
+
+    private void emitUiSceneFlowSnapshot(JSONObject snapshot) {
+        if (snapshot == null) {
+            return;
+        }
+        mUiEventBus.emitLazy(() -> UiEvent.create(UiChannel.SCENEFLOW, "sceneflow.snapshot", snapshot));
     }
 
     private void addProjectId(JSONObject payload) {
@@ -486,9 +637,16 @@ public final class WebUiServer implements EventListener {
                     return;
                 }
                 mSockets.add(ctx);
+                updateUiProtocolActive();
             });
-            ws.onClose(mSockets::remove);
-            ws.onError(mSockets::remove);
+            ws.onClose(ctx -> {
+                mSockets.remove(ctx);
+                updateUiProtocolActive();
+            });
+            ws.onError(ctx -> {
+                mSockets.remove(ctx);
+                updateUiProtocolActive();
+            });
             ws.onMessage(ctx -> handleWsMessage(ctx, ctx.message()));
         });
     }
@@ -648,6 +806,7 @@ public final class WebUiServer implements EventListener {
 
         writeJson(ctx, projectJson);
         broadcastEvent("Project.Opened", projectJson, null);
+        emitUiProjectState(projectJson.optString("projectId", null));
     }
 
     private void handleNewProject(Context ctx) {
@@ -691,6 +850,7 @@ public final class WebUiServer implements EventListener {
 
         writeJson(ctx, projectJson);
         broadcastEvent("Project.Opened", projectJson, null);
+        emitUiProjectState(projectJson.optString("projectId", null));
     }
 
     private void handleSaveProject(Context ctx) {
@@ -891,6 +1051,7 @@ public final class WebUiServer implements EventListener {
         }
         writeJson(ctx, snapshot);
         broadcastEvent("SceneFlow.PathChanged", new JSONObject().put("projectId", projectId).put("superNodeId", superNodeId), null);
+        emitUiSceneFlowSnapshot(snapshot);
     }
 
     private void handleScript(Context ctx) {
@@ -1386,6 +1547,7 @@ public final class WebUiServer implements EventListener {
                     }
                     sendResponse(ctx, requestId, name, project);
                     broadcastEvent("Project.Opened", project, sourceClientId);
+                    emitUiProjectState(project.optString("projectId", null));
                     return;
                 }
                 case "Project.New": {
@@ -1424,6 +1586,7 @@ public final class WebUiServer implements EventListener {
                     }
                     sendResponse(ctx, requestId, name, project);
                     broadcastEvent("Project.Opened", project, sourceClientId);
+                    emitUiProjectState(project.optString("projectId", null));
                     return;
                 }
                 case "Project.Save": {
@@ -1557,6 +1720,7 @@ public final class WebUiServer implements EventListener {
                     }
                     sendResponse(ctx, requestId, name, project);
                     broadcastEvent("Project.Activated", project, sourceClientId);
+                    emitUiProjectState(project.optString("projectId", null));
                     return;
                 }
                 case "SceneFlow.Navigate": {
@@ -3737,6 +3901,7 @@ public final class WebUiServer implements EventListener {
                     }
                     sendResponse(ctx, requestId, name, response);
                     broadcastEvent("ProjectConfig.Changed", response.put("projectId", projectId), sourceClientId);
+                    emitUiProjectConfig(projectId);
                     return;
                 }
                 case "Script.Update": {
@@ -3756,6 +3921,7 @@ public final class WebUiServer implements EventListener {
                     sendResponse(ctx, requestId, name, response);
                     if (response.optBoolean("applied")) {
                         broadcastEvent("Script.Changed", response.put("projectId", projectId), sourceClientId);
+                        emitUiScriptSnapshot(projectId);
                         if (response.has("dirty")) {
                             boolean dirty = response.getBoolean("dirty");
                             broadcastEvent("Project.DirtyChanged", new JSONObject().put("projectId", projectId).put("dirty", dirty), sourceClientId);
@@ -4279,6 +4445,21 @@ public final class WebUiServer implements EventListener {
         }
         json.put("rect", rectJson);
         return json;
+    }
+
+    private JSONObject scriptSnapshotToJson(EditorProject project, String projectId) {
+        SceneScript script = project.getSceneScript();
+        String text = script.getText();
+        ScriptDiagnostics.Result diagnostics = ScriptDiagnostics.analyze(text);
+        JSONObject response = new JSONObject();
+        if (projectId != null && !projectId.isBlank()) {
+            response.put("projectId", projectId);
+        }
+        response.put("text", text);
+        response.put("version", script.getHashCode());
+        response.put("parseOk", diagnostics.isParseOk());
+        response.put("parseErrors", diagnosticsToJson(diagnostics.getDiagnostics()));
+        return response;
     }
 
     private JSONObject scriptScenesToJson(SceneScript script) {
@@ -4965,8 +5146,10 @@ public final class WebUiServer implements EventListener {
             response.put("id", requestId);
         }
         response.put("name", name);
-        response.put("payload", payload == null ? new JSONObject() : payload);
+        JSONObject payloadObj = payload == null ? new JSONObject() : payload;
+        response.put("payload", payloadObj);
         ctx.send(response.toString());
+        maybeEmitUiSceneFlowSnapshot(payloadObj);
     }
 
     private void sendError(WsContext ctx, String requestId, String name, String message) {
@@ -4980,6 +5163,20 @@ public final class WebUiServer implements EventListener {
         payload.put("message", message);
         response.put("payload", payload);
         ctx.send(response.toString());
+    }
+
+    private void maybeEmitUiSceneFlowSnapshot(JSONObject payload) {
+        if (payload == null) {
+            return;
+        }
+        JSONObject snapshot = payload.optJSONObject("snapshot");
+        if (snapshot != null) {
+            emitUiSceneFlowSnapshot(snapshot);
+            return;
+        }
+        if (payload.has("nodes") && payload.has("edges") && payload.has("superNodeId")) {
+            emitUiSceneFlowSnapshot(payload);
+        }
     }
 
     private void appendDirty(ProjectEditor editor, JSONObject payload) {

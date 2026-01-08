@@ -11,8 +11,12 @@ repositories {
 }
 
 apply plugin: 'java'
-targetCompatibility = JavaVersion.VERSION_21
-sourceCompatibility = JavaVersion.VERSION_21
+targetCompatibility = JavaVersion.VERSION_17
+sourceCompatibility = JavaVersion.VERSION_17
+
+tasks.withType(JavaCompile).configureEach {
+    options.release = 17
+}
 
 dependencies {
     compileOnly group: 'com.github.vbmacher', name: 'java-cup-runtime', version: '11b-20160615'
