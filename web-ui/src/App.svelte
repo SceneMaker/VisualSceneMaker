@@ -36,12 +36,21 @@
   let showTokenSection = false;
 
   const SCENE_DRAG_TYPE = "application/x-vsm-scene";
+  const AGENT_DRAG_TYPE = "application/x-vsm-agent";
   const BLOCK_DRAG_TYPE = "application/x-vsm-block";
   const SCENE_LANGUAGE_ALL = "__all__";
   const SCENEFLOW_ROOT_ID = "__root__";
   const SCENEFLOW_ZOOM_KEY = "vsm_scene_flow_zoom";
   const SCENEFLOW_ZOOM_MIN = 0.3;
   const SCENEFLOW_ZOOM_MAX = 3.5;
+  const AGENT_ICON_PATHS = {
+    input:
+      "M8.25 9V5.25A2.25 2.25 0 0 1 10.5 3h6a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 16.5 21h-6a2.25 2.25 0 0 1-2.25-2.25V15M12 9l3 3m0 0-3 3m3-3H2.25",
+    processing:
+      "M19.5 12c0-1.232-.046-2.453-.138-3.662a4.006 4.006 0 0 0-3.7-3.7 48.678 48.678 0 0 0-7.324 0 4.006 4.006 0 0 0-3.7 3.7c-.017.22-.032.441-.046.662M19.5 12l3-3m-3 3-3-3m-12 3c0 1.232.046 2.453.138 3.662a4.006 4.006 0 0 0 3.7 3.7 48.656 48.656 0 0 0 7.324 0 4.006 4.006 0 0 0 3.7-3.7c.017-.22.032-.441.046-.662M4.5 12l3 3m-3-3-3 3",
+    output:
+      "M8.25 9V5.25A2.25 2.25 0 0 1 10.5 3h6a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 16.5 21h-6a2.25 2.25 0 0 1-2.25-2.25V15M12 9l3 3m0 0-3 3m3-3H2.25"
+  };
   const DEFAULT_VAR_BADGE_STATE = {
     visible: true,
     global: { x: 16, y: 12, w: 240, h: 150 },
@@ -298,6 +307,26 @@
     const innerEndX = handleSize;
     const innerEndY = handleSize - innerRadius;
     return `M ${outerStartX} ${outerStartY} A ${outerRadius} ${outerRadius} 0 0 1 ${outerEndX} ${outerEndY} L ${innerStartX} ${innerStartY} A ${innerRadius} ${innerRadius} 0 0 0 ${innerEndX} ${innerEndY} Z`;
+  }
+
+  function superNodeIconPath(w, h, power = 5, steps = 24) {
+    const a = w / 2;
+    const b = h / 2;
+    const cx = a;
+    const cy = b;
+    const points = [];
+    for (let i = 0; i <= steps; i += 1) {
+      const theta = (Math.PI * 2 * i) / steps;
+      const cos = Math.cos(theta);
+      const sin = Math.sin(theta);
+      const x = cx + a * Math.sign(cos) * Math.pow(Math.abs(cos), 2 / power);
+      const y = cy + b * Math.sign(sin) * Math.pow(Math.abs(sin), 2 / power);
+      points.push({ x, y });
+    }
+    return points
+      .map((pt, idx) => `${idx === 0 ? "M" : "L"} ${pt.x} ${pt.y}`)
+      .concat("Z")
+      .join(" ");
   }
 
   function revisionSlug(revision) {
@@ -650,6 +679,7 @@
   let configLoaded = false;
   let configError = "";
   let lastConfigProjectId = "";
+  let lastProjectConfigProjectId = "";
   let projectConfigDialogOpen = false;
   let projectConfig = null;
   let projectConfigDraft = null;
@@ -697,6 +727,9 @@
   let scriptElementsError = "";
   let scriptElementsLoading = false;
   let scriptElementsLoaded = false;
+  let sceneAgentNames = [];
+  let deviceAgentNames = [];
+  let agentGroups = { input: [], processing: [], output: [] };
   const SELECTION_PREVIEW_LIMIT = 6;
 
   let sceneFlow = null;
@@ -1035,6 +1068,9 @@
   $: filteredScriptScenes = filterSceneLanguages(scriptScenes, scriptScenesFilter, scriptScenesLanguage);
   $: sceneLanguageOptions = sceneLanguageOptionList(scriptScenes);
   $: filteredScriptElements = filterScriptElements(scriptElements, scriptElementsFilter);
+  $: sceneAgentNames = extractSceneAgents(scriptDraft);
+  $: deviceAgentNames = extractDeviceAgents(projectConfigAgents);
+  $: agentGroups = buildAgentGroups(sceneAgentNames, deviceAgentNames);
   $: prefsPreviewStyle = buildPrefsPreviewStyle(prefsDialogDraft);
 
   $: if (selectedNode && selectedNode.id !== nodeDraftId) {
@@ -1198,6 +1234,7 @@
 
   $: if (!sessionReady) {
     lastConfigProjectId = "";
+    lastProjectConfigProjectId = "";
     lastScriptProjectId = "";
     lastSceneFlowProjectId = "";
     lastRuntimeProjectId = "";
@@ -1216,6 +1253,11 @@
   $: if (sessionReady && selectedProjectId && selectedProjectId !== lastConfigProjectId) {
     lastConfigProjectId = selectedProjectId;
     loadConfig(selectedProjectId);
+  }
+
+  $: if (sessionReady && selectedProjectId && selectedProjectId !== lastProjectConfigProjectId) {
+    lastProjectConfigProjectId = selectedProjectId;
+    loadProjectConfig(selectedProjectId);
   }
 
   $: if (sessionReady && selectedProjectId && selectedProjectId !== lastScriptProjectId) {
@@ -1241,6 +1283,13 @@
   }
 
   $: if (!selectedProjectId) {
+    lastProjectConfigProjectId = "";
+    projectConfig = null;
+    projectConfigDraft = null;
+    projectConfigError = "";
+    projectConfigLoading = false;
+    projectConfigSaved = null;
+    projectConfigPending = false;
     scriptText = "";
     scriptDraft = "";
     scriptVersion = null;
@@ -3270,6 +3319,75 @@
     return `PlayScene("${escaped}")`;
   }
 
+  function playAgentCommand(name) {
+    const raw = String(name || "");
+    const escaped = raw.replace(/\\/g, "\\\\").replace(/"/g, "\\\"");
+    return `PlayAction("[${escaped} command]")`;
+  }
+
+  function extractSceneAgents(text) {
+    if (!text) return [];
+    const map = new Map();
+    const lines = String(text).split(/\r?\n/);
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith("//") || trimmed.startsWith("#")) {
+        continue;
+      }
+      const match = trimmed.match(/^([A-Za-z0-9_][^:]*)\s*:/);
+      if (!match) continue;
+      const name = match[1].trim();
+      if (!name) continue;
+      const key = name.toLowerCase();
+      if (key === "scene") continue;
+      if (!map.has(key)) {
+        map.set(key, name);
+      }
+    }
+    return Array.from(map.values()).sort((a, b) => a.localeCompare(b));
+  }
+
+  function extractDeviceAgents(agents) {
+    if (!Array.isArray(agents)) return [];
+    const map = new Map();
+    for (const agent of agents) {
+      const name = String(agent?.name || "").trim();
+      if (!name) continue;
+      const key = name.toLowerCase();
+      if (!map.has(key)) {
+        map.set(key, name);
+      }
+    }
+    return Array.from(map.values()).sort((a, b) => a.localeCompare(b));
+  }
+
+  function buildAgentGroups(sceneAgents, deviceAgents) {
+    const sceneMap = new Map();
+    const deviceMap = new Map();
+    for (const name of sceneAgents || []) {
+      sceneMap.set(String(name).toLowerCase(), name);
+    }
+    for (const name of deviceAgents || []) {
+      deviceMap.set(String(name).toLowerCase(), name);
+    }
+    const output = [];
+    const processing = [];
+    for (const [key, name] of sceneMap.entries()) {
+      output.push({ name, type: "output", shared: deviceMap.has(key) });
+    }
+    output.sort((a, b) => a.name.localeCompare(b.name));
+    for (const [key, name] of deviceMap.entries()) {
+      if (sceneMap.has(key)) continue;
+      processing.push({ name, type: "processing", shared: false });
+    }
+    processing.sort((a, b) => a.name.localeCompare(b.name));
+    return {
+      input: [],
+      processing,
+      output
+    };
+  }
+
   function startBlockDrag(event, payload) {
     if (!event?.dataTransfer || !payload) return;
     event.dataTransfer.setData(BLOCK_DRAG_TYPE, JSON.stringify(payload));
@@ -3283,6 +3401,18 @@
       language: language || ""
     };
     event.dataTransfer.setData(SCENE_DRAG_TYPE, JSON.stringify(payload));
+    event.dataTransfer.setData("text/plain", JSON.stringify(payload));
+    event.dataTransfer.effectAllowed = "copy";
+  }
+
+  function startAgentDrag(event, agent, agentType) {
+    if (!event?.dataTransfer || !agent?.name) return;
+    const payload = {
+      kind: "agent",
+      name: agent.name,
+      type: agentType || agent.type || "processing"
+    };
+    event.dataTransfer.setData(AGENT_DRAG_TYPE, JSON.stringify(payload));
     event.dataTransfer.setData("text/plain", JSON.stringify(payload));
     event.dataTransfer.effectAllowed = "copy";
   }
@@ -3311,13 +3441,42 @@
     return null;
   }
 
+  function parseAgentDrop(event) {
+    const data = event?.dataTransfer;
+    if (!data) return null;
+    const raw = data.getData(AGENT_DRAG_TYPE);
+    if (raw) {
+      try {
+        return JSON.parse(raw);
+      } catch (err) {
+        return null;
+      }
+    }
+    const text = data.getData("text/plain");
+    if (!text) return null;
+    try {
+      const parsed = JSON.parse(text);
+      if (parsed?.kind === "agent" && parsed?.name) {
+        return parsed;
+      }
+    } catch (err) {
+      return null;
+    }
+    return null;
+  }
+
   function isSceneDrag(event) {
     const types = Array.from(event?.dataTransfer?.types || []);
-    return types.includes(SCENE_DRAG_TYPE) || types.includes("text/plain");
+    return types.includes(SCENE_DRAG_TYPE) || (types.includes("text/plain") && !types.includes(AGENT_DRAG_TYPE));
+  }
+
+  function isAgentDrag(event) {
+    const types = Array.from(event?.dataTransfer?.types || []);
+    return types.includes(AGENT_DRAG_TYPE);
   }
 
   function handleSceneDropOver(event) {
-    if (!isSceneDrag(event)) return;
+    if (!isSceneDrag(event) && !isAgentDrag(event)) return;
     event.preventDefault();
     if (event.dataTransfer) {
       event.dataTransfer.dropEffect = "copy";
@@ -3330,6 +3489,19 @@
       projectId: selectedProjectId,
       nodeId,
       command: { text: playSceneCommand(sceneName) }
+    });
+    if (response && selectNode) {
+      sceneFlowSelection = { type: "node", id: nodeId };
+      sceneFlowMultiSelection = [{ type: "node", id: nodeId }];
+    }
+  }
+
+  async function addAgentCommandToNode(nodeId, agentName, { selectNode = false } = {}) {
+    if (!selectedProjectId || !nodeId || !agentName) return;
+    const response = await runSceneFlowCommand("SceneFlow.Node.Cmd.Add", {
+      projectId: selectedProjectId,
+      nodeId,
+      command: { text: playAgentCommand(agentName) }
     });
     if (response && selectNode) {
       sceneFlowSelection = { type: "node", id: nodeId };
@@ -3356,6 +3528,25 @@
     await addSceneCommandToNode(response.nodeId, payload.name, { selectNode: true });
   }
 
+  async function handleSceneFlowAgentDrop(payload) {
+    if (!payload?.name || !selectedProjectId) return;
+    if (payload.targetNodeId) {
+      await addAgentCommandToNode(payload.targetNodeId, payload.name, { selectNode: true });
+      return;
+    }
+    const response = await runSceneFlowCommand("SceneFlow.Node.Create", {
+      projectId: selectedProjectId,
+      nodeType: "Basic",
+      name: payload.name,
+      x: payload.x,
+      y: payload.y
+    });
+    if (!response?.nodeId) {
+      return;
+    }
+    await addAgentCommandToNode(response.nodeId, payload.name, { selectNode: true });
+  }
+
   async function handleBlockDrop(payload) {
     if (!payload || !selectedProjectId) return;
     if (payload.kind === "node") {
@@ -3376,6 +3567,12 @@
   }
 
   async function handleCommandSceneDrop(event) {
+    const agentPayload = parseAgentDrop(event);
+    if (agentPayload?.name && nodeEditorTarget?.id) {
+      event.preventDefault();
+      await addAgentCommandToNode(nodeEditorTarget.id, agentPayload.name);
+      return;
+    }
     const payload = parseSceneDrop(event);
     if (!payload?.name || !nodeEditorTarget?.id) return;
     event.preventDefault();
@@ -5123,14 +5320,14 @@
                   class="block-icon"
                   title="Supernode"
                   aria-label="Supernode"
+                  style="color:#7A7D81"
                   draggable="true"
                   on:click={() => createSceneFlowNode("Super")}
                   on:dragstart={(event) => startBlockDrag(event, { kind: "node", nodeType: "Super" })}
                   disabled={!selectedProject || !wsConnected || sceneFlowBusy}
                 >
                   <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <rect x="4" y="4" width="16" height="16" rx="2" />
-                    <rect x="8" y="8" width="8" height="8" rx="1" />
+                    <path d={superNodeIconPath(16, 16)} transform="translate(4 4)" fill="currentColor" />
                   </svg>
                 </button>
                 <button
@@ -5138,13 +5335,14 @@
                   class="block-icon"
                   title="Node"
                   aria-label="Node"
+                  style="color:#7A7D81"
                   draggable="true"
                   on:click={() => createSceneFlowNode("Basic")}
                   on:dragstart={(event) => startBlockDrag(event, { kind: "node", nodeType: "Basic" })}
                   disabled={!selectedProject || !wsConnected || sceneFlowBusy}
                 >
                   <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <circle cx="12" cy="12" r="7" />
+                    <ellipse cx="12" cy="12" rx="7" ry="7" fill="currentColor" />
                   </svg>
                 </button>
                 <button
@@ -5152,13 +5350,16 @@
                   class="block-icon"
                   title="Comment"
                   aria-label="Comment"
+                  style="color:#7A7D81"
                   draggable="true"
                   on:click={createSceneFlowComment}
                   on:dragstart={(event) => startBlockDrag(event, { kind: "comment" })}
                   disabled={!selectedProject || !wsConnected || sceneFlowBusy}
                 >
                   <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M6 6h12a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H10l-4 3v-3H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z" />
+                    <rect x="4.5" y="6" width="15" height="12" rx="3.5" ry="3.5" />
+                    <line x1="7" y1="10" x2="17" y2="10" />
+                    <line x1="7" y1="14" x2="15" y2="14" />
                   </svg>
                 </button>
                 <button
@@ -5167,15 +5368,18 @@
                   class:active={edgeCreateMode && edgeCreateType === "EEDGE"}
                   title="Epsilon edge"
                   aria-label="Epsilon edge"
+                  style="color:#7A7D81"
                   draggable="true"
                   on:click={() => startEdgeCreate("EEDGE")}
                   on:dragstart={(event) => startBlockDrag(event, { kind: "edge", edgeType: "EEDGE" })}
                   disabled={!sceneFlow || !wsConnected || sceneFlowBusy}
                 >
                   <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M4 12h11" />
-                    <path d="M11 7l5 5-5 5" />
-                    <text class="block-icon-text" x="5" y="9">E</text>
+                    <g transform="translate(0 0)">
+                      <path d="M4 12h12" stroke="currentColor" />
+                      <path d="M14 9.5l5 2.5-5 2.5z" fill="currentColor" />
+                      <text class="block-icon-text edge-symbol" x="5" y="9"></text>
+                    </g>
                   </svg>
                 </button>
                 <button
@@ -5184,15 +5388,18 @@
                   class:active={edgeCreateMode && edgeCreateType === "PEDGE"}
                   title="Probabilistic edge"
                   aria-label="Probabilistic edge"
+                  style="color:#5BAE7A"
                   draggable="true"
                   on:click={() => startEdgeCreate("PEDGE")}
                   on:dragstart={(event) => startBlockDrag(event, { kind: "edge", edgeType: "PEDGE" })}
                   disabled={!sceneFlow || !wsConnected || sceneFlowBusy}
                 >
                   <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M4 12h11" />
-                    <path d="M11 7l5 5-5 5" />
-                    <text class="block-icon-text" x="5" y="9">P</text>
+                    <g transform="translate(0 4)">
+                      <path d="M4 12h12" stroke="currentColor" />
+                      <path d="M14 9.5l5 2.5-5 2.5z" fill="currentColor" />
+                      <text class="block-icon-text edge-symbol" x="5" y="9">P</text>
+                    </g>
                   </svg>
                 </button>
                 <button
@@ -5201,15 +5408,18 @@
                   class:active={edgeCreateMode && edgeCreateType === "FEDGE"}
                   title="Fork edge"
                   aria-label="Fork edge"
+                  style="color:#5B8EDC"
                   draggable="true"
                   on:click={() => startEdgeCreate("FEDGE")}
                   on:dragstart={(event) => startBlockDrag(event, { kind: "edge", edgeType: "FEDGE" })}
                   disabled={!sceneFlow || !wsConnected || sceneFlowBusy}
                 >
                   <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M4 12h11" />
-                    <path d="M11 7l5 5-5 5" />
-                    <text class="block-icon-text" x="5" y="9">F</text>
+                    <g transform="translate(0 0)">
+                      <path d="M4 12h12" stroke="currentColor" />
+                      <path d="M14 9.5l5 2.5-5 2.5z" fill="currentColor" />
+                      <text class="block-icon-text edge-symbol" x="5" y="9"></text>
+                    </g>
                   </svg>
                 </button>
                 <button
@@ -5218,15 +5428,18 @@
                   class:active={edgeCreateMode && edgeCreateType === "CEDGE"}
                   title="Conditional edge"
                   aria-label="Conditional edge"
+                  style="color:#FFC857"
                   draggable="true"
                   on:click={() => startEdgeCreate("CEDGE")}
                   on:dragstart={(event) => startBlockDrag(event, { kind: "edge", edgeType: "CEDGE" })}
                   disabled={!sceneFlow || !wsConnected || sceneFlowBusy}
                 >
                   <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M4 12h11" />
-                    <path d="M11 7l5 5-5 5" />
-                    <text class="block-icon-text" x="5" y="9">C</text>
+                    <g transform="translate(0 4)">
+                      <path d="M4 12h12" stroke="currentColor" />
+                      <path d="M14 9.5l5 2.5-5 2.5z" fill="currentColor" />
+                      <text class="block-icon-text edge-symbol" x="5" y="9">C</text>
+                    </g>
                   </svg>
                 </button>
                 <button
@@ -5235,15 +5448,18 @@
                   class:active={edgeCreateMode && edgeCreateType === "TEDGE"}
                   title="Timeout edge"
                   aria-label="Timeout edge"
+                  style="color:#A06A4B"
                   draggable="true"
                   on:click={() => startEdgeCreate("TEDGE")}
                   on:dragstart={(event) => startBlockDrag(event, { kind: "edge", edgeType: "TEDGE" })}
                   disabled={!sceneFlow || !wsConnected || sceneFlowBusy}
                 >
                   <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M4 12h11" />
-                    <path d="M11 7l5 5-5 5" />
-                    <text class="block-icon-text" x="5" y="9">T</text>
+                    <g transform="translate(0 4)">
+                      <path d="M4 12h12" stroke="currentColor" />
+                      <path d="M14 9.5l5 2.5-5 2.5z" fill="currentColor" />
+                      <text class="block-icon-text edge-symbol" x="5" y="9">T</text>
+                    </g>
                   </svg>
                 </button>
                 <button
@@ -5252,15 +5468,18 @@
                   class:active={edgeCreateMode && edgeCreateType === "IEDGE"}
                   title="Interruptive edge"
                   aria-label="Interruptive edge"
+                  style="color:#E26D5A"
                   draggable="true"
                   on:click={() => startEdgeCreate("IEDGE")}
                   on:dragstart={(event) => startBlockDrag(event, { kind: "edge", edgeType: "IEDGE" })}
                   disabled={!sceneFlow || !wsConnected || sceneFlowBusy}
                 >
                   <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M4 12h11" />
-                    <path d="M11 7l5 5-5 5" />
-                    <text class="block-icon-text" x="5" y="9">I</text>
+                    <g transform="translate(0 4)">
+                      <path d="M4 12h12" stroke="currentColor" />
+                      <path d="M14 9.5l5 2.5-5 2.5z" fill="currentColor" />
+                      <text class="block-icon-text edge-symbol" x="5" y="9">I</text>
+                    </g>
                   </svg>
                 </button>
               </div>
@@ -5270,6 +5489,144 @@
                     ? `Edge ${edgeTypeLabel(edgeCreateType)}: pick target node`
                     : `Edge ${edgeTypeLabel(edgeCreateType)}: pick source node`}
                 </p>
+              {/if}
+            </div>
+            <div class="blocks-section blocks-section--agents">
+              <div class="block-section-title">Agents</div>
+              {#if !selectedProject}
+                <p class="muted">Select a project to view agents.</p>
+              {:else if scriptLoading || projectConfigLoading}
+                <p class="muted">Loading agents...</p>
+              {:else if agentGroups.input.length === 0 &&
+                agentGroups.processing.length === 0 &&
+                agentGroups.output.length === 0}
+                <p class="muted">No agents found.</p>
+              {:else}
+                <div class="agent-list">
+                  <div class="scene-group agent-group">
+                    <div class="scene-group-title">Input</div>
+                    <div class="scene-items" role="list">
+                      {#if agentGroups.input.length === 0}
+                        <div class="agent-empty">No agents.</div>
+                      {:else}
+                        {#each agentGroups.input as agent}
+                          <div class="scene-item agent-item" role="listitem">
+                            <div class="scene-item-main">
+                              <span
+                                class="scene-drag-handle agent-drag-handle"
+                                draggable="true"
+                                on:dragstart={(event) => startAgentDrag(event, agent, "input")}
+                                role="button"
+                                tabindex="0"
+                                aria-label={`Drag agent ${agent.name}`}
+                                title="Drag agent"
+                              >
+                                <svg
+                                  class="scene-drag-icon agent-icon"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                  stroke-width="1.5"
+                                  stroke="currentColor"
+                                  aria-hidden="true"
+                                >
+                                  <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    d={AGENT_ICON_PATHS.input}
+                                  />
+                                </svg>
+                              </span>
+                              <span class="scene-name agent-name">{agent.name}</span>
+                            </div>
+                          </div>
+                        {/each}
+                      {/if}
+                    </div>
+                  </div>
+                  <div class="scene-group agent-group">
+                    <div class="scene-group-title">Processing</div>
+                    <div class="scene-items" role="list">
+                      {#if agentGroups.processing.length === 0}
+                        <div class="agent-empty">No agents.</div>
+                      {:else}
+                        {#each agentGroups.processing as agent}
+                          <div class="scene-item agent-item" role="listitem">
+                            <div class="scene-item-main">
+                              <span
+                                class="scene-drag-handle agent-drag-handle"
+                                draggable="true"
+                                on:dragstart={(event) => startAgentDrag(event, agent, "processing")}
+                                role="button"
+                                tabindex="0"
+                                aria-label={`Drag agent ${agent.name}`}
+                                title="Drag agent"
+                              >
+                                <svg
+                                  class="scene-drag-icon agent-icon"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                  stroke-width="1.5"
+                                  stroke="currentColor"
+                                  aria-hidden="true"
+                                >
+                                  <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    d={AGENT_ICON_PATHS.processing}
+                                  />
+                                </svg>
+                              </span>
+                              <span class="scene-name agent-name">{agent.name}</span>
+                            </div>
+                          </div>
+                        {/each}
+                      {/if}
+                    </div>
+                  </div>
+                  <div class="scene-group agent-group">
+                    <div class="scene-group-title">Output</div>
+                    <div class="scene-items" role="list">
+                      {#if agentGroups.output.length === 0}
+                        <div class="agent-empty">No agents.</div>
+                      {:else}
+                        {#each agentGroups.output as agent}
+                          <div class="scene-item agent-item" role="listitem">
+                            <div class="scene-item-main">
+                              <span
+                                class="scene-drag-handle agent-drag-handle"
+                                draggable="true"
+                                on:dragstart={(event) => startAgentDrag(event, agent, "output")}
+                                role="button"
+                                tabindex="0"
+                                aria-label={`Drag agent ${agent.name}`}
+                                title="Drag agent"
+                              >
+                                <svg
+                                  class="scene-drag-icon agent-icon"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                  stroke-width="1.5"
+                                  stroke="currentColor"
+                                  aria-hidden="true"
+                                >
+                                  <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    d={AGENT_ICON_PATHS.output}
+                                  />
+                                </svg>
+                              </span>
+                              <span class="scene-name agent-name" class:shared={agent.shared}>{agent.name}</span>
+                            </div>
+                          </div>
+                        {/each}
+                      {/if}
+                    </div>
+                  </div>
+                </div>
               {/if}
             </div>
             <div class="blocks-section blocks-section--scenes">
@@ -5388,6 +5745,8 @@
                 onEdgePick={handleEdgePick}
                 onSceneDrop={handleSceneFlowSceneDrop}
                 sceneDragType={SCENE_DRAG_TYPE}
+                onAgentDrop={handleSceneFlowAgentDrop}
+                agentDragType={AGENT_DRAG_TYPE}
                 onBlockDrop={handleBlockDrop}
                 blockDragType={BLOCK_DRAG_TYPE}
                 showCommandText={sceneFlowShowCmdText}

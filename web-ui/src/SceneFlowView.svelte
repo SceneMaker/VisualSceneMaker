@@ -14,6 +14,8 @@
   export let onEdgePick = null;
   export let onSceneDrop = null;
   export let sceneDragType = "application/x-vsm-scene";
+  export let onAgentDrop = null;
+  export let agentDragType = "application/x-vsm-agent";
   export let onBlockDrop = null;
   export let blockDragType = "application/x-vsm-block";
   export let showCommandText = true;
@@ -48,8 +50,8 @@
     edges: {
       eedge: "#7a7d81",
       fedge: "#5b8edc",
-      tedge: "#b07a5a",
-      cedge: "#f7d77a",
+      tedge: "#a06a4b",
+      cedge: "#ffc857",
       pedge: "#5bae7a",
       iedge: "#e26d5a"
     }
@@ -1381,7 +1383,7 @@
   function edgeLabel(edge) {
     if (edge.condition) return edge.condition;
     if (edge.probability !== undefined && edge.probability !== null) {
-      return `${edge.probability}`;
+      return `${edge.probability}%`;
     }
     if (edge.timeoutExpr) return `${edge.timeoutExpr}(ms)`;
     if (edge.timeoutMs !== undefined && edge.timeoutMs !== null) {
@@ -1700,6 +1702,30 @@
     return null;
   }
 
+  function parseAgentDrop(event) {
+    const data = event?.dataTransfer;
+    if (!data) return null;
+    const raw = data.getData(agentDragType);
+    if (raw) {
+      try {
+        return JSON.parse(raw);
+      } catch (err) {
+        return null;
+      }
+    }
+    const text = data.getData("text/plain");
+    if (!text) return null;
+    try {
+      const parsed = JSON.parse(text);
+      if (parsed?.kind === "agent" && parsed?.name) {
+        return parsed;
+      }
+    } catch (err) {
+      return null;
+    }
+    return null;
+  }
+
   function parseBlockDrop(event) {
     const data = event?.dataTransfer;
     if (!data) return null;
@@ -1732,7 +1758,12 @@
 
   function isSceneDrag(event) {
     const types = Array.from(event?.dataTransfer?.types || []);
-    return types.includes(sceneDragType) || types.includes("text/plain");
+    return types.includes(sceneDragType) || (types.includes("text/plain") && !types.includes(agentDragType));
+  }
+
+  function isAgentDrag(event) {
+    const types = Array.from(event?.dataTransfer?.types || []);
+    return types.includes(agentDragType);
   }
 
   function isBlockDrag(event) {
@@ -1741,7 +1772,7 @@
   }
 
   function handleSceneDragOver(event) {
-    if (!isSceneDrag(event) && !isBlockDrag(event)) return;
+    if (!isSceneDrag(event) && !isBlockDrag(event) && !isAgentDrag(event)) return;
     event.preventDefault();
     if (event.dataTransfer) {
       event.dataTransfer.dropEffect = "copy";
@@ -1759,6 +1790,24 @@
       if (typeof onBlockDrop === "function") {
         onBlockDrop({
           ...payload,
+          x: clamped.x,
+          y: clamped.y,
+          targetNodeId: target?.id || ""
+        });
+      }
+      return;
+    }
+    if (isAgentDrag(event)) {
+      const payload = parseAgentDrop(event);
+      if (!payload?.name) return;
+      event.preventDefault();
+      const world = eventToWorld(event);
+      const clamped = clampWorldPoint(world);
+      const target = findNodeAt(world);
+      if (typeof onAgentDrop === "function") {
+        onAgentDrop({
+          name: payload.name,
+          type: payload.type || "processing",
           x: clamped.x,
           y: clamped.y,
           targetNodeId: target?.id || ""

@@ -326,6 +326,17 @@ summary {
   align-content: start;
 }
 
+.agent-list {
+  overflow: auto;
+  border: 1px solid var(--stroke);
+  border-radius: 12px;
+  background: #ffffff;
+  padding: 0.25rem;
+  display: grid;
+  gap: 0.25rem;
+  align-content: start;
+}
+
 .scene-group {
   border: 1px dashed var(--stroke);
   border-radius: 10px;
@@ -407,6 +418,16 @@ summary {
   flex: 1;
   min-width: 0;
   white-space: nowrap;
+}
+
+.agent-name.shared {
+  font-weight: 700;
+}
+
+.agent-empty {
+  font-size: 0.8rem;
+  color: var(--muted);
+  padding: 0.15rem 0;
 }
 
 .scene-count {
@@ -846,7 +867,7 @@ summary {
   display: grid;
   gap: 1.2rem;
   align-content: stretch;
-  grid-template-rows: auto 1fr;
+  grid-template-rows: auto auto 1fr;
   box-sizing: border-box;
 }
 
@@ -857,6 +878,10 @@ summary {
 
 .blocks-section--icons {
   gap: 0.4rem;
+}
+
+.blocks-section--agents {
+  gap: 0.25rem;
 }
 
 .blocks-section--scenes {
@@ -902,8 +927,8 @@ summary {
 }
 
 .block-icon svg {
-  width: 20px;
-  height: 20px;
+  width: 40px;
+  height: 40px;
   stroke: currentColor;
   fill: none;
   stroke-width: 1.6;
@@ -914,9 +939,13 @@ summary {
 .block-icon .block-icon-text {
   fill: currentColor;
   stroke: none;
-  font-size: 7px;
+  font-size: 14px;
   font-weight: 700;
   font-family: "Space Grotesk", "IBM Plex Sans", "Segoe UI", sans-serif;
+}
+
+.block-icon .block-icon-text.edge-symbol {
+  font-size: 7px;
 }
 
 .block-icon:hover {
@@ -2457,7 +2486,7 @@ summary {
   font-size: var(--sf-font-size, 16px);
   fill: var(--node-text, #ffffff);
   font-family: "SansSerif", "Helvetica Neue", Arial, sans-serif;
-  font-style: oblique;
+  font-style: normal;
   font-weight: 600;
   pointer-events: none;
 }
@@ -2479,7 +2508,8 @@ summary {
 }
 
 .node-id {
-  fill: #d3d3d3;
+  fill: #ffffff;
+  font-weight: 400;
 }
 
 .node-start-sign polygon {
