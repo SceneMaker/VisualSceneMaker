@@ -6,7 +6,7 @@ import de.dfki.vsm.runtime.activity.ActionActivity;
 import de.dfki.vsm.runtime.activity.SpeechActivity;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
 import de.dfki.vsm.runtime.project.RunTimeProject;
-import de.dfki.vsm.xtension.WordMapping;
+import de.dfki.vsm.util.WordMapping;
 
 import java.util.LinkedList;
 import java.util.List;

@@ -15,7 +15,7 @@ import de.dfki.vsm.runtime.interpreter.value.StructValue;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.jpl.JPLEngine;
 import de.dfki.vsm.util.xml.XMLUtilities;
-import de.dfki.vsm.xtension.WordMapping;
+import de.dfki.vsm.util.WordMapping;
 import de.dfki.vsm.xtension.tricatworld.util.property.TricatWorldtProjectProperty;
 import de.dfki.vsm.xtension.tricatworld.xml.command.TriCatWorldCommand;
 import de.dfki.vsm.xtension.tricatworld.xml.command.object.TriCatWorldCmdObject;

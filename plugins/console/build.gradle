@@ -1,0 +1,16 @@
+plugins {
+    id 'java'
+}
+
+group 'de.dfki'
+version '1.0.0'
+
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation project(":core")
+    implementation project(":plugins:extensionAPI")
+}

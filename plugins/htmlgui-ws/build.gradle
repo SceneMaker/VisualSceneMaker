@@ -5,8 +5,6 @@ plugins {
 group 'de.dfki'
 version '1.0.0'
 
-sourceCompatibility = JavaVersion.VERSION_21
-targetCompatibility = JavaVersion.VERSION_21
 
 repositories {
     mavenCentral()

@@ -1,7 +1,6 @@
 plugins {
     id 'java'
-    id 'org.openjfx.javafxplugin' version '0.0.13'
-    id 'net.nemerosa.versioning' version '3.0.0'
+    id 'net.nemerosa.versioning' version '3.1.0'
     id 'com.github.johnrengelman.shadow' version '8.1.1'
 }
 javadoc { options.encoding = 'UTF-8' }
@@ -11,8 +10,6 @@ allprojects {
     version = versioning.info.lastTag
 }
 
-sourceCompatibility = JavaVersion.VERSION_21
-targetCompatibility = JavaVersion.VERSION_21
 
 subprojects {
     plugins.withId('java') {
@@ -29,23 +26,27 @@ repositories {
     maven { url "https://repo.spring.io/libs-release" }
 }
 
-javafx {
-    version = '21'
-    modules = [ 'javafx.controls', 'javafx.graphics', 'javafx.fxml', 'javafx.swing' ]
-}
-
 dependencies {
-    testImplementation group: 'junit', name: 'junit', version: '4.0'
     // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.3.2'
+    testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.3.2'
+    testRuntimeOnly group: 'org.junit.platform', name: 'junit-platform-launcher', version: '1.3.2'
     implementation project(":core", {p->p.ext.flavor = "pc"; p.version = versioning.info.lastTag})
+    implementation project(":editor")
     implementation fileTree(dir: 'lib', include: "*.jar")
+    implementation project(":plugins:alma")
     implementation project(":plugins:AndroidGui")
+    implementation project(":plugins:console")
+    implementation project(":plugins:email")
     implementation project(":plugins:studymaster-web")
+    implementation project(":plugins:fortunecookie")
     implementation project(":plugins:emma-user-model")
     implementation project(":plugins:decad")
     implementation project(":plugins:htmlgui-ws")
     implementation project(":plugins:odp")
+    implementation project(":plugins:qrwebcam")
+    implementation project(":plugins:unity")
+    implementation project(":plugins:wizard")
     implementation project(":plugins:yallah")
     implementation project(":plugins:ssi")
     implementation project(":plugins:ssj")
@@ -101,6 +102,17 @@ java {
     withJavadocJar()
     withSourcesJar()
 }
+
+tasks.withType(Javadoc).configureEach {
+    options.encoding = 'UTF-8'
+    options.addStringOption('Xdoclint:none', '-quiet')
+}
+tasks.withType(Test).configureEach {
+    useJUnitPlatform()
+    filter {
+        setFailOnNoMatchingTests(false)
+    }
+}
 def includeJavaFxRuntime = project.hasProperty("includeJavaFx") &&
         !"false".equalsIgnoreCase(project.property("includeJavaFx").toString())
 def runtimeClasspathForJar = {
@@ -134,78 +146,4 @@ jar {
                 'Last-Tag': versioning.info.lastTag
         )
     }
-}
-
-import java.util.Locale
-
-def webUiDir = file("web-ui")
-def isWindows = System.getProperty("os.name").toLowerCase(Locale.ROOT).contains("windows")
-def defaultNpmCmd = isWindows ? "npm.cmd" : "npm"
-def npmCommand = project.findProperty("npmCommand") ?: defaultNpmCmd
-def skipWebUi = project.hasProperty("skipWebUi") && !"false".equalsIgnoreCase(project.property("skipWebUi").toString())
-def webUiSkipLogged = false
-
-def npmAvailable = {
-    def cmd = npmCommand.toString()
-    File cmdFile = new File(cmd)
-    if (cmdFile.isAbsolute()) {
-        return cmdFile.exists()
-    }
-    def pathEnv = System.getenv("PATH")
-    if (pathEnv == null || pathEnv.isBlank()) {
-        return false
-    }
-    def separator = java.util.regex.Pattern.quote(File.pathSeparator)
-    return pathEnv.split(separator).any { new File(it, cmd).exists() }
-}
-
-def shouldRunWebUiTasks = {
-    if (!webUiDir.exists() || !file("${webUiDir}/package.json").exists()) {
-        if (!webUiSkipLogged) {
-            logger.lifecycle("Skipping web UI build: web-ui package.json not found.")
-            webUiSkipLogged = true
-        }
-        return false
-    }
-    if (skipWebUi) {
-        if (!webUiSkipLogged) {
-            logger.lifecycle("Skipping web UI build: skipWebUi=true.")
-            webUiSkipLogged = true
-        }
-        return false
-    }
-    if (!npmAvailable()) {
-        if (!webUiSkipLogged) {
-            logger.warn("Skipping web UI build: npm not found. Install Node.js or set -PnpmCommand=/path/to/npm.")
-            webUiSkipLogged = true
-        }
-        return false
-    }
-    return true
-}
-
-tasks.register("webUiInstall", Exec) {
-    workingDir webUiDir
-    commandLine npmCommand, "install"
-    inputs.file(file("${webUiDir}/package.json"))
-    outputs.dir(file("${webUiDir}/node_modules"))
-    onlyIf { shouldRunWebUiTasks() }
-}
-
-tasks.register("webUiBuild", Exec) {
-    workingDir webUiDir
-    commandLine npmCommand, "run", "build"
-    dependsOn tasks.named("webUiInstall")
-    inputs.dir(file("${webUiDir}/src"))
-    inputs.file(file("${webUiDir}/index.html"))
-    inputs.file(file("${webUiDir}/vite.config.js"))
-    inputs.file(file("${webUiDir}/svelte.config.js"))
-    inputs.file(file("${webUiDir}/package.json"))
-    outputs.dir(file("src/main/resources/web-ui"))
-    onlyIf { shouldRunWebUiTasks() }
-}
-
-processResources.dependsOn tasks.named("webUiBuild")
-tasks.named("sourcesJar") {
-    dependsOn tasks.named("webUiBuild")
 }

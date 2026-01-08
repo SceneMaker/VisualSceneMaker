@@ -1,12 +1,11 @@
 plugins {
     id 'java'
-    id 'org.openjfx.javafxplugin'
+    id 'org.openjfx.javafxplugin' version '0.1.0'
 }
 
 group 'de.dfki'
 version '4.0.1'
 
-sourceCompatibility = JavaVersion.VERSION_21
 
 repositories {
     mavenCentral()

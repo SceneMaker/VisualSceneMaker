@@ -1,7 +1,7 @@
 # Repository Guidelines
 
 ## Project Structure & Module Organization
-The main application lives under `src/main/java` with resources in `src/main/resources`. Unit tests are in `src/test/java` (for example, `de/dfki/vsm/xtension/decad/*Test.java`). The Gradle multi-project layout includes the core engine in `core/` and optional extensions under `plugins/` (for example, `plugins/DriveSimulator`). Shared assets and bundled jars live in `res/` and `lib/`. `FaceDetection/` and `swi/` contain auxiliary components, and `doc/` holds documentation. Build outputs go to `build/`.
+The main application lives under `src/main/java` with resources in `src/main/resources`. Unit tests are in `src/test/java` (for example, `de/dfki/vsm/xtension/decad/*Test.java`). The Gradle multi-project layout includes the core engine in `core/` and optional extensions under `plugins/` (for example, `plugins/DriveSimulator`). Shared assets and bundled jars live in `res/` and `lib/`. `swi/` contains auxiliary components, and `doc/` holds documentation. Build outputs go to `build/`.
 
 ## Build, Test, and Development Commands
 - `./gradlew build` compiles all modules, runs tests, and produces jars.

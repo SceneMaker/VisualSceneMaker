@@ -15,8 +15,8 @@ targetCompatibility = JavaVersion.VERSION_21
 sourceCompatibility = JavaVersion.VERSION_21
 
 dependencies {
-    implementation files('../lib/JCup.jar')
-    implementation files('../lib/JFlex.jar')
+    compileOnly group: 'com.github.vbmacher', name: 'java-cup-runtime', version: '11b-20160615'
+    runtimeOnly group: 'com.github.vbmacher', name: 'java-cup-runtime', version: '11b-20160615'
     // https://mvnrepository.com/artifact/jpl/jpl
     implementation group: 'jpl', name: 'jpl', version: '7.4.0'
     // https://mvnrepository.com/artifact/org.jetbrains/annotations

@@ -9,8 +9,6 @@ repositories {
     mavenCentral()
 }
 
-sourceCompatibility = JavaVersion.VERSION_21
-targetCompatibility = JavaVersion.VERSION_21
 
 // Exclude the `node_modules` folder, which is possibly created by `npm` when building the React web app.
 sourceSets {

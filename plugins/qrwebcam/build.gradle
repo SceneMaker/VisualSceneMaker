@@ -1,0 +1,19 @@
+plugins {
+    id 'java'
+}
+
+group 'de.dfki'
+version '1.0.0'
+
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation project(":core")
+    implementation project(":plugins:extensionAPI")
+    implementation group: 'com.github.sarxos', name: 'webcam-capture', version: '0.3.12'
+    implementation group: 'com.google.zxing', name: 'core', version: '2.0'
+    implementation group: 'com.google.zxing', name: 'javase', version: '2.0'
+}
