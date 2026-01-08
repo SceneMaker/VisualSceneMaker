@@ -68,17 +68,6 @@ import de.dfki.vsm.model.sceneflow.glue.command.expression.variable.SimpleVariab
 import de.dfki.vsm.model.scenescript.SceneObject;
 import de.dfki.vsm.model.scenescript.SceneScript;
 import de.dfki.vsm.model.scenescript.ScriptDiagnostics;
-import de.dfki.vsm.event.EventDispatcher;
-import de.dfki.vsm.event.EventListener;
-import de.dfki.vsm.event.EventObject;
-import de.dfki.vsm.event.event.EdgeExecutedEvent;
-import de.dfki.vsm.event.event.NodeExecutedEvent;
-import de.dfki.vsm.event.event.NodeStartedEvent;
-import de.dfki.vsm.event.event.NodeTerminatedEvent;
-import de.dfki.vsm.event.event.ProjectChangedEvent;
-import de.dfki.vsm.event.event.SceneStoppedEvent;
-import de.dfki.vsm.event.event.TimeoutEdgeStartedEvent;
-import de.dfki.vsm.event.event.VariableChangedEvent;
 import de.dfki.vsm.model.visicon.VisiconAgent;
 import de.dfki.vsm.model.visicon.VisiconConfig;
 import de.dfki.vsm.model.visicon.VisiconViseme;
@@ -144,7 +133,7 @@ import java.util.function.Supplier;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
-public final class WebUiServer implements EventListener, UiEventListener {
+public final class WebUiServer implements UiEventListener {
 
     private static final WebUiServer INSTANCE = new WebUiServer();
     private static final int DEFAULT_PORT = 8090;
@@ -237,7 +226,6 @@ public final class WebUiServer implements EventListener, UiEventListener {
 
         mApp.start(mBindHost, mPort);
         mStarted = true;
-        EventDispatcher.getInstance().register(this);
         mUiEventBus.addListener(this);
         updateUiProtocolActive();
 
@@ -250,87 +238,11 @@ public final class WebUiServer implements EventListener, UiEventListener {
         if (!mStarted || mApp == null) {
             return;
         }
-        EventDispatcher.getInstance().remove(this);
         mUiEventBus.removeListener(this);
         mUiEventBus.setActive(false);
         mApp.stop();
         mBroadcastExecutor.shutdownNow();
         mStarted = false;
-    }
-
-    @Override
-    public void update(EventObject event) {
-        if (event instanceof VariableChangedEvent) {
-            Tuple<String, String> pair = ((VariableChangedEvent) event).getVarValue();
-            if (pair == null) {
-                return;
-            }
-            String name = pair.getFirst();
-            if (name == null || name.isBlank()) {
-                return;
-            }
-            String value = sanitizeVariableValue(pair.getSecond());
-            JSONObject payload = new JSONObject();
-            payload.put("name", name);
-            payload.put("value", value);
-            addProjectId(payload);
-            broadcastEvent("Runtime.VariableChanged", payload, null);
-            return;
-        }
-        if (event instanceof SceneStoppedEvent) {
-            JSONObject payload = new JSONObject();
-            addProjectId(payload);
-            broadcastEvent("SceneFlow.Runtime.Stopped", payload, null);
-            return;
-        }
-        if (event instanceof NodeStartedEvent) {
-            BasicNode node = ((NodeStartedEvent) event).getNode();
-            JSONObject payload = nodeActivityPayload(node);
-            broadcastEvent("SceneFlow.Node.Started", payload, null);
-            return;
-        }
-        if (event instanceof NodeExecutedEvent || event instanceof NodeTerminatedEvent) {
-            BasicNode node = event instanceof NodeExecutedEvent
-                    ? ((NodeExecutedEvent) event).getNode()
-                    : ((NodeTerminatedEvent) event).getNode();
-            JSONObject payload = nodeActivityPayload(node);
-            broadcastEvent("SceneFlow.Node.Stopped", payload, null);
-            return;
-        }
-        if (event instanceof EdgeExecutedEvent) {
-            AbstractEdge edge = ((EdgeExecutedEvent) event).getEdge();
-            JSONObject payload = edgeActivityPayload(edge);
-            broadcastEvent("SceneFlow.Edge.Executed", payload, null);
-            return;
-        }
-        if (event instanceof ProjectChangedEvent) {
-            JSONObject payload = callOnEdt(() -> {
-                EditorInstance instance = EditorInstance.getInstance();
-                ProjectEditor editor = instance.getSelectedProjectEditor();
-                if (editor == null || editor.getEditorProject() == null) {
-                    return null;
-                }
-                JSONObject config = configToJson(editor.getEditorProject());
-                config.put("projectId", projectIdFor(editor));
-                return config;
-            });
-            if (payload != null) {
-                broadcastEvent("Config.Changed", payload, null);
-            }
-            return;
-        }
-        if (event instanceof TimeoutEdgeStartedEvent) {
-            TimeoutEdgeStartedEvent timeoutEvent = (TimeoutEdgeStartedEvent) event;
-            TimeoutEdge edge = timeoutEvent.getEdge();
-            if (edge == null) {
-                return;
-            }
-            JSONObject payload = edgeActivityPayload(edge);
-            payload.put("timeoutMs", timeoutEvent.getTimeoutMs());
-            payload.put("startedAt", timeoutEvent.getStartedAt());
-            broadcastEvent("SceneFlow.Timeout.Started", payload, null);
-            return;
-        }
     }
 
     @Override
@@ -350,7 +262,11 @@ public final class WebUiServer implements EventListener, UiEventListener {
         message.put("event", event.getEvent());
         message.put("ts", event.getTimestamp());
         message.put("seq", event.getSequence());
-        message.put("payload", wrapPayload(event.getPayload()));
+        Object payload = event.getPayload();
+        if (event.getChannel() == UiChannel.RUNTIME) {
+            payload = attachProjectId(payload, mLastRuntimeProjectId);
+        }
+        message.put("payload", wrapPayload(payload));
         broadcast(message);
     }
 
@@ -360,6 +276,41 @@ public final class WebUiServer implements EventListener, UiEventListener {
         }
         Object wrapped = JSONObject.wrap(payload);
         return wrapped == null ? new JSONObject() : wrapped;
+    }
+
+    private Object attachProjectId(Object payload, String projectId) {
+        if (projectId == null || projectId.isBlank()) {
+            return payload;
+        }
+        if (payload instanceof JSONObject) {
+            JSONObject json = new JSONObject();
+            JSONObject existing = (JSONObject) payload;
+            for (String key : existing.keySet()) {
+                json.put(key, existing.get(key));
+            }
+            if (!json.has("projectId")) {
+                json.put("projectId", projectId);
+            }
+            return json;
+        }
+        if (payload instanceof Map) {
+            Map<?, ?> raw = (Map<?, ?>) payload;
+            Map<String, Object> map = new LinkedHashMap<>();
+            for (Map.Entry<?, ?> entry : raw.entrySet()) {
+                if (entry.getKey() != null) {
+                    map.put(entry.getKey().toString(), entry.getValue());
+                }
+            }
+            map.putIfAbsent("projectId", projectId);
+            return map;
+        }
+        if (payload == null) {
+            return new JSONObject().put("projectId", projectId);
+        }
+        JSONObject json = new JSONObject();
+        json.put("projectId", projectId);
+        json.put("value", payload);
+        return json;
     }
 
     private void updateUiProtocolActive() {
@@ -374,6 +325,96 @@ public final class WebUiServer implements EventListener, UiEventListener {
         emitUiScriptSnapshot(projectId);
         emitUiScriptElements(projectId);
         emitUiSceneFlowSnapshot(projectId, null);
+    }
+
+    private void emitUiProjectLoaded(JSONObject projectJson) {
+        if (projectJson == null) {
+            return;
+        }
+        JSONObject payload = new JSONObject();
+        payload.put("project", projectSummary(projectJson));
+        mUiEventBus.emitLazy(() -> UiEvent.create(UiChannel.PROJECT, "project.loaded", payload));
+    }
+
+    private void emitUiProjectSaved(JSONObject projectJson) {
+        if (projectJson == null) {
+            return;
+        }
+        JSONObject payload = new JSONObject();
+        String path = projectPath(projectJson);
+        if (path == null) {
+            payload.put("path", JSONObject.NULL);
+        } else {
+            payload.put("path", path);
+        }
+        payload.put("dirty", projectJson.optBoolean("dirty", false));
+        String projectId = projectJson.optString("projectId", "");
+        if (!projectId.isBlank()) {
+            payload.put("projectId", projectId);
+        }
+        mUiEventBus.emitLazy(() -> UiEvent.create(UiChannel.PROJECT, "project.saved", payload));
+    }
+
+    private void emitUiProjectClosed(String projectId) {
+        if (projectId == null || projectId.isBlank()) {
+            return;
+        }
+        JSONObject payload = new JSONObject();
+        payload.put("projectId", projectId);
+        mUiEventBus.emitLazy(() -> UiEvent.create(UiChannel.PROJECT, "project.closed", payload));
+    }
+
+    private void emitUiProjectDirty(String projectId, boolean dirty, List<String> areas) {
+        JSONObject payload = new JSONObject();
+        payload.put("dirty", dirty);
+        if (projectId != null && !projectId.isBlank()) {
+            payload.put("projectId", projectId);
+        }
+        if (areas != null && !areas.isEmpty()) {
+            payload.put("areas", areas);
+        }
+        mUiEventBus.emitLazy(() -> UiEvent.create(UiChannel.PROJECT, "project.dirty", payload));
+    }
+
+    private void emitUiPreferences(JSONObject response) {
+        if (response == null) {
+            return;
+        }
+        mUiEventBus.emitLazy(() -> UiEvent.create(UiChannel.SYSTEM, "system.preferences", response));
+    }
+
+    private JSONObject projectSummary(JSONObject projectJson) {
+        JSONObject summary = new JSONObject();
+        if (projectJson == null) {
+            return summary;
+        }
+        String projectId = projectJson.optString("projectId", "");
+        if (!projectId.isBlank()) {
+            summary.put("id", projectId);
+        }
+        String name = projectJson.optString("name", "");
+        if (!name.isBlank()) {
+            summary.put("name", name);
+        }
+        String path = projectPath(projectJson);
+        if (path == null) {
+            summary.put("path", JSONObject.NULL);
+        } else {
+            summary.put("path", path);
+        }
+        summary.put("dirty", projectJson.optBoolean("dirty", false));
+        return summary;
+    }
+
+    private String projectPath(JSONObject projectJson) {
+        if (projectJson == null || projectJson.isNull("path")) {
+            return null;
+        }
+        String path = projectJson.optString("path", null);
+        if (path == null || path.isBlank()) {
+            return null;
+        }
+        return path;
     }
 
     private void emitUiProjectConfig(String projectId) {
@@ -474,90 +515,31 @@ public final class WebUiServer implements EventListener, UiEventListener {
         mUiEventBus.emitLazy(() -> UiEvent.create(UiChannel.SCENEFLOW, "sceneflow.snapshot", snapshot));
     }
 
-    private void addProjectId(JSONObject payload) {
-        String projectId = resolveVariableProjectId();
-        if (projectId != null && !projectId.isBlank()) {
-            payload.put("projectId", projectId);
+    private void emitUiRuntimeState(String projectId) {
+        JSONObject payload = callOnEdt(() -> runtimeStatePayload(projectId));
+        if (payload == null) {
+            return;
         }
+        mUiEventBus.emitLazy(() -> UiEvent.create(UiChannel.RUNTIME, "runtime.state", payload));
     }
 
-    private JSONObject nodeActivityPayload(BasicNode node) {
-        JSONObject payload = new JSONObject();
-        if (node != null) {
-            payload.put("nodeId", node.getId());
-            SuperNode parent = node.getParentNode();
-            if (parent != null) {
-                payload.put("parentId", parent.getId());
-            }
-        }
-        addProjectId(payload);
-        return payload;
-    }
-
-    private JSONObject edgeActivityPayload(AbstractEdge edge) {
-        JSONObject payload = new JSONObject();
-        if (edge != null) {
-            String sourceId = edge.getSourceUnid();
-            if (sourceId == null || sourceId.isBlank()) {
-                sourceId = edge.getSourceNode() != null ? edge.getSourceNode().getId() : "";
-            }
-            String targetId = edge.getTargetUnid();
-            if (targetId == null || targetId.isBlank()) {
-                targetId = edge.getTargetNode() != null ? edge.getTargetNode().getId() : "";
-            }
-            if (sourceId != null && !sourceId.isBlank()) {
-                payload.put("sourceId", sourceId);
-            }
-            if (targetId != null && !targetId.isBlank()) {
-                payload.put("targetId", targetId);
-            }
-            payload.put("edgeType", edgeType(edge));
-            SuperNode owner = resolveEdgeOwner(edge);
-            if (owner != null) {
-                payload.put("superNodeId", owner.getId());
-                String edgeId = edgeActivityId(edge, owner);
-                if (edgeId != null) {
-                    payload.put("edgeId", edgeId);
-                }
-            }
-        }
-        addProjectId(payload);
-        return payload;
-    }
-
-    private SuperNode resolveEdgeOwner(AbstractEdge edge) {
-        if (edge == null) {
+    private JSONObject runtimeStatePayload(String projectId) {
+        if (projectId == null || projectId.isBlank()) {
             return null;
         }
-        BasicNode source = edge.getSourceNode();
-        if (source != null && source.getParentNode() != null) {
-            return source.getParentNode();
-        }
-        BasicNode target = edge.getTargetNode();
-        if (target != null && target.getParentNode() != null) {
-            return target.getParentNode();
-        }
-        return null;
-    }
-
-    private String edgeActivityId(AbstractEdge edge, SuperNode owner) {
-        if (edge == null || owner == null) {
+        EditorInstance instance = EditorInstance.getInstance();
+        ProjectEditor editor = findProjectEditorById(projectId, instance);
+        if (editor == null || editor.getEditorProject() == null) {
             return null;
         }
-        int index = 0;
-        for (BasicNode node : owner.getNodeAndSuperNodeList()) {
-            for (AbstractEdge candidate : node.getEdgeList()) {
-                if (candidate == edge) {
-                    return "E" + index;
-                }
-                index += 1;
-            }
-        }
-        return null;
-    }
-
-    private String resolveVariableProjectId() {
-        return mLastRuntimeProjectId;
+        EditorProject project = editor.getEditorProject();
+        String status = project.isRunning()
+                ? (project.isPaused() ? "paused" : "running")
+                : "stopped";
+        JSONObject payload = new JSONObject();
+        payload.put("projectId", projectId);
+        payload.put("status", status);
+        return payload;
     }
 
     public String getToken() {
@@ -805,7 +787,7 @@ public final class WebUiServer implements EventListener, UiEventListener {
         }
 
         writeJson(ctx, projectJson);
-        broadcastEvent("Project.Opened", projectJson, null);
+        emitUiProjectLoaded(projectJson);
         emitUiProjectState(projectJson.optString("projectId", null));
     }
 
@@ -849,7 +831,7 @@ public final class WebUiServer implements EventListener, UiEventListener {
         }
 
         writeJson(ctx, projectJson);
-        broadcastEvent("Project.Opened", projectJson, null);
+        emitUiProjectLoaded(projectJson);
         emitUiProjectState(projectJson.optString("projectId", null));
     }
 
@@ -891,7 +873,7 @@ public final class WebUiServer implements EventListener, UiEventListener {
             return;
         }
         writeJson(ctx, projectJson);
-        broadcastEvent("Project.DirtyChanged", new JSONObject().put("projectId", projectId).put("dirty", false), null);
+        emitUiProjectSaved(projectJson);
     }
 
     private void handleSaveAsProject(Context ctx) {
@@ -936,7 +918,7 @@ public final class WebUiServer implements EventListener, UiEventListener {
             return;
         }
         writeJson(ctx, projectJson);
-        broadcastEvent("Project.DirtyChanged", new JSONObject().put("projectId", projectId).put("dirty", false), null);
+        emitUiProjectSaved(projectJson);
     }
 
     private void handleCloseProject(Context ctx) {
@@ -957,7 +939,7 @@ public final class WebUiServer implements EventListener, UiEventListener {
         response.put("closed", true);
         response.put("projectId", projectId);
         writeJson(ctx, response);
-        broadcastEvent("Project.Closed", new JSONObject().put("projectId", projectId), null);
+        emitUiProjectClosed(projectId);
     }
 
     private void handleProjectDetail(Context ctx) {
@@ -1050,7 +1032,6 @@ public final class WebUiServer implements EventListener, UiEventListener {
             return;
         }
         writeJson(ctx, snapshot);
-        broadcastEvent("SceneFlow.PathChanged", new JSONObject().put("projectId", projectId).put("superNodeId", superNodeId), null);
         emitUiSceneFlowSnapshot(snapshot);
     }
 
@@ -1546,7 +1527,7 @@ public final class WebUiServer implements EventListener, UiEventListener {
                         return;
                     }
                     sendResponse(ctx, requestId, name, project);
-                    broadcastEvent("Project.Opened", project, sourceClientId);
+                    emitUiProjectLoaded(project);
                     emitUiProjectState(project.optString("projectId", null));
                     return;
                 }
@@ -1585,7 +1566,7 @@ public final class WebUiServer implements EventListener, UiEventListener {
                         return;
                     }
                     sendResponse(ctx, requestId, name, project);
-                    broadcastEvent("Project.Opened", project, sourceClientId);
+                    emitUiProjectLoaded(project);
                     emitUiProjectState(project.optString("projectId", null));
                     return;
                 }
@@ -1629,7 +1610,7 @@ public final class WebUiServer implements EventListener, UiEventListener {
                         return;
                     }
                     sendResponse(ctx, requestId, name, project);
-                    broadcastEvent("Project.DirtyChanged", new JSONObject().put("projectId", projectId).put("dirty", false), sourceClientId);
+                    emitUiProjectSaved(project);
                     return;
                 }
                 case "Project.SaveAs": {
@@ -1670,7 +1651,7 @@ public final class WebUiServer implements EventListener, UiEventListener {
                         return;
                     }
                     sendResponse(ctx, requestId, name, project);
-                    broadcastEvent("Project.DirtyChanged", new JSONObject().put("projectId", projectId).put("dirty", false), sourceClientId);
+                    emitUiProjectSaved(project);
                     return;
                 }
                 case "Project.Close": {
@@ -1692,7 +1673,7 @@ public final class WebUiServer implements EventListener, UiEventListener {
                         return;
                     }
                     sendResponse(ctx, requestId, name, new JSONObject().put("projectId", projectId));
-                    broadcastEvent("Project.Closed", new JSONObject().put("projectId", projectId), sourceClientId);
+                    emitUiProjectClosed(projectId);
                     return;
                 }
                 case "Project.Activate": {
@@ -1719,7 +1700,7 @@ public final class WebUiServer implements EventListener, UiEventListener {
                         return;
                     }
                     sendResponse(ctx, requestId, name, project);
-                    broadcastEvent("Project.Activated", project, sourceClientId);
+                    emitUiProjectLoaded(project);
                     emitUiProjectState(project.optString("projectId", null));
                     return;
                 }
@@ -1768,7 +1749,6 @@ public final class WebUiServer implements EventListener, UiEventListener {
                         return;
                     }
                     sendResponse(ctx, requestId, name, snapshot);
-                    broadcastEvent("SceneFlow.PathChanged", new JSONObject().put("projectId", projectId).put("superNodeId", superNodeId), sourceClientId);
                     return;
                 }
                 case "SceneFlow.Node.Create": {
@@ -1870,7 +1850,7 @@ public final class WebUiServer implements EventListener, UiEventListener {
                         return;
                     }
                     sendResponse(ctx, requestId, name, response);
-                    broadcastDirtyIfPresent(response, projectId, sourceClientId);
+                    broadcastDirtyIfPresent(response, projectId);
                     return;
                 }
                 case "SceneFlow.Node.Update": {
@@ -2350,7 +2330,7 @@ public final class WebUiServer implements EventListener, UiEventListener {
                         return;
                     }
                     sendResponse(ctx, requestId, name, response);
-                    broadcastDirtyIfPresent(response, projectId, sourceClientId);
+                    broadcastDirtyIfPresent(response, projectId);
                     return;
                 }
                 case "SceneFlow.Node.TypeDef.Add": {
@@ -2424,7 +2404,7 @@ public final class WebUiServer implements EventListener, UiEventListener {
                         return;
                     }
                     sendResponse(ctx, requestId, name, response);
-                    broadcastDirtyIfPresent(response, projectId, sourceClientId);
+                    broadcastDirtyIfPresent(response, projectId);
                     return;
                 }
                 case "SceneFlow.Node.TypeDef.Update": {
@@ -2501,7 +2481,7 @@ public final class WebUiServer implements EventListener, UiEventListener {
                         return;
                     }
                     sendResponse(ctx, requestId, name, response);
-                    broadcastDirtyIfPresent(response, projectId, sourceClientId);
+                    broadcastDirtyIfPresent(response, projectId);
                     return;
                 }
                 case "SceneFlow.Node.TypeDef.Delete": {
@@ -2571,7 +2551,7 @@ public final class WebUiServer implements EventListener, UiEventListener {
                         return;
                     }
                     sendResponse(ctx, requestId, name, response);
-                    broadcastDirtyIfPresent(response, projectId, sourceClientId);
+                    broadcastDirtyIfPresent(response, projectId);
                     return;
                 }
                 case "SceneFlow.Node.TypeDef.Move": {
@@ -2650,7 +2630,7 @@ public final class WebUiServer implements EventListener, UiEventListener {
                         return;
                     }
                     sendResponse(ctx, requestId, name, response);
-                    broadcastDirtyIfPresent(response, projectId, sourceClientId);
+                    broadcastDirtyIfPresent(response, projectId);
                     return;
                 }
                 case "SceneFlow.Node.VarDef.Add": {
@@ -2724,7 +2704,7 @@ public final class WebUiServer implements EventListener, UiEventListener {
                         return;
                     }
                     sendResponse(ctx, requestId, name, response);
-                    broadcastDirtyIfPresent(response, projectId, sourceClientId);
+                    broadcastDirtyIfPresent(response, projectId);
                     return;
                 }
                 case "SceneFlow.Node.VarDef.Update": {
@@ -2801,7 +2781,7 @@ public final class WebUiServer implements EventListener, UiEventListener {
                         return;
                     }
                     sendResponse(ctx, requestId, name, response);
-                    broadcastDirtyIfPresent(response, projectId, sourceClientId);
+                    broadcastDirtyIfPresent(response, projectId);
                     return;
                 }
                 case "SceneFlow.Node.VarDef.Delete": {
@@ -2871,7 +2851,7 @@ public final class WebUiServer implements EventListener, UiEventListener {
                         return;
                     }
                     sendResponse(ctx, requestId, name, response);
-                    broadcastDirtyIfPresent(response, projectId, sourceClientId);
+                    broadcastDirtyIfPresent(response, projectId);
                     return;
                 }
                 case "SceneFlow.Node.VarDef.Move": {
@@ -2950,7 +2930,7 @@ public final class WebUiServer implements EventListener, UiEventListener {
                         return;
                     }
                     sendResponse(ctx, requestId, name, response);
-                    broadcastDirtyIfPresent(response, projectId, sourceClientId);
+                    broadcastDirtyIfPresent(response, projectId);
                     return;
                 }
                 case "SceneFlow.Node.Cmd.Add": {
@@ -3024,7 +3004,7 @@ public final class WebUiServer implements EventListener, UiEventListener {
                         return;
                     }
                     sendResponse(ctx, requestId, name, response);
-                    broadcastDirtyIfPresent(response, projectId, sourceClientId);
+                    broadcastDirtyIfPresent(response, projectId);
                     return;
                 }
                 case "SceneFlow.Node.Cmd.Update": {
@@ -3101,7 +3081,7 @@ public final class WebUiServer implements EventListener, UiEventListener {
                         return;
                     }
                     sendResponse(ctx, requestId, name, response);
-                    broadcastDirtyIfPresent(response, projectId, sourceClientId);
+                    broadcastDirtyIfPresent(response, projectId);
                     return;
                 }
                 case "SceneFlow.Node.Cmd.Delete": {
@@ -3171,7 +3151,7 @@ public final class WebUiServer implements EventListener, UiEventListener {
                         return;
                     }
                     sendResponse(ctx, requestId, name, response);
-                    broadcastDirtyIfPresent(response, projectId, sourceClientId);
+                    broadcastDirtyIfPresent(response, projectId);
                     return;
                 }
                 case "SceneFlow.Node.Cmd.Move": {
@@ -3250,7 +3230,7 @@ public final class WebUiServer implements EventListener, UiEventListener {
                         return;
                     }
                     sendResponse(ctx, requestId, name, response);
-                    broadcastDirtyIfPresent(response, projectId, sourceClientId);
+                    broadcastDirtyIfPresent(response, projectId);
                     return;
                 }
                 case "SceneFlow.Comment.Create": {
@@ -3744,7 +3724,7 @@ public final class WebUiServer implements EventListener, UiEventListener {
                         return;
                     }
                     sendResponse(ctx, requestId, name, response);
-                    broadcastDirtyIfPresent(response, projectId, sourceClientId);
+                    broadcastDirtyIfPresent(response, projectId);
                     return;
                 }
                 case "SceneFlow.Edge.Delete": {
@@ -3853,7 +3833,7 @@ public final class WebUiServer implements EventListener, UiEventListener {
                     }
                     JSONObject payloadResp = new JSONObject().put("projectId", projectId);
                     sendResponse(ctx, requestId, name, payloadResp);
-                    broadcastEvent("Runtime.StateChanged", new JSONObject().put("projectId", projectId), sourceClientId);
+                    emitUiRuntimeState(projectId);
                     return;
                 }
                 case "Preferences.Update": {
@@ -3868,7 +3848,7 @@ public final class WebUiServer implements EventListener, UiEventListener {
                         return;
                     }
                     sendResponse(ctx, requestId, name, response);
-                    broadcastEvent("Preferences.Changed", response, sourceClientId);
+                    emitUiPreferences(response);
                     return;
                 }
                 case "Config.Update": {
@@ -3884,7 +3864,7 @@ public final class WebUiServer implements EventListener, UiEventListener {
                         return;
                     }
                     sendResponse(ctx, requestId, name, response);
-                    broadcastEvent("Config.Changed", response.put("projectId", projectId), sourceClientId);
+                    emitUiProjectConfig(projectId);
                     return;
                 }
                 case "ProjectConfig.Update": {
@@ -3900,7 +3880,6 @@ public final class WebUiServer implements EventListener, UiEventListener {
                         return;
                     }
                     sendResponse(ctx, requestId, name, response);
-                    broadcastEvent("ProjectConfig.Changed", response.put("projectId", projectId), sourceClientId);
                     emitUiProjectConfig(projectId);
                     return;
                 }
@@ -3920,11 +3899,10 @@ public final class WebUiServer implements EventListener, UiEventListener {
                     }
                     sendResponse(ctx, requestId, name, response);
                     if (response.optBoolean("applied")) {
-                        broadcastEvent("Script.Changed", response.put("projectId", projectId), sourceClientId);
                         emitUiScriptSnapshot(projectId);
                         if (response.has("dirty")) {
                             boolean dirty = response.getBoolean("dirty");
-                            broadcastEvent("Project.DirtyChanged", new JSONObject().put("projectId", projectId).put("dirty", dirty), sourceClientId);
+                            emitUiProjectDirty(projectId, dirty, List.of("script"));
                         }
                     }
                     return;
@@ -5186,23 +5164,12 @@ public final class WebUiServer implements EventListener, UiEventListener {
         payload.put("dirty", editor.getEditorProject().hasChanged());
     }
 
-    private void broadcastDirtyIfPresent(JSONObject response, String projectId, String sourceClientId) {
+    private void broadcastDirtyIfPresent(JSONObject response, String projectId) {
         if (response == null || projectId == null || projectId.isBlank() || !response.has("dirty")) {
             return;
         }
         boolean dirty = response.optBoolean("dirty", false);
-        broadcastEvent("Project.DirtyChanged", new JSONObject().put("projectId", projectId).put("dirty", dirty), sourceClientId);
-    }
-
-    private void broadcastEvent(String name, JSONObject payload, String sourceClientId) {
-        JSONObject event = new JSONObject();
-        event.put("type", "event");
-        event.put("name", name);
-        event.put("payload", payload == null ? new JSONObject() : payload);
-        if (sourceClientId != null && !sourceClientId.isBlank()) {
-            event.put("sourceClientId", sourceClientId);
-        }
-        broadcast(event);
+        emitUiProjectDirty(projectId, dirty, List.of("sceneflow"));
     }
 
     private void broadcast(JSONObject message) {

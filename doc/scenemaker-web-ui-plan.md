@@ -78,6 +78,7 @@ Next
 2) Expand edge editing.
    - More control-point tools and UX affordances.
    - Better edge selection handles.
+   - TODO: Multi-edge straighten that preserves separate paths (avoid overlapping edges).
 3) SceneFlow preferences and project configuration.
    - Expose SceneFlow preference handling (grid, sizes, etc.).
    - Project configuration editing in the web UI.

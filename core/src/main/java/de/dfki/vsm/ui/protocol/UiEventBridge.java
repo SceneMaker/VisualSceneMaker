@@ -8,9 +8,12 @@ import de.dfki.vsm.event.event.EdgeSelectedEvent;
 import de.dfki.vsm.event.event.FunctionCreatedEvent;
 import de.dfki.vsm.event.event.FunctionModifiedEvent;
 import de.dfki.vsm.event.event.FunctionRemovedEvent;
+import de.dfki.vsm.event.event.NodeExecutedEvent;
 import de.dfki.vsm.event.event.NodeStartedEvent;
+import de.dfki.vsm.event.event.NodeTerminatedEvent;
 import de.dfki.vsm.event.event.NodeSelectedEvent;
 import de.dfki.vsm.event.event.ProjectChangedEvent;
+import de.dfki.vsm.event.event.SceneStoppedEvent;
 import de.dfki.vsm.event.event.TimeoutEdgeStartedEvent;
 import de.dfki.vsm.event.event.VariableChangedEvent;
 import de.dfki.vsm.event.event.WorkSpaceSelectedEvent;
@@ -101,6 +104,22 @@ public final class UiEventBridge implements EventListener {
                 return;
             }
             mSink.emitLazy(() -> UiEvent.create(UiChannel.RUNTIME, "runtime.nodeActive", nodePayload(node)));
+            return;
+        }
+        if (event instanceof NodeExecutedEvent || event instanceof NodeTerminatedEvent) {
+            BasicNode node = event instanceof NodeExecutedEvent
+                    ? ((NodeExecutedEvent) event).getNode()
+                    : ((NodeTerminatedEvent) event).getNode();
+            if (node == null) {
+                return;
+            }
+            mSink.emitLazy(() -> UiEvent.create(UiChannel.RUNTIME, "runtime.nodeStopped", nodePayload(node)));
+            return;
+        }
+        if (event instanceof SceneStoppedEvent) {
+            Map<String, Object> payload = new LinkedHashMap<>();
+            payload.put("status", "stopped");
+            mSink.emitLazy(() -> UiEvent.create(UiChannel.RUNTIME, "runtime.state", payload));
             return;
         }
         if (event instanceof EdgeExecutedEvent) {

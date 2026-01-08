@@ -2428,6 +2428,7 @@ summary {
   stroke: #ffffff;
   stroke-width: 5;
   stroke-linejoin: round;
+  pointer-events: none;
 }
 
 .edge-control-line {
@@ -2445,6 +2446,25 @@ summary {
 }
 
 .edge-control-handle:active {
+  cursor: grabbing;
+}
+
+.edge-anchor {
+  fill: rgba(255, 255, 255, 0.85);
+  stroke: var(--edge-color, #827d78);
+  stroke-width: 1.5;
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.edge-bend-handle {
+  fill: #ffffff;
+  stroke: var(--edge-color, #827d78);
+  stroke-width: 2.2;
+  cursor: grab;
+}
+
+.edge-bend-handle:active {
   cursor: grabbing;
 }
 
