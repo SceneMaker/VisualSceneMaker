@@ -96,3 +96,7 @@ Next
    - Refactor web server to depend only on core/runtime (no Swing/editor classes).
    - Identify Android-compatible HTTP/WebSocket server alternative to Javalin/Jetty.
    - Package web UI assets for Android (classpath/assets) and define launch flags.
+9) Agents palette follow-ups.
+   - Read agent types (input/processing/output) from project.xml instead of defaulting to processing.
+   - Map agents to their configured commands in project.xml (replace PlayAction placeholder).
+   - Expand agent drag/drop to respect per-agent type + command metadata.
