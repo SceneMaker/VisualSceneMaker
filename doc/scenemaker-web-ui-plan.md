@@ -100,3 +100,5 @@ Next
    - Read agent types (input/processing/output) from project.xml instead of defaulting to processing.
    - Map agents to their configured commands in project.xml (replace PlayAction placeholder).
    - Expand agent drag/drop to respect per-agent type + command metadata.
+10) Dependency hygiene.
+    - Probe for a newer java-cup-runtime version and update if safe.
