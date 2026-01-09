@@ -62,6 +62,7 @@ import de.dfki.vsm.model.sceneflow.glue.command.expression.literal.BoolLiteral;
 import de.dfki.vsm.model.sceneflow.glue.command.expression.literal.FloatLiteral;
 import de.dfki.vsm.model.sceneflow.glue.command.expression.literal.IntLiteral;
 import de.dfki.vsm.model.sceneflow.glue.command.expression.literal.StringLiteral;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.UnaryExpression;
 import de.dfki.vsm.model.sceneflow.glue.command.expression.record.ArrayExpression;
 import de.dfki.vsm.model.sceneflow.glue.command.expression.record.StructExpression;
 import de.dfki.vsm.model.sceneflow.glue.command.expression.variable.SimpleVariable;
@@ -79,6 +80,7 @@ import de.dfki.vsm.ui.protocol.UiEventBus;
 import de.dfki.vsm.ui.protocol.UiEventListener;
 import de.dfki.vsm.ui.protocol.UiChannel;
 import de.dfki.vsm.ui.protocol.UiProtocol;
+import de.dfki.vsm.util.jpl.JPLEngine;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 import de.dfki.vsm.util.tpl.Tuple;
 import de.dfki.vsm.util.xml.XMLUtilities;
@@ -3836,6 +3838,52 @@ public final class WebUiServer implements UiEventListener {
                     emitUiRuntimeState(projectId);
                     return;
                 }
+                case "Runtime.Variable.Set": {
+                    String projectId = body.optString("projectId", null);
+                    String varName = body.optString("name", null);
+                    String valueExpr = body.optString("value", null);
+                    if (valueExpr == null || valueExpr.isBlank()) {
+                        valueExpr = body.optString("valueExpr", null);
+                    }
+                    final String valueExprResolved = valueExpr;
+                    if (projectId == null || projectId.isBlank()
+                            || varName == null || varName.isBlank()
+                            || valueExprResolved == null || valueExprResolved.isBlank()) {
+                        sendError(ctx, requestId, "BAD_REQUEST", "Missing projectId, name, or value");
+                        return;
+                    }
+                    JSONObject response = callOnEdt(() -> applyRuntimeVariableUpdate(projectId, varName, valueExprResolved));
+                    if (response == null) {
+                        sendError(ctx, requestId, "PROJECT_NOT_FOUND", "Project not found");
+                        return;
+                    }
+                    if (response.has("error")) {
+                        sendError(ctx, requestId, response.getString("error"),
+                                response.optString("message", "Failed to update variable"));
+                        return;
+                    }
+                    sendResponse(ctx, requestId, name, response);
+                    return;
+                }
+                case "Runtime.Query": {
+                    String projectId = body.optString("projectId", null);
+                    String query = body.optString("query", null);
+                    if (projectId == null || projectId.isBlank() || query == null || query.isBlank()) {
+                        sendError(ctx, requestId, "BAD_REQUEST", "Missing projectId or query");
+                        return;
+                    }
+                    ProjectEditor editor = callOnEdt(() -> {
+                        EditorInstance instance = EditorInstance.getInstance();
+                        return findProjectEditorById(projectId, instance);
+                    });
+                    if (editor == null) {
+                        sendError(ctx, requestId, "PROJECT_NOT_FOUND", "Project not found");
+                        return;
+                    }
+                    JSONObject response = applyRuntimeQuery(query);
+                    sendResponse(ctx, requestId, name, response);
+                    return;
+                }
                 case "Preferences.Update": {
                     JSONObject values = body.optJSONObject("values");
                     if (values == null) {
@@ -4882,6 +4930,150 @@ public final class WebUiServer implements UiEventListener {
             error.put("message", exc.getMessage());
             return error;
         }
+    }
+
+    private JSONObject applyRuntimeVariableUpdate(String projectId, String name, String valueExpr) {
+        try {
+            EditorInstance instance = EditorInstance.getInstance();
+            ProjectEditor editor = findProjectEditorById(projectId, instance);
+            if (editor == null || editor.getEditorProject() == null) {
+                return null;
+            }
+            VariableDefinition def = findRuntimeVariableDefinition(editor, name);
+            if (def == null) {
+                JSONObject error = new JSONObject();
+                error.put("error", "VAR_NOT_FOUND");
+                error.put("message", "Variable not found");
+                return error;
+            }
+            Expression exp;
+            try {
+                String trimmedExpr = valueExpr != null ? valueExpr.trim() : "";
+                Object parsed = GlueParser.run(trimmedExpr);
+                if (!(parsed instanceof Expression)) {
+                    JSONObject error = new JSONObject();
+                    error.put("error", "PARSE_FAILED");
+                    error.put("message", "Expression could not be parsed");
+                    return error;
+                }
+                exp = (Expression) parsed;
+            } catch (Exception exc) {
+                JSONObject error = new JSONObject();
+                error.put("error", "PARSE_FAILED");
+                error.put("message", exc.getMessage());
+                return error;
+            }
+            if (!isSupportedRuntimeExpression(exp)) {
+                JSONObject error = new JSONObject();
+                error.put("error", "UNSUPPORTED_EXPRESSION");
+                error.put("message", "Expression type is not supported");
+                return error;
+            }
+            boolean ok = applyRuntimeExpression(editor.getEditorProject(), name, exp);
+            if (!ok) {
+                JSONObject error = new JSONObject();
+                error.put("error", "SET_FAILED");
+                error.put("message", "Failed to update variable");
+                return error;
+            }
+            JSONObject response = new JSONObject();
+            response.put("projectId", projectId);
+            response.put("name", name);
+            String value = resolveVariableValue(editor.getEditorProject(), name);
+            if (value != null) {
+                response.put("value", value);
+            }
+            return response;
+        } catch (Exception exc) {
+            JSONObject error = new JSONObject();
+            error.put("error", "SET_FAILED");
+            error.put("message", exc.getMessage());
+            return error;
+        }
+    }
+
+    private JSONObject applyRuntimeQuery(String query) {
+        JSONObject response = new JSONObject();
+        int count = 0;
+        try {
+            String trimmed = query != null ? query.trim() : "";
+            count = JPLEngine.query(trimmed).size();
+        } catch (Exception exc) {
+            mLogger.failure(exc.toString());
+        }
+        response.put("count", count);
+        return response;
+    }
+
+    private VariableDefinition findRuntimeVariableDefinition(ProjectEditor editor, String name) {
+        if (editor == null || name == null || name.isBlank()) {
+            return null;
+        }
+        EditorProject project = editor.getEditorProject();
+        if (project == null || project.getSceneFlow() == null) {
+            return null;
+        }
+        for (VariableDefinition def : project.getSceneFlow().getVarDefList()) {
+            if (name.equals(def.getName())) {
+                return def;
+            }
+        }
+        SceneFlowManager manager = editor.getSceneFlowEditor().getSceneFlowManager();
+        if (manager == null) {
+            return null;
+        }
+        SuperNode current = manager.getCurrentActiveSuperNode();
+        if (current == null) {
+            return null;
+        }
+        for (VariableDefinition def : current.getVarDefList()) {
+            if (name.equals(def.getName())) {
+                return def;
+            }
+        }
+        return null;
+    }
+
+    private boolean isSupportedRuntimeExpression(Expression exp) {
+        if (exp instanceof BoolLiteral
+                || exp instanceof IntLiteral
+                || exp instanceof FloatLiteral
+                || exp instanceof StringLiteral) {
+            return true;
+        }
+        if (exp instanceof UnaryExpression) {
+            Expression inner = ((UnaryExpression) exp).getExp();
+            return inner instanceof IntLiteral || inner instanceof FloatLiteral;
+        }
+        return false;
+    }
+
+    private boolean applyRuntimeExpression(EditorProject project, String name, Expression exp) {
+        if (exp == null || project == null || name == null || name.isBlank()) {
+            return false;
+        }
+        if (exp instanceof BoolLiteral) {
+            return project.setVariable(name, ((BoolLiteral) exp).getValue());
+        }
+        if (exp instanceof IntLiteral) {
+            return project.setVariable(name, ((IntLiteral) exp).getValue());
+        }
+        if (exp instanceof FloatLiteral) {
+            return project.setVariable(name, ((FloatLiteral) exp).getValue());
+        }
+        if (exp instanceof StringLiteral) {
+            return project.setVariable(name, ((StringLiteral) exp).getValue());
+        }
+        if (exp instanceof UnaryExpression) {
+            Expression inner = ((UnaryExpression) exp).getExp();
+            if (inner instanceof IntLiteral) {
+                return project.setVariable(name, -1 * ((IntLiteral) inner).getValue());
+            }
+            if (inner instanceof FloatLiteral) {
+                return project.setVariable(name, -1 * ((FloatLiteral) inner).getValue());
+            }
+        }
+        return false;
     }
 
     private JSONObject runtimeToJson(ProjectEditor editor) {
