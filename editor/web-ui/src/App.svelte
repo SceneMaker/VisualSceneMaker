@@ -13,6 +13,7 @@
   import IconStart from "./icons/IconStart.svelte";
   import IconStop from "./icons/IconStop.svelte";
   import IconTrash from "./icons/IconTrash.svelte";
+  import IconMonitor from "./icons/IconMonitor.svelte";
 
   const clientId = (() => {
     const existing = localStorage.getItem("vsm_client_id");
@@ -53,6 +54,8 @@
     output:
       "M8.25 9V5.25A2.25 2.25 0 0 1 10.5 3h6a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 16.5 21h-6a2.25 2.25 0 0 1-2.25-2.25V15M12 9l3 3m0 0-3 3m3-3H2.25"
   };
+  const DEFAULT_AGENT_HOST = "localhost";
+  const DEFAULT_AGENT_PORT = "7777";
   const DEFAULT_VAR_BADGE_STATE = {
     visible: true,
     global: { x: 16, y: 12, w: 240, h: 150 },
@@ -732,6 +735,12 @@
   let sceneAgentNames = [];
   let deviceAgentNames = [];
   let agentGroups = { input: [], processing: [], output: [] };
+  let missingAgentNames = [];
+  let missingAgentDialogOpen = false;
+  let missingAgentDrafts = [];
+  let missingAgentDeviceOptions = [];
+  let missingAgentError = "";
+  let missingAgentBusy = false;
   const SELECTION_PREVIEW_LIMIT = 6;
 
   let sceneFlow = null;
@@ -758,6 +767,14 @@
   let runtimeError = "";
   let runtimeLoading = false;
   let runtimeLoaded = false;
+  let monitorDialogOpen = false;
+  let monitorSelectedKey = "";
+  let monitorSelectedVar = null;
+  let monitorValueDraft = "";
+  let monitorQueryDraft = "";
+  let monitorStatus = "";
+  let monitorError = "";
+  let monitorCanEdit = false;
   let lastRuntimeProjectId = "";
   let runtimeValues = {};
   let runtimeInitialValues = {};
@@ -1053,6 +1070,7 @@
   $: runtimeCanPause = wsConnected && !!selectedProjectId && runtimeState === "running";
   $: runtimeCanStop = wsConnected && !!selectedProjectId && runtimeState !== "stopped";
   $: runtimePlayLabel = runtimeState === "paused" ? "Resume" : "Start";
+  $: monitorCanEdit = runtimeState !== "stopped";
   $: infoRevision = info?.revision || info?.buildRevision || info?.build || info?.version || "unknown";
   $: infoRevisionSlug = revisionSlug(infoRevision);
   $: infoBuildDate = info?.buildDate || info?.buildTime || "unknown";
@@ -1076,6 +1094,9 @@
   $: sceneAgentNames = extractSceneAgents(scriptDraft);
   $: deviceAgentNames = extractDeviceAgents(projectConfigAgents);
   $: agentGroups = buildAgentGroups(sceneAgentNames, deviceAgentNames);
+  $: missingAgentNames = extractMissingAgents(sceneAgentNames, projectConfigAgents);
+  $: missingAgentDeviceOptions = buildMissingAgentDeviceOptions(projectConfigPlugins);
+  $: monitorSelectedVar = findMonitorVar(monitorSelectedKey);
   $: prefsPreviewStyle = buildPrefsPreviewStyle(prefsDialogDraft);
   $: projectConfigDirty =
     projectConfigFingerprint(projectConfigDraft) !== projectConfigFingerprint(projectConfig);
@@ -2365,7 +2386,7 @@
     }
   }
 
-  async function runRuntimeCommand(command) {
+  async function executeRuntimeCommand(command) {
     if (!selectedProjectId) return;
     runtimeError = "";
     try {
@@ -2375,6 +2396,15 @@
     } catch (err) {
       runtimeError = err.message || "Failed to update runtime.";
     }
+  }
+
+  async function runRuntimeCommand(command, options = {}) {
+    if (!selectedProjectId) return;
+    if (command === "Runtime.Play" && !options.skipMissingAgentCheck && missingAgentNames.length) {
+      openMissingAgentDialog();
+      return;
+    }
+    await executeRuntimeCommand(command);
   }
 
   function clearSceneFlowActivity() {
@@ -2893,6 +2923,110 @@
       if (globals !== runtimeInfo.globalVariables || locals !== runtimeInfo.localVariables) {
         runtimeInfo = { ...runtimeInfo, globalVariables: globals, localVariables: locals };
       }
+    }
+  }
+
+  function monitorVarKey(scope, name) {
+    return `${scope}:${name}`;
+  }
+
+  function findMonitorVar(key) {
+    if (!key) return null;
+    const [scope, ...rest] = key.split(":");
+    const name = rest.join(":");
+    if (!name) return null;
+    const list = scope === "local" ? runtimeLocals : runtimeGlobals;
+    return list.find((entry) => entry?.name === name) || null;
+  }
+
+  function monitorVarValue(def) {
+    const name = (def?.name || "").trim();
+    const hasLiveValue = Object.prototype.hasOwnProperty.call(runtimeValues, name);
+    const value = normalizeRuntimeValue(hasLiveValue ? runtimeValues[name] : def?.value);
+    const expr = normalizeRuntimeValue(def?.expr);
+    const initial = normalizeRuntimeValue(runtimeInitialValues[name]);
+    const showInitial = hasLiveValue && initial !== "" && value !== initial;
+    const displayValue = value || expr || "—";
+    return { value, initial, showInitial, displayValue };
+  }
+
+  function selectMonitorVar(scope, def) {
+    if (!def?.name) return;
+    monitorSelectedKey = monitorVarKey(scope, def.name);
+    const details = monitorVarValue(def);
+    monitorValueDraft = details.value || (details.displayValue === "—" ? "" : details.displayValue);
+    monitorError = "";
+    monitorStatus = "";
+  }
+
+  function openMonitorDialog() {
+    if (!selectedProjectId) return;
+    monitorDialogOpen = true;
+    monitorError = "";
+    monitorStatus = "";
+    monitorValueDraft = "";
+    if (!runtimeInfo) {
+      loadRuntime(selectedProjectId);
+    }
+    if (!monitorSelectedVar) {
+      if (runtimeGlobals.length) {
+        selectMonitorVar("global", runtimeGlobals[0]);
+      } else if (runtimeLocals.length) {
+        selectMonitorVar("local", runtimeLocals[0]);
+      }
+    }
+  }
+
+  function closeMonitorDialog() {
+    monitorDialogOpen = false;
+    monitorSelectedKey = "";
+    monitorValueDraft = "";
+    monitorStatus = "";
+    monitorError = "";
+  }
+
+  async function applyMonitorValue() {
+    if (!selectedProjectId || !monitorSelectedVar?.name) return;
+    monitorError = "";
+    monitorStatus = "";
+    const value = monitorValueDraft.trim();
+    if (!value) {
+      monitorError = "Enter a value to apply.";
+      return;
+    }
+    try {
+      const response = await sendCommand("Runtime.Variable.Set", {
+        projectId: selectedProjectId,
+        name: monitorSelectedVar.name,
+        value
+      });
+      monitorStatus = "Value updated.";
+      if (response?.value !== undefined) {
+        applyRuntimeVarUpdate(monitorSelectedVar.name, response.value);
+      }
+    } catch (err) {
+      monitorError = err.message || "Failed to update variable.";
+    }
+  }
+
+  async function runMonitorQuery() {
+    if (!selectedProjectId) return;
+    monitorError = "";
+    monitorStatus = "";
+    const query = monitorQueryDraft.trim();
+    if (!query) {
+      monitorError = "Enter a query to run.";
+      return;
+    }
+    try {
+      const response = await sendCommand("Runtime.Query", {
+        projectId: selectedProjectId,
+        query
+      });
+      const count = Number.isFinite(response?.count) ? response.count : 0;
+      monitorStatus = `Query ok: ${count} solution${count === 1 ? "" : "s"}.`;
+    } catch (err) {
+      monitorError = err.message || "Failed to run query.";
     }
   }
 
@@ -3518,6 +3652,21 @@
     return Array.from(map.values()).sort((a, b) => a.localeCompare(b));
   }
 
+  function extractMissingAgents(sceneAgents, agents) {
+    if (!Array.isArray(sceneAgents) || !sceneAgents.length) return [];
+    const configured = new Set();
+    if (Array.isArray(agents)) {
+      for (const agent of agents) {
+        const name = String(agent?.name || "").trim().toLowerCase();
+        if (name) configured.add(name);
+      }
+    }
+    return sceneAgents.filter((name) => {
+      const key = String(name || "").trim().toLowerCase();
+      return key && !configured.has(key);
+    });
+  }
+
   function buildAgentGroups(sceneAgents, deviceAgents) {
     const sceneMap = new Map();
     const deviceMap = new Map();
@@ -3543,6 +3692,103 @@
       processing,
       output
     };
+  }
+
+  function buildMissingAgentDeviceOptions(plugins) {
+    const options = [];
+    const seen = new Set();
+    const addOption = (value, label) => {
+      const trimmed = (value || "").trim();
+      if (!trimmed || seen.has(trimmed)) return;
+      seen.add(trimmed);
+      options.push({ value: trimmed, label: label || trimmed });
+    };
+    if (Array.isArray(plugins)) {
+      for (const plugin of plugins) {
+        addOption(plugin?.name, plugin?.name);
+      }
+    }
+    return options;
+  }
+
+  function defaultMissingAgentDevice(plugins) {
+    const options = buildMissingAgentDeviceOptions(plugins);
+    return options.length ? options[0].value : "";
+  }
+
+  function buildMissingAgentDrafts(names, plugins) {
+    const device = defaultMissingAgentDevice(plugins);
+    return (names || []).map((name) => ({
+      name,
+      device,
+      host: DEFAULT_AGENT_HOST,
+      port: DEFAULT_AGENT_PORT
+    }));
+  }
+
+  function openMissingAgentDialog() {
+    if (!selectedProjectId) return;
+    missingAgentError = "";
+    missingAgentBusy = false;
+    missingAgentDrafts = buildMissingAgentDrafts(missingAgentNames, projectConfigPlugins);
+    missingAgentDialogOpen = true;
+    loadAvailableDevices();
+    if (!projectConfigDraft) {
+      loadProjectConfig(selectedProjectId);
+    }
+  }
+
+  function closeMissingAgentDialog() {
+    missingAgentDialogOpen = false;
+    missingAgentDrafts = [];
+    missingAgentError = "";
+    missingAgentBusy = false;
+  }
+
+  function updateMissingAgentDraft(index, field, value) {
+    missingAgentDrafts = missingAgentDrafts.map((draft, idx) =>
+      idx === index ? { ...draft, [field]: value } : draft
+    );
+  }
+
+  async function applyMissingAgentsAndRun() {
+    if (!selectedProjectId) return;
+    missingAgentError = "";
+    missingAgentBusy = true;
+    try {
+      const base = normalizeProjectConfig(projectConfigDraft || projectConfig || {});
+      const existing = new Set(
+        (base.agents || []).map((agent) => (agent?.name || "").trim().toLowerCase()).filter(Boolean)
+      );
+      const nextAgents = [...base.agents];
+      for (const draft of missingAgentDrafts) {
+        const name = (draft?.name || "").trim();
+        if (!name || existing.has(name.toLowerCase())) continue;
+        const device = (draft?.device || "").trim();
+        if (!device) {
+          missingAgentError = `Select a device for ${name}.`;
+          return;
+        }
+        const features = [];
+        nextAgents.push({ name, device, features });
+        existing.add(name.toLowerCase());
+      }
+      const response = await sendCommand("ProjectConfig.Update", {
+        projectId: selectedProjectId,
+        config: { ...base, agents: nextAgents }
+      });
+      projectConfig = normalizeProjectConfig(response.config || {});
+      projectConfigDraft = cloneProjectConfig(projectConfig);
+      projectConfigSaved = response.saved ?? null;
+      projectConfigPending = response.pending === true;
+      missingAgentDialogOpen = false;
+      missingAgentDrafts = [];
+      await executeRuntimeCommand("Runtime.Play");
+    } catch (err) {
+      missingAgentError = err.message || "Failed to update project config.";
+    } finally {
+      missingAgentBusy = false;
+    }
   }
 
   function startBlockDrag(event, payload) {
@@ -5542,6 +5788,16 @@
           >
             <IconStop className="icon" />
           </button>
+          <button
+            type="button"
+            class="ghost icon-button"
+            on:click={openMonitorDialog}
+            disabled={!selectedProject || !wsConnected}
+            aria-label="Open runtime monitor"
+            title="Runtime monitor"
+          >
+            <IconMonitor className="icon" />
+          </button>
         </div>
         {#if sceneFlowPathNodes.length || sceneFlow?.path?.length}
           <div class="sceneflow-breadcrumbs-row">
@@ -6977,6 +7233,16 @@
           >
             <IconStop className="icon" />
           </button>
+          <button
+            type="button"
+            class="ghost icon-button"
+            on:click={openMonitorDialog}
+            disabled={!selectedProject || !wsConnected}
+            aria-label="Open runtime monitor"
+            title="Runtime monitor"
+          >
+            <IconMonitor className="icon" />
+          </button>
         </div>
       </div>
       {#if !selectedProject}
@@ -7086,6 +7352,79 @@
             Remove from recent
           </button>
         </div>
+      </div>
+    </button>
+  {/if}
+
+  {#if missingAgentDialogOpen}
+    <button
+      type="button"
+      class="modal-backdrop"
+      on:click|self={closeMissingAgentDialog}
+      aria-label="Close dialog"
+    >
+      <div class="modal missing-agent-modal" role="dialog" aria-modal="true" aria-labelledby="missing-agent-title">
+        <h3 id="missing-agent-title">Missing Agent Device Configuration</h3>
+        <div class="modal-body">
+          <p>
+            The scene script references agents that are not configured in this project. Map each one to a device or run
+            anyway and abort with Stop if needed. If the device is not present, cancel and add the needed device.
+          </p>
+          <div class="missing-agent-table">
+            <div class="missing-agent-header">
+              <span>Agent</span>
+              <span>Device</span>
+            </div>
+            {#each missingAgentDrafts as draft, index}
+              <div class="missing-agent-row">
+                <div class="missing-agent-name">{draft.name}</div>
+                <select
+                  value={draft.device}
+                  on:change={(event) => updateMissingAgentDraft(index, "device", event.target.value)}
+                  disabled={missingAgentDeviceOptions.length === 0}
+                >
+                  <option value="">Select device</option>
+                  {#each missingAgentDeviceOptions as option}
+                    <option value={option.value}>{option.label}</option>
+                  {/each}
+                </select>
+              </div>
+            {/each}
+          </div>
+          {#if availableDevicesLoading}
+            <p class="muted">Loading devices...</p>
+          {/if}
+          {#if availableDevicesError}
+            <p class="error">{availableDevicesError}</p>
+          {/if}
+        </div>
+        <div class="row row-end">
+          <button type="button" class="ghost" on:click={closeMissingAgentDialog} disabled={missingAgentBusy}>
+            Cancel
+          </button>
+          <button
+            type="button"
+            class="ghost"
+            on:click={async () => {
+              closeMissingAgentDialog();
+              await runRuntimeCommand("Runtime.Play", { skipMissingAgentCheck: true });
+            }}
+            disabled={missingAgentBusy}
+          >
+            Run anyway
+          </button>
+          <button
+            type="button"
+            class="primary"
+            on:click={applyMissingAgentsAndRun}
+            disabled={!wsConnected || missingAgentBusy || missingAgentDrafts.length === 0}
+          >
+            Configure & Run
+          </button>
+        </div>
+        {#if missingAgentError}
+          <p class="error">{missingAgentError}</p>
+        {/if}
       </div>
     </button>
   {/if}
@@ -7823,6 +8162,145 @@
         </div>
         {#if prefsDialogError}
           <p class="error">{prefsDialogError}</p>
+        {/if}
+      </div>
+    </button>
+  {/if}
+
+  {#if monitorDialogOpen}
+    <button
+      type="button"
+      class="modal-backdrop"
+      on:click|self={closeMonitorDialog}
+      aria-label="Close dialog"
+    >
+      <div class="modal monitor-modal" role="dialog" aria-modal="true" aria-labelledby="monitor-dialog-title">
+        <div class="monitor-header">
+          <div>
+            <h3 id="monitor-dialog-title">Runtime monitor</h3>
+            <span class="muted">State: {runtimeStateLabel}</span>
+          </div>
+          <button type="button" class="ghost" on:click={closeMonitorDialog}>Close</button>
+        </div>
+        <div class="monitor-body">
+          <div class="monitor-lists">
+            <section class="monitor-section">
+              <header>
+                <h4>Global variables</h4>
+              </header>
+              {#if runtimeGlobals.length === 0}
+                <p class="muted">No global variables.</p>
+              {:else}
+                <div class="monitor-table" role="list">
+                  {#each runtimeGlobals as variable}
+                    {@const key = monitorVarKey("global", variable.name)}
+                    {@const details = monitorVarValue(variable)}
+                    <button
+                      type="button"
+                      class="monitor-row"
+                      class:selected={monitorSelectedKey === key}
+                      on:click={() => selectMonitorVar("global", variable)}
+                    >
+                      <span class="monitor-name">{variable.name}</span>
+                      <span class="monitor-value">
+                        {details.displayValue}
+                        {#if details.showInitial}
+                          <span class="monitor-initial">({details.initial})</span>
+                        {/if}
+                      </span>
+                    </button>
+                  {/each}
+                </div>
+              {/if}
+            </section>
+            <section class="monitor-section">
+              <header>
+                <h4>Local variables</h4>
+              </header>
+              {#if runtimeLocals.length === 0}
+                <p class="muted">No local variables.</p>
+              {:else}
+                <div class="monitor-table" role="list">
+                  {#each runtimeLocals as variable}
+                    {@const key = monitorVarKey("local", variable.name)}
+                    {@const details = monitorVarValue(variable)}
+                    <button
+                      type="button"
+                      class="monitor-row"
+                      class:selected={monitorSelectedKey === key}
+                      on:click={() => selectMonitorVar("local", variable)}
+                    >
+                      <span class="monitor-name">{variable.name}</span>
+                      <span class="monitor-value">
+                        {details.displayValue}
+                        {#if details.showInitial}
+                          <span class="monitor-initial">({details.initial})</span>
+                        {/if}
+                      </span>
+                    </button>
+                  {/each}
+                </div>
+              {/if}
+            </section>
+          </div>
+          <section class="monitor-editor">
+            <div class="monitor-editor-header">
+              <h4>Update variable</h4>
+              <span class="muted">
+                {monitorSelectedVar
+                  ? `${monitorSelectedVar.name} (${monitorSelectedKey.startsWith("local") ? "local" : "global"})`
+                  : "Select a variable"}
+              </span>
+            </div>
+            <label for="monitor-value-input">Value expression</label>
+            <input
+              id="monitor-value-input"
+              value={monitorValueDraft}
+              on:input={(event) => (monitorValueDraft = event.target.value)}
+              on:keydown={(event) => {
+                if (event.key === "Enter") {
+                  applyMonitorValue();
+                }
+              }}
+              placeholder='e.g. 42, "text", true'
+              disabled={!monitorCanEdit || !monitorSelectedVar}
+            />
+            <button
+              type="button"
+              class="primary"
+              on:click={applyMonitorValue}
+              disabled={!monitorCanEdit || !monitorSelectedVar}
+            >
+              Apply value
+            </button>
+            <div class="monitor-query">
+              <label for="monitor-query-input">Run Prolog query</label>
+              <input
+                id="monitor-query-input"
+                value={monitorQueryDraft}
+                on:input={(event) => (monitorQueryDraft = event.target.value)}
+                on:keydown={(event) => {
+                  if (event.key === "Enter") {
+                    runMonitorQuery();
+                  }
+                }}
+                placeholder="query(...)"
+                disabled={!monitorCanEdit}
+              />
+              <button type="button" class="ghost" on:click={runMonitorQuery} disabled={!monitorCanEdit}>
+                Run query
+              </button>
+            </div>
+          </section>
+        </div>
+        {#if monitorError || monitorStatus}
+          <div class="monitor-footer">
+            {#if monitorError}
+              <span class="error">{monitorError}</span>
+            {:else}
+              <span class="muted">{monitorStatus}</span>
+            {/if}
+          </div>
         {/if}
       </div>
     </button>

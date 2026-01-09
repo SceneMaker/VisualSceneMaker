@@ -869,6 +869,20 @@ Control-point updates can also be expressed via `edge.update`:
 { "projectId": "p1" }
 ```
 
+`runtime.variable.set`
+```
+{ "projectId": "p1", "name": "cnt", "value": "42" }
+```
+
+`runtime.query`
+```
+{ "projectId": "p1", "query": "state(X)" }
+```
+
+Responses:
+- `runtime.variable.set`: `{ "name": "cnt", "value": "42" }`
+- `runtime.query`: `{ "count": 3 }`
+
 Each command gets a response with success/error plus optional updated snapshot.
 
 ## Versioning and compatibility
