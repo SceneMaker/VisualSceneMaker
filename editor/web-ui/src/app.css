@@ -797,8 +797,8 @@ summary {
   align-items: center;
   justify-content: center;
   min-width: 72px;
-  height: 32px;
-  padding: 0 0.6rem;
+  height: 34px;
+  padding: 0 0.7rem;
   border-radius: var(--radius-pill);
   font-size: 0.78rem;
   font-weight: 600;
@@ -807,18 +807,29 @@ summary {
   color: var(--muted);
 }
 
+.sceneflow-runtime-cluster .icon-button {
+  height: 34px;
+  width: 34px;
+  font-size: 0.9rem;
+  min-height: 34px;
+  min-width: 34px;
+}
+
 .runtime-state.running {
   color: #2f6b3a;
+  font-size: 0.9rem;
   border-color: rgba(47, 107, 58, 0.4);
 }
 
 .runtime-state.paused {
   color: #8d6a1b;
+  font-size: 0.9rem;
   border-color: rgba(141, 106, 27, 0.35);
 }
 
 .runtime-state.stopped {
   color: #8a4b4b;
+  font-size: 0.9rem;
   border-color: rgba(138, 75, 75, 0.35);
 }
 
@@ -826,7 +837,7 @@ summary {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   color: var(--muted);
 }
 
@@ -853,7 +864,7 @@ summary {
   white-space: nowrap;
 }
 
-.sceneflow-breadcrumbs-row {
+.main-toolbar-row {
   flex: 1 1 100%;
   display: flex;
   align-items: center;
@@ -921,6 +932,17 @@ summary {
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
+}
+
+.sceneflow-runtime-cluster {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
 }
 
 .sceneflow-status {

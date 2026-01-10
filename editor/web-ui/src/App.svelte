@@ -6209,41 +6209,8 @@
         </div>
       </header>
       <div class="sceneflow-toolbar">
-        <div class="runtime-controls">
-          <span class={`runtime-state ${runtimeState}`}>{runtimeStateLabel}</span>
-          <button
-            type="button"
-            class="ghost icon-button"
-            on:click={() => runRuntimeCommand("Runtime.Play")}
-            disabled={!runtimeCanPlay}
-            aria-label={runtimePlayLabel}
-            title={runtimePlayLabel}
-          >
-            <IconStart className="icon" />
-          </button>
-          <button
-            type="button"
-            class="ghost icon-button"
-            on:click={() => runRuntimeCommand("Runtime.Pause")}
-            disabled={!runtimeCanPause}
-            aria-label="Pause"
-            title="Pause"
-          >
-            <IconPause className="icon" />
-          </button>
-          <button
-            type="button"
-            class="ghost icon-button danger"
-            on:click={() => runRuntimeCommand("Runtime.Stop")}
-            disabled={!runtimeCanStop}
-            aria-label="Stop"
-            title="Stop"
-          >
-            <IconStop className="icon" />
-          </button>
-        </div>
         {#if sceneFlowPathNodes.length || sceneFlow?.path?.length}
-          <div class="sceneflow-breadcrumbs-row">
+          <div class="main-toolbar-row">
             <div class="sceneflow-edit-cluster">
               <button
                 type="button"
@@ -6366,6 +6333,39 @@
                 title="Runtime monitor"
               >
                 <IconMonitor className="icon" />
+              </button>
+            </div>
+            <div class="sceneflow-runtime-cluster">
+              <span class={`runtime-state ${runtimeState}`}>{runtimeStateLabel}</span>
+              <button
+                type="button"
+                class="ghost icon-button"
+                on:click={() => runRuntimeCommand("Runtime.Play")}
+                disabled={!runtimeCanPlay}
+                aria-label={runtimePlayLabel}
+                title={runtimePlayLabel}
+              >
+                <IconStart className="icon" />
+              </button>
+              <button
+                type="button"
+                class="ghost icon-button"
+                on:click={() => runRuntimeCommand("Runtime.Pause")}
+                disabled={!runtimeCanPause}
+                aria-label="Pause"
+                title="Pause"
+              >
+                <IconPause className="icon" />
+              </button>
+              <button
+                type="button"
+                class="ghost icon-button danger"
+                on:click={() => runRuntimeCommand("Runtime.Stop")}
+                disabled={!runtimeCanStop}
+                aria-label="Stop"
+                title="Stop"
+              >
+                <IconStop className="icon" />
               </button>
             </div>
           </div>
