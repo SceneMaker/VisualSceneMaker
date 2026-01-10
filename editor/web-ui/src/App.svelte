@@ -6209,57 +6209,6 @@
         </div>
       </header>
       <div class="sceneflow-toolbar">
-        <button
-          type="button"
-          class="ghost icon-button danger"
-          on:click={deleteSceneFlowSelection}
-          disabled={!sceneFlowSelection || sceneFlowBusy}
-          aria-label="Delete"
-          title="Delete"
-        >
-          <svg viewBox="0 0 24 24" class="icon" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
-            />
-          </svg>
-        </button>
-        <button type="button" class="ghost icon-only" on:click={undoSceneFlow} disabled={!wsConnected || sceneFlowBusy} aria-label="Undo" title="Undo">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3" />
-          </svg>
-        </button>
-        <button type="button" class="ghost icon-only" on:click={redoSceneFlow} disabled={!wsConnected || sceneFlowBusy} aria-label="Redo" title="Redo">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round" d="m15 15 6-6m0 0-6-6m6 6H9a6 6 0 0 0 0 12h3" />
-          </svg>
-        </button>
-        <button
-          type="button"
-          class="ghost icon-only"
-          on:click={straightenAllEdges}
-          disabled={!wsConnected || sceneFlowBusy}
-          aria-label="Straighten edges"
-          title="Straighten edges"
-        >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14" />
-          </svg>
-        </button>
-        <button
-          type="button"
-          class="ghost icon-only"
-          on:click={downloadSceneFlowSnapshot}
-          disabled={!sceneFlowRef || !sceneFlow}
-          aria-label="Download snapshot"
-          title="Download snapshot"
-        >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z" />
-            <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0ZM18.75 10.5h.008v.008h-.008V10.5Z" />
-          </svg>
-        </button>
         <div class="runtime-controls">
           <span class={`runtime-state ${runtimeState}`}>{runtimeStateLabel}</span>
           <button
@@ -6295,61 +6244,130 @@
         </div>
         {#if sceneFlowPathNodes.length || sceneFlow?.path?.length}
           <div class="sceneflow-breadcrumbs-row">
-            <button
-              type="button"
-              class="sceneflow-gear"
-              on:click={openProjectConfigDialog}
-              disabled={!selectedProject || !wsConnected}
-              aria-label="Open project modules"
-              title="Project modules"
-            >
-              <IconPuzzle className="icon" />
-            </button>
-            <button
-              type="button"
-              class="sceneflow-gear"
-              on:click={openPrefsDialog}
-              disabled={!selectedProject || !wsConnected}
-              aria-label="Open preferences"
-              title="Preferences"
-            >
-              <IconGear className="icon" />
-            </button>
-            {#if sceneFlowPathNodes.length}
-              <nav class="sceneflow-breadcrumbs" aria-label="SceneFlow path">
-                {#each sceneFlowPathNodes as node, idx}
-                  {#if idx > 0}
-                    <span class="crumb-sep">/</span>
-                  {/if}
-                  {#if idx < sceneFlowPathNodes.length - 1}
-                    <button
-                      type="button"
-                      class="crumb"
-                      on:click={() => navigateSceneFlow(node.id || SCENEFLOW_ROOT_ID)}
-                      disabled={!wsConnected || sceneFlowBusy}
-                    >
-                      {node.name || "SceneFlow"}
-                    </button>
-                  {:else}
-                    <span class="crumb-current">{node.name || "SceneFlow"}</span>
-                  {/if}
-                {/each}
-              </nav>
-            {:else}
-              <div class="sceneflow-breadcrumbs">
-                <span class="muted">Path: {sceneFlow.path.join(" / ")}</span>
-              </div>
-            {/if}
-            <button
-              type="button"
-              class="sceneflow-gear"
-              on:click={openMonitorDialog}
-              disabled={!selectedProject || !wsConnected}
-              aria-label="Open runtime monitor"
-              title="Runtime monitor"
-            >
-              <IconMonitor className="icon" />
-            </button>
+            <div class="sceneflow-edit-cluster">
+              <button
+                type="button"
+                class="ghost icon-button danger flat"
+                on:click={deleteSceneFlowSelection}
+                disabled={!sceneFlowSelection || sceneFlowBusy}
+                aria-label="Delete"
+                title="Delete"
+              >
+                <svg viewBox="0 0 24 24" class="icon" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
+                  />
+                </svg>
+              </button>
+              <button
+                type="button"
+                class="ghost icon-button flat"
+                on:click={undoSceneFlow}
+                disabled={!wsConnected || sceneFlowBusy}
+                aria-label="Undo"
+                title="Undo"
+              >
+                <svg viewBox="0 0 24 24" class="icon" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3" />
+                </svg>
+              </button>
+              <button
+                type="button"
+                class="ghost icon-button flat"
+                on:click={redoSceneFlow}
+                disabled={!wsConnected || sceneFlowBusy}
+                aria-label="Redo"
+                title="Redo"
+              >
+                <svg viewBox="0 0 24 24" class="icon" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="m15 15 6-6m0 0-6-6m6 6H9a6 6 0 0 0 0 12h3" />
+                </svg>
+              </button>
+              <button
+                type="button"
+                class="ghost icon-button flat"
+                on:click={straightenAllEdges}
+                disabled={!wsConnected || sceneFlowBusy}
+                aria-label="Straighten edges"
+                title="Straighten edges"
+              >
+                <svg viewBox="0 0 24 24" class="icon" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14" />
+                </svg>
+              </button>
+              <button
+                type="button"
+                class="ghost icon-button flat"
+                on:click={downloadSceneFlowSnapshot}
+                disabled={!sceneFlowRef || !sceneFlow}
+                aria-label="Download snapshot"
+                title="Download snapshot"
+              >
+                <svg viewBox="0 0 24 24" class="icon" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0ZM18.75 10.5h.008v.008h-.008V10.5Z" />
+                </svg>
+              </button>
+            </div>
+            <div class="sceneflow-nav-cluster">
+              <button
+                type="button"
+                class="sceneflow-gear flat"
+                on:click={openProjectConfigDialog}
+                disabled={!selectedProject || !wsConnected}
+                aria-label="Open project modules"
+                title="Project modules"
+              >
+                <IconPuzzle className="icon" />
+              </button>
+              <button
+                type="button"
+                class="sceneflow-gear flat"
+                on:click={openPrefsDialog}
+                disabled={!selectedProject || !wsConnected}
+                aria-label="Open preferences"
+                title="Preferences"
+              >
+                <IconGear className="icon" />
+              </button>
+              {#if sceneFlowPathNodes.length}
+                <nav class="sceneflow-breadcrumbs" aria-label="SceneFlow path">
+                  {#each sceneFlowPathNodes as node, idx}
+                    {#if idx > 0}
+                      <span class="crumb-sep">/</span>
+                    {/if}
+                    {#if idx < sceneFlowPathNodes.length - 1}
+                      <button
+                        type="button"
+                        class="crumb"
+                        on:click={() => navigateSceneFlow(node.id || SCENEFLOW_ROOT_ID)}
+                        disabled={!wsConnected || sceneFlowBusy}
+                      >
+                        {node.name || "SceneFlow"}
+                      </button>
+                    {:else}
+                      <span class="crumb-current">{node.name || "SceneFlow"}</span>
+                    {/if}
+                  {/each}
+                </nav>
+              {:else}
+                <div class="sceneflow-breadcrumbs">
+                  <span class="muted">Path: {sceneFlow.path.join(" / ")}</span>
+                </div>
+              {/if}
+              <button
+                type="button"
+                class="sceneflow-gear flat"
+                on:click={openMonitorDialog}
+                disabled={!selectedProject || !wsConnected}
+                aria-label="Open runtime monitor"
+                title="Runtime monitor"
+              >
+                <IconMonitor className="icon" />
+              </button>
+            </div>
           </div>
         {/if}
       </div>
