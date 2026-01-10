@@ -6150,65 +6150,66 @@
 
     {#if showEditor}
     <section class="panel sceneflow-panel">
-      <header class="panel-title">
-        <h2>
-          VSM Web Project <span class="project-name-accent">{selectedProject?.name || ""}{headerDirty ? " *" : ""}</span>
-        </h2>
-        <div class="panel-title-right">
-          {#if autoSaving || autoSaveStatus}
-            <span
-              class={`autosave-status ${autoSaving ? "saving" : ""} ${autoSaveStatus.includes("failed") ? "error" : ""}`}
-              aria-live="polite"
-            >
-              {autoSaveStatus}
-            </span>
-          {/if}
-          {#if projectRequiresSaveAs}
+      <div class="sceneflow-controls-panel">
+        <header class="panel-title">
+          <h2>
+            VSM Web Project <span class="project-name-accent">{selectedProject?.name || ""}{headerDirty ? " *" : ""}</span>
+          </h2>
+          <div class="panel-title-right">
+            {#if autoSaving || autoSaveStatus}
+              <span
+                class={`autosave-status ${autoSaving ? "saving" : ""} ${autoSaveStatus.includes("failed") ? "error" : ""}`}
+                aria-live="polite"
+              >
+                {autoSaveStatus}
+              </span>
+            {/if}
+            {#if projectRequiresSaveAs}
+              <button
+                type="button"
+                class="ghost panel-save"
+                on:click={openSaveAsDialog}
+                disabled={!selectedProject || projectSaving}
+              >
+                Save As
+              </button>
+            {:else}
+              <button
+                type="button"
+                class="ghost panel-save"
+                on:click={() => saveProject(selectedProjectId)}
+                disabled={!selectedProject || projectSaving}
+              >
+                Save
+              </button>
+            {/if}
             <button
               type="button"
-              class="ghost panel-save"
-              on:click={openSaveAsDialog}
-              disabled={!selectedProject || projectSaving}
+              class="ghost icon-only"
+              on:click={() => loadSceneFlow(selectedProjectId)}
+              disabled={!selectedProject || sceneFlowLoading}
+              aria-label="Reload SceneFlow"
+              title="Reload SceneFlow"
             >
-              Save As
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
+              </svg>
             </button>
-          {:else}
             <button
               type="button"
-              class="ghost panel-save"
-              on:click={() => saveProject(selectedProjectId)}
+              class="panel-close"
+              on:click={requestReturnToLanding}
               disabled={!selectedProject || projectSaving}
+              aria-label="Close project"
+              title="Close Project"
             >
-              Save
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+              </svg>
             </button>
-          {/if}
-          <button
-            type="button"
-            class="ghost icon-only"
-            on:click={() => loadSceneFlow(selectedProjectId)}
-            disabled={!selectedProject || sceneFlowLoading}
-            aria-label="Reload SceneFlow"
-            title="Reload SceneFlow"
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
-            </svg>
-          </button>
-          <button
-            type="button"
-            class="panel-close"
-            on:click={requestReturnToLanding}
-            disabled={!selectedProject || projectSaving}
-            aria-label="Close project"
-            title="Close Project"
-          >
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-      </header>
-      <div class="sceneflow-toolbar">
+          </div>
+        </header>
+        <div class="sceneflow-toolbar">
         {#if sceneFlowPathNodes.length || sceneFlow?.path?.length}
           <div class="main-toolbar-row">
             <div class="sceneflow-edit-cluster">
@@ -6370,6 +6371,7 @@
             </div>
           </div>
         {/if}
+        </div>
       </div>
       {#if !selectedProject}
         <p class="muted">Select a project to view the SceneFlow graph.</p>
@@ -6836,7 +6838,7 @@
                 aria-pressed={sceneFlowNodeSnap}
                 disabled={!sceneFlow}
               >
-                node grid snap
+                node snap
               </button>
               <button
                 type="button"
@@ -6846,7 +6848,7 @@
                 aria-pressed={sceneFlowEdgeSnap}
                 disabled={!sceneFlow}
               >
-                edge grid snap
+                edge snap
               </button>
               <button
                 type="button"
@@ -6856,7 +6858,7 @@
                 aria-pressed={sceneFlowShowVars}
                 disabled={!sceneFlow}
               >
-                show vars
+                vars
               </button>
               <button
                 type="button"
@@ -6865,7 +6867,7 @@
                 on:click={() => (sceneFlowShowCmdText = !sceneFlowShowCmdText)}
                 aria-pressed={sceneFlowShowCmdText}
               >
-                show cmds
+                cmds
               </button>
               <button
                 type="button"
@@ -6875,7 +6877,7 @@
                 aria-pressed={sceneFlowShowBlocks}
                 disabled={!sceneFlow}
               >
-                show blocks
+                blocks
               </button>
               <button
                 type="button"
@@ -6885,7 +6887,7 @@
                 aria-pressed={sceneFlowShowInspector}
                 disabled={!sceneFlow}
               >
-                show inspector
+                inspector
               </button>
             </div>
             {#if sceneFlowShowVars}

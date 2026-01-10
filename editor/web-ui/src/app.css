@@ -587,6 +587,15 @@ summary {
   align-items: center;
   justify-content: center;
   border-radius: var(--radius-sm);
+  background: #ffffff;
+  border: 1px solid var(--stroke);
+  color: var(--ink);
+}
+
+.panel-save.ghost {
+  background: #ffffff;
+  border: 1px solid var(--stroke);
+  color: var(--ink);
 }
 
 .autosave-status {
@@ -782,7 +791,7 @@ summary {
   flex-wrap: wrap;
   gap: 0.6rem;
   align-items: center;
-  margin: 0.8rem 0 1rem;
+  margin: 0;
 }
 
 .runtime-controls {
@@ -924,6 +933,12 @@ summary {
   box-shadow: none;
 }
 
+.sceneflow-edit-cluster .icon-button,
+.sceneflow-runtime-cluster .icon-button {
+  background: #ffffff;
+  border: 1px solid var(--stroke);
+}
+
 .sceneflow-nav-cluster {
   display: inline-flex;
   align-items: center;
@@ -943,6 +958,17 @@ summary {
   align-items: center;
   gap: 0.4rem;
   flex-wrap: wrap;
+}
+
+.sceneflow-controls-panel {
+  background: #e7e1d8;
+  border: 1px dashed var(--stroke);
+  border-radius: var(--radius-md);
+  padding: 0.75rem 0.9rem;
+  display: grid;
+  gap: 0.65rem;
+  box-sizing: border-box;
+  margin-bottom: 0.75rem;
 }
 
 .sceneflow-status {
