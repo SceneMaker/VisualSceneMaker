@@ -845,11 +845,10 @@ summary {
   font-size: 0.85rem;
   width: calc(var(--sf-canvas-width) * 0.5);
   max-width: 100%;
-  padding: 0.25rem 0.55rem;
+  padding: 0.35rem 0.65rem;
   border-radius: var(--radius-sm);
   background: rgba(255, 255, 255, 0.9);
   border: 1px solid var(--stroke);
-  box-shadow: var(--shadow-soft);
   overflow-x: auto;
   white-space: nowrap;
 }
@@ -857,22 +856,23 @@ summary {
 .sceneflow-breadcrumbs-row {
   flex: 1 1 100%;
   display: flex;
-  justify-content: center;
   align-items: center;
   gap: 0.5rem;
+  flex-wrap: wrap;
+  position: relative;
+  min-height: 40px;
 }
 
 .sceneflow-gear {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 32px;
+  width: 34px;
+  height: 34px;
   padding: 0;
   border-radius: var(--radius-sm);
   background: rgba(255, 255, 255, 0.9);
   border: 1px solid var(--stroke);
-  box-shadow: var(--shadow-soft);
   color: var(--ink);
   cursor: pointer;
 }
@@ -890,6 +890,37 @@ summary {
 .sceneflow-gear:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+.sceneflow-edit-cluster {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.sceneflow-edit-cluster .icon-button {
+  height: 34px;
+  min-height: 34px;
+  width: 34px;
+  min-width: 34px;
+  box-shadow: none;
+}
+
+.icon-button.flat,
+.sceneflow-edit-cluster .icon-button,
+.sceneflow-gear.flat {
+  box-shadow: none;
+}
+
+.sceneflow-nav-cluster {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
 }
 
 .sceneflow-status {
