@@ -7,7 +7,6 @@ import de.dfki.vsm.editor.dialog.NewProjectDialog;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.ios.ResourceLoader;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
-import de.dfki.vsm.xtesting.NewPropertyManager.PropertyManagerGUI;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -371,16 +370,7 @@ public class EditorStarter extends JPanel {
 					projectList[i].addMouseListener(new MouseAdapter() {
 						@Override
 						public void mouseClicked(MouseEvent me) {
-							if(SwingUtilities.isRightMouseButton(me) ){
-                                                            RunTimeProject project = new RunTimeProject();
-                                                            project.parseForInformation(projectDir.getPath());
-                                                            PropertyManagerGUI gui = new PropertyManagerGUI();
-                                                            gui.init(project);
-                                                            gui.setVisible(true);
-                                                        }
-                                                        else{
-                                                            mEditorInstance.openProject(projectDir.getPath());
-                                                        }
+                                                    mEditorInstance.openProject(projectDir.getPath());
 						}
 
 						@Override
@@ -482,15 +472,7 @@ public class EditorStarter extends JPanel {
 				newTutorialProj.addMouseListener(new MouseAdapter() {
 					@Override
 					public void mouseClicked(MouseEvent me) {
-                                                
-						if(SwingUtilities.isRightMouseButton(me) ){
-                                                    PropertyManagerGUI gui = new PropertyManagerGUI();
-                                                    gui.init(project);
-                                                    gui.setVisible(true);
-                                                }else{
-                                                    mEditorInstance.openProject(tutorialProj.getPath());
-                                                }
-						
+						mEditorInstance.openProject(tutorialProj.getPath());
 					}
 
 					@Override

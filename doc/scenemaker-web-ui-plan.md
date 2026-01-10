@@ -86,6 +86,7 @@ Next
 2) Cutover prep.
    - Swing editor deprecation toggle (`--no-swing`) is done.
    - Documentation + release checklist:
+     - Note that the legacy JavaFX property manager/renderers are removed; plugins now expose data-only properties (no render hooks) and the old PropertyManager GUI is gone.
      - Update README/landing help with `--allow-lan`, `--no-browser`, `--no-swing`, token usage, and LAN reachability.
      - Document browser auto-open and how to connect manually (token panel, /api/v1/token on localhost).
      - Note save/close behavior (Close disabled while saving; Save As required for untitled projects).

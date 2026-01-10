@@ -1,12 +1,9 @@
 package de.dfki.vsm.xtension.reeti.util.property;
 
-import de.dfki.vsm.extensionAPI.ExportableProperties;
-import de.dfki.vsm.extensionAPI.ProjectProperty;
-import de.dfki.vsm.extensionAPI.renderers.BooleanRenderer;
-import de.dfki.vsm.extensionAPI.renderers.IntegerRenderer;
-import de.dfki.vsm.extensionAPI.renderers.StringRender;
-import de.dfki.vsm.extensionAPI.value.ProjectValueProperty;
-import de.dfki.vsm.extensionAPI.value.ValueTYPE;
+import de.dfki.vsm.model.project.property.ExportableProperties;
+import de.dfki.vsm.model.project.property.ProjectProperty;
+import de.dfki.vsm.model.project.property.value.ProjectValueProperty;
+import de.dfki.vsm.model.project.property.value.ValueTYPE;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -20,34 +17,24 @@ public class ReetiProjectProperty implements ExportableProperties {
     public ReetiProjectProperty(){
         ProjectProperty lhost = new ProjectProperty("lhost", true,
             "The address of the computer running VSM ");
-        ProjectValueProperty lhostVP = new ProjectValueProperty(ValueTYPE.STRING,
-                "127.0.0.1",
-                new StringRender());
+        ProjectValueProperty lhostVP = new ProjectValueProperty(ValueTYPE.STRING, "127.0.0.1", true);
 
         ProjectProperty lport = new ProjectProperty("lport", true,
             "The port of the computer running VSM ");
-        ProjectValueProperty lportVP= new ProjectValueProperty(ValueTYPE.NUMERIC,
-                1421,
-                new IntegerRenderer());
+        ProjectValueProperty lportVP = new ProjectValueProperty(ValueTYPE.NUMERIC, 1421, true);
 
 
         ProjectProperty rhost = new ProjectProperty("rhost", true,
             "The address of the computer running ReetiV2Engine ");
-        ProjectValueProperty rhostVP = new ProjectValueProperty(ValueTYPE.STRING,
-                "127.0.0.1",
-                new StringRender());
+        ProjectValueProperty rhostVP = new ProjectValueProperty(ValueTYPE.STRING, "127.0.0.1", true);
 
         ProjectProperty rport = new ProjectProperty("rport", true,
             "The port of the computer running ReetiV2Engine ");
-        ProjectValueProperty rportVP= new ProjectValueProperty(ValueTYPE.NUMERIC,
-                1241,
-                new IntegerRenderer());
+        ProjectValueProperty rportVP = new ProjectValueProperty(ValueTYPE.NUMERIC, 1241, true);
 
         ProjectProperty useSSI = new ProjectProperty("useSSI", false, 
                 "Whether to communicate with OpenSSI or not");
-        ProjectValueProperty useSSIVP = new ProjectValueProperty(ValueTYPE.BOOLEAN,
-                false,
-                new BooleanRenderer());
+        ProjectValueProperty useSSIVP = new ProjectValueProperty(ValueTYPE.BOOLEAN, false, false);
 
         exportableProperties.put(lhost, lhostVP);
         exportableProperties.put(rhost, rhostVP);

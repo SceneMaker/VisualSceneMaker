@@ -18,7 +18,6 @@ import de.dfki.vsm.model.project.EditorConfig;
 import de.dfki.vsm.model.sceneflow.chart.SuperNode;
 import de.dfki.vsm.util.ios.ResourceLoader;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
-import de.dfki.vsm.xtesting.NewPropertyManager.PropertyManagerGUI;
 
 import javax.swing.*;
 import javax.swing.plaf.basic.BasicButtonUI;
@@ -342,9 +341,7 @@ public class SceneFlowToolBar extends JToolBar implements EventListener {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (mEditorProject.getProjectFile() != null) {
-                    PropertyManagerGUI gui = new PropertyManagerGUI();
-                    gui.init(mEditorProject);
-                    gui.setVisible(true);
+                    // legacy property manager removed
                 }else{
                     mProjectSettings.setEnabled(false);
                 }

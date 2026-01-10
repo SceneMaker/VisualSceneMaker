@@ -12,5 +12,4 @@ repositories {
 
 dependencies {
     implementation project(":core")
-    implementation project(":plugins:extensionAPI")
 }

@@ -63,7 +63,6 @@ dependencies {
     implementation project(":plugins:tricatworld")
     implementation project(":plugins:charamel")
     implementation project(":plugins:charamel-ws")
-    implementation project(":plugins:extensionAPI")
     implementation project(":plugins:sockets")
     implementation project(":plugins:DriveSimulator")
     implementation "io.javalin:javalin:3.8.0"

@@ -568,10 +568,41 @@ summary {
   gap: 1rem;
 }
 
+.panel-title .project-name-accent {
+  color: #7A8699;
+}
+
 .panel-title-right {
   display: flex;
   align-items: center;
   gap: 0.6rem;
+}
+
+.panel-save {
+  height: 34px;
+  min-height: 34px;
+  padding: 0 12px;
+  display: inline-flex;
+  font-size: 0.95rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+}
+
+.autosave-status {
+  padding: 0.15rem 0.6rem;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--stroke);
+  background: var(--panel-soft);
+  color: var(--muted);
+  font-size: 0.95rem;
+  white-space: nowrap;
+}
+
+.autosave-status.error {
+  border-color: var(--danger);
+  color: var(--danger);
+  background: #fdf2f2;
 }
 
 .panel-badges {
@@ -615,6 +646,9 @@ summary {
   box-shadow: none;
 }
 
+.panel-title .close-label {
+  color: #4B5563;
+}
 .script-panel {
   grid-column: 1 / -1;
 }
@@ -2428,6 +2462,7 @@ summary {
 .modal h3 {
   margin: 0;
   font-size: 1rem;
+  color: #4B5563;
 }
 
 .modal-body {
@@ -3133,4 +3168,19 @@ button.badge:active {
   .kv-row {
     grid-template-columns: 1fr;
   }
+}
+
+.icon-only {
+  padding: 0;
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.icon-only svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
 }
