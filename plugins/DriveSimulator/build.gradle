@@ -16,7 +16,6 @@ dependencies {
     implementation project(path: ':plugins:sockets')
     testImplementation group: 'junit', name: 'junit', version: '4.12'
     implementation project(":core")
-    implementation project(":plugins:extensionAPI")
     implementation group: 'com.google.code.gson', name: 'gson', version: '2.7'
     implementation 'io.socket:socket.io-client:1.0.0'
 }

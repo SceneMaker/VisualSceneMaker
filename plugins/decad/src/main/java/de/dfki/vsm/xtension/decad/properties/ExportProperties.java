@@ -1,11 +1,9 @@
 package de.dfki.vsm.xtension.decad.properties;
 
-import de.dfki.vsm.extensionAPI.ExportableProperties;
-import de.dfki.vsm.extensionAPI.ProjectProperty;
-import de.dfki.vsm.extensionAPI.renderers.IntegerRenderer;
-import de.dfki.vsm.extensionAPI.renderers.StringRender;
-import de.dfki.vsm.extensionAPI.value.ProjectValueProperty;
-import de.dfki.vsm.extensionAPI.value.ValueTYPE;
+import de.dfki.vsm.model.project.property.ExportableProperties;
+import de.dfki.vsm.model.project.property.ProjectProperty;
+import de.dfki.vsm.model.project.property.value.ProjectValueProperty;
+import de.dfki.vsm.model.project.property.value.ValueTYPE;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -17,16 +15,12 @@ public class ExportProperties implements ExportableProperties {
     public Map<ProjectProperty, ProjectValueProperty> getExportableProperties() {
         ProjectProperty url = new ProjectProperty("url", true,
                 "Url to connect VSM with DECAD.\n ");
-        ProjectValueProperty urlVP = new ProjectValueProperty(ValueTYPE.STRING,
-                "http://localhost",
-                new StringRender());
+        ProjectValueProperty urlVP = new ProjectValueProperty(ValueTYPE.STRING, "http://localhost", true);
 
         ProjectProperty port = new ProjectProperty("port", true,
                 "Port to connect VSM with DECAD.\n " +
                         "This field represents the port of the web server.");
-        ProjectValueProperty portVP = new ProjectValueProperty(ValueTYPE.NUMERIC,
-                5005,
-                new IntegerRenderer());
+        ProjectValueProperty portVP = new ProjectValueProperty(ValueTYPE.NUMERIC, 5005, true);
 
         exportableProperties.put(url, urlVP);
         exportableProperties.put(port, portVP);

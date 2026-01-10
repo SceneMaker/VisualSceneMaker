@@ -1,11 +1,11 @@
-package de.dfki.vsm.extensionAPI;
+package de.dfki.vsm.model.project.property;
 
-import de.dfki.vsm.extensionAPI.value.ProjectValueProperty;
+import de.dfki.vsm.model.project.property.value.ProjectValueProperty;
 
 import java.util.Map;
 
 /**
- * Created by alvaro on 4/20/17.
+ * Declares project-level properties that can be exported/edited.
  */
 public interface ExportableProperties {
     Map<ProjectProperty, ProjectValueProperty> getExportableProperties();

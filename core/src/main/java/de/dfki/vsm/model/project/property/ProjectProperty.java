@@ -1,34 +1,33 @@
-package de.dfki.vsm.extensionAPI;
+package de.dfki.vsm.model.project.property;
 
 /**
- * Created by alvaro on 4/20/17.
+ * Simple descriptor for a project-level property.
  */
 public class ProjectProperty {
-
 
     private final String description;
     String name;
     boolean required;
 
-    public ProjectProperty(String name, boolean required){
+    public ProjectProperty(String name, boolean required) {
         this.name = name;
         this.required = required;
         this.description = "";
     }
 
-    public ProjectProperty(String name ){
+    public ProjectProperty(String name) {
         this.name = name;
         this.required = false;
         this.description = "";
     }
 
-    public ProjectProperty(String name, String description){
+    public ProjectProperty(String name, String description) {
         this.name = name;
         this.description = description;
         this.required = false;
     }
 
-    public ProjectProperty(String name, boolean required, String description){
+    public ProjectProperty(String name, boolean required, String description) {
         this.name = name;
         this.description = description;
         this.required = required;
@@ -50,14 +49,15 @@ public class ProjectProperty {
         this.required = required;
     }
 
-    public String getDescription(){
+    public String getDescription() {
         return description;
     }
 
-    public String toString(){
+    public String toString() {
         String requireText = "";
-        if(required)
+        if (required) {
             requireText = " (required)";
+        }
         return this.getName() + requireText;
     }
 }

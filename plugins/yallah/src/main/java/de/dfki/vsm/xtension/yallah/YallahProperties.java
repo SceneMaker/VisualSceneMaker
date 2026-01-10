@@ -1,11 +1,9 @@
 package de.dfki.vsm.xtension.yallah;
 
-import de.dfki.vsm.extensionAPI.ExportableProperties;
-import de.dfki.vsm.extensionAPI.ProjectProperty;
-import de.dfki.vsm.extensionAPI.renderers.SelectableRenderer;
-import de.dfki.vsm.extensionAPI.renderers.StringRender;
-import de.dfki.vsm.extensionAPI.value.ProjectValueProperty;
-import de.dfki.vsm.extensionAPI.value.ValueTYPE;
+import de.dfki.vsm.model.project.property.ExportableProperties;
+import de.dfki.vsm.model.project.property.ProjectProperty;
+import de.dfki.vsm.model.project.property.value.ProjectValueProperty;
+import de.dfki.vsm.model.project.property.value.ValueTYPE;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -36,11 +34,7 @@ public class YallahProperties implements ExportableProperties {
                 new ProjectProperty("launchMode",
                         true,
                         "How to launch the Yallah client application"),
-                new ProjectValueProperty(ValueTYPE.LIST,
-                        mLaunchModes.get(0),
-                        new SelectableRenderer(),
-                        true,
-                        mLaunchModes)
+                new ProjectValueProperty(ValueTYPE.LIST, mLaunchModes.get(0), true, mLaunchModes)
         ) ;
 
         //
@@ -49,11 +43,7 @@ public class YallahProperties implements ExportableProperties {
                 new ProjectProperty("port",
                         true,
                         "The port on which to listen the incoming WebSocket connections"),
-                new ProjectValueProperty(ValueTYPE.STRING,
-                        WEBSOCKET_SERVER_PORT,
-                        new StringRender(),
-                        true
-                         )
+                new ProjectValueProperty(ValueTYPE.STRING, WEBSOCKET_SERVER_PORT, true)
         ) ;
     }
 

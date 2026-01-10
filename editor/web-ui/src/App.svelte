@@ -1,5 +1,5 @@
 <script>
-  import { tick, onMount } from "svelte";
+  import { tick, onMount, onDestroy } from "svelte";
   import SceneFlowMiniMap from "./SceneFlowMiniMap.svelte";
   import SceneFlowView from "./SceneFlowView.svelte";
   import ScriptEditor from "./ScriptEditor.svelte";
@@ -71,6 +71,7 @@
     showBlocks: true,
     showInspector: true
   };
+  const AUTOSAVE_DELAY_MS = 5000;
   const VAR_BADGE_COOKIE = "vsm_var_badges";
   const VAR_BADGE_MIN_WIDTH = 180;
   const VAR_BADGE_MIN_HEIGHT = 90;
@@ -752,6 +753,10 @@
   let prefsRecentSelectedKey = "";
   let prefsRecentDirty = false;
   let projectSaving = false;
+  let autoSaveTimer = null;
+  let autoSaving = false;
+  let autoSaveStatus = "";
+  let autoSaveReady = false;
 
   let scriptText = "";
   let scriptDraft = "";
@@ -792,6 +797,7 @@
   let sceneFlowError = "";
   let sceneFlowLoading = false;
   let sceneFlowLoaded = false;
+  let sceneFlowDirty = false;
   let lastSceneFlowProjectId = "";
   let sceneFlowRef;
   let sceneFlowZoom = readSceneFlowZoom();
@@ -917,6 +923,7 @@
   $: selectedProject = projects.find((p) => p.projectId === selectedProjectId) || null;
   $: filteredPrefs = filterKeyValues(prefDraft, prefFilter);
   $: projectConfigView = normalizeProjectConfig(projectConfigDraft || projectConfig || {});
+  $: headerDirty = !!(selectedProject?.dirty || sceneFlowDirty || scriptDirty || projectConfigDirty);
   $: projectConfigPlugins = projectConfigView.plugins;
   $: projectConfigAgents = projectConfigView.agents;
   $: projectConfigPlayer = projectConfigView.player;
@@ -1162,6 +1169,26 @@
     }
     return !selectedProject.path || selectedProject.pending === true;
   })();
+  $: autoSaveReady =
+    showEditor &&
+    !!selectedProjectId &&
+    !projectRequiresSaveAs &&
+    !scriptDirty &&
+    !configDirty &&
+    !projectConfigDirty &&
+    (selectedProject?.dirty || sceneFlowDirty || configSaved === false || projectConfigPending);
+  $: {
+    const shouldScheduleAutoSave = autoSaveReady && !projectSaving && !autoSaving;
+    if (shouldScheduleAutoSave) {
+      clearAutoSaveTimer();
+      autoSaveTimer = setTimeout(runAutoSave, AUTOSAVE_DELAY_MS);
+    } else {
+      clearAutoSaveTimer();
+      if ((!autoSaveReady || !headerDirty) && !autoSaving) {
+        autoSaveStatus = "";
+      }
+    }
+  }
   $: {
     if (typeof document !== "undefined") {
       const status = wsConnected ? "connected" : "offline";
@@ -1533,6 +1560,10 @@
     autoConnectIfLocal();
   });
 
+  onDestroy(() => {
+    clearAutoSaveTimer();
+  });
+
   async function refreshInfo() {
     error = "";
     try {
@@ -1611,12 +1642,21 @@
   }
 
   async function saveProject(projectId) {
-    if (!projectId || projectSaving) return;
+    if (!projectId || projectSaving) return false;
+    let ok = false;
     projectSaving = true;
     try {
       await apiPost(`/api/v1/projects/${projectId}/save`, {});
       await loadProjects();
       await loadRecent();
+      ok = true;
+      // Locally clear dirty flags to avoid redundant autosaves until the server refresh arrives.
+      sceneFlowDirty = false;
+      projectConfigPending = false;
+      configSaved = null;
+      projects = projects.map((p) =>
+        p.projectId === projectId ? { ...p, dirty: false, pending: false } : p
+      );
     } catch (err) {
       const message = err?.message || "Failed to save project.";
       const needsSaveAs = /save-as|save as|pending|no path/i.test(message);
@@ -1626,6 +1666,33 @@
       }
     } finally {
       projectSaving = false;
+    }
+    return ok;
+  }
+
+  function clearAutoSaveTimer() {
+    if (autoSaveTimer) {
+      clearTimeout(autoSaveTimer);
+      autoSaveTimer = null;
+    }
+  }
+
+  async function runAutoSave() {
+    clearAutoSaveTimer();
+    if (!autoSaveReady || projectSaving || autoSaving || !selectedProjectId) return;
+    autoSaving = true;
+    autoSaveStatus = "Autosaving…";
+    const ok = await saveProject(selectedProjectId);
+    autoSaving = false;
+    if (ok) {
+      autoSaveStatus = "Saved";
+      setTimeout(() => {
+        if (!headerDirty) {
+          autoSaveStatus = "";
+        }
+      }, 1200);
+    } else {
+      autoSaveStatus = "Autosave failed — use Save";
     }
   }
 
@@ -2491,6 +2558,7 @@
     sceneFlowError = "";
     sceneFlowLoading = true;
     sceneFlowLoaded = false;
+    sceneFlowDirty = false;
     sceneFlowSelection = null;
     sceneFlowMultiSelection = [];
     edgeCreateSourceId = "";
@@ -2893,6 +2961,8 @@
     }
     pending.clear();
   }
+
+ 
 
   function handleUiProtocolEvent(message) {
     const payload = message.payload || {};
@@ -3380,7 +3450,7 @@
 
   function collectUnsavedReasons() {
     const reasons = [];
-    if (selectedProject?.dirty) {
+    if (selectedProject?.dirty || sceneFlowDirty) {
       reasons.push("SceneFlow: graph edits are not saved.");
     }
     if (scriptDirty) {
@@ -3420,7 +3490,26 @@
     loadConfirmReasons = [];
   }
 
+  async function confirmSaveAndClose() {
+    if (!selectedProjectId) {
+      loadConfirmOpen = false;
+      return;
+    }
+    if (projectRequiresSaveAs) {
+      // Can't save without a path; fall back to the Save As flow.
+      loadConfirmOpen = false;
+      openSaveAsDialog();
+      return;
+    }
+    await saveProject(selectedProjectId);
+    loadConfirmOpen = false;
+    loadConfirmReasons = [];
+    await returnToLanding(true);
+  }
+
   async function confirmReturnToLanding() {
+    loadConfirmOpen = false;
+    loadConfirmReasons = [];
     await returnToLanding(true);
   }
 
@@ -5169,6 +5258,9 @@
       if (response?.snapshot) {
         sceneFlow = response.snapshot;
       }
+      if (response) {
+        sceneFlowDirty = true;
+      }
       return response;
     } catch (err) {
       sceneFlowError = err.message || "SceneFlow command failed.";
@@ -6059,20 +6151,56 @@
     {#if showEditor}
     <section class="panel sceneflow-panel">
       <header class="panel-title">
-        <h2>SceneFlow</h2>
+        <h2>
+          VSM Web Project <span class="project-name-accent">{selectedProject?.name || ""}{headerDirty ? " *" : ""}</span>
+        </h2>
         <div class="panel-title-right">
-          <div class="panel-badges">
-            <div class="badge subtle">
-              {selectedProject ? selectedProject.name : "No project selected"}
-            </div>
-          </div>
+          {#if autoSaving || autoSaveStatus}
+            <span
+              class={`autosave-status ${autoSaving ? "saving" : ""} ${autoSaveStatus.includes("failed") ? "error" : ""}`}
+              aria-live="polite"
+            >
+              {autoSaveStatus}
+            </span>
+          {/if}
+          {#if projectRequiresSaveAs}
+            <button
+              type="button"
+              class="ghost panel-save"
+              on:click={openSaveAsDialog}
+              disabled={!selectedProject || projectSaving}
+            >
+              Save As
+            </button>
+          {:else}
+            <button
+              type="button"
+              class="ghost panel-save"
+              on:click={() => saveProject(selectedProjectId)}
+              disabled={!selectedProject || projectSaving}
+            >
+              Save
+            </button>
+          {/if}
+          <button
+            type="button"
+            class="ghost icon-only"
+            on:click={() => loadSceneFlow(selectedProjectId)}
+            disabled={!selectedProject || sceneFlowLoading}
+            aria-label="Reload SceneFlow"
+            title="Reload SceneFlow"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
+            </svg>
+          </button>
           <button
             type="button"
             class="panel-close"
             on:click={requestReturnToLanding}
             disabled={!selectedProject || projectSaving}
             aria-label="Close project"
-            title="Close project"
+            title="Close Project"
           >
             <svg viewBox="0 0 24 24" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
@@ -6081,70 +6209,56 @@
         </div>
       </header>
       <div class="sceneflow-toolbar">
-        {#if projectRequiresSaveAs}
-          <button
-            type="button"
-            class="ghost"
-            on:click={openSaveAsDialog}
-            disabled={!selectedProject || projectSaving}
-          >
-            Save As
-          </button>
-        {:else}
-          <button
-            type="button"
-            class="ghost"
-            on:click={() => saveProject(selectedProjectId)}
-            disabled={!selectedProject || projectSaving}
-          >
-            Save
-          </button>
-        {/if}
         <button
           type="button"
-          class="ghost"
-          on:click={() => loadSceneFlow(selectedProjectId)}
-          disabled={!selectedProject || sceneFlowLoading}
-        >
-          Reload
-        </button>
-        <button
-          type="button"
-          class="ghost"
+          class="ghost icon-button danger"
           on:click={deleteSceneFlowSelection}
           disabled={!sceneFlowSelection || sceneFlowBusy}
+          aria-label="Delete"
+          title="Delete"
         >
-          Delete
+          <svg viewBox="0 0 24 24" class="icon" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
+            />
+          </svg>
         </button>
-        <button type="button" class="ghost" on:click={undoSceneFlow} disabled={!wsConnected || sceneFlowBusy}>
-          Undo
+        <button type="button" class="ghost icon-only" on:click={undoSceneFlow} disabled={!wsConnected || sceneFlowBusy} aria-label="Undo" title="Undo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3" />
+          </svg>
         </button>
-        <button type="button" class="ghost" on:click={redoSceneFlow} disabled={!wsConnected || sceneFlowBusy}>
-          Redo
+        <button type="button" class="ghost icon-only" on:click={redoSceneFlow} disabled={!wsConnected || sceneFlowBusy} aria-label="Redo" title="Redo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="m15 15 6-6m0 0-6-6m6 6H9a6 6 0 0 0 0 12h3" />
+          </svg>
         </button>
         <button
           type="button"
-          class="ghost"
-          on:click={normalizeAllEdges}
-          disabled={!wsConnected || sceneFlowBusy}
-        >
-          Normalize edges
-        </button>
-        <button
-          type="button"
-          class="ghost"
+          class="ghost icon-only"
           on:click={straightenAllEdges}
           disabled={!wsConnected || sceneFlowBusy}
+          aria-label="Straighten edges"
+          title="Straighten edges"
         >
-          Straighten edges
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14" />
+          </svg>
         </button>
         <button
           type="button"
-          class="ghost"
+          class="ghost icon-only"
           on:click={downloadSceneFlowSnapshot}
           disabled={!sceneFlowRef || !sceneFlow}
+          aria-label="Download snapshot"
+          title="Download snapshot"
         >
-          Snapshot
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0ZM18.75 10.5h.008v.008h-.008V10.5Z" />
+          </svg>
         </button>
         <div class="runtime-controls">
           <span class={`runtime-state ${runtimeState}`}>{runtimeStateLabel}</span>
@@ -7621,11 +7735,6 @@
     <section class="panel script-panel panel-wide">
       <header class="panel-title">
         <h2>Scene Script</h2>
-        <div class="panel-badges">
-          <div class="badge subtle">
-            {selectedProject ? selectedProject.name : "No project selected"}
-          </div>
-        </div>
       </header>
       <div class="script-toolbar">
         <button type="button" class="ghost" on:click={() => loadScript(selectedProjectId)} disabled={!selectedProject}>
@@ -7736,7 +7845,7 @@
       aria-label="Close dialog"
     >
       <div class="modal" role="dialog" aria-modal="true" aria-labelledby="load-confirm-title">
-        <h3 id="load-confirm-title">Close project?</h3>
+        <h3 id="load-confirm-title">Close Project?</h3>
         <div class="modal-body">
           <p>Closing will discard unsaved changes in these areas:</p>
           <ul class="load-confirm-list">
@@ -7747,6 +7856,14 @@
         </div>
         <div class="row">
           <button type="button" class="ghost" on:click={cancelLoadConfirm}>Cancel</button>
+          <button
+            type="button"
+            class="primary"
+            on:click={confirmSaveAndClose}
+            disabled={!selectedProject || projectSaving || projectRequiresSaveAs}
+          >
+            Save and Close
+          </button>
           <button type="button" class="danger" on:click={confirmReturnToLanding}>Close</button>
         </div>
       </div>

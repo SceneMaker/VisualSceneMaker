@@ -1,8 +1,8 @@
 package de.dfki.vsm.xtension.yallah;
 
-import de.dfki.vsm.extensionAPI.ExportableProperties;
-import de.dfki.vsm.extensionAPI.ProjectProperty;
-import de.dfki.vsm.extensionAPI.value.ProjectValueProperty;
+import de.dfki.vsm.model.project.property.ExportableProperties;
+import de.dfki.vsm.model.project.property.ProjectProperty;
+import de.dfki.vsm.model.project.property.value.ProjectValueProperty;
 import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.model.scenescript.ActionFeature;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
