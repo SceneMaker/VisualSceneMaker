@@ -69,6 +69,15 @@ import de.dfki.vsm.model.sceneflow.glue.command.expression.variable.SimpleVariab
 import de.dfki.vsm.model.scenescript.SceneObject;
 import de.dfki.vsm.model.scenescript.SceneScript;
 import de.dfki.vsm.model.scenescript.ScriptDiagnostics;
+import de.dfki.vsm.model.scenescript.ScriptEntity;
+import de.dfki.vsm.model.scenescript.SceneTurn;
+import de.dfki.vsm.model.scenescript.SceneUttr;
+import de.dfki.vsm.model.scenescript.SceneParam;
+import de.dfki.vsm.model.scenescript.UttrElement;
+import de.dfki.vsm.model.scenescript.SceneWord;
+import de.dfki.vsm.model.scenescript.ActionObject;
+import de.dfki.vsm.model.scenescript.ActionFeature;
+import de.dfki.vsm.model.scenescript.ActionParam;
 import de.dfki.vsm.model.visicon.VisiconAgent;
 import de.dfki.vsm.model.visicon.VisiconConfig;
 import de.dfki.vsm.model.visicon.VisiconViseme;
@@ -134,6 +143,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public final class WebUiServer implements UiEventListener {
 
@@ -180,6 +191,41 @@ public final class WebUiServer implements UiEventListener {
         private SceneFlowClipboard(String projectId, List<BasicNode> nodes) {
             this.projectId = projectId;
             this.nodes = nodes;
+        }
+    }
+
+    private static final class NodeMoveRequest {
+        private final String nodeId;
+        private final Point target;
+
+        private NodeMoveRequest(String nodeId, Point target) {
+            this.nodeId = nodeId;
+            this.target = target;
+        }
+    }
+
+    private static final class VarRenameSnapshot {
+        private final Map<BasicNode, List<VariableDefinition>> nodeVarDefsBefore = new LinkedHashMap<>();
+        private final Map<BasicNode, List<VariableDefinition>> nodeVarDefsAfter = new LinkedHashMap<>();
+        private final Map<BasicNode, List<Command>> nodeCommandsBefore = new LinkedHashMap<>();
+        private final Map<BasicNode, List<Command>> nodeCommandsAfter = new LinkedHashMap<>();
+        private final Map<AbstractEdge, List<Command>> edgeCommandsBefore = new LinkedHashMap<>();
+        private final Map<AbstractEdge, List<Command>> edgeCommandsAfter = new LinkedHashMap<>();
+        private final Map<AbstractEdge, Expression> edgeConditionsBefore = new LinkedHashMap<>();
+        private final Map<AbstractEdge, Expression> edgeConditionsAfter = new LinkedHashMap<>();
+        private final Map<AbstractEdge, Expression> edgeTimeoutsBefore = new LinkedHashMap<>();
+        private final Map<AbstractEdge, Expression> edgeTimeoutsAfter = new LinkedHashMap<>();
+        private String scriptBefore;
+        private String scriptAfter;
+        private boolean scriptChanged;
+
+        private boolean hasChanges() {
+            return scriptChanged
+                    || !nodeVarDefsBefore.isEmpty()
+                    || !nodeCommandsBefore.isEmpty()
+                    || !edgeCommandsBefore.isEmpty()
+                    || !edgeConditionsBefore.isEmpty()
+                    || !edgeTimeoutsBefore.isEmpty();
         }
     }
 
@@ -1493,14 +1539,16 @@ public final class WebUiServer implements UiEventListener {
     }
 
     private void handleWsMessage(WsContext ctx, String message) {
+        String requestId = null;
+        String name = "";
         try {
             JSONObject payload = new JSONObject(message);
             String type = payload.optString("type", "cmd");
             if (!"cmd".equals(type)) {
                 return;
             }
-            String name = payload.optString("name", "");
-            String requestId = payload.optString("id", null);
+            name = payload.optString("name", "");
+            requestId = payload.optString("id", null);
             String sourceClientId = payload.optString("sourceClientId", null);
             JSONObject body = payload.optJSONObject("payload");
             if (body == null) {
@@ -1834,8 +1882,40 @@ public final class WebUiServer implements UiEventListener {
                         if (node == null) {
                             return new JSONObject().put("error", "NODE_NOT_FOUND");
                         }
+                        Point beforeMove = new Point(node.getX(), node.getY());
                         Point target = new Point((int) Math.round(x), (int) Math.round(y));
                         moveNode(workSpace, node, target, snap);
+                        Point afterMove = new Point(node.getX(), node.getY());
+                        if (!beforeMove.equals(afterMove)) {
+                            UndoManager undoManager = editor.getSceneFlowEditor().getUndoManager();
+                            Point undoPoint = new Point(beforeMove);
+                            Point redoPoint = new Point(afterMove);
+                            undoManager.addEdit(new AbstractUndoableEdit() {
+                                @Override
+                                public void undo() throws CannotUndoException {
+                                    super.undo();
+                                    moveNode(workSpace, node, undoPoint, false);
+                                }
+
+                                @Override
+                                public void redo() throws CannotRedoException {
+                                    super.redo();
+                                    moveNode(workSpace, node, redoPoint, false);
+                                }
+
+                                @Override
+                                public String getUndoPresentationName() {
+                                    return "Undo Move Node";
+                                }
+
+                                @Override
+                                public String getRedoPresentationName() {
+                                    return "Redo Move Node";
+                                }
+                            });
+                            UndoAction.getInstance().refreshUndoState();
+                            RedoAction.getInstance().refreshRedoState();
+                        }
                         JSONObject payloadResp = new JSONObject();
                         payloadResp.put("nodeId", nodeId);
                         payloadResp.put("x", node.getX());
@@ -1849,6 +1929,110 @@ public final class WebUiServer implements UiEventListener {
                     }
                     if (response.has("error")) {
                         sendError(ctx, requestId, response.getString("error"), "Node not found");
+                        return;
+                    }
+                    sendResponse(ctx, requestId, name, response);
+                    broadcastDirtyIfPresent(response, projectId);
+                    return;
+                }
+                case "SceneFlow.Node.MoveGroup": {
+                    String projectId = body.optString("projectId", null);
+                    JSONArray nodesPayload = body.optJSONArray("nodes");
+                    boolean snap = body.optBoolean("snap", false);
+                    if (projectId == null || projectId.isBlank() || nodesPayload == null || nodesPayload.length() == 0) {
+                        sendError(ctx, requestId, "BAD_REQUEST", "Missing projectId or nodes");
+                        return;
+                    }
+                    List<NodeMoveRequest> moves = new ArrayList<>();
+                    for (int i = 0; i < nodesPayload.length(); i++) {
+                        JSONObject entry = nodesPayload.optJSONObject(i);
+                        if (entry == null) {
+                            sendError(ctx, requestId, "BAD_REQUEST", "Invalid nodes entry");
+                            return;
+                        }
+                        String moveId = entry.optString("id", null);
+                        double moveX = entry.has("x") ? entry.optDouble("x", Double.NaN) : Double.NaN;
+                        double moveY = entry.has("y") ? entry.optDouble("y", Double.NaN) : Double.NaN;
+                        if (moveId == null || moveId.isBlank() || !isFinite(moveX) || !isFinite(moveY)) {
+                            sendError(ctx, requestId, "BAD_REQUEST", "Missing node id or coordinates");
+                            return;
+                        }
+                        moves.add(new NodeMoveRequest(moveId, new Point((int) Math.round(moveX), (int) Math.round(moveY))));
+                    }
+                    JSONObject response = callOnEdt(() -> {
+                        EditorInstance instance = EditorInstance.getInstance();
+                        ProjectEditor editor = findProjectEditorById(projectId, instance);
+                        if (editor == null) {
+                            return null;
+                        }
+                        WorkSpacePanel workSpace = editor.getSceneFlowEditor().getWorkSpace();
+                        SceneFlowManager manager = editor.getSceneFlowEditor().getSceneFlowManager();
+                        Map<Node, Point> beforeMoves = new LinkedHashMap<>();
+                        Map<Node, Point> afterMoves = new LinkedHashMap<>();
+                        for (NodeMoveRequest move : moves) {
+                            Node node = workSpace.getNode(move.nodeId);
+                            if (node == null) {
+                                return new JSONObject().put("error", "NODE_NOT_FOUND").put("nodeId", move.nodeId);
+                            }
+                            Point beforePoint = new Point(node.getX(), node.getY());
+                            moveNode(workSpace, node, move.target, snap);
+                            Point afterPoint = new Point(node.getX(), node.getY());
+                            if (!beforePoint.equals(afterPoint)) {
+                                beforeMoves.put(node, beforePoint);
+                                afterMoves.put(node, afterPoint);
+                            }
+                        }
+                        if (!beforeMoves.isEmpty()) {
+                            UndoManager undoManager = editor.getSceneFlowEditor().getUndoManager();
+                            Map<Node, Point> undoPoints = new LinkedHashMap<>();
+                            Map<Node, Point> redoPoints = new LinkedHashMap<>();
+                            for (Map.Entry<Node, Point> entry : beforeMoves.entrySet()) {
+                                undoPoints.put(entry.getKey(), new Point(entry.getValue()));
+                            }
+                            for (Map.Entry<Node, Point> entry : afterMoves.entrySet()) {
+                                redoPoints.put(entry.getKey(), new Point(entry.getValue()));
+                            }
+                            undoManager.addEdit(new AbstractUndoableEdit() {
+                                @Override
+                                public void undo() throws CannotUndoException {
+                                    super.undo();
+                                    for (Map.Entry<Node, Point> entry : undoPoints.entrySet()) {
+                                        moveNode(workSpace, entry.getKey(), entry.getValue(), false);
+                                    }
+                                }
+
+                                @Override
+                                public void redo() throws CannotRedoException {
+                                    super.redo();
+                                    for (Map.Entry<Node, Point> entry : redoPoints.entrySet()) {
+                                        moveNode(workSpace, entry.getKey(), entry.getValue(), false);
+                                    }
+                                }
+
+                                @Override
+                                public String getUndoPresentationName() {
+                                    return "Undo Move Nodes";
+                                }
+
+                                @Override
+                                public String getRedoPresentationName() {
+                                    return "Redo Move Nodes";
+                                }
+                            });
+                            UndoAction.getInstance().refreshUndoState();
+                            RedoAction.getInstance().refreshRedoState();
+                        }
+                        JSONObject payloadResp = new JSONObject();
+                        payloadResp.put("snapshot", sceneFlowSnapshot(editor, manager.getCurrentActiveSuperNode()));
+                        return payloadResp;
+                    });
+                    if (response == null) {
+                        sendError(ctx, requestId, "PROJECT_NOT_FOUND", "Project not found");
+                        return;
+                    }
+                    if (response.has("error")) {
+                        String nodeId = response.optString("nodeId", "");
+                        sendError(ctx, requestId, response.getString("error"), "Node not found" + (nodeId.isBlank() ? "" : ": " + nodeId));
                         return;
                     }
                     sendResponse(ctx, requestId, name, response);
@@ -2706,6 +2890,10 @@ public final class WebUiServer implements UiEventListener {
                         return;
                     }
                     sendResponse(ctx, requestId, name, response);
+                    if (response.optBoolean("scriptChanged")) {
+                        emitUiScriptSnapshot(projectId);
+                        emitUiScriptElements(projectId);
+                    }
                     broadcastDirtyIfPresent(response, projectId);
                     return;
                 }
@@ -2735,6 +2923,11 @@ public final class WebUiServer implements UiEventListener {
                         if (index >= list.size()) {
                             return new JSONObject().put("error", "VARDEF_NOT_FOUND");
                         }
+                        String oldName = null;
+                        VariableDefinition existing = list.get(index);
+                        if (existing != null) {
+                            oldName = existing.getName();
+                        }
                         StringBuilder error = new StringBuilder();
                         VariableDefinition varDef = parseVarDef(varDefJson, dataNode, error);
                         if (varDef == null) {
@@ -2742,35 +2935,91 @@ public final class WebUiServer implements UiEventListener {
                         }
                         List<VariableDefinition> before = copyVarDefList(list);
                         list.set(index, varDef);
-                        List<VariableDefinition> after = copyVarDefList(list);
-                        UndoManager undoManager = editor.getSceneFlowEditor().getUndoManager();
-                        undoManager.addEdit(new AbstractUndoableEdit() {
-                            @Override
-                            public void undo() throws CannotUndoException {
-                                super.undo();
+                        String newName = varDef.getName();
+                        VarRenameSnapshot renameSnapshot = null;
+                        if (oldName != null && newName != null && !oldName.equals(newName)) {
+                            StringBuilder renameError = new StringBuilder();
+                            renameSnapshot = renameVariableReferences(editor.getEditorProject(), oldName, newName, renameError);
+                            if (renameSnapshot == null) {
                                 applyVarDefList(dataNode, before);
+                                String renameMessage = renameError.length() > 0 ? renameError.toString() : "Variable rename failed.";
+                                return new JSONObject().put("error", "VARDEF_RENAME_FAILED").put("message", renameMessage);
                             }
+                            renameSnapshot.nodeVarDefsBefore.putIfAbsent(dataNode, before);
+                            renameSnapshot.nodeVarDefsAfter.putIfAbsent(dataNode, copyVarDefList(dataNode.getVarDefList()));
+                        }
+                        List<VariableDefinition> after = copyVarDefList(list);
+                        if (renameSnapshot != null && renameSnapshot.hasChanges()) {
+                            editor.refresh();
+                        }
+                        UndoManager undoManager = editor.getSceneFlowEditor().getUndoManager();
+                        if (renameSnapshot != null && renameSnapshot.hasChanges()) {
+                            VarRenameSnapshot snapshot = renameSnapshot;
+                            undoManager.addEdit(new AbstractUndoableEdit() {
+                                @Override
+                                public void undo() throws CannotUndoException {
+                                    super.undo();
+                                    applyVarRenameSnapshot(editor.getEditorProject(), snapshot, false);
+                                    editor.refresh();
+                                    if (snapshot.scriptChanged) {
+                                        emitUiScriptSnapshot(projectId);
+                                        emitUiScriptElements(projectId);
+                                    }
+                                }
 
-                            @Override
-                            public void redo() throws CannotRedoException {
-                                super.redo();
-                                applyVarDefList(dataNode, after);
-                            }
+                                @Override
+                                public void redo() throws CannotRedoException {
+                                    super.redo();
+                                    applyVarRenameSnapshot(editor.getEditorProject(), snapshot, true);
+                                    editor.refresh();
+                                    if (snapshot.scriptChanged) {
+                                        emitUiScriptSnapshot(projectId);
+                                        emitUiScriptElements(projectId);
+                                    }
+                                }
 
-                            @Override
-                            public String getUndoPresentationName() {
-                                return "Undo Update Variable Definitions";
-                            }
+                                @Override
+                                public String getUndoPresentationName() {
+                                    return "Undo Update Variable Definitions";
+                                }
 
-                            @Override
-                            public String getRedoPresentationName() {
-                                return "Redo Update Variable Definitions";
-                            }
-                        });
+                                @Override
+                                public String getRedoPresentationName() {
+                                    return "Redo Update Variable Definitions";
+                                }
+                            });
+                        } else {
+                            undoManager.addEdit(new AbstractUndoableEdit() {
+                                @Override
+                                public void undo() throws CannotUndoException {
+                                    super.undo();
+                                    applyVarDefList(dataNode, before);
+                                }
+
+                                @Override
+                                public void redo() throws CannotRedoException {
+                                    super.redo();
+                                    applyVarDefList(dataNode, after);
+                                }
+
+                                @Override
+                                public String getUndoPresentationName() {
+                                    return "Undo Update Variable Definitions";
+                                }
+
+                                @Override
+                                public String getRedoPresentationName() {
+                                    return "Redo Update Variable Definitions";
+                                }
+                            });
+                        }
                         UndoAction.getInstance().refreshUndoState();
                         RedoAction.getInstance().refreshRedoState();
                         JSONObject payloadResp = new JSONObject();
                         payloadResp.put("snapshot", sceneFlowSnapshot(editor, active));
+                        if (renameSnapshot != null && renameSnapshot.scriptChanged) {
+                            payloadResp.put("scriptChanged", true);
+                        }
                         appendDirty(editor, payloadResp);
                         return payloadResp;
                     });
@@ -3331,6 +3580,12 @@ public final class WebUiServer implements UiEventListener {
                             graphics = new CommentGraphics();
                             badge.setGraphics(graphics);
                         }
+                        CommentBoundary beforeRect = null;
+                        CommentBoundary currentRect = graphics.getRectangle();
+                        if (currentRect != null) {
+                            beforeRect = currentRect.getCopy();
+                        }
+                        String beforeText = badge.getHTMLText();
                         CommentBoundary rect = graphics.getRectangle();
                         int nextWidth = width > 0 ? width : (rect != null ? rect.getWidth() : 100);
                         int nextHeight = height > 0 ? height : (rect != null ? rect.getHeight() : 100);
@@ -3348,6 +3603,45 @@ public final class WebUiServer implements UiEventListener {
                         }
                         if (hasText) {
                             badge.setHTMLText(text);
+                        }
+                        CommentBoundary afterRect = null;
+                        CommentBoundary updatedRect = graphics.getRectangle();
+                        if (updatedRect != null) {
+                            afterRect = updatedRect.getCopy();
+                        }
+                        String afterText = badge.getHTMLText();
+                        if (!commentBoundaryEquals(beforeRect, afterRect) || !Objects.equals(beforeText, afterText)) {
+                            Comment guiCommentFinal = guiComment;
+                            CommentBadge badgeFinal = badge;
+                            WorkSpacePanel workSpaceFinal = workSpace;
+                            CommentBoundary undoRect = beforeRect != null ? beforeRect.getCopy() : null;
+                            CommentBoundary redoRect = afterRect != null ? afterRect.getCopy() : null;
+                            UndoManager undoManager = editor.getSceneFlowEditor().getUndoManager();
+                            undoManager.addEdit(new AbstractUndoableEdit() {
+                                @Override
+                                public void undo() throws CannotUndoException {
+                                    super.undo();
+                                    applyCommentState(badgeFinal, guiCommentFinal, workSpaceFinal, undoRect, beforeText);
+                                }
+
+                                @Override
+                                public void redo() throws CannotRedoException {
+                                    super.redo();
+                                    applyCommentState(badgeFinal, guiCommentFinal, workSpaceFinal, redoRect, afterText);
+                                }
+
+                                @Override
+                                public String getUndoPresentationName() {
+                                    return "Undo Update Comment";
+                                }
+
+                                @Override
+                                public String getRedoPresentationName() {
+                                    return "Redo Update Comment";
+                                }
+                            });
+                            UndoAction.getInstance().refreshUndoState();
+                            RedoAction.getInstance().refreshRedoState();
                         }
                         JSONObject payloadResp = new JSONObject();
                         payloadResp.put("commentId", commentId);
@@ -3448,7 +3742,7 @@ public final class WebUiServer implements UiEventListener {
                             case TEDGE: {
                                 TimeoutEdge tedge = new TimeoutEdge();
                                 try {
-                                    tedge.setTimeout(0);
+                                    tedge.setTimeout(1000);
                                 } catch (NumberFormatException ignored) {
                                     // Keep default timeout if parsing fails.
                                 }
@@ -3616,6 +3910,303 @@ public final class WebUiServer implements UiEventListener {
                     sendResponse(ctx, requestId, name, response);
                     return;
                 }
+                case "SceneFlow.Edge.Normalize":
+                case "SceneFlow.Edge.Straighten": {
+                    String projectId = body.optString("projectId", null);
+                    String edgeId = body.optString("edgeId", null);
+                    if (projectId == null || projectId.isBlank()
+                            || edgeId == null || edgeId.isBlank()) {
+                        sendError(ctx, requestId, "BAD_REQUEST", "Missing projectId or edgeId");
+                        return;
+                    }
+                    final boolean normalizeEdge = "SceneFlow.Edge.Normalize".equals(name);
+                    JSONObject response = callOnEdt(() -> {
+                        EditorInstance instance = EditorInstance.getInstance();
+                        ProjectEditor editor = findProjectEditorById(projectId, instance);
+                        if (editor == null) {
+                            return null;
+                        }
+                        WorkSpacePanel workSpace = editor.getSceneFlowEditor().getWorkSpace();
+                        SceneFlowManager manager = editor.getSceneFlowEditor().getSceneFlowManager();
+                        SuperNode active = manager.getCurrentActiveSuperNode();
+                        AbstractEdge dataEdge = resolveEdgeById(active, edgeId);
+                        if (dataEdge == null) {
+                            return new JSONObject().put("error", "EDGE_NOT_FOUND");
+                        }
+                        Edge guiEdge = findGuiEdgeByData(workSpace, dataEdge);
+                        if (guiEdge == null) {
+                            return new JSONObject().put("error", "EDGE_NOT_FOUND");
+                        }
+                        if (guiEdge.mEg != null) {
+                            guiEdge.mEg.updateDrawingParameters();
+                        }
+                        List<EdgePoint> oldPoints = copyEdgePoints(
+                                dataEdge.getGraphics() != null ? dataEdge.getGraphics().getConnection() : null);
+                        if (normalizeEdge) {
+                            guiEdge.rebuildEdgeNicely();
+                        } else {
+                            guiEdge.straightenEdge();
+                        }
+                        if (guiEdge.mEg != null) {
+                            guiEdge.mEg.updateDrawingParameters();
+                        }
+                        guiEdge.update();
+                        guiEdge.repaint(100);
+                        workSpace.revalidate();
+                        workSpace.repaint(100);
+                        List<EdgePoint> newPoints = copyEdgePoints(
+                                dataEdge.getGraphics() != null ? dataEdge.getGraphics().getConnection() : null);
+                        String oldSignature = edgePointsSignature(oldPoints);
+                        String newSignature = edgePointsSignature(newPoints);
+                        if (!oldSignature.equals(newSignature)) {
+                            UndoManager undoManager = editor.getSceneFlowEditor().getUndoManager();
+                            List<EdgePoint> undoPoints = oldPoints;
+                            List<EdgePoint> redoPoints = newPoints;
+                            undoManager.addEdit(new AbstractUndoableEdit() {
+                                @Override
+                                public void undo() throws CannotUndoException {
+                                    super.undo();
+                                    applyEdgePointState(dataEdge, undoPoints, workSpace);
+                                }
+
+                                @Override
+                                public void redo() throws CannotRedoException {
+                                    super.redo();
+                                    applyEdgePointState(dataEdge, redoPoints, workSpace);
+                                }
+
+                                @Override
+                                public String getUndoPresentationName() {
+                                    return "Undo Update Edge";
+                                }
+
+                                @Override
+                                public String getRedoPresentationName() {
+                                    return "Redo Update Edge";
+                                }
+                            });
+                            UndoAction.getInstance().refreshUndoState();
+                            RedoAction.getInstance().refreshRedoState();
+                        }
+                        JSONObject payloadResp = new JSONObject();
+                        payloadResp.put("snapshot", sceneFlowSnapshot(editor, active));
+                        appendDirty(editor, payloadResp);
+                        return payloadResp;
+                    });
+                    if (response == null) {
+                        sendError(ctx, requestId, "PROJECT_NOT_FOUND", "Project not found");
+                        return;
+                    }
+                    if (response.has("error")) {
+                        sendError(ctx, requestId, response.getString("error"), "Failed to update edge");
+                        return;
+                    }
+                    sendResponse(ctx, requestId, name, response);
+                    broadcastDirtyIfPresent(response, projectId);
+                    return;
+                }
+                case "SceneFlow.Edge.NormalizeGroup":
+                case "SceneFlow.Edge.StraightenGroup": {
+                    String projectId = body.optString("projectId", null);
+                    JSONArray edgeIds = body.optJSONArray("edgeIds");
+                    if (projectId == null || projectId.isBlank() || edgeIds == null || edgeIds.length() == 0) {
+                        sendError(ctx, requestId, "BAD_REQUEST", "Missing projectId or edgeIds");
+                        return;
+                    }
+                    final boolean normalizeGroup = "SceneFlow.Edge.NormalizeGroup".equals(name);
+                    JSONObject response = callOnEdt(() -> {
+                        EditorInstance instance = EditorInstance.getInstance();
+                        ProjectEditor editor = findProjectEditorById(projectId, instance);
+                        if (editor == null) {
+                            return null;
+                        }
+                        WorkSpacePanel workSpace = editor.getSceneFlowEditor().getWorkSpace();
+                        SceneFlowManager manager = editor.getSceneFlowEditor().getSceneFlowManager();
+                        SuperNode active = manager.getCurrentActiveSuperNode();
+                        List<Edge> guiEdges = new ArrayList<>();
+                        for (int i = 0; i < edgeIds.length(); i++) {
+                            String edgeId = edgeIds.optString(i, "").trim();
+                            if (edgeId.isEmpty()) {
+                                continue;
+                            }
+                            AbstractEdge dataEdge = resolveEdgeById(active, edgeId);
+                            if (dataEdge == null) {
+                                continue;
+                            }
+                            Edge guiEdge = findGuiEdgeByData(workSpace, dataEdge);
+                            if (guiEdge != null) {
+                                guiEdges.add(guiEdge);
+                            }
+                        }
+                        if (guiEdges.size() < 2) {
+                            return new JSONObject().put("error", "EDGE_NOT_FOUND");
+                        }
+                        Map<AbstractEdge, List<EdgePoint>> before = captureEdgePointState(guiEdges);
+                        if (normalizeGroup) {
+                            normalizeEdgeGroup(workSpace, guiEdges);
+                        } else {
+                            straightenEdgeGroup(workSpace, guiEdges);
+                        }
+                        workSpace.revalidate();
+                        workSpace.repaint(100);
+                        Map<AbstractEdge, List<EdgePoint>> after = captureEdgePointState(guiEdges);
+                        if (!edgePointStateEquals(before, after)) {
+                            UndoManager undoManager = editor.getSceneFlowEditor().getUndoManager();
+                            Map<AbstractEdge, List<EdgePoint>> undoState = copyEdgePointState(before);
+                            Map<AbstractEdge, List<EdgePoint>> redoState = copyEdgePointState(after);
+                            undoManager.addEdit(new AbstractUndoableEdit() {
+                                @Override
+                                public void undo() throws CannotUndoException {
+                                    super.undo();
+                                    applyEdgePointState(undoState, workSpace);
+                                }
+
+                                @Override
+                                public void redo() throws CannotRedoException {
+                                    super.redo();
+                                    applyEdgePointState(redoState, workSpace);
+                                }
+
+                                @Override
+                                public String getUndoPresentationName() {
+                                    return "Undo Update Edges";
+                                }
+
+                                @Override
+                                public String getRedoPresentationName() {
+                                    return "Redo Update Edges";
+                                }
+                            });
+                            UndoAction.getInstance().refreshUndoState();
+                            RedoAction.getInstance().refreshRedoState();
+                        }
+                        JSONObject payloadResp = new JSONObject();
+                        payloadResp.put("snapshot", sceneFlowSnapshot(editor, active));
+                        appendDirty(editor, payloadResp);
+                        return payloadResp;
+                    });
+                    if (response == null) {
+                        sendError(ctx, requestId, "PROJECT_NOT_FOUND", "Project not found");
+                        return;
+                    }
+                    if (response.has("error")) {
+                        String errorMessage = normalizeGroup
+                                ? "Failed to normalize edges"
+                                : "Failed to straighten edges";
+                        sendError(ctx, requestId, response.getString("error"), errorMessage);
+                        return;
+                    }
+                    sendResponse(ctx, requestId, name, response);
+                    broadcastDirtyIfPresent(response, projectId);
+                    return;
+                }
+                case "SceneFlow.Edge.Retarget": {
+                    String projectId = body.optString("projectId", null);
+                    String edgeId = body.optString("edgeId", null);
+                    String targetId = body.optString("targetId", null);
+                    double dropX = body.has("dropX") ? body.optDouble("dropX", Double.NaN) : Double.NaN;
+                    double dropY = body.has("dropY") ? body.optDouble("dropY", Double.NaN) : Double.NaN;
+                    if (projectId == null || projectId.isBlank()
+                            || edgeId == null || edgeId.isBlank()
+                            || targetId == null || targetId.isBlank()) {
+                        sendError(ctx, requestId, "BAD_REQUEST", "Missing projectId, edgeId, or targetId");
+                        return;
+                    }
+                    JSONObject response = callOnEdt(() -> {
+                        EditorInstance instance = EditorInstance.getInstance();
+                        ProjectEditor editor = findProjectEditorById(projectId, instance);
+                        if (editor == null) {
+                            return null;
+                        }
+                        WorkSpacePanel workSpace = editor.getSceneFlowEditor().getWorkSpace();
+                        SceneFlowManager manager = editor.getSceneFlowEditor().getSceneFlowManager();
+                        SuperNode active = manager.getCurrentActiveSuperNode();
+                        AbstractEdge dataEdge = resolveEdgeById(active, edgeId);
+                        if (dataEdge == null) {
+                            return new JSONObject().put("error", "EDGE_NOT_FOUND");
+                        }
+                        Edge guiEdge = findGuiEdgeByData(workSpace, dataEdge);
+                        if (guiEdge == null) {
+                            return new JSONObject().put("error", "EDGE_NOT_FOUND");
+                        }
+                        Node sourceNode = guiEdge.getSourceNode();
+                        Node oldTargetNode = guiEdge.getTargetNode();
+                        Node newTargetNode = workSpace.getNode(targetId);
+                        if (sourceNode == null || newTargetNode == null) {
+                            return new JSONObject().put("error", "NODE_NOT_FOUND");
+                        }
+                        Point dropPoint = (Double.isFinite(dropX) && Double.isFinite(dropY))
+                                ? new Point((int) Math.round(dropX), (int) Math.round(dropY))
+                                : null;
+                        List<EdgePoint> oldPoints = copyEdgePoints(
+                                dataEdge.getGraphics() != null ? dataEdge.getGraphics().getConnection() : null);
+                        String oldTargetId = oldTargetNode != null && oldTargetNode.getDataNode() != null
+                                ? oldTargetNode.getDataNode().getId()
+                                : dataEdge.getTargetUnid();
+                        Point oldEndPoint = edgeEndPoint(oldPoints);
+
+                        Edge newGuiEdge = retargetEdge(workSpace, dataEdge, sourceNode, newTargetNode, dropPoint);
+                        if (newGuiEdge == null) {
+                            return new JSONObject().put("error", "EDGE_UPDATE_FAILED");
+                        }
+                        List<EdgePoint> newPoints = copyEdgePoints(
+                                dataEdge.getGraphics() != null ? dataEdge.getGraphics().getConnection() : null);
+                        Point newEndPoint = edgeEndPoint(newPoints);
+
+                        UndoManager undoManager = editor.getSceneFlowEditor().getUndoManager();
+                        String undoTargetId = oldTargetId;
+                        String redoTargetId = newTargetNode.getDataNode().getId();
+                        undoManager.addEdit(new AbstractUndoableEdit() {
+                            @Override
+                            public void undo() throws CannotUndoException {
+                                super.undo();
+                                Node undoTarget = workSpace.getNode(undoTargetId);
+                                if (undoTarget != null) {
+                                    retargetEdge(workSpace, dataEdge, sourceNode, undoTarget, oldEndPoint);
+                                    applyEdgePointState(dataEdge, oldPoints, workSpace);
+                                }
+                            }
+
+                            @Override
+                            public void redo() throws CannotRedoException {
+                                super.redo();
+                                Node redoTarget = workSpace.getNode(redoTargetId);
+                                if (redoTarget != null) {
+                                    retargetEdge(workSpace, dataEdge, sourceNode, redoTarget, newEndPoint);
+                                    applyEdgePointState(dataEdge, newPoints, workSpace);
+                                }
+                            }
+
+                            @Override
+                            public String getUndoPresentationName() {
+                                return "Undo Retarget Edge";
+                            }
+
+                            @Override
+                            public String getRedoPresentationName() {
+                                return "Redo Retarget Edge";
+                            }
+                        });
+                        UndoAction.getInstance().refreshUndoState();
+                        RedoAction.getInstance().refreshRedoState();
+                        JSONObject payloadResp = new JSONObject();
+                        payloadResp.put("edgeId", edgeId);
+                        payloadResp.put("snapshot", sceneFlowSnapshot(editor, active));
+                        appendDirty(editor, payloadResp);
+                        return payloadResp;
+                    });
+                    if (response == null) {
+                        sendError(ctx, requestId, "PROJECT_NOT_FOUND", "Project not found");
+                        return;
+                    }
+                    if (response.has("error")) {
+                        sendError(ctx, requestId, response.getString("error"), "Failed to retarget edge");
+                        return;
+                    }
+                    sendResponse(ctx, requestId, name, response);
+                    broadcastDirtyIfPresent(response, projectId);
+                    return;
+                }
                 case "SceneFlow.Edge.PEdge.UpdateGroup": {
                     String projectId = body.optString("projectId", null);
                     String sourceId = body.optString("sourceId", null);
@@ -3777,6 +4368,74 @@ public final class WebUiServer implements UiEventListener {
                     sendResponse(ctx, requestId, name, response);
                     return;
                 }
+                case "SceneFlow.Edge.NormalizeAll":
+                case "SceneFlow.Edge.StraightenAll": {
+                    String projectId = body.optString("projectId", null);
+                    if (projectId == null || projectId.isBlank()) {
+                        sendError(ctx, requestId, "BAD_REQUEST", "Missing projectId");
+                        return;
+                    }
+                    final boolean normalizeAll = "SceneFlow.Edge.NormalizeAll".equals(name);
+                    JSONObject response = callOnEdt(() -> {
+                        EditorInstance instance = EditorInstance.getInstance();
+                        ProjectEditor editor = findProjectEditorById(projectId, instance);
+                        if (editor == null) {
+                            return null;
+                        }
+                        WorkSpacePanel workSpace = editor.getSceneFlowEditor().getWorkSpace();
+                        Map<AbstractEdge, List<EdgePoint>> before = captureEdgePointState(workSpace);
+                        if (normalizeAll) {
+                            workSpace.normalizeAllEdges();
+                        } else {
+                            workSpace.straightenAllEdges();
+                        }
+                        workSpace.revalidate();
+                        workSpace.repaint(100);
+                        Map<AbstractEdge, List<EdgePoint>> after = captureEdgePointState(workSpace);
+                        if (!edgePointStateEquals(before, after)) {
+                            UndoManager undoManager = editor.getSceneFlowEditor().getUndoManager();
+                            Map<AbstractEdge, List<EdgePoint>> undoState = copyEdgePointState(before);
+                            Map<AbstractEdge, List<EdgePoint>> redoState = copyEdgePointState(after);
+                            undoManager.addEdit(new AbstractUndoableEdit() {
+                                @Override
+                                public void undo() throws CannotUndoException {
+                                    super.undo();
+                                    applyEdgePointState(undoState, workSpace);
+                                }
+
+                                @Override
+                                public void redo() throws CannotRedoException {
+                                    super.redo();
+                                    applyEdgePointState(redoState, workSpace);
+                                }
+
+                                @Override
+                                public String getUndoPresentationName() {
+                                    return "Undo Update Edges";
+                                }
+
+                                @Override
+                                public String getRedoPresentationName() {
+                                    return "Redo Update Edges";
+                                }
+                            });
+                            UndoAction.getInstance().refreshUndoState();
+                            RedoAction.getInstance().refreshRedoState();
+                        }
+                        SuperNode active = editor.getSceneFlowEditor().getSceneFlowManager().getCurrentActiveSuperNode();
+                        JSONObject payloadResp = new JSONObject();
+                        payloadResp.put("snapshot", sceneFlowSnapshot(editor, active));
+                        appendDirty(editor, payloadResp);
+                        return payloadResp;
+                    });
+                    if (response == null) {
+                        sendError(ctx, requestId, "PROJECT_NOT_FOUND", "Project not found");
+                        return;
+                    }
+                    sendResponse(ctx, requestId, name, response);
+                    broadcastDirtyIfPresent(response, projectId);
+                    return;
+                }
                 case "SceneFlow.Undo":
                 case "SceneFlow.Redo": {
                     String projectId = body.optString("projectId", null);
@@ -3784,6 +4443,7 @@ public final class WebUiServer implements UiEventListener {
                         sendError(ctx, requestId, "BAD_REQUEST", "Missing projectId");
                         return;
                     }
+                    final boolean undo = "SceneFlow.Undo".equals(name);
                     JSONObject response = callOnEdt(() -> {
                         EditorInstance instance = EditorInstance.getInstance();
                         ProjectEditor editor = findProjectEditorById(projectId, instance);
@@ -3792,7 +4452,7 @@ public final class WebUiServer implements UiEventListener {
                         }
                         UndoManager undoManager = editor.getSceneFlowEditor().getUndoManager();
                         try {
-                            if ("SceneFlow.Undo".equals(name)) {
+                            if (undo) {
                                 if (undoManager.canUndo()) {
                                     undoManager.undo();
                                 }
@@ -3827,8 +4487,9 @@ public final class WebUiServer implements UiEventListener {
                         sendError(ctx, requestId, "BAD_REQUEST", "Missing projectId");
                         return;
                     }
+                    final String runtimeCommand = name;
                     mLastRuntimeProjectId = projectId;
-                    boolean ok = callOnEdt(() -> runRuntimeCommand(projectId, name));
+                    boolean ok = callOnEdt(() -> runRuntimeCommand(projectId, runtimeCommand));
                     if (!ok) {
                         sendError(ctx, requestId, "RUNTIME_FAILED", "Failed to change runtime state");
                         return;
@@ -3959,7 +4620,13 @@ public final class WebUiServer implements UiEventListener {
                     sendError(ctx, requestId, "NOT_IMPLEMENTED", "Command not implemented");
             }
         } catch (Exception e) {
+            String errorName = "SERVER_ERROR";
+            String errorMessage = "WebSocket command failed.";
+            if (name != null && !name.isBlank()) {
+                errorMessage = "WebSocket command failed: " + name;
+            }
             mLogger.failure("WebSocket message error: " + e.getMessage());
+            sendError(ctx, requestId, errorName, errorMessage);
         }
     }
 
@@ -5508,6 +6175,47 @@ public final class WebUiServer implements UiEventListener {
         }
     }
 
+    private void applyCommentState(CommentBadge badge, Comment guiComment, WorkSpacePanel workSpace,
+                                   CommentBoundary boundary, String htmlText) {
+        if (badge == null) {
+            return;
+        }
+        CommentGraphics graphics = badge.getGraphics();
+        if (graphics == null) {
+            graphics = new CommentGraphics();
+            badge.setGraphics(graphics);
+        }
+        if (boundary != null) {
+            CommentBoundary next = boundary.getCopy();
+            graphics.setRectangle(next);
+            if (guiComment != null) {
+                guiComment.setBounds(next.getXPos(), next.getYPos(), next.getWidth(), next.getHeight());
+                guiComment.revalidate();
+                guiComment.repaint(100);
+            }
+        }
+        if (htmlText != null) {
+            badge.setHTMLText(htmlText);
+        }
+        if (workSpace != null) {
+            workSpace.revalidate();
+            workSpace.repaint(100);
+        }
+    }
+
+    private boolean commentBoundaryEquals(CommentBoundary left, CommentBoundary right) {
+        if (left == null && right == null) {
+            return true;
+        }
+        if (left == null || right == null) {
+            return false;
+        }
+        return left.getXPos() == right.getXPos()
+                && left.getYPos() == right.getYPos()
+                && left.getWidth() == right.getWidth()
+                && left.getHeight() == right.getHeight();
+    }
+
     private List<DataTypeDefinition> copyTypeDefList(List<DataTypeDefinition> list) {
         List<DataTypeDefinition> copy = new ArrayList<>();
         if (list == null) {
@@ -5590,6 +6298,377 @@ public final class WebUiServer implements UiEventListener {
             }
         }
         node.setCmdList(copy);
+    }
+
+    private void applyVarRenameSnapshot(EditorProject project, VarRenameSnapshot snapshot, boolean useAfter) {
+        if (project == null || snapshot == null) {
+            return;
+        }
+        Map<BasicNode, List<VariableDefinition>> varDefs = useAfter ? snapshot.nodeVarDefsAfter : snapshot.nodeVarDefsBefore;
+        for (Map.Entry<BasicNode, List<VariableDefinition>> entry : varDefs.entrySet()) {
+            applyVarDefList(entry.getKey(), entry.getValue());
+        }
+        Map<BasicNode, List<Command>> nodeCommands = useAfter ? snapshot.nodeCommandsAfter : snapshot.nodeCommandsBefore;
+        for (Map.Entry<BasicNode, List<Command>> entry : nodeCommands.entrySet()) {
+            applyCommandList(entry.getKey(), entry.getValue());
+        }
+        Map<AbstractEdge, List<Command>> edgeCommands = useAfter ? snapshot.edgeCommandsAfter : snapshot.edgeCommandsBefore;
+        for (Map.Entry<AbstractEdge, List<Command>> entry : edgeCommands.entrySet()) {
+            applyEdgeCommandList(entry.getKey(), entry.getValue());
+        }
+        Map<AbstractEdge, Expression> edgeConditions = useAfter ? snapshot.edgeConditionsAfter : snapshot.edgeConditionsBefore;
+        for (Map.Entry<AbstractEdge, Expression> entry : edgeConditions.entrySet()) {
+            applyEdgeCondition(entry.getKey(), entry.getValue());
+        }
+        Map<AbstractEdge, Expression> edgeTimeouts = useAfter ? snapshot.edgeTimeoutsAfter : snapshot.edgeTimeoutsBefore;
+        for (Map.Entry<AbstractEdge, Expression> entry : edgeTimeouts.entrySet()) {
+            applyEdgeTimeoutExpression(entry.getKey(), entry.getValue());
+        }
+        if (snapshot.scriptChanged) {
+            SceneScript script = project.getSceneScript();
+            String text = useAfter ? snapshot.scriptAfter : snapshot.scriptBefore;
+            if (text != null) {
+                script.parseTXT(text);
+            }
+        }
+    }
+
+    private VarRenameSnapshot renameVariableReferences(EditorProject project, String oldName, String newName, StringBuilder error) {
+        if (project == null || oldName == null || newName == null) {
+            return null;
+        }
+        if (oldName.isBlank() || newName.isBlank() || oldName.equals(newName)) {
+            return new VarRenameSnapshot();
+        }
+        Pattern identifierPattern = buildIdentifierPattern(oldName);
+        Pattern scriptPattern = buildSceneScriptVarPattern(oldName);
+        VarRenameSnapshot snapshot = new VarRenameSnapshot();
+        SuperNode root = project.getSceneFlow();
+        List<BasicNode> nodes = collectSceneFlowNodes(root);
+        for (BasicNode node : nodes) {
+            if (node == null) {
+                continue;
+            }
+            List<VariableDefinition> updatedVarDefs = renameVarDefList(node.getVarDefList(), identifierPattern, oldName, newName, error);
+            if (error != null && error.length() > 0) {
+                applyVarRenameSnapshot(project, snapshot, false);
+                return null;
+            }
+            if (updatedVarDefs != null) {
+                snapshot.nodeVarDefsBefore.put(node, copyVarDefList(node.getVarDefList()));
+                snapshot.nodeVarDefsAfter.put(node, copyVarDefList(updatedVarDefs));
+                node.setVarDefList(new ArrayList<>(updatedVarDefs));
+            }
+            List<Command> updatedCommands = renameCommandList(node.getCmdList(), identifierPattern, newName, error);
+            if (error != null && error.length() > 0) {
+                applyVarRenameSnapshot(project, snapshot, false);
+                return null;
+            }
+            if (updatedCommands != null) {
+                snapshot.nodeCommandsBefore.put(node, copyCommandList(node.getCmdList()));
+                snapshot.nodeCommandsAfter.put(node, copyCommandList(updatedCommands));
+                node.setCmdList(new ArrayList<>(updatedCommands));
+            }
+            for (AbstractEdge edge : node.getEdgeList()) {
+                if (edge == null) {
+                    continue;
+                }
+                List<Command> updatedEdgeCommands = renameCommandList(edge.getCmdList(), identifierPattern, newName, error);
+                if (error != null && error.length() > 0) {
+                    applyVarRenameSnapshot(project, snapshot, false);
+                    return null;
+                }
+                if (updatedEdgeCommands != null) {
+                    snapshot.edgeCommandsBefore.put(edge, copyCommandList(edge.getCmdList()));
+                    snapshot.edgeCommandsAfter.put(edge, copyCommandList(updatedEdgeCommands));
+                    edge.setCmdList(new ArrayList<>(updatedEdgeCommands));
+                }
+                Expression condition = edgeCondition(edge);
+                Expression updatedCondition = renameExpression(condition, identifierPattern, newName, error);
+                if (error != null && error.length() > 0) {
+                    applyVarRenameSnapshot(project, snapshot, false);
+                    return null;
+                }
+                if (!Objects.equals(expressionSyntax(condition), expressionSyntax(updatedCondition))) {
+                    snapshot.edgeConditionsBefore.put(edge, copyExpression(condition));
+                    snapshot.edgeConditionsAfter.put(edge, copyExpression(updatedCondition));
+                    applyEdgeCondition(edge, updatedCondition);
+                }
+                Expression timeoutExpr = edgeTimeoutExpression(edge);
+                Expression updatedTimeout = renameExpression(timeoutExpr, identifierPattern, newName, error);
+                if (error != null && error.length() > 0) {
+                    applyVarRenameSnapshot(project, snapshot, false);
+                    return null;
+                }
+                if (!Objects.equals(expressionSyntax(timeoutExpr), expressionSyntax(updatedTimeout))) {
+                    snapshot.edgeTimeoutsBefore.put(edge, copyExpression(timeoutExpr));
+                    snapshot.edgeTimeoutsAfter.put(edge, copyExpression(updatedTimeout));
+                    applyEdgeTimeoutExpression(edge, updatedTimeout);
+                }
+            }
+        }
+        SceneScript script = project.getSceneScript();
+        String scriptText = script.getText();
+        boolean scriptRenamed = renameSceneScriptParameters(script, oldName, newName, scriptPattern);
+        if (scriptRenamed) {
+            snapshot.scriptBefore = scriptText;
+            snapshot.scriptAfter = script.getText();
+            snapshot.scriptChanged = true;
+        } else {
+            String updatedText = replaceVariableToken(scriptText, scriptPattern, "$" + newName);
+            if (!Objects.equals(scriptText, updatedText)) {
+                snapshot.scriptBefore = scriptText;
+                boolean parseOk = script.parseTXT(updatedText);
+                if (!parseOk) {
+                    if (error != null && error.length() == 0) {
+                        error.append("Scene script update failed.");
+                    }
+                    applyVarRenameSnapshot(project, snapshot, false);
+                    return null;
+                }
+                snapshot.scriptAfter = script.getText();
+                snapshot.scriptChanged = true;
+            }
+        }
+        return snapshot;
+    }
+
+    private boolean renameSceneScriptParameters(SceneScript script, String oldName, String newName, Pattern scriptPattern) {
+        if (script == null || oldName == null || newName == null) {
+            return false;
+        }
+        boolean changed = false;
+        for (ScriptEntity entity : script.getEntityList()) {
+            if (entity instanceof SceneObject) {
+                changed |= renameSceneObjectParameters((SceneObject) entity, oldName, newName, scriptPattern);
+            } else if (entity instanceof ActionObject) {
+                changed |= renameActionObjectParameters((ActionObject) entity, oldName, newName, scriptPattern);
+            }
+        }
+        return changed;
+    }
+
+    private boolean renameSceneObjectParameters(SceneObject scene, String oldName, String newName, Pattern scriptPattern) {
+        boolean changed = false;
+        if (scene == null) {
+            return false;
+        }
+        for (SceneTurn turn : scene.getTurnList()) {
+            changed |= renameSceneTurnParameters(turn, oldName, newName, scriptPattern);
+        }
+        return changed;
+    }
+
+    private boolean renameSceneTurnParameters(SceneTurn turn, String oldName, String newName, Pattern scriptPattern) {
+        boolean changed = false;
+        if (turn == null) {
+            return false;
+        }
+        for (SceneUttr utterance : turn.getUttrList()) {
+            changed |= renameSceneUttrParameters(utterance, oldName, newName, scriptPattern);
+        }
+        return changed;
+    }
+
+    private boolean renameSceneUttrParameters(SceneUttr utterance, String oldName, String newName, Pattern scriptPattern) {
+        boolean changed = false;
+        if (utterance == null) {
+            return false;
+        }
+        for (UttrElement element : utterance.getWordList()) {
+            if (element instanceof SceneParam) {
+                SceneParam param = (SceneParam) element;
+                if (oldName.equals(param.getName())) {
+                    param.setName(newName);
+                    changed = true;
+                }
+            } else if (element instanceof SceneWord) {
+                SceneWord word = (SceneWord) element;
+                String before = word.getText();
+                String after = replaceVariableToken(before, scriptPattern, "$" + newName);
+                if (!Objects.equals(before, after)) {
+                    word.setText(after);
+                    changed = true;
+                }
+            } else if (element instanceof ActionObject) {
+                changed |= renameActionObjectParameters((ActionObject) element, oldName, newName, scriptPattern);
+            }
+        }
+        return changed;
+    }
+
+    private boolean renameActionObjectParameters(ActionObject action, String oldName, String newName, Pattern scriptPattern) {
+        if (action == null) {
+            return false;
+        }
+        boolean changed = false;
+        for (ActionFeature feature : action.getFeatureList()) {
+            if (feature instanceof ActionParam) {
+                ActionParam param = (ActionParam) feature;
+                if (oldName.equals(param.getVal())) {
+                    param.setVal(newName);
+                    changed = true;
+                }
+            } else {
+                String before = feature.getVal();
+                String after = replaceVariableToken(before, scriptPattern, "$" + newName);
+                if (!Objects.equals(before, after)) {
+                    feature.setVal(after);
+                    changed = true;
+                }
+            }
+        }
+        return changed;
+    }
+
+    private List<BasicNode> collectSceneFlowNodes(SuperNode root) {
+        List<BasicNode> nodes = new ArrayList<>();
+        collectSceneFlowNodes(root, nodes);
+        return nodes;
+    }
+
+    private void collectSceneFlowNodes(SuperNode node, List<BasicNode> nodes) {
+        if (node == null) {
+            return;
+        }
+        nodes.add(node);
+        for (BasicNode child : node.getNodeList()) {
+            nodes.add(child);
+        }
+        for (SuperNode child : node.getSuperNodeList()) {
+            collectSceneFlowNodes(child, nodes);
+        }
+    }
+
+    private List<VariableDefinition> renameVarDefList(
+            List<VariableDefinition> list,
+            Pattern pattern,
+            String oldName,
+            String newName,
+            StringBuilder error) {
+        if (list == null || list.isEmpty()) {
+            return null;
+        }
+        List<VariableDefinition> updated = new ArrayList<>();
+        boolean changed = false;
+        for (VariableDefinition def : list) {
+            if (def == null) {
+                continue;
+            }
+            VariableDefinition copy = def.getCopy();
+            if (oldName.equals(copy.getName())) {
+                copy.setName(newName);
+                changed = true;
+            }
+            Expression exp = copy.getExp();
+            Expression updatedExp = renameExpression(exp, pattern, newName, error);
+            if (exp != null && updatedExp == null) {
+                return null;
+            }
+            if (!Objects.equals(expressionSyntax(exp), expressionSyntax(updatedExp))) {
+                copy.setExp(updatedExp);
+                changed = true;
+            }
+            updated.add(copy);
+        }
+        return changed ? updated : null;
+    }
+
+    private List<Command> renameCommandList(
+            List<Command> list,
+            Pattern pattern,
+            String newName,
+            StringBuilder error) {
+        if (list == null || list.isEmpty()) {
+            return null;
+        }
+        List<Command> updated = new ArrayList<>();
+        boolean changed = false;
+        for (Command cmd : list) {
+            if (cmd == null) {
+                continue;
+            }
+            String before = cmd.getConcreteSyntax();
+            String after = replaceVariableToken(before, pattern, newName);
+            if (Objects.equals(before, after)) {
+                updated.add(cmd.getCopy());
+                continue;
+            }
+            Command parsed = parseCommandText(after, error);
+            if (parsed == null) {
+                return null;
+            }
+            updated.add(parsed);
+            changed = true;
+        }
+        return changed ? updated : null;
+    }
+
+    private Expression renameExpression(Expression expr, Pattern pattern, String newName, StringBuilder error) {
+        if (expr == null) {
+            return null;
+        }
+        String before = expressionSyntax(expr);
+        String after = replaceVariableToken(before, pattern, newName);
+        if (Objects.equals(before, after)) {
+            return expr;
+        }
+        try {
+            Object parsed = GlueParser.run(after.trim());
+            if (!(parsed instanceof Expression)) {
+                if (error != null && error.length() == 0) {
+                    error.append("Expression parse failed.");
+                }
+                return null;
+            }
+            return (Expression) parsed;
+        } catch (Exception ex) {
+            if (error != null && error.length() == 0) {
+                String msg = ex.getMessage();
+                error.append(msg != null && !msg.isBlank() ? msg : "Expression parse failed.");
+            }
+            return null;
+        }
+    }
+
+    private void applyEdgeCommandList(AbstractEdge edge, List<Command> list) {
+        if (edge == null) {
+            return;
+        }
+        edge.setCmdList(copyCommandList(list));
+    }
+
+    private void applyEdgeCondition(AbstractEdge edge, Expression condition) {
+        if (edge instanceof GuargedEdge) {
+            ((GuargedEdge) edge).setCondition(copyExpression(condition));
+        } else if (edge instanceof InterruptEdge) {
+            ((InterruptEdge) edge).setCondition(copyExpression(condition));
+        }
+    }
+
+    private void applyEdgeTimeoutExpression(AbstractEdge edge, Expression expr) {
+        if (edge instanceof TimeoutEdge) {
+            ((TimeoutEdge) edge).setExpression(copyExpression(expr));
+        }
+    }
+
+    private Pattern buildIdentifierPattern(String name) {
+        return Pattern.compile("(?<![A-Za-z0-9_])" + Pattern.quote(name) + "(?![A-Za-z0-9_])");
+    }
+
+    private Pattern buildSceneScriptVarPattern(String name) {
+        return Pattern.compile("\\$" + Pattern.quote(name) + "(?![A-Za-z0-9_])");
+    }
+
+    private String replaceVariableToken(String text, Pattern pattern, String replacement) {
+        if (text == null || text.isEmpty()) {
+            return text;
+        }
+        Matcher matcher = pattern.matcher(text);
+        if (!matcher.find()) {
+            return text;
+        }
+        return matcher.replaceAll(Matcher.quoteReplacement(replacement));
     }
 
     private DataTypeDefinition parseTypeDef(JSONObject source, StringBuilder error) {
@@ -5937,6 +7016,186 @@ public final class WebUiServer implements UiEventListener {
         return copy;
     }
 
+    private Map<AbstractEdge, List<EdgePoint>> captureEdgePointState(WorkSpacePanel workSpace) {
+        Map<AbstractEdge, List<EdgePoint>> state = new LinkedHashMap<>();
+        if (workSpace == null) {
+            return state;
+        }
+        for (Edge edge : workSpace.getEdges()) {
+            if (edge == null) {
+                continue;
+            }
+            AbstractEdge dataEdge = edge.getDataEdge();
+            if (dataEdge == null) {
+                continue;
+            }
+            if (edge.mEg != null) {
+                edge.mEg.updateDrawingParameters();
+            }
+            EdgeGraphics graphics = dataEdge.getGraphics();
+            EdgeArrow arrow = graphics != null ? graphics.getConnection() : null;
+            state.put(dataEdge, copyEdgePoints(arrow));
+        }
+        return state;
+    }
+
+    private Map<AbstractEdge, List<EdgePoint>> captureEdgePointState(List<Edge> guiEdges) {
+        Map<AbstractEdge, List<EdgePoint>> state = new LinkedHashMap<>();
+        if (guiEdges == null || guiEdges.isEmpty()) {
+            return state;
+        }
+        for (Edge edge : guiEdges) {
+            if (edge == null) {
+                continue;
+            }
+            AbstractEdge dataEdge = edge.getDataEdge();
+            if (dataEdge == null) {
+                continue;
+            }
+            if (edge.mEg != null) {
+                edge.mEg.updateDrawingParameters();
+            }
+            EdgeGraphics graphics = dataEdge.getGraphics();
+            EdgeArrow arrow = graphics != null ? graphics.getConnection() : null;
+            state.put(dataEdge, copyEdgePoints(arrow));
+        }
+        return state;
+    }
+
+    private void straightenEdgeGroup(WorkSpacePanel workSpace, List<Edge> guiEdges) {
+        if (workSpace == null || guiEdges == null || guiEdges.isEmpty()) {
+            return;
+        }
+        EditorConfig config = workSpace.getEditorConfig();
+        double spacing = Math.max(10, config != null ? config.sNODEWIDTH * 0.12 : 12);
+        Map<String, List<Edge>> grouped = new LinkedHashMap<>();
+        for (Edge edge : guiEdges) {
+            if (edge == null) {
+                continue;
+            }
+            Node source = edge.getSourceNode();
+            Node target = edge.getTargetNode();
+            String sourceId = source != null && source.getDataNode() != null ? source.getDataNode().getId() : null;
+            String targetId = target != null && target.getDataNode() != null ? target.getDataNode().getId() : null;
+            if (sourceId == null || targetId == null) {
+                continue;
+            }
+            String key = sourceId + "->" + targetId;
+            grouped.computeIfAbsent(key, k -> new ArrayList<>()).add(edge);
+        }
+        for (List<Edge> group : grouped.values()) {
+            if (group.isEmpty()) {
+                continue;
+            }
+            for (Edge edge : group) {
+                edge.straightenEdge();
+                if (edge.mEg != null) {
+                    edge.mEg.updateDrawingParameters();
+                }
+                edge.update();
+            }
+            if (group.size() == 1) {
+                continue;
+            }
+            Edge sample = group.get(0);
+            de.dfki.vsm.editor.util.EdgeGraphics graphics = sample.mEg;
+            Point start = graphics != null ? graphics.mAbsoluteStartPos : null;
+            Point end = graphics != null ? graphics.mAbsoluteEndPos : null;
+            double dx = start != null && end != null ? end.x - start.x : 0;
+            double dy = start != null && end != null ? end.y - start.y : 0;
+            double length = Math.hypot(dx, dy);
+            double perpX = 0;
+            double perpY = -1;
+            if (Double.isFinite(length) && length > 0.001) {
+                perpX = -dy / length;
+                perpY = dx / length;
+            }
+            double midIndex = (group.size() - 1) / 2.0;
+            for (int i = 0; i < group.size(); i++) {
+                Edge edge = group.get(i);
+                de.dfki.vsm.editor.util.EdgeGraphics eg = edge.mEg;
+                if (eg == null) {
+                    continue;
+                }
+                double offset = (i - midIndex) * spacing;
+                if (Math.abs(offset) < 0.01) {
+                    continue;
+                }
+                int shiftX = (int) Math.round(perpX * offset);
+                int shiftY = (int) Math.round(perpY * offset);
+                eg.mCCrtl1.translate(shiftX, shiftY);
+                eg.mCCrtl2.translate(shiftX, shiftY);
+                eg.updateDrawingParameters();
+                edge.update();
+            }
+        }
+    }
+
+    private void normalizeEdgeGroup(WorkSpacePanel workSpace, List<Edge> guiEdges) {
+        if (workSpace == null || guiEdges == null || guiEdges.isEmpty()) {
+            return;
+        }
+        for (Edge edge : guiEdges) {
+            if (edge == null) {
+                continue;
+            }
+            edge.rebuildEdgeNicely();
+            if (edge.mEg != null) {
+                edge.mEg.updateDrawingParameters();
+            }
+            edge.update();
+        }
+    }
+
+    private Map<AbstractEdge, List<EdgePoint>> copyEdgePointState(Map<AbstractEdge, List<EdgePoint>> original) {
+        Map<AbstractEdge, List<EdgePoint>> copy = new LinkedHashMap<>();
+        if (original == null) {
+            return copy;
+        }
+        for (Map.Entry<AbstractEdge, List<EdgePoint>> entry : original.entrySet()) {
+            List<EdgePoint> points = new ArrayList<>();
+            if (entry.getValue() != null) {
+                for (EdgePoint point : entry.getValue()) {
+                    if (point != null) {
+                        points.add(point.getCopy());
+                    }
+                }
+            }
+            copy.put(entry.getKey(), points);
+        }
+        return copy;
+    }
+
+    private boolean edgePointStateEquals(
+            Map<AbstractEdge, List<EdgePoint>> left,
+            Map<AbstractEdge, List<EdgePoint>> right) {
+        if (left == null || right == null) {
+            return left == right;
+        }
+        if (left.size() != right.size()) {
+            return false;
+        }
+        for (Map.Entry<AbstractEdge, List<EdgePoint>> entry : left.entrySet()) {
+            List<EdgePoint> other = right.get(entry.getKey());
+            if (other == null) {
+                return false;
+            }
+            if (!edgePointsSignature(entry.getValue()).equals(edgePointsSignature(other))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private void applyEdgePointState(Map<AbstractEdge, List<EdgePoint>> state, WorkSpacePanel workSpace) {
+        if (state == null || state.isEmpty()) {
+            return;
+        }
+        for (Map.Entry<AbstractEdge, List<EdgePoint>> entry : state.entrySet()) {
+            applyEdgePointState(entry.getKey(), entry.getValue(), workSpace);
+        }
+    }
+
     private String edgePointsSignature(List<EdgePoint> points) {
         if (points == null || points.isEmpty()) {
             return "";
@@ -5956,6 +7215,25 @@ public final class WebUiServer implements UiEventListener {
                     .append(';');
         }
         return sb.toString();
+    }
+
+    private boolean edgePointMatches(Point point, EdgePoint edgePoint) {
+        if (point == null || edgePoint == null) {
+            return false;
+        }
+        return Math.abs(point.x - edgePoint.getXPos()) <= 1
+                && Math.abs(point.y - edgePoint.getYPos()) <= 1;
+    }
+
+    private Point edgeEndPoint(List<EdgePoint> points) {
+        if (points == null || points.isEmpty()) {
+            return null;
+        }
+        EdgePoint point = points.get(points.size() - 1);
+        if (point == null) {
+            return null;
+        }
+        return new Point(point.getXPos(), point.getYPos());
     }
 
     private List<EdgePoint> parseEdgePoints(JSONArray list) {
@@ -6009,6 +7287,45 @@ public final class WebUiServer implements UiEventListener {
             if (guiEdge != null && guiEdge.mEg != null && stored.size() >= 2) {
                 EdgePoint start = stored.get(0);
                 EdgePoint end = stored.get(stored.size() - 1);
+                Node sourceNode = guiEdge.getSourceNode();
+                Node targetNode = guiEdge.getTargetNode();
+                boolean sameNode = sourceNode != null && sourceNode.equals(targetNode);
+                if (sourceNode != null && !edgePointMatches(sourceNode.getEdgeDockPoint(guiEdge), start)) {
+                    sourceNode.disconnectEdge(guiEdge);
+                    Point newStart = sourceNode.connectEdgeAtSourceNode(
+                            guiEdge,
+                            new Point(start.getXPos(), start.getYPos())
+                    );
+                    if (newStart != null) {
+                        guiEdge.mEg.mAbsoluteStartPos.setLocation(newStart);
+                    }
+                }
+                if (targetNode != null) {
+                    Point currentTarget = sameNode
+                            ? targetNode.getSelfPointingEdgeDockPoint(guiEdge)
+                            : targetNode.getEdgeDockPoint(guiEdge);
+                    if (!edgePointMatches(currentTarget, end)) {
+                        if (sameNode) {
+                            targetNode.disconnectSelfPointingEdge(guiEdge);
+                            Point newEnd = targetNode.connectSelfPointingEdge(
+                                    guiEdge,
+                                    new Point(end.getXPos(), end.getYPos())
+                            );
+                            if (newEnd != null) {
+                                guiEdge.mEg.mAbsoluteEndPos.setLocation(newEnd);
+                            }
+                        } else {
+                            targetNode.disconnectEdge(guiEdge);
+                            Point newEnd = targetNode.connectEdgetAtTargetNode(
+                                    guiEdge,
+                                    new Point(end.getXPos(), end.getYPos())
+                            );
+                            if (newEnd != null) {
+                                guiEdge.mEg.mAbsoluteEndPos.setLocation(newEnd);
+                            }
+                        }
+                    }
+                }
                 guiEdge.mEg.mCCrtl1.setLocation(start.getCtrlXPos(), start.getCtrlYPos());
                 guiEdge.mEg.mCCrtl2.setLocation(end.getCtrlXPos(), end.getCtrlYPos());
                 guiEdge.mEg.updateDrawingParameters();
@@ -6017,6 +7334,54 @@ public final class WebUiServer implements UiEventListener {
             workSpace.revalidate();
             workSpace.repaint(100);
         }
+    }
+
+    private Edge retargetEdge(
+            WorkSpacePanel workSpace,
+            AbstractEdge dataEdge,
+            Node sourceNode,
+            Node targetNode,
+            Point dropPoint) {
+        if (workSpace == null || dataEdge == null || sourceNode == null || targetNode == null) {
+            return null;
+        }
+        Edge guiEdge = findGuiEdgeByData(workSpace, dataEdge);
+        if (guiEdge == null) {
+            return null;
+        }
+        Node oldTarget = guiEdge.getTargetNode();
+        boolean sameNode = sourceNode.equals(targetNode);
+        Point sourceDock = sourceNode.disconnectEdge(guiEdge);
+        if (oldTarget != null) {
+            if (sourceNode.equals(oldTarget)) {
+                oldTarget.disconnectSelfPointingEdge(guiEdge);
+            } else {
+                oldTarget.disconnectEdge(guiEdge);
+            }
+        }
+        workSpace.remove(guiEdge);
+
+        if (sourceNode.getDataNode() != null) {
+            dataEdge.setSourceNode(sourceNode.getDataNode());
+            dataEdge.setSourceUnid(sourceNode.getDataNode().getId());
+        }
+        if (targetNode.getDataNode() != null) {
+            dataEdge.setTargetNode(targetNode.getDataNode());
+            dataEdge.setTargetUnid(targetNode.getDataNode().getId());
+        }
+        dataEdge.setGraphics(null);
+
+        Edge.TYPE guiType = parseEdgeCreateType(edgeType(dataEdge));
+        Point targetDrop = sameNode ? null : dropPoint;
+        Point sourceDockPoint = sameNode ? null : sourceDock;
+        Edge newEdge = new Edge(workSpace, dataEdge, guiType, sourceNode, targetNode, sourceDockPoint, targetDrop);
+        workSpace.add(newEdge);
+        newEdge.straightenEdge();
+        newEdge.update();
+        newEdge.repaint(100);
+        workSpace.revalidate();
+        workSpace.repaint(100);
+        return newEdge;
     }
 
     private void applyEdgeState(

@@ -46,6 +46,8 @@
   const SCENEFLOW_ZOOM_KEY = "vsm_scene_flow_zoom";
   const SCENEFLOW_ZOOM_MIN = 0.3;
   const SCENEFLOW_ZOOM_MAX = 3.5;
+  const SCENEFLOW_TOGGLE_COOKIE = "vsm_sceneflow_toggles";
+  const WS_REQUEST_TIMEOUT_MS = 20000;
   const AGENT_ICON_PATHS = {
     input:
       "M8.25 9V5.25A2.25 2.25 0 0 1 10.5 3h6a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 16.5 21h-6a2.25 2.25 0 0 1-2.25-2.25V15M12 9l3 3m0 0-3 3m3-3H2.25",
@@ -60,6 +62,14 @@
     visible: true,
     global: { x: 16, y: 12, w: 240, h: 150 },
     local: { x: 16, y: 190, w: 240, h: 150 }
+  };
+  const DEFAULT_SCENEFLOW_TOGGLES = {
+    nodeSnap: true,
+    edgeSnap: true,
+    showCmds: true,
+    showVars: true,
+    showBlocks: true,
+    showInspector: true
   };
   const VAR_BADGE_COOKIE = "vsm_var_badges";
   const VAR_BADGE_MIN_WIDTH = 180;
@@ -436,6 +446,39 @@
     document.cookie = `${name}=${value}; path=/; max-age=${maxAgeSeconds}; samesite=lax`;
   }
 
+  function normalizeSceneFlowToggles(state) {
+    return {
+      nodeSnap: state?.nodeSnap !== undefined ? !!state.nodeSnap : DEFAULT_SCENEFLOW_TOGGLES.nodeSnap,
+      edgeSnap: state?.edgeSnap !== undefined ? !!state.edgeSnap : DEFAULT_SCENEFLOW_TOGGLES.edgeSnap,
+      showCmds: state?.showCmds !== undefined ? !!state.showCmds : DEFAULT_SCENEFLOW_TOGGLES.showCmds,
+      showVars: state?.showVars !== undefined ? !!state.showVars : DEFAULT_SCENEFLOW_TOGGLES.showVars,
+      showBlocks:
+        state?.showBlocks !== undefined ? !!state.showBlocks : DEFAULT_SCENEFLOW_TOGGLES.showBlocks,
+      showInspector:
+        state?.showInspector !== undefined
+          ? !!state.showInspector
+          : DEFAULT_SCENEFLOW_TOGGLES.showInspector
+    };
+  }
+
+  function loadSceneFlowToggles() {
+    const raw = readCookie(SCENEFLOW_TOGGLE_COOKIE);
+    if (!raw) {
+      return { ...DEFAULT_SCENEFLOW_TOGGLES };
+    }
+    try {
+      const parsed = JSON.parse(decodeURIComponent(raw));
+      return normalizeSceneFlowToggles(parsed);
+    } catch (err) {
+      return { ...DEFAULT_SCENEFLOW_TOGGLES };
+    }
+  }
+
+  function persistSceneFlowToggles(state) {
+    const payload = encodeURIComponent(JSON.stringify(state));
+    writeCookie(SCENEFLOW_TOGGLE_COOKIE, payload);
+  }
+
   function cloneBadgeState(state) {
     return JSON.parse(JSON.stringify(state));
   }
@@ -513,9 +556,7 @@
   }
 
   function toggleVarBadges() {
-    const next = { ...varBadgeState, visible: !varBadgeState.visible };
-    varBadgeState = next;
-    persistVarBadgeState(next);
+    sceneFlowShowVars = !sceneFlowShowVars;
   }
 
   function startVarBadgeMove(event, key) {
@@ -617,7 +658,7 @@
   }
 
   function handleVarBadgeDocumentDown(event) {
-    if (!varBadgeState?.visible) return;
+    if (!sceneFlowShowVars) return;
     const key = badgeKeyFromTarget(event?.target);
     if (!key) return;
     const isHandle = event.target?.closest?.(".var-resize-handle");
@@ -707,6 +748,10 @@
   let prefsDialogError = "";
   let prefsDialogBusy = false;
   let prefsPreviewStyle = "";
+  let prefsRecentFiles = [];
+  let prefsRecentSelectedKey = "";
+  let prefsRecentDirty = false;
+  let projectSaving = false;
 
   let scriptText = "";
   let scriptDraft = "";
@@ -760,8 +805,14 @@
   let sceneFlowDuplicateKey = "";
   let sceneFlowFrameColor = "#7d7d7d";
   let sceneFlowFrameStyle = "";
-  let sceneFlowSnap = true;
-  let sceneFlowShowCmdText = true;
+  let sceneFlowLayoutStyle = "";
+  const sceneFlowToggleState = loadSceneFlowToggles();
+  let sceneFlowNodeSnap = sceneFlowToggleState.nodeSnap;
+  let sceneFlowEdgeSnap = sceneFlowToggleState.edgeSnap;
+  let sceneFlowShowCmdText = sceneFlowToggleState.showCmds;
+  let sceneFlowShowVars = sceneFlowToggleState.showVars;
+  let sceneFlowShowBlocks = sceneFlowToggleState.showBlocks;
+  let sceneFlowShowInspector = sceneFlowToggleState.showInspector;
   let sceneFlowBusy = false;
   let runtimeInfo = null;
   let runtimeError = "";
@@ -775,6 +826,8 @@
   let monitorStatus = "";
   let monitorError = "";
   let monitorCanEdit = false;
+  let monitorGlobals = [];
+  let monitorLocals = [];
   let lastRuntimeProjectId = "";
   let runtimeValues = {};
   let runtimeInitialValues = {};
@@ -1051,18 +1104,46 @@
   $: startNodes = sceneFlow?.nodes ? sceneFlow.nodes.filter((node) => node.isStart && !node.isHistory) : [];
   $: sceneFlowFrameColor = superNodeFrameColor(sceneFlow);
   $: sceneFlowFrameStyle = `--sf-frame-color:${sceneFlowFrameColor};`;
+  $: {
+    let columns = "minmax(0, 1fr)";
+    let gap = "0";
+    if (sceneFlowShowBlocks && sceneFlowShowInspector) {
+      columns = "var(--sf-side-width) minmax(0, 1fr) var(--sf-side-width)";
+      gap = "var(--sf-gap)";
+    } else if (sceneFlowShowBlocks && !sceneFlowShowInspector) {
+      columns = "var(--sf-side-width) minmax(0, 1fr)";
+      gap = "var(--sf-gap)";
+    } else if (!sceneFlowShowBlocks && sceneFlowShowInspector) {
+      columns = "minmax(0, 1fr) var(--sf-side-width)";
+      gap = "var(--sf-gap)";
+    }
+    sceneFlowLayoutStyle = `grid-template-columns:${columns};gap:${gap};`;
+  }
+  $: if (varBadgeState.visible !== sceneFlowShowVars) {
+    varBadgeState = { ...varBadgeState, visible: sceneFlowShowVars };
+  }
+  $: persistSceneFlowToggles({
+    nodeSnap: sceneFlowNodeSnap,
+    edgeSnap: sceneFlowEdgeSnap,
+    showCmds: sceneFlowShowCmdText,
+    showVars: sceneFlowShowVars,
+    showBlocks: sceneFlowShowBlocks,
+    showInspector: sceneFlowShowInspector
+  });
   $: activePathNode = sceneFlowPathNodes.length ? sceneFlowPathNodes[sceneFlowPathNodes.length - 1] : null;
   $: isSceneFlowRoot =
     activePathNode?.isRoot === true ||
     sceneFlow?.superNodeData?.isRoot === true ||
     sceneFlowPathNodes.length === 1;
   $: showLocalVarBadge = !!sceneFlow && !isSceneFlowRoot;
-  $: runtimeState = selectedProject?.runtimeState || runtimeInfo?.state || "stopped";
+  $: runtimeState = runtimeInfo?.state || selectedProject?.runtimeState || "stopped";
   $: runtimeStateLabel = RUNTIME_STATE_LABELS[runtimeState] || runtimeState;
   $: runtimeGlobals = Array.isArray(runtimeInfo?.globalVariables) ? runtimeInfo.globalVariables : [];
   $: runtimeLocals = Array.isArray(runtimeInfo?.localVariables) ? runtimeInfo.localVariables : [];
   $: runtimeRootVars = runtimeGlobals.length ? runtimeGlobals : runtimeLocals;
   $: runtimeDisplayGlobals = isSceneFlowRoot ? runtimeRootVars : runtimeGlobals;
+  $: monitorGlobals = runtimeDisplayGlobals;
+  $: monitorLocals = isSceneFlowRoot ? [] : runtimeLocals;
   $: activityNodeIds = Array.from(activityNodeCounts.keys());
   $: activityEdgeList = Array.from(activityEdgeHits.values());
   $: timeoutEdgeList = Array.from(timeoutEdgeRuns.values());
@@ -1530,7 +1611,8 @@
   }
 
   async function saveProject(projectId) {
-    if (!projectId) return;
+    if (!projectId || projectSaving) return;
+    projectSaving = true;
     try {
       await apiPost(`/api/v1/projects/${projectId}/save`, {});
       await loadProjects();
@@ -1542,16 +1624,25 @@
       if (needsSaveAs) {
         openSaveAsDialog();
       }
+    } finally {
+      projectSaving = false;
     }
   }
 
   async function saveAsProject(projectId, overridePath) {
     const targetPath = overridePath || saveAsPath;
-    if (!projectId || !targetPath) return;
-    await apiPost(`/api/v1/projects/${projectId}/save-as`, { path: targetPath });
-    saveAsPath = "";
-    await loadProjects();
-    await loadRecent();
+    if (!projectId || !targetPath || projectSaving) return;
+    projectSaving = true;
+    try {
+      await apiPost(`/api/v1/projects/${projectId}/save-as`, { path: targetPath });
+      saveAsPath = "";
+      await loadProjects();
+      await loadRecent();
+    } catch (err) {
+      statusMessage = err?.message || "Failed to save project.";
+    } finally {
+      projectSaving = false;
+    }
   }
 
   async function closeProject(projectId) {
@@ -2018,6 +2109,17 @@
     return text ? text : fallback;
   }
 
+  function readPreferenceString(key, fallback) {
+    if (Object.prototype.hasOwnProperty.call(preferences, key)) {
+      const value = preferences[key];
+      if (value !== undefined && value !== null) {
+        const text = String(value).trim();
+        if (text) return text;
+      }
+    }
+    return fallback;
+  }
+
   function normalizeConfigValue(value) {
     if (value === undefined || value === null) return "";
     return String(value);
@@ -2051,6 +2153,55 @@
     return `font-family:${family}, monospace; font-size:${fontSize}px;`;
   }
 
+  function recentFileSortKey(key) {
+    const match = String(key || "").match(/(\d+)/g);
+    if (match && match.length) {
+      const parsed = Number.parseInt(match[match.length - 1], 10);
+      if (Number.isFinite(parsed)) {
+        return { hasNumber: true, value: parsed, raw: String(key) };
+      }
+    }
+    return { hasNumber: false, value: 0, raw: String(key) };
+  }
+
+  function buildRecentFileList(source) {
+    const entries = Object.entries(source || {})
+      .filter(([key, value]) => String(key || "").startsWith("recentfile"))
+      .map(([key, value]) => ({ key, value: String(value || "").trim() }))
+      .filter((entry) => entry.value);
+    entries.sort((a, b) => {
+      const left = recentFileSortKey(a.key);
+      const right = recentFileSortKey(b.key);
+      if (left.hasNumber && right.hasNumber && left.value !== right.value) {
+        return left.value - right.value;
+      }
+      if (left.hasNumber !== right.hasNumber) {
+        return left.hasNumber ? -1 : 1;
+      }
+      return left.raw.localeCompare(right.raw);
+    });
+    return entries;
+  }
+
+  function selectPrefsRecentFile(key) {
+    prefsRecentSelectedKey = key;
+  }
+
+  function removePrefsRecentFile() {
+    if (!prefsRecentSelectedKey) return;
+    const next = prefsRecentFiles.filter((entry) => entry.key !== prefsRecentSelectedKey);
+    prefsRecentFiles = next;
+    prefsRecentSelectedKey = next[0]?.key || "";
+    prefsRecentDirty = true;
+  }
+
+  function clearPrefsRecentFiles() {
+    if (!prefsRecentFiles.length) return;
+    prefsRecentFiles = [];
+    prefsRecentSelectedKey = "";
+    prefsRecentDirty = true;
+  }
+
   function openPrefsDialog() {
     if (!selectedProjectId) return;
     const width = readConfigInt("node_width", PREF_NODE_DEFAULT);
@@ -2065,8 +2216,14 @@
       activityTrace: readConfigBool("visualizationtrace", true),
       showNodeId: readConfigBool("shownodeid", true),
       scriptFontType: readConfigString("scriptfonttype", PREF_SCRIPT_FONT_DEFAULT),
-      scriptFontSize: String(readConfigInt("scriptfonsize", PREF_SCRIPT_FONT_SIZE_DEFAULT))
+      scriptFontSize: String(readConfigInt("scriptfonsize", PREF_SCRIPT_FONT_SIZE_DEFAULT)),
+      sceneflowNamespace: readPreferenceString("xmlns", "xml.sceneflow.dfki.de"),
+      sceneflowInstance: readPreferenceString("xmlns_xsi", "http://www.w3.org/2001/XMLSchema-instance"),
+      sceneflowSchema: readPreferenceString("xsi_schemeLocation", "res/xsd/sceneflow.xsd")
     };
+    prefsRecentFiles = buildRecentFileList(config);
+    prefsRecentSelectedKey = prefsRecentFiles[0]?.key || "";
+    prefsRecentDirty = false;
     prefsDialogError = "";
     prefsDialogOpen = true;
   }
@@ -2075,6 +2232,9 @@
     prefsDialogOpen = false;
     prefsDialogDraft = null;
     prefsDialogError = "";
+    prefsRecentFiles = [];
+    prefsRecentSelectedKey = "";
+    prefsRecentDirty = false;
   }
 
   async function applyPrefsDialog() {
@@ -2103,43 +2263,87 @@
       prefsDialogError = "Script font type is required.";
       return;
     }
-    const changes = {};
-    const addChange = (key, value) => {
+    const configChanges = {};
+    const prefChanges = {};
+    const addConfigChange = (key, value) => {
       const next = String(value);
       const current = normalizeConfigValue(config?.[key]);
       if (current !== next) {
-        changes[key] = next;
+        configChanges[key] = next;
       }
     };
-    addChange("node_width", nodeSize);
-    addChange("node_height", nodeSize);
-    addChange("grid_x", gridScale);
-    addChange("grid_y", gridScale);
-    addChange("workspace_fontsize", workspaceFontSize);
-    addChange("grid", prefsDialogDraft.drawGrid);
-    addChange("visualization", prefsDialogDraft.activityVisualization);
-    addChange("visualizationtrace", prefsDialogDraft.activityTrace);
-    addChange("shownodeid", prefsDialogDraft.showNodeId);
-    addChange("scriptfonsize", scriptFontSize);
-    addChange("scriptfonttype", scriptFontType);
-    if (!Object.keys(changes).length) {
+    const addPrefChange = (key, value) => {
+      const next = String(value);
+      const current = normalizeConfigValue(preferences?.[key]);
+      if (current !== next) {
+        prefChanges[key] = next;
+      }
+    };
+    addConfigChange("node_width", nodeSize);
+    addConfigChange("node_height", nodeSize);
+    addConfigChange("grid_x", gridScale);
+    addConfigChange("grid_y", gridScale);
+    addConfigChange("workspace_fontsize", workspaceFontSize);
+    addConfigChange("grid", prefsDialogDraft.drawGrid);
+    addConfigChange("visualization", prefsDialogDraft.activityVisualization);
+    addConfigChange("visualizationtrace", prefsDialogDraft.activityTrace);
+    addConfigChange("shownodeid", prefsDialogDraft.showNodeId);
+    addConfigChange("scriptfonsize", scriptFontSize);
+    addConfigChange("scriptfonttype", scriptFontType);
+    addPrefChange("xmlns", prefsDialogDraft.sceneflowNamespace);
+    addPrefChange("xmlns_xsi", prefsDialogDraft.sceneflowInstance);
+    addPrefChange("xsi_schemeLocation", prefsDialogDraft.sceneflowSchema);
+    if (prefsRecentDirty) {
+      const currentRecent = buildRecentFileList(config);
+      const currentMap = new Map(currentRecent.map((entry) => [entry.key, entry.value]));
+      const nextMap = new Map(prefsRecentFiles.map((entry) => [entry.key, entry.value]));
+      const allKeys = new Set([...currentMap.keys(), ...nextMap.keys()]);
+      for (const key of allKeys) {
+        const currentValue = normalizeConfigValue(currentMap.get(key) || "");
+        const nextValue = normalizeConfigValue(nextMap.get(key) || "");
+        if (currentValue !== nextValue) {
+          configChanges[key] = nextValue;
+        }
+      }
+    }
+    if (!Object.keys(configChanges).length && !Object.keys(prefChanges).length) {
       prefsDialogError = "No changes to apply.";
       return;
     }
     prefsDialogBusy = true;
     try {
-      const response = await sendCommand("Config.Update", {
-        projectId: selectedProjectId,
-        values: changes
-      });
-      if (response?.config) {
-        config = response.config;
+      let configResponse = null;
+      if (Object.keys(configChanges).length) {
+        configResponse = await sendCommand("Config.Update", {
+          projectId: selectedProjectId,
+          values: configChanges
+        });
+        if (configResponse?.config) {
+          config = configResponse.config;
+        }
+        configDraft = { ...configDraft, ...configChanges };
+        configSaved = configResponse?.saved === true;
       }
-      configDraft = { ...configDraft, ...changes };
-      configSaved = response?.saved === true;
-      statusMessage = response?.pending
-        ? "Config stored; save the project to persist."
-        : "Config updated.";
+      let prefResponse = null;
+      if (Object.keys(prefChanges).length) {
+        prefResponse = await sendCommand("Preferences.Update", {
+          values: prefChanges
+        });
+        if (prefResponse?.preferences) {
+          preferences = prefResponse.preferences;
+          prefDraft = { ...prefResponse.preferences };
+        }
+      }
+      const messages = [];
+      if (Object.keys(prefChanges).length) {
+        messages.push("Preferences updated.");
+      }
+      if (Object.keys(configChanges).length) {
+        messages.push(
+          configResponse?.pending ? "Config stored; save the project to persist." : "Config updated."
+        );
+      }
+      statusMessage = messages.filter(Boolean).join(" ");
       closePrefsDialog();
     } catch (err) {
       prefsDialogError = err.message || "Failed to update preferences.";
@@ -2592,6 +2796,7 @@
   function connectWs() {
     wsError = "";
     if (ws) {
+      rejectPendingRequests("WebSocket reconnecting.");
       ws.close();
     }
     const needsToken = info?.tokenRequired === true;
@@ -2622,6 +2827,7 @@
       };
       ws.onclose = (event) => {
         wsConnected = false;
+        rejectPendingRequests("WebSocket closed.");
         const reason = (event?.reason || "").toLowerCase();
         if (event?.code === 1008 || reason.includes("unauthorized")) {
           const message = "Missing or invalid token.";
@@ -2637,6 +2843,7 @@
       };
       ws.onerror = () => {
         wsError = "WebSocket connection failed.";
+        rejectPendingRequests("WebSocket connection failed.");
         finish(false);
       };
       ws.onmessage = (event) => handleWsMessage(event.data);
@@ -2653,6 +2860,9 @@
     if (message.type === "response" || message.type === "error") {
       const entry = pending.get(message.id);
       if (!entry) return;
+      if (entry.timer) {
+        clearTimeout(entry.timer);
+      }
       pending.delete(message.id);
       if (message.type === "error") {
         const detail = message.payload?.message;
@@ -2668,6 +2878,20 @@
       }
       return;
     }
+  }
+
+  function rejectPendingRequests(reason) {
+    if (!pending.size) return;
+    const error = new Error(reason || "WebSocket request cancelled.");
+    for (const entry of pending.values()) {
+      if (entry?.reject) {
+        if (entry.timer) {
+          clearTimeout(entry.timer);
+        }
+        entry.reject(error);
+      }
+    }
+    pending.clear();
   }
 
   function handleUiProtocolEvent(message) {
@@ -2935,7 +3159,7 @@
     const [scope, ...rest] = key.split(":");
     const name = rest.join(":");
     if (!name) return null;
-    const list = scope === "local" ? runtimeLocals : runtimeGlobals;
+    const list = scope === "local" ? monitorLocals : monitorGlobals;
     return list.find((entry) => entry?.name === name) || null;
   }
 
@@ -2969,10 +3193,10 @@
       loadRuntime(selectedProjectId);
     }
     if (!monitorSelectedVar) {
-      if (runtimeGlobals.length) {
-        selectMonitorVar("global", runtimeGlobals[0]);
-      } else if (runtimeLocals.length) {
-        selectMonitorVar("local", runtimeLocals[0]);
+      if (monitorGlobals.length) {
+        selectMonitorVar("global", monitorGlobals[0]);
+      } else if (monitorLocals.length) {
+        selectMonitorVar("local", monitorLocals[0]);
       }
     }
   }
@@ -3043,8 +3267,18 @@
       payload
     };
     return new Promise((resolve, reject) => {
-      pending.set(id, { resolve, reject });
-      ws.send(JSON.stringify(message));
+      const timer = setTimeout(() => {
+        pending.delete(id);
+        reject(new Error(`Request timed out: ${name}`));
+      }, WS_REQUEST_TIMEOUT_MS);
+      pending.set(id, { resolve, reject, timer });
+      try {
+        ws.send(JSON.stringify(message));
+      } catch (err) {
+        pending.delete(id);
+        clearTimeout(timer);
+        reject(err);
+      }
     });
   }
 
@@ -4552,6 +4786,11 @@
       return;
     }
     resetVarDefEditor();
+    if (response.scriptChanged) {
+      loadScript(selectedProjectId);
+      loadScriptScenes(selectedProjectId);
+      loadScriptElements(selectedProjectId);
+    }
     refreshRuntimeVars(nodeEditorTarget);
   }
 
@@ -4939,6 +5178,51 @@
     }
   }
 
+  function snapshotFileSlug(value) {
+    return String(value || "")
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "") || "sceneflow";
+  }
+
+  function sceneFlowSnapshotFilename() {
+    const projectName = snapshotFileSlug(selectedProject?.name || "project");
+    const flowName = snapshotFileSlug(currentSuperName || "sceneflow");
+    const stamp = new Date().toISOString().replace(/[:.]/g, "-");
+    return `${projectName}-${flowName}-${stamp}.png`;
+  }
+
+  function triggerDownload(dataUrl, filename) {
+    const link = document.createElement("a");
+    link.href = dataUrl;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  }
+
+  async function normalizeAllEdges() {
+    if (!selectedProjectId || sceneFlowBusy) return;
+    await runSceneFlowCommand("SceneFlow.Edge.NormalizeAll", { projectId: selectedProjectId });
+  }
+
+  async function straightenAllEdges() {
+    if (!selectedProjectId || sceneFlowBusy) return;
+    await runSceneFlowCommand("SceneFlow.Edge.StraightenAll", { projectId: selectedProjectId });
+  }
+
+  async function downloadSceneFlowSnapshot() {
+    if (!sceneFlowRef?.exportPng) return;
+    sceneFlowError = "";
+    const dataUrl = await sceneFlowRef.exportPng();
+    if (!dataUrl) {
+      sceneFlowError = "Failed to export SceneFlow snapshot.";
+      return;
+    }
+    triggerDownload(dataUrl, sceneFlowSnapshotFilename());
+  }
+
   async function alignSelectedNodes(mode) {
     if (!selectedProjectId || !selectionHasMovableNodes || !wsConnected || sceneFlowBusy) return;
     const items = selectionNodes.map((node) => ({ node, bounds: nodeBounds(node) }));
@@ -4957,6 +5241,7 @@
     if (mode === "top") targetY = Math.min(...ys);
     if (mode === "bottom") targetY = Math.max(...bottoms);
     if (mode === "middle") targetY = (Math.min(...centersY) + Math.max(...centersY)) / 2;
+    const moves = [];
     for (const entry of items) {
       const bounds = entry.bounds;
       let nextX = bounds.x;
@@ -4974,9 +5259,16 @@
         }
       }
       if (nextX !== bounds.x || nextY !== bounds.y) {
-        await moveSceneFlowNode(entry.node.id, nextX, nextY, sceneFlowSnap);
+        moves.push({ id: entry.node.id, x: nextX, y: nextY });
       }
     }
+    if (!moves.length) return;
+    if (moves.length === 1) {
+      const move = moves[0];
+      await moveSceneFlowNode(move.id, move.x, move.y, sceneFlowNodeSnap);
+      return;
+    }
+    await moveSceneFlowNodeGroup(moves, sceneFlowNodeSnap);
   }
 
   async function distributeSelectedNodes(axis) {
@@ -4989,6 +5281,7 @@
     const last = items[items.length - 1].bounds[key];
     const gap = (last - first) / (items.length - 1);
     if (!Number.isFinite(gap)) return;
+    const moves = [];
     for (let i = 1; i < items.length - 1; i += 1) {
       const entry = items[i];
       const targetCenter = first + gap * i;
@@ -4996,9 +5289,16 @@
       const nextX = axis === "x" ? targetCenter - bounds.w / 2 : bounds.x;
       const nextY = axis === "y" ? targetCenter - bounds.h / 2 : bounds.y;
       if (nextX !== bounds.x || nextY !== bounds.y) {
-        await moveSceneFlowNode(entry.node.id, nextX, nextY, sceneFlowSnap);
+        moves.push({ id: entry.node.id, x: nextX, y: nextY });
       }
     }
+    if (!moves.length) return;
+    if (moves.length === 1) {
+      const move = moves[0];
+      await moveSceneFlowNode(move.id, move.x, move.y, sceneFlowNodeSnap);
+      return;
+    }
+    await moveSceneFlowNodeGroup(moves, sceneFlowNodeSnap);
   }
 
   async function setSelectedNodesStart(value) {
@@ -5076,12 +5376,6 @@
       sceneFlowMultiSelection = [{ type: "node", id: nodeId }];
       return;
     }
-    if (edgeCreateSourceId === nodeId) {
-      edgeCreateSourceId = "";
-      sceneFlowSelection = null;
-      sceneFlowMultiSelection = [];
-      return;
-    }
     await createSceneFlowEdge(edgeCreateSourceId, nodeId);
     edgeCreateSourceId = "";
     edgeCreateMode = false;
@@ -5107,9 +5401,35 @@
       nodeId,
       x,
       y,
-      snap: snap ?? sceneFlowSnap
+      snap: snap ?? sceneFlowNodeSnap
     };
     const response = await runSceneFlowCommand("SceneFlow.Node.Move", payload);
+    if (!response?.snapshot && previous) {
+      sceneFlow = previous;
+    }
+  }
+
+  async function moveSceneFlowNodeGroup(nodes, snap) {
+    if (!selectedProjectId || !Array.isArray(nodes) || nodes.length === 0) return;
+    const previous = sceneFlow;
+    if (sceneFlow?.nodes?.length) {
+      const moveMap = new Map(nodes.map((entry) => [entry.id, entry]));
+      const nextNodes = sceneFlow.nodes.map((node) => {
+        const move = moveMap.get(node.id);
+        if (!move) return node;
+        return {
+          ...node,
+          graphics: { ...(node.graphics || {}), x: move.x, y: move.y }
+        };
+      });
+      sceneFlow = { ...sceneFlow, nodes: nextNodes };
+    }
+    const payload = {
+      projectId: selectedProjectId,
+      nodes: nodes.map((entry) => ({ id: entry.id, x: entry.x, y: entry.y })),
+      snap: snap ?? sceneFlowNodeSnap
+    };
+    const response = await runSceneFlowCommand("SceneFlow.Node.MoveGroup", payload);
     if (!response?.snapshot && previous) {
       sceneFlow = previous;
     }
@@ -5230,9 +5550,51 @@
     }
   }
 
-  async function resetEdgeCurve() {
-    if (!selectedEdge) return;
-    await updateSceneFlowEdgeControl(selectedEdge.id, "reset", 0, 0);
+  async function retargetSceneFlowEdge(edgeId, targetId, x, y) {
+    if (!selectedProjectId || !edgeId || !targetId) return;
+    await runSceneFlowCommand("SceneFlow.Edge.Retarget", {
+      projectId: selectedProjectId,
+      edgeId,
+      targetId,
+      dropX: x,
+      dropY: y
+    });
+  }
+
+  async function normalizeSelectedEdge() {
+    if (!selectedProjectId || !selectedEdge) return;
+    await runSceneFlowCommand("SceneFlow.Edge.Normalize", {
+      projectId: selectedProjectId,
+      edgeId: selectedEdge.id
+    });
+  }
+
+  async function straightenSelectedEdge() {
+    if (!selectedProjectId || !selectedEdge) return;
+    await runSceneFlowCommand("SceneFlow.Edge.Straighten", {
+      projectId: selectedProjectId,
+      edgeId: selectedEdge.id
+    });
+  }
+
+  async function straightenSelectedEdges() {
+    if (!selectedProjectId || !selectionEdges.length) return;
+    const edgeIds = Array.from(new Set(selectionEdges.map((edge) => edge.id).filter(Boolean)));
+    if (edgeIds.length < 2) return;
+    await runSceneFlowCommand("SceneFlow.Edge.StraightenGroup", {
+      projectId: selectedProjectId,
+      edgeIds
+    });
+  }
+
+  async function normalizeSelectedEdges() {
+    if (!selectedProjectId || !selectionEdges.length) return;
+    const edgeIds = Array.from(new Set(selectionEdges.map((edge) => edge.id).filter(Boolean)));
+    if (edgeIds.length < 2) return;
+    await runSceneFlowCommand("SceneFlow.Edge.NormalizeGroup", {
+      projectId: selectedProjectId,
+      edgeIds
+    });
   }
 
   async function toggleNodeStart() {
@@ -5533,7 +5895,7 @@
 
 <svelte:window on:keydown={handleGlobalKeydown} />
 
-<main>
+<main class:editor-view={showEditor}>
   {#if !showEditor}
     <header class="hero">
       <div class="hero-brand">
@@ -5541,7 +5903,7 @@
         <div>
           <h1>Visual SceneMaker Web</h1>
         <p>
-          Revision <span title={infoRevision}>{infoRevisionSlug}</span>&nbsp;•&nbsp;Build date {infoBuildDate}
+          Version <span title={infoRevision}>{infoRevisionSlug}</span>&nbsp;•&nbsp;Build date {infoBuildDate}
         </p>
         </div>
       </div>
@@ -5556,7 +5918,6 @@
         >
           <span class:ok={wsConnected}>{wsConnected ? "connected" : "offline"}</span>
         </button>
-        <div class="badge subtle protocol-badge" title={protocolBadgeTitle}>{protocolBadgeText}</div>
       </div>
     </header>
 
@@ -5658,7 +6019,7 @@
     </section>
     <section class="panel">
         <header class="panel-title">
-          <h2>Recent projects</h2>
+          <h2>Recent Projects</h2>
         </header>
         <div class="project-list">
           {#if recentLoading}
@@ -5699,28 +6060,33 @@
     <section class="panel sceneflow-panel">
       <header class="panel-title">
         <h2>SceneFlow</h2>
-        <div class="panel-badges">
-          <div class="badge subtle">
-            {selectedProject ? selectedProject.name : "No project selected"}
+        <div class="panel-title-right">
+          <div class="panel-badges">
+            <div class="badge subtle">
+              {selectedProject ? selectedProject.name : "No project selected"}
+            </div>
           </div>
-          <div class="badge subtle protocol-badge" title={protocolBadgeTitle}>{protocolBadgeText}</div>
+          <button
+            type="button"
+            class="panel-close"
+            on:click={requestReturnToLanding}
+            disabled={!selectedProject || projectSaving}
+            aria-label="Close project"
+            title="Close project"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+            </svg>
+          </button>
         </div>
       </header>
       <div class="sceneflow-toolbar">
-        <button
-          type="button"
-          class="ghost danger"
-          on:click={requestReturnToLanding}
-          disabled={!selectedProject}
-        >
-          Close
-        </button>
         {#if projectRequiresSaveAs}
           <button
             type="button"
             class="ghost"
             on:click={openSaveAsDialog}
-            disabled={!selectedProject}
+            disabled={!selectedProject || projectSaving}
           >
             Save As
           </button>
@@ -5729,7 +6095,7 @@
             type="button"
             class="ghost"
             on:click={() => saveProject(selectedProjectId)}
-            disabled={!selectedProject}
+            disabled={!selectedProject || projectSaving}
           >
             Save
           </button>
@@ -5755,6 +6121,30 @@
         </button>
         <button type="button" class="ghost" on:click={redoSceneFlow} disabled={!wsConnected || sceneFlowBusy}>
           Redo
+        </button>
+        <button
+          type="button"
+          class="ghost"
+          on:click={normalizeAllEdges}
+          disabled={!wsConnected || sceneFlowBusy}
+        >
+          Normalize edges
+        </button>
+        <button
+          type="button"
+          class="ghost"
+          on:click={straightenAllEdges}
+          disabled={!wsConnected || sceneFlowBusy}
+        >
+          Straighten edges
+        </button>
+        <button
+          type="button"
+          class="ghost"
+          on:click={downloadSceneFlowSnapshot}
+          disabled={!sceneFlowRef || !sceneFlow}
+        >
+          Snapshot
         </button>
         <div class="runtime-controls">
           <span class={`runtime-state ${runtimeState}`}>{runtimeStateLabel}</span>
@@ -5787,16 +6177,6 @@
             title="Stop"
           >
             <IconStop className="icon" />
-          </button>
-          <button
-            type="button"
-            class="ghost icon-button"
-            on:click={openMonitorDialog}
-            disabled={!selectedProject || !wsConnected}
-            aria-label="Open runtime monitor"
-            title="Runtime monitor"
-          >
-            <IconMonitor className="icon" />
           </button>
         </div>
         {#if sceneFlowPathNodes.length || sceneFlow?.path?.length}
@@ -5846,14 +6226,25 @@
                 <span class="muted">Path: {sceneFlow.path.join(" / ")}</span>
               </div>
             {/if}
+            <button
+              type="button"
+              class="sceneflow-gear"
+              on:click={openMonitorDialog}
+              disabled={!selectedProject || !wsConnected}
+              aria-label="Open runtime monitor"
+              title="Runtime monitor"
+            >
+              <IconMonitor className="icon" />
+            </button>
           </div>
         {/if}
       </div>
       {#if !selectedProject}
         <p class="muted">Select a project to view the SceneFlow graph.</p>
       {:else if sceneFlow}
-        <div class="sceneflow-layout">
-          <aside class="sceneflow-blocks">
+        <div class="sceneflow-layout" style={sceneFlowLayoutStyle}>
+          {#if sceneFlowShowBlocks}
+            <aside class="sceneflow-blocks">
             <div class="blocks-section blocks-section--icons">
               <div class="blocks-grid blocks-grid--icons">
                 <button
@@ -6257,7 +6648,8 @@
                 </div>
               {/if}
             </div>
-          </aside>
+            </aside>
+          {/if}
           <div class="sceneflow-container" style={sceneFlowFrameStyle} bind:this={sceneFlowContainerEl}>
             <div class="sceneflow-scroll">
               <SceneFlowView
@@ -6272,14 +6664,19 @@
                 activityNodes={activityNodeIds}
                 activityEdges={activityEdgeList}
                 timeoutEdges={timeoutEdgeList}
+                runtimeValues={runtimeValues}
+                runtimeState={runtimeState}
                 onNavigate={navigateSceneFlow}
                 onNodeMove={moveSceneFlowNode}
+                onNodeGroupMove={moveSceneFlowNodeGroup}
                 onCommentUpdate={updateSceneFlowComment}
                 onEdgeControlUpdate={updateSceneFlowEdgeControl}
+                onEdgeRetarget={retargetSceneFlowEdge}
                 onDeleteSelection={deleteSceneFlowSelection}
                 onUndo={undoSceneFlow}
                 onRedo={redoSceneFlow}
-                snapToGrid={sceneFlowSnap}
+                nodeSnapToGrid={sceneFlowNodeSnap}
+                edgeSnapToGrid={sceneFlowEdgeSnap}
                 edgeCreateMode={edgeCreateMode}
                 edgeCreateSourceId={edgeCreateSourceId}
                 edgeCreateType={edgeCreateType}
@@ -6302,19 +6699,29 @@
               <button
                 type="button"
                 class="sceneflow-toggle"
-                class:active={sceneFlowSnap}
-                on:click={() => (sceneFlowSnap = !sceneFlowSnap)}
-                aria-pressed={sceneFlowSnap}
+                class:active={sceneFlowNodeSnap}
+                on:click={() => (sceneFlowNodeSnap = !sceneFlowNodeSnap)}
+                aria-pressed={sceneFlowNodeSnap}
                 disabled={!sceneFlow}
               >
-                grid snap
+                node grid snap
               </button>
               <button
                 type="button"
                 class="sceneflow-toggle"
-                class:active={varBadgeState.visible}
+                class:active={sceneFlowEdgeSnap}
+                on:click={() => (sceneFlowEdgeSnap = !sceneFlowEdgeSnap)}
+                aria-pressed={sceneFlowEdgeSnap}
+                disabled={!sceneFlow}
+              >
+                edge grid snap
+              </button>
+              <button
+                type="button"
+                class="sceneflow-toggle"
+                class:active={sceneFlowShowVars}
                 on:click={toggleVarBadges}
-                aria-pressed={varBadgeState.visible}
+                aria-pressed={sceneFlowShowVars}
                 disabled={!sceneFlow}
               >
                 show vars
@@ -6328,8 +6735,28 @@
               >
                 show cmds
               </button>
+              <button
+                type="button"
+                class="sceneflow-toggle"
+                class:active={sceneFlowShowBlocks}
+                on:click={() => (sceneFlowShowBlocks = !sceneFlowShowBlocks)}
+                aria-pressed={sceneFlowShowBlocks}
+                disabled={!sceneFlow}
+              >
+                show blocks
+              </button>
+              <button
+                type="button"
+                class="sceneflow-toggle"
+                class:active={sceneFlowShowInspector}
+                on:click={() => (sceneFlowShowInspector = !sceneFlowShowInspector)}
+                aria-pressed={sceneFlowShowInspector}
+                disabled={!sceneFlow}
+              >
+                show inspector
+              </button>
             </div>
-            {#if varBadgeState.visible}
+            {#if sceneFlowShowVars}
               <div
                 class="sceneflow-var-badge"
                 style:left={`${varBadgeState.global?.x ?? 0}px`}
@@ -6467,7 +6894,8 @@
               />
             </div>
           </div>
-          <aside class="sceneflow-inspector">
+          {#if sceneFlowShowInspector}
+            <aside class="sceneflow-inspector">
             {#if multiSelectionActive}
               <h3 class="inspector-title">Selection ({selectionList.length})</h3>
               <div class="inspector-meta">
@@ -6664,6 +7092,32 @@
                   </div>
                 </div>
               {/if}
+              {#if selectionEdges.length > 1}
+                <div class="definition-section">
+                  <header class="definition-header">
+                    <h4>Edges</h4>
+                    <span class="muted">{selectionEdges.length} edges</span>
+                  </header>
+                  <div class="actions">
+                    <button
+                      type="button"
+                      class="ghost"
+                      on:click={normalizeSelectedEdges}
+                      disabled={!wsConnected || sceneFlowBusy}
+                    >
+                      Normalize
+                    </button>
+                    <button
+                      type="button"
+                      class="ghost"
+                      on:click={straightenSelectedEdges}
+                      disabled={!wsConnected || sceneFlowBusy}
+                    >
+                      Straighten
+                    </button>
+                  </div>
+                </div>
+              {/if}
             {:else if sceneFlowSelection?.type === "node" && selectedNode && nodeDraft}
               <div class="node-header">
                 <input
@@ -6783,7 +7237,20 @@
                 {/if}
               </div>
               <div class="actions">
-                <button type="button" class="ghost" on:click={resetEdgeCurve} disabled={!wsConnected || sceneFlowBusy}>
+                <button
+                  type="button"
+                  class="ghost"
+                  on:click={normalizeSelectedEdge}
+                  disabled={!wsConnected || sceneFlowBusy}
+                >
+                  Normalize
+                </button>
+                <button
+                  type="button"
+                  class="ghost"
+                  on:click={straightenSelectedEdge}
+                  disabled={!wsConnected || sceneFlowBusy}
+                >
                   Straighten
                 </button>
                 <button type="button" class="primary" on:click={applyEdgeEdits} disabled={!edgeDirty || !wsConnected}>
@@ -6955,6 +7422,7 @@
                           class="var-row"
                           class:selected={varDefSelectedIndex === index}
                           on:click={() => selectVarDef(index)}
+                          on:dblclick={() => startVarDefEdit(index)}
                           aria-pressed={varDefSelectedIndex === index}
                         >
                           <span class="var-line">
@@ -7117,7 +7585,8 @@
                 </div>
               </div>
             {/if}
-          </aside>
+            </aside>
+          {/if}
         </div>
       {:else}
         <p class="muted">No SceneFlow data loaded yet.</p>
@@ -7156,7 +7625,6 @@
           <div class="badge subtle">
             {selectedProject ? selectedProject.name : "No project selected"}
           </div>
-          <div class="badge subtle protocol-badge" title={protocolBadgeTitle}>{protocolBadgeText}</div>
         </div>
       </header>
       <div class="script-toolbar">
@@ -7232,16 +7700,6 @@
             title="Stop"
           >
             <IconStop className="icon" />
-          </button>
-          <button
-            type="button"
-            class="ghost icon-button"
-            on:click={openMonitorDialog}
-            disabled={!selectedProject || !wsConnected}
-            aria-label="Open runtime monitor"
-            title="Runtime monitor"
-          >
-            <IconMonitor className="icon" />
           </button>
         </div>
       </div>
@@ -8146,6 +8604,86 @@
               {/each}
             </datalist>
           </section>
+          <section class="prefs-card">
+            <header class="prefs-card-header">
+              <h4>Sceneflow syntax</h4>
+              <span class="muted">XML namespace and schema references.</span>
+            </header>
+            <div class="prefs-group">
+              <div class="prefs-rows">
+                <div class="prefs-row">
+                  <div class="prefs-field">
+                    <label for="pref-xmlns">Namespace</label>
+                    <span class="prefs-help">Used as the sceneflow XML namespace.</span>
+                  </div>
+                  <div class="prefs-control">
+                    <input id="pref-xmlns" class="prefs-input" bind:value={prefsDialogDraft.sceneflowNamespace} />
+                  </div>
+                </div>
+                <div class="prefs-row">
+                  <div class="prefs-field">
+                    <label for="pref-xmlns-xsi">Instance</label>
+                    <span class="prefs-help">XML schema instance namespace.</span>
+                  </div>
+                  <div class="prefs-control">
+                    <input id="pref-xmlns-xsi" class="prefs-input" bind:value={prefsDialogDraft.sceneflowInstance} />
+                  </div>
+                </div>
+                <div class="prefs-row">
+                  <div class="prefs-field">
+                    <label for="pref-xsd-location">XSD location</label>
+                    <span class="prefs-help">Schema location used when exporting sceneflow.</span>
+                  </div>
+                  <div class="prefs-control">
+                    <input id="pref-xsd-location" class="prefs-input" bind:value={prefsDialogDraft.sceneflowSchema} />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+          <section class="prefs-card prefs-card--wide">
+            <header class="prefs-card-header">
+              <h4>Recently edited sceneflows</h4>
+              <span class="muted">Manage the stored list for this project.</span>
+            </header>
+            <div class="prefs-recent">
+              <div class="prefs-recent-list" role="list" aria-label="Recent sceneflows">
+                {#if prefsRecentFiles.length === 0}
+                  <div class="prefs-recent-empty">No recent sceneflows.</div>
+                {:else}
+                  {#each prefsRecentFiles as entry}
+                    <button
+                      type="button"
+                      class="prefs-recent-item"
+                      class:selected={prefsRecentSelectedKey === entry.key}
+                      aria-current={prefsRecentSelectedKey === entry.key ? "true" : undefined}
+                      on:click={() => selectPrefsRecentFile(entry.key)}
+                    >
+                      <span class="prefs-recent-name">{entry.value}</span>
+                    </button>
+                  {/each}
+                {/if}
+              </div>
+              <div class="prefs-recent-actions">
+                <button
+                  type="button"
+                  class="ghost"
+                  on:click={removePrefsRecentFile}
+                  disabled={!prefsRecentSelectedKey}
+                >
+                  Remove item
+                </button>
+                <button
+                  type="button"
+                  class="ghost danger"
+                  on:click={clearPrefsRecentFiles}
+                  disabled={!prefsRecentFiles.length}
+                >
+                  Clear list
+                </button>
+              </div>
+            </div>
+          </section>
         </div>
         <div class="actions">
           <button
@@ -8177,7 +8715,7 @@
       <div class="modal monitor-modal" role="dialog" aria-modal="true" aria-labelledby="monitor-dialog-title">
         <div class="monitor-header">
           <div>
-            <h3 id="monitor-dialog-title">Runtime monitor</h3>
+            <h3 id="monitor-dialog-title">Runtime Monitor</h3>
             <span class="muted">State: {runtimeStateLabel}</span>
           </div>
           <button type="button" class="ghost" on:click={closeMonitorDialog}>Close</button>
@@ -8188,11 +8726,11 @@
               <header>
                 <h4>Global variables</h4>
               </header>
-              {#if runtimeGlobals.length === 0}
+              {#if monitorGlobals.length === 0}
                 <p class="muted">No global variables.</p>
               {:else}
                 <div class="monitor-table" role="list">
-                  {#each runtimeGlobals as variable}
+                  {#each monitorGlobals as variable}
                     {@const key = monitorVarKey("global", variable.name)}
                     {@const details = monitorVarValue(variable)}
                     <button
@@ -8217,11 +8755,11 @@
               <header>
                 <h4>Local variables</h4>
               </header>
-              {#if runtimeLocals.length === 0}
+              {#if monitorLocals.length === 0}
                 <p class="muted">No local variables.</p>
               {:else}
                 <div class="monitor-table" role="list">
-                  {#each runtimeLocals as variable}
+                  {#each monitorLocals as variable}
                     {@const key = monitorVarKey("local", variable.name)}
                     {@const details = monitorVarValue(variable)}
                     <button

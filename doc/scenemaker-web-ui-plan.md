@@ -27,6 +27,9 @@ Done
 - Svelte app shell with three main regions: left building blocks + scenes, center SceneFlow canvas, right inspector.
 - Scene Script section positioned below SceneFlow and aligned to width.
 - Project dialogs + preferences reachable from web UI.
+- Preferences dialog includes recent sceneflow list management (remove item / clear list).
+- Swing parity review complete; remaining legacy items (Save All, Script Elements panel, etc.) intentionally dropped.
+- WebSocket command timeout to avoid hung requests in the web UI.
 
 ## Phase 2: SceneFlow canvas (core editing)
 Done
@@ -34,6 +37,7 @@ Done
 - Grid dots, snap-to-grid, zoom/pan/fit, minimap, and viewport constraints.
 - Node/edge creation via block panel and edge creation flow.
 - Edge routing, arrowheads, control-point updates, and probability manager (sum=100).
+- Edge edit handles on hover + multi-edge straighten with spacing for selected edges.
 - Comment editing, moving, resizing, and styling (banana handle).
 - Command visualization as text or dots, toggleable.
 - Start node indicators and supernode sizing by child count.
@@ -70,36 +74,35 @@ Done
 - Runtime controls (start/pause/stop) in SceneFlow + Scene Script toolbars.
 - Variable badges for local/global variables in the SceneFlow canvas (toggleable).
 
+## Phase 8: Hardening & QA
+Done
+- WebSocket command errors now return a response even on unexpected server exceptions.
+- Grouped undo/redo for multi-node moves (including align/distribute operations).
+
 ## Next steps
 Next
-1) Bulk actions for multi-selection.
-   - Align/distribute nodes.
-   - Mass toggles (start node, delete, etc.).
-2) Expand edge editing.
-   - More control-point tools and UX affordances.
-   - Better edge selection handles.
-   - TODO: Multi-edge straighten that preserves separate paths (avoid overlapping edges).
-3) SceneFlow preferences and project configuration.
-   - Expose SceneFlow preference handling (grid, sizes, etc.).
-   - Project configuration editing in the web UI.
-4) Remaining Swing parity checks.
-   - Verify all Swing dialogs/features are represented.
-   - Validate any missing inspector fields or metadata.
-5) Hardening & QA.
-   - Error handling in WebSocket flows.
-   - Validate undo/redo coverage for complex operations.
-6) Final web UI / app design pass.
+1) Final web UI / app design pass.
    - Visual polish, spacing, iconography, and consistency sweep.
-7) Cutover prep.
-   - Swing editor deprecation toggle.
-   - Documentation + release checklist.
-8) Android headless hosting feasibility.
+2) Cutover prep.
+   - Swing editor deprecation toggle (`--no-swing`) is done.
+   - Documentation + release checklist:
+     - Update README/landing help with `--allow-lan`, `--no-browser`, `--no-swing`, token usage, and LAN reachability.
+     - Document browser auto-open and how to connect manually (token panel, /api/v1/token on localhost).
+     - Note save/close behavior (Close disabled while saving; Save As required for untitled projects).
+     - Add UI help entry for recent sceneflows management (remove/clear list).
+     - Verify packaged assets include `/images/vsm_logo.svg` and web-ui build output.
+     - Smoke checklist: open recent project, create/edit nodes/edges/comments, undo/redo, copy/paste, align/distribute, agent/scene drag, runtime play/stop, variable badges live update, script diagnostics, preferences apply.
+3) Android headless hosting feasibility.
    - Refactor web server to depend only on core/runtime (no Swing/editor classes).
    - Identify Android-compatible HTTP/WebSocket server alternative to Javalin/Jetty.
    - Package web UI assets for Android (classpath/assets) and define launch flags.
-9) Agents palette follow-ups.
+4) Agents palette follow-ups.
    - Read agent types (input/processing/output) from project.xml instead of defaulting to processing.
    - Map agents to their configured commands in project.xml (replace PlayAction placeholder).
    - Expand agent drag/drop to respect per-agent type + command metadata.
-10) Dependency hygiene.
+5) Dependency hygiene.
     - Probe for a newer java-cup-runtime version and update if safe.
+
+## Future web UI todos (deferred)
+- SceneFlow element tree functions panel (function definitions add/edit/remove).
+- Help/About dialogs.
