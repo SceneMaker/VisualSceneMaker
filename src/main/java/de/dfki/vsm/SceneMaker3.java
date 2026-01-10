@@ -26,12 +26,15 @@ public final class SceneMaker3 {
     public static void main(final String[] args) {
         boolean allowLan = false;
         boolean openBrowser = true;
+        boolean noSwing = false;
         List<String> remaining = new ArrayList<>();
         for (String arg : args) {
             if ("--allow-lan".equalsIgnoreCase(arg) || "--allow-external".equalsIgnoreCase(arg)) {
                 allowLan = true;
             } else if ("--no-browser".equalsIgnoreCase(arg)) {
                 openBrowser = false;
+            } else if ("--no-swing".equalsIgnoreCase(arg)) {
+                noSwing = true;
             } else {
                 remaining.add(arg);
             }
@@ -46,6 +49,17 @@ public final class SceneMaker3 {
             }
         } catch (Exception exc) {
             sLogger.warning("Warning: Cannot start Web UI server: " + exc.getMessage());
+        }
+        if (noSwing) {
+            if (effectiveArgs.length == 2 && "runtime".equalsIgnoreCase(effectiveArgs[0])) {
+                final File file = new File(effectiveArgs[1]);
+                if (file.exists()) {
+                    Core.runtime(file);
+                } else {
+                    error(file);
+                }
+            }
+            return;
         }
         // Let Java Swing do the work for us
         SwingUtilities.invokeLater(() -> {
@@ -175,7 +189,7 @@ public final class SceneMaker3 {
 
     // Print usage when usage error happened
     private static void usage() {
-        sLogger.failure("Error: Usage: [--allow-lan] [--no-browser] [runtime|editor] [filename]");
+        sLogger.failure("Error: Usage: [--allow-lan] [--no-browser] [--no-swing] [runtime|editor] [filename]");
     }
 
     // Print error when a file error happened

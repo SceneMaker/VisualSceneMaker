@@ -3,8 +3,10 @@
   export let snapshot = null;
   export let onNavigate = null;
   export let onNodeMove = null;
+  export let onNodeGroupMove = null;
   export let onCommentUpdate = null;
   export let onEdgeControlUpdate = null;
+  export let onEdgeRetarget = null;
   export let onDeleteSelection = null;
   export let onUndo = null;
   export let onRedo = null;
@@ -25,7 +27,8 @@
   export let config = null;
   export let selection = null;
   export let multiSelection = [];
-  export let snapToGrid = true;
+  export let nodeSnapToGrid = true;
+  export let edgeSnapToGrid = true;
   export let onCopySelection = null;
   export let onPasteSelection = null;
   export let onCutSelection = null;
@@ -33,6 +36,8 @@
   export let activityNodes = [];
   export let activityEdges = [];
   export let timeoutEdges = [];
+  export let runtimeValues = {};
+  export let runtimeState = "stopped";
 
   const DEFAULT_NODE_SIZE = 90;
   const DEFAULT_FONT_SIZE = 16;
@@ -65,6 +70,32 @@
   const zoomStep = 1.12;
   const SUPER_NODE_SHAPE_POWER = 5;
   const COMMAND_FONT_FAMILY = '"SansSerif", "Helvetica Neue", Arial, sans-serif';
+  const EXPORT_STYLE_PROPS = [
+    "fill",
+    "fill-opacity",
+    "stroke",
+    "stroke-width",
+    "stroke-linecap",
+    "stroke-linejoin",
+    "stroke-dasharray",
+    "stroke-dashoffset",
+    "stroke-opacity",
+    "opacity",
+    "font-family",
+    "font-size",
+    "font-style",
+    "font-weight",
+    "letter-spacing",
+    "text-anchor",
+    "dominant-baseline",
+    "paint-order",
+    "filter",
+    "mix-blend-mode",
+    "background-color",
+    "background-image",
+    "background-size",
+    "background-position"
+  ];
 
   $: nodes = snapshot?.nodes || [];
   $: edges = snapshot?.edges || [];
@@ -172,6 +203,7 @@
   let timeoutNow = Date.now();
   let timeoutFrame = null;
   let selectedNodeIds = new Set();
+  let selectedEdgeIds = new Set();
   let selectedCommentIds = new Set();
   let selectionBox = null;
   let suppressStageClick = false;
@@ -180,7 +212,9 @@
   let editingCommentOriginal = "";
   let commentEditorEl = null;
   let hoveredCommentId = null;
+  let hoveredEdgeId = null;
   let edgeCreateHoverId = null;
+  let edgeRetargetHoverId = null;
   let edgeCreateCursor = null;
   let dragState = null;
   let panStart = { x: 0, y: 0 };
@@ -227,30 +261,37 @@
   $: {
     const nodes = new Set();
     const comments = new Set();
+    const edges = new Set();
     if (Array.isArray(multiSelection)) {
       for (const entry of multiSelection) {
         if (!entry || !entry.id) continue;
         if (entry.type === "node") {
           nodes.add(entry.id);
+        } else if (entry.type === "edge") {
+          edges.add(entry.id);
         } else if (entry.type === "comment") {
           comments.add(entry.id);
         }
       }
     }
+    if (selection?.type === "node") {
+      nodes.add(selection.id);
+    } else if (selection?.type === "edge") {
+      edges.add(selection.id);
+    } else if (selection?.type === "comment") {
+      comments.add(selection.id);
+    }
     selectedNodeIds = nodes;
+    selectedEdgeIds = edges;
     selectedCommentIds = comments;
   }
 
   $: if (selection) {
-    if (selection.type === "node" || selection.type === "comment") {
-      const inMulti = Array.isArray(multiSelection)
-        ? multiSelection.some((entry) => entry.type === selection.type && entry.id === selection.id)
-        : false;
-      if (!inMulti) {
-        multiSelection = [{ type: selection.type, id: selection.id }];
-      }
-    } else if (selection.type === "edge" && Array.isArray(multiSelection) && multiSelection.length) {
-      multiSelection = [];
+    const inMulti = Array.isArray(multiSelection)
+      ? multiSelection.some((entry) => entry.type === selection.type && entry.id === selection.id)
+      : false;
+    if (!inMulti) {
+      multiSelection = [{ type: selection.type, id: selection.id }];
     }
   } else if (selection === null && Array.isArray(multiSelection) && multiSelection.length) {
     multiSelection = [];
@@ -586,6 +627,68 @@
     clampPanToNonNegative();
   }
 
+  function inlineSvgStyles(sourceSvg, targetSvg) {
+    if (typeof window === "undefined" || !sourceSvg || !targetSvg) return;
+    const copyStyles = (source, target) => {
+      const computed = window.getComputedStyle(source);
+      for (const prop of EXPORT_STYLE_PROPS) {
+        const value = computed.getPropertyValue(prop);
+        if (value) {
+          target.style.setProperty(prop, value);
+        }
+      }
+    };
+    copyStyles(sourceSvg, targetSvg);
+    const sourceEls = sourceSvg.querySelectorAll("*");
+    const targetEls = targetSvg.querySelectorAll("*");
+    sourceEls.forEach((el, idx) => {
+      const target = targetEls[idx];
+      if (!target) return;
+      copyStyles(el, target);
+    });
+  }
+
+  export async function exportPng(options = {}) {
+    if (!svgEl) return null;
+    const scale = Number.isFinite(options.scale) ? options.scale : 1;
+    const background = options.background || "#ffffff";
+    const clone = svgEl.cloneNode(true);
+    inlineSvgStyles(svgEl, clone);
+    const width = Number.parseFloat(svgEl.getAttribute("width")) || canvasWidth || 0;
+    const height = Number.parseFloat(svgEl.getAttribute("height")) || canvasHeight || 0;
+    clone.setAttribute("width", String(width));
+    clone.setAttribute("height", String(height));
+    clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+    clone.setAttribute("xmlns:xlink", "http://www.w3.org/1999/xlink");
+    const serialized = new XMLSerializer().serializeToString(clone);
+    const blob = new Blob([serialized], { type: "image/svg+xml;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    return new Promise((resolve) => {
+      const image = new Image();
+      image.onload = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.max(1, Math.round(width * scale));
+        canvas.height = Math.max(1, Math.round(height * scale));
+        const ctx = canvas.getContext("2d");
+        if (!ctx) {
+          URL.revokeObjectURL(url);
+          resolve(null);
+          return;
+        }
+        ctx.fillStyle = background;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+        URL.revokeObjectURL(url);
+        resolve(canvas.toDataURL("image/png"));
+      };
+      image.onerror = () => {
+        URL.revokeObjectURL(url);
+        resolve(null);
+      };
+      image.src = url;
+    });
+  }
+
   function clampPanToNonNegative() {
     if (!baseBox) return;
     const minX = -baseBox.x;
@@ -701,6 +804,34 @@
     return !(a.x + a.w < b.x || a.x > b.x + b.w || a.y + a.h < b.y || a.y > b.y + b.h);
   }
 
+  function edgeBounds(edge, drag) {
+    if (!edge) return null;
+    const pts = edgePoints(edge, drag);
+    if (!pts || pts.length === 0) return null;
+    let minX = Infinity;
+    let minY = Infinity;
+    let maxX = -Infinity;
+    let maxY = -Infinity;
+    for (const pt of pts) {
+      if (!pt) continue;
+      const values = [
+        { x: pt.x, y: pt.y },
+        { x: pt.cx, y: pt.cy }
+      ];
+      for (const value of values) {
+        if (!Number.isFinite(value.x) || !Number.isFinite(value.y)) continue;
+        minX = Math.min(minX, value.x);
+        minY = Math.min(minY, value.y);
+        maxX = Math.max(maxX, value.x);
+        maxY = Math.max(maxY, value.y);
+      }
+    }
+    if (!Number.isFinite(minX) || !Number.isFinite(minY) || !Number.isFinite(maxX) || !Number.isFinite(maxY)) {
+      return null;
+    }
+    return { x: minX, y: minY, w: maxX - minX, h: maxY - minY };
+  }
+
   function startSelectionBox(event) {
     if (event.button !== 0 || !svgEl) return;
     event.preventDefault();
@@ -757,6 +888,7 @@
     suppressStageClick = true;
     const rect = selectionRect(finished);
     const nextNodeIds = finished.additive ? new Set(selectedNodeIds) : new Set();
+    const nextEdgeIds = finished.additive ? new Set(selectedEdgeIds) : new Set();
     const nextCommentIds = finished.additive ? new Set(selectedCommentIds) : new Set();
     if (rect) {
       for (const node of nodes) {
@@ -773,9 +905,15 @@
           nextCommentIds.add(comment.id);
         }
       }
+      for (const edge of edges) {
+        const eRect = edgeBounds(edge, null);
+        if (eRect && rectsIntersect(rect, eRect)) {
+          nextEdgeIds.add(edge.id);
+        }
+      }
     }
-    if (nextNodeIds.size || nextCommentIds.size) {
-      updateMultiSelection(nextNodeIds, nextCommentIds);
+    if (nextNodeIds.size || nextEdgeIds.size || nextCommentIds.size) {
+      updateMultiSelection(nextNodeIds, nextCommentIds, nextEdgeIds);
       return;
     }
     if (!finished.additive) {
@@ -889,17 +1027,17 @@
     return entry && target && entry.type === target.type && entry.id === target.id;
   }
 
-  function buildSelectionList(nodeIds, commentIds) {
+  function buildSelectionList(nodeIds, commentIds, edgeIds) {
     const list = [];
     nodeIds.forEach((id) => list.push(selectionEntry("node", id)));
+    edgeIds.forEach((id) => list.push(selectionEntry("edge", id)));
     commentIds.forEach((id) => list.push(selectionEntry("comment", id)));
     return list;
   }
 
-  function updateMultiSelection(nextNodeIds, nextCommentIds, primary = null) {
-    const list = buildSelectionList(nextNodeIds, nextCommentIds);
+  function updateMultiSelection(nextNodeIds, nextCommentIds, nextEdgeIds, primary = null) {
+    const list = buildSelectionList(nextNodeIds, nextCommentIds, nextEdgeIds);
     multiSelection = list;
-    selectedEdgeId = null;
     if (primary) {
       selection = primary;
       return;
@@ -912,12 +1050,20 @@
 
   function toggleSelection(type, id) {
     const nextNodeIds = new Set(selectedNodeIds);
+    const nextEdgeIds = new Set(selectedEdgeIds);
     const nextCommentIds = new Set(selectedCommentIds);
     if (type === "node") {
       if (nextNodeIds.has(id)) {
         nextNodeIds.delete(id);
       } else {
         nextNodeIds.add(id);
+      }
+    }
+    if (type === "edge") {
+      if (nextEdgeIds.has(id)) {
+        nextEdgeIds.delete(id);
+      } else {
+        nextEdgeIds.add(id);
       }
     }
     if (type === "comment") {
@@ -927,9 +1073,8 @@
         nextCommentIds.add(id);
       }
     }
-    const list = buildSelectionList(nextNodeIds, nextCommentIds);
+    const list = buildSelectionList(nextNodeIds, nextCommentIds, nextEdgeIds);
     multiSelection = list;
-    selectedEdgeId = null;
     if (list.length === 0) {
       selection = null;
       return;
@@ -966,19 +1111,23 @@
     selectedNodeId = nodeId;
     selectedEdgeId = null;
     selectedCommentId = null;
-    updateMultiSelection(new Set([nodeId]), new Set(), { type: "node", id: nodeId });
+    updateMultiSelection(new Set([nodeId]), new Set(), new Set(), { type: "node", id: nodeId });
   }
 
-  function selectEdge(edgeId) {
+  function selectEdge(edgeId, options = {}) {
     if (editingCommentId) {
       commitCommentEdit();
     }
     focusStage();
+    const isMulti = options.multi;
+    if (isMulti) {
+      toggleSelection("edge", edgeId);
+      return;
+    }
     selectedEdgeId = edgeId;
     selectedNodeId = null;
     selectedCommentId = null;
-    selection = { type: "edge", id: edgeId };
-    multiSelection = [];
+    updateMultiSelection(new Set(), new Set(), new Set([edgeId]), { type: "edge", id: edgeId });
   }
 
   function selectComment(commentId, options = {}) {
@@ -994,7 +1143,7 @@
     selectedCommentId = commentId;
     selectedNodeId = null;
     selectedEdgeId = null;
-    updateMultiSelection(new Set(), new Set([commentId]), { type: "comment", id: commentId });
+    updateMultiSelection(new Set(), new Set([commentId]), new Set(), { type: "comment", id: commentId });
   }
 
   function edgeColor(edge) {
@@ -1380,12 +1529,39 @@
     return { x: x + w / 2, y: y + h / 2 };
   }
 
-  function edgeLabel(edge) {
+  function nodeContainsPoint(node, point, drag) {
+    if (!node || !point) return false;
+    const pos = nodePosition(node, drag);
+    const { w, h } = nodeSize(node);
+    return point.x >= pos.x && point.x <= pos.x + w && point.y >= pos.y && point.y <= pos.y + h;
+  }
+
+  function findNodeAtPoint(point, drag) {
+    if (!point) return null;
+    for (let i = nodes.length - 1; i >= 0; i -= 1) {
+      const node = nodes[i];
+      if (nodeContainsPoint(node, point, drag)) {
+        return node;
+      }
+    }
+    return null;
+  }
+
+  function edgeLabel(edge, values, state) {
     if (edge.condition) return edge.condition;
     if (edge.probability !== undefined && edge.probability !== null) {
       return `${edge.probability}%`;
     }
-    if (edge.timeoutExpr) return `${edge.timeoutExpr}(ms)`;
+    if (edge.timeoutExpr) {
+      if (state === "running") {
+        const runtimeValue = runtimeNumericValue(edge.timeoutExpr, values);
+        if (runtimeValue !== null) {
+          const expr = edge.timeoutExpr.trim();
+          return `${runtimeValue}ms (${expr})`;
+        }
+      }
+      return `${edge.timeoutExpr}(ms)`;
+    }
     if (edge.timeoutMs !== undefined && edge.timeoutMs !== null) {
       return `${edge.timeoutMs}ms`;
     }
@@ -1445,6 +1621,14 @@
     return null;
   }
 
+  function edgeBendHandlePos(edge, drag, label) {
+    const pos = edgeMidPoint(edge, drag);
+    if (!pos) return null;
+    if (!label) return pos;
+    const offset = Math.max(10, Math.round(labelLineHeight * 0.9));
+    return { x: pos.x, y: pos.y - offset };
+  }
+
   function edgeControlPoints(edge, drag) {
     const pts = edgePoints(edge, drag);
     if (pts.length < 2) return null;
@@ -1495,7 +1679,21 @@
     return lines.join("\n");
   }
 
-  function edgeTooltip(edge) {
+  function runtimeNumericValue(expr, values) {
+    if (!expr) return null;
+    const name = expr.trim();
+    if (!name) return null;
+    const raw = values?.[name];
+    if (Number.isFinite(raw)) return raw;
+    if (raw === null || raw === undefined) return null;
+    const text = String(raw).trim();
+    if (!text) return null;
+    if (!/^-?\d+(\.\d+)?$/.test(text)) return null;
+    const parsed = Number.parseFloat(text);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+
+  function edgeTooltip(edge, values) {
     if (!edge) return "";
     const lines = [];
     if (edge.type) {
@@ -1508,7 +1706,14 @@
       lines.push(`Probability: ${edge.probability}`);
     }
     if (edge.timeoutExpr) {
-      lines.push(`Timeout expr: ${edge.timeoutExpr}`);
+      const expr = edge.timeoutExpr.trim();
+      const runtimeValue = runtimeNumericValue(expr, values);
+      if (runtimeValue !== null) {
+        lines.push(`Timeout: ${runtimeValue}ms (${expr})`);
+      } else {
+        lines.push(`Timeout expr: ${edge.timeoutExpr}`);
+      }
+      return lines.join("\n");
     }
     if (edge.timeoutMs !== undefined && edge.timeoutMs !== null) {
       lines.push(`Timeout: ${edge.timeoutMs}ms`);
@@ -1566,6 +1771,13 @@
   }
 
   function handleEdgeKeydown(edge, event) {
+    if (event.key === "r" || event.key === "R") {
+      event.preventDefault();
+      if (typeof onEdgeControlUpdate === "function") {
+        onEdgeControlUpdate(edge.id, "reset", 0, 0);
+      }
+      return;
+    }
     if (event.key !== "Enter" && event.key !== " " && event.key !== "Spacebar") {
       return;
     }
@@ -1650,9 +1862,8 @@
     }
   }
 
-  function edgeAriaLabel(edge) {
+  function edgeAriaLabel(edge, label) {
     if (!edge) return "Edge";
-    const label = edgeLabel(edge);
     if (label) {
       return `Edge ${edge.type || ""}: ${label}`;
     }
@@ -1950,6 +2161,13 @@
     };
   }
 
+  function snapWorldPoint(point, enableSnap) {
+    if (!point || !enableSnap) return point;
+    const snappedX = gridOriginX + Math.round((point.x - gridOriginX) / gridX) * gridX;
+    const snappedY = gridOriginY + Math.round((point.y - gridOriginY) / gridY) * gridY;
+    return clampWorldPoint({ x: snappedX, y: snappedY });
+  }
+
   function worldRectToScreenRect(rect) {
     if (!svgEl || !rect) return null;
     const view = currentViewBox();
@@ -2144,6 +2362,29 @@
     }
   }
 
+  function startEdgeTargetDrag(event, edge, point) {
+    if (!edge || event.button !== 0) return;
+    if (edgeCreateMode) return;
+    event.preventDefault();
+    focusStage();
+    selectEdge(edge.id);
+    const world = eventToWorld(event);
+    dragState = {
+      type: "edge-target",
+      id: edge.id,
+      x: point?.x ?? world.x,
+      y: point?.y ?? world.y,
+      startX: world.x,
+      startY: world.y,
+      moved: false,
+      pointerId: event.pointerId
+    };
+    const captureEl = stageEl || svgEl;
+    if (captureEl) {
+      captureEl.setPointerCapture(event.pointerId);
+    }
+  }
+
   function startEdgeBendDrag(event, edge, controls) {
     if (!edge || event.button !== 0) return;
     if (edgeCreateMode) return;
@@ -2173,6 +2414,7 @@
   function updateDrag(event) {
     if (!dragState || dragState.pointerId !== event.pointerId) return;
     const world = eventToWorld(event);
+    const dragPoint = snapWorldPoint(world, edgeSnapToGrid) ?? world;
     const dx = world.x - dragState.startX;
     const dy = world.y - dragState.startY;
     if (dragState.type === "group") {
@@ -2189,18 +2431,31 @@
     if (dragState.type === "edge-control") {
       dragState = {
         ...dragState,
-        cx: world.x,
-        cy: world.y,
+        cx: dragPoint.x,
+        cy: dragPoint.y,
         moved: dragState.moved || Math.hypot(dx, dy) > dragThreshold
       };
       return;
     }
-    if (dragState.type === "edge-bend") {
+    if (dragState.type === "edge-target") {
       dragState = {
         ...dragState,
-        dx,
-        dy,
+        x: dragPoint.x,
+        y: dragPoint.y,
         moved: dragState.moved || Math.hypot(dx, dy) > dragThreshold
+      };
+      const hoveredNode = findNodeAtPoint(dragPoint, null);
+      edgeRetargetHoverId = hoveredNode ? hoveredNode.id : null;
+      return;
+    }
+    if (dragState.type === "edge-bend") {
+      const bendDx = dragPoint.x - dragState.startX;
+      const bendDy = dragPoint.y - dragState.startY;
+      dragState = {
+        ...dragState,
+        dx: bendDx,
+        dy: bendDy,
+        moved: dragState.moved || Math.hypot(bendDx, bendDy) > dragThreshold
       };
       return;
     }
@@ -2242,6 +2497,7 @@
     if (!dragState || dragState.pointerId !== event.pointerId) return;
     const finished = dragState;
     dragState = null;
+    edgeRetargetHoverId = null;
     const captureEl = stageEl || svgEl;
     if (captureEl && captureEl.hasPointerCapture(event.pointerId)) {
       captureEl.releasePointerCapture(event.pointerId);
@@ -2254,7 +2510,8 @@
     if (finished.type === "group") {
       const dx = finished.dx ?? 0;
       const dy = finished.dy ?? 0;
-      if (typeof onNodeMove === "function") {
+      const nodeMoves = [];
+      if (finished.nodeIds?.length) {
         for (const nodeId of finished.nodeIds || []) {
           const origin = finished.nodeOrigins?.[nodeId];
           if (!origin) continue;
@@ -2262,7 +2519,14 @@
           const nextX = origin.x + dx;
           const nextY = origin.y + dy;
           const clamped = clampNodePoint(node, { x: nextX, y: nextY });
-          await Promise.resolve(onNodeMove(nodeId, clamped.x, clamped.y, snapToGrid));
+          nodeMoves.push({ id: nodeId, x: clamped.x, y: clamped.y });
+        }
+      }
+      if (nodeMoves.length > 1 && typeof onNodeGroupMove === "function") {
+        await Promise.resolve(onNodeGroupMove(nodeMoves, nodeSnapToGrid));
+      } else if (typeof onNodeMove === "function") {
+        for (const move of nodeMoves) {
+          await Promise.resolve(onNodeMove(move.id, move.x, move.y, nodeSnapToGrid));
         }
       }
       if (typeof onCommentUpdate === "function") {
@@ -2278,13 +2542,22 @@
       return;
     }
     if (finished.type === "node" && typeof onNodeMove === "function") {
-      onNodeMove(finished.id, finalX, finalY, snapToGrid);
+      onNodeMove(finished.id, finalX, finalY, nodeSnapToGrid);
     }
     if ((finished.type === "comment" || finished.type === "comment-resize") && typeof onCommentUpdate === "function") {
       onCommentUpdate(finished.id, finalX, finalY, finished.width, finished.height);
     }
     if (finished.type === "edge-control" && typeof onEdgeControlUpdate === "function") {
       onEdgeControlUpdate(finished.id, finished.handle, finished.cx, finished.cy);
+    }
+    if (finished.type === "edge-target") {
+      const point = { x: finalX, y: finalY };
+      const target = findNodeAtPoint(point, null);
+      if (target && typeof onEdgeRetarget === "function") {
+        onEdgeRetarget(finished.id, target.id, point.x, point.y);
+      }
+      suppressStageClick = true;
+      return;
     }
     if (finished.type === "edge-bend" && typeof onEdgeControlUpdate === "function") {
       const dx = finished.dx ?? 0;
@@ -2370,6 +2643,22 @@
         nextPoints = nextPoints.map((pt, index) => (index === idx ? next : pt));
       }
     }
+    if (activeDrag?.type === "edge-target" && activeDrag.id === edge.id) {
+      const lastIdx = nextPoints.length - 1;
+      const end = nextPoints[lastIdx];
+      if (end) {
+        const dx = (activeDrag.x ?? end.x) - end.x;
+        const dy = (activeDrag.y ?? end.y) - end.y;
+        const next = {
+          ...end,
+          x: activeDrag.x ?? end.x,
+          y: activeDrag.y ?? end.y,
+          cx: Number.isFinite(end.cx) ? end.cx + dx : end.cx,
+          cy: Number.isFinite(end.cy) ? end.cy + dy : end.cy
+        };
+        nextPoints = nextPoints.map((pt, index) => (index === lastIdx ? next : pt));
+      }
+    }
     if (activeDrag?.type === "edge-bend" && activeDrag.id === edge.id) {
       const dx = activeDrag.dx ?? 0;
       const dy = activeDrag.dy ?? 0;
@@ -2384,6 +2673,9 @@
       });
     }
     const adjusted = applyEdgeOffsets(nextPoints, edge);
+    if (activeDrag?.type === "edge-target" && activeDrag.id === edge.id) {
+      return adjusted;
+    }
     return adjustEdgeEndpoints(adjusted, edge, drag);
   }
 
@@ -2466,8 +2758,7 @@
 
   function buildEdgeCreatePreview(source, hover, cursor) {
     if (!edgeCreateMode || !source) return null;
-    const invalid = hover && hover.id === source.id;
-    const targetNode = !invalid && hover ? hover : null;
+    const targetNode = hover || null;
     const targetPoint = targetNode ? nodeCenter(targetNode, null) : cursor;
     if (!targetPoint) return null;
     const sourceCenter = nodeCenter(source, null);
@@ -2481,7 +2772,7 @@
     return {
       path,
       arrowPath: arrow ? arrowPath(arrow) : "",
-      invalid
+      invalid: false
     };
   }
 
@@ -2661,10 +2952,11 @@
 
   <g class="edges">
     {#each edges as edge (edge.id)}
-      {@const label = edgeLabel(edge)}
-      {@const tooltip = edgeTooltip(edge)}
+      {@const label = edgeLabel(edge, runtimeValues, runtimeState)}
+      {@const tooltip = edgeTooltip(edge, runtimeValues)}
       {@const baseColor = edgeColor(edge)}
-      {@const isSelected = selectedEdgeId === edge.id}
+      {@const isHovered = hoveredEdgeId === edge.id}
+      {@const isSelected = selectedEdgeIds.has(edge.id)}
       {@const color = isSelected ? COLORS.selected : baseColor}
       {@const arrow = edgeArrow(edge, dragState)}
       {@const arrowPathData = arrow ? arrowPath(arrow) : ""}
@@ -2672,19 +2964,27 @@
       {@const activity = activityEdgeMap.get(edge.id)}
       {@const timeoutEntry = timeoutEdgeMap.get(edge.id)}
       {@const timeoutProgress = edge.type === "TEDGE" ? timeoutEdgeProgress(timeoutEntry, timeoutNow) : null}
-      {@const controls = isSelected ? edgeControlPoints(edge, dragState) : null}
-      {@const handleRadius = isSelected ? Math.max(5, Math.round(baseNodeSize * 0.08)) : 0}
-      {@const anchorRadius = isSelected ? Math.max(3, Math.round(handleRadius * 0.55)) : 0}
-      {@const bendRadius = isSelected ? Math.max(5, Math.round(handleRadius * 0.9)) : 0}
-      {@const bendPos = controls ? edgeMidPoint(edge, dragState) : null}
+      {@const controls = isSelected || isHovered ? edgeControlPoints(edge, dragState) : null}
+      {@const showHandles = isSelected || isHovered}
+      {@const baseHandleRadius = Math.max(5, Math.round(baseNodeSize * 0.08))}
+      {@const handleRadius = showHandles ? (isSelected ? baseHandleRadius : Math.max(4, Math.round(baseHandleRadius * 0.8))) : 0}
+      {@const handleHitRadius = showHandles ? Math.max(12, handleRadius + 8) : 0}
+      {@const anchorRadius = showHandles ? Math.max(3, Math.round(handleRadius * 0.55)) : 0}
+      {@const bendRadius = showHandles ? Math.max(5, Math.round(handleRadius * 0.9)) : 0}
+      {@const bendHitRadius = showHandles ? Math.max(14, bendRadius + 10) : 0}
+      {@const bendPos = controls ? edgeBendHandlePos(edge, dragState, label) : null}
       <g
         class="edge-group"
         class:selected={isSelected}
-        on:click|stopPropagation={() => selectEdge(edge.id)}
+        on:click|stopPropagation={(event) => selectEdge(edge.id, { multi: isMultiModifier(event) })}
         on:keydown={(event) => handleEdgeKeydown(edge, event)}
+        on:mouseenter={() => (hoveredEdgeId = edge.id)}
+        on:mouseleave={() => {
+          if (hoveredEdgeId === edge.id) hoveredEdgeId = null;
+        }}
         role="button"
         tabindex="0"
-        aria-label={edgeAriaLabel(edge)}
+        aria-label={edgeAriaLabel(edge, label)}
       >
         {#if tooltip}
           <title>{tooltip}</title>
@@ -2722,10 +3022,11 @@
             {/if}
           {/key}
         {/if}
-        {#if isSelected}
+        {#if showHandles}
           {#if controls}
             <circle
               class="edge-anchor"
+              class:muted={!isSelected}
               cx={controls.start.x}
               cy={controls.start.y}
               r={anchorRadius}
@@ -2733,21 +3034,39 @@
             />
             <circle
               class="edge-anchor"
+              class:muted={!isSelected}
               cx={controls.end.x}
               cy={controls.end.y}
               r={anchorRadius}
               style={`--edge-color:${color}`}
             />
+            <circle
+              class="edge-anchor-hit"
+              cx={controls.end.x}
+              cy={controls.end.y}
+              r={handleHitRadius}
+              on:pointerdown|stopPropagation={(event) => startEdgeTargetDrag(event, edge, controls.end)}
+            />
             <path
               class="edge-control-line"
+              class:muted={!isSelected}
               d={`M ${controls.start.x} ${controls.start.y} L ${controls.ctrl1.x} ${controls.ctrl1.y}`}
             />
             <path
               class="edge-control-line"
+              class:muted={!isSelected}
               d={`M ${controls.end.x} ${controls.end.y} L ${controls.ctrl2.x} ${controls.ctrl2.y}`}
             />
             <circle
+              class="edge-control-hit"
+              cx={controls.ctrl1.x}
+              cy={controls.ctrl1.y}
+              r={handleHitRadius}
+              on:pointerdown|stopPropagation={(event) => startEdgeControlDrag(event, edge, "ctrl1", controls.ctrl1)}
+            />
+            <circle
               class="edge-control-handle"
+              class:muted={!isSelected}
               cx={controls.ctrl1.x}
               cy={controls.ctrl1.y}
               r={handleRadius}
@@ -2755,7 +3074,15 @@
               on:pointerdown|stopPropagation={(event) => startEdgeControlDrag(event, edge, "ctrl1", controls.ctrl1)}
             />
             <circle
+              class="edge-control-hit"
+              cx={controls.ctrl2.x}
+              cy={controls.ctrl2.y}
+              r={handleHitRadius}
+              on:pointerdown|stopPropagation={(event) => startEdgeControlDrag(event, edge, "ctrl2", controls.ctrl2)}
+            />
+            <circle
               class="edge-control-handle"
+              class:muted={!isSelected}
               cx={controls.ctrl2.x}
               cy={controls.ctrl2.y}
               r={handleRadius}
@@ -2777,9 +3104,17 @@
             {label}
           </text>
         {/if}
-        {#if isSelected && controls && bendPos}
+        {#if controls && bendPos && (isSelected || isHovered)}
+          <circle
+            class="edge-bend-hit"
+            cx={bendPos.x}
+            cy={bendPos.y}
+            r={bendHitRadius}
+            on:pointerdown|stopPropagation={(event) => startEdgeBendDrag(event, edge, controls)}
+          />
           <circle
             class="edge-bend-handle"
+            class:muted={!isSelected}
             cx={bendPos.x}
             cy={bendPos.y}
             r={bendRadius}
@@ -2836,8 +3171,10 @@
         class:selected={isSelected}
         class:active={isActive}
         class:edge-source={edgeCreateMode && edgeCreateSourceId === node.id}
-        class:edge-target={edgeCreateMode && edgeCreateHoverId === node.id && edgeCreateHoverId !== edgeCreateSourceId}
-        class:edge-target-invalid={edgeCreateMode && edgeCreateHoverId === node.id && edgeCreateHoverId === edgeCreateSourceId}
+        class:edge-target={
+          (edgeCreateMode && edgeCreateHoverId === node.id && edgeCreateHoverId !== edgeCreateSourceId) ||
+          edgeRetargetHoverId === node.id
+        }
       >
         {#if tooltip}
           <title>{tooltip}</title>

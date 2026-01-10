@@ -13,6 +13,11 @@
   --button-pressed: #416aa6;
   --danger: #e26d5a;
   --shadow: 0 16px 40px rgba(0, 0, 0, 0.08);
+  --shadow-soft: 0 8px 18px rgba(0, 0, 0, 0.08);
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 16px;
+  --radius-pill: 999px;
 }
 
 body {
@@ -28,6 +33,12 @@ main {
   margin: 3rem auto 4rem;
   padding: 0 var(--page-pad);
   animation: rise 0.6s ease;
+}
+
+main.editor-view {
+  margin: 0 auto;
+  padding-top: 0;
+  padding-bottom: 0;
 }
 
 .hero {
@@ -78,7 +89,7 @@ p {
 
 .panel {
   background: var(--panel);
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   --panel-pad: 1.5rem;
   padding: var(--panel-pad);
   border: 1px solid var(--stroke);
@@ -106,6 +117,10 @@ p {
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
 }
 
+main.editor-view .grid {
+  gap: 0.75rem;
+}
+
 .field label {
   display: block;
   font-weight: 600;
@@ -116,7 +131,7 @@ input {
   width: 100%;
   padding: 0.6rem 0.8rem;
   border: 1px solid var(--stroke);
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   font-size: 0.95rem;
   background: #ffffff;
   color: var(--ink);
@@ -126,7 +141,7 @@ input {
 select {
   padding: 0.55rem 0.8rem;
   border: 1px solid var(--stroke);
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   font-size: 0.95rem;
   background: #ffffff;
   color: var(--ink);
@@ -137,7 +152,7 @@ textarea {
   width: 100%;
   padding: 0.6rem 0.8rem;
   border: 1px solid var(--stroke);
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   font-size: 0.95rem;
   font-family: inherit;
   background: #ffffff;
@@ -184,7 +199,7 @@ textarea {
 
 button {
   padding: 0.55rem 1.1rem;
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   border: 1px solid var(--button);
   background: var(--button);
   color: #ffffff;
@@ -356,7 +371,7 @@ summary {
 
 .scene-group {
   border: 1px dashed var(--stroke);
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   padding: 0.5rem 0.6rem;
   display: grid;
   gap: 0.5rem;
@@ -466,7 +481,7 @@ summary {
 
 .element-category {
   border: 1px dashed var(--stroke);
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   padding: 0.4rem 0.6rem;
   display: grid;
   gap: 0.4rem;
@@ -487,7 +502,7 @@ summary {
 
 .element-group {
   border: 1px solid rgba(227, 222, 209, 0.7);
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   padding: 0.4rem 0.5rem;
   display: grid;
   gap: 0.4rem;
@@ -553,6 +568,12 @@ summary {
   gap: 1rem;
 }
 
+.panel-title-right {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
 .panel-badges {
   display: flex;
   align-items: center;
@@ -565,6 +586,33 @@ summary {
   font-size: 0.8rem;
   letter-spacing: 0.02em;
   text-transform: uppercase;
+}
+
+.panel-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: #e26d5a;
+  color: #ffffff;
+  cursor: pointer;
+  box-shadow: var(--shadow-soft);
+  padding: 0;
+}
+
+.panel-close svg {
+  width: 18px;
+  height: 18px;
+  stroke: currentColor;
+}
+
+.panel-close:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  box-shadow: none;
 }
 
 .script-panel {
@@ -717,7 +765,7 @@ summary {
   min-width: 72px;
   height: 32px;
   padding: 0 0.6rem;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   font-size: 0.78rem;
   font-weight: 600;
   border: 1px solid var(--stroke);
@@ -764,10 +812,10 @@ summary {
   width: calc(var(--sf-canvas-width) * 0.5);
   max-width: 100%;
   padding: 0.25rem 0.55rem;
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   background: rgba(255, 255, 255, 0.9);
   border: 1px solid var(--stroke);
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow-soft);
   overflow-x: auto;
   white-space: nowrap;
 }
@@ -787,10 +835,10 @@ summary {
   width: 36px;
   height: 32px;
   padding: 0;
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   background: rgba(255, 255, 255, 0.9);
   border: 1px solid var(--stroke);
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow-soft);
   color: var(--ink);
   cursor: pointer;
 }
@@ -890,7 +938,7 @@ summary {
 .sceneflow-blocks {
   background: #e7e1d8;
   border: 1px dashed var(--stroke);
-  border-radius: 14px;
+  border-radius: var(--radius-md);
   padding: 1rem;
   height: 100%;
   min-height: 0;
@@ -945,7 +993,7 @@ summary {
 
 .block-icon {
   border: 1px solid var(--stroke);
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   height: 44px;
   padding: 0;
   background: #ffffff;
@@ -1018,7 +1066,7 @@ summary {
 
 .sceneflow-container {
   border: 4px solid var(--sf-frame-color, var(--stroke));
-  border-radius: 14px;
+  border-radius: var(--radius-md);
   background: #f9f6ed;
   overflow: hidden;
   position: relative;
@@ -1047,9 +1095,9 @@ summary {
   color: var(--ink);
   background: #ffffff;
   border: 1px solid var(--stroke);
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   padding: 0.25rem 0.8rem;
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow-soft);
   cursor: pointer;
   user-select: none;
 }
@@ -1072,7 +1120,7 @@ summary {
   z-index: 4;
   background: #f8f6f2;
   border: none;
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   padding: 0.5rem 0.6rem;
   min-width: 180px;
   box-shadow: none;
@@ -1164,7 +1212,7 @@ summary {
 .sceneflow-inspector {
   background: #e7e1d8;
   border: 1px dashed var(--stroke);
-  border-radius: 14px;
+  border-radius: var(--radius-md);
   padding: 1rem;
   height: 100%;
   min-height: 0;
@@ -1314,7 +1362,7 @@ summary {
 .definition-editor {
   background: #ffffff;
   border: 1px solid var(--stroke);
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   padding: 0.6rem;
   display: grid;
   gap: 0.5rem;
@@ -1552,6 +1600,10 @@ summary {
   gap: 1rem;
 }
 
+.monitor-header h3 {
+  color: #4b5563;
+}
+
 .monitor-body {
   display: grid;
   grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
@@ -1607,11 +1659,12 @@ summary {
 
 .monitor-name {
   font-weight: 600;
+  color: #4b5563;
 }
 
 .monitor-value {
   font-size: 0.8rem;
-  color: var(--muted);
+  color: #4b5563;
   text-align: right;
 }
 
@@ -1746,7 +1799,7 @@ summary {
 }
 
 .prefs-card {
-  border-radius: 14px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--stroke);
   padding: 0.9rem;
   background: rgba(255, 255, 255, 0.92);
@@ -1814,7 +1867,7 @@ summary {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   border: 1px solid var(--stroke);
   padding: 0.25rem 0.45rem;
   background: #ffffff;
@@ -1836,7 +1889,7 @@ summary {
 }
 
 .prefs-input {
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   border: 1px solid var(--stroke);
   padding: 0.35rem 0.5rem;
   background: #ffffff;
@@ -1855,7 +1908,7 @@ summary {
   align-items: center;
   gap: 0.45rem;
   padding: 0.3rem 0.6rem;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   border: 1px solid var(--stroke);
   background: rgba(255, 255, 255, 0.92);
   font-size: 0.85rem;
@@ -1876,7 +1929,7 @@ summary {
 .pref-toggle-indicator {
   width: 10px;
   height: 10px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: rgba(180, 180, 180, 0.6);
   border: 1px solid rgba(80, 80, 80, 0.2);
   flex: 0 0 auto;
@@ -1904,11 +1957,70 @@ summary {
 }
 
 .prefs-preview {
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   border: 1px dashed rgba(80, 80, 80, 0.25);
   background: rgba(248, 248, 248, 0.9);
   padding: 0.5rem 0.6rem;
   color: var(--muted);
+}
+
+.prefs-card--wide {
+  grid-column: 1 / -1;
+}
+
+.prefs-recent {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.prefs-recent-list {
+  border-radius: 12px;
+  border: 1px solid var(--stroke);
+  background: #ffffff;
+  padding: 0.35rem;
+  max-height: 160px;
+  overflow: auto;
+  display: grid;
+  gap: 0.2rem;
+}
+
+.prefs-recent-item {
+  border: none;
+  background: transparent;
+  padding: 0.4rem 0.5rem;
+  border-radius: 8px;
+  text-align: left;
+  font-size: 0.85rem;
+  color: var(--ink);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.prefs-recent-item:hover {
+  background: rgba(65, 106, 166, 0.1);
+}
+
+.prefs-recent-item.selected {
+  background: rgba(65, 106, 166, 0.18);
+}
+
+.prefs-recent-empty {
+  padding: 0.4rem 0.5rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.prefs-recent-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.prefs-recent-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
 }
 
 .project-config-header {
@@ -1953,7 +2065,7 @@ summary {
 }
 
 .project-config-tree {
-  border-radius: 14px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--stroke);
   padding: 0.8rem;
   background: rgba(255, 255, 255, 0.92);
@@ -1963,7 +2075,7 @@ summary {
 
 .project-config-tree-item {
   border: 1px solid transparent;
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   padding: 0.35rem 0.5rem;
   background: transparent;
   display: flex;
@@ -2018,7 +2130,7 @@ summary {
 
 .project-config-tree-add {
   border: 1px dashed rgba(46, 93, 58, 0.4);
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   padding: 0.35rem 0.5rem;
   background: rgba(46, 93, 58, 0.05);
   color: var(--accent);
@@ -2035,7 +2147,7 @@ summary {
 }
 
 .project-config-panel {
-  border-radius: 14px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--stroke);
   padding: 0.9rem;
   background: rgba(255, 255, 255, 0.95);
@@ -2070,7 +2182,7 @@ summary {
 
 .project-config-grid input,
 .project-config-grid select {
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   border: 1px solid var(--stroke);
   padding: 0.3rem 0.5rem;
   font-size: 0.85rem;
@@ -2119,7 +2231,7 @@ summary {
 .project-config-info-grid input,
 .project-config-info-grid select,
 .project-config-agent-add-row input {
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   border: 1px solid var(--stroke);
   padding: 0.3rem 0.5rem;
   font-size: 0.85rem;
@@ -2614,10 +2726,25 @@ summary {
   pointer-events: none;
 }
 
+.edge-control-line.muted {
+  opacity: 0.5;
+}
+
 .edge-control-handle {
   fill: #ffffff;
   stroke: var(--edge-color, #827d78);
   stroke-width: 2;
+  cursor: grab;
+}
+
+.edge-control-handle.muted {
+  opacity: 0.6;
+}
+
+.edge-control-hit {
+  fill: transparent;
+  stroke: transparent;
+  pointer-events: all;
   cursor: grab;
 }
 
@@ -2633,10 +2760,32 @@ summary {
   pointer-events: none;
 }
 
+.edge-anchor.muted {
+  opacity: 0.45;
+}
+
+.edge-anchor-hit {
+  fill: transparent;
+  stroke: transparent;
+  pointer-events: all;
+  cursor: grab;
+}
+
 .edge-bend-handle {
   fill: #ffffff;
   stroke: var(--edge-color, #827d78);
   stroke-width: 2.2;
+  cursor: grab;
+}
+
+.edge-bend-handle.muted {
+  opacity: 0.6;
+}
+
+.edge-bend-hit {
+  fill: transparent;
+  stroke: transparent;
+  pointer-events: all;
   cursor: grab;
 }
 
@@ -2785,10 +2934,10 @@ summary {
   font-weight: 600;
   color: var(--ink);
   padding: 0 0.6rem;
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   background: rgba(255, 255, 255, 0.9);
   border: 1px solid var(--stroke);
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow-soft);
 }
 
 .sceneflow-zoom-button {
@@ -2797,10 +2946,10 @@ summary {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   background: rgba(255, 255, 255, 0.9);
   border: 1px solid var(--stroke);
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow-soft);
   color: var(--ink);
   cursor: pointer;
   padding: 0;
@@ -2866,7 +3015,7 @@ summary {
 
 .badge {
   background: var(--panel-soft);
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   padding: 0.4rem 0.8rem;
   border: 1px solid var(--stroke);
 }
