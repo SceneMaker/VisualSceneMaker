@@ -4,6 +4,7 @@ import de.dfki.vsm.util.log.LOGDefaultLogger;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
@@ -220,6 +221,25 @@ public class Preferences {
 
         if (!sPROPERTIES.containsKey("workspace_fontsize")) {
             sPROPERTIES.setProperty("workspace_fontsize", "11");
+        }
+    }
+
+    public static synchronized void load() {
+        parseConfigFile();
+    }
+
+    public static synchronized void save() {
+        try {
+            File configFile = new File(sCONFIG_FILE);
+            File parentDir = configFile.getParentFile();
+            if (parentDir != null && !parentDir.exists()) {
+                parentDir.mkdirs();
+            }
+            try (FileOutputStream out = new FileOutputStream(sCONFIG_FILE)) {
+                sPROPERTIES.storeToXML(out, "VSM Preferences");
+            }
+        } catch (IOException e) {
+            LOGDefaultLogger.getInstance().failure("Error saving preferences: " + e.getMessage());
         }
     }
 

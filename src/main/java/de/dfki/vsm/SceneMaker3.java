@@ -49,6 +49,7 @@ public final class SceneMaker3 {
             }
         } catch (Exception exc) {
             sLogger.warning("Warning: Cannot start Web UI server: " + exc.getMessage());
+            exc.printStackTrace();
         }
         if (noSwing) {
             if (effectiveArgs.length == 2 && "runtime".equalsIgnoreCase(effectiveArgs[0])) {
@@ -57,6 +58,14 @@ public final class SceneMaker3 {
                     Core.runtime(file);
                 } else {
                     error(file);
+                }
+            } else {
+                // Keep the application alive when running in web-only mode
+                sLogger.message("Running in web-only mode. Press Ctrl+C to exit.");
+                try {
+                    Thread.currentThread().join();
+                } catch (InterruptedException e) {
+                    sLogger.message("Shutting down...");
                 }
             }
             return;

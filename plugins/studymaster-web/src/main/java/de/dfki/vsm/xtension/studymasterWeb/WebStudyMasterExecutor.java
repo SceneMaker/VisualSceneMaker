@@ -138,8 +138,9 @@ public class WebStudyMasterExecutor extends ActivityExecutor implements EventLis
 
         // Start the HTTP server
         mHttpServer = Javalin.create(config -> {
-            config.addStaticFiles("/react-studymaster/build");
-            config.enforceSsl = true;
+            config.addStaticFiles(staticFiles -> {
+                staticFiles.directory = "/react-studymaster/build";
+            });
         }).start(http_port);
 
         // Set callbacks to manage WebSocket events
