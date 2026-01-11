@@ -1,0 +1,388 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 1600" width="1400" height="1600">
+  <defs>
+    <style>
+      .layer-bg { fill: #f5f5f5; stroke: #333; stroke-width: 2; }
+      .component { fill: #ffffff; stroke: #4a90e2; stroke-width: 2; rx: 5; }
+      .component-core { fill: #e3f2fd; stroke: #1976d2; stroke-width: 2; rx: 5; }
+      .component-ui { fill: #fff3e0; stroke: #f57c00; stroke-width: 2; rx: 5; }
+      .component-controller { fill: #f3e5f5; stroke: #7b1fa2; stroke-width: 2; rx: 5; }
+      .title { font-family: Arial, sans-serif; font-size: 16px; font-weight: bold; fill: #333; }
+      .subtitle { font-family: Arial, sans-serif; font-size: 12px; fill: #666; }
+      .label { font-family: Arial, sans-serif; font-size: 11px; fill: #333; }
+      .small-label { font-family: Arial, sans-serif; font-size: 9px; fill: #666; }
+      .arrow { stroke: #666; stroke-width: 2; fill: none; marker-end: url(#arrowhead); }
+      .arrow-data { stroke: #4a90e2; stroke-width: 2; fill: none; marker-end: url(#arrowhead-blue); }
+      .arrow-event { stroke: #9c27b0; stroke-width: 2; fill: none; marker-end: url(#arrowhead-purple); stroke-dasharray: 5,5; }
+      .arrow-ws { stroke: #ff9800; stroke-width: 2; fill: none; marker-end: url(#arrowhead-orange); }
+      .legend-box { fill: white; stroke: #333; stroke-width: 1; }
+    </style>
+    <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+      <polygon points="0 0, 10 3, 0 6" fill="#666" />
+    </marker>
+    <marker id="arrowhead-blue" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+      <polygon points="0 0, 10 3, 0 6" fill="#4a90e2" />
+    </marker>
+    <marker id="arrowhead-purple" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+      <polygon points="0 0, 10 3, 0 6" fill="#9c27b0" />
+    </marker>
+    <marker id="arrowhead-orange" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+      <polygon points="0 0, 10 3, 0 6" fill="#ff9800" />
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="700" y="30" class="title" text-anchor="middle" font-size="24">VisualSceneMaker Architecture - MVC Overview</text>
+  <text x="700" y="50" class="subtitle" text-anchor="middle">Layered Architecture with Event-Driven Communication</text>
+
+  <!-- VIEW LAYER -->
+  <rect x="50" y="80" width="1300" height="320" class="layer-bg" />
+  <text x="700" y="105" class="title" text-anchor="middle">VIEW LAYER - User Interfaces</text>
+
+  <!-- Desktop UI -->
+  <rect x="80" y="120" width="380" height="260" class="component-ui" />
+  <text x="270" y="145" class="title" text-anchor="middle">Desktop UI (Swing/JavaFX)</text>
+
+  <rect x="100" y="160" width="160" height="60" class="component" />
+  <text x="180" y="180" class="label" text-anchor="middle">EditorInstance</text>
+  <text x="180" y="195" class="small-label" text-anchor="middle">Main JFrame window</text>
+  <text x="180" y="210" class="small-label" text-anchor="middle">TabPane, MenuBar</text>
+
+  <rect x="280" y="160" width="160" height="60" class="component" />
+  <text x="360" y="180" class="label" text-anchor="middle">ProjectEditor</text>
+  <text x="360" y="195" class="small-label" text-anchor="middle">Graph visualization</text>
+  <text x="360" y="210" class="small-label" text-anchor="middle">Script editor</text>
+
+  <rect x="100" y="240" width="160" height="60" class="component" />
+  <text x="180" y="260" class="label" text-anchor="middle">EditorMenuBar</text>
+  <text x="180" y="275" class="small-label" text-anchor="middle">File/Edit/Run menus</text>
+
+  <rect x="280" y="240" width="160" height="60" class="component" />
+  <text x="360" y="260" class="label" text-anchor="middle">Canvas/Workspace</text>
+  <text x="360" y="275" class="small-label" text-anchor="middle">Node/Edge rendering</text>
+
+  <text x="270" y="330" class="small-label" text-anchor="middle" font-style="italic">Entry: SceneMaker3.java</text>
+  <text x="270" y="350" class="small-label" text-anchor="middle">editor/src/main/java/de/dfki/vsm/editor/</text>
+
+  <!-- Web UI -->
+  <rect x="480" y="120" width="840" height="260" class="component-ui" />
+  <text x="900" y="145" class="title" text-anchor="middle">Web UI (Svelte + Javalin)</text>
+
+  <!-- Frontend -->
+  <rect x="500" y="160" width="380" height="200" class="component" />
+  <text x="690" y="180" class="label" text-anchor="middle" font-weight="bold">Frontend (Svelte)</text>
+
+  <rect x="520" y="195" width="110" height="50" class="component" />
+  <text x="575" y="215" class="small-label" text-anchor="middle">App.svelte</text>
+  <text x="575" y="230" class="small-label" text-anchor="middle">Root component</text>
+
+  <rect x="640" y="195" width="110" height="50" class="component" />
+  <text x="695" y="215" class="small-label" text-anchor="middle">SceneFlowView</text>
+  <text x="695" y="230" class="small-label" text-anchor="middle">Graph editor</text>
+
+  <rect x="760" y="195" width="110" height="50" class="component" />
+  <text x="815" y="215" class="small-label" text-anchor="middle">ScriptEditor</text>
+  <text x="815" y="230" class="small-label" text-anchor="middle">Code editor</text>
+
+  <rect x="520" y="255" width="110" height="50" class="component" />
+  <text x="575" y="275" class="small-label" text-anchor="middle">MiniMap</text>
+
+  <rect x="640" y="255" width="230" height="50" class="component" />
+  <text x="755" y="275" class="small-label" text-anchor="middle">15+ Icon Components</text>
+
+  <text x="690" y="330" class="small-label" text-anchor="middle" font-style="italic">Build: Vite, Output: static HTML/JS/CSS</text>
+  <text x="690" y="350" class="small-label" text-anchor="middle">editor/web-ui/src/</text>
+
+  <!-- Backend -->
+  <rect x="900" y="160" width="400" height="200" class="component" />
+  <text x="1100" y="180" class="label" text-anchor="middle" font-weight="bold">Backend (Javalin 4.6.8)</text>
+
+  <rect x="920" y="195" width="360" height="80" class="component-core" />
+  <text x="1100" y="215" class="small-label" text-anchor="middle" font-weight="bold">WebUiServer.java (Port 8090)</text>
+  <text x="1100" y="230" class="small-label" text-anchor="middle">REST API: /api/v1/projects/*, /api/v1/preferences</text>
+  <text x="1100" y="245" class="small-label" text-anchor="middle">WebSocket: /ws (real-time events)</text>
+  <text x="1100" y="260" class="small-label" text-anchor="middle">Static: /web-ui/ (SPA), /images/</text>
+
+  <rect x="920" y="285" width="170" height="50" class="component" />
+  <text x="1005" y="305" class="small-label" text-anchor="middle">ProjectRef Store</text>
+  <text x="1005" y="320" class="small-label" text-anchor="middle">In-memory cache</text>
+
+  <rect x="1110" y="285" width="170" height="50" class="component" />
+  <text x="1195" y="305" class="small-label" text-anchor="middle">WS Session Pool</text>
+  <text x="1195" y="320" class="small-label" text-anchor="middle">Broadcast system</text>
+
+  <!-- CONTROLLER LAYER -->
+  <rect x="50" y="420" width="1300" height="280" class="layer-bg" />
+  <text x="700" y="445" class="title" text-anchor="middle">CONTROLLER LAYER - Event Coordination</text>
+
+  <rect x="80" y="460" width="280" height="220" class="component-controller" />
+  <text x="220" y="485" class="title" text-anchor="middle">Event System</text>
+
+  <rect x="100" y="500" width="240" height="60" class="component" />
+  <text x="220" y="520" class="label" text-anchor="middle">EventDispatcher</text>
+  <text x="220" y="535" class="small-label" text-anchor="middle">Singleton, Thread-safe</text>
+  <text x="220" y="550" class="small-label" text-anchor="middle">CopyOnWriteArrayList</text>
+
+  <rect x="100" y="570" width="110" height="60" class="component" />
+  <text x="155" y="595" class="small-label" text-anchor="middle">30+ Event Types</text>
+  <text x="155" y="610" class="small-label" text-anchor="middle">Node/Edge/Scene</text>
+
+  <rect x="230" y="570" width="110" height="60" class="component" />
+  <text x="285" y="595" class="small-label" text-anchor="middle">Timer Schedule</text>
+  <text x="285" y="610" class="small-label" text-anchor="middle">Delayed events</text>
+
+  <text x="220" y="655" class="small-label" text-anchor="middle">core/event/EventDispatcher.java</text>
+
+  <rect x="380" y="460" width="280" height="220" class="component-controller" />
+  <text x="520" y="485" class="title" text-anchor="middle">UI Protocol Bridge</text>
+
+  <rect x="400" y="500" width="240" height="60" class="component" />
+  <text x="520" y="520" class="label" text-anchor="middle">UiEventBus</text>
+  <text x="520" y="535" class="small-label" text-anchor="middle">Lazy emission (Supplier)</text>
+  <text x="520" y="550" class="small-label" text-anchor="middle">Sequence tracking</text>
+
+  <rect x="400" y="570" width="110" height="60" class="component" />
+  <text x="455" y="590" class="small-label" text-anchor="middle">UiEventBridge</text>
+  <text x="455" y="605" class="small-label" text-anchor="middle">Domain → UI</text>
+  <text x="455" y="620" class="small-label" text-anchor="middle">translation</text>
+
+  <rect x="530" y="570" width="110" height="60" class="component" />
+  <text x="585" y="590" class="small-label" text-anchor="middle">UiProtocol</text>
+  <text x="585" y="605" class="small-label" text-anchor="middle">Version 1</text>
+  <text x="585" y="620" class="small-label" text-anchor="middle">Install/Reset</text>
+
+  <text x="520" y="655" class="small-label" text-anchor="middle">core/ui/protocol/</text>
+
+  <rect x="680" y="460" width="280" height="220" class="component-controller" />
+  <text x="820" y="485" class="title" text-anchor="middle">Execution Control</text>
+
+  <rect x="700" y="500" width="240" height="60" class="component" />
+  <text x="820" y="520" class="label" text-anchor="middle">RunTimeProject</text>
+  <text x="820" y="535" class="small-label" text-anchor="middle">launch/start/abort/unload</text>
+  <text x="820" y="550" class="small-label" text-anchor="middle">Coordinates runtime</text>
+
+  <rect x="700" y="570" width="110" height="60" class="component" />
+  <text x="755" y="590" class="small-label" text-anchor="middle">Interpreter</text>
+  <text x="755" y="605" class="small-label" text-anchor="middle">State machine</text>
+  <text x="755" y="620" class="small-label" text-anchor="middle">ReentrantLock</text>
+
+  <rect x="830" y="570" width="110" height="60" class="component" />
+  <text x="885" y="590" class="small-label" text-anchor="middle">ActivityExecutor</text>
+  <text x="885" y="605" class="small-label" text-anchor="middle">Scheduler</text>
+  <text x="885" y="620" class="small-label" text-anchor="middle">Worker threads</text>
+
+  <text x="820" y="655" class="small-label" text-anchor="middle">runtime/project/RunTimeProject.java</text>
+
+  <rect x="980" y="460" width="360" height="220" class="component-controller" />
+  <text x="1160" y="485" class="title" text-anchor="middle">WebSocket Message Handlers</text>
+
+  <rect x="1000" y="500" width="160" height="50" class="component" />
+  <text x="1080" y="520" class="small-label" text-anchor="middle">SceneFlow.Node.*</text>
+  <text x="1080" y="535" class="small-label" text-anchor="middle">Add/Update/Delete</text>
+
+  <rect x="1170" y="500" width="160" height="50" class="component" />
+  <text x="1250" y="520" class="small-label" text-anchor="middle">SceneFlow.Edge.*</text>
+  <text x="1250" y="535" class="small-label" text-anchor="middle">Add/Update/Delete</text>
+
+  <rect x="1000" y="560" width="160" height="50" class="component" />
+  <text x="1080" y="580" class="small-label" text-anchor="middle">Runtime.*</text>
+  <text x="1080" y="595" class="small-label" text-anchor="middle">Start/Pause/Stop</text>
+
+  <rect x="1170" y="560" width="160" height="50" class="component" />
+  <text x="1250" y="580" class="small-label" text-anchor="middle">Project.Save/Close</text>
+  <text x="1250" y="595" class="small-label" text-anchor="middle">Lifecycle mgmt</text>
+
+  <text x="1160" y="630" class="small-label" text-anchor="middle">Methods processed in handleWsMessage()</text>
+  <text x="1160" y="655" class="small-label" text-anchor="middle">core/web/WebUiServer.java:1500+</text>
+
+  <!-- MODEL LAYER -->
+  <rect x="50" y="720" width="1300" height="420" class="layer-bg" />
+  <text x="700" y="745" class="title" text-anchor="middle">MODEL LAYER - Domain Entities &amp; Runtime Engine</text>
+
+  <!-- Core Models -->
+  <rect x="80" y="760" width="380" height="360" class="component-core" />
+  <text x="270" y="785" class="title" text-anchor="middle">Core Models (Pure POJOs)</text>
+
+  <rect x="100" y="800" width="160" height="60" class="component" />
+  <text x="180" y="820" class="label" text-anchor="middle">ProjectConfig</text>
+  <text x="180" y="835" class="small-label" text-anchor="middle">Agents, Plugins</text>
+  <text x="180" y="850" class="small-label" text-anchor="middle">Player/Editor config</text>
+
+  <rect x="280" y="800" width="160" height="60" class="component" />
+  <text x="360" y="820" class="label" text-anchor="middle">SceneFlow</text>
+  <text x="360" y="835" class="small-label" text-anchor="middle">Nodes, Edges</text>
+  <text x="360" y="850" class="small-label" text-anchor="middle">Visual graph</text>
+
+  <rect x="100" y="870" width="160" height="60" class="component" />
+  <text x="180" y="890" class="label" text-anchor="middle">SceneScript</text>
+  <text x="180" y="905" class="small-label" text-anchor="middle">Dialogue content</text>
+  <text x="180" y="920" class="small-label" text-anchor="middle">Multi-language</text>
+
+  <rect x="280" y="870" width="160" height="60" class="component" />
+  <text x="360" y="890" class="label" text-anchor="middle">Glue Language</text>
+  <text x="360" y="905" class="small-label" text-anchor="middle">Commands</text>
+  <text x="360" y="920" class="small-label" text-anchor="middle">Expressions, Types</text>
+
+  <rect x="100" y="940" width="340" height="60" class="component" />
+  <text x="270" y="960" class="label" text-anchor="middle">Graphics Models</text>
+  <text x="270" y="975" class="small-label" text-anchor="middle">NodeGraphics, EdgeGraphics, Badges</text>
+  <text x="270" y="990" class="small-label" text-anchor="middle">Position, size, visual metadata</text>
+
+  <rect x="100" y="1010" width="160" height="50" class="component" />
+  <text x="180" y="1030" class="small-label" text-anchor="middle">Acticon, Visicon</text>
+  <text x="180" y="1045" class="small-label" text-anchor="middle">Gesticon configs</text>
+
+  <rect x="280" y="1010" width="160" height="50" class="component" />
+  <text x="360" y="1030" class="small-label" text-anchor="middle">XML Persistence</text>
+  <text x="360" y="1045" class="small-label" text-anchor="middle">ModelObject i/f</text>
+
+  <text x="270" y="1090" class="small-label" text-anchor="middle">core/model/*</text>
+
+  <!-- Runtime Engine -->
+  <rect x="480" y="760" width="380" height="360" class="component-core" />
+  <text x="670" y="785" class="title" text-anchor="middle">Runtime Execution Engine</text>
+
+  <rect x="500" y="800" width="160" height="60" class="component" />
+  <text x="580" y="820" class="label" text-anchor="middle">Interpreter</text>
+  <text x="580" y="835" class="small-label" text-anchor="middle">Executes sceneflow</text>
+  <text x="580" y="850" class="small-label" text-anchor="middle">Thread-safe locks</text>
+
+  <rect x="680" y="800" width="160" height="60" class="component" />
+  <text x="760" y="820" class="label" text-anchor="middle">Evaluator</text>
+  <text x="760" y="835" class="small-label" text-anchor="middle">Expression eval</text>
+  <text x="760" y="850" class="small-label" text-anchor="middle">Value system</text>
+
+  <rect x="500" y="870" width="160" height="60" class="component" />
+  <text x="580" y="890" class="label" text-anchor="middle">Environment</text>
+  <text x="580" y="905" class="small-label" text-anchor="middle">Variable store</text>
+  <text x="580" y="920" class="small-label" text-anchor="middle">Symbol table</text>
+
+  <rect x="680" y="870" width="160" height="60" class="component" />
+  <text x="760" y="890" class="label" text-anchor="middle">ActivityExecutor</text>
+  <text x="760" y="905" class="small-label" text-anchor="middle">Action/Speech</text>
+  <text x="760" y="920" class="small-label" text-anchor="middle">Async execution</text>
+
+  <rect x="500" y="940" width="340" height="60" class="component" />
+  <text x="670" y="960" class="label" text-anchor="middle">Activity System</text>
+  <text x="670" y="975" class="small-label" text-anchor="middle">ActionActivity, SpeechActivity, PauseActivity</text>
+  <text x="670" y="990" class="small-label" text-anchor="middle">Scheduler, Worker threads, Feedback/Trigger</text>
+
+  <rect x="500" y="1010" width="160" height="50" class="component" />
+  <text x="580" y="1030" class="small-label" text-anchor="middle">TimeoutManager</text>
+  <text x="580" y="1045" class="small-label" text-anchor="middle">History tracking</text>
+
+  <rect x="680" y="1010" width="160" height="50" class="component" />
+  <text x="760" y="1030" class="small-label" text-anchor="middle">Player system</text>
+  <text x="760" y="1045" class="small-label" text-anchor="middle">Scene playback</text>
+
+  <text x="670" y="1090" class="small-label" text-anchor="middle">runtime/interpreter/*, runtime/activity/*</text>
+
+  <!-- Plugin System -->
+  <rect x="880" y="760" width="460" height="360" class="component-core" />
+  <text x="1110" y="785" class="title" text-anchor="middle">Plugin System &amp; Extensions</text>
+
+  <rect x="900" y="800" width="200" height="60" class="component" />
+  <text x="1000" y="820" class="label" text-anchor="middle">RunTimePlugin</text>
+  <text x="1000" y="835" class="small-label" text-anchor="middle">Base interface</text>
+  <text x="1000" y="850" class="small-label" text-anchor="middle">Dynamic loading</text>
+
+  <rect x="1120" y="800" width="200" height="60" class="component" />
+  <text x="1220" y="820" class="label" text-anchor="middle">Plugin Registry</text>
+  <text x="1220" y="835" class="small-label" text-anchor="middle">Reflection-based</text>
+  <text x="1220" y="850" class="small-label" text-anchor="middle">ClassPath scan</text>
+
+  <rect x="900" y="870" width="420" height="80" class="component" />
+  <text x="1110" y="890" class="label" text-anchor="middle">24 Plugin Modules</text>
+  <text x="1110" y="905" class="small-label" text-anchor="middle">alma, charamel, unity, reeti, ssi, ssj, console, email,</text>
+  <text x="1110" y="920" class="small-label" text-anchor="middle">studymaster-web, htmlgui-ws, yallah, wizard, timer,</text>
+  <text x="1110" y="935" class="small-label" text-anchor="middle">tricatworld, AndroidGui, DriveSimulator, VLCRemoteController...</text>
+
+  <rect x="900" y="960" width="200" height="60" class="component" />
+  <text x="1000" y="980" class="small-label" text-anchor="middle">Custom Agents</text>
+  <text x="1000" y="995" class="small-label" text-anchor="middle">Reeti, Unity,</text>
+  <text x="1000" y="1010" class="small-label" text-anchor="middle">Charamel avatars</text>
+
+  <rect x="1120" y="960" width="200" height="60" class="component" />
+  <text x="1220" y="980" class="small-label" text-anchor="middle">Custom Actions</text>
+  <text x="1220" y="995" class="small-label" text-anchor="middle">Speech, Animation</text>
+  <text x="1220" y="1010" class="small-label" text-anchor="middle">External APIs</text>
+
+  <rect x="900" y="1030" width="420" height="50" class="component" />
+  <text x="1110" y="1050" class="small-label" text-anchor="middle">Data Processors: XML parsers, Network clients, Device controllers</text>
+
+  <text x="1110" y="1090" class="small-label" text-anchor="middle">plugins/*/</text>
+
+  <!-- ARROWS - Communication Flow -->
+
+  <!-- Desktop UI to Event System -->
+  <path d="M 270 380 L 270 420 L 220 420 L 220 460" class="arrow-event" />
+  <text x="200" y="410" class="small-label" fill="#9c27b0">Events</text>
+
+  <!-- Web Frontend to Backend -->
+  <path d="M 690 360 L 690 400 L 1100 400 L 1100 360" class="arrow-ws" />
+  <text x="850" y="390" class="small-label" fill="#ff9800">WebSocket + REST</text>
+
+  <!-- WebUiServer to RunTimeProject -->
+  <path d="M 1100 360 L 1100 400 L 820 400 L 820 460" class="arrow-data" />
+
+  <!-- Event System to UiProtocol -->
+  <path d="M 360 500 L 400 500" class="arrow-event" />
+
+  <!-- UiProtocol to WebUiServer -->
+  <path d="M 640 520 L 900 520 L 900 360" class="arrow-event" />
+
+  <!-- RunTimeProject to Model -->
+  <path d="M 820 680 L 820 720 L 670 720 L 670 760" class="arrow-data" />
+
+  <!-- RunTimeProject to Interpreter -->
+  <path d="M 700 680 L 580 680 L 580 760" class="arrow-data" />
+
+  <!-- EventDispatcher to Desktop UI -->
+  <path d="M 220 460 L 220 420 L 180 420 L 180 380" class="arrow-event" />
+
+  <!-- Interpreter fires events -->
+  <path d="M 500 870 L 400 870 L 400 700 L 220 700 L 220 680" class="arrow-event" />
+  <text x="410" y="780" class="small-label" fill="#9c27b0" transform="rotate(-90 410 780)">Runtime Events</text>
+
+  <!-- Plugin System to Runtime -->
+  <path d="M 880 910 L 860 910" class="arrow" />
+
+  <!-- LEGEND -->
+  <rect x="50" y="1160" width="1300" height="160" class="legend-box" />
+  <text x="700" y="1185" class="title" text-anchor="middle">Communication Patterns</text>
+
+  <line x1="80" y1="1210" x2="150" y2="1210" class="arrow-data" />
+  <text x="160" y="1215" class="label">Data Flow (Synchronous calls)</text>
+
+  <line x1="80" y1="1240" x2="150" y2="1240" class="arrow-event" />
+  <text x="160" y="1245" class="label">Event Flow (Pub/Sub, Asynchronous)</text>
+
+  <line x1="80" y1="1270" x2="150" y2="1270" class="arrow-ws" />
+  <text x="160" y="1275" class="label">WebSocket/REST (HTTP protocol)</text>
+
+  <line x1="80" y1="1300" x2="150" y2="1300" class="arrow" />
+  <text x="160" y="1305" class="label">General dependency/relationship</text>
+
+  <text x="550" y="1215" class="label" font-weight="bold">Key Entry Points:</text>
+  <text x="550" y="1235" class="small-label">• SceneMaker3.main() - Desktop + Web launcher</text>
+  <text x="550" y="1255" class="small-label">• SceneMaker4.main() - Web-only launcher</text>
+  <text x="550" y="1275" class="small-label">• Core.runtime() - Headless runtime execution</text>
+  <text x="550" y="1295" class="small-label">• WebUiServer.start() - Web server (port 8090)</text>
+
+  <text x="950" y="1215" class="label" font-weight="bold">Execution Flow Example:</text>
+  <text x="950" y="1235" class="small-label">1. User clicks node in Web UI</text>
+  <text x="950" y="1255" class="small-label">2. WS message → WebUiServer</text>
+  <text x="950" y="1275" class="small-label">3. Update model → RunTimeProject</text>
+  <text x="950" y="1295" class="small-label">4. Broadcast snapshot to all WS clients</text>
+
+  <!-- Bottom annotations -->
+  <text x="700" y="1350" class="subtitle" text-anchor="middle">Thread Safety: ReentrantLock (Interpreter), CopyOnWriteArrayList (EventDispatcher), Synchronized methods (Preferences)</text>
+  <text x="700" y="1370" class="subtitle" text-anchor="middle">Persistence: XML files (projectconfig.xml, sceneflow.xml, scenescript.xml) + Binary encoding (BINUtilities)</text>
+  <text x="700" y="1390" class="subtitle" text-anchor="middle">Architecture Pattern: Layered MVC + Event-Driven + Plugin-based Extensibility</text>
+
+  <!-- Footer -->
+  <text x="700" y="1440" class="small-label" text-anchor="middle" font-style="italic">Repository: /Users/gebhard/Code/Repo/VisualSceneMaker</text>
+  <text x="700" y="1460" class="small-label" text-anchor="middle" font-style="italic">Branch: web2026 | Created: 2026-01-11</text>
+  <text x="700" y="1480" class="small-label" text-anchor="middle" font-style="italic">For detailed class paths, see accompanying documentation: doc/architecture-details.md</text>
+
+</svg>
