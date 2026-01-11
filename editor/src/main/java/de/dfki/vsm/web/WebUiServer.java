@@ -606,27 +606,27 @@ public final class WebUiServer implements UiEventListener {
         mApp.get(API_PREFIX + "/projects/tutorials", ctx -> handleStaticProjectList(ctx, PreferencesDesktop.sTUTORIALS_PROJECTS));
         mApp.post(API_PREFIX + "/projects/open", this::handleOpenProject);
         mApp.post(API_PREFIX + "/projects", this::handleNewProject);
-        mApp.post(API_PREFIX + "/projects/:id/save", this::handleSaveProject);
-        mApp.post(API_PREFIX + "/projects/:id/save-as", this::handleSaveAsProject);
-        mApp.post(API_PREFIX + "/projects/:id/close", this::handleCloseProject);
-        mApp.get(API_PREFIX + "/projects/:id", this::handleProjectDetail);
+        mApp.post(API_PREFIX + "/projects/{id}/save", this::handleSaveProject);
+        mApp.post(API_PREFIX + "/projects/{id}/save-as", this::handleSaveAsProject);
+        mApp.post(API_PREFIX + "/projects/{id}/close", this::handleCloseProject);
+        mApp.get(API_PREFIX + "/projects/{id}", this::handleProjectDetail);
 
-        mApp.get(API_PREFIX + "/projects/:id/sceneflow", this::handleSceneFlow);
-        mApp.post(API_PREFIX + "/projects/:id/sceneflow/navigate", this::handleSceneFlowNavigate);
+        mApp.get(API_PREFIX + "/projects/{id}/sceneflow", this::handleSceneFlow);
+        mApp.post(API_PREFIX + "/projects/{id}/sceneflow/navigate", this::handleSceneFlowNavigate);
 
-        mApp.get(API_PREFIX + "/projects/:id/script", this::handleScript);
-        mApp.get(API_PREFIX + "/projects/:id/script/scenes", this::handleScriptScenes);
-        mApp.get(API_PREFIX + "/projects/:id/script/elements", this::handleScriptElements);
-        mApp.post(API_PREFIX + "/projects/:id/script/diagnostics", this::handleScriptDiagnostics);
+        mApp.get(API_PREFIX + "/projects/{id}/script", this::handleScript);
+        mApp.get(API_PREFIX + "/projects/{id}/script/scenes", this::handleScriptScenes);
+        mApp.get(API_PREFIX + "/projects/{id}/script/elements", this::handleScriptElements);
+        mApp.post(API_PREFIX + "/projects/{id}/script/diagnostics", this::handleScriptDiagnostics);
 
-        mApp.get(API_PREFIX + "/projects/:id/functions", this::handleFunctions);
-        mApp.get(API_PREFIX + "/projects/:id/types", this::handleTypes);
-        mApp.get(API_PREFIX + "/projects/:id/config", this::handleConfig);
-        mApp.get(API_PREFIX + "/projects/:id/project-config", this::handleProjectConfig);
-        mApp.get(API_PREFIX + "/projects/:id/project-config/keys", this::handleProjectConfigKeys);
+        mApp.get(API_PREFIX + "/projects/{id}/functions", this::handleFunctions);
+        mApp.get(API_PREFIX + "/projects/{id}/types", this::handleTypes);
+        mApp.get(API_PREFIX + "/projects/{id}/config", this::handleConfig);
+        mApp.get(API_PREFIX + "/projects/{id}/project-config", this::handleProjectConfig);
+        mApp.get(API_PREFIX + "/projects/{id}/project-config/keys", this::handleProjectConfigKeys);
         mApp.get(API_PREFIX + "/devices", this::handleAvailableDevices);
         mApp.get(API_PREFIX + "/preferences", this::handlePreferences);
-        mApp.get(API_PREFIX + "/projects/:id/runtime", this::handleRuntime);
+        mApp.get(API_PREFIX + "/projects/{id}/runtime", this::handleRuntime);
 
         mApp.get(API_PREFIX + "/fs/roots", this::handleFsRoots);
         mApp.get(API_PREFIX + "/fs/list", this::handleFsList);
