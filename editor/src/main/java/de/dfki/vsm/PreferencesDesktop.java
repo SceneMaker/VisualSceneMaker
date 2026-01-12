@@ -84,7 +84,7 @@ public final class PreferencesDesktop extends Preferences {
     // IMAGE RESSOURCES
     //////////////////////////////////////////////////////////////////////////////
     public static final ImageIcon ICON_SCENEMAKER_LOGO = ResourceLoader.loadImageIcon("/res/img/smlogo.png");
-    public static final ImageIcon ICON_SCENEMAKER_DOC = ResourceLoader.loadImageIcon("/res/img/dociconsmall.png");
+    public static final ImageIcon ICON_SCENEMAKER_DOC = ResourceLoader.loadImageIcon("/images/vsm_logo.png");
     public static final ImageIcon ICON_SHOW_GRID = ResourceLoader.loadImageIcon("/res/img/grid.png");
     public static final ImageIcon ICON_VISUALISATION = ResourceLoader.loadImageIcon("/res/img/visualisation.png");
     //SUPERNODE
@@ -206,7 +206,7 @@ public final class PreferencesDesktop extends Preferences {
             // paint a nice doc icon when os is mac
             if (isMac() && Taskbar.isTaskbarSupported()) {
                 Taskbar taskbar = Taskbar.getTaskbar();
-                if (taskbar.isSupported(Taskbar.Feature.ICON_IMAGE)) {
+                if (taskbar.isSupported(Taskbar.Feature.ICON_IMAGE) && ICON_SCENEMAKER_DOC != null) {
                     taskbar.setIconImage(ICON_SCENEMAKER_DOC.getImage());
                 }
             }
