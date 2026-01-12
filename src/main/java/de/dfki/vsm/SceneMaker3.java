@@ -2,11 +2,13 @@ package de.dfki.vsm;
 
 import de.dfki.vsm.editor.EditorInstance;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
+import de.dfki.vsm.util.ios.ResourceLoader;
 import de.dfki.vsm.web.WebUiServer;
 
 import javax.swing.*;
 import java.awt.Desktop;
 import java.awt.GraphicsEnvironment;
+import java.awt.Taskbar;
 import java.io.File;
 import java.net.URI;
 import java.util.ArrayList;
@@ -52,6 +54,7 @@ public final class SceneMaker3 {
             exc.printStackTrace();
         }
         if (noSwing) {
+            configureDockIcon();
             if (effectiveArgs.length == 2 && "runtime".equalsIgnoreCase(effectiveArgs[0])) {
                 final File file = new File(effectiveArgs[1]);
                 if (file.exists()) {
@@ -222,5 +225,27 @@ public final class SceneMaker3 {
         } catch (Exception exc) {
             sLogger.warning("Warning: Cannot open browser: " + exc.getMessage());
         }
+    }
+
+    private static void configureDockIcon() {
+        if (!isMac() || GraphicsEnvironment.isHeadless()) {
+            return;
+        }
+        if (!Taskbar.isTaskbarSupported()) {
+            return;
+        }
+        Taskbar taskbar = Taskbar.getTaskbar();
+        if (!taskbar.isSupported(Taskbar.Feature.ICON_IMAGE)) {
+            return;
+        }
+        ImageIcon icon = ResourceLoader.loadImageIcon("/images/vsm_logo.png");
+        if (icon != null) {
+            taskbar.setIconImage(icon.getImage());
+        }
+    }
+
+    private static boolean isMac() {
+        final String os = System.getProperty("os.name").toLowerCase();
+        return (os.contains("mac"));
     }
 }

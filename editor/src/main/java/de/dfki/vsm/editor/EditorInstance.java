@@ -143,7 +143,10 @@ public final class EditorInstance extends JFrame implements EventListener, Chang
         mWelcomeScreen.setOpaque(false);
         mWelcomeScreen.getViewport().setOpaque(false);
         add(mWelcomeScreen);
-        setIconImage(ResourceLoader.loadImageIcon("/res/img/dociconsmall.png").getImage());
+        ImageIcon appIcon = ResourceLoader.loadImageIcon("/images/vsm_logo.png");
+        if (appIcon != null) {
+            setIconImage(appIcon.getImage());
+        }
         setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
         // Init the windows closing support
         addWindowListener(new WindowAdapter() {

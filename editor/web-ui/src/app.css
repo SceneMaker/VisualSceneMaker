@@ -2661,7 +2661,6 @@ summary {
   font-size: var(--sf-font-size, 16px);
   fill: var(--sf-comment-text, rgba(75, 75, 75, 0.5));
   font-family: "SansSerif", "Helvetica Neue", Arial, sans-serif;
-  font-style: italic;
   dominant-baseline: hanging;
   pointer-events: none;
   white-space: pre;
@@ -2684,7 +2683,6 @@ summary {
   color: var(--sf-comment-text, rgba(75, 75, 75, 0.8));
   font-size: var(--sf-font-size, 16px);
   font-family: "SansSerif", "Helvetica Neue", Arial, sans-serif;
-  font-style: italic;
   padding: 6px 8px;
   line-height: 1.25;
   resize: none;
