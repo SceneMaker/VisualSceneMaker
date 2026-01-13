@@ -1565,15 +1565,18 @@ public final class WebUiServer implements UiEventListener {
                         sendError(ctx, requestId, "BAD_REQUEST", "Missing project path");
                         return;
                     }
+                    // Phase 6: Use EditorProjectService instead of EditorInstance
                     JSONObject project = callOnEdt(() -> {
-                        EditorInstance instance = EditorInstance.getInstance();
-                        if (!instance.openProject(path)) {
+                        EditorProject proj = mEditorProjectService.openProject(path);
+                        if (proj == null) {
                             return null;
                         }
-                        ProjectEditor editor = instance.getSelectedProjectEditor();
-                        JTabbedPane tabs = instance.getProjectEditors();
-                        int index = tabs.indexOfComponent(editor);
-                        return projectToJson(editor, tabs, index);
+                        String projectId = mEditorProjectService.getProjectId(proj);
+                        if (projectId == null) {
+                            return null;
+                        }
+                        mCurrentProjectId = projectId;
+                        return projectToJson(proj, projectId);
                     });
                     if (project == null) {
                         sendError(ctx, requestId, "OPEN_FAILED", "Failed to open project");
@@ -1591,28 +1594,25 @@ public final class WebUiServer implements UiEventListener {
                         sendError(ctx, requestId, "BAD_REQUEST", "Missing project name");
                         return;
                     }
+                    // Phase 6: Use EditorProjectService instead of EditorInstance
                     JSONObject project = callOnEdt(() -> {
-                        EditorInstance instance = EditorInstance.getInstance();
-                        if (!instance.newProject(projectName)) {
+                        EditorProject proj = mEditorProjectService.createProject(projectName);
+                        if (proj == null) {
                             return null;
                         }
-                        ProjectEditor editor = instance.getSelectedProjectEditor();
-                        if (editor == null || editor.getEditorProject() == null) {
+                        String projectId = mEditorProjectService.getProjectId(proj);
+                        if (projectId == null) {
                             return null;
                         }
-                        EditorProject proj = editor.getEditorProject();
-                        proj.setProjectName(projectName);
+                        mCurrentProjectId = projectId;
+
                         if (baseDir != null && !baseDir.isBlank()) {
                             File target = new File(baseDir, projectName);
                             if (proj.write(target)) {
-                                instance.setTabNameSaved();
-                                instance.updateRecentProjects(proj);
-                                instance.refresh();
+                                mEditorProjectService.addRecentProject(proj.getProjectPath(), proj.getProjectName());
                             }
                         }
-                        JTabbedPane tabs = instance.getProjectEditors();
-                        int index = tabs.indexOfComponent(editor);
-                        return projectToJson(editor, tabs, index);
+                        return projectToJson(proj, projectId);
                     });
                     if (project == null) {
                         sendError(ctx, requestId, "CREATE_FAILED", "Failed to create project");
@@ -1629,25 +1629,19 @@ public final class WebUiServer implements UiEventListener {
                         sendError(ctx, requestId, "BAD_REQUEST", "Missing projectId");
                         return;
                     }
+                    // Phase 6: Use EditorProjectService instead of EditorInstance
                     JSONObject project = callOnEdt(() -> {
-                        EditorInstance instance = EditorInstance.getInstance();
-                        ProjectEditor editor = findProjectEditorById(projectId, instance);
-                        if (editor == null || editor.getEditorProject() == null) {
+                        EditorProject proj = mEditorProjectService.getProject(projectId);
+                        if (proj == null) {
                             return null;
                         }
-                        EditorProject proj = editor.getEditorProject();
                         if (proj.isPending()) {
                             return new JSONObject().put("error", "PROJECT_PENDING");
                         }
-                        JTabbedPane tabs = instance.getProjectEditors();
-                        int index = tabs.indexOfComponent(editor);
-                        if (index >= 0) {
-                            tabs.setSelectedIndex(index);
-                        }
-                        if (!instance.save(editor)) {
+                        if (!mEditorProjectService.saveProject(proj)) {
                             return new JSONObject().put("error", "SAVE_FAILED");
                         }
-                        return projectToJson(editor, tabs, index);
+                        return projectToJson(proj, projectId);
                     });
                     if (project == null) {
                         sendError(ctx, requestId, "PROJECT_NOT_FOUND", "Project not found");
