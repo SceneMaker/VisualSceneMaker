@@ -17,6 +17,8 @@ import de.dfki.vsm.editor.action.UndoAction;
 import de.dfki.vsm.editor.project.EditorProject;
 import de.dfki.vsm.editor.project.ProjectEditor;
 import de.dfki.vsm.editor.project.sceneflow.workspace.WorkSpacePanel;
+import de.dfki.vsm.editor.service.EditorProjectService;
+import de.dfki.vsm.editor.service.SceneFlowService;
 import de.dfki.vsm.editor.util.SceneFlowManager;
 import de.dfki.vsm.model.project.property.ExportableProperties;
 import de.dfki.vsm.model.project.property.ProjectProperty;
@@ -174,6 +176,11 @@ public final class WebUiServer implements UiEventListener {
     private volatile List<DeviceEntry> mAvailableDevices;
     private volatile List<String> mExportablePropertyClassNames;
 
+    // Headless services (Phase 6 refactoring)
+    private EditorProjectService mEditorProjectService;
+    private SceneFlowService mSceneFlowService;
+    private String mCurrentProjectId; // Track currently active project
+
     private static final class DeviceEntry {
         private final String name;
         private final String className;
@@ -260,6 +267,10 @@ public final class WebUiServer implements UiEventListener {
 
         loadAvailableDeviceCache();
         loadExportablePropertyCache();
+
+        // Initialize headless services (Phase 6 refactoring)
+        mEditorProjectService = new EditorProjectService();
+        mSceneFlowService = new SceneFlowService();
 
         mApp.before(ctx -> {
             if (requiresAuth(ctx.path())) {
@@ -471,12 +482,12 @@ public final class WebUiServer implements UiEventListener {
         }
         mUiEventBus.emitLazy(() -> {
             JSONObject payload = callOnEdt(() -> {
-                EditorInstance instance = EditorInstance.getInstance();
-                ProjectEditor editor = findProjectEditorById(projectId, instance);
-                if (editor == null || editor.getEditorProject() == null) {
+                // Phase 6: Use EditorProjectService instead of EditorInstance
+                EditorProject project = mEditorProjectService.getProject(projectId);
+                if (project == null) {
                     return null;
                 }
-                JSONObject response = projectConfigToJson(editor.getEditorProject());
+                JSONObject response = projectConfigToJson(project);
                 response.put("projectId", projectId);
                 return response;
             });
@@ -493,12 +504,12 @@ public final class WebUiServer implements UiEventListener {
         }
         mUiEventBus.emitLazy(() -> {
             JSONObject payload = callOnEdt(() -> {
-                EditorInstance instance = EditorInstance.getInstance();
-                ProjectEditor editor = findProjectEditorById(projectId, instance);
-                if (editor == null || editor.getEditorProject() == null) {
+                // Phase 6: Use EditorProjectService instead of EditorInstance
+                EditorProject project = mEditorProjectService.getProject(projectId);
+                if (project == null) {
                     return null;
                 }
-                return scriptSnapshotToJson(editor.getEditorProject(), projectId);
+                return scriptSnapshotToJson(project, projectId);
             });
             if (payload == null) {
                 return null;
@@ -513,12 +524,12 @@ public final class WebUiServer implements UiEventListener {
         }
         mUiEventBus.emitLazy(() -> {
             JSONObject payload = callOnEdt(() -> {
-                EditorInstance instance = EditorInstance.getInstance();
-                ProjectEditor editor = findProjectEditorById(projectId, instance);
-                if (editor == null || editor.getEditorProject() == null) {
+                // Phase 6: Use EditorProjectService instead of EditorInstance
+                EditorProject project = mEditorProjectService.getProject(projectId);
+                if (project == null) {
                     return null;
                 }
-                JSONObject elements = scriptElementsToJson(editor.getEditorProject());
+                JSONObject elements = scriptElementsToJson(project);
                 JSONObject response = new JSONObject();
                 response.put("projectId", projectId);
                 response.put("elements", elements);
@@ -575,12 +586,11 @@ public final class WebUiServer implements UiEventListener {
         if (projectId == null || projectId.isBlank()) {
             return null;
         }
-        EditorInstance instance = EditorInstance.getInstance();
-        ProjectEditor editor = findProjectEditorById(projectId, instance);
-        if (editor == null || editor.getEditorProject() == null) {
+        // Phase 6: Use EditorProjectService instead of EditorInstance
+        EditorProject project = mEditorProjectService.getProject(projectId);
+        if (project == null) {
             return null;
         }
-        EditorProject project = editor.getEditorProject();
         String status = project.isRunning()
                 ? (project.isPaused() ? "paused" : "running")
                 : "stopped";
@@ -731,15 +741,14 @@ public final class WebUiServer implements UiEventListener {
     }
 
     private void handleProjectsList(Context ctx) {
+        // Phase 6: Use EditorProjectService instead of EditorInstance
         JSONArray list = callOnEdt(() -> {
             JSONArray projects = new JSONArray();
-            EditorInstance instance = EditorInstance.getInstance();
-            JTabbedPane tabs = instance.getProjectEditors();
-            for (int i = 0; i < tabs.getTabCount(); i++) {
-                Component comp = tabs.getComponentAt(i);
-                if (comp instanceof ProjectEditor) {
-                    projects.put(projectToJson((ProjectEditor) comp, tabs, i));
-                }
+            Map<String, EditorProject> openProjects = mEditorProjectService.getOpenProjects();
+            for (Map.Entry<String, EditorProject> entry : openProjects.entrySet()) {
+                String projectId = entry.getKey();
+                EditorProject project = entry.getValue();
+                projects.put(projectToJson(project, projectId));
             }
             return projects;
         });
@@ -749,23 +758,14 @@ public final class WebUiServer implements UiEventListener {
     }
 
     private void handleRecentProjects(Context ctx) {
+        // Phase 6: Use EditorProjectService instead of PreferencesDesktop
         JSONArray recent = new JSONArray();
-        for (int i = 0; i <= PreferencesDesktop.sMAX_RECENT_PROJECTS; i++) {
-            String path = PreferencesDesktop.getProperty("recentproject." + i + ".path");
-            String name = PreferencesDesktop.getProperty("recentproject." + i + ".name");
-            String date = PreferencesDesktop.getProperty("recentproject." + i + ".date");
-            if (path == null || name == null) {
-                continue;
-            }
-            if (path.startsWith(PreferencesDesktop.sSAMPLE_PROJECTS) || path.startsWith(PreferencesDesktop.sTUTORIALS_PROJECTS)) {
-                continue;
-            }
+        List<EditorProjectService.RecentProject> recentProjects = mEditorProjectService.getRecentProjects();
+        for (EditorProjectService.RecentProject rp : recentProjects) {
             JSONObject entry = new JSONObject();
-            entry.put("name", name);
-            entry.put("path", path);
-            if (date != null) {
-                entry.put("date", date);
-            }
+            entry.put("name", rp.name);
+            entry.put("path", rp.path);
+            entry.put("date", String.valueOf(rp.lastOpened));
             recent.put(entry);
         }
         JSONObject response = new JSONObject();
@@ -817,16 +817,19 @@ public final class WebUiServer implements UiEventListener {
             return;
         }
 
+        // Phase 6: Use EditorProjectService instead of EditorInstance
         JSONObject projectJson = callOnEdt(() -> {
-            EditorInstance instance = EditorInstance.getInstance();
-            boolean ok = instance.openProject(path);
-            if (!ok) {
+            EditorProject project = mEditorProjectService.openProject(path);
+            if (project == null) {
                 return null;
             }
-            ProjectEditor editor = instance.getSelectedProjectEditor();
-            JTabbedPane tabs = instance.getProjectEditors();
-            int index = tabs.indexOfComponent(editor);
-            return projectToJson(editor, tabs, index);
+            String projectId = mEditorProjectService.getProjectId(project);
+            if (projectId == null) {
+                return null;
+            }
+            // Set as current project
+            mCurrentProjectId = projectId;
+            return projectToJson(project, projectId);
         });
 
         if (projectJson == null) {
@@ -848,29 +851,29 @@ public final class WebUiServer implements UiEventListener {
             return;
         }
 
+        // Phase 6: Use EditorProjectService instead of EditorInstance
         JSONObject projectJson = callOnEdt(() -> {
-            EditorInstance instance = EditorInstance.getInstance();
-            boolean ok = instance.newProject(name);
-            if (!ok) {
+            EditorProject project = mEditorProjectService.createProject(name);
+            if (project == null) {
                 return null;
             }
-            ProjectEditor editor = instance.getSelectedProjectEditor();
-            if (editor == null || editor.getEditorProject() == null) {
+            String projectId = mEditorProjectService.getProjectId(project);
+            if (projectId == null) {
                 return null;
             }
-            EditorProject project = editor.getEditorProject();
-            project.setProjectName(name);
+
+            // Set as current project
+            mCurrentProjectId = projectId;
+
+            // Save to baseDir if provided
             if (baseDir != null && !baseDir.isBlank()) {
                 File target = new File(baseDir, name);
                 if (project.write(target)) {
-                    instance.setTabNameSaved();
-                    instance.updateRecentProjects(project);
-                    instance.refresh();
+                    mEditorProjectService.addRecentProject(project.getProjectPath(), project.getProjectName());
                 }
             }
-            JTabbedPane tabs = instance.getProjectEditors();
-            int index = tabs.indexOfComponent(editor);
-            return projectToJson(editor, tabs, index);
+
+            return projectToJson(project, projectId);
         });
 
         if (projectJson == null) {
@@ -4693,6 +4696,49 @@ public final class WebUiServer implements UiEventListener {
 
         JSONObject json = new JSONObject();
         json.put("projectId", projectIdFor(editor));
+        json.put("name", name);
+        json.put("path", path);
+        json.put("dirty", project.hasChanged());
+        json.put("runtimeState", runtimeState);
+        json.put("activeSuperNodeId", activeSuperNodeId);
+        json.put("pending", project.isPending());
+        json.put("saveAsOnly", saveAsOnly);
+        json.put("config", config);
+        return json;
+    }
+
+    // Phase 6: Headless version of projectToJson
+    private JSONObject projectToJson(EditorProject project, String projectId) {
+        String name = project.getProjectName();
+        if (name == null || name.isBlank()) {
+            name = "";
+        }
+        String path = project.getProjectPath();
+        if (path != null && path.isBlank()) {
+            path = null;
+        }
+        boolean systemPath = isSystemDirectory(path);
+        boolean sampleProject = isUnderDirectory(path, PreferencesDesktop.sSAMPLE_PROJECTS);
+        boolean tutorialProject = isUnderDirectory(path, PreferencesDesktop.sTUTORIALS_PROJECTS);
+        boolean jarPath = isJarPath(path);
+        boolean saveAsOnly = project.isPending() || !systemPath || jarPath || sampleProject || tutorialProject;
+        String runtimeState = project.isRunning()
+                ? (project.isPaused() ? "paused" : "running")
+                : "stopped";
+
+        // Default to root sceneflow ID for active supernode
+        String activeSuperNodeId = project.getSceneFlow().getId();
+        if (activeSuperNodeId == null || activeSuperNodeId.isBlank()) {
+            activeSuperNodeId = ROOT_SUPERNODE_ID;
+        }
+
+        JSONObject config = new JSONObject();
+        EditorConfig editorConfig = project.getEditorConfig();
+        config.put("node_width", editorConfig.getProperty("node_width"));
+        config.put("node_height", editorConfig.getProperty("node_height"));
+
+        JSONObject json = new JSONObject();
+        json.put("projectId", projectId);
         json.put("name", name);
         json.put("path", path);
         json.put("dirty", project.hasChanged());
