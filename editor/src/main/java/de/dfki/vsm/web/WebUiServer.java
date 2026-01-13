@@ -995,15 +995,13 @@ public final class WebUiServer implements UiEventListener {
 
     private void handleProjectDetail(Context ctx) {
         String projectId = ctx.pathParam("id");
+        // Phase 6: Use EditorProjectService instead of EditorInstance
         JSONObject projectJson = callOnEdt(() -> {
-            EditorInstance instance = EditorInstance.getInstance();
-            ProjectEditor editor = findProjectEditorById(projectId, instance);
-            if (editor == null) {
+            EditorProject project = mEditorProjectService.getProject(projectId);
+            if (project == null) {
                 return null;
             }
-            JTabbedPane tabs = instance.getProjectEditors();
-            int index = tabs.indexOfComponent(editor);
-            return projectToJson(editor, tabs, index);
+            return projectToJson(project, projectId);
         });
         if (projectJson == null) {
             writeError(ctx, 404, "PROJECT_NOT_FOUND", "Project not found");
@@ -1088,13 +1086,13 @@ public final class WebUiServer implements UiEventListener {
 
     private void handleScript(Context ctx) {
         String projectId = ctx.pathParam("id");
+        // Phase 6: Use EditorProjectService instead of EditorInstance
         String text = callOnEdt(() -> {
-            EditorInstance instance = EditorInstance.getInstance();
-            ProjectEditor editor = findProjectEditorById(projectId, instance);
-            if (editor == null) {
+            EditorProject project = mEditorProjectService.getProject(projectId);
+            if (project == null) {
                 return null;
             }
-            SceneScript script = editor.getEditorProject().getSceneScript();
+            SceneScript script = project.getSceneScript();
             return script.getText();
         });
         if (text == null) {
@@ -1116,13 +1114,13 @@ public final class WebUiServer implements UiEventListener {
         String bodyText = body.optString("text", null);
         String text = bodyText;
         if (text == null) {
+            // Phase 6: Use EditorProjectService instead of EditorInstance
             text = callOnEdt(() -> {
-                EditorInstance instance = EditorInstance.getInstance();
-                ProjectEditor editor = findProjectEditorById(projectId, instance);
-                if (editor == null) {
+                EditorProject project = mEditorProjectService.getProject(projectId);
+                if (project == null) {
                     return null;
                 }
-                SceneScript script = editor.getEditorProject().getSceneScript();
+                SceneScript script = project.getSceneScript();
                 return script.getText();
             });
         }
@@ -1139,13 +1137,13 @@ public final class WebUiServer implements UiEventListener {
 
     private void handleScriptScenes(Context ctx) {
         String projectId = ctx.pathParam("id");
+        // Phase 6: Use EditorProjectService instead of EditorInstance
         JSONObject response = callOnEdt(() -> {
-            EditorInstance instance = EditorInstance.getInstance();
-            ProjectEditor editor = findProjectEditorById(projectId, instance);
-            if (editor == null) {
+            EditorProject project = mEditorProjectService.getProject(projectId);
+            if (project == null) {
                 return null;
             }
-            SceneScript script = editor.getEditorProject().getSceneScript();
+            SceneScript script = project.getSceneScript();
             return scriptScenesToJson(script);
         });
         if (response == null) {
@@ -1157,13 +1155,13 @@ public final class WebUiServer implements UiEventListener {
 
     private void handleScriptElements(Context ctx) {
         String projectId = ctx.pathParam("id");
+        // Phase 6: Use EditorProjectService instead of EditorInstance
         JSONObject response = callOnEdt(() -> {
-            EditorInstance instance = EditorInstance.getInstance();
-            ProjectEditor editor = findProjectEditorById(projectId, instance);
-            if (editor == null) {
+            EditorProject project = mEditorProjectService.getProject(projectId);
+            if (project == null) {
                 return null;
             }
-            return scriptElementsToJson(editor.getEditorProject());
+            return scriptElementsToJson(project);
         });
         if (response == null) {
             writeError(ctx, 404, "PROJECT_NOT_FOUND", "Project not found");
@@ -1174,13 +1172,13 @@ public final class WebUiServer implements UiEventListener {
 
     private void handleFunctions(Context ctx) {
         String projectId = ctx.pathParam("id");
+        // Phase 6: Use EditorProjectService instead of EditorInstance
         JSONObject response = callOnEdt(() -> {
-            EditorInstance instance = EditorInstance.getInstance();
-            ProjectEditor editor = findProjectEditorById(projectId, instance);
-            if (editor == null) {
+            EditorProject project = mEditorProjectService.getProject(projectId);
+            if (project == null) {
                 return null;
             }
-            return functionsToJson(editor.getEditorProject());
+            return functionsToJson(project);
         });
         if (response == null) {
             writeError(ctx, 404, "PROJECT_NOT_FOUND", "Project not found");
@@ -1191,13 +1189,13 @@ public final class WebUiServer implements UiEventListener {
 
     private void handleTypes(Context ctx) {
         String projectId = ctx.pathParam("id");
+        // Phase 6: Use EditorProjectService instead of EditorInstance
         JSONObject response = callOnEdt(() -> {
-            EditorInstance instance = EditorInstance.getInstance();
-            ProjectEditor editor = findProjectEditorById(projectId, instance);
-            if (editor == null) {
+            EditorProject project = mEditorProjectService.getProject(projectId);
+            if (project == null) {
                 return null;
             }
-            return typesToJson(editor.getEditorProject());
+            return typesToJson(project);
         });
         if (response == null) {
             writeError(ctx, 404, "PROJECT_NOT_FOUND", "Project not found");
@@ -1208,13 +1206,13 @@ public final class WebUiServer implements UiEventListener {
 
     private void handleConfig(Context ctx) {
         String projectId = ctx.pathParam("id");
+        // Phase 6: Use EditorProjectService instead of EditorInstance
         JSONObject response = callOnEdt(() -> {
-            EditorInstance instance = EditorInstance.getInstance();
-            ProjectEditor editor = findProjectEditorById(projectId, instance);
-            if (editor == null) {
+            EditorProject project = mEditorProjectService.getProject(projectId);
+            if (project == null) {
                 return null;
             }
-            return configToJson(editor.getEditorProject());
+            return configToJson(project);
         });
         if (response == null) {
             writeError(ctx, 404, "PROJECT_NOT_FOUND", "Project not found");
@@ -1225,13 +1223,13 @@ public final class WebUiServer implements UiEventListener {
 
     private void handleProjectConfig(Context ctx) {
         String projectId = ctx.pathParam("id");
+        // Phase 6: Use EditorProjectService instead of EditorInstance
         JSONObject response = callOnEdt(() -> {
-            EditorInstance instance = EditorInstance.getInstance();
-            ProjectEditor editor = findProjectEditorById(projectId, instance);
-            if (editor == null) {
+            EditorProject project = mEditorProjectService.getProject(projectId);
+            if (project == null) {
                 return null;
             }
-            return projectConfigToJson(editor.getEditorProject());
+            return projectConfigToJson(project);
         });
         if (response == null) {
             writeError(ctx, 404, "PROJECT_NOT_FOUND", "Project not found");
@@ -1250,13 +1248,12 @@ public final class WebUiServer implements UiEventListener {
             return;
         }
         boolean agentScope = "agent".equalsIgnoreCase(scope);
+        // Phase 6: Use EditorProjectService instead of EditorInstance
         JSONObject response = callOnEdt(() -> {
-            EditorInstance instance = EditorInstance.getInstance();
-            ProjectEditor editor = findProjectEditorById(projectId, instance);
-            if (editor == null || editor.getEditorProject() == null) {
+            EditorProject project = mEditorProjectService.getProject(projectId);
+            if (project == null) {
                 return null;
             }
-            EditorProject project = editor.getEditorProject();
             PluginConfig plugin = null;
             if (className != null && !className.isBlank()) {
                 String resolvedName = (deviceName == null || deviceName.isBlank()) ? className : deviceName;
@@ -1476,13 +1473,13 @@ public final class WebUiServer implements UiEventListener {
     private void handleRuntime(Context ctx) {
         String projectId = ctx.pathParam("id");
         mLastRuntimeProjectId = projectId;
+        // Phase 6: Use EditorProjectService instead of EditorInstance
         JSONObject response = callOnEdt(() -> {
-            EditorInstance instance = EditorInstance.getInstance();
-            ProjectEditor editor = findProjectEditorById(projectId, instance);
-            if (editor == null) {
+            EditorProject project = mEditorProjectService.getProject(projectId);
+            if (project == null) {
                 return null;
             }
-            return runtimeToJson(editor);
+            return runtimeToJson(project);
         });
         if (response == null) {
             writeError(ctx, 404, "PROJECT_NOT_FOUND", "Project not found");
@@ -5809,6 +5806,32 @@ public final class WebUiServer implements UiEventListener {
         return response;
     }
 
+    // Phase 6: Headless version of runtimeToJson
+    private JSONObject runtimeToJson(EditorProject project) {
+        // Use root sceneflow as current active supernode since we don't have SceneFlowManager
+        SuperNode current = project.getSceneFlow();
+        JSONObject response = new JSONObject();
+        String state = project.isRunning()
+                ? (project.isPaused() ? "paused" : "running")
+                : "stopped";
+        response.put("state", state);
+        Map<String, DataTypeDefinition> typeMap = new LinkedHashMap<>();
+        for (DataTypeDefinition def : project.getSceneFlow().getTypeDefList()) {
+            typeMap.put(def.getName(), def);
+        }
+        JSONArray globals = new JSONArray();
+        for (VariableDefinition def : project.getSceneFlow().getVarDefList()) {
+            globals.put(variableToJson(def, typeMap, "global", project));
+        }
+        JSONArray locals = new JSONArray();
+        for (VariableDefinition def : current.getVarDefList()) {
+            locals.put(variableToJson(def, typeMap, "local", project));
+        }
+        response.put("globalVariables", globals);
+        response.put("localVariables", locals);
+        return response;
+    }
+
     private JSONObject variableToJson(VariableDefinition def, Map<String, DataTypeDefinition> typeMap, String scope, RunTimeProject project) {
         JSONObject json = new JSONObject();
         json.put("name", def.getName());
@@ -7979,7 +8002,11 @@ public final class WebUiServer implements UiEventListener {
     }
 
     private boolean requiresAuth(String path) {
+        // Public endpoints that don't require authentication
         if ((API_PREFIX + "/token").equals(path)) {
+            return false;
+        }
+        if ((API_PREFIX + "/info").equals(path)) {
             return false;
         }
         return path.startsWith("/api/") || path.startsWith("/ws");
