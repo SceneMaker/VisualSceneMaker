@@ -1013,18 +1013,18 @@ public final class WebUiServer implements UiEventListener {
     private void handleSceneFlow(Context ctx) {
         String projectId = ctx.pathParam("id");
         String superNodeId = ctx.queryParam("superNodeId");
+        // Phase 6: Use EditorProjectService instead of EditorInstance
         JSONObject snapshot = callOnEdt(() -> {
-            EditorInstance instance = EditorInstance.getInstance();
-            ProjectEditor editor = findProjectEditorById(projectId, instance);
-            if (editor == null) {
+            EditorProject project = mEditorProjectService.getProject(projectId);
+            if (project == null) {
                 return null;
             }
-            SceneFlowManager manager = editor.getSceneFlowEditor().getSceneFlowManager();
-            SuperNode target = resolveSuperNode(manager.getSceneFlow(), superNodeId);
+            SceneFlow sceneFlow = project.getSceneFlow();
+            SuperNode target = resolveSuperNode(sceneFlow, superNodeId);
             if (target == null) {
-                target = manager.getCurrentActiveSuperNode();
+                target = sceneFlow; // Default to root sceneflow
             }
-            return sceneFlowSnapshot(editor, target);
+            return sceneFlowSnapshot(project, projectId, target);
         });
         if (snapshot == null) {
             writeError(ctx, 404, "PROJECT_NOT_FOUND", "Project not found");
@@ -4893,6 +4893,107 @@ public final class WebUiServer implements UiEventListener {
         }
         snapshot.put("comments", comments);
         return snapshot;
+    }
+
+    // Phase 6: Headless version of sceneFlowSnapshot
+    private JSONObject sceneFlowSnapshot(EditorProject project, String projectId, SuperNode superNode) {
+        EditorConfig config = project.getEditorConfig();
+        SceneFlow sceneFlow = project.getSceneFlow();
+
+        JSONObject snapshot = new JSONObject();
+        snapshot.put("projectId", projectId);
+        snapshot.put("superNodeId", superNode.getId());
+        snapshot.put("revision", superNode.getHashCode());
+        JSONObject superNodeJson = new JSONObject();
+        superNodeJson.put("id", superNode.getId());
+        superNodeJson.put("name", superNode.getName());
+        superNodeJson.put("flavour", superNode.getFlavour().name());
+        snapshot.put("superNode", superNodeJson);
+
+        JSONArray path = new JSONArray();
+        JSONArray pathNodesJson = new JSONArray();
+        List<SuperNode> pathNodes = findPathToSuperNode(sceneFlow, superNode.getId());
+        if (superNode.getParentNode() == null && (pathNodes == null || pathNodes.isEmpty())) {
+            pathNodes = new ArrayList<>();
+            pathNodes.add(superNode);
+        }
+        if (pathNodes != null) {
+            for (SuperNode node : pathNodes) {
+                String nodeName = node.getName();
+                if (nodeName == null || nodeName.isBlank()) {
+                    nodeName = "SceneFlow";
+                }
+                String nodeId = node.getId();
+                if (nodeId == null || nodeId.isBlank()) {
+                    nodeId = ROOT_SUPERNODE_ID;
+                }
+                path.put(nodeName);
+                JSONObject pathEntry = new JSONObject();
+                pathEntry.put("id", nodeId);
+                pathEntry.put("name", nodeName);
+                pathEntry.put("isRoot", node.getParentNode() == null);
+                pathNodesJson.put(pathEntry);
+            }
+        }
+        snapshot.put("path", path);
+        snapshot.put("pathNodes", pathNodesJson);
+
+        Set<String> altStartIds = collectAltStartIds(superNode);
+        JSONObject superNodeData = nodeToJson(superNode, superNode, altStartIds, config);
+        SuperNode parent = superNode.getParentNode();
+        boolean isRoot = parent == null;
+        boolean isStart = isRoot || parent.getStartNodeMap().containsKey(superNode.getId());
+        superNodeData.put("isStart", isStart);
+        superNodeData.put("isRoot", isRoot);
+        snapshot.put("superNodeData", superNodeData);
+        JSONArray nodes = new JSONArray();
+        for (BasicNode node : superNode.getNodeAndSuperNodeList()) {
+            nodes.put(nodeToJson(node, superNode, altStartIds, config));
+        }
+        snapshot.put("nodes", nodes);
+
+        JSONArray edges = new JSONArray();
+        int edgeIndex = 0;
+        for (BasicNode node : superNode.getNodeAndSuperNodeList()) {
+            for (AbstractEdge edge : node.getEdgeList()) {
+                edges.put(edgeToJson(edge, edgeIndex++));
+            }
+        }
+        snapshot.put("edges", edges);
+
+        JSONArray comments = new JSONArray();
+        int commentIndex = 0;
+        for (CommentBadge comment : superNode.getCommentList()) {
+            comments.put(commentToJson(comment, commentIndex++));
+        }
+        snapshot.put("comments", comments);
+        return snapshot;
+    }
+
+    // Phase 6: Headless version of collectAltStartIds
+    private Set<String> collectAltStartIds(SuperNode target) {
+        Set<String> altStartIds = new LinkedHashSet<>();
+        SuperNode parent = target.getParentNode();
+        if (parent == null) {
+            return altStartIds;
+        }
+        for (BasicNode node : parent.getNodeAndSuperNodeList()) {
+            for (AbstractEdge edge : node.getEdgeList()) {
+                if (!target.getId().equals(edge.getTargetUnid())) {
+                    continue;
+                }
+                Map<Tuple<String, BasicNode>, Tuple<String, BasicNode>> altMap = edge.getAltMap();
+                if (altMap == null) {
+                    continue;
+                }
+                for (Tuple<String, BasicNode> alt : altMap.values()) {
+                    if (alt != null && alt.getFirst() != null && !alt.getFirst().isEmpty()) {
+                        altStartIds.add(alt.getFirst());
+                    }
+                }
+            }
+        }
+        return altStartIds;
     }
 
     private JSONObject nodeToJson(BasicNode node, SuperNode superNode, Set<String> altStartIds, EditorConfig config) {
