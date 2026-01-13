@@ -974,13 +974,9 @@ public final class WebUiServer implements UiEventListener {
 
     private void handleCloseProject(Context ctx) {
         String projectId = ctx.pathParam("id");
+        // Phase 6: Use EditorProjectService instead of EditorInstance
         boolean closed = callOnEdt(() -> {
-            EditorInstance instance = EditorInstance.getInstance();
-            ProjectEditor editor = findProjectEditorById(projectId, instance);
-            if (editor == null) {
-                return false;
-            }
-            return instance.closeProject(editor, false);
+            return mEditorProjectService.closeProject(projectId);
         });
         if (!closed) {
             writeError(ctx, 404, "PROJECT_NOT_FOUND", "Project not found");
@@ -8108,6 +8104,22 @@ public final class WebUiServer implements UiEventListener {
             return false;
         }
         if ((API_PREFIX + "/info").equals(path)) {
+            return false;
+        }
+        // Landing page endpoints - should be accessible without auth
+        if ((API_PREFIX + "/preferences").equals(path)) {
+            return false;
+        }
+        if ((API_PREFIX + "/projects/recent").equals(path)) {
+            return false;
+        }
+        if ((API_PREFIX + "/projects").equals(path)) {
+            return false;
+        }
+        if ((API_PREFIX + "/projects/tutorials").equals(path)) {
+            return false;
+        }
+        if ((API_PREFIX + "/projects/samples").equals(path)) {
             return false;
         }
         return path.startsWith("/api/") || path.startsWith("/ws");
