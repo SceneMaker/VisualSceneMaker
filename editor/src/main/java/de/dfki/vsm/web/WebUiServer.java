@@ -4620,13 +4620,12 @@ public final class WebUiServer implements UiEventListener {
         }
     }
 
+    // Phase 6: Headless version of runRuntimeCommand
     private boolean runRuntimeCommand(String projectId, String command) {
-        EditorInstance instance = EditorInstance.getInstance();
-        ProjectEditor editor = findProjectEditorById(projectId, instance);
-        if (editor == null || editor.getEditorProject() == null) {
+        EditorProject project = mEditorProjectService.getProject(projectId);
+        if (project == null) {
             return false;
         }
-        EditorProject project = editor.getEditorProject();
         switch (command) {
             case "Runtime.Play":
                 if (project.isRunning()) {
@@ -4645,7 +4644,14 @@ public final class WebUiServer implements UiEventListener {
                 }
                 return true;
             case "Runtime.Stop":
-                return instance.stop(project);
+                if (project.isRunning()) {
+                    if (project.abort()) {
+                        project.unload();
+                        return true;
+                    }
+                    return false;
+                }
+                return true;
             default:
                 return false;
         }
