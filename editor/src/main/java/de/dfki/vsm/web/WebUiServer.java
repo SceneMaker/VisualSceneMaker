@@ -1980,6 +1980,7 @@ public final class WebUiServer implements UiEventListener {
                     broadcastDirtyIfPresent(response, projectId);
                     return;
                 }
+                // Phase 6: Headless version of SceneFlow.Node.Update
                 case "SceneFlow.Node.Update": {
                     String projectId = body.optString("projectId", null);
                     String nodeId = body.optString("nodeId", "");
@@ -1990,23 +1991,15 @@ public final class WebUiServer implements UiEventListener {
                     }
                     final JSONObject sourcePayload = fields == null ? body : fields;
                     JSONObject response = callOnEdt(() -> {
-                        EditorInstance instance = EditorInstance.getInstance();
-                        ProjectEditor editor = findProjectEditorById(projectId, instance);
-                        if (editor == null) {
+                        EditorProject project = mEditorProjectService.getProject(projectId);
+                        if (project == null) {
                             return null;
                         }
-                        WorkSpacePanel workSpace = editor.getSceneFlowEditor().getWorkSpace();
-                        SceneFlowManager manager = editor.getSceneFlowEditor().getSceneFlowManager();
-                        SuperNode active = manager.getCurrentActiveSuperNode();
-                        BasicNode dataNode = resolveNodeForDefinitions(active, nodeId);
+                        SceneFlow sceneFlow = project.getSceneFlow();
+                        BasicNode dataNode = nodeId.isBlank() ? sceneFlow : findNodeRecursive(sceneFlow, nodeId);
                         if (dataNode == null) {
                             return new JSONObject().put("error", "NODE_NOT_FOUND");
                         }
-                        String oldName = dataNode.getName();
-                        String oldComment = dataNode.getComment();
-                        boolean oldStart = dataNode.getParentNode() != null
-                                && dataNode.getParentNode().getStartNodeMap().containsKey(dataNode.getId());
-
                         if (sourcePayload.has("name") && !dataNode.isHistoryNode()) {
                             String nodeName = sourcePayload.optString("name", "").trim();
                             if (nodeName.isBlank()) {
@@ -2019,53 +2012,12 @@ public final class WebUiServer implements UiEventListener {
                         }
                         if (sourcePayload.has("isStart")) {
                             boolean isStart = sourcePayload.optBoolean("isStart", false);
-                            Node guiNode = workSpace.getNode(nodeId);
-                            updateStartFlag(dataNode, guiNode, isStart);
-                        }
-                        String newName = dataNode.getName();
-                        String newComment = dataNode.getComment();
-                        boolean newStart = dataNode.getParentNode() != null
-                                && dataNode.getParentNode().getStartNodeMap().containsKey(dataNode.getId());
-
-                        Node guiNode = workSpace.getNode(nodeId);
-                        if (guiNode != null) {
-                            guiNode.update(null, null);
-                        }
-                        workSpace.revalidate();
-                        workSpace.repaint(100);
-                        if (!Objects.equals(oldName, newName)
-                                || !Objects.equals(oldComment, newComment)
-                                || oldStart != newStart) {
-                            UndoManager undoManager = editor.getSceneFlowEditor().getUndoManager();
-                            undoManager.addEdit(new AbstractUndoableEdit() {
-                                @Override
-                                public void undo() throws CannotUndoException {
-                                    super.undo();
-                                    applyNodeState(dataNode, guiNode, workSpace, oldName, oldComment, oldStart);
-                                }
-
-                                @Override
-                                public void redo() throws CannotRedoException {
-                                    super.redo();
-                                    applyNodeState(dataNode, guiNode, workSpace, newName, newComment, newStart);
-                                }
-
-                                @Override
-                                public String getUndoPresentationName() {
-                                    return "Undo Update Node";
-                                }
-
-                                @Override
-                                public String getRedoPresentationName() {
-                                    return "Redo Update Node";
-                                }
-                            });
-                            UndoAction.getInstance().refreshUndoState();
-                            RedoAction.getInstance().refreshRedoState();
+                            updateStartFlag(dataNode, null, isStart);
                         }
                         JSONObject payloadResp = new JSONObject();
                         payloadResp.put("nodeId", nodeId);
-                        payloadResp.put("snapshot", sceneFlowSnapshot(editor, manager.getCurrentActiveSuperNode()));
+                        payloadResp.put("snapshot", sceneFlowSnapshot(project, projectId, sceneFlow));
+                        payloadResp.put("dirty", project.hasChanged());
                         return payloadResp;
                     });
                     if (response == null) {
@@ -2077,8 +2029,12 @@ public final class WebUiServer implements UiEventListener {
                         return;
                     }
                     sendResponse(ctx, requestId, name, response);
+                    if (response.has("dirty")) {
+                        emitUiProjectDirty(projectId, response.getBoolean("dirty"), List.of("sceneflow"));
+                    }
                     return;
                 }
+                // Phase 6: Headless version of SceneFlow.Node.Delete
                 case "SceneFlow.Node.Delete": {
                     String projectId = body.optString("projectId", null);
                     String nodeId = body.optString("nodeId", null);
@@ -2087,20 +2043,24 @@ public final class WebUiServer implements UiEventListener {
                         return;
                     }
                     JSONObject response = callOnEdt(() -> {
-                        EditorInstance instance = EditorInstance.getInstance();
-                        ProjectEditor editor = findProjectEditorById(projectId, instance);
-                        if (editor == null) {
+                        EditorProject project = mEditorProjectService.getProject(projectId);
+                        if (project == null) {
                             return null;
                         }
-                        WorkSpacePanel workSpace = editor.getSceneFlowEditor().getWorkSpace();
-                        Node node = workSpace.getNode(nodeId);
-                        if (node == null) {
+                        SceneFlow sceneFlow = project.getSceneFlow();
+                        BasicNode dataNode = findNodeRecursive(sceneFlow, nodeId);
+                        if (dataNode == null) {
                             return new JSONObject().put("error", "NODE_NOT_FOUND");
                         }
-                        new RemoveNodeAction(workSpace, node).run();
+                        SuperNode parent = dataNode.getParentNode();
+                        if (parent == null) {
+                            return new JSONObject().put("error", "CANNOT_DELETE_ROOT");
+                        }
+                        parent.removeNode(dataNode);
                         JSONObject payloadResp = new JSONObject();
                         payloadResp.put("nodeId", nodeId);
-                        payloadResp.put("snapshot", sceneFlowSnapshot(editor, editor.getSceneFlowEditor().getSceneFlowManager().getCurrentActiveSuperNode()));
+                        payloadResp.put("snapshot", sceneFlowSnapshot(project, projectId, sceneFlow));
+                        payloadResp.put("dirty", project.hasChanged());
                         return payloadResp;
                     });
                     if (response == null) {
@@ -2112,6 +2072,9 @@ public final class WebUiServer implements UiEventListener {
                         return;
                     }
                     sendResponse(ctx, requestId, name, response);
+                    if (response.has("dirty")) {
+                        emitUiProjectDirty(projectId, response.getBoolean("dirty"), List.of("sceneflow"));
+                    }
                     return;
                 }
                 case "SceneFlow.Selection.Copy": {
@@ -2760,6 +2723,7 @@ public final class WebUiServer implements UiEventListener {
                     broadcastDirtyIfPresent(response, projectId);
                     return;
                 }
+                // Phase 6: Headless version of SceneFlow.Node.VarDef.Add
                 case "SceneFlow.Node.VarDef.Add": {
                     String projectId = body.optString("projectId", null);
                     String nodeId = body.optString("nodeId", "");
@@ -2770,14 +2734,12 @@ public final class WebUiServer implements UiEventListener {
                         return;
                     }
                     JSONObject response = callOnEdt(() -> {
-                        EditorInstance instance = EditorInstance.getInstance();
-                        ProjectEditor editor = findProjectEditorById(projectId, instance);
-                        if (editor == null) {
+                        EditorProject project = mEditorProjectService.getProject(projectId);
+                        if (project == null) {
                             return null;
                         }
-                        SceneFlowManager manager = editor.getSceneFlowEditor().getSceneFlowManager();
-                        SuperNode active = manager.getCurrentActiveSuperNode();
-                        BasicNode dataNode = resolveNodeForDefinitions(active, nodeId);
+                        SceneFlow sceneFlow = project.getSceneFlow();
+                        BasicNode dataNode = nodeId.isBlank() ? sceneFlow : findNodeRecursive(sceneFlow, nodeId);
                         if (dataNode == null) {
                             return new JSONObject().put("error", "NODE_NOT_FOUND");
                         }
@@ -2786,40 +2748,12 @@ public final class WebUiServer implements UiEventListener {
                         if (varDef == null) {
                             return new JSONObject().put("error", error.length() > 0 ? error.toString() : "VARDEF_INVALID");
                         }
-                        List<VariableDefinition> before = copyVarDefList(dataNode.getVarDefList());
                         List<VariableDefinition> list = dataNode.getVarDefList();
                         int insertIndex = index < 0 || index > list.size() ? list.size() : index;
                         list.add(insertIndex, varDef);
-                        List<VariableDefinition> after = copyVarDefList(list);
-                        UndoManager undoManager = editor.getSceneFlowEditor().getUndoManager();
-                        undoManager.addEdit(new AbstractUndoableEdit() {
-                            @Override
-                            public void undo() throws CannotUndoException {
-                                super.undo();
-                                applyVarDefList(dataNode, before);
-                            }
-
-                            @Override
-                            public void redo() throws CannotRedoException {
-                                super.redo();
-                                applyVarDefList(dataNode, after);
-                            }
-
-                            @Override
-                            public String getUndoPresentationName() {
-                                return "Undo Update Variable Definitions";
-                            }
-
-                            @Override
-                            public String getRedoPresentationName() {
-                                return "Redo Update Variable Definitions";
-                            }
-                        });
-                        UndoAction.getInstance().refreshUndoState();
-                        RedoAction.getInstance().refreshRedoState();
                         JSONObject payloadResp = new JSONObject();
-                        payloadResp.put("snapshot", sceneFlowSnapshot(editor, active));
-                        appendDirty(editor, payloadResp);
+                        payloadResp.put("snapshot", sceneFlowSnapshot(project, projectId, sceneFlow));
+                        payloadResp.put("dirty", project.hasChanged());
                         return payloadResp;
                     });
                     if (response == null) {
@@ -2831,11 +2765,13 @@ public final class WebUiServer implements UiEventListener {
                         return;
                     }
                     sendResponse(ctx, requestId, name, response);
+                    if (response.has("dirty")) {
+                        emitUiProjectDirty(projectId, response.getBoolean("dirty"), List.of("sceneflow"));
+                    }
                     if (response.optBoolean("scriptChanged")) {
                         emitUiScriptSnapshot(projectId);
                         emitUiScriptElements(projectId);
                     }
-                    broadcastDirtyIfPresent(response, projectId);
                     return;
                 }
                 // Phase 6: Headless version of SceneFlow.Node.VarDef.Update
@@ -2915,6 +2851,7 @@ public final class WebUiServer implements UiEventListener {
                     }
                     return;
                 }
+                // Phase 6: Headless version of SceneFlow.Node.VarDef.Delete
                 case "SceneFlow.Node.VarDef.Delete": {
                     String projectId = body.optString("projectId", null);
                     String nodeId = body.optString("nodeId", "");
@@ -2924,14 +2861,12 @@ public final class WebUiServer implements UiEventListener {
                         return;
                     }
                     JSONObject response = callOnEdt(() -> {
-                        EditorInstance instance = EditorInstance.getInstance();
-                        ProjectEditor editor = findProjectEditorById(projectId, instance);
-                        if (editor == null) {
+                        EditorProject project = mEditorProjectService.getProject(projectId);
+                        if (project == null) {
                             return null;
                         }
-                        SceneFlowManager manager = editor.getSceneFlowEditor().getSceneFlowManager();
-                        SuperNode active = manager.getCurrentActiveSuperNode();
-                        BasicNode dataNode = resolveNodeForDefinitions(active, nodeId);
+                        SceneFlow sceneFlow = project.getSceneFlow();
+                        BasicNode dataNode = nodeId.isBlank() ? sceneFlow : findNodeRecursive(sceneFlow, nodeId);
                         if (dataNode == null) {
                             return new JSONObject().put("error", "NODE_NOT_FOUND");
                         }
@@ -2939,38 +2874,10 @@ public final class WebUiServer implements UiEventListener {
                         if (index >= list.size()) {
                             return new JSONObject().put("error", "VARDEF_NOT_FOUND");
                         }
-                        List<VariableDefinition> before = copyVarDefList(list);
                         list.remove(index);
-                        List<VariableDefinition> after = copyVarDefList(list);
-                        UndoManager undoManager = editor.getSceneFlowEditor().getUndoManager();
-                        undoManager.addEdit(new AbstractUndoableEdit() {
-                            @Override
-                            public void undo() throws CannotUndoException {
-                                super.undo();
-                                applyVarDefList(dataNode, before);
-                            }
-
-                            @Override
-                            public void redo() throws CannotRedoException {
-                                super.redo();
-                                applyVarDefList(dataNode, after);
-                            }
-
-                            @Override
-                            public String getUndoPresentationName() {
-                                return "Undo Update Variable Definitions";
-                            }
-
-                            @Override
-                            public String getRedoPresentationName() {
-                                return "Redo Update Variable Definitions";
-                            }
-                        });
-                        UndoAction.getInstance().refreshUndoState();
-                        RedoAction.getInstance().refreshRedoState();
                         JSONObject payloadResp = new JSONObject();
-                        payloadResp.put("snapshot", sceneFlowSnapshot(editor, active));
-                        appendDirty(editor, payloadResp);
+                        payloadResp.put("snapshot", sceneFlowSnapshot(project, projectId, sceneFlow));
+                        payloadResp.put("dirty", project.hasChanged());
                         return payloadResp;
                     });
                     if (response == null) {
@@ -2982,7 +2889,9 @@ public final class WebUiServer implements UiEventListener {
                         return;
                     }
                     sendResponse(ctx, requestId, name, response);
-                    broadcastDirtyIfPresent(response, projectId);
+                    if (response.has("dirty")) {
+                        emitUiProjectDirty(projectId, response.getBoolean("dirty"), List.of("sceneflow"));
+                    }
                     return;
                 }
                 case "SceneFlow.Node.VarDef.Move": {
