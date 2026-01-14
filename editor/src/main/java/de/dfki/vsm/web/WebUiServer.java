@@ -2887,6 +2887,7 @@ public final class WebUiServer implements UiEventListener {
                     broadcastDirtyIfPresent(response, projectId);
                     return;
                 }
+                // Phase 6: Headless version of SceneFlow.Node.VarDef.Update
                 case "SceneFlow.Node.VarDef.Update": {
                     String projectId = body.optString("projectId", null);
                     String nodeId = body.optString("nodeId", "");
@@ -2898,14 +2899,12 @@ public final class WebUiServer implements UiEventListener {
                         return;
                     }
                     JSONObject response = callOnEdt(() -> {
-                        EditorInstance instance = EditorInstance.getInstance();
-                        ProjectEditor editor = findProjectEditorById(projectId, instance);
-                        if (editor == null) {
+                        EditorProject project = mEditorProjectService.getProject(projectId);
+                        if (project == null) {
                             return null;
                         }
-                        SceneFlowManager manager = editor.getSceneFlowEditor().getSceneFlowManager();
-                        SuperNode active = manager.getCurrentActiveSuperNode();
-                        BasicNode dataNode = resolveNodeForDefinitions(active, nodeId);
+                        SceneFlow sceneFlow = project.getSceneFlow();
+                        BasicNode dataNode = nodeId.isBlank() ? sceneFlow : findNodeRecursive(sceneFlow, nodeId);
                         if (dataNode == null) {
                             return new JSONObject().put("error", "NODE_NOT_FOUND");
                         }
@@ -2929,7 +2928,7 @@ public final class WebUiServer implements UiEventListener {
                         VarRenameSnapshot renameSnapshot = null;
                         if (oldName != null && newName != null && !oldName.equals(newName)) {
                             StringBuilder renameError = new StringBuilder();
-                            renameSnapshot = renameVariableReferences(editor.getEditorProject(), oldName, newName, renameError);
+                            renameSnapshot = renameVariableReferences(project, oldName, newName, renameError);
                             if (renameSnapshot == null) {
                                 applyVarDefList(dataNode, before);
                                 String renameMessage = renameError.length() > 0 ? renameError.toString() : "Variable rename failed.";
@@ -2938,79 +2937,13 @@ public final class WebUiServer implements UiEventListener {
                             renameSnapshot.nodeVarDefsBefore.putIfAbsent(dataNode, before);
                             renameSnapshot.nodeVarDefsAfter.putIfAbsent(dataNode, copyVarDefList(dataNode.getVarDefList()));
                         }
-                        List<VariableDefinition> after = copyVarDefList(list);
-                        if (renameSnapshot != null && renameSnapshot.hasChanges()) {
-                            editor.refresh();
-                        }
-                        UndoManager undoManager = editor.getSceneFlowEditor().getUndoManager();
-                        if (renameSnapshot != null && renameSnapshot.hasChanges()) {
-                            VarRenameSnapshot snapshot = renameSnapshot;
-                            undoManager.addEdit(new AbstractUndoableEdit() {
-                                @Override
-                                public void undo() throws CannotUndoException {
-                                    super.undo();
-                                    applyVarRenameSnapshot(editor.getEditorProject(), snapshot, false);
-                                    editor.refresh();
-                                    if (snapshot.scriptChanged) {
-                                        emitUiScriptSnapshot(projectId);
-                                        emitUiScriptElements(projectId);
-                                    }
-                                }
-
-                                @Override
-                                public void redo() throws CannotRedoException {
-                                    super.redo();
-                                    applyVarRenameSnapshot(editor.getEditorProject(), snapshot, true);
-                                    editor.refresh();
-                                    if (snapshot.scriptChanged) {
-                                        emitUiScriptSnapshot(projectId);
-                                        emitUiScriptElements(projectId);
-                                    }
-                                }
-
-                                @Override
-                                public String getUndoPresentationName() {
-                                    return "Undo Update Variable Definitions";
-                                }
-
-                                @Override
-                                public String getRedoPresentationName() {
-                                    return "Redo Update Variable Definitions";
-                                }
-                            });
-                        } else {
-                            undoManager.addEdit(new AbstractUndoableEdit() {
-                                @Override
-                                public void undo() throws CannotUndoException {
-                                    super.undo();
-                                    applyVarDefList(dataNode, before);
-                                }
-
-                                @Override
-                                public void redo() throws CannotRedoException {
-                                    super.redo();
-                                    applyVarDefList(dataNode, after);
-                                }
-
-                                @Override
-                                public String getUndoPresentationName() {
-                                    return "Undo Update Variable Definitions";
-                                }
-
-                                @Override
-                                public String getRedoPresentationName() {
-                                    return "Redo Update Variable Definitions";
-                                }
-                            });
-                        }
-                        UndoAction.getInstance().refreshUndoState();
-                        RedoAction.getInstance().refreshRedoState();
+                        // Note: Undo/redo support removed for headless operation
                         JSONObject payloadResp = new JSONObject();
-                        payloadResp.put("snapshot", sceneFlowSnapshot(editor, active));
+                        payloadResp.put("snapshot", sceneFlowSnapshot(project, projectId, sceneFlow));
                         if (renameSnapshot != null && renameSnapshot.scriptChanged) {
                             payloadResp.put("scriptChanged", true);
                         }
-                        appendDirty(editor, payloadResp);
+                        payloadResp.put("dirty", project.hasChanged());
                         return payloadResp;
                     });
                     if (response == null) {
@@ -3022,7 +2955,13 @@ public final class WebUiServer implements UiEventListener {
                         return;
                     }
                     sendResponse(ctx, requestId, name, response);
-                    broadcastDirtyIfPresent(response, projectId);
+                    if (response.has("dirty")) {
+                        emitUiProjectDirty(projectId, response.getBoolean("dirty"), List.of("sceneflow"));
+                    }
+                    if (response.optBoolean("scriptChanged", false)) {
+                        emitUiScriptSnapshot(projectId);
+                        emitUiScriptElements(projectId);
+                    }
                     return;
                 }
                 case "SceneFlow.Node.VarDef.Delete": {
@@ -5687,17 +5626,17 @@ public final class WebUiServer implements UiEventListener {
         return response;
     }
 
+    // Phase 6: Headless version of applyScriptUpdate
     private JSONObject applyScriptUpdate(String projectId, String text, Integer expectedVersion, boolean force) {
         try {
-            EditorInstance instance = EditorInstance.getInstance();
-            ProjectEditor editor = findProjectEditorById(projectId, instance);
-            if (editor == null || editor.getEditorProject() == null) {
+            EditorProject project = mEditorProjectService.getProject(projectId);
+            if (project == null) {
                 JSONObject error = new JSONObject();
                 error.put("error", "PROJECT_NOT_FOUND");
                 error.put("message", "Project not found");
                 return error;
             }
-            SceneScript script = editor.getEditorProject().getSceneScript();
+            SceneScript script = project.getSceneScript();
             int currentVersion = script.getHashCode();
             if (!force && expectedVersion != null && expectedVersion != currentVersion) {
                 JSONObject response = new JSONObject();
@@ -5712,21 +5651,13 @@ public final class WebUiServer implements UiEventListener {
             ScriptDiagnostics.Result diagnostics = parseOk
                     ? new ScriptDiagnostics.Result(true, List.of())
                     : ScriptDiagnostics.analyze(text);
-            if (parseOk) {
-                editor.refresh();
-                JTabbedPane tabs = instance.getProjectEditors();
-                int index = tabs.indexOfComponent(editor);
-                if (index >= 0 && tabs.getSelectedIndex() == index) {
-                    instance.setTabNameModified();
-                }
-            }
             JSONObject response = new JSONObject();
             response.put("applied", parseOk);
             response.put("parseOk", parseOk);
             response.put("version", script.getHashCode());
             response.put("text", script.getText());
             response.put("parseErrors", diagnosticsToJson(diagnostics.getDiagnostics()));
-            response.put("dirty", editor.getEditorProject().hasChanged());
+            response.put("dirty", project.hasChanged());
             if (!parseOk) {
                 response.put("reason", "PARSE_FAILED");
             }
@@ -6281,6 +6212,31 @@ public final class WebUiServer implements UiEventListener {
         for (BasicNode node : superNode.getNodeAndSuperNodeList()) {
             if (nodeId.equals(node.getId())) {
                 return node;
+            }
+        }
+        return null;
+    }
+
+    // Phase 6: Recursive helper to find node anywhere in sceneflow
+    private BasicNode findNodeRecursive(SuperNode root, String nodeId) {
+        if (root == null || nodeId == null) {
+            return null;
+        }
+        // Check if root itself matches
+        if (nodeId.equals(root.getId())) {
+            return root;
+        }
+        // Check direct children
+        for (BasicNode node : root.getNodeAndSuperNodeList()) {
+            if (nodeId.equals(node.getId())) {
+                return node;
+            }
+            // Recursively search in child supernodes
+            if (node instanceof SuperNode) {
+                BasicNode found = findNodeRecursive((SuperNode) node, nodeId);
+                if (found != null) {
+                    return found;
+                }
             }
         }
         return null;
