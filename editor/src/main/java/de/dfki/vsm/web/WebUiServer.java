@@ -2056,6 +2056,9 @@ public final class WebUiServer implements UiEventListener {
                         if (parent == null) {
                             return new JSONObject().put("error", "CANNOT_DELETE_ROOT");
                         }
+                        // Remove all edges connected to this node
+                        removeConnectedEdges(parent, dataNode);
+                        // Remove the node itself
                         parent.removeNode(dataNode);
                         JSONObject payloadResp = new JSONObject();
                         payloadResp.put("nodeId", nodeId);
@@ -6102,10 +6105,10 @@ public final class WebUiServer implements UiEventListener {
         return null;
     }
 
-    // Phase 6: Generate unique node ID
+    // Phase 6: Generate unique node ID with N/S prefix
     private String generateNextNodeId(SuperNode root, boolean isSuperNode) {
         int maxId = 0;
-        String prefix = isSuperNode ? "SuperNode" : "Node";
+        String prefix = isSuperNode ? "S" : "N";
         maxId = Math.max(maxId, extractMaxId(root, prefix));
         return prefix + (maxId + 1);
     }
@@ -6132,6 +6135,69 @@ public final class WebUiServer implements UiEventListener {
             }
         }
         return max;
+    }
+
+    // Phase 6: Remove all edges connected to a node
+    private void removeConnectedEdges(SuperNode parent, BasicNode node) {
+        if (parent == null || node == null) {
+            return;
+        }
+        String nodeId = node.getId();
+        // Iterate through all nodes in parent and remove edges connected to the deleted node
+        for (BasicNode n : parent.getNodeAndSuperNodeList()) {
+            // Remove C edges
+            List<GuargedEdge> cEdgesToRemove = new ArrayList<>();
+            for (AbstractEdge edge : n.getEdgeList()) {
+                if (edge instanceof GuargedEdge) {
+                    GuargedEdge cEdge = (GuargedEdge) edge;
+                    if (nodeId.equals(cEdge.getSourceNode().getId()) || nodeId.equals(cEdge.getTargetNode().getId())) {
+                        cEdgesToRemove.add(cEdge);
+                    }
+                }
+            }
+            for (GuargedEdge edge : cEdgesToRemove) {
+                edge.getSourceNode().removeCEdge(edge);
+            }
+            // Remove I edges
+            List<InterruptEdge> iEdgesToRemove = new ArrayList<>();
+            for (AbstractEdge edge : n.getEdgeList()) {
+                if (edge instanceof InterruptEdge) {
+                    InterruptEdge iEdge = (InterruptEdge) edge;
+                    if (nodeId.equals(iEdge.getSourceNode().getId()) || nodeId.equals(iEdge.getTargetNode().getId())) {
+                        iEdgesToRemove.add(iEdge);
+                    }
+                }
+            }
+            for (InterruptEdge edge : iEdgesToRemove) {
+                edge.getSourceNode().removeIEdge(edge);
+            }
+            // Remove P edges
+            List<RandomEdge> pEdgesToRemove = new ArrayList<>();
+            for (AbstractEdge edge : n.getEdgeList()) {
+                if (edge instanceof RandomEdge) {
+                    RandomEdge pEdge = (RandomEdge) edge;
+                    if (nodeId.equals(pEdge.getSourceNode().getId()) || nodeId.equals(pEdge.getTargetNode().getId())) {
+                        pEdgesToRemove.add(pEdge);
+                    }
+                }
+            }
+            for (RandomEdge edge : pEdgesToRemove) {
+                edge.getSourceNode().removePEdge(edge);
+            }
+            // Remove F edges
+            List<ForkingEdge> fEdgesToRemove = new ArrayList<>();
+            for (AbstractEdge edge : n.getEdgeList()) {
+                if (edge instanceof ForkingEdge) {
+                    ForkingEdge fEdge = (ForkingEdge) edge;
+                    if (nodeId.equals(fEdge.getSourceNode().getId()) || nodeId.equals(fEdge.getTargetNode().getId())) {
+                        fEdgesToRemove.add(fEdge);
+                    }
+                }
+            }
+            for (ForkingEdge edge : fEdgesToRemove) {
+                edge.getSourceNode().removeFEdge(edge);
+            }
+        }
     }
 
     private BasicNode resolveNodeForDefinitions(SuperNode superNode, String nodeId) {
