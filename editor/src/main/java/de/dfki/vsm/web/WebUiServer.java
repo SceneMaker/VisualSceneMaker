@@ -886,28 +886,22 @@ public final class WebUiServer implements UiEventListener {
         emitUiProjectState(projectJson.optString("projectId", null));
     }
 
+    // Phase 6: Headless version of handleSaveProject
     private void handleSaveProject(Context ctx) {
         String projectId = ctx.pathParam("id");
         JSONObject projectJson = callOnEdt(() -> {
-            EditorInstance instance = EditorInstance.getInstance();
-            ProjectEditor editor = findProjectEditorById(projectId, instance);
-            if (editor == null || editor.getEditorProject() == null) {
+            EditorProject project = mEditorProjectService.getProject(projectId);
+            if (project == null) {
                 return null;
             }
-            EditorProject project = editor.getEditorProject();
             if (project.isPending()) {
                 return new JSONObject().put("error", "PROJECT_PENDING");
             }
-            JTabbedPane tabs = instance.getProjectEditors();
-            int index = tabs.indexOfComponent(editor);
-            if (index >= 0) {
-                tabs.setSelectedIndex(index);
-            }
-            boolean ok = instance.save(editor);
+            boolean ok = mEditorProjectService.saveProject(project);
             if (!ok) {
                 return new JSONObject().put("error", "SAVE_FAILED");
             }
-            return projectToJson(editor, tabs, index);
+            return projectToJson(project, projectId);
         });
 
         if (projectJson == null) {
@@ -927,6 +921,7 @@ public final class WebUiServer implements UiEventListener {
         emitUiProjectSaved(projectJson);
     }
 
+    // Phase 6: Headless version of handleSaveAsProject
     private void handleSaveAsProject(Context ctx) {
         String projectId = ctx.pathParam("id");
         JSONObject body = readJsonBody(ctx);
@@ -937,27 +932,15 @@ public final class WebUiServer implements UiEventListener {
         }
 
         JSONObject projectJson = callOnEdt(() -> {
-            EditorInstance instance = EditorInstance.getInstance();
-            ProjectEditor editor = findProjectEditorById(projectId, instance);
-            if (editor == null || editor.getEditorProject() == null) {
+            EditorProject project = mEditorProjectService.getProject(projectId);
+            if (project == null) {
                 return null;
             }
-            EditorProject project = editor.getEditorProject();
-            JTabbedPane tabs = instance.getProjectEditors();
-            int index = tabs.indexOfComponent(editor);
-            if (index >= 0) {
-                tabs.setSelectedIndex(index);
+            boolean ok = mEditorProjectService.saveProjectAs(project, path);
+            if (!ok) {
+                return new JSONObject().put("error", "SAVE_FAILED");
             }
-            String projectName = index >= 0 ? tabs.getTitleAt(index).replace("*", "") : project.getProjectName();
-            project.setProjectName(projectName);
-            File target = new File(path);
-            if (project.write(target)) {
-                instance.setTabNameSaved();
-                instance.updateRecentProjects(project);
-                instance.refresh();
-                return projectToJson(editor, tabs, index);
-            }
-            return new JSONObject().put("error", "SAVE_FAILED");
+            return projectToJson(project, projectId);
         });
 
         if (projectJson == null) {
