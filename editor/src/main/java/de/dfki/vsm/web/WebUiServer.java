@@ -2426,6 +2426,7 @@ public final class WebUiServer implements UiEventListener {
                     broadcastDirtyIfPresent(response, projectId);
                     return;
                 }
+                // Phase 6: Headless version of SceneFlow.Node.TypeDef.Add
                 case "SceneFlow.Node.TypeDef.Add": {
                     String projectId = body.optString("projectId", null);
                     String nodeId = body.optString("nodeId", "");
@@ -2436,14 +2437,12 @@ public final class WebUiServer implements UiEventListener {
                         return;
                     }
                     JSONObject response = callOnEdt(() -> {
-                        EditorInstance instance = EditorInstance.getInstance();
-                        ProjectEditor editor = findProjectEditorById(projectId, instance);
-                        if (editor == null) {
+                        EditorProject project = mEditorProjectService.getProject(projectId);
+                        if (project == null) {
                             return null;
                         }
-                        SceneFlowManager manager = editor.getSceneFlowEditor().getSceneFlowManager();
-                        SuperNode active = manager.getCurrentActiveSuperNode();
-                        BasicNode dataNode = resolveNodeForDefinitions(active, nodeId);
+                        SceneFlow sceneFlow = project.getSceneFlow();
+                        BasicNode dataNode = nodeId.isBlank() ? sceneFlow : findNodeRecursive(sceneFlow, nodeId);
                         if (dataNode == null) {
                             return new JSONObject().put("error", "NODE_NOT_FOUND");
                         }
@@ -2452,40 +2451,12 @@ public final class WebUiServer implements UiEventListener {
                         if (typeDef == null) {
                             return new JSONObject().put("error", error.length() > 0 ? error.toString() : "TYPEDEF_INVALID");
                         }
-                        List<DataTypeDefinition> before = copyTypeDefList(dataNode.getTypeDefList());
                         List<DataTypeDefinition> list = dataNode.getTypeDefList();
                         int insertIndex = index < 0 || index > list.size() ? list.size() : index;
                         list.add(insertIndex, typeDef);
-                        List<DataTypeDefinition> after = copyTypeDefList(list);
-                        UndoManager undoManager = editor.getSceneFlowEditor().getUndoManager();
-                        undoManager.addEdit(new AbstractUndoableEdit() {
-                            @Override
-                            public void undo() throws CannotUndoException {
-                                super.undo();
-                                applyTypeDefList(dataNode, before);
-                            }
-
-                            @Override
-                            public void redo() throws CannotRedoException {
-                                super.redo();
-                                applyTypeDefList(dataNode, after);
-                            }
-
-                            @Override
-                            public String getUndoPresentationName() {
-                                return "Undo Update Type Definitions";
-                            }
-
-                            @Override
-                            public String getRedoPresentationName() {
-                                return "Redo Update Type Definitions";
-                            }
-                        });
-                        UndoAction.getInstance().refreshUndoState();
-                        RedoAction.getInstance().refreshRedoState();
                         JSONObject payloadResp = new JSONObject();
-                        payloadResp.put("snapshot", sceneFlowSnapshot(editor, active));
-                        appendDirty(editor, payloadResp);
+                        payloadResp.put("snapshot", sceneFlowSnapshot(project, projectId, sceneFlow));
+                        payloadResp.put("dirty", project.hasChanged());
                         return payloadResp;
                     });
                     if (response == null) {
@@ -2497,7 +2468,9 @@ public final class WebUiServer implements UiEventListener {
                         return;
                     }
                     sendResponse(ctx, requestId, name, response);
-                    broadcastDirtyIfPresent(response, projectId);
+                    if (response.has("dirty")) {
+                        emitUiProjectDirty(projectId, response.getBoolean("dirty"), List.of("sceneflow"));
+                    }
                     return;
                 }
                 case "SceneFlow.Node.TypeDef.Update": {
@@ -2976,6 +2949,7 @@ public final class WebUiServer implements UiEventListener {
                     broadcastDirtyIfPresent(response, projectId);
                     return;
                 }
+                // Phase 6: Headless version of SceneFlow.Node.Cmd.Add
                 case "SceneFlow.Node.Cmd.Add": {
                     String projectId = body.optString("projectId", null);
                     String nodeId = body.optString("nodeId", "");
@@ -2986,14 +2960,12 @@ public final class WebUiServer implements UiEventListener {
                         return;
                     }
                     JSONObject response = callOnEdt(() -> {
-                        EditorInstance instance = EditorInstance.getInstance();
-                        ProjectEditor editor = findProjectEditorById(projectId, instance);
-                        if (editor == null) {
+                        EditorProject project = mEditorProjectService.getProject(projectId);
+                        if (project == null) {
                             return null;
                         }
-                        SceneFlowManager manager = editor.getSceneFlowEditor().getSceneFlowManager();
-                        SuperNode active = manager.getCurrentActiveSuperNode();
-                        BasicNode dataNode = resolveNodeForDefinitions(active, nodeId);
+                        SceneFlow sceneFlow = project.getSceneFlow();
+                        BasicNode dataNode = nodeId.isBlank() ? sceneFlow : findNodeRecursive(sceneFlow, nodeId);
                         if (dataNode == null) {
                             return new JSONObject().put("error", "NODE_NOT_FOUND");
                         }
@@ -3002,40 +2974,12 @@ public final class WebUiServer implements UiEventListener {
                         if (command == null) {
                             return new JSONObject().put("error", error.length() > 0 ? error.toString() : "COMMAND_INVALID");
                         }
-                        List<Command> before = copyCommandList(dataNode.getCmdList());
                         List<Command> list = dataNode.getCmdList();
                         int insertIndex = index < 0 || index > list.size() ? list.size() : index;
                         list.add(insertIndex, command);
-                        List<Command> after = copyCommandList(list);
-                        UndoManager undoManager = editor.getSceneFlowEditor().getUndoManager();
-                        undoManager.addEdit(new AbstractUndoableEdit() {
-                            @Override
-                            public void undo() throws CannotUndoException {
-                                super.undo();
-                                applyCommandList(dataNode, before);
-                            }
-
-                            @Override
-                            public void redo() throws CannotRedoException {
-                                super.redo();
-                                applyCommandList(dataNode, after);
-                            }
-
-                            @Override
-                            public String getUndoPresentationName() {
-                                return "Undo Update Commands";
-                            }
-
-                            @Override
-                            public String getRedoPresentationName() {
-                                return "Redo Update Commands";
-                            }
-                        });
-                        UndoAction.getInstance().refreshUndoState();
-                        RedoAction.getInstance().refreshRedoState();
                         JSONObject payloadResp = new JSONObject();
-                        payloadResp.put("snapshot", sceneFlowSnapshot(editor, active));
-                        appendDirty(editor, payloadResp);
+                        payloadResp.put("snapshot", sceneFlowSnapshot(project, projectId, sceneFlow));
+                        payloadResp.put("dirty", project.hasChanged());
                         return payloadResp;
                     });
                     if (response == null) {
@@ -3047,7 +2991,9 @@ public final class WebUiServer implements UiEventListener {
                         return;
                     }
                     sendResponse(ctx, requestId, name, response);
-                    broadcastDirtyIfPresent(response, projectId);
+                    if (response.has("dirty")) {
+                        emitUiProjectDirty(projectId, response.getBoolean("dirty"), List.of("sceneflow"));
+                    }
                     return;
                 }
                 case "SceneFlow.Node.Cmd.Update": {
