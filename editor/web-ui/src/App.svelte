@@ -1044,6 +1044,27 @@
   $: if (!sessionReady || !selectedProjectId) {
     showEditor = false;
   }
+  $: {
+    // Debug logging for project load state
+    console.log("[PROJECT LOAD STATE]", {
+      selectedProjectId: !!selectedProjectId,
+      configLoaded,
+      scriptLoaded,
+      scriptScenesLoaded,
+      scriptElementsLoaded,
+      sceneFlowLoaded,
+      runtimeLoaded,
+      configError,
+      scriptError,
+      scriptScenesError,
+      scriptElementsError,
+      sceneFlowError,
+      runtimeError,
+      projectLoadComplete,
+      showEditor,
+      sessionReady
+    });
+  }
   $: selectedNode = sceneFlowSelection?.type === "node" ? sceneFlow?.nodes?.find((node) => node.id === sceneFlowSelection.id) : null;
   $: selectedEdge = sceneFlowSelection?.type === "edge" ? sceneFlow?.edges?.find((edge) => edge.id === sceneFlowSelection.id) : null;
   $: selectedComment =
@@ -3325,7 +3346,9 @@
   }
 
   function sendCommand(name, payload) {
+    console.log("[sendCommand] START", name, "ws state:", ws?.readyState);
     if (!ws || ws.readyState !== WebSocket.OPEN) {
+      console.error("[sendCommand] WebSocket not connected!");
       return Promise.reject(new Error("WebSocket not connected."));
     }
     const id = `req-${Date.now()}-${Math.random().toString(16).slice(2)}`;
@@ -3336,15 +3359,19 @@
       sourceClientId: clientId,
       payload
     };
+    console.log("[sendCommand] Sending message:", JSON.stringify(message));
     return new Promise((resolve, reject) => {
       const timer = setTimeout(() => {
+        console.error("[sendCommand] Request timed out:", name);
         pending.delete(id);
         reject(new Error(`Request timed out: ${name}`));
       }, WS_REQUEST_TIMEOUT_MS);
       pending.set(id, { resolve, reject, timer });
       try {
         ws.send(JSON.stringify(message));
+        console.log("[sendCommand] Message sent successfully");
       } catch (err) {
+        console.error("[sendCommand] Send error:", err);
         pending.delete(id);
         clearTimeout(timer);
         reject(err);
@@ -4213,6 +4240,7 @@
     if (!selectedProjectId || !nodeId || !sceneName) return;
     const response = await runSceneFlowCommand("SceneFlow.Node.Cmd.Add", {
       projectId: selectedProjectId,
+      superNodeId: sceneFlow?.superNodeId,
       nodeId,
       command: { text: playSceneCommand(sceneName) }
     });
@@ -4226,6 +4254,7 @@
     if (!selectedProjectId || !nodeId || !agentName) return;
     const response = await runSceneFlowCommand("SceneFlow.Node.Cmd.Add", {
       projectId: selectedProjectId,
+      superNodeId: sceneFlow?.superNodeId,
       nodeId,
       command: { text: playAgentCommand(agentName) }
     });
@@ -4243,6 +4272,7 @@
     }
     const response = await runSceneFlowCommand("SceneFlow.Node.Create", {
       projectId: selectedProjectId,
+      superNodeId: sceneFlow?.superNodeId,
       nodeType: "Basic",
       name: payload.name,
       x: payload.x,
@@ -4262,6 +4292,7 @@
     }
     const response = await runSceneFlowCommand("SceneFlow.Node.Create", {
       projectId: selectedProjectId,
+      superNodeId: sceneFlow?.superNodeId,
       nodeType: "Basic",
       name: payload.name,
       x: payload.x,
@@ -4764,6 +4795,7 @@
     const commandName = typeDefEditIndex >= 0 ? "SceneFlow.Node.TypeDef.Update" : "SceneFlow.Node.TypeDef.Add";
     const commandPayload = {
       projectId: selectedProjectId,
+      superNodeId: sceneFlow?.superNodeId,
       nodeId: nodeEditorTarget.id,
       typeDef: payload
     };
@@ -4785,6 +4817,7 @@
     if (target < 0 || target >= nodeEditorTypeDefs.length) return null;
     return await runSceneFlowCommand("SceneFlow.Node.TypeDef.Move", {
       projectId: selectedProjectId,
+      superNodeId: sceneFlow?.superNodeId,
       nodeId: nodeEditorTarget.id,
       from: index,
       to: target
@@ -4795,6 +4828,7 @@
     if (!selectedProjectId || !nodeEditorTarget) return;
     await runSceneFlowCommand("SceneFlow.Node.TypeDef.Delete", {
       projectId: selectedProjectId,
+      superNodeId: sceneFlow?.superNodeId,
       nodeId: nodeEditorTarget.id,
       index
     });
@@ -4863,6 +4897,7 @@
     const commandName = varDefEditIndex >= 0 ? "SceneFlow.Node.VarDef.Update" : "SceneFlow.Node.VarDef.Add";
     const commandPayload = {
       projectId: selectedProjectId,
+      superNodeId: sceneFlow?.superNodeId,
       nodeId: nodeEditorTarget.id,
       varDef: payload
     };
@@ -4890,6 +4925,7 @@
     if (target < 0 || target >= nodeEditorVarDefs.length) return null;
     const response = await runSceneFlowCommand("SceneFlow.Node.VarDef.Move", {
       projectId: selectedProjectId,
+      superNodeId: sceneFlow?.superNodeId,
       nodeId: nodeEditorTarget.id,
       from: index,
       to: target
@@ -4927,6 +4963,7 @@
     if (!selectedProjectId || !nodeEditorTarget) return;
     await runSceneFlowCommand("SceneFlow.Node.VarDef.Delete", {
       projectId: selectedProjectId,
+      superNodeId: sceneFlow?.superNodeId,
       nodeId: nodeEditorTarget.id,
       index
     });
@@ -5028,6 +5065,7 @@
     const commandName = isExisting ? "SceneFlow.Node.Cmd.Update" : "SceneFlow.Node.Cmd.Add";
     const commandPayload = {
       projectId: selectedProjectId,
+      superNodeId: sceneFlow?.superNodeId,
       nodeId: nodeEditorTarget.id,
       command: { text }
     };
@@ -5054,6 +5092,7 @@
     if (target < 0 || target >= nodeEditorCommands.length) return null;
     return await runSceneFlowCommand("SceneFlow.Node.Cmd.Move", {
       projectId: selectedProjectId,
+      superNodeId: sceneFlow?.superNodeId,
       nodeId: nodeEditorTarget.id,
       from: index,
       to: target
@@ -5064,6 +5103,7 @@
     if (!selectedProjectId || !nodeEditorTarget) return;
     return await runSceneFlowCommand("SceneFlow.Node.Cmd.Delete", {
       projectId: selectedProjectId,
+      superNodeId: sceneFlow?.superNodeId,
       nodeId: nodeEditorTarget.id,
       index
     });
@@ -5250,11 +5290,17 @@
   }
 
   async function runSceneFlowCommand(name, payload) {
-    if (!selectedProjectId) return null;
+    console.log("[runSceneFlowCommand] START", name, payload);
+    if (!selectedProjectId) {
+      console.log("[runSceneFlowCommand] No selectedProjectId, returning null");
+      return null;
+    }
     sceneFlowError = "";
     sceneFlowBusy = true;
     try {
+      console.log("[runSceneFlowCommand] Calling sendCommand...");
       const response = await sendCommand(name, payload);
+      console.log("[runSceneFlowCommand] Response:", response);
       if (response?.snapshot) {
         sceneFlow = response.snapshot;
       }
@@ -5263,6 +5309,7 @@
       }
       return response;
     } catch (err) {
+      console.error("[runSceneFlowCommand] ERROR:", err);
       sceneFlowError = err.message || "SceneFlow command failed.";
       return null;
     } finally {
@@ -5399,6 +5446,7 @@
     for (const node of updates) {
       await runSceneFlowCommand("SceneFlow.Node.Update", {
         projectId: selectedProjectId,
+        superNodeId: sceneFlow?.superNodeId,
         nodeId: node.id,
         fields: { isStart: value }
       });
@@ -5408,32 +5456,45 @@
   async function createSceneFlowNode(nodeType, position = null) {
     if (!selectedProjectId) return;
     const center = position || sceneFlowCenter();
-    await runSceneFlowCommand("SceneFlow.Node.Create", {
+    const response = await runSceneFlowCommand("SceneFlow.Node.Create", {
       projectId: selectedProjectId,
+      superNodeId: sceneFlow?.superNodeId,
       nodeType,
       x: center.x,
       y: center.y
     });
+    // Select the newly created node
+    if (response?.nodeId) {
+      sceneFlowSelection = { type: "node", id: response.nodeId };
+      sceneFlowMultiSelection = [{ type: "node", id: response.nodeId }];
+    }
   }
 
   async function createSceneFlowComment(position = null) {
     if (!selectedProjectId) return;
     const center = position || sceneFlowCenter();
-    await runSceneFlowCommand("SceneFlow.Comment.Create", {
+    const response = await runSceneFlowCommand("SceneFlow.Comment.Create", {
       projectId: selectedProjectId,
       x: center.x,
       y: center.y
     });
+    // Select the newly created comment
+    if (response?.commentId) {
+      sceneFlowSelection = { type: "comment", id: response.commentId };
+      sceneFlowMultiSelection = [{ type: "comment", id: response.commentId }];
+    }
   }
 
   async function createSceneFlowEdge(sourceId, targetId) {
-    if (!selectedProjectId || !sourceId || !targetId) return;
-    await runSceneFlowCommand("SceneFlow.Edge.Create", {
+    if (!selectedProjectId || !sourceId || !targetId) return null;
+    const response = await runSceneFlowCommand("SceneFlow.Edge.Create", {
       projectId: selectedProjectId,
+      superNodeId: sceneFlow?.superNodeId,
       sourceId,
       targetId,
       edgeType: edgeCreateType || "EEDGE"
     });
+    return response?.edgeId || null;
   }
 
   function toggleEdgeCreateMode() {
@@ -5468,11 +5529,17 @@
       sceneFlowMultiSelection = [{ type: "node", id: nodeId }];
       return;
     }
-    await createSceneFlowEdge(edgeCreateSourceId, nodeId);
+    const edgeId = await createSceneFlowEdge(edgeCreateSourceId, nodeId);
     edgeCreateSourceId = "";
     edgeCreateMode = false;
-    sceneFlowSelection = null;
-    sceneFlowMultiSelection = [];
+    // Select the newly created edge instead of clearing selection
+    if (edgeId) {
+      sceneFlowSelection = { type: "edge", id: edgeId };
+      sceneFlowMultiSelection = [{ type: "edge", id: edgeId }];
+    } else {
+      sceneFlowSelection = null;
+      sceneFlowMultiSelection = [];
+    }
   }
 
   async function moveSceneFlowNode(nodeId, x, y, snap) {
@@ -5490,6 +5557,7 @@
     }
     const payload = {
       projectId: selectedProjectId,
+      superNodeId: sceneFlow?.superNodeId,
       nodeId,
       x,
       y,
@@ -5518,6 +5586,7 @@
     }
     const payload = {
       projectId: selectedProjectId,
+      superNodeId: sceneFlow?.superNodeId,
       nodes: nodes.map((entry) => ({ id: entry.id, x: entry.x, y: entry.y })),
       snap: snap ?? sceneFlowNodeSnap
     };
@@ -5634,6 +5703,7 @@
     }
     const response = await runSceneFlowCommand("SceneFlow.Edge.Update", {
       projectId: selectedProjectId,
+      superNodeId: sceneFlow?.superNodeId,
       edgeId,
       fields: { points: nextPoints }
     });
@@ -5646,6 +5716,7 @@
     if (!selectedProjectId || !edgeId || !targetId) return;
     await runSceneFlowCommand("SceneFlow.Edge.Retarget", {
       projectId: selectedProjectId,
+      superNodeId: sceneFlow?.superNodeId,
       edgeId,
       targetId,
       dropX: x,
@@ -5697,6 +5768,7 @@
     nodeEditError = "";
     const response = await runSceneFlowCommand("SceneFlow.Node.Update", {
       projectId: selectedProjectId,
+      superNodeId: sceneFlow?.superNodeId,
       nodeId: selectedNode.id,
       fields: { isStart: next }
     });
@@ -5714,6 +5786,7 @@
     superNodeEditError = "";
     const response = await runSceneFlowCommand("SceneFlow.Node.Update", {
       projectId: selectedProjectId,
+      superNodeId: sceneFlow?.superNodeId,
       nodeId: nodeEditorTarget.id,
       fields: { isStart: next }
     });
@@ -5787,6 +5860,7 @@
     }
     const response = await runSceneFlowCommand("SceneFlow.Node.Update", {
       projectId: selectedProjectId,
+      superNodeId: sceneFlow?.superNodeId,
       nodeId: selectedNode.id,
       fields
     });
@@ -5816,6 +5890,7 @@
     }
     const response = await runSceneFlowCommand("SceneFlow.Node.Update", {
       projectId: selectedProjectId,
+      superNodeId: sceneFlow?.superNodeId,
       nodeId: nodeEditorTarget.id,
       fields
     });
@@ -5895,6 +5970,7 @@
     }
     const response = await runSceneFlowCommand("SceneFlow.Edge.Update", {
       projectId: selectedProjectId,
+      superNodeId: sceneFlow?.superNodeId,
       edgeId: selectedEdge.id,
       fields
     });
@@ -5904,18 +5980,31 @@
   }
 
   async function deleteSceneFlowSelection() {
-    if (!selectedProjectId || sceneFlowBusy) return;
+    console.log("[DELETE] deleteSceneFlowSelection called");
+    console.log("[DELETE] selectedProjectId:", selectedProjectId);
+    console.log("[DELETE] sceneFlowBusy:", sceneFlowBusy);
+    if (!selectedProjectId || sceneFlowBusy) {
+      console.log("[DELETE] Early return: no project or busy");
+      return;
+    }
     const selectionList = sceneFlowSelectionList();
-    if (!selectionList.length) return;
+    console.log("[DELETE] selectionList:", JSON.stringify(selectionList));
+    if (!selectionList.length) {
+      console.log("[DELETE] Early return: empty selection");
+      return;
+    }
     const selection = sceneFlowSelection;
+    console.log("[DELETE] current selection:", JSON.stringify(selection));
     sceneFlowSelection = null;
     sceneFlowMultiSelection = [];
     const nodeIds = selectionList.filter((item) => item.type === "node").map((item) => item.id);
     const commentIds = selectionList.filter((item) => item.type === "comment").map((item) => item.id);
     const edgeIds = selectionList.filter((item) => item.type === "edge").map((item) => item.id);
+    console.log("[DELETE] nodeIds:", nodeIds, "commentIds:", commentIds, "edgeIds:", edgeIds);
 
     for (const nodeId of nodeIds) {
-      await runSceneFlowCommand("SceneFlow.Node.Delete", { projectId: selectedProjectId, nodeId });
+      console.log("[DELETE] Sending delete request for node:", nodeId);
+      await runSceneFlowCommand("SceneFlow.Node.Delete", { projectId: selectedProjectId, superNodeId: sceneFlow?.superNodeId, nodeId });
     }
     for (const commentId of commentIds) {
       await runSceneFlowCommand("SceneFlow.Comment.Delete", { projectId: selectedProjectId, commentId });
@@ -5923,7 +6012,7 @@
     if (!nodeIds.length) {
       for (const edgeId of edgeIds) {
         const edge = sceneFlow?.edges?.find((entry) => entry.id === edgeId);
-        const payload = { projectId: selectedProjectId, edgeId };
+        const payload = { projectId: selectedProjectId, superNodeId: sceneFlow?.superNodeId, edgeId };
         if (edge?.sourceId) {
           payload.sourceId = edge.sourceId;
         }
@@ -5971,10 +6060,14 @@
       redoSceneFlow();
       return;
     }
-    if ((key === "Delete" || key === "Backspace") && sceneFlowSelectionList().length) {
-      event.preventDefault();
-      deleteSceneFlowSelection();
-      return;
+    if (key === "Delete" || key === "Backspace") {
+      const selList = sceneFlowSelectionList();
+      console.log("[KEYDOWN] Delete/Backspace pressed, selectionList:", JSON.stringify(selList));
+      if (selList.length) {
+        event.preventDefault();
+        deleteSceneFlowSelection();
+        return;
+      }
     }
     if (key === "Escape" && edgeCreateMode) {
       edgeCreateMode = false;
