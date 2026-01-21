@@ -148,17 +148,15 @@
   $: gridY = Math.max(8, baseNodeSize * gridScaleY);
   $: gridOriginX = gridNodeWidth / 2 + gridNodeWidth / 3;
   $: gridOriginY = gridNodeHeight / 2 + gridNodeHeight / 3;
-  $: viewWidth = baseBox ? baseBox.width / zoomLevel : 1;
-  $: viewHeight = baseBox ? baseBox.height / zoomLevel : 1;
-  $: scaleX = viewWidth ? canvasWidth / viewWidth : zoomLevel;
-  $: scaleY = viewHeight ? canvasHeight / viewHeight : zoomLevel;
-  $: uniformScale = Math.min(scaleX, scaleY);
-  $: viewOffsetX = (canvasWidth - viewWidth * uniformScale) / 2;
-  $: viewOffsetY = (canvasHeight - viewHeight * uniformScale) / 2;
+  // With 1:1 pixel mapping at zoom=1, uniformScale equals zoomLevel
+  $: uniformScale = zoomLevel;
   $: gridScreenX = gridX * uniformScale;
   $: gridScreenY = gridY * uniformScale;
-  $: viewOriginX = ((baseBox && Number.isFinite(baseBox.x)) ? baseBox.x : 0) + panX;
-  $: viewOriginY = ((baseBox && Number.isFinite(baseBox.y)) ? baseBox.y : 0) + panY;
+  $: viewOriginX = panX;
+  $: viewOriginY = panY;
+  // No offset needed since viewBox matches canvas dimensions
+  $: viewOffsetX = 0;
+  $: viewOffsetY = 0;
   $: gridOffsetX = (gridOriginX - viewOriginX - gridX / 2) * uniformScale + viewOffsetX;
   $: gridOffsetY = (gridOriginY - viewOriginY - gridY / 2) * uniformScale + viewOffsetY;
   $: svgStyle = [
@@ -179,9 +177,10 @@
 
   $: bounds = computeBounds(nodes, edges, comments, showCommandText);
   $: baseBox = bounds.box;
-  $: viewBox = viewBoxString(baseBox, zoomLevel, panX, panY);
   $: canvasWidth = Math.max(minCanvasWidth, bounds.width, viewportSize.width || 0);
   $: canvasHeight = Math.max(minCanvasHeight, bounds.height, viewportSize.height || 0);
+  // Use canvas dimensions for viewBox to achieve 1:1 pixel mapping at zoom=1
+  $: viewBox = viewBoxString(canvasWidth, canvasHeight, zoomLevel, panX, panY);
   $: if (baseBox) {
     clampPanToNonNegative();
   }
@@ -545,24 +544,23 @@
     return null;
   }
 
-  function viewBoxString(box, zoomLevel, offsetX, offsetY) {
-    if (!box) return "0 0 200 200";
-    const width = box.width / zoomLevel;
-    const height = box.height / zoomLevel;
-    const x = box.x + offsetX;
-    const y = box.y + offsetY;
+  function viewBoxString(canvasW, canvasH, zoomLevel, offsetX, offsetY) {
+    // At zoom=1, viewBox matches canvas for 1:1 pixel mapping
+    // Zooming changes viewBox size inversely (smaller viewBox = magnified content)
+    const width = canvasW / zoomLevel;
+    const height = canvasH / zoomLevel;
+    const x = offsetX;
+    const y = offsetY;
     return `${x} ${y} ${width} ${height}`;
   }
 
   function currentViewBox() {
-    if (!baseBox) {
-      return { x: 0, y: 0, width: 200, height: 200 };
-    }
+    // Use canvas dimensions for 1:1 pixel mapping at zoom=1
     return {
-      x: baseBox.x + panX,
-      y: baseBox.y + panY,
-      width: baseBox.width / zoomLevel,
-      height: baseBox.height / zoomLevel
+      x: panX,
+      y: panY,
+      width: canvasWidth / zoomLevel,
+      height: canvasHeight / zoomLevel
     };
   }
 
@@ -574,25 +572,27 @@
     const view = currentViewBox();
     const clamped = clamp(nextZoom, minZoom, maxZoom);
     if (!anchor) {
+      // Zoom centered on current view center
       const centerX = view.x + view.width / 2;
       const centerY = view.y + view.height / 2;
       zoomLevel = clamped;
-      const width = baseBox.width / zoomLevel;
-      const height = baseBox.height / zoomLevel;
-      panX = centerX - width / 2 - baseBox.x;
-      panY = centerY - height / 2 - baseBox.y;
+      const width = canvasWidth / zoomLevel;
+      const height = canvasHeight / zoomLevel;
+      panX = centerX - width / 2;
+      panY = centerY - height / 2;
       clampPanToNonNegative();
       return;
     }
+    // Zoom anchored at specific point (e.g., mouse wheel zoom)
     const relX = clamp(anchor.relX ?? 0.5, 0, 1);
     const relY = clamp(anchor.relY ?? 0.5, 0, 1);
     zoomLevel = clamped;
-    const width = baseBox.width / zoomLevel;
-    const height = baseBox.height / zoomLevel;
+    const width = canvasWidth / zoomLevel;
+    const height = canvasHeight / zoomLevel;
     const newX = anchor.x - relX * width;
     const newY = anchor.y - relY * height;
-    panX = newX - baseBox.x;
-    panY = newY - baseBox.y;
+    panX = newX;
+    panY = newY;
     clampPanToNonNegative();
   }
 
@@ -619,11 +619,11 @@
   }
 
   export function centerOn(x, y) {
-    if (!baseBox || !Number.isFinite(x) || !Number.isFinite(y)) return;
-    const width = baseBox.width / zoomLevel;
-    const height = baseBox.height / zoomLevel;
-    panX = x - width / 2 - baseBox.x;
-    panY = y - height / 2 - baseBox.y;
+    if (!Number.isFinite(x) || !Number.isFinite(y)) return;
+    const width = canvasWidth / zoomLevel;
+    const height = canvasHeight / zoomLevel;
+    panX = x - width / 2;
+    panY = y - height / 2;
     clampPanToNonNegative();
   }
 

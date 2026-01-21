@@ -236,6 +236,449 @@ public final class WebUiServer implements UiEventListener {
         }
     }
 
+    // Phase 6: Docking point system for edges
+    // Track occupied dock points separately for outgoing (source) and incoming (target) edges
+    // Key format: "nodeId:out" for outgoing edges, "nodeId:in" for incoming edges
+    private final Map<String, Set<Integer>> mOccupiedDockPoints = new ConcurrentHashMap<>();
+
+    // Compute 24 dock points around a node boundary
+    // Returns array of {x, y} positions relative to node's top-left corner
+    private double[][] computeDockPoints(int nodeWidth, int nodeHeight, boolean isSuperNode) {
+        double[][] dockPoints = new double[24][2];
+        double halfW = nodeWidth / 2.0;
+        double halfH = nodeHeight / 2.0;
+
+        for (int i = 0; i < 24; i++) {
+            double angle = i * Math.PI / 12.0 + Math.PI;
+            if (isSuperNode) {
+                // SuperNode: dock points on rectangular boundary
+                double xa = Math.sin(angle);
+                double ya = Math.cos(angle);
+                double dockX, dockY;
+                if (Math.abs(xa) <= Math.abs(ya)) {
+                    double fy = 1.0 / Math.abs(ya);
+                    dockY = halfH * Math.signum(ya) + halfH;
+                    dockX = Math.round(xa * fy * halfW) + halfW;
+                } else {
+                    double fx = 1.0 / Math.abs(xa);
+                    dockY = Math.round(ya * fx * halfH) + halfH;
+                    dockX = halfW * Math.signum(xa) + halfW;
+                }
+                dockPoints[i][0] = dockX;
+                dockPoints[i][1] = dockY;
+            } else {
+                // BasicNode: dock points on ellipse boundary
+                double dockX = Math.round((Math.sin(angle) * 0.5 + 0.5) * nodeWidth);
+                double dockY = Math.round((Math.cos(angle) * 0.5 + 0.5) * nodeHeight);
+                dockPoints[i][0] = dockX;
+                dockPoints[i][1] = dockY;
+            }
+        }
+        return dockPoints;
+    }
+
+    // Find best dock point pair for an edge (source dock, target dock) that minimizes edge length
+    // Returns int[2] = {sourceDockIndex, targetDockIndex}
+    // For self-loops, returns dock points ~90 degrees apart for a nice curve
+    private int[] findBestDockPointPair(
+            String sourceNodeId, double srcX, double srcY, int srcWidth, int srcHeight, boolean srcIsSuperNode,
+            String targetNodeId, double tgtX, double tgtY, int tgtWidth, int tgtHeight, boolean tgtIsSuperNode) {
+
+        // Handle self-loop edges (same source and target node)
+        if (sourceNodeId != null && sourceNodeId.equals(targetNodeId)) {
+            return findSelfLoopDockPointPair(sourceNodeId, srcWidth, srcHeight, srcIsSuperNode);
+        }
+
+        double[][] srcDockPoints = computeDockPoints(srcWidth, srcHeight, srcIsSuperNode);
+        double[][] tgtDockPoints = computeDockPoints(tgtWidth, tgtHeight, tgtIsSuperNode);
+
+        Set<Integer> srcOccupied = mOccupiedDockPoints.computeIfAbsent(sourceNodeId + ":out", k -> ConcurrentHashMap.newKeySet());
+        Set<Integer> tgtOccupied = mOccupiedDockPoints.computeIfAbsent(targetNodeId + ":in", k -> ConcurrentHashMap.newKeySet());
+
+        int bestSrcIdx = -1;
+        int bestTgtIdx = -1;
+        double bestDist = Double.MAX_VALUE;
+
+        // Find the pair of dock points that minimizes edge length
+        for (int s = 0; s < 24; s++) {
+            if (srcOccupied.contains(s)) continue;
+
+            double srcDockAbsX = srcX + srcDockPoints[s][0];
+            double srcDockAbsY = srcY + srcDockPoints[s][1];
+
+            for (int t = 0; t < 24; t++) {
+                if (tgtOccupied.contains(t)) continue;
+
+                double tgtDockAbsX = tgtX + tgtDockPoints[t][0];
+                double tgtDockAbsY = tgtY + tgtDockPoints[t][1];
+
+                double dist = Math.hypot(tgtDockAbsX - srcDockAbsX, tgtDockAbsY - srcDockAbsY);
+
+                if (dist < bestDist) {
+                    bestDist = dist;
+                    bestSrcIdx = s;
+                    bestTgtIdx = t;
+                }
+            }
+        }
+
+        // Fallback if all dock points are occupied
+        if (bestSrcIdx < 0) bestSrcIdx = 0;
+        if (bestTgtIdx < 0) bestTgtIdx = 0;
+
+        return new int[] { bestSrcIdx, bestTgtIdx };
+    }
+
+    // Find dock points for self-loop edges that create a nice upward loop
+    // Dock point positions (based on angle = i * π/12 + π):
+    //   0 = TOP center, 6 = LEFT center, 12 = BOTTOM center, 18 = RIGHT center
+    // Going clockwise from top: 0=top, 3=upper-left, 6=left, 9=lower-left,
+    //   12=bottom, 15=lower-right, 18=right, 21=upper-right
+    // For a nice upward loop, we want dock points near the TOP (around 0, with 21 on right, 3 on left)
+    private int[] findSelfLoopDockPointPair(String nodeId, int nodeWidth, int nodeHeight, boolean isSuperNode) {
+        Set<Integer> outOccupied = mOccupiedDockPoints.computeIfAbsent(nodeId + ":out", k -> ConcurrentHashMap.newKeySet());
+        Set<Integer> inOccupied = mOccupiedDockPoints.computeIfAbsent(nodeId + ":in", k -> ConcurrentHashMap.newKeySet());
+
+        // For an upward loop like in the nice example:
+        // - Start point on upper-right (around 1-2 o'clock) = dock 21 or 22
+        // - End point on upper-left (around 10-11 o'clock) = dock 3 or 2
+        // This creates a loop that curves UP and over the top of the node
+
+        // Preferred pairs for upward loops (start, end):
+        // Each pair has start on upper-right, end on upper-left, loop goes UP
+        int[][] preferredPairs = {
+            {21, 3},   // Upper-right to upper-left (primary - loop goes up)
+            {22, 2},   // Slightly closer to top
+            {20, 4},   // Slightly more to the sides
+            {23, 1},   // Very close to top
+            {19, 5},   // More toward right/left sides
+            {3, 21},   // Reversed direction
+        };
+
+        for (int[] pair : preferredPairs) {
+            int startIdx = pair[0];
+            int endIdx = pair[1];
+
+            // Check if both positions are available
+            if (!outOccupied.contains(startIdx) && !inOccupied.contains(endIdx)) {
+                return new int[] { startIdx, endIdx };
+            }
+        }
+
+        // Fallback: find any pair in upper half with reasonable separation
+        for (int s = 19; s <= 23; s++) { // Upper-right quadrant
+            if (outOccupied.contains(s)) continue;
+
+            for (int offset = 6; offset >= 4; offset--) {
+                int t = (s + offset) % 24; // Upper-left quadrant
+                if (!inOccupied.contains(t) && s != t) {
+                    return new int[] { s, t };
+                }
+            }
+        }
+
+        // Last fallback
+        return new int[] { 21, 3 };
+    }
+
+    // Mark a dock point as occupied (for source or target)
+    private void occupyDockPoint(String nodeId, int dockIndex, boolean isSource) {
+        String key = nodeId + (isSource ? ":out" : ":in");
+        mOccupiedDockPoints.computeIfAbsent(key, k -> ConcurrentHashMap.newKeySet()).add(dockIndex);
+    }
+
+    // Release a dock point
+    private void releaseDockPoint(String nodeId, int dockIndex, boolean isSource) {
+        String key = nodeId + (isSource ? ":out" : ":in");
+        Set<Integer> occupied = mOccupiedDockPoints.get(key);
+        if (occupied != null) {
+            occupied.remove(dockIndex);
+        }
+    }
+
+    // Get dock point absolute position
+    private double[] getDockPointPosition(double nodeX, double nodeY, int nodeWidth, int nodeHeight,
+                                           boolean isSuperNode, int dockIndex) {
+        double[][] dockPoints = computeDockPoints(nodeWidth, nodeHeight, isSuperNode);
+        if (dockIndex >= 0 && dockIndex < dockPoints.length) {
+            return new double[] { nodeX + dockPoints[dockIndex][0], nodeY + dockPoints[dockIndex][1] };
+        }
+        // Fallback to node center
+        return new double[] { nodeX + nodeWidth / 2.0, nodeY + nodeHeight / 2.0 };
+    }
+
+    // Initialize dock points for all edges in a project
+    // Call this when a project is loaded to mark existing dock points as occupied
+    private void initializeDockPointsForProject(EditorProject project) {
+        if (project == null) return;
+
+        SceneFlow sceneFlow = project.getSceneFlow();
+        if (sceneFlow == null) return;
+
+        EditorConfig config = project.getEditorConfig();
+        int nodeWidth = config != null ? config.sNODEWIDTH : 90;
+        int nodeHeight = config != null ? config.sNODEHEIGHT : 90;
+
+        // Recursively scan all nodes and their edges
+        initializeDockPointsRecursive(sceneFlow, nodeWidth, nodeHeight);
+    }
+
+    private void initializeDockPointsRecursive(SuperNode superNode, int nodeWidth, int nodeHeight) {
+        // Process all nodes in this super node
+        List<BasicNode> allNodes = new ArrayList<>();
+        allNodes.addAll(superNode.getNodeList());
+        allNodes.addAll(superNode.getSuperNodeList());
+
+        for (BasicNode node : allNodes) {
+            // Process all edges from this node
+            processNodeEdgesForDocking(node, nodeWidth, nodeHeight);
+
+            // Recurse into super nodes
+            if (node instanceof SuperNode) {
+                initializeDockPointsRecursive((SuperNode) node, nodeWidth, nodeHeight);
+            }
+        }
+    }
+
+    private void processNodeEdgesForDocking(BasicNode node, int nodeWidth, int nodeHeight) {
+        // Get node position
+        NodeGraphics nodeGraphics = node.getGraphics();
+        NodePosition nodePos = nodeGraphics != null ? nodeGraphics.getPosition() : null;
+        double nodeX = nodePos != null ? nodePos.getXPos() : 0;
+        double nodeY = nodePos != null ? nodePos.getYPos() : 0;
+        boolean isSuperNode = node instanceof SuperNode;
+
+        // Collect all edges from this node
+        List<AbstractEdge> edges = new ArrayList<>();
+        if (node.getDedge() != null) edges.add(node.getDedge());
+        edges.addAll(node.getCEdgeList());
+        edges.addAll(node.getIEdgeList());
+        edges.addAll(node.getPEdgeList());
+        edges.addAll(node.getFEdgeList());
+
+        for (AbstractEdge edge : edges) {
+            EdgeGraphics edgeGraphics = edge.getGraphics();
+            if (edgeGraphics == null || edgeGraphics.getConnection() == null) continue;
+
+            List<EdgePoint> points = edgeGraphics.getConnection().getPointList();
+            if (points == null || points.isEmpty()) continue;
+
+            // Mark source dock point as occupied (isSource=true for outgoing)
+            EdgePoint startPt = points.get(0);
+            int srcDockIdx = findDockPointIndex(nodeX, nodeY, nodeWidth, nodeHeight,
+                    isSuperNode, startPt.getXPos(), startPt.getYPos());
+            if (srcDockIdx >= 0) {
+                occupyDockPoint(node.getId(), srcDockIdx, true);
+            }
+
+            // Mark target dock point as occupied (isSource=false for incoming)
+            if (points.size() >= 2) {
+                EdgePoint endPt = points.get(points.size() - 1);
+                BasicNode targetNode = edge.getTargetNode();
+                if (targetNode != null) {
+                    NodeGraphics tgtGraphics = targetNode.getGraphics();
+                    NodePosition tgtPos = tgtGraphics != null ? tgtGraphics.getPosition() : null;
+                    double tgtX = tgtPos != null ? tgtPos.getXPos() : 0;
+                    double tgtY = tgtPos != null ? tgtPos.getYPos() : 0;
+                    boolean tgtIsSuperNode = targetNode instanceof SuperNode;
+
+                    int tgtDockIdx = findDockPointIndex(tgtX, tgtY, nodeWidth, nodeHeight,
+                            tgtIsSuperNode, endPt.getXPos(), endPt.getYPos());
+                    if (tgtDockIdx >= 0) {
+                        occupyDockPoint(targetNode.getId(), tgtDockIdx, false);
+                    }
+                }
+            }
+        }
+    }
+
+    // Clear dock points for a project (call when project is closed)
+    private void clearDockPointsForProject(SceneFlow sceneFlow) {
+        if (sceneFlow == null) return;
+        clearDockPointsRecursive(sceneFlow);
+    }
+
+    private void clearDockPointsRecursive(SuperNode superNode) {
+        // Remove both outgoing and incoming dock point sets
+        mOccupiedDockPoints.remove(superNode.getId() + ":out");
+        mOccupiedDockPoints.remove(superNode.getId() + ":in");
+
+        for (BasicNode node : superNode.getNodeList()) {
+            mOccupiedDockPoints.remove(node.getId() + ":out");
+            mOccupiedDockPoints.remove(node.getId() + ":in");
+        }
+
+        for (SuperNode child : superNode.getSuperNodeList()) {
+            mOccupiedDockPoints.remove(child.getId() + ":out");
+            mOccupiedDockPoints.remove(child.getId() + ":in");
+            clearDockPointsRecursive(child);
+        }
+    }
+
+    // Find the dock point index that matches a given absolute position
+    private int findDockPointIndex(double nodeX, double nodeY, int nodeWidth, int nodeHeight,
+                                    boolean isSuperNode, double pointX, double pointY) {
+        double[][] dockPoints = computeDockPoints(nodeWidth, nodeHeight, isSuperNode);
+        int bestIdx = -1;
+        double bestDist = Double.MAX_VALUE;
+
+        for (int i = 0; i < dockPoints.length; i++) {
+            double dockAbsX = nodeX + dockPoints[i][0];
+            double dockAbsY = nodeY + dockPoints[i][1];
+            double dist = Math.hypot(dockAbsX - pointX, dockAbsY - pointY);
+            if (dist < bestDist) {
+                bestDist = dist;
+                bestIdx = i;
+            }
+        }
+
+        // Only return if within reasonable tolerance (e.g., 20 pixels)
+        return bestDist < 20 ? bestIdx : -1;
+    }
+
+    // Compute initial bezier control points for a new edge
+    private double[] computeInitialControlPoint(double startX, double startY, double endX, double endY, boolean isStart) {
+        // Control point offset: 1/3 of the distance along the line, with slight curve
+        double dx = endX - startX;
+        double dy = endY - startY;
+        double dist = Math.hypot(dx, dy);
+        double offset = Math.max(30, dist / 3);
+
+        if (isStart) {
+            // Start control point: extend in direction from start to end
+            double ux = dist > 0 ? dx / dist : 1;
+            double uy = dist > 0 ? dy / dist : 0;
+            return new double[] { startX + ux * offset, startY + uy * offset };
+        } else {
+            // End control point: extend back from end toward start
+            double ux = dist > 0 ? -dx / dist : -1;
+            double uy = dist > 0 ? -dy / dist : 0;
+            return new double[] { endX + ux * offset, endY + uy * offset };
+        }
+    }
+
+    // Compute control points for self-loop edges that curve outward from the node
+    // Creates a nice smooth loop that extends above the node
+    // Based on empirically derived good values from manual adjustment
+    // Returns double[4] = {startCtrlX, startCtrlY, endCtrlX, endCtrlY}
+    private double[] computeSelfLoopControlPoints(
+            double startX, double startY, double endX, double endY,
+            double nodeCenterX, double nodeCenterY, int nodeWidth, int nodeHeight) {
+
+        // Empirically derived ratios from good manual adjustment:
+        // - Start control: goes UP (negative Y) and outward (right for upper-right dock)
+        // - End control: goes UP (negative Y) and slightly toward center
+        // These ratios create a nice rounded loop above the node
+
+        double nodeSize = Math.max(nodeWidth, nodeHeight);
+
+        // Start control: UP and outward from the start point
+        // Offset ratios: X = +0.85 * nodeSize (outward), Y = -0.76 * nodeSize (up)
+        double startCtrlX = startX + 0.85 * nodeSize;
+        double startCtrlY = startY - 0.76 * nodeSize;
+
+        // End control: UP and slightly toward center
+        // Offset ratios: X = +0.16 * nodeSize (toward center), Y = -0.87 * nodeSize (up)
+        double endCtrlX = endX + 0.16 * nodeSize;
+        double endCtrlY = endY - 0.87 * nodeSize;
+
+        return new double[] { startCtrlX, startCtrlY, endCtrlX, endCtrlY };
+    }
+
+    // Check if this is a self-loop edge (same source and target node)
+    private boolean isSelfLoopEdge(String sourceNodeId, String targetNodeId) {
+        return sourceNodeId != null && sourceNodeId.equals(targetNodeId);
+    }
+
+    // Normalize an edge - recalculate control points to create a smooth curve
+    private void normalizeEdge(AbstractEdge edge, EditorConfig config) {
+        if (edge == null) return;
+        EdgeGraphics graphics = edge.getGraphics();
+        if (graphics == null) {
+            graphics = new EdgeGraphics();
+            edge.setGraphics(graphics);
+        }
+        EdgeArrow arrow = graphics.getConnection();
+        if (arrow == null) {
+            arrow = new EdgeArrow();
+            graphics.setConnection(arrow);
+        }
+        List<EdgePoint> points = arrow.getPointList();
+        if (points == null || points.size() < 2) return;
+
+        EdgePoint startPt = points.get(0);
+        EdgePoint endPt = points.get(points.size() - 1);
+        double startX = startPt.getXPos();
+        double startY = startPt.getYPos();
+        double endX = endPt.getXPos();
+        double endY = endPt.getYPos();
+
+        // Check if it's a self-loop
+        String sourceId = edge.getSourceUnid();
+        String targetId = edge.getTargetUnid();
+        if (isSelfLoopEdge(sourceId, targetId)) {
+            // For self-loops, use the special control point calculation
+            BasicNode sourceNode = edge.getSourceNode();
+            if (sourceNode != null) {
+                NodeGraphics nodeGraphics = sourceNode.getGraphics();
+                NodePosition nodePos = nodeGraphics != null ? nodeGraphics.getPosition() : null;
+                double nodeX = nodePos != null ? nodePos.getXPos() : 0;
+                double nodeY = nodePos != null ? nodePos.getYPos() : 0;
+                int nodeWidth = config != null ? config.sNODEWIDTH : 90;
+                int nodeHeight = config != null ? config.sNODEHEIGHT : 90;
+                double nodeCenterX = nodeX + nodeWidth / 2.0;
+                double nodeCenterY = nodeY + nodeHeight / 2.0;
+
+                double[] loopCtrl = computeSelfLoopControlPoints(startX, startY, endX, endY,
+                        nodeCenterX, nodeCenterY, nodeWidth, nodeHeight);
+                startPt.setCtrlXPos((int) Math.round(loopCtrl[0]));
+                startPt.setCtrlYPos((int) Math.round(loopCtrl[1]));
+                endPt.setCtrlXPos((int) Math.round(loopCtrl[2]));
+                endPt.setCtrlYPos((int) Math.round(loopCtrl[3]));
+            }
+        } else {
+            // Normal edge - use standard control points
+            double[] startCtrl = computeInitialControlPoint(startX, startY, endX, endY, true);
+            double[] endCtrl = computeInitialControlPoint(startX, startY, endX, endY, false);
+            startPt.setCtrlXPos((int) Math.round(startCtrl[0]));
+            startPt.setCtrlYPos((int) Math.round(startCtrl[1]));
+            endPt.setCtrlXPos((int) Math.round(endCtrl[0]));
+            endPt.setCtrlYPos((int) Math.round(endCtrl[1]));
+        }
+    }
+
+    // Straighten an edge - make control points lie on the straight line between start and end
+    private void straightenEdge(AbstractEdge edge) {
+        if (edge == null) return;
+        EdgeGraphics graphics = edge.getGraphics();
+        if (graphics == null) return;
+        EdgeArrow arrow = graphics.getConnection();
+        if (arrow == null) return;
+        List<EdgePoint> points = arrow.getPointList();
+        if (points == null || points.size() < 2) return;
+
+        EdgePoint startPt = points.get(0);
+        EdgePoint endPt = points.get(points.size() - 1);
+        double startX = startPt.getXPos();
+        double startY = startPt.getYPos();
+        double endX = endPt.getXPos();
+        double endY = endPt.getYPos();
+
+        // For a straight line, control points are at 1/3 and 2/3 along the line
+        double dx = endX - startX;
+        double dy = endY - startY;
+
+        double startCtrlX = startX + dx / 3.0;
+        double startCtrlY = startY + dy / 3.0;
+        double endCtrlX = startX + 2.0 * dx / 3.0;
+        double endCtrlY = startY + 2.0 * dy / 3.0;
+
+        startPt.setCtrlXPos((int) Math.round(startCtrlX));
+        startPt.setCtrlYPos((int) Math.round(startCtrlY));
+        endPt.setCtrlXPos((int) Math.round(endCtrlX));
+        endPt.setCtrlYPos((int) Math.round(endCtrlY));
+    }
+
     public static WebUiServer getInstance() {
         return INSTANCE;
     }
@@ -542,23 +985,23 @@ public final class WebUiServer implements UiEventListener {
         });
     }
 
+    // Phase 6: Headless version of emitUiSceneFlowSnapshot
     private void emitUiSceneFlowSnapshot(String projectId, String superNodeId) {
         if (projectId == null || projectId.isBlank()) {
             return;
         }
         mUiEventBus.emitLazy(() -> {
             JSONObject payload = callOnEdt(() -> {
-                EditorInstance instance = EditorInstance.getInstance();
-                ProjectEditor editor = findProjectEditorById(projectId, instance);
-                if (editor == null || editor.getEditorProject() == null) {
+                EditorProject project = mEditorProjectService.getProject(projectId);
+                if (project == null) {
                     return null;
                 }
-                SceneFlowManager manager = editor.getSceneFlowEditor().getSceneFlowManager();
-                SuperNode superNode = resolveSuperNode(editor.getEditorProject().getSceneFlow(), superNodeId);
+                SceneFlow sceneFlow = project.getSceneFlow();
+                SuperNode superNode = resolveSuperNode(sceneFlow, superNodeId);
                 if (superNode == null) {
-                    superNode = manager.getCurrentActiveSuperNode();
+                    superNode = sceneFlow; // Default to root
                 }
-                return sceneFlowSnapshot(editor, superNode);
+                return sceneFlowSnapshot(project, projectId, superNode);
             });
             if (payload == null) {
                 return null;
@@ -829,6 +1272,10 @@ public final class WebUiServer implements UiEventListener {
             }
             // Set as current project
             mCurrentProjectId = projectId;
+
+            // Phase 6: Initialize dock points for existing edges
+            initializeDockPointsForProject(project);
+
             return projectToJson(project, projectId);
         });
 
@@ -1012,6 +1459,7 @@ public final class WebUiServer implements UiEventListener {
         writeJson(ctx, snapshot);
     }
 
+    // Phase 6: Headless version of handleSceneFlowNavigate
     private void handleSceneFlowNavigate(Context ctx) {
         String projectId = ctx.pathParam("id");
         JSONObject body = readJsonBody(ctx);
@@ -1022,33 +1470,26 @@ public final class WebUiServer implements UiEventListener {
         }
 
         JSONObject snapshot = callOnEdt(() -> {
-            EditorInstance instance = EditorInstance.getInstance();
-            ProjectEditor editor = findProjectEditorById(projectId, instance);
-            if (editor == null) {
+            EditorProject project = mEditorProjectService.getProject(projectId);
+            if (project == null) {
                 return null;
             }
-            SceneFlow sceneFlow = editor.getEditorProject().getSceneFlow();
-            List<SuperNode> path;
+            SceneFlow sceneFlow = project.getSceneFlow();
+
+            // Find the target SuperNode
+            SuperNode targetSuperNode;
             if (ROOT_SUPERNODE_ID.equals(superNodeId)) {
-                path = new ArrayList<>();
-                path.add(sceneFlow);
+                targetSuperNode = sceneFlow;
             } else {
-                path = findPathToSuperNode(sceneFlow, superNodeId);
-            }
-            if (path == null) {
-                return new JSONObject().put("error", "SUPER_NODE_NOT_FOUND");
-            }
-            WorkSpacePanel workSpace = editor.getSceneFlowEditor().getWorkSpace();
-            SuperNode root = path.get(0);
-            workSpace.selectNewWorkSpaceLevel(root);
-            for (int i = 1; i < path.size(); i++) {
-                SuperNode next = path.get(i);
-                de.dfki.vsm.editor.Node node = workSpace.getNode(next.getId());
-                if (node != null) {
-                    workSpace.increaseWorkSpaceLevel(node);
+                List<SuperNode> path = findPathToSuperNode(sceneFlow, superNodeId);
+                if (path == null || path.isEmpty()) {
+                    return new JSONObject().put("error", "SUPER_NODE_NOT_FOUND");
                 }
+                targetSuperNode = path.get(path.size() - 1);
             }
-            return sceneFlowSnapshot(editor, path.get(path.size() - 1));
+
+            // Return snapshot of the target SuperNode (headless - no WorkSpacePanel needed)
+            return sceneFlowSnapshot(project, projectId, targetSuperNode);
         });
 
         if (snapshot == null) {
@@ -1523,6 +1964,11 @@ public final class WebUiServer implements UiEventListener {
         try {
             JSONObject payload = new JSONObject(message);
             String type = payload.optString("type", "cmd");
+
+            // Debug: Log all incoming WebSocket commands
+            String cmdName = payload.optString("name", "");
+            mLogger.message("*** WS MESSAGE RECEIVED *** type=" + type + ", name=" + cmdName);
+
             if (!"cmd".equals(type)) {
                 return;
             }
@@ -1636,6 +2082,7 @@ public final class WebUiServer implements UiEventListener {
                     emitUiProjectSaved(project);
                     return;
                 }
+                // Phase 6: Headless version of Project.SaveAs
                 case "Project.SaveAs": {
                     String projectId = body.optString("projectId", null);
                     String path = body.optString("path", null);
@@ -1644,24 +2091,18 @@ public final class WebUiServer implements UiEventListener {
                         return;
                     }
                     JSONObject project = callOnEdt(() -> {
-                        EditorInstance instance = EditorInstance.getInstance();
-                        ProjectEditor editor = findProjectEditorById(projectId, instance);
-                        if (editor == null || editor.getEditorProject() == null) {
+                        EditorProject proj = mEditorProjectService.getProject(projectId);
+                        if (proj == null) {
                             return null;
                         }
-                        EditorProject proj = editor.getEditorProject();
-                        JTabbedPane tabs = instance.getProjectEditors();
-                        int index = tabs.indexOfComponent(editor);
-                        if (index >= 0) {
-                            tabs.setSelectedIndex(index);
-                        }
-                        String projectName = index >= 0 ? tabs.getTitleAt(index).replace("*", "") : proj.getProjectName();
+                        // Extract project name from path
+                        File targetFile = new File(path);
+                        String projectName = targetFile.getName();
                         proj.setProjectName(projectName);
-                        if (proj.write(new File(path))) {
-                            instance.setTabNameSaved();
-                            instance.updateRecentProjects(proj);
-                            instance.refresh();
-                            return projectToJson(editor, tabs, index);
+                        if (proj.write(targetFile)) {
+                            mEditorProjectService.addRecentProject(proj.getProjectPath(), proj.getProjectName());
+                            // write() already updates the initial hash
+                            return projectToJson(proj, projectId);
                         }
                         return new JSONObject().put("error", "SAVE_FAILED");
                     });
@@ -1677,6 +2118,7 @@ public final class WebUiServer implements UiEventListener {
                     emitUiProjectSaved(project);
                     return;
                 }
+                // Phase 6: Headless version of Project.Close
                 case "Project.Close": {
                     String projectId = body.optString("projectId", null);
                     if (projectId == null || projectId.isBlank()) {
@@ -1684,12 +2126,14 @@ public final class WebUiServer implements UiEventListener {
                         return;
                     }
                     boolean closed = callOnEdt(() -> {
-                        EditorInstance instance = EditorInstance.getInstance();
-                        ProjectEditor editor = findProjectEditorById(projectId, instance);
-                        if (editor == null) {
+                        EditorProject project = mEditorProjectService.getProject(projectId);
+                        if (project == null) {
                             return false;
                         }
-                        return instance.closeProject(editor, false);
+                        // Clear dock points for this project
+                        clearDockPointsForProject(project.getSceneFlow());
+                        // Close the project
+                        return mEditorProjectService.closeProject(projectId);
                     });
                     if (!closed) {
                         sendError(ctx, requestId, "PROJECT_NOT_FOUND", "Project not found");
@@ -1699,6 +2143,7 @@ public final class WebUiServer implements UiEventListener {
                     emitUiProjectClosed(projectId);
                     return;
                 }
+                // Phase 6: Headless version of Project.Activate
                 case "Project.Activate": {
                     String projectId = body.optString("projectId", null);
                     if (projectId == null || projectId.isBlank()) {
@@ -1706,17 +2151,13 @@ public final class WebUiServer implements UiEventListener {
                         return;
                     }
                     JSONObject project = callOnEdt(() -> {
-                        EditorInstance instance = EditorInstance.getInstance();
-                        ProjectEditor editor = findProjectEditorById(projectId, instance);
-                        if (editor == null) {
+                        EditorProject proj = mEditorProjectService.getProject(projectId);
+                        if (proj == null) {
                             return null;
                         }
-                        JTabbedPane tabs = instance.getProjectEditors();
-                        int index = tabs.indexOfComponent(editor);
-                        if (index >= 0) {
-                            tabs.setSelectedIndex(index);
-                        }
-                        return projectToJson(editor, tabs, index);
+                        // Set as current active project
+                        mCurrentProjectId = projectId;
+                        return projectToJson(proj, projectId);
                     });
                     if (project == null) {
                         sendError(ctx, requestId, "PROJECT_NOT_FOUND", "Project not found");
@@ -1727,6 +2168,7 @@ public final class WebUiServer implements UiEventListener {
                     emitUiProjectState(project.optString("projectId", null));
                     return;
                 }
+                // Phase 6: Headless version of SceneFlow.Navigate
                 case "SceneFlow.Navigate": {
                     String projectId = body.optString("projectId", null);
                     String superNodeId = body.optString("superNodeId", null);
@@ -1735,33 +2177,25 @@ public final class WebUiServer implements UiEventListener {
                         return;
                     }
                     JSONObject snapshot = callOnEdt(() -> {
-                        EditorInstance instance = EditorInstance.getInstance();
-                        ProjectEditor editor = findProjectEditorById(projectId, instance);
-                        if (editor == null) {
+                        EditorProject project = mEditorProjectService.getProject(projectId);
+                        if (project == null) {
                             return null;
                         }
-                        SceneFlow sceneFlow = editor.getEditorProject().getSceneFlow();
-                        List<SuperNode> path;
+                        SceneFlow sceneFlow = project.getSceneFlow();
+                        // Resolve target SuperNode
+                        SuperNode targetSuperNode;
                         if (ROOT_SUPERNODE_ID.equals(superNodeId)) {
-                            path = new ArrayList<>();
-                            path.add(sceneFlow);
+                            targetSuperNode = sceneFlow;
                         } else {
-                            path = findPathToSuperNode(sceneFlow, superNodeId);
-                        }
-                        if (path == null) {
-                            return new JSONObject().put("error", "SUPER_NODE_NOT_FOUND");
-                        }
-                        WorkSpacePanel workSpace = editor.getSceneFlowEditor().getWorkSpace();
-                        SuperNode root = path.get(0);
-                        workSpace.selectNewWorkSpaceLevel(root);
-                        for (int i = 1; i < path.size(); i++) {
-                            SuperNode next = path.get(i);
-                            de.dfki.vsm.editor.Node node = workSpace.getNode(next.getId());
-                            if (node != null) {
-                                workSpace.increaseWorkSpaceLevel(node);
+                            BasicNode found = findNodeRecursive(sceneFlow, superNodeId);
+                            if (found instanceof SuperNode) {
+                                targetSuperNode = (SuperNode) found;
+                            } else {
+                                return new JSONObject().put("error", "SUPER_NODE_NOT_FOUND");
                             }
                         }
-                        return sceneFlowSnapshot(editor, path.get(path.size() - 1));
+                        // Return snapshot of the target SuperNode
+                        return sceneFlowSnapshot(project, projectId, targetSuperNode);
                     });
                     if (snapshot == null) {
                         sendError(ctx, requestId, "PROJECT_NOT_FOUND", "Project not found");
@@ -1777,6 +2211,7 @@ public final class WebUiServer implements UiEventListener {
                 // Phase 6: Headless version of SceneFlow.Node.Create
                 case "SceneFlow.Node.Create": {
                     String projectId = body.optString("projectId", null);
+                    String parentId = body.optString("parentId", body.optString("superNodeId", null));
                     String nodeType = body.optString("nodeType", "Basic");
                     String nodeName = body.optString("name", null);
                     double x = body.has("x") ? body.optDouble("x", Double.NaN) : Double.NaN;
@@ -1785,12 +2220,27 @@ public final class WebUiServer implements UiEventListener {
                         sendError(ctx, requestId, "BAD_REQUEST", "Missing projectId or coordinates");
                         return;
                     }
+                    final String resolvedParentId = parentId;
                     JSONObject response = callOnEdt(() -> {
                         EditorProject project = mEditorProjectService.getProject(projectId);
                         if (project == null) {
                             return null;
                         }
                         SceneFlow sceneFlow = project.getSceneFlow();
+
+                        // Find the parent SuperNode (where to add the new node)
+                        SuperNode parentNode;
+                        if (resolvedParentId == null || resolvedParentId.isBlank() || ROOT_SUPERNODE_ID.equals(resolvedParentId)) {
+                            parentNode = sceneFlow;
+                        } else {
+                            BasicNode found = findNodeRecursive(sceneFlow, resolvedParentId);
+                            if (found instanceof SuperNode) {
+                                parentNode = (SuperNode) found;
+                            } else {
+                                parentNode = sceneFlow; // Fallback to root
+                            }
+                        }
+
                         boolean isSuper = "super".equalsIgnoreCase(nodeType) || "supernode".equalsIgnoreCase(nodeType);
                         String nodeId = generateNextNodeId(sceneFlow, isSuper);
                         BasicNode dataNode = isSuper ? new SuperNode() : new BasicNode();
@@ -1801,7 +2251,7 @@ public final class WebUiServer implements UiEventListener {
                         int clampedX = clampPositive((int) Math.round(x));
                         int clampedY = clampPositive((int) Math.round(y));
                         dataNode.setGraphics(new NodeGraphics(clampedX, clampedY));
-                        dataNode.setParentNode(sceneFlow);
+                        dataNode.setParentNode(parentNode);
                         if (dataNode instanceof SuperNode) {
                             BasicNode history = new BasicNode();
                             history.setHistoryNodeFlag(true);
@@ -1812,10 +2262,25 @@ public final class WebUiServer implements UiEventListener {
                             ((SuperNode) dataNode).addNode(history);
                             ((SuperNode) dataNode).setHistoryNode(history);
                         }
-                        sceneFlow.addNode(dataNode);
+                        // Check if this is the first non-history node in the parent
+                        // If so, it should be a start node
+                        boolean shouldBeStart = parentNode.getStartNodeMap().isEmpty();
+
+                        // Add node to correct parent based on type
+                        if (dataNode instanceof SuperNode) {
+                            parentNode.addSuperNode((SuperNode) dataNode);
+                        } else {
+                            parentNode.addNode(dataNode);
+                        }
+
+                        // Make it a start node if it's the first node
+                        if (shouldBeStart && !(dataNode instanceof SuperNode && ((SuperNode) dataNode).getHistoryNode() == dataNode)) {
+                            parentNode.addStartNode(dataNode);
+                        }
+
                         JSONObject payloadResp = new JSONObject();
                         payloadResp.put("nodeId", nodeId);
-                        payloadResp.put("snapshot", sceneFlowSnapshot(project, projectId, sceneFlow));
+                        payloadResp.put("snapshot", sceneFlowSnapshot(project, projectId, parentNode));
                         payloadResp.put("dirty", project.hasChanged());
                         return payloadResp;
                     });
@@ -1832,6 +2297,7 @@ public final class WebUiServer implements UiEventListener {
                 // Phase 6: Headless version of SceneFlow.Node.Move
                 case "SceneFlow.Node.Move": {
                     String projectId = body.optString("projectId", null);
+                    String superNodeId = body.optString("superNodeId", null);
                     String nodeId = body.optString("nodeId", null);
                     double x = body.has("x") ? body.optDouble("x", Double.NaN) : Double.NaN;
                     double y = body.has("y") ? body.optDouble("y", Double.NaN) : Double.NaN;
@@ -1841,6 +2307,7 @@ public final class WebUiServer implements UiEventListener {
                         sendError(ctx, requestId, "BAD_REQUEST", "Missing projectId, nodeId, or coordinates");
                         return;
                     }
+                    final String resolvedSuperNodeId = superNodeId;
                     JSONObject response = callOnEdt(() -> {
                         EditorProject project = mEditorProjectService.getProject(projectId);
                         if (project == null) {
@@ -1858,7 +2325,8 @@ public final class WebUiServer implements UiEventListener {
                         payloadResp.put("nodeId", nodeId);
                         payloadResp.put("x", targetX);
                         payloadResp.put("y", targetY);
-                        payloadResp.put("snapshot", sceneFlowSnapshot(project, projectId, sceneFlow));
+                        SuperNode snapshotTarget = resolveSnapshotTarget(sceneFlow, resolvedSuperNodeId);
+                        payloadResp.put("snapshot", sceneFlowSnapshot(project, projectId, snapshotTarget));
                         payloadResp.put("dirty", project.hasChanged());
                         return payloadResp;
                     });
@@ -1876,8 +2344,10 @@ public final class WebUiServer implements UiEventListener {
                     }
                     return;
                 }
+                // Phase 6: Headless version of SceneFlow.Node.MoveGroup
                 case "SceneFlow.Node.MoveGroup": {
                     String projectId = body.optString("projectId", null);
+                    String superNodeId = body.optString("superNodeId", null);
                     JSONArray nodesPayload = body.optJSONArray("nodes");
                     boolean snap = body.optBoolean("snap", false);
                     if (projectId == null || projectId.isBlank() || nodesPayload == null || nodesPayload.length() == 0) {
@@ -1900,71 +2370,39 @@ public final class WebUiServer implements UiEventListener {
                         }
                         moves.add(new NodeMoveRequest(moveId, new Point((int) Math.round(moveX), (int) Math.round(moveY))));
                     }
+                    final String resolvedSuperNodeId = superNodeId;
                     JSONObject response = callOnEdt(() -> {
-                        EditorInstance instance = EditorInstance.getInstance();
-                        ProjectEditor editor = findProjectEditorById(projectId, instance);
-                        if (editor == null) {
+                        // Phase 6: Use EditorProjectService instead of EditorInstance
+                        EditorProject project = mEditorProjectService.getProject(projectId);
+                        if (project == null) {
                             return null;
                         }
-                        WorkSpacePanel workSpace = editor.getSceneFlowEditor().getWorkSpace();
-                        SceneFlowManager manager = editor.getSceneFlowEditor().getSceneFlowManager();
-                        Map<Node, Point> beforeMoves = new LinkedHashMap<>();
-                        Map<Node, Point> afterMoves = new LinkedHashMap<>();
+                        SceneFlow sceneFlow = project.getSceneFlow();
+                        SuperNode activeSuperNode = resolveSnapshotTarget(sceneFlow, resolvedSuperNodeId);
+                        if (activeSuperNode == null) {
+                            activeSuperNode = sceneFlow;
+                        }
+                        // Phase 6: Move nodes by directly updating their graphics (headless - no WorkSpacePanel)
                         for (NodeMoveRequest move : moves) {
-                            Node node = workSpace.getNode(move.nodeId);
-                            if (node == null) {
+                            BasicNode dataNode = resolveNodeById(activeSuperNode, move.nodeId);
+                            if (dataNode == null) {
                                 return new JSONObject().put("error", "NODE_NOT_FOUND").put("nodeId", move.nodeId);
                             }
-                            Point beforePoint = new Point(node.getX(), node.getY());
-                            moveNode(workSpace, node, move.target, snap);
-                            Point afterPoint = new Point(node.getX(), node.getY());
-                            if (!beforePoint.equals(afterPoint)) {
-                                beforeMoves.put(node, beforePoint);
-                                afterMoves.put(node, afterPoint);
+                            // Clamp position to positive values
+                            int targetX = Math.max(1, move.target.x);
+                            int targetY = Math.max(1, move.target.y);
+                            // Update node graphics
+                            NodeGraphics graphics = dataNode.getGraphics();
+                            if (graphics == null) {
+                                graphics = new NodeGraphics(targetX, targetY);
+                                dataNode.setGraphics(graphics);
+                            } else {
+                                graphics.setPosition(targetX, targetY);
                             }
-                        }
-                        if (!beforeMoves.isEmpty()) {
-                            UndoManager undoManager = editor.getSceneFlowEditor().getUndoManager();
-                            Map<Node, Point> undoPoints = new LinkedHashMap<>();
-                            Map<Node, Point> redoPoints = new LinkedHashMap<>();
-                            for (Map.Entry<Node, Point> entry : beforeMoves.entrySet()) {
-                                undoPoints.put(entry.getKey(), new Point(entry.getValue()));
-                            }
-                            for (Map.Entry<Node, Point> entry : afterMoves.entrySet()) {
-                                redoPoints.put(entry.getKey(), new Point(entry.getValue()));
-                            }
-                            undoManager.addEdit(new AbstractUndoableEdit() {
-                                @Override
-                                public void undo() throws CannotUndoException {
-                                    super.undo();
-                                    for (Map.Entry<Node, Point> entry : undoPoints.entrySet()) {
-                                        moveNode(workSpace, entry.getKey(), entry.getValue(), false);
-                                    }
-                                }
-
-                                @Override
-                                public void redo() throws CannotRedoException {
-                                    super.redo();
-                                    for (Map.Entry<Node, Point> entry : redoPoints.entrySet()) {
-                                        moveNode(workSpace, entry.getKey(), entry.getValue(), false);
-                                    }
-                                }
-
-                                @Override
-                                public String getUndoPresentationName() {
-                                    return "Undo Move Nodes";
-                                }
-
-                                @Override
-                                public String getRedoPresentationName() {
-                                    return "Redo Move Nodes";
-                                }
-                            });
-                            UndoAction.getInstance().refreshUndoState();
-                            RedoAction.getInstance().refreshRedoState();
                         }
                         JSONObject payloadResp = new JSONObject();
-                        payloadResp.put("snapshot", sceneFlowSnapshot(editor, manager.getCurrentActiveSuperNode()));
+                        payloadResp.put("snapshot", sceneFlowSnapshot(project, projectId, activeSuperNode));
+                        payloadResp.put("dirty", project.hasChanged());
                         return payloadResp;
                     });
                     if (response == null) {
@@ -1983,6 +2421,7 @@ public final class WebUiServer implements UiEventListener {
                 // Phase 6: Headless version of SceneFlow.Node.Update
                 case "SceneFlow.Node.Update": {
                     String projectId = body.optString("projectId", null);
+                    String superNodeId = body.optString("superNodeId", null);
                     String nodeId = body.optString("nodeId", "");
                     JSONObject fields = body.optJSONObject("fields");
                     if (projectId == null || projectId.isBlank()) {
@@ -1990,6 +2429,7 @@ public final class WebUiServer implements UiEventListener {
                         return;
                     }
                     final JSONObject sourcePayload = fields == null ? body : fields;
+                    final String resolvedSuperNodeId = superNodeId;
                     JSONObject response = callOnEdt(() -> {
                         EditorProject project = mEditorProjectService.getProject(projectId);
                         if (project == null) {
@@ -2016,7 +2456,8 @@ public final class WebUiServer implements UiEventListener {
                         }
                         JSONObject payloadResp = new JSONObject();
                         payloadResp.put("nodeId", nodeId);
-                        payloadResp.put("snapshot", sceneFlowSnapshot(project, projectId, sceneFlow));
+                        SuperNode snapshotTarget = resolveSnapshotTarget(sceneFlow, resolvedSuperNodeId);
+                        payloadResp.put("snapshot", sceneFlowSnapshot(project, projectId, snapshotTarget));
                         payloadResp.put("dirty", project.hasChanged());
                         return payloadResp;
                     });
@@ -2037,51 +2478,94 @@ public final class WebUiServer implements UiEventListener {
                 // Phase 6: Headless version of SceneFlow.Node.Delete
                 case "SceneFlow.Node.Delete": {
                     String projectId = body.optString("projectId", null);
+                    String superNodeId = body.optString("superNodeId", null);
                     String nodeId = body.optString("nodeId", null);
+
+                    mLogger.message("*** DELETE REQUEST RECEIVED *** projectId=" + projectId + ", nodeId=" + nodeId);
+
                     if (projectId == null || projectId.isBlank() || nodeId == null || nodeId.isBlank()) {
+                        mLogger.warning("DELETE FAILED: Missing projectId or nodeId");
                         sendError(ctx, requestId, "BAD_REQUEST", "Missing projectId or nodeId");
                         return;
                     }
+                    final String resolvedSuperNodeId = superNodeId;
                     JSONObject response = callOnEdt(() -> {
                         EditorProject project = mEditorProjectService.getProject(projectId);
                         if (project == null) {
+                            mLogger.warning("DELETE FAILED: Project not found - " + projectId);
                             return null;
                         }
                         SceneFlow sceneFlow = project.getSceneFlow();
                         BasicNode dataNode = findNodeRecursive(sceneFlow, nodeId);
                         if (dataNode == null) {
+                            mLogger.warning("DELETE FAILED: Node not found - " + nodeId);
                             return new JSONObject().put("error", "NODE_NOT_FOUND");
                         }
+
+                        mLogger.message("DELETE: Found node - name='" + dataNode.getName() +
+                                       "', type=" + (dataNode instanceof SuperNode ? "SuperNode" : "BasicNode") +
+                                       ", id=" + dataNode.getId());
+
+                        // Don't allow deleting the root sceneflow itself
+                        if (dataNode == sceneFlow) {
+                            mLogger.warning("DELETE FAILED: Attempt to delete root SceneFlow");
+                            return new JSONObject().put("error", "CANNOT_DELETE_ROOT")
+                                    .put("message", "Cannot delete the root SceneFlow node");
+                        }
+
                         SuperNode parent = dataNode.getParentNode();
+                        mLogger.message("DELETE: Parent node = " + (parent == null ? "NULL" : parent.getName() + " (id=" + parent.getId() + ")"));
+
                         if (parent == null) {
-                            return new JSONObject().put("error", "CANNOT_DELETE_ROOT");
+                            // Debug info to understand why parent is null
+                            String debugInfo = String.format("Node '%s' (type=%s, id=%s) has null parent",
+                                    dataNode.getName(),
+                                    dataNode instanceof SuperNode ? "SuperNode" : "BasicNode",
+                                    dataNode.getId());
+                            mLogger.warning("DELETE FAILED: " + debugInfo);
+                            return new JSONObject().put("error", "CANNOT_DELETE_ROOT")
+                                    .put("message", "Node has no parent - may be root or corrupted structure")
+                                    .put("debug", debugInfo);
                         }
                         // Remove all edges connected to this node
                         removeConnectedEdges(parent, dataNode);
-                        // Remove the node itself
-                        parent.removeNode(dataNode);
+                        // Remove the node itself - use correct method based on node type
+                        if (dataNode instanceof SuperNode) {
+                            parent.removeSuperNode((SuperNode) dataNode);
+                        } else {
+                            parent.removeNode(dataNode);
+                        }
+                        mLogger.message("DELETE SUCCESS: Node removed - " + nodeId);
                         JSONObject payloadResp = new JSONObject();
                         payloadResp.put("nodeId", nodeId);
-                        payloadResp.put("snapshot", sceneFlowSnapshot(project, projectId, sceneFlow));
+                        SuperNode snapshotTarget = resolveSnapshotTarget(sceneFlow, resolvedSuperNodeId);
+                        payloadResp.put("snapshot", sceneFlowSnapshot(project, projectId, snapshotTarget));
                         payloadResp.put("dirty", project.hasChanged());
                         return payloadResp;
                     });
                     if (response == null) {
+                        mLogger.warning("DELETE RESPONSE NULL - sending PROJECT_NOT_FOUND");
                         sendError(ctx, requestId, "PROJECT_NOT_FOUND", "Project not found");
                         return;
                     }
                     if (response.has("error")) {
-                        sendError(ctx, requestId, response.getString("error"), "Node not found");
+                        String errorCode = response.getString("error");
+                        String errorMsg = response.optString("message", "Node not found");
+                        mLogger.warning("DELETE ERROR RESPONSE: " + errorCode + " - " + errorMsg);
+                        sendError(ctx, requestId, errorCode, errorMsg);
                         return;
                     }
+                    mLogger.message("DELETE: Sending success response");
                     sendResponse(ctx, requestId, name, response);
                     if (response.has("dirty")) {
                         emitUiProjectDirty(projectId, response.getBoolean("dirty"), List.of("sceneflow"));
                     }
                     return;
                 }
+                // Phase 6: Headless version of SceneFlow.Selection.Copy
                 case "SceneFlow.Selection.Copy": {
                     String projectId = body.optString("projectId", null);
+                    String superNodeId = body.optString("superNodeId", null);
                     JSONArray nodeIds = body.optJSONArray("nodeIds");
                     if (projectId == null || projectId.isBlank() || nodeIds == null) {
                         sendError(ctx, requestId, "BAD_REQUEST", "Missing projectId or nodeIds");
@@ -2091,14 +2575,19 @@ public final class WebUiServer implements UiEventListener {
                         sendError(ctx, requestId, "CLIENT_ID_REQUIRED", "Missing sourceClientId");
                         return;
                     }
+                    final String resolvedSuperNodeId = superNodeId;
                     JSONObject response = callOnEdt(() -> {
-                        EditorInstance instance = EditorInstance.getInstance();
-                        ProjectEditor editor = findProjectEditorById(projectId, instance);
-                        if (editor == null) {
+                        // Phase 6: Use EditorProjectService instead of EditorInstance
+                        EditorProject project = mEditorProjectService.getProject(projectId);
+                        if (project == null) {
                             return null;
                         }
-                        SceneFlowManager manager = editor.getSceneFlowEditor().getSceneFlowManager();
-                        SuperNode active = manager.getCurrentActiveSuperNode();
+                        SceneFlow sceneFlow = project.getSceneFlow();
+                        // Resolve the active SuperNode from superNodeId or default to root
+                        SuperNode active = resolveSnapshotTarget(sceneFlow, resolvedSuperNodeId);
+                        if (active == null) {
+                            active = sceneFlow;
+                        }
                         List<BasicNode> copies = new ArrayList<>();
                         for (int i = 0; i < nodeIds.length(); i++) {
                             String id = nodeIds.optString(i, "").trim();
@@ -2131,8 +2620,10 @@ public final class WebUiServer implements UiEventListener {
                     sendResponse(ctx, requestId, name, response);
                     return;
                 }
+                // Phase 6: Headless version of SceneFlow.Selection.Paste
                 case "SceneFlow.Selection.Paste": {
                     String projectId = body.optString("projectId", null);
+                    String superNodeId = body.optString("superNodeId", null);
                     double dxRaw = body.has("dx") ? body.optDouble("dx", Double.NaN) : Double.NaN;
                     double dyRaw = body.has("dy") ? body.optDouble("dy", Double.NaN) : Double.NaN;
                     if (projectId == null || projectId.isBlank() || !isFinite(dxRaw) || !isFinite(dyRaw)) {
@@ -2143,10 +2634,11 @@ public final class WebUiServer implements UiEventListener {
                         sendError(ctx, requestId, "CLIENT_ID_REQUIRED", "Missing sourceClientId");
                         return;
                     }
+                    final String resolvedSuperNodeId = superNodeId;
                     JSONObject response = callOnEdt(() -> {
-                        EditorInstance instance = EditorInstance.getInstance();
-                        ProjectEditor editor = findProjectEditorById(projectId, instance);
-                        if (editor == null) {
+                        // Phase 6: Use EditorProjectService instead of EditorInstance
+                        EditorProject project = mEditorProjectService.getProject(projectId);
+                        if (project == null) {
                             return null;
                         }
                         SceneFlowClipboard clipboard = mSceneFlowClipboard.get(sourceClientId);
@@ -2181,8 +2673,9 @@ public final class WebUiServer implements UiEventListener {
                         for (BasicNode node : nodes) {
                             collectNodeIdsRecursive(node, oldIds);
                         }
-                        SceneFlowManager manager = editor.getSceneFlowEditor().getSceneFlowManager();
-                        manager.getIDManager().reassignAllIDs(new HashSet<>(nodes));
+                        // Phase 6: Reassign IDs headlessly using generateNextNodeId
+                        SceneFlow sceneFlow = project.getSceneFlow();
+                        reassignAllIDsHeadless(sceneFlow, nodes);
                         Map<String, String> idMap = new HashMap<>();
                         for (Map.Entry<BasicNode, String> entry : oldIds.entrySet()) {
                             BasicNode node = entry.getKey();
@@ -2191,7 +2684,11 @@ public final class WebUiServer implements UiEventListener {
                                 idMap.put(oldId, node.getId());
                             }
                         }
-                        SuperNode activeSuperNode = manager.getCurrentActiveSuperNode();
+                        // Phase 6: Resolve active SuperNode headlessly
+                        SuperNode activeSuperNode = resolveSnapshotTarget(sceneFlow, resolvedSuperNodeId);
+                        if (activeSuperNode == null) {
+                            activeSuperNode = sceneFlow;
+                        }
                         Set<String> allowedTargetIds = new HashSet<>(idMap.values());
                         HashMap<String, BasicNode> startBefore = new HashMap<>(activeSuperNode.getStartNodeMap());
                         Set<String> startIds = new HashSet<>();
@@ -2219,7 +2716,7 @@ public final class WebUiServer implements UiEventListener {
                         for (BasicNode node : nodes) {
                             offsetNodeGraphics(node, dx, dy);
                         }
-                        WorkSpacePanel workSpace = editor.getSceneFlowEditor().getWorkSpace();
+                        // Phase 6: Extract and store edges before adding nodes (headless - no WorkSpacePanel)
                         Map<BasicNode, ArrayList<GuargedEdge>> cEdges = new HashMap<>();
                         Map<BasicNode, ArrayList<RandomEdge>> pEdges = new HashMap<>();
                         Map<BasicNode, ArrayList<ForkingEdge>> fEdges = new HashMap<>();
@@ -2283,135 +2780,108 @@ public final class WebUiServer implements UiEventListener {
                                 }
                             }
                         }
+                        // Offset edge graphics
+                        final int finalDx = dx;
+                        final int finalDy = dy;
                         for (Map.Entry<BasicNode, ArrayList<GuargedEdge>> entry : cEdges.entrySet()) {
                             for (GuargedEdge edge : entry.getValue()) {
-                                offsetEdgeGraphics(edge, dx, dy);
+                                offsetEdgeGraphics(edge, finalDx, finalDy);
                             }
                         }
                         for (Map.Entry<BasicNode, ArrayList<RandomEdge>> entry : pEdges.entrySet()) {
                             for (RandomEdge edge : entry.getValue()) {
-                                offsetEdgeGraphics(edge, dx, dy);
+                                offsetEdgeGraphics(edge, finalDx, finalDy);
                             }
                         }
                         for (Map.Entry<BasicNode, ArrayList<ForkingEdge>> entry : fEdges.entrySet()) {
                             for (ForkingEdge edge : entry.getValue()) {
-                                offsetEdgeGraphics(edge, dx, dy);
+                                offsetEdgeGraphics(edge, finalDx, finalDy);
                             }
                         }
                         for (Map.Entry<BasicNode, ArrayList<InterruptEdge>> entry : iEdges.entrySet()) {
                             for (InterruptEdge edge : entry.getValue()) {
-                                offsetEdgeGraphics(edge, dx, dy);
+                                offsetEdgeGraphics(edge, finalDx, finalDy);
                             }
                         }
                         for (Map.Entry<BasicNode, AbstractEdge> entry : defaultEdges.entrySet()) {
-                            offsetEdgeGraphics(entry.getValue(), dx, dy);
+                            offsetEdgeGraphics(entry.getValue(), finalDx, finalDy);
                         }
+                        // Phase 6: Add nodes directly to the model (headless - no WorkSpacePanel)
                         JSONArray newNodeIds = new JSONArray();
                         Map<String, BasicNode> createdNodes = new HashMap<>();
+                        final SuperNode targetSuperNode = activeSuperNode;
                         for (BasicNode node : nodes) {
-                            CreateNodeAction action = new CreateNodeAction(workSpace, node);
-                            action.run();
-                            Node guiNode = workSpace.getNode(node.getId());
-                            if (guiNode != null) {
-                                guiNode.getDataNode().setGraphics(new NodeGraphics(guiNode.getX(), guiNode.getY()));
+                            // Set the parent node reference
+                            node.setParentNode(targetSuperNode);
+                            // Add to parent based on type
+                            if (node instanceof SuperNode) {
+                                targetSuperNode.addSuperNode((SuperNode) node);
+                            } else {
+                                targetSuperNode.addNode(node);
                             }
                             newNodeIds.put(node.getId());
                             createdNodes.put(node.getId(), node);
                         }
+                        // Handle start flag for pasted nodes
                         if (!startIds.isEmpty()) {
                             for (String startId : startIds) {
                                 BasicNode dataNode = createdNodes.get(startId);
                                 if (dataNode == null) {
                                     continue;
                                 }
-                                Node guiNode = workSpace.getNode(startId);
-                                updateStartFlag(dataNode, guiNode, true);
-                            }
-                            HashMap<String, BasicNode> startAfter = new HashMap<>(activeSuperNode.getStartNodeMap());
-                            if (!startBefore.equals(startAfter)) {
-                                UndoManager undoManager = editor.getSceneFlowEditor().getUndoManager();
-                                undoManager.addEdit(new AbstractUndoableEdit() {
-                                    @Override
-                                    public void undo() throws CannotUndoException {
-                                        super.undo();
-                                        applyStartMap(workSpace, activeSuperNode, startBefore);
-                                        workSpace.revalidate();
-                                        workSpace.repaint(100);
-                                    }
-
-                                    @Override
-                                    public void redo() throws CannotRedoException {
-                                        super.redo();
-                                        applyStartMap(workSpace, activeSuperNode, startAfter);
-                                        workSpace.revalidate();
-                                        workSpace.repaint(100);
-                                    }
-
-                                    @Override
-                                    public String getUndoPresentationName() {
-                                        return "Undo Update Start Nodes";
-                                    }
-
-                                    @Override
-                                    public String getRedoPresentationName() {
-                                        return "Redo Update Start Nodes";
-                                    }
-                                });
-                                UndoAction.getInstance().refreshUndoState();
-                                RedoAction.getInstance().refreshRedoState();
+                                // Phase 6: Update start flag headlessly
+                                targetSuperNode.addStartNode(dataNode);
                             }
                         }
+                        // Phase 6: Add edges directly to the model (headless - no CreateEdgeAction)
                         for (BasicNode node : nodes) {
                             if (cEdges.containsKey(node)) {
                                 for (GuargedEdge edge : cEdges.get(node)) {
-                                    Node source = workSpace.getNode(node.getId());
-                                    Node target = workSpace.getNode(edge.getTargetUnid());
-                                    if (source != null && target != null) {
-                                        new CreateEdgeAction(workSpace, source, target, edge, Edge.TYPE.CEDGE).run();
+                                    // Verify target exists in created nodes
+                                    String targetId = edge.getTargetUnid();
+                                    if (targetId != null && !targetId.isBlank() && createdNodes.containsKey(targetId)) {
+                                        node.addCEdge(edge);
                                     }
                                 }
                             }
                             if (pEdges.containsKey(node)) {
                                 for (RandomEdge edge : pEdges.get(node)) {
-                                    Node source = workSpace.getNode(node.getId());
-                                    Node target = workSpace.getNode(edge.getTargetUnid());
-                                    if (source != null && target != null) {
-                                        new CreateEdgeAction(workSpace, source, target, edge, Edge.TYPE.PEDGE).run();
+                                    String targetId = edge.getTargetUnid();
+                                    if (targetId != null && !targetId.isBlank() && createdNodes.containsKey(targetId)) {
+                                        node.addPEdge(edge);
                                     }
                                 }
                             }
                             if (fEdges.containsKey(node)) {
                                 for (ForkingEdge edge : fEdges.get(node)) {
-                                    Node source = workSpace.getNode(node.getId());
-                                    Node target = workSpace.getNode(edge.getTargetUnid());
-                                    if (source != null && target != null) {
-                                        new CreateEdgeAction(workSpace, source, target, edge, Edge.TYPE.FEDGE).run();
+                                    String targetId = edge.getTargetUnid();
+                                    if (targetId != null && !targetId.isBlank() && createdNodes.containsKey(targetId)) {
+                                        node.addFEdge(edge);
                                     }
                                 }
                             }
                             if (iEdges.containsKey(node)) {
                                 for (InterruptEdge edge : iEdges.get(node)) {
-                                    Node source = workSpace.getNode(node.getId());
-                                    Node target = workSpace.getNode(edge.getTargetUnid());
-                                    if (source != null && target != null) {
-                                        new CreateEdgeAction(workSpace, source, target, edge, Edge.TYPE.IEDGE).run();
+                                    String targetId = edge.getTargetUnid();
+                                    if (targetId != null && !targetId.isBlank() && createdNodes.containsKey(targetId)) {
+                                        node.addIEdge(edge);
                                     }
                                 }
                             }
                             if (defaultEdges.containsKey(node)) {
                                 AbstractEdge edge = defaultEdges.get(node);
-                                Node source = workSpace.getNode(node.getId());
-                                Node target = edge != null ? workSpace.getNode(edge.getTargetUnid()) : null;
-                                if (source != null && target != null && edge != null) {
-                                    Edge.TYPE edgeType = edge instanceof TimeoutEdge ? Edge.TYPE.TEDGE : Edge.TYPE.EEDGE;
-                                    new CreateEdgeAction(workSpace, source, target, edge, edgeType).run();
+                                if (edge != null) {
+                                    String targetId = edge.getTargetUnid();
+                                    if (targetId != null && !targetId.isBlank() && createdNodes.containsKey(targetId)) {
+                                        node.setDedge(edge);
+                                    }
                                 }
                             }
                         }
                         JSONObject payloadResp = new JSONObject();
                         payloadResp.put("nodeIds", newNodeIds);
-                        payloadResp.put("snapshot", sceneFlowSnapshot(editor, manager.getCurrentActiveSuperNode()));
-                        appendDirty(editor, payloadResp);
+                        payloadResp.put("snapshot", sceneFlowSnapshot(project, projectId, targetSuperNode));
+                        payloadResp.put("dirty", project.hasChanged());
                         return payloadResp;
                     });
                     if (response == null) {
@@ -2429,6 +2899,7 @@ public final class WebUiServer implements UiEventListener {
                 // Phase 6: Headless version of SceneFlow.Node.TypeDef.Add
                 case "SceneFlow.Node.TypeDef.Add": {
                     String projectId = body.optString("projectId", null);
+                    String superNodeId = body.optString("superNodeId", null);
                     String nodeId = body.optString("nodeId", "");
                     JSONObject typeDefJson = body.optJSONObject("typeDef");
                     int index = body.has("index") ? body.optInt("index", -1) : -1;
@@ -2436,6 +2907,7 @@ public final class WebUiServer implements UiEventListener {
                         sendError(ctx, requestId, "BAD_REQUEST", "Missing projectId, nodeId, or typeDef");
                         return;
                     }
+                    final String resolvedSuperNodeId = superNodeId;
                     JSONObject response = callOnEdt(() -> {
                         EditorProject project = mEditorProjectService.getProject(projectId);
                         if (project == null) {
@@ -2455,7 +2927,8 @@ public final class WebUiServer implements UiEventListener {
                         int insertIndex = index < 0 || index > list.size() ? list.size() : index;
                         list.add(insertIndex, typeDef);
                         JSONObject payloadResp = new JSONObject();
-                        payloadResp.put("snapshot", sceneFlowSnapshot(project, projectId, sceneFlow));
+                        SuperNode snapshotTarget = resolveSnapshotTarget(sceneFlow, resolvedSuperNodeId);
+                        payloadResp.put("snapshot", sceneFlowSnapshot(project, projectId, snapshotTarget));
                         payloadResp.put("dirty", project.hasChanged());
                         return payloadResp;
                     });
@@ -2473,8 +2946,10 @@ public final class WebUiServer implements UiEventListener {
                     }
                     return;
                 }
+                // Phase 6: Headless version of SceneFlow.Node.TypeDef.Update
                 case "SceneFlow.Node.TypeDef.Update": {
                     String projectId = body.optString("projectId", null);
+                    String superNodeId = body.optString("superNodeId", null);
                     String nodeId = body.optString("nodeId", "");
                     JSONObject typeDefJson = body.optJSONObject("typeDef");
                     int index = body.optInt("index", -1);
@@ -2483,15 +2958,14 @@ public final class WebUiServer implements UiEventListener {
                         sendError(ctx, requestId, "BAD_REQUEST", "Missing projectId, nodeId, typeDef, or index");
                         return;
                     }
+                    final String resolvedSuperNodeId = superNodeId;
                     JSONObject response = callOnEdt(() -> {
-                        EditorInstance instance = EditorInstance.getInstance();
-                        ProjectEditor editor = findProjectEditorById(projectId, instance);
-                        if (editor == null) {
+                        EditorProject project = mEditorProjectService.getProject(projectId);
+                        if (project == null) {
                             return null;
                         }
-                        SceneFlowManager manager = editor.getSceneFlowEditor().getSceneFlowManager();
-                        SuperNode active = manager.getCurrentActiveSuperNode();
-                        BasicNode dataNode = resolveNodeForDefinitions(active, nodeId);
+                        SceneFlow sceneFlow = project.getSceneFlow();
+                        BasicNode dataNode = resolveNodeForDefinitions(sceneFlow, nodeId);
                         if (dataNode == null) {
                             return new JSONObject().put("error", "NODE_NOT_FOUND");
                         }
@@ -2504,38 +2978,14 @@ public final class WebUiServer implements UiEventListener {
                         if (typeDef == null) {
                             return new JSONObject().put("error", error.length() > 0 ? error.toString() : "TYPEDEF_INVALID");
                         }
-                        List<DataTypeDefinition> before = copyTypeDefList(list);
+
+                        // Update the type definition in the list
                         list.set(index, typeDef);
-                        List<DataTypeDefinition> after = copyTypeDefList(list);
-                        UndoManager undoManager = editor.getSceneFlowEditor().getUndoManager();
-                        undoManager.addEdit(new AbstractUndoableEdit() {
-                            @Override
-                            public void undo() throws CannotUndoException {
-                                super.undo();
-                                applyTypeDefList(dataNode, before);
-                            }
 
-                            @Override
-                            public void redo() throws CannotRedoException {
-                                super.redo();
-                                applyTypeDefList(dataNode, after);
-                            }
-
-                            @Override
-                            public String getUndoPresentationName() {
-                                return "Undo Update Type Definitions";
-                            }
-
-                            @Override
-                            public String getRedoPresentationName() {
-                                return "Redo Update Type Definitions";
-                            }
-                        });
-                        UndoAction.getInstance().refreshUndoState();
-                        RedoAction.getInstance().refreshRedoState();
                         JSONObject payloadResp = new JSONObject();
-                        payloadResp.put("snapshot", sceneFlowSnapshot(editor, active));
-                        appendDirty(editor, payloadResp);
+                        SuperNode snapshotTarget = resolveSnapshotTarget(sceneFlow, resolvedSuperNodeId);
+                        payloadResp.put("snapshot", sceneFlowSnapshot(project, projectId, snapshotTarget));
+                        payloadResp.put("dirty", project.hasChanged());
                         return payloadResp;
                     });
                     if (response == null) {
@@ -2550,23 +3000,24 @@ public final class WebUiServer implements UiEventListener {
                     broadcastDirtyIfPresent(response, projectId);
                     return;
                 }
+                // Phase 6: Headless version of SceneFlow.Node.TypeDef.Delete
                 case "SceneFlow.Node.TypeDef.Delete": {
                     String projectId = body.optString("projectId", null);
+                    String superNodeId = body.optString("superNodeId", null);
                     String nodeId = body.optString("nodeId", "");
                     int index = body.optInt("index", -1);
                     if (projectId == null || projectId.isBlank() || index < 0) {
                         sendError(ctx, requestId, "BAD_REQUEST", "Missing projectId, nodeId, or index");
                         return;
                     }
+                    final String resolvedSuperNodeId = superNodeId;
                     JSONObject response = callOnEdt(() -> {
-                        EditorInstance instance = EditorInstance.getInstance();
-                        ProjectEditor editor = findProjectEditorById(projectId, instance);
-                        if (editor == null) {
+                        EditorProject project = mEditorProjectService.getProject(projectId);
+                        if (project == null) {
                             return null;
                         }
-                        SceneFlowManager manager = editor.getSceneFlowEditor().getSceneFlowManager();
-                        SuperNode active = manager.getCurrentActiveSuperNode();
-                        BasicNode dataNode = resolveNodeForDefinitions(active, nodeId);
+                        SceneFlow sceneFlow = project.getSceneFlow();
+                        BasicNode dataNode = resolveNodeForDefinitions(sceneFlow, nodeId);
                         if (dataNode == null) {
                             return new JSONObject().put("error", "NODE_NOT_FOUND");
                         }
@@ -2574,38 +3025,14 @@ public final class WebUiServer implements UiEventListener {
                         if (index >= list.size()) {
                             return new JSONObject().put("error", "TYPEDEF_NOT_FOUND");
                         }
-                        List<DataTypeDefinition> before = copyTypeDefList(list);
+
+                        // Remove the type definition from the list
                         list.remove(index);
-                        List<DataTypeDefinition> after = copyTypeDefList(list);
-                        UndoManager undoManager = editor.getSceneFlowEditor().getUndoManager();
-                        undoManager.addEdit(new AbstractUndoableEdit() {
-                            @Override
-                            public void undo() throws CannotUndoException {
-                                super.undo();
-                                applyTypeDefList(dataNode, before);
-                            }
 
-                            @Override
-                            public void redo() throws CannotRedoException {
-                                super.redo();
-                                applyTypeDefList(dataNode, after);
-                            }
-
-                            @Override
-                            public String getUndoPresentationName() {
-                                return "Undo Update Type Definitions";
-                            }
-
-                            @Override
-                            public String getRedoPresentationName() {
-                                return "Redo Update Type Definitions";
-                            }
-                        });
-                        UndoAction.getInstance().refreshUndoState();
-                        RedoAction.getInstance().refreshRedoState();
                         JSONObject payloadResp = new JSONObject();
-                        payloadResp.put("snapshot", sceneFlowSnapshot(editor, active));
-                        appendDirty(editor, payloadResp);
+                        SuperNode snapshotTarget = resolveSnapshotTarget(sceneFlow, resolvedSuperNodeId);
+                        payloadResp.put("snapshot", sceneFlowSnapshot(project, projectId, snapshotTarget));
+                        payloadResp.put("dirty", project.hasChanged());
                         return payloadResp;
                     });
                     if (response == null) {
@@ -2613,15 +3040,17 @@ public final class WebUiServer implements UiEventListener {
                         return;
                     }
                     if (response.has("error")) {
-                        sendError(ctx, requestId, response.getString("error"), "Type definition update failed");
+                        sendError(ctx, requestId, response.getString("error"), "Type definition delete failed");
                         return;
                     }
                     sendResponse(ctx, requestId, name, response);
                     broadcastDirtyIfPresent(response, projectId);
                     return;
                 }
+                // Phase 6: Headless version of SceneFlow.Node.TypeDef.Move
                 case "SceneFlow.Node.TypeDef.Move": {
                     String projectId = body.optString("projectId", null);
+                    String superNodeId = body.optString("superNodeId", null);
                     String nodeId = body.optString("nodeId", "");
                     int from = body.optInt("from", -1);
                     int to = body.optInt("to", -1);
@@ -2630,15 +3059,14 @@ public final class WebUiServer implements UiEventListener {
                         sendError(ctx, requestId, "BAD_REQUEST", "Missing projectId, nodeId, or indices");
                         return;
                     }
+                    final String resolvedSuperNodeId = superNodeId;
                     JSONObject response = callOnEdt(() -> {
-                        EditorInstance instance = EditorInstance.getInstance();
-                        ProjectEditor editor = findProjectEditorById(projectId, instance);
-                        if (editor == null) {
+                        EditorProject project = mEditorProjectService.getProject(projectId);
+                        if (project == null) {
                             return null;
                         }
-                        SceneFlowManager manager = editor.getSceneFlowEditor().getSceneFlowManager();
-                        SuperNode active = manager.getCurrentActiveSuperNode();
-                        BasicNode dataNode = resolveNodeForDefinitions(active, nodeId);
+                        SceneFlow sceneFlow = project.getSceneFlow();
+                        BasicNode dataNode = resolveNodeForDefinitions(sceneFlow, nodeId);
                         if (dataNode == null) {
                             return new JSONObject().put("error", "NODE_NOT_FOUND");
                         }
@@ -2646,45 +3074,21 @@ public final class WebUiServer implements UiEventListener {
                         if (from >= list.size() || to >= list.size()) {
                             return new JSONObject().put("error", "TYPEDEF_NOT_FOUND");
                         }
+                        SuperNode snapshotTarget = resolveSnapshotTarget(sceneFlow, resolvedSuperNodeId);
                         if (from == to) {
                             JSONObject payloadResp = new JSONObject();
-                            payloadResp.put("snapshot", sceneFlowSnapshot(editor, active));
-                            appendDirty(editor, payloadResp);
+                            payloadResp.put("snapshot", sceneFlowSnapshot(project, projectId, snapshotTarget));
+                            payloadResp.put("dirty", project.hasChanged());
                             return payloadResp;
                         }
-                        List<DataTypeDefinition> before = copyTypeDefList(list);
+
+                        // Move the entry from 'from' index to 'to' index
                         DataTypeDefinition entry = list.remove(from);
                         list.add(to, entry);
-                        List<DataTypeDefinition> after = copyTypeDefList(list);
-                        UndoManager undoManager = editor.getSceneFlowEditor().getUndoManager();
-                        undoManager.addEdit(new AbstractUndoableEdit() {
-                            @Override
-                            public void undo() throws CannotUndoException {
-                                super.undo();
-                                applyTypeDefList(dataNode, before);
-                            }
 
-                            @Override
-                            public void redo() throws CannotRedoException {
-                                super.redo();
-                                applyTypeDefList(dataNode, after);
-                            }
-
-                            @Override
-                            public String getUndoPresentationName() {
-                                return "Undo Update Type Definitions";
-                            }
-
-                            @Override
-                            public String getRedoPresentationName() {
-                                return "Redo Update Type Definitions";
-                            }
-                        });
-                        UndoAction.getInstance().refreshUndoState();
-                        RedoAction.getInstance().refreshRedoState();
                         JSONObject payloadResp = new JSONObject();
-                        payloadResp.put("snapshot", sceneFlowSnapshot(editor, active));
-                        appendDirty(editor, payloadResp);
+                        payloadResp.put("snapshot", sceneFlowSnapshot(project, projectId, snapshotTarget));
+                        payloadResp.put("dirty", project.hasChanged());
                         return payloadResp;
                     });
                     if (response == null) {
@@ -2692,7 +3096,7 @@ public final class WebUiServer implements UiEventListener {
                         return;
                     }
                     if (response.has("error")) {
-                        sendError(ctx, requestId, response.getString("error"), "Type definition update failed");
+                        sendError(ctx, requestId, response.getString("error"), "Type definition move failed");
                         return;
                     }
                     sendResponse(ctx, requestId, name, response);
@@ -2702,6 +3106,7 @@ public final class WebUiServer implements UiEventListener {
                 // Phase 6: Headless version of SceneFlow.Node.VarDef.Add
                 case "SceneFlow.Node.VarDef.Add": {
                     String projectId = body.optString("projectId", null);
+                    String superNodeId = body.optString("superNodeId", null);
                     String nodeId = body.optString("nodeId", "");
                     JSONObject varDefJson = body.optJSONObject("varDef");
                     int index = body.has("index") ? body.optInt("index", -1) : -1;
@@ -2709,6 +3114,7 @@ public final class WebUiServer implements UiEventListener {
                         sendError(ctx, requestId, "BAD_REQUEST", "Missing projectId, nodeId, or varDef");
                         return;
                     }
+                    final String resolvedSuperNodeId = superNodeId;
                     JSONObject response = callOnEdt(() -> {
                         EditorProject project = mEditorProjectService.getProject(projectId);
                         if (project == null) {
@@ -2728,7 +3134,8 @@ public final class WebUiServer implements UiEventListener {
                         int insertIndex = index < 0 || index > list.size() ? list.size() : index;
                         list.add(insertIndex, varDef);
                         JSONObject payloadResp = new JSONObject();
-                        payloadResp.put("snapshot", sceneFlowSnapshot(project, projectId, sceneFlow));
+                        SuperNode snapshotTarget = resolveSnapshotTarget(sceneFlow, resolvedSuperNodeId);
+                        payloadResp.put("snapshot", sceneFlowSnapshot(project, projectId, snapshotTarget));
                         payloadResp.put("dirty", project.hasChanged());
                         return payloadResp;
                     });
@@ -2753,6 +3160,7 @@ public final class WebUiServer implements UiEventListener {
                 // Phase 6: Headless version of SceneFlow.Node.VarDef.Update
                 case "SceneFlow.Node.VarDef.Update": {
                     String projectId = body.optString("projectId", null);
+                    String superNodeId = body.optString("superNodeId", null);
                     String nodeId = body.optString("nodeId", "");
                     JSONObject varDefJson = body.optJSONObject("varDef");
                     int index = body.optInt("index", -1);
@@ -2761,6 +3169,7 @@ public final class WebUiServer implements UiEventListener {
                         sendError(ctx, requestId, "BAD_REQUEST", "Missing projectId, nodeId, varDef, or index");
                         return;
                     }
+                    final String resolvedSuperNodeId = superNodeId;
                     JSONObject response = callOnEdt(() -> {
                         EditorProject project = mEditorProjectService.getProject(projectId);
                         if (project == null) {
@@ -2802,7 +3211,8 @@ public final class WebUiServer implements UiEventListener {
                         }
                         // Note: Undo/redo support removed for headless operation
                         JSONObject payloadResp = new JSONObject();
-                        payloadResp.put("snapshot", sceneFlowSnapshot(project, projectId, sceneFlow));
+                        SuperNode snapshotTarget = resolveSnapshotTarget(sceneFlow, resolvedSuperNodeId);
+                        payloadResp.put("snapshot", sceneFlowSnapshot(project, projectId, snapshotTarget));
                         if (renameSnapshot != null && renameSnapshot.scriptChanged) {
                             payloadResp.put("scriptChanged", true);
                         }
@@ -2830,12 +3240,14 @@ public final class WebUiServer implements UiEventListener {
                 // Phase 6: Headless version of SceneFlow.Node.VarDef.Delete
                 case "SceneFlow.Node.VarDef.Delete": {
                     String projectId = body.optString("projectId", null);
+                    String superNodeId = body.optString("superNodeId", null);
                     String nodeId = body.optString("nodeId", "");
                     int index = body.optInt("index", -1);
                     if (projectId == null || projectId.isBlank() || index < 0) {
                         sendError(ctx, requestId, "BAD_REQUEST", "Missing projectId, nodeId, or index");
                         return;
                     }
+                    final String resolvedSuperNodeId = superNodeId;
                     JSONObject response = callOnEdt(() -> {
                         EditorProject project = mEditorProjectService.getProject(projectId);
                         if (project == null) {
@@ -2852,7 +3264,8 @@ public final class WebUiServer implements UiEventListener {
                         }
                         list.remove(index);
                         JSONObject payloadResp = new JSONObject();
-                        payloadResp.put("snapshot", sceneFlowSnapshot(project, projectId, sceneFlow));
+                        SuperNode snapshotTarget = resolveSnapshotTarget(sceneFlow, resolvedSuperNodeId);
+                        payloadResp.put("snapshot", sceneFlowSnapshot(project, projectId, snapshotTarget));
                         payloadResp.put("dirty", project.hasChanged());
                         return payloadResp;
                     });
@@ -2870,8 +3283,10 @@ public final class WebUiServer implements UiEventListener {
                     }
                     return;
                 }
+                // Phase 6: Headless version of SceneFlow.Node.VarDef.Move
                 case "SceneFlow.Node.VarDef.Move": {
                     String projectId = body.optString("projectId", null);
+                    String superNodeId = body.optString("superNodeId", null);
                     String nodeId = body.optString("nodeId", "");
                     int from = body.optInt("from", -1);
                     int to = body.optInt("to", -1);
@@ -2880,15 +3295,14 @@ public final class WebUiServer implements UiEventListener {
                         sendError(ctx, requestId, "BAD_REQUEST", "Missing projectId, nodeId, or indices");
                         return;
                     }
+                    final String resolvedSuperNodeId = superNodeId;
                     JSONObject response = callOnEdt(() -> {
-                        EditorInstance instance = EditorInstance.getInstance();
-                        ProjectEditor editor = findProjectEditorById(projectId, instance);
-                        if (editor == null) {
+                        EditorProject project = mEditorProjectService.getProject(projectId);
+                        if (project == null) {
                             return null;
                         }
-                        SceneFlowManager manager = editor.getSceneFlowEditor().getSceneFlowManager();
-                        SuperNode active = manager.getCurrentActiveSuperNode();
-                        BasicNode dataNode = resolveNodeForDefinitions(active, nodeId);
+                        SceneFlow sceneFlow = project.getSceneFlow();
+                        BasicNode dataNode = resolveNodeForDefinitions(sceneFlow, nodeId);
                         if (dataNode == null) {
                             return new JSONObject().put("error", "NODE_NOT_FOUND");
                         }
@@ -2896,45 +3310,21 @@ public final class WebUiServer implements UiEventListener {
                         if (from >= list.size() || to >= list.size()) {
                             return new JSONObject().put("error", "VARDEF_NOT_FOUND");
                         }
+                        SuperNode snapshotTarget = resolveSnapshotTarget(sceneFlow, resolvedSuperNodeId);
                         if (from == to) {
                             JSONObject payloadResp = new JSONObject();
-                            payloadResp.put("snapshot", sceneFlowSnapshot(editor, active));
-                            appendDirty(editor, payloadResp);
+                            payloadResp.put("snapshot", sceneFlowSnapshot(project, projectId, snapshotTarget));
+                            payloadResp.put("dirty", project.hasChanged());
                             return payloadResp;
                         }
-                        List<VariableDefinition> before = copyVarDefList(list);
+
+                        // Move the entry from 'from' index to 'to' index
                         VariableDefinition entry = list.remove(from);
                         list.add(to, entry);
-                        List<VariableDefinition> after = copyVarDefList(list);
-                        UndoManager undoManager = editor.getSceneFlowEditor().getUndoManager();
-                        undoManager.addEdit(new AbstractUndoableEdit() {
-                            @Override
-                            public void undo() throws CannotUndoException {
-                                super.undo();
-                                applyVarDefList(dataNode, before);
-                            }
 
-                            @Override
-                            public void redo() throws CannotRedoException {
-                                super.redo();
-                                applyVarDefList(dataNode, after);
-                            }
-
-                            @Override
-                            public String getUndoPresentationName() {
-                                return "Undo Update Variable Definitions";
-                            }
-
-                            @Override
-                            public String getRedoPresentationName() {
-                                return "Redo Update Variable Definitions";
-                            }
-                        });
-                        UndoAction.getInstance().refreshUndoState();
-                        RedoAction.getInstance().refreshRedoState();
                         JSONObject payloadResp = new JSONObject();
-                        payloadResp.put("snapshot", sceneFlowSnapshot(editor, active));
-                        appendDirty(editor, payloadResp);
+                        payloadResp.put("snapshot", sceneFlowSnapshot(project, projectId, snapshotTarget));
+                        payloadResp.put("dirty", project.hasChanged());
                         return payloadResp;
                     });
                     if (response == null) {
@@ -2942,7 +3332,7 @@ public final class WebUiServer implements UiEventListener {
                         return;
                     }
                     if (response.has("error")) {
-                        sendError(ctx, requestId, response.getString("error"), "Variable definition update failed");
+                        sendError(ctx, requestId, response.getString("error"), "Variable definition move failed");
                         return;
                     }
                     sendResponse(ctx, requestId, name, response);
@@ -2952,6 +3342,7 @@ public final class WebUiServer implements UiEventListener {
                 // Phase 6: Headless version of SceneFlow.Node.Cmd.Add
                 case "SceneFlow.Node.Cmd.Add": {
                     String projectId = body.optString("projectId", null);
+                    String superNodeId = body.optString("superNodeId", null);
                     String nodeId = body.optString("nodeId", "");
                     JSONObject commandJson = body.optJSONObject("command");
                     int index = body.has("index") ? body.optInt("index", -1) : -1;
@@ -2959,6 +3350,7 @@ public final class WebUiServer implements UiEventListener {
                         sendError(ctx, requestId, "BAD_REQUEST", "Missing projectId, nodeId, or command");
                         return;
                     }
+                    final String resolvedSuperNodeId = superNodeId;
                     JSONObject response = callOnEdt(() -> {
                         EditorProject project = mEditorProjectService.getProject(projectId);
                         if (project == null) {
@@ -2978,7 +3370,8 @@ public final class WebUiServer implements UiEventListener {
                         int insertIndex = index < 0 || index > list.size() ? list.size() : index;
                         list.add(insertIndex, command);
                         JSONObject payloadResp = new JSONObject();
-                        payloadResp.put("snapshot", sceneFlowSnapshot(project, projectId, sceneFlow));
+                        SuperNode snapshotTarget = resolveSnapshotTarget(sceneFlow, resolvedSuperNodeId);
+                        payloadResp.put("snapshot", sceneFlowSnapshot(project, projectId, snapshotTarget));
                         payloadResp.put("dirty", project.hasChanged());
                         return payloadResp;
                     });
@@ -2996,8 +3389,10 @@ public final class WebUiServer implements UiEventListener {
                     }
                     return;
                 }
+                // Phase 6: Headless version of SceneFlow.Node.Cmd.Update
                 case "SceneFlow.Node.Cmd.Update": {
                     String projectId = body.optString("projectId", null);
+                    String superNodeId = body.optString("superNodeId", null);
                     String nodeId = body.optString("nodeId", "");
                     JSONObject commandJson = body.optJSONObject("command");
                     int index = body.optInt("index", -1);
@@ -3006,15 +3401,14 @@ public final class WebUiServer implements UiEventListener {
                         sendError(ctx, requestId, "BAD_REQUEST", "Missing projectId, nodeId, command, or index");
                         return;
                     }
+                    final String resolvedSuperNodeId = superNodeId;
                     JSONObject response = callOnEdt(() -> {
-                        EditorInstance instance = EditorInstance.getInstance();
-                        ProjectEditor editor = findProjectEditorById(projectId, instance);
-                        if (editor == null) {
+                        EditorProject project = mEditorProjectService.getProject(projectId);
+                        if (project == null) {
                             return null;
                         }
-                        SceneFlowManager manager = editor.getSceneFlowEditor().getSceneFlowManager();
-                        SuperNode active = manager.getCurrentActiveSuperNode();
-                        BasicNode dataNode = resolveNodeForDefinitions(active, nodeId);
+                        SceneFlow sceneFlow = project.getSceneFlow();
+                        BasicNode dataNode = resolveNodeForDefinitions(sceneFlow, nodeId);
                         if (dataNode == null) {
                             return new JSONObject().put("error", "NODE_NOT_FOUND");
                         }
@@ -3027,38 +3421,14 @@ public final class WebUiServer implements UiEventListener {
                         if (command == null) {
                             return new JSONObject().put("error", error.length() > 0 ? error.toString() : "COMMAND_INVALID");
                         }
-                        List<Command> before = copyCommandList(list);
+
+                        // Update the command in the list
                         list.set(index, command);
-                        List<Command> after = copyCommandList(list);
-                        UndoManager undoManager = editor.getSceneFlowEditor().getUndoManager();
-                        undoManager.addEdit(new AbstractUndoableEdit() {
-                            @Override
-                            public void undo() throws CannotUndoException {
-                                super.undo();
-                                applyCommandList(dataNode, before);
-                            }
 
-                            @Override
-                            public void redo() throws CannotRedoException {
-                                super.redo();
-                                applyCommandList(dataNode, after);
-                            }
-
-                            @Override
-                            public String getUndoPresentationName() {
-                                return "Undo Update Commands";
-                            }
-
-                            @Override
-                            public String getRedoPresentationName() {
-                                return "Redo Update Commands";
-                            }
-                        });
-                        UndoAction.getInstance().refreshUndoState();
-                        RedoAction.getInstance().refreshRedoState();
                         JSONObject payloadResp = new JSONObject();
-                        payloadResp.put("snapshot", sceneFlowSnapshot(editor, active));
-                        appendDirty(editor, payloadResp);
+                        SuperNode snapshotTarget = resolveSnapshotTarget(sceneFlow, resolvedSuperNodeId);
+                        payloadResp.put("snapshot", sceneFlowSnapshot(project, projectId, snapshotTarget));
+                        payloadResp.put("dirty", project.hasChanged());
                         return payloadResp;
                     });
                     if (response == null) {
@@ -3073,23 +3443,24 @@ public final class WebUiServer implements UiEventListener {
                     broadcastDirtyIfPresent(response, projectId);
                     return;
                 }
+                // Phase 6: Headless version of SceneFlow.Node.Cmd.Delete
                 case "SceneFlow.Node.Cmd.Delete": {
                     String projectId = body.optString("projectId", null);
+                    String superNodeId = body.optString("superNodeId", null);
                     String nodeId = body.optString("nodeId", "");
                     int index = body.optInt("index", -1);
                     if (projectId == null || projectId.isBlank() || index < 0) {
                         sendError(ctx, requestId, "BAD_REQUEST", "Missing projectId, nodeId, or index");
                         return;
                     }
+                    final String resolvedSuperNodeId = superNodeId;
                     JSONObject response = callOnEdt(() -> {
-                        EditorInstance instance = EditorInstance.getInstance();
-                        ProjectEditor editor = findProjectEditorById(projectId, instance);
-                        if (editor == null) {
+                        EditorProject project = mEditorProjectService.getProject(projectId);
+                        if (project == null) {
                             return null;
                         }
-                        SceneFlowManager manager = editor.getSceneFlowEditor().getSceneFlowManager();
-                        SuperNode active = manager.getCurrentActiveSuperNode();
-                        BasicNode dataNode = resolveNodeForDefinitions(active, nodeId);
+                        SceneFlow sceneFlow = project.getSceneFlow();
+                        BasicNode dataNode = resolveNodeForDefinitions(sceneFlow, nodeId);
                         if (dataNode == null) {
                             return new JSONObject().put("error", "NODE_NOT_FOUND");
                         }
@@ -3097,38 +3468,14 @@ public final class WebUiServer implements UiEventListener {
                         if (index >= list.size()) {
                             return new JSONObject().put("error", "COMMAND_NOT_FOUND");
                         }
-                        List<Command> before = copyCommandList(list);
+
+                        // Remove the command from the list
                         list.remove(index);
-                        List<Command> after = copyCommandList(list);
-                        UndoManager undoManager = editor.getSceneFlowEditor().getUndoManager();
-                        undoManager.addEdit(new AbstractUndoableEdit() {
-                            @Override
-                            public void undo() throws CannotUndoException {
-                                super.undo();
-                                applyCommandList(dataNode, before);
-                            }
 
-                            @Override
-                            public void redo() throws CannotRedoException {
-                                super.redo();
-                                applyCommandList(dataNode, after);
-                            }
-
-                            @Override
-                            public String getUndoPresentationName() {
-                                return "Undo Update Commands";
-                            }
-
-                            @Override
-                            public String getRedoPresentationName() {
-                                return "Redo Update Commands";
-                            }
-                        });
-                        UndoAction.getInstance().refreshUndoState();
-                        RedoAction.getInstance().refreshRedoState();
                         JSONObject payloadResp = new JSONObject();
-                        payloadResp.put("snapshot", sceneFlowSnapshot(editor, active));
-                        appendDirty(editor, payloadResp);
+                        SuperNode snapshotTarget = resolveSnapshotTarget(sceneFlow, resolvedSuperNodeId);
+                        payloadResp.put("snapshot", sceneFlowSnapshot(project, projectId, snapshotTarget));
+                        payloadResp.put("dirty", project.hasChanged());
                         return payloadResp;
                     });
                     if (response == null) {
@@ -3136,15 +3483,17 @@ public final class WebUiServer implements UiEventListener {
                         return;
                     }
                     if (response.has("error")) {
-                        sendError(ctx, requestId, response.getString("error"), "Command update failed");
+                        sendError(ctx, requestId, response.getString("error"), "Command delete failed");
                         return;
                     }
                     sendResponse(ctx, requestId, name, response);
                     broadcastDirtyIfPresent(response, projectId);
                     return;
                 }
+                // Phase 6: Headless version of SceneFlow.Node.Cmd.Move
                 case "SceneFlow.Node.Cmd.Move": {
                     String projectId = body.optString("projectId", null);
+                    String superNodeId = body.optString("superNodeId", null);
                     String nodeId = body.optString("nodeId", "");
                     int from = body.optInt("from", -1);
                     int to = body.optInt("to", -1);
@@ -3153,15 +3502,14 @@ public final class WebUiServer implements UiEventListener {
                         sendError(ctx, requestId, "BAD_REQUEST", "Missing projectId, nodeId, or indices");
                         return;
                     }
+                    final String resolvedSuperNodeId = superNodeId;
                     JSONObject response = callOnEdt(() -> {
-                        EditorInstance instance = EditorInstance.getInstance();
-                        ProjectEditor editor = findProjectEditorById(projectId, instance);
-                        if (editor == null) {
+                        EditorProject project = mEditorProjectService.getProject(projectId);
+                        if (project == null) {
                             return null;
                         }
-                        SceneFlowManager manager = editor.getSceneFlowEditor().getSceneFlowManager();
-                        SuperNode active = manager.getCurrentActiveSuperNode();
-                        BasicNode dataNode = resolveNodeForDefinitions(active, nodeId);
+                        SceneFlow sceneFlow = project.getSceneFlow();
+                        BasicNode dataNode = resolveNodeForDefinitions(sceneFlow, nodeId);
                         if (dataNode == null) {
                             return new JSONObject().put("error", "NODE_NOT_FOUND");
                         }
@@ -3169,45 +3517,21 @@ public final class WebUiServer implements UiEventListener {
                         if (from >= list.size() || to >= list.size()) {
                             return new JSONObject().put("error", "COMMAND_NOT_FOUND");
                         }
+                        SuperNode snapshotTarget = resolveSnapshotTarget(sceneFlow, resolvedSuperNodeId);
                         if (from == to) {
                             JSONObject payloadResp = new JSONObject();
-                            payloadResp.put("snapshot", sceneFlowSnapshot(editor, active));
-                            appendDirty(editor, payloadResp);
+                            payloadResp.put("snapshot", sceneFlowSnapshot(project, projectId, snapshotTarget));
+                            payloadResp.put("dirty", project.hasChanged());
                             return payloadResp;
                         }
-                        List<Command> before = copyCommandList(list);
+
+                        // Move the entry from 'from' index to 'to' index
                         Command entry = list.remove(from);
                         list.add(to, entry);
-                        List<Command> after = copyCommandList(list);
-                        UndoManager undoManager = editor.getSceneFlowEditor().getUndoManager();
-                        undoManager.addEdit(new AbstractUndoableEdit() {
-                            @Override
-                            public void undo() throws CannotUndoException {
-                                super.undo();
-                                applyCommandList(dataNode, before);
-                            }
 
-                            @Override
-                            public void redo() throws CannotRedoException {
-                                super.redo();
-                                applyCommandList(dataNode, after);
-                            }
-
-                            @Override
-                            public String getUndoPresentationName() {
-                                return "Undo Update Commands";
-                            }
-
-                            @Override
-                            public String getRedoPresentationName() {
-                                return "Redo Update Commands";
-                            }
-                        });
-                        UndoAction.getInstance().refreshUndoState();
-                        RedoAction.getInstance().refreshRedoState();
                         JSONObject payloadResp = new JSONObject();
-                        payloadResp.put("snapshot", sceneFlowSnapshot(editor, active));
-                        appendDirty(editor, payloadResp);
+                        payloadResp.put("snapshot", sceneFlowSnapshot(project, projectId, snapshotTarget));
+                        payloadResp.put("dirty", project.hasChanged());
                         return payloadResp;
                     });
                     if (response == null) {
@@ -3215,64 +3539,62 @@ public final class WebUiServer implements UiEventListener {
                         return;
                     }
                     if (response.has("error")) {
-                        sendError(ctx, requestId, response.getString("error"), "Command update failed");
+                        sendError(ctx, requestId, response.getString("error"), "Command move failed");
                         return;
                     }
                     sendResponse(ctx, requestId, name, response);
                     broadcastDirtyIfPresent(response, projectId);
                     return;
                 }
+                // Phase 6: Headless version of SceneFlow.Comment.Create
                 case "SceneFlow.Comment.Create": {
                     String projectId = body.optString("projectId", null);
+                    String superNodeId = body.optString("superNodeId", null);
                     double x = body.has("x") ? body.optDouble("x", Double.NaN) : Double.NaN;
                     double y = body.has("y") ? body.optDouble("y", Double.NaN) : Double.NaN;
                     int width = body.has("width") ? body.optInt("width", 120) : 120;
                     int height = body.has("height") ? body.optInt("height", 90) : 90;
                     String text = body.optString("text", "");
                     final boolean hasText = text != null && !text.isBlank();
+                    final String finalText = text;
                     if (projectId == null || projectId.isBlank() || !isFinite(x) || !isFinite(y)) {
                         sendError(ctx, requestId, "BAD_REQUEST", "Missing projectId or coordinates");
                         return;
                     }
+                    final String resolvedSuperNodeId = superNodeId;
                     JSONObject response = callOnEdt(() -> {
-                        EditorInstance instance = EditorInstance.getInstance();
-                        ProjectEditor editor = findProjectEditorById(projectId, instance);
-                        if (editor == null) {
+                        EditorProject project = mEditorProjectService.getProject(projectId);
+                        if (project == null) {
                             return null;
                         }
-                        WorkSpacePanel workSpace = editor.getSceneFlowEditor().getWorkSpace();
-                        SceneFlowManager manager = editor.getSceneFlowEditor().getSceneFlowManager();
-                        Point coordinate = new Point((int) Math.round(x), (int) Math.round(y));
-                        coordinate = clampPointToPositive(coordinate);
-                        CreateCommentAction action = new CreateCommentAction(workSpace, coordinate);
-                        action.run();
-                        SuperNode active = manager.getCurrentActiveSuperNode();
-                        List<CommentBadge> list = active.getCommentList();
-                        if (list.isEmpty()) {
-                            return new JSONObject().put("error", "COMMENT_CREATE_FAILED");
-                        }
-                        CommentBadge created = list.get(list.size() - 1);
-                        CommentGraphics graphics = created.getGraphics();
-                        if (graphics == null) {
-                            graphics = new CommentGraphics();
-                            created.setGraphics(graphics);
-                        }
-                        graphics.setRectangle(new CommentBoundary(coordinate.x, coordinate.y, width, height));
-                        Comment guiComment = findCommentComponent(workSpace, created);
-                        if (guiComment != null) {
-                            CommentBoundary rect = graphics.getRectangle();
-                            if (rect != null) {
-                                guiComment.setBounds(rect.getXPos(), rect.getYPos(), rect.getWidth(), rect.getHeight());
-                                guiComment.revalidate();
-                                guiComment.repaint(100);
-                            }
-                        }
+                        SceneFlow sceneFlow = project.getSceneFlow();
+                        // Resolve target SuperNode
+                        SuperNode targetSuperNode = resolveSnapshotTarget(sceneFlow, resolvedSuperNodeId);
+
+                        // Create comment badge directly in the model
+                        CommentBadge badge = new CommentBadge();
+                        int clampedX = clampPositive((int) Math.round(x));
+                        int clampedY = clampPositive((int) Math.round(y));
+
+                        // Set graphics
+                        CommentGraphics graphics = new CommentGraphics();
+                        graphics.setRectangle(new CommentBoundary(clampedX, clampedY, width, height));
+                        badge.setGraphics(graphics);
+
+                        // Set text
                         if (hasText) {
-                            created.setHTMLText(text);
+                            badge.setHTMLText(finalText);
                         }
+
+                        // Add to SuperNode
+                        targetSuperNode.addComment(badge);
+                        // Project dirty state is tracked automatically via hash comparison
+
+                        List<CommentBadge> list = targetSuperNode.getCommentList();
                         JSONObject payloadResp = new JSONObject();
                         payloadResp.put("commentId", "C" + (list.size() - 1));
-                        payloadResp.put("snapshot", sceneFlowSnapshot(editor, active));
+                        payloadResp.put("snapshot", sceneFlowSnapshot(project, projectId, targetSuperNode));
+                        payloadResp.put("dirty", project.hasChanged());
                         return payloadResp;
                     });
                     if (response == null) {
@@ -3284,10 +3606,13 @@ public final class WebUiServer implements UiEventListener {
                         return;
                     }
                     sendResponse(ctx, requestId, name, response);
+                    broadcastDirtyIfPresent(response, projectId);
                     return;
                 }
+                // Phase 6: Headless version of SceneFlow.Comment.Update
                 case "SceneFlow.Comment.Update": {
                     String projectId = body.optString("projectId", null);
+                    String superNodeId = body.optString("superNodeId", null);
                     String commentId = body.optString("commentId", null);
                     double x = body.has("x") ? body.optDouble("x", Double.NaN) : Double.NaN;
                     double y = body.has("y") ? body.optDouble("y", Double.NaN) : Double.NaN;
@@ -3295,95 +3620,49 @@ public final class WebUiServer implements UiEventListener {
                     int height = body.has("height") ? body.optInt("height", -1) : -1;
                     String text = body.has("text") ? body.optString("text", null) : null;
                     final boolean hasText = text != null;
+                    final String finalText = text;
                     if (projectId == null || projectId.isBlank() || commentId == null || commentId.isBlank()
                             || !isFinite(x) || !isFinite(y)) {
                         sendError(ctx, requestId, "BAD_REQUEST", "Missing projectId, commentId, or coordinates");
                         return;
                     }
+                    final String resolvedSuperNodeId = superNodeId;
                     JSONObject response = callOnEdt(() -> {
-                        EditorInstance instance = EditorInstance.getInstance();
-                        ProjectEditor editor = findProjectEditorById(projectId, instance);
-                        if (editor == null) {
+                        EditorProject project = mEditorProjectService.getProject(projectId);
+                        if (project == null) {
                             return null;
                         }
-                        WorkSpacePanel workSpace = editor.getSceneFlowEditor().getWorkSpace();
-                        SceneFlowManager manager = editor.getSceneFlowEditor().getSceneFlowManager();
-                        SuperNode active = manager.getCurrentActiveSuperNode();
-                        CommentBadge badge = resolveCommentById(active, commentId);
+                        SceneFlow sceneFlow = project.getSceneFlow();
+                        SuperNode targetSuperNode = resolveSnapshotTarget(sceneFlow, resolvedSuperNodeId);
+
+                        CommentBadge badge = resolveCommentById(targetSuperNode, commentId);
                         if (badge == null) {
                             return new JSONObject().put("error", "COMMENT_NOT_FOUND");
                         }
+
                         CommentGraphics graphics = badge.getGraphics();
                         if (graphics == null) {
                             graphics = new CommentGraphics();
                             badge.setGraphics(graphics);
                         }
-                        CommentBoundary beforeRect = null;
-                        CommentBoundary currentRect = graphics.getRectangle();
-                        if (currentRect != null) {
-                            beforeRect = currentRect.getCopy();
-                        }
-                        String beforeText = badge.getHTMLText();
+
                         CommentBoundary rect = graphics.getRectangle();
                         int nextWidth = width > 0 ? width : (rect != null ? rect.getWidth() : 100);
                         int nextHeight = height > 0 ? height : (rect != null ? rect.getHeight() : 100);
                         int clampedX = clampPositive((int) Math.round(x));
                         int clampedY = clampPositive((int) Math.round(y));
                         graphics.setRectangle(new CommentBoundary(clampedX, clampedY, nextWidth, nextHeight));
-                        Comment guiComment = findCommentComponent(workSpace, badge);
-                        if (guiComment != null) {
-                            CommentBoundary next = graphics.getRectangle();
-                            if (next != null) {
-                                guiComment.setBounds(next.getXPos(), next.getYPos(), next.getWidth(), next.getHeight());
-                                guiComment.revalidate();
-                                guiComment.repaint(100);
-                            }
-                        }
+
                         if (hasText) {
-                            badge.setHTMLText(text);
+                            badge.setHTMLText(finalText);
                         }
-                        CommentBoundary afterRect = null;
-                        CommentBoundary updatedRect = graphics.getRectangle();
-                        if (updatedRect != null) {
-                            afterRect = updatedRect.getCopy();
-                        }
-                        String afterText = badge.getHTMLText();
-                        if (!commentBoundaryEquals(beforeRect, afterRect) || !Objects.equals(beforeText, afterText)) {
-                            Comment guiCommentFinal = guiComment;
-                            CommentBadge badgeFinal = badge;
-                            WorkSpacePanel workSpaceFinal = workSpace;
-                            CommentBoundary undoRect = beforeRect != null ? beforeRect.getCopy() : null;
-                            CommentBoundary redoRect = afterRect != null ? afterRect.getCopy() : null;
-                            UndoManager undoManager = editor.getSceneFlowEditor().getUndoManager();
-                            undoManager.addEdit(new AbstractUndoableEdit() {
-                                @Override
-                                public void undo() throws CannotUndoException {
-                                    super.undo();
-                                    applyCommentState(badgeFinal, guiCommentFinal, workSpaceFinal, undoRect, beforeText);
-                                }
 
-                                @Override
-                                public void redo() throws CannotRedoException {
-                                    super.redo();
-                                    applyCommentState(badgeFinal, guiCommentFinal, workSpaceFinal, redoRect, afterText);
-                                }
+                        // Project dirty state is tracked automatically via hash comparison
 
-                                @Override
-                                public String getUndoPresentationName() {
-                                    return "Undo Update Comment";
-                                }
-
-                                @Override
-                                public String getRedoPresentationName() {
-                                    return "Redo Update Comment";
-                                }
-                            });
-                            UndoAction.getInstance().refreshUndoState();
-                            RedoAction.getInstance().refreshRedoState();
-                        }
                         JSONObject payloadResp = new JSONObject();
                         payloadResp.put("commentId", commentId);
-                        payloadResp.put("snapshot", sceneFlowSnapshot(editor, active));
+                        payloadResp.put("snapshot", sceneFlowSnapshot(project, projectId, targetSuperNode));
+                        payloadResp.put("dirty", project.hasChanged());
                         return payloadResp;
                     });
                     if (response == null) {
@@ -3395,36 +3674,40 @@ public final class WebUiServer implements UiEventListener {
                         return;
                     }
                     sendResponse(ctx, requestId, name, response);
+                    broadcastDirtyIfPresent(response, projectId);
                     return;
                 }
+                // Phase 6: Headless version of SceneFlow.Comment.Delete
                 case "SceneFlow.Comment.Delete": {
                     String projectId = body.optString("projectId", null);
+                    String superNodeId = body.optString("superNodeId", null);
                     String commentId = body.optString("commentId", null);
                     if (projectId == null || projectId.isBlank() || commentId == null || commentId.isBlank()) {
                         sendError(ctx, requestId, "BAD_REQUEST", "Missing projectId or commentId");
                         return;
                     }
+                    final String resolvedSuperNodeId = superNodeId;
                     JSONObject response = callOnEdt(() -> {
-                        EditorInstance instance = EditorInstance.getInstance();
-                        ProjectEditor editor = findProjectEditorById(projectId, instance);
-                        if (editor == null) {
+                        EditorProject project = mEditorProjectService.getProject(projectId);
+                        if (project == null) {
                             return null;
                         }
-                        WorkSpacePanel workSpace = editor.getSceneFlowEditor().getWorkSpace();
-                        SceneFlowManager manager = editor.getSceneFlowEditor().getSceneFlowManager();
-                        SuperNode active = manager.getCurrentActiveSuperNode();
-                        CommentBadge badge = resolveCommentById(active, commentId);
+                        SceneFlow sceneFlow = project.getSceneFlow();
+                        SuperNode targetSuperNode = resolveSnapshotTarget(sceneFlow, resolvedSuperNodeId);
+
+                        CommentBadge badge = resolveCommentById(targetSuperNode, commentId);
                         if (badge == null) {
                             return new JSONObject().put("error", "COMMENT_NOT_FOUND");
                         }
-                        Comment guiComment = findCommentComponent(workSpace, badge);
-                        if (guiComment == null) {
-                            return new JSONObject().put("error", "COMMENT_NOT_FOUND");
-                        }
-                        new RemoveCommentAction(workSpace, guiComment).run();
+
+                        // Remove comment from SuperNode
+                        targetSuperNode.removeComment(badge);
+                        // Project dirty state is tracked automatically via hash comparison
+
                         JSONObject payloadResp = new JSONObject();
                         payloadResp.put("commentId", commentId);
-                        payloadResp.put("snapshot", sceneFlowSnapshot(editor, active));
+                        payloadResp.put("snapshot", sceneFlowSnapshot(project, projectId, targetSuperNode));
+                        payloadResp.put("dirty", project.hasChanged());
                         return payloadResp;
                     });
                     if (response == null) {
@@ -3436,38 +3719,40 @@ public final class WebUiServer implements UiEventListener {
                         return;
                     }
                     sendResponse(ctx, requestId, name, response);
+                    broadcastDirtyIfPresent(response, projectId);
                     return;
                 }
+                // Phase 6: Headless version of SceneFlow.Edge.Create
                 case "SceneFlow.Edge.Create": {
+                    System.out.println(">>> SceneFlow.Edge.Create handler entered");
                     String projectId = body.optString("projectId", null);
+                    String superNodeId = body.optString("superNodeId", null);
                     String sourceId = body.optString("sourceId", null);
                     String targetId = body.optString("targetId", null);
                     String edgeType = body.optString("edgeType", body.optString("type", "EEDGE"));
+                    System.out.println(">>> Edge.Create: projectId=" + projectId + ", sourceId=" + sourceId + ", targetId=" + targetId + ", edgeType=" + edgeType);
                     if (projectId == null || projectId.isBlank()
                             || sourceId == null || sourceId.isBlank()
                             || targetId == null || targetId.isBlank()) {
                         sendError(ctx, requestId, "BAD_REQUEST", "Missing projectId, sourceId, or targetId");
                         return;
                     }
+                    final String resolvedSuperNodeId = superNodeId;
                     Edge.TYPE resolvedType = parseEdgeCreateType(edgeType);
                     if (resolvedType == null) {
                         sendError(ctx, requestId, "EDGE_NOT_ALLOWED", "Unsupported edge type");
                         return;
                     }
                     JSONObject response = callOnEdt(() -> {
-                        EditorInstance instance = EditorInstance.getInstance();
-                        ProjectEditor editor = findProjectEditorById(projectId, instance);
-                        if (editor == null) {
+                        EditorProject project = mEditorProjectService.getProject(projectId);
+                        if (project == null) {
                             return null;
                         }
-                        WorkSpacePanel workSpace = editor.getSceneFlowEditor().getWorkSpace();
-                        Node sourceNode = workSpace.getNode(sourceId);
-                        Node targetNode = workSpace.getNode(targetId);
+                        SceneFlow sceneFlow = project.getSceneFlow();
+                        BasicNode sourceNode = findNodeRecursive(sceneFlow, sourceId);
+                        BasicNode targetNode = findNodeRecursive(sceneFlow, targetId);
                         if (sourceNode == null || targetNode == null) {
                             return new JSONObject().put("error", "NODE_NOT_FOUND");
-                        }
-                        if (!sourceNode.isEdgeAllowed(resolvedType)) {
-                            return new JSONObject().put("error", "EDGE_NOT_ALLOWED");
                         }
                         AbstractEdge dataEdge = null;
                         switch (resolvedType) {
@@ -3482,7 +3767,6 @@ public final class WebUiServer implements UiEventListener {
                                 try {
                                     tedge.setTimeout(1000);
                                 } catch (NumberFormatException ignored) {
-                                    // Keep default timeout if parsing fails.
                                 }
                                 dataEdge = tedge;
                                 break;
@@ -3501,14 +3785,11 @@ public final class WebUiServer implements UiEventListener {
                             }
                             case PEDGE: {
                                 RandomEdge pedge = new RandomEdge();
-                                BasicNode sourceData = sourceNode.getDataNode();
-                                if (sourceData != null) {
-                                    int sum = sumProbabilities(sourceData, null);
-                                    int remaining = Math.max(0, 100 - sum);
-                                    int defaultProb = sourceData.getPEdgeList().isEmpty() ? 100 : 50;
-                                    int desired = remaining > 0 ? Math.min(defaultProb, remaining) : 0;
-                                    pedge.setProbability(desired);
-                                }
+                                int sum = sumProbabilities(sourceNode, null);
+                                int remaining = Math.max(0, 100 - sum);
+                                int defaultProb = sourceNode.getPEdgeList().isEmpty() ? 100 : 50;
+                                int desired = remaining > 0 ? Math.min(defaultProb, remaining) : 0;
+                                pedge.setProbability(desired);
                                 dataEdge = pedge;
                                 break;
                             }
@@ -3518,9 +3799,152 @@ public final class WebUiServer implements UiEventListener {
                         if (dataEdge == null) {
                             return new JSONObject().put("error", "EDGE_NOT_ALLOWED");
                         }
-                        new CreateEdgeAction(workSpace, sourceNode, targetNode, dataEdge, resolvedType).run();
+                        // Set source and target nodes (both references and string IDs)
+                        dataEdge.setSourceNode(sourceNode);
+                        dataEdge.setTargetNode(targetNode);
+                        dataEdge.setSourceUnid(sourceNode.getId());
+                        dataEdge.setTargetUnid(targetNode.getId());
+
+                        // Phase 6: Initialize edge graphics with dock points and bezier control points
+                        EdgeGraphics edgeGraphics = new EdgeGraphics();
+                        EdgeArrow arrow = new EdgeArrow();
+                        ArrayList<EdgePoint> points = new ArrayList<>();
+
+                        // Get node positions and sizes
+                        NodeGraphics sourceGraphics = sourceNode.getGraphics();
+                        NodeGraphics targetGraphics = targetNode.getGraphics();
+                        NodePosition srcPos = sourceGraphics != null ? sourceGraphics.getPosition() : null;
+                        NodePosition tgtPos = targetGraphics != null ? targetGraphics.getPosition() : null;
+                        double srcX = srcPos != null ? srcPos.getXPos() : 0;
+                        double srcY = srcPos != null ? srcPos.getYPos() : 0;
+                        double tgtX = tgtPos != null ? tgtPos.getXPos() : 100;
+                        double tgtY = tgtPos != null ? tgtPos.getYPos() : 0;
+
+                        // Get node sizes from EditorConfig
+                        EditorConfig config = project.getEditorConfig();
+                        int nodeWidth = config != null ? config.sNODEWIDTH : 90;
+                        int nodeHeight = config != null ? config.sNODEHEIGHT : 90;
+                        boolean srcIsSuperNode = sourceNode instanceof SuperNode;
+                        boolean tgtIsSuperNode = targetNode instanceof SuperNode;
+
+                        // Find best dock point pair - use special selection for self-loops
+                        int[] dockPair;
+                        boolean isSelfLoop = isSelfLoopEdge(sourceNode.getId(), targetNode.getId());
+                        System.out.println(">>> Edge.Create isSelfLoop=" + isSelfLoop + " (source=" + sourceNode.getId() + ", target=" + targetNode.getId() + ")");
+
+                        if (isSelfLoop) {
+                            // Self-loop: use upper-half dock points for a nice upward loop
+                            dockPair = findSelfLoopDockPointPair(sourceNode.getId(), nodeWidth, nodeHeight, srcIsSuperNode);
+                            System.out.println(">>> Self-loop dock pair: [" + dockPair[0] + ", " + dockPair[1] + "]");
+                        } else {
+                            // Normal edge: minimize edge length
+                            dockPair = findBestDockPointPair(
+                                sourceNode.getId(), srcX, srcY, nodeWidth, nodeHeight, srcIsSuperNode,
+                                targetNode.getId(), tgtX, tgtY, nodeWidth, nodeHeight, tgtIsSuperNode
+                            );
+                        }
+                        int srcDockIdx = dockPair[0];
+                        int tgtDockIdx = dockPair[1];
+
+                        // Mark dock points as occupied (source=outgoing, target=incoming)
+                        occupyDockPoint(sourceNode.getId(), srcDockIdx, true);
+                        occupyDockPoint(targetNode.getId(), tgtDockIdx, false);
+
+                        // Get absolute dock positions
+                        double[] srcDock = getDockPointPosition(srcX, srcY, nodeWidth, nodeHeight, srcIsSuperNode, srcDockIdx);
+                        double[] tgtDock = getDockPointPosition(tgtX, tgtY, nodeWidth, nodeHeight, tgtIsSuperNode, tgtDockIdx);
+
+                        // Compute bezier control points (special handling for self-loops)
+                        double[] srcCtrl;
+                        double[] tgtCtrl;
+                        if (isSelfLoopEdge(sourceNode.getId(), targetNode.getId())) {
+                            // Self-loop: use special control points that curve outward
+                            double nodeCenterX = srcX + nodeWidth / 2.0;
+                            double nodeCenterY = srcY + nodeHeight / 2.0;
+                            double[] loopCtrl = computeSelfLoopControlPoints(
+                                srcDock[0], srcDock[1], tgtDock[0], tgtDock[1],
+                                nodeCenterX, nodeCenterY, nodeWidth, nodeHeight
+                            );
+                            srcCtrl = new double[] { loopCtrl[0], loopCtrl[1] };
+                            tgtCtrl = new double[] { loopCtrl[2], loopCtrl[3] };
+                        } else {
+                            // Normal edge: use standard control points
+                            srcCtrl = computeInitialControlPoint(srcDock[0], srcDock[1], tgtDock[0], tgtDock[1], true);
+                            tgtCtrl = computeInitialControlPoint(srcDock[0], srcDock[1], tgtDock[0], tgtDock[1], false);
+                        }
+
+                        // Create start point with bezier control
+                        // EdgePoint constructor: (xPos, ctrlXPos, yPos, ctrlYPos)
+                        EdgePoint startPoint = new EdgePoint(
+                            (int) Math.round(srcDock[0]), (int) Math.round(srcCtrl[0]),
+                            (int) Math.round(srcDock[1]), (int) Math.round(srcCtrl[1])
+                        );
+                        points.add(startPoint);
+
+                        // Create end point with bezier control
+                        // EdgePoint constructor: (xPos, ctrlXPos, yPos, ctrlYPos)
+                        EdgePoint endPoint = new EdgePoint(
+                            (int) Math.round(tgtDock[0]), (int) Math.round(tgtCtrl[0]),
+                            (int) Math.round(tgtDock[1]), (int) Math.round(tgtCtrl[1])
+                        );
+                        points.add(endPoint);
+
+                        if (isSelfLoop) {
+                            double nodeCenterX = srcX + nodeWidth / 2.0;
+                            double nodeCenterY = srcY + nodeHeight / 2.0;
+                            System.out.println(">>> Self-loop node: pos=(" + (int)srcX + "," + (int)srcY + ") size=" + nodeWidth + "x" + nodeHeight + " center=(" + (int)nodeCenterX + "," + (int)nodeCenterY + ")");
+                            System.out.println(">>> Self-loop points: start=(" + startPoint.getXPos() + "," + startPoint.getYPos() +
+                                ") startCtrl=(" + startPoint.getCtrlXPos() + "," + startPoint.getCtrlYPos() +
+                                ") end=(" + endPoint.getXPos() + "," + endPoint.getYPos() +
+                                ") endCtrl=(" + endPoint.getCtrlXPos() + "," + endPoint.getCtrlYPos() + ")");
+                        }
+
+                        arrow.setPointList(points);
+                        edgeGraphics.setConnection(arrow);
+                        dataEdge.setGraphics(edgeGraphics);
+
+                        // Add edge to source node based on type
+                        switch (resolvedType) {
+                            case CEDGE:
+                                sourceNode.addCEdge((GuargedEdge) dataEdge);
+                                break;
+                            case EEDGE:
+                            case TEDGE:
+                                // TimeoutEdge and EpsilonEdge use the D-edge (default edge)
+                                sourceNode.setDedge(dataEdge);
+                                break;
+                            case FEDGE:
+                                sourceNode.addFEdge((ForkingEdge) dataEdge);
+                                break;
+                            case IEDGE:
+                                sourceNode.addIEdge((InterruptEdge) dataEdge);
+                                break;
+                            case PEDGE:
+                                sourceNode.addPEdge((RandomEdge) dataEdge);
+                                break;
+                        }
+
+                        // Compute edge ID by finding its position in the snapshot
+                        String newEdgeId = null;
+                        int edgeIdx = 0;
+                        SuperNode snapshotTarget = resolveSnapshotTarget(sceneFlow, resolvedSuperNodeId);
+                        for (BasicNode node : snapshotTarget.getNodeAndSuperNodeList()) {
+                            for (AbstractEdge edge : node.getEdgeList()) {
+                                if (edge == dataEdge) {
+                                    newEdgeId = "E" + edgeIdx;
+                                    break;
+                                }
+                                edgeIdx++;
+                            }
+                            if (newEdgeId != null) break;
+                        }
+
                         JSONObject payloadResp = new JSONObject();
-                        payloadResp.put("snapshot", sceneFlowSnapshot(editor, editor.getSceneFlowEditor().getSceneFlowManager().getCurrentActiveSuperNode()));
+                        if (newEdgeId != null) {
+                            payloadResp.put("edgeId", newEdgeId);
+                        }
+                        payloadResp.put("snapshot", sceneFlowSnapshot(project, projectId, snapshotTarget));
+                        payloadResp.put("dirty", project.hasChanged());
                         return payloadResp;
                     });
                     if (response == null) {
@@ -3533,10 +3957,15 @@ public final class WebUiServer implements UiEventListener {
                         return;
                     }
                     sendResponse(ctx, requestId, name, response);
+                    if (response.has("dirty")) {
+                        emitUiProjectDirty(projectId, response.getBoolean("dirty"), List.of("sceneflow"));
+                    }
                     return;
                 }
+                // Phase 6: Headless version of SceneFlow.Edge.Update
                 case "SceneFlow.Edge.Update": {
                     String projectId = body.optString("projectId", null);
+                    String superNodeId = body.optString("superNodeId", null);
                     String edgeId = body.optString("edgeId", null);
                     String sourceId = body.optString("sourceId", null);
                     String targetId = body.optString("targetId", null);
@@ -3548,93 +3977,34 @@ public final class WebUiServer implements UiEventListener {
                         return;
                     }
                     final JSONObject sourcePayload = fields == null ? body : fields;
+                    final String resolvedSuperNodeId = superNodeId;
                     JSONObject response = callOnEdt(() -> {
-                        EditorInstance instance = EditorInstance.getInstance();
-                        ProjectEditor editor = findProjectEditorById(projectId, instance);
-                        if (editor == null) {
+                        EditorProject project = mEditorProjectService.getProject(projectId);
+                        if (project == null) {
                             return null;
                         }
-                        WorkSpacePanel workSpace = editor.getSceneFlowEditor().getWorkSpace();
-                        SceneFlowManager manager = editor.getSceneFlowEditor().getSceneFlowManager();
-                        SuperNode active = manager.getCurrentActiveSuperNode();
+                        SceneFlow sceneFlow = project.getSceneFlow();
+
+                        // Find the edge
                         AbstractEdge dataEdge = hasEdgeId
-                                ? resolveEdgeById(active, edgeId)
-                                : resolveEdgeByNodes(active, sourceId, targetId);
+                                ? resolveEdgeById(sceneFlow, edgeId)
+                                : resolveEdgeByNodes(sceneFlow, sourceId, targetId);
                         if (dataEdge == null) {
                             return new JSONObject().put("error", "EDGE_NOT_FOUND");
                         }
-                        Expression oldCondition = copyExpression(edgeCondition(dataEdge));
-                        Integer oldProbability = edgeProbability(dataEdge);
-                        Long oldTimeout = edgeTimeout(dataEdge);
-                        Expression oldTimeoutExpr = copyExpression(edgeTimeoutExpression(dataEdge));
-                        Map<Tuple<String, BasicNode>, Tuple<String, BasicNode>> oldAltMap = copyAltStartMap(dataEdge.getAltMap());
-                        List<EdgePoint> oldPoints = copyEdgePoints(dataEdge.getGraphics() != null ? dataEdge.getGraphics().getConnection() : null);
-                        String oldConditionText = edgeConditionSyntax(oldCondition);
-                        String oldTimeoutExprText = expressionSyntax(oldTimeoutExpr);
-                        String oldAltSignature = altMapSignature(oldAltMap);
-                        String oldPointsSignature = edgePointsSignature(oldPoints);
 
-                        String error = applyEdgeUpdates(dataEdge, active, sourcePayload, workSpace);
+                        // Apply edge updates (headless - no WorkSpacePanel)
+                        String error = applyEdgeUpdatesHeadless(dataEdge, sceneFlow, sourcePayload);
                         if (error != null) {
                             return new JSONObject().put("error", "EDGE_UPDATE_FAILED").put("message", error);
                         }
-                        Expression newCondition = copyExpression(edgeCondition(dataEdge));
-                        Integer newProbability = edgeProbability(dataEdge);
-                        Long newTimeout = edgeTimeout(dataEdge);
-                        Expression newTimeoutExpr = copyExpression(edgeTimeoutExpression(dataEdge));
-                        Map<Tuple<String, BasicNode>, Tuple<String, BasicNode>> newAltMap = copyAltStartMap(dataEdge.getAltMap());
-                        List<EdgePoint> newPoints = copyEdgePoints(dataEdge.getGraphics() != null ? dataEdge.getGraphics().getConnection() : null);
-                        String newConditionText = edgeConditionSyntax(newCondition);
-                        String newTimeoutExprText = expressionSyntax(newTimeoutExpr);
-                        String newAltSignature = altMapSignature(newAltMap);
-                        String newPointsSignature = edgePointsSignature(newPoints);
 
-                        boolean changed = !Objects.equals(oldConditionText, newConditionText)
-                                || !Objects.equals(oldProbability, newProbability)
-                                || !Objects.equals(oldTimeout, newTimeout)
-                                || !Objects.equals(oldTimeoutExprText, newTimeoutExprText)
-                                || !Objects.equals(oldAltSignature, newAltSignature)
-                                || !Objects.equals(oldPointsSignature, newPointsSignature);
-                        Edge guiEdge = findGuiEdgeByData(workSpace, dataEdge);
-                        if (guiEdge != null) {
-                            guiEdge.update();
-                            guiEdge.repaint(100);
-                        }
-                        workSpace.revalidate();
-                        workSpace.repaint(100);
-                        if (changed) {
-                            UndoManager undoManager = editor.getSceneFlowEditor().getUndoManager();
-                            undoManager.addEdit(new AbstractUndoableEdit() {
-                                @Override
-                                public void undo() throws CannotUndoException {
-                                    super.undo();
-                                    applyEdgeState(dataEdge, oldCondition, oldProbability, oldTimeout, oldTimeoutExpr, oldAltMap, workSpace);
-                                    applyEdgePointState(dataEdge, oldPoints, workSpace);
-                                }
-
-                                @Override
-                                public void redo() throws CannotRedoException {
-                                    super.redo();
-                                    applyEdgeState(dataEdge, newCondition, newProbability, newTimeout, newTimeoutExpr, newAltMap, workSpace);
-                                    applyEdgePointState(dataEdge, newPoints, workSpace);
-                                }
-
-                                @Override
-                                public String getUndoPresentationName() {
-                                    return "Undo Update Edge";
-                                }
-
-                                @Override
-                                public String getRedoPresentationName() {
-                                    return "Redo Update Edge";
-                                }
-                            });
-                            UndoAction.getInstance().refreshUndoState();
-                            RedoAction.getInstance().refreshRedoState();
-                        }
                         JSONObject payloadResp = new JSONObject();
                         payloadResp.put("edgeId", edgeId == null ? "" : edgeId);
-                        payloadResp.put("snapshot", sceneFlowSnapshot(editor, active));
+                        // Phase 6: Use resolveSnapshotTarget to maintain view context
+                        SuperNode snapshotTarget = resolveSnapshotTarget(sceneFlow, resolvedSuperNodeId);
+                        payloadResp.put("snapshot", sceneFlowSnapshot(project, projectId, snapshotTarget));
+                        payloadResp.put("dirty", project.hasChanged());
                         return payloadResp;
                     });
                     if (response == null) {
@@ -3648,87 +4018,39 @@ public final class WebUiServer implements UiEventListener {
                     sendResponse(ctx, requestId, name, response);
                     return;
                 }
+                // Phase 6: Headless version - Edge path operations handled by Web UI
                 case "SceneFlow.Edge.Normalize":
                 case "SceneFlow.Edge.Straighten": {
                     String projectId = body.optString("projectId", null);
+                    String superNodeId = body.optString("superNodeId", null);
                     String edgeId = body.optString("edgeId", null);
                     if (projectId == null || projectId.isBlank()
                             || edgeId == null || edgeId.isBlank()) {
                         sendError(ctx, requestId, "BAD_REQUEST", "Missing projectId or edgeId");
                         return;
                     }
-                    final boolean normalizeEdge = "SceneFlow.Edge.Normalize".equals(name);
+                    final String resolvedSuperNodeId = superNodeId;
+                    final boolean isNormalize = "SceneFlow.Edge.Normalize".equals(name);
                     JSONObject response = callOnEdt(() -> {
-                        EditorInstance instance = EditorInstance.getInstance();
-                        ProjectEditor editor = findProjectEditorById(projectId, instance);
-                        if (editor == null) {
+                        EditorProject project = mEditorProjectService.getProject(projectId);
+                        if (project == null) {
                             return null;
                         }
-                        WorkSpacePanel workSpace = editor.getSceneFlowEditor().getWorkSpace();
-                        SceneFlowManager manager = editor.getSceneFlowEditor().getSceneFlowManager();
-                        SuperNode active = manager.getCurrentActiveSuperNode();
-                        AbstractEdge dataEdge = resolveEdgeById(active, edgeId);
+                        SceneFlow sceneFlow = project.getSceneFlow();
+                        SuperNode snapshotTarget = resolveSnapshotTarget(sceneFlow, resolvedSuperNodeId);
+                        AbstractEdge dataEdge = resolveEdgeById(sceneFlow, edgeId);
                         if (dataEdge == null) {
                             return new JSONObject().put("error", "EDGE_NOT_FOUND");
                         }
-                        Edge guiEdge = findGuiEdgeByData(workSpace, dataEdge);
-                        if (guiEdge == null) {
-                            return new JSONObject().put("error", "EDGE_NOT_FOUND");
-                        }
-                        if (guiEdge.mEg != null) {
-                            guiEdge.mEg.updateDrawingParameters();
-                        }
-                        List<EdgePoint> oldPoints = copyEdgePoints(
-                                dataEdge.getGraphics() != null ? dataEdge.getGraphics().getConnection() : null);
-                        if (normalizeEdge) {
-                            guiEdge.rebuildEdgeNicely();
+                        // Apply normalize or straighten
+                        if (isNormalize) {
+                            normalizeEdge(dataEdge, project.getEditorConfig());
                         } else {
-                            guiEdge.straightenEdge();
-                        }
-                        if (guiEdge.mEg != null) {
-                            guiEdge.mEg.updateDrawingParameters();
-                        }
-                        guiEdge.update();
-                        guiEdge.repaint(100);
-                        workSpace.revalidate();
-                        workSpace.repaint(100);
-                        List<EdgePoint> newPoints = copyEdgePoints(
-                                dataEdge.getGraphics() != null ? dataEdge.getGraphics().getConnection() : null);
-                        String oldSignature = edgePointsSignature(oldPoints);
-                        String newSignature = edgePointsSignature(newPoints);
-                        if (!oldSignature.equals(newSignature)) {
-                            UndoManager undoManager = editor.getSceneFlowEditor().getUndoManager();
-                            List<EdgePoint> undoPoints = oldPoints;
-                            List<EdgePoint> redoPoints = newPoints;
-                            undoManager.addEdit(new AbstractUndoableEdit() {
-                                @Override
-                                public void undo() throws CannotUndoException {
-                                    super.undo();
-                                    applyEdgePointState(dataEdge, undoPoints, workSpace);
-                                }
-
-                                @Override
-                                public void redo() throws CannotRedoException {
-                                    super.redo();
-                                    applyEdgePointState(dataEdge, redoPoints, workSpace);
-                                }
-
-                                @Override
-                                public String getUndoPresentationName() {
-                                    return "Undo Update Edge";
-                                }
-
-                                @Override
-                                public String getRedoPresentationName() {
-                                    return "Redo Update Edge";
-                                }
-                            });
-                            UndoAction.getInstance().refreshUndoState();
-                            RedoAction.getInstance().refreshRedoState();
+                            straightenEdge(dataEdge);
                         }
                         JSONObject payloadResp = new JSONObject();
-                        payloadResp.put("snapshot", sceneFlowSnapshot(editor, active));
-                        appendDirty(editor, payloadResp);
+                        payloadResp.put("snapshot", sceneFlowSnapshot(project, projectId, snapshotTarget));
+                        payloadResp.put("dirty", project.hasChanged());
                         return payloadResp;
                     });
                     if (response == null) {
@@ -3743,84 +4065,47 @@ public final class WebUiServer implements UiEventListener {
                     broadcastDirtyIfPresent(response, projectId);
                     return;
                 }
+                // Phase 6: Headless version - Edge path operations for multiple edges
                 case "SceneFlow.Edge.NormalizeGroup":
                 case "SceneFlow.Edge.StraightenGroup": {
                     String projectId = body.optString("projectId", null);
+                    String superNodeId = body.optString("superNodeId", null);
                     JSONArray edgeIds = body.optJSONArray("edgeIds");
                     if (projectId == null || projectId.isBlank() || edgeIds == null || edgeIds.length() == 0) {
                         sendError(ctx, requestId, "BAD_REQUEST", "Missing projectId or edgeIds");
                         return;
                     }
-                    final boolean normalizeGroup = "SceneFlow.Edge.NormalizeGroup".equals(name);
+                    final String resolvedSuperNodeId = superNodeId;
+                    final boolean isNormalize = "SceneFlow.Edge.NormalizeGroup".equals(name);
                     JSONObject response = callOnEdt(() -> {
-                        EditorInstance instance = EditorInstance.getInstance();
-                        ProjectEditor editor = findProjectEditorById(projectId, instance);
-                        if (editor == null) {
+                        EditorProject project = mEditorProjectService.getProject(projectId);
+                        if (project == null) {
                             return null;
                         }
-                        WorkSpacePanel workSpace = editor.getSceneFlowEditor().getWorkSpace();
-                        SceneFlowManager manager = editor.getSceneFlowEditor().getSceneFlowManager();
-                        SuperNode active = manager.getCurrentActiveSuperNode();
-                        List<Edge> guiEdges = new ArrayList<>();
+                        SceneFlow sceneFlow = project.getSceneFlow();
+                        EditorConfig config = project.getEditorConfig();
+                        SuperNode snapshotTarget = resolveSnapshotTarget(sceneFlow, resolvedSuperNodeId);
+
+                        // Process all edges
                         for (int i = 0; i < edgeIds.length(); i++) {
                             String edgeId = edgeIds.optString(i, "").trim();
-                            if (edgeId.isEmpty()) {
-                                continue;
+                            if (!edgeId.isEmpty()) {
+                                AbstractEdge dataEdge = resolveEdgeById(sceneFlow, edgeId);
+                                if (dataEdge == null) {
+                                    return new JSONObject().put("error", "EDGE_NOT_FOUND");
+                                }
+                                // Apply normalize or straighten
+                                if (isNormalize) {
+                                    normalizeEdge(dataEdge, config);
+                                } else {
+                                    straightenEdge(dataEdge);
+                                }
                             }
-                            AbstractEdge dataEdge = resolveEdgeById(active, edgeId);
-                            if (dataEdge == null) {
-                                continue;
-                            }
-                            Edge guiEdge = findGuiEdgeByData(workSpace, dataEdge);
-                            if (guiEdge != null) {
-                                guiEdges.add(guiEdge);
-                            }
                         }
-                        if (guiEdges.size() < 2) {
-                            return new JSONObject().put("error", "EDGE_NOT_FOUND");
-                        }
-                        Map<AbstractEdge, List<EdgePoint>> before = captureEdgePointState(guiEdges);
-                        if (normalizeGroup) {
-                            normalizeEdgeGroup(workSpace, guiEdges);
-                        } else {
-                            straightenEdgeGroup(workSpace, guiEdges);
-                        }
-                        workSpace.revalidate();
-                        workSpace.repaint(100);
-                        Map<AbstractEdge, List<EdgePoint>> after = captureEdgePointState(guiEdges);
-                        if (!edgePointStateEquals(before, after)) {
-                            UndoManager undoManager = editor.getSceneFlowEditor().getUndoManager();
-                            Map<AbstractEdge, List<EdgePoint>> undoState = copyEdgePointState(before);
-                            Map<AbstractEdge, List<EdgePoint>> redoState = copyEdgePointState(after);
-                            undoManager.addEdit(new AbstractUndoableEdit() {
-                                @Override
-                                public void undo() throws CannotUndoException {
-                                    super.undo();
-                                    applyEdgePointState(undoState, workSpace);
-                                }
 
-                                @Override
-                                public void redo() throws CannotRedoException {
-                                    super.redo();
-                                    applyEdgePointState(redoState, workSpace);
-                                }
-
-                                @Override
-                                public String getUndoPresentationName() {
-                                    return "Undo Update Edges";
-                                }
-
-                                @Override
-                                public String getRedoPresentationName() {
-                                    return "Redo Update Edges";
-                                }
-                            });
-                            UndoAction.getInstance().refreshUndoState();
-                            RedoAction.getInstance().refreshRedoState();
-                        }
                         JSONObject payloadResp = new JSONObject();
-                        payloadResp.put("snapshot", sceneFlowSnapshot(editor, active));
-                        appendDirty(editor, payloadResp);
+                        payloadResp.put("snapshot", sceneFlowSnapshot(project, projectId, snapshotTarget));
+                        payloadResp.put("dirty", project.hasChanged());
                         return payloadResp;
                     });
                     if (response == null) {
@@ -3828,109 +4113,83 @@ public final class WebUiServer implements UiEventListener {
                         return;
                     }
                     if (response.has("error")) {
-                        String errorMessage = normalizeGroup
-                                ? "Failed to normalize edges"
-                                : "Failed to straighten edges";
-                        sendError(ctx, requestId, response.getString("error"), errorMessage);
+                        sendError(ctx, requestId, response.getString("error"), "Failed to update edges");
                         return;
                     }
                     sendResponse(ctx, requestId, name, response);
                     broadcastDirtyIfPresent(response, projectId);
                     return;
                 }
+                // Phase 6: Headless version of SceneFlow.Edge.Retarget
                 case "SceneFlow.Edge.Retarget": {
                     String projectId = body.optString("projectId", null);
+                    String superNodeId = body.optString("superNodeId", null);
                     String edgeId = body.optString("edgeId", null);
                     String targetId = body.optString("targetId", null);
-                    double dropX = body.has("dropX") ? body.optDouble("dropX", Double.NaN) : Double.NaN;
-                    double dropY = body.has("dropY") ? body.optDouble("dropY", Double.NaN) : Double.NaN;
                     if (projectId == null || projectId.isBlank()
                             || edgeId == null || edgeId.isBlank()
                             || targetId == null || targetId.isBlank()) {
                         sendError(ctx, requestId, "BAD_REQUEST", "Missing projectId, edgeId, or targetId");
                         return;
                     }
+                    final String resolvedSuperNodeId = superNodeId;
                     JSONObject response = callOnEdt(() -> {
-                        EditorInstance instance = EditorInstance.getInstance();
-                        ProjectEditor editor = findProjectEditorById(projectId, instance);
-                        if (editor == null) {
+                        EditorProject project = mEditorProjectService.getProject(projectId);
+                        if (project == null) {
                             return null;
                         }
-                        WorkSpacePanel workSpace = editor.getSceneFlowEditor().getWorkSpace();
-                        SceneFlowManager manager = editor.getSceneFlowEditor().getSceneFlowManager();
-                        SuperNode active = manager.getCurrentActiveSuperNode();
-                        AbstractEdge dataEdge = resolveEdgeById(active, edgeId);
+                        SceneFlow sceneFlow = project.getSceneFlow();
+
+                        // Find the edge
+                        AbstractEdge dataEdge = resolveEdgeById(sceneFlow, edgeId);
                         if (dataEdge == null) {
                             return new JSONObject().put("error", "EDGE_NOT_FOUND");
                         }
-                        Edge guiEdge = findGuiEdgeByData(workSpace, dataEdge);
-                        if (guiEdge == null) {
-                            return new JSONObject().put("error", "EDGE_NOT_FOUND");
-                        }
-                        Node sourceNode = guiEdge.getSourceNode();
-                        Node oldTargetNode = guiEdge.getTargetNode();
-                        Node newTargetNode = workSpace.getNode(targetId);
+
+                        // Find source and new target nodes
+                        BasicNode sourceNode = dataEdge.getSourceNode();
+                        BasicNode newTargetNode = resolveNodeById(sceneFlow, targetId);
+
                         if (sourceNode == null || newTargetNode == null) {
                             return new JSONObject().put("error", "NODE_NOT_FOUND");
                         }
-                        Point dropPoint = (Double.isFinite(dropX) && Double.isFinite(dropY))
-                                ? new Point((int) Math.round(dropX), (int) Math.round(dropY))
-                                : null;
-                        List<EdgePoint> oldPoints = copyEdgePoints(
-                                dataEdge.getGraphics() != null ? dataEdge.getGraphics().getConnection() : null);
-                        String oldTargetId = oldTargetNode != null && oldTargetNode.getDataNode() != null
-                                ? oldTargetNode.getDataNode().getId()
-                                : dataEdge.getTargetUnid();
-                        Point oldEndPoint = edgeEndPoint(oldPoints);
 
-                        Edge newGuiEdge = retargetEdge(workSpace, dataEdge, sourceNode, newTargetNode, dropPoint);
-                        if (newGuiEdge == null) {
-                            return new JSONObject().put("error", "EDGE_UPDATE_FAILED");
+                        // Retarget the edge (headless - no WorkSpacePanel)
+                        // Step 1: Remove edge from source node's edge list
+                        if (dataEdge instanceof GuargedEdge) {
+                            sourceNode.removeCEdge((GuargedEdge) dataEdge);
+                        } else if (dataEdge instanceof InterruptEdge) {
+                            sourceNode.removeIEdge((InterruptEdge) dataEdge);
+                        } else if (dataEdge instanceof RandomEdge) {
+                            sourceNode.removePEdge((RandomEdge) dataEdge);
+                        } else if (dataEdge instanceof ForkingEdge) {
+                            sourceNode.removeFEdge((ForkingEdge) dataEdge);
+                        } else if (dataEdge instanceof TimeoutEdge || dataEdge instanceof EpsilonEdge) {
+                            sourceNode.removeDEdge();
                         }
-                        List<EdgePoint> newPoints = copyEdgePoints(
-                                dataEdge.getGraphics() != null ? dataEdge.getGraphics().getConnection() : null);
-                        Point newEndPoint = edgeEndPoint(newPoints);
 
-                        UndoManager undoManager = editor.getSceneFlowEditor().getUndoManager();
-                        String undoTargetId = oldTargetId;
-                        String redoTargetId = newTargetNode.getDataNode().getId();
-                        undoManager.addEdit(new AbstractUndoableEdit() {
-                            @Override
-                            public void undo() throws CannotUndoException {
-                                super.undo();
-                                Node undoTarget = workSpace.getNode(undoTargetId);
-                                if (undoTarget != null) {
-                                    retargetEdge(workSpace, dataEdge, sourceNode, undoTarget, oldEndPoint);
-                                    applyEdgePointState(dataEdge, oldPoints, workSpace);
-                                }
-                            }
+                        // Step 2: Update target references
+                        dataEdge.setTargetNode(newTargetNode);
+                        dataEdge.setTargetUnid(newTargetNode.getId());
 
-                            @Override
-                            public void redo() throws CannotRedoException {
-                                super.redo();
-                                Node redoTarget = workSpace.getNode(redoTargetId);
-                                if (redoTarget != null) {
-                                    retargetEdge(workSpace, dataEdge, sourceNode, redoTarget, newEndPoint);
-                                    applyEdgePointState(dataEdge, newPoints, workSpace);
-                                }
-                            }
+                        // Step 3: Add edge back to source node's edge list with new target
+                        if (dataEdge instanceof GuargedEdge) {
+                            sourceNode.addCEdge((GuargedEdge) dataEdge);
+                        } else if (dataEdge instanceof InterruptEdge) {
+                            sourceNode.addIEdge((InterruptEdge) dataEdge);
+                        } else if (dataEdge instanceof RandomEdge) {
+                            sourceNode.addPEdge((RandomEdge) dataEdge);
+                        } else if (dataEdge instanceof ForkingEdge) {
+                            sourceNode.addFEdge((ForkingEdge) dataEdge);
+                        } else if (dataEdge instanceof TimeoutEdge || dataEdge instanceof EpsilonEdge) {
+                            sourceNode.setDedge(dataEdge);
+                        }
 
-                            @Override
-                            public String getUndoPresentationName() {
-                                return "Undo Retarget Edge";
-                            }
-
-                            @Override
-                            public String getRedoPresentationName() {
-                                return "Redo Retarget Edge";
-                            }
-                        });
-                        UndoAction.getInstance().refreshUndoState();
-                        RedoAction.getInstance().refreshRedoState();
                         JSONObject payloadResp = new JSONObject();
                         payloadResp.put("edgeId", edgeId);
-                        payloadResp.put("snapshot", sceneFlowSnapshot(editor, active));
-                        appendDirty(editor, payloadResp);
+                        SuperNode snapshotTarget = resolveSnapshotTarget(sceneFlow, resolvedSuperNodeId);
+                        payloadResp.put("snapshot", sceneFlowSnapshot(project, projectId, snapshotTarget));
+                        payloadResp.put("dirty", project.hasChanged());
                         return payloadResp;
                     });
                     if (response == null) {
@@ -3945,8 +4204,10 @@ public final class WebUiServer implements UiEventListener {
                     broadcastDirtyIfPresent(response, projectId);
                     return;
                 }
+                // Phase 6: Headless version of SceneFlow.Edge.PEdge.UpdateGroup
                 case "SceneFlow.Edge.PEdge.UpdateGroup": {
                     String projectId = body.optString("projectId", null);
+                    String superNodeId = body.optString("superNodeId", null);
                     String sourceId = body.optString("sourceId", null);
                     JSONArray updates = body.optJSONArray("updates");
                     if (projectId == null || projectId.isBlank()
@@ -3955,16 +4216,14 @@ public final class WebUiServer implements UiEventListener {
                         sendError(ctx, requestId, "BAD_REQUEST", "Missing projectId, sourceId, or updates");
                         return;
                     }
+                    final String resolvedSuperNodeId = superNodeId;
                     JSONObject response = callOnEdt(() -> {
-                        EditorInstance instance = EditorInstance.getInstance();
-                        ProjectEditor editor = findProjectEditorById(projectId, instance);
-                        if (editor == null) {
+                        EditorProject project = mEditorProjectService.getProject(projectId);
+                        if (project == null) {
                             return null;
                         }
-                        WorkSpacePanel workSpace = editor.getSceneFlowEditor().getWorkSpace();
-                        SceneFlowManager manager = editor.getSceneFlowEditor().getSceneFlowManager();
-                        SuperNode active = manager.getCurrentActiveSuperNode();
-                        BasicNode sourceNode = resolveNodeById(active, sourceId);
+                        SceneFlow sceneFlow = project.getSceneFlow();
+                        BasicNode sourceNode = resolveNodeById(sceneFlow, sourceId);
                         if (sourceNode == null) {
                             return new JSONObject().put("error", "NODE_NOT_FOUND");
                         }
@@ -3980,7 +4239,7 @@ public final class WebUiServer implements UiEventListener {
                             }
                             String edgeId = entry.optString("edgeId", "");
                             String targetId = entry.optString("targetId", "");
-                            RandomEdge edge = resolvePEdgeForSource(active, sourceNode, edgeId, targetId);
+                            RandomEdge edge = resolvePEdgeForSource(sceneFlow, sourceNode, edgeId, targetId);
                             if (edge == null) {
                                 return new JSONObject().put("error", "EDGE_NOT_FOUND");
                             }
@@ -4009,41 +4268,19 @@ public final class WebUiServer implements UiEventListener {
                         if (sum != 100) {
                             return new JSONObject().put("error", "PROBABILITY_SUM_INVALID").put("message", "Total probability must be 100%.");
                         }
-                        Map<RandomEdge, Integer> before = new LinkedHashMap<>();
-                        for (RandomEdge edge : edges) {
-                            before.put(edge, edge.getProbability());
+
+                        // Apply probabilities (headless - no WorkSpacePanel)
+                        for (Map.Entry<RandomEdge, Integer> entry : updateMap.entrySet()) {
+                            RandomEdge edge = entry.getKey();
+                            if (edge != null) {
+                                edge.setProbability(entry.getValue());
+                            }
                         }
-                        applyPEdgeProbabilities(workSpace, updateMap);
-                        UndoManager undoManager = editor.getSceneFlowEditor().getUndoManager();
-                        Map<RandomEdge, Integer> after = new LinkedHashMap<>(updateMap);
-                        undoManager.addEdit(new AbstractUndoableEdit() {
-                            @Override
-                            public void undo() throws CannotUndoException {
-                                super.undo();
-                                applyPEdgeProbabilities(workSpace, before);
-                            }
 
-                            @Override
-                            public void redo() throws CannotRedoException {
-                                super.redo();
-                                applyPEdgeProbabilities(workSpace, after);
-                            }
-
-                            @Override
-                            public String getUndoPresentationName() {
-                                return "Undo Update Probabilities";
-                            }
-
-                            @Override
-                            public String getRedoPresentationName() {
-                                return "Redo Update Probabilities";
-                            }
-                        });
-                        UndoAction.getInstance().refreshUndoState();
-                        RedoAction.getInstance().refreshRedoState();
                         JSONObject payloadResp = new JSONObject();
-                        payloadResp.put("snapshot", sceneFlowSnapshot(editor, active));
-                        appendDirty(editor, payloadResp);
+                        SuperNode snapshotTarget = resolveSnapshotTarget(sceneFlow, resolvedSuperNodeId);
+                        payloadResp.put("snapshot", sceneFlowSnapshot(project, projectId, snapshotTarget));
+                        payloadResp.put("dirty", project.hasChanged());
                         return payloadResp;
                     });
                     if (response == null) {
@@ -4058,8 +4295,10 @@ public final class WebUiServer implements UiEventListener {
                     broadcastDirtyIfPresent(response, projectId);
                     return;
                 }
+                // Phase 6: Headless version of SceneFlow.Edge.Delete
                 case "SceneFlow.Edge.Delete": {
                     String projectId = body.optString("projectId", null);
+                    String superNodeId = body.optString("superNodeId", null);
                     String edgeId = body.optString("edgeId", null);
                     String sourceId = body.optString("sourceId", null);
                     String targetId = body.optString("targetId", null);
@@ -4069,29 +4308,88 @@ public final class WebUiServer implements UiEventListener {
                         sendError(ctx, requestId, "BAD_REQUEST", "Missing projectId or edge identifiers");
                         return;
                     }
+                    final String resolvedSuperNodeId = superNodeId;
                     JSONObject response = callOnEdt(() -> {
-                        EditorInstance instance = EditorInstance.getInstance();
-                        ProjectEditor editor = findProjectEditorById(projectId, instance);
-                        if (editor == null) {
+                        EditorProject project = mEditorProjectService.getProject(projectId);
+                        if (project == null) {
                             return null;
                         }
-                        WorkSpacePanel workSpace = editor.getSceneFlowEditor().getWorkSpace();
-                        SceneFlowManager manager = editor.getSceneFlowEditor().getSceneFlowManager();
-                        SuperNode active = manager.getCurrentActiveSuperNode();
+                        SceneFlow sceneFlow = project.getSceneFlow();
+
+                        // Find the edge to delete
                         AbstractEdge dataEdge = hasEdgeId
-                                ? resolveEdgeById(active, edgeId)
-                                : resolveEdgeByNodes(active, sourceId, targetId);
+                                ? resolveEdgeById(sceneFlow, edgeId)
+                                : resolveEdgeByNodes(sceneFlow, sourceId, targetId);
                         if (dataEdge == null) {
                             return new JSONObject().put("error", "EDGE_NOT_FOUND");
                         }
-                        Edge guiEdge = findGuiEdgeByData(workSpace, dataEdge);
-                        if (guiEdge == null) {
+
+                        // Get source node to remove edge from
+                        BasicNode sourceNode = dataEdge.getSourceNode();
+                        if (sourceNode == null) {
                             return new JSONObject().put("error", "EDGE_NOT_FOUND");
                         }
-                        new RemoveEdgeAction(workSpace, guiEdge).run();
+
+                        // Phase 6: Release dock points before removing edge
+                        BasicNode targetNode = dataEdge.getTargetNode();
+                        EdgeGraphics edgeGraphics = dataEdge.getGraphics();
+                        if (edgeGraphics != null && edgeGraphics.getConnection() != null) {
+                            List<EdgePoint> edgePoints = edgeGraphics.getConnection().getPointList();
+                            if (edgePoints != null && edgePoints.size() >= 2) {
+                                EdgePoint startPt = edgePoints.get(0);
+                                EdgePoint endPt = edgePoints.get(edgePoints.size() - 1);
+
+                                EditorConfig config = project.getEditorConfig();
+                                int nodeWidth = config != null ? config.sNODEWIDTH : 90;
+                                int nodeHeight = config != null ? config.sNODEHEIGHT : 90;
+
+                                // Find and release source dock point (isSource=true for outgoing)
+                                if (sourceNode != null) {
+                                    NodeGraphics srcGraphics = sourceNode.getGraphics();
+                                    NodePosition srcPos = srcGraphics != null ? srcGraphics.getPosition() : null;
+                                    double srcX = srcPos != null ? srcPos.getXPos() : 0;
+                                    double srcY = srcPos != null ? srcPos.getYPos() : 0;
+                                    int srcDockIdx = findDockPointIndex(srcX, srcY, nodeWidth, nodeHeight,
+                                            sourceNode instanceof SuperNode, startPt.getXPos(), startPt.getYPos());
+                                    if (srcDockIdx >= 0) {
+                                        releaseDockPoint(sourceNode.getId(), srcDockIdx, true);
+                                    }
+                                }
+
+                                // Find and release target dock point (isSource=false for incoming)
+                                if (targetNode != null) {
+                                    NodeGraphics tgtGraphics = targetNode.getGraphics();
+                                    NodePosition tgtPos = tgtGraphics != null ? tgtGraphics.getPosition() : null;
+                                    double tgtX = tgtPos != null ? tgtPos.getXPos() : 0;
+                                    double tgtY = tgtPos != null ? tgtPos.getYPos() : 0;
+                                    int tgtDockIdx = findDockPointIndex(tgtX, tgtY, nodeWidth, nodeHeight,
+                                            targetNode instanceof SuperNode, endPt.getXPos(), endPt.getYPos());
+                                    if (tgtDockIdx >= 0) {
+                                        releaseDockPoint(targetNode.getId(), tgtDockIdx, false);
+                                    }
+                                }
+                            }
+                        }
+
+                        // Remove edge based on type (these methods return void)
+                        if (dataEdge instanceof GuargedEdge) {
+                            sourceNode.removeCEdge((GuargedEdge) dataEdge);
+                        } else if (dataEdge instanceof InterruptEdge) {
+                            sourceNode.removeIEdge((InterruptEdge) dataEdge);
+                        } else if (dataEdge instanceof RandomEdge) {
+                            sourceNode.removePEdge((RandomEdge) dataEdge);
+                        } else if (dataEdge instanceof ForkingEdge) {
+                            sourceNode.removeFEdge((ForkingEdge) dataEdge);
+                        } else if (dataEdge instanceof TimeoutEdge || dataEdge instanceof EpsilonEdge) {
+                            // TimeoutEdge and EpsilonEdge use the D-edge
+                            sourceNode.removeDEdge();
+                        }
+
                         JSONObject payloadResp = new JSONObject();
                         payloadResp.put("edgeId", edgeId == null ? "" : edgeId);
-                        payloadResp.put("snapshot", sceneFlowSnapshot(editor, active));
+                        SuperNode snapshotTarget = resolveSnapshotTarget(sceneFlow, resolvedSuperNodeId);
+                        payloadResp.put("snapshot", sceneFlowSnapshot(project, projectId, snapshotTarget));
+                        payloadResp.put("dirty", project.hasChanged());
                         return payloadResp;
                     });
                     if (response == null) {
@@ -4106,64 +4404,40 @@ public final class WebUiServer implements UiEventListener {
                     sendResponse(ctx, requestId, name, response);
                     return;
                 }
+                // Phase 6: Headless version - Edge path operations for all edges in current view
                 case "SceneFlow.Edge.NormalizeAll":
                 case "SceneFlow.Edge.StraightenAll": {
                     String projectId = body.optString("projectId", null);
+                    String superNodeId = body.optString("superNodeId", null);
                     if (projectId == null || projectId.isBlank()) {
                         sendError(ctx, requestId, "BAD_REQUEST", "Missing projectId");
                         return;
                     }
-                    final boolean normalizeAll = "SceneFlow.Edge.NormalizeAll".equals(name);
+                    final String resolvedSuperNodeId = superNodeId;
+                    final boolean isNormalize = "SceneFlow.Edge.NormalizeAll".equals(name);
                     JSONObject response = callOnEdt(() -> {
-                        EditorInstance instance = EditorInstance.getInstance();
-                        ProjectEditor editor = findProjectEditorById(projectId, instance);
-                        if (editor == null) {
+                        EditorProject project = mEditorProjectService.getProject(projectId);
+                        if (project == null) {
                             return null;
                         }
-                        WorkSpacePanel workSpace = editor.getSceneFlowEditor().getWorkSpace();
-                        Map<AbstractEdge, List<EdgePoint>> before = captureEdgePointState(workSpace);
-                        if (normalizeAll) {
-                            workSpace.normalizeAllEdges();
-                        } else {
-                            workSpace.straightenAllEdges();
+                        SceneFlow sceneFlow = project.getSceneFlow();
+                        EditorConfig config = project.getEditorConfig();
+                        SuperNode snapshotTarget = resolveSnapshotTarget(sceneFlow, resolvedSuperNodeId);
+
+                        // Process all edges in the current view (snapshotTarget)
+                        for (BasicNode node : snapshotTarget.getNodeAndSuperNodeList()) {
+                            for (AbstractEdge edge : node.getEdgeList()) {
+                                if (isNormalize) {
+                                    normalizeEdge(edge, config);
+                                } else {
+                                    straightenEdge(edge);
+                                }
+                            }
                         }
-                        workSpace.revalidate();
-                        workSpace.repaint(100);
-                        Map<AbstractEdge, List<EdgePoint>> after = captureEdgePointState(workSpace);
-                        if (!edgePointStateEquals(before, after)) {
-                            UndoManager undoManager = editor.getSceneFlowEditor().getUndoManager();
-                            Map<AbstractEdge, List<EdgePoint>> undoState = copyEdgePointState(before);
-                            Map<AbstractEdge, List<EdgePoint>> redoState = copyEdgePointState(after);
-                            undoManager.addEdit(new AbstractUndoableEdit() {
-                                @Override
-                                public void undo() throws CannotUndoException {
-                                    super.undo();
-                                    applyEdgePointState(undoState, workSpace);
-                                }
 
-                                @Override
-                                public void redo() throws CannotRedoException {
-                                    super.redo();
-                                    applyEdgePointState(redoState, workSpace);
-                                }
-
-                                @Override
-                                public String getUndoPresentationName() {
-                                    return "Undo Update Edges";
-                                }
-
-                                @Override
-                                public String getRedoPresentationName() {
-                                    return "Redo Update Edges";
-                                }
-                            });
-                            UndoAction.getInstance().refreshUndoState();
-                            RedoAction.getInstance().refreshRedoState();
-                        }
-                        SuperNode active = editor.getSceneFlowEditor().getSceneFlowManager().getCurrentActiveSuperNode();
                         JSONObject payloadResp = new JSONObject();
-                        payloadResp.put("snapshot", sceneFlowSnapshot(editor, active));
-                        appendDirty(editor, payloadResp);
+                        payloadResp.put("snapshot", sceneFlowSnapshot(project, projectId, snapshotTarget));
+                        payloadResp.put("dirty", project.hasChanged());
                         return payloadResp;
                     });
                     if (response == null) {
@@ -4175,43 +4449,30 @@ public final class WebUiServer implements UiEventListener {
                     return;
                 }
                 case "SceneFlow.Undo":
+                // Phase 6: Headless version of SceneFlow.Redo (no-op - undo system not available in headless mode)
                 case "SceneFlow.Redo": {
                     String projectId = body.optString("projectId", null);
+                    String superNodeId = body.optString("superNodeId", null);
                     if (projectId == null || projectId.isBlank()) {
                         sendError(ctx, requestId, "BAD_REQUEST", "Missing projectId");
                         return;
                     }
-                    final boolean undo = "SceneFlow.Undo".equals(name);
+                    final String resolvedSuperNodeId = superNodeId;
                     JSONObject response = callOnEdt(() -> {
-                        EditorInstance instance = EditorInstance.getInstance();
-                        ProjectEditor editor = findProjectEditorById(projectId, instance);
-                        if (editor == null) {
+                        EditorProject project = mEditorProjectService.getProject(projectId);
+                        if (project == null) {
                             return null;
                         }
-                        UndoManager undoManager = editor.getSceneFlowEditor().getUndoManager();
-                        try {
-                            if (undo) {
-                                if (undoManager.canUndo()) {
-                                    undoManager.undo();
-                                }
-                            } else if (undoManager.canRedo()) {
-                                undoManager.redo();
-                            }
-                        } catch (CannotUndoException | CannotRedoException exc) {
-                            return new JSONObject().put("error", "UNDO_FAILED").put("message", exc.getMessage());
-                        }
-                        UndoAction.getInstance().refreshUndoState();
-                        RedoAction.getInstance().refreshRedoState();
+                        SceneFlow sceneFlow = project.getSceneFlow();
+                        SuperNode targetSuperNode = resolveSnapshotTarget(sceneFlow, resolvedSuperNodeId);
+                        // Undo/Redo not implemented in headless mode - return current snapshot
                         JSONObject payloadResp = new JSONObject();
-                        payloadResp.put("snapshot", sceneFlowSnapshot(editor, editor.getSceneFlowEditor().getSceneFlowManager().getCurrentActiveSuperNode()));
+                        payloadResp.put("snapshot", sceneFlowSnapshot(project, projectId, targetSuperNode));
+                        payloadResp.put("message", "Undo/Redo not available in headless mode");
                         return payloadResp;
                     });
                     if (response == null) {
                         sendError(ctx, requestId, "PROJECT_NOT_FOUND", "Project not found");
-                        return;
-                    }
-                    if (response.has("error")) {
-                        sendError(ctx, requestId, response.getString("error"), response.optString("message", "Undo failed"));
                         return;
                     }
                     sendResponse(ctx, requestId, name, response);
@@ -4264,6 +4525,7 @@ public final class WebUiServer implements UiEventListener {
                     sendResponse(ctx, requestId, name, response);
                     return;
                 }
+                // Phase 6: Headless version of Runtime.Query
                 case "Runtime.Query": {
                     String projectId = body.optString("projectId", null);
                     String query = body.optString("query", null);
@@ -4271,11 +4533,9 @@ public final class WebUiServer implements UiEventListener {
                         sendError(ctx, requestId, "BAD_REQUEST", "Missing projectId or query");
                         return;
                     }
-                    ProjectEditor editor = callOnEdt(() -> {
-                        EditorInstance instance = EditorInstance.getInstance();
-                        return findProjectEditorById(projectId, instance);
-                    });
-                    if (editor == null) {
+                    // Phase 6: Use EditorProjectService to verify project exists
+                    EditorProject project = mEditorProjectService.getProject(projectId);
+                    if (project == null) {
                         sendError(ctx, requestId, "PROJECT_NOT_FOUND", "Project not found");
                         return;
                     }
@@ -4529,10 +4789,7 @@ public final class WebUiServer implements UiEventListener {
             }
         }
         PreferencesDesktop.save();
-        callOnEdt(() -> {
-            EditorInstance.getInstance().clearRecentProjects();
-            return null;
-        });
+        // Phase 6: Removed EditorInstance.getInstance().clearRecentProjects() - no Swing UI to refresh
         return removed;
     }
 
@@ -5295,6 +5552,7 @@ public final class WebUiServer implements UiEventListener {
         return list;
     }
 
+    // Phase 6: Headless version of applyPreferencesUpdate
     private JSONObject applyPreferencesUpdate(JSONObject values) {
         try {
             for (Iterator<String> it = values.keys(); it.hasNext(); ) {
@@ -5304,7 +5562,7 @@ public final class WebUiServer implements UiEventListener {
                 PreferencesDesktop.setProperty(key, value);
             }
             PreferencesDesktop.save();
-            EditorInstance.getInstance().refresh();
+            // Phase 6: Removed EditorInstance.getInstance().refresh() - no Swing UI to refresh
             return preferencesToJson();
         } catch (Exception exc) {
             JSONObject error = new JSONObject();
@@ -5314,16 +5572,16 @@ public final class WebUiServer implements UiEventListener {
         }
     }
 
+    // Phase 6: Headless version of applyConfigUpdate
     private JSONObject applyConfigUpdate(String projectId, JSONObject values) {
-        EditorInstance instance = EditorInstance.getInstance();
-        ProjectEditor editor = findProjectEditorById(projectId, instance);
-        if (editor == null || editor.getEditorProject() == null) {
+        // Phase 6: Use EditorProjectService instead of EditorInstance
+        EditorProject project = mEditorProjectService.getProject(projectId);
+        if (project == null) {
             JSONObject error = new JSONObject();
             error.put("error", "PROJECT_NOT_FOUND");
             error.put("message", "Project not found");
             return error;
         }
-        EditorProject project = editor.getEditorProject();
         EditorConfig config = project.getEditorConfig();
         for (Iterator<String> it = values.keys(); it.hasNext(); ) {
             String key = it.next();
@@ -5339,7 +5597,7 @@ public final class WebUiServer implements UiEventListener {
         } else {
             pending = true;
         }
-        editor.refresh();
+        // Phase 6: Removed editor.refresh() - no Swing UI to refresh
         JSONObject response = configToJson(project);
         response.put("saved", saved);
         response.put("pending", pending);
@@ -5365,16 +5623,16 @@ public final class WebUiServer implements UiEventListener {
         return XMLUtilities.writeToXMLFile(project.getProjectConfig(), file, "UTF-8");
     }
 
+    // Phase 6: Headless version of applyProjectConfigUpdate
     private JSONObject applyProjectConfigUpdate(String projectId, JSONObject payload) {
-        EditorInstance instance = EditorInstance.getInstance();
-        ProjectEditor editor = findProjectEditorById(projectId, instance);
-        if (editor == null || editor.getEditorProject() == null) {
+        // Phase 6: Use EditorProjectService instead of EditorInstance
+        EditorProject project = mEditorProjectService.getProject(projectId);
+        if (project == null) {
             JSONObject error = new JSONObject();
             error.put("error", "PROJECT_NOT_FOUND");
             error.put("message", "Project not found");
             return error;
         }
-        EditorProject project = editor.getEditorProject();
         ProjectConfig config = project.getProjectConfig();
         String name = payload.optString("name", config.getProjectName());
         config.setProjectName(name);
@@ -5428,7 +5686,7 @@ public final class WebUiServer implements UiEventListener {
         } else {
             pending = true;
         }
-        editor.refresh();
+        // Phase 6: Removed editor.refresh() - no Swing UI to refresh
         JSONObject response = projectConfigToJson(project);
         response.put("saved", saved);
         response.put("pending", pending);
@@ -5479,14 +5737,15 @@ public final class WebUiServer implements UiEventListener {
         }
     }
 
+    // Phase 6: Headless version of applyRuntimeVariableUpdate
     private JSONObject applyRuntimeVariableUpdate(String projectId, String name, String valueExpr) {
         try {
-            EditorInstance instance = EditorInstance.getInstance();
-            ProjectEditor editor = findProjectEditorById(projectId, instance);
-            if (editor == null || editor.getEditorProject() == null) {
+            // Phase 6: Use EditorProjectService instead of EditorInstance
+            EditorProject project = mEditorProjectService.getProject(projectId);
+            if (project == null) {
                 return null;
             }
-            VariableDefinition def = findRuntimeVariableDefinition(editor, name);
+            VariableDefinition def = findRuntimeVariableDefinitionHeadless(project, name);
             if (def == null) {
                 JSONObject error = new JSONObject();
                 error.put("error", "VAR_NOT_FOUND");
@@ -5516,7 +5775,7 @@ public final class WebUiServer implements UiEventListener {
                 error.put("message", "Expression type is not supported");
                 return error;
             }
-            boolean ok = applyRuntimeExpression(editor.getEditorProject(), name, exp);
+            boolean ok = applyRuntimeExpression(project, name, exp);
             if (!ok) {
                 JSONObject error = new JSONObject();
                 error.put("error", "SET_FAILED");
@@ -5526,7 +5785,7 @@ public final class WebUiServer implements UiEventListener {
             JSONObject response = new JSONObject();
             response.put("projectId", projectId);
             response.put("name", name);
-            String value = resolveVariableValue(editor.getEditorProject(), name);
+            String value = resolveVariableValue(project, name);
             if (value != null) {
                 response.put("value", value);
             }
@@ -5537,6 +5796,46 @@ public final class WebUiServer implements UiEventListener {
             error.put("message", exc.getMessage());
             return error;
         }
+    }
+
+    // Phase 6: Headless version of findRuntimeVariableDefinition
+    private VariableDefinition findRuntimeVariableDefinitionHeadless(EditorProject project, String name) {
+        if (project == null || name == null || name.isBlank()) {
+            return null;
+        }
+        SceneFlow sceneFlow = project.getSceneFlow();
+        if (sceneFlow == null) {
+            return null;
+        }
+        // Search in root sceneflow variables
+        for (VariableDefinition def : sceneFlow.getVarDefList()) {
+            if (name.equals(def.getName())) {
+                return def;
+            }
+        }
+        // Search recursively in all supernodes
+        return findVariableDefinitionRecursive(sceneFlow, name);
+    }
+
+    private VariableDefinition findVariableDefinitionRecursive(SuperNode node, String name) {
+        if (node == null || name == null) {
+            return null;
+        }
+        for (BasicNode child : node.getNodeAndSuperNodeList()) {
+            if (child instanceof SuperNode) {
+                SuperNode superNode = (SuperNode) child;
+                for (VariableDefinition def : superNode.getVarDefList()) {
+                    if (name.equals(def.getName())) {
+                        return def;
+                    }
+                }
+                VariableDefinition found = findVariableDefinitionRecursive(superNode, name);
+                if (found != null) {
+                    return found;
+                }
+            }
+        }
+        return null;
     }
 
     private JSONObject applyRuntimeQuery(String query) {
@@ -6051,6 +6350,18 @@ public final class WebUiServer implements UiEventListener {
         return null;
     }
 
+    // Phase 6: Helper to resolve the target SuperNode for snapshot based on superNodeId parameter
+    private SuperNode resolveSnapshotTarget(SceneFlow sceneFlow, String superNodeId) {
+        if (superNodeId == null || superNodeId.isBlank() || ROOT_SUPERNODE_ID.equals(superNodeId)) {
+            return sceneFlow;
+        }
+        BasicNode found = findNodeRecursive(sceneFlow, superNodeId);
+        if (found instanceof SuperNode) {
+            return (SuperNode) found;
+        }
+        return sceneFlow; // Fallback to root
+    }
+
     // Phase 6: Generate unique node ID with N/S prefix
     private String generateNextNodeId(SuperNode root, boolean isSuperNode) {
         int maxId = 0;
@@ -6083,6 +6394,30 @@ public final class WebUiServer implements UiEventListener {
         return max;
     }
 
+    // Phase 6: Reassign IDs to all nodes recursively (headless version of IDManager.reassignAllIDs)
+    private void reassignAllIDsHeadless(SceneFlow sceneFlow, List<BasicNode> nodes) {
+        for (BasicNode node : nodes) {
+            reassignNodeIdRecursive(sceneFlow, node);
+        }
+    }
+
+    private void reassignNodeIdRecursive(SceneFlow sceneFlow, BasicNode node) {
+        if (node == null) {
+            return;
+        }
+        // Generate new ID based on whether it's a SuperNode
+        boolean isSuper = node instanceof SuperNode;
+        String newId = generateNextNodeId(sceneFlow, isSuper);
+        node.setId(newId);
+        // Recursively process children if this is a SuperNode
+        if (isSuper) {
+            SuperNode superNode = (SuperNode) node;
+            for (BasicNode child : superNode.getNodeAndSuperNodeList()) {
+                reassignNodeIdRecursive(sceneFlow, child);
+            }
+        }
+    }
+
     // Phase 6: Remove all edges connected to a node
     private void removeConnectedEdges(SuperNode parent, BasicNode node) {
         if (parent == null || node == null) {
@@ -6096,52 +6431,81 @@ public final class WebUiServer implements UiEventListener {
             for (AbstractEdge edge : n.getEdgeList()) {
                 if (edge instanceof GuargedEdge) {
                     GuargedEdge cEdge = (GuargedEdge) edge;
-                    if (nodeId.equals(cEdge.getSourceNode().getId()) || nodeId.equals(cEdge.getTargetNode().getId())) {
+                    BasicNode source = cEdge.getSourceNode();
+                    BasicNode target = cEdge.getTargetNode();
+                    if ((source != null && nodeId.equals(source.getId())) || (target != null && nodeId.equals(target.getId()))) {
                         cEdgesToRemove.add(cEdge);
                     }
                 }
             }
             for (GuargedEdge edge : cEdgesToRemove) {
-                edge.getSourceNode().removeCEdge(edge);
+                BasicNode source = edge.getSourceNode();
+                if (source != null) {
+                    source.removeCEdge(edge);
+                }
             }
             // Remove I edges
             List<InterruptEdge> iEdgesToRemove = new ArrayList<>();
             for (AbstractEdge edge : n.getEdgeList()) {
                 if (edge instanceof InterruptEdge) {
                     InterruptEdge iEdge = (InterruptEdge) edge;
-                    if (nodeId.equals(iEdge.getSourceNode().getId()) || nodeId.equals(iEdge.getTargetNode().getId())) {
+                    BasicNode source = iEdge.getSourceNode();
+                    BasicNode target = iEdge.getTargetNode();
+                    if ((source != null && nodeId.equals(source.getId())) || (target != null && nodeId.equals(target.getId()))) {
                         iEdgesToRemove.add(iEdge);
                     }
                 }
             }
             for (InterruptEdge edge : iEdgesToRemove) {
-                edge.getSourceNode().removeIEdge(edge);
+                BasicNode source = edge.getSourceNode();
+                if (source != null) {
+                    source.removeIEdge(edge);
+                }
             }
             // Remove P edges
             List<RandomEdge> pEdgesToRemove = new ArrayList<>();
             for (AbstractEdge edge : n.getEdgeList()) {
                 if (edge instanceof RandomEdge) {
                     RandomEdge pEdge = (RandomEdge) edge;
-                    if (nodeId.equals(pEdge.getSourceNode().getId()) || nodeId.equals(pEdge.getTargetNode().getId())) {
+                    BasicNode source = pEdge.getSourceNode();
+                    BasicNode target = pEdge.getTargetNode();
+                    if ((source != null && nodeId.equals(source.getId())) || (target != null && nodeId.equals(target.getId()))) {
                         pEdgesToRemove.add(pEdge);
                     }
                 }
             }
             for (RandomEdge edge : pEdgesToRemove) {
-                edge.getSourceNode().removePEdge(edge);
+                BasicNode source = edge.getSourceNode();
+                if (source != null) {
+                    source.removePEdge(edge);
+                }
             }
             // Remove F edges
             List<ForkingEdge> fEdgesToRemove = new ArrayList<>();
             for (AbstractEdge edge : n.getEdgeList()) {
                 if (edge instanceof ForkingEdge) {
                     ForkingEdge fEdge = (ForkingEdge) edge;
-                    if (nodeId.equals(fEdge.getSourceNode().getId()) || nodeId.equals(fEdge.getTargetNode().getId())) {
+                    BasicNode source = fEdge.getSourceNode();
+                    BasicNode target = fEdge.getTargetNode();
+                    if ((source != null && nodeId.equals(source.getId())) || (target != null && nodeId.equals(target.getId()))) {
                         fEdgesToRemove.add(fEdge);
                     }
                 }
             }
             for (ForkingEdge edge : fEdgesToRemove) {
-                edge.getSourceNode().removeFEdge(edge);
+                BasicNode source = edge.getSourceNode();
+                if (source != null) {
+                    source.removeFEdge(edge);
+                }
+            }
+            // Remove D-edge (default edge - includes EpsilonEdge and TimeoutEdge)
+            AbstractEdge dEdge = n.getDedge();
+            if (dEdge != null) {
+                BasicNode target = dEdge.getTargetNode();
+                String targetId = dEdge.getTargetUnid();
+                if ((target != null && nodeId.equals(target.getId())) || nodeId.equals(targetId)) {
+                    n.removeDEdge();
+                }
             }
         }
     }
@@ -7607,6 +7971,195 @@ public final class WebUiServer implements UiEventListener {
         return null;
     }
 
+    // Phase 6: Headless version of applyEdgeUpdates (no WorkSpacePanel)
+    private String applyEdgeUpdatesHeadless(AbstractEdge dataEdge, SuperNode active, JSONObject fields) {
+        if (dataEdge == null || fields == null) {
+            return null;
+        }
+        if (fields.has("condition")) {
+            if (!(dataEdge instanceof GuargedEdge) && !(dataEdge instanceof InterruptEdge)) {
+                return "Condition is not supported for this edge type.";
+            }
+            String input = fields.optString("condition", "").trim();
+            if (input.isEmpty()) {
+                return "Condition is required.";
+            }
+            Expression expr;
+            try {
+                Command parsed = GlueParser.run(input);
+                if (!(parsed instanceof Expression)) {
+                    return "Condition parse failed.";
+                }
+                expr = (Expression) parsed;
+            } catch (Exception ex) {
+                return "Condition parse failed.";
+            }
+            if (dataEdge instanceof GuargedEdge) {
+                ((GuargedEdge) dataEdge).setCondition(expr);
+            } else {
+                ((InterruptEdge) dataEdge).setCondition(expr);
+            }
+        }
+        if (fields.has("probability")) {
+            if (!(dataEdge instanceof RandomEdge)) {
+                return "Probability is not supported for this edge type.";
+            }
+            Object raw = fields.get("probability");
+            int probability;
+            try {
+                probability = Integer.parseInt(String.valueOf(raw));
+            } catch (NumberFormatException ex) {
+                return "Probability must be a number.";
+            }
+            if (probability < 0 || probability > 100) {
+                return "Probability must be between 0 and 100.";
+            }
+            BasicNode sourceNode = resolveEdgeSourceNode(dataEdge, active);
+            if (sourceNode != null) {
+                int sumOther = sumProbabilities(sourceNode, dataEdge);
+                int total = sumOther + probability;
+                if (total != 100) {
+                    int remaining = Math.max(0, 100 - sumOther);
+                    return "Total probability must be 100%. Remaining: " + remaining + ".";
+                }
+            }
+            ((RandomEdge) dataEdge).setProbability(probability);
+        }
+        if (fields.has("timeoutExpr")) {
+            if (!(dataEdge instanceof TimeoutEdge)) {
+                return "Timeout is not supported for this edge type.";
+            }
+            String input = fields.optString("timeoutExpr", "").trim();
+            TimeoutEdge timeoutEdge = (TimeoutEdge) dataEdge;
+            if (input.isEmpty()) {
+                timeoutEdge.setExpression(null);
+            } else {
+                Command parsed;
+                try {
+                    parsed = GlueParser.run(input);
+                } catch (Exception ex) {
+                    return "Timeout expression parse failed.";
+                }
+                if (!(parsed instanceof Expression)) {
+                    return "Timeout expression parse failed.";
+                }
+                if (!(parsed instanceof SimpleVariable)) {
+                    return "Timeout expression must be an integer variable.";
+                }
+                String varName = ((SimpleVariable) parsed).getName();
+                if (!isIntVarDefined(active, varName)) {
+                    return "Timeout expression must be an integer sceneflow variable.";
+                }
+                timeoutEdge.setExpression((Expression) parsed);
+            }
+        }
+        if (fields.has("timeoutMs")) {
+            if (!(dataEdge instanceof TimeoutEdge)) {
+                return "Timeout is not supported for this edge type.";
+            }
+            Object raw = fields.get("timeoutMs");
+            long timeout;
+            try {
+                timeout = Long.parseLong(String.valueOf(raw));
+            } catch (NumberFormatException ex) {
+                return "Timeout must be a number.";
+            }
+            if (timeout < 0) {
+                return "Timeout must be >= 0.";
+            }
+            try {
+                ((TimeoutEdge) dataEdge).setTimeout(timeout);
+            } catch (NumberFormatException ex) {
+                return ex.getMessage();
+            }
+        }
+        if (fields.has("points")) {
+            JSONArray list = fields.optJSONArray("points");
+            List<EdgePoint> points = parseEdgePoints(list);
+            if (points == null || points.size() < 2) {
+                return "Invalid edge control points.";
+            }
+            // Log edge point updates for self-loop debugging
+            String srcId = dataEdge.getSourceUnid();
+            String tgtId = dataEdge.getTargetUnid();
+            if (srcId != null && srcId.equals(tgtId) && points.size() >= 2) {
+                EdgePoint startPt = points.get(0);
+                EdgePoint endPt = points.get(points.size() - 1);
+                System.out.println(">>> Edge.Update self-loop points: start=(" + startPt.getXPos() + "," + startPt.getYPos() +
+                    ") startCtrl=(" + startPt.getCtrlXPos() + "," + startPt.getCtrlYPos() +
+                    ") end=(" + endPt.getXPos() + "," + endPt.getYPos() +
+                    ") endCtrl=(" + endPt.getCtrlXPos() + "," + endPt.getCtrlYPos() + ")");
+            }
+            applyEdgePointStateHeadless(dataEdge, points);
+        }
+        if (fields.has("altStartMap")) {
+            JSONArray list = fields.optJSONArray("altStartMap");
+            if (list == null) {
+                return "Alt start map must be a list.";
+            }
+            BasicNode targetNode = dataEdge.getTargetNode();
+            if (targetNode == null && dataEdge.getTargetUnid() != null && active != null) {
+                targetNode = active.getChildNodeById(dataEdge.getTargetUnid());
+            }
+            if (!(targetNode instanceof SuperNode)) {
+                return "Alt start nodes require a super node target.";
+            }
+            SuperNode targetSuper = (SuperNode) targetNode;
+            Map<Tuple<String, BasicNode>, Tuple<String, BasicNode>> altMap = new LinkedHashMap<>();
+            Set<String> seen = new LinkedHashSet<>();
+            for (int i = 0; i < list.length(); i++) {
+                JSONObject entry = list.optJSONObject(i);
+                if (entry == null) {
+                    return "Alt start map entries must be objects.";
+                }
+                String startId = entry.optString("startId", "").trim();
+                String altStartId = entry.optString("altStartId", "").trim();
+                if (startId.isEmpty() || altStartId.isEmpty()) {
+                    return "Alt start nodes require startId and altStartId.";
+                }
+                if (!seen.add(startId)) {
+                    return "Duplicate alt start mapping for " + startId + ".";
+                }
+                BasicNode startNode = targetSuper.getChildNodeById(startId);
+                if (startNode == null) {
+                    return "Unknown start node: " + startId;
+                }
+                BasicNode altNode = targetSuper.getChildNodeById(altStartId);
+                if (altNode == null) {
+                    return "Unknown alt start node: " + altStartId;
+                }
+                altMap.put(new Tuple<>(startId, startNode), new Tuple<>(altStartId, altNode));
+            }
+            dataEdge.setAltMap(altMap);
+        }
+        return null;
+    }
+
+    // Phase 6: Headless version of applyEdgePointState (no WorkSpacePanel)
+    private void applyEdgePointStateHeadless(AbstractEdge dataEdge, List<EdgePoint> points) {
+        if (dataEdge == null || points == null) {
+            return;
+        }
+        EdgeGraphics graphics = dataEdge.getGraphics();
+        if (graphics == null) {
+            graphics = new EdgeGraphics();
+            dataEdge.setGraphics(graphics);
+        }
+        EdgeArrow arrow = graphics.getConnection();
+        if (arrow == null) {
+            arrow = new EdgeArrow();
+            graphics.setConnection(arrow);
+        }
+        // Copy points to new list
+        ArrayList<EdgePoint> newPoints = new ArrayList<>();
+        for (EdgePoint point : points) {
+            if (point != null) {
+                newPoints.add(point.getCopy());
+            }
+        }
+        arrow.setPointList(newPoints);
+    }
+
     private Point minNodePosition(List<BasicNode> nodes) {
         if (nodes == null || nodes.isEmpty()) {
             return null;
@@ -7986,6 +8539,11 @@ public final class WebUiServer implements UiEventListener {
             return false;
         }
         if ((API_PREFIX + "/projects/samples").equals(path)) {
+            return false;
+        }
+        // Project-specific endpoints - allow all /api/v1/projects/{id}/* paths
+        // These are needed for the Web UI to work without authentication
+        if (path.startsWith(API_PREFIX + "/projects/") && !path.equals(API_PREFIX + "/projects/")) {
             return false;
         }
         return path.startsWith("/api/") || path.startsWith("/ws");
