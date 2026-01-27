@@ -8175,6 +8175,76 @@
       {:else}
         <p class="muted">No SceneFlow data loaded yet.</p>
       {/if}
+      {#if selectedProject}
+        <div class="scenescript">
+          <div class="script-toolbar">
+            <button type="button" class="ghost" on:click={() => loadScript(selectedProjectId)} disabled={!selectedProject}>
+              Reload
+            </button>
+            <button
+              type="button"
+              class="primary"
+              on:click={applyScript}
+              disabled={!selectedProject || !wsConnected || !scriptDirty}
+            >
+              Apply
+            </button>
+            <button
+              type="button"
+              class="ghost"
+              on:click={() => scriptEditorRef?.openSearch()}
+              disabled={!selectedProject}
+            >
+              Search
+            </button>
+            <button
+              type="button"
+              class="ghost"
+              on:click={() => scriptEditorRef?.jumpToPreviousDiagnostic()}
+              disabled={!selectedProject || scriptDiagnostics.length === 0}
+            >
+              Prev issue
+            </button>
+            <button
+              type="button"
+              class="ghost"
+              on:click={() => scriptEditorRef?.jumpToNextDiagnostic()}
+              disabled={!selectedProject || scriptDiagnostics.length === 0}
+            >
+              Next issue
+            </button>
+            {#if scriptVersion !== null}
+              <span class="muted">v{scriptVersion}</span>
+            {/if}
+            {#if scriptDirty}
+              <span class="muted">Unsaved edits</span>
+            {/if}
+          </div>
+          <div class="script-editor" class:has-error={!scriptParseOk}>
+            {#if !selectedProject}
+              <p class="muted">Select a project to edit the scene script.</p>
+            {:else}
+              <ScriptEditor
+                bind:this={scriptEditorRef}
+                value={scriptDraft}
+                readOnly={!selectedProject}
+                hasServerError={!scriptParseOk}
+                diagnostics={scriptDiagnostics}
+                onChange={(value) => {
+                  scriptDraft = value;
+                  scheduleScriptDiagnostics();
+                }}
+              />
+            {/if}
+          </div>
+          {#if scriptStatus}
+            <p class="status">{scriptStatus}</p>
+          {/if}
+          {#if scriptError}
+            <p class="error">{scriptError}</p>
+          {/if}
+        </div>
+      {/if}
       {#if sceneFlowError || runtimeError || edgeCreateMode || sceneFlowLoading || sceneFlow?.revision}
         <div class="sceneflow-status">
           <div class="sceneflow-status-left">
@@ -8202,108 +8272,6 @@
       {/if}
     </section>
 
-    <section class="panel script-panel panel-wide">
-      <header class="panel-title">
-        <h2>Scene Script</h2>
-      </header>
-      <div class="script-toolbar">
-        <button type="button" class="ghost" on:click={() => loadScript(selectedProjectId)} disabled={!selectedProject}>
-          Reload
-        </button>
-        <button
-          type="button"
-          class="primary"
-          on:click={applyScript}
-          disabled={!selectedProject || !wsConnected || !scriptDirty}
-        >
-          Apply
-        </button>
-        <button
-          type="button"
-          class="ghost"
-          on:click={() => scriptEditorRef?.openSearch()}
-          disabled={!selectedProject}
-        >
-          Search
-        </button>
-        <button
-          type="button"
-          class="ghost"
-          on:click={() => scriptEditorRef?.jumpToPreviousDiagnostic()}
-          disabled={!selectedProject || scriptDiagnostics.length === 0}
-        >
-          Prev issue
-        </button>
-        <button
-          type="button"
-          class="ghost"
-          on:click={() => scriptEditorRef?.jumpToNextDiagnostic()}
-          disabled={!selectedProject || scriptDiagnostics.length === 0}
-        >
-          Next issue
-        </button>
-        {#if scriptVersion !== null}
-          <span class="muted">v{scriptVersion}</span>
-        {/if}
-        {#if scriptDirty}
-          <span class="muted">Unsaved edits</span>
-        {/if}
-        <div class="runtime-controls">
-          <span class={`runtime-state ${runtimeState}`}>{runtimeStateLabel}</span>
-          <button
-            type="button"
-            class="ghost icon-button"
-            on:click={() => runRuntimeCommand("Runtime.Play")}
-            disabled={!runtimeCanPlay}
-            aria-label={runtimePlayLabel}
-            title={runtimePlayLabel}
-          >
-            <IconStart className="icon" />
-          </button>
-          <button
-            type="button"
-            class="ghost icon-button"
-            on:click={() => runRuntimeCommand("Runtime.Pause")}
-            disabled={!runtimeCanPause}
-            aria-label="Pause"
-            title="Pause"
-          >
-            <IconPause className="icon" />
-          </button>
-          <button
-            type="button"
-            class="ghost icon-button danger"
-            on:click={() => runRuntimeCommand("Runtime.Stop")}
-            disabled={!runtimeCanStop}
-            aria-label="Stop"
-            title="Stop"
-          >
-            <IconStop className="icon" />
-          </button>
-        </div>
-      </div>
-      {#if !selectedProject}
-        <p class="muted">Select a project to edit the scene script.</p>
-      {:else}
-        <ScriptEditor
-          bind:this={scriptEditorRef}
-          value={scriptDraft}
-          readOnly={!selectedProject}
-          hasServerError={!scriptParseOk}
-          diagnostics={scriptDiagnostics}
-          onChange={(value) => {
-            scriptDraft = value;
-            scheduleScriptDiagnostics();
-          }}
-        />
-      {/if}
-      {#if scriptStatus}
-        <p class="status">{scriptStatus}</p>
-      {/if}
-      {#if scriptError}
-        <p class="error">{scriptError}</p>
-      {/if}
-  </section>
     {/if}
   </div>
 
