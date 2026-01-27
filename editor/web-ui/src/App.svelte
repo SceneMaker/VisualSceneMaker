@@ -728,6 +728,7 @@
   let saveAsError = "";
 
   let openPathInput;
+  let openPathPickerInput;
   let newProjectNameInput;
   let saveAsInputEl;
   let saveAsDialogEl;
@@ -851,6 +852,8 @@
   let sceneFlowShowVars = sceneFlowToggleState.showVars;
   let sceneFlowShowBlocks = sceneFlowToggleState.showBlocks;
   let sceneFlowShowInspector = sceneFlowToggleState.showInspector;
+  let agentsCollapsed = false;
+  let scenesCollapsed = false;
   let sceneFlowBusy = false;
   let runtimeInfo = null;
   let runtimeError = "";
@@ -1808,6 +1811,75 @@
       }
       return { ok: false, error: message };
     }
+  }
+
+  function handleDirectoryInputChange(event) {
+    const files = event?.target?.files;
+    const first = files && files.length ? files[0] : null;
+    const relative = first?.webkitRelativePath || "";
+    const root = relative.split("/")[0] || "";
+    const basePath = first?.path || "";
+    if (basePath) {
+      openPath = basePath.replace(new RegExp(`${root}$`), "");
+      openPathError = "";
+      return;
+    }
+    if (root) {
+      openPath = root;
+      openPathError = `Selected \"${root}\". Please augment it to the full absolute path.`;
+    } else {
+      openPathError = "This browser cannot provide a full path. Please paste it manually.";
+    }
+  }
+
+  async function browseForProjectDir() {
+    openPathError = "";
+    try {
+      if (typeof window !== "undefined" && typeof window.showDirectoryPicker === "function") {
+        const handle = await window.showDirectoryPicker();
+        // Most browsers do not expose absolute paths; show a helpful message instead.
+        if (handle?.name) {
+          openPath = handle.name;
+          openPathError = `Selected \"${handle.name}\". Please augment it to the full absolute path.`;
+        } else {
+          openPathError = "Please paste the full path manually.";
+        }
+        return;
+      }
+    } catch (err) {
+      if (err?.name === "AbortError") {
+        return;
+      }
+      // Fall through to the input picker below.
+    }
+    if (openPathPickerInput) {
+      openPathPickerInput.value = "";
+      openPathPickerInput.click();
+    } else {
+      openPathError = "Directory picker is not available in this browser.";
+    }
+  }
+
+  function handleProjectDrop(event) {
+    event.preventDefault();
+    openPathError = "";
+    const items = Array.from(event?.dataTransfer?.items || []);
+    const entry = items
+      .map((item) => (typeof item.webkitGetAsEntry === "function" ? item.webkitGetAsEntry() : null))
+      .find((candidate) => candidate && candidate.isDirectory);
+    const dirName = entry?.name || "";
+    const file = event?.dataTransfer?.files?.[0];
+    const basePath = file?.path || "";
+    if (basePath) {
+      openPath = basePath.replace(new RegExp(`${dirName}$`), "");
+      return;
+    }
+    if (dirName) {
+      openPath = dirName;
+      openPathError = `Dropped "${dirName}". Please augment it to the full absolute path.`;
+      return;
+    }
+    openPathError = "Could not read the dropped folder path. Please paste it manually.";
   }
 
   async function openRecentProject(project) {
@@ -6679,9 +6751,22 @@
             bind:this={openPathInput}
             bind:value={openPath}
             on:input={() => (openPathError = "")}
+            on:dragover|preventDefault
+            on:drop={handleProjectDrop}
           />
           <button type="submit" disabled={!openPath || !openPath.trim()}>Open</button>
+          <button type="button" class="ghost" on:click={browseForProjectDir}>Browse…</button>
         </div>
+        <input
+          class="sr-only"
+          type="file"
+          webkitdirectory
+          directory
+          bind:this={openPathPickerInput}
+          on:change={handleDirectoryInputChange}
+          tabindex="-1"
+          aria-hidden="true"
+        />
         {#if openPathError}
           <p class="error">{openPathError}</p>
         {/if}
@@ -6979,7 +7064,11 @@
       {:else if sceneFlow}
         <div class="sceneflow-layout" style={sceneFlowLayoutStyle}>
           {#if sceneFlowShowBlocks}
-            <aside class="sceneflow-blocks">
+            <aside
+              class="sceneflow-blocks"
+              class:agents-collapsed={agentsCollapsed}
+              class:scenes-collapsed={scenesCollapsed}
+            >
             <div class="blocks-section blocks-section--icons">
               <div class="blocks-grid blocks-grid--icons">
                 <button
@@ -7158,8 +7247,29 @@
                 </p>
               {/if}
             </div>
-            <div class="blocks-section blocks-section--agents">
-              <div class="block-section-title">Agents</div>
+            <div class="blocks-section blocks-section--agents" class:collapsed={agentsCollapsed}>
+              <div class="block-section-header">
+                <div class="block-section-title">Agents</div>
+                <button
+                  type="button"
+                  class="ghost icon-button block-section-toggle"
+                  aria-pressed={!agentsCollapsed}
+                  aria-label={agentsCollapsed ? "Expand agents" : "Collapse agents"}
+                  title={agentsCollapsed ? "Expand" : "Collapse"}
+                  on:click={() => (agentsCollapsed = !agentsCollapsed)}
+                >
+                  {#if agentsCollapsed}
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                    </svg>
+                  {:else}
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14" />
+                    </svg>
+                  {/if}
+                </button>
+              </div>
+              {#if !agentsCollapsed}
               {#if !selectedProject}
                 <p class="muted">Select a project to view agents.</p>
               {:else if scriptLoading || projectConfigLoading}
@@ -7295,9 +7405,31 @@
                   </div>
                 </div>
               {/if}
+              {/if}
             </div>
-            <div class="blocks-section blocks-section--scenes">
-              <div class="block-section-title">Scenes</div>
+            <div class="blocks-section blocks-section--scenes" class:collapsed={scenesCollapsed}>
+              <div class="block-section-header">
+                <div class="block-section-title">Scenes</div>
+                <button
+                  type="button"
+                  class="ghost icon-button block-section-toggle"
+                  aria-pressed={!scenesCollapsed}
+                  aria-label={scenesCollapsed ? "Expand scenes" : "Collapse scenes"}
+                  title={scenesCollapsed ? "Expand" : "Collapse"}
+                  on:click={() => (scenesCollapsed = !scenesCollapsed)}
+                >
+                  {#if scenesCollapsed}
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                    </svg>
+                  {:else}
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14" />
+                    </svg>
+                  {/if}
+                </button>
+              </div>
+              {#if !scenesCollapsed}
               <div class="scene-selector">
                 <select
                   bind:value={scriptScenesLanguage}
@@ -7382,7 +7514,9 @@
                   {/each}
                 </div>
               {/if}
+              {/if}
             </div>
+            <div class="blocks-filler" aria-hidden="true"></div>
             </aside>
           {/if}
           <div class="sceneflow-container" style={sceneFlowFrameStyle} bind:this={sceneFlowContainerEl}>

@@ -87,6 +87,18 @@ p {
   color: var(--muted);
 }
 
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 .panel {
   background: var(--panel);
   border-radius: var(--radius-lg);
@@ -1161,15 +1173,27 @@ summary {
   background: #e7e1d8;
   border: 1px dashed var(--stroke);
   border-radius: var(--radius-md);
-  padding: 1rem;
+  padding: 1rem 1rem 0.6rem;
   height: 100%;
   min-height: 0;
   overflow: hidden;
   display: grid;
   gap: 1.2rem;
   align-content: stretch;
-  grid-template-rows: auto minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 0.4fr) minmax(0, 0.6fr) minmax(0, 0fr);
   box-sizing: border-box;
+}
+
+.sceneflow-blocks.agents-collapsed:not(.scenes-collapsed) {
+  grid-template-rows: auto auto minmax(0, 1fr) minmax(0, 0fr);
+}
+
+.sceneflow-blocks.scenes-collapsed:not(.agents-collapsed) {
+  grid-template-rows: auto minmax(0, 1fr) auto minmax(0, 0fr);
+}
+
+.sceneflow-blocks.agents-collapsed.scenes-collapsed {
+  grid-template-rows: auto auto auto minmax(0, 1fr);
 }
 
 .blocks-section {
@@ -1205,6 +1229,32 @@ summary {
   color: var(--muted);
   text-transform: uppercase;
   letter-spacing: 0.05em;
+}
+
+.block-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.block-section-toggle {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  flex: 0 0 auto;
+}
+
+.block-section-toggle svg {
+  width: 18px;
+  height: 18px;
+}
+
+.blocks-filler {
+  min-height: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
 }
 
 .blocks-grid {
