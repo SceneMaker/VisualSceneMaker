@@ -9,7 +9,30 @@ import de.dfki.vsm.model.sceneflow.chart.graphics.node.NodeGraphics;
 import de.dfki.vsm.model.sceneflow.chart.SuperNode;
 import de.dfki.vsm.model.sceneflow.chart.badge.CommentBadge;
 import de.dfki.vsm.model.sceneflow.chart.graphics.comment.CommentGraphics;
+import de.dfki.vsm.model.sceneflow.chart.graphics.edge.EdgePoint;
+import de.dfki.vsm.model.sceneflow.chart.graphics.edge.EdgeArrow;
+import de.dfki.vsm.model.sceneflow.chart.graphics.comment.CommentBoundary;
+import de.dfki.vsm.model.sceneflow.chart.SceneFlow;
+import de.dfki.vsm.model.sceneflow.chart.edge.GuargedEdge;
+import de.dfki.vsm.model.sceneflow.chart.edge.EpsilonEdge;
+import de.dfki.vsm.model.sceneflow.chart.edge.ForkingEdge;
+import de.dfki.vsm.model.sceneflow.chart.edge.InterruptEdge;
+import de.dfki.vsm.model.sceneflow.chart.edge.RandomEdge;
+import de.dfki.vsm.model.sceneflow.chart.edge.TimeoutEdge;
+import de.dfki.vsm.model.sceneflow.glue.command.definition.DataTypeDefinition;
+import de.dfki.vsm.model.sceneflow.glue.command.definition.VariableDefinition;
+import de.dfki.vsm.model.sceneflow.glue.command.Command;
 import de.dfki.vsm.runtime.project.RunTimeProject;
+import de.dfki.vsm.event.EventDispatcher;
+import de.dfki.vsm.event.EventListener;
+import de.dfki.vsm.event.EventObject;
+import de.dfki.vsm.event.event.NodeExecutedEvent;
+import de.dfki.vsm.event.event.NodeStartedEvent;
+import de.dfki.vsm.event.event.EdgeExecutedEvent;
+import de.dfki.vsm.event.event.NodeTerminatedEvent;
+import de.dfki.vsm.event.event.TimeoutEdgeStartedEvent;
+import de.dfki.vsm.event.event.SceneStoppedEvent;
+import de.dfki.vsm.runtime.interpreter.event.TerminationEvent;
 import java.util.List;
 import java.util.ArrayList;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
@@ -29,13 +52,14 @@ import java.nio.file.Paths;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.io.InputStream;
 
-public final class WebUiServer {
+public final class WebUiServer implements EventListener {
 
     private static final LOGDefaultLogger sLogger = LOGDefaultLogger.getInstance();
     private static final String API_PREFIX = "/api/v1";
@@ -91,13 +115,160 @@ public final class WebUiServer {
             config.enableCorsForAllOrigins();
         }).start(allowExternal ? "0.0.0.0" : "127.0.0.1", port);
         registerRoutes();
+        // Register for runtime events to broadcast to WebSocket clients
+        EventDispatcher.getInstance().register(this);
         sLogger.message("Web UI server started on " + getLocalUrl());
     }
 
     public void stop() {
         if (mApp != null) {
+            EventDispatcher.getInstance().remove(this);
             mApp.stop();
             mApp = null;
+        }
+    }
+
+    /**
+     * Event handler - translates domain events to UI protocol events.
+     * This mirrors UiEventBridge to ensure consistent event format between
+     * local (editor) and remote (runtime-server) connections.
+     */
+    @Override
+    public void update(EventObject event) {
+        if (event == null) {
+            return;
+        }
+        System.out.println("[EVENT] Received: " + event.getClass().getSimpleName());
+
+        String projectId = findProjectIdForEvent(event);
+        JSONObject message = new JSONObject();
+        message.put("type", "event");
+        message.put("ts", System.currentTimeMillis());
+        JSONObject payload = new JSONObject();
+        if (projectId != null) {
+            payload.put("projectId", projectId);
+        }
+
+        // Match UiEventBridge event translation exactly for consistency
+        if (event instanceof NodeStartedEvent) {
+            // NodeStartedEvent → runtime.nodeActive (node becomes active)
+            BasicNode node = ((NodeStartedEvent) event).getNode();
+            if (node == null) return;
+            payload.put("nodeId", node.getId());
+            if (node.getParentNode() != null) {
+                payload.put("parentId", node.getParentNode().getId());
+            }
+            message.put("channel", "runtime");
+            message.put("event", "runtime.nodeActive");
+            System.out.println("[EVENT] → runtime.nodeActive: " + node.getId());
+
+        } else if (event instanceof NodeExecutedEvent || event instanceof NodeTerminatedEvent) {
+            // Both NodeExecutedEvent and NodeTerminatedEvent → runtime.nodeStopped
+            // (matches UiEventBridge behavior)
+            BasicNode node = event instanceof NodeExecutedEvent
+                    ? ((NodeExecutedEvent) event).getNode()
+                    : ((NodeTerminatedEvent) event).getNode();
+            if (node == null) return;
+            payload.put("nodeId", node.getId());
+            if (node.getParentNode() != null) {
+                payload.put("parentId", node.getParentNode().getId());
+            }
+            message.put("channel", "runtime");
+            message.put("event", "runtime.nodeStopped");
+            System.out.println("[EVENT] → runtime.nodeStopped: " + node.getId());
+
+        } else if (event instanceof EdgeExecutedEvent) {
+            // EdgeExecutedEvent → runtime.edgeActive
+            AbstractEdge edge = ((EdgeExecutedEvent) event).getEdge();
+            if (edge == null) return;
+            String sourceId = edge.getSourceNode() != null ? edge.getSourceNode().getId() : "";
+            String targetId = edge.getTargetNode() != null ? edge.getTargetNode().getId() : "";
+            payload.put("sourceId", sourceId);
+            payload.put("targetId", targetId);
+            payload.put("edgeType", getEdgeTypeLowercase(edge));
+            message.put("channel", "runtime");
+            message.put("event", "runtime.edgeActive");
+            System.out.println("[EVENT] → runtime.edgeActive: " + sourceId + " -> " + targetId);
+
+        } else if (event instanceof TimeoutEdgeStartedEvent) {
+            // TimeoutEdgeStartedEvent → runtime.timeoutProgress
+            TimeoutEdgeStartedEvent te = (TimeoutEdgeStartedEvent) event;
+            TimeoutEdge edge = te.getEdge();
+            if (edge == null) return;
+            String sourceId = edge.getSourceNode() != null ? edge.getSourceNode().getId() : "";
+            String targetId = edge.getTargetNode() != null ? edge.getTargetNode().getId() : "";
+            payload.put("sourceId", sourceId);
+            payload.put("targetId", targetId);
+            payload.put("edgeType", "timeout");
+            payload.put("timeoutMs", te.getTimeoutMs());
+            payload.put("startedAt", te.getStartedAt());
+            payload.put("elapsedMs", 0L);
+            payload.put("ratio", 0.0);
+            message.put("channel", "runtime");
+            message.put("event", "runtime.timeoutProgress");
+            System.out.println("[EVENT] → runtime.timeoutProgress");
+
+        } else if (event instanceof SceneStoppedEvent || event instanceof TerminationEvent) {
+            // SceneStoppedEvent or TerminationEvent → runtime.state with status: "stopped"
+            payload.put("status", "stopped");
+            message.put("channel", "runtime");
+            message.put("event", "runtime.state");
+            System.out.println("[EVENT] → runtime.state: stopped");
+            // Update runtime state in project store
+            if (projectId != null) {
+                ProjectRef ref = projectStore.get(projectId);
+                if (ref != null) {
+                    ref.runtimeState = "stopped";
+                }
+            }
+
+        } else {
+            // Unknown event type, skip
+            System.out.println("[EVENT] Unknown, skipping: " + event.getClass().getName());
+            return;
+        }
+
+        message.put("payload", payload);
+        System.out.println("[EVENT] Broadcasting to " + wsSessions.size() + " clients");
+        broadcastToAll(message.toString());
+    }
+
+    /**
+     * Returns edge type in lowercase format matching UiEventBridge.
+     * Used for runtime.edgeActive events.
+     */
+    private String getEdgeTypeLowercase(AbstractEdge edge) {
+        if (edge instanceof EpsilonEdge) return "epsilon";
+        if (edge instanceof GuargedEdge) return "conditional";
+        if (edge instanceof RandomEdge) return "probabilistic";
+        if (edge instanceof InterruptEdge) return "interruptive";
+        if (edge instanceof TimeoutEdge) return "timeout";
+        if (edge instanceof ForkingEdge) return "fork";
+        return "unknown";
+    }
+
+    private String findProjectIdForEvent(EventObject event) {
+        // Try to find which project this event belongs to
+        for (Map.Entry<String, ProjectRef> entry : projectStore.entrySet()) {
+            ProjectRef ref = entry.getValue();
+            if (ref.runtimeProject != null && ref.runtimeProject.isRunning()) {
+                return entry.getKey();
+            }
+        }
+        // Return first project if only one exists
+        if (projectStore.size() == 1) {
+            return projectStore.keySet().iterator().next();
+        }
+        return null;
+    }
+
+    private void broadcastToAll(String message) {
+        for (WsContext ctx : wsSessions) {
+            try {
+                ctx.send(message);
+            } catch (Exception e) {
+                sLogger.warning("Failed to send WebSocket message: " + e.getMessage());
+            }
         }
     }
 
@@ -139,10 +310,23 @@ public final class WebUiServer {
 
         // WebSocket endpoint: accepts requests and replies with JSON. Broadcasts snapshots/runtime state after mutations.
         mApp.ws("/ws", ws -> {
-            ws.onConnect(ctx -> wsSessions.add(ctx));
-            ws.onClose(ctx -> wsSessions.remove(ctx));
-            ws.onError(ctx -> wsSessions.remove(ctx));
-            ws.onMessage(ctx -> handleWsMessage(ctx.message(), ctx::send, msg -> broadcast(ctx, msg)));
+            ws.onConnect(ctx -> {
+                System.out.println("[WS-CORE] Client connected: " + ctx.getSessionId());
+                sLogger.message("[WS-CORE] Client connected: " + ctx.getSessionId());
+                wsSessions.add(ctx);
+            });
+            ws.onClose(ctx -> {
+                System.out.println("[WS-CORE] Client disconnected: " + ctx.getSessionId());
+                wsSessions.remove(ctx);
+            });
+            ws.onError(ctx -> {
+                System.out.println("[WS-CORE] WebSocket error: " + ctx.getSessionId());
+                wsSessions.remove(ctx);
+            });
+            ws.onMessage(ctx -> {
+                System.out.println("[WS-CORE] Message received from " + ctx.getSessionId() + ": " + ctx.message());
+                handleWsMessage(ctx.message(), ctx::send, msg -> broadcast(ctx, msg));
+            });
         });
 
         // Serve packaged images (e.g., vsm_logo.svg) explicitly.
@@ -484,37 +668,354 @@ public final class WebUiServer {
 
     private void handleSceneflow(Context ctx) {
         String pid = ctx.pathParam("pid");
+        String superNodeIdParam = ctx.queryParam("superNodeId");
         ProjectRef ref = projectStore.get(pid);
-        JSONObject response = new JSONObject();
-        if (ref != null && ref.runtimeProject != null) {
-            try {
-                String sceneflowXml = loadFile(ref.runtimeProject.getProjectPath(), "sceneflow.xml");
-                ref.nodes = serializeNodes(ref.runtimeProject);
-                ref.edges = serializeEdges(ref.runtimeProject);
-                ref.comments = serializeComments(ref.runtimeProject);
-                JSONObject meta = new JSONObject();
-                meta.put("path", new JSONArray());
-                meta.put("superNodeId", "");
-                response.put("nodes", new JSONArray(ref.nodes));
-                response.put("edges", new JSONArray(ref.edges));
-                response.put("comments", new JSONArray(ref.comments));
-                response.put("path", meta.optJSONArray("path"));
-                response.put("superNodeId", meta.optString("superNodeId", ""));
-                response.put("raw", sceneflowXml == null ? "" : sceneflowXml);
-            } catch (Exception exc) {
-                sLogger.warning("Warning: cannot load sceneflow for pid=" + pid + ": " + exc.getMessage());
-                response.put("nodes", new JSONArray());
-                response.put("edges", new JSONArray());
-                response.put("comments", new JSONArray());
-                response.put("raw", "");
-            }
-        } else {
-            response.put("nodes", new JSONArray());
-            response.put("edges", new JSONArray());
-            response.put("comments", new JSONArray());
-            response.put("raw", "");
+
+        if (ref == null || ref.runtimeProject == null) {
+            JSONObject empty = new JSONObject();
+            empty.put("nodes", new JSONArray());
+            empty.put("edges", new JSONArray());
+            empty.put("comments", new JSONArray());
+            empty.put("raw", "");
+            writeJson(ctx, empty);
+            return;
         }
-        writeJson(ctx, response);
+
+        try {
+            SceneFlow sceneFlow = ref.runtimeProject.getSceneFlow();
+            SuperNode targetSuperNode = resolveSuperNode(sceneFlow, superNodeIdParam);
+            if (targetSuperNode == null) {
+                targetSuperNode = sceneFlow;
+            }
+
+            JSONObject snapshot = createSceneFlowSnapshot(ref.runtimeProject, pid, targetSuperNode, sceneFlow);
+            writeJson(ctx, snapshot);
+        } catch (Exception exc) {
+            sLogger.warning("Warning: cannot load sceneflow for pid=" + pid + ": " + exc.getMessage());
+            JSONObject error = new JSONObject();
+            error.put("nodes", new JSONArray());
+            error.put("edges", new JSONArray());
+            error.put("comments", new JSONArray());
+            error.put("raw", "");
+            writeJson(ctx, error);
+        }
+    }
+
+    private SuperNode resolveSuperNode(SceneFlow sceneFlow, String superNodeId) {
+        if (superNodeId == null || superNodeId.isBlank() || "__root__".equals(superNodeId)) {
+            return sceneFlow;
+        }
+        return findSuperNodeById(sceneFlow, superNodeId);
+    }
+
+    private SuperNode findSuperNodeById(SuperNode parent, String id) {
+        if (parent == null) return null;
+        if (id.equals(parent.getId())) return parent;
+        for (SuperNode child : parent.getSuperNodeList()) {
+            SuperNode found = findSuperNodeById(child, id);
+            if (found != null) return found;
+        }
+        return null;
+    }
+
+    private JSONObject createSceneFlowSnapshot(RunTimeProject rtp, String projectId, SuperNode superNode, SceneFlow sceneFlow) {
+        JSONObject snapshot = new JSONObject();
+        snapshot.put("projectId", projectId);
+        snapshot.put("superNodeId", superNode.getId() != null ? superNode.getId() : "");
+        snapshot.put("revision", superNode.hashCode());
+
+        // SuperNode info
+        JSONObject superNodeJson = new JSONObject();
+        superNodeJson.put("id", superNode.getId() != null ? superNode.getId() : "");
+        superNodeJson.put("name", superNode.getName() != null ? superNode.getName() : "SceneFlow");
+        superNodeJson.put("flavour", superNode.getFlavour() != null ? superNode.getFlavour().name() : "None");
+        snapshot.put("superNode", superNodeJson);
+
+        // Build path
+        JSONArray path = new JSONArray();
+        JSONArray pathNodes = new JSONArray();
+        List<SuperNode> pathList = findPathToSuperNode(sceneFlow, superNode.getId());
+        if (pathList == null || pathList.isEmpty()) {
+            pathList = new ArrayList<>();
+            pathList.add(superNode);
+        }
+        for (SuperNode node : pathList) {
+            String nodeName = node.getName();
+            if (nodeName == null || nodeName.isBlank()) {
+                nodeName = "SceneFlow";
+            }
+            String nodeId = node.getId();
+            if (nodeId == null || nodeId.isBlank()) {
+                nodeId = "__root__";
+            }
+            path.put(nodeName);
+            JSONObject pathEntry = new JSONObject();
+            pathEntry.put("id", nodeId);
+            pathEntry.put("name", nodeName);
+            pathEntry.put("isRoot", node.getParentNode() == null);
+            pathNodes.put(pathEntry);
+        }
+        snapshot.put("path", path);
+        snapshot.put("pathNodes", pathNodes);
+
+        // SuperNode data
+        Set<String> altStartIds = collectAltStartIds(superNode);
+        JSONObject superNodeData = nodeToJsonCore(superNode, superNode, altStartIds);
+        superNodeData.put("isStart", superNode.getParentNode() == null ||
+            (superNode.getParentNode() != null && superNode.getParentNode().getStartNodeMap().containsKey(superNode.getId())));
+        superNodeData.put("isRoot", superNode.getParentNode() == null);
+        snapshot.put("superNodeData", superNodeData);
+
+        // Nodes at current level only
+        JSONArray nodes = new JSONArray();
+        for (BasicNode node : superNode.getNodeAndSuperNodeList()) {
+            nodes.put(nodeToJsonCore(node, superNode, altStartIds));
+        }
+        snapshot.put("nodes", nodes);
+
+        // Edges at current level only
+        JSONArray edges = new JSONArray();
+        int edgeIndex = 0;
+        for (BasicNode node : superNode.getNodeAndSuperNodeList()) {
+            for (AbstractEdge edge : node.getEdgeList()) {
+                edges.put(edgeToJsonCore(edge, edgeIndex++));
+            }
+        }
+        snapshot.put("edges", edges);
+
+        // Comments
+        JSONArray comments = new JSONArray();
+        int commentIndex = 0;
+        for (CommentBadge comment : superNode.getCommentList()) {
+            comments.put(commentToJsonCore(comment, commentIndex++));
+        }
+        snapshot.put("comments", comments);
+
+        return snapshot;
+    }
+
+    private List<SuperNode> findPathToSuperNode(SuperNode root, String targetId) {
+        if (root == null) return null;
+        List<SuperNode> path = new ArrayList<>();
+        if (findPathRecursive(root, targetId, path)) {
+            return path;
+        }
+        return null;
+    }
+
+    private boolean findPathRecursive(SuperNode current, String targetId, List<SuperNode> path) {
+        path.add(current);
+        String currentId = current.getId();
+        if ((currentId != null && currentId.equals(targetId)) ||
+            (currentId == null && targetId == null) ||
+            ("__root__".equals(targetId) && current.getParentNode() == null)) {
+            return true;
+        }
+        for (SuperNode child : current.getSuperNodeList()) {
+            if (findPathRecursive(child, targetId, path)) {
+                return true;
+            }
+        }
+        path.remove(path.size() - 1);
+        return false;
+    }
+
+    private Set<String> collectAltStartIds(SuperNode target) {
+        Set<String> altStartIds = new java.util.LinkedHashSet<>();
+        SuperNode parent = target.getParentNode();
+        if (parent == null) {
+            return altStartIds;
+        }
+        for (BasicNode node : parent.getNodeAndSuperNodeList()) {
+            for (AbstractEdge edge : node.getEdgeList()) {
+                if (!target.getId().equals(edge.getTargetUnid())) {
+                    continue;
+                }
+                Map<de.dfki.vsm.util.tpl.Tuple<String, BasicNode>, de.dfki.vsm.util.tpl.Tuple<String, BasicNode>> altMap = edge.getAltMap();
+                if (altMap == null) {
+                    continue;
+                }
+                for (de.dfki.vsm.util.tpl.Tuple<String, BasicNode> alt : altMap.values()) {
+                    if (alt != null && alt.getFirst() != null && !alt.getFirst().isEmpty()) {
+                        altStartIds.add(alt.getFirst());
+                    }
+                }
+            }
+        }
+        return altStartIds;
+    }
+
+    private JSONObject nodeToJsonCore(BasicNode node, SuperNode superNode, Set<String> altStartIds) {
+        JSONObject json = new JSONObject();
+        json.put("id", node.getId());
+        json.put("type", (node instanceof SuperNode) ? "Super" : "Basic");
+        json.put("name", node.getName() != null ? node.getName() : "");
+        json.put("comment", node.getComment() != null ? node.getComment() : "");
+        json.put("flavour", node.getFlavour() != null ? node.getFlavour().name() : "None");
+        json.put("isStart", superNode.getStartNodeMap().containsKey(node.getId()));
+        json.put("isAltStart", altStartIds.contains(node.getId()));
+        json.put("isHistory", node.isHistoryNode());
+
+        int childCount = 0;
+        if (node instanceof SuperNode) {
+            childCount = ((SuperNode) node).getNodeAndSuperNodeList().size();
+        }
+        json.put("childCount", childCount);
+
+        JSONObject graphics = new JSONObject();
+        int x = 0, y = 0;
+        if (node.getGraphics() != null && node.getGraphics().getPosition() != null) {
+            x = node.getGraphics().getPosition().getXPos();
+            y = node.getGraphics().getPosition().getYPos();
+        }
+        graphics.put("x", x);
+        graphics.put("y", y);
+        json.put("graphics", graphics);
+
+        JSONObject size = new JSONObject();
+        if (node instanceof SuperNode) {
+            size.put("w", 140);
+            size.put("h", 140);
+        } else {
+            size.put("w", 90);
+            size.put("h", 90);
+        }
+        json.put("size", size);
+
+        // Type definitions
+        json.put("typeDefs", typeDefsToJsonCore(node.getTypeDefList()));
+        json.put("varDefs", varDefsToJsonCore(node.getVarDefList()));
+        json.put("commands", commandsToJsonCore(node.getCmdList()));
+
+        return json;
+    }
+
+    private JSONArray typeDefsToJsonCore(List<DataTypeDefinition> defs) {
+        JSONArray list = new JSONArray();
+        if (defs == null) return list;
+        for (DataTypeDefinition def : defs) {
+            if (def != null) {
+                JSONObject json = new JSONObject();
+                json.put("name", def.getName());
+                json.put("flavour", def.getFlavour() != null ? def.getFlavour().name() : "");
+                json.put("syntax", def.getConcreteSyntax());
+                list.put(json);
+            }
+        }
+        return list;
+    }
+
+    private JSONArray varDefsToJsonCore(List<VariableDefinition> defs) {
+        JSONArray list = new JSONArray();
+        if (defs == null) return list;
+        for (VariableDefinition def : defs) {
+            if (def != null) {
+                JSONObject json = new JSONObject();
+                json.put("name", def.getName());
+                json.put("type", def.getType());
+                json.put("expression", def.getExp() != null ? def.getExp().getConcreteSyntax() : "");
+                json.put("syntax", def.getConcreteSyntax());
+                list.put(json);
+            }
+        }
+        return list;
+    }
+
+    private JSONArray commandsToJsonCore(List<Command> commands) {
+        JSONArray list = new JSONArray();
+        if (commands == null) return list;
+        for (Command cmd : commands) {
+            if (cmd != null) {
+                JSONObject json = new JSONObject();
+                json.put("text", cmd.getConcreteSyntax());
+                json.put("syntax", cmd.getConcreteSyntax());
+                list.put(json);
+            }
+        }
+        return list;
+    }
+
+    private JSONObject edgeToJsonCore(AbstractEdge edge, int index) {
+        JSONObject json = new JSONObject();
+        json.put("id", "E" + index);
+        json.put("type", getEdgeType(edge));
+
+        String sourceId = edge.getSourceUnid();
+        if (sourceId == null || sourceId.isBlank()) {
+            sourceId = edge.getSourceNode() != null ? edge.getSourceNode().getId() : "";
+        }
+        String targetId = edge.getTargetUnid();
+        if (targetId == null || targetId.isBlank()) {
+            targetId = edge.getTargetNode() != null ? edge.getTargetNode().getId() : "";
+        }
+        json.put("sourceId", sourceId);
+        json.put("targetId", targetId);
+
+        // Edge graphics
+        JSONObject graphics = new JSONObject();
+        EdgeGraphics eg = edge.getGraphics();
+        EdgeArrow arrow = eg != null ? eg.getConnection() : null;
+        JSONArray points = new JSONArray();
+        if (arrow != null) {
+            for (EdgePoint point : arrow.getPointList()) {
+                JSONObject p = new JSONObject();
+                p.put("x", point.getXPos());
+                p.put("y", point.getYPos());
+                p.put("cx", point.getCtrlXPos());
+                p.put("cy", point.getCtrlYPos());
+                points.put(p);
+            }
+        }
+        graphics.put("points", points);
+        json.put("graphics", graphics);
+
+        // Edge condition/expression
+        String conditionText = "";
+        if (edge instanceof GuargedEdge) {
+            GuargedEdge ge = (GuargedEdge) edge;
+            if (ge.getCondition() != null) {
+                conditionText = ge.getCondition().getConcreteSyntax();
+            }
+        }
+        json.put("condition", conditionText);
+        json.put("probability", edge instanceof RandomEdge ? ((RandomEdge) edge).getProbability() : 0);
+        json.put("timeout", edge instanceof TimeoutEdge ? ((TimeoutEdge) edge).getTimeout() : 0);
+
+        return json;
+    }
+
+    private String getEdgeType(AbstractEdge edge) {
+        if (edge instanceof GuargedEdge) return "CEDGE";  // Conditional/Guarded edge
+        if (edge instanceof RandomEdge) return "PEDGE";   // Probabilistic edge
+        if (edge instanceof InterruptEdge) return "IEDGE"; // Interrupt edge
+        if (edge instanceof ForkingEdge) return "FEDGE";  // Forking edge
+        if (edge instanceof TimeoutEdge) return "TEDGE";  // Timeout edge
+        if (edge instanceof EpsilonEdge) return "EEDGE";  // Epsilon edge
+        return "EEDGE"; // Default to epsilon
+    }
+
+    private JSONObject commentToJsonCore(CommentBadge comment, int index) {
+        JSONObject json = new JSONObject();
+        json.put("id", "C" + index);
+        json.put("text", comment.getHTMLText() != null ? comment.getHTMLText() : "");
+
+        JSONObject graphics = new JSONObject();
+        CommentGraphics cg = comment.getGraphics();
+        CommentBoundary rect = cg != null ? cg.getRectangle() : null;
+        if (rect != null) {
+            graphics.put("x", rect.getXPos());
+            graphics.put("y", rect.getYPos());
+            graphics.put("w", rect.getWidth());
+            graphics.put("h", rect.getHeight());
+        } else {
+            graphics.put("x", 0);
+            graphics.put("y", 0);
+            graphics.put("w", 100);
+            graphics.put("h", 50);
+        }
+        json.put("graphics", graphics);
+
+        return json;
     }
 
     private void handleRuntime(Context ctx) {
@@ -883,23 +1384,46 @@ public final class WebUiServer {
 
     // --- WebSocket handling -------------------------------------------------
     private void handleWsMessage(String raw, java.util.function.Consumer<String> sender, java.util.function.Consumer<String> broadcaster) {
+        System.out.println("[WS-HANDLE] Starting handleWsMessage");
         try {
+            System.out.println("[WS-HANDLE] Parsing message...");
             JSONObject msg = new JSONObject(raw);
             String id = msg.optString("id", "");
+            // Support both "method" (editor style) and "name" (web-ui style) for the command name
             String method = msg.optString("method", "");
+            if (method.isEmpty()) {
+                method = msg.optString("name", "");
+            }
+            // Support both "params" (editor style) and "payload" (web-ui style) for parameters
             JSONObject params = msg.optJSONObject("params");
+            if (params == null) {
+                params = msg.optJSONObject("payload");
+            }
+            System.out.println("[WS-HANDLE] Dispatching method: " + method + ", id: " + id);
             JSONObject result = dispatchWs(method, params == null ? new JSONObject() : params, broadcaster);
+            System.out.println("[WS-HANDLE] Dispatch returned: " + (result != null ? result.toString() : "null"));
+            // Send response in the format the Web UI expects
+            // Web UI expects: { type: "response", id, payload } or { type: "error", payload: { message } }
             JSONObject resp = new JSONObject();
+            resp.put("type", "response");
             if (!id.isEmpty()) {
                 resp.put("id", id);
             }
+            resp.put("payload", result);
+            // Also include status for backward compatibility
             resp.put("status", "ok");
-            resp.put("result", result);
+            System.out.println("[WS-HANDLE] Sending response: " + resp.toString());
             sender.accept(resp.toString());
+            System.out.println("[WS-HANDLE] Response sent successfully");
         } catch (Exception exc) {
+            System.out.println("[WS-HANDLE] ERROR: " + exc.getMessage());
+            exc.printStackTrace();
             JSONObject resp = new JSONObject();
+            resp.put("type", "error");
+            JSONObject payload = new JSONObject();
+            payload.put("message", exc.getMessage());
+            resp.put("payload", payload);
             resp.put("status", "error");
-            resp.put("message", exc.getMessage());
             sender.accept(resp.toString());
         }
     }
@@ -933,22 +1457,81 @@ public final class WebUiServer {
                 JSONObject ok = new JSONObject();
                 ok.put("status", "ok");
                 return ok;
+            case "Runtime.Play":
             case "Runtime.Start":
             case "Runtime.Pause":
-            case "Runtime.Stop":
+            case "Runtime.Stop": {
                 String pid = params.optString("projectId", "");
-                String state = method.endsWith("Start") ? "running" : method.endsWith("Pause") ? "paused" : "stopped";
-                setRuntimeState(pid, state);
+                System.out.println("[RUNTIME] " + method + " called for project: " + pid);
+                ProjectRef ref = projectStore.get(pid);
+                if (ref == null || ref.runtimeProject == null) {
+                    System.out.println("[RUNTIME] Project not found: " + pid);
+                    JSONObject err = new JSONObject();
+                    err.put("error", "PROJECT_NOT_FOUND");
+                    err.put("message", "Project not found: " + pid);
+                    return err;
+                }
+                RunTimeProject rtp = ref.runtimeProject;
+                boolean success = false;
+                String newState = ref.runtimeState;
+
+                if ("Runtime.Play".equals(method) || "Runtime.Start".equals(method)) {
+                    System.out.println("[RUNTIME] Play/Start: isRunning=" + rtp.isRunning() + ", isPaused=" + rtp.isPaused());
+                    if (rtp.isRunning()) {
+                        if (rtp.isPaused()) {
+                            success = rtp.proceed();
+                            System.out.println("[RUNTIME] proceed() returned: " + success);
+                            newState = success ? "running" : "paused";
+                        } else {
+                            success = true;
+                            newState = "running";
+                        }
+                    } else {
+                        boolean launched = rtp.launch();
+                        System.out.println("[RUNTIME] launch() returned: " + launched);
+                        if (launched) {
+                            success = rtp.start();
+                            System.out.println("[RUNTIME] start() returned: " + success);
+                            newState = success ? "running" : "stopped";
+                        } else {
+                            System.out.println("[RUNTIME] launch() failed");
+                        }
+                    }
+                } else if ("Runtime.Pause".equals(method)) {
+                    if (rtp.isRunning() && !rtp.isPaused()) {
+                        success = rtp.pause();
+                        newState = success ? "paused" : "running";
+                    } else {
+                        success = true;
+                        newState = rtp.isPaused() ? "paused" : (rtp.isRunning() ? "running" : "stopped");
+                    }
+                } else if ("Runtime.Stop".equals(method)) {
+                    if (rtp.isRunning()) {
+                        success = rtp.abort();
+                        if (success) {
+                            rtp.unload();
+                        }
+                        newState = "stopped";
+                    } else {
+                        success = true;
+                        newState = "stopped";
+                    }
+                }
+
+                ref.runtimeState = newState;
+                sLogger.message("[RUNTIME] Final state: " + newState + ", success=" + success);
                 JSONObject rt = new JSONObject();
-                rt.put("state", state);
+                rt.put("state", newState);
+                rt.put("projectId", pid);
                 if (broadcaster != null) {
                     JSONObject evt = new JSONObject();
                     evt.put("event", "runtime.state");
-                    evt.put("state", state);
+                    evt.put("state", newState);
                     evt.put("projectId", pid);
                     broadcaster.accept(evt.toString());
                 }
                 return rt;
+            }
             default:
                 JSONObject unknown = new JSONObject();
                 unknown.put("message", "Unhandled method: " + method);
