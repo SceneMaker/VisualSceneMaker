@@ -5165,6 +5165,7 @@
     if (typeDefEditIndex >= 0) {
       commandPayload.index = typeDefEditIndex;
     }
+    pinSelectedNodeSelection();
     const response = await runSceneFlowCommand(commandName, commandPayload);
     if (!response) {
       typeDefError = sceneFlowError || "Failed to update type definitions.";
@@ -5178,6 +5179,7 @@
     if (!nodeEditorTypeDefs[index]) return null;
     const target = index + direction;
     if (target < 0 || target >= nodeEditorTypeDefs.length) return null;
+    pinSelectedNodeSelection();
     return await runSceneFlowCommand("SceneFlow.Node.TypeDef.Move", {
       projectId: selectedProjectId,
       superNodeId: sceneFlow?.superNodeId,
@@ -5189,6 +5191,7 @@
 
   async function deleteTypeDef(index) {
     if (!selectedProjectId || !nodeEditorTarget) return;
+    pinSelectedNodeSelection();
     await runSceneFlowCommand("SceneFlow.Node.TypeDef.Delete", {
       projectId: selectedProjectId,
       superNodeId: sceneFlow?.superNodeId,
@@ -5271,6 +5274,7 @@
     if (varDefEditIndex >= 0) {
       commandPayload.index = varDefEditIndex;
     }
+    pinSelectedNodeSelection();
     const response = await runSceneFlowCommand(commandName, commandPayload);
     if (!response) {
       varDefError = sceneFlowError || "Failed to update variable definitions.";
@@ -5290,6 +5294,7 @@
     if (!nodeEditorVarDefs[index]) return null;
     const target = index + direction;
     if (target < 0 || target >= nodeEditorVarDefs.length) return null;
+    pinSelectedNodeSelection();
     const response = await runSceneFlowCommand("SceneFlow.Node.VarDef.Move", {
       projectId: selectedProjectId,
       superNodeId: sceneFlow?.superNodeId,
@@ -5328,6 +5333,7 @@
 
   async function deleteVarDef(index) {
     if (!selectedProjectId || !nodeEditorTarget) return;
+    pinSelectedNodeSelection();
     await runSceneFlowCommand("SceneFlow.Node.VarDef.Delete", {
       projectId: selectedProjectId,
       superNodeId: sceneFlow?.superNodeId,
@@ -5441,6 +5447,7 @@
     if (isExisting) {
       commandPayload.index = index;
     }
+    pinSelectedNodeSelection();
     const response = await runSceneFlowCommand(commandName, commandPayload);
     if (!response) {
       cmdError = sceneFlowError || "Failed to update commands.";
@@ -5459,6 +5466,7 @@
     if (!nodeEditorCommands[index]) return null;
     const target = index + direction;
     if (target < 0 || target >= nodeEditorCommands.length) return null;
+    pinSelectedNodeSelection();
     return await runSceneFlowCommand("SceneFlow.Node.Cmd.Move", {
       projectId: selectedProjectId,
       superNodeId: sceneFlow?.superNodeId,
@@ -5470,6 +5478,7 @@
 
   async function deleteCmd(index) {
     if (!selectedProjectId || !nodeEditorTarget) return;
+    pinSelectedNodeSelection();
     return await runSceneFlowCommand("SceneFlow.Node.Cmd.Delete", {
       projectId: selectedProjectId,
       superNodeId: sceneFlow?.superNodeId,
@@ -6184,6 +6193,13 @@
     if (!response) {
       superNodeDraft = previous;
       superNodeEditError = sceneFlowError || "Failed to update start node.";
+    }
+  }
+
+  function pinSelectedNodeSelection() {
+    if (sceneFlowSelection?.type === "node" && sceneFlowSelection.id) {
+      pinnedNodeSelectionId = sceneFlowSelection.id;
+      pinnedNodeSelectionRevision = sceneFlow?.revision ?? null;
     }
   }
 
