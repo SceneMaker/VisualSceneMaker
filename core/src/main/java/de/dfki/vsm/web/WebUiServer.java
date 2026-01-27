@@ -62,18 +62,34 @@ public final class WebUiServer {
         mAllowExternal = allow;
     }
 
+    private int mPort = 8090;
+
     public void start() {
+        start(8090, mAllowExternal);
+    }
+
+    public void start(int port, boolean allowExternal) {
         if (mApp != null) {
             return;
         }
+        mPort = port;
+        mAllowExternal = allowExternal;
         Preferences.load();
         mApp = Javalin.create(config -> {
-            config.addStaticFiles("/web-ui", Location.CLASSPATH);
-            // Serve packaged images (e.g., vsm_logo.svg)
-            config.addStaticFiles("images", Location.CLASSPATH);
-            // Configure SPA mode: serve index.html for all routes that don't match API endpoints or static files
-            config.addSinglePageRoot("/", "/web-ui/index.html", Location.CLASSPATH);
-        }).start(mAllowExternal ? "0.0.0.0" : "127.0.0.1", 8090);
+            // Try to add static files if available (editor mode)
+            // These may not be present in runtime-only mode
+            boolean hasWebUi = getClass().getClassLoader().getResource("web-ui/index.html") != null;
+            boolean hasImages = getClass().getClassLoader().getResource("images/") != null;
+            if (hasWebUi) {
+                config.addStaticFiles("/web-ui", Location.CLASSPATH);
+                config.addSinglePageRoot("/", "/web-ui/index.html", Location.CLASSPATH);
+            }
+            if (hasImages) {
+                config.addStaticFiles("images", Location.CLASSPATH);
+            }
+            // Enable CORS for cross-origin requests (Phase 8.4: remote connections)
+            config.enableCorsForAllOrigins();
+        }).start(allowExternal ? "0.0.0.0" : "127.0.0.1", port);
         registerRoutes();
         sLogger.message("Web UI server started on " + getLocalUrl());
     }
@@ -86,7 +102,7 @@ public final class WebUiServer {
     }
 
     public String getLocalUrl() {
-        return "http://127.0.0.1:8090";
+        return "http://127.0.0.1:" + mPort;
     }
 
     private void registerRoutes() {
@@ -136,7 +152,7 @@ public final class WebUiServer {
     private void handleInfo(Context ctx) {
         JSONObject info = new JSONObject();
         info.put("name", "SceneMaker Web");
-        info.put("port", 8090);
+        info.put("port", mPort);
         info.put("tokenRequired", true);
         writeJson(ctx, info);
     }
@@ -1064,6 +1080,56 @@ public final class WebUiServer {
         } catch (Exception ignored) {
         }
         return "";
+    }
+
+    /**
+     * Register an externally-loaded RunTimeProject with this server.
+     * This allows projects loaded via command-line to be accessible via API.
+     *
+     * @param project The already-loaded RunTimeProject
+     * @return The assigned project ID
+     */
+    public String registerProject(RunTimeProject project) {
+        if (project == null) {
+            return null;
+        }
+        String path = project.getProjectPath();
+        String name = project.getProjectName();
+        if (name == null || name.isBlank()) {
+            name = fileName(path);
+        }
+
+        // Check if already registered by path
+        for (ProjectRef ref : projectStore.values()) {
+            if (ref.path != null && !ref.path.isBlank() && ref.path.equals(path)) {
+                // Update the runtime project reference
+                ref.runtimeProject = project;
+                return ref.id;
+            }
+        }
+
+        // Register as new project
+        String id = UUID.randomUUID().toString();
+        ProjectRef ref = new ProjectRef(id, name, path);
+        ref.runtimeProject = project;
+        ref.nodes = serializeNodes(project);
+        ref.edges = serializeEdges(project);
+        ref.comments = serializeComments(project);
+        ref.runtimeState = project.isRunning() ? "running" : "stopped";
+        projectStore.put(id, ref);
+        sLogger.message("Registered project: " + name + " (id=" + id + ")");
+        return id;
+    }
+
+    /**
+     * Get the RunTimeProject for a given project ID.
+     *
+     * @param projectId The project ID
+     * @return The RunTimeProject or null if not found
+     */
+    public RunTimeProject getProject(String projectId) {
+        ProjectRef ref = projectStore.get(projectId);
+        return ref != null ? ref.runtimeProject : null;
     }
 
     private String ensureProject(String path, String name) {

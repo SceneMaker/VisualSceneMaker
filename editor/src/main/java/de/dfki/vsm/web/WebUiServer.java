@@ -237,9 +237,13 @@ public final class WebUiServer implements UiEventListener {
     }
 
     // Phase 6: Docking point system for edges
-    // Track occupied dock points separately for outgoing (source) and incoming (target) edges
-    // Key format: "nodeId:out" for outgoing edges, "nodeId:in" for incoming edges
+    // Track occupied dock points per node - each dock point can only be used by ONE edge endpoint
+    // Key format: "nodeId" - single set per node (no in/out separation)
+    // This prevents bidirectional edges from overlapping (they must use different dock points)
     private final Map<String, Set<Integer>> mOccupiedDockPoints = new ConcurrentHashMap<>();
+
+    // Dock point index for start sign (left side of node)
+    private static final int START_SIGN_DOCK_INDEX = 6;
 
     // Compute 24 dock points around a node boundary
     // Returns array of {x, y} positions relative to node's top-left corner
@@ -292,8 +296,14 @@ public final class WebUiServer implements UiEventListener {
         double[][] srcDockPoints = computeDockPoints(srcWidth, srcHeight, srcIsSuperNode);
         double[][] tgtDockPoints = computeDockPoints(tgtWidth, tgtHeight, tgtIsSuperNode);
 
-        Set<Integer> srcOccupied = mOccupiedDockPoints.computeIfAbsent(sourceNodeId + ":out", k -> ConcurrentHashMap.newKeySet());
-        Set<Integer> tgtOccupied = mOccupiedDockPoints.computeIfAbsent(targetNodeId + ":in", k -> ConcurrentHashMap.newKeySet());
+        // Single set per node - each dock point can only be used by one edge endpoint
+        Set<Integer> srcOccupied = mOccupiedDockPoints.computeIfAbsent(sourceNodeId, k -> ConcurrentHashMap.newKeySet());
+        Set<Integer> tgtOccupied = mOccupiedDockPoints.computeIfAbsent(targetNodeId, k -> ConcurrentHashMap.newKeySet());
+
+        // DEBUG: Log occupied dock points
+        System.out.println(">>> findBestDockPointPair: " + sourceNodeId + " -> " + targetNodeId);
+        System.out.println(">>>   srcOccupied[" + sourceNodeId + "] = " + srcOccupied);
+        System.out.println(">>>   tgtOccupied[" + targetNodeId + "] = " + tgtOccupied);
 
         int bestSrcIdx = -1;
         int bestTgtIdx = -1;
@@ -326,6 +336,8 @@ public final class WebUiServer implements UiEventListener {
         if (bestSrcIdx < 0) bestSrcIdx = 0;
         if (bestTgtIdx < 0) bestTgtIdx = 0;
 
+        System.out.println(">>>   SELECTED: srcDock=" + bestSrcIdx + ", tgtDock=" + bestTgtIdx);
+
         return new int[] { bestSrcIdx, bestTgtIdx };
     }
 
@@ -336,8 +348,8 @@ public final class WebUiServer implements UiEventListener {
     //   12=bottom, 15=lower-right, 18=right, 21=upper-right
     // For a nice upward loop, we want dock points near the TOP (around 0, with 21 on right, 3 on left)
     private int[] findSelfLoopDockPointPair(String nodeId, int nodeWidth, int nodeHeight, boolean isSuperNode) {
-        Set<Integer> outOccupied = mOccupiedDockPoints.computeIfAbsent(nodeId + ":out", k -> ConcurrentHashMap.newKeySet());
-        Set<Integer> inOccupied = mOccupiedDockPoints.computeIfAbsent(nodeId + ":in", k -> ConcurrentHashMap.newKeySet());
+        // Single set per node - both self-loop endpoints use dock points from same set
+        Set<Integer> occupied = mOccupiedDockPoints.computeIfAbsent(nodeId, k -> ConcurrentHashMap.newKeySet());
 
         // For an upward loop like in the nice example:
         // - Start point on upper-right (around 1-2 o'clock) = dock 21 or 22
@@ -359,19 +371,19 @@ public final class WebUiServer implements UiEventListener {
             int startIdx = pair[0];
             int endIdx = pair[1];
 
-            // Check if both positions are available
-            if (!outOccupied.contains(startIdx) && !inOccupied.contains(endIdx)) {
+            // Check if both positions are available (both in same set now)
+            if (!occupied.contains(startIdx) && !occupied.contains(endIdx)) {
                 return new int[] { startIdx, endIdx };
             }
         }
 
         // Fallback: find any pair in upper half with reasonable separation
         for (int s = 19; s <= 23; s++) { // Upper-right quadrant
-            if (outOccupied.contains(s)) continue;
+            if (occupied.contains(s)) continue;
 
             for (int offset = 6; offset >= 4; offset--) {
                 int t = (s + offset) % 24; // Upper-left quadrant
-                if (!inOccupied.contains(t) && s != t) {
+                if (!occupied.contains(t) && s != t) {
                     return new int[] { s, t };
                 }
             }
@@ -381,16 +393,18 @@ public final class WebUiServer implements UiEventListener {
         return new int[] { 21, 3 };
     }
 
-    // Mark a dock point as occupied (for source or target)
+    // Mark a dock point as occupied
+    // isSource parameter kept for API compatibility but ignored (single set per node)
     private void occupyDockPoint(String nodeId, int dockIndex, boolean isSource) {
-        String key = nodeId + (isSource ? ":out" : ":in");
-        mOccupiedDockPoints.computeIfAbsent(key, k -> ConcurrentHashMap.newKeySet()).add(dockIndex);
+        Set<Integer> set = mOccupiedDockPoints.computeIfAbsent(nodeId, k -> ConcurrentHashMap.newKeySet());
+        set.add(dockIndex);
+        System.out.println(">>> occupyDockPoint: nodeId=" + nodeId + ", dockIndex=" + dockIndex + " -> set now: " + set);
     }
 
     // Release a dock point
+    // isSource parameter kept for API compatibility but ignored (single set per node)
     private void releaseDockPoint(String nodeId, int dockIndex, boolean isSource) {
-        String key = nodeId + (isSource ? ":out" : ":in");
-        Set<Integer> occupied = mOccupiedDockPoints.get(key);
+        Set<Integer> occupied = mOccupiedDockPoints.get(nodeId);
         if (occupied != null) {
             occupied.remove(dockIndex);
         }
@@ -428,6 +442,16 @@ public final class WebUiServer implements UiEventListener {
         List<BasicNode> allNodes = new ArrayList<>();
         allNodes.addAll(superNode.getNodeList());
         allNodes.addAll(superNode.getSuperNodeList());
+
+        // Mark start sign dock points for start nodes
+        Map<String, BasicNode> startNodeMap = superNode.getStartNodeMap();
+        if (startNodeMap != null) {
+            for (BasicNode startNode : startNodeMap.values()) {
+                if (startNode != null) {
+                    occupyStartSignDockPoint(startNode.getId());
+                }
+            }
+        }
 
         for (BasicNode node : allNodes) {
             // Process all edges from this node
@@ -499,18 +523,15 @@ public final class WebUiServer implements UiEventListener {
     }
 
     private void clearDockPointsRecursive(SuperNode superNode) {
-        // Remove both outgoing and incoming dock point sets
-        mOccupiedDockPoints.remove(superNode.getId() + ":out");
-        mOccupiedDockPoints.remove(superNode.getId() + ":in");
+        // Remove dock point set for this node (single set per node)
+        mOccupiedDockPoints.remove(superNode.getId());
 
         for (BasicNode node : superNode.getNodeList()) {
-            mOccupiedDockPoints.remove(node.getId() + ":out");
-            mOccupiedDockPoints.remove(node.getId() + ":in");
+            mOccupiedDockPoints.remove(node.getId());
         }
 
         for (SuperNode child : superNode.getSuperNodeList()) {
-            mOccupiedDockPoints.remove(child.getId() + ":out");
-            mOccupiedDockPoints.remove(child.getId() + ":in");
+            mOccupiedDockPoints.remove(child.getId());
             clearDockPointsRecursive(child);
         }
     }
@@ -536,21 +557,156 @@ public final class WebUiServer implements UiEventListener {
         return bestDist < 20 ? bestIdx : -1;
     }
 
-    // Compute initial bezier control points for a new edge
+    // Mark start sign dock point as occupied for a start node
+    private void occupyStartSignDockPoint(String nodeId) {
+        mOccupiedDockPoints.computeIfAbsent(nodeId, k -> ConcurrentHashMap.newKeySet()).add(START_SIGN_DOCK_INDEX);
+    }
+
+    // Release start sign dock point when node is no longer a start node
+    private void releaseStartSignDockPoint(String nodeId) {
+        Set<Integer> occupied = mOccupiedDockPoints.get(nodeId);
+        if (occupied != null) {
+            occupied.remove(START_SIGN_DOCK_INDEX);
+        }
+    }
+
+    // Find the nearest available (unoccupied) dock point to a given position
+    // Returns the dock index, or -1 if all are occupied
+    private int findNearestAvailableDockPoint(String nodeId, double nodeX, double nodeY,
+            int nodeWidth, int nodeHeight, boolean isSuperNode, double targetX, double targetY) {
+        double[][] dockPoints = computeDockPoints(nodeWidth, nodeHeight, isSuperNode);
+        Set<Integer> occupied = mOccupiedDockPoints.getOrDefault(nodeId, ConcurrentHashMap.newKeySet());
+
+        int bestIdx = -1;
+        double bestDist = Double.MAX_VALUE;
+
+        for (int i = 0; i < dockPoints.length; i++) {
+            if (occupied.contains(i)) continue; // Skip occupied dock points
+
+            double dockAbsX = nodeX + dockPoints[i][0];
+            double dockAbsY = nodeY + dockPoints[i][1];
+            double dist = Math.hypot(dockAbsX - targetX, dockAbsY - targetY);
+            if (dist < bestDist) {
+                bestDist = dist;
+                bestIdx = i;
+            }
+        }
+
+        return bestIdx;
+    }
+
+    // Update edge endpoints when a node is moved
+    // Uses delta-based movement to shift edge endpoints by the same amount the node moved
+    private void updateEdgeEndpointsForMovedNode(BasicNode movedNode, SuperNode parent, EditorConfig config, int oldX, int oldY) {
+        if (movedNode == null || parent == null) return;
+
+        NodeGraphics nodeGraphics = movedNode.getGraphics();
+        NodePosition nodePos = nodeGraphics != null ? nodeGraphics.getPosition() : null;
+        int newX = nodePos != null ? nodePos.getXPos() : 0;
+        int newY = nodePos != null ? nodePos.getYPos() : 0;
+
+        // Calculate movement delta
+        int deltaX = newX - oldX;
+        int deltaY = newY - oldY;
+
+        // Skip if no actual movement
+        if (deltaX == 0 && deltaY == 0) return;
+
+        String nodeId = movedNode.getId();
+
+        // Update outgoing edges (edges FROM this node) - shift start points
+        for (AbstractEdge edge : movedNode.getEdgeList()) {
+            EdgeGraphics edgeGraphics = edge.getGraphics();
+            if (edgeGraphics == null) continue;
+            EdgeArrow arrow = edgeGraphics.getConnection();
+            if (arrow == null) continue;
+            List<EdgePoint> points = arrow.getPointList();
+            if (points == null || points.isEmpty()) continue;
+
+            EdgePoint startPt = points.get(0);
+            // Shift both position and control point by delta
+            startPt.setXPos(startPt.getXPos() + deltaX);
+            startPt.setYPos(startPt.getYPos() + deltaY);
+            startPt.setCtrlXPos(startPt.getCtrlXPos() + deltaX);
+            startPt.setCtrlYPos(startPt.getCtrlYPos() + deltaY);
+        }
+
+        // Update incoming edges (edges TO this node) - shift end points
+        for (BasicNode otherNode : parent.getNodeAndSuperNodeList()) {
+            for (AbstractEdge edge : otherNode.getEdgeList()) {
+                String targetId = edge.getTargetUnid();
+                if (!nodeId.equals(targetId)) continue;
+
+                EdgeGraphics edgeGraphics = edge.getGraphics();
+                if (edgeGraphics == null) continue;
+                EdgeArrow arrow = edgeGraphics.getConnection();
+                if (arrow == null) continue;
+                List<EdgePoint> points = arrow.getPointList();
+                if (points == null || points.size() < 2) continue;
+
+                EdgePoint endPt = points.get(points.size() - 1);
+                // Shift both position and control point by delta
+                endPt.setXPos(endPt.getXPos() + deltaX);
+                endPt.setYPos(endPt.getYPos() + deltaY);
+                endPt.setCtrlXPos(endPt.getCtrlXPos() + deltaX);
+                endPt.setCtrlYPos(endPt.getCtrlYPos() + deltaY);
+            }
+        }
+    }
+
+    // Compute bezier control points using the Swing UI algorithm
+    // Control point = node_center + scalingFactor * (dock_point - node_center)
+    // This naturally creates curves that bow outward from each node
+    private double[] computeInitialControlPoints(
+            double srcDockX, double srcDockY, double srcCenterX, double srcCenterY,
+            double tgtDockX, double tgtDockY, double tgtCenterX, double tgtCenterY,
+            double nodeHeight, boolean isSelfLoop) {
+
+        // Vector from source node center to source dock point
+        double srcVecX = srcDockX - srcCenterX;
+        double srcVecY = srcDockY - srcCenterY;
+
+        // Vector from target node center to target dock point
+        double tgtVecX = tgtDockX - tgtCenterX;
+        double tgtVecY = tgtDockY - tgtCenterY;
+
+        // Scale based on distance between node centers (same as Swing UI)
+        double distance = Math.hypot(tgtCenterX - srcCenterX, tgtCenterY - srcCenterY);
+        double scalingFactor = isSelfLoop ? 3.0 : ((distance / nodeHeight) - 0.5);
+        if (scalingFactor < 1.25) {
+            scalingFactor = 1.25;
+        }
+
+        // Control point 1: source center + scaled vector to source dock
+        double ctrl1X = srcCenterX + scalingFactor * srcVecX;
+        double ctrl1Y = srcCenterY + scalingFactor * srcVecY;
+
+        // Control point 2: target center + scaled vector to target dock
+        double ctrl2X = tgtCenterX + scalingFactor * tgtVecX;
+        double ctrl2Y = tgtCenterY + scalingFactor * tgtVecY;
+
+        // Sanitize: ensure control points are not too close to origin
+        double minPos = 15;
+        ctrl1X = Math.max(ctrl1X, minPos);
+        ctrl1Y = Math.max(ctrl1Y, minPos);
+        ctrl2X = Math.max(ctrl2X, minPos);
+        ctrl2Y = Math.max(ctrl2Y, minPos);
+
+        return new double[] { ctrl1X, ctrl1Y, ctrl2X, ctrl2Y };
+    }
+
+    // Legacy method for backward compatibility
     private double[] computeInitialControlPoint(double startX, double startY, double endX, double endY, boolean isStart) {
-        // Control point offset: 1/3 of the distance along the line, with slight curve
         double dx = endX - startX;
         double dy = endY - startY;
         double dist = Math.hypot(dx, dy);
         double offset = Math.max(30, dist / 3);
 
         if (isStart) {
-            // Start control point: extend in direction from start to end
             double ux = dist > 0 ? dx / dist : 1;
             double uy = dist > 0 ? dy / dist : 0;
             return new double[] { startX + ux * offset, startY + uy * offset };
         } else {
-            // End control point: extend back from end toward start
             double ux = dist > 0 ? -dx / dist : -1;
             double uy = dist > 0 ? -dy / dist : 0;
             return new double[] { endX + ux * offset, endY + uy * offset };
@@ -591,6 +747,7 @@ public final class WebUiServer implements UiEventListener {
     }
 
     // Normalize an edge - recalculate control points to create a smooth curve
+    // Uses Swing-style algorithm with node centers for proper bowing
     private void normalizeEdge(AbstractEdge edge, EditorConfig config) {
         if (edge == null) return;
         EdgeGraphics graphics = edge.getGraphics();
@@ -613,6 +770,9 @@ public final class WebUiServer implements UiEventListener {
         double endX = endPt.getXPos();
         double endY = endPt.getYPos();
 
+        int nodeWidth = config != null ? config.sNODEWIDTH : 90;
+        int nodeHeight = config != null ? config.sNODEHEIGHT : 90;
+
         // Check if it's a self-loop
         String sourceId = edge.getSourceUnid();
         String targetId = edge.getTargetUnid();
@@ -624,8 +784,6 @@ public final class WebUiServer implements UiEventListener {
                 NodePosition nodePos = nodeGraphics != null ? nodeGraphics.getPosition() : null;
                 double nodeX = nodePos != null ? nodePos.getXPos() : 0;
                 double nodeY = nodePos != null ? nodePos.getYPos() : 0;
-                int nodeWidth = config != null ? config.sNODEWIDTH : 90;
-                int nodeHeight = config != null ? config.sNODEHEIGHT : 90;
                 double nodeCenterX = nodeX + nodeWidth / 2.0;
                 double nodeCenterY = nodeY + nodeHeight / 2.0;
 
@@ -637,19 +795,59 @@ public final class WebUiServer implements UiEventListener {
                 endPt.setCtrlYPos((int) Math.round(loopCtrl[3]));
             }
         } else {
-            // Normal edge - use standard control points
-            double[] startCtrl = computeInitialControlPoint(startX, startY, endX, endY, true);
-            double[] endCtrl = computeInitialControlPoint(startX, startY, endX, endY, false);
-            startPt.setCtrlXPos((int) Math.round(startCtrl[0]));
-            startPt.setCtrlYPos((int) Math.round(startCtrl[1]));
-            endPt.setCtrlXPos((int) Math.round(endCtrl[0]));
-            endPt.setCtrlYPos((int) Math.round(endCtrl[1]));
+            // Normal edge - use Swing-style algorithm with node centers
+            BasicNode sourceNode = edge.getSourceNode();
+            BasicNode targetNode = edge.getTargetNode();
+            if (sourceNode != null && targetNode != null) {
+                NodeGraphics srcGraphics = sourceNode.getGraphics();
+                NodeGraphics tgtGraphics = targetNode.getGraphics();
+                NodePosition srcPos = srcGraphics != null ? srcGraphics.getPosition() : null;
+                NodePosition tgtPos = tgtGraphics != null ? tgtGraphics.getPosition() : null;
+                double srcX = srcPos != null ? srcPos.getXPos() : 0;
+                double srcY = srcPos != null ? srcPos.getYPos() : 0;
+                double tgtX = tgtPos != null ? tgtPos.getXPos() : 0;
+                double tgtY = tgtPos != null ? tgtPos.getYPos() : 0;
+                double srcCenterX = srcX + nodeWidth / 2.0;
+                double srcCenterY = srcY + nodeHeight / 2.0;
+                double tgtCenterX = tgtX + nodeWidth / 2.0;
+                double tgtCenterY = tgtY + nodeHeight / 2.0;
+
+                // Use Swing algorithm: control points based on vectors from centers to dock points
+                double[] allCtrl = computeInitialControlPoints(
+                        startX, startY, srcCenterX, srcCenterY,
+                        endX, endY, tgtCenterX, tgtCenterY,
+                        nodeHeight, false);
+                startPt.setCtrlXPos((int) Math.round(allCtrl[0]));
+                startPt.setCtrlYPos((int) Math.round(allCtrl[1]));
+                endPt.setCtrlXPos((int) Math.round(allCtrl[2]));
+                endPt.setCtrlYPos((int) Math.round(allCtrl[3]));
+            }
         }
     }
 
     // Straighten an edge - make control points lie on the straight line between start and end
+    // Note: Self-loops and bidirectional edges cannot be straightened (would overlap)
     private void straightenEdge(AbstractEdge edge) {
         if (edge == null) return;
+
+        // Skip self-loops - straightening them would collapse the curve
+        String sourceId = edge.getSourceUnid();
+        String targetId = edge.getTargetUnid();
+        if (isSelfLoopEdge(sourceId, targetId)) {
+            return;
+        }
+
+        // Skip if there's a reverse edge (bidirectional pair) - straightening would overlap
+        BasicNode targetNode = edge.getTargetNode();
+        if (targetNode != null) {
+            for (AbstractEdge reverseEdge : targetNode.getEdgeList()) {
+                if (sourceId.equals(reverseEdge.getTargetUnid())) {
+                    // Found reverse edge - skip straightening
+                    return;
+                }
+            }
+        }
+
         EdgeGraphics graphics = edge.getGraphics();
         if (graphics == null) return;
         EdgeArrow arrow = graphics.getConnection();
@@ -1406,6 +1604,11 @@ public final class WebUiServer implements UiEventListener {
         String projectId = ctx.pathParam("id");
         // Phase 6: Use EditorProjectService instead of EditorInstance
         boolean closed = callOnEdt(() -> {
+            EditorProject project = mEditorProjectService.getProject(projectId);
+            if (project != null) {
+                // Clear dock points for this project before closing
+                clearDockPointsForProject(project.getSceneFlow());
+            }
             return mEditorProjectService.closeProject(projectId);
         });
         if (!closed) {
@@ -1998,6 +2201,8 @@ public final class WebUiServer implements UiEventListener {
                             return null;
                         }
                         mCurrentProjectId = projectId;
+                        // Phase 6: Initialize dock points for existing edges
+                        initializeDockPointsForProject(proj);
                         return projectToJson(proj, projectId);
                     });
                     if (project == null) {
@@ -2208,7 +2413,7 @@ public final class WebUiServer implements UiEventListener {
                     sendResponse(ctx, requestId, name, snapshot);
                     return;
                 }
-                // Phase 6: Headless version of SceneFlow.Node.Create
+                // Phase 6/8: Headless version of SceneFlow.Node.Create using SceneFlowService
                 case "SceneFlow.Node.Create": {
                     String projectId = body.optString("projectId", null);
                     String parentId = body.optString("parentId", body.optString("superNodeId", null));
@@ -2221,71 +2426,64 @@ public final class WebUiServer implements UiEventListener {
                         return;
                     }
                     final String resolvedParentId = parentId;
+                    final String finalNodeName = nodeName;
                     JSONObject response = callOnEdt(() -> {
                         EditorProject project = mEditorProjectService.getProject(projectId);
                         if (project == null) {
                             return null;
                         }
-                        SceneFlow sceneFlow = project.getSceneFlow();
 
-                        // Find the parent SuperNode (where to add the new node)
-                        SuperNode parentNode;
-                        if (resolvedParentId == null || resolvedParentId.isBlank() || ROOT_SUPERNODE_ID.equals(resolvedParentId)) {
-                            parentNode = sceneFlow;
-                        } else {
-                            BasicNode found = findNodeRecursive(sceneFlow, resolvedParentId);
-                            if (found instanceof SuperNode) {
-                                parentNode = (SuperNode) found;
-                            } else {
-                                parentNode = sceneFlow; // Fallback to root
-                            }
+                        // Resolve parent node ID (use sceneflow root if not specified)
+                        String effectiveParentId = resolvedParentId;
+                        if (effectiveParentId == null || effectiveParentId.isBlank() || ROOT_SUPERNODE_ID.equals(effectiveParentId)) {
+                            effectiveParentId = project.getSceneFlow().getId();
                         }
 
-                        boolean isSuper = "super".equalsIgnoreCase(nodeType) || "supernode".equalsIgnoreCase(nodeType);
-                        String nodeId = generateNextNodeId(sceneFlow, isSuper);
-                        BasicNode dataNode = isSuper ? new SuperNode() : new BasicNode();
-                        dataNode.setNameAndId(nodeId);
-                        if (nodeName != null && !nodeName.isBlank()) {
-                            dataNode.setName(nodeName);
-                        }
+                        // Calculate grid-snapped position
+                        EditorConfig config = project.getEditorConfig();
+                        int gridX = config != null ? config.sGRID_XSPACE : 1;
+                        int gridY = config != null ? config.sGRID_YSPACE : 1;
+                        int nodeW = config != null ? config.sNODEWIDTH : 90;
+                        int nodeH = config != null ? config.sNODEHEIGHT : 90;
                         int clampedX = clampPositive((int) Math.round(x));
                         int clampedY = clampPositive((int) Math.round(y));
-                        dataNode.setGraphics(new NodeGraphics(clampedX, clampedY));
-                        dataNode.setParentNode(parentNode);
-                        if (dataNode instanceof SuperNode) {
-                            BasicNode history = new BasicNode();
-                            history.setHistoryNodeFlag(true);
-                            history.setName("History");
-                            history.setId(generateNextNodeId(sceneFlow, false));
-                            history.setGraphics(new NodeGraphics(0, 0));
-                            history.setParentNode((SuperNode) dataNode);
-                            ((SuperNode) dataNode).addNode(history);
-                            ((SuperNode) dataNode).setHistoryNode(history);
-                        }
-                        // Check if this is the first non-history node in the parent
-                        // If so, it should be a start node
-                        boolean shouldBeStart = parentNode.getStartNodeMap().isEmpty();
+                        double snapOriginX = nodeW / 2.0 + nodeW / 3.0;
+                        double snapOriginY = nodeH / 2.0 + nodeH / 3.0;
+                        double centerX = clampedX + nodeW / 2.0;
+                        double centerY = clampedY + nodeH / 2.0;
+                        double snappedCenterX = snapOriginX + Math.round((centerX - snapOriginX) / gridX) * gridX;
+                        double snappedCenterY = snapOriginY + Math.round((centerY - snapOriginY) / gridY) * gridY;
+                        int snappedX = (int) Math.round(snappedCenterX - nodeW / 2.0);
+                        int snappedY = (int) Math.round(snappedCenterY - nodeH / 2.0);
 
-                        // Add node to correct parent based on type
-                        if (dataNode instanceof SuperNode) {
-                            parentNode.addSuperNode((SuperNode) dataNode);
-                        } else {
-                            parentNode.addNode(dataNode);
+                        // Determine node type
+                        boolean isSuper = "super".equalsIgnoreCase(nodeType) || "supernode".equalsIgnoreCase(nodeType);
+                        SceneFlowService.NodeType serviceNodeType = isSuper
+                            ? SceneFlowService.NodeType.SUPER_NODE
+                            : SceneFlowService.NodeType.BASIC_NODE;
+
+                        // Delegate to SceneFlowService
+                        BasicNode createdNode = mSceneFlowService.createNode(
+                            project, effectiveParentId, serviceNodeType, new Point(snappedX, snappedY), finalNodeName);
+
+                        if (createdNode == null) {
+                            return null;
                         }
 
-                        // Make it a start node if it's the first node
-                        if (shouldBeStart && !(dataNode instanceof SuperNode && ((SuperNode) dataNode).getHistoryNode() == dataNode)) {
-                            parentNode.addStartNode(dataNode);
+                        // Handle start node dock point (UI concern)
+                        SuperNode parentNode = (SuperNode) createdNode.getParentNode();
+                        if (parentNode != null && parentNode.getStartNodeMap().containsKey(createdNode.getId())) {
+                            occupyStartSignDockPoint(createdNode.getId());
                         }
 
                         JSONObject payloadResp = new JSONObject();
-                        payloadResp.put("nodeId", nodeId);
+                        payloadResp.put("nodeId", createdNode.getId());
                         payloadResp.put("snapshot", sceneFlowSnapshot(project, projectId, parentNode));
                         payloadResp.put("dirty", project.hasChanged());
                         return payloadResp;
                     });
                     if (response == null) {
-                        sendError(ctx, requestId, "PROJECT_NOT_FOUND", "Project not found");
+                        sendError(ctx, requestId, "PROJECT_NOT_FOUND", "Project not found or node creation failed");
                         return;
                     }
                     sendResponse(ctx, requestId, name, response);
@@ -2318,14 +2516,41 @@ public final class WebUiServer implements UiEventListener {
                         if (dataNode == null) {
                             return new JSONObject().put("error", "NODE_NOT_FOUND");
                         }
+                        // Capture old position before updating
+                        NodeGraphics oldGraphics = dataNode.getGraphics();
+                        NodePosition oldPos = oldGraphics != null ? oldGraphics.getPosition() : null;
+                        int oldX = oldPos != null ? oldPos.getXPos() : 0;
+                        int oldY = oldPos != null ? oldPos.getYPos() : 0;
+
                         int targetX = (int) Math.round(x);
                         int targetY = (int) Math.round(y);
+                        if (snap) {
+                            EditorConfig config = project.getEditorConfig();
+                            int gridX = config != null ? config.sGRID_XSPACE : 1;
+                            int gridY = config != null ? config.sGRID_YSPACE : 1;
+                            int nodeW = config != null ? config.sNODEWIDTH : 90;
+                            int nodeH = config != null ? config.sNODEHEIGHT : 90;
+                            // Grid origin offset by -gridX/2 to match visual grid dots
+                            double snapOriginX = nodeW / 2.0 + nodeW / 3.0;
+                            double snapOriginY = nodeH / 2.0 + nodeH / 3.0;
+                            // Snap node CENTER to grid, then convert back to top-left
+                            double centerX = targetX + nodeW / 2.0;
+                            double centerY = targetY + nodeH / 2.0;
+                            double snappedCenterX = snapOriginX + Math.round((centerX - snapOriginX) / gridX) * gridX;
+                            double snappedCenterY = snapOriginY + Math.round((centerY - snapOriginY) / gridY) * gridY;
+                            targetX = (int) Math.round(snappedCenterX - nodeW / 2.0);
+                            targetY = (int) Math.round(snappedCenterY - nodeH / 2.0);
+                        }
                         dataNode.setGraphics(new NodeGraphics(targetX, targetY));
+
+                        // Update edge endpoints by applying the movement delta
+                        SuperNode snapshotTarget = resolveSnapshotTarget(sceneFlow, resolvedSuperNodeId);
+                        updateEdgeEndpointsForMovedNode(dataNode, snapshotTarget, project.getEditorConfig(), oldX, oldY);
+
                         JSONObject payloadResp = new JSONObject();
                         payloadResp.put("nodeId", nodeId);
                         payloadResp.put("x", targetX);
                         payloadResp.put("y", targetY);
-                        SuperNode snapshotTarget = resolveSnapshotTarget(sceneFlow, resolvedSuperNodeId);
                         payloadResp.put("snapshot", sceneFlowSnapshot(project, projectId, snapshotTarget));
                         payloadResp.put("dirty", project.hasChanged());
                         return payloadResp;
@@ -2383,14 +2608,41 @@ public final class WebUiServer implements UiEventListener {
                             activeSuperNode = sceneFlow;
                         }
                         // Phase 6: Move nodes by directly updating their graphics (headless - no WorkSpacePanel)
+                        // Store old positions for delta-based edge updates
+                        EditorConfig config = project.getEditorConfig();
+                        int gridX = config != null ? config.sGRID_XSPACE : 1;
+                        int gridY = config != null ? config.sGRID_YSPACE : 1;
+                        int nodeW = config != null ? config.sNODEWIDTH : 90;
+                        int nodeH = config != null ? config.sNODEHEIGHT : 90;
+                        // Grid origin offset by -gridX/2 to match visual grid dots
+                        double snapOriginX = nodeW / 2.0 + nodeW / 3.0;
+                        double snapOriginY = nodeH / 2.0 + nodeH / 3.0;
+                        Map<BasicNode, int[]> oldPositions = new IdentityHashMap<>();
+                        List<BasicNode> movedNodes = new ArrayList<>();
                         for (NodeMoveRequest move : moves) {
                             BasicNode dataNode = resolveNodeById(activeSuperNode, move.nodeId);
                             if (dataNode == null) {
                                 return new JSONObject().put("error", "NODE_NOT_FOUND").put("nodeId", move.nodeId);
                             }
-                            // Clamp position to positive values
+                            // Capture old position before updating
+                            NodeGraphics oldGraphics = dataNode.getGraphics();
+                            NodePosition oldPos = oldGraphics != null ? oldGraphics.getPosition() : null;
+                            int oldX = oldPos != null ? oldPos.getXPos() : 0;
+                            int oldY = oldPos != null ? oldPos.getYPos() : 0;
+                            oldPositions.put(dataNode, new int[] { oldX, oldY });
+
+                            // Clamp position to positive values and apply snap
                             int targetX = Math.max(1, move.target.x);
                             int targetY = Math.max(1, move.target.y);
+                            if (snap) {
+                                // Snap node CENTER to grid, then convert back to top-left
+                                double centerX = targetX + nodeW / 2.0;
+                                double centerY = targetY + nodeH / 2.0;
+                                double snappedCenterX = snapOriginX + Math.round((centerX - snapOriginX) / gridX) * gridX;
+                                double snappedCenterY = snapOriginY + Math.round((centerY - snapOriginY) / gridY) * gridY;
+                                targetX = (int) Math.round(snappedCenterX - nodeW / 2.0);
+                                targetY = (int) Math.round(snappedCenterY - nodeH / 2.0);
+                            }
                             // Update node graphics
                             NodeGraphics graphics = dataNode.getGraphics();
                             if (graphics == null) {
@@ -2399,7 +2651,15 @@ public final class WebUiServer implements UiEventListener {
                             } else {
                                 graphics.setPosition(targetX, targetY);
                             }
+                            movedNodes.add(dataNode);
                         }
+
+                        // Update edge endpoints to follow the moved nodes
+                        for (BasicNode movedNode : movedNodes) {
+                            int[] oldPos = oldPositions.get(movedNode);
+                            updateEdgeEndpointsForMovedNode(movedNode, activeSuperNode, config, oldPos[0], oldPos[1]);
+                        }
+
                         JSONObject payloadResp = new JSONObject();
                         payloadResp.put("snapshot", sceneFlowSnapshot(project, projectId, activeSuperNode));
                         payloadResp.put("dirty", project.hasChanged());
@@ -2475,16 +2735,13 @@ public final class WebUiServer implements UiEventListener {
                     }
                     return;
                 }
-                // Phase 6: Headless version of SceneFlow.Node.Delete
+                // Phase 6/8: Headless version of SceneFlow.Node.Delete using SceneFlowService
                 case "SceneFlow.Node.Delete": {
                     String projectId = body.optString("projectId", null);
                     String superNodeId = body.optString("superNodeId", null);
                     String nodeId = body.optString("nodeId", null);
 
-                    mLogger.message("*** DELETE REQUEST RECEIVED *** projectId=" + projectId + ", nodeId=" + nodeId);
-
                     if (projectId == null || projectId.isBlank() || nodeId == null || nodeId.isBlank()) {
-                        mLogger.warning("DELETE FAILED: Missing projectId or nodeId");
                         sendError(ctx, requestId, "BAD_REQUEST", "Missing projectId or nodeId");
                         return;
                     }
@@ -2492,50 +2749,27 @@ public final class WebUiServer implements UiEventListener {
                     JSONObject response = callOnEdt(() -> {
                         EditorProject project = mEditorProjectService.getProject(projectId);
                         if (project == null) {
-                            mLogger.warning("DELETE FAILED: Project not found - " + projectId);
                             return null;
                         }
                         SceneFlow sceneFlow = project.getSceneFlow();
-                        BasicNode dataNode = findNodeRecursive(sceneFlow, nodeId);
-                        if (dataNode == null) {
-                            mLogger.warning("DELETE FAILED: Node not found - " + nodeId);
-                            return new JSONObject().put("error", "NODE_NOT_FOUND");
-                        }
-
-                        mLogger.message("DELETE: Found node - name='" + dataNode.getName() +
-                                       "', type=" + (dataNode instanceof SuperNode ? "SuperNode" : "BasicNode") +
-                                       ", id=" + dataNode.getId());
 
                         // Don't allow deleting the root sceneflow itself
-                        if (dataNode == sceneFlow) {
-                            mLogger.warning("DELETE FAILED: Attempt to delete root SceneFlow");
+                        if (nodeId.equals(sceneFlow.getId())) {
                             return new JSONObject().put("error", "CANNOT_DELETE_ROOT")
                                     .put("message", "Cannot delete the root SceneFlow node");
                         }
 
-                        SuperNode parent = dataNode.getParentNode();
-                        mLogger.message("DELETE: Parent node = " + (parent == null ? "NULL" : parent.getName() + " (id=" + parent.getId() + ")"));
+                        // Clear UI-specific dock point tracking before deletion
+                        mOccupiedDockPoints.remove(nodeId);
 
-                        if (parent == null) {
-                            // Debug info to understand why parent is null
-                            String debugInfo = String.format("Node '%s' (type=%s, id=%s) has null parent",
-                                    dataNode.getName(),
-                                    dataNode instanceof SuperNode ? "SuperNode" : "BasicNode",
-                                    dataNode.getId());
-                            mLogger.warning("DELETE FAILED: " + debugInfo);
-                            return new JSONObject().put("error", "CANNOT_DELETE_ROOT")
-                                    .put("message", "Node has no parent - may be root or corrupted structure")
-                                    .put("debug", debugInfo);
+                        // Delegate to SceneFlowService for domain logic
+                        boolean deleted = mSceneFlowService.deleteNode(project, nodeId);
+
+                        if (!deleted) {
+                            return new JSONObject().put("error", "NODE_NOT_FOUND")
+                                    .put("message", "Node not found or could not be deleted");
                         }
-                        // Remove all edges connected to this node
-                        removeConnectedEdges(parent, dataNode);
-                        // Remove the node itself - use correct method based on node type
-                        if (dataNode instanceof SuperNode) {
-                            parent.removeSuperNode((SuperNode) dataNode);
-                        } else {
-                            parent.removeNode(dataNode);
-                        }
-                        mLogger.message("DELETE SUCCESS: Node removed - " + nodeId);
+
                         JSONObject payloadResp = new JSONObject();
                         payloadResp.put("nodeId", nodeId);
                         SuperNode snapshotTarget = resolveSnapshotTarget(sceneFlow, resolvedSuperNodeId);
@@ -2544,18 +2778,15 @@ public final class WebUiServer implements UiEventListener {
                         return payloadResp;
                     });
                     if (response == null) {
-                        mLogger.warning("DELETE RESPONSE NULL - sending PROJECT_NOT_FOUND");
                         sendError(ctx, requestId, "PROJECT_NOT_FOUND", "Project not found");
                         return;
                     }
                     if (response.has("error")) {
                         String errorCode = response.getString("error");
                         String errorMsg = response.optString("message", "Node not found");
-                        mLogger.warning("DELETE ERROR RESPONSE: " + errorCode + " - " + errorMsg);
                         sendError(ctx, requestId, errorCode, errorMsg);
                         return;
                     }
-                    mLogger.message("DELETE: Sending success response");
                     sendResponse(ctx, requestId, name, response);
                     if (response.has("dirty")) {
                         emitUiProjectDirty(projectId, response.getBoolean("dirty"), List.of("sceneflow"));
@@ -2831,6 +3062,7 @@ public final class WebUiServer implements UiEventListener {
                                 }
                                 // Phase 6: Update start flag headlessly
                                 targetSuperNode.addStartNode(dataNode);
+                                occupyStartSignDockPoint(dataNode.getId());
                             }
                         }
                         // Phase 6: Add edges directly to the model (headless - no CreateEdgeAction)
@@ -2877,6 +3109,13 @@ public final class WebUiServer implements UiEventListener {
                                     }
                                 }
                             }
+                        }
+                        // Phase 6: Initialize dock points for pasted nodes' edges
+                        EditorConfig config = project.getEditorConfig();
+                        int nodeWidth = config != null ? config.sNODEWIDTH : 90;
+                        int nodeHeight = config != null ? config.sNODEHEIGHT : 90;
+                        for (BasicNode node : nodes) {
+                            processNodeEdgesForDocking(node, nodeWidth, nodeHeight);
                         }
                         JSONObject payloadResp = new JSONObject();
                         payloadResp.put("nodeIds", newNodeIds);
@@ -3868,9 +4107,18 @@ public final class WebUiServer implements UiEventListener {
                             srcCtrl = new double[] { loopCtrl[0], loopCtrl[1] };
                             tgtCtrl = new double[] { loopCtrl[2], loopCtrl[3] };
                         } else {
-                            // Normal edge: use standard control points
-                            srcCtrl = computeInitialControlPoint(srcDock[0], srcDock[1], tgtDock[0], tgtDock[1], true);
-                            tgtCtrl = computeInitialControlPoint(srcDock[0], srcDock[1], tgtDock[0], tgtDock[1], false);
+                            // Normal edge: use Swing-style control points based on dock vectors
+                            double srcCenterX = srcX + nodeWidth / 2.0;
+                            double srcCenterY = srcY + nodeHeight / 2.0;
+                            double tgtCenterX = tgtX + nodeWidth / 2.0;
+                            double tgtCenterY = tgtY + nodeHeight / 2.0;
+                            double[] allCtrl = computeInitialControlPoints(
+                                srcDock[0], srcDock[1], srcCenterX, srcCenterY,
+                                tgtDock[0], tgtDock[1], tgtCenterX, tgtCenterY,
+                                nodeHeight, false
+                            );
+                            srcCtrl = new double[] { allCtrl[0], allCtrl[1] };
+                            tgtCtrl = new double[] { allCtrl[2], allCtrl[3] };
                         }
 
                         // Create start point with bezier control
@@ -3994,7 +4242,7 @@ public final class WebUiServer implements UiEventListener {
                         }
 
                         // Apply edge updates (headless - no WorkSpacePanel)
-                        String error = applyEdgeUpdatesHeadless(dataEdge, sceneFlow, sourcePayload);
+                        String error = applyEdgeUpdatesHeadless(dataEdge, sceneFlow, sourcePayload, project.getEditorConfig());
                         if (error != null) {
                             return new JSONObject().put("error", "EDGE_UPDATE_FAILED").put("message", error);
                         }
@@ -4146,12 +4394,87 @@ public final class WebUiServer implements UiEventListener {
                             return new JSONObject().put("error", "EDGE_NOT_FOUND");
                         }
 
-                        // Find source and new target nodes
+                        // Find source, old target, and new target nodes
                         BasicNode sourceNode = dataEdge.getSourceNode();
+                        BasicNode oldTargetNode = dataEdge.getTargetNode();
                         BasicNode newTargetNode = resolveNodeById(sceneFlow, targetId);
 
                         if (sourceNode == null || newTargetNode == null) {
                             return new JSONObject().put("error", "NODE_NOT_FOUND");
+                        }
+
+                        // Phase 6: Get node dimensions for dock point handling
+                        EditorConfig config = project.getEditorConfig();
+                        int nodeWidth = config != null ? config.sNODEWIDTH : 90;
+                        int nodeHeight = config != null ? config.sNODEHEIGHT : 90;
+
+                        // Phase 6: Release old target's dock point
+                        if (oldTargetNode != null) {
+                            EdgeGraphics edgeGraphics = dataEdge.getGraphics();
+                            if (edgeGraphics != null && edgeGraphics.getConnection() != null) {
+                                List<EdgePoint> points = edgeGraphics.getConnection().getPointList();
+                                if (points != null && points.size() >= 2) {
+                                    EdgePoint endPt = points.get(points.size() - 1);
+                                    NodeGraphics oldTgtGraphics = oldTargetNode.getGraphics();
+                                    NodePosition oldTgtPos = oldTgtGraphics != null ? oldTgtGraphics.getPosition() : null;
+                                    double oldTgtX = oldTgtPos != null ? oldTgtPos.getXPos() : 0;
+                                    double oldTgtY = oldTgtPos != null ? oldTgtPos.getYPos() : 0;
+                                    int oldDockIdx = findDockPointIndex(oldTgtX, oldTgtY, nodeWidth, nodeHeight,
+                                            oldTargetNode instanceof SuperNode, endPt.getXPos(), endPt.getYPos());
+                                    if (oldDockIdx >= 0) {
+                                        releaseDockPoint(oldTargetNode.getId(), oldDockIdx, false);
+                                    }
+                                }
+                            }
+                        }
+
+                        // Phase 6: Find and occupy new dock point on new target, update edge endpoint
+                        NodeGraphics newTgtGraphics = newTargetNode.getGraphics();
+                        NodePosition newTgtPos = newTgtGraphics != null ? newTgtGraphics.getPosition() : null;
+                        double newTgtX = newTgtPos != null ? newTgtPos.getXPos() : 0;
+                        double newTgtY = newTgtPos != null ? newTgtPos.getYPos() : 0;
+                        boolean newTgtIsSuperNode = newTargetNode instanceof SuperNode;
+
+                        // Get source position for dock point selection
+                        NodeGraphics srcGraphics = sourceNode.getGraphics();
+                        NodePosition srcPos = srcGraphics != null ? srcGraphics.getPosition() : null;
+                        double srcX = srcPos != null ? srcPos.getXPos() : 0;
+                        double srcY = srcPos != null ? srcPos.getYPos() : 0;
+                        boolean srcIsSuperNode = sourceNode instanceof SuperNode;
+
+                        // Find best dock point pair for new configuration
+                        int[] dockPair;
+                        boolean isSelfLoop = sourceNode.getId().equals(newTargetNode.getId());
+                        if (isSelfLoop) {
+                            dockPair = findSelfLoopDockPointPair(sourceNode.getId(), nodeWidth, nodeHeight, srcIsSuperNode);
+                        } else {
+                            dockPair = findBestDockPointPair(
+                                sourceNode.getId(), srcX, srcY, nodeWidth, nodeHeight, srcIsSuperNode,
+                                newTargetNode.getId(), newTgtX, newTgtY, nodeWidth, nodeHeight, newTgtIsSuperNode
+                            );
+                        }
+                        int newTgtDockIdx = dockPair[1];
+                        occupyDockPoint(newTargetNode.getId(), newTgtDockIdx, false);
+
+                        // Update edge endpoint to new dock position
+                        double[] newTgtDock = getDockPointPosition(newTgtX, newTgtY, nodeWidth, nodeHeight, newTgtIsSuperNode, newTgtDockIdx);
+                        EdgeGraphics edgeGraphics = dataEdge.getGraphics();
+                        if (edgeGraphics != null && edgeGraphics.getConnection() != null) {
+                            List<EdgePoint> points = edgeGraphics.getConnection().getPointList();
+                            if (points != null && points.size() >= 2) {
+                                EdgePoint endPt = points.get(points.size() - 1);
+                                EdgePoint startPt = points.get(0);
+                                // Update end position
+                                endPt.setXPos((int) Math.round(newTgtDock[0]));
+                                endPt.setYPos((int) Math.round(newTgtDock[1]));
+                                // Update control point
+                                double[] tgtCtrl = computeInitialControlPoint(
+                                    startPt.getXPos(), startPt.getYPos(),
+                                    newTgtDock[0], newTgtDock[1], false
+                                );
+                                endPt.setCtrlXPos((int) Math.round(tgtCtrl[0]));
+                                endPt.setCtrlYPos((int) Math.round(tgtCtrl[1]));
+                            }
                         }
 
                         // Retarget the edge (headless - no WorkSpacePanel)
@@ -5447,6 +5770,9 @@ public final class WebUiServer implements UiEventListener {
             String key = keyObj.toString();
             config.put(key, editorConfig.getProperty(key));
         }
+        // Add computed grid spacing values for frontend consistency
+        config.put("grid_space_x", editorConfig.sGRID_XSPACE);
+        config.put("grid_space_y", editorConfig.sGRID_YSPACE);
         JSONObject response = new JSONObject();
         response.put("config", config);
         return response;
@@ -6418,8 +6744,53 @@ public final class WebUiServer implements UiEventListener {
         }
     }
 
+    // Phase 6: Release dock points for an edge before deletion
+    private void releaseDockPointsForEdge(AbstractEdge edge, EditorConfig config) {
+        if (edge == null) return;
+
+        int nodeWidth = config != null ? config.sNODEWIDTH : 90;
+        int nodeHeight = config != null ? config.sNODEHEIGHT : 90;
+
+        EdgeGraphics edgeGraphics = edge.getGraphics();
+        if (edgeGraphics == null || edgeGraphics.getConnection() == null) return;
+
+        List<EdgePoint> points = edgeGraphics.getConnection().getPointList();
+        if (points == null || points.size() < 2) return;
+
+        EdgePoint startPt = points.get(0);
+        EdgePoint endPt = points.get(points.size() - 1);
+
+        // Release source dock point
+        BasicNode sourceNode = edge.getSourceNode();
+        if (sourceNode != null) {
+            NodeGraphics srcGraphics = sourceNode.getGraphics();
+            NodePosition srcPos = srcGraphics != null ? srcGraphics.getPosition() : null;
+            double srcX = srcPos != null ? srcPos.getXPos() : 0;
+            double srcY = srcPos != null ? srcPos.getYPos() : 0;
+            int srcDockIdx = findDockPointIndex(srcX, srcY, nodeWidth, nodeHeight,
+                    sourceNode instanceof SuperNode, startPt.getXPos(), startPt.getYPos());
+            if (srcDockIdx >= 0) {
+                releaseDockPoint(sourceNode.getId(), srcDockIdx, true);
+            }
+        }
+
+        // Release target dock point
+        BasicNode targetNode = edge.getTargetNode();
+        if (targetNode != null) {
+            NodeGraphics tgtGraphics = targetNode.getGraphics();
+            NodePosition tgtPos = tgtGraphics != null ? tgtGraphics.getPosition() : null;
+            double tgtX = tgtPos != null ? tgtPos.getXPos() : 0;
+            double tgtY = tgtPos != null ? tgtPos.getYPos() : 0;
+            int tgtDockIdx = findDockPointIndex(tgtX, tgtY, nodeWidth, nodeHeight,
+                    targetNode instanceof SuperNode, endPt.getXPos(), endPt.getYPos());
+            if (tgtDockIdx >= 0) {
+                releaseDockPoint(targetNode.getId(), tgtDockIdx, false);
+            }
+        }
+    }
+
     // Phase 6: Remove all edges connected to a node
-    private void removeConnectedEdges(SuperNode parent, BasicNode node) {
+    private void removeConnectedEdges(SuperNode parent, BasicNode node, EditorConfig config) {
         if (parent == null || node == null) {
             return;
         }
@@ -6439,6 +6810,7 @@ public final class WebUiServer implements UiEventListener {
                 }
             }
             for (GuargedEdge edge : cEdgesToRemove) {
+                releaseDockPointsForEdge(edge, config);
                 BasicNode source = edge.getSourceNode();
                 if (source != null) {
                     source.removeCEdge(edge);
@@ -6457,6 +6829,7 @@ public final class WebUiServer implements UiEventListener {
                 }
             }
             for (InterruptEdge edge : iEdgesToRemove) {
+                releaseDockPointsForEdge(edge, config);
                 BasicNode source = edge.getSourceNode();
                 if (source != null) {
                     source.removeIEdge(edge);
@@ -6475,6 +6848,7 @@ public final class WebUiServer implements UiEventListener {
                 }
             }
             for (RandomEdge edge : pEdgesToRemove) {
+                releaseDockPointsForEdge(edge, config);
                 BasicNode source = edge.getSourceNode();
                 if (source != null) {
                     source.removePEdge(edge);
@@ -6493,6 +6867,7 @@ public final class WebUiServer implements UiEventListener {
                 }
             }
             for (ForkingEdge edge : fEdgesToRemove) {
+                releaseDockPointsForEdge(edge, config);
                 BasicNode source = edge.getSourceNode();
                 if (source != null) {
                     source.removeFEdge(edge);
@@ -6504,6 +6879,7 @@ public final class WebUiServer implements UiEventListener {
                 BasicNode target = dEdge.getTargetNode();
                 String targetId = dEdge.getTargetUnid();
                 if ((target != null && nodeId.equals(target.getId())) || nodeId.equals(targetId)) {
+                    releaseDockPointsForEdge(dEdge, config);
                     n.removeDEdge();
                 }
             }
@@ -6535,11 +6911,13 @@ public final class WebUiServer implements UiEventListener {
         }
         if (isStart) {
             startMap.put(dataNode.getId(), dataNode);
+            occupyStartSignDockPoint(dataNode.getId());
             if (guiNode != null) {
                 guiNode.addStartSign();
             }
         } else {
             startMap.remove(dataNode.getId());
+            releaseStartSignDockPoint(dataNode.getId());
             if (guiNode != null) {
                 guiNode.removeStartSign();
             }
@@ -7972,7 +8350,7 @@ public final class WebUiServer implements UiEventListener {
     }
 
     // Phase 6: Headless version of applyEdgeUpdates (no WorkSpacePanel)
-    private String applyEdgeUpdatesHeadless(AbstractEdge dataEdge, SuperNode active, JSONObject fields) {
+    private String applyEdgeUpdatesHeadless(AbstractEdge dataEdge, SuperNode active, JSONObject fields, EditorConfig config) {
         if (dataEdge == null || fields == null) {
             return null;
         }
@@ -8090,7 +8468,7 @@ public final class WebUiServer implements UiEventListener {
                     ") end=(" + endPt.getXPos() + "," + endPt.getYPos() +
                     ") endCtrl=(" + endPt.getCtrlXPos() + "," + endPt.getCtrlYPos() + ")");
             }
-            applyEdgePointStateHeadless(dataEdge, points);
+            applyEdgePointStateHeadless(dataEdge, points, config);
         }
         if (fields.has("altStartMap")) {
             JSONArray list = fields.optJSONArray("altStartMap");
@@ -8136,10 +8514,12 @@ public final class WebUiServer implements UiEventListener {
     }
 
     // Phase 6: Headless version of applyEdgePointState (no WorkSpacePanel)
-    private void applyEdgePointStateHeadless(AbstractEdge dataEdge, List<EdgePoint> points) {
-        if (dataEdge == null || points == null) {
+    // Handles dock point snapping when edge endpoints are moved
+    private void applyEdgePointStateHeadless(AbstractEdge dataEdge, List<EdgePoint> points, EditorConfig config) {
+        if (dataEdge == null || points == null || points.size() < 2) {
             return;
         }
+
         EdgeGraphics graphics = dataEdge.getGraphics();
         if (graphics == null) {
             graphics = new EdgeGraphics();
@@ -8150,6 +8530,116 @@ public final class WebUiServer implements UiEventListener {
             arrow = new EdgeArrow();
             graphics.setConnection(arrow);
         }
+
+        // Get node dimensions
+        int nodeWidth = config != null ? config.sNODEWIDTH : 90;
+        int nodeHeight = config != null ? config.sNODEHEIGHT : 90;
+
+        // Get source and target nodes
+        BasicNode sourceNode = dataEdge.getSourceNode();
+        BasicNode targetNode = dataEdge.getTargetNode();
+
+        // Get current (old) edge points for dock point comparison
+        List<EdgePoint> oldPoints = arrow.getPointList();
+        EdgePoint oldStartPt = (oldPoints != null && !oldPoints.isEmpty()) ? oldPoints.get(0) : null;
+        EdgePoint oldEndPt = (oldPoints != null && oldPoints.size() >= 2) ? oldPoints.get(oldPoints.size() - 1) : null;
+
+        // Get new points from input
+        EdgePoint newStartPt = points.get(0);
+        EdgePoint newEndPt = points.get(points.size() - 1);
+
+        // Process source node dock point (start of edge)
+        if (sourceNode != null) {
+            NodeGraphics srcGraphics = sourceNode.getGraphics();
+            NodePosition srcPos = srcGraphics != null ? srcGraphics.getPosition() : null;
+            double srcX = srcPos != null ? srcPos.getXPos() : 0;
+            double srcY = srcPos != null ? srcPos.getYPos() : 0;
+            boolean srcIsSuperNode = sourceNode instanceof SuperNode;
+            String srcId = sourceNode.getId();
+
+            // Find old dock point index
+            int oldSrcDock = -1;
+            if (oldStartPt != null) {
+                oldSrcDock = findDockPointIndex(srcX, srcY, nodeWidth, nodeHeight, srcIsSuperNode,
+                        oldStartPt.getXPos(), oldStartPt.getYPos());
+            }
+
+            // Check if endpoint position changed (not just control point)
+            boolean srcEndpointMoved = oldStartPt == null ||
+                    Math.abs(newStartPt.getXPos() - oldStartPt.getXPos()) > 5 ||
+                    Math.abs(newStartPt.getYPos() - oldStartPt.getYPos()) > 5;
+
+            if (srcEndpointMoved) {
+                // Find nearest available dock point to new position
+                int newSrcDock = findNearestAvailableDockPoint(srcId, srcX, srcY, nodeWidth, nodeHeight,
+                        srcIsSuperNode, newStartPt.getXPos(), newStartPt.getYPos());
+
+                if (newSrcDock >= 0 && newSrcDock != oldSrcDock) {
+                    // Release old dock point
+                    if (oldSrcDock >= 0) {
+                        releaseDockPoint(srcId, oldSrcDock, true);
+                    }
+                    // Occupy new dock point
+                    occupyDockPoint(srcId, newSrcDock, true);
+
+                    // Snap endpoint to dock position, preserve control point offset
+                    double[] dockPos = getDockPointPosition(srcX, srcY, nodeWidth, nodeHeight, srcIsSuperNode, newSrcDock);
+                    int ctrlOffsetX = newStartPt.getCtrlXPos() - newStartPt.getXPos();
+                    int ctrlOffsetY = newStartPt.getCtrlYPos() - newStartPt.getYPos();
+                    newStartPt.setXPos((int) Math.round(dockPos[0]));
+                    newStartPt.setYPos((int) Math.round(dockPos[1]));
+                    newStartPt.setCtrlXPos((int) Math.round(dockPos[0]) + ctrlOffsetX);
+                    newStartPt.setCtrlYPos((int) Math.round(dockPos[1]) + ctrlOffsetY);
+                }
+            }
+        }
+
+        // Process target node dock point (end of edge)
+        if (targetNode != null) {
+            NodeGraphics tgtGraphics = targetNode.getGraphics();
+            NodePosition tgtPos = tgtGraphics != null ? tgtGraphics.getPosition() : null;
+            double tgtX = tgtPos != null ? tgtPos.getXPos() : 0;
+            double tgtY = tgtPos != null ? tgtPos.getYPos() : 0;
+            boolean tgtIsSuperNode = targetNode instanceof SuperNode;
+            String tgtId = targetNode.getId();
+
+            // Find old dock point index
+            int oldTgtDock = -1;
+            if (oldEndPt != null) {
+                oldTgtDock = findDockPointIndex(tgtX, tgtY, nodeWidth, nodeHeight, tgtIsSuperNode,
+                        oldEndPt.getXPos(), oldEndPt.getYPos());
+            }
+
+            // Check if endpoint position changed (not just control point)
+            boolean tgtEndpointMoved = oldEndPt == null ||
+                    Math.abs(newEndPt.getXPos() - oldEndPt.getXPos()) > 5 ||
+                    Math.abs(newEndPt.getYPos() - oldEndPt.getYPos()) > 5;
+
+            if (tgtEndpointMoved) {
+                // Find nearest available dock point to new position
+                int newTgtDock = findNearestAvailableDockPoint(tgtId, tgtX, tgtY, nodeWidth, nodeHeight,
+                        tgtIsSuperNode, newEndPt.getXPos(), newEndPt.getYPos());
+
+                if (newTgtDock >= 0 && newTgtDock != oldTgtDock) {
+                    // Release old dock point
+                    if (oldTgtDock >= 0) {
+                        releaseDockPoint(tgtId, oldTgtDock, false);
+                    }
+                    // Occupy new dock point
+                    occupyDockPoint(tgtId, newTgtDock, false);
+
+                    // Snap endpoint to dock position, preserve control point offset
+                    double[] dockPos = getDockPointPosition(tgtX, tgtY, nodeWidth, nodeHeight, tgtIsSuperNode, newTgtDock);
+                    int ctrlOffsetX = newEndPt.getCtrlXPos() - newEndPt.getXPos();
+                    int ctrlOffsetY = newEndPt.getCtrlYPos() - newEndPt.getYPos();
+                    newEndPt.setXPos((int) Math.round(dockPos[0]));
+                    newEndPt.setYPos((int) Math.round(dockPos[1]));
+                    newEndPt.setCtrlXPos((int) Math.round(dockPos[0]) + ctrlOffsetX);
+                    newEndPt.setCtrlYPos((int) Math.round(dockPos[1]) + ctrlOffsetY);
+                }
+            }
+        }
+
         // Copy points to new list
         ArrayList<EdgePoint> newPoints = new ArrayList<>();
         for (EdgePoint point : points) {

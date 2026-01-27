@@ -2,6 +2,7 @@ rootProject.name = 'VisualSceneMaker'
 
 include 'core'
 include 'editor'
+include 'runtime-server'
 include 'plugins:alma'
 include 'plugins:AndroidGui'
 include 'plugins:charamel-ws'

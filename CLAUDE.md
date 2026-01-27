@@ -9,13 +9,14 @@ VisualSceneMaker is a visual dialogue authoring system with a hierarchical state
 **Key Architecture**: Three-tier MVC with event-driven communication
 - **Core** (`core/`): Pure domain logic, runtime execution engine, web server (Java 17)
 - **Editor** (`editor/`): Desktop UI (Swing/JavaFX) and Web UI (Svelte) (Java 21)
+- **Runtime Server** (`runtime-server/`): Standalone headless runtime (Java 17, Android-compatible)
 - **Plugins** (`plugins/`): 24+ extensible runtime plugins (Java 17)
 
-## ⚠️ Ongoing Refactoring (2026-01-11)
+## ⚠️ Ongoing Refactoring (2026-01-26)
 
 **Status**: Removing Swing UI and creating distributed runtime architecture
 
-**Current Progress**: Phase 1 Complete ✅ (1 of 7 phases)
+**Current Progress**: Phases 1, 6, 7 Complete ✅
 
 The project is undergoing a major refactoring to:
 - Remove all Swing/JavaFX desktop UI code
@@ -24,16 +25,16 @@ The project is undergoing a major refactoring to:
 - Support runtime execution on Android devices and Desktop Java
 
 **Important Documents**:
-- **Implementation Plan**: `/Users/gebhard/.claude/plans/curried-noodling-milner.md` - Full 7-phase plan
-- **Phase 2 Guide**: `doc/phase-2-implementation-guide.md` - Next steps for extracting business logic
-- **Session Summary**: `doc/refactoring-session-summary-2026-01-11.md` - What was completed
+- **Implementation Plan**: `/Users/gebhard/.claude/plans/curried-noodling-milner.md` - Full 8-phase plan
+- **Runtime Server Guide**: `doc/runtime-server.md` - Standalone runtime documentation
+- **Phase 2 Guide**: `doc/phase-2-implementation-guide.md` - Service extraction guide
 
-**Phase 1 Changes** (✅ Complete):
-- Moved `EditorConfig.java` from core to editor module (removed AWT dependency from core)
-- Core module is now 100% decoupled from editor (Android-ready)
-- Verified: `./gradlew :core:build` succeeds independently
+**Completed Phases**:
+- ✅ Phase 1: Core module decoupled from editor (Android-ready)
+- ✅ Phase 6: WebUiServer refactored for headless operation
+- ✅ Phase 7: Standalone `runtime-server` module created
 
-**Next Phase**: Extract business logic from Swing UI into headless services (EditorProjectService, SceneFlowService, SceneScriptService)
+**Next Phase**: Phase 8 - Service extraction and remote connection infrastructure
 
 ## Build Commands
 
@@ -78,6 +79,21 @@ java -jar build/libs/VisualSceneMaker-*.jar
 ```bash
 java -jar build/libs/VisualSceneMaker-*.jar --no-swing
 # OR use SceneMaker4 entry point
+```
+
+### Standalone Runtime Server
+```bash
+# Build
+./gradlew :runtime-server:jar
+
+# Run (localhost only)
+java -jar runtime-server/build/libs/runtime-server-*.jar --port=8091
+
+# Run with project auto-load
+java -jar runtime-server/build/libs/runtime-server-*.jar --project=/path/to/project --autostart
+
+# Run with LAN access (for remote Web UI)
+java -jar runtime-server/build/libs/runtime-server-*.jar --allow-lan --port=8091
 ```
 
 ### Command-Line Options
@@ -243,6 +259,7 @@ mLogger.failure("Error message");
 ### Entry Points
 - `src/main/java/de/dfki/vsm/SceneMaker3.java` - Main launcher (Swing + Web)
 - `src/main/java/de/dfki/vsm/SceneMaker4.java` - Web-only launcher
+- `runtime-server/src/main/java/de/dfki/vsm/runtime/RuntimeMain.java` - Standalone runtime server
 - `core/src/main/java/de/dfki/vsm/Core.java` - Headless runtime
 
 ### Core Runtime
@@ -271,7 +288,8 @@ mLogger.failure("Error message");
 ## Documentation
 
 Additional architecture details are in `doc/`:
-- `architecture-details.md` - Comprehensive architecture guide (1180 lines)
+- `runtime-server.md` - Standalone runtime server guide (deployment, API, usage)
+- `architecture-details.md` - Comprehensive architecture guide
 - `scenemaker-java-compatibility.md` - Java 17/21 compatibility policy
 - `scenemaker-ui-protocol.md` - UI event protocol specification
 - `scenemaker-web-ui-api.md` - REST/WebSocket API documentation
