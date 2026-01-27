@@ -35,6 +35,7 @@
   let statusMessage = "";
   let sessionReady = false;
   let showEditor = false;
+  let editorManuallyClosed = false;
   let projectLoadAttempted = false;
   let projectLoadProjectId = "";
   let showTokenSection = false;
@@ -1078,7 +1079,7 @@
       scriptElementsLoading ||
       sceneFlowLoading ||
       runtimeLoading);
-  $: if (projectLoadComplete && !showEditor) {
+  $: if (projectLoadComplete && !showEditor && !editorManuallyClosed) {
     showEditor = true;
   }
   $: if (!sessionReady || !selectedProjectId) {
@@ -1451,6 +1452,7 @@
   $: if (sessionReady && selectedProjectId && selectedProjectId !== projectLoadProjectId) {
     projectLoadProjectId = selectedProjectId;
     projectLoadAttempted = true;
+    editorManuallyClosed = false;
     showEditor = false;
     resetProjectLoadState();
   }
@@ -1890,6 +1892,7 @@
       const response = await apiPost("/api/v1/projects/open", { path: targetPath });
       openPath = "";
       if (response?.projectId) {
+        editorManuallyClosed = false;
         selectedProjectId = response.projectId;
       }
       await loadProjects();
@@ -1923,6 +1926,31 @@
     } else {
       openPathError = "This browser cannot provide a full path. Please paste it manually.";
     }
+  }
+
+  function openProjectFromLanding(project) {
+    const projectId = project?.projectId;
+    if (!projectId) return;
+    editorManuallyClosed = false;
+    if (projectId === selectedProjectId) {
+      if (projectLoadComplete) {
+        showEditor = true;
+        return;
+      }
+      // Force the reactive loaders to run again for the same project id.
+      projectLoadProjectId = "";
+      projectLoadAttempted = false;
+      lastConfigProjectId = "";
+      lastProjectConfigProjectId = "";
+      lastScriptProjectId = "";
+      lastSceneFlowProjectId = "";
+      lastRuntimeProjectId = "";
+      resetProjectLoadState();
+      loadConfig(projectId);
+      return;
+    }
+    selectedProjectId = projectId;
+    loadConfig(projectId);
   }
 
   async function browseForProjectDir() {
@@ -3989,6 +4017,9 @@
     loadConfirmReasons = [];
     const projectId = selectedProjectId;
     if (closeProjectOnServer && projectId) {
+      if (runtimeState !== "stopped") {
+        await runRuntimeCommand("Runtime.Stop");
+      }
       await closeProject(projectId);
       return;
     }
@@ -3997,6 +4028,16 @@
     projectLoadAttempted = false;
     projectLoadProjectId = "";
     resetProjectLoadState();
+    recentLoaded = false;
+    await tick();
+    openPathInput?.focus();
+  }
+
+  async function exitEditorView() {
+    loadConfirmOpen = false;
+    loadConfirmReasons = [];
+    editorManuallyClosed = true;
+    showEditor = false;
     recentLoaded = false;
     await tick();
     openPathInput?.focus();
@@ -6772,33 +6813,6 @@
 
   <div class="grid">
     {#if !showEditor}
-    <!-- Phase 8.4: Connection status and remote server button -->
-    <section class="panel connection-panel">
-      <header class="panel-title">
-        <h2>Server Connection</h2>
-      </header>
-      <div class="connection-status">
-        <span class="connection-indicator {wsConnected ? 'connected' : 'disconnected'}"></span>
-        <span class="connection-text">
-          {#if wsConnected}
-            Connected to <strong>{connectedServerName || location.host}</strong>
-            {#if isRemoteConnection}
-              <span class="remote-badge">Remote</span>
-            {/if}
-          {:else}
-            Disconnected
-          {/if}
-        </span>
-      </div>
-      <div class="connection-actions">
-        {#if isRemoteConnection}
-          <button type="button" class="ghost" on:click={disconnectFromRemote}>
-            Disconnect
-          </button>
-        {/if}
-      </div>
-    </section>
-
     <section class="panel">
       <header class="panel-title">
         <h2>Projects</h2>
@@ -6809,19 +6823,29 @@
           <p class="muted">No open projects.</p>
         {/if}
         {#each projects as project}
-          <button
-            type="button"
-            class:selected={project.projectId === selectedProjectId}
-            on:click={() => {
-              selectedProjectId = project.projectId;
-              loadConfig(project.projectId);
-            }}
-          >
-            <span>{project.name}</span>
-            <span class="meta">
-              {project.dirty ? "*" : ""} {project.runtimeState}
-            </span>
-          </button>
+          <div class="project-row">
+            <button
+              type="button"
+              class:selected={project.projectId === selectedProjectId}
+              on:click={() => openProjectFromLanding(project)}
+            >
+              <span>{project.name}</span>
+              <span class="meta">
+                {project.dirty ? "*" : ""} {project.runtimeState}
+              </span>
+            </button>
+            {#if !showEditor && project.projectId === selectedProjectId}
+              <button
+                type="button"
+                class="ghost danger project-row-close"
+                aria-label="Close project"
+                title="Close project"
+                on:click|stopPropagation={requestReturnToLanding}
+              >
+                Close
+              </button>
+            {/if}
+          </div>
         {/each}
       </div>
 
@@ -6984,7 +7008,7 @@
             <button
               type="button"
               class="panel-close"
-              on:click={requestReturnToLanding}
+              on:click={exitEditorView}
               disabled={!selectedProject || projectSaving}
               aria-label="Close project"
               title="Close Project"
