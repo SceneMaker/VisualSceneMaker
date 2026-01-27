@@ -36,9 +36,27 @@ main {
 }
 
 main.editor-view {
+  --page-pad: 0.75rem;
   margin: 0 auto;
   padding-top: 0;
   padding-bottom: 0;
+}
+
+main.editor-view .panel {
+  --panel-pad: 0.75rem;
+}
+
+main.editor-view .panel-wide {
+  --wide-side-margin: 0.375rem;
+}
+
+main.editor-view .sceneflow-panel {
+  --sf-gap: 0.5rem;
+  --sf-side-margin: 0.375rem;
+}
+
+main.editor-view .sceneflow-blocks {
+  padding: 0.5rem 0.5rem 0.3rem;
 }
 
 .hero {
@@ -393,11 +411,26 @@ button.ghost.danger:active {
   margin: 1rem 0;
 }
 
+.project-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: stretch;
+}
+
 .project-list button {
   display: flex;
   justify-content: space-between;
   align-items: center;
   text-align: left;
+}
+
+.project-row > button:first-child {
+  flex: 1 1 auto;
+}
+
+.project-row-close {
+  flex: 0 0 auto;
+  padding: 0.55rem 0.7rem;
 }
 
 .project-list button.selected {

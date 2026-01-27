@@ -1,5 +1,6 @@
 package de.dfki.vsm.web;
 
+import de.dfki.vsm.Preferences;
 import de.dfki.vsm.PreferencesDesktop;
 import de.dfki.vsm.editor.CmdBadge;
 import de.dfki.vsm.editor.Comment;
@@ -910,6 +911,8 @@ public final class WebUiServer implements UiEventListener {
         loadExportablePropertyCache();
 
         // Initialize headless services (Phase 6 refactoring)
+        // Ensure persisted preferences (including recent projects) are loaded in headless mode.
+        Preferences.load();
         mEditorProjectService = new EditorProjectService();
         mSceneFlowService = new SceneFlowService();
 
