@@ -38,6 +38,15 @@
   const protocolBadgeText = "Protocol UI";
   const protocolBadgeTitle = "UI protocol (v1)";
 
+  // Remote connection state (Phase 8.4)
+  let showConnectDialog = false;
+  let remoteServerUrl = localStorage.getItem("vsm_remote_server") || "";
+  let remoteServerInput = "";
+  let remoteConnecting = false;
+  let remoteConnectionError = "";
+  let isRemoteConnection = false; // true if connected to a server other than location.host
+  let connectedServerName = ""; // Display name of connected server
+
   const SCENE_DRAG_TYPE = "application/x-vsm-scene";
   const AGENT_DRAG_TYPE = "application/x-vsm-agent";
   const BLOCK_DRAG_TYPE = "application/x-vsm-block";
@@ -712,8 +721,28 @@
   let openPath = "";
   let newName = "";
   let newBaseDir = "";
+  let openPathError = "";
+  let createProjectError = "";
   let saveAsPath = "";
   let saveAsDialogOpen = false;
+  let saveAsError = "";
+
+  let openPathInput;
+  let newProjectNameInput;
+  let saveAsInputEl;
+  let saveAsDialogEl;
+  let loadConfirmDialogEl;
+  let recentFailureDialogEl;
+  let missingAgentDialogEl;
+  let projectConfigDialogEl;
+  let prefsDialogEl;
+  let monitorDialogEl;
+  let cmdDialogEl;
+  let typeDefDialogEl;
+  let typeDefNameInputEl;
+  let varDefDialogEl;
+  let varDefNameInputEl;
+  let lastFocusedElement = null;
 
   let preferences = {};
   let prefDraft = {};
@@ -1535,6 +1564,93 @@
     }
   }
 
+  // Phase 8.4: Remote server connection functions
+  async function connectToRemoteServer(serverUrl) {
+    if (!serverUrl || !serverUrl.trim()) {
+      remoteConnectionError = "Please enter a server URL";
+      return false;
+    }
+
+    remoteConnecting = true;
+    remoteConnectionError = "";
+
+    try {
+      // Normalize URL (add http:// if missing)
+      let normalizedUrl = serverUrl.trim();
+      if (!normalizedUrl.startsWith("http://") && !normalizedUrl.startsWith("https://")) {
+        normalizedUrl = "http://" + normalizedUrl;
+      }
+
+      // Test connection by fetching server info
+      const infoResponse = await fetch(`${normalizedUrl}/api/v1/info`);
+      if (!infoResponse.ok) {
+        throw new Error(`Server returned ${infoResponse.status}`);
+      }
+      const serverInfo = await infoResponse.json();
+
+      // If token required, try to get one (only works for localhost)
+      if (serverInfo.tokenRequired) {
+        // For remote servers, user must provide token manually
+        // For now, try without token first
+      }
+
+      // Save the remote server URL
+      remoteServerUrl = normalizedUrl;
+      localStorage.setItem("vsm_remote_server", normalizedUrl);
+
+      // Close existing connection and reconnect to remote
+      const wsOk = await connectWs(normalizedUrl);
+      if (!wsOk) {
+        throw new Error("WebSocket connection failed");
+      }
+
+      // Update info with remote server info
+      info = serverInfo;
+
+      // Clear projects since we're connecting to different server
+      projects = [];
+      selectedProjectId = null;
+      showEditor = false;
+
+      // Load projects from remote server
+      await loadProjects();
+
+      showConnectDialog = false;
+      remoteConnecting = false;
+      statusMessage = `Connected to ${connectedServerName}`;
+      return true;
+
+    } catch (err) {
+      remoteConnectionError = err.message || "Connection failed";
+      remoteConnecting = false;
+      return false;
+    }
+  }
+
+  async function disconnectFromRemote() {
+    if (ws) {
+      ws.close();
+    }
+    isRemoteConnection = false;
+    remoteServerUrl = "";
+    localStorage.removeItem("vsm_remote_server");
+    connectedServerName = "";
+
+    // Reconnect to local server
+    await connectAll();
+  }
+
+  function openConnectDialog() {
+    remoteServerInput = remoteServerUrl || "localhost:8091";
+    remoteConnectionError = "";
+    showConnectDialog = true;
+  }
+
+  function closeConnectDialog() {
+    showConnectDialog = false;
+    remoteConnectionError = "";
+  }
+
   async function loadInfo() {
     info = await apiGet("/api/v1/info");
     localStorage.setItem("vsm_token", token);
@@ -1624,42 +1740,105 @@
     tutorials = data.projects || [];
   }
 
-  async function openProject(path) {
-    if (!path) return;
-    const response = await apiPost("/api/v1/projects/open", { path });
-    openPath = "";
-    if (response?.projectId) {
-      selectedProjectId = response.projectId;
+  function rememberFocus() {
+    if (typeof document === "undefined") return;
+    if (lastFocusedElement) return;
+    const active = document.activeElement;
+    lastFocusedElement = active instanceof HTMLElement ? active : null;
+  }
+
+  function restoreFocus() {
+    if (lastFocusedElement && lastFocusedElement.isConnected) {
+      lastFocusedElement.focus({ preventScroll: true });
     }
-    await loadProjects();
-    await loadRecent();
+    lastFocusedElement = null;
+  }
+
+  async function focusDialog(dialogEl, preferredEl = null) {
+    await tick();
+    const target =
+      preferredEl ||
+      dialogEl?.querySelector?.("input, select, textarea, button, [tabindex]:not([tabindex='-1'])") ||
+      dialogEl;
+    if (target && typeof target.focus === "function") {
+      target.focus({ preventScroll: true });
+    }
+  }
+
+  async function openProject(path, options = {}) {
+    const targetPath = (path || "").trim();
+    const surfaceError = options.surfaceError !== false;
+    if (!targetPath) {
+      if (surfaceError) {
+        openPathError = "Path is required.";
+        await tick();
+        openPathInput?.focus();
+      }
+      return { ok: false, error: "Path is required." };
+    }
+    if (surfaceError) {
+      openPathError = "";
+    }
+    try {
+      const response = await apiPost("/api/v1/projects/open", { path: targetPath });
+      openPath = "";
+      if (response?.projectId) {
+        selectedProjectId = response.projectId;
+      }
+      await loadProjects();
+      await loadRecent();
+      return { ok: true };
+    } catch (err) {
+      const message = err?.message || "Failed to open project.";
+      if (surfaceError) {
+        openPathError = message;
+        await tick();
+        openPathInput?.focus();
+      }
+      return { ok: false, error: message };
+    }
   }
 
   async function openRecentProject(project) {
     if (!project?.path) return;
-    try {
-      await openProject(project.path);
-    } catch (err) {
+    const result = await openProject(project.path, { surfaceError: false });
+    if (!result?.ok) {
+      rememberFocus();
       recentFailureProject = project;
-      recentFailureMessage = err?.message || "Failed to open recent project.";
+      recentFailureMessage = result?.error || "Failed to open recent project.";
       recentFailureOpen = true;
+      focusDialog(recentFailureDialogEl);
     }
   }
 
   async function createProject() {
-    if (!newName) return;
-    const payload = { name: newName };
-    if (newBaseDir) {
-      payload.baseDir = newBaseDir;
+    const name = (newName || "").trim();
+    const baseDir = (newBaseDir || "").trim();
+    if (!name) {
+      createProjectError = "Project name is required.";
+      await tick();
+      newProjectNameInput?.focus();
+      return;
     }
-    const response = await apiPost("/api/v1/projects", payload);
-    newName = "";
-    newBaseDir = "";
-    if (response?.projectId) {
-      selectedProjectId = response.projectId;
+    createProjectError = "";
+    const payload = { name };
+    if (baseDir) {
+      payload.baseDir = baseDir;
     }
-    await loadProjects();
-    await loadRecent();
+    try {
+      const response = await apiPost("/api/v1/projects", payload);
+      newName = "";
+      newBaseDir = "";
+      if (response?.projectId) {
+        selectedProjectId = response.projectId;
+      }
+      await loadProjects();
+      await loadRecent();
+    } catch (err) {
+      createProjectError = err?.message || "Failed to create project.";
+      await tick();
+      newProjectNameInput?.focus();
+    }
   }
 
   async function saveProject(projectId) {
@@ -1718,16 +1897,19 @@
   }
 
   async function saveAsProject(projectId, overridePath) {
-    const targetPath = overridePath || saveAsPath;
-    if (!projectId || !targetPath || projectSaving) return;
+    const targetPath = (overridePath || saveAsPath || "").trim();
+    if (!projectId || !targetPath || projectSaving) return false;
     projectSaving = true;
     try {
       await apiPost(`/api/v1/projects/${projectId}/save-as`, { path: targetPath });
       saveAsPath = "";
+      saveAsError = "";
       await loadProjects();
       await loadRecent();
+      return true;
     } catch (err) {
-      statusMessage = err?.message || "Failed to save project.";
+      saveAsError = err?.message || "Failed to save project.";
+      return false;
     } finally {
       projectSaving = false;
     }
@@ -1922,6 +2104,7 @@
 
   function openProjectConfigDialog() {
     if (!selectedProjectId) return;
+    rememberFocus();
     projectConfigDialogOpen = true;
     projectConfigSelection = { type: "project" };
     projectConfigError = "";
@@ -1929,6 +2112,7 @@
     projectConfigPending = false;
     loadProjectConfig(selectedProjectId);
     loadAvailableDevices();
+    focusDialog(projectConfigDialogEl);
   }
 
   $: if (projectConfigDialogOpen && (selectedProjectPlugin?.className || selectedProjectPlugin?.name)) {
@@ -1946,6 +2130,7 @@
     projectConfigNewPlugin = { name: "", className: "", type: "device", load: true };
     projectConfigNewAgent = { name: "", device: "" };
     projectConfigNewFeature = { key: "", value: "" };
+    restoreFocus();
   }
 
   function selectProjectConfig(selection) {
@@ -2292,6 +2477,7 @@
 
   function openPrefsDialog() {
     if (!selectedProjectId) return;
+    rememberFocus();
     const width = readConfigInt("node_width", PREF_NODE_DEFAULT);
     const height = readConfigInt("node_height", width);
     const nodeSize = width || height || PREF_NODE_DEFAULT;
@@ -2314,6 +2500,7 @@
     prefsRecentDirty = false;
     prefsDialogError = "";
     prefsDialogOpen = true;
+    focusDialog(prefsDialogEl);
   }
 
   function closePrefsDialog() {
@@ -2323,6 +2510,7 @@
     prefsRecentFiles = [];
     prefsRecentSelectedKey = "";
     prefsRecentDirty = false;
+    restoreFocus();
   }
 
   async function applyPrefsDialog() {
@@ -2882,7 +3070,7 @@
     }
   }
 
-  function connectWs() {
+  function connectWs(serverUrl = null) {
     wsError = "";
     if (ws) {
       rejectPendingRequests("WebSocket reconnecting.");
@@ -2901,8 +3089,23 @@
         settled = true;
         resolve(ok);
       };
-      const protocol = location.protocol === "https:" ? "wss" : "ws";
-      const baseUrl = `${protocol}://${location.host}/ws`;
+
+      let baseUrl;
+      if (serverUrl) {
+        // Remote connection: serverUrl is like "localhost:8091" or "192.168.1.10:8091"
+        const protocol = serverUrl.startsWith("https") ? "wss" : "ws";
+        const cleanUrl = serverUrl.replace(/^https?:\/\//, "").replace(/\/$/, "");
+        baseUrl = `${protocol}://${cleanUrl}/ws`;
+        isRemoteConnection = true;
+        connectedServerName = cleanUrl;
+      } else {
+        // Local connection: use current page host
+        const protocol = location.protocol === "https:" ? "wss" : "ws";
+        baseUrl = `${protocol}://${location.host}/ws`;
+        isRemoteConnection = false;
+        connectedServerName = location.host;
+      }
+
       const url = token ? `${baseUrl}?token=${encodeURIComponent(token)}` : baseUrl;
       ws = new WebSocket(url);
       ws.onopen = () => {
@@ -3276,6 +3479,7 @@
 
   function openMonitorDialog() {
     if (!selectedProjectId) return;
+    rememberFocus();
     monitorDialogOpen = true;
     monitorError = "";
     monitorStatus = "";
@@ -3290,6 +3494,7 @@
         selectMonitorVar("local", monitorLocals[0]);
       }
     }
+    focusDialog(monitorDialogEl);
   }
 
   function closeMonitorDialog() {
@@ -3298,6 +3503,7 @@
     monitorValueDraft = "";
     monitorStatus = "";
     monitorError = "";
+    restoreFocus();
   }
 
   async function applyMonitorValue() {
@@ -3510,21 +3716,26 @@
     projectLoadProjectId = "";
     resetProjectLoadState();
     recentLoaded = false;
+    await tick();
+    openPathInput?.focus();
   }
 
   function cancelLoadConfirm() {
     loadConfirmOpen = false;
     loadConfirmReasons = [];
+    restoreFocus();
   }
 
   async function confirmSaveAndClose() {
     if (!selectedProjectId) {
       loadConfirmOpen = false;
+      restoreFocus();
       return;
     }
     if (projectRequiresSaveAs) {
       // Can't save without a path; fall back to the Save As flow.
       loadConfirmOpen = false;
+      loadConfirmReasons = [];
       openSaveAsDialog();
       return;
     }
@@ -3532,19 +3743,23 @@
     loadConfirmOpen = false;
     loadConfirmReasons = [];
     await returnToLanding(true);
+    restoreFocus();
   }
 
   async function confirmReturnToLanding() {
     loadConfirmOpen = false;
     loadConfirmReasons = [];
     await returnToLanding(true);
+    restoreFocus();
   }
 
   function requestReturnToLanding() {
     const reasons = collectUnsavedReasons();
     if (reasons.length) {
+      rememberFocus();
       loadConfirmReasons = reasons;
       loadConfirmOpen = true;
+      focusDialog(loadConfirmDialogEl);
       return;
     }
     returnToLanding(true);
@@ -3552,18 +3767,34 @@
 
   function openSaveAsDialog() {
     saveAsPath = "";
+    saveAsError = "";
+    rememberFocus();
     saveAsDialogOpen = true;
+    focusDialog(saveAsDialogEl, saveAsInputEl);
   }
 
   function closeSaveAsDialog() {
     saveAsDialogOpen = false;
+    saveAsError = "";
+    restoreFocus();
   }
 
   async function confirmSaveAs() {
-    const target = saveAsPath;
-    if (!target) return;
-    await saveAsProject(selectedProjectId, target);
-    saveAsDialogOpen = false;
+    const target = (saveAsPath || "").trim();
+    if (!target) {
+      saveAsError = "Path is required.";
+      await tick();
+      saveAsInputEl?.focus();
+      return;
+    }
+    const ok = await saveAsProject(selectedProjectId, target);
+    if (ok) {
+      saveAsDialogOpen = false;
+      restoreFocus();
+    } else {
+      await tick();
+      saveAsInputEl?.focus();
+    }
   }
 
   async function removeRecentProject(path) {
@@ -3576,6 +3807,7 @@
     recentFailureOpen = false;
     recentFailureProject = null;
     recentFailureMessage = "";
+    restoreFocus();
   }
 
   function filterKeyValues(values, filter) {
@@ -4078,6 +4310,7 @@
 
   function openMissingAgentDialog() {
     if (!selectedProjectId) return;
+    rememberFocus();
     missingAgentError = "";
     missingAgentBusy = false;
     missingAgentDrafts = buildMissingAgentDrafts(missingAgentNames, projectConfigPlugins);
@@ -4086,6 +4319,7 @@
     if (!projectConfigDraft) {
       loadProjectConfig(selectedProjectId);
     }
+    focusDialog(missingAgentDialogEl);
   }
 
   function closeMissingAgentDialog() {
@@ -4093,6 +4327,7 @@
     missingAgentDrafts = [];
     missingAgentError = "";
     missingAgentBusy = false;
+    restoreFocus();
   }
 
   function updateMissingAgentDraft(index, field, value) {
@@ -4537,6 +4772,16 @@
     varDefSelectedIndex = null;
   }
 
+  function closeTypeDefDialog() {
+    resetTypeDefEditor();
+    restoreFocus();
+  }
+
+  function closeVarDefDialog() {
+    resetVarDefEditor();
+    restoreFocus();
+  }
+
   function resetCmdEditor() {
     cmdDraft = "";
     cmdEditIndex = null;
@@ -4554,6 +4799,7 @@
   function closeCmdDialog() {
     cmdDialogOpen = false;
     resetCmdEditor();
+    restoreFocus();
   }
 
   function defaultTypeDefDraft() {
@@ -4687,15 +4933,18 @@
   }
 
   function startTypeDefAdd() {
+    rememberFocus();
     typeDefError = "";
     typeDefEditIndex = -1;
     typeDefSelectedIndex = null;
     typeDefDraft = defaultTypeDefDraft();
+    focusDialog(typeDefDialogEl, typeDefNameInputEl);
   }
 
   function startTypeDefEdit(index) {
     const def = nodeEditorTypeDefs[index];
     if (!def) return;
+    rememberFocus();
     typeDefError = "";
     typeDefEditIndex = index;
     typeDefSelectedIndex = index;
@@ -4705,6 +4954,7 @@
       elementType: def.elementType ?? "Int",
       members: Array.isArray(def.members) ? def.members.map((member) => ({ ...member })) : []
     };
+    focusDialog(typeDefDialogEl, typeDefNameInputEl);
   }
 
   function selectTypeDef(index) {
@@ -4838,15 +5088,18 @@
   }
 
   function startVarDefAdd() {
+    rememberFocus();
     varDefError = "";
     varDefEditIndex = -1;
     varDefSelectedIndex = null;
     varDefDraft = defaultVarDefDraft();
+    focusDialog(varDefDialogEl, varDefNameInputEl);
   }
 
   function startVarDefEdit(index) {
     const def = nodeEditorVarDefs[index];
     if (!def) return;
+    rememberFocus();
     varDefError = "";
     varDefEditIndex = index;
     varDefSelectedIndex = index;
@@ -4855,6 +5108,7 @@
       type: def.type ?? (nodeEditorTypeOptions[0] || "Bool"),
       expression: def.expression ?? ""
     };
+    focusDialog(varDefDialogEl, varDefNameInputEl);
   }
 
   function selectVarDef(index) {
@@ -4988,6 +5242,7 @@
   async function openCmdDialog(nodeId = null) {
     const targetId = nodeId || nodeEditorTarget?.id || "";
     if (!targetId && !nodeEditorTarget) return;
+    rememberFocus();
     if (nodeId && (sceneFlowSelection?.type !== "node" || sceneFlowSelection.id !== nodeId)) {
       sceneFlowSelection = { type: "node", id: nodeId };
       sceneFlowMultiSelection = [{ type: "node", id: nodeId }];
@@ -4995,6 +5250,7 @@
     }
     cmdDialogOpen = true;
     syncCmdInlineDrafts();
+    focusDialog(cmdDialogEl);
   }
 
   async function startCmdAdd() {
@@ -6041,10 +6297,58 @@
     return !!target.isContentEditable;
   }
 
+  function handleDialogEscape() {
+    if (cmdDialogOpen) {
+      closeCmdDialog();
+      return true;
+    }
+    if (typeDefDraft) {
+      closeTypeDefDialog();
+      return true;
+    }
+    if (varDefDraft) {
+      closeVarDefDialog();
+      return true;
+    }
+    if (monitorDialogOpen) {
+      closeMonitorDialog();
+      return true;
+    }
+    if (prefsDialogOpen) {
+      closePrefsDialog();
+      return true;
+    }
+    if (projectConfigDialogOpen) {
+      closeProjectConfigDialog();
+      return true;
+    }
+    if (missingAgentDialogOpen) {
+      closeMissingAgentDialog();
+      return true;
+    }
+    if (recentFailureOpen) {
+      closeRecentFailureDialog();
+      return true;
+    }
+    if (saveAsDialogOpen) {
+      closeSaveAsDialog();
+      return true;
+    }
+    if (loadConfirmOpen) {
+      cancelLoadConfirm();
+      return true;
+    }
+    return false;
+  }
+
   function handleGlobalKeydown(event) {
     if (!event) return;
-    if (isEditableTarget(event.target)) return;
     const key = event.key;
+    if (key === "Escape" && handleDialogEscape()) {
+      event.preventDefault();
+      return;
+    }
+    if (isEditableTarget(event.target)) return;
     const isMod = event.metaKey || event.ctrlKey;
     if (isMod && key.toLowerCase() === "z") {
       event.preventDefault();
@@ -6142,6 +6446,36 @@
 
   <div class="grid">
     {#if !showEditor}
+    <!-- Phase 8.4: Connection status and remote server button -->
+    <section class="panel connection-panel">
+      <header class="panel-title">
+        <h2>Server Connection</h2>
+      </header>
+      <div class="connection-status">
+        <span class="connection-indicator {wsConnected ? 'connected' : 'disconnected'}"></span>
+        <span class="connection-text">
+          {#if wsConnected}
+            Connected to <strong>{connectedServerName || location.host}</strong>
+            {#if isRemoteConnection}
+              <span class="remote-badge">Remote</span>
+            {/if}
+          {:else}
+            Disconnected
+          {/if}
+        </span>
+      </div>
+      <div class="connection-actions">
+        <button type="button" class="ghost" on:click={openConnectDialog}>
+          {isRemoteConnection ? "Change Server" : "Connect to Remote"}
+        </button>
+        {#if isRemoteConnection}
+          <button type="button" class="ghost" on:click={disconnectFromRemote}>
+            Disconnect
+          </button>
+        {/if}
+      </div>
+    </section>
+
     <section class="panel">
       <header class="panel-title">
         <h2>Projects</h2>
@@ -6185,21 +6519,44 @@
         {/if}
       {/if}
 
-      <div class="stack">
+      <form class="stack" on:submit|preventDefault={() => openProject(openPath)}>
         <label for="open-path">Open by path</label>
         <div class="row">
-          <input id="open-path" placeholder="/abs/path/to/project" bind:value={openPath} />
-          <button type="button" on:click={() => openProject(openPath)}>Open</button>
+          <input
+            id="open-path"
+            placeholder="/abs/path/to/project"
+            bind:this={openPathInput}
+            bind:value={openPath}
+            on:input={() => (openPathError = "")}
+          />
+          <button type="submit" disabled={!openPath || !openPath.trim()}>Open</button>
         </div>
-      </div>
+        {#if openPathError}
+          <p class="error">{openPathError}</p>
+        {/if}
+      </form>
 
-      <div class="stack">
+      <form class="stack" on:submit|preventDefault={createProject}>
         <label for="new-project-name">New project name</label>
-        <input id="new-project-name" placeholder="Project name" bind:value={newName} />
+        <input
+          id="new-project-name"
+          placeholder="Project name"
+          bind:this={newProjectNameInput}
+          bind:value={newName}
+          on:input={() => (createProjectError = "")}
+        />
         <label for="new-project-base">Base dir (optional)</label>
-        <input id="new-project-base" placeholder="Base dir (optional)" bind:value={newBaseDir} />
-        <button type="button" on:click={createProject}>Create</button>
-      </div>
+        <input
+          id="new-project-base"
+          placeholder="Base dir (optional)"
+          bind:value={newBaseDir}
+          on:input={() => (createProjectError = "")}
+        />
+        <button type="submit" disabled={!newName || !newName.trim()}>Create</button>
+        {#if createProjectError}
+          <p class="error">{createProjectError}</p>
+        {/if}
+      </form>
 
     </section>
     <section class="panel">
@@ -7950,14 +8307,59 @@
     {/if}
   </div>
 
+  <!-- Phase 8.4: Connect to Remote Server Dialog -->
+  {#if showConnectDialog}
+    <div
+      class="modal-backdrop"
+      on:click|self={closeConnectDialog}
+      role="presentation"
+    >
+      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="connect-dialog-title" tabindex="-1">
+        <h3 id="connect-dialog-title">Connect to Runtime Server</h3>
+        <div class="modal-body">
+          <p class="connect-dialog-hint">Enter the address of a remote runtime server to connect for execution and monitoring.</p>
+          <label class="connect-input-label">
+            Server URL
+            <input
+              type="text"
+              bind:value={remoteServerInput}
+              placeholder="localhost:8091 or 192.168.1.10:8091"
+              disabled={remoteConnecting}
+              on:keydown={(e) => e.key === "Enter" && connectToRemoteServer(remoteServerInput)}
+            />
+          </label>
+          {#if remoteConnectionError}
+            <p class="connect-error">{remoteConnectionError}</p>
+          {/if}
+          {#if isRemoteConnection}
+            <p class="connect-current">Currently connected to: <strong>{connectedServerName}</strong></p>
+          {/if}
+        </div>
+        <div class="row">
+          <button type="button" class="ghost" on:click={closeConnectDialog} disabled={remoteConnecting}>Cancel</button>
+          {#if isRemoteConnection}
+            <button type="button" class="ghost" on:click={disconnectFromRemote} disabled={remoteConnecting}>Disconnect</button>
+          {/if}
+          <button
+            type="button"
+            class="primary"
+            on:click={() => connectToRemoteServer(remoteServerInput)}
+            disabled={remoteConnecting || !remoteServerInput.trim()}
+          >
+            {remoteConnecting ? "Connecting..." : "Connect"}
+          </button>
+        </div>
+      </div>
+    </div>
+  {/if}
+
   {#if loadConfirmOpen}
-    <button
-      type="button"
+    <div
       class="modal-backdrop"
       on:click|self={cancelLoadConfirm}
-      aria-label="Close dialog"
+      role="presentation"
     >
-      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="load-confirm-title">
+      <div class="modal" bind:this={loadConfirmDialogEl} role="dialog" aria-modal="true" aria-labelledby="load-confirm-title" tabindex="-1">
         <h3 id="load-confirm-title">Close Project?</h3>
         <div class="modal-body">
           <p>Closing will discard unsaved changes in these areas:</p>
@@ -7980,43 +8382,51 @@
           <button type="button" class="danger" on:click={confirmReturnToLanding}>Close</button>
         </div>
       </div>
-    </button>
+    </div>
   {/if}
 
   {#if saveAsDialogOpen}
-    <button
-      type="button"
+    <div
       class="modal-backdrop"
       on:click|self={closeSaveAsDialog}
-      aria-label="Close dialog"
+      role="presentation"
     >
-      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="save-as-title">
+      <div class="modal" bind:this={saveAsDialogEl} role="dialog" aria-modal="true" aria-labelledby="save-as-title" tabindex="-1">
         <h3 id="save-as-title">Save project as</h3>
-        <div class="modal-body">
+        <form class="modal-body" on:submit|preventDefault={confirmSaveAs}>
           <label for="save-as-path">Save to path</label>
           <input
             id="save-as-path"
             placeholder="/abs/path/to/project"
+            bind:this={saveAsInputEl}
             bind:value={saveAsPath}
           />
           <p class="muted">Choose a new folder for this project.</p>
-        </div>
-        <div class="row">
-          <button type="button" class="ghost" on:click={closeSaveAsDialog}>Cancel</button>
-          <button type="button" class="primary" on:click={confirmSaveAs} disabled={!saveAsPath}>Save As</button>
-        </div>
+          {#if saveAsError}
+            <p class="error">{saveAsError}</p>
+          {/if}
+          <div class="row">
+            <button type="button" class="ghost" on:click={closeSaveAsDialog}>Cancel</button>
+            <button
+              type="submit"
+              class="primary"
+              disabled={!saveAsPath || !saveAsPath.trim()}
+            >
+              Save As
+            </button>
+          </div>
+        </form>
       </div>
-    </button>
+    </div>
   {/if}
 
   {#if recentFailureOpen}
-    <button
-      type="button"
+    <div
       class="modal-backdrop"
       on:click|self={closeRecentFailureDialog}
-      aria-label="Close dialog"
+      role="presentation"
     >
-      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="recent-failure-title">
+      <div class="modal" bind:this={recentFailureDialogEl} role="dialog" aria-modal="true" aria-labelledby="recent-failure-title" tabindex="-1">
         <h3 id="recent-failure-title">Cannot open recent project</h3>
         <div class="modal-body">
           <p>{recentFailureMessage || "The project could not be opened."}</p>
@@ -8041,17 +8451,16 @@
           </button>
         </div>
       </div>
-    </button>
+    </div>
   {/if}
 
   {#if missingAgentDialogOpen}
-    <button
-      type="button"
+    <div
       class="modal-backdrop"
       on:click|self={closeMissingAgentDialog}
-      aria-label="Close dialog"
+      role="presentation"
     >
-      <div class="modal missing-agent-modal" role="dialog" aria-modal="true" aria-labelledby="missing-agent-title">
+      <div class="modal missing-agent-modal" bind:this={missingAgentDialogEl} role="dialog" aria-modal="true" aria-labelledby="missing-agent-title" tabindex="-1">
         <h3 id="missing-agent-title">Missing Agent Device Configuration</h3>
         <div class="modal-body">
           <p>
@@ -8114,17 +8523,16 @@
           <p class="error">{missingAgentError}</p>
         {/if}
       </div>
-    </button>
+    </div>
   {/if}
 
   {#if projectConfigDialogOpen}
-    <button
-      type="button"
+    <div
       class="modal-backdrop"
       on:click|self={closeProjectConfigDialog}
-      aria-label="Close dialog"
+      role="presentation"
     >
-      <div class="modal project-config-modal" role="dialog" aria-modal="true" aria-labelledby="project-config-title">
+      <div class="modal project-config-modal" bind:this={projectConfigDialogEl} role="dialog" aria-modal="true" aria-labelledby="project-config-title" tabindex="-1">
         <div class="project-config-header">
           <div class="project-config-title">
             <span class="project-config-icon">
@@ -8665,17 +9073,16 @@
           </div>
         </div>
       </div>
-    </button>
+    </div>
   {/if}
 
   {#if prefsDialogOpen && prefsDialogDraft}
-    <button
-      type="button"
+    <div
       class="modal-backdrop"
       on:click|self={closePrefsDialog}
-      aria-label="Close dialog"
+      role="presentation"
     >
-      <div class="modal prefs-modal" role="dialog" aria-modal="true" aria-labelledby="prefs-dialog-title">
+      <div class="modal prefs-modal" bind:this={prefsDialogEl} role="dialog" aria-modal="true" aria-labelledby="prefs-dialog-title" tabindex="-1">
         <div class="prefs-header">
           <div class="prefs-title">
             <span class="prefs-title-icon">
@@ -8932,17 +9339,16 @@
           <p class="error">{prefsDialogError}</p>
         {/if}
       </div>
-    </button>
+    </div>
   {/if}
 
   {#if monitorDialogOpen}
-    <button
-      type="button"
+    <div
       class="modal-backdrop"
       on:click|self={closeMonitorDialog}
-      aria-label="Close dialog"
+      role="presentation"
     >
-      <div class="modal monitor-modal" role="dialog" aria-modal="true" aria-labelledby="monitor-dialog-title">
+      <div class="modal monitor-modal" bind:this={monitorDialogEl} role="dialog" aria-modal="true" aria-labelledby="monitor-dialog-title" tabindex="-1">
         <div class="monitor-header">
           <div>
             <h3 id="monitor-dialog-title">Runtime Monitor</h3>
@@ -9071,21 +9477,20 @@
           </div>
         {/if}
       </div>
-    </button>
+    </div>
   {/if}
 
   {#if typeDefDraft}
-    <button
-      type="button"
+    <div
       class="modal-backdrop"
-      on:click|self={resetTypeDefEditor}
-      aria-label="Close dialog"
+      on:click|self={closeTypeDefDialog}
+      role="presentation"
     >
-      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="type-def-dialog-title">
+      <div class="modal" bind:this={typeDefDialogEl} role="dialog" aria-modal="true" aria-labelledby="type-def-dialog-title" tabindex="-1">
         <h3 id="type-def-dialog-title">{typeDefEditIndex >= 0 ? "Edit type definition" : "Add type definition"}</h3>
         <div class="modal-body">
           <label for="type-def-name">Name</label>
-          <input id="type-def-name" bind:value={typeDefDraft.name} />
+          <input id="type-def-name" bind:this={typeDefNameInputEl} bind:value={typeDefDraft.name} />
           <label for="type-def-flavour">Flavour</label>
           <select
             id="type-def-flavour"
@@ -9167,18 +9572,18 @@
           <button type="button" class="primary" on:click={applyTypeDefEdit} disabled={!wsConnected || sceneFlowBusy}>
             {typeDefEditIndex >= 0 ? "Save" : "Add"}
           </button>
-          <button type="button" class="ghost" on:click={resetTypeDefEditor}>Cancel</button>
+          <button type="button" class="ghost" on:click={closeTypeDefDialog}>Cancel</button>
         </div>
         {#if typeDefError}
           <p class="error">{typeDefError}</p>
         {/if}
       </div>
-    </button>
+    </div>
   {/if}
 
   {#if cmdDialogOpen}
     <div class="modal-backdrop cmd-modal-backdrop">
-      <div class="modal cmd-modal" role="dialog" aria-modal="true" aria-labelledby="cmd-dialog-title">
+      <div class="modal cmd-modal" bind:this={cmdDialogEl} role="dialog" aria-modal="true" aria-labelledby="cmd-dialog-title" tabindex="-1">
         <h3 id="cmd-dialog-title">Command executions of {nodeEditorTarget?.name || "(unnamed)"}</h3>
         <div class="cmd-dialog">
           <div class="def-table cmd-inline-table">
@@ -9273,17 +9678,16 @@
   {/if}
 
   {#if varDefDraft}
-    <button
-      type="button"
+    <div
       class="modal-backdrop"
-      on:click|self={resetVarDefEditor}
-      aria-label="Close dialog"
+      on:click|self={closeVarDefDialog}
+      role="presentation"
     >
-      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="var-def-dialog-title">
+      <div class="modal" bind:this={varDefDialogEl} role="dialog" aria-modal="true" aria-labelledby="var-def-dialog-title" tabindex="-1">
         <h3 id="var-def-dialog-title">{varDefEditIndex >= 0 ? "Edit variable definition" : "Add variable definition"}</h3>
         <div class="modal-body">
           <label for="var-def-name">Name</label>
-          <input id="var-def-name" bind:value={varDefDraft.name} />
+          <input id="var-def-name" bind:this={varDefNameInputEl} bind:value={varDefDraft.name} />
           <label for="var-def-type">Type</label>
           <select id="var-def-type" bind:value={varDefDraft.type} on:change={updateVarDefType}>
             {#each nodeEditorTypeOptions as option}
@@ -9297,12 +9701,12 @@
           <button type="button" class="primary" on:click={applyVarDefEdit} disabled={!wsConnected || sceneFlowBusy}>
             {varDefEditIndex >= 0 ? "Save" : "Add"}
           </button>
-          <button type="button" class="ghost" on:click={resetVarDefEditor}>Cancel</button>
+          <button type="button" class="ghost" on:click={closeVarDefDialog}>Cancel</button>
         </div>
         {#if varDefError}
           <p class="error">{varDefError}</p>
         {/if}
       </div>
-    </button>
+    </div>
   {/if}
 </main>

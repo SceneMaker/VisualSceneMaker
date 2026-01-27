@@ -1,0 +1,52 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+group 'de.dfki.vsm'
+version '1.0.0'
+
+// Java 17 compatibility enforced by root build.gradle
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // Core module contains runtime engine and basic WebUiServer
+    implementation project(':core')
+
+    // Minimal plugins for runtime (optional, can be configured per deployment)
+    implementation project(':plugins:console')
+    implementation project(':plugins:timer')
+
+    // SLF4J for Javalin logging
+    implementation 'org.slf4j:slf4j-simple:2.0.9'
+}
+
+application {
+    mainClass = 'de.dfki.vsm.runtime.RuntimeMain'
+}
+
+jar {
+    manifest {
+        attributes(
+            'Main-Class': 'de.dfki.vsm.runtime.RuntimeMain'
+        )
+    }
+
+    // Create fat JAR with all dependencies
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+    duplicatesStrategy = 'exclude'
+}
+
+// Task to create distribution
+tasks.named('distZip') {
+    archiveFileName = "runtime-server-${version}.zip"
+}
+
+tasks.named('distTar') {
+    archiveFileName = "runtime-server-${version}.tar"
+}

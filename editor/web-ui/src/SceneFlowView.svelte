@@ -144,8 +144,8 @@
   $: showNodeIds = readBoolean(config?.shownodeid ?? config?.["shownodeid"], true);
   $: gridNodeWidth = nodeWidth || baseNodeSize;
   $: gridNodeHeight = nodeHeight || baseNodeSize;
-  $: gridX = Math.max(8, baseNodeSize * gridScaleX);
-  $: gridY = Math.max(8, baseNodeSize * gridScaleY);
+  $: gridX = Math.max(8, readNumber(config?.grid_space_x ?? config?.["grid_space_x"], baseNodeSize * gridScaleX));
+  $: gridY = Math.max(8, readNumber(config?.grid_space_y ?? config?.["grid_space_y"], baseNodeSize * gridScaleY));
   $: gridOriginX = gridNodeWidth / 2 + gridNodeWidth / 3;
   $: gridOriginY = gridNodeHeight / 2 + gridNodeHeight / 3;
   // With 1:1 pixel mapping at zoom=1, uniformScale equals zoomLevel

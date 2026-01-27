@@ -13,15 +13,15 @@ allprojects {
 
 subprojects {
     plugins.withId('java') {
-        def isCoreOrPlugin = project.path == ':core' || project.path.startsWith(':plugins:')
-        if (!isCoreOrPlugin) {
+        def isJava17Module = project.path == ':core' || project.path == ':runtime-server' || project.path.startsWith(':plugins:')
+        if (!isJava17Module) {
             java {
                 toolchain {
                     languageVersion = JavaLanguageVersion.of(21)
                 }
             }
         }
-        if (isCoreOrPlugin) {
+        if (isJava17Module) {
             tasks.withType(JavaCompile).configureEach {
                 options.release = 17
             }
