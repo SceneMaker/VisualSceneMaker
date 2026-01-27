@@ -834,6 +834,9 @@
   let sceneFlowViewBox = null;
   let sceneFlowSelection = null;
   let sceneFlowMultiSelection = [];
+  let pinnedNodeSelectionId = "";
+  let pinnedNodeSelectionRevision = null;
+  let pinnedEdgeSelectionId = "";
   let sceneFlowClipboard = null;
   let sceneFlowPasteIndex = 0;
   let sceneFlowDuplicateIndex = 0;
@@ -1148,6 +1151,14 @@
   $: nodeEditorVarDefs = Array.isArray(nodeEditorTarget?.varDefs) ? nodeEditorTarget.varDefs : [];
   $: nodeEditorCommands = Array.isArray(nodeEditorTarget?.commands) ? nodeEditorTarget.commands : [];
   $: sceneFlowVarDefs = Array.isArray(sceneFlow?.superNodeData?.varDefs) ? sceneFlow.superNodeData.varDefs : [];
+  $: console.log("[SELDBG] selection-state", {
+    sceneFlowSelection,
+    sceneFlowMultiSelection,
+    nodeEditorTargetId,
+    superNodeId: sceneFlow?.superNodeId,
+    revision: sceneFlow?.revision
+  });
+
   $: sceneFlowIntVarNames = sceneFlowVarDefs
     .filter((def) => (def?.type || "").trim().toLowerCase() === "int" && (def?.name || "").trim())
     .map((def) => (def.name || "").trim());
@@ -2764,6 +2775,28 @@
 
   async function loadSceneFlow(projectId, superNodeId = "") {
     if (!projectId) return;
+    const targetSuperId = (superNodeId || sceneFlow?.superNodeId || "").trim();
+    const currentSuperId = (sceneFlow?.superNodeId || "").trim();
+    const canPreserveNode =
+      sceneFlowSelection?.type === "node" && targetSuperId === currentSuperId && sceneFlowSelection.id;
+    const canPreserveEdge =
+      sceneFlowSelection?.type === "edge" && targetSuperId === currentSuperId && sceneFlowSelection.id;
+    if (canPreserveNode) {
+      pinnedNodeSelectionId = sceneFlowSelection.id;
+      pinnedNodeSelectionRevision = sceneFlow?.revision ?? null;
+    } else if (canPreserveEdge) {
+      pinnedEdgeSelectionId = sceneFlowSelection.id;
+    }
+    console.log("[SELDBG] loadSceneFlow start", {
+      projectId,
+      superNodeId,
+      targetSuperId,
+      currentSuperId,
+      pinnedNodeSelectionId,
+      pinnedEdgeSelectionId,
+      beforeSelection: sceneFlowSelection,
+      beforeMulti: sceneFlowMultiSelection
+    });
     sceneFlowError = "";
     sceneFlowLoading = true;
     sceneFlowLoaded = false;
@@ -2778,8 +2811,35 @@
       if (projectId !== selectedProjectId) {
         return;
       }
+      const pinnedExists =
+        pinnedNodeSelectionId && Array.isArray(data?.nodes)
+          ? data.nodes.some((node) => node.id === pinnedNodeSelectionId)
+          : false;
+      const pinnedEdgeExists =
+        !pinnedExists && pinnedEdgeSelectionId && Array.isArray(data?.edges)
+          ? data.edges.some((edge) => edge.id === pinnedEdgeSelectionId)
+          : false;
       sceneFlow = data;
       sceneFlowLoaded = true;
+      if (pinnedExists) {
+        sceneFlowSelection = { type: "node", id: pinnedNodeSelectionId };
+        sceneFlowMultiSelection = [{ type: "node", id: pinnedNodeSelectionId }];
+      } else if (pinnedEdgeExists) {
+        sceneFlowSelection = { type: "edge", id: pinnedEdgeSelectionId };
+        sceneFlowMultiSelection = [{ type: "edge", id: pinnedEdgeSelectionId }];
+      }
+      pinnedNodeSelectionId = "";
+      pinnedNodeSelectionRevision = null;
+      pinnedEdgeSelectionId = "";
+      console.log("[SELDBG] loadSceneFlow success", {
+        projectId,
+        superNodeId,
+        revision: sceneFlow?.revision,
+        pinnedExists,
+        pinnedEdgeExists,
+        afterSelection: sceneFlowSelection,
+        afterMulti: sceneFlowMultiSelection
+      });
       loadRuntime(projectId);
     } catch (err) {
       if (projectId !== selectedProjectId) {
@@ -2788,6 +2848,14 @@
       sceneFlowError = err.message || "Failed to load SceneFlow.";
       sceneFlow = null;
       sceneFlowLoaded = false;
+      pinnedNodeSelectionId = "";
+      pinnedNodeSelectionRevision = null;
+      pinnedEdgeSelectionId = "";
+      console.log("[SELDBG] loadSceneFlow error", {
+        projectId,
+        superNodeId,
+        error: sceneFlowError
+      });
     } finally {
       if (projectId === selectedProjectId) {
         sceneFlowLoading = false;
@@ -3330,12 +3398,48 @@
     const snapshot = payload?.snapshot || payload;
     if (!snapshot || !snapshot.nodes || !snapshot.edges) return;
     if (snapshot.projectId && snapshot.projectId !== selectedProjectId) return;
+    const pinnedExists =
+      pinnedNodeSelectionId && Array.isArray(snapshot.nodes)
+        ? snapshot.nodes.some((node) => node.id === pinnedNodeSelectionId)
+        : false;
+    const pinnedEdgeExists =
+      !pinnedExists && pinnedEdgeSelectionId && Array.isArray(snapshot.edges)
+        ? snapshot.edges.some((edge) => edge.id === pinnedEdgeSelectionId)
+        : false;
+    console.log("[SELDBG] sceneflow.snapshot", {
+      revision: snapshot?.revision,
+      superNodeId: snapshot?.superNodeId,
+      pinnedNodeSelectionId,
+      pinnedNodeSelectionRevision,
+      pinnedExists,
+      pinnedEdgeSelectionId,
+      pinnedEdgeExists,
+      beforeSelection: sceneFlowSelection,
+      beforeMulti: sceneFlowMultiSelection
+    });
     sceneFlow = snapshot;
     sceneFlowError = "";
     sceneFlowLoaded = true;
     sceneFlowLoading = false;
-    sceneFlowSelection = null;
-    sceneFlowMultiSelection = [];
+    if (pinnedExists) {
+      sceneFlowSelection = { type: "node", id: pinnedNodeSelectionId };
+      sceneFlowMultiSelection = [{ type: "node", id: pinnedNodeSelectionId }];
+    } else if (pinnedEdgeExists) {
+      sceneFlowSelection = { type: "edge", id: pinnedEdgeSelectionId };
+      sceneFlowMultiSelection = [{ type: "edge", id: pinnedEdgeSelectionId }];
+    } else {
+      sceneFlowSelection = null;
+      sceneFlowMultiSelection = [];
+    }
+    pinnedNodeSelectionId = "";
+    pinnedNodeSelectionRevision = null;
+    pinnedEdgeSelectionId = "";
+    console.log("[SELDBG] sceneflow.snapshot applied", {
+      revision: sceneFlow?.revision,
+      superNodeId: sceneFlow?.superNodeId,
+      afterSelection: sceneFlowSelection,
+      afterMulti: sceneFlowMultiSelection
+    });
     edgeCreateSourceId = "";
     clearSceneFlowActivity();
     if (selectedProjectId) {
@@ -3393,6 +3497,15 @@
       ...edges.map((id) => ({ type: "edge", id })),
       ...comments.map((id) => ({ type: "comment", id }))
     ];
+    console.log("[SELDBG] sceneflow.selection", {
+      selection,
+      pinnedNodeSelectionId,
+      pinnedNodeSelectionRevision,
+      beforeSelection: sceneFlowSelection,
+      beforeMulti: sceneFlowMultiSelection,
+      nextSelection: list[0] || null,
+      nextMulti: list
+    });
     sceneFlowMultiSelection = list;
     sceneFlowSelection = list.length ? list[0] : null;
   }
@@ -5902,6 +6015,9 @@
 
   async function updateSceneFlowEdgeControl(edgeId, handle, cx, cy) {
     if (!selectedProjectId || !edgeId) return;
+    if (sceneFlowSelection?.type === "edge" && sceneFlowSelection.id === edgeId) {
+      pinnedEdgeSelectionId = edgeId;
+    }
     const isBend = handle === "bend";
     const isReset = handle === "reset";
     if (!isBend && !isReset && (!Number.isFinite(cx) || !Number.isFinite(cy))) return;
@@ -6018,6 +6134,15 @@
 
   async function toggleNodeStart() {
     if (!selectedProjectId || !selectedNode || !nodeDraft || selectedNode.isHistory) return;
+    pinnedNodeSelectionId = selectedNode.id;
+    pinnedNodeSelectionRevision = sceneFlow?.revision ?? null;
+    console.log("[SELDBG] toggleNodeStart begin", {
+      nodeId: selectedNode.id,
+      revision: sceneFlow?.revision,
+      superNodeId: sceneFlow?.superNodeId,
+      selection: sceneFlowSelection,
+      multi: sceneFlowMultiSelection
+    });
     const previous = nodeDraft;
     const next = !previous.isStart;
     nodeDraft = { ...previous, isStart: next };
@@ -6032,6 +6157,16 @@
       nodeDraft = previous;
       nodeEditError = sceneFlowError || "Failed to update start node.";
     }
+    console.log("[SELDBG] toggleNodeStart end", {
+      nodeId: selectedNode?.id,
+      revision: sceneFlow?.revision,
+      superNodeId: sceneFlow?.superNodeId,
+      pinnedNodeSelectionId,
+      pinnedNodeSelectionRevision,
+      selection: sceneFlowSelection,
+      multi: sceneFlowMultiSelection,
+      response
+    });
   }
 
   async function toggleSuperNodeStart() {
