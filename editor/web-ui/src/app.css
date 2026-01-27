@@ -449,6 +449,7 @@ summary {
   gap: 0.25rem;
   min-height: 0;
   height: 100%;
+  flex: 1;
   align-content: start;
 }
 
@@ -460,6 +461,9 @@ summary {
   padding: 0.25rem;
   display: grid;
   gap: 0.25rem;
+  min-height: 0;
+  height: 100%;
+  flex: 1;
   align-content: start;
 }
 
@@ -1149,11 +1153,11 @@ summary {
   padding: 1rem;
   height: 100%;
   min-height: 0;
-  overflow: auto;
+  overflow: hidden;
   display: grid;
   gap: 1.2rem;
   align-content: stretch;
-  grid-template-rows: auto auto 1fr;
+  grid-template-rows: auto minmax(0, 1fr) minmax(0, 1fr);
   box-sizing: border-box;
 }
 
@@ -1168,12 +1172,16 @@ summary {
 
 .blocks-section--agents {
   gap: 0.25rem;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .blocks-section--scenes {
   gap: 0.25rem;
   min-height: 0;
-  grid-template-rows: auto auto auto 1fr;
+  display: flex;
+  flex-direction: column;
 }
 
 .sceneflow-blocks .search {
