@@ -27,6 +27,9 @@
 
   let token = localStorage.getItem("vsm_token") || "";
   let autoConnectAttempted = false;
+  let autoConnectTimer = null;
+  let autoConnectAttempts = 0;
+  let autoConnectInFlight = false;
   let info = null;
   let error = "";
   let statusMessage = "";
@@ -103,6 +106,8 @@
   const PREF_GRID_MAX = 8;
   const PREF_FONT_MIN = 8;
   const PREF_FONT_MAX = 16;
+  const AUTO_CONNECT_MAX_ATTEMPTS = 12;
+  const AUTO_CONNECT_RETRY_MS = 1000;
   const SCRIPT_FONT_OPTIONS = [
     "Monospaced",
     "IBM Plex Mono",
@@ -1545,7 +1550,7 @@
       const wsOk = await connectWs();
       if (!wsOk) {
         error = wsError || "WebSocket connection failed.";
-        return;
+        return false;
       }
       sessionReady = true;
       showTokenSection = false;
@@ -1563,6 +1568,7 @@
           loadRuntime(selectedProjectId)
         ]);
       }
+      return true;
     } catch (err) {
       const message = err?.message || "Failed to connect.";
       const tokenIssue = /token/i.test(message);
@@ -1575,6 +1581,7 @@
         }
       }
       error = message;
+      return false;
     }
   }
 
@@ -1612,26 +1619,83 @@
       remoteServerUrl = normalizedUrl;
       localStorage.setItem("vsm_remote_server", normalizedUrl);
 
+      // Update info with remote server info BEFORE connecting WebSocket
+      // (connectWs checks info.tokenRequired)
+      info = serverInfo;
+
+      // Mark as remote connection BEFORE loading projects
+      isRemoteConnection = true;
+      connectedServerName = serverInfo.name || new URL(normalizedUrl).host;
+
       // Close existing connection and reconnect to remote
       const wsOk = await connectWs(normalizedUrl);
       if (!wsOk) {
         throw new Error("WebSocket connection failed");
       }
 
-      // Update info with remote server info
-      info = serverInfo;
-
       // Clear projects since we're connecting to different server
       projects = [];
       selectedProjectId = null;
       showEditor = false;
+      // Keep sessionReady false to prevent reactive statements from interfering
+      sessionReady = false;
 
-      // Load projects from remote server
-      await loadProjects();
+      // Load projects and preferences from remote server
+      console.log("[REMOTE] Loading projects from remote server...");
+      await Promise.all([loadProjects(), loadPreferences()]);
+      console.log("[REMOTE] Projects loaded:", projects.length, projects);
+
+      // If there are projects, load all data BEFORE setting sessionReady
+      if (projects.length > 0) {
+        const projectId = projects[0].projectId;
+        console.log("[REMOTE] First project ID:", projectId);
+
+        // Set all tracking variables FIRST to prevent reactive resets
+        projectLoadProjectId = projectId;
+        projectLoadAttempted = true;
+        lastConfigProjectId = projectId;
+        lastProjectConfigProjectId = projectId;
+        lastScriptProjectId = projectId;
+        lastSceneFlowProjectId = projectId;
+        lastRuntimeProjectId = projectId;
+
+        // Set selectedProjectId AFTER tracking variables
+        selectedProjectId = projectId;
+        console.log("[REMOTE] Set selectedProjectId to:", selectedProjectId);
+
+        // Wait for Svelte to process state changes
+        await tick();
+
+        // Now load all project data
+        console.log("[REMOTE] Loading project data...");
+        await Promise.all([
+          loadConfig(projectId),
+          loadProjectConfig(projectId),
+          loadScript(projectId),
+          loadScriptScenes(projectId),
+          loadScriptElements(projectId),
+          loadSceneFlow(projectId),
+          loadRuntime(projectId)
+        ]);
+        console.log("[REMOTE] Project data loaded");
+
+        // Wait for loads to complete and Svelte to update
+        await tick();
+      } else {
+        console.log("[REMOTE] No projects found on remote server");
+      }
+
+      // NOW set sessionReady to true - this triggers the UI to show
+      sessionReady = true;
+      console.log("[REMOTE] Set sessionReady to true");
+
+      // Wait for Svelte to process sessionReady change
+      await tick();
 
       showConnectDialog = false;
       remoteConnecting = false;
       statusMessage = `Connected to ${connectedServerName}`;
+      console.log("[REMOTE] Connection complete, showEditor:", showEditor);
       return true;
 
     } catch (err) {
@@ -1696,24 +1760,53 @@
   }
 
   async function autoConnectIfLocal() {
-    if (autoConnectAttempted) return;
+    if (!isLocalHost() || isRemoteConnection || sessionReady || autoConnectInFlight) return;
     autoConnectAttempted = true;
+    if (autoConnectTimer) {
+      clearTimeout(autoConnectTimer);
+      autoConnectTimer = null;
+    }
+    autoConnectAttempts += 1;
+    console.log("[AUTO-CONNECT] Attempt", autoConnectAttempts, "token exists:", !!token);
     if (!token) {
       const fetched = await fetchLocalToken();
-      if (!fetched) {
-        return;
-      }
+      console.log("[AUTO-CONNECT] Token fetch result:", fetched, "token now:", !!token);
+      // Continue even if token fetch fails - server might not require token
     }
-    await connectAll();
+    console.log("[AUTO-CONNECT] Calling connectAll()");
+    autoConnectInFlight = true;
+    const ok = await connectAll();
+    autoConnectInFlight = false;
+    console.log("[AUTO-CONNECT] connectAll() completed, sessionReady:", sessionReady);
+    if (!ok) {
+      scheduleAutoConnectRetry("connectAll-failed");
+    }
   }
 
   onMount(() => {
+    autoConnectAttempts = 0;
     autoConnectIfLocal();
   });
 
   onDestroy(() => {
     clearAutoSaveTimer();
+    if (autoConnectTimer) {
+      clearTimeout(autoConnectTimer);
+      autoConnectTimer = null;
+    }
   });
+
+  function scheduleAutoConnectRetry(reason) {
+    if (!isLocalHost() || isRemoteConnection || sessionReady) return;
+    if (autoConnectTimer || autoConnectInFlight) return;
+    if (autoConnectAttempts >= AUTO_CONNECT_MAX_ATTEMPTS) return;
+    const delay = Math.min(AUTO_CONNECT_RETRY_MS * Math.max(autoConnectAttempts, 1), 5000);
+    console.log("[AUTO-CONNECT] Scheduling retry", { reason, delay, attempt: autoConnectAttempts });
+    autoConnectTimer = setTimeout(() => {
+      autoConnectTimer = null;
+      autoConnectIfLocal();
+    }, delay);
+  }
 
   async function refreshInfo() {
     error = "";
@@ -3271,11 +3364,13 @@
             localStorage.removeItem("vsm_token");
           }
         }
+        scheduleAutoConnectRetry("ws-closed");
         finish(false);
       };
       ws.onerror = () => {
         wsError = "WebSocket connection failed.";
         rejectPendingRequests("WebSocket connection failed.");
+        scheduleAutoConnectRetry("ws-error");
         finish(false);
       };
       ws.onmessage = (event) => handleWsMessage(event.data);
@@ -3789,7 +3884,9 @@
     if (token) {
       headers.Authorization = `Bearer ${token}`;
     }
-    const response = await fetch(path, {
+    // When connected to a remote server, prefix API paths with the remote URL
+    const url = isRemoteConnection && remoteServerUrl ? `${remoteServerUrl}${path}` : path;
+    const response = await fetch(url, {
       ...options,
       headers
     });
@@ -6635,6 +6732,9 @@
 
     {#if showTokenSection}
       <section class="panel connect">
+        <header class="panel-title">
+            <h2>Server Connection</h2>
+        </header>
         <div class="field">
           <label for="token">Token</label>
           <input id="token" placeholder="Paste token from server log" bind:value={token} />
@@ -6645,6 +6745,9 @@
         </p>
         <div class="row">
           <button type="button" class="primary" on:click={connectAll}>Connect</button>
+          <button type="button" class="ghost" on:click={openConnectDialog}>
+            {isRemoteConnection ? "Change Server" : "Connect to Remote"}
+          </button>
           <button type="button" class="ghost" on:click={refreshInfo}>Refresh Info</button>
         </div>
         {#if info}
@@ -6688,9 +6791,6 @@
         </span>
       </div>
       <div class="connection-actions">
-        <button type="button" class="ghost" on:click={openConnectDialog}>
-          {isRemoteConnection ? "Change Server" : "Connect to Remote"}
-        </button>
         {#if isRemoteConnection}
           <button type="button" class="ghost" on:click={disconnectFromRemote}>
             Disconnect

@@ -154,3 +154,11 @@ jar {
         )
     }
 }
+
+// Run task to start the editor (SceneMaker3)
+task run(type: JavaExec) {
+    group = 'application'
+    description = 'Runs the VisualSceneMaker editor'
+    mainClass = 'de.dfki.vsm.SceneMaker3'
+    classpath = sourceSets.main.runtimeClasspath
+}
