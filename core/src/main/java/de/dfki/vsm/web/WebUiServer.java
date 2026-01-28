@@ -21,6 +21,7 @@ import de.dfki.vsm.model.sceneflow.chart.edge.RandomEdge;
 import de.dfki.vsm.model.sceneflow.chart.edge.TimeoutEdge;
 import de.dfki.vsm.model.sceneflow.glue.command.definition.DataTypeDefinition;
 import de.dfki.vsm.model.sceneflow.glue.command.definition.datatype.ListTypeDefinition;
+import de.dfki.vsm.model.sceneflow.glue.command.definition.datatype.MemberDefinition;
 import de.dfki.vsm.model.sceneflow.glue.command.definition.datatype.StructTypeDefinition;
 import de.dfki.vsm.model.sceneflow.glue.command.definition.VariableDefinition;
 import de.dfki.vsm.model.sceneflow.glue.command.Command;
@@ -1900,6 +1901,154 @@ public final class WebUiServer implements EventListener {
                 return response;
             }
 
+            // Type definition operations
+            case "SceneFlow.Node.TypeDef.Add": {
+                String pid = params.optString("projectId", "");
+                String nodeId = params.optString("nodeId", "");
+                String superNodeId = params.optString("superNodeId", null);
+                JSONObject typeDefJson = params.optJSONObject("typeDef");
+                int index = params.has("index") ? params.optInt("index", -1) : -1;
+
+                ProjectRef ref = projectStore.get(pid);
+                if (ref == null || ref.runtimeProject == null) {
+                    return errorResponse("PROJECT_NOT_FOUND", "Project not found");
+                }
+                if (typeDefJson == null) {
+                    return errorResponse("BAD_REQUEST", "Missing typeDef");
+                }
+
+                SceneFlow sceneFlow = ref.runtimeProject.getSceneFlow();
+                BasicNode dataNode = nodeId.isBlank() ? sceneFlow : findNodeRecursive(sceneFlow, nodeId);
+                if (dataNode == null) {
+                    return errorResponse("NODE_NOT_FOUND", "Node not found: " + nodeId);
+                }
+
+                StringBuilder error = new StringBuilder();
+                DataTypeDefinition typeDef = parseTypeDef(typeDefJson, error);
+                if (typeDef == null) {
+                    return errorResponse("TYPEDEF_INVALID", error.length() > 0 ? error.toString() : "Invalid type definition");
+                }
+
+                List<DataTypeDefinition> list = dataNode.getTypeDefList();
+                int insertIndex = index < 0 || index > list.size() ? list.size() : index;
+                list.add(insertIndex, typeDef);
+
+                SuperNode snapshotTarget = resolveSuperNode(sceneFlow, superNodeId);
+                JSONObject response = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
+                response.put("status", "ok");
+                return response;
+            }
+
+            case "SceneFlow.Node.TypeDef.Update": {
+                String pid = params.optString("projectId", "");
+                String nodeId = params.optString("nodeId", "");
+                String superNodeId = params.optString("superNodeId", null);
+                JSONObject typeDefJson = params.optJSONObject("typeDef");
+                int index = params.optInt("index", -1);
+
+                ProjectRef ref = projectStore.get(pid);
+                if (ref == null || ref.runtimeProject == null) {
+                    return errorResponse("PROJECT_NOT_FOUND", "Project not found");
+                }
+                if (typeDefJson == null || index < 0) {
+                    return errorResponse("BAD_REQUEST", "Missing typeDef or index");
+                }
+
+                SceneFlow sceneFlow = ref.runtimeProject.getSceneFlow();
+                BasicNode dataNode = nodeId.isBlank() ? sceneFlow : findNodeRecursive(sceneFlow, nodeId);
+                if (dataNode == null) {
+                    return errorResponse("NODE_NOT_FOUND", "Node not found: " + nodeId);
+                }
+
+                List<DataTypeDefinition> list = dataNode.getTypeDefList();
+                if (index >= list.size()) {
+                    return errorResponse("TYPEDEF_NOT_FOUND", "Type definition not found at index: " + index);
+                }
+
+                StringBuilder error = new StringBuilder();
+                DataTypeDefinition typeDef = parseTypeDef(typeDefJson, error);
+                if (typeDef == null) {
+                    return errorResponse("TYPEDEF_INVALID", error.length() > 0 ? error.toString() : "Invalid type definition");
+                }
+
+                list.set(index, typeDef);
+
+                SuperNode snapshotTarget = resolveSuperNode(sceneFlow, superNodeId);
+                JSONObject response = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
+                response.put("status", "ok");
+                return response;
+            }
+
+            case "SceneFlow.Node.TypeDef.Delete": {
+                String pid = params.optString("projectId", "");
+                String nodeId = params.optString("nodeId", "");
+                String superNodeId = params.optString("superNodeId", null);
+                int index = params.optInt("index", -1);
+
+                ProjectRef ref = projectStore.get(pid);
+                if (ref == null || ref.runtimeProject == null) {
+                    return errorResponse("PROJECT_NOT_FOUND", "Project not found");
+                }
+                if (index < 0) {
+                    return errorResponse("BAD_REQUEST", "Missing index");
+                }
+
+                SceneFlow sceneFlow = ref.runtimeProject.getSceneFlow();
+                BasicNode dataNode = nodeId.isBlank() ? sceneFlow : findNodeRecursive(sceneFlow, nodeId);
+                if (dataNode == null) {
+                    return errorResponse("NODE_NOT_FOUND", "Node not found: " + nodeId);
+                }
+
+                List<DataTypeDefinition> list = dataNode.getTypeDefList();
+                if (index >= list.size()) {
+                    return errorResponse("TYPEDEF_NOT_FOUND", "Type definition not found at index: " + index);
+                }
+
+                list.remove(index);
+
+                SuperNode snapshotTarget = resolveSuperNode(sceneFlow, superNodeId);
+                JSONObject response = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
+                response.put("status", "ok");
+                return response;
+            }
+
+            case "SceneFlow.Node.TypeDef.Move": {
+                String pid = params.optString("projectId", "");
+                String nodeId = params.optString("nodeId", "");
+                String superNodeId = params.optString("superNodeId", null);
+                int from = params.optInt("from", -1);
+                int to = params.optInt("to", -1);
+
+                ProjectRef ref = projectStore.get(pid);
+                if (ref == null || ref.runtimeProject == null) {
+                    return errorResponse("PROJECT_NOT_FOUND", "Project not found");
+                }
+                if (from < 0 || to < 0) {
+                    return errorResponse("BAD_REQUEST", "Missing from or to index");
+                }
+
+                SceneFlow sceneFlow = ref.runtimeProject.getSceneFlow();
+                BasicNode dataNode = nodeId.isBlank() ? sceneFlow : findNodeRecursive(sceneFlow, nodeId);
+                if (dataNode == null) {
+                    return errorResponse("NODE_NOT_FOUND", "Node not found: " + nodeId);
+                }
+
+                List<DataTypeDefinition> list = dataNode.getTypeDefList();
+                if (from >= list.size() || to >= list.size()) {
+                    return errorResponse("TYPEDEF_NOT_FOUND", "Invalid index");
+                }
+
+                if (from != to) {
+                    DataTypeDefinition entry = list.remove(from);
+                    list.add(to, entry);
+                }
+
+                SuperNode snapshotTarget = resolveSuperNode(sceneFlow, superNodeId);
+                JSONObject response = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
+                response.put("status", "ok");
+                return response;
+            }
+
             default:
                 JSONObject unknown = new JSONObject();
                 unknown.put("message", "Unhandled method: " + method);
@@ -2243,6 +2392,63 @@ public final class WebUiServer implements EventListener {
             current = current.getParentNode();
         }
         return null;
+    }
+
+    private DataTypeDefinition parseTypeDef(JSONObject source, StringBuilder error) {
+        if (source == null) {
+            if (error != null) {
+                error.append("Missing type definition.");
+            }
+            return null;
+        }
+        String name = source.optString("name", "").trim();
+        if (name.isBlank()) {
+            if (error != null) {
+                error.append("Type name is required.");
+            }
+            return null;
+        }
+        String flavourRaw = source.optString("flavour", "").trim();
+        DataTypeDefinition.Flavour flavour;
+        try {
+            flavour = DataTypeDefinition.Flavour.valueOf(flavourRaw);
+        } catch (Exception ex) {
+            if (error != null) {
+                error.append("Type flavour is required (List or Struct).");
+            }
+            return null;
+        }
+        if (flavour == DataTypeDefinition.Flavour.List) {
+            String elementType = source.optString("elementType", "").trim();
+            if (elementType.isBlank()) {
+                elementType = "Int";
+            }
+            return new ListTypeDefinition(name, elementType);
+        }
+        // Struct type
+        ArrayList<MemberDefinition> members = new ArrayList<>();
+        JSONArray list = source.optJSONArray("members");
+        if (list != null) {
+            for (int i = 0; i < list.length(); i++) {
+                JSONObject entry = list.optJSONObject(i);
+                if (entry == null) {
+                    if (error != null) {
+                        error.append("Invalid struct member.");
+                    }
+                    return null;
+                }
+                String memberName = entry.optString("name", "").trim();
+                String memberType = entry.optString("type", "").trim();
+                if (memberName.isBlank() || memberType.isBlank()) {
+                    if (error != null) {
+                        error.append("Member name and type are required.");
+                    }
+                    return null;
+                }
+                members.add(new MemberDefinition(memberName, memberType));
+            }
+        }
+        return new StructTypeDefinition(name, members);
     }
 
     private static class ProjectRef {
