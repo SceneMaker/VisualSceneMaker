@@ -96,6 +96,41 @@
     "background-position"
   ];
 
+  function edgePairKey(edge) {
+    const a = (edge?.sourceId || "").trim();
+    const b = (edge?.targetId || "").trim();
+    if (!a || !b) return "";
+    return a < b ? `${a}|${b}` : `${b}|${a}`;
+  }
+
+  function buildEdgeLabelOffsets(list) {
+    const map = new Map();
+    if (!Array.isArray(list)) return map;
+    const groups = new Map();
+    for (const edge of list) {
+      const key = edgePairKey(edge);
+      if (!key) continue;
+      if (!groups.has(key)) {
+        groups.set(key, []);
+      }
+      groups.get(key).push(edge);
+    }
+    for (const group of groups.values()) {
+      if (!group.length) continue;
+      if (group.length === 1) {
+        map.set(group[0].id, 0);
+        continue;
+      }
+      const sorted = [...group].sort((a, b) => String(a.id || "").localeCompare(String(b.id || "")));
+      sorted.forEach((edge, idx) => {
+        const step = Math.floor(idx / 2) + 1;
+        const sign = idx % 2 === 0 ? 1 : -1;
+        map.set(edge.id, sign * step);
+      });
+    }
+    return map;
+  }
+
   $: nodes = snapshot?.nodes || [];
   $: edges = snapshot?.edges || [];
   $: comments = snapshot?.comments || [];
@@ -127,6 +162,7 @@
           .map((entry) => [entry.id, entry])
       )
     : new Map();
+  $: edgeLabelOffsets = buildEdgeLabelOffsets(edges);
   $: baseNodeSize = nodeWidth || guessNodeSize(nodes) || DEFAULT_NODE_SIZE;
   $: nodeStrokeWidth = Math.max(1, baseNodeSize / 25);
   $: edgeStrokeWidth = Math.max(1, baseNodeSize / 30) * 1.34;
@@ -197,6 +233,7 @@
   let activityNodeSet = new Set();
   let activityEdgeMap = new Map();
   let timeoutEdgeMap = new Map();
+  let edgeLabelOffsets = new Map();
   let activityEnabled = true;
   let timeoutNow = Date.now();
   let timeoutFrame = null;
@@ -1589,7 +1626,48 @@
       const end = pts[pts.length - 1];
       const ctrl1 = safeCtrl(start);
       const ctrl2 = safeCtrl(end);
-      return cubicPointAt(start, ctrl1, ctrl2, end, 0.5);
+      const mid = cubicPointAt(start, ctrl1, ctrl2, end, 0.5);
+      const lineMid = { x: (start.x + end.x) / 2, y: (start.y + end.y) / 2 };
+      const dx = mid.x - lineMid.x;
+      const dy = mid.y - lineMid.y;
+      const boost = 0.6;
+      let x = mid.x + dx * boost;
+      let y = mid.y + dy * boost;
+      const offsetUnits = edgeLabelOffsets.get(edge.id) || 0;
+      if (offsetUnits) {
+        const source = nodeMap.get(edge.sourceId);
+        const target = nodeMap.get(edge.targetId);
+        let baseDx = end.x - start.x;
+        let baseDy = end.y - start.y;
+        if (source && target) {
+          const aId = edge.sourceId || "";
+          const bId = edge.targetId || "";
+          const a = aId < bId ? source : target;
+          const b = aId < bId ? target : source;
+          const aCenter = nodeCenter(a, drag);
+          const bCenter = nodeCenter(b, drag);
+          baseDx = bCenter.x - aCenter.x;
+          baseDy = bCenter.y - aCenter.y;
+        }
+        const length = Math.hypot(baseDx, baseDy);
+        if (length > 0) {
+          const spacing = Math.max(8, Math.round(labelLineHeight * 0.9));
+          const curvedOffset = Math.hypot(dx, dy);
+          const offsetThreshold = Math.max(6, Math.round(labelLineHeight * 0.6));
+          if (curvedOffset >= offsetThreshold) {
+            return { x, y };
+          }
+          if (Math.abs(baseDy) > Math.abs(baseDx)) {
+            y += offsetUnits * spacing;
+          } else {
+            const perpX = -baseDy / length;
+            const perpY = baseDx / length;
+            x += perpX * offsetUnits * spacing;
+            y += perpY * offsetUnits * spacing;
+          }
+        }
+      }
+      return { x, y };
     }
     const source = nodeMap.get(edge.sourceId);
     const target = nodeMap.get(edge.targetId);
