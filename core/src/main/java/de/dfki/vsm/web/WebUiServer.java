@@ -2049,6 +2049,154 @@ public final class WebUiServer implements EventListener {
                 return response;
             }
 
+            // Command operations
+            case "SceneFlow.Node.Cmd.Add": {
+                String pid = params.optString("projectId", "");
+                String nodeId = params.optString("nodeId", "");
+                String superNodeId = params.optString("superNodeId", null);
+                JSONObject commandJson = params.optJSONObject("command");
+                int index = params.has("index") ? params.optInt("index", -1) : -1;
+
+                ProjectRef ref = projectStore.get(pid);
+                if (ref == null || ref.runtimeProject == null) {
+                    return errorResponse("PROJECT_NOT_FOUND", "Project not found");
+                }
+                if (commandJson == null) {
+                    return errorResponse("BAD_REQUEST", "Missing command");
+                }
+
+                SceneFlow sceneFlow = ref.runtimeProject.getSceneFlow();
+                BasicNode dataNode = nodeId.isBlank() ? sceneFlow : findNodeRecursive(sceneFlow, nodeId);
+                if (dataNode == null) {
+                    return errorResponse("NODE_NOT_FOUND", "Node not found: " + nodeId);
+                }
+
+                StringBuilder error = new StringBuilder();
+                Command command = parseCommandText(commandJson.optString("text", ""), error);
+                if (command == null) {
+                    return errorResponse("COMMAND_INVALID", error.length() > 0 ? error.toString() : "Invalid command");
+                }
+
+                List<Command> list = dataNode.getCmdList();
+                int insertIndex = index < 0 || index > list.size() ? list.size() : index;
+                list.add(insertIndex, command);
+
+                SuperNode snapshotTarget = resolveSuperNode(sceneFlow, superNodeId);
+                JSONObject response = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
+                response.put("status", "ok");
+                return response;
+            }
+
+            case "SceneFlow.Node.Cmd.Update": {
+                String pid = params.optString("projectId", "");
+                String nodeId = params.optString("nodeId", "");
+                String superNodeId = params.optString("superNodeId", null);
+                JSONObject commandJson = params.optJSONObject("command");
+                int index = params.optInt("index", -1);
+
+                ProjectRef ref = projectStore.get(pid);
+                if (ref == null || ref.runtimeProject == null) {
+                    return errorResponse("PROJECT_NOT_FOUND", "Project not found");
+                }
+                if (commandJson == null || index < 0) {
+                    return errorResponse("BAD_REQUEST", "Missing command or index");
+                }
+
+                SceneFlow sceneFlow = ref.runtimeProject.getSceneFlow();
+                BasicNode dataNode = nodeId.isBlank() ? sceneFlow : findNodeRecursive(sceneFlow, nodeId);
+                if (dataNode == null) {
+                    return errorResponse("NODE_NOT_FOUND", "Node not found: " + nodeId);
+                }
+
+                List<Command> list = dataNode.getCmdList();
+                if (index >= list.size()) {
+                    return errorResponse("COMMAND_NOT_FOUND", "Command not found at index: " + index);
+                }
+
+                StringBuilder error = new StringBuilder();
+                Command command = parseCommandText(commandJson.optString("text", ""), error);
+                if (command == null) {
+                    return errorResponse("COMMAND_INVALID", error.length() > 0 ? error.toString() : "Invalid command");
+                }
+
+                list.set(index, command);
+
+                SuperNode snapshotTarget = resolveSuperNode(sceneFlow, superNodeId);
+                JSONObject response = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
+                response.put("status", "ok");
+                return response;
+            }
+
+            case "SceneFlow.Node.Cmd.Delete": {
+                String pid = params.optString("projectId", "");
+                String nodeId = params.optString("nodeId", "");
+                String superNodeId = params.optString("superNodeId", null);
+                int index = params.optInt("index", -1);
+
+                ProjectRef ref = projectStore.get(pid);
+                if (ref == null || ref.runtimeProject == null) {
+                    return errorResponse("PROJECT_NOT_FOUND", "Project not found");
+                }
+                if (index < 0) {
+                    return errorResponse("BAD_REQUEST", "Missing index");
+                }
+
+                SceneFlow sceneFlow = ref.runtimeProject.getSceneFlow();
+                BasicNode dataNode = nodeId.isBlank() ? sceneFlow : findNodeRecursive(sceneFlow, nodeId);
+                if (dataNode == null) {
+                    return errorResponse("NODE_NOT_FOUND", "Node not found: " + nodeId);
+                }
+
+                List<Command> list = dataNode.getCmdList();
+                if (index >= list.size()) {
+                    return errorResponse("COMMAND_NOT_FOUND", "Command not found at index: " + index);
+                }
+
+                list.remove(index);
+
+                SuperNode snapshotTarget = resolveSuperNode(sceneFlow, superNodeId);
+                JSONObject response = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
+                response.put("status", "ok");
+                return response;
+            }
+
+            case "SceneFlow.Node.Cmd.Move": {
+                String pid = params.optString("projectId", "");
+                String nodeId = params.optString("nodeId", "");
+                String superNodeId = params.optString("superNodeId", null);
+                int from = params.optInt("from", -1);
+                int to = params.optInt("to", -1);
+
+                ProjectRef ref = projectStore.get(pid);
+                if (ref == null || ref.runtimeProject == null) {
+                    return errorResponse("PROJECT_NOT_FOUND", "Project not found");
+                }
+                if (from < 0 || to < 0) {
+                    return errorResponse("BAD_REQUEST", "Missing from or to index");
+                }
+
+                SceneFlow sceneFlow = ref.runtimeProject.getSceneFlow();
+                BasicNode dataNode = nodeId.isBlank() ? sceneFlow : findNodeRecursive(sceneFlow, nodeId);
+                if (dataNode == null) {
+                    return errorResponse("NODE_NOT_FOUND", "Node not found: " + nodeId);
+                }
+
+                List<Command> list = dataNode.getCmdList();
+                if (from >= list.size() || to >= list.size()) {
+                    return errorResponse("COMMAND_NOT_FOUND", "Invalid index");
+                }
+
+                if (from != to) {
+                    Command entry = list.remove(from);
+                    list.add(to, entry);
+                }
+
+                SuperNode snapshotTarget = resolveSuperNode(sceneFlow, superNodeId);
+                JSONObject response = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
+                response.put("status", "ok");
+                return response;
+            }
+
             default:
                 JSONObject unknown = new JSONObject();
                 unknown.put("message", "Unhandled method: " + method);
@@ -2449,6 +2597,33 @@ public final class WebUiServer implements EventListener {
             }
         }
         return new StructTypeDefinition(name, members);
+    }
+
+    private Command parseCommandText(String input, StringBuilder error) {
+        String text = input == null ? "" : input.trim();
+        if (text.isEmpty()) {
+            if (error != null) {
+                error.append("Command text is required.");
+            }
+            return null;
+        }
+        Command parsed;
+        try {
+            parsed = GlueParser.run(text);
+        } catch (Exception ex) {
+            if (error != null) {
+                String msg = ex.getMessage();
+                error.append(msg != null && !msg.isBlank() ? msg : "Command parse failed.");
+            }
+            return null;
+        }
+        if (parsed == null) {
+            if (error != null) {
+                error.append("Command parse failed.");
+            }
+            return null;
+        }
+        return parsed;
     }
 
     private static class ProjectRef {
