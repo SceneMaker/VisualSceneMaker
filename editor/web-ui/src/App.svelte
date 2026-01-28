@@ -78,7 +78,6 @@
   };
   const DEFAULT_SCENEFLOW_TOGGLES = {
     nodeSnap: true,
-    edgeSnap: true,
     showCmds: true,
     showVars: true,
     showBlocks: true,
@@ -88,6 +87,7 @@
   const VAR_BADGE_COOKIE = "vsm_var_badges";
   const VAR_BADGE_MIN_WIDTH = 180;
   const VAR_BADGE_MIN_HEIGHT = 90;
+  const ACTIVITY_SUPERNODE_DECAY_MS = 900;
   const VAR_BADGE_HANDLE_SIZE = 18;
   const VAR_BADGE_HANDLE_PATH = buildVarBadgeHandlePath(VAR_BADGE_HANDLE_SIZE);
   const RUNTIME_STATE_LABELS = {
@@ -465,7 +465,6 @@
   function normalizeSceneFlowToggles(state) {
     return {
       nodeSnap: state?.nodeSnap !== undefined ? !!state.nodeSnap : DEFAULT_SCENEFLOW_TOGGLES.nodeSnap,
-      edgeSnap: state?.edgeSnap !== undefined ? !!state.edgeSnap : DEFAULT_SCENEFLOW_TOGGLES.edgeSnap,
       showCmds: state?.showCmds !== undefined ? !!state.showCmds : DEFAULT_SCENEFLOW_TOGGLES.showCmds,
       showVars: state?.showVars !== undefined ? !!state.showVars : DEFAULT_SCENEFLOW_TOGGLES.showVars,
       showBlocks:
@@ -853,7 +852,6 @@
   let sceneFlowLayoutStyle = "";
   const sceneFlowToggleState = loadSceneFlowToggles();
   let sceneFlowNodeSnap = sceneFlowToggleState.nodeSnap;
-  let sceneFlowEdgeSnap = sceneFlowToggleState.edgeSnap;
   let sceneFlowShowCmdText = sceneFlowToggleState.showCmds;
   let sceneFlowShowVars = sceneFlowToggleState.showVars;
   let sceneFlowShowBlocks = sceneFlowToggleState.showBlocks;
@@ -876,11 +874,13 @@
   let monitorGlobals = [];
   let monitorLocals = [];
   let lastRuntimeProjectId = "";
+  let lastRuntimeSuperNodeId = "";
   let runtimeValues = {};
   let runtimeInitialValues = {};
   let runtimeInitialProjectId = "";
   let runtimeInitialState = "stopped";
   let activityNodeCounts = new Map();
+  let activityNodeDecayTokens = new Map();
   let activityEdgeHits = new Map();
   let activityNodeIds = [];
   let activityEdgeList = [];
@@ -1201,7 +1201,6 @@
   }
   $: persistSceneFlowToggles({
     nodeSnap: sceneFlowNodeSnap,
-    edgeSnap: sceneFlowEdgeSnap,
     showCmds: sceneFlowShowCmdText,
     showVars: sceneFlowShowVars,
     showBlocks: sceneFlowShowBlocks,
@@ -1488,6 +1487,13 @@
     runtimeValues = {};
     loadRuntime(selectedProjectId);
   }
+  $: if (sessionReady && selectedProjectId && sceneFlowLoaded) {
+    const currentSuperId = sceneFlow?.superNodeId || "";
+    if (currentSuperId !== lastRuntimeSuperNodeId) {
+      lastRuntimeSuperNodeId = currentSuperId;
+      loadRuntime(selectedProjectId);
+    }
+  }
 
   $: if (!selectedProjectId) {
     lastProjectConfigProjectId = "";
@@ -1525,6 +1531,7 @@
     runtimeError = "";
     runtimeLoading = false;
     lastRuntimeProjectId = "";
+    lastRuntimeSuperNodeId = "";
     runtimeValues = {};
     runtimeInitialValues = {};
     runtimeInitialProjectId = "";
@@ -3062,7 +3069,9 @@
     runtimeLoading = true;
     runtimeLoaded = false;
     try {
-      const data = await apiGet(`/api/v1/projects/${projectId}/runtime`);
+      const superNodeId = sceneFlow?.superNodeId || "";
+      const query = superNodeId ? `?superNodeId=${encodeURIComponent(superNodeId)}` : "";
+      const data = await apiGet(`/api/v1/projects/${projectId}/runtime${query}`);
       if (projectId !== selectedProjectId) {
         return;
       }
@@ -3151,6 +3160,12 @@
 
   function clearSceneFlowActivity() {
     activityNodeCounts = new Map();
+    if (activityNodeDecayTokens.size) {
+      for (const token of activityNodeDecayTokens.values()) {
+        clearTimeout(token);
+      }
+      activityNodeDecayTokens = new Map();
+    }
     activityEdgeHits = new Map();
     timeoutEdgeRuns = new Map();
   }
@@ -3190,8 +3205,44 @@
     return match?.id || "";
   }
 
+  function isSuperNodeId(nodeId) {
+    if (!nodeId || !sceneFlow?.nodes) return false;
+    const match = sceneFlow.nodes.find((node) => node.id === nodeId);
+    return match?.type === "Super";
+  }
+
+  function scheduleSuperNodeDecay(nodeId) {
+    if (!nodeId) return;
+    const existing = activityNodeDecayTokens.get(nodeId);
+    if (existing) {
+      clearTimeout(existing);
+    }
+    const token = setTimeout(() => {
+      const current = activityNodeDecayTokens.get(nodeId);
+      if (current === token) {
+        activityNodeDecayTokens.delete(nodeId);
+        clearActivityNode(nodeId);
+      }
+    }, ACTIVITY_SUPERNODE_DECAY_MS);
+    activityNodeDecayTokens.set(nodeId, token);
+  }
+
+  function clearActivityNode(nodeId) {
+    if (!nodeId) return;
+    const next = new Map(activityNodeCounts);
+    next.delete(nodeId);
+    activityNodeCounts = next;
+  }
+
   function incrementActivityNode(nodeId) {
     if (!nodeId) return;
+    if (isSuperNodeId(nodeId)) {
+      const next = new Map(activityNodeCounts);
+      next.set(nodeId, 1);
+      activityNodeCounts = next;
+      scheduleSuperNodeDecay(nodeId);
+      return;
+    }
     const next = new Map(activityNodeCounts);
     const count = next.get(nodeId) || 0;
     next.set(nodeId, count + 1);
@@ -3200,6 +3251,15 @@
 
   function decrementActivityNode(nodeId) {
     if (!nodeId) return;
+    if (isSuperNodeId(nodeId)) {
+      clearActivityNode(nodeId);
+      const existing = activityNodeDecayTokens.get(nodeId);
+      if (existing) {
+        clearTimeout(existing);
+        activityNodeDecayTokens.delete(nodeId);
+      }
+      return;
+    }
     const next = new Map(activityNodeCounts);
     const count = next.get(nodeId);
     if (!count) return;
@@ -4270,7 +4330,9 @@
     const expr = (def.expr || "").trim();
     const hasLiveValue = Object.prototype.hasOwnProperty.call(runtimeValues, name);
     const value = normalizeRuntimeValue(hasLiveValue ? runtimeValues[name] : def.value);
-    const initial = normalizeRuntimeValue(runtimeInitialValues[name]);
+    // Use captured initial value, or fall back to expr (definition expression) for hot-connect scenarios
+    const capturedInitial = normalizeRuntimeValue(runtimeInitialValues[name]);
+    const initial = capturedInitial || expr;
     const showInitial = hasLiveValue && initial !== "" && value !== initial;
     const head = [type, name].filter(Boolean).join(" ");
     if (value) {
@@ -5931,12 +5993,18 @@
 
   async function normalizeAllEdges() {
     if (!selectedProjectId || sceneFlowBusy) return;
-    await runSceneFlowCommand("SceneFlow.Edge.NormalizeAll", { projectId: selectedProjectId });
+    await runSceneFlowCommand("SceneFlow.Edge.NormalizeAll", {
+      projectId: selectedProjectId,
+      superNodeId: sceneFlow?.superNodeId
+    });
   }
 
   async function straightenAllEdges() {
     if (!selectedProjectId || sceneFlowBusy) return;
-    await runSceneFlowCommand("SceneFlow.Edge.StraightenAll", { projectId: selectedProjectId });
+    await runSceneFlowCommand("SceneFlow.Edge.StraightenAll", {
+      projectId: selectedProjectId,
+      superNodeId: sceneFlow?.superNodeId
+    });
   }
 
   async function downloadSceneFlowSnapshot() {
@@ -6319,6 +6387,7 @@
     if (!selectedProjectId || !selectedEdge) return;
     await runSceneFlowCommand("SceneFlow.Edge.Normalize", {
       projectId: selectedProjectId,
+      superNodeId: sceneFlow?.superNodeId,
       edgeId: selectedEdge.id
     });
   }
@@ -6327,6 +6396,7 @@
     if (!selectedProjectId || !selectedEdge) return;
     await runSceneFlowCommand("SceneFlow.Edge.Straighten", {
       projectId: selectedProjectId,
+      superNodeId: sceneFlow?.superNodeId,
       edgeId: selectedEdge.id
     });
   }
@@ -6337,6 +6407,7 @@
     if (edgeIds.length < 2) return;
     await runSceneFlowCommand("SceneFlow.Edge.StraightenGroup", {
       projectId: selectedProjectId,
+      superNodeId: sceneFlow?.superNodeId,
       edgeIds
     });
   }
@@ -6347,6 +6418,7 @@
     if (edgeIds.length < 2) return;
     await runSceneFlowCommand("SceneFlow.Edge.NormalizeGroup", {
       projectId: selectedProjectId,
+      superNodeId: sceneFlow?.superNodeId,
       edgeIds
     });
   }
@@ -7669,7 +7741,6 @@
                 onUndo={undoSceneFlow}
                 onRedo={redoSceneFlow}
                 nodeSnapToGrid={sceneFlowNodeSnap}
-                edgeSnapToGrid={sceneFlowEdgeSnap}
                 edgeCreateMode={edgeCreateMode}
                 edgeCreateSourceId={edgeCreateSourceId}
                 edgeCreateType={edgeCreateType}
@@ -7698,16 +7769,6 @@
                 disabled={!sceneFlow}
               >
                 node snap
-              </button>
-              <button
-                type="button"
-                class="sceneflow-toggle"
-                class:active={sceneFlowEdgeSnap}
-                on:click={() => (sceneFlowEdgeSnap = !sceneFlowEdgeSnap)}
-                aria-pressed={sceneFlowEdgeSnap}
-                disabled={!sceneFlow}
-              >
-                edge snap
               </button>
               <button
                 type="button"

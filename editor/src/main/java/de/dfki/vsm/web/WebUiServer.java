@@ -2099,13 +2099,14 @@ public final class WebUiServer implements UiEventListener {
     private void handleRuntime(Context ctx) {
         String projectId = ctx.pathParam("id");
         mLastRuntimeProjectId = projectId;
+        String superNodeId = ctx.queryParam("superNodeId");
         // Phase 6: Use EditorProjectService instead of EditorInstance
         JSONObject response = callOnEdt(() -> {
             EditorProject project = mEditorProjectService.getProject(projectId);
             if (project == null) {
                 return null;
             }
-            return runtimeToJson(project);
+            return runtimeToJson(project, superNodeId);
         });
         if (response == null) {
             writeError(ctx, 404, "PROJECT_NOT_FOUND", "Project not found");
@@ -4235,17 +4236,18 @@ public final class WebUiServer implements UiEventListener {
                             return null;
                         }
                         SceneFlow sceneFlow = project.getSceneFlow();
+                        SuperNode snapshotTarget = resolveSnapshotTarget(sceneFlow, resolvedSuperNodeId);
 
-                        // Find the edge
+                        // Find the edge in the active supernode
                         AbstractEdge dataEdge = hasEdgeId
-                                ? resolveEdgeById(sceneFlow, edgeId)
-                                : resolveEdgeByNodes(sceneFlow, sourceId, targetId);
+                                ? resolveEdgeById(snapshotTarget, edgeId)
+                                : resolveEdgeByNodes(snapshotTarget, sourceId, targetId);
                         if (dataEdge == null) {
                             return new JSONObject().put("error", "EDGE_NOT_FOUND");
                         }
 
                         // Apply edge updates (headless - no WorkSpacePanel)
-                        String error = applyEdgeUpdatesHeadless(dataEdge, sceneFlow, sourcePayload, project.getEditorConfig());
+                        String error = applyEdgeUpdatesHeadless(dataEdge, snapshotTarget, sourcePayload, project.getEditorConfig());
                         if (error != null) {
                             return new JSONObject().put("error", "EDGE_UPDATE_FAILED").put("message", error);
                         }
@@ -4253,7 +4255,6 @@ public final class WebUiServer implements UiEventListener {
                         JSONObject payloadResp = new JSONObject();
                         payloadResp.put("edgeId", edgeId == null ? "" : edgeId);
                         // Phase 6: Use resolveSnapshotTarget to maintain view context
-                        SuperNode snapshotTarget = resolveSnapshotTarget(sceneFlow, resolvedSuperNodeId);
                         payloadResp.put("snapshot", sceneFlowSnapshot(project, projectId, snapshotTarget));
                         payloadResp.put("dirty", project.hasChanged());
                         return payloadResp;
@@ -4289,7 +4290,7 @@ public final class WebUiServer implements UiEventListener {
                         }
                         SceneFlow sceneFlow = project.getSceneFlow();
                         SuperNode snapshotTarget = resolveSnapshotTarget(sceneFlow, resolvedSuperNodeId);
-                        AbstractEdge dataEdge = resolveEdgeById(sceneFlow, edgeId);
+                        AbstractEdge dataEdge = resolveEdgeById(snapshotTarget, edgeId);
                         if (dataEdge == null) {
                             return new JSONObject().put("error", "EDGE_NOT_FOUND");
                         }
@@ -4341,7 +4342,7 @@ public final class WebUiServer implements UiEventListener {
                         for (int i = 0; i < edgeIds.length(); i++) {
                             String edgeId = edgeIds.optString(i, "").trim();
                             if (!edgeId.isEmpty()) {
-                                AbstractEdge dataEdge = resolveEdgeById(sceneFlow, edgeId);
+                                AbstractEdge dataEdge = resolveEdgeById(snapshotTarget, edgeId);
                                 if (dataEdge == null) {
                                     return new JSONObject().put("error", "EDGE_NOT_FOUND");
                                 }
@@ -4390,9 +4391,10 @@ public final class WebUiServer implements UiEventListener {
                             return null;
                         }
                         SceneFlow sceneFlow = project.getSceneFlow();
+                        SuperNode snapshotTarget = resolveSnapshotTarget(sceneFlow, resolvedSuperNodeId);
 
-                        // Find the edge
-                        AbstractEdge dataEdge = resolveEdgeById(sceneFlow, edgeId);
+                        // Find the edge in the active supernode
+                        AbstractEdge dataEdge = resolveEdgeById(snapshotTarget, edgeId);
                         if (dataEdge == null) {
                             return new JSONObject().put("error", "EDGE_NOT_FOUND");
                         }
@@ -4400,7 +4402,7 @@ public final class WebUiServer implements UiEventListener {
                         // Find source, old target, and new target nodes
                         BasicNode sourceNode = dataEdge.getSourceNode();
                         BasicNode oldTargetNode = dataEdge.getTargetNode();
-                        BasicNode newTargetNode = resolveNodeById(sceneFlow, targetId);
+                        BasicNode newTargetNode = resolveNodeById(snapshotTarget, targetId);
 
                         if (sourceNode == null || newTargetNode == null) {
                             return new JSONObject().put("error", "NODE_NOT_FOUND");
@@ -4513,7 +4515,6 @@ public final class WebUiServer implements UiEventListener {
 
                         JSONObject payloadResp = new JSONObject();
                         payloadResp.put("edgeId", edgeId);
-                        SuperNode snapshotTarget = resolveSnapshotTarget(sceneFlow, resolvedSuperNodeId);
                         payloadResp.put("snapshot", sceneFlowSnapshot(project, projectId, snapshotTarget));
                         payloadResp.put("dirty", project.hasChanged());
                         return payloadResp;
@@ -4641,11 +4642,12 @@ public final class WebUiServer implements UiEventListener {
                             return null;
                         }
                         SceneFlow sceneFlow = project.getSceneFlow();
+                        SuperNode snapshotTarget = resolveSnapshotTarget(sceneFlow, resolvedSuperNodeId);
 
-                        // Find the edge to delete
+                        // Find the edge to delete in the active supernode
                         AbstractEdge dataEdge = hasEdgeId
-                                ? resolveEdgeById(sceneFlow, edgeId)
-                                : resolveEdgeByNodes(sceneFlow, sourceId, targetId);
+                                ? resolveEdgeById(snapshotTarget, edgeId)
+                                : resolveEdgeByNodes(snapshotTarget, sourceId, targetId);
                         if (dataEdge == null) {
                             return new JSONObject().put("error", "EDGE_NOT_FOUND");
                         }
@@ -4713,7 +4715,6 @@ public final class WebUiServer implements UiEventListener {
 
                         JSONObject payloadResp = new JSONObject();
                         payloadResp.put("edgeId", edgeId == null ? "" : edgeId);
-                        SuperNode snapshotTarget = resolveSnapshotTarget(sceneFlow, resolvedSuperNodeId);
                         payloadResp.put("snapshot", sceneFlowSnapshot(project, projectId, snapshotTarget));
                         payloadResp.put("dirty", project.hasChanged());
                         return payloadResp;
@@ -6278,20 +6279,21 @@ public final class WebUiServer implements UiEventListener {
     }
 
     // Phase 6: Headless version of runtimeToJson
-    private JSONObject runtimeToJson(EditorProject project) {
-        // Use root sceneflow as current active supernode since we don't have SceneFlowManager
-        SuperNode current = project.getSceneFlow();
+    private JSONObject runtimeToJson(EditorProject project, String superNodeId) {
+        // Use requested supernode when available, otherwise fall back to root
+        SceneFlow sceneFlow = project.getSceneFlow();
+        SuperNode current = resolveSnapshotTarget(sceneFlow, superNodeId);
         JSONObject response = new JSONObject();
         String state = project.isRunning()
                 ? (project.isPaused() ? "paused" : "running")
                 : "stopped";
         response.put("state", state);
         Map<String, DataTypeDefinition> typeMap = new LinkedHashMap<>();
-        for (DataTypeDefinition def : project.getSceneFlow().getTypeDefList()) {
+        for (DataTypeDefinition def : sceneFlow.getTypeDefList()) {
             typeMap.put(def.getName(), def);
         }
         JSONArray globals = new JSONArray();
-        for (VariableDefinition def : project.getSceneFlow().getVarDefList()) {
+        for (VariableDefinition def : sceneFlow.getVarDefList()) {
             globals.put(variableToJson(def, typeMap, "global", project));
         }
         JSONArray locals = new JSONArray();

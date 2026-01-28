@@ -1428,6 +1428,7 @@ summary {
   position: absolute;
   z-index: 4;
   background: #f8f6f2;
+  opacity: 0.75;
   border: none;
   border-radius: var(--radius-sm);
   padding: 0.5rem 0.6rem;
@@ -3116,6 +3117,10 @@ summary {
   pointer-events: none;
 }
 
+.node.node-super .node-activity {
+  fill: rgba(255, 255, 255, 0.5);
+}
+
 .node-super {
   cursor: pointer;
 }
@@ -3158,6 +3163,10 @@ summary {
 
 .node.history .node-shape {
   fill: #ffffff;
+}
+
+.node.history .node-id {
+  fill: #000000;
 }
 
 .node-title {
