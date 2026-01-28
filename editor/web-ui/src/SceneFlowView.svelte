@@ -28,7 +28,6 @@
   export let selection = null;
   export let multiSelection = [];
   export let nodeSnapToGrid = true;
-  export let edgeSnapToGrid = true;
   export let onCopySelection = null;
   export let onPasteSelection = null;
   export let onCutSelection = null;
@@ -2161,13 +2160,6 @@
     };
   }
 
-  function snapWorldPoint(point, enableSnap) {
-    if (!point || !enableSnap) return point;
-    const snappedX = gridOriginX + Math.round((point.x - gridOriginX) / gridX) * gridX;
-    const snappedY = gridOriginY + Math.round((point.y - gridOriginY) / gridY) * gridY;
-    return clampWorldPoint({ x: snappedX, y: snappedY });
-  }
-
   function worldRectToScreenRect(rect) {
     if (!svgEl || !rect) return null;
     const view = currentViewBox();
@@ -2414,7 +2406,7 @@
   function updateDrag(event) {
     if (!dragState || dragState.pointerId !== event.pointerId) return;
     const world = eventToWorld(event);
-    const dragPoint = snapWorldPoint(world, edgeSnapToGrid) ?? world;
+    const dragPoint = world;
     const dx = world.x - dragState.startX;
     const dy = world.y - dragState.startY;
     if (dragState.type === "group") {

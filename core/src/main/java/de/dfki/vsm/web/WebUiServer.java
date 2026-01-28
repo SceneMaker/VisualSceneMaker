@@ -32,7 +32,10 @@ import de.dfki.vsm.event.event.EdgeExecutedEvent;
 import de.dfki.vsm.event.event.NodeTerminatedEvent;
 import de.dfki.vsm.event.event.TimeoutEdgeStartedEvent;
 import de.dfki.vsm.event.event.SceneStoppedEvent;
+import de.dfki.vsm.event.event.VariableChangedEvent;
 import de.dfki.vsm.runtime.interpreter.event.TerminationEvent;
+import de.dfki.vsm.util.tpl.Tuple;
+import de.dfki.vsm.runtime.interpreter.value.AbstractValue;
 import java.util.List;
 import java.util.ArrayList;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
@@ -139,6 +142,31 @@ public final class WebUiServer implements EventListener {
             return;
         }
         System.out.println("[EVENT] Received: " + event.getClass().getSimpleName());
+
+        // Handle VariableChangedEvent first (matches UiEventBridge order)
+        if (event instanceof VariableChangedEvent) {
+            VariableChangedEvent varEvent = (VariableChangedEvent) event;
+            Tuple<String, String> pair = varEvent.getVarValue();
+            if (pair == null || pair.getFirst() == null || pair.getFirst().isBlank()) {
+                return;
+            }
+            String projectId = findProjectIdForEvent(event);
+            JSONObject message = new JSONObject();
+            message.put("type", "event");
+            message.put("ts", System.currentTimeMillis());
+            message.put("channel", "vars");
+            message.put("event", "vars.updated");
+            JSONObject payload = new JSONObject();
+            if (projectId != null) {
+                payload.put("projectId", projectId);
+            }
+            payload.put("name", pair.getFirst());
+            payload.put("value", pair.getSecond() != null ? pair.getSecond() : "");
+            message.put("payload", payload);
+            System.out.println("[EVENT] → vars.updated: " + pair.getFirst() + " = " + pair.getSecond());
+            broadcastToAll(message.toString());
+            return;
+        }
 
         String projectId = findProjectIdForEvent(event);
         JSONObject message = new JSONObject();
@@ -532,6 +560,7 @@ public final class WebUiServer implements EventListener {
             entry.put("path", ref.path == null ? "" : ref.path);
             entry.put("dirty", ref.dirty);
             entry.put("pending", false);
+            entry.put("runtimeState", ref.runtimeState);
             list.put(entry);
         }
         response.put("projects", list);
@@ -999,21 +1028,22 @@ public final class WebUiServer implements EventListener {
         json.put("id", "C" + index);
         json.put("text", comment.getHTMLText() != null ? comment.getHTMLText() : "");
 
-        JSONObject graphics = new JSONObject();
+        // Use "rect" key to match editor's format
+        JSONObject rectJson = new JSONObject();
         CommentGraphics cg = comment.getGraphics();
         CommentBoundary rect = cg != null ? cg.getRectangle() : null;
         if (rect != null) {
-            graphics.put("x", rect.getXPos());
-            graphics.put("y", rect.getYPos());
-            graphics.put("w", rect.getWidth());
-            graphics.put("h", rect.getHeight());
+            rectJson.put("x", rect.getXPos());
+            rectJson.put("y", rect.getYPos());
+            rectJson.put("w", rect.getWidth());
+            rectJson.put("h", rect.getHeight());
         } else {
-            graphics.put("x", 0);
-            graphics.put("y", 0);
-            graphics.put("w", 100);
-            graphics.put("h", 50);
+            rectJson.put("x", 0);
+            rectJson.put("y", 0);
+            rectJson.put("w", 0);
+            rectJson.put("h", 0);
         }
-        json.put("graphics", graphics);
+        json.put("rect", rectJson);
 
         return json;
     }
@@ -1023,9 +1053,37 @@ public final class WebUiServer implements EventListener {
         ProjectRef ref = projectStore.get(pid);
         JSONObject response = new JSONObject();
         response.put("state", ref != null ? ref.runtimeState : "stopped");
-        response.put("vars", serializeVars(ref));
+
+        // Match editor's runtimeToJson format: globalVariables and localVariables
         if (ref != null && ref.runtimeProject != null) {
             response.put("project", ref.runtimeProject.getProjectPath());
+            SceneFlow sceneFlow = ref.runtimeProject.getSceneFlow();
+            if (sceneFlow != null) {
+                // Build type map for typeFlavor resolution
+                Map<String, DataTypeDefinition> typeMap = new HashMap<>();
+                for (DataTypeDefinition def : sceneFlow.getTypeDefList()) {
+                    typeMap.put(def.getName(), def);
+                }
+
+                // Global variables from root sceneflow
+                JSONArray globals = new JSONArray();
+                for (VariableDefinition def : sceneFlow.getVarDefList()) {
+                    globals.put(variableToJsonCore(def, typeMap, "global", ref.runtimeProject));
+                }
+                response.put("globalVariables", globals);
+
+                // Local variables (use root sceneflow as "current" since runtime-server is headless)
+                JSONArray locals = new JSONArray();
+                // Note: In headless mode, we don't track current active supernode,
+                // so locals would be same as globals for root - typically empty for local scope
+                response.put("localVariables", locals);
+            } else {
+                response.put("globalVariables", new JSONArray());
+                response.put("localVariables", new JSONArray());
+            }
+        } else {
+            response.put("globalVariables", new JSONArray());
+            response.put("localVariables", new JSONArray());
         }
         writeJson(ctx, response);
     }
@@ -1040,6 +1098,76 @@ public final class WebUiServer implements EventListener {
         JSONObject response = new JSONObject();
         response.put("issues", new JSONArray());
         writeJson(ctx, response);
+    }
+
+    /**
+     * Convert a VariableDefinition to JSON with runtime value.
+     * Matches editor's variableToJson format for consistency.
+     */
+    private JSONObject variableToJsonCore(VariableDefinition def, Map<String, DataTypeDefinition> typeMap, String scope, RunTimeProject project) {
+        JSONObject json = new JSONObject();
+        json.put("name", def.getName());
+        json.put("type", def.getType());
+        json.put("typeFlavor", resolveTypeFlavor(def.getType(), typeMap));
+        json.put("expr", def.getExp() != null ? def.getExp().getConcreteSyntax() : "");
+        json.put("scope", scope);
+        // Get actual runtime value
+        String value = resolveVariableValue(project, def.getName());
+        if (value != null) {
+            json.put("value", value);
+        }
+        return json;
+    }
+
+    /**
+     * Resolve variable's runtime value from the interpreter environment.
+     */
+    private String resolveVariableValue(RunTimeProject project, String name) {
+        if (project == null || name == null || name.isBlank()) {
+            return null;
+        }
+        try {
+            AbstractValue value = project.getValueOf(name);
+            if (value == null) {
+                return null;
+            }
+            return sanitizeVariableValue(value.getConcreteSyntax());
+        } catch (Exception e) {
+            // Variable may not be available yet in runtime environment
+            return null;
+        }
+    }
+
+    /**
+     * Remove internal type markers from variable value display.
+     */
+    private String sanitizeVariableValue(String value) {
+        if (value == null) {
+            return null;
+        }
+        // Remove type markers like #s# for string, #i# for int, etc.
+        return value.replaceAll("#[a-zA-Z]#", "");
+    }
+
+    /**
+     * Resolve type flavor for display (Primitive, Struct, List).
+     */
+    private String resolveTypeFlavor(String type, Map<String, DataTypeDefinition> typeMap) {
+        if (type == null) {
+            return "Primitive";
+        }
+        DataTypeDefinition def = typeMap.get(type);
+        if (def != null && def.getFlavour() != null) {
+            return def.getFlavour().name();
+        }
+        // Built-in primitive types
+        if ("Int".equalsIgnoreCase(type)
+                || "Float".equalsIgnoreCase(type)
+                || "Bool".equalsIgnoreCase(type)
+                || "String".equalsIgnoreCase(type)) {
+            return "Primitive";
+        }
+        return "Primitive";
     }
 
     private List<JSONObject> serializeNodes(RunTimeProject rtp) {
@@ -1576,35 +1704,6 @@ public final class WebUiServer implements EventListener {
         return resp;
     }
 
-    private JSONArray serializeVars(ProjectRef ref) {
-        if (ref == null || ref.runtimeProject == null || ref.runtimeProject.getSceneFlow() == null) {
-            return new JSONArray();
-        }
-        JSONArray arr = new JSONArray();
-        try {
-            List<?> vars = ref.runtimeProject.getVarDefInSceneFlow();
-            if (vars != null) {
-                for (Object v : vars) {
-                    JSONObject obj = new JSONObject();
-                    try {
-                        de.dfki.vsm.model.sceneflow.glue.command.definition.VariableDefinition vd =
-                                (de.dfki.vsm.model.sceneflow.glue.command.definition.VariableDefinition) v;
-                        obj.put("name", vd.getName());
-                        obj.put("type", vd.getType());
-                    } catch (Exception ignored) {
-                        obj.put("name", "");
-                        obj.put("type", "");
-                    }
-                    obj.put("value", "");
-                    arr.put(obj);
-                }
-            }
-        } catch (Exception exc) {
-            sLogger.warning("Warning: cannot serialize vars: " + exc.getMessage());
-        }
-        return arr;
-    }
-
     private JSONArray serializeCommands(List<de.dfki.vsm.model.sceneflow.glue.command.Command> commands) {
         if (commands == null) {
             return new JSONArray();
@@ -1713,6 +1812,21 @@ public final class WebUiServer implements EventListener {
     public RunTimeProject getProject(String projectId) {
         ProjectRef ref = projectStore.get(projectId);
         return ref != null ? ref.runtimeProject : null;
+    }
+
+    /**
+     * Set the runtime state for a project.
+     * Use this after externally starting/stopping a project (e.g., via autostart).
+     *
+     * @param projectId The project ID
+     * @param state The runtime state ("running", "paused", "stopped")
+     */
+    public void setProjectRuntimeState(String projectId, String state) {
+        ProjectRef ref = projectStore.get(projectId);
+        if (ref != null) {
+            ref.runtimeState = state;
+            sLogger.message("Project " + projectId + " runtime state set to: " + state);
+        }
     }
 
     private String ensureProject(String path, String name) {

@@ -92,6 +92,8 @@ public class RuntimeMain {
                             System.out.println("Starting runtime...");
                             if (project.start()) {
                                 System.out.println("Runtime started.");
+                                // Update the runtime state so Web UI sees it as running
+                                server.setProjectRuntimeState(projectId, "running");
                             } else {
                                 System.err.println("Failed to start runtime.");
                             }
