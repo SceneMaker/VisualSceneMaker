@@ -20,8 +20,18 @@ import de.dfki.vsm.model.sceneflow.chart.edge.InterruptEdge;
 import de.dfki.vsm.model.sceneflow.chart.edge.RandomEdge;
 import de.dfki.vsm.model.sceneflow.chart.edge.TimeoutEdge;
 import de.dfki.vsm.model.sceneflow.glue.command.definition.DataTypeDefinition;
+import de.dfki.vsm.model.sceneflow.glue.command.definition.datatype.ListTypeDefinition;
+import de.dfki.vsm.model.sceneflow.glue.command.definition.datatype.StructTypeDefinition;
 import de.dfki.vsm.model.sceneflow.glue.command.definition.VariableDefinition;
 import de.dfki.vsm.model.sceneflow.glue.command.Command;
+import de.dfki.vsm.model.sceneflow.glue.command.Expression;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.literal.BoolLiteral;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.literal.FloatLiteral;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.literal.IntLiteral;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.literal.StringLiteral;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.record.ArrayExpression;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.record.StructExpression;
+import de.dfki.vsm.model.sceneflow.glue.GlueParser;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.event.EventDispatcher;
 import de.dfki.vsm.event.EventListener;
@@ -1741,6 +1751,155 @@ public final class WebUiServer implements EventListener {
                 }
                 return rt;
             }
+
+            // Variable definition operations
+            case "SceneFlow.Node.VarDef.Add": {
+                String pid = params.optString("projectId", "");
+                String nodeId = params.optString("nodeId", "");
+                String superNodeId = params.optString("superNodeId", null);
+                JSONObject varDefJson = params.optJSONObject("varDef");
+                int index = params.has("index") ? params.optInt("index", -1) : -1;
+
+                ProjectRef ref = projectStore.get(pid);
+                if (ref == null || ref.runtimeProject == null) {
+                    return errorResponse("PROJECT_NOT_FOUND", "Project not found");
+                }
+                if (varDefJson == null) {
+                    return errorResponse("BAD_REQUEST", "Missing varDef");
+                }
+
+                SceneFlow sceneFlow = ref.runtimeProject.getSceneFlow();
+                BasicNode dataNode = nodeId.isBlank() ? sceneFlow : findNodeRecursive(sceneFlow, nodeId);
+                if (dataNode == null) {
+                    return errorResponse("NODE_NOT_FOUND", "Node not found: " + nodeId);
+                }
+
+                StringBuilder error = new StringBuilder();
+                VariableDefinition varDef = parseVarDef(varDefJson, dataNode, error);
+                if (varDef == null) {
+                    return errorResponse("VARDEF_INVALID", error.length() > 0 ? error.toString() : "Invalid variable definition");
+                }
+
+                List<VariableDefinition> list = dataNode.getVarDefList();
+                int insertIndex = index < 0 || index > list.size() ? list.size() : index;
+                list.add(insertIndex, varDef);
+
+                SuperNode snapshotTarget = resolveSuperNode(sceneFlow, superNodeId);
+                JSONObject response = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
+                response.put("status", "ok");
+                return response;
+            }
+
+            case "SceneFlow.Node.VarDef.Update": {
+                String pid = params.optString("projectId", "");
+                String nodeId = params.optString("nodeId", "");
+                String superNodeId = params.optString("superNodeId", null);
+                JSONObject varDefJson = params.optJSONObject("varDef");
+                int index = params.optInt("index", -1);
+
+                ProjectRef ref = projectStore.get(pid);
+                if (ref == null || ref.runtimeProject == null) {
+                    return errorResponse("PROJECT_NOT_FOUND", "Project not found");
+                }
+                if (varDefJson == null || index < 0) {
+                    return errorResponse("BAD_REQUEST", "Missing varDef or index");
+                }
+
+                SceneFlow sceneFlow = ref.runtimeProject.getSceneFlow();
+                BasicNode dataNode = nodeId.isBlank() ? sceneFlow : findNodeRecursive(sceneFlow, nodeId);
+                if (dataNode == null) {
+                    return errorResponse("NODE_NOT_FOUND", "Node not found: " + nodeId);
+                }
+
+                List<VariableDefinition> list = dataNode.getVarDefList();
+                if (index >= list.size()) {
+                    return errorResponse("VARDEF_NOT_FOUND", "Variable definition not found at index: " + index);
+                }
+
+                StringBuilder error = new StringBuilder();
+                VariableDefinition varDef = parseVarDef(varDefJson, dataNode, error);
+                if (varDef == null) {
+                    return errorResponse("VARDEF_INVALID", error.length() > 0 ? error.toString() : "Invalid variable definition");
+                }
+
+                list.set(index, varDef);
+
+                SuperNode snapshotTarget = resolveSuperNode(sceneFlow, superNodeId);
+                JSONObject response = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
+                response.put("status", "ok");
+                return response;
+            }
+
+            case "SceneFlow.Node.VarDef.Delete": {
+                String pid = params.optString("projectId", "");
+                String nodeId = params.optString("nodeId", "");
+                String superNodeId = params.optString("superNodeId", null);
+                int index = params.optInt("index", -1);
+
+                ProjectRef ref = projectStore.get(pid);
+                if (ref == null || ref.runtimeProject == null) {
+                    return errorResponse("PROJECT_NOT_FOUND", "Project not found");
+                }
+                if (index < 0) {
+                    return errorResponse("BAD_REQUEST", "Missing index");
+                }
+
+                SceneFlow sceneFlow = ref.runtimeProject.getSceneFlow();
+                BasicNode dataNode = nodeId.isBlank() ? sceneFlow : findNodeRecursive(sceneFlow, nodeId);
+                if (dataNode == null) {
+                    return errorResponse("NODE_NOT_FOUND", "Node not found: " + nodeId);
+                }
+
+                List<VariableDefinition> list = dataNode.getVarDefList();
+                if (index >= list.size()) {
+                    return errorResponse("VARDEF_NOT_FOUND", "Variable definition not found at index: " + index);
+                }
+
+                list.remove(index);
+
+                SuperNode snapshotTarget = resolveSuperNode(sceneFlow, superNodeId);
+                JSONObject response = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
+                response.put("status", "ok");
+                return response;
+            }
+
+            case "SceneFlow.Node.VarDef.Move": {
+                String pid = params.optString("projectId", "");
+                String nodeId = params.optString("nodeId", "");
+                String superNodeId = params.optString("superNodeId", null);
+                int from = params.optInt("from", -1);
+                int to = params.optInt("to", -1);
+
+                ProjectRef ref = projectStore.get(pid);
+                if (ref == null || ref.runtimeProject == null) {
+                    return errorResponse("PROJECT_NOT_FOUND", "Project not found");
+                }
+                if (from < 0 || to < 0) {
+                    return errorResponse("BAD_REQUEST", "Missing from or to index");
+                }
+
+                SceneFlow sceneFlow = ref.runtimeProject.getSceneFlow();
+                BasicNode dataNode = nodeId.isBlank() ? sceneFlow : findNodeRecursive(sceneFlow, nodeId);
+                if (dataNode == null) {
+                    return errorResponse("NODE_NOT_FOUND", "Node not found: " + nodeId);
+                }
+
+                List<VariableDefinition> list = dataNode.getVarDefList();
+                if (from >= list.size() || to >= list.size()) {
+                    return errorResponse("VARDEF_NOT_FOUND", "Invalid index");
+                }
+
+                if (from != to) {
+                    VariableDefinition entry = list.remove(from);
+                    list.add(to, entry);
+                }
+
+                SuperNode snapshotTarget = resolveSuperNode(sceneFlow, superNodeId);
+                JSONObject response = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
+                response.put("status", "ok");
+                return response;
+            }
+
             default:
                 JSONObject unknown = new JSONObject();
                 unknown.put("message", "Unhandled method: " + method);
@@ -1958,6 +2117,132 @@ public final class WebUiServer implements EventListener {
         if (ref != null) {
             ref.dirty = false;
         }
+    }
+
+    // --- VarDef helper methods ---
+
+    private JSONObject errorResponse(String code, String message) {
+        JSONObject err = new JSONObject();
+        err.put("error", code);
+        err.put("message", message);
+        return err;
+    }
+
+    private BasicNode findNodeRecursive(SuperNode parent, String nodeId) {
+        if (parent == null || nodeId == null || nodeId.isBlank()) {
+            return null;
+        }
+        if (nodeId.equals(parent.getId())) {
+            return parent;
+        }
+        for (BasicNode node : parent.getNodeAndSuperNodeList()) {
+            if (nodeId.equals(node.getId())) {
+                return node;
+            }
+            if (node instanceof SuperNode) {
+                BasicNode found = findNodeRecursive((SuperNode) node, nodeId);
+                if (found != null) {
+                    return found;
+                }
+            }
+        }
+        return null;
+    }
+
+    private VariableDefinition parseVarDef(JSONObject source, BasicNode node, StringBuilder error) {
+        if (source == null) {
+            if (error != null) {
+                error.append("Missing variable definition.");
+            }
+            return null;
+        }
+        String name = source.optString("name", "").trim();
+        if (name.isBlank()) {
+            if (error != null) {
+                error.append("Variable name is required.");
+            }
+            return null;
+        }
+        String type = source.optString("type", "").trim();
+        if (type.isBlank()) {
+            if (error != null) {
+                error.append("Variable type is required.");
+            }
+            return null;
+        }
+        String expressionText = source.has("expression") ? source.optString("expression", "") : "";
+        Expression exp = null;
+        if (expressionText == null || expressionText.trim().isEmpty()) {
+            exp = defaultExpressionForType(type, node);
+            if (exp == null) {
+                if (error != null) {
+                    error.append("Expression is required for type: " + type);
+                }
+                return null;
+            }
+        } else {
+            Command parsed;
+            try {
+                parsed = GlueParser.run(expressionText.trim());
+            } catch (Exception ex) {
+                if (error != null) {
+                    String msg = ex.getMessage();
+                    error.append(msg != null && !msg.isBlank() ? msg : "Expression parse failed.");
+                }
+                return null;
+            }
+            if (!(parsed instanceof Expression)) {
+                if (error != null) {
+                    error.append("Expression parse failed.");
+                }
+                return null;
+            }
+            exp = (Expression) parsed;
+        }
+        return new VariableDefinition(name, type, exp);
+    }
+
+    private Expression defaultExpressionForType(String type, BasicNode node) {
+        if (type == null) {
+            return null;
+        }
+        String trimmed = type.trim();
+        if (trimmed.equalsIgnoreCase("Int")) {
+            return new IntLiteral(0);
+        }
+        if (trimmed.equalsIgnoreCase("Bool")) {
+            return new BoolLiteral(true);
+        }
+        if (trimmed.equalsIgnoreCase("Float")) {
+            return new FloatLiteral(0);
+        }
+        if (trimmed.equalsIgnoreCase("String")) {
+            return new StringLiteral("");
+        }
+        DataTypeDefinition def = findTypeDefInHierarchy(node, trimmed);
+        if (def instanceof ListTypeDefinition) {
+            return new ArrayExpression();
+        }
+        if (def instanceof StructTypeDefinition) {
+            return new StructExpression();
+        }
+        return null;
+    }
+
+    private DataTypeDefinition findTypeDefInHierarchy(BasicNode node, String name) {
+        if (node == null || name == null) {
+            return null;
+        }
+        BasicNode current = node;
+        while (current != null) {
+            for (DataTypeDefinition def : current.getTypeDefList()) {
+                if (def != null && name.equals(def.getName())) {
+                    return def;
+                }
+            }
+            current = current.getParentNode();
+        }
+        return null;
     }
 
     private static class ProjectRef {
