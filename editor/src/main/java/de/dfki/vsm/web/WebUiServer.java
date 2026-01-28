@@ -829,53 +829,313 @@ public final class WebUiServer implements UiEventListener {
     // Straighten an edge - make control points lie on the straight line between start and end
     // Note: Self-loops and bidirectional edges cannot be straightened (would overlap)
     private void straightenEdge(AbstractEdge edge) {
+        straightenEdge(edge, null);
+    }
+
+    private void straightenEdge(AbstractEdge edge, EditorConfig config) {
         if (edge == null) return;
 
-        // Skip self-loops - straightening them would collapse the curve
-        String sourceId = edge.getSourceUnid();
-        String targetId = edge.getTargetUnid();
+        String sourceId = resolveEdgeNodeId(edge, true);
+        String targetId = resolveEdgeNodeId(edge, false);
         if (isSelfLoopEdge(sourceId, targetId)) {
             return;
         }
 
-        // Skip if there's a reverse edge (bidirectional pair) - straightening would overlap
         BasicNode targetNode = edge.getTargetNode();
         if (targetNode != null) {
             for (AbstractEdge reverseEdge : targetNode.getEdgeList()) {
-                if (sourceId.equals(reverseEdge.getTargetUnid())) {
-                    // Found reverse edge - skip straightening
+                if (sourceId.equals(resolveEdgeNodeId(reverseEdge, false))) {
                     return;
                 }
             }
         }
 
-        EdgeGraphics graphics = edge.getGraphics();
-        if (graphics == null) return;
-        EdgeArrow arrow = graphics.getConnection();
-        if (arrow == null) return;
-        List<EdgePoint> points = arrow.getPointList();
-        if (points == null || points.size() < 2) return;
+        BasicNode sourceNode = edge.getSourceNode();
+        if (sourceNode == null || targetNode == null) {
+            return;
+        }
+        int srcWidth = nodeWidthFor(sourceNode, config);
+        int srcHeight = nodeHeightFor(sourceNode, config);
+        int tgtWidth = nodeWidthFor(targetNode, config);
+        int tgtHeight = nodeHeightFor(targetNode, config);
+        NodePosition srcPos = sourceNode.getGraphics() != null ? sourceNode.getGraphics().getPosition() : null;
+        NodePosition tgtPos = targetNode.getGraphics() != null ? targetNode.getGraphics().getPosition() : null;
+        double srcX = srcPos != null ? srcPos.getXPos() : 0;
+        double srcY = srcPos != null ? srcPos.getYPos() : 0;
+        double tgtX = tgtPos != null ? tgtPos.getXPos() : 0;
+        double tgtY = tgtPos != null ? tgtPos.getYPos() : 0;
 
+        releaseEdgeDockPoints(edge, sourceNode, targetNode, srcWidth, srcHeight, tgtWidth, tgtHeight);
+        int[] dockPair = findBestDockPointPair(
+                sourceNode.getId(), srcX, srcY, srcWidth, srcHeight, sourceNode instanceof SuperNode,
+                targetNode.getId(), tgtX, tgtY, tgtWidth, tgtHeight, targetNode instanceof SuperNode);
+        int srcDockIdx = dockPair[0];
+        int tgtDockIdx = dockPair[1];
+        occupyDockPoint(sourceNode.getId(), srcDockIdx, true);
+        occupyDockPoint(targetNode.getId(), tgtDockIdx, false);
+        double[] srcDock = getDockPointPosition(srcX, srcY, srcWidth, srcHeight, sourceNode instanceof SuperNode, srcDockIdx);
+        double[] tgtDock = getDockPointPosition(tgtX, tgtY, tgtWidth, tgtHeight, targetNode instanceof SuperNode, tgtDockIdx);
+
+        rebuildEdgePoints(edge, srcDock, tgtDock, 0);
+    }
+
+    private int nodeWidthFor(BasicNode node, EditorConfig config) {
+        if (node instanceof SuperNode) {
+            return config != null ? config.sSUPERNODEWIDTH : 160;
+        }
+        return config != null ? config.sNODEWIDTH : 90;
+    }
+
+    private int nodeHeightFor(BasicNode node, EditorConfig config) {
+        if (node instanceof SuperNode) {
+            return config != null ? config.sSUPERNODEHEIGHT : 120;
+        }
+        return config != null ? config.sNODEHEIGHT : 90;
+    }
+
+    private void releaseEdgeDockPoints(AbstractEdge edge, BasicNode sourceNode, BasicNode targetNode,
+                                       int srcWidth, int srcHeight, int tgtWidth, int tgtHeight) {
+        if (edge == null || sourceNode == null || targetNode == null) {
+            return;
+        }
+        EdgeGraphics graphics = edge.getGraphics();
+        if (graphics == null || graphics.getConnection() == null) {
+            return;
+        }
+        List<EdgePoint> points = graphics.getConnection().getPointList();
+        if (points == null || points.size() < 2) {
+            return;
+        }
         EdgePoint startPt = points.get(0);
         EdgePoint endPt = points.get(points.size() - 1);
-        double startX = startPt.getXPos();
-        double startY = startPt.getYPos();
-        double endX = endPt.getXPos();
-        double endY = endPt.getYPos();
+        NodePosition srcPos = sourceNode.getGraphics() != null ? sourceNode.getGraphics().getPosition() : null;
+        NodePosition tgtPos = targetNode.getGraphics() != null ? targetNode.getGraphics().getPosition() : null;
+        double srcX = srcPos != null ? srcPos.getXPos() : 0;
+        double srcY = srcPos != null ? srcPos.getYPos() : 0;
+        double tgtX = tgtPos != null ? tgtPos.getXPos() : 0;
+        double tgtY = tgtPos != null ? tgtPos.getYPos() : 0;
+        int srcDockIdx = findDockPointIndex(srcX, srcY, srcWidth, srcHeight, sourceNode instanceof SuperNode,
+                startPt.getXPos(), startPt.getYPos());
+        int tgtDockIdx = findDockPointIndex(tgtX, tgtY, tgtWidth, tgtHeight, targetNode instanceof SuperNode,
+                endPt.getXPos(), endPt.getYPos());
+        if (srcDockIdx >= 0) {
+            releaseDockPoint(sourceNode.getId(), srcDockIdx, true);
+        }
+        if (tgtDockIdx >= 0) {
+            releaseDockPoint(targetNode.getId(), tgtDockIdx, false);
+        }
+    }
 
-        // For a straight line, control points are at 1/3 and 2/3 along the line
-        double dx = endX - startX;
-        double dy = endY - startY;
+    private void rebuildEdgePoints(AbstractEdge edge, double[] srcDock, double[] tgtDock, double offset) {
+        if (edge == null || srcDock == null || tgtDock == null || srcDock.length < 2 || tgtDock.length < 2) {
+            return;
+        }
+        EdgeGraphics graphics = edge.getGraphics();
+        if (graphics == null) {
+            graphics = new EdgeGraphics();
+            edge.setGraphics(graphics);
+        }
+        EdgeArrow arrow = graphics.getConnection();
+        if (arrow == null) {
+            arrow = new EdgeArrow();
+            graphics.setConnection(arrow);
+        }
+        ArrayList<EdgePoint> points = new ArrayList<>();
+        EdgePoint startPt = new EdgePoint((int) Math.round(srcDock[0]), (int) Math.round(srcDock[0]),
+                (int) Math.round(srcDock[1]), (int) Math.round(srcDock[1]));
+        EdgePoint endPt = new EdgePoint((int) Math.round(tgtDock[0]), (int) Math.round(tgtDock[0]),
+                (int) Math.round(tgtDock[1]), (int) Math.round(tgtDock[1]));
+        points.add(startPt);
+        points.add(endPt);
+        arrow.setPointList(points);
 
-        double startCtrlX = startX + dx / 3.0;
-        double startCtrlY = startY + dy / 3.0;
-        double endCtrlX = startX + 2.0 * dx / 3.0;
-        double endCtrlY = startY + 2.0 * dy / 3.0;
-
+        double dx = tgtDock[0] - srcDock[0];
+        double dy = tgtDock[1] - srcDock[1];
+        double length = Math.hypot(dx, dy);
+        double perpX = length > 0 ? -dy / length : 0;
+        double perpY = length > 0 ? dx / length : 0;
+        double startCtrlX = srcDock[0] + dx / 3.0 + perpX * offset;
+        double startCtrlY = srcDock[1] + dy / 3.0 + perpY * offset;
+        double endCtrlX = srcDock[0] + 2.0 * dx / 3.0 + perpX * offset;
+        double endCtrlY = srcDock[1] + 2.0 * dy / 3.0 + perpY * offset;
         startPt.setCtrlXPos((int) Math.round(startCtrlX));
         startPt.setCtrlYPos((int) Math.round(startCtrlY));
         endPt.setCtrlXPos((int) Math.round(endCtrlX));
         endPt.setCtrlYPos((int) Math.round(endCtrlY));
+    }
+
+    private String resolveEdgeNodeId(AbstractEdge edge, boolean source) {
+        if (edge == null) {
+            return "";
+        }
+        String id = source ? edge.getSourceUnid() : edge.getTargetUnid();
+        if (id != null && !id.isBlank()) {
+            return id;
+        }
+        BasicNode node = source ? edge.getSourceNode() : edge.getTargetNode();
+        return node != null ? node.getId() : "";
+    }
+
+    private void straightenEdgesWithFanning(List<AbstractEdge> edges, EditorConfig config) {
+        if (edges == null || edges.isEmpty()) {
+            return;
+        }
+        int nodeWidth = config != null ? config.sNODEWIDTH : 90;
+        double minSpacing = Math.max(8, nodeWidth * 0.12);
+        double maxSpacing = Math.max(minSpacing + 6, nodeWidth * 0.32);
+        Map<String, List<AbstractEdge>> grouped = new LinkedHashMap<>();
+        Map<AbstractEdge, Integer> directionSign = new LinkedHashMap<>();
+        for (AbstractEdge edge : edges) {
+            if (edge == null) {
+                continue;
+            }
+            String sourceId = resolveEdgeNodeId(edge, true);
+            String targetId = resolveEdgeNodeId(edge, false);
+            if (sourceId.isEmpty() || targetId.isEmpty() || isSelfLoopEdge(sourceId, targetId)) {
+                continue;
+            }
+            String a = sourceId.compareTo(targetId) <= 0 ? sourceId : targetId;
+            String b = sourceId.compareTo(targetId) <= 0 ? targetId : sourceId;
+            String key = a + "|" + b;
+            grouped.computeIfAbsent(key, k -> new ArrayList<>()).add(edge);
+            int sign = sourceId.compareTo(targetId) <= 0 ? 1 : -1;
+            directionSign.put(edge, sign);
+        }
+        for (Map.Entry<String, List<AbstractEdge>> entry : grouped.entrySet()) {
+            List<AbstractEdge> bucket = entry.getValue();
+            int count = bucket != null ? bucket.size() : 0;
+            if (count == 0) {
+                continue;
+            }
+            List<AbstractEdge> sorted = new ArrayList<>(bucket);
+            sorted.sort(Comparator.comparing(edge -> {
+                String src = resolveEdgeNodeId(edge, true);
+                String tgt = resolveEdgeNodeId(edge, false);
+                return src + "->" + tgt + ":" + System.identityHashCode(edge);
+            }));
+            String[] ids = entry.getKey().split("\\|", 2);
+            String nodeAId = ids.length > 0 ? ids[0] : "";
+            String nodeBId = ids.length > 1 ? ids[1] : "";
+            BasicNode nodeA = null;
+            BasicNode nodeB = null;
+            for (AbstractEdge edge : sorted) {
+                if (nodeA == null || nodeB == null) {
+                    String srcId = resolveEdgeNodeId(edge, true);
+                    String tgtId = resolveEdgeNodeId(edge, false);
+                    if (nodeA == null) {
+                        if (nodeAId.equals(srcId)) {
+                            nodeA = edge.getSourceNode();
+                        } else if (nodeAId.equals(tgtId)) {
+                            nodeA = edge.getTargetNode();
+                        }
+                    }
+                    if (nodeB == null) {
+                        if (nodeBId.equals(srcId)) {
+                            nodeB = edge.getSourceNode();
+                        } else if (nodeBId.equals(tgtId)) {
+                            nodeB = edge.getTargetNode();
+                        }
+                    }
+                }
+            }
+            if (nodeA == null || nodeB == null) {
+                continue;
+            }
+            int widthA = nodeWidthFor(nodeA, config);
+            int heightA = nodeHeightFor(nodeA, config);
+            int widthB = nodeWidthFor(nodeB, config);
+            int heightB = nodeHeightFor(nodeB, config);
+            NodePosition posA = nodeA.getGraphics() != null ? nodeA.getGraphics().getPosition() : null;
+            NodePosition posB = nodeB.getGraphics() != null ? nodeB.getGraphics().getPosition() : null;
+            double aX = posA != null ? posA.getXPos() : 0;
+            double aY = posA != null ? posA.getYPos() : 0;
+            double bX = posB != null ? posB.getXPos() : 0;
+            double bY = posB != null ? posB.getYPos() : 0;
+            double aCenterX = aX + widthA / 2.0;
+            double aCenterY = aY + heightA / 2.0;
+            double bCenterX = bX + widthB / 2.0;
+            double bCenterY = bY + heightB / 2.0;
+            double baseDx = bCenterX - aCenterX;
+            double baseDy = bCenterY - aCenterY;
+            double baseLen = Math.hypot(baseDx, baseDy);
+            if (baseLen < 1.0) {
+                continue;
+            }
+            double spacing = Math.max(minSpacing, Math.min(maxSpacing, baseLen * 0.12));
+            double center = (count - 1) / 2.0;
+
+            for (AbstractEdge edge : sorted) {
+                BasicNode srcNode = edge.getSourceNode();
+                BasicNode tgtNode = edge.getTargetNode();
+                if (srcNode == null || tgtNode == null) {
+                    continue;
+                }
+                int srcWidth = nodeWidthFor(srcNode, config);
+                int srcHeight = nodeHeightFor(srcNode, config);
+                int tgtWidth = nodeWidthFor(tgtNode, config);
+                int tgtHeight = nodeHeightFor(tgtNode, config);
+                releaseEdgeDockPoints(edge, srcNode, tgtNode, srcWidth, srcHeight, tgtWidth, tgtHeight);
+            }
+
+            for (int i = 0; i < count; i++) {
+                AbstractEdge edge = sorted.get(i);
+                BasicNode srcNode = edge.getSourceNode();
+                BasicNode tgtNode = edge.getTargetNode();
+                if (srcNode == null || tgtNode == null) {
+                    continue;
+                }
+                int srcWidth = nodeWidthFor(srcNode, config);
+                int srcHeight = nodeHeightFor(srcNode, config);
+                int tgtWidth = nodeWidthFor(tgtNode, config);
+                int tgtHeight = nodeHeightFor(tgtNode, config);
+                NodePosition srcPos = srcNode.getGraphics() != null ? srcNode.getGraphics().getPosition() : null;
+                NodePosition tgtPos = tgtNode.getGraphics() != null ? tgtNode.getGraphics().getPosition() : null;
+                double srcX = srcPos != null ? srcPos.getXPos() : 0;
+                double srcY = srcPos != null ? srcPos.getYPos() : 0;
+                double tgtX = tgtPos != null ? tgtPos.getXPos() : 0;
+                double tgtY = tgtPos != null ? tgtPos.getYPos() : 0;
+                double srcCenterX = srcX + srcWidth / 2.0;
+                double srcCenterY = srcY + srcHeight / 2.0;
+                double tgtCenterX = tgtX + tgtWidth / 2.0;
+                double tgtCenterY = tgtY + tgtHeight / 2.0;
+                double dx = tgtCenterX - srcCenterX;
+                double dy = tgtCenterY - srcCenterY;
+                double len = Math.hypot(dx, dy);
+                if (len < 1.0) {
+                    continue;
+                }
+                double ux = dx / len;
+                double uy = dy / len;
+                double perpX = -uy;
+                double perpY = ux;
+                double offset = (i - center) * spacing;
+                Integer sign = directionSign.get(edge);
+                if (sign != null && sign < 0) {
+                    offset = -offset;
+                }
+                double srcRadius = srcWidth / 2.0;
+                double tgtRadius = tgtWidth / 2.0;
+                double desiredSrcX = srcCenterX + ux * srcRadius + perpX * offset;
+                double desiredSrcY = srcCenterY + uy * srcRadius + perpY * offset;
+                double desiredTgtX = tgtCenterX - ux * tgtRadius + perpX * offset;
+                double desiredTgtY = tgtCenterY - uy * tgtRadius + perpY * offset;
+                int srcDockIdx = findNearestAvailableDockPoint(srcNode.getId(), srcX, srcY, srcWidth, srcHeight,
+                        srcNode instanceof SuperNode, desiredSrcX, desiredSrcY);
+                int tgtDockIdx = findNearestAvailableDockPoint(tgtNode.getId(), tgtX, tgtY, tgtWidth, tgtHeight,
+                        tgtNode instanceof SuperNode, desiredTgtX, desiredTgtY);
+                if (srcDockIdx < 0) {
+                    srcDockIdx = 0;
+                }
+                if (tgtDockIdx < 0) {
+                    tgtDockIdx = 0;
+                }
+                occupyDockPoint(srcNode.getId(), srcDockIdx, true);
+                occupyDockPoint(tgtNode.getId(), tgtDockIdx, false);
+                double[] srcDock = getDockPointPosition(srcX, srcY, srcWidth, srcHeight, srcNode instanceof SuperNode, srcDockIdx);
+                double[] tgtDock = getDockPointPosition(tgtX, tgtY, tgtWidth, tgtHeight, tgtNode instanceof SuperNode, tgtDockIdx);
+                rebuildEdgePoints(edge, srcDock, tgtDock, offset);
+            }
+        }
     }
 
     public static WebUiServer getInstance() {
@@ -3208,7 +3468,8 @@ public final class WebUiServer implements UiEventListener {
                             return null;
                         }
                         SceneFlow sceneFlow = project.getSceneFlow();
-                        BasicNode dataNode = resolveNodeForDefinitions(sceneFlow, nodeId);
+                        SuperNode snapshotTarget = resolveSnapshotTarget(sceneFlow, resolvedSuperNodeId);
+                        BasicNode dataNode = resolveNodeForDefinitions(snapshotTarget, nodeId);
                         if (dataNode == null) {
                             return new JSONObject().put("error", "NODE_NOT_FOUND");
                         }
@@ -3226,7 +3487,6 @@ public final class WebUiServer implements UiEventListener {
                         list.set(index, typeDef);
 
                         JSONObject payloadResp = new JSONObject();
-                        SuperNode snapshotTarget = resolveSnapshotTarget(sceneFlow, resolvedSuperNodeId);
                         payloadResp.put("snapshot", sceneFlowSnapshot(project, projectId, snapshotTarget));
                         payloadResp.put("dirty", project.hasChanged());
                         return payloadResp;
@@ -3260,7 +3520,8 @@ public final class WebUiServer implements UiEventListener {
                             return null;
                         }
                         SceneFlow sceneFlow = project.getSceneFlow();
-                        BasicNode dataNode = resolveNodeForDefinitions(sceneFlow, nodeId);
+                        SuperNode snapshotTarget = resolveSnapshotTarget(sceneFlow, resolvedSuperNodeId);
+                        BasicNode dataNode = resolveNodeForDefinitions(snapshotTarget, nodeId);
                         if (dataNode == null) {
                             return new JSONObject().put("error", "NODE_NOT_FOUND");
                         }
@@ -3273,7 +3534,6 @@ public final class WebUiServer implements UiEventListener {
                         list.remove(index);
 
                         JSONObject payloadResp = new JSONObject();
-                        SuperNode snapshotTarget = resolveSnapshotTarget(sceneFlow, resolvedSuperNodeId);
                         payloadResp.put("snapshot", sceneFlowSnapshot(project, projectId, snapshotTarget));
                         payloadResp.put("dirty", project.hasChanged());
                         return payloadResp;
@@ -3309,7 +3569,8 @@ public final class WebUiServer implements UiEventListener {
                             return null;
                         }
                         SceneFlow sceneFlow = project.getSceneFlow();
-                        BasicNode dataNode = resolveNodeForDefinitions(sceneFlow, nodeId);
+                        SuperNode snapshotTarget = resolveSnapshotTarget(sceneFlow, resolvedSuperNodeId);
+                        BasicNode dataNode = resolveNodeForDefinitions(snapshotTarget, nodeId);
                         if (dataNode == null) {
                             return new JSONObject().put("error", "NODE_NOT_FOUND");
                         }
@@ -3317,7 +3578,6 @@ public final class WebUiServer implements UiEventListener {
                         if (from >= list.size() || to >= list.size()) {
                             return new JSONObject().put("error", "TYPEDEF_NOT_FOUND");
                         }
-                        SuperNode snapshotTarget = resolveSnapshotTarget(sceneFlow, resolvedSuperNodeId);
                         if (from == to) {
                             JSONObject payloadResp = new JSONObject();
                             payloadResp.put("snapshot", sceneFlowSnapshot(project, projectId, snapshotTarget));
@@ -3545,7 +3805,8 @@ public final class WebUiServer implements UiEventListener {
                             return null;
                         }
                         SceneFlow sceneFlow = project.getSceneFlow();
-                        BasicNode dataNode = resolveNodeForDefinitions(sceneFlow, nodeId);
+                        SuperNode snapshotTarget = resolveSnapshotTarget(sceneFlow, resolvedSuperNodeId);
+                        BasicNode dataNode = resolveNodeForDefinitions(snapshotTarget, nodeId);
                         if (dataNode == null) {
                             return new JSONObject().put("error", "NODE_NOT_FOUND");
                         }
@@ -3553,7 +3814,6 @@ public final class WebUiServer implements UiEventListener {
                         if (from >= list.size() || to >= list.size()) {
                             return new JSONObject().put("error", "VARDEF_NOT_FOUND");
                         }
-                        SuperNode snapshotTarget = resolveSnapshotTarget(sceneFlow, resolvedSuperNodeId);
                         if (from == to) {
                             JSONObject payloadResp = new JSONObject();
                             payloadResp.put("snapshot", sceneFlowSnapshot(project, projectId, snapshotTarget));
@@ -3651,7 +3911,8 @@ public final class WebUiServer implements UiEventListener {
                             return null;
                         }
                         SceneFlow sceneFlow = project.getSceneFlow();
-                        BasicNode dataNode = resolveNodeForDefinitions(sceneFlow, nodeId);
+                        SuperNode snapshotTarget = resolveSnapshotTarget(sceneFlow, resolvedSuperNodeId);
+                        BasicNode dataNode = resolveNodeForDefinitions(snapshotTarget, nodeId);
                         if (dataNode == null) {
                             return new JSONObject().put("error", "NODE_NOT_FOUND");
                         }
@@ -3669,7 +3930,6 @@ public final class WebUiServer implements UiEventListener {
                         list.set(index, command);
 
                         JSONObject payloadResp = new JSONObject();
-                        SuperNode snapshotTarget = resolveSnapshotTarget(sceneFlow, resolvedSuperNodeId);
                         payloadResp.put("snapshot", sceneFlowSnapshot(project, projectId, snapshotTarget));
                         payloadResp.put("dirty", project.hasChanged());
                         return payloadResp;
@@ -3703,7 +3963,8 @@ public final class WebUiServer implements UiEventListener {
                             return null;
                         }
                         SceneFlow sceneFlow = project.getSceneFlow();
-                        BasicNode dataNode = resolveNodeForDefinitions(sceneFlow, nodeId);
+                        SuperNode snapshotTarget = resolveSnapshotTarget(sceneFlow, resolvedSuperNodeId);
+                        BasicNode dataNode = resolveNodeForDefinitions(snapshotTarget, nodeId);
                         if (dataNode == null) {
                             return new JSONObject().put("error", "NODE_NOT_FOUND");
                         }
@@ -3716,7 +3977,6 @@ public final class WebUiServer implements UiEventListener {
                         list.remove(index);
 
                         JSONObject payloadResp = new JSONObject();
-                        SuperNode snapshotTarget = resolveSnapshotTarget(sceneFlow, resolvedSuperNodeId);
                         payloadResp.put("snapshot", sceneFlowSnapshot(project, projectId, snapshotTarget));
                         payloadResp.put("dirty", project.hasChanged());
                         return payloadResp;
@@ -3752,7 +4012,8 @@ public final class WebUiServer implements UiEventListener {
                             return null;
                         }
                         SceneFlow sceneFlow = project.getSceneFlow();
-                        BasicNode dataNode = resolveNodeForDefinitions(sceneFlow, nodeId);
+                        SuperNode snapshotTarget = resolveSnapshotTarget(sceneFlow, resolvedSuperNodeId);
+                        BasicNode dataNode = resolveNodeForDefinitions(snapshotTarget, nodeId);
                         if (dataNode == null) {
                             return new JSONObject().put("error", "NODE_NOT_FOUND");
                         }
@@ -3760,7 +4021,6 @@ public final class WebUiServer implements UiEventListener {
                         if (from >= list.size() || to >= list.size()) {
                             return new JSONObject().put("error", "COMMAND_NOT_FOUND");
                         }
-                        SuperNode snapshotTarget = resolveSnapshotTarget(sceneFlow, resolvedSuperNodeId);
                         if (from == to) {
                             JSONObject payloadResp = new JSONObject();
                             payloadResp.put("snapshot", sceneFlowSnapshot(project, projectId, snapshotTarget));
@@ -4298,7 +4558,7 @@ public final class WebUiServer implements UiEventListener {
                         if (isNormalize) {
                             normalizeEdge(dataEdge, project.getEditorConfig());
                         } else {
-                            straightenEdge(dataEdge);
+                            straightenEdge(dataEdge, project.getEditorConfig());
                         }
                         JSONObject payloadResp = new JSONObject();
                         payloadResp.put("snapshot", sceneFlowSnapshot(project, projectId, snapshotTarget));
@@ -4338,6 +4598,7 @@ public final class WebUiServer implements UiEventListener {
                         EditorConfig config = project.getEditorConfig();
                         SuperNode snapshotTarget = resolveSnapshotTarget(sceneFlow, resolvedSuperNodeId);
 
+                        List<AbstractEdge> selectedEdges = new ArrayList<>();
                         // Process all edges
                         for (int i = 0; i < edgeIds.length(); i++) {
                             String edgeId = edgeIds.optString(i, "").trim();
@@ -4346,13 +4607,15 @@ public final class WebUiServer implements UiEventListener {
                                 if (dataEdge == null) {
                                     return new JSONObject().put("error", "EDGE_NOT_FOUND");
                                 }
-                                // Apply normalize or straighten
                                 if (isNormalize) {
                                     normalizeEdge(dataEdge, config);
                                 } else {
-                                    straightenEdge(dataEdge);
+                                    selectedEdges.add(dataEdge);
                                 }
                             }
+                        }
+                        if (!isNormalize && !selectedEdges.isEmpty()) {
+                            straightenEdgesWithFanning(selectedEdges, config);
                         }
 
                         JSONObject payloadResp = new JSONObject();
@@ -4751,15 +5014,19 @@ public final class WebUiServer implements UiEventListener {
                         EditorConfig config = project.getEditorConfig();
                         SuperNode snapshotTarget = resolveSnapshotTarget(sceneFlow, resolvedSuperNodeId);
 
-                        // Process all edges in the current view (snapshotTarget)
-                        for (BasicNode node : snapshotTarget.getNodeAndSuperNodeList()) {
-                            for (AbstractEdge edge : node.getEdgeList()) {
-                                if (isNormalize) {
+                        if (isNormalize) {
+                            // Process all edges in the current view (snapshotTarget)
+                            for (BasicNode node : snapshotTarget.getNodeAndSuperNodeList()) {
+                                for (AbstractEdge edge : node.getEdgeList()) {
                                     normalizeEdge(edge, config);
-                                } else {
-                                    straightenEdge(edge);
                                 }
                             }
+                        } else {
+                            List<AbstractEdge> allEdges = new ArrayList<>();
+                            for (BasicNode node : snapshotTarget.getNodeAndSuperNodeList()) {
+                                allEdges.addAll(node.getEdgeList());
+                            }
+                            straightenEdgesWithFanning(allEdges, config);
                         }
 
                         JSONObject payloadResp = new JSONObject();

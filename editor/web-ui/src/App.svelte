@@ -5209,12 +5209,25 @@
     return "";
   }
 
+  function varExpressionHint(typeName) {
+    const name = (typeName || "").trim();
+    if (!name) return "";
+    if (name === "Int") return "e.g. 0";
+    if (name === "Bool") return "e.g. true / false";
+    if (name === "Float") return "e.g. 0.0";
+    if (name === "String") return "e.g. \"text\"";
+    const match = nodeEditorTypeCatalog.find((entry) => entry?.name === name);
+    if (match?.flavour === "List") return "e.g. [ ]";
+    if (match?.flavour === "Struct") return "e.g. { }";
+    return "";
+  }
+
   function defaultVarDefDraft() {
     const preferred = nodeEditorTypeOptions.includes("Bool") ? "Bool" : nodeEditorTypeOptions[0] || "Bool";
     return {
       name: "",
       type: preferred,
-      expression: defaultVarExpression(preferred)
+      expression: ""
     };
   }
 
@@ -5509,13 +5522,6 @@
 
   function updateVarDefType() {
     if (!varDefDraft) return;
-    const expr = (varDefDraft.expression || "").trim();
-    if (!expr) {
-      varDefDraft = {
-        ...varDefDraft,
-        expression: defaultVarExpression(varDefDraft.type)
-      };
-    }
   }
 
   async function applyVarDefEdit() {
@@ -10133,7 +10139,11 @@
             {/each}
           </select>
           <label for="var-def-exp">Expression</label>
-          <input id="var-def-exp" bind:value={varDefDraft.expression} />
+          <input
+            id="var-def-exp"
+            bind:value={varDefDraft.expression}
+            placeholder={varExpressionHint(varDefDraft.type)}
+          />
         </div>
         <div class="actions">
           <button type="button" class="primary" on:click={applyVarDefEdit} disabled={!wsConnected || sceneFlowBusy}>

@@ -568,10 +568,50 @@ public final class WebUiServer implements EventListener {
     }
 
     private void handlePreferences(Context ctx) {
-        // Minimal placeholder; real preference sync is handled client-side for now.
         JSONObject response = new JSONObject();
-        response.put("preferences", new JSONObject());
+        response.put("preferences", preferencesToJson());
         writeJson(ctx, response);
+    }
+
+    private JSONObject preferencesToJson() {
+        JSONObject prefs = new JSONObject();
+        // Font and display preferences
+        String fontSize = Preferences.getProperty("workspace_fontsize");
+        if (fontSize != null && !fontSize.isBlank()) {
+            prefs.put("workspace_fontsize", fontSize);
+        }
+        // Node dimensions
+        String nodeWidth = Preferences.getProperty("node_width");
+        String nodeHeight = Preferences.getProperty("node_height");
+        if (nodeWidth != null) prefs.put("node_width", nodeWidth);
+        if (nodeHeight != null) prefs.put("node_height", nodeHeight);
+        // Grid settings
+        String grid = Preferences.getProperty("grid");
+        String gridX = Preferences.getProperty("grid_x");
+        String gridY = Preferences.getProperty("grid_y");
+        if (grid != null) prefs.put("grid", grid);
+        if (gridX != null) prefs.put("grid_x", gridX);
+        if (gridY != null) prefs.put("grid_y", gridY);
+        // Display options
+        String showNodeId = Preferences.getProperty("shownodeid");
+        String showVariables = Preferences.getProperty("showvariables");
+        String visualization = Preferences.getProperty("visualization");
+        if (showNodeId != null) prefs.put("shownodeid", showNodeId);
+        if (showVariables != null) prefs.put("showvariables", showVariables);
+        if (visualization != null) prefs.put("visualization", visualization);
+        return prefs;
+    }
+
+    private int getPreferenceInt(String key, int defaultValue) {
+        String value = Preferences.getProperty(key);
+        if (value == null || value.isBlank()) {
+            return defaultValue;
+        }
+        try {
+            return Integer.parseInt(value.trim());
+        } catch (NumberFormatException e) {
+            return defaultValue;
+        }
     }
 
     private void handleDevices(Context ctx) {
@@ -902,13 +942,11 @@ public final class WebUiServer implements EventListener {
         json.put("graphics", graphics);
 
         JSONObject size = new JSONObject();
-        if (node instanceof SuperNode) {
-            size.put("w", 140);
-            size.put("h", 140);
-        } else {
-            size.put("w", 90);
-            size.put("h", 90);
-        }
+        // Use configured node size from preferences (default 90x90)
+        int nodeWidth = getPreferenceInt("node_width", 90);
+        int nodeHeight = getPreferenceInt("node_height", 90);
+        size.put("w", nodeWidth);
+        size.put("h", nodeHeight);
         json.put("size", size);
 
         // Type definitions
@@ -1005,10 +1043,26 @@ public final class WebUiServer implements EventListener {
             if (ge.getCondition() != null) {
                 conditionText = ge.getCondition().getConcreteSyntax();
             }
+        } else if (edge instanceof InterruptEdge) {
+            InterruptEdge ie = (InterruptEdge) edge;
+            if (ie.getCondition() != null) {
+                conditionText = ie.getCondition().getConcreteSyntax();
+            }
         }
         json.put("condition", conditionText);
-        json.put("probability", edge instanceof RandomEdge ? ((RandomEdge) edge).getProbability() : 0);
-        json.put("timeout", edge instanceof TimeoutEdge ? ((TimeoutEdge) edge).getTimeout() : 0);
+
+        // Only set probability for RandomEdge (PEDGE) - don't set for other types
+        // so frontend can distinguish and show correct label
+        if (edge instanceof RandomEdge) {
+            json.put("probability", ((RandomEdge) edge).getProbability());
+        }
+
+        // Timeout edge fields: timeoutMs (numeric) and timeoutExpr (expression string)
+        if (edge instanceof TimeoutEdge) {
+            TimeoutEdge te = (TimeoutEdge) edge;
+            json.put("timeoutMs", te.getTimeout());
+            json.put("timeoutExpr", te.getExpression() != null ? te.getExpression().getConcreteSyntax() : "");
+        }
 
         return json;
     }
@@ -1089,9 +1143,36 @@ public final class WebUiServer implements EventListener {
     }
 
     private void handleSceneflowNavigate(Context ctx) {
-        JSONObject response = new JSONObject();
-        response.put("status", "ok");
-        writeJson(ctx, response);
+        String pid = ctx.pathParam("pid");
+        JSONObject body = new JSONObject(ctx.body());
+        String superNodeId = body.optString("superNodeId", "");
+
+        ProjectRef ref = projectStore.get(pid);
+        if (ref == null || ref.runtimeProject == null) {
+            JSONObject error = new JSONObject();
+            error.put("status", "error");
+            error.put("message", "Project not found");
+            writeJson(ctx, error);
+            return;
+        }
+
+        try {
+            SceneFlow sceneFlow = ref.runtimeProject.getSceneFlow();
+            SuperNode targetSuperNode = resolveSuperNode(sceneFlow, superNodeId);
+            if (targetSuperNode == null) {
+                targetSuperNode = sceneFlow;
+            }
+
+            JSONObject snapshot = createSceneFlowSnapshot(ref.runtimeProject, pid, targetSuperNode, sceneFlow);
+            snapshot.put("status", "ok");
+            writeJson(ctx, snapshot);
+        } catch (Exception exc) {
+            sLogger.warning("Navigation failed for project " + pid + ": " + exc.getMessage());
+            JSONObject error = new JSONObject();
+            error.put("status", "error");
+            error.put("message", "Navigation failed: " + exc.getMessage());
+            writeJson(ctx, error);
+        }
     }
 
     private void handleScriptDiagnostics(Context ctx) {
