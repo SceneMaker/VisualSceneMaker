@@ -31,6 +31,7 @@ import de.dfki.vsm.model.sceneflow.glue.command.expression.literal.BoolLiteral;
 import de.dfki.vsm.model.sceneflow.glue.command.expression.literal.FloatLiteral;
 import de.dfki.vsm.model.sceneflow.glue.command.expression.literal.IntLiteral;
 import de.dfki.vsm.model.sceneflow.glue.command.expression.literal.StringLiteral;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.UnaryExpression;
 import de.dfki.vsm.model.sceneflow.glue.command.expression.record.ArrayExpression;
 import de.dfki.vsm.model.sceneflow.glue.command.expression.record.StructExpression;
 import de.dfki.vsm.model.sceneflow.glue.GlueParser;
@@ -86,6 +87,14 @@ public final class WebUiServer implements EventListener {
     private boolean mAllowExternal = false;
     private final Map<String, ProjectRef> projectStore = new HashMap<>();
     private final java.util.Set<WsContext> wsSessions = ConcurrentHashMap.newKeySet();
+
+    // Phase 8: Docking point system for edges
+    // Track occupied dock points per node - each dock point can only be used by ONE edge endpoint
+    // Key format: "nodeId" - single set per node (no in/out separation)
+    private final Map<String, Set<Integer>> mOccupiedDockPoints = new ConcurrentHashMap<>();
+
+    // Dock point index for start sign (left side of node)
+    private static final int START_SIGN_DOCK_INDEX = 6;
 
     private WebUiServer() {
     }
@@ -688,6 +697,11 @@ public final class WebUiServer implements EventListener {
     private void handleProjectClose(Context ctx) {
         String pid = ctx.pathParam("pid");
         if (!pid.isEmpty()) {
+            // Phase 8: Clear dock points before removing project
+            ProjectRef ref = projectStore.get(pid);
+            if (ref != null && ref.runtimeProject != null) {
+                clearDockPointsForProject(ref.runtimeProject.getSceneFlow());
+            }
             projectStore.remove(pid);
         }
         JSONObject response = new JSONObject();
@@ -2300,6 +2314,418 @@ public final class WebUiServer implements EventListener {
                 return response;
             }
 
+            // Phase 8: Edge retargeting operation
+            case "SceneFlow.Edge.Retarget": {
+                String pid = params.optString("projectId", "");
+                String superNodeId = params.optString("superNodeId", null);
+                String edgeId = params.optString("edgeId", "");
+                String targetId = params.optString("targetId", "");
+
+                if (pid.isBlank() || edgeId.isBlank() || targetId.isBlank()) {
+                    return errorResponse("BAD_REQUEST", "Missing projectId, edgeId, or targetId");
+                }
+
+                ProjectRef ref = projectStore.get(pid);
+                if (ref == null || ref.runtimeProject == null) {
+                    return errorResponse("PROJECT_NOT_FOUND", "Project not found");
+                }
+
+                SceneFlow sceneFlow = ref.runtimeProject.getSceneFlow();
+                SuperNode snapshotTarget = resolveSuperNode(sceneFlow, superNodeId);
+
+                // Find the edge in the active supernode
+                AbstractEdge dataEdge = resolveEdgeById(snapshotTarget != null ? snapshotTarget : sceneFlow, edgeId);
+                if (dataEdge == null) {
+                    return errorResponse("EDGE_NOT_FOUND", "Edge not found: " + edgeId);
+                }
+
+                // Find source, old target, and new target nodes
+                BasicNode sourceNode = dataEdge.getSourceNode();
+                BasicNode oldTargetNode = dataEdge.getTargetNode();
+                BasicNode newTargetNode = resolveNodeById(snapshotTarget != null ? snapshotTarget : sceneFlow, targetId);
+
+                if (sourceNode == null || newTargetNode == null) {
+                    return errorResponse("NODE_NOT_FOUND", "Source or target node not found");
+                }
+
+                // Get node dimensions for dock point handling
+                int nodeWidth = getPreferenceInt("node_width", 90);
+                int nodeHeight = getPreferenceInt("node_height", 90);
+
+                // Release old target's dock point
+                if (oldTargetNode != null) {
+                    EdgeGraphics edgeGraphics = dataEdge.getGraphics();
+                    if (edgeGraphics != null && edgeGraphics.getConnection() != null) {
+                        List<EdgePoint> points = edgeGraphics.getConnection().getPointList();
+                        if (points != null && points.size() >= 2) {
+                            EdgePoint endPt = points.get(points.size() - 1);
+                            NodeGraphics oldTgtGraphics = oldTargetNode.getGraphics();
+                            NodePosition oldTgtPos = oldTgtGraphics != null ? oldTgtGraphics.getPosition() : null;
+                            double oldTgtX = oldTgtPos != null ? oldTgtPos.getXPos() : 0;
+                            double oldTgtY = oldTgtPos != null ? oldTgtPos.getYPos() : 0;
+                            int oldDockIdx = findDockPointIndex(oldTgtX, oldTgtY, nodeWidth, nodeHeight,
+                                    oldTargetNode instanceof SuperNode, endPt.getXPos(), endPt.getYPos());
+                            if (oldDockIdx >= 0) {
+                                releaseDockPoint(oldTargetNode.getId(), oldDockIdx, false);
+                            }
+                        }
+                    }
+                }
+
+                // Find and occupy new dock point on new target, update edge endpoint
+                NodeGraphics newTgtGraphics = newTargetNode.getGraphics();
+                NodePosition newTgtPos = newTgtGraphics != null ? newTgtGraphics.getPosition() : null;
+                double newTgtX = newTgtPos != null ? newTgtPos.getXPos() : 0;
+                double newTgtY = newTgtPos != null ? newTgtPos.getYPos() : 0;
+                boolean newTgtIsSuperNode = newTargetNode instanceof SuperNode;
+
+                // Get source position for dock point selection
+                NodeGraphics srcGraphics = sourceNode.getGraphics();
+                NodePosition srcPos = srcGraphics != null ? srcGraphics.getPosition() : null;
+                double srcX = srcPos != null ? srcPos.getXPos() : 0;
+                double srcY = srcPos != null ? srcPos.getYPos() : 0;
+                boolean srcIsSuperNode = sourceNode instanceof SuperNode;
+
+                // Find best dock point pair for new configuration
+                int[] dockPair;
+                boolean isSelfLoop = sourceNode.getId().equals(newTargetNode.getId());
+                if (isSelfLoop) {
+                    dockPair = findSelfLoopDockPointPair(sourceNode.getId(), nodeWidth, nodeHeight, srcIsSuperNode);
+                } else {
+                    dockPair = findBestDockPointPair(
+                        sourceNode.getId(), srcX, srcY, nodeWidth, nodeHeight, srcIsSuperNode,
+                        newTargetNode.getId(), newTgtX, newTgtY, nodeWidth, nodeHeight, newTgtIsSuperNode
+                    );
+                }
+                int newTgtDockIdx = dockPair[1];
+                occupyDockPoint(newTargetNode.getId(), newTgtDockIdx, false);
+
+                // Update edge endpoint to new dock position
+                double[] newTgtDock = getDockPointPosition(newTgtX, newTgtY, nodeWidth, nodeHeight, newTgtIsSuperNode, newTgtDockIdx);
+                EdgeGraphics edgeGraphics = dataEdge.getGraphics();
+                if (edgeGraphics != null && edgeGraphics.getConnection() != null) {
+                    List<EdgePoint> points = edgeGraphics.getConnection().getPointList();
+                    if (points != null && points.size() >= 2) {
+                        EdgePoint endPt = points.get(points.size() - 1);
+                        EdgePoint startPt = points.get(0);
+                        // Update end position
+                        endPt.setXPos((int) Math.round(newTgtDock[0]));
+                        endPt.setYPos((int) Math.round(newTgtDock[1]));
+                        // Update control point
+                        if (isSelfLoop) {
+                            // For self-loops, use special control points
+                            double nodeCenterX = srcX + nodeWidth / 2.0;
+                            double nodeCenterY = srcY + nodeHeight / 2.0;
+                            double[] loopCtrl = computeSelfLoopControlPoints(
+                                startPt.getXPos(), startPt.getYPos(),
+                                newTgtDock[0], newTgtDock[1],
+                                nodeCenterX, nodeCenterY, nodeWidth, nodeHeight
+                            );
+                            startPt.setCtrlXPos((int) Math.round(loopCtrl[0]));
+                            startPt.setCtrlYPos((int) Math.round(loopCtrl[1]));
+                            endPt.setCtrlXPos((int) Math.round(loopCtrl[2]));
+                            endPt.setCtrlYPos((int) Math.round(loopCtrl[3]));
+                        } else {
+                            double[] tgtCtrl = computeInitialControlPoint(
+                                startPt.getXPos(), startPt.getYPos(),
+                                newTgtDock[0], newTgtDock[1], false
+                            );
+                            endPt.setCtrlXPos((int) Math.round(tgtCtrl[0]));
+                            endPt.setCtrlYPos((int) Math.round(tgtCtrl[1]));
+                        }
+                    }
+                }
+
+                // Retarget the edge - remove from source's edge list
+                if (dataEdge instanceof GuargedEdge) {
+                    sourceNode.removeCEdge((GuargedEdge) dataEdge);
+                } else if (dataEdge instanceof InterruptEdge) {
+                    sourceNode.removeIEdge((InterruptEdge) dataEdge);
+                } else if (dataEdge instanceof RandomEdge) {
+                    sourceNode.removePEdge((RandomEdge) dataEdge);
+                } else if (dataEdge instanceof ForkingEdge) {
+                    sourceNode.removeFEdge((ForkingEdge) dataEdge);
+                } else if (dataEdge instanceof TimeoutEdge || dataEdge instanceof EpsilonEdge) {
+                    sourceNode.removeDEdge();
+                }
+
+                // Update target references
+                dataEdge.setTargetNode(newTargetNode);
+                dataEdge.setTargetUnid(newTargetNode.getId());
+
+                // Add edge back to source node's edge list with new target
+                if (dataEdge instanceof GuargedEdge) {
+                    sourceNode.addCEdge((GuargedEdge) dataEdge);
+                } else if (dataEdge instanceof InterruptEdge) {
+                    sourceNode.addIEdge((InterruptEdge) dataEdge);
+                } else if (dataEdge instanceof RandomEdge) {
+                    sourceNode.addPEdge((RandomEdge) dataEdge);
+                } else if (dataEdge instanceof ForkingEdge) {
+                    sourceNode.addFEdge((ForkingEdge) dataEdge);
+                } else if (dataEdge instanceof TimeoutEdge || dataEdge instanceof EpsilonEdge) {
+                    sourceNode.setDedge(dataEdge);
+                }
+
+                JSONObject response = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
+                response.put("status", "ok");
+                response.put("edgeId", edgeId);
+                return response;
+            }
+
+            // Runtime variable operations
+            case "Runtime.Variable.Set": {
+                String pid = params.optString("projectId", "");
+                String varName = params.optString("name", "");
+                String valueExpr = params.optString("value", "");
+                if (valueExpr.isBlank()) {
+                    valueExpr = params.optString("valueExpr", "");
+                }
+
+                ProjectRef ref = projectStore.get(pid);
+                if (ref == null || ref.runtimeProject == null) {
+                    return errorResponse("PROJECT_NOT_FOUND", "Project not found");
+                }
+                if (varName.isBlank() || valueExpr.isBlank()) {
+                    return errorResponse("BAD_REQUEST", "Missing name or value");
+                }
+
+                RunTimeProject rtp = ref.runtimeProject;
+                SceneFlow sceneFlow = rtp.getSceneFlow();
+
+                // Find the variable definition
+                VariableDefinition varDef = findVariableDefinitionInHierarchy(sceneFlow, varName);
+                if (varDef == null) {
+                    return errorResponse("VAR_NOT_FOUND", "Variable not found: " + varName);
+                }
+
+                // Parse the expression
+                Expression exp;
+                try {
+                    Object parsed = GlueParser.run(valueExpr.trim());
+                    if (!(parsed instanceof Expression)) {
+                        return errorResponse("PARSE_FAILED", "Expression could not be parsed");
+                    }
+                    exp = (Expression) parsed;
+                } catch (Exception exc) {
+                    return errorResponse("PARSE_FAILED", exc.getMessage() != null ? exc.getMessage() : "Parse failed");
+                }
+
+                // Check if expression type is supported
+                if (!isSupportedRuntimeExpression(exp)) {
+                    return errorResponse("UNSUPPORTED_EXPRESSION", "Expression type is not supported");
+                }
+
+                // Apply the expression
+                boolean setOk = applyRuntimeExpression(rtp, varName, exp);
+                if (!setOk) {
+                    return errorResponse("SET_FAILED", "Failed to update variable");
+                }
+
+                JSONObject response = new JSONObject();
+                response.put("status", "ok");
+                response.put("projectId", pid);
+                response.put("name", varName);
+                String currentValue = resolveVariableValue(rtp, varName);
+                if (currentValue != null) {
+                    response.put("value", currentValue);
+                }
+                return response;
+            }
+
+            case "Runtime.Query": {
+                String pid = params.optString("projectId", "");
+                String query = params.optString("query", "");
+
+                ProjectRef ref = projectStore.get(pid);
+                if (ref == null || ref.runtimeProject == null) {
+                    return errorResponse("PROJECT_NOT_FOUND", "Project not found");
+                }
+                if (query.isBlank()) {
+                    return errorResponse("BAD_REQUEST", "Missing query");
+                }
+
+                JSONObject response = new JSONObject();
+                response.put("status", "ok");
+                int count = 0;
+                try {
+                    count = de.dfki.vsm.util.jpl.JPLEngine.query(query.trim()).size();
+                } catch (Exception exc) {
+                    sLogger.warning("Runtime.Query failed: " + exc.getMessage());
+                }
+                response.put("count", count);
+                return response;
+            }
+
+            case "SceneFlow.Edge.PEdge.UpdateGroup": {
+                String pid = params.optString("projectId", "");
+                String superNodeId = params.optString("superNodeId", null);
+                String sourceId = params.optString("sourceId", "");
+                JSONArray updates = params.optJSONArray("updates");
+
+                ProjectRef ref = projectStore.get(pid);
+                if (ref == null || ref.runtimeProject == null) {
+                    return errorResponse("PROJECT_NOT_FOUND", "Project not found");
+                }
+                if (sourceId.isBlank() || updates == null) {
+                    return errorResponse("BAD_REQUEST", "Missing sourceId or updates");
+                }
+
+                SceneFlow sceneFlow = ref.runtimeProject.getSceneFlow();
+                SuperNode snapshotTarget = resolveSuperNode(sceneFlow, superNodeId);
+                SuperNode targetNode = snapshotTarget != null ? snapshotTarget : sceneFlow;
+
+                BasicNode sourceNode = resolveNodeById(targetNode, sourceId);
+                if (sourceNode == null) {
+                    return errorResponse("NODE_NOT_FOUND", "Source node not found: " + sourceId);
+                }
+
+                List<RandomEdge> edges = sourceNode.getPEdgeList();
+                if (edges.isEmpty()) {
+                    return errorResponse("EDGE_NOT_FOUND", "No probability edges found");
+                }
+
+                // Build update map
+                java.util.LinkedHashMap<RandomEdge, Integer> updateMap = new java.util.LinkedHashMap<>();
+                for (int i = 0; i < updates.length(); i++) {
+                    JSONObject entry = updates.optJSONObject(i);
+                    if (entry == null) {
+                        return errorResponse("INVALID_PAYLOAD", "Invalid edge update entry");
+                    }
+                    String edgeId = entry.optString("edgeId", "");
+                    String targetId = entry.optString("targetId", "");
+                    RandomEdge edge = resolvePEdgeForSource(targetNode, sourceNode, edgeId, targetId);
+                    if (edge == null) {
+                        return errorResponse("EDGE_NOT_FOUND", "Edge not found");
+                    }
+                    if (updateMap.containsKey(edge)) {
+                        return errorResponse("DUPLICATE_EDGE", "Duplicate edge entry");
+                    }
+                    Object raw = entry.opt("probability");
+                    int probability;
+                    try {
+                        probability = Integer.parseInt(String.valueOf(raw));
+                    } catch (NumberFormatException ex) {
+                        return errorResponse("INVALID_PROBABILITY", "Probability must be a number");
+                    }
+                    if (probability < 0 || probability > 100) {
+                        return errorResponse("INVALID_PROBABILITY", "Probability must be between 0 and 100");
+                    }
+                    updateMap.put(edge, probability);
+                }
+
+                if (updateMap.size() != edges.size()) {
+                    return errorResponse("EDGE_COUNT_MISMATCH", "Provide probabilities for all P-edges");
+                }
+
+                int sum = 0;
+                for (int probability : updateMap.values()) {
+                    sum += probability;
+                }
+                if (sum != 100) {
+                    return errorResponse("PROBABILITY_SUM_INVALID", "Total probability must be 100%");
+                }
+
+                // Apply probabilities
+                for (java.util.Map.Entry<RandomEdge, Integer> entry : updateMap.entrySet()) {
+                    RandomEdge edge = entry.getKey();
+                    if (edge != null) {
+                        edge.setProbability(entry.getValue());
+                    }
+                }
+
+                JSONObject response = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
+                response.put("status", "ok");
+                return response;
+            }
+
+            case "SceneFlow.Node.MoveGroup": {
+                String pid = params.optString("projectId", "");
+                String superNodeId = params.optString("superNodeId", null);
+                JSONArray nodesPayload = params.optJSONArray("nodes");
+                boolean snap = params.optBoolean("snap", false);
+
+                ProjectRef ref = projectStore.get(pid);
+                if (ref == null || ref.runtimeProject == null) {
+                    return errorResponse("PROJECT_NOT_FOUND", "Project not found");
+                }
+                if (nodesPayload == null || nodesPayload.length() == 0) {
+                    return errorResponse("BAD_REQUEST", "Missing nodes");
+                }
+
+                SceneFlow sceneFlow = ref.runtimeProject.getSceneFlow();
+                SuperNode snapshotTarget = resolveSuperNode(sceneFlow, superNodeId);
+                SuperNode activeSuperNode = snapshotTarget != null ? snapshotTarget : sceneFlow;
+
+                // Get grid and node dimensions from preferences
+                int gridX = getPreferenceInt("grid_x", 10);
+                int gridY = getPreferenceInt("grid_y", 10);
+                int nodeW = getPreferenceInt("node_width", 90);
+                int nodeH = getPreferenceInt("node_height", 90);
+                double snapOriginX = nodeW / 2.0 + nodeW / 3.0;
+                double snapOriginY = nodeH / 2.0 + nodeH / 3.0;
+
+                // Store old positions and moved nodes
+                java.util.IdentityHashMap<BasicNode, int[]> oldPositions = new java.util.IdentityHashMap<>();
+                List<BasicNode> movedNodes = new ArrayList<>();
+
+                for (int i = 0; i < nodesPayload.length(); i++) {
+                    JSONObject entry = nodesPayload.optJSONObject(i);
+                    if (entry == null) {
+                        return errorResponse("BAD_REQUEST", "Invalid nodes entry");
+                    }
+                    String moveId = entry.optString("id", "");
+                    double moveX = entry.has("x") ? entry.optDouble("x", Double.NaN) : Double.NaN;
+                    double moveY = entry.has("y") ? entry.optDouble("y", Double.NaN) : Double.NaN;
+                    if (moveId.isBlank() || Double.isNaN(moveX) || Double.isNaN(moveY)) {
+                        return errorResponse("BAD_REQUEST", "Missing node id or coordinates");
+                    }
+
+                    BasicNode dataNode = resolveNodeById(activeSuperNode, moveId);
+                    if (dataNode == null) {
+                        return errorResponse("NODE_NOT_FOUND", "Node not found: " + moveId);
+                    }
+
+                    // Capture old position
+                    NodeGraphics oldGraphics = dataNode.getGraphics();
+                    NodePosition oldPos = oldGraphics != null ? oldGraphics.getPosition() : null;
+                    int oldX = oldPos != null ? oldPos.getXPos() : 0;
+                    int oldY = oldPos != null ? oldPos.getYPos() : 0;
+                    oldPositions.put(dataNode, new int[] { oldX, oldY });
+
+                    // Calculate target position
+                    int targetX = Math.max(1, (int) Math.round(moveX));
+                    int targetY = Math.max(1, (int) Math.round(moveY));
+                    if (snap) {
+                        double centerX = targetX + nodeW / 2.0;
+                        double centerY = targetY + nodeH / 2.0;
+                        double snappedCenterX = snapOriginX + Math.round((centerX - snapOriginX) / gridX) * gridX;
+                        double snappedCenterY = snapOriginY + Math.round((centerY - snapOriginY) / gridY) * gridY;
+                        targetX = (int) Math.round(snappedCenterX - nodeW / 2.0);
+                        targetY = (int) Math.round(snappedCenterY - nodeH / 2.0);
+                    }
+
+                    // Update node graphics
+                    NodeGraphics graphics = dataNode.getGraphics();
+                    if (graphics == null) {
+                        graphics = new NodeGraphics(targetX, targetY);
+                        dataNode.setGraphics(graphics);
+                    } else {
+                        graphics.setPosition(targetX, targetY);
+                    }
+                    movedNodes.add(dataNode);
+                }
+
+                // Update edge endpoints
+                for (BasicNode movedNode : movedNodes) {
+                    int[] oldPos = oldPositions.get(movedNode);
+                    updateEdgeEndpointsForMovedNode(movedNode, activeSuperNode, oldPos[0], oldPos[1]);
+                }
+
+                JSONObject response = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
+                response.put("status", "ok");
+                return response;
+            }
+
             default:
                 JSONObject unknown = new JSONObject();
                 unknown.put("message", "Unhandled method: " + method);
@@ -2439,6 +2865,8 @@ public final class WebUiServer implements EventListener {
         ref.comments = serializeComments(project);
         ref.runtimeState = project.isRunning() ? "running" : "stopped";
         projectStore.put(id, ref);
+        // Phase 8: Initialize dock points for the registered project
+        initializeDockPointsForProject(project);
         sLogger.message("Registered project: " + name + " (id=" + id + ")");
         return id;
     }
@@ -2494,6 +2922,8 @@ public final class WebUiServer implements EventListener {
                 ref.comments = comments;
                 ref.runtimeState = "stopped";
                 projectStore.put(id, ref);
+                // Phase 8: Initialize dock points for the loaded project
+                initializeDockPointsForProject(rtp);
                 return id;
             } catch (Exception exc) {
                 sLogger.warning("Warning: failed to load project from " + path + ": " + exc.getMessage());
@@ -2917,6 +3347,507 @@ public final class WebUiServer implements EventListener {
         startPt.setCtrlYPos((int) Math.round(startY + uy * offset));
         endPt.setCtrlXPos((int) Math.round(endX - ux * offset));
         endPt.setCtrlYPos((int) Math.round(endY - uy * offset));
+    }
+
+    private void updateEdgeEndpointsForMovedNode(BasicNode movedNode, SuperNode parent, int oldX, int oldY) {
+        if (movedNode == null || parent == null) return;
+
+        NodeGraphics nodeGraphics = movedNode.getGraphics();
+        NodePosition nodePos = nodeGraphics != null ? nodeGraphics.getPosition() : null;
+        int newX = nodePos != null ? nodePos.getXPos() : 0;
+        int newY = nodePos != null ? nodePos.getYPos() : 0;
+
+        int deltaX = newX - oldX;
+        int deltaY = newY - oldY;
+        if (deltaX == 0 && deltaY == 0) return;
+
+        String nodeId = movedNode.getId();
+
+        // Update outgoing edges (edges FROM this node) - shift start points
+        for (AbstractEdge edge : movedNode.getEdgeList()) {
+            EdgeGraphics edgeGraphics = edge.getGraphics();
+            if (edgeGraphics == null) continue;
+            EdgeArrow arrow = edgeGraphics.getConnection();
+            if (arrow == null) continue;
+            List<EdgePoint> points = arrow.getPointList();
+            if (points == null || points.isEmpty()) continue;
+
+            EdgePoint startPt = points.get(0);
+            startPt.setXPos(startPt.getXPos() + deltaX);
+            startPt.setYPos(startPt.getYPos() + deltaY);
+            startPt.setCtrlXPos(startPt.getCtrlXPos() + deltaX);
+            startPt.setCtrlYPos(startPt.getCtrlYPos() + deltaY);
+        }
+
+        // Update incoming edges (edges TO this node) - shift end points
+        for (BasicNode otherNode : parent.getNodeAndSuperNodeList()) {
+            for (AbstractEdge edge : otherNode.getEdgeList()) {
+                String targetId = edge.getTargetUnid();
+                if (!nodeId.equals(targetId)) continue;
+
+                EdgeGraphics edgeGraphics = edge.getGraphics();
+                if (edgeGraphics == null) continue;
+                EdgeArrow arrow = edgeGraphics.getConnection();
+                if (arrow == null) continue;
+                List<EdgePoint> points = arrow.getPointList();
+                if (points == null || points.size() < 2) continue;
+
+                EdgePoint endPt = points.get(points.size() - 1);
+                endPt.setXPos(endPt.getXPos() + deltaX);
+                endPt.setYPos(endPt.getYPos() + deltaY);
+                endPt.setCtrlXPos(endPt.getCtrlXPos() + deltaX);
+                endPt.setCtrlYPos(endPt.getCtrlYPos() + deltaY);
+            }
+        }
+    }
+
+    // --- Phase 8: Dock point helper methods ---
+
+    // Compute 24 dock points around a node boundary
+    // Returns array of {x, y} positions relative to node's top-left corner
+    private double[][] computeDockPoints(int nodeWidth, int nodeHeight, boolean isSuperNode) {
+        double[][] dockPoints = new double[24][2];
+        double halfW = nodeWidth / 2.0;
+        double halfH = nodeHeight / 2.0;
+
+        for (int i = 0; i < 24; i++) {
+            double angle = i * Math.PI / 12.0 + Math.PI;
+            if (isSuperNode) {
+                // SuperNode: dock points on rectangular boundary
+                double xa = Math.sin(angle);
+                double ya = Math.cos(angle);
+                double dockX, dockY;
+                if (Math.abs(xa) <= Math.abs(ya)) {
+                    double fy = 1.0 / Math.abs(ya);
+                    dockY = halfH * Math.signum(ya) + halfH;
+                    dockX = Math.round(xa * fy * halfW) + halfW;
+                } else {
+                    double fx = 1.0 / Math.abs(xa);
+                    dockY = Math.round(ya * fx * halfH) + halfH;
+                    dockX = halfW * Math.signum(xa) + halfW;
+                }
+                dockPoints[i][0] = dockX;
+                dockPoints[i][1] = dockY;
+            } else {
+                // BasicNode: dock points on ellipse boundary
+                double dockX = Math.round((Math.sin(angle) * 0.5 + 0.5) * nodeWidth);
+                double dockY = Math.round((Math.cos(angle) * 0.5 + 0.5) * nodeHeight);
+                dockPoints[i][0] = dockX;
+                dockPoints[i][1] = dockY;
+            }
+        }
+        return dockPoints;
+    }
+
+    // Find best dock point pair for an edge (source dock, target dock) that minimizes edge length
+    // Returns int[2] = {sourceDockIndex, targetDockIndex}
+    private int[] findBestDockPointPair(
+            String sourceNodeId, double srcX, double srcY, int srcWidth, int srcHeight, boolean srcIsSuperNode,
+            String targetNodeId, double tgtX, double tgtY, int tgtWidth, int tgtHeight, boolean tgtIsSuperNode) {
+
+        // Handle self-loop edges (same source and target node)
+        if (sourceNodeId != null && sourceNodeId.equals(targetNodeId)) {
+            return findSelfLoopDockPointPair(sourceNodeId, srcWidth, srcHeight, srcIsSuperNode);
+        }
+
+        double[][] srcDockPoints = computeDockPoints(srcWidth, srcHeight, srcIsSuperNode);
+        double[][] tgtDockPoints = computeDockPoints(tgtWidth, tgtHeight, tgtIsSuperNode);
+
+        // Single set per node - each dock point can only be used by one edge endpoint
+        Set<Integer> srcOccupied = mOccupiedDockPoints.computeIfAbsent(sourceNodeId, k -> ConcurrentHashMap.newKeySet());
+        Set<Integer> tgtOccupied = mOccupiedDockPoints.computeIfAbsent(targetNodeId, k -> ConcurrentHashMap.newKeySet());
+
+        int bestSrcIdx = -1;
+        int bestTgtIdx = -1;
+        double bestDist = Double.MAX_VALUE;
+
+        // Find the pair of dock points that minimizes edge length
+        for (int s = 0; s < 24; s++) {
+            if (srcOccupied.contains(s)) continue;
+
+            double srcDockAbsX = srcX + srcDockPoints[s][0];
+            double srcDockAbsY = srcY + srcDockPoints[s][1];
+
+            for (int t = 0; t < 24; t++) {
+                if (tgtOccupied.contains(t)) continue;
+
+                double tgtDockAbsX = tgtX + tgtDockPoints[t][0];
+                double tgtDockAbsY = tgtY + tgtDockPoints[t][1];
+
+                double dist = Math.hypot(tgtDockAbsX - srcDockAbsX, tgtDockAbsY - srcDockAbsY);
+
+                if (dist < bestDist) {
+                    bestDist = dist;
+                    bestSrcIdx = s;
+                    bestTgtIdx = t;
+                }
+            }
+        }
+
+        // Fallback if all dock points are occupied
+        if (bestSrcIdx < 0) bestSrcIdx = 0;
+        if (bestTgtIdx < 0) bestTgtIdx = 0;
+
+        return new int[] { bestSrcIdx, bestTgtIdx };
+    }
+
+    // Find dock points for self-loop edges that create a nice upward loop
+    private int[] findSelfLoopDockPointPair(String nodeId, int nodeWidth, int nodeHeight, boolean isSuperNode) {
+        Set<Integer> occupied = mOccupiedDockPoints.computeIfAbsent(nodeId, k -> ConcurrentHashMap.newKeySet());
+
+        // Preferred pairs for upward loops (start, end):
+        int[][] preferredPairs = {
+            {21, 3},   // Upper-right to upper-left (primary - loop goes up)
+            {22, 2},   // Slightly closer to top
+            {20, 4},   // Slightly more to the sides
+            {23, 1},   // Very close to top
+            {19, 5},   // More toward right/left sides
+            {3, 21},   // Reversed direction
+        };
+
+        for (int[] pair : preferredPairs) {
+            int startIdx = pair[0];
+            int endIdx = pair[1];
+            if (!occupied.contains(startIdx) && !occupied.contains(endIdx)) {
+                return new int[] { startIdx, endIdx };
+            }
+        }
+
+        // Fallback: find any pair in upper half with reasonable separation
+        for (int s = 19; s <= 23; s++) {
+            if (occupied.contains(s)) continue;
+            for (int offset = 6; offset >= 4; offset--) {
+                int t = (s + offset) % 24;
+                if (!occupied.contains(t) && s != t) {
+                    return new int[] { s, t };
+                }
+            }
+        }
+
+        // Last fallback
+        return new int[] { 21, 3 };
+    }
+
+    // Mark a dock point as occupied
+    private void occupyDockPoint(String nodeId, int dockIndex, boolean isSource) {
+        Set<Integer> set = mOccupiedDockPoints.computeIfAbsent(nodeId, k -> ConcurrentHashMap.newKeySet());
+        set.add(dockIndex);
+    }
+
+    // Release a dock point
+    private void releaseDockPoint(String nodeId, int dockIndex, boolean isSource) {
+        Set<Integer> occupied = mOccupiedDockPoints.get(nodeId);
+        if (occupied != null) {
+            occupied.remove(dockIndex);
+        }
+    }
+
+    // Get dock point absolute position
+    private double[] getDockPointPosition(double nodeX, double nodeY, int nodeWidth, int nodeHeight,
+                                           boolean isSuperNode, int dockIndex) {
+        double[][] dockPoints = computeDockPoints(nodeWidth, nodeHeight, isSuperNode);
+        if (dockIndex >= 0 && dockIndex < dockPoints.length) {
+            return new double[] { nodeX + dockPoints[dockIndex][0], nodeY + dockPoints[dockIndex][1] };
+        }
+        // Fallback to node center
+        return new double[] { nodeX + nodeWidth / 2.0, nodeY + nodeHeight / 2.0 };
+    }
+
+    // Initialize dock points for all edges in a project
+    private void initializeDockPointsForProject(RunTimeProject project) {
+        if (project == null) return;
+
+        SceneFlow sceneFlow = project.getSceneFlow();
+        if (sceneFlow == null) return;
+
+        int nodeWidth = getPreferenceInt("node_width", 90);
+        int nodeHeight = getPreferenceInt("node_height", 90);
+
+        // Recursively scan all nodes and their edges
+        initializeDockPointsRecursive(sceneFlow, nodeWidth, nodeHeight);
+    }
+
+    private void initializeDockPointsRecursive(SuperNode superNode, int nodeWidth, int nodeHeight) {
+        // Process all nodes in this super node
+        List<BasicNode> allNodes = new ArrayList<>();
+        allNodes.addAll(superNode.getNodeList());
+        allNodes.addAll(superNode.getSuperNodeList());
+
+        // Mark start sign dock points for start nodes
+        Map<String, BasicNode> startNodeMap = superNode.getStartNodeMap();
+        if (startNodeMap != null) {
+            for (BasicNode startNode : startNodeMap.values()) {
+                if (startNode != null) {
+                    occupyStartSignDockPoint(startNode.getId());
+                }
+            }
+        }
+
+        for (BasicNode node : allNodes) {
+            // Process all edges from this node
+            processNodeEdgesForDocking(node, nodeWidth, nodeHeight);
+
+            // Recurse into super nodes
+            if (node instanceof SuperNode) {
+                initializeDockPointsRecursive((SuperNode) node, nodeWidth, nodeHeight);
+            }
+        }
+    }
+
+    private void processNodeEdgesForDocking(BasicNode node, int nodeWidth, int nodeHeight) {
+        NodeGraphics nodeGraphics = node.getGraphics();
+        NodePosition nodePos = nodeGraphics != null ? nodeGraphics.getPosition() : null;
+        double nodeX = nodePos != null ? nodePos.getXPos() : 0;
+        double nodeY = nodePos != null ? nodePos.getYPos() : 0;
+        boolean isSuperNode = node instanceof SuperNode;
+
+        // Collect all edges from this node
+        List<AbstractEdge> edges = new ArrayList<>();
+        if (node.getDedge() != null) edges.add(node.getDedge());
+        edges.addAll(node.getCEdgeList());
+        edges.addAll(node.getIEdgeList());
+        edges.addAll(node.getPEdgeList());
+        edges.addAll(node.getFEdgeList());
+
+        for (AbstractEdge edge : edges) {
+            EdgeGraphics edgeGraphics = edge.getGraphics();
+            if (edgeGraphics == null || edgeGraphics.getConnection() == null) continue;
+
+            List<EdgePoint> points = edgeGraphics.getConnection().getPointList();
+            if (points == null || points.isEmpty()) continue;
+
+            // Mark source dock point as occupied
+            EdgePoint startPt = points.get(0);
+            int srcDockIdx = findDockPointIndex(nodeX, nodeY, nodeWidth, nodeHeight,
+                    isSuperNode, startPt.getXPos(), startPt.getYPos());
+            if (srcDockIdx >= 0) {
+                occupyDockPoint(node.getId(), srcDockIdx, true);
+            }
+
+            // Mark target dock point as occupied
+            if (points.size() >= 2) {
+                EdgePoint endPt = points.get(points.size() - 1);
+                BasicNode targetNode = edge.getTargetNode();
+                if (targetNode != null) {
+                    NodeGraphics tgtGraphics = targetNode.getGraphics();
+                    NodePosition tgtPos = tgtGraphics != null ? tgtGraphics.getPosition() : null;
+                    double tgtX = tgtPos != null ? tgtPos.getXPos() : 0;
+                    double tgtY = tgtPos != null ? tgtPos.getYPos() : 0;
+                    boolean tgtIsSuperNode = targetNode instanceof SuperNode;
+
+                    int tgtDockIdx = findDockPointIndex(tgtX, tgtY, nodeWidth, nodeHeight,
+                            tgtIsSuperNode, endPt.getXPos(), endPt.getYPos());
+                    if (tgtDockIdx >= 0) {
+                        occupyDockPoint(targetNode.getId(), tgtDockIdx, false);
+                    }
+                }
+            }
+        }
+    }
+
+    // Clear dock points for a project (call when project is closed)
+    private void clearDockPointsForProject(SceneFlow sceneFlow) {
+        if (sceneFlow == null) return;
+        clearDockPointsRecursive(sceneFlow);
+    }
+
+    private void clearDockPointsRecursive(SuperNode superNode) {
+        mOccupiedDockPoints.remove(superNode.getId());
+
+        for (BasicNode node : superNode.getNodeList()) {
+            mOccupiedDockPoints.remove(node.getId());
+        }
+
+        for (SuperNode child : superNode.getSuperNodeList()) {
+            mOccupiedDockPoints.remove(child.getId());
+            clearDockPointsRecursive(child);
+        }
+    }
+
+    // Find the dock point index that matches a given absolute position
+    private int findDockPointIndex(double nodeX, double nodeY, int nodeWidth, int nodeHeight,
+                                    boolean isSuperNode, double pointX, double pointY) {
+        double[][] dockPoints = computeDockPoints(nodeWidth, nodeHeight, isSuperNode);
+        int bestIdx = -1;
+        double bestDist = Double.MAX_VALUE;
+
+        for (int i = 0; i < dockPoints.length; i++) {
+            double dockAbsX = nodeX + dockPoints[i][0];
+            double dockAbsY = nodeY + dockPoints[i][1];
+            double dist = Math.hypot(dockAbsX - pointX, dockAbsY - pointY);
+            if (dist < bestDist) {
+                bestDist = dist;
+                bestIdx = i;
+            }
+        }
+
+        // Only return if within reasonable tolerance (e.g., 20 pixels)
+        return bestDist < 20 ? bestIdx : -1;
+    }
+
+    // Mark start sign dock point as occupied for a start node
+    private void occupyStartSignDockPoint(String nodeId) {
+        mOccupiedDockPoints.computeIfAbsent(nodeId, k -> ConcurrentHashMap.newKeySet()).add(START_SIGN_DOCK_INDEX);
+    }
+
+    // Release start sign dock point when node is no longer a start node
+    private void releaseStartSignDockPoint(String nodeId) {
+        Set<Integer> occupied = mOccupiedDockPoints.get(nodeId);
+        if (occupied != null) {
+            occupied.remove(START_SIGN_DOCK_INDEX);
+        }
+    }
+
+    // Compute control point for edge endpoints
+    private double[] computeInitialControlPoint(double startX, double startY, double endX, double endY, boolean isStart) {
+        double dx = endX - startX;
+        double dy = endY - startY;
+        double dist = Math.hypot(dx, dy);
+        double offset = Math.max(30, dist / 3);
+
+        if (isStart) {
+            double ux = dist > 0 ? dx / dist : 1;
+            double uy = dist > 0 ? dy / dist : 0;
+            return new double[] { startX + ux * offset, startY + uy * offset };
+        } else {
+            double ux = dist > 0 ? -dx / dist : -1;
+            double uy = dist > 0 ? -dy / dist : 0;
+            return new double[] { endX + ux * offset, endY + uy * offset };
+        }
+    }
+
+    // Compute control points for self-loop edges that curve outward from the node
+    private double[] computeSelfLoopControlPoints(
+            double startX, double startY, double endX, double endY,
+            double nodeCenterX, double nodeCenterY, int nodeWidth, int nodeHeight) {
+
+        double nodeSize = Math.max(nodeWidth, nodeHeight);
+
+        // Start control: UP and outward from the start point
+        double startCtrlX = startX + 0.85 * nodeSize;
+        double startCtrlY = startY - 0.76 * nodeSize;
+
+        // End control: UP and slightly toward center
+        double endCtrlX = endX + 0.16 * nodeSize;
+        double endCtrlY = endY - 0.87 * nodeSize;
+
+        return new double[] { startCtrlX, startCtrlY, endCtrlX, endCtrlY };
+    }
+
+    // --- PEdge helper methods ---
+
+    private BasicNode resolveNodeById(SuperNode superNode, String nodeId) {
+        if (superNode == null || nodeId == null) {
+            return null;
+        }
+        if (nodeId.equals(superNode.getId())) {
+            return superNode;
+        }
+        for (BasicNode node : superNode.getNodeAndSuperNodeList()) {
+            if (nodeId.equals(node.getId())) {
+                return node;
+            }
+        }
+        return null;
+    }
+
+    private RandomEdge resolvePEdgeForSource(SuperNode superNode, BasicNode sourceNode, String edgeId, String targetId) {
+        if (sourceNode == null) {
+            return null;
+        }
+        // Try to resolve by edge ID first
+        if (edgeId != null && !edgeId.isBlank()) {
+            AbstractEdge resolved = resolveEdgeById(superNode, edgeId);
+            if (resolved instanceof RandomEdge) {
+                RandomEdge pedge = (RandomEdge) resolved;
+                BasicNode edgeSource = pedge.getSourceNode();
+                if (edgeSource != null && edgeSource.equals(sourceNode)) {
+                    return pedge;
+                }
+            }
+        }
+        // Fall back to target ID matching
+        if (targetId != null && !targetId.isBlank()) {
+            for (RandomEdge edge : sourceNode.getPEdgeList()) {
+                if (edge == null) {
+                    continue;
+                }
+                String target = edge.getTargetUnid();
+                if ((target == null || target.isBlank()) && edge.getTargetNode() != null) {
+                    target = edge.getTargetNode().getId();
+                }
+                if (targetId.equals(target)) {
+                    return edge;
+                }
+            }
+        }
+        return null;
+    }
+
+    // --- Runtime variable helper methods ---
+
+    private VariableDefinition findVariableDefinitionInHierarchy(SuperNode node, String name) {
+        if (node == null || name == null || name.isBlank()) {
+            return null;
+        }
+        // Search in this node's variables
+        for (VariableDefinition def : node.getVarDefList()) {
+            if (name.equals(def.getName())) {
+                return def;
+            }
+        }
+        // Search recursively in child supernodes
+        for (BasicNode child : node.getNodeAndSuperNodeList()) {
+            if (child instanceof SuperNode) {
+                VariableDefinition found = findVariableDefinitionInHierarchy((SuperNode) child, name);
+                if (found != null) {
+                    return found;
+                }
+            }
+        }
+        return null;
+    }
+
+    private boolean isSupportedRuntimeExpression(Expression exp) {
+        if (exp instanceof BoolLiteral
+                || exp instanceof IntLiteral
+                || exp instanceof FloatLiteral
+                || exp instanceof StringLiteral) {
+            return true;
+        }
+        if (exp instanceof UnaryExpression) {
+            Expression inner = ((UnaryExpression) exp).getExp();
+            return inner instanceof IntLiteral || inner instanceof FloatLiteral;
+        }
+        return false;
+    }
+
+    private boolean applyRuntimeExpression(RunTimeProject project, String name, Expression exp) {
+        if (exp == null || project == null || name == null || name.isBlank()) {
+            return false;
+        }
+        if (exp instanceof BoolLiteral) {
+            return project.setVariable(name, ((BoolLiteral) exp).getValue());
+        }
+        if (exp instanceof IntLiteral) {
+            return project.setVariable(name, ((IntLiteral) exp).getValue());
+        }
+        if (exp instanceof FloatLiteral) {
+            return project.setVariable(name, ((FloatLiteral) exp).getValue());
+        }
+        if (exp instanceof StringLiteral) {
+            return project.setVariable(name, ((StringLiteral) exp).getValue());
+        }
+        if (exp instanceof UnaryExpression) {
+            Expression inner = ((UnaryExpression) exp).getExp();
+            if (inner instanceof IntLiteral) {
+                return project.setVariable(name, -1 * ((IntLiteral) inner).getValue());
+            }
+            if (inner instanceof FloatLiteral) {
+                return project.setVariable(name, -1.0f * ((FloatLiteral) inner).getValue());
+            }
+        }
+        return false;
     }
 
     private static class ProjectRef {

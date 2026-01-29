@@ -127,6 +127,7 @@ import java.net.URLConnection;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -5472,6 +5473,7 @@ public final class WebUiServer implements UiEventListener {
         superNodeData.put("isStart", isStart);
         superNodeData.put("isRoot", isRoot);
         snapshot.put("superNodeData", superNodeData);
+        snapshot.put("intVarNames", new JSONArray(collectIntVarNames(superNode)));
         JSONArray nodes = new JSONArray();
         for (BasicNode node : superNode.getNodeAndSuperNodeList()) {
             nodes.put(nodeToJson(node, superNode, altStartIds, config));
@@ -5547,6 +5549,7 @@ public final class WebUiServer implements UiEventListener {
         superNodeData.put("isStart", isStart);
         superNodeData.put("isRoot", isRoot);
         snapshot.put("superNodeData", superNodeData);
+        snapshot.put("intVarNames", new JSONArray(collectIntVarNames(superNode)));
         JSONArray nodes = new JSONArray();
         for (BasicNode node : superNode.getNodeAndSuperNodeList()) {
             nodes.put(nodeToJson(node, superNode, altStartIds, config));
@@ -7894,20 +7897,57 @@ public final class WebUiServer implements UiEventListener {
         if (active == null || name == null || name.isBlank()) {
             return false;
         }
-        for (VariableDefinition def : active.getVarDefList()) {
-            if (def == null) {
-                continue;
+        BasicNode current = active;
+        while (current != null) {
+            for (VariableDefinition def : current.getVarDefList()) {
+                if (def == null) {
+                    continue;
+                }
+                String defName = def.getName();
+                String defType = def.getType();
+                if (defName == null || defType == null) {
+                    continue;
+                }
+                if (name.equals(defName) && "int".equalsIgnoreCase(defType.trim())) {
+                    return true;
+                }
             }
-            String defName = def.getName();
-            String defType = def.getType();
-            if (defName == null || defType == null) {
-                continue;
-            }
-            if (name.equals(defName) && "int".equalsIgnoreCase(defType.trim())) {
-                return true;
-            }
+            current = current.getParentNode();
         }
         return false;
+    }
+
+    private List<String> collectIntVarNames(SuperNode active) {
+        if (active == null) {
+            return List.of();
+        }
+        List<SuperNode> chain = new ArrayList<>();
+        BasicNode current = active;
+        while (current instanceof SuperNode) {
+            chain.add((SuperNode) current);
+            current = current.getParentNode();
+        }
+        Collections.reverse(chain);
+        LinkedHashSet<String> names = new LinkedHashSet<>();
+        for (SuperNode node : chain) {
+            for (VariableDefinition def : node.getVarDefList()) {
+                if (def == null) {
+                    continue;
+                }
+                String defName = def.getName();
+                String defType = def.getType();
+                if (defName == null || defType == null) {
+                    continue;
+                }
+                if ("int".equalsIgnoreCase(defType.trim())) {
+                    String trimmed = defName.trim();
+                    if (!trimmed.isEmpty()) {
+                        names.add(trimmed);
+                    }
+                }
+            }
+        }
+        return new ArrayList<>(names);
     }
 
     private Expression edgeCondition(AbstractEdge dataEdge) {
