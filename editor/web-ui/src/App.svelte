@@ -850,6 +850,7 @@
   let sceneFlowFrameColor = "#7d7d7d";
   let sceneFlowFrameStyle = "";
   let sceneFlowLayoutStyle = "";
+  let sceneFlowIntVarNames = [];
   const sceneFlowToggleState = loadSceneFlowToggles();
   let sceneFlowNodeSnap = sceneFlowToggleState.nodeSnap;
   let sceneFlowShowCmdText = sceneFlowToggleState.showCmds;
@@ -1168,9 +1169,15 @@
     revision: sceneFlow?.revision
   });
 
-  $: sceneFlowIntVarNames = sceneFlowVarDefs
-    .filter((def) => (def?.type || "").trim().toLowerCase() === "int" && (def?.name || "").trim())
-    .map((def) => (def.name || "").trim());
+  $: {
+    const rawNames = Array.isArray(sceneFlow?.intVarNames)
+      ? sceneFlow.intVarNames
+      : sceneFlowVarDefs
+          .filter((def) => (def?.type || "").trim().toLowerCase() === "int" && (def?.name || "").trim())
+          .map((def) => (def.name || "").trim());
+    const cleaned = rawNames.map((name) => String(name || "").trim()).filter(Boolean);
+    sceneFlowIntVarNames = Array.from(new Set(cleaned));
+  }
   $: nodeEditorTypeOptions = Array.isArray(nodeEditorTarget?.typeOptions)
     ? nodeEditorTarget.typeOptions
     : ["Int", "Bool", "Float", "String"];
