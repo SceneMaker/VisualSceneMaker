@@ -108,6 +108,7 @@ public final class WebUiServer implements EventListener {
     // Track occupied dock points per node - each dock point can only be used by ONE edge endpoint
     // Key format: "nodeId" - single set per node (no in/out separation)
     private final Map<String, Set<Integer>> mOccupiedDockPoints = new ConcurrentHashMap<>();
+    private final Map<String, EdgePairSplit> mEdgePairSplits = new ConcurrentHashMap<>();
 
     // Dock point index for start sign (left side of node)
     private static final int START_SIGN_DOCK_INDEX = 6;
@@ -1338,6 +1339,7 @@ public final class WebUiServer implements EventListener {
             }
         }
         graphics.put("points", points);
+        graphics.put("docked", points.length() >= 2);
         json.put("graphics", graphics);
 
         // Edge condition/expression
@@ -2633,13 +2635,14 @@ public final class WebUiServer implements EventListener {
                 }
 
                 boolean isNormalize = "SceneFlow.Edge.Normalize".equals(method);
-                if (isNormalize) {
-                    int nodeWidth = getEditorConfigInt(ref, "node_width", 90);
-                    int nodeHeight = getEditorConfigInt(ref, "node_height", nodeWidth);
-                    normalizeEdge(dataEdge, nodeWidth, nodeHeight);
-                } else {
-                    straightenEdge(dataEdge);
+                int nodeWidth = getEditorConfigInt(ref, "node_width", 90);
+                int nodeHeight = getEditorConfigInt(ref, "node_height", nodeWidth);
+                if (!isNormalize) {
+                    List<AbstractEdge> relayout = new ArrayList<>();
+                    relayout.add(dataEdge);
+                    relayoutEdgesInOrder(relayout, nodeWidth, nodeHeight);
                 }
+                normalizeEdge(dataEdge, nodeWidth, nodeHeight);
 
                 JSONObject response = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
                 response.put("status", "ok");
@@ -2663,13 +2666,17 @@ public final class WebUiServer implements EventListener {
                 boolean isNormalize = "SceneFlow.Edge.NormalizeAll".equals(method);
                 int nodeWidth = getEditorConfigInt(ref, "node_width", 90);
                 int nodeHeight = getEditorConfigInt(ref, "node_height", nodeWidth);
+                if (!isNormalize) {
+                    clearDockPointsRecursive(targetNode);
+                    occupyStartSignDockPointsRecursive(targetNode);
+                    List<AbstractEdge> relayout = new ArrayList<>();
+                    Set<AbstractEdge> seen = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
+                    collectEdgesRecursive(targetNode, relayout, seen);
+                    relayoutEdgesInOrder(relayout, nodeWidth, nodeHeight);
+                }
                 for (BasicNode node : targetNode.getNodeAndSuperNodeList()) {
                     for (AbstractEdge edge : node.getEdgeList()) {
-                        if (isNormalize) {
-                            normalizeEdge(edge, nodeWidth, nodeHeight);
-                        } else {
-                            straightenEdge(edge);
-                        }
+                        normalizeEdge(edge, nodeWidth, nodeHeight);
                     }
                 }
 
@@ -2699,18 +2706,20 @@ public final class WebUiServer implements EventListener {
                 boolean isNormalize = "SceneFlow.Edge.NormalizeGroup".equals(method);
                 int nodeWidth = getEditorConfigInt(ref, "node_width", 90);
                 int nodeHeight = getEditorConfigInt(ref, "node_height", nodeWidth);
+                List<AbstractEdge> groupEdges = new ArrayList<>();
                 for (int i = 0; i < edgeIds.length(); i++) {
                     String edgeId = edgeIds.optString(i, "").trim();
-                    if (!edgeId.isEmpty()) {
-                        AbstractEdge dataEdge = resolveEdgeById(targetNode, edgeId);
-                        if (dataEdge != null) {
-                            if (isNormalize) {
-                                normalizeEdge(dataEdge, nodeWidth, nodeHeight);
-                            } else {
-                                straightenEdge(dataEdge);
-                            }
-                        }
+                    if (edgeId.isEmpty()) continue;
+                    AbstractEdge dataEdge = resolveEdgeById(targetNode, edgeId);
+                    if (dataEdge != null) {
+                        groupEdges.add(dataEdge);
                     }
+                }
+                if (!isNormalize && !groupEdges.isEmpty()) {
+                    relayoutEdgesInOrder(groupEdges, nodeWidth, nodeHeight);
+                }
+                for (AbstractEdge dataEdge : groupEdges) {
+                    normalizeEdge(dataEdge, nodeWidth, nodeHeight);
                 }
 
                 JSONObject response = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
@@ -3492,7 +3501,11 @@ public final class WebUiServer implements EventListener {
             graphics = new NodeGraphics();
             dataNode.setGraphics(graphics);
         }
+        NodePosition oldPos = graphics.getPosition();
+        int oldX = oldPos != null ? oldPos.getXPos() : 0;
+        int oldY = oldPos != null ? oldPos.getYPos() : 0;
         graphics.setPosition(targetX, targetY);
+        updateEdgeEndpointsForMovedNode(dataNode, snapshotTarget != null ? snapshotTarget : sceneFlow, oldX, oldY);
 
         JSONObject snapshot = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
         JSONObject resp = buildSceneFlowResponse(snapshot);
@@ -3586,6 +3599,7 @@ public final class WebUiServer implements EventListener {
         edge.setGraphics(new EdgeGraphics());
         int nodeWidth = getEditorConfigInt(ref, "node_width", 90);
         int nodeHeight = getEditorConfigInt(ref, "node_height", nodeWidth);
+        initializeEdgeDockPoints(edge, nodeWidth, nodeHeight);
         normalizeEdge(edge, nodeWidth, nodeHeight);
 
         JSONObject snapshot = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
@@ -3779,6 +3793,9 @@ public final class WebUiServer implements EventListener {
                 sourceNode.removeDEdge();
             }
         }
+        int nodeWidth = getEditorConfigInt(ref, "node_width", 90);
+        int nodeHeight = getEditorConfigInt(ref, "node_height", nodeWidth);
+        releaseEdgeDockPoints(dataEdge, nodeWidth, nodeHeight);
 
         JSONObject snapshot = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
         JSONObject resp = buildSceneFlowResponse(snapshot);
@@ -4864,26 +4881,44 @@ public final class WebUiServer implements EventListener {
         int bestTgtIdx = -1;
         double bestDist = Double.MAX_VALUE;
 
-        // Find the pair of dock points that minimizes edge length
-        for (int s = 0; s < 24; s++) {
-            if (srcOccupied.contains(s)) continue;
+        double srcCenterX = srcX + srcWidth / 2.0;
+        double srcCenterY = srcY + srcHeight / 2.0;
+        double tgtCenterX = tgtX + tgtWidth / 2.0;
+        double tgtCenterY = tgtY + tgtHeight / 2.0;
 
-            double srcDockAbsX = srcX + srcDockPoints[s][0];
-            double srcDockAbsY = srcY + srcDockPoints[s][1];
+        EdgePairSplit split = getPairSplit(sourceNodeId, targetNodeId);
+        Integer dirSign = split != null ? split.getDirSign(sourceNodeId, targetNodeId) : null;
 
-            for (int t = 0; t < 24; t++) {
-                if (tgtOccupied.contains(t)) continue;
-
-                double tgtDockAbsX = tgtX + tgtDockPoints[t][0];
-                double tgtDockAbsY = tgtY + tgtDockPoints[t][1];
-
-                double dist = Math.hypot(tgtDockAbsX - srcDockAbsX, tgtDockAbsY - srcDockAbsY);
-
-                if (dist < bestDist) {
-                    bestDist = dist;
-                    bestSrcIdx = s;
-                    bestTgtIdx = t;
+        // Find the pair of dock points that minimizes edge length (optionally using split)
+        for (int pass = 0; pass < 2; pass++) {
+            boolean enforceSplit = pass == 0 && dirSign != null && split != null;
+            bestDist = Double.MAX_VALUE;
+            bestSrcIdx = -1;
+            bestTgtIdx = -1;
+            for (int s = 0; s < 24; s++) {
+                if (srcOccupied.contains(s)) continue;
+                double srcDockAbsX = srcX + srcDockPoints[s][0];
+                double srcDockAbsY = srcY + srcDockPoints[s][1];
+                if (enforceSplit && !split.matchesSide(srcDockAbsX, srcDockAbsY, srcCenterX, srcCenterY, dirSign)) {
+                    continue;
                 }
+                for (int t = 0; t < 24; t++) {
+                    if (tgtOccupied.contains(t)) continue;
+                    double tgtDockAbsX = tgtX + tgtDockPoints[t][0];
+                    double tgtDockAbsY = tgtY + tgtDockPoints[t][1];
+                    if (enforceSplit && !split.matchesSide(tgtDockAbsX, tgtDockAbsY, tgtCenterX, tgtCenterY, dirSign)) {
+                        continue;
+                    }
+                    double dist = Math.hypot(tgtDockAbsX - srcDockAbsX, tgtDockAbsY - srcDockAbsY);
+                    if (dist < bestDist) {
+                        bestDist = dist;
+                        bestSrcIdx = s;
+                        bestTgtIdx = t;
+                    }
+                }
+            }
+            if (bestSrcIdx >= 0 && bestTgtIdx >= 0) {
+                break;
             }
         }
 
@@ -4891,7 +4926,59 @@ public final class WebUiServer implements EventListener {
         if (bestSrcIdx < 0) bestSrcIdx = 0;
         if (bestTgtIdx < 0) bestTgtIdx = 0;
 
+        double[] srcDockAbs = new double[] { srcX + srcDockPoints[bestSrcIdx][0], srcY + srcDockPoints[bestSrcIdx][1] };
+        double[] tgtDockAbs = new double[] { tgtX + tgtDockPoints[bestTgtIdx][0], tgtY + tgtDockPoints[bestTgtIdx][1] };
+        recordDockPairSplit(sourceNodeId, targetNodeId,
+                srcCenterX, srcCenterY, tgtCenterX, tgtCenterY, srcDockAbs, tgtDockAbs);
         return new int[] { bestSrcIdx, bestTgtIdx };
+    }
+
+    private void recordDockPairSplit(
+            String sourceNodeId,
+            String targetNodeId,
+            double srcCenterX,
+            double srcCenterY,
+            double tgtCenterX,
+            double tgtCenterY,
+            double[] srcDockAbs,
+            double[] tgtDockAbs) {
+        if (sourceNodeId == null || targetNodeId == null) return;
+        EdgePairSplit split = getOrCreatePairSplit(sourceNodeId, targetNodeId, srcCenterX, srcCenterY, tgtCenterX, tgtCenterY);
+        if (split == null) return;
+        int sign = split.sideSign(srcDockAbs[0], srcDockAbs[1], srcCenterX, srcCenterY);
+        split.setDirSign(sourceNodeId, targetNodeId, sign);
+    }
+
+    private EdgePairSplit getPairSplit(String sourceNodeId, String targetNodeId) {
+        if (sourceNodeId == null || targetNodeId == null) return null;
+        String key = pairKey(sourceNodeId, targetNodeId);
+        return mEdgePairSplits.get(key);
+    }
+
+    private EdgePairSplit getOrCreatePairSplit(
+            String sourceNodeId,
+            String targetNodeId,
+            double srcCenterX,
+            double srcCenterY,
+            double tgtCenterX,
+            double tgtCenterY) {
+        if (sourceNodeId == null || targetNodeId == null) return null;
+        String key = pairKey(sourceNodeId, targetNodeId);
+        EdgePairSplit existing = mEdgePairSplits.get(key);
+        if (existing != null) return existing;
+        double vx = tgtCenterX - srcCenterX;
+        double vy = tgtCenterY - srcCenterY;
+        double len = Math.hypot(vx, vy);
+        if (len < 1e-6) return null;
+        double nx = -vy / len;
+        double ny = vx / len;
+        EdgePairSplit created = new EdgePairSplit(nx, ny);
+        mEdgePairSplits.put(key, created);
+        return created;
+    }
+
+    private String pairKey(String a, String b) {
+        return a.compareTo(b) <= 0 ? a + "|" + b : b + "|" + a;
     }
 
     // Find dock points for self-loop edges that create a nice upward loop
@@ -5006,6 +5093,8 @@ public final class WebUiServer implements EventListener {
         NodePosition nodePos = nodeGraphics != null ? nodeGraphics.getPosition() : null;
         double nodeX = nodePos != null ? nodePos.getXPos() : 0;
         double nodeY = nodePos != null ? nodePos.getYPos() : 0;
+        double nodeCenterX = nodeX + nodeWidth / 2.0;
+        double nodeCenterY = nodeY + nodeHeight / 2.0;
         boolean isSuperNode = node instanceof SuperNode;
 
         // Collect all edges from this node
@@ -5047,6 +5136,14 @@ public final class WebUiServer implements EventListener {
                     if (tgtDockIdx >= 0) {
                         occupyDockPoint(targetNode.getId(), tgtDockIdx, false);
                     }
+                    if (srcDockIdx >= 0 && tgtDockIdx >= 0) {
+                        double tgtCenterX = tgtX + nodeWidth / 2.0;
+                        double tgtCenterY = tgtY + nodeHeight / 2.0;
+                        double[] srcDockAbs = new double[] { startPt.getXPos(), startPt.getYPos() };
+                        double[] tgtDockAbs = new double[] { endPt.getXPos(), endPt.getYPos() };
+                        recordDockPairSplit(edge.getSourceUnid(), edge.getTargetUnid(),
+                                nodeCenterX, nodeCenterY, tgtCenterX, tgtCenterY, srcDockAbs, tgtDockAbs);
+                    }
                 }
             }
         }
@@ -5059,6 +5156,7 @@ public final class WebUiServer implements EventListener {
     }
 
     private void clearDockPointsRecursive(SuperNode superNode) {
+        mEdgePairSplits.clear();
         mOccupiedDockPoints.remove(superNode.getId());
 
         for (BasicNode node : superNode.getNodeList()) {
@@ -5102,6 +5200,457 @@ public final class WebUiServer implements EventListener {
         Set<Integer> occupied = mOccupiedDockPoints.get(nodeId);
         if (occupied != null) {
             occupied.remove(START_SIGN_DOCK_INDEX);
+        }
+    }
+
+    private void occupyStartSignDockPointsRecursive(SuperNode superNode) {
+        if (superNode == null) return;
+        Map<String, BasicNode> startNodeMap = superNode.getStartNodeMap();
+        if (startNodeMap != null) {
+            for (BasicNode startNode : startNodeMap.values()) {
+                if (startNode != null) {
+                    occupyStartSignDockPoint(startNode.getId());
+                }
+            }
+        }
+        for (BasicNode node : superNode.getSuperNodeList()) {
+            if (node instanceof SuperNode) {
+                occupyStartSignDockPointsRecursive((SuperNode) node);
+            }
+        }
+    }
+
+    private void reassignDockPointsRecursive(SuperNode superNode, int nodeWidth, int nodeHeight) {
+        if (superNode == null) return;
+        List<AbstractEdge> edges = new ArrayList<>();
+        Set<AbstractEdge> seen = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
+        collectEdgesRecursive(superNode, edges, seen);
+        edges.sort((a, b) -> {
+            String aSrc = a != null ? String.valueOf(a.getSourceUnid()) : "";
+            String bSrc = b != null ? String.valueOf(b.getSourceUnid()) : "";
+            int cmp = aSrc.compareTo(bSrc);
+            if (cmp != 0) return cmp;
+            String aTgt = a != null ? String.valueOf(a.getTargetUnid()) : "";
+            String bTgt = b != null ? String.valueOf(b.getTargetUnid()) : "";
+            cmp = aTgt.compareTo(bTgt);
+            if (cmp != 0) return cmp;
+            String aType = a != null ? String.valueOf(getEdgeType(a)) : "";
+            String bType = b != null ? String.valueOf(getEdgeType(b)) : "";
+            cmp = aType.compareTo(bType);
+            if (cmp != 0) return cmp;
+            return Integer.compare(System.identityHashCode(a), System.identityHashCode(b));
+        });
+        for (AbstractEdge edge : edges) {
+            reassignDockPointsForEdge(edge, nodeWidth, nodeHeight);
+        }
+    }
+
+    private void collectEdgesRecursive(SuperNode superNode, List<AbstractEdge> out, Set<AbstractEdge> seen) {
+        if (superNode == null) return;
+        List<BasicNode> allNodes = new ArrayList<>();
+        allNodes.addAll(superNode.getNodeList());
+        allNodes.addAll(superNode.getSuperNodeList());
+        for (BasicNode node : allNodes) {
+            for (AbstractEdge edge : node.getEdgeList()) {
+                if (edge != null && seen.add(edge)) {
+                    out.add(edge);
+                }
+            }
+            if (node instanceof SuperNode) {
+                collectEdgesRecursive((SuperNode) node, out, seen);
+            }
+        }
+    }
+
+    private void reassignDockPointsForEdge(AbstractEdge edge, int nodeWidth, int nodeHeight) {
+        if (edge == null) return;
+        releaseEdgeDockPoints(edge, nodeWidth, nodeHeight);
+        initializeEdgeDockPoints(edge, nodeWidth, nodeHeight);
+    }
+
+    private void relayoutEdgesInOrder(List<AbstractEdge> edges, int nodeWidth, int nodeHeight) {
+        if (edges == null || edges.isEmpty()) return;
+        for (AbstractEdge edge : edges) {
+            releaseEdgeDockPoints(edge, nodeWidth, nodeHeight);
+        }
+        for (AbstractEdge edge : edges) {
+            initializeEdgeDockPoints(edge, nodeWidth, nodeHeight);
+        }
+    }
+
+    private void reassignDockPointsForStraighten(SuperNode superNode, int nodeWidth, int nodeHeight) {
+        if (superNode == null) return;
+        List<AbstractEdge> edges = new ArrayList<>();
+        Set<AbstractEdge> seen = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
+        collectEdgesRecursive(superNode, edges, seen);
+        Map<String, List<AbstractEdge>> pairs = new java.util.TreeMap<>();
+        for (AbstractEdge edge : edges) {
+            if (edge == null) continue;
+            String src = edge.getSourceUnid();
+            String tgt = edge.getTargetUnid();
+            if (src == null || tgt == null) continue;
+            String key = src.compareTo(tgt) <= 0 ? src + "|" + tgt : tgt + "|" + src;
+            pairs.computeIfAbsent(key, k -> new ArrayList<>()).add(edge);
+        }
+        for (Map.Entry<String, List<AbstractEdge>> entry : pairs.entrySet()) {
+            String[] parts = entry.getKey().split("\\|", 2);
+            if (parts.length != 2) continue;
+            reassignDockPointsForPair(superNode, parts[0], parts[1], nodeWidth, nodeHeight);
+        }
+    }
+
+    private void reassignDockPointsForPair(SuperNode superNode, String sourceId, String targetId, int nodeWidth, int nodeHeight) {
+        if (superNode == null || sourceId == null || targetId == null) return;
+        List<AbstractEdge> edges = new ArrayList<>();
+        Set<AbstractEdge> seen = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
+        collectEdgesRecursive(superNode, edges, seen);
+        List<AbstractEdge> group = new ArrayList<>();
+        for (AbstractEdge edge : edges) {
+            if (edge == null) continue;
+            String src = edge.getSourceUnid();
+            String tgt = edge.getTargetUnid();
+            if (src == null || tgt == null) continue;
+            boolean same = (src.equals(sourceId) && tgt.equals(targetId)) || (src.equals(targetId) && tgt.equals(sourceId));
+            if (same) {
+                group.add(edge);
+            }
+        }
+        if (group.isEmpty()) return;
+        for (AbstractEdge edge : group) {
+            releaseEdgeDockPoints(edge, nodeWidth, nodeHeight);
+        }
+
+        BasicNode nodeA = resolveNodeById(superNode, sourceId);
+        BasicNode nodeB = resolveNodeById(superNode, targetId);
+        if (nodeA == null || nodeB == null) return;
+        boolean sameNode = nodeA.getId().equals(nodeB.getId());
+        if (sameNode) {
+            for (AbstractEdge edge : group) {
+                initializeEdgeDockPoints(edge, nodeWidth, nodeHeight);
+            }
+            return;
+        }
+
+        NodeGraphics aGraphics = nodeA.getGraphics();
+        NodeGraphics bGraphics = nodeB.getGraphics();
+        NodePosition aPos = aGraphics != null ? aGraphics.getPosition() : null;
+        NodePosition bPos = bGraphics != null ? bGraphics.getPosition() : null;
+        double aX = aPos != null ? aPos.getXPos() : 0;
+        double aY = aPos != null ? aPos.getYPos() : 0;
+        double bX = bPos != null ? bPos.getXPos() : 0;
+        double bY = bPos != null ? bPos.getYPos() : 0;
+        boolean aSuper = nodeA instanceof SuperNode;
+        boolean bSuper = nodeB instanceof SuperNode;
+
+        double[][] aDockPoints = computeDockPoints(nodeWidth, nodeHeight, aSuper);
+        double[][] bDockPoints = computeDockPoints(nodeWidth, nodeHeight, bSuper);
+
+        int bestASrc = 0;
+        int bestBTgt = 0;
+        double bestDist = Double.MAX_VALUE;
+        for (int s = 0; s < 24; s++) {
+            double sx = aX + aDockPoints[s][0];
+            double sy = aY + aDockPoints[s][1];
+            for (int t = 0; t < 24; t++) {
+                double tx = bX + bDockPoints[t][0];
+                double ty = bY + bDockPoints[t][1];
+                double dist = Math.hypot(tx - sx, ty - sy);
+                if (dist < bestDist) {
+                    bestDist = dist;
+                    bestASrc = s;
+                    bestBTgt = t;
+                }
+            }
+        }
+
+        final int anchorA = bestASrc;
+        final int anchorB = bestBTgt;
+
+        List<Integer> aCandidates = new ArrayList<>();
+        List<Integer> bCandidates = new ArrayList<>();
+        for (int i = 0; i < 24; i++) {
+            aCandidates.add(i);
+            bCandidates.add(i);
+        }
+        aCandidates.sort((i, j) -> {
+            double dxI = aDockPoints[i][0] - aDockPoints[anchorA][0];
+            double dyI = aDockPoints[i][1] - aDockPoints[anchorA][1];
+            double dxJ = aDockPoints[j][0] - aDockPoints[anchorA][0];
+            double dyJ = aDockPoints[j][1] - aDockPoints[anchorA][1];
+            return Double.compare(dxI * dxI + dyI * dyI, dxJ * dxJ + dyJ * dyJ);
+        });
+        bCandidates.sort((i, j) -> {
+            double dxI = bDockPoints[i][0] - bDockPoints[anchorB][0];
+            double dyI = bDockPoints[i][1] - bDockPoints[anchorB][1];
+            double dxJ = bDockPoints[j][0] - bDockPoints[anchorB][0];
+            double dyJ = bDockPoints[j][1] - bDockPoints[anchorB][1];
+            return Double.compare(dxI * dxI + dyI * dyI, dxJ * dxJ + dyJ * dyJ);
+        });
+
+        aCandidates = uniqueDockCandidates(aCandidates, aDockPoints);
+        bCandidates = uniqueDockCandidates(bCandidates, bDockPoints);
+
+        Set<Integer> aUsed = new java.util.HashSet<>();
+        Set<Integer> bUsed = new java.util.HashSet<>();
+        Set<String> aUsedCoords = new java.util.HashSet<>();
+        Set<String> bUsedCoords = new java.util.HashSet<>();
+        Set<Integer> aOccupied = mOccupiedDockPoints.computeIfAbsent(nodeA.getId(), k -> ConcurrentHashMap.newKeySet());
+        Set<Integer> bOccupied = mOccupiedDockPoints.computeIfAbsent(nodeB.getId(), k -> ConcurrentHashMap.newKeySet());
+
+        group.sort((a, b) -> {
+            String aType = a != null ? String.valueOf(getEdgeType(a)) : "";
+            String bType = b != null ? String.valueOf(getEdgeType(b)) : "";
+            int cmp = aType.compareTo(bType);
+            if (cmp != 0) return cmp;
+            return Integer.compare(System.identityHashCode(a), System.identityHashCode(b));
+        });
+
+        for (AbstractEdge edge : group) {
+            if (edge == null) continue;
+            boolean fromA = nodeA.getId().equals(edge.getSourceUnid());
+            List<Integer> srcCandidates = fromA ? aCandidates : bCandidates;
+            List<Integer> tgtCandidates = fromA ? bCandidates : aCandidates;
+            Set<Integer> srcUsed = fromA ? aUsed : bUsed;
+            Set<Integer> tgtUsed = fromA ? bUsed : aUsed;
+            Set<Integer> srcOccupied = fromA ? aOccupied : bOccupied;
+            Set<Integer> tgtOccupied = fromA ? bOccupied : aOccupied;
+            double[][] srcDockPoints = fromA ? aDockPoints : bDockPoints;
+            double[][] tgtDockPoints = fromA ? bDockPoints : aDockPoints;
+            Set<String> srcUsedCoords = fromA ? aUsedCoords : bUsedCoords;
+            Set<String> tgtUsedCoords = fromA ? bUsedCoords : aUsedCoords;
+
+            int srcIdx = nextAvailableDockIndexWithCoords(
+                    srcCandidates,
+                    srcDockPoints,
+                    srcUsed,
+                    srcUsedCoords,
+                    srcOccupied,
+                    0
+            );
+            int tgtIdx = nextAvailableDockIndexWithCoords(
+                    tgtCandidates,
+                    tgtDockPoints,
+                    tgtUsed,
+                    tgtUsedCoords,
+                    tgtOccupied,
+                    0
+            );
+
+            srcUsed.add(srcIdx);
+            tgtUsed.add(tgtIdx);
+            srcOccupied.add(srcIdx);
+            tgtOccupied.add(tgtIdx);
+            srcUsedCoords.add(coordKey(srcDockPoints[srcIdx]));
+            tgtUsedCoords.add(coordKey(tgtDockPoints[tgtIdx]));
+
+            double[] srcDock = fromA
+                    ? new double[] { aX + aDockPoints[srcIdx][0], aY + aDockPoints[srcIdx][1] }
+                    : new double[] { bX + bDockPoints[srcIdx][0], bY + bDockPoints[srcIdx][1] };
+            double[] tgtDock = fromA
+                    ? new double[] { bX + bDockPoints[tgtIdx][0], bY + bDockPoints[tgtIdx][1] }
+                    : new double[] { aX + aDockPoints[tgtIdx][0], aY + aDockPoints[tgtIdx][1] };
+
+            EdgeGraphics graphics = edge.getGraphics();
+            if (graphics == null) {
+                graphics = new EdgeGraphics();
+                edge.setGraphics(graphics);
+            }
+            EdgeArrow arrow = graphics.getConnection();
+            if (arrow == null) {
+                arrow = new EdgeArrow();
+                graphics.setConnection(arrow);
+            }
+            ArrayList<EdgePoint> points = new ArrayList<>();
+            points.add(new EdgePoint(
+                    (int) Math.round(srcDock[0]),
+                    (int) Math.round(srcDock[0]),
+                    (int) Math.round(srcDock[1]),
+                    (int) Math.round(srcDock[1])
+            ));
+            points.add(new EdgePoint(
+                    (int) Math.round(tgtDock[0]),
+                    (int) Math.round(tgtDock[0]),
+                    (int) Math.round(tgtDock[1]),
+                    (int) Math.round(tgtDock[1])
+            ));
+            arrow.setPointList(points);
+        }
+    }
+
+    private int nextAvailableDockIndex(List<Integer> candidates, Set<Integer> used, Set<Integer> occupied, int start) {
+        if (candidates == null || candidates.isEmpty()) return 0;
+        int size = candidates.size();
+        for (int i = 0; i < size; i++) {
+            int idx = candidates.get((start + i) % size);
+            if (used.contains(idx) || occupied.contains(idx)) continue;
+            return idx;
+        }
+        for (int i = 0; i < size; i++) {
+            int idx = candidates.get((start + i) % size);
+            if (used.contains(idx)) continue;
+            return idx;
+        }
+        return candidates.get(start % size);
+    }
+
+    private int nextAvailableDockIndexWithCoords(
+            List<Integer> candidates,
+            double[][] dockPoints,
+            Set<Integer> used,
+            Set<String> usedCoords,
+            Set<Integer> occupied,
+            int start) {
+        if (candidates == null || candidates.isEmpty()) return 0;
+        int size = candidates.size();
+        for (int i = 0; i < size; i++) {
+            int idx = candidates.get((start + i) % size);
+            if (used.contains(idx) || occupied.contains(idx)) continue;
+            String key = coordKey(dockPoints[idx]);
+            if (usedCoords.contains(key)) continue;
+            return idx;
+        }
+        return candidates.get(start % size);
+    }
+
+    private String coordKey(double[] dockPoint) {
+        if (dockPoint == null || dockPoint.length < 2) return "";
+        return Math.round(dockPoint[0]) + "," + Math.round(dockPoint[1]);
+    }
+
+    private List<Integer> uniqueDockCandidates(List<Integer> candidates, double[][] dockPoints) {
+        if (candidates == null || dockPoints == null) return candidates;
+        List<Integer> unique = new ArrayList<>();
+        Set<String> seen = new java.util.HashSet<>();
+        for (Integer idx : candidates) {
+            if (idx == null || idx < 0 || idx >= dockPoints.length) continue;
+            String key = coordKey(dockPoints[idx]);
+            if (seen.add(key)) {
+                unique.add(idx);
+            }
+        }
+        return unique.isEmpty() ? candidates : unique;
+    }
+
+    private static final class EdgePairSplit {
+        private final double nx;
+        private final double ny;
+        private final Map<String, Integer> dirSign = new ConcurrentHashMap<>();
+
+        private EdgePairSplit(double nx, double ny) {
+            this.nx = nx;
+            this.ny = ny;
+        }
+
+        private int sideSign(double x, double y, double cx, double cy) {
+            double dot = (x - cx) * nx + (y - cy) * ny;
+            return dot >= 0 ? 1 : -1;
+        }
+
+        private boolean matchesSide(double x, double y, double cx, double cy, int sign) {
+            return sideSign(x, y, cx, cy) == sign;
+        }
+
+        private Integer getDirSign(String sourceId, String targetId) {
+            return dirSign.get(sourceId + "->" + targetId);
+        }
+
+        private void setDirSign(String sourceId, String targetId, int sign) {
+            String key = sourceId + "->" + targetId;
+            if (!dirSign.containsKey(key)) {
+                dirSign.put(key, sign);
+                dirSign.put(targetId + "->" + sourceId, -sign);
+            }
+        }
+    }
+
+
+    private void initializeEdgeDockPoints(AbstractEdge edge, int nodeWidth, int nodeHeight) {
+        if (edge == null) return;
+        BasicNode sourceNode = edge.getSourceNode();
+        BasicNode targetNode = edge.getTargetNode();
+        if (sourceNode == null || targetNode == null) return;
+
+        NodeGraphics srcGraphics = sourceNode.getGraphics();
+        NodeGraphics tgtGraphics = targetNode.getGraphics();
+        NodePosition srcPos = srcGraphics != null ? srcGraphics.getPosition() : null;
+        NodePosition tgtPos = tgtGraphics != null ? tgtGraphics.getPosition() : null;
+        double srcX = srcPos != null ? srcPos.getXPos() : 0;
+        double srcY = srcPos != null ? srcPos.getYPos() : 0;
+        double tgtX = tgtPos != null ? tgtPos.getXPos() : 0;
+        double tgtY = tgtPos != null ? tgtPos.getYPos() : 0;
+        boolean srcIsSuper = sourceNode instanceof SuperNode;
+        boolean tgtIsSuper = targetNode instanceof SuperNode;
+        boolean isSelfLoop = sourceNode.getId().equals(targetNode.getId());
+
+        int[] dockPair = isSelfLoop
+                ? findSelfLoopDockPointPair(sourceNode.getId(), nodeWidth, nodeHeight, srcIsSuper)
+                : findBestDockPointPair(
+                        sourceNode.getId(), srcX, srcY, nodeWidth, nodeHeight, srcIsSuper,
+                        targetNode.getId(), tgtX, tgtY, nodeWidth, nodeHeight, tgtIsSuper
+                );
+
+        int srcDockIdx = dockPair[0];
+        int tgtDockIdx = dockPair[1];
+        occupyDockPoint(sourceNode.getId(), srcDockIdx, true);
+        occupyDockPoint(targetNode.getId(), tgtDockIdx, false);
+
+        double[] srcDock = getDockPointPosition(srcX, srcY, nodeWidth, nodeHeight, srcIsSuper, srcDockIdx);
+        double[] tgtDock = getDockPointPosition(tgtX, tgtY, nodeWidth, nodeHeight, tgtIsSuper, tgtDockIdx);
+
+        EdgeGraphics graphics = edge.getGraphics();
+        if (graphics == null) {
+            graphics = new EdgeGraphics();
+            edge.setGraphics(graphics);
+        }
+        EdgeArrow arrow = graphics.getConnection();
+        if (arrow == null) {
+            arrow = new EdgeArrow();
+            graphics.setConnection(arrow);
+        }
+        ArrayList<EdgePoint> points = new ArrayList<>();
+        points.add(new EdgePoint(
+                (int) Math.round(srcDock[0]),
+                (int) Math.round(srcDock[0]),
+                (int) Math.round(srcDock[1]),
+                (int) Math.round(srcDock[1])
+        ));
+        points.add(new EdgePoint(
+                (int) Math.round(tgtDock[0]),
+                (int) Math.round(tgtDock[0]),
+                (int) Math.round(tgtDock[1]),
+                (int) Math.round(tgtDock[1])
+        ));
+        arrow.setPointList(points);
+    }
+
+    private void releaseEdgeDockPoints(AbstractEdge edge, int nodeWidth, int nodeHeight) {
+        if (edge == null) return;
+        BasicNode sourceNode = edge.getSourceNode();
+        BasicNode targetNode = edge.getTargetNode();
+        if (sourceNode == null || targetNode == null) return;
+        EdgeGraphics edgeGraphics = edge.getGraphics();
+        if (edgeGraphics == null || edgeGraphics.getConnection() == null) return;
+        List<EdgePoint> points = edgeGraphics.getConnection().getPointList();
+        if (points == null || points.size() < 2) return;
+        EdgePoint startPt = points.get(0);
+        EdgePoint endPt = points.get(points.size() - 1);
+        NodeGraphics srcGraphics = sourceNode.getGraphics();
+        NodeGraphics tgtGraphics = targetNode.getGraphics();
+        NodePosition srcPos = srcGraphics != null ? srcGraphics.getPosition() : null;
+        NodePosition tgtPos = tgtGraphics != null ? tgtGraphics.getPosition() : null;
+        double srcX = srcPos != null ? srcPos.getXPos() : 0;
+        double srcY = srcPos != null ? srcPos.getYPos() : 0;
+        double tgtX = tgtPos != null ? tgtPos.getXPos() : 0;
+        double tgtY = tgtPos != null ? tgtPos.getYPos() : 0;
+        int srcDockIdx = findDockPointIndex(srcX, srcY, nodeWidth, nodeHeight,
+                sourceNode instanceof SuperNode, startPt.getXPos(), startPt.getYPos());
+        if (srcDockIdx >= 0) {
+            releaseDockPoint(sourceNode.getId(), srcDockIdx, true);
+        }
+        int tgtDockIdx = findDockPointIndex(tgtX, tgtY, nodeWidth, nodeHeight,
+                targetNode instanceof SuperNode, endPt.getXPos(), endPt.getYPos());
+        if (tgtDockIdx >= 0) {
+            releaseDockPoint(targetNode.getId(), tgtDockIdx, false);
         }
     }
 
