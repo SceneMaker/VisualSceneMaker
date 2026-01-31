@@ -6132,10 +6132,39 @@
     if (!Number.isFinite(centerX) || !Number.isFinite(centerY)) return position;
     const snappedCenterX = originX + Math.round((centerX - originX) / gridX) * gridX;
     const snappedCenterY = originY + Math.round((centerY - originY) / gridY) * gridY;
-    return {
+    const base = {
       x: Math.max(1, Math.round(snappedCenterX - nodeWidth / 2)),
       y: Math.max(1, Math.round(snappedCenterY - nodeHeight / 2))
     };
+    const occupied = new Set();
+    for (const node of sceneFlow?.nodes || []) {
+      if (!node) continue;
+      const nx = Number.isFinite(node?.graphics?.x) ? node.graphics.x : node?.x;
+      const ny = Number.isFinite(node?.graphics?.y) ? node.graphics.y : node?.y;
+      if (!Number.isFinite(nx) || !Number.isFinite(ny)) continue;
+      occupied.add(`${Math.round(nx)}|${Math.round(ny)}`);
+    }
+    const baseKey = `${Math.round(base.x)}|${Math.round(base.y)}`;
+    if (!occupied.has(baseKey)) {
+      return base;
+    }
+    for (let radius = 1; radius <= 8; radius += 1) {
+      for (let dx = -radius; dx <= radius; dx += 1) {
+        for (let dy = -radius; dy <= radius; dy += 1) {
+          if (dx === 0 && dy === 0) continue;
+          if (Math.abs(dx) !== radius && Math.abs(dy) !== radius) continue;
+          const candidate = {
+            x: Math.max(1, Math.round(base.x + dx * gridX)),
+            y: Math.max(1, Math.round(base.y + dy * gridY))
+          };
+          const key = `${Math.round(candidate.x)}|${Math.round(candidate.y)}`;
+          if (!occupied.has(key)) {
+            return candidate;
+          }
+        }
+      }
+    }
+    return base;
   }
 
   function nodeScaledSize(node) {
@@ -7378,8 +7407,8 @@
                 class="ghost icon-button flat"
                 on:click={straightenAllEdges}
                 disabled={!wsConnected || sceneFlowBusy}
-                aria-label="Straighten edges"
-                title="Straighten edges"
+                aria-label="Relayout edges"
+                title="Relayout edges"
               >
                 <svg viewBox="0 0 24 24" class="icon" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14" />
@@ -8405,7 +8434,7 @@
                       on:click={straightenSelectedEdges}
                       disabled={!wsConnected || sceneFlowBusy}
                     >
-                      Straighten
+                      Relayout
                     </button>
                   </div>
                 </div>
@@ -8543,7 +8572,7 @@
                   on:click={straightenSelectedEdge}
                   disabled={!wsConnected || sceneFlowBusy}
                 >
-                  Straighten
+                  Relayout
                 </button>
                 <button type="button" class="primary" on:click={applyEdgeEdits} disabled={!edgeDirty || !wsConnected}>
                   Apply

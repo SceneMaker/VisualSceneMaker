@@ -2284,17 +2284,60 @@
     };
   }
 
-  function snapNodePoint(node, point) {
-    if (!nodeSnapToGrid || !node || !point) return point;
-    if (!Number.isFinite(gridX) || !Number.isFinite(gridY) || gridX <= 0 || gridY <= 0) {
-      return point;
+  function nodePositionKey(x, y) {
+    return `${Math.round(x)}|${Math.round(y)}`;
+  }
+
+  function buildNodePositionSet(ignoreId) {
+    const set = new Set();
+    for (const entry of nodes || []) {
+      if (!entry || entry.id === ignoreId) continue;
+      const nx = Number.isFinite(entry?.graphics?.x) ? entry.graphics.x : entry?.x;
+      const ny = Number.isFinite(entry?.graphics?.y) ? entry.graphics.y : entry?.y;
+      if (!Number.isFinite(nx) || !Number.isFinite(ny)) continue;
+      set.add(nodePositionKey(nx, ny));
     }
-    const { w, h } = nodeSize(node);
-    const centerX = point.x + w / 2;
-    const centerY = point.y + h / 2;
-    const snappedCenterX = gridOriginX + Math.round((centerX - gridOriginX) / gridX) * gridX;
-    const snappedCenterY = gridOriginY + Math.round((centerY - gridOriginY) / gridY) * gridY;
-    return { x: snappedCenterX - w / 2, y: snappedCenterY - h / 2 };
+    return set;
+  }
+
+  function avoidNodeOverlap(node, point) {
+    if (!node || !point) return point;
+    const occupied = buildNodePositionSet(node.id);
+    const key = nodePositionKey(point.x, point.y);
+    if (!occupied.has(key)) return point;
+    const stepX = Number.isFinite(gridX) && gridX > 0 ? gridX : 10;
+    const stepY = Number.isFinite(gridY) && gridY > 0 ? gridY : 10;
+    for (let radius = 1; radius <= 8; radius += 1) {
+      for (let dx = -radius; dx <= radius; dx += 1) {
+        for (let dy = -radius; dy <= radius; dy += 1) {
+          if (dx === 0 && dy === 0) continue;
+          if (Math.abs(dx) !== radius && Math.abs(dy) !== radius) continue;
+          const candidate = {
+            x: Math.max(MIN_WORLD_COORD, point.x + dx * stepX),
+            y: Math.max(MIN_WORLD_COORD, point.y + dy * stepY)
+          };
+          const candKey = nodePositionKey(candidate.x, candidate.y);
+          if (!occupied.has(candKey)) {
+            return candidate;
+          }
+        }
+      }
+    }
+    return point;
+  }
+
+  function snapNodePoint(node, point) {
+    if (!node || !point) return point;
+    let nextPoint = point;
+    if (nodeSnapToGrid && Number.isFinite(gridX) && Number.isFinite(gridY) && gridX > 0 && gridY > 0) {
+      const { w, h } = nodeSize(node);
+      const centerX = point.x + w / 2;
+      const centerY = point.y + h / 2;
+      const snappedCenterX = gridOriginX + Math.round((centerX - gridOriginX) / gridX) * gridX;
+      const snappedCenterY = gridOriginY + Math.round((centerY - gridOriginY) / gridY) * gridY;
+      nextPoint = { x: snappedCenterX - w / 2, y: snappedCenterY - h / 2 };
+    }
+    return avoidNodeOverlap(node, nextPoint);
   }
 
   function worldRectToScreenRect(rect) {
@@ -2751,6 +2794,16 @@
           const dx = nextX - originX;
           const dy = nextY - originY;
           if (Number.isFinite(dx) && Number.isFinite(dy) && (dx || dy)) {
+            const isSelfLoop = edge.sourceId === movedId && edge.targetId === movedId;
+            if (isSelfLoop) {
+              nextPoints = nextPoints.map((pt) => ({
+                ...pt,
+                x: pt.x + dx,
+                y: pt.y + dy,
+                cx: Number.isFinite(pt.cx) ? pt.cx + dx : pt.cx,
+                cy: Number.isFinite(pt.cy) ? pt.cy + dy : pt.cy
+              }));
+            } else {
             nextPoints = nextPoints.map((pt, idx) => {
               const isStart = idx === 0;
               const isEnd = idx === nextPoints.length - 1;
@@ -2765,6 +2818,7 @@
               const adjCy = Number.isFinite(pt.cy) ? pt.cy + dy : pt.cy;
               return { ...pt, x: adjX, y: adjY, cx: adjCx, cy: adjCy };
             });
+            }
           }
         }
       }
@@ -2846,6 +2900,9 @@
 
   function adjustEdgeEndpoints(points, edge, drag) {
     if (!points?.length) return points;
+    if (edge?.graphics?.docked) {
+      return points;
+    }
     const source = nodeMap.get(edge.sourceId);
     const target = nodeMap.get(edge.targetId);
     if (!source || !target) return points;
