@@ -1,6 +1,5 @@
 plugins {
     id 'java'
-    id 'org.openjfx.javafxplugin' version '0.1.0'
 }
 
 group 'de.dfki'
@@ -10,17 +9,12 @@ repositories {
     maven { url "https://repo.spring.io/libs-release" }
 }
 
-javafx {
-    version = '21'
-    modules = [ 'javafx.controls', 'javafx.graphics', 'javafx.fxml', 'javafx.swing' ]
-}
+// Phase 8: Removed JavaFX plugin - Swing UI has been removed
 
 dependencies {
     implementation project(":core")
     implementation "io.javalin:javalin:4.6.8"
     implementation 'org.jetbrains:annotations:16.0.2'
-    // https://mvnrepository.com/artifact/org.slick2d/slick2d-core
-    implementation group: 'org.slick2d', name: 'slick2d-core', version: '1.0.2' // needed for documentation
     // https://mvnrepository.com/artifact/org.reflections/reflections
     implementation group: 'org.reflections', name: 'reflections', version: '0.9.12'
     // https://mvnrepository.com/artifact/jpl/jpl
@@ -29,10 +23,6 @@ dependencies {
     implementation group: 'net.java.dev.jna', name: 'jna', version: '4.2.2'
     // https://mvnrepository.com/artifact/net.java.dev.jna/jna-platform
     implementation group: 'net.java.dev.jna', name: 'jna-platform', version: '4.2.2'
-    // https://mvnrepository.com/artifact/com.1stleg/jnativehook
-    implementation group: 'com.1stleg', name: 'jnativehook', version: '2.1.0'
-    // https://mvnrepository.com/artifact/com.fifesoft/autocomplete
-    implementation group: 'com.fifesoft', name: 'autocomplete', version: '2.0.5.1'
     // https://mvnrepository.com/artifact/math.geom2d/javaGeom
     implementation group: 'math.geom2d', name: 'javaGeom', version: '0.11.1'
     // https://mvnrepository.com/artifact/net.sourceforge.javaflacencoder/java-flac-encoder
@@ -41,16 +31,19 @@ dependencies {
     implementation group: 'org.json', name: 'json', version: '20171018'
     // https://mvnrepository.com/artifact/javax.xml.bind/jaxb-api
     implementation group: 'javax.xml.bind', name: 'jaxb-api', version: '2.4.0-b180830.0359'
-    // https://mvnrepository.com/artifact/com.github.sarxos/webcam-capture
-    implementation group: 'com.github.sarxos', name: 'webcam-capture', version: '0.3.12'
     // https://mvnrepository.com/artifact/com.google.zxing/core
     implementation group: 'com.google.zxing', name: 'core', version: '2.0'
-    // https://mvnrepository.com/artifact/com.google.zxing/javase
-    implementation group: 'com.google.zxing', name: 'javase', version: '2.0'
     // https://mvnrepository.com/artifact/org.slf4j/slf4j-api
     implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.25'
-    // https://mvnrepository.com/artifact/com.nativelibs4java/bridj
-    implementation group: 'com.nativelibs4java', name: 'bridj', version: '0.7.0'
+
+    // Phase 8: Removed Swing-related dependencies:
+    // - org.openjfx.javafxplugin (JavaFX)
+    // - slick2d-core (documentation)
+    // - jnativehook (global keyboard hooks)
+    // - autocomplete (Swing text completion)
+    // - webcam-capture (Swing webcam UI)
+    // - javase (zxing AWT support)
+    // - bridj (native bindings)
 }
 
 import java.util.Locale

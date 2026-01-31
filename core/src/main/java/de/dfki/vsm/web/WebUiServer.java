@@ -1,7 +1,15 @@
 package de.dfki.vsm.web;
 
 import de.dfki.vsm.Preferences;
+import de.dfki.vsm.model.acticon.ActiconAction;
+import de.dfki.vsm.model.acticon.ActiconConfig;
+import de.dfki.vsm.model.gesticon.GesticonAgent;
+import de.dfki.vsm.model.gesticon.GesticonConfig;
+import de.dfki.vsm.model.gesticon.GesticonGesture;
 import de.dfki.vsm.model.project.ProjectConfig;
+import de.dfki.vsm.model.scenescript.SceneObject;
+import de.dfki.vsm.model.scenescript.ScriptDiagnostics;
+import de.dfki.vsm.model.scenescript.SceneScript;
 import de.dfki.vsm.model.sceneflow.chart.BasicNode;
 import de.dfki.vsm.model.sceneflow.chart.edge.AbstractEdge;
 import de.dfki.vsm.model.sceneflow.chart.graphics.edge.EdgeGraphics;
@@ -52,6 +60,7 @@ import de.dfki.vsm.runtime.interpreter.value.AbstractValue;
 import java.util.List;
 import java.util.ArrayList;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
+import de.dfki.vsm.util.xml.XMLUtilities;
 import io.javalin.Javalin;
 import io.javalin.core.util.Header;
 import io.javalin.http.staticfiles.Location;
@@ -68,12 +77,19 @@ import java.nio.file.Paths;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import de.dfki.vsm.model.visicon.VisiconAgent;
+import de.dfki.vsm.model.visicon.VisiconConfig;
+import de.dfki.vsm.model.visicon.VisiconViseme;
 
 public final class WebUiServer implements EventListener {
 
@@ -346,7 +362,7 @@ public final class WebUiServer implements EventListener {
         mApp.post(API_PREFIX + "/projects/{pid}/save", this::handleProjectSave);
         mApp.post(API_PREFIX + "/projects/{pid}/save-as", this::handleProjectSaveAs);
         mApp.post(API_PREFIX + "/projects/{pid}/close", this::handleProjectClose);
-        mApp.get(API_PREFIX + "/projects/{pid}/config", this::handleProjectConfig);
+        mApp.get(API_PREFIX + "/projects/{pid}/config", this::handleEditorConfig);
         mApp.get(API_PREFIX + "/projects/{pid}/project-config", this::handleProjectConfig);
         mApp.get(API_PREFIX + "/projects/{pid}/project-config/keys", this::handleProjectConfigKeys);
         mApp.get(API_PREFIX + "/projects/{pid}/script", this::handleScript);
@@ -620,11 +636,111 @@ public final class WebUiServer implements EventListener {
         if (showNodeId != null) prefs.put("shownodeid", showNodeId);
         if (showVariables != null) prefs.put("showvariables", showVariables);
         if (visualization != null) prefs.put("visualization", visualization);
+        String xmlns = Preferences.getProperty("xmlns");
+        String xmlnsXsi = Preferences.getProperty("xmlns_xsi");
+        String schemaLocation = Preferences.getProperty("xsi_schemeLocation");
+        if (xmlns != null) prefs.put("xmlns", xmlns);
+        if (xmlnsXsi != null) prefs.put("xmlns_xsi", xmlnsXsi);
+        if (schemaLocation != null) prefs.put("xsi_schemeLocation", schemaLocation);
         return prefs;
     }
 
     private int getPreferenceInt(String key, int defaultValue) {
         String value = Preferences.getProperty(key);
+        if (value == null || value.isBlank()) {
+            return defaultValue;
+        }
+        try {
+            return Integer.parseInt(value.trim());
+        } catch (NumberFormatException e) {
+            return defaultValue;
+        }
+    }
+
+    private Properties loadEditorConfig(ProjectRef ref) {
+        if (ref == null) {
+            Properties props = new Properties();
+            ensureEditorConfigDefaults(props);
+            return props;
+        }
+        if (ref.editorConfigLoaded && ref.editorConfig != null) {
+            return ref.editorConfig;
+        }
+        Properties props = new Properties();
+        String path = ref.path == null ? "" : ref.path.trim();
+        if (!path.isBlank()) {
+            java.io.File file = new java.io.File(path, "editorconfig.xml");
+            if (file.exists()) {
+                try (FileInputStream in = new FileInputStream(file)) {
+                    props.loadFromXML(in);
+                } catch (IOException exc) {
+                    sLogger.warning("Warning: cannot load editorconfig.xml: " + exc.getMessage());
+                }
+            }
+        }
+        ensureEditorConfigDefaults(props);
+        ref.editorConfig = props;
+        ref.editorConfigLoaded = true;
+        return props;
+    }
+
+    private void ensureEditorConfigDefaults(Properties props) {
+        if (props == null) return;
+        if (!props.containsKey("node_width")) props.setProperty("node_width", "90");
+        if (!props.containsKey("node_height")) props.setProperty("node_height", "90");
+        if (!props.containsKey("grid_x")) props.setProperty("grid_x", "1");
+        if (!props.containsKey("grid_y")) props.setProperty("grid_y", "1");
+        if (!props.containsKey("grid")) props.setProperty("grid", "true");
+        if (!props.containsKey("visualization")) props.setProperty("visualization", "true");
+        if (!props.containsKey("visualizationtrace")) props.setProperty("visualizationtrace", "true");
+        if (!props.containsKey("shownodeid")) props.setProperty("shownodeid", "true");
+        if (!props.containsKey("showvariables")) props.setProperty("showvariables", "true");
+        if (!props.containsKey("workspace_fontsize")) props.setProperty("workspace_fontsize", "11");
+        if (!props.containsKey("scriptfonsize")) props.setProperty("scriptfonsize", "16");
+        if (!props.containsKey("scriptfonttype")) props.setProperty("scriptfonttype", "Monospaced");
+        if (!props.containsKey("showsceneelements")) props.setProperty("showsceneelements", "false");
+        if (!props.containsKey("defaultsupernodename")) props.setProperty("defaultsupernodename", "default");
+        if (!props.containsKey("num_magnets")) props.setProperty("num_magnets", "8");
+        if (!props.containsKey("autohidebottombar")) props.setProperty("autohidebottombar", "true");
+    }
+
+    private JSONObject editorConfigToJson(Properties props) {
+        JSONObject json = new JSONObject();
+        if (props == null) {
+            return json;
+        }
+        for (String key : props.stringPropertyNames()) {
+            json.put(key, props.getProperty(key));
+        }
+        return json;
+    }
+
+    private boolean saveEditorConfig(ProjectRef ref) {
+        if (ref == null) return false;
+        String path = ref.path == null ? "" : ref.path.trim();
+        if (path.isBlank()) return false;
+        Properties props = loadEditorConfig(ref);
+        java.io.File file = new java.io.File(path, "editorconfig.xml");
+        try {
+            java.io.File parent = file.getParentFile();
+            if (parent != null && !parent.exists()) {
+                parent.mkdirs();
+            }
+            try (FileOutputStream out = new FileOutputStream(file)) {
+                props.storeToXML(out, "VSM Editor Config");
+            }
+            ref.editorConfigDirty = false;
+            return true;
+        } catch (IOException exc) {
+            sLogger.warning("Warning: cannot save editorconfig.xml: " + exc.getMessage());
+            return false;
+        }
+    }
+
+    private int getEditorConfigInt(ProjectRef ref, String key, int defaultValue) {
+        Properties props = loadEditorConfig(ref);
+        if (props == null) return defaultValue;
+        String value = props.getProperty(key);
         if (value == null || value.isBlank()) {
             return defaultValue;
         }
@@ -650,6 +766,7 @@ public final class WebUiServer implements EventListener {
             return;
         }
         String projectId = ensureProject(path, fileName(path));
+        addRecent(path, fileName(path));
         response.put("projectId", projectId);
         response.put("path", path);
         response.put("name", fileName(path));
@@ -670,7 +787,29 @@ public final class WebUiServer implements EventListener {
 
     private void handleProjectSave(Context ctx) {
         String pid = ctx.pathParam("pid");
+        ProjectRef ref = projectStore.get(pid);
+        if (ref == null || ref.runtimeProject == null) {
+            ctx.status(404).result("Project not found");
+            return;
+        }
+        String path = ref.path == null ? "" : ref.path.trim();
+        if (path.isBlank()) {
+            ctx.status(400).result("Save-as required: no project path");
+            return;
+        }
+        boolean ok = ref.runtimeProject.write(new java.io.File(path));
+        if (!ok) {
+            ctx.status(500).result("Failed to save project");
+            return;
+        }
+        if (ref.editorConfigLoaded && ref.editorConfigDirty) {
+            if (!saveEditorConfig(ref)) {
+                ctx.status(500).result("Failed to save editor config");
+                return;
+            }
+        }
         markClean(pid);
+        addRecent(path, ref.name);
         JSONObject response = new JSONObject();
         response.put("status", "ok");
         writeJson(ctx, response);
@@ -680,14 +819,36 @@ public final class WebUiServer implements EventListener {
         JSONObject body = new JSONObject(ctx.body());
         String path = body.optString("path", "");
         String pid = ctx.pathParam("pid");
-        if (!pid.isEmpty()) {
-            ProjectRef ref = projectStore.get(pid);
-            if (ref != null) {
-                ref.path = path;
-                ref.name = fileName(path);
-                ref.dirty = false;
+        if (pid.isEmpty()) {
+            ctx.status(404).result("Project not found");
+            return;
+        }
+        ProjectRef ref = projectStore.get(pid);
+        if (ref == null || ref.runtimeProject == null) {
+            ctx.status(404).result("Project not found");
+            return;
+        }
+        if (path == null || path.isBlank()) {
+            ctx.status(400).result("Missing path");
+            return;
+        }
+        ref.path = path;
+        ref.name = fileName(path);
+        ref.runtimeProject.setProjectPath(path);
+        ref.runtimeProject.setProjectName(ref.name);
+        boolean ok = ref.runtimeProject.write(new java.io.File(path));
+        if (!ok) {
+            ctx.status(500).result("Failed to save project");
+            return;
+        }
+        if (ref.editorConfigLoaded && ref.editorConfigDirty) {
+            if (!saveEditorConfig(ref)) {
+                ctx.status(500).result("Failed to save editor config");
+                return;
             }
         }
+        ref.dirty = false;
+        addRecent(path, ref.name);
         JSONObject response = new JSONObject();
         response.put("status", "ok");
         response.put("path", path);
@@ -725,6 +886,19 @@ public final class WebUiServer implements EventListener {
         writeJson(ctx, response);
     }
 
+    private void handleEditorConfig(Context ctx) {
+        String pid = ctx.pathParam("pid");
+        ProjectRef ref = projectStore.get(pid);
+        JSONObject response = new JSONObject();
+        if (ref != null) {
+            Properties config = loadEditorConfig(ref);
+            response.put("config", editorConfigToJson(config));
+        } else {
+            response.put("config", new JSONObject());
+        }
+        writeJson(ctx, response);
+    }
+
     private void handleProjectConfigKeys(Context ctx) {
         JSONObject response = new JSONObject();
         response.put("keys", new JSONArray());
@@ -737,27 +911,130 @@ public final class WebUiServer implements EventListener {
         JSONObject response = new JSONObject();
         if (ref != null && ref.runtimeProject != null) {
             try {
-                String script = loadFile(ref.runtimeProject.getProjectPath(), "scenescript.xml");
-                response.put("script", script == null ? "" : script);
+                ensureScriptLoaded(ref);
+                response.put("text", ref.scriptText == null ? "" : ref.scriptText);
+                response.put("version", ref.scriptVersion);
+                response.put("parseOk", ref.scriptParseOk);
+                response.put("parseErrors", diagnosticsToJson(ref.scriptParseErrors));
             } catch (Exception exc) {
                 sLogger.warning("Warning: cannot load script for pid=" + pid + ": " + exc.getMessage());
-                response.put("script", "");
+                response.put("text", "");
+                response.put("version", ref != null ? ref.scriptVersion : 1);
+                response.put("parseOk", true);
+                response.put("parseErrors", new JSONArray());
             }
         } else {
-            response.put("script", "");
+            response.put("text", "");
+            response.put("version", 1);
+            response.put("parseOk", true);
+            response.put("parseErrors", new JSONArray());
         }
         writeJson(ctx, response);
     }
 
     private void handleScriptScenes(Context ctx) {
         JSONObject response = new JSONObject();
-        response.put("scenes", new JSONArray());
+        JSONArray languages = new JSONArray();
+        String pid = ctx.pathParam("pid");
+        ProjectRef ref = projectStore.get(pid);
+        if (ref != null && ref.runtimeProject != null) {
+            SceneScript script = ref.runtimeProject.getSceneScript();
+            Map<String, Map<String, Integer>> grouped = new java.util.TreeMap<>();
+            for (SceneObject scene : script.getSceneList()) {
+                if (scene == null) continue;
+                String language = scene.getLanguage();
+                String name = scene.getName();
+                String langKey = language == null ? "" : language.trim();
+                String nameKey = name == null ? "" : name.trim();
+                if (nameKey.isEmpty()) {
+                    continue;
+                }
+                grouped.computeIfAbsent(langKey, key -> new java.util.TreeMap<>())
+                    .merge(nameKey, 1, Integer::sum);
+            }
+            for (Map.Entry<String, Map<String, Integer>> langEntry : grouped.entrySet()) {
+                JSONObject langJson = new JSONObject();
+                langJson.put("language", langEntry.getKey());
+                JSONArray groups = new JSONArray();
+                for (Map.Entry<String, Integer> groupEntry : langEntry.getValue().entrySet()) {
+                    JSONObject groupJson = new JSONObject();
+                    groupJson.put("name", groupEntry.getKey());
+                    groupJson.put("count", groupEntry.getValue());
+                    groups.put(groupJson);
+                }
+                langJson.put("groups", groups);
+                languages.put(langJson);
+            }
+        }
+        response.put("languages", languages);
         writeJson(ctx, response);
     }
 
     private void handleScriptElements(Context ctx) {
         JSONObject response = new JSONObject();
-        response.put("elements", new JSONArray());
+        String pid = ctx.pathParam("pid");
+        ProjectRef ref = projectStore.get(pid);
+        JSONArray acticonJson = new JSONArray();
+        JSONArray gesticonJson = new JSONArray();
+        JSONArray visiconJson = new JSONArray();
+        if (ref != null && ref.runtimeProject != null) {
+            ActiconConfig acticon = ref.runtimeProject.getActicon();
+            if (acticon != null) {
+                for (ActiconAction action : acticon.getActionList()) {
+                    if (action == null) continue;
+                    JSONObject item = new JSONObject();
+                    item.put("name", action.getActionName() == null ? "" : action.getActionName());
+                    item.put("script", action.toScript());
+                    acticonJson.put(item);
+                }
+            }
+
+            GesticonConfig gesticon = ref.runtimeProject.getGesticon();
+            if (gesticon != null) {
+                for (GesticonAgent agent : gesticon.getAgentList()) {
+                    if (agent == null) continue;
+                    JSONObject agentJson = new JSONObject();
+                    agentJson.put("agent", agent.getAgentName() == null ? "" : agent.getAgentName());
+                    agentJson.put("icon", agent.getAgentIcon() == null ? "" : agent.getAgentIcon());
+                    JSONArray gestures = new JSONArray();
+                    for (GesticonGesture gesture : agent.getGestureList()) {
+                        if (gesture == null) continue;
+                        JSONObject gestureJson = new JSONObject();
+                        gestureJson.put("character", gesture.getCharacter());
+                        gestureJson.put("animName", gesture.getAnimName());
+                        gestureJson.put("animPath", gesture.getAnimPath());
+                        gestureJson.put("category", gesture.getCategory());
+                        gestureJson.put("script", "");
+                        gestures.put(gestureJson);
+                    }
+                    agentJson.put("gestures", gestures);
+                    gesticonJson.put(agentJson);
+                }
+            }
+
+            VisiconConfig visicon = ref.runtimeProject.getVisicon();
+            if (visicon != null) {
+                for (VisiconAgent agent : visicon.getAgentList()) {
+                    if (agent == null) continue;
+                    JSONObject agentJson = new JSONObject();
+                    agentJson.put("agent", agent.getAgentName() == null ? "" : agent.getAgentName());
+                    agentJson.put("icon", agent.getAgentIcon() == null ? "" : agent.getAgentIcon());
+                    JSONArray visemes = new JSONArray();
+                    for (VisiconViseme viseme : agent.getVisemeList()) {
+                        if (viseme == null) continue;
+                        JSONObject visemeJson = new JSONObject();
+                        visemeJson.put("key", viseme.getKey());
+                        visemeJson.put("value", viseme.getValue());
+                        visemes.put(visemeJson);
+                    }
+                    agentJson.put("visemes", visemes);
+                    visiconJson.put(agentJson);
+                }
+            }
+        }
+        response.put("acticon", acticonJson);
+        response.put("gesticon", gesticonJson);
+        response.put("visicon", visiconJson);
         writeJson(ctx, response);
     }
 
@@ -819,6 +1096,10 @@ public final class WebUiServer implements EventListener {
         snapshot.put("superNodeId", superNode.getId() != null ? superNode.getId() : "");
         snapshot.put("revision", superNode.hashCode());
 
+        ProjectRef ref = projectStore.get(projectId);
+        int nodeWidth = getEditorConfigInt(ref, "node_width", 90);
+        int nodeHeight = getEditorConfigInt(ref, "node_height", nodeWidth);
+
         // SuperNode info
         JSONObject superNodeJson = new JSONObject();
         superNodeJson.put("id", superNode.getId() != null ? superNode.getId() : "");
@@ -855,7 +1136,7 @@ public final class WebUiServer implements EventListener {
 
         // SuperNode data
         Set<String> altStartIds = collectAltStartIds(superNode);
-        JSONObject superNodeData = nodeToJsonCore(superNode, superNode, altStartIds);
+        JSONObject superNodeData = nodeToJsonCore(superNode, superNode, altStartIds, nodeWidth, nodeHeight);
         superNodeData.put("isStart", superNode.getParentNode() == null ||
             (superNode.getParentNode() != null && superNode.getParentNode().getStartNodeMap().containsKey(superNode.getId())));
         superNodeData.put("isRoot", superNode.getParentNode() == null);
@@ -864,7 +1145,7 @@ public final class WebUiServer implements EventListener {
         // Nodes at current level only
         JSONArray nodes = new JSONArray();
         for (BasicNode node : superNode.getNodeAndSuperNodeList()) {
-            nodes.put(nodeToJsonCore(node, superNode, altStartIds));
+            nodes.put(nodeToJsonCore(node, superNode, altStartIds, nodeWidth, nodeHeight));
         }
         snapshot.put("nodes", nodes);
 
@@ -940,7 +1221,7 @@ public final class WebUiServer implements EventListener {
         return altStartIds;
     }
 
-    private JSONObject nodeToJsonCore(BasicNode node, SuperNode superNode, Set<String> altStartIds) {
+    private JSONObject nodeToJsonCore(BasicNode node, SuperNode superNode, Set<String> altStartIds, int nodeWidth, int nodeHeight) {
         JSONObject json = new JSONObject();
         json.put("id", node.getId());
         json.put("type", (node instanceof SuperNode) ? "Super" : "Basic");
@@ -968,9 +1249,6 @@ public final class WebUiServer implements EventListener {
         json.put("graphics", graphics);
 
         JSONObject size = new JSONObject();
-        // Use configured node size from preferences (default 90x90)
-        int nodeWidth = getPreferenceInt("node_width", 90);
-        int nodeHeight = getPreferenceInt("node_height", 90);
         size.put("w", nodeWidth);
         size.put("h", nodeHeight);
         json.put("size", size);
@@ -1203,7 +1481,22 @@ public final class WebUiServer implements EventListener {
 
     private void handleScriptDiagnostics(Context ctx) {
         JSONObject response = new JSONObject();
-        response.put("issues", new JSONArray());
+        try {
+            JSONObject body = new JSONObject(ctx.body());
+            String text = body.optString("text", "");
+            if (text == null || text.isBlank()) {
+                response.put("parseOk", true);
+                response.put("parseErrors", new JSONArray());
+                writeJson(ctx, response);
+                return;
+            }
+            ScriptDiagnostics.Result result = ScriptDiagnostics.analyze(text);
+            response.put("parseOk", result.isParseOk());
+            response.put("parseErrors", diagnosticsToJson(result.getDiagnostics()));
+        } catch (Exception exc) {
+            response.put("parseOk", false);
+            response.put("parseErrors", new JSONArray());
+        }
         writeJson(ctx, response);
     }
 
@@ -1669,23 +1962,116 @@ public final class WebUiServer implements EventListener {
             case "SceneFlow.Snapshot":
                 return snapshotPayload(params.optString("projectId", ""));
             case "SceneFlow.Node.Add":
-                return mutateAndSnapshot(params.optString("projectId", ""), () -> addNode(params), broadcaster);
+            case "SceneFlow.Node.Create":
+                return createNodeForProject(params, broadcaster);
             case "SceneFlow.Node.Update":
-                return mutateAndSnapshot(params.optString("projectId", ""), () -> updateNode(params), broadcaster);
+                return updateNodeForProject(params, broadcaster);
             case "SceneFlow.Node.Delete":
-                return mutateAndSnapshot(params.optString("projectId", ""), () -> deleteNode(params), broadcaster);
+                return deleteNodeForProject(params, broadcaster);
+            case "SceneFlow.Node.Move":
+                return moveNodeForProject(params, broadcaster);
             case "SceneFlow.Edge.Add":
-                return mutateAndSnapshot(params.optString("projectId", ""), () -> addEdge(params), broadcaster);
+            case "SceneFlow.Edge.Create":
+                return createEdgeForProject(params, broadcaster);
             case "SceneFlow.Edge.Update":
-                return mutateAndSnapshot(params.optString("projectId", ""), () -> updateEdge(params), broadcaster);
+                return updateEdgeForProject(params, broadcaster);
             case "SceneFlow.Edge.Delete":
-                return mutateAndSnapshot(params.optString("projectId", ""), () -> deleteEdge(params), broadcaster);
+                return deleteEdgeForProject(params, broadcaster);
             case "SceneFlow.Comment.Add":
-                return mutateAndSnapshot(params.optString("projectId", ""), () -> addComment(params), broadcaster);
+            case "SceneFlow.Comment.Create":
+                return createCommentForProject(params, broadcaster);
             case "SceneFlow.Comment.Update":
-                return mutateAndSnapshot(params.optString("projectId", ""), () -> updateComment(params), broadcaster);
+                return updateCommentForProject(params, broadcaster);
             case "SceneFlow.Comment.Delete":
-                return mutateAndSnapshot(params.optString("projectId", ""), () -> deleteComment(params), broadcaster);
+                return deleteCommentForProject(params, broadcaster);
+            case "Script.Update":
+                return updateScriptForProject(params, broadcaster);
+            case "Config.Update": {
+                String pid = params.optString("projectId", "");
+                JSONObject values = params.optJSONObject("values");
+                if (pid.isBlank()) {
+                    return errorResponse("BAD_REQUEST", "Missing projectId");
+                }
+                if (values == null) {
+                    return errorResponse("BAD_REQUEST", "Missing values");
+                }
+                ProjectRef ref = projectStore.get(pid);
+                if (ref == null) {
+                    return errorResponse("PROJECT_NOT_FOUND", "Project not found");
+                }
+                Properties config = loadEditorConfig(ref);
+                for (String key : values.keySet()) {
+                    Object raw = values.get(key);
+                    if (raw == null || raw == JSONObject.NULL) {
+                        config.remove(key);
+                    } else {
+                        config.setProperty(key, String.valueOf(raw));
+                    }
+                }
+                boolean saved = false;
+                boolean pending = false;
+                String path = ref.path == null ? "" : ref.path.trim();
+                if (!path.isBlank()) {
+                    saved = saveEditorConfig(ref);
+                    if (!saved) {
+                        return errorResponse("CONFIG_SAVE_FAILED", "Failed to save editor config");
+                    }
+                } else {
+                    pending = true;
+                    ref.editorConfigDirty = true;
+                    ref.dirty = true;
+                }
+                JSONObject response = new JSONObject();
+                response.put("status", "ok");
+                response.put("config", editorConfigToJson(config));
+                response.put("saved", saved);
+                response.put("pending", pending);
+                if (ref.runtimeProject != null) {
+                    SceneFlow sceneFlow = ref.runtimeProject.getSceneFlow();
+                    String superNodeId = params.optString("superNodeId", "");
+                    SuperNode snapshotTarget = resolveSuperNode(sceneFlow, superNodeId);
+                    JSONObject snapshot = createSceneFlowSnapshot(
+                            ref.runtimeProject,
+                            pid,
+                            snapshotTarget != null ? snapshotTarget : sceneFlow,
+                            sceneFlow
+                    );
+                    response.put("snapshot", snapshot);
+                    if (broadcaster != null) {
+                        JSONObject evt = new JSONObject();
+                        evt.put("event", "sceneflow.snapshot");
+                        evt.put("snapshot", snapshot);
+                        broadcaster.accept(evt.toString());
+                    }
+                }
+                return response;
+            }
+            case "Preferences.Update": {
+                JSONObject values = params.optJSONObject("values");
+                if (values == null) {
+                    return errorResponse("BAD_REQUEST", "Missing values");
+                }
+                for (String key : values.keySet()) {
+                    Object raw = values.get(key);
+                    if (raw == null || raw == JSONObject.NULL) {
+                        Preferences.removeProperty(key);
+                    } else {
+                        Preferences.setProperty(key, String.valueOf(raw));
+                    }
+                }
+                Preferences.save();
+                JSONObject prefs = preferencesToJson();
+                if (broadcaster != null) {
+                    JSONObject evt = new JSONObject();
+                    evt.put("event", "system.preferences");
+                    evt.put("preferences", prefs);
+                    broadcaster.accept(evt.toString());
+                }
+                JSONObject response = new JSONObject();
+                response.put("status", "ok");
+                response.put("preferences", prefs);
+                return response;
+            }
             case "Project.Save":
             case "Project.SaveAs":
             case "Project.Close":
@@ -1801,8 +2187,9 @@ public final class WebUiServer implements EventListener {
                 list.add(insertIndex, varDef);
 
                 SuperNode snapshotTarget = resolveSuperNode(sceneFlow, superNodeId);
-                JSONObject response = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
-                response.put("status", "ok");
+                JSONObject snapshot = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
+                JSONObject response = buildSceneFlowResponse(snapshot);
+                broadcastSceneFlowSnapshot(broadcaster, pid, snapshot);
                 return response;
             }
 
@@ -1841,8 +2228,9 @@ public final class WebUiServer implements EventListener {
                 list.set(index, varDef);
 
                 SuperNode snapshotTarget = resolveSuperNode(sceneFlow, superNodeId);
-                JSONObject response = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
-                response.put("status", "ok");
+                JSONObject snapshot = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
+                JSONObject response = buildSceneFlowResponse(snapshot);
+                broadcastSceneFlowSnapshot(broadcaster, pid, snapshot);
                 return response;
             }
 
@@ -1874,8 +2262,9 @@ public final class WebUiServer implements EventListener {
                 list.remove(index);
 
                 SuperNode snapshotTarget = resolveSuperNode(sceneFlow, superNodeId);
-                JSONObject response = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
-                response.put("status", "ok");
+                JSONObject snapshot = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
+                JSONObject response = buildSceneFlowResponse(snapshot);
+                broadcastSceneFlowSnapshot(broadcaster, pid, snapshot);
                 return response;
             }
 
@@ -1911,8 +2300,9 @@ public final class WebUiServer implements EventListener {
                 }
 
                 SuperNode snapshotTarget = resolveSuperNode(sceneFlow, superNodeId);
-                JSONObject response = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
-                response.put("status", "ok");
+                JSONObject snapshot = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
+                JSONObject response = buildSceneFlowResponse(snapshot);
+                broadcastSceneFlowSnapshot(broadcaster, pid, snapshot);
                 return response;
             }
 
@@ -1949,8 +2339,9 @@ public final class WebUiServer implements EventListener {
                 list.add(insertIndex, typeDef);
 
                 SuperNode snapshotTarget = resolveSuperNode(sceneFlow, superNodeId);
-                JSONObject response = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
-                response.put("status", "ok");
+                JSONObject snapshot = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
+                JSONObject response = buildSceneFlowResponse(snapshot);
+                broadcastSceneFlowSnapshot(broadcaster, pid, snapshot);
                 return response;
             }
 
@@ -1989,8 +2380,9 @@ public final class WebUiServer implements EventListener {
                 list.set(index, typeDef);
 
                 SuperNode snapshotTarget = resolveSuperNode(sceneFlow, superNodeId);
-                JSONObject response = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
-                response.put("status", "ok");
+                JSONObject snapshot = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
+                JSONObject response = buildSceneFlowResponse(snapshot);
+                broadcastSceneFlowSnapshot(broadcaster, pid, snapshot);
                 return response;
             }
 
@@ -2022,8 +2414,9 @@ public final class WebUiServer implements EventListener {
                 list.remove(index);
 
                 SuperNode snapshotTarget = resolveSuperNode(sceneFlow, superNodeId);
-                JSONObject response = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
-                response.put("status", "ok");
+                JSONObject snapshot = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
+                JSONObject response = buildSceneFlowResponse(snapshot);
+                broadcastSceneFlowSnapshot(broadcaster, pid, snapshot);
                 return response;
             }
 
@@ -2059,8 +2452,9 @@ public final class WebUiServer implements EventListener {
                 }
 
                 SuperNode snapshotTarget = resolveSuperNode(sceneFlow, superNodeId);
-                JSONObject response = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
-                response.put("status", "ok");
+                JSONObject snapshot = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
+                JSONObject response = buildSceneFlowResponse(snapshot);
+                broadcastSceneFlowSnapshot(broadcaster, pid, snapshot);
                 return response;
             }
 
@@ -2097,8 +2491,9 @@ public final class WebUiServer implements EventListener {
                 list.add(insertIndex, command);
 
                 SuperNode snapshotTarget = resolveSuperNode(sceneFlow, superNodeId);
-                JSONObject response = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
-                response.put("status", "ok");
+                JSONObject snapshot = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
+                JSONObject response = buildSceneFlowResponse(snapshot);
+                broadcastSceneFlowSnapshot(broadcaster, pid, snapshot);
                 return response;
             }
 
@@ -2137,8 +2532,9 @@ public final class WebUiServer implements EventListener {
                 list.set(index, command);
 
                 SuperNode snapshotTarget = resolveSuperNode(sceneFlow, superNodeId);
-                JSONObject response = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
-                response.put("status", "ok");
+                JSONObject snapshot = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
+                JSONObject response = buildSceneFlowResponse(snapshot);
+                broadcastSceneFlowSnapshot(broadcaster, pid, snapshot);
                 return response;
             }
 
@@ -2170,8 +2566,9 @@ public final class WebUiServer implements EventListener {
                 list.remove(index);
 
                 SuperNode snapshotTarget = resolveSuperNode(sceneFlow, superNodeId);
-                JSONObject response = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
-                response.put("status", "ok");
+                JSONObject snapshot = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
+                JSONObject response = buildSceneFlowResponse(snapshot);
+                broadcastSceneFlowSnapshot(broadcaster, pid, snapshot);
                 return response;
             }
 
@@ -2207,8 +2604,9 @@ public final class WebUiServer implements EventListener {
                 }
 
                 SuperNode snapshotTarget = resolveSuperNode(sceneFlow, superNodeId);
-                JSONObject response = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
-                response.put("status", "ok");
+                JSONObject snapshot = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
+                JSONObject response = buildSceneFlowResponse(snapshot);
+                broadcastSceneFlowSnapshot(broadcaster, pid, snapshot);
                 return response;
             }
 
@@ -2236,7 +2634,9 @@ public final class WebUiServer implements EventListener {
 
                 boolean isNormalize = "SceneFlow.Edge.Normalize".equals(method);
                 if (isNormalize) {
-                    normalizeEdge(dataEdge);
+                    int nodeWidth = getEditorConfigInt(ref, "node_width", 90);
+                    int nodeHeight = getEditorConfigInt(ref, "node_height", nodeWidth);
+                    normalizeEdge(dataEdge, nodeWidth, nodeHeight);
                 } else {
                     straightenEdge(dataEdge);
                 }
@@ -2261,10 +2661,12 @@ public final class WebUiServer implements EventListener {
                 SuperNode targetNode = snapshotTarget != null ? snapshotTarget : sceneFlow;
 
                 boolean isNormalize = "SceneFlow.Edge.NormalizeAll".equals(method);
+                int nodeWidth = getEditorConfigInt(ref, "node_width", 90);
+                int nodeHeight = getEditorConfigInt(ref, "node_height", nodeWidth);
                 for (BasicNode node : targetNode.getNodeAndSuperNodeList()) {
                     for (AbstractEdge edge : node.getEdgeList()) {
                         if (isNormalize) {
-                            normalizeEdge(edge);
+                            normalizeEdge(edge, nodeWidth, nodeHeight);
                         } else {
                             straightenEdge(edge);
                         }
@@ -2295,13 +2697,15 @@ public final class WebUiServer implements EventListener {
                 SuperNode targetNode = snapshotTarget != null ? snapshotTarget : sceneFlow;
 
                 boolean isNormalize = "SceneFlow.Edge.NormalizeGroup".equals(method);
+                int nodeWidth = getEditorConfigInt(ref, "node_width", 90);
+                int nodeHeight = getEditorConfigInt(ref, "node_height", nodeWidth);
                 for (int i = 0; i < edgeIds.length(); i++) {
                     String edgeId = edgeIds.optString(i, "").trim();
                     if (!edgeId.isEmpty()) {
                         AbstractEdge dataEdge = resolveEdgeById(targetNode, edgeId);
                         if (dataEdge != null) {
                             if (isNormalize) {
-                                normalizeEdge(dataEdge);
+                                normalizeEdge(dataEdge, nodeWidth, nodeHeight);
                             } else {
                                 straightenEdge(dataEdge);
                             }
@@ -2349,8 +2753,8 @@ public final class WebUiServer implements EventListener {
                 }
 
                 // Get node dimensions for dock point handling
-                int nodeWidth = getPreferenceInt("node_width", 90);
-                int nodeHeight = getPreferenceInt("node_height", 90);
+                int nodeWidth = getEditorConfigInt(ref, "node_width", 90);
+                int nodeHeight = getEditorConfigInt(ref, "node_height", nodeWidth);
 
                 // Release old target's dock point
                 if (oldTargetNode != null) {
@@ -2657,10 +3061,10 @@ public final class WebUiServer implements EventListener {
                 SuperNode activeSuperNode = snapshotTarget != null ? snapshotTarget : sceneFlow;
 
                 // Get grid and node dimensions from preferences
-                int gridX = getPreferenceInt("grid_x", 10);
-                int gridY = getPreferenceInt("grid_y", 10);
-                int nodeW = getPreferenceInt("node_width", 90);
-                int nodeH = getPreferenceInt("node_height", 90);
+                int gridX = getEditorConfigInt(ref, "grid_x", 10);
+                int gridY = getEditorConfigInt(ref, "grid_y", 10);
+                int nodeW = getEditorConfigInt(ref, "node_width", 90);
+                int nodeH = getEditorConfigInt(ref, "node_height", nodeW);
                 double snapOriginX = nodeW / 2.0 + nodeW / 3.0;
                 double snapOriginY = nodeH / 2.0 + nodeH / 3.0;
 
@@ -2770,6 +3174,829 @@ public final class WebUiServer implements EventListener {
         return resp;
     }
 
+    private JSONObject buildSceneFlowResponse(JSONObject snapshot) {
+        JSONObject resp = new JSONObject();
+        resp.put("status", "ok");
+        resp.put("snapshot", snapshot);
+        return resp;
+    }
+
+    private void broadcastSceneFlowSnapshot(java.util.function.Consumer<String> broadcaster, String projectId, JSONObject snapshot) {
+        if (broadcaster == null) {
+            return;
+        }
+        JSONObject evt = new JSONObject();
+        evt.put("event", "sceneflow.snapshot");
+        evt.put("projectId", projectId);
+        evt.put("snapshot", snapshot);
+        broadcaster.accept(evt.toString());
+    }
+
+    private int safeRound(Double value, int fallback) {
+        if (value == null || Double.isNaN(value) || Double.isInfinite(value)) {
+            return fallback;
+        }
+        return (int) Math.round(value);
+    }
+
+    private int computeNextNodeIndex(RunTimeProject rtp) {
+        return computeNextNodeIndex(rtp, false);
+    }
+
+    private int computeNextSuperNodeIndex(RunTimeProject rtp) {
+        return computeNextNodeIndex(rtp, true);
+    }
+
+    private int computeNextNodeIndex(RunTimeProject rtp, boolean superNodes) {
+        if (rtp == null || rtp.getSceneFlow() == null) {
+            return 1;
+        }
+        int max = 0;
+        SceneFlow sceneFlow = rtp.getSceneFlow();
+        List<BasicNode> nodes = new ArrayList<>();
+        collectNodes(sceneFlow, nodes);
+        for (BasicNode node : nodes) {
+            if (node == null) continue;
+            boolean isRoot = node instanceof SuperNode && ((SuperNode) node).getParentNode() == null;
+            if (isRoot) continue;
+            boolean isSuper = node instanceof SuperNode;
+            if (isSuper != superNodes) continue;
+            Integer val = parseNodeIndex(node.getId(), superNodes);
+            if (val != null && val > max) {
+                max = val;
+            }
+        }
+        return max + 1;
+    }
+
+    private Integer parseNodeIndex(String id, boolean superNode) {
+        if (id == null) return null;
+        String trimmed = id.trim();
+        if (trimmed.isEmpty()) return null;
+        String prefix = superNode ? "S" : "N";
+        if (trimmed.length() > 1 && trimmed.startsWith(prefix)) {
+            String rest = trimmed.substring(1);
+            if (rest.matches("\\d+")) {
+                try {
+                    return Integer.parseInt(rest);
+                } catch (NumberFormatException ignore) {
+                    return null;
+                }
+            }
+            return null;
+        }
+        if (trimmed.matches("\\d+")) {
+            try {
+                return Integer.parseInt(trimmed);
+            } catch (NumberFormatException ignore) {
+                return null;
+            }
+        }
+        return null;
+    }
+
+    private String allocateNodeId(ProjectRef ref, boolean superNode, Set<String> used) {
+        String prefix = superNode ? "S" : "N";
+        int next = superNode ? ref.nextSuperNodeIndex : ref.nextNodeIndex;
+        if (next < 1) {
+            next = 1;
+        }
+        String candidate;
+        do {
+            candidate = prefix + next;
+            next += 1;
+        } while (used != null && used.contains(candidate));
+        if (superNode) {
+            ref.nextSuperNodeIndex = next;
+        } else {
+            ref.nextNodeIndex = next;
+        }
+        return candidate;
+    }
+
+    private String normalizeNodeId(String id, boolean superNode, ProjectRef ref, Set<String> used) {
+        String trimmed = id == null ? "" : id.trim();
+        String prefix = superNode ? "S" : "N";
+        if (!trimmed.isEmpty()) {
+            if (trimmed.startsWith(prefix) && trimmed.substring(1).matches("\\d+") && (used == null || !used.contains(trimmed))) {
+                return trimmed;
+            }
+            if (trimmed.matches("\\d+")) {
+                String candidate = prefix + trimmed;
+                if (used == null || !used.contains(candidate)) {
+                    return candidate;
+                }
+            }
+        }
+        return allocateNodeId(ref, superNode, used);
+    }
+
+    private JSONObject createNodeForProject(JSONObject params, java.util.function.Consumer<String> broadcaster) {
+        String pid = params.optString("projectId", "");
+        ProjectRef ref = projectStore.get(pid);
+        if (ref == null || ref.runtimeProject == null) {
+            return mutateAndSnapshot(pid, () -> addNode(params), broadcaster);
+        }
+
+        SceneFlow sceneFlow = ref.runtimeProject.getSceneFlow();
+        String superNodeId = params.optString("superNodeId", null);
+        SuperNode snapshotTarget = resolveSuperNode(sceneFlow, superNodeId);
+        SuperNode activeSuperNode = snapshotTarget != null ? snapshotTarget : sceneFlow;
+
+        String nodeType = params.optString("nodeType", params.optString("type", "Basic"));
+        String nodeId = params.optString("nodeId", "").trim();
+        boolean isSuperNode = "Super".equalsIgnoreCase(nodeType);
+        Set<String> usedIds = new java.util.HashSet<>();
+        List<BasicNode> existingNodes = new ArrayList<>();
+        collectNodes(sceneFlow, existingNodes);
+        for (BasicNode existing : existingNodes) {
+            if (existing == null) continue;
+            String existingId = existing.getId();
+            if (existingId != null) {
+                usedIds.add(existingId);
+            }
+        }
+        if (nodeId.isBlank()) {
+            nodeId = allocateNodeId(ref, isSuperNode, usedIds);
+        } else {
+            nodeId = normalizeNodeId(nodeId, isSuperNode, ref, usedIds);
+        }
+        String name = params.optString("name", "").trim();
+        if (name.isBlank()) {
+            String label = isSuperNode ? "Supernode " : "Node ";
+            name = label + nodeId;
+        }
+
+        BasicNode node = isSuperNode ? new SuperNode() : new BasicNode();
+        node.setId(nodeId);
+        node.setName(name);
+        node.setGraphics(new NodeGraphics(
+            safeRound(params.has("x") ? params.optDouble("x") : null, 0),
+            safeRound(params.has("y") ? params.optDouble("y") : null, 0)
+        ));
+        node.setParentNode(activeSuperNode);
+        if (node instanceof SuperNode) {
+            activeSuperNode.addSuperNode((SuperNode) node);
+        } else {
+            activeSuperNode.addNode(node);
+        }
+        if (params.optBoolean("isStart", false)) {
+            activeSuperNode.addStartNode(node);
+        }
+
+        JSONObject snapshot = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
+        JSONObject resp = buildSceneFlowResponse(snapshot);
+        resp.put("nodeId", nodeId);
+        broadcastSceneFlowSnapshot(broadcaster, pid, snapshot);
+        return resp;
+    }
+
+    private JSONObject updateNodeForProject(JSONObject params, java.util.function.Consumer<String> broadcaster) {
+        String pid = params.optString("projectId", "");
+        ProjectRef ref = projectStore.get(pid);
+        if (ref == null || ref.runtimeProject == null) {
+            return mutateAndSnapshot(pid, () -> updateNode(params), broadcaster);
+        }
+
+        SceneFlow sceneFlow = ref.runtimeProject.getSceneFlow();
+        String superNodeId = params.optString("superNodeId", null);
+        SuperNode snapshotTarget = resolveSuperNode(sceneFlow, superNodeId);
+        String nodeId = params.optString("nodeId", "");
+        JSONObject fields = params.optJSONObject("fields");
+        if (fields == null) {
+            fields = new JSONObject();
+        }
+
+        BasicNode dataNode =
+            nodeId.isBlank() ? (snapshotTarget != null ? snapshotTarget : sceneFlow) : findNodeRecursive(sceneFlow, nodeId);
+        if (dataNode == null) {
+            return errorResponse("NODE_NOT_FOUND", "Node not found: " + nodeId);
+        }
+        SuperNode activeSuperNode = dataNode.getParentNode() != null ? dataNode.getParentNode() : sceneFlow;
+
+        if (fields.has("name")) {
+            String nextName = fields.optString("name", "").trim();
+            dataNode.setName(nextName);
+        }
+        if (fields.has("comment")) {
+            dataNode.setComment(fields.optString("comment", ""));
+        }
+        if (fields.has("isHistory")) {
+            dataNode.setHistoryNodeFlag(fields.optBoolean("isHistory", false));
+        }
+        if (fields.has("isStart") && dataNode != activeSuperNode) {
+            boolean isStart = fields.optBoolean("isStart", false);
+            if (isStart) {
+                activeSuperNode.addStartNode(dataNode);
+            } else {
+                activeSuperNode.removeStartNode(dataNode);
+            }
+        }
+
+        JSONObject snapshot = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
+        JSONObject resp = buildSceneFlowResponse(snapshot);
+        broadcastSceneFlowSnapshot(broadcaster, pid, snapshot);
+        return resp;
+    }
+
+    private JSONObject deleteNodeForProject(JSONObject params, java.util.function.Consumer<String> broadcaster) {
+        String pid = params.optString("projectId", "");
+        ProjectRef ref = projectStore.get(pid);
+        if (ref == null || ref.runtimeProject == null) {
+            return mutateAndSnapshot(pid, () -> deleteNode(params), broadcaster);
+        }
+
+        SceneFlow sceneFlow = ref.runtimeProject.getSceneFlow();
+        String superNodeId = params.optString("superNodeId", null);
+        SuperNode snapshotTarget = resolveSuperNode(sceneFlow, superNodeId);
+        String nodeId = params.optString("nodeId", "");
+        if (nodeId.isBlank()) {
+            return errorResponse("BAD_REQUEST", "Missing nodeId");
+        }
+
+        BasicNode dataNode = findNodeRecursive(sceneFlow, nodeId);
+        if (dataNode == null) {
+            return errorResponse("NODE_NOT_FOUND", "Node not found: " + nodeId);
+        }
+        SuperNode activeSuperNode = dataNode.getParentNode() != null ? dataNode.getParentNode() : sceneFlow;
+        activeSuperNode.removeStartNode(dataNode);
+        if (dataNode instanceof SuperNode) {
+            activeSuperNode.removeSuperNode((SuperNode) dataNode);
+        } else {
+            activeSuperNode.removeNode(dataNode);
+        }
+        // Remove edges connected to this node within the active supernode
+        for (BasicNode node : activeSuperNode.getNodeAndSuperNodeList()) {
+            node.getCEdgeList().removeIf(edge -> nodeId.equals(edge.getTargetUnid()) || nodeId.equals(edge.getSourceUnid()));
+            node.getIEdgeList().removeIf(edge -> nodeId.equals(edge.getTargetUnid()) || nodeId.equals(edge.getSourceUnid()));
+            node.getPEdgeList().removeIf(edge -> nodeId.equals(edge.getTargetUnid()) || nodeId.equals(edge.getSourceUnid()));
+            node.getFEdgeList().removeIf(edge -> nodeId.equals(edge.getTargetUnid()) || nodeId.equals(edge.getSourceUnid()));
+            AbstractEdge dEdge = node.getDedge();
+            if (dEdge != null && (nodeId.equals(dEdge.getTargetUnid()) || nodeId.equals(dEdge.getSourceUnid()))) {
+                node.removeDEdge();
+            }
+        }
+
+        JSONObject snapshot = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
+        JSONObject resp = buildSceneFlowResponse(snapshot);
+        broadcastSceneFlowSnapshot(broadcaster, pid, snapshot);
+        return resp;
+    }
+
+    private JSONObject moveNodeForProject(JSONObject params, java.util.function.Consumer<String> broadcaster) {
+        String pid = params.optString("projectId", "");
+        ProjectRef ref = projectStore.get(pid);
+        if (ref == null || ref.runtimeProject == null) {
+            return errorResponse("PROJECT_NOT_FOUND", "Project not found");
+        }
+
+        SceneFlow sceneFlow = ref.runtimeProject.getSceneFlow();
+        String superNodeId = params.optString("superNodeId", null);
+        SuperNode snapshotTarget = resolveSuperNode(sceneFlow, superNodeId);
+        String nodeId = params.optString("nodeId", "");
+        if (nodeId.isBlank()) {
+            return errorResponse("BAD_REQUEST", "Missing nodeId");
+        }
+        double moveX = params.has("x") ? params.optDouble("x", Double.NaN) : Double.NaN;
+        double moveY = params.has("y") ? params.optDouble("y", Double.NaN) : Double.NaN;
+        if (Double.isNaN(moveX) || Double.isNaN(moveY)) {
+            return errorResponse("BAD_REQUEST", "Missing coordinates");
+        }
+        boolean snap = params.optBoolean("snap", false);
+
+        BasicNode dataNode = findNodeRecursive(sceneFlow, nodeId);
+        if (dataNode == null) {
+            return errorResponse("NODE_NOT_FOUND", "Node not found: " + nodeId);
+        }
+
+        int nodeW = getEditorConfigInt(ref, "node_width", 90);
+        int nodeH = getEditorConfigInt(ref, "node_height", nodeW);
+        int gridX = getEditorConfigInt(ref, "grid_x", 10);
+        int gridY = getEditorConfigInt(ref, "grid_y", 10);
+        double snapOriginX = nodeW / 2.0 + nodeW / 3.0;
+        double snapOriginY = nodeH / 2.0 + nodeH / 3.0;
+
+        int targetX = Math.max(1, (int) Math.round(moveX));
+        int targetY = Math.max(1, (int) Math.round(moveY));
+        if (snap) {
+            double centerX = targetX + nodeW / 2.0;
+            double centerY = targetY + nodeH / 2.0;
+            double snappedCenterX = snapOriginX + Math.round((centerX - snapOriginX) / gridX) * gridX;
+            double snappedCenterY = snapOriginY + Math.round((centerY - snapOriginY) / gridY) * gridY;
+            targetX = (int) Math.round(snappedCenterX - nodeW / 2.0);
+            targetY = (int) Math.round(snappedCenterY - nodeH / 2.0);
+        }
+
+        NodeGraphics graphics = dataNode.getGraphics();
+        if (graphics == null) {
+            graphics = new NodeGraphics();
+            dataNode.setGraphics(graphics);
+        }
+        graphics.setPosition(targetX, targetY);
+
+        JSONObject snapshot = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
+        JSONObject resp = buildSceneFlowResponse(snapshot);
+        broadcastSceneFlowSnapshot(broadcaster, pid, snapshot);
+        return resp;
+    }
+
+    private JSONObject createEdgeForProject(JSONObject params, java.util.function.Consumer<String> broadcaster) {
+        String pid = params.optString("projectId", "");
+        ProjectRef ref = projectStore.get(pid);
+        if (ref == null || ref.runtimeProject == null) {
+            return mutateAndSnapshot(pid, () -> addEdge(params), broadcaster);
+        }
+
+        SceneFlow sceneFlow = ref.runtimeProject.getSceneFlow();
+        String superNodeId = params.optString("superNodeId", null);
+        SuperNode snapshotTarget = resolveSuperNode(sceneFlow, superNodeId);
+        SuperNode activeSuperNode = snapshotTarget != null ? snapshotTarget : sceneFlow;
+
+        String sourceId = params.optString("sourceId", params.optString("source", ""));
+        String targetId = params.optString("targetId", params.optString("target", ""));
+        if (sourceId.isBlank() || targetId.isBlank()) {
+            return errorResponse("BAD_REQUEST", "Missing sourceId or targetId");
+        }
+
+        BasicNode sourceNode = resolveNodeById(activeSuperNode, sourceId);
+        BasicNode targetNode = resolveNodeById(activeSuperNode, targetId);
+        if (sourceNode == null || targetNode == null) {
+            return errorResponse("NODE_NOT_FOUND", "Source or target node not found");
+        }
+
+        String edgeType = params.optString("edgeType", params.optString("type", "EEDGE")).trim().toUpperCase();
+        String edgeConstraintError = validateEdgeCreateConstraints(sourceNode, edgeType);
+        if (edgeConstraintError != null) {
+            return errorResponse("EDGE_NOT_ALLOWED", edgeConstraintError);
+        }
+        AbstractEdge edge;
+        switch (edgeType) {
+            case "CEDGE":
+                edge = new GuargedEdge();
+                if (sourceNode.getCEdgeList() == null || sourceNode.getCEdgeList().isEmpty()) {
+                    ((GuargedEdge) edge).setCondition(parseExpressionOrNull("true"));
+                } else {
+                    ((GuargedEdge) edge).setCondition(parseExpressionOrNull("false"));
+                }
+                sourceNode.addCEdge((GuargedEdge) edge);
+                break;
+            case "IEDGE":
+                edge = new InterruptEdge();
+                if (sourceNode.getIEdgeList() == null || sourceNode.getIEdgeList().isEmpty()) {
+                    ((InterruptEdge) edge).setCondition(parseExpressionOrNull("true"));
+                } else {
+                    ((InterruptEdge) edge).setCondition(parseExpressionOrNull("false"));
+                }
+                sourceNode.addIEdge((InterruptEdge) edge);
+                break;
+            case "PEDGE": {
+                RandomEdge redge = new RandomEdge();
+                int probability = (sourceNode.getPEdgeList() == null || sourceNode.getPEdgeList().isEmpty()) ? 100 : 0;
+                redge.setProbability(probability);
+                edge = redge;
+                sourceNode.addPEdge((RandomEdge) edge);
+                break;
+            }
+            case "FEDGE":
+                edge = new ForkingEdge();
+                sourceNode.addFEdge((ForkingEdge) edge);
+                break;
+            case "TEDGE": {
+                TimeoutEdge ted = new TimeoutEdge();
+                try {
+                    ted.setTimeout(1000);
+                } catch (NumberFormatException ignore) {
+                    // ignore
+                }
+                edge = ted;
+                sourceNode.setDedge(edge);
+                break;
+            }
+            case "EEDGE":
+            default:
+                edge = new EpsilonEdge();
+                sourceNode.setDedge(edge);
+                break;
+        }
+
+        edge.setSourceNode(sourceNode);
+        edge.setTargetNode(targetNode);
+        edge.setSourceUnid(sourceNode.getId());
+        edge.setTargetUnid(targetNode.getId());
+        edge.setGraphics(new EdgeGraphics());
+        int nodeWidth = getEditorConfigInt(ref, "node_width", 90);
+        int nodeHeight = getEditorConfigInt(ref, "node_height", nodeWidth);
+        normalizeEdge(edge, nodeWidth, nodeHeight);
+
+        JSONObject snapshot = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
+        JSONObject resp = buildSceneFlowResponse(snapshot);
+        broadcastSceneFlowSnapshot(broadcaster, pid, snapshot);
+        return resp;
+    }
+
+    private String validateEdgeCreateConstraints(BasicNode sourceNode, String edgeType) {
+        if (sourceNode == null) {
+            return "Source node not found";
+        }
+        String type = edgeType == null ? "" : edgeType.trim().toUpperCase();
+        boolean hasC = sourceNode.getCEdgeList() != null && !sourceNode.getCEdgeList().isEmpty();
+        boolean hasP = sourceNode.getPEdgeList() != null && !sourceNode.getPEdgeList().isEmpty();
+        boolean hasI = sourceNode.getIEdgeList() != null && !sourceNode.getIEdgeList().isEmpty();
+        boolean hasF = sourceNode.getFEdgeList() != null && !sourceNode.getFEdgeList().isEmpty();
+        AbstractEdge dEdge = sourceNode.getDedge();
+        boolean hasE = dEdge instanceof EpsilonEdge;
+        boolean hasT = dEdge instanceof TimeoutEdge;
+        boolean hasD = dEdge != null;
+
+        if (hasP) {
+            return "PEDGE".equals(type) ? null : "Only probabilistic edges are allowed on this node";
+        }
+        if (hasI) {
+            return "IEDGE".equals(type) ? null : "Only interrupt edges are allowed on this node";
+        }
+        if (hasF) {
+            return "FEDGE".equals(type) ? null : "Only fork edges are allowed on this node";
+        }
+
+        if (hasC) {
+            if ("CEDGE".equals(type)) {
+                return null;
+            }
+            if ("EEDGE".equals(type) || "TEDGE".equals(type)) {
+                return hasD ? "Only one default/timeout edge is allowed on this node" : null;
+            }
+            return "Only conditional edges are allowed (plus one epsilon or timeout edge)";
+        }
+
+        if (hasD) {
+            if ("CEDGE".equals(type)) {
+                return null;
+            }
+            if (hasE) {
+                return "Only conditional edges can be combined with an epsilon edge";
+            }
+            if (hasT) {
+                return "Only conditional edges can be combined with a timeout edge";
+            }
+            return "Only conditional edges can be combined with the default edge";
+        }
+
+        return null;
+    }
+
+    private JSONObject updateEdgeForProject(JSONObject params, java.util.function.Consumer<String> broadcaster) {
+        String pid = params.optString("projectId", "");
+        ProjectRef ref = projectStore.get(pid);
+        if (ref == null || ref.runtimeProject == null) {
+            return mutateAndSnapshot(pid, () -> updateEdge(params), broadcaster);
+        }
+
+        SceneFlow sceneFlow = ref.runtimeProject.getSceneFlow();
+        String superNodeId = params.optString("superNodeId", null);
+        SuperNode snapshotTarget = resolveSuperNode(sceneFlow, superNodeId);
+        SuperNode activeSuperNode = snapshotTarget != null ? snapshotTarget : sceneFlow;
+        String edgeId = params.optString("edgeId", "");
+        if (edgeId.isBlank()) {
+            return errorResponse("BAD_REQUEST", "Missing edgeId");
+        }
+        AbstractEdge edge = resolveEdgeById(activeSuperNode, edgeId);
+        if (edge == null) {
+            return errorResponse("EDGE_NOT_FOUND", "Edge not found: " + edgeId);
+        }
+
+        JSONObject fields = params.optJSONObject("fields");
+        if (fields == null) {
+            fields = new JSONObject();
+        }
+
+        if (fields.has("points")) {
+            JSONArray points = fields.optJSONArray("points");
+            if (points != null) {
+                EdgeGraphics graphics = edge.getGraphics();
+                if (graphics == null) {
+                    graphics = new EdgeGraphics();
+                    edge.setGraphics(graphics);
+                }
+                EdgeArrow arrow = graphics.getConnection();
+                if (arrow == null) {
+                    arrow = new EdgeArrow();
+                    graphics.setConnection(arrow);
+                }
+                ArrayList<EdgePoint> pointList = new ArrayList<>();
+                for (int i = 0; i < points.length(); i++) {
+                    JSONObject pt = points.optJSONObject(i);
+                    if (pt == null) continue;
+                    int x = safeRound(pt.has("x") ? pt.optDouble("x") : null, 0);
+                    int y = safeRound(pt.has("y") ? pt.optDouble("y") : null, 0);
+                    int cx = safeRound(pt.has("cx") ? pt.optDouble("cx") : null, x);
+                    int cy = safeRound(pt.has("cy") ? pt.optDouble("cy") : null, y);
+                    pointList.add(new EdgePoint(x, cx, y, cy));
+                }
+                arrow.setPointList(pointList);
+            }
+        }
+
+        if (fields.has("condition")) {
+            String conditionText = fields.optString("condition", "").trim();
+            if (edge instanceof GuargedEdge) {
+                ((GuargedEdge) edge).setCondition(parseExpressionOrNull(conditionText));
+            } else if (edge instanceof InterruptEdge) {
+                ((InterruptEdge) edge).setCondition(parseExpressionOrNull(conditionText));
+            }
+        }
+        if (fields.has("timeoutMs") || fields.has("timeoutExpr")) {
+            if (edge instanceof TimeoutEdge) {
+                TimeoutEdge te = (TimeoutEdge) edge;
+                if (fields.has("timeoutMs")) {
+                    try {
+                        te.setTimeout(fields.optLong("timeoutMs", 0));
+                        te.setExpression(null);
+                    } catch (NumberFormatException ignore) {
+                        // ignore invalid timeout
+                    }
+                } else {
+                    String exprText = fields.optString("timeoutExpr", "").trim();
+                    te.setExpression(parseExpressionOrNull(exprText));
+                }
+            }
+        }
+        if (fields.has("altStartMap") && (edge instanceof GuargedEdge || edge instanceof InterruptEdge)) {
+            JSONArray entries = fields.optJSONArray("altStartMap");
+            if (entries != null) {
+                edge.getAltMap().clear();
+                for (int i = 0; i < entries.length(); i++) {
+                    JSONObject entry = entries.optJSONObject(i);
+                    if (entry == null) continue;
+                    String startId = entry.optString("startId", "").trim();
+                    String altStartId = entry.optString("altStartId", "").trim();
+                    if (startId.isEmpty() || altStartId.isEmpty()) continue;
+                    BasicNode startNode = resolveNodeById(activeSuperNode, startId);
+                    BasicNode altNode = resolveNodeById(activeSuperNode, altStartId);
+                    if (startNode == null || altNode == null) continue;
+                    Tuple<String, BasicNode> startTuple = new Tuple<>(startId, startNode);
+                    Tuple<String, BasicNode> altTuple = new Tuple<>(altStartId, altNode);
+                    edge.getAltMap().put(startTuple, altTuple);
+                }
+            }
+        }
+
+        JSONObject snapshot = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
+        JSONObject resp = buildSceneFlowResponse(snapshot);
+        broadcastSceneFlowSnapshot(broadcaster, pid, snapshot);
+        return resp;
+    }
+
+    private JSONObject deleteEdgeForProject(JSONObject params, java.util.function.Consumer<String> broadcaster) {
+        String pid = params.optString("projectId", "");
+        ProjectRef ref = projectStore.get(pid);
+        if (ref == null || ref.runtimeProject == null) {
+            return mutateAndSnapshot(pid, () -> deleteEdge(params), broadcaster);
+        }
+
+        SceneFlow sceneFlow = ref.runtimeProject.getSceneFlow();
+        String superNodeId = params.optString("superNodeId", null);
+        SuperNode snapshotTarget = resolveSuperNode(sceneFlow, superNodeId);
+        SuperNode activeSuperNode = snapshotTarget != null ? snapshotTarget : sceneFlow;
+        String edgeId = params.optString("edgeId", "");
+        if (edgeId.isBlank()) {
+            return errorResponse("BAD_REQUEST", "Missing edgeId");
+        }
+        AbstractEdge dataEdge = resolveEdgeById(activeSuperNode, edgeId);
+        if (dataEdge == null) {
+            return errorResponse("EDGE_NOT_FOUND", "Edge not found: " + edgeId);
+        }
+        BasicNode sourceNode = dataEdge.getSourceNode();
+        if (sourceNode != null) {
+            if (dataEdge instanceof GuargedEdge) {
+                sourceNode.removeCEdge((GuargedEdge) dataEdge);
+            } else if (dataEdge instanceof InterruptEdge) {
+                sourceNode.removeIEdge((InterruptEdge) dataEdge);
+            } else if (dataEdge instanceof RandomEdge) {
+                sourceNode.removePEdge((RandomEdge) dataEdge);
+            } else if (dataEdge instanceof ForkingEdge) {
+                sourceNode.removeFEdge((ForkingEdge) dataEdge);
+            } else if (dataEdge instanceof TimeoutEdge || dataEdge instanceof EpsilonEdge) {
+                sourceNode.removeDEdge();
+            }
+        }
+
+        JSONObject snapshot = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
+        JSONObject resp = buildSceneFlowResponse(snapshot);
+        broadcastSceneFlowSnapshot(broadcaster, pid, snapshot);
+        return resp;
+    }
+
+    private JSONObject createCommentForProject(JSONObject params, java.util.function.Consumer<String> broadcaster) {
+        String pid = params.optString("projectId", "");
+        ProjectRef ref = projectStore.get(pid);
+        if (ref == null || ref.runtimeProject == null) {
+            return mutateAndSnapshot(pid, () -> addComment(params), broadcaster);
+        }
+
+        SceneFlow sceneFlow = ref.runtimeProject.getSceneFlow();
+        String superNodeId = params.optString("superNodeId", null);
+        SuperNode snapshotTarget = resolveSuperNode(sceneFlow, superNodeId);
+        SuperNode activeSuperNode = snapshotTarget != null ? snapshotTarget : sceneFlow;
+
+        CommentBadge comment = new CommentBadge();
+        comment.setParentNode(activeSuperNode);
+        CommentBoundary rect = new CommentBoundary(
+            safeRound(params.has("x") ? params.optDouble("x") : null, 0),
+            safeRound(params.has("y") ? params.optDouble("y") : null, 0),
+            200,
+            120
+        );
+        comment.setGraphics(new CommentGraphics(rect));
+        comment.setHTMLText(params.optString("text", ""));
+        activeSuperNode.getCommentList().add(comment);
+
+        JSONObject snapshot = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
+        JSONObject resp = buildSceneFlowResponse(snapshot);
+        String commentId = "C" + Math.max(0, activeSuperNode.getCommentList().size() - 1);
+        resp.put("commentId", commentId);
+        broadcastSceneFlowSnapshot(broadcaster, pid, snapshot);
+        return resp;
+    }
+
+    private JSONObject updateCommentForProject(JSONObject params, java.util.function.Consumer<String> broadcaster) {
+        String pid = params.optString("projectId", "");
+        ProjectRef ref = projectStore.get(pid);
+        if (ref == null || ref.runtimeProject == null) {
+            return mutateAndSnapshot(pid, () -> updateComment(params), broadcaster);
+        }
+
+        SceneFlow sceneFlow = ref.runtimeProject.getSceneFlow();
+        String superNodeId = params.optString("superNodeId", null);
+        SuperNode snapshotTarget = resolveSuperNode(sceneFlow, superNodeId);
+        SuperNode activeSuperNode = snapshotTarget != null ? snapshotTarget : sceneFlow;
+        String commentId = params.optString("commentId", "");
+        if (commentId.isBlank()) {
+            return errorResponse("BAD_REQUEST", "Missing commentId");
+        }
+        CommentBadge comment = resolveCommentById(activeSuperNode, commentId);
+        if (comment == null) {
+            return errorResponse("COMMENT_NOT_FOUND", "Comment not found: " + commentId);
+        }
+
+        if (params.has("text")) {
+            comment.setHTMLText(params.optString("text", ""));
+        }
+        CommentGraphics cg = comment.getGraphics();
+        if (cg == null) {
+            cg = new CommentGraphics();
+            comment.setGraphics(cg);
+        }
+        CommentBoundary boundary = cg.getRectangle();
+        if (boundary == null) {
+            boundary = new CommentBoundary();
+            cg.setRectangle(boundary);
+        }
+        if (params.has("x")) {
+            boundary.setXPos(safeRound(params.optDouble("x"), boundary.getXPos()));
+        }
+        if (params.has("y")) {
+            boundary.setYPos(safeRound(params.optDouble("y"), boundary.getYPos()));
+        }
+        if (params.has("width")) {
+            boundary.setWidth(safeRound(params.optDouble("width"), boundary.getWidth()));
+        }
+        if (params.has("height")) {
+            boundary.setHeight(safeRound(params.optDouble("height"), boundary.getHeight()));
+        }
+        JSONObject rect = params.optJSONObject("rect");
+        if (rect != null) {
+            boundary.setXPos(safeRound(rect.has("x") ? rect.optDouble("x") : null, boundary.getXPos()));
+            boundary.setYPos(safeRound(rect.has("y") ? rect.optDouble("y") : null, boundary.getYPos()));
+            boundary.setWidth(safeRound(rect.has("w") ? rect.optDouble("w") : null, boundary.getWidth()));
+            boundary.setHeight(safeRound(rect.has("h") ? rect.optDouble("h") : null, boundary.getHeight()));
+        }
+
+        JSONObject snapshot = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
+        JSONObject resp = buildSceneFlowResponse(snapshot);
+        broadcastSceneFlowSnapshot(broadcaster, pid, snapshot);
+        return resp;
+    }
+
+    private JSONObject deleteCommentForProject(JSONObject params, java.util.function.Consumer<String> broadcaster) {
+        String pid = params.optString("projectId", "");
+        ProjectRef ref = projectStore.get(pid);
+        if (ref == null || ref.runtimeProject == null) {
+            return mutateAndSnapshot(pid, () -> deleteComment(params), broadcaster);
+        }
+
+        SceneFlow sceneFlow = ref.runtimeProject.getSceneFlow();
+        String superNodeId = params.optString("superNodeId", null);
+        SuperNode snapshotTarget = resolveSuperNode(sceneFlow, superNodeId);
+        SuperNode activeSuperNode = snapshotTarget != null ? snapshotTarget : sceneFlow;
+        String commentId = params.optString("commentId", "");
+        if (commentId.isBlank()) {
+            return errorResponse("BAD_REQUEST", "Missing commentId");
+        }
+        CommentBadge comment = resolveCommentById(activeSuperNode, commentId);
+        if (comment == null) {
+            return errorResponse("COMMENT_NOT_FOUND", "Comment not found: " + commentId);
+        }
+        activeSuperNode.getCommentList().remove(comment);
+
+        JSONObject snapshot = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
+        JSONObject resp = buildSceneFlowResponse(snapshot);
+        broadcastSceneFlowSnapshot(broadcaster, pid, snapshot);
+        return resp;
+    }
+
+    private JSONObject updateScriptForProject(JSONObject params, java.util.function.Consumer<String> broadcaster) {
+        String pid = params.optString("projectId", "");
+        ProjectRef ref = projectStore.get(pid);
+        if (ref == null || ref.runtimeProject == null) {
+            return errorResponse("PROJECT_NOT_FOUND", "Project not found");
+        }
+        ensureScriptLoaded(ref);
+        String text = params.optString("text", "");
+        if (params.has("version")) {
+            int clientVersion = params.optInt("version", ref.scriptVersion);
+            if (clientVersion != ref.scriptVersion) {
+                JSONObject mismatch = new JSONObject();
+                mismatch.put("applied", false);
+                mismatch.put("reason", "VERSION_MISMATCH");
+                mismatch.put("version", ref.scriptVersion);
+                mismatch.put("text", ref.scriptText == null ? "" : ref.scriptText);
+                mismatch.put("parseOk", ref.scriptParseOk);
+                mismatch.put("parseErrors", diagnosticsToJson(ref.scriptParseErrors));
+                return mismatch;
+            }
+        }
+
+        String previousText = ref.scriptText == null ? serializeSceneScript(ref.runtimeProject) : ref.scriptText;
+        boolean ok = applyScriptText(ref.runtimeProject, text);
+        if (!ok) {
+            applyScriptText(ref.runtimeProject, previousText);
+            ScriptDiagnostics.Result result = ScriptDiagnostics.analyze(text);
+            JSONObject failed = new JSONObject();
+            failed.put("applied", false);
+            failed.put("reason", "PARSE_FAILED");
+            failed.put("parseOk", result.isParseOk());
+            failed.put("parseErrors", diagnosticsToJson(result.getDiagnostics()));
+            return failed;
+        }
+
+        ref.scriptText = text;
+        ref.scriptVersion = Math.max(1, ref.scriptVersion + 1);
+        ref.scriptParseOk = true;
+        ref.scriptParseErrors.clear();
+        ref.dirty = true;
+
+        JSONObject resp = new JSONObject();
+        resp.put("applied", true);
+        resp.put("text", ref.scriptText);
+        resp.put("version", ref.scriptVersion);
+        resp.put("parseOk", ref.scriptParseOk);
+        resp.put("parseErrors", diagnosticsToJson(ref.scriptParseErrors));
+        if (broadcaster != null) {
+            broadcastScriptSnapshot(broadcaster, pid, resp);
+            JSONObject dirtyEvt = new JSONObject();
+            dirtyEvt.put("event", "project.dirty");
+            dirtyEvt.put("projectId", pid);
+            dirtyEvt.put("areas", new JSONArray().put("script"));
+            broadcaster.accept(dirtyEvt.toString());
+        }
+        return resp;
+    }
+
+    private CommentBadge resolveCommentById(SuperNode superNode, String commentId) {
+        if (superNode == null || commentId == null) {
+            return null;
+        }
+        String normalized = commentId.trim();
+        if (normalized.startsWith("C")) {
+            normalized = normalized.substring(1);
+        }
+        int index;
+        try {
+            index = Integer.parseInt(normalized);
+        } catch (NumberFormatException ex) {
+            return null;
+        }
+        if (index < 0 || index >= superNode.getCommentList().size()) {
+            return null;
+        }
+        return superNode.getCommentList().get(index);
+    }
+
+    private Expression parseExpressionOrNull(String text) {
+        if (text == null || text.isBlank()) {
+            return null;
+        }
+        try {
+            Object parsed = GlueParser.run(text.trim());
+            if (parsed instanceof Expression) {
+                return (Expression) parsed;
+            }
+        } catch (Exception exc) {
+            return null;
+        }
+        return null;
+    }
+
     private JSONArray serializeCommands(List<de.dfki.vsm.model.sceneflow.glue.command.Command> commands) {
         if (commands == null) {
             return new JSONArray();
@@ -2830,6 +4057,165 @@ public final class WebUiServer implements EventListener {
         return "";
     }
 
+    private void ensureScriptLoaded(ProjectRef ref) {
+        if (ref == null || ref.runtimeProject == null) {
+            return;
+        }
+        if (ref.scriptText != null) {
+            if (ref.scriptVersion < 1) {
+                ref.scriptVersion = 1;
+            }
+            return;
+        }
+        SceneScript scriptModel = ref.runtimeProject.getSceneScript();
+        boolean alreadyLoaded = scriptModel != null && scriptModel.getSceneListSize() > 0;
+        if (!alreadyLoaded) {
+            String xml = "";
+            if (ref.path != null && !ref.path.isBlank()) {
+                xml = loadFile(ref.runtimeProject.getProjectPath(), "scenescript.xml");
+            }
+            if (xml != null && !xml.isBlank() && scriptModel != null) {
+                scriptModel.clear();
+                XMLUtilities.parseFromXMLString(scriptModel, xml, "UTF-8");
+            }
+        }
+        String scriptText = ref.runtimeProject.getSceneScript() != null ? ref.runtimeProject.getSceneScript().getText() : "";
+        ref.scriptText = scriptText == null ? "" : scriptText;
+        ref.scriptVersion = 1;
+        if (ref.scriptText == null || ref.scriptText.isBlank()) {
+            ref.scriptParseOk = true;
+            ref.scriptParseErrors.clear();
+        } else {
+            ScriptDiagnostics.Result result = ScriptDiagnostics.analyze(ref.scriptText);
+            ref.scriptParseOk = result.isParseOk();
+            ref.scriptParseErrors.clear();
+            ref.scriptParseErrors.addAll(result.getDiagnostics());
+        }
+    }
+
+    private String serializeSceneScript(RunTimeProject project) {
+        if (project == null || project.getSceneScript() == null) {
+            return "";
+        }
+        try {
+            return project.getSceneScript().getText();
+        } catch (Exception exc) {
+            return "";
+        }
+    }
+
+    private boolean applyScriptText(RunTimeProject project, String text) {
+        if (project == null || text == null) {
+            return false;
+        }
+        SceneScript script = project.getSceneScript();
+        if (script == null) {
+            return false;
+        }
+        if (text.isBlank()) {
+            script.clear();
+            return true;
+        }
+        return script.parseTXT(text);
+    }
+
+    private void broadcastScriptSnapshot(java.util.function.Consumer<String> broadcaster, String projectId, JSONObject snapshot) {
+        if (broadcaster == null) {
+            return;
+        }
+        JSONObject evt = new JSONObject();
+        evt.put("event", "script.snapshot");
+        evt.put("projectId", projectId);
+        evt.put("snapshot", snapshot);
+        broadcaster.accept(evt.toString());
+    }
+
+    private JSONArray diagnosticsToJson(List<ScriptDiagnostics.Diagnostic> diagnostics) {
+        JSONArray arr = new JSONArray();
+        if (diagnostics == null) {
+            return arr;
+        }
+        for (ScriptDiagnostics.Diagnostic diag : diagnostics) {
+            if (diag == null) continue;
+            JSONObject obj = new JSONObject();
+            obj.put("from", diag.getFrom());
+            obj.put("to", diag.getTo());
+            obj.put("line", diag.getLine());
+            obj.put("column", diag.getColumn());
+            obj.put("severity", diag.getSeverity());
+            obj.put("message", diag.getMessage());
+            obj.put("source", diag.getSource());
+            arr.put(obj);
+        }
+        return arr;
+    }
+
+    private boolean normalizeSceneFlowIds(ProjectRef ref) {
+        if (ref == null || ref.runtimeProject == null || ref.runtimeProject.getSceneFlow() == null) {
+            return false;
+        }
+        SceneFlow sceneFlow = ref.runtimeProject.getSceneFlow();
+        List<BasicNode> nodes = new ArrayList<>();
+        collectNodes(sceneFlow, nodes);
+        Set<String> used = new java.util.HashSet<>();
+        boolean changed = false;
+        for (BasicNode node : nodes) {
+            String id = node.getId();
+            boolean isRoot = node instanceof SuperNode && ((SuperNode) node).getParentNode() == null;
+            if (isRoot && (id == null || id.isBlank())) {
+                used.add("");
+                continue;
+            }
+            boolean isSuper = node instanceof SuperNode && !isRoot;
+            String normalized = normalizeNodeId(id, isSuper, ref, used);
+            if (!normalized.equals(id)) {
+                node.setId(normalized);
+                id = normalized;
+                changed = true;
+            }
+            used.add(id == null ? "" : id);
+        }
+        rebuildStartNodeMaps(sceneFlow);
+        List<AbstractEdge> edges = new ArrayList<>();
+        collectEdges(sceneFlow, edges);
+        for (AbstractEdge edge : edges) {
+            if (edge.getSourceNode() != null) {
+                edge.setSourceUnid(edge.getSourceNode().getId());
+            }
+            if (edge.getTargetNode() != null) {
+                edge.setTargetUnid(edge.getTargetNode().getId());
+            }
+        }
+        return changed;
+    }
+
+    private void collectNodes(SuperNode node, List<BasicNode> out) {
+        if (node == null) return;
+        out.add(node);
+        for (BasicNode child : node.getNodeAndSuperNodeList()) {
+            if (child instanceof SuperNode) {
+                collectNodes((SuperNode) child, out);
+            } else {
+                out.add(child);
+            }
+        }
+    }
+
+
+    private void rebuildStartNodeMaps(SuperNode node) {
+        if (node == null) return;
+        java.util.HashMap<String, BasicNode> next = new java.util.HashMap<>();
+        for (BasicNode start : node.getStartNodeMap().values()) {
+            if (start != null && start.getId() != null && !start.getId().isBlank()) {
+                next.put(start.getId(), start);
+            }
+        }
+        node.setStartNodeMap(next);
+        for (SuperNode child : node.getSuperNodeList()) {
+            rebuildStartNodeMaps(child);
+        }
+    }
+
     /**
      * Register an externally-loaded RunTimeProject with this server.
      * This allows projects loaded via command-line to be accessible via API.
@@ -2860,13 +4246,17 @@ public final class WebUiServer implements EventListener {
         String id = UUID.randomUUID().toString();
         ProjectRef ref = new ProjectRef(id, name, path);
         ref.runtimeProject = project;
+        ref.runtimeState = project.isRunning() ? "running" : "stopped";
+        ref.nextNodeIndex = computeNextNodeIndex(project);
+        ref.nextSuperNodeIndex = computeNextSuperNodeIndex(project);
+        normalizeSceneFlowIds(ref);
         ref.nodes = serializeNodes(project);
         ref.edges = serializeEdges(project);
         ref.comments = serializeComments(project);
-        ref.runtimeState = project.isRunning() ? "running" : "stopped";
         projectStore.put(id, ref);
+        ensureScriptLoaded(ref);
         // Phase 8: Initialize dock points for the registered project
-        initializeDockPointsForProject(project);
+        initializeDockPointsForProject(ref);
         sLogger.message("Registered project: " + name + " (id=" + id + ")");
         return id;
     }
@@ -2911,19 +4301,23 @@ public final class WebUiServer implements EventListener {
             try {
                 rtp = new RunTimeProject(new java.io.File(path));
                 rtp.parse(path);
-                List<JSONObject> nodes = serializeNodes(rtp);
-                List<JSONObject> edges = serializeEdges(rtp);
-                List<JSONObject> comments = serializeComments(rtp);
                 String id = UUID.randomUUID().toString();
                 ProjectRef ref = new ProjectRef(id, name, path);
                 ref.runtimeProject = rtp;
-                ref.nodes = nodes;
-                ref.edges = edges;
-                ref.comments = comments;
                 ref.runtimeState = "stopped";
+                ref.nextNodeIndex = computeNextNodeIndex(rtp);
+                ref.nextSuperNodeIndex = computeNextSuperNodeIndex(rtp);
+                boolean idChanged = normalizeSceneFlowIds(ref);
+                ref.nodes = serializeNodes(rtp);
+                ref.edges = serializeEdges(rtp);
+                ref.comments = serializeComments(rtp);
                 projectStore.put(id, ref);
+                ensureScriptLoaded(ref);
                 // Phase 8: Initialize dock points for the loaded project
-                initializeDockPointsForProject(rtp);
+                initializeDockPointsForProject(ref);
+                if (idChanged) {
+                    rtp.write(new java.io.File(path));
+                }
                 return id;
             } catch (Exception exc) {
                 sLogger.warning("Warning: failed to load project from " + path + ": " + exc.getMessage());
@@ -2932,12 +4326,24 @@ public final class WebUiServer implements EventListener {
 
         String id = UUID.randomUUID().toString();
         ProjectRef ref = new ProjectRef(id, name, path);
+        rtp = new RunTimeProject();
+        if (path != null && !path.isBlank()) {
+            rtp.setProjectPath(path);
+        }
+        if (name != null && !name.isBlank()) {
+            rtp.setProjectName(name);
+        }
         ref.runtimeProject = rtp;
         ref.runtimeState = "stopped";
-        ref.nodes = new ArrayList<>();
-        ref.edges = new ArrayList<>();
-        ref.comments = new ArrayList<>();
+        ref.nextNodeIndex = computeNextNodeIndex(rtp);
+        ref.nextSuperNodeIndex = computeNextSuperNodeIndex(rtp);
+        normalizeSceneFlowIds(ref);
+        ref.nodes = serializeNodes(rtp);
+        ref.edges = serializeEdges(rtp);
+        ref.comments = serializeComments(rtp);
         projectStore.put(id, ref);
+        ensureScriptLoaded(ref);
+        initializeDockPointsForProject(ref);
         return id;
     }
 
@@ -3190,7 +4596,7 @@ public final class WebUiServer implements EventListener {
         return null;
     }
 
-    private void normalizeEdge(AbstractEdge edge) {
+    private void normalizeEdge(AbstractEdge edge, int nodeWidth, int nodeHeight) {
         if (edge == null) return;
         EdgeGraphics graphics = edge.getGraphics();
         if (graphics == null) {
@@ -3211,9 +4617,6 @@ public final class WebUiServer implements EventListener {
         double startY = startPt.getYPos();
         double endX = endPt.getXPos();
         double endY = endPt.getYPos();
-
-        int nodeWidth = getPreferenceInt("node_width", 90);
-        int nodeHeight = getPreferenceInt("node_height", 90);
 
         String sourceId = edge.getSourceUnid();
         String targetId = edge.getTargetUnid();
@@ -3554,14 +4957,18 @@ public final class WebUiServer implements EventListener {
     }
 
     // Initialize dock points for all edges in a project
-    private void initializeDockPointsForProject(RunTimeProject project) {
+    private void initializeDockPointsForProject(ProjectRef ref) {
+        if (ref == null || ref.runtimeProject == null) return;
+        int nodeWidth = getEditorConfigInt(ref, "node_width", 90);
+        int nodeHeight = getEditorConfigInt(ref, "node_height", nodeWidth);
+        initializeDockPointsForProject(ref.runtimeProject, nodeWidth, nodeHeight);
+    }
+
+    private void initializeDockPointsForProject(RunTimeProject project, int nodeWidth, int nodeHeight) {
         if (project == null) return;
 
         SceneFlow sceneFlow = project.getSceneFlow();
         if (sceneFlow == null) return;
-
-        int nodeWidth = getPreferenceInt("node_width", 90);
-        int nodeHeight = getPreferenceInt("node_height", 90);
 
         // Recursively scan all nodes and their edges
         initializeDockPointsRecursive(sceneFlow, nodeWidth, nodeHeight);
@@ -3860,12 +5267,24 @@ public final class WebUiServer implements EventListener {
         List<JSONObject> edges = new ArrayList<>();
         List<JSONObject> comments = new ArrayList<>();
         String runtimeState = "stopped";
+        int nextNodeIndex = 1;
+        int nextSuperNodeIndex = 1;
+        String scriptText;
+        int scriptVersion = 1;
+        boolean scriptParseOk = true;
+        List<ScriptDiagnostics.Diagnostic> scriptParseErrors = new ArrayList<>();
+        Properties editorConfig;
+        boolean editorConfigLoaded = false;
+        boolean editorConfigDirty = false;
 
         ProjectRef(String id, String name, String path) {
             this.id = id;
             this.name = name == null ? "" : name;
             this.path = path == null ? "" : path;
             this.dirty = false;
+            this.scriptText = null;
+            this.scriptVersion = 1;
+            this.scriptParseOk = true;
         }
     }
 

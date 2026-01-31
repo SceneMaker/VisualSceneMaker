@@ -35,6 +35,19 @@ dependencies {
 
 }
 
+def webUiSourceDir = rootProject.file("editor/src/main/resources/web-ui")
+def webUiTargetDir = file("src/main/resources/web-ui")
+
+tasks.register("syncWebUi", Sync) {
+    dependsOn project(":editor").tasks.named("webUiBuild")
+    from(webUiSourceDir)
+    into(webUiTargetDir)
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    onlyIf { webUiSourceDir.exists() }
+}
+
+processResources.dependsOn tasks.named("syncWebUi")
+
 
 jar {
     doFirst {
