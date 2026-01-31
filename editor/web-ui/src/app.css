@@ -3172,6 +3172,7 @@ summary {
 .node-title {
   text-anchor: middle;
   dominant-baseline: middle;
+  alignment-baseline: middle;
   font-size: var(--sf-font-size, 16px);
   fill: var(--node-text, #ffffff);
   font-family: "SansSerif", "Helvetica Neue", Arial, sans-serif;

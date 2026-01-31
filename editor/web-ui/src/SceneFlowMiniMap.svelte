@@ -23,9 +23,21 @@
   $: comments = snapshot?.comments || [];
   $: nodeMap = new Map(nodes.map((node) => [node.id, node]));
   $: miniViewBox = worldBox
-    ? `${worldBox.x} ${worldBox.y} ${worldBox.width} ${worldBox.height}`
+    ? `${toFinite(worldBox.x)} ${toFinite(worldBox.y)} ${Math.max(0, toFinite(worldBox.width))} ${Math.max(
+        0,
+        toFinite(worldBox.height)
+      )}`
     : "0 0 200 200";
   $: viewport = computeViewport(worldBox, viewBox);
+
+  function toFinite(value, fallback = 0) {
+    const num = Number(value);
+    return Number.isFinite(num) ? num : fallback;
+  }
+
+  function safeSvgNumber(value, fallback = 0) {
+    return toFinite(value, fallback);
+  }
 
   function superNodeScale(node) {
     const count = Number.isFinite(node?.childCount) ? node.childCount : 0;
@@ -34,8 +46,8 @@
   }
 
   function nodeSize(node) {
-    const width = node?.size?.w ?? 160;
-    const height = node?.size?.h ?? 60;
+    const width = toFinite(node?.size?.w, 160);
+    const height = toFinite(node?.size?.h, 60);
     if (node?.type !== "Super") {
       return { w: width, h: height };
     }
@@ -47,8 +59,8 @@
     if (node?.type !== "Super") {
       return { x: 0, y: 0 };
     }
-    const baseWidth = node?.size?.w ?? 160;
-    const baseHeight = node?.size?.h ?? 60;
+    const baseWidth = toFinite(node?.size?.w, 160);
+    const baseHeight = toFinite(node?.size?.h, 60);
     const scaled = nodeSize(node);
     return {
       x: (baseWidth - scaled.w) / 2,
@@ -57,8 +69,8 @@
   }
 
   function nodeRenderPosition(node) {
-    const x = node.graphics?.x ?? 0;
-    const y = node.graphics?.y ?? 0;
+    const x = toFinite(node?.graphics?.x, 0);
+    const y = toFinite(node?.graphics?.y, 0);
     const offset = nodeVisualOffset(node);
     return { x: x + offset.x, y: y + offset.y };
   }
@@ -97,10 +109,18 @@
 
   function computeViewport(world, view) {
     if (!world || !view) return null;
-    const x1 = Math.max(world.x, view.x);
-    const y1 = Math.max(world.y, view.y);
-    const x2 = Math.min(world.x + world.width, view.x + view.width);
-    const y2 = Math.min(world.y + world.height, view.y + view.height);
+    const worldX = toFinite(world.x);
+    const worldY = toFinite(world.y);
+    const worldW = toFinite(world.width);
+    const worldH = toFinite(world.height);
+    const viewX = toFinite(view.x);
+    const viewY = toFinite(view.y);
+    const viewW = toFinite(view.width);
+    const viewH = toFinite(view.height);
+    const x1 = Math.max(worldX, viewX);
+    const y1 = Math.max(worldY, viewY);
+    const x2 = Math.min(worldX + worldW, viewX + viewW);
+    const y2 = Math.min(worldY + worldH, viewY + viewH);
     const width = Math.max(0, x2 - x1);
     const height = Math.max(0, y2 - y1);
     return { x: x1, y: y1, width, height };
@@ -139,10 +159,10 @@
         <rect
           class="mini-comment"
           fill={COLORS.comment}
-          x={comment.rect?.x ?? 0}
-          y={comment.rect?.y ?? 0}
-          width={comment.rect?.w ?? 0}
-          height={comment.rect?.h ?? 0}
+          x={safeSvgNumber(comment?.rect?.x ?? 0)}
+          y={safeSvgNumber(comment?.rect?.y ?? 0)}
+          width={safeSvgNumber(comment?.rect?.w ?? 0)}
+          height={safeSvgNumber(comment?.rect?.h ?? 0)}
           rx="8"
         />
       {/each}
@@ -171,14 +191,36 @@
         {@const w = size.w}
         {@const h = size.h}
         {#if node.type === "Super"}
-          <rect class="mini-node" x={x} y={y} width={w} height={h} fill={nodeFill(node)} rx="6" />
+          <rect
+            class="mini-node"
+            x={safeSvgNumber(x)}
+            y={safeSvgNumber(y)}
+            width={safeSvgNumber(w)}
+            height={safeSvgNumber(h)}
+            fill={nodeFill(node)}
+            rx="6"
+          />
         {:else}
-          <ellipse class="mini-node" cx={x + w / 2} cy={y + h / 2} rx={w / 2} ry={h / 2} fill={nodeFill(node)} />
+          <ellipse
+            class="mini-node"
+            cx={safeSvgNumber(x + w / 2)}
+            cy={safeSvgNumber(y + h / 2)}
+            rx={safeSvgNumber(w / 2)}
+            ry={safeSvgNumber(h / 2)}
+            fill={nodeFill(node)}
+          />
         {/if}
       {/each}
     </g>
     {#if viewport}
-      <rect class="mini-viewport" x={viewport.x} y={viewport.y} width={viewport.width} height={viewport.height} rx="8" />
+      <rect
+        class="mini-viewport"
+        x={safeSvgNumber(viewport.x)}
+        y={safeSvgNumber(viewport.y)}
+        width={safeSvgNumber(viewport.width)}
+        height={safeSvgNumber(viewport.height)}
+        rx="8"
+      />
     {/if}
   </svg>
 </div>

@@ -49,8 +49,8 @@
     startSign: "#e84a4f",
     altStartSign: "#c0c0c0",
     selected: "#5b8fdc",
-    commentFill: "rgba(200, 200, 200, 0.78)",
-    commentText: "rgba(75, 75, 75, 0.5)",
+    commentFill: "rgba(232, 232, 232, 0.9)",
+    commentText: "#4f5864",
     edges: {
       eedge: "#7a7d81",
       fedge: "#5b8edc",
@@ -163,7 +163,9 @@
       )
     : new Map();
   $: edgeLabelOffsets = buildEdgeLabelOffsets(edges);
-  $: baseNodeSize = nodeWidth || guessNodeSize(nodes) || DEFAULT_NODE_SIZE;
+  $: baseNodeSize = Number.isFinite(nodeWidth)
+    ? nodeWidth
+    : (guessNodeSize(nodes) ?? DEFAULT_NODE_SIZE);
   $: nodeStrokeWidth = Math.max(1, baseNodeSize / 25);
   $: edgeStrokeWidth = Math.max(1, baseNodeSize / 30) * 1.34;
   $: fontSize = Number.isFinite(workspaceFontSize) && workspaceFontSize > 0
@@ -171,6 +173,7 @@
     : Math.max(10, Math.round(baseNodeSize * 0.18));
   $: labelLineHeight = Math.max(10, Math.round(fontSize * 1.2));
   $: commandLineHeight = labelLineHeight;
+  $: labelVerticalOffset = Math.round(labelLineHeight * 0.12) + 2;
   $: commandPaddingX = Math.max(6, Math.round(fontSize * 0.5));
   $: commandPaddingY = Math.max(4, Math.round(fontSize * 0.35));
   $: commandGap = Math.max(4, Math.round(fontSize * 0.5));
@@ -443,10 +446,10 @@
     });
 
     commentList.forEach((comment) => {
-      const x = comment.rect?.x ?? 0;
-      const y = comment.rect?.y ?? 0;
-      const w = comment.rect?.w ?? 0;
-      const h = comment.rect?.h ?? 0;
+      const x = toFinite(comment.rect?.x, 0);
+      const y = toFinite(comment.rect?.y, 0);
+      const w = toFinite(comment.rect?.w, 0);
+      const h = toFinite(comment.rect?.h, 0);
       expand(x, y);
       expand(x + w, y + h);
     });
@@ -514,8 +517,8 @@
 
   function nodeBaseSize(node) {
     return {
-      w: node?.size?.w ?? baseNodeSize,
-      h: node?.size?.h ?? nodeHeight ?? baseNodeSize
+      w: toFinite(node?.size?.w, baseNodeSize),
+      h: toFinite(node?.size?.h, nodeHeight ?? baseNodeSize)
     };
   }
 
@@ -1205,9 +1208,36 @@
     return node?.isHistory ? COLORS.textHistory : COLORS.text;
   }
 
-  function nodeLines(node) {
+  function nodeLines(node, w) {
     if (!node?.name) return [];
-    return node.name.split(";").filter((line) => line.trim().length > 0);
+    const raw = node.name.trim();
+    if (!raw) return [];
+    if (raw.includes(";")) {
+      return raw.split(";").map((line) => line.trim()).filter((line) => line.length > 0);
+    }
+    const size = fontSize || 12;
+    const paddingX = Math.max(8, Math.round(size * 0.6));
+    const maxWidth = Math.max(20, toFinite(w, 0) - paddingX * 2);
+    if (!Number.isFinite(maxWidth) || maxWidth <= 0) {
+      return [raw];
+    }
+    const words = raw.split(/\s+/).filter((word) => word.length > 0);
+    if (!words.length) return [raw];
+    const lines = [];
+    let current = "";
+    for (const word of words) {
+      const candidate = current ? `${current} ${word}` : word;
+      if (!current || measureTextMetrics(candidate, size).width <= maxWidth) {
+        current = candidate;
+        continue;
+      }
+      lines.push(current);
+      current = word;
+    }
+    if (current) {
+      lines.push(current);
+    }
+    return lines;
   }
 
   function nodeCommandLines(node) {
@@ -1218,15 +1248,17 @@
   }
 
   function nodeCommandDotsLayout(node, w, h) {
+    const safeW = toFinite(w, 0);
+    const safeH = toFinite(h, 0);
     const count = nodeCommandLines(node).length;
     if (!count) return null;
     const size = fontSize || 12;
     const radius = Math.max(3, Math.round(size * 0.33)) * 2;
     const gap = Math.max(4, Math.round(radius * 0.9));
     const totalWidth = count * radius * 2 + (count - 1) * gap;
-    const startX = (w - totalWidth) / 2;
-    const rx = Math.max(1, w / 2);
-    const ry = Math.max(1, h / 2);
+    const startX = (safeW - totalWidth) / 2;
+    const rx = Math.max(1, safeW / 2);
+    const ry = Math.max(1, safeH / 2);
     const isSuper = node?.type === "Super";
     let minX = Infinity;
     let maxX = -Infinity;
@@ -1305,6 +1337,8 @@
   }
 
   function nodeCommandLayout(node, w, h) {
+    const safeW = toFinite(w, 0);
+    const safeH = toFinite(h, 0);
     const lines = nodeCommandLines(node);
     if (!lines.length) return null;
     const size = fontSize || 12;
@@ -1317,13 +1351,16 @@
     const maxDescent = metrics.reduce((max, metric) => Math.max(max, metric.descent), 0);
     const lineHeight = Math.max(1, maxAscent + maxDescent);
     const width = Math.max(1, maxTextWidth + padX * 2);
+    if (!Number.isFinite(width) || !Number.isFinite(lineHeight)) {
+      return null;
+    }
     return {
       lines,
-      x: (w - width) / 2,
-      y: h + gap,
+      x: (safeW - width) / 2,
+      y: safeH + gap,
       width,
       height: lines.length * lineHeight + padY * 2,
-      textX: (w - width) / 2 + padX,
+      textX: (safeW - width) / 2 + padX,
       textStartY: padY + maxAscent,
       lineHeight,
       fontSize: size
@@ -1331,11 +1368,11 @@
   }
 
   function nodeLabelLayout(node, w, h) {
-    const lines = nodeLines(node);
+    const lines = nodeLines(node, w);
     if (!lines.length) return null;
     const idLine = showNodeIds && node?.id ? `[${node.id}]` : "";
     const total = lines.length + (idLine ? 1 : 0);
-    const startY = h / 2 - ((total - 1) * labelLineHeight) / 2;
+    const startY = Math.round(h / 2 - ((total - 1) * labelLineHeight) / 2 + labelVerticalOffset);
     return {
       lines,
       idLine,
@@ -2163,12 +2200,21 @@
     return { x: rect.x, y: rect.y };
   }
 
+  function toFinite(value, fallback = 0) {
+    const num = Number(value);
+    return Number.isFinite(num) ? num : fallback;
+  }
+
+  function safeSvgNumber(value) {
+    return Number.isFinite(value) ? value : 0;
+  }
+
   function commentRect(comment, drag) {
     const base = {
-      x: comment.rect?.x ?? 0,
-      y: comment.rect?.y ?? 0,
-      w: Math.max(commentMinSize, comment.rect?.w ?? 0),
-      h: Math.max(commentMinSize, comment.rect?.h ?? 0)
+      x: toFinite(comment.rect?.x, 0),
+      y: toFinite(comment.rect?.y, 0),
+      w: Math.max(commentMinSize, toFinite(comment.rect?.w, 0)),
+      h: Math.max(commentMinSize, toFinite(comment.rect?.h, 0))
     };
     const activeDrag = drag || dragState;
     if (activeDrag?.type === "group" && activeDrag.commentOrigins?.[comment.id]) {
@@ -2188,18 +2234,18 @@
     }
     if (activeDrag.type === "comment") {
       return {
-        x: activeDrag.x ?? base.x,
-        y: activeDrag.y ?? base.y,
-        w: activeDrag.width ?? base.w,
-        h: activeDrag.height ?? base.h
+        x: toFinite(activeDrag.x, base.x),
+        y: toFinite(activeDrag.y, base.y),
+        w: Math.max(commentMinSize, toFinite(activeDrag.width, base.w)),
+        h: Math.max(commentMinSize, toFinite(activeDrag.height, base.h))
       };
     }
     if (activeDrag.type === "comment-resize") {
       return {
         x: base.x,
         y: base.y,
-        w: activeDrag.width ?? base.w,
-        h: activeDrag.height ?? base.h
+        w: Math.max(commentMinSize, toFinite(activeDrag.width, base.w)),
+        h: Math.max(commentMinSize, toFinite(activeDrag.height, base.h))
       };
     }
     return base;
@@ -2236,6 +2282,19 @@
       x: Math.max(MIN_WORLD_COORD - offset.x, point.x ?? 0),
       y: Math.max(MIN_WORLD_COORD - offset.y, point.y ?? 0)
     };
+  }
+
+  function snapNodePoint(node, point) {
+    if (!nodeSnapToGrid || !node || !point) return point;
+    if (!Number.isFinite(gridX) || !Number.isFinite(gridY) || gridX <= 0 || gridY <= 0) {
+      return point;
+    }
+    const { w, h } = nodeSize(node);
+    const centerX = point.x + w / 2;
+    const centerY = point.y + h / 2;
+    const snappedCenterX = gridOriginX + Math.round((centerX - gridOriginX) / gridX) * gridX;
+    const snappedCenterY = gridOriginY + Math.round((centerY - gridOriginY) / gridY) * gridY;
+    return { x: snappedCenterX - w / 2, y: snappedCenterY - h / 2 };
   }
 
   function worldRectToScreenRect(rect) {
@@ -2589,7 +2648,8 @@
           const nextX = origin.x + dx;
           const nextY = origin.y + dy;
           const clamped = clampNodePoint(node, { x: nextX, y: nextY });
-          nodeMoves.push({ id: nodeId, x: clamped.x, y: clamped.y });
+          const snapped = snapNodePoint(node, clamped);
+          nodeMoves.push({ id: nodeId, x: snapped.x, y: snapped.y });
         }
       }
       if (nodeMoves.length > 1 && typeof onNodeGroupMove === "function") {
@@ -2612,7 +2672,10 @@
       return;
     }
     if (finished.type === "node" && typeof onNodeMove === "function") {
-      onNodeMove(finished.id, finalX, finalY, nodeSnapToGrid);
+      const node = nodeMap.get(finished.id);
+      const clamped = clampNodePoint(node, { x: finalX, y: finalY });
+      const snapped = snapNodePoint(node, clamped);
+      onNodeMove(finished.id, snapped.x, snapped.y, nodeSnapToGrid);
     }
     if ((finished.type === "comment" || finished.type === "comment-resize") && typeof onCommentUpdate === "function") {
       onCommentUpdate(finished.id, finalX, finalY, finished.width, finished.height);
@@ -2918,17 +2981,24 @@
     {#each comments as comment (comment.id)}
       {@const rect = commentRect(comment, dragState)}
       <clipPath id={`comment-clip-${comment.id}`} clipPathUnits="userSpaceOnUse">
-        <rect x={rect.x} y={rect.y} width={rect.w} height={rect.h} rx={commentCornerRadius} ry={commentCornerRadius} />
+        <rect
+          x={safeSvgNumber(rect.x)}
+          y={safeSvgNumber(rect.y)}
+          width={safeSvgNumber(rect.w)}
+          height={safeSvgNumber(rect.h)}
+          rx={commentCornerRadius}
+          ry={commentCornerRadius}
+        />
       </clipPath>
     {/each}
   </defs>
-  {#if selectionBox && selectionBox.moved}
+  {#if selectionBox && selectionBox.moved && Number.isFinite(selectionBox.w) && Number.isFinite(selectionBox.h)}
     <rect
       class="selection-box"
-      x={selectionBox.x}
-      y={selectionBox.y}
-      width={selectionBox.w}
-      height={selectionBox.h}
+      x={safeSvgNumber(selectionBox.x)}
+      y={safeSvgNumber(selectionBox.y)}
+      width={safeSvgNumber(selectionBox.w)}
+      height={safeSvgNumber(selectionBox.h)}
     />
   {/if}
   <g class="comments">
@@ -2962,10 +3032,10 @@
         {/if}
         <rect
           class="comment-rect"
-          x={rect.x}
-          y={rect.y}
-          width={rect.w}
-          height={rect.h}
+          x={safeSvgNumber(rect.x)}
+          y={safeSvgNumber(rect.y)}
+          width={safeSvgNumber(rect.w)}
+          height={safeSvgNumber(rect.h)}
           rx={commentCornerRadius}
           ry={commentCornerRadius}
           filter={isSelected ? "url(#sf-selected-glow)" : null}
@@ -3305,10 +3375,10 @@
             >
               <rect
                 class="node-command-box"
-                x={cmdLayout.x}
-                y={cmdLayout.y}
-                width={cmdLayout.width}
-                height={cmdLayout.height}
+                x={safeSvgNumber(cmdLayout.x)}
+                y={safeSvgNumber(cmdLayout.y)}
+                width={safeSvgNumber(cmdLayout.width)}
+                height={safeSvgNumber(cmdLayout.height)}
                 rx={commandCornerRadius}
                 ry={commandCornerRadius}
               />

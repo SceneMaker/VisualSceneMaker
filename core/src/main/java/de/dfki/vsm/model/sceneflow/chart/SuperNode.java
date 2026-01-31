@@ -224,6 +224,20 @@ public class SuperNode extends BasicNode {
     }
 
     @Override
+    public void clearContent() {
+        super.clearContent();
+        mCommentList.clear();
+        mNodeList.clear();
+        mSuperNodeList.clear();
+        mStartNodeMap.clear();
+        mHistoryNode = null;
+        mHideLocalVarBadge = false;
+        mHideGlobalVarBadge = false;
+        mLocalVariableBadge = new VariableBadge("LocalVariableBadge");
+        mGlobalVariableBadge = new VariableBadge("GlobalVariableBadge");
+    }
+
+    @Override
     public void establishTargetNodes() {
         super.establishTargetNodes();
 

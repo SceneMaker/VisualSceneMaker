@@ -88,6 +88,17 @@ public class BasicNode implements ModelObject {
         return mNodeName;
     }
 
+    public void clearContent() {
+        mCmdList.clear();
+        mTypeDefList.clear();
+        mVarDefList.clear();
+        mCEdgeList.clear();
+        mPEdgeList.clear();
+        mIEdgeList.clear();
+        mFEdgeList.clear();
+        mDEdge = null;
+    }
+
     public void setNameAndId(String value) {
         mNodeId = value;
         mNodeName = value;

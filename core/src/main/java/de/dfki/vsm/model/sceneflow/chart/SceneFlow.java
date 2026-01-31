@@ -119,6 +119,20 @@ public final class SceneFlow extends SuperNode {
     }
 
     @Override
+    public void clearContent() {
+        super.clearContent();
+        mXMLNameSpace = "";
+        mXMLSchemeInstance = "";
+        mXMLSchemeLocation = "";
+        mPackageName = "";
+        mContextClass = "";
+        mContextCode = "";
+        mClassPathList.clear();
+        mUserCmdDefMap.clear();
+        mModifDate = "";
+    }
+
+    @Override
     public SceneFlow getCopy() {
         return (SceneFlow) CopyTool.copy(this);
     }

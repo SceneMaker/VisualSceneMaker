@@ -34,6 +34,10 @@ repositories {
     maven { url "https://repo.spring.io/libs-release" }
 }
 
+def appName = 'VSM Web'
+def appIconPng = file('editor/src/main/resources/images/vsm_logo.png')
+def appIconIcns = layout.buildDirectory.file('jpackage/VSM Web.icns')
+
 dependencies {
     // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.3.2'
@@ -110,6 +114,52 @@ java {
     withSourcesJar()
 }
 
+tasks.named('processResources') {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    from('editor/src/main/resources/images/vsm_logo.png') {
+        into('app-icons')
+        rename('vsm_logo.png', 'vsm-docicon.png')
+    }
+}
+
+tasks.named('build') {
+    dependsOn ':core:syncWebUi'
+}
+
+tasks.register('generateIcns') {
+    dependsOn tasks.jar
+    outputs.file(appIconIcns)
+    doLast {
+        def iconsetDir = file("$buildDir/jpackage/VSM.iconset")
+        iconsetDir.mkdirs()
+        exec { commandLine 'sips', '-z', '16', '16', appIconPng, '--out', "${iconsetDir}/icon_16x16.png" }
+        exec { commandLine 'sips', '-z', '32', '32', appIconPng, '--out', "${iconsetDir}/icon_16x16@2x.png" }
+        exec { commandLine 'sips', '-z', '32', '32', appIconPng, '--out', "${iconsetDir}/icon_32x32.png" }
+        exec { commandLine 'sips', '-z', '64', '64', appIconPng, '--out', "${iconsetDir}/icon_32x32@2x.png" }
+        exec { commandLine 'sips', '-z', '128', '128', appIconPng, '--out', "${iconsetDir}/icon_128x128.png" }
+        exec { commandLine 'sips', '-z', '256', '256', appIconPng, '--out', "${iconsetDir}/icon_128x128@2x.png" }
+        exec { commandLine 'sips', '-z', '256', '256', appIconPng, '--out', "${iconsetDir}/icon_256x256.png" }
+        exec { commandLine 'sips', '-z', '512', '512', appIconPng, '--out', "${iconsetDir}/icon_256x256@2x.png" }
+        exec { commandLine 'sips', '-z', '512', '512', appIconPng, '--out', "${iconsetDir}/icon_512x512.png" }
+        exec { commandLine 'sips', '-z', '1024', '1024', appIconPng, '--out', "${iconsetDir}/icon_512x512@2x.png" }
+        exec { commandLine 'iconutil', '-c', 'icns', iconsetDir, '-o', appIconIcns.get().asFile }
+    }
+}
+
+tasks.register('jpackageApp', Exec) {
+    dependsOn tasks.jar
+    dependsOn tasks.named('generateIcns')
+    def jarFile = tasks.jar.archiveFile.get().asFile
+    commandLine 'jpackage',
+            '--type', 'app-image',
+            '--name', appName,
+            '--input', layout.buildDirectory.dir('libs').get().asFile.absolutePath,
+            '--main-jar', jarFile.name,
+            '--main-class', 'de.dfki.vsm.SceneMaker4',
+            '--icon', appIconIcns.get().asFile.absolutePath,
+            '--dest', layout.buildDirectory.dir('jpackage').get().asFile.absolutePath
+}
+
 tasks.withType(Javadoc).configureEach {
     options.encoding = 'UTF-8'
     options.addStringOption('Xdoclint:none', '-quiet')
@@ -143,9 +193,11 @@ jar {
             it.isDirectory() ? it : zipTree(it)
         }
     }
+    archiveClassifier.set('plain')
     manifest {
         attributes(
-                'Main-Class': 'de.dfki.vsm.SceneMaker3',
+                // Phase 8: Updated to SceneMaker4 (web-only, Swing removed)
+                'Main-Class': 'de.dfki.vsm.SceneMaker4',
                 'build' : versioning.info.build,
                 'Build-Revision': versioning.info.commit,
                 'Build-Date': new Date().format("yyyy-MM-dd HH:mm:ss"),
@@ -155,10 +207,34 @@ jar {
     }
 }
 
-// Run task to start the editor (SceneMaker3)
+shadowJar {
+    duplicatesStrategy = 'exclude'
+    archiveClassifier.set('shadow')
+    manifest {
+        attributes(
+                // Phase 8: Updated to SceneMaker4 (web-only, Swing removed)
+                'Main-Class': 'de.dfki.vsm.SceneMaker4',
+                'build' : versioning.info.build,
+                'Build-Revision': versioning.info.commit,
+                'Build-Date': new Date().format("yyyy-MM-dd HH:mm:ss"),
+                'Full-Version': versioning.info.full,
+                'Last-Tag': versioning.info.lastTag
+        )
+    }
+}
+
+// Run task to start the editor (SceneMaker4 - web-only)
 task run(type: JavaExec) {
     group = 'application'
-    description = 'Runs the VisualSceneMaker editor'
-    mainClass = 'de.dfki.vsm.SceneMaker3'
+    description = 'Runs the VisualSceneMaker web editor'
+    mainClass = 'de.dfki.vsm.SceneMaker4'
     classpath = sourceSets.main.runtimeClasspath
+    if (org.gradle.internal.os.OperatingSystem.current().isMacOsX()) {
+        jvmArgs(
+                '-Xdock:name=VSM Web',
+                "-Xdock:icon=${projectDir}/src/main/resources/app-icons/vsm-docicon.png",
+                '-Dapple.awt.application.name=VSM Web',
+                '-Dcom.apple.mrj.application.apple.menu.about.name=VSM Web'
+        )
+    }
 }

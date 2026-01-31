@@ -77,21 +77,19 @@ public class IDManager {
         }
     }
 
-    public void setID(de.dfki.vsm.editor.Node n) {
-        String  idStr = n.getDataNode().getId().substring(1);
+    // Phase 8: Removed setID(de.dfki.vsm.editor.Node) - Swing UI dependency removed
+    // Use setID(BasicNode) instead
+    public void setID(BasicNode node) {
+        String  idStr = node.getId().substring(1);
         Integer id    = Integer.valueOf(idStr);
 
-        if (n.getDataNode() instanceof SuperNode) {
+        if (node instanceof SuperNode) {
             if (!mSuperNodeIDs.contains(id)) {
-
-                // System.out.println("id added for supernode!");
                 mSuperNodeIDs.add(id);
                 Collections.sort(mSuperNodeIDs);
             }
         } else {
             if (!mNodeIDs.contains(id)) {
-
-                // System.out.println("id added for node!");
                 mNodeIDs.add(id);
                 Collections.sort(mNodeIDs);
             }
@@ -132,11 +130,13 @@ public class IDManager {
         return "N" + freeID;
     }
 
-    public void freeID(de.dfki.vsm.editor.Node n) {
-        String  idStr = n.getDataNode().getId().substring(1);
+    // Phase 8: Removed freeID(de.dfki.vsm.editor.Node) - Swing UI dependency removed
+    // Use freeID(BasicNode) instead
+    public void freeID(BasicNode node) {
+        String  idStr = node.getId().substring(1);
         Integer id    = Integer.valueOf(idStr);
 
-        if (n.getDataNode() instanceof SuperNode) {
+        if (node instanceof SuperNode) {
             mSuperNodeIDs.remove(id);
             Collections.sort(mSuperNodeIDs);
         } else {

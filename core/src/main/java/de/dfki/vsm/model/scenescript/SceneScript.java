@@ -42,6 +42,13 @@ public final class SceneScript extends ScriptEntity {
         initLangMap();
     }
 
+    public void clear() {
+        mEntityList = new LinkedList<>();
+        initObjectLists();
+        initGroupMap();
+        initLangMap();
+    }
+
     private void initObjectLists() {
         // First Clear The Groups
         mSceneList.clear();

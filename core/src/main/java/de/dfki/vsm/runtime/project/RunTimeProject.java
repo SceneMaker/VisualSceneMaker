@@ -479,6 +479,7 @@ public class RunTimeProject {
 
         }
 
+        mSceneFlow.clearContent();
         if (!XMLUtilities.parseFromXMLStream(mSceneFlow, inputStream)) {
             mLogger.failure("Error: Cannot parse sceneflow file  in path" + path);
             return false;
@@ -549,6 +550,7 @@ public class RunTimeProject {
             }
 
         }
+        mSceneScript.clear();
         if (!XMLUtilities.parseFromXMLStream(mSceneScript, inputStream)) {
             mLogger.failure("Error: Cannot parse scenescript configuration file  in path" + path);
             return false;
