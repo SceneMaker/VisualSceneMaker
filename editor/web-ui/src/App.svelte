@@ -107,6 +107,12 @@
   const PREF_GRID_MAX = 8;
   const PREF_FONT_MIN = 8;
   const PREF_FONT_MAX = 16;
+  const PREF_UNDO_DEFAULT = 500;
+  const PREF_UNDO_MIN = 10;
+  const PREF_UNDO_MAX = 5000;
+  const PREF_COMMAND_LOG_DEFAULT = 5000;
+  const PREF_COMMAND_LOG_MIN = 100;
+  const PREF_COMMAND_LOG_MAX = 50000;
   const AUTO_CONNECT_MAX_ATTEMPTS = 12;
   const AUTO_CONNECT_RETRY_MS = 1000;
   const SCRIPT_FONT_OPTIONS = [
@@ -832,6 +838,8 @@
   let sceneFlowLoading = false;
   let sceneFlowLoaded = false;
   let sceneFlowDirty = false;
+  let sceneFlowCanUndo = false;
+  let sceneFlowCanRedo = false;
   let lastSceneFlowProjectId = "";
   let sceneFlowRef;
   let sceneFlowZoom = readSceneFlowZoom();
@@ -839,9 +847,12 @@
   let sceneFlowViewBox = null;
   let sceneFlowSelection = null;
   let sceneFlowMultiSelection = [];
+  let nodeEditorTypeOptions = ["Int", "Bool", "Float", "String"];
+  let nodeEditorTypeCatalog = [];
   let pinnedNodeSelectionId = "";
   let pinnedNodeSelectionRevision = null;
   let pinnedEdgeSelectionId = "";
+  let pendingNodePositions = new Set();
   let sceneFlowClipboard = null;
   let sceneFlowPasteIndex = 0;
   let sceneFlowDuplicateIndex = 0;
@@ -942,6 +953,17 @@
   let cmdDialogOpen = false;
   let cmdInlineDrafts = [];
   let cmdDialogNodeId = "";
+  let cmdInlineInputEls = [];
+  let cmdHelperOpen = false;
+  let cmdHelperType = "PlayScene";
+  let cmdHelperScene = "";
+  let cmdHelperAgent = "";
+  let cmdHelperAction = "";
+  let cmdHelperArgs = [];
+  let cmdHelperVarName = "";
+  let cmdHelperVarType = "Int";
+  let cmdHelperVarExpr = "";
+  let cmdHelperVarStep = "1";
   let lastNodeDefsId = "";
   let loadConfirmOpen = false;
   let loadConfirmReasons = [];
@@ -1271,14 +1293,48 @@
     const cleaned = rawNames.map((name) => String(name || "").trim()).filter(Boolean);
     sceneFlowIntVarNames = Array.from(new Set(cleaned));
   }
-  $: nodeEditorTypeOptions = Array.isArray(nodeEditorTarget?.typeOptions)
-    ? nodeEditorTarget.typeOptions
-    : ["Int", "Bool", "Float", "String"];
-  $: nodeEditorTypeCatalog = Array.isArray(nodeEditorTarget?.typeCatalog) ? nodeEditorTarget.typeCatalog : [];
+  function buildTypeCatalog(typeDefs) {
+    if (!Array.isArray(typeDefs)) return [];
+    return typeDefs
+      .map((def) => {
+        if (!def) return null;
+        return {
+          name: (def.name ?? "").trim(),
+          flavour: (def.flavour ?? "").trim(),
+          elementType: (def.elementType ?? "").trim(),
+          members: Array.isArray(def.members) ? def.members : []
+        };
+      })
+      .filter((entry) => entry && entry.name);
+  }
+
+  $: nodeEditorTypeCatalog = Array.isArray(nodeEditorTarget?.typeCatalog)
+    ? nodeEditorTarget.typeCatalog
+    : buildTypeCatalog(nodeEditorTypeDefs);
+  $: {
+    const base = ["Int", "Bool", "Float", "String"];
+    const serverOptions = Array.isArray(nodeEditorTarget?.typeOptions) ? nodeEditorTarget.typeOptions : base;
+    const extras = nodeEditorTypeCatalog.map((entry) => entry.name).filter(Boolean);
+    nodeEditorTypeOptions = Array.from(new Set([...serverOptions, ...extras]));
+  }
   $: currentSuperName =
     sceneFlow?.path?.length ? sceneFlow.path[sceneFlow.path.length - 1] : sceneFlow?.superNodeId || "SceneFlow";
   $: sceneFlowPathNodes = Array.isArray(sceneFlow?.pathNodes) ? sceneFlow.pathNodes : [];
   $: startNodes = sceneFlow?.nodes ? sceneFlow.nodes.filter((node) => node.isStart && !node.isHistory) : [];
+  $: helperVarCandidates = (() => {
+    const list = [];
+    const seen = new Set();
+    const addVar = (def, scope) => {
+      if (!def) return;
+      const name = (def.name || "").trim();
+      if (!name || seen.has(name)) return;
+      seen.add(name);
+      list.push({ name, type: (def.type || "").trim(), scope });
+    };
+    (nodeEditorVarDefs || []).forEach((def) => addVar(def, "local"));
+    (sceneFlowVarDefs || []).forEach((def) => addVar(def, "global"));
+    return list;
+  })();
   $: sceneFlowFrameColor = superNodeFrameColor(sceneFlow);
   $: sceneFlowFrameStyle = `--sf-frame-color:${sceneFlowFrameColor};`;
   $: {
@@ -2766,6 +2822,8 @@
       activityVisualization: readConfigBool("visualization", true),
       activityTrace: readConfigBool("visualizationtrace", true),
       showNodeId: readConfigBool("shownodeid", true),
+      undoMaxDepth: String(readConfigInt("undo_max_depth", PREF_UNDO_DEFAULT)),
+      commandLogMax: String(readConfigInt("command_log_max", PREF_COMMAND_LOG_DEFAULT)),
       scriptFontType: readConfigString("scriptfonttype", PREF_SCRIPT_FONT_DEFAULT),
       scriptFontSize: String(readConfigInt("scriptfonsize", PREF_SCRIPT_FONT_SIZE_DEFAULT)),
       sceneflowNamespace: readPreferenceString("xmlns", "xml.sceneflow.dfki.de"),
@@ -2805,6 +2863,20 @@
       "Script font size"
     );
     if (scriptFontSize === null) return;
+    const undoMaxDepth = parsePrefsInt(
+      prefsDialogDraft.undoMaxDepth,
+      PREF_UNDO_MIN,
+      PREF_UNDO_MAX,
+      "Undo history depth"
+    );
+    if (undoMaxDepth === null) return;
+    const commandLogMax = parsePrefsInt(
+      prefsDialogDraft.commandLogMax,
+      PREF_COMMAND_LOG_MIN,
+      PREF_COMMAND_LOG_MAX,
+      "Command log max"
+    );
+    if (commandLogMax === null) return;
     const scriptFontType = String(prefsDialogDraft.scriptFontType || "").trim();
     if (!scriptFontType) {
       prefsDialogError = "Script font type is required.";
@@ -2835,6 +2907,8 @@
     addConfigChange("visualization", prefsDialogDraft.activityVisualization);
     addConfigChange("visualizationtrace", prefsDialogDraft.activityTrace);
     addConfigChange("shownodeid", prefsDialogDraft.showNodeId);
+    addConfigChange("undo_max_depth", undoMaxDepth);
+    addConfigChange("command_log_max", commandLogMax);
     addConfigChange("scriptfonsize", scriptFontSize);
     addConfigChange("scriptfonttype", scriptFontType);
     addPrefChange("xmlns", prefsDialogDraft.sceneflowNamespace);
@@ -3754,6 +3828,11 @@
       beforeMulti: sceneFlowMultiSelection
     });
     sceneFlow = snapshot;
+    if (snapshot?.undoState) {
+      sceneFlowCanUndo = !!snapshot.undoState.canUndo;
+      sceneFlowCanRedo = !!snapshot.undoState.canRedo;
+    }
+    pendingNodePositions.clear();
     sceneFlowError = "";
     sceneFlowLoaded = true;
     sceneFlowLoading = false;
@@ -3796,6 +3875,10 @@
     }
     if (snapshot.version !== undefined) {
       scriptVersion = snapshot.version;
+    }
+    if (snapshot?.undoState) {
+      sceneFlowCanUndo = !!snapshot.undoState.canUndo;
+      sceneFlowCanRedo = !!snapshot.undoState.canRedo;
     }
     scriptDiagnostics = Array.isArray(snapshot.parseErrors) ? snapshot.parseErrors : [];
     scriptParseOk = snapshot.parseOk !== false;
@@ -5367,6 +5450,8 @@
     cmdSelectedIndex = null;
     cmdInlineDrafts = [];
     cmdDialogNodeId = "";
+    cmdInlineInputEls = [];
+    cmdHelperOpen = false;
   }
 
   function syncCmdInlineDrafts() {
@@ -5392,26 +5477,48 @@
   function defaultVarExpression(typeName) {
     const name = (typeName || "").trim();
     if (!name) return "";
-    if (name === "Int") return "0";
-    if (name === "Bool") return "true";
-    if (name === "Float") return "0";
-    if (name === "String") return "\"\"";
-    const match = nodeEditorTypeCatalog.find((entry) => entry?.name === name);
-    if (match?.flavour === "List") return "[ ]";
-    if (match?.flavour === "Struct") return "{ }";
-    return "";
+    return buildTypeExample(name, 0, false);
   }
 
   function varExpressionHint(typeName) {
     const name = (typeName || "").trim();
     if (!name) return "";
-    if (name === "Int") return "e.g. 0";
-    if (name === "Bool") return "e.g. true / false";
-    if (name === "Float") return "e.g. 0.0";
-    if (name === "String") return "e.g. \"text\"";
+    const example = buildTypeExample(name, 0, true);
+    return example ? `e.g. ${example}` : "";
+  }
+
+  function buildTypeExample(typeName, depth, preferHint) {
+    const name = (typeName || "").trim();
+    if (!name) return "";
+    if (name === "Int") return preferHint ? "0" : "0";
+    if (name === "Bool") return preferHint ? "true / false" : "true";
+    if (name === "Float") return preferHint ? "0.0" : "0.0";
+    if (name === "String") return preferHint ? "\"text\"" : "\"\"";
     const match = nodeEditorTypeCatalog.find((entry) => entry?.name === name);
-    if (match?.flavour === "List") return "e.g. [ ]";
-    if (match?.flavour === "Struct") return "e.g. { }";
+    if (!match || depth > 2) {
+      return "";
+    }
+    if (match.flavour === "List") {
+      const elementType = (match.elementType || "").trim();
+      const elementExample = elementType ? buildTypeExample(elementType, depth + 1, false) : "";
+      return elementExample ? `[${elementExample}]` : "[ ]";
+    }
+    if (match.flavour === "Struct") {
+      const members = Array.isArray(match.members) ? match.members : [];
+      const parts = members.slice(0, 3).map((member) => {
+        const memberName = (member?.name ?? "").trim();
+        const memberType = (member?.type ?? "").trim();
+        if (!memberName && !memberType) return "";
+        const value = memberType ? buildTypeExample(memberType, depth + 1, false) : "";
+        if (!memberName) return value;
+        if (!value) return `${memberName} =`;
+        return `${memberName} = ${value}`;
+      }).filter(Boolean);
+      if (parts.length) {
+        return `{ ${parts.join(", ")} }`;
+      }
+      return "{ }";
+    }
     return "";
   }
 
@@ -5428,7 +5535,7 @@
     if (!def) return "";
     if (def.flavour === "List") {
       const elementType = (def.elementType || "").trim();
-      return elementType ? elementType : "?";
+      return elementType ? elementType : "";
     }
     if (def.flavour === "Struct") {
       const members = Array.isArray(def.members) ? def.members : [];
@@ -5457,6 +5564,14 @@
     const name = (def.name ?? "").trim();
     const summary = typeDefSummary(def);
     let line = "";
+    if (flavour === "List") {
+      const base = name ? `List ${name}` : "List";
+      return summary ? `${base}(${summary})` : base;
+    }
+    if (flavour === "Struct") {
+      const base = name ? `Struct ${name}` : "Struct";
+      return summary ? `${base}(${summary})` : base;
+    }
     if (flavour) {
       line += flavour;
     }
@@ -5760,6 +5875,13 @@
     refreshRuntimeVars(nodeEditorTarget);
   }
 
+  function handleVarDefKeydown(event) {
+    if (event.key !== "Enter") return;
+    event.preventDefault();
+    if (!wsConnected || sceneFlowBusy) return;
+    applyVarDefEdit();
+  }
+
   async function moveVarDef(index, direction) {
     if (!selectedProjectId || !nodeEditorTarget) return null;
     if (!nodeEditorVarDefs[index]) return null;
@@ -5839,6 +5961,8 @@
       await tick();
     }
     cmdDialogOpen = true;
+    cmdInlineInputEls = [];
+    cmdHelperOpen = false;
     syncCmdInlineDrafts();
     focusDialog(cmdDialogEl);
   }
@@ -6016,6 +6140,154 @@
     startCmdEdit(cmdSelectedIndex);
   }
 
+  function openCmdHelper() {
+    cmdHelperType = "PlayScene";
+    cmdHelperScene = scriptScenes?.[0]?.name || scriptScenes?.[0]?.id || "";
+    cmdHelperAgent = "";
+    const actionOption = Array.isArray(scriptElements?.acticon) ? scriptElements.acticon[0] : null;
+    cmdHelperAction = actionOption?.name || actionOption?.script || "";
+    cmdHelperArgs = [];
+    cmdHelperVarName = helperVarCandidates?.[0]?.name || "";
+    cmdHelperVarType = helperVarCandidates?.[0]?.type || "Int";
+    cmdHelperVarExpr = "";
+    cmdHelperVarStep = "1";
+    cmdHelperOpen = true;
+  }
+
+  function updateCmdHelperType() {
+    if (cmdHelperType === "Inc" || cmdHelperType === "Dec") {
+      cmdHelperVarType = "Int";
+      cmdHelperVarStep = cmdHelperVarStep || "1";
+      cmdHelperVarExpr = "";
+    }
+    if (cmdHelperType === "Assign") {
+      cmdHelperVarExpr = cmdHelperVarExpr || "";
+    }
+  }
+
+  function closeCmdHelper() {
+    cmdHelperOpen = false;
+  }
+
+  function addCmdHelperArg() {
+    cmdHelperArgs = [...cmdHelperArgs, { key: "", value: "" }];
+  }
+
+  function removeCmdHelperArg(index) {
+    cmdHelperArgs = cmdHelperArgs.filter((_, idx) => idx !== index);
+  }
+
+  function updateCmdHelperArg(index, field, value) {
+    cmdHelperArgs = cmdHelperArgs.map((entry, idx) => (idx === index ? { ...entry, [field]: value } : entry));
+  }
+
+  function commandFromHelper() {
+    if (cmdHelperType === "PlayScene") {
+      const scene = (cmdHelperScene || "").trim();
+      if (!scene) return "";
+      return `PlayScene("${scene}")`;
+    }
+    if (cmdHelperType === "PlayAction") {
+      const agent = (cmdHelperAgent || "").trim();
+      const action = (cmdHelperAction || "").trim();
+      if (!agent || !action) return "";
+      const args = cmdHelperArgs
+        .map((entry) => {
+          const key = (entry?.key || "").trim();
+          const value = (entry?.value || "").trim();
+          if (!key || !value) return "";
+          return `${key}=${value}`;
+        })
+        .filter(Boolean)
+        .join(" ");
+      const payload = [agent, action, args].filter(Boolean).join(" ");
+      return `PlayAction("[${payload}]")`;
+    }
+    if (cmdHelperType === "Assign") {
+      const name = (cmdHelperVarName || "").trim();
+      const expr = (cmdHelperVarExpr || "").trim();
+      if (!name || !expr) return "";
+      return `${name} = ${expr}`;
+    }
+    if (cmdHelperType === "Inc") {
+      const name = (cmdHelperVarName || "").trim();
+      const step = (cmdHelperVarStep || "").trim() || "1";
+      if (!name) return "";
+      return `${name} = ${name} + ${step}`;
+    }
+    if (cmdHelperType === "Dec") {
+      const name = (cmdHelperVarName || "").trim();
+      const step = (cmdHelperVarStep || "").trim() || "1";
+      if (!name) return "";
+      return `${name} = ${name} - ${step}`;
+    }
+    return "";
+  }
+
+  async function ensureHelperVarExists() {
+    const name = (cmdHelperVarName || "").trim();
+    if (!name || !nodeEditorTarget || !selectedProjectId) return true;
+    const existing = helperVarCandidates.find((entry) => entry.name === name);
+    if (existing) return true;
+    const type = (cmdHelperVarType || "Int").trim() || "Int";
+    const confirmCreate = window.confirm(`Create variable "${name}" (${type})?`);
+    if (!confirmCreate) return false;
+    const payload = {
+      projectId: selectedProjectId,
+      superNodeId: sceneFlow?.superNodeId,
+      nodeId: nodeEditorTarget.id,
+      varDef: {
+        name,
+        type,
+        expression: defaultVarExpression(type)
+      }
+    };
+    const response = await runSceneFlowCommand("SceneFlow.Node.VarDef.Add", payload);
+    return !!response;
+  }
+
+  function insertHelperCommand(text) {
+    if (!text) return;
+    if (cmdSelectedIndex === null) {
+      cmdInlineDrafts = [...cmdInlineDrafts, text];
+      cmdSelectedIndex = cmdInlineDrafts.length - 1;
+      return;
+    }
+    const el = cmdInlineInputEls[cmdSelectedIndex];
+    if (el && typeof el.setRangeText === "function") {
+      const start = el.selectionStart ?? el.value.length;
+      const end = el.selectionEnd ?? el.value.length;
+      el.setRangeText(text, start, end, "end");
+      updateCmdInlineDraft(cmdSelectedIndex, el.value);
+      el.focus();
+      return;
+    }
+    const current = cmdInlineDrafts[cmdSelectedIndex] ?? "";
+    const next = current ? `${current} ${text}` : text;
+    updateCmdInlineDraft(cmdSelectedIndex, next);
+  }
+
+  async function applyCmdHelperInsert() {
+    cmdError = "";
+    if (cmdHelperType === "PlayAction") {
+      if (!(cmdHelperAgent || "").trim()) {
+        cmdError = "Agent name is required.";
+        return;
+      }
+    }
+    if (cmdHelperType === "Assign" || cmdHelperType === "Inc" || cmdHelperType === "Dec") {
+      const ok = await ensureHelperVarExists();
+      if (!ok) return;
+    }
+    const text = commandFromHelper();
+    if (!text) {
+      cmdError = "Helper command is incomplete.";
+      return;
+    }
+    insertHelperCommand(text);
+    cmdHelperOpen = false;
+  }
+
   function filterScriptElements(elements, query) {
     const source = elements || {};
     const acticon = Array.isArray(source.acticon) ? source.acticon : [];
@@ -6108,59 +6380,142 @@
 
   function sceneFlowCenter() {
     const box = sceneFlowViewBox || sceneFlowWorldBox;
-    if (!box) {
+    if (!box || !Number.isFinite(box.width) || !Number.isFinite(box.height) || box.width <= 0 || box.height <= 0) {
       return { x: 120, y: 120 };
     }
-    return {
-      x: box.x + box.width / 2,
-      y: box.y + box.height / 2
-    };
+    const cx = box.x + box.width / 2;
+    const cy = box.y + box.height / 2;
+    if (!Number.isFinite(cx) || !Number.isFinite(cy)) {
+      return { x: 120, y: 120 };
+    }
+    return { x: cx, y: cy };
   }
 
   function snapSceneFlowPosition(position) {
-    if (!sceneFlowNodeSnap || !position) return position;
+    if (!position) return position;
     const nodeWidth = readConfigInt("node_width", PREF_NODE_DEFAULT);
     const nodeHeight = readConfigInt("node_height", nodeWidth);
+    const bounds = sceneFlowViewBox || sceneFlowWorldBox;
+    const clampToBounds = (pos) => {
+      if (!bounds || !Number.isFinite(bounds.width) || !Number.isFinite(bounds.height)) {
+        return pos;
+      }
+      const maxX = bounds.x + bounds.width - nodeWidth;
+      const maxY = bounds.y + bounds.height - nodeHeight;
+      return {
+        x: Math.min(Math.max(pos.x, bounds.x), maxX),
+        y: Math.min(Math.max(pos.y, bounds.y), maxY)
+      };
+    };
     const gridScaleX = readConfigInt("grid_x", PREF_GRID_DEFAULT);
     const gridScaleY = readConfigInt("grid_y", gridScaleX);
     const gridX = Math.max(8, nodeWidth * gridScaleX);
     const gridY = Math.max(8, nodeHeight * gridScaleY);
     const originX = nodeWidth / 2 + nodeWidth / 3;
     const originY = nodeHeight / 2 + nodeHeight / 3;
-    const centerX = position.x + nodeWidth / 2;
-    const centerY = position.y + nodeHeight / 2;
-    if (!Number.isFinite(centerX) || !Number.isFinite(centerY)) return position;
-    const snappedCenterX = originX + Math.round((centerX - originX) / gridX) * gridX;
-    const snappedCenterY = originY + Math.round((centerY - originY) / gridY) * gridY;
-    const base = {
-      x: Math.max(1, Math.round(snappedCenterX - nodeWidth / 2)),
-      y: Math.max(1, Math.round(snappedCenterY - nodeHeight / 2))
+    let base = {
+      x: Math.max(1, Math.round(position.x)),
+      y: Math.max(1, Math.round(position.y))
     };
-    const occupied = new Set();
+    if (sceneFlowNodeSnap) {
+      const centerX = base.x + nodeWidth / 2;
+      const centerY = base.y + nodeHeight / 2;
+      if (!Number.isFinite(centerX) || !Number.isFinite(centerY)) return base;
+      const snappedCenterX = originX + Math.round((centerX - originX) / gridX) * gridX;
+      const snappedCenterY = originY + Math.round((centerY - originY) / gridY) * gridY;
+      base = {
+        x: Math.max(1, Math.round(snappedCenterX - nodeWidth / 2)),
+        y: Math.max(1, Math.round(snappedCenterY - nodeHeight / 2))
+      };
+    }
+    const occupied = [];
     for (const node of sceneFlow?.nodes || []) {
       if (!node) continue;
-      const nx = Number.isFinite(node?.graphics?.x) ? node.graphics.x : node?.x;
-      const ny = Number.isFinite(node?.graphics?.y) ? node.graphics.y : node?.y;
+      const nxRaw = node?.graphics?.x ?? node?.x;
+      const nyRaw = node?.graphics?.y ?? node?.y;
+      const nx = Number(nxRaw);
+      const ny = Number(nyRaw);
       if (!Number.isFinite(nx) || !Number.isFinite(ny)) continue;
-      occupied.add(`${Math.round(nx)}|${Math.round(ny)}`);
+      occupied.push({ x: nx, y: ny, w: nodeWidth, h: nodeHeight });
     }
-    const baseKey = `${Math.round(base.x)}|${Math.round(base.y)}`;
-    if (!occupied.has(baseKey)) {
+    for (const key of pendingNodePositions) {
+      const parts = String(key).split("|");
+      if (parts.length !== 2) continue;
+      const px = Number(parts[0]);
+      const py = Number(parts[1]);
+      if (!Number.isFinite(px) || !Number.isFinite(py)) continue;
+      occupied.push({ x: px, y: py, w: nodeWidth, h: nodeHeight });
+    }
+    const overlaps = (pos) => {
+      const rect = { x: pos.x, y: pos.y, w: nodeWidth, h: nodeHeight };
+      for (const other of occupied) {
+        if (
+          rect.x < other.x + other.w &&
+          rect.x + rect.w > other.x &&
+          rect.y < other.y + other.h &&
+          rect.y + rect.h > other.y
+        ) {
+          return true;
+        }
+      }
+      return false;
+    };
+    base = clampToBounds(base);
+    if (!overlaps(base)) {
+      pendingNodePositions.add(`${Math.round(base.x)}|${Math.round(base.y)}`);
       return base;
     }
-    for (let radius = 1; radius <= 8; radius += 1) {
-      for (let dx = -radius; dx <= radius; dx += 1) {
-        for (let dy = -radius; dy <= radius; dy += 1) {
-          if (dx === 0 && dy === 0) continue;
-          if (Math.abs(dx) !== radius && Math.abs(dy) !== radius) continue;
-          const candidate = {
-            x: Math.max(1, Math.round(base.x + dx * gridX)),
-            y: Math.max(1, Math.round(base.y + dy * gridY))
-          };
-          const key = `${Math.round(candidate.x)}|${Math.round(candidate.y)}`;
-          if (!occupied.has(key)) {
+    const baseCenterX = base.x + nodeWidth / 2;
+    const baseCenterY = base.y + nodeHeight / 2;
+    const baseIx = Math.round((baseCenterX - originX) / gridX);
+    const baseIy = Math.round((baseCenterY - originY) / gridY);
+    const maxGridX = bounds && Number.isFinite(bounds.width) ? Math.ceil(bounds.width / gridX) + 2 : 40;
+    const maxGridY = bounds && Number.isFinite(bounds.height) ? Math.ceil(bounds.height / gridY) + 2 : 40;
+    const maxRadius = Math.max(10, Math.ceil(Math.sqrt(occupied.length || 0)) + 10, Math.max(maxGridX, maxGridY));
+    const maxSteps = (maxRadius * 2 + 1) ** 2;
+    let stepX = 0;
+    let stepY = 0;
+    let dirX = 1;
+    let dirY = 0;
+    let segmentLength = 1;
+    let segmentPassed = 0;
+    let segmentCount = 0;
+    for (let step = 0; step < maxSteps; step += 1) {
+      if (!(stepX === 0 && stepY === 0) && Math.max(Math.abs(stepX), Math.abs(stepY)) <= maxRadius) {
+        const centerX = originX + (baseIx + stepX) * gridX;
+        const centerY = originY + (baseIy + stepY) * gridY;
+        const candidate = {
+          x: Math.round(centerX - nodeWidth / 2),
+          y: Math.round(centerY - nodeHeight / 2)
+        };
+        if (bounds) {
+          if (candidate.x < bounds.x || candidate.y < bounds.y) {
+            // skip
+          } else if (candidate.x + nodeWidth > bounds.x + bounds.width) {
+            // skip
+          } else if (candidate.y + nodeHeight > bounds.y + bounds.height) {
+            // skip
+          } else if (!overlaps(candidate)) {
+            pendingNodePositions.add(`${Math.round(candidate.x)}|${Math.round(candidate.y)}`);
             return candidate;
           }
+        } else if (!overlaps(candidate)) {
+          pendingNodePositions.add(`${Math.round(candidate.x)}|${Math.round(candidate.y)}`);
+          return candidate;
+        }
+      }
+      stepX += dirX;
+      stepY += dirY;
+      segmentPassed += 1;
+      if (segmentPassed === segmentLength) {
+        segmentPassed = 0;
+        segmentCount += 1;
+        const nextDirX = -dirY;
+        const nextDirY = dirX;
+        dirX = nextDirX;
+        dirY = nextDirY;
+        if (segmentCount % 2 === 0) {
+          segmentLength += 1;
         }
       }
     }
@@ -6362,8 +6717,13 @@
 
   async function createSceneFlowNode(nodeType, position = null) {
     if (!selectedProjectId) return;
-    const center = position || sceneFlowCenter();
-    const target = snapSceneFlowPosition(center);
+    const fallback = sceneFlowCenter();
+    const center = position || fallback;
+    const safeCenter = {
+      x: Number.isFinite(center?.x) ? center.x : fallback.x,
+      y: Number.isFinite(center?.y) ? center.y : fallback.y
+    };
+    const target = snapSceneFlowPosition(safeCenter);
     const response = await runSceneFlowCommand("SceneFlow.Node.Create", {
       projectId: selectedProjectId,
       superNodeId: sceneFlow?.superNodeId,
@@ -7382,7 +7742,7 @@
                 type="button"
                 class="ghost icon-button flat"
                 on:click={undoSceneFlow}
-                disabled={!wsConnected || sceneFlowBusy}
+                disabled={!wsConnected || sceneFlowBusy || !(sceneFlow?.undoState?.canUndo ?? sceneFlowCanUndo)}
                 aria-label="Undo"
                 title="Undo"
               >
@@ -7394,7 +7754,7 @@
                 type="button"
                 class="ghost icon-button flat"
                 on:click={redoSceneFlow}
-                disabled={!wsConnected || sceneFlowBusy}
+                disabled={!wsConnected || sceneFlowBusy || !(sceneFlow?.undoState?.canRedo ?? sceneFlowCanRedo)}
                 aria-label="Redo"
                 title="Redo"
               >
@@ -9975,6 +10335,54 @@
               </div>
             </div>
           </section>
+          <section class="prefs-card">
+            <header class="prefs-card-header">
+              <h4>Undo/Redo Management</h4>
+              <span class="muted">History depth for this project.</span>
+            </header>
+            <div class="prefs-group">
+              <div class="prefs-rows">
+                <div class="prefs-row">
+                  <div class="prefs-field">
+                    <label for="pref-undo-depth">Undo history depth</label>
+                    <span class="prefs-help">Maximum undo steps kept on disk.</span>
+                  </div>
+                  <div class="prefs-control">
+                    <div class="prefs-number">
+                      <input
+                        id="pref-undo-depth"
+                        type="number"
+                        min={PREF_UNDO_MIN}
+                        max={PREF_UNDO_MAX}
+                        step="10"
+                        bind:value={prefsDialogDraft.undoMaxDepth}
+                      />
+                      <span>steps</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="prefs-row">
+                  <div class="prefs-field">
+                    <label for="pref-command-log-max">Command log max</label>
+                    <span class="prefs-help">Maximum command entries stored on disk.</span>
+                  </div>
+                  <div class="prefs-control">
+                    <div class="prefs-number">
+                      <input
+                        id="pref-command-log-max"
+                        type="number"
+                        min={PREF_COMMAND_LOG_MIN}
+                        max={PREF_COMMAND_LOG_MAX}
+                        step="100"
+                        bind:value={prefsDialogDraft.commandLogMax}
+                      />
+                      <span>entries</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
         </div>
         <div class="actions">
           <button
@@ -10256,6 +10664,8 @@
                     <input
                       class="cmd-inline-input"
                       value={cmdText}
+                      data-cmd-index={index}
+                      on:focus={(event) => (cmdInlineInputEls[index] = event.currentTarget)}
                       on:input={(event) => updateCmdInlineDraft(index, event.target.value)}
                       on:focus={() => (cmdSelectedIndex = index)}
                       on:blur={() => commitCmdInlineDraft(index)}
@@ -10276,6 +10686,16 @@
                 title="Add command"
               >
                 <IconPlus className="icon" />
+              </button>
+              <button
+                type="button"
+                class="ghost icon-button"
+                on:click={openCmdHelper}
+                disabled={!wsConnected || sceneFlowBusy}
+                aria-label="Open command helper"
+                title="Command helper"
+              >
+                <IconPuzzle className="icon" />
               </button>
               <button
                 type="button"
@@ -10320,6 +10740,109 @@
               </button>
             </div>
           </div>
+          {#if cmdHelperOpen}
+            <div class="cmd-helper">
+              <div class="cmd-helper-header">
+                <h4>Command helper</h4>
+                <button type="button" class="ghost" on:click={closeCmdHelper}>Close</button>
+              </div>
+              <label for="cmd-helper-type">Type</label>
+              <select id="cmd-helper-type" bind:value={cmdHelperType} on:change={updateCmdHelperType}>
+                <option value="PlayScene">PlayScene</option>
+                <option value="PlayAction">PlayAction</option>
+                <option value="Assign">Assign variable</option>
+                <option value="Inc">Increase variable</option>
+                <option value="Dec">Decrease variable</option>
+              </select>
+              {#if cmdHelperType === "PlayScene"}
+                <label for="cmd-helper-scene">Scene</label>
+                <select id="cmd-helper-scene" bind:value={cmdHelperScene}>
+                  {#each scriptScenes as scene}
+                    <option value={scene?.name || scene?.id}>{scene?.name || scene?.id}</option>
+                  {/each}
+                </select>
+                {#if scriptScenes.length === 0}
+                  <p class="muted">No scenes loaded.</p>
+                {/if}
+              {:else if cmdHelperType === "PlayAction"}
+                <label for="cmd-helper-agent">Agent</label>
+                <input id="cmd-helper-agent" bind:value={cmdHelperAgent} placeholder="Agent name" />
+                <label for="cmd-helper-action">Action</label>
+                <input id="cmd-helper-action" bind:value={cmdHelperAction} list="cmd-helper-action-list" placeholder="Action name" />
+                <datalist id="cmd-helper-action-list">
+                  {#each scriptElements.acticon as action}
+                    <option value={action?.name || action?.script}>{action?.name || action?.script}</option>
+                  {/each}
+                </datalist>
+                {#if !scriptElements.acticon.length}
+                  <p class="muted">No actions loaded.</p>
+                {/if}
+                <div class="cmd-helper-args">
+                  <div class="cmd-helper-args-header">
+                    <span>Arguments</span>
+                    <button type="button" class="ghost icon-button" on:click={addCmdHelperArg} aria-label="Add argument">
+                      <IconPlus className="icon" />
+                    </button>
+                  </div>
+                  {#if cmdHelperArgs.length === 0}
+                    <p class="muted">No arguments.</p>
+                  {:else}
+                    {#each cmdHelperArgs as arg, argIndex}
+                      <div class="cmd-helper-arg-row">
+                        <input
+                          placeholder="key"
+                          value={arg.key}
+                          on:input={(event) => updateCmdHelperArg(argIndex, "key", event.target.value)}
+                        />
+                        <input
+                          placeholder="value"
+                          value={arg.value}
+                          on:input={(event) => updateCmdHelperArg(argIndex, "value", event.target.value)}
+                        />
+                        <button
+                          type="button"
+                          class="ghost icon-button danger"
+                          on:click={() => removeCmdHelperArg(argIndex)}
+                          aria-label="Remove argument"
+                        >
+                          <IconTrash className="icon" />
+                        </button>
+                      </div>
+                    {/each}
+                  {/if}
+                </div>
+              {:else}
+                <label for="cmd-helper-var">Variable</label>
+                <input id="cmd-helper-var" bind:value={cmdHelperVarName} list="cmd-helper-var-list" placeholder="Variable name" />
+                <datalist id="cmd-helper-var-list">
+                  {#each helperVarCandidates as variable}
+                    <option value={variable.name}>{variable.type ? `${variable.name} (${variable.type})` : variable.name}</option>
+                  {/each}
+                </datalist>
+                <label for="cmd-helper-var-type">Variable type (if new)</label>
+                <select id="cmd-helper-var-type" bind:value={cmdHelperVarType}>
+                  {#each nodeEditorTypeOptions as option}
+                    <option value={option}>{option}</option>
+                  {/each}
+                </select>
+                {#if cmdHelperType === "Assign"}
+                  <label for="cmd-helper-expr">Expression</label>
+                  <input
+                    id="cmd-helper-expr"
+                    bind:value={cmdHelperVarExpr}
+                    placeholder={varExpressionHint(cmdHelperVarType)}
+                  />
+                {:else}
+                  <label for="cmd-helper-step">Step</label>
+                  <input id="cmd-helper-step" bind:value={cmdHelperVarStep} placeholder="1" />
+                {/if}
+              {/if}
+              <div class="actions cmd-helper-actions">
+                <button type="button" class="primary" on:click={applyCmdHelperInsert}>Insert</button>
+                <button type="button" class="ghost" on:click={closeCmdHelper}>Cancel</button>
+              </div>
+            </div>
+          {/if}
           <div class="actions cmd-dialog-actions">
             <button type="button" class="primary cmd-close" on:click={closeCmdDialog}>Close</button>
           </div>
@@ -10341,7 +10864,12 @@
         <h3 id="var-def-dialog-title">{varDefEditIndex >= 0 ? "Edit variable definition" : "Add variable definition"}</h3>
         <div class="modal-body">
           <label for="var-def-name">Name</label>
-          <input id="var-def-name" bind:this={varDefNameInputEl} bind:value={varDefDraft.name} />
+          <input
+            id="var-def-name"
+            bind:this={varDefNameInputEl}
+            bind:value={varDefDraft.name}
+            on:keydown={handleVarDefKeydown}
+          />
           <label for="var-def-type">Type</label>
           <select id="var-def-type" bind:value={varDefDraft.type} on:change={updateVarDefType}>
             {#each nodeEditorTypeOptions as option}
@@ -10353,6 +10881,7 @@
             id="var-def-exp"
             bind:value={varDefDraft.expression}
             placeholder={varExpressionHint(varDefDraft.type)}
+            on:keydown={handleVarDefKeydown}
           />
         </div>
         <div class="actions">
