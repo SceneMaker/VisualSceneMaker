@@ -74,6 +74,8 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.nio.charset.StandardCharsets;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
@@ -87,6 +89,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ByteArrayOutputStream;
 import de.dfki.vsm.model.visicon.VisiconAgent;
 import de.dfki.vsm.model.visicon.VisiconConfig;
 import de.dfki.vsm.model.visicon.VisiconViseme;
@@ -371,6 +374,7 @@ public final class WebUiServer implements EventListener {
         mApp.get(API_PREFIX + "/projects/{pid}/script/elements", this::handleScriptElements);
         mApp.get(API_PREFIX + "/projects/{pid}/sceneflow", this::handleSceneflow);
         mApp.get(API_PREFIX + "/projects/{pid}/runtime", this::handleRuntime);
+        mApp.get(API_PREFIX + "/projects/{pid}/history/commands", this::handleCommandLog);
         mApp.post(API_PREFIX + "/projects/{pid}/sceneflow/navigate", this::handleSceneflowNavigate);
         mApp.post(API_PREFIX + "/projects/{pid}/script/diagnostics", this::handleScriptDiagnostics);
 
@@ -1098,6 +1102,12 @@ public final class WebUiServer implements EventListener {
         snapshot.put("revision", superNode.hashCode());
 
         ProjectRef ref = projectStore.get(projectId);
+        if (ref != null) {
+            JSONObject undoState = buildUndoState(ref);
+            if (undoState != null) {
+                snapshot.put("undoState", undoState);
+            }
+        }
         int nodeWidth = getEditorConfigInt(ref, "node_width", 90);
         int nodeHeight = getEditorConfigInt(ref, "node_height", nodeWidth);
 
@@ -1271,6 +1281,25 @@ public final class WebUiServer implements EventListener {
                 json.put("name", def.getName());
                 json.put("flavour", def.getFlavour() != null ? def.getFlavour().name() : "");
                 json.put("syntax", def.getConcreteSyntax());
+                if (def instanceof ListTypeDefinition) {
+                    ListTypeDefinition listDef = (ListTypeDefinition) def;
+                    if (listDef.getType() != null) {
+                        json.put("elementType", listDef.getType());
+                    }
+                } else if (def instanceof StructTypeDefinition) {
+                    StructTypeDefinition structDef = (StructTypeDefinition) def;
+                    JSONArray members = new JSONArray();
+                    if (structDef.getMemberList() != null) {
+                        for (MemberDefinition member : structDef.getMemberList()) {
+                            if (member == null) continue;
+                            JSONObject memberJson = new JSONObject();
+                            memberJson.put("name", member.getName());
+                            memberJson.put("type", member.getType());
+                            members.put(memberJson);
+                        }
+                    }
+                    json.put("members", members);
+                }
                 list.put(json);
             }
         }
@@ -1446,6 +1475,56 @@ public final class WebUiServer implements EventListener {
             response.put("localVariables", new JSONArray());
         }
         writeJson(ctx, response);
+    }
+
+    private void handleCommandLog(Context ctx) {
+        String pid = ctx.pathParam("pid");
+        ProjectRef ref = projectStore.get(pid);
+        if (ref == null) {
+            ctx.status(404);
+            writeJson(ctx, new JSONObject().put("error", "PROJECT_NOT_FOUND"));
+            return;
+        }
+        ensureCommandLogLoaded(ref);
+        long since = 0;
+        try {
+            String raw = ctx.queryParam("since");
+            if (raw != null && !raw.isBlank()) {
+                since = Long.parseLong(raw.trim());
+            }
+        } catch (NumberFormatException ignore) {
+        }
+        int limit = 0;
+        try {
+            String raw = ctx.queryParam("limit");
+            if (raw != null && !raw.isBlank()) {
+                limit = Integer.parseInt(raw.trim());
+            }
+        } catch (NumberFormatException ignore) {
+        }
+        int maxLimit = Math.max(1, getEditorConfigInt(ref, "command_log_max", 5000));
+        if (limit <= 0 || limit > maxLimit) {
+            limit = maxLimit;
+        }
+        JSONArray entries = new JSONArray();
+        int added = 0;
+        long lastSeq = 0;
+        for (CommandLogEntry entry : ref.commandLog) {
+            if (entry.seq <= since) {
+                lastSeq = Math.max(lastSeq, entry.seq);
+                continue;
+            }
+            entries.put(entry.toJson());
+            lastSeq = Math.max(lastSeq, entry.seq);
+            added++;
+            if (added >= limit) break;
+        }
+        JSONObject result = new JSONObject();
+        result.put("projectId", pid);
+        result.put("entries", entries);
+        result.put("lastSeq", lastSeq);
+        result.put("count", entries.length());
+        writeJson(ctx, result);
     }
 
     private void handleSceneflowNavigate(Context ctx) {
@@ -1986,6 +2065,10 @@ public final class WebUiServer implements EventListener {
                 return updateCommentForProject(params, broadcaster);
             case "SceneFlow.Comment.Delete":
                 return deleteCommentForProject(params, broadcaster);
+            case "SceneFlow.Undo":
+                return undoProject(params, broadcaster);
+            case "SceneFlow.Redo":
+                return redoProject(params, broadcaster);
             case "Script.Update":
                 return updateScriptForProject(params, broadcaster);
             case "Config.Update": {
@@ -2192,6 +2275,8 @@ public final class WebUiServer implements EventListener {
                 JSONObject snapshot = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
                 JSONObject response = buildSceneFlowResponse(snapshot);
                 broadcastSceneFlowSnapshot(broadcaster, pid, snapshot);
+                recordHistory(ref, "SceneFlow.Node.VarDef.Add");
+                recordCommand(ref, "SceneFlow.Node.VarDef.Add", params);
                 return response;
             }
 
@@ -2233,6 +2318,8 @@ public final class WebUiServer implements EventListener {
                 JSONObject snapshot = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
                 JSONObject response = buildSceneFlowResponse(snapshot);
                 broadcastSceneFlowSnapshot(broadcaster, pid, snapshot);
+                recordHistory(ref, "SceneFlow.Node.VarDef.Update");
+                recordCommand(ref, "SceneFlow.Node.VarDef.Update", params);
                 return response;
             }
 
@@ -2267,6 +2354,8 @@ public final class WebUiServer implements EventListener {
                 JSONObject snapshot = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
                 JSONObject response = buildSceneFlowResponse(snapshot);
                 broadcastSceneFlowSnapshot(broadcaster, pid, snapshot);
+                recordHistory(ref, "SceneFlow.Node.VarDef.Delete");
+                recordCommand(ref, "SceneFlow.Node.VarDef.Delete", params);
                 return response;
             }
 
@@ -2305,6 +2394,8 @@ public final class WebUiServer implements EventListener {
                 JSONObject snapshot = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
                 JSONObject response = buildSceneFlowResponse(snapshot);
                 broadcastSceneFlowSnapshot(broadcaster, pid, snapshot);
+                recordHistory(ref, "SceneFlow.Node.VarDef.Move");
+                recordCommand(ref, "SceneFlow.Node.VarDef.Move", params);
                 return response;
             }
 
@@ -2344,6 +2435,8 @@ public final class WebUiServer implements EventListener {
                 JSONObject snapshot = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
                 JSONObject response = buildSceneFlowResponse(snapshot);
                 broadcastSceneFlowSnapshot(broadcaster, pid, snapshot);
+                recordHistory(ref, "SceneFlow.Node.TypeDef.Add");
+                recordCommand(ref, "SceneFlow.Node.TypeDef.Add", params);
                 return response;
             }
 
@@ -2385,6 +2478,8 @@ public final class WebUiServer implements EventListener {
                 JSONObject snapshot = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
                 JSONObject response = buildSceneFlowResponse(snapshot);
                 broadcastSceneFlowSnapshot(broadcaster, pid, snapshot);
+                recordHistory(ref, "SceneFlow.Node.TypeDef.Update");
+                recordCommand(ref, "SceneFlow.Node.TypeDef.Update", params);
                 return response;
             }
 
@@ -2419,6 +2514,8 @@ public final class WebUiServer implements EventListener {
                 JSONObject snapshot = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
                 JSONObject response = buildSceneFlowResponse(snapshot);
                 broadcastSceneFlowSnapshot(broadcaster, pid, snapshot);
+                recordHistory(ref, "SceneFlow.Node.TypeDef.Delete");
+                recordCommand(ref, "SceneFlow.Node.TypeDef.Delete", params);
                 return response;
             }
 
@@ -2457,6 +2554,8 @@ public final class WebUiServer implements EventListener {
                 JSONObject snapshot = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
                 JSONObject response = buildSceneFlowResponse(snapshot);
                 broadcastSceneFlowSnapshot(broadcaster, pid, snapshot);
+                recordHistory(ref, "SceneFlow.Node.TypeDef.Move");
+                recordCommand(ref, "SceneFlow.Node.TypeDef.Move", params);
                 return response;
             }
 
@@ -2496,6 +2595,8 @@ public final class WebUiServer implements EventListener {
                 JSONObject snapshot = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
                 JSONObject response = buildSceneFlowResponse(snapshot);
                 broadcastSceneFlowSnapshot(broadcaster, pid, snapshot);
+                recordHistory(ref, "SceneFlow.Node.Cmd.Add");
+                recordCommand(ref, "SceneFlow.Node.Cmd.Add", params);
                 return response;
             }
 
@@ -2537,6 +2638,8 @@ public final class WebUiServer implements EventListener {
                 JSONObject snapshot = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
                 JSONObject response = buildSceneFlowResponse(snapshot);
                 broadcastSceneFlowSnapshot(broadcaster, pid, snapshot);
+                recordHistory(ref, "SceneFlow.Node.Cmd.Update");
+                recordCommand(ref, "SceneFlow.Node.Cmd.Update", params);
                 return response;
             }
 
@@ -2571,6 +2674,8 @@ public final class WebUiServer implements EventListener {
                 JSONObject snapshot = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
                 JSONObject response = buildSceneFlowResponse(snapshot);
                 broadcastSceneFlowSnapshot(broadcaster, pid, snapshot);
+                recordHistory(ref, "SceneFlow.Node.Cmd.Delete");
+                recordCommand(ref, "SceneFlow.Node.Cmd.Delete", params);
                 return response;
             }
 
@@ -2609,6 +2714,8 @@ public final class WebUiServer implements EventListener {
                 JSONObject snapshot = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
                 JSONObject response = buildSceneFlowResponse(snapshot);
                 broadcastSceneFlowSnapshot(broadcaster, pid, snapshot);
+                recordHistory(ref, "SceneFlow.Node.Cmd.Move");
+                recordCommand(ref, "SceneFlow.Node.Cmd.Move", params);
                 return response;
             }
 
@@ -2646,6 +2753,8 @@ public final class WebUiServer implements EventListener {
 
                 JSONObject response = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
                 response.put("status", "ok");
+                recordHistory(ref, method);
+                recordCommand(ref, method, params);
                 return response;
             }
 
@@ -2682,6 +2791,8 @@ public final class WebUiServer implements EventListener {
 
                 JSONObject response = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
                 response.put("status", "ok");
+                recordHistory(ref, method);
+                recordCommand(ref, method, params);
                 return response;
             }
 
@@ -2724,6 +2835,8 @@ public final class WebUiServer implements EventListener {
 
                 JSONObject response = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
                 response.put("status", "ok");
+                recordHistory(ref, method);
+                recordCommand(ref, method, params);
                 return response;
             }
 
@@ -2882,6 +2995,8 @@ public final class WebUiServer implements EventListener {
                 JSONObject response = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
                 response.put("status", "ok");
                 response.put("edgeId", edgeId);
+                recordHistory(ref, "SceneFlow.Edge.Retarget");
+                recordCommand(ref, "SceneFlow.Edge.Retarget", params);
                 return response;
             }
 
@@ -3349,7 +3464,8 @@ public final class WebUiServer implements EventListener {
         } else {
             activeSuperNode.addNode(node);
         }
-        if (params.optBoolean("isStart", false)) {
+        boolean hasStart = activeSuperNode.getStartNodeMap() != null && !activeSuperNode.getStartNodeMap().isEmpty();
+        if (params.optBoolean("isStart", false) || !hasStart) {
             activeSuperNode.addStartNode(node);
         }
 
@@ -3357,8 +3473,10 @@ public final class WebUiServer implements EventListener {
         JSONObject resp = buildSceneFlowResponse(snapshot);
         resp.put("nodeId", nodeId);
         broadcastSceneFlowSnapshot(broadcaster, pid, snapshot);
-        return resp;
-    }
+                recordHistory(ref, "SceneFlow.Node.Create");
+                recordCommand(ref, "SceneFlow.Node.Create", params);
+                return resp;
+            }
 
     private JSONObject updateNodeForProject(JSONObject params, java.util.function.Consumer<String> broadcaster) {
         String pid = params.optString("projectId", "");
@@ -3405,8 +3523,10 @@ public final class WebUiServer implements EventListener {
         JSONObject snapshot = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
         JSONObject resp = buildSceneFlowResponse(snapshot);
         broadcastSceneFlowSnapshot(broadcaster, pid, snapshot);
-        return resp;
-    }
+                recordHistory(ref, "SceneFlow.Node.Update");
+                recordCommand(ref, "SceneFlow.Node.Update", params);
+                return resp;
+            }
 
     private JSONObject deleteNodeForProject(JSONObject params, java.util.function.Consumer<String> broadcaster) {
         String pid = params.optString("projectId", "");
@@ -3449,8 +3569,10 @@ public final class WebUiServer implements EventListener {
         JSONObject snapshot = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
         JSONObject resp = buildSceneFlowResponse(snapshot);
         broadcastSceneFlowSnapshot(broadcaster, pid, snapshot);
-        return resp;
-    }
+                recordHistory(ref, "SceneFlow.Node.Delete");
+                recordCommand(ref, "SceneFlow.Node.Delete", params);
+                return resp;
+            }
 
     private JSONObject moveNodeForProject(JSONObject params, java.util.function.Consumer<String> broadcaster) {
         String pid = params.optString("projectId", "");
@@ -3510,8 +3632,10 @@ public final class WebUiServer implements EventListener {
         JSONObject snapshot = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
         JSONObject resp = buildSceneFlowResponse(snapshot);
         broadcastSceneFlowSnapshot(broadcaster, pid, snapshot);
-        return resp;
-    }
+                recordHistory(ref, "SceneFlow.Node.Move");
+                recordCommand(ref, "SceneFlow.Node.Move", params);
+                return resp;
+            }
 
     private JSONObject createEdgeForProject(JSONObject params, java.util.function.Consumer<String> broadcaster) {
         String pid = params.optString("projectId", "");
@@ -3605,8 +3729,10 @@ public final class WebUiServer implements EventListener {
         JSONObject snapshot = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
         JSONObject resp = buildSceneFlowResponse(snapshot);
         broadcastSceneFlowSnapshot(broadcaster, pid, snapshot);
-        return resp;
-    }
+                recordHistory(ref, "SceneFlow.Edge.Create");
+                recordCommand(ref, "SceneFlow.Edge.Create", params);
+                return resp;
+            }
 
     private String validateEdgeCreateConstraints(BasicNode sourceNode, String edgeType) {
         if (sourceNode == null) {
@@ -3757,8 +3883,10 @@ public final class WebUiServer implements EventListener {
         JSONObject snapshot = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
         JSONObject resp = buildSceneFlowResponse(snapshot);
         broadcastSceneFlowSnapshot(broadcaster, pid, snapshot);
-        return resp;
-    }
+                recordHistory(ref, "SceneFlow.Edge.Update");
+                recordCommand(ref, "SceneFlow.Edge.Update", params);
+                return resp;
+            }
 
     private JSONObject deleteEdgeForProject(JSONObject params, java.util.function.Consumer<String> broadcaster) {
         String pid = params.optString("projectId", "");
@@ -3800,8 +3928,10 @@ public final class WebUiServer implements EventListener {
         JSONObject snapshot = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
         JSONObject resp = buildSceneFlowResponse(snapshot);
         broadcastSceneFlowSnapshot(broadcaster, pid, snapshot);
-        return resp;
-    }
+                recordHistory(ref, "SceneFlow.Edge.Delete");
+                recordCommand(ref, "SceneFlow.Edge.Delete", params);
+                return resp;
+            }
 
     private JSONObject createCommentForProject(JSONObject params, java.util.function.Consumer<String> broadcaster) {
         String pid = params.optString("projectId", "");
@@ -3832,8 +3962,10 @@ public final class WebUiServer implements EventListener {
         String commentId = "C" + Math.max(0, activeSuperNode.getCommentList().size() - 1);
         resp.put("commentId", commentId);
         broadcastSceneFlowSnapshot(broadcaster, pid, snapshot);
-        return resp;
-    }
+                recordHistory(ref, "SceneFlow.Comment.Create");
+                recordCommand(ref, "SceneFlow.Comment.Create", params);
+                return resp;
+            }
 
     private JSONObject updateCommentForProject(JSONObject params, java.util.function.Consumer<String> broadcaster) {
         String pid = params.optString("projectId", "");
@@ -3891,8 +4023,10 @@ public final class WebUiServer implements EventListener {
         JSONObject snapshot = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
         JSONObject resp = buildSceneFlowResponse(snapshot);
         broadcastSceneFlowSnapshot(broadcaster, pid, snapshot);
-        return resp;
-    }
+                recordHistory(ref, "SceneFlow.Comment.Update");
+                recordCommand(ref, "SceneFlow.Comment.Update", params);
+                return resp;
+            }
 
     private JSONObject deleteCommentForProject(JSONObject params, java.util.function.Consumer<String> broadcaster) {
         String pid = params.optString("projectId", "");
@@ -3918,8 +4052,10 @@ public final class WebUiServer implements EventListener {
         JSONObject snapshot = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
         JSONObject resp = buildSceneFlowResponse(snapshot);
         broadcastSceneFlowSnapshot(broadcaster, pid, snapshot);
-        return resp;
-    }
+                recordHistory(ref, "SceneFlow.Comment.Delete");
+                recordCommand(ref, "SceneFlow.Comment.Delete", params);
+                return resp;
+            }
 
     private JSONObject updateScriptForProject(JSONObject params, java.util.function.Consumer<String> broadcaster) {
         String pid = params.optString("projectId", "");
@@ -3974,6 +4110,102 @@ public final class WebUiServer implements EventListener {
             dirtyEvt.put("event", "project.dirty");
             dirtyEvt.put("projectId", pid);
             dirtyEvt.put("areas", new JSONArray().put("script"));
+            broadcaster.accept(dirtyEvt.toString());
+        }
+        recordHistory(ref, "Script.Update");
+        recordCommand(ref, "Script.Update", params);
+        return resp;
+    }
+
+    private JSONObject undoProject(JSONObject params, java.util.function.Consumer<String> broadcaster) {
+        String pid = params.optString("projectId", "");
+        ProjectRef ref = projectStore.get(pid);
+        if (ref == null || ref.runtimeProject == null) {
+            return errorResponse("PROJECT_NOT_FOUND", "Project not found");
+        }
+        ensureHistoryLoaded(ref);
+        if (ref.historyIndex <= 0) {
+            JSONObject resp = new JSONObject();
+            resp.put("status", "ok");
+            resp.put("applied", false);
+            return resp;
+        }
+        ref.historySuspended = true;
+        ref.commandLogSuspended = true;
+        try {
+            ref.historyIndex = Math.max(0, ref.historyIndex - 1);
+            HistoryEntry entry = ref.history.get(ref.historyIndex);
+            if (!applyHistoryEntry(ref, entry)) {
+                return errorResponse("UNDO_FAILED", "Failed to apply undo");
+            }
+        } finally {
+            ref.historySuspended = false;
+            ref.commandLogSuspended = false;
+        }
+        saveHistoryToDisk(ref);
+
+        SceneFlow sceneFlow = ref.runtimeProject.getSceneFlow();
+        SuperNode snapshotTarget = sceneFlow;
+        JSONObject snapshot = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
+        broadcastSceneFlowSnapshot(broadcaster, pid, snapshot);
+        JSONObject scriptSnapshot = buildScriptSnapshot(ref);
+        broadcastScriptSnapshot(broadcaster, pid, scriptSnapshot);
+
+        JSONObject resp = buildSceneFlowResponse(snapshot);
+        resp.put("script", scriptSnapshot);
+        resp.put("applied", true);
+        if (broadcaster != null) {
+            JSONObject dirtyEvt = new JSONObject();
+            dirtyEvt.put("event", "project.dirty");
+            dirtyEvt.put("projectId", pid);
+            dirtyEvt.put("areas", new JSONArray().put("sceneflow").put("script"));
+            broadcaster.accept(dirtyEvt.toString());
+        }
+        return resp;
+    }
+
+    private JSONObject redoProject(JSONObject params, java.util.function.Consumer<String> broadcaster) {
+        String pid = params.optString("projectId", "");
+        ProjectRef ref = projectStore.get(pid);
+        if (ref == null || ref.runtimeProject == null) {
+            return errorResponse("PROJECT_NOT_FOUND", "Project not found");
+        }
+        ensureHistoryLoaded(ref);
+        if (ref.historyIndex >= ref.history.size() - 1) {
+            JSONObject resp = new JSONObject();
+            resp.put("status", "ok");
+            resp.put("applied", false);
+            return resp;
+        }
+        ref.historySuspended = true;
+        ref.commandLogSuspended = true;
+        try {
+            ref.historyIndex = Math.min(ref.history.size() - 1, ref.historyIndex + 1);
+            HistoryEntry entry = ref.history.get(ref.historyIndex);
+            if (!applyHistoryEntry(ref, entry)) {
+                return errorResponse("REDO_FAILED", "Failed to apply redo");
+            }
+        } finally {
+            ref.historySuspended = false;
+            ref.commandLogSuspended = false;
+        }
+        saveHistoryToDisk(ref);
+
+        SceneFlow sceneFlow = ref.runtimeProject.getSceneFlow();
+        SuperNode snapshotTarget = sceneFlow;
+        JSONObject snapshot = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
+        broadcastSceneFlowSnapshot(broadcaster, pid, snapshot);
+        JSONObject scriptSnapshot = buildScriptSnapshot(ref);
+        broadcastScriptSnapshot(broadcaster, pid, scriptSnapshot);
+
+        JSONObject resp = buildSceneFlowResponse(snapshot);
+        resp.put("script", scriptSnapshot);
+        resp.put("applied", true);
+        if (broadcaster != null) {
+            JSONObject dirtyEvt = new JSONObject();
+            dirtyEvt.put("event", "project.dirty");
+            dirtyEvt.put("projectId", pid);
+            dirtyEvt.put("areas", new JSONArray().put("sceneflow").put("script"));
             broadcaster.accept(dirtyEvt.toString());
         }
         return resp;
@@ -4147,6 +4379,368 @@ public final class WebUiServer implements EventListener {
         broadcaster.accept(evt.toString());
     }
 
+    private String serializeSceneFlowXml(SceneFlow sceneFlow) {
+        if (sceneFlow == null) {
+            return "";
+        }
+        try {
+            java.io.ByteArrayOutputStream stream = new java.io.ByteArrayOutputStream();
+            XMLUtilities.writeToXMLStream(sceneFlow, stream);
+            return stream.toString(java.nio.charset.StandardCharsets.UTF_8);
+        } catch (Exception exc) {
+            return "";
+        }
+    }
+
+    private boolean applySceneFlowXml(SceneFlow sceneFlow, String xml) {
+        if (sceneFlow == null) {
+            return false;
+        }
+        sceneFlow.clearContent();
+        if (xml != null && !xml.isBlank()) {
+            if (!XMLUtilities.parseFromXMLString(sceneFlow, xml, "UTF-8")) {
+                return false;
+            }
+        }
+        sceneFlow.establishStartNodes();
+        sceneFlow.establishTargetNodes();
+        sceneFlow.establishAltStartNodes();
+        return true;
+    }
+
+    private JSONObject buildScriptSnapshot(ProjectRef ref) {
+        ensureScriptLoaded(ref);
+        ScriptDiagnostics.Result result = ScriptDiagnostics.analyze(ref.scriptText == null ? "" : ref.scriptText);
+        ref.scriptParseOk = result.isParseOk();
+        ref.scriptParseErrors.clear();
+        ref.scriptParseErrors.addAll(result.getDiagnostics());
+
+        JSONObject snapshot = new JSONObject();
+        snapshot.put("text", ref.scriptText == null ? "" : ref.scriptText);
+        snapshot.put("version", ref.scriptVersion);
+        snapshot.put("parseOk", ref.scriptParseOk);
+        snapshot.put("parseErrors", diagnosticsToJson(ref.scriptParseErrors));
+        if (ref != null) {
+            JSONObject undoState = buildUndoState(ref);
+            if (undoState != null) {
+                snapshot.put("undoState", undoState);
+            }
+        }
+        return snapshot;
+    }
+
+    private JSONObject buildUndoState(ProjectRef ref) {
+        if (ref == null) {
+            return null;
+        }
+        ensureHistoryLoaded(ref);
+        int size = ref.history != null ? ref.history.size() : 0;
+        int index = ref.historyIndex;
+        int effectiveSize = size;
+        int effectiveIndex = index;
+        boolean matchesCurrent = false;
+        if (size > 0 && index >= 0 && index < size && ref.runtimeProject != null) {
+            String xml = serializeSceneFlowXml(ref.runtimeProject.getSceneFlow());
+            ensureScriptLoaded(ref);
+            String script = ref.scriptText == null ? "" : ref.scriptText;
+            HistoryEntry current = ref.history.get(index);
+            if (current != null) {
+                matchesCurrent = current.sceneFlowXml.equals(xml) && current.scriptText.equals(script);
+            }
+        }
+        if (size == 0) {
+            effectiveIndex = -1;
+            effectiveSize = 0;
+        } else if (!matchesCurrent) {
+            if (index < size - 1) {
+                effectiveSize = size;
+                effectiveIndex = index;
+            } else {
+                effectiveSize = size + 1;
+                effectiveIndex = size;
+            }
+        }
+        JSONObject undoState = new JSONObject();
+        undoState.put("index", effectiveIndex);
+        undoState.put("size", effectiveSize);
+        undoState.put("canUndo", effectiveIndex > 0);
+        undoState.put("canRedo", effectiveSize > 0 && effectiveIndex < effectiveSize - 1);
+        return undoState;
+    }
+
+    private Path historyDir(ProjectRef ref) {
+        if (ref == null || ref.path == null || ref.path.isBlank()) {
+            return null;
+        }
+        return Paths.get(ref.path, ".history");
+    }
+
+    private Path historyFile(ProjectRef ref) {
+        Path dir = historyDir(ref);
+        if (dir == null) return null;
+        return dir.resolve("undo.json");
+    }
+
+    private Path commandLogFile(ProjectRef ref) {
+        Path dir = historyDir(ref);
+        if (dir == null) return null;
+        return dir.resolve("commands.jsonl");
+    }
+
+    private void ensureCommandLogLoaded(ProjectRef ref) {
+        if (ref == null || ref.commandLogLoaded) {
+            return;
+        }
+        loadCommandLogFromDisk(ref);
+        ref.commandLogLoaded = true;
+        if (ref.commandLog.isEmpty() && ref.runtimeProject != null) {
+            recordCommandSnapshot(ref, "init");
+        }
+    }
+
+    private void loadCommandLogFromDisk(ProjectRef ref) {
+        Path file = commandLogFile(ref);
+        if (file == null || !Files.exists(file)) {
+            return;
+        }
+        try {
+            List<String> lines = Files.readAllLines(file);
+            for (String line : lines) {
+                if (line == null) continue;
+                String trimmed = line.trim();
+                if (trimmed.isEmpty()) continue;
+                JSONObject obj = new JSONObject(trimmed);
+                CommandLogEntry entry = CommandLogEntry.fromJson(obj);
+                if (entry != null) {
+                    ref.commandLog.add(entry);
+                    ref.commandSeq = Math.max(ref.commandSeq, entry.seq);
+                    ref.commandCount = Math.max(ref.commandCount, entry.cmdIndex);
+                }
+            }
+        } catch (Exception exc) {
+            sLogger.warning("Warning: Failed to load command log: " + exc.getMessage());
+        }
+    }
+
+    private void appendCommandLog(ProjectRef ref, CommandLogEntry entry) {
+        Path file = commandLogFile(ref);
+        if (file == null) return;
+        try {
+            Files.createDirectories(file.getParent());
+            Files.writeString(
+                file,
+                entry.toJson().toString() + System.lineSeparator(),
+                java.nio.file.StandardOpenOption.CREATE,
+                java.nio.file.StandardOpenOption.APPEND
+            );
+        } catch (Exception exc) {
+            sLogger.warning("Warning: Failed to append command log: " + exc.getMessage());
+        }
+    }
+
+    private void rewriteCommandLog(ProjectRef ref) {
+        Path file = commandLogFile(ref);
+        if (file == null) return;
+        try {
+            Files.createDirectories(file.getParent());
+            StringBuilder sb = new StringBuilder();
+            for (CommandLogEntry entry : ref.commandLog) {
+                sb.append(entry.toJson().toString()).append(System.lineSeparator());
+            }
+            Files.writeString(file, sb.toString());
+        } catch (Exception exc) {
+            sLogger.warning("Warning: Failed to rewrite command log: " + exc.getMessage());
+        }
+    }
+
+    private void pruneCommandLog(ProjectRef ref) {
+        int max = getEditorConfigInt(ref, "command_log_max", 5000);
+        if (max < 1) {
+            max = 1;
+        }
+        if (ref.commandLog.size() <= max) {
+            return;
+        }
+        int removeCount = ref.commandLog.size() - max;
+        if (removeCount > 0) {
+            ref.commandLog.subList(0, removeCount).clear();
+            rewriteCommandLog(ref);
+        }
+    }
+
+    private void recordCommand(ProjectRef ref, String method, JSONObject params) {
+        if (ref == null || ref.runtimeProject == null || ref.commandLogSuspended) {
+            return;
+        }
+        ensureCommandLogLoaded(ref);
+        ref.commandSeq += 1;
+        ref.commandCount += 1;
+        JSONObject payload = null;
+        if (params != null) {
+            payload = new JSONObject(params.toString());
+        }
+        CommandLogEntry entry = new CommandLogEntry(
+                ref.commandSeq,
+                System.currentTimeMillis(),
+                "command",
+                method,
+                ref.commandCount,
+                payload,
+                "",
+                ""
+        );
+        ref.commandLog.add(entry);
+        appendCommandLog(ref, entry);
+        if (ref.commandCount % 50 == 0) {
+            recordCommandSnapshot(ref, "interval");
+        }
+        pruneCommandLog(ref);
+    }
+
+    private void recordCommandSnapshot(ProjectRef ref, String reason) {
+        if (ref == null || ref.runtimeProject == null) return;
+        ensureScriptLoaded(ref);
+        String xml = serializeSceneFlowXml(ref.runtimeProject.getSceneFlow());
+        String script = ref.scriptText == null ? "" : ref.scriptText;
+        ref.commandSeq += 1;
+        CommandLogEntry entry = new CommandLogEntry(
+                ref.commandSeq,
+                System.currentTimeMillis(),
+                "snapshot",
+                reason,
+                ref.commandCount,
+                null,
+                xml,
+                script
+        );
+        ref.commandLog.add(entry);
+        appendCommandLog(ref, entry);
+        pruneCommandLog(ref);
+    }
+
+    private int getUndoDepth(ProjectRef ref) {
+        return getEditorConfigInt(ref, "undo_max_depth", 500);
+    }
+
+    private void ensureHistoryLoaded(ProjectRef ref) {
+        if (ref == null || ref.historyLoaded) {
+            return;
+        }
+        loadHistoryFromDisk(ref);
+        ref.historyLoaded = true;
+        if (ref.history.isEmpty() && ref.runtimeProject != null) {
+            recordHistory(ref, "init");
+        }
+    }
+
+    private void loadHistoryFromDisk(ProjectRef ref) {
+        Path file = historyFile(ref);
+        if (file == null || !Files.exists(file)) {
+            return;
+        }
+        try {
+            String raw = Files.readString(file);
+            if (raw == null || raw.isBlank()) return;
+            JSONObject obj = new JSONObject(raw);
+            JSONArray arr = obj.optJSONArray("entries");
+            int index = obj.optInt("index", -1);
+            if (arr != null) {
+                ref.history.clear();
+                for (int i = 0; i < arr.length(); i++) {
+                    JSONObject entry = arr.optJSONObject(i);
+                    if (entry == null) continue;
+                    HistoryEntry parsed = HistoryEntry.fromJson(entry);
+                    if (parsed != null) {
+                        ref.history.add(parsed);
+                    }
+                }
+            }
+            if (!ref.history.isEmpty()) {
+                ref.historyIndex = Math.min(Math.max(index, 0), ref.history.size() - 1);
+            }
+        } catch (Exception exc) {
+            sLogger.warning("Warning: Failed to load history: " + exc.getMessage());
+        }
+    }
+
+    private void saveHistoryToDisk(ProjectRef ref) {
+        Path file = historyFile(ref);
+        if (file == null) return;
+        try {
+            Files.createDirectories(file.getParent());
+            JSONObject obj = new JSONObject();
+            obj.put("index", ref.historyIndex);
+            JSONArray arr = new JSONArray();
+            for (HistoryEntry entry : ref.history) {
+                arr.put(entry.toJson());
+            }
+            obj.put("entries", arr);
+            Files.writeString(file, obj.toString());
+        } catch (Exception exc) {
+            sLogger.warning("Warning: Failed to save history: " + exc.getMessage());
+        }
+    }
+
+    private void recordHistory(ProjectRef ref, String reason) {
+        if (ref == null || ref.runtimeProject == null || ref.historySuspended) {
+            return;
+        }
+        ensureHistoryLoaded(ref);
+        String xml = serializeSceneFlowXml(ref.runtimeProject.getSceneFlow());
+        ensureScriptLoaded(ref);
+        String script = ref.scriptText == null ? "" : ref.scriptText;
+        HistoryEntry entry = new HistoryEntry(System.currentTimeMillis(), xml, script, reason);
+
+        if (ref.historyIndex >= 0 && ref.historyIndex < ref.history.size()) {
+            HistoryEntry current = ref.history.get(ref.historyIndex);
+            if (current != null && current.sceneFlowXml.equals(entry.sceneFlowXml) && current.scriptText.equals(entry.scriptText)) {
+                return;
+            }
+        }
+        ensureCommandLogLoaded(ref);
+        if (ref.historyIndex < ref.history.size() - 1) {
+            ref.history.subList(ref.historyIndex + 1, ref.history.size()).clear();
+        }
+        ref.history.add(entry);
+        ref.historyIndex = ref.history.size() - 1;
+
+        int maxDepth = Math.max(1, getUndoDepth(ref));
+        while (ref.history.size() > maxDepth) {
+            ref.history.remove(0);
+            ref.historyIndex = Math.max(0, ref.historyIndex - 1);
+        }
+        saveHistoryToDisk(ref);
+    }
+
+    private boolean applyHistoryEntry(ProjectRef ref, HistoryEntry entry) {
+        if (ref == null || ref.runtimeProject == null || entry == null) {
+            return false;
+        }
+        SceneFlow sceneFlow = ref.runtimeProject.getSceneFlow();
+        if (!applySceneFlowXml(sceneFlow, entry.sceneFlowXml)) {
+            return false;
+        }
+        normalizeSceneFlowIds(ref);
+        ref.nodes = serializeNodes(ref.runtimeProject);
+        ref.edges = serializeEdges(ref.runtimeProject);
+        ref.comments = serializeComments(ref.runtimeProject);
+        ref.nextNodeIndex = computeNextNodeIndex(ref.runtimeProject);
+        ref.nextSuperNodeIndex = computeNextSuperNodeIndex(ref.runtimeProject);
+        clearDockPointsRecursive(sceneFlow);
+        initializeDockPointsForProject(ref);
+
+        String script = entry.scriptText == null ? "" : entry.scriptText;
+        applyScriptText(ref.runtimeProject, script);
+        ref.scriptText = script;
+        ref.scriptVersion = Math.max(1, ref.scriptVersion + 1);
+        ScriptDiagnostics.Result result = ScriptDiagnostics.analyze(ref.scriptText);
+        ref.scriptParseOk = result.isParseOk();
+        ref.scriptParseErrors.clear();
+        ref.scriptParseErrors.addAll(result.getDiagnostics());
+        ref.dirty = true;
+        return true;
+    }
+
     private JSONArray diagnosticsToJson(List<ScriptDiagnostics.Diagnostic> diagnostics) {
         JSONArray arr = new JSONArray();
         if (diagnostics == null) {
@@ -4274,6 +4868,8 @@ public final class WebUiServer implements EventListener {
         ensureScriptLoaded(ref);
         // Phase 8: Initialize dock points for the registered project
         initializeDockPointsForProject(ref);
+        ensureHistoryLoaded(ref);
+        ensureCommandLogLoaded(ref);
         sLogger.message("Registered project: " + name + " (id=" + id + ")");
         return id;
     }
@@ -4332,6 +4928,8 @@ public final class WebUiServer implements EventListener {
                 ensureScriptLoaded(ref);
                 // Phase 8: Initialize dock points for the loaded project
                 initializeDockPointsForProject(ref);
+                ensureHistoryLoaded(ref);
+                ensureCommandLogLoaded(ref);
                 if (idChanged) {
                     rtp.write(new java.io.File(path));
                 }
@@ -4361,6 +4959,8 @@ public final class WebUiServer implements EventListener {
         projectStore.put(id, ref);
         ensureScriptLoaded(ref);
         initializeDockPointsForProject(ref);
+        ensureHistoryLoaded(ref);
+        ensureCommandLogLoaded(ref);
         return id;
     }
 
@@ -5825,6 +6425,15 @@ public final class WebUiServer implements EventListener {
         Properties editorConfig;
         boolean editorConfigLoaded = false;
         boolean editorConfigDirty = false;
+        List<HistoryEntry> history = new ArrayList<>();
+        int historyIndex = -1;
+        boolean historyLoaded = false;
+        boolean historySuspended = false;
+        List<CommandLogEntry> commandLog = new ArrayList<>();
+        long commandSeq = 0;
+        int commandCount = 0;
+        boolean commandLogLoaded = false;
+        boolean commandLogSuspended = false;
 
         ProjectRef(String id, String name, String path) {
             this.id = id;
@@ -5834,6 +6443,93 @@ public final class WebUiServer implements EventListener {
             this.scriptText = null;
             this.scriptVersion = 1;
             this.scriptParseOk = true;
+        }
+    }
+
+    private static class HistoryEntry {
+        final long timestamp;
+        final String sceneFlowXml;
+        final String scriptText;
+        final String reason;
+
+        HistoryEntry(long timestamp, String sceneFlowXml, String scriptText, String reason) {
+            this.timestamp = timestamp;
+            this.sceneFlowXml = sceneFlowXml == null ? "" : sceneFlowXml;
+            this.scriptText = scriptText == null ? "" : scriptText;
+            this.reason = reason == null ? "" : reason;
+        }
+
+        JSONObject toJson() {
+            JSONObject obj = new JSONObject();
+            obj.put("ts", timestamp);
+            obj.put("sceneFlowXml", sceneFlowXml);
+            obj.put("scriptText", scriptText);
+            obj.put("reason", reason);
+            return obj;
+        }
+
+        static HistoryEntry fromJson(JSONObject obj) {
+            if (obj == null) return null;
+            long ts = obj.optLong("ts", System.currentTimeMillis());
+            String xml = obj.optString("sceneFlowXml", "");
+            String script = obj.optString("scriptText", "");
+            String reason = obj.optString("reason", "");
+            return new HistoryEntry(ts, xml, script, reason);
+        }
+    }
+
+    private static class CommandLogEntry {
+        final long seq;
+        final long timestamp;
+        final String kind;
+        final String method;
+        final int cmdIndex;
+        final JSONObject payload;
+        final String sceneFlowXml;
+        final String scriptText;
+
+        CommandLogEntry(long seq, long timestamp, String kind, String method, int cmdIndex,
+                        JSONObject payload, String sceneFlowXml, String scriptText) {
+            this.seq = seq;
+            this.timestamp = timestamp;
+            this.kind = kind == null ? "" : kind;
+            this.method = method == null ? "" : method;
+            this.cmdIndex = cmdIndex;
+            this.payload = payload;
+            this.sceneFlowXml = sceneFlowXml == null ? "" : sceneFlowXml;
+            this.scriptText = scriptText == null ? "" : scriptText;
+        }
+
+        JSONObject toJson() {
+            JSONObject obj = new JSONObject();
+            obj.put("seq", seq);
+            obj.put("ts", timestamp);
+            obj.put("kind", kind);
+            obj.put("method", method);
+            obj.put("cmdIndex", cmdIndex);
+            if (payload != null) {
+                obj.put("payload", payload);
+            }
+            if (!sceneFlowXml.isBlank()) {
+                obj.put("sceneFlowXml", sceneFlowXml);
+            }
+            if (!scriptText.isBlank()) {
+                obj.put("scriptText", scriptText);
+            }
+            return obj;
+        }
+
+        static CommandLogEntry fromJson(JSONObject obj) {
+            if (obj == null) return null;
+            long seq = obj.optLong("seq", 0);
+            long ts = obj.optLong("ts", System.currentTimeMillis());
+            String kind = obj.optString("kind", "");
+            String method = obj.optString("method", "");
+            int cmdIndex = obj.optInt("cmdIndex", 0);
+            JSONObject payload = obj.optJSONObject("payload");
+            String xml = obj.optString("sceneFlowXml", "");
+            String script = obj.optString("scriptText", "");
+            return new CommandLogEntry(seq, ts, kind, method, cmdIndex, payload, xml, script);
         }
     }
 

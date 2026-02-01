@@ -2289,25 +2289,43 @@
   }
 
   function buildNodePositionSet(ignoreId) {
-    const set = new Set();
+    const items = [];
     for (const entry of nodes || []) {
       if (!entry || entry.id === ignoreId) continue;
-      const nx = Number.isFinite(entry?.graphics?.x) ? entry.graphics.x : entry?.x;
-      const ny = Number.isFinite(entry?.graphics?.y) ? entry.graphics.y : entry?.y;
+      const nxRaw = entry?.graphics?.x ?? entry?.x;
+      const nyRaw = entry?.graphics?.y ?? entry?.y;
+      const nx = Number(nxRaw);
+      const ny = Number(nyRaw);
       if (!Number.isFinite(nx) || !Number.isFinite(ny)) continue;
-      set.add(nodePositionKey(nx, ny));
+      const size = nodeSize(entry);
+      items.push({ x: nx, y: ny, w: size.w, h: size.h });
     }
-    return set;
+    return items;
   }
 
   function avoidNodeOverlap(node, point) {
     if (!node || !point) return point;
     const occupied = buildNodePositionSet(node.id);
-    const key = nodePositionKey(point.x, point.y);
-    if (!occupied.has(key)) return point;
+    const { w, h } = nodeSize(node);
+    const overlaps = (pos) => {
+      const rect = { x: pos.x, y: pos.y, w, h };
+      for (const other of occupied) {
+        if (
+          rect.x < other.x + other.w &&
+          rect.x + rect.w > other.x &&
+          rect.y < other.y + other.h &&
+          rect.y + rect.h > other.y
+        ) {
+          return true;
+        }
+      }
+      return false;
+    };
+    if (!overlaps(point)) return point;
     const stepX = Number.isFinite(gridX) && gridX > 0 ? gridX : 10;
     const stepY = Number.isFinite(gridY) && gridY > 0 ? gridY : 10;
-    for (let radius = 1; radius <= 8; radius += 1) {
+    const maxRadius = Math.max(20, Math.ceil(Math.sqrt(occupied.length || 0)) + 10);
+    for (let radius = 1; radius <= maxRadius; radius += 1) {
       for (let dx = -radius; dx <= radius; dx += 1) {
         for (let dy = -radius; dy <= radius; dy += 1) {
           if (dx === 0 && dy === 0) continue;
@@ -2316,10 +2334,22 @@
             x: Math.max(MIN_WORLD_COORD, point.x + dx * stepX),
             y: Math.max(MIN_WORLD_COORD, point.y + dy * stepY)
           };
-          const candKey = nodePositionKey(candidate.x, candidate.y);
-          if (!occupied.has(candKey)) {
+          if (!overlaps(candidate)) {
             return candidate;
           }
+        }
+      }
+    }
+    const scanRadius = Math.max(40, maxRadius * 2);
+    for (let dy = -scanRadius; dy <= scanRadius; dy += 1) {
+      for (let dx = -scanRadius; dx <= scanRadius; dx += 1) {
+        if (dx === 0 && dy === 0) continue;
+        const candidate = {
+          x: Math.max(MIN_WORLD_COORD, point.x + dx * stepX),
+          y: Math.max(MIN_WORLD_COORD, point.y + dy * stepY)
+        };
+        if (!overlaps(candidate)) {
+          return candidate;
         }
       }
     }

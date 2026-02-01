@@ -2702,6 +2702,44 @@ summary {
   background: rgba(255, 255, 255, 0.1);
 }
 
+.cmd-helper {
+  border: 1px solid rgba(75, 85, 99, 0.18);
+  border-radius: 10px;
+  padding: 0.75rem;
+  display: grid;
+  gap: 0.55rem;
+  background: rgba(255, 255, 255, 0.65);
+}
+
+.cmd-helper-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.cmd-helper-args {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.cmd-helper-args-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.cmd-helper-arg-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.cmd-helper-actions {
+  justify-content: flex-end;
+}
 
 .cmd-row {
   display: flex;
