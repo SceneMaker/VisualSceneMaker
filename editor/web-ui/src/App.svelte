@@ -795,6 +795,7 @@
   let autoSaving = false;
   let autoSaveStatus = "";
   let autoSaveReady = false;
+  let autoSaveEnabled = true;
 
   let scriptText = "";
   let scriptDraft = "";
@@ -950,6 +951,7 @@
   let cmdEditIndex = null;
   let cmdError = "";
   let cmdSelectedIndex = null;
+  let startListSelectedId = "";
   let cmdDialogOpen = false;
   let cmdInlineDrafts = [];
   let cmdDialogNodeId = "";
@@ -1322,7 +1324,35 @@
   $: currentSuperName =
     sceneFlow?.path?.length ? sceneFlow.path[sceneFlow.path.length - 1] : sceneFlow?.superNodeId || "SceneFlow";
   $: sceneFlowPathNodes = Array.isArray(sceneFlow?.pathNodes) ? sceneFlow.pathNodes : [];
+  $: sceneFlowBreadcrumbNodes = (() => {
+    if (!sceneFlowPathNodes.length) return [];
+    const draftName = sceneFlowSelection
+      ? ""
+      : String(superNodeDraft?.name ?? "").trim();
+    const lastId = sceneFlowPathNodes[sceneFlowPathNodes.length - 1]?.id || "";
+    return sceneFlowPathNodes.map((node, idx) => {
+      if (idx === sceneFlowPathNodes.length - 1 && draftName && nodeEditorTarget?.id === lastId) {
+        return { ...node, name: draftName };
+      }
+      return node;
+    });
+  })();
   $: startNodes = sceneFlow?.nodes ? sceneFlow.nodes.filter((node) => node.isStart && !node.isHistory) : [];
+  $: superNodeChildren = sceneFlow?.nodes ? sceneFlow.nodes.filter((node) => !node.isHistory) : [];
+  $: superNodeStartList = superNodeChildren
+    .slice()
+    .sort((a, b) => Number(!!b.isStart) - Number(!!a.isStart) || displayNodeName(a).localeCompare(displayNodeName(b)));
+  $: {
+    if (superNodeStartList.length) {
+      const exists = superNodeStartList.some((node) => node.id === startListSelectedId);
+      if (!exists) {
+        startListSelectedId = superNodeStartList[0].id;
+      }
+    } else {
+      startListSelectedId = "";
+    }
+  }
+  $: startListSelectedNode = superNodeStartList.find((node) => node.id === startListSelectedId) || null;
   $: helperVarCandidates = (() => {
     const list = [];
     const seen = new Set();
@@ -1434,6 +1464,7 @@
     return !selectedProject.path || selectedProject.pending === true;
   })();
   $: autoSaveReady =
+    autoSaveEnabled &&
     showEditor &&
     !!selectedProjectId &&
     !projectRequiresSaveAs &&
@@ -2334,6 +2365,27 @@
     }
   }
 
+  async function toggleAutoSave() {
+    if (!selectedProjectId || projectSaving || autoSaving) return;
+    const next = !autoSaveEnabled;
+    const nextValue = String(next);
+    configDraft = { ...configDraft, autosave: nextValue };
+    config = { ...config, autosave: nextValue };
+    autoSaveEnabled = next;
+    const response = await sendCommand("Config.Update", {
+      projectId: selectedProjectId,
+      superNodeId: sceneFlow?.superNodeId || "",
+      values: { autosave: nextValue }
+    });
+    if (response?.config) {
+      const merged = { ...config, ...response.config, autosave: nextValue };
+      config = merged;
+      configDraft = { ...merged };
+      autoSaveEnabled = resolveConfigBool(merged.autosave, true);
+    }
+    configSaved = response?.saved === true;
+  }
+
   async function saveAsProject(projectId, overridePath) {
     const targetPath = (overridePath || saveAsPath || "").trim();
     if (!projectId || !targetPath || projectSaving) return false;
@@ -2401,6 +2453,8 @@
           });
           config = configResponse.config || {};
           configDraft = { ...config };
+          autoSaveEnabled = resolveConfigBool(configDraft.autosave, true);
+          autoSaveEnabled = resolveConfigBool(configDraft.autosave, true);
           configSaved = configResponse.saved === true;
         }
       }
@@ -2419,6 +2473,8 @@
       }
       config = data.config || {};
       configDraft = { ...config };
+      autoSaveEnabled = resolveConfigBool(configDraft.autosave, true);
+      autoSaveEnabled = resolveConfigBool(configDraft.autosave, true);
       configSaved = null;
       configLoaded = true;
     } catch (err) {
@@ -2448,6 +2504,8 @@
     });
     config = response.config || {};
     configDraft = { ...config };
+    autoSaveEnabled = resolveConfigBool(configDraft.autosave, true);
+    autoSaveEnabled = resolveConfigBool(configDraft.autosave, true);
     configSaved = response.saved === true;
     if (response?.snapshot) {
       applySceneFlowSnapshot(response.snapshot);
@@ -2818,6 +2876,12 @@
     return String(raw).toLowerCase() === "true";
   }
 
+  function resolveConfigBool(value, fallback) {
+    if (value === undefined || value === null || value === "") return fallback;
+    if (typeof value === "boolean") return value;
+    return String(value).toLowerCase() === "true";
+  }
+
   function readConfigString(key, fallback) {
     const raw = readConfigValue(key, fallback);
     if (raw === undefined || raw === null) return fallback;
@@ -2876,18 +2940,19 @@
     const width = readConfigInt("node_width", PREF_NODE_DEFAULT);
     const height = readConfigInt("node_height", width);
     const nodeSize = width || height || PREF_NODE_DEFAULT;
-    prefsDialogDraft = {
-      nodeSize: String(nodeSize),
-      gridScale: String(readConfigInt("grid_x", PREF_GRID_DEFAULT)),
-      workspaceFontSize: String(readConfigInt("workspace_fontsize", PREF_WORKSPACE_FONT_DEFAULT)),
-      drawGrid: readConfigBool("grid", true),
-      activityVisualization: readConfigBool("visualization", true),
-      activityTrace: readConfigBool("visualizationtrace", true),
-      showNodeId: readConfigBool("shownodeid", true),
-      undoMaxDepth: String(readConfigInt("undo_max_depth", PREF_UNDO_DEFAULT)),
-      commandLogMax: String(readConfigInt("command_log_max", PREF_COMMAND_LOG_DEFAULT)),
-      scriptFontType: readConfigString("scriptfonttype", PREF_SCRIPT_FONT_DEFAULT),
-      scriptFontSize: String(readConfigInt("scriptfonsize", PREF_SCRIPT_FONT_SIZE_DEFAULT)),
+      prefsDialogDraft = {
+        nodeSize: String(nodeSize),
+        gridScale: String(readConfigInt("grid_x", PREF_GRID_DEFAULT)),
+        workspaceFontSize: String(readConfigInt("workspace_fontsize", PREF_WORKSPACE_FONT_DEFAULT)),
+        drawGrid: readConfigBool("grid", true),
+        activityVisualization: readConfigBool("visualization", true),
+        activityTrace: readConfigBool("visualizationtrace", true),
+        showNodeId: readConfigBool("shownodeid", true),
+        autoSaveEnabled: readConfigBool("autosave", true),
+        undoMaxDepth: String(readConfigInt("undo_max_depth", PREF_UNDO_DEFAULT)),
+        commandLogMax: String(readConfigInt("command_log_max", PREF_COMMAND_LOG_DEFAULT)),
+        scriptFontType: readConfigString("scriptfonttype", PREF_SCRIPT_FONT_DEFAULT),
+        scriptFontSize: String(readConfigInt("scriptfonsize", PREF_SCRIPT_FONT_SIZE_DEFAULT)),
       sceneflowNamespace: readPreferenceString("xmlns", "xml.sceneflow.dfki.de"),
       sceneflowInstance: readPreferenceString("xmlns_xsi", "http://www.w3.org/2001/XMLSchema-instance"),
       sceneflowSchema: readPreferenceString("xsi_schemeLocation", "res/xsd/sceneflow.xsd")
@@ -2969,6 +3034,7 @@
     addConfigChange("visualization", prefsDialogDraft.activityVisualization);
     addConfigChange("visualizationtrace", prefsDialogDraft.activityTrace);
     addConfigChange("shownodeid", prefsDialogDraft.showNodeId);
+    addConfigChange("autosave", prefsDialogDraft.autoSaveEnabled);
     addConfigChange("undo_max_depth", undoMaxDepth);
     addConfigChange("command_log_max", commandLogMax);
     addConfigChange("scriptfonsize", scriptFontSize);
@@ -2993,6 +3059,7 @@
           config = configResponse.config;
         }
         configDraft = { ...configDraft, ...configChanges };
+        autoSaveEnabled = resolveConfigBool(configDraft.autosave, true);
         configSaved = configResponse?.saved === true;
         if (configResponse?.snapshot) {
           applySceneFlowSnapshot(configResponse.snapshot);
@@ -4854,10 +4921,21 @@
     return trimmed ? trimmed : "default";
   }
 
-  function playSceneCommand(name) {
+  function sceneParamsForName(name) {
+    if (!name) return [];
+    const params = helperSceneIndex?.get(name);
+    return Array.isArray(params) ? params.filter((param) => String(param || "").trim()) : [];
+  }
+
+  function playSceneCommand(name, params = []) {
     const raw = String(name || "");
     const escaped = raw.replace(/\\/g, "\\\\").replace(/"/g, "\\\"");
-    return `PlayScene("${escaped}")`;
+    const cleaned = Array.isArray(params) ? params.map((param) => String(param || "").trim()).filter(Boolean) : [];
+    if (!cleaned.length) {
+      return `PlayScene("${escaped}")`;
+    }
+    const bindings = cleaned.map((param) => `${param}=""`).join(", ");
+    return `PlayScene("${escaped}", { ${bindings} })`;
   }
 
   function playAgentCommand(name) {
@@ -5141,11 +5219,12 @@
 
   async function addSceneCommandToNode(nodeId, sceneName, { selectNode = false } = {}) {
     if (!selectedProjectId || !nodeId || !sceneName) return;
+    const params = sceneParamsForName(sceneName);
     const response = await runSceneFlowCommand("SceneFlow.Node.Cmd.Add", {
       projectId: selectedProjectId,
       superNodeId: sceneFlow?.superNodeId,
       nodeId,
-      command: { text: playSceneCommand(sceneName) }
+      command: { text: playSceneCommand(sceneName, params) }
     });
     if (response && selectNode) {
       sceneFlowSelection = { type: "node", id: nodeId };
@@ -7216,6 +7295,16 @@
     }
   }
 
+  async function toggleChildStart(node) {
+    if (!selectedProjectId || !node || node.isHistory) return;
+    await runSceneFlowCommand("SceneFlow.Node.Update", {
+      projectId: selectedProjectId,
+      superNodeId: sceneFlow?.superNodeId,
+      nodeId: node.id,
+      fields: { isStart: !node.isStart }
+    });
+  }
+
   function pinSelectedNodeSelection() {
     if (sceneFlowSelection?.type === "node" && sceneFlowSelection.id) {
       pinnedNodeSelectionId = sceneFlowSelection.id;
@@ -7796,6 +7885,16 @@
             {:else}
               <button
                 type="button"
+                class="ghost panel-save autosave-toggle"
+                class:active={autoSaveEnabled}
+                on:click={toggleAutoSave}
+                disabled={!selectedProject || projectSaving || autoSaving}
+                title={autoSaveEnabled ? "Disable autosave" : "Enable autosave"}
+              >
+                Autosave
+              </button>
+              <button
+                type="button"
                 class="ghost panel-save"
                 on:click={() => saveProject(selectedProjectId)}
                 disabled={!selectedProject || projectSaving}
@@ -7920,13 +8019,13 @@
               >
                 <IconGear className="icon" />
               </button>
-              {#if sceneFlowPathNodes.length}
+              {#if sceneFlowBreadcrumbNodes.length}
                 <nav class="sceneflow-breadcrumbs" aria-label="SceneFlow path">
-                  {#each sceneFlowPathNodes as node, idx}
+                  {#each sceneFlowBreadcrumbNodes as node, idx}
                     {#if idx > 0}
                       <span class="crumb-sep">/</span>
                     {/if}
-                    {#if idx < sceneFlowPathNodes.length - 1}
+                    {#if idx < sceneFlowBreadcrumbNodes.length - 1}
                       <button
                         type="button"
                         class="crumb"
@@ -9088,25 +9187,63 @@
                     <IconStart className="icon" />
                   </button>
                 </div>
+                {#if superNodeDirty}
+                  <div class="actions">
+                    <button type="button" class="primary" on:click={applySuperNodeEdits} disabled={!wsConnected || sceneFlowBusy}>
+                      Apply
+                    </button>
+                    <button type="button" class="ghost" on:click={resetSuperNodeDraft} disabled={!superNodeDirty}>
+                      Reset
+                    </button>
+                  </div>
+                {/if}
               {:else}
                 <h3 class="inspector-title">{currentSuperName}</h3>
               {/if}
-              <div class="inspector-meta">
-                <div class="inspector-row">
-                  <span>Start nodes</span>
-                  <span>{startNodes.length ? startNodes.map(displayNodeName).join(", ") : "None"}</span>
+              <div class="definition-section">
+                <header class="definition-header">
+                  <h4>Start nodes</h4>
+                  <span class="muted">{startNodes.length}/{superNodeChildren.length}</span>
+                </header>
+                <div class="def-table start-node-table">
+                  <div class="def-list">
+                    {#if superNodeStartList.length === 0}
+                      <div class="def-empty">No nodes yet.</div>
+                    {:else}
+                      {#each superNodeStartList as node}
+                        <button
+                          type="button"
+                          class="def-row"
+                          class:selected={startListSelectedId === node.id}
+                          on:click={() => (startListSelectedId = node.id)}
+                          aria-pressed={startListSelectedId === node.id}
+                        >
+                          <span class="def-line">
+                            <span class={node.isStart ? "start-node" : "start-node-inactive"}>
+                              {displayNodeName(node)}
+                            </span>
+                            <span class="muted">({node.type === "Super" ? "Super" : "Basic"})</span>
+                          </span>
+                        </button>
+                      {/each}
+                    {/if}
+                  </div>
+                  <div class="def-actions">
+                    <button
+                      type="button"
+                      class="icon-button start-toggle"
+                      class:active={startListSelectedNode?.isStart}
+                      on:click={() => startListSelectedNode && toggleChildStart(startListSelectedNode)}
+                      aria-pressed={!!startListSelectedNode?.isStart}
+                      aria-label="Toggle start node"
+                      title={startListSelectedNode?.isStart ? "Unset start node" : "Set start node"}
+                      disabled={!startListSelectedNode || !wsConnected || sceneFlowBusy}
+                    >
+                      <IconStart className="icon" />
+                    </button>
+                  </div>
                 </div>
               </div>
-              {#if superNodeDirty}
-                <div class="actions">
-                  <button type="button" class="primary" on:click={applySuperNodeEdits} disabled={!wsConnected || sceneFlowBusy}>
-                    Apply
-                  </button>
-                  <button type="button" class="ghost" on:click={resetSuperNodeDraft} disabled={!superNodeDirty}>
-                    Reset
-                  </button>
-                </div>
-              {/if}
               {#if superNodeEditError}
                 <p class="error">{superNodeEditError}</p>
               {/if}
@@ -10453,6 +10590,18 @@
             </header>
             <div class="prefs-group">
               <div class="prefs-rows">
+                <div class="prefs-row">
+                  <div class="prefs-field">
+                    <label for="pref-autosave">Autosave</label>
+                    <span class="prefs-help">Automatically save project changes.</span>
+                  </div>
+                  <div class="prefs-control">
+                    <label class="toggle">
+                      <input id="pref-autosave" type="checkbox" bind:checked={prefsDialogDraft.autoSaveEnabled} />
+                      {prefsDialogDraft.autoSaveEnabled ? "On" : "Off"}
+                    </label>
+                  </div>
+                </div>
                 <div class="prefs-row">
                   <div class="prefs-field">
                     <label for="pref-undo-depth">Undo history depth</label>
