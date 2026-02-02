@@ -964,6 +964,8 @@
   let cmdHelperVarType = "Int";
   let cmdHelperVarExpr = "";
   let cmdHelperVarStep = "1";
+  let cmdHelperSceneBindings = {};
+  let cmdHelperVarScope = "global";
   let lastNodeDefsId = "";
   let loadConfirmOpen = false;
   let loadConfirmReasons = [];
@@ -1335,6 +1337,11 @@
     (sceneFlowVarDefs || []).forEach((def) => addVar(def, "global"));
     return list;
   })();
+  $: cmdHelperVarExists = (() => {
+    const name = (cmdHelperVarName || "").trim();
+    if (!name) return false;
+    return helperVarCandidates.some((entry) => entry.name === name);
+  })();
   $: sceneFlowFrameColor = superNodeFrameColor(sceneFlow);
   $: sceneFlowFrameStyle = `--sf-frame-color:${sceneFlowFrameColor};`;
   $: {
@@ -1374,6 +1381,38 @@
   $: runtimeLocals = Array.isArray(runtimeInfo?.localVariables) ? runtimeInfo.localVariables : [];
   $: runtimeRootVars = runtimeGlobals.length ? runtimeGlobals : runtimeLocals;
   $: runtimeDisplayGlobals = isSceneFlowRoot ? runtimeRootVars : runtimeGlobals;
+  $: displayGlobalVarList = (() => {
+    const merged = [];
+    const seen = new Set();
+    runtimeDisplayGlobals.forEach((def) => {
+      const name = (def?.name || "").trim();
+      if (!name) return;
+      seen.add(name);
+      merged.push(def);
+    });
+    sceneFlowVarDefs.forEach((def) => {
+      const name = (def?.name || "").trim();
+      if (!name || seen.has(name)) return;
+      merged.push(def);
+    });
+    return merged;
+  })();
+  $: displayLocalVarList = (() => {
+    const merged = [];
+    const seen = new Set();
+    runtimeLocals.forEach((def) => {
+      const name = (def?.name || "").trim();
+      if (!name) return;
+      seen.add(name);
+      merged.push(def);
+    });
+    nodeEditorVarDefs.forEach((def) => {
+      const name = (def?.name || "").trim();
+      if (!name || seen.has(name)) return;
+      merged.push(def);
+    });
+    return merged;
+  })();
   $: monitorGlobals = runtimeDisplayGlobals;
   $: monitorLocals = isSceneFlowRoot ? [] : runtimeLocals;
   $: activityNodeIds = Array.from(activityNodeCounts.keys());
@@ -1427,6 +1466,29 @@
     scriptScenesFilter,
     scriptScenesLanguage
   );
+  $: helperSceneIndex = (() => {
+    const source = scriptScenesLive.length ? scriptScenesLive : scriptScenes;
+    const index = new Map();
+    if (!Array.isArray(source)) return index;
+    source.forEach((lang) => {
+      const groups = Array.isArray(lang?.groups) ? lang.groups : [];
+      groups.forEach((group) => {
+        const name = (group?.name || "").trim();
+        if (!name) return;
+        const params = Array.isArray(group?.params) ? group.params : [];
+        if (!index.has(name)) {
+          index.set(name, params);
+          return;
+        }
+        const merged = new Set([...(index.get(name) || []), ...params]);
+        index.set(name, Array.from(merged));
+      });
+    });
+    return index;
+  })();
+  $: helperScenes = (() => {
+    return Array.from(helperSceneIndex.keys()).sort((a, b) => a.localeCompare(b));
+  })();
   $: sceneLanguageOptions = sceneLanguageOptionList(scriptScenesLive.length ? scriptScenesLive : scriptScenes);
   $: filteredScriptElements = filterScriptElements(scriptElements, scriptElementsFilter);
   $: sceneAgentNames = extractSceneAgents(scriptDraft);
@@ -4497,7 +4559,7 @@
     if (!def) return "";
     const type = (def.type || "").trim();
     const name = (def.name || "").trim();
-    const expr = (def.expr || "").trim();
+    const expr = (def.expr ?? def.expression ?? "").trim();
     const hasLiveValue = Object.prototype.hasOwnProperty.call(runtimeValues, name);
     const value = normalizeRuntimeValue(hasLiveValue ? runtimeValues[name] : def.value);
     // Use captured initial value, or fall back to expr (definition expression) for hot-connect scenarios
@@ -5351,7 +5413,10 @@
         if (name) {
           if (!grouped.has(lang)) grouped.set(lang, new Map());
           const map = grouped.get(lang);
-          map.set(name, (map.get(name) || 0) + 1);
+          const entry = map.get(name) || { count: 0, params: new Set() };
+          entry.count += 1;
+          current.params.forEach((param) => entry.params.add(param));
+          map.set(name, entry);
         }
       }
       current = null;
@@ -5366,17 +5431,27 @@
       const match = line.match(/^scene\s+(\S+)\s+(.+)$/i);
       if (match) {
         flush();
-        current = { language: match[1], name: match[2].trim() };
+        current = { language: match[1], name: match[2].trim(), params: new Set() };
         continue;
       }
       if (current) {
         hasContent = true;
+        const paramMatches = line.matchAll(/\$([A-Za-z_][A-Za-z0-9_]*)/g);
+        for (const param of paramMatches) {
+          if (param?.[1]) {
+            current.params.add(param[1]);
+          }
+        }
       }
     }
     flush();
     for (const [language, groups] of grouped.entries()) {
       const groupList = Array.from(groups.entries())
-        .map(([name, count]) => ({ name, count }))
+        .map(([name, entry]) => ({
+          name,
+          count: entry.count,
+          params: Array.from(entry.params)
+        }))
         .sort((a, b) => a.name.localeCompare(b.name));
       output.push({ language, groups: groupList });
     }
@@ -5459,7 +5534,12 @@
     cmdDialogNodeId = nodeEditorTarget?.id || "";
   }
 
-  function closeCmdDialog() {
+  async function closeCmdDialog() {
+    if (cmdDialogOpen && wsConnected && !sceneFlowBusy && cmdInlineDrafts.length) {
+      for (let i = cmdInlineDrafts.length - 1; i >= 0; i -= 1) {
+        await commitCmdInlineDraft(i);
+      }
+    }
     cmdDialogOpen = false;
     resetCmdEditor();
     restoreFocus();
@@ -6142,7 +6222,7 @@
 
   function openCmdHelper() {
     cmdHelperType = "PlayScene";
-    cmdHelperScene = scriptScenes?.[0]?.name || scriptScenes?.[0]?.id || "";
+    cmdHelperScene = helperScenes?.[0] || "";
     cmdHelperAgent = "";
     const actionOption = Array.isArray(scriptElements?.acticon) ? scriptElements.acticon[0] : null;
     cmdHelperAction = actionOption?.name || actionOption?.script || "";
@@ -6151,6 +6231,8 @@
     cmdHelperVarType = helperVarCandidates?.[0]?.type || "Int";
     cmdHelperVarExpr = "";
     cmdHelperVarStep = "1";
+    cmdHelperSceneBindings = {};
+    cmdHelperVarScope = "global";
     cmdHelperOpen = true;
   }
 
@@ -6163,6 +6245,15 @@
     if (cmdHelperType === "Assign") {
       cmdHelperVarExpr = cmdHelperVarExpr || "";
     }
+  }
+
+  $: if (cmdHelperOpen && cmdHelperType === "PlayScene") {
+    const params = helperSceneIndex.get(cmdHelperScene) || [];
+    const next = {};
+    params.forEach((param) => {
+      next[param] = cmdHelperSceneBindings?.[param] || "";
+    });
+    cmdHelperSceneBindings = next;
   }
 
   function closeCmdHelper() {
@@ -6185,6 +6276,17 @@
     if (cmdHelperType === "PlayScene") {
       const scene = (cmdHelperScene || "").trim();
       if (!scene) return "";
+      const bindings = Object.entries(cmdHelperSceneBindings || {})
+        .map(([key, value]) => {
+          const name = (key || "").trim();
+          const mapped = (value || "").trim();
+          if (!name || !mapped) return "";
+          return `${name} = ${mapped}`;
+        })
+        .filter(Boolean);
+      if (bindings.length) {
+        return `PlayScene("${scene}", { ${bindings.join(", ")} })`;
+      }
       return `PlayScene("${scene}")`;
     }
     if (cmdHelperType === "PlayAction") {
@@ -6232,10 +6334,19 @@
     const type = (cmdHelperVarType || "Int").trim() || "Int";
     const confirmCreate = window.confirm(`Create variable "${name}" (${type})?`);
     if (!confirmCreate) return false;
+    let targetNodeId = "";
+    if (cmdHelperVarScope === "local") {
+      targetNodeId = nodeEditorTarget?.id || "";
+    } else if (cmdHelperVarScope === "parent") {
+      const path = Array.isArray(sceneFlowPathNodes) ? sceneFlowPathNodes : [];
+      if (path.length > 1) {
+        targetNodeId = path[path.length - 2]?.id || "";
+      }
+    }
     const payload = {
       projectId: selectedProjectId,
       superNodeId: sceneFlow?.superNodeId,
-      nodeId: nodeEditorTarget.id,
+      nodeId: targetNodeId,
       varDef: {
         name,
         type,
@@ -8325,8 +8436,8 @@
                               </span>
                               <span
                                 class="scene-name"
-                                title={group.name}
-                                use:fitMiddleEllipsis={{ text: group.name }}
+                                title={group?.params?.length ? `${group.name} (${group.params.join(", ")})` : group.name}
+                                use:fitMiddleEllipsis={{ text: group?.params?.length ? `${group.name} (${group.params.join(", ")})` : group.name }}
                               ></span>
                             </div>
                             <span class="scene-count">{group.count}</span>
@@ -8458,10 +8569,10 @@
                       <span class="error">{runtimeError}</span>
                     {:else if runtimeLoading}
                       <span class="muted">Loading...</span>
-                    {:else if runtimeDisplayGlobals.length === 0}
+                    {:else if displayGlobalVarList.length === 0}
                       <span class="muted">No variables.</span>
                     {:else}
-                      {#each runtimeDisplayGlobals as variable}
+                      {#each displayGlobalVarList as variable}
                         <div class="sceneflow-var-row" title={runtimeVarLine(variable)}>
                           {runtimeVarLine(variable) || variable?.name || "Variable"}
                         </div>
@@ -8501,10 +8612,10 @@
                         <span class="error">{runtimeError}</span>
                       {:else if runtimeLoading}
                         <span class="muted">Loading...</span>
-                      {:else if runtimeLocals.length === 0}
+                      {:else if displayLocalVarList.length === 0}
                         <span class="muted">No local variables.</span>
                       {:else}
-                        {#each runtimeLocals as variable}
+                        {#each displayLocalVarList as variable}
                           <div class="sceneflow-var-row" title={runtimeVarLine(variable)}>
                             {runtimeVarLine(variable) || variable?.name || "Variable"}
                           </div>
@@ -10746,7 +10857,7 @@
                 <h4>Command helper</h4>
                 <button type="button" class="ghost" on:click={closeCmdHelper}>Close</button>
               </div>
-              <label for="cmd-helper-type">Type</label>
+              <label for="cmd-helper-type">Command</label>
               <select id="cmd-helper-type" bind:value={cmdHelperType} on:change={updateCmdHelperType}>
                 <option value="PlayScene">PlayScene</option>
                 <option value="PlayAction">PlayAction</option>
@@ -10757,12 +10868,38 @@
               {#if cmdHelperType === "PlayScene"}
                 <label for="cmd-helper-scene">Scene</label>
                 <select id="cmd-helper-scene" bind:value={cmdHelperScene}>
-                  {#each scriptScenes as scene}
-                    <option value={scene?.name || scene?.id}>{scene?.name || scene?.id}</option>
+                  {#each helperScenes as sceneName}
+                    <option value={sceneName}>{sceneName}</option>
                   {/each}
                 </select>
-                {#if scriptScenes.length === 0}
+                {#if helperScenes.length === 0}
                   <p class="muted">No scenes loaded.</p>
+                {/if}
+                {#if (helperSceneIndex.get(cmdHelperScene) || []).length}
+                  <div class="cmd-helper-args">
+                    <div class="cmd-helper-args-header">
+                      <span>Scene variables</span>
+                    </div>
+                    {#each helperSceneIndex.get(cmdHelperScene) || [] as param}
+                      <div class="cmd-helper-arg-row">
+                        <span>{param}</span>
+                        <select
+                          value={cmdHelperSceneBindings?.[param] || ""}
+                          on:change={(event) => {
+                            cmdHelperSceneBindings = {
+                              ...cmdHelperSceneBindings,
+                              [param]: event.target.value
+                            };
+                          }}
+                        >
+                          <option value="">Select variable</option>
+                          {#each helperVarCandidates as variable}
+                            <option value={variable.name}>{variable.name}</option>
+                          {/each}
+                        </select>
+                      </div>
+                    {/each}
+                  </div>
                 {/if}
               {:else if cmdHelperType === "PlayAction"}
                 <label for="cmd-helper-agent">Agent</label>
@@ -10813,18 +10950,35 @@
                 </div>
               {:else}
                 <label for="cmd-helper-var">Variable</label>
-                <input id="cmd-helper-var" bind:value={cmdHelperVarName} list="cmd-helper-var-list" placeholder="Variable name" />
+                <input
+                  id="cmd-helper-var"
+                  bind:value={cmdHelperVarName}
+                  list="cmd-helper-var-list"
+                  placeholder="Variable name"
+                  class:input-warning={!cmdHelperVarExists && cmdHelperVarName.trim().length}
+                />
+                {#if !cmdHelperVarExists && cmdHelperVarName.trim().length}
+                  <p class="muted">Variable not found. It will be created if you insert.</p>
+                {/if}
                 <datalist id="cmd-helper-var-list">
                   {#each helperVarCandidates as variable}
                     <option value={variable.name}>{variable.type ? `${variable.name} (${variable.type})` : variable.name}</option>
                   {/each}
                 </datalist>
-                <label for="cmd-helper-var-type">Variable type (if new)</label>
-                <select id="cmd-helper-var-type" bind:value={cmdHelperVarType}>
-                  {#each nodeEditorTypeOptions as option}
-                    <option value={option}>{option}</option>
-                  {/each}
-                </select>
+                {#if !cmdHelperVarExists}
+                  <label for="cmd-helper-var-scope">Create in</label>
+                  <select id="cmd-helper-var-scope" bind:value={cmdHelperVarScope}>
+                    <option value="global">Global (top-level)</option>
+                    <option value="parent">Parent supernode</option>
+                    <option value="local">Local node</option>
+                  </select>
+                  <label for="cmd-helper-var-type">Variable type (if new)</label>
+                  <select id="cmd-helper-var-type" bind:value={cmdHelperVarType}>
+                    {#each nodeEditorTypeOptions as option}
+                      <option value={option}>{option}</option>
+                    {/each}
+                  </select>
+                {/if}
                 {#if cmdHelperType === "Assign"}
                   <label for="cmd-helper-expr">Expression</label>
                   <input

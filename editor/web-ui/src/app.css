@@ -2741,6 +2741,11 @@ summary {
   justify-content: flex-end;
 }
 
+.input-warning {
+  border-color: rgba(188, 120, 34, 0.7);
+  box-shadow: 0 0 0 1px rgba(188, 120, 34, 0.35);
+}
+
 .cmd-row {
   display: flex;
   width: 100%;
