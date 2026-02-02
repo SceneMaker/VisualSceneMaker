@@ -973,7 +973,6 @@ public class GlueParser extends java_cup.runtime.lr_parser {
 /** Cup generated class to encapsulate user supplied action code.*/
 class CUP$GlueParser$actions {
 
-Improv
     // Trim the quotes
     public static String trim(final String value) {    
         return value.substring(1, value.length() - 1);
