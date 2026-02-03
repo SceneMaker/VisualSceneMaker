@@ -763,6 +763,16 @@ summary {
   background: #fdf2f2;
 }
 
+.unsaved-indicator {
+  padding: 0.15rem 0.6rem;
+  border-radius: var(--radius-pill);
+  border: 1px solid #f3c16b;
+  background: #fff4df;
+  color: #a16600;
+  font-size: 0.95rem;
+  white-space: nowrap;
+}
+
 .panel-badges {
   display: flex;
   align-items: center;
@@ -1912,7 +1922,9 @@ summary {
 .modal.project-config-modal {
   width: min(1040px, 94vw);
   background: rgba(255, 255, 255, 0.98);
-  padding: 1.2rem;
+  padding: 0.5rem;
+  max-height: 75vh;
+  overflow: hidden;
 }
 
 .modal.monitor-modal {
@@ -2363,7 +2375,7 @@ summary {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
+  gap: 0.4rem;
 }
 
 .project-config-header-actions {
@@ -2375,12 +2387,12 @@ summary {
 .project-config-title {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.35rem;
 }
 
 .project-config-icon {
-  width: 36px;
-  height: 36px;
+  width: 30px;
+  height: 30px;
   border-radius: 12px;
   background: rgba(46, 93, 58, 0.12);
   color: var(--accent);
@@ -2397,22 +2409,28 @@ summary {
 .project-config-body {
   display: grid;
   grid-template-columns: 240px minmax(0, 1fr);
-  gap: 1rem;
+  gap: 0.35rem;
+  min-height: 0;
+  overflow: hidden;
+  align-content: start;
 }
 
 .project-config-tree {
   border-radius: var(--radius-md);
   border: 1px solid var(--stroke);
-  padding: 0.8rem;
+  padding: 0.35rem;
   background: rgba(255, 255, 255, 0.92);
   display: grid;
-  gap: 0.6rem;
+  gap: 0.2rem;
+  min-height: 0;
+  overflow: auto;
+  align-content: start;
 }
 
 .project-config-tree-item {
   border: 1px solid transparent;
   border-radius: var(--radius-sm);
-  padding: 0.35rem 0.5rem;
+  padding: 0.15rem 0.35rem;
   background: transparent;
   display: flex;
   align-items: center;
@@ -2438,7 +2456,7 @@ summary {
 
 .project-config-tree-item.agent {
   font-size: 0.85rem;
-  padding-left: 0.75rem;
+  padding-left: 0.6rem;
 }
 
 .project-config-tree-meta {
@@ -2448,7 +2466,7 @@ summary {
 
 .project-config-tree-section {
   display: grid;
-  gap: 0.4rem;
+  gap: 0.2rem;
 }
 
 .project-config-tree-title {
@@ -2459,15 +2477,15 @@ summary {
 }
 
 .project-config-tree-children {
-  margin-left: 0.6rem;
+  margin-left: 0.45rem;
   display: grid;
-  gap: 0.25rem;
+  gap: 0.15rem;
 }
 
 .project-config-tree-add {
   border: 1px dashed rgba(46, 93, 58, 0.4);
   border-radius: var(--radius-sm);
-  padding: 0.35rem 0.5rem;
+  padding: 0.15rem 0.35rem;
   background: rgba(46, 93, 58, 0.05);
   color: var(--accent);
   font-size: 0.85rem;
@@ -2478,25 +2496,28 @@ summary {
 
 .project-config-main {
   display: grid;
-  gap: 0.8rem;
+  gap: 0.3rem;
   min-width: 0;
+  min-height: 0;
+  overflow: auto;
+  align-content: start;
 }
 
 .project-config-panel {
   border-radius: var(--radius-md);
   border: 1px solid var(--stroke);
-  padding: 0.9rem;
-  background: rgba(255, 255, 255, 0.95);
-  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.08);
+  padding: 0.4rem;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: none;
   display: grid;
-  gap: 0.6rem;
+  gap: 0.25rem;
 }
 
 .project-config-panel-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.75rem;
+  gap: 0.35rem;
 }
 
 .project-config-panel-header h4 {
@@ -2506,8 +2527,8 @@ summary {
 
 .project-config-grid {
   display: grid;
-  grid-template-columns: 160px minmax(0, 1fr);
-  gap: 0.5rem 0.75rem;
+  grid-template-columns: 130px minmax(0, 1fr);
+  gap: 0.2rem 0.5rem;
   align-items: center;
 }
 
@@ -2520,7 +2541,7 @@ summary {
 .project-config-grid select {
   border-radius: var(--radius-sm);
   border: 1px solid var(--stroke);
-  padding: 0.3rem 0.5rem;
+  padding: 0.2rem 0.4rem;
   font-size: 0.85rem;
   background: #fff;
 }
@@ -2533,13 +2554,13 @@ summary {
 .project-config-info-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.5rem 0.75rem;
+  gap: 0.25rem 0.5rem;
   align-items: center;
 }
 
 .project-config-info-row {
   display: grid;
-  gap: 0.25rem;
+  gap: 0.15rem;
 }
 
 .project-config-info-label {
@@ -2569,7 +2590,7 @@ summary {
 .project-config-agent-add-row input {
   border-radius: var(--radius-sm);
   border: 1px solid var(--stroke);
-  padding: 0.3rem 0.5rem;
+  padding: 0.2rem 0.4rem;
   font-size: 0.85rem;
   background: #fff;
   width: 100%;
@@ -2577,7 +2598,7 @@ summary {
 
 .project-config-meta {
   display: inline-flex;
-  gap: 0.75rem;
+  gap: 0.35rem;
   font-size: 0.85rem;
   color: var(--muted);
 }
@@ -2593,8 +2614,8 @@ summary {
 .project-config-table-header {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
-  gap: 0.5rem;
-  padding: 0.35rem 0.5rem;
+  gap: 0.3rem;
+  padding: 0.2rem 0.35rem;
   font-size: 0.7rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -2606,9 +2627,9 @@ summary {
 .project-config-table-add {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
-  gap: 0.5rem;
+  gap: 0.3rem;
   align-items: center;
-  padding: 0.35rem 0.5rem;
+  padding: 0.2rem 0.35rem;
 }
 
 .project-config-table-row {
@@ -2616,7 +2637,7 @@ summary {
 }
 
 .project-config-table-empty {
-  padding: 0.45rem 0.6rem;
+  padding: 0.2rem 0.35rem;
   font-size: 0.85rem;
   color: var(--muted);
   border-top: 1px solid var(--stroke);
@@ -2631,13 +2652,13 @@ summary {
 .project-config-table-add input {
   border-radius: 8px;
   border: 1px solid var(--stroke);
-  padding: 0.25rem 0.4rem;
+  padding: 0.15rem 0.3rem;
   font-size: 0.85rem;
 }
 
 .project-config-agent-add {
   display: grid;
-  gap: 0.35rem;
+  gap: 0.2rem;
 }
 
 .project-config-agent-add-title {
@@ -2650,7 +2671,7 @@ summary {
 .project-config-agent-add-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  gap: 0.5rem;
+  gap: 0.3rem;
   align-items: center;
 }
 
@@ -2658,9 +2679,9 @@ summary {
   border-radius: 12px;
   border: 1px dashed rgba(46, 93, 58, 0.4);
   background: rgba(46, 93, 58, 0.05);
-  padding: 0.5rem 0.6rem;
+  padding: 0.25rem 0.35rem;
   display: grid;
-  gap: 0.5rem;
+  gap: 0.25rem;
 }
 
 .project-config-keylist-title {
@@ -2673,7 +2694,7 @@ summary {
 .project-config-keygrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.75rem;
+  gap: 0.35rem;
 }
 
 .project-config-key-title {
@@ -2686,7 +2707,7 @@ summary {
 
 .project-config-key-list {
   display: grid;
-  gap: 0.35rem;
+  gap: 0.2rem;
 }
 
 .project-config-key-item {
@@ -2705,8 +2726,8 @@ summary {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.75rem;
-  margin-top: 0.5rem;
+  gap: 0.35rem;
+  margin-top: 0.25rem;
 }
 
 .project-config-status {

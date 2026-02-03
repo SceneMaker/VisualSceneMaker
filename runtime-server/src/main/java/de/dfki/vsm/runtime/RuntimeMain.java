@@ -1,9 +1,6 @@
 package de.dfki.vsm.runtime;
 
-import de.dfki.vsm.runtime.project.RunTimeProject;
-import de.dfki.vsm.web.WebUiServer;
-
-import java.io.File;
+import de.dfki.vsm.runtime.server.RuntimeServerImpl;
 
 /**
  * Standalone runtime server entry point.
@@ -11,6 +8,7 @@ import java.io.File;
  * This provides a headless runtime server that can:
  * - Load and execute VSM projects
  * - Expose a REST/WebSocket API for runtime control and monitoring
+ * - Serve the Web UI for browser-based monitoring and control
  * - Run on any Java 17+ environment (Desktop, Android, embedded)
  *
  * Usage:
@@ -21,6 +19,7 @@ import java.io.File;
  *   --allow-lan       Bind to 0.0.0.0 instead of localhost
  *   --project=PATH    Auto-load project on startup
  *   --autostart       Automatically start runtime after loading project
+ *   --token=TOKEN     Set authentication token (default: auto-generated)
  *   --help            Show this help message
  */
 public class RuntimeMain {
@@ -32,6 +31,7 @@ public class RuntimeMain {
         boolean allowLan = false;
         String projectPath = null;
         boolean autoStart = false;
+        String token = null;
 
         // Parse command-line arguments
         for (String arg : args) {
@@ -48,6 +48,8 @@ public class RuntimeMain {
                 projectPath = arg.substring(10);
             } else if (arg.equals("--autostart")) {
                 autoStart = true;
+            } else if (arg.startsWith("--token=")) {
+                token = arg.substring(8);
             } else if (arg.equals("--help") || arg.equals("-h")) {
                 printHelp();
                 System.exit(0);
@@ -60,16 +62,17 @@ public class RuntimeMain {
         System.out.println("==============================================");
         System.out.println();
 
-        // Start the web server
-        WebUiServer server = WebUiServer.getInstance();
+        // Start the runtime server
+        RuntimeServerImpl server = new RuntimeServerImpl();
         String bindHost = allowLan ? "0.0.0.0" : "127.0.0.1";
 
         try {
-            server.start(port, allowLan);
+            server.start(port, bindHost, token);
 
             System.out.println("Runtime server started:");
-            System.out.println("  URL: http://" + (allowLan ? "0.0.0.0" : "localhost") + ":" + port);
-            System.out.println("  Mode: Runtime-only (no editing)");
+            System.out.println("  URL:   " + server.getLocalUrl());
+            System.out.println("  Token: " + server.getAuthToken());
+            System.out.println("  Mode:  Runtime-only (no editing)");
             if (allowLan) {
                 System.out.println("  WARNING: External connections allowed!");
             }
@@ -77,36 +80,25 @@ public class RuntimeMain {
 
             // Load project if specified
             if (projectPath != null) {
-                File projectFile = new File(projectPath);
-                if (projectFile.exists()) {
-                    System.out.println("Loading project: " + projectPath);
-                    RunTimeProject project = new RunTimeProject(projectFile);
-                    if (project.launch()) {
-                        System.out.println("Project loaded successfully.");
+                System.out.println("Loading project: " + projectPath);
+                if (server.loadProject(projectPath)) {
+                    System.out.println("Project loaded successfully.");
 
-                        // Register with WebUiServer so it's accessible via API
-                        String projectId = server.registerProject(project);
-                        System.out.println("Project registered with ID: " + projectId);
-
-                        if (autoStart) {
-                            System.out.println("Starting runtime...");
-                            if (project.start()) {
-                                System.out.println("Runtime started.");
-                                // Update the runtime state so Web UI sees it as running
-                                server.setProjectRuntimeState(projectId, "running");
-                            } else {
-                                System.err.println("Failed to start runtime.");
-                            }
+                    if (autoStart) {
+                        System.out.println("Starting runtime...");
+                        if (server.startRuntime()) {
+                            System.out.println("Runtime started.");
+                        } else {
+                            System.err.println("Failed to start runtime.");
                         }
-                    } else {
-                        System.err.println("Failed to load project: " + projectPath);
                     }
                 } else {
-                    System.err.println("Project file not found: " + projectPath);
+                    System.err.println("Failed to load project: " + projectPath);
                 }
             }
 
             System.out.println();
+            System.out.println("Open Web UI at: " + server.getLocalUrl());
             System.out.println("Press Ctrl+C to stop the server.");
 
             // Keep the main thread alive
@@ -129,6 +121,7 @@ public class RuntimeMain {
         System.out.println("  --allow-lan       Bind to 0.0.0.0 (allow external connections)");
         System.out.println("  --project=PATH    Auto-load project on startup");
         System.out.println("  --autostart       Automatically start runtime after loading");
+        System.out.println("  --token=TOKEN     Set authentication token (default: auto-generated)");
         System.out.println("  --help, -h        Show this help message");
         System.out.println();
         System.out.println("Examples:");

@@ -7,6 +7,10 @@ import de.dfki.vsm.model.gesticon.GesticonAgent;
 import de.dfki.vsm.model.gesticon.GesticonConfig;
 import de.dfki.vsm.model.gesticon.GesticonGesture;
 import de.dfki.vsm.model.project.ProjectConfig;
+import de.dfki.vsm.model.project.PluginConfig;
+import de.dfki.vsm.model.project.AgentConfig;
+import de.dfki.vsm.model.project.PlayerConfig;
+import de.dfki.vsm.model.config.ConfigFeature;
 import de.dfki.vsm.model.scenescript.SceneObject;
 import de.dfki.vsm.model.scenescript.ScriptDiagnostics;
 import de.dfki.vsm.model.scenescript.SceneScript;
@@ -44,6 +48,7 @@ import de.dfki.vsm.model.sceneflow.glue.command.expression.record.ArrayExpressio
 import de.dfki.vsm.model.sceneflow.glue.command.expression.record.StructExpression;
 import de.dfki.vsm.model.sceneflow.glue.GlueParser;
 import de.dfki.vsm.runtime.project.RunTimeProject;
+import de.dfki.vsm.runtime.plugin.RunTimePlugin;
 import de.dfki.vsm.event.EventDispatcher;
 import de.dfki.vsm.event.EventListener;
 import de.dfki.vsm.event.EventObject;
@@ -68,6 +73,9 @@ import io.javalin.http.Context;
 import io.javalin.websocket.WsContext;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.reflections.Reflections;
+import org.reflections.scanners.SubTypesScanner;
+import org.reflections.util.ConfigurationBuilder;
 
 import java.net.URI;
 import java.net.URL;
@@ -77,7 +85,9 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.nio.charset.StandardCharsets;
 import java.util.Comparator;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -85,11 +95,15 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.lang.reflect.Modifier;
+import java.util.jar.Manifest;
+import java.util.jar.Attributes;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import de.dfki.vsm.model.visicon.VisiconAgent;
 import de.dfki.vsm.model.visicon.VisiconConfig;
 import de.dfki.vsm.model.visicon.VisiconViseme;
@@ -301,13 +315,7 @@ public final class WebUiServer implements EventListener {
      * Used for runtime.edgeActive events.
      */
     private String getEdgeTypeLowercase(AbstractEdge edge) {
-        if (edge instanceof EpsilonEdge) return "epsilon";
-        if (edge instanceof GuargedEdge) return "conditional";
-        if (edge instanceof RandomEdge) return "probabilistic";
-        if (edge instanceof InterruptEdge) return "interruptive";
-        if (edge instanceof TimeoutEdge) return "timeout";
-        if (edge instanceof ForkingEdge) return "fork";
-        return "unknown";
+        return SceneFlowSnapshotBuilder.getEdgeTypeLowercase(edge);
     }
 
     private String findProjectIdForEvent(EventObject event) {
@@ -402,6 +410,45 @@ public final class WebUiServer implements EventListener {
         info.put("name", "SceneMaker Web");
         info.put("port", mPort);
         info.put("tokenRequired", true);
+        String buildDate = "unknown";
+        String revision = "unknown";
+        String version = "unknown";
+        String build = "unknown";
+        try {
+            java.io.InputStream stream = WebUiServer.class.getClassLoader().getResourceAsStream("META-INF/MANIFEST.MF");
+            if (stream != null) {
+                try (java.io.InputStream in = stream) {
+                    java.util.jar.Manifest manifest = new java.util.jar.Manifest(in);
+                    java.util.jar.Attributes attrs = manifest.getMainAttributes();
+                    buildDate = attrs.getValue("Build-Date") != null ? attrs.getValue("Build-Date") : buildDate;
+                    revision = attrs.getValue("Build-Revision") != null ? attrs.getValue("Build-Revision") : revision;
+                    version = attrs.getValue("Last-Tag") != null ? attrs.getValue("Last-Tag") : version;
+                    build = attrs.getValue("build") != null ? attrs.getValue("build") : build;
+                }
+            }
+        } catch (Exception ignored) {
+            // Leave defaults when manifest is unavailable.
+        }
+        String sysBuildDate = System.getProperty("vsm.buildDate");
+        String sysRevision = System.getProperty("vsm.buildRevision");
+        String sysVersion = System.getProperty("vsm.version");
+        String sysBuild = System.getProperty("vsm.build");
+        if (buildDate.equals("unknown") && sysBuildDate != null && !sysBuildDate.isBlank()) {
+            buildDate = sysBuildDate;
+        }
+        if (revision.equals("unknown") && sysRevision != null && !sysRevision.isBlank()) {
+            revision = sysRevision;
+        }
+        if (version.equals("unknown") && sysVersion != null && !sysVersion.isBlank()) {
+            version = sysVersion;
+        }
+        if (build.equals("unknown") && sysBuild != null && !sysBuild.isBlank()) {
+            build = sysBuild;
+        }
+        info.put("buildDate", buildDate);
+        info.put("revision", revision);
+        info.put("version", version);
+        info.put("build", build);
         writeJson(ctx, info);
     }
 
@@ -750,9 +797,78 @@ public final class WebUiServer implements EventListener {
         }
     }
 
+    private List<URL> collectDeviceScanUrls() {
+        List<URL> urls = new ArrayList<>();
+        try {
+            java.security.CodeSource codeSource = WebUiServer.class.getProtectionDomain().getCodeSource();
+            if (codeSource != null && codeSource.getLocation() != null) {
+                URL location = codeSource.getLocation();
+                File file = new File(location.toURI());
+                if (file.isFile() && file.getName().endsWith(".jar")) {
+                    urls.add(location);
+                }
+            }
+        } catch (Exception ignored) {
+        }
+        File baseDir = new File(System.getProperty("user.dir", "."));
+        File pluginsDir = new File(baseDir, "plugins");
+        if (pluginsDir.isDirectory()) {
+            java.util.List<File> jars = new ArrayList<>();
+            File[] topLevelJars = pluginsDir.listFiles((dir, name) -> name != null && name.toLowerCase().endsWith(".jar"));
+            if (topLevelJars != null) {
+                jars.addAll(Arrays.asList(topLevelJars));
+            }
+            File[] pluginDirs = pluginsDir.listFiles(File::isDirectory);
+            if (pluginDirs != null) {
+                for (File pluginDir : pluginDirs) {
+                    File libsDir = new File(pluginDir, "build/libs");
+                    File[] builtJars = libsDir.listFiles((dir, name) -> name != null && name.toLowerCase().endsWith(".jar"));
+                    if (builtJars != null) {
+                        jars.addAll(Arrays.asList(builtJars));
+                    }
+                }
+            }
+            for (File jar : jars) {
+                try {
+                    urls.add(jar.toURI().toURL());
+                } catch (Exception ignored) {
+                }
+            }
+        }
+        return urls;
+    }
+
     private void handleDevices(Context ctx) {
         JSONObject response = new JSONObject();
-        response.put("devices", new JSONArray());
+        JSONArray devices = new JSONArray();
+        List<URL> scanUrls = collectDeviceScanUrls();
+        if (!scanUrls.isEmpty()) {
+            try {
+                Reflections reflections = new Reflections(new ConfigurationBuilder()
+                        .setUrls(scanUrls)
+                        .addScanners(new SubTypesScanner(false))
+                        .setExpandSuperTypes(false));
+                Set<Class<? extends RunTimePlugin>> types = reflections.getSubTypesOf(RunTimePlugin.class);
+                Set<String> seen = new HashSet<>();
+                for (Class<? extends RunTimePlugin> type : types) {
+                    if (type == null) continue;
+                    if (Modifier.isAbstract(type.getModifiers()) || Modifier.isInterface(type.getModifiers())) {
+                        continue;
+                    }
+                    String className = type.getCanonicalName();
+                    if (className == null || className.isBlank() || !seen.add(className)) {
+                        continue;
+                    }
+                    JSONObject entry = new JSONObject();
+                    entry.put("name", type.getSimpleName());
+                    entry.put("className", className);
+                    devices.put(entry);
+                }
+            } catch (Exception exc) {
+                sLogger.warning("Warning: device discovery failed: " + exc.getMessage());
+            }
+        }
+        response.put("devices", devices);
         writeJson(ctx, response);
     }
 
@@ -875,14 +991,161 @@ public final class WebUiServer implements EventListener {
         JSONObject response = new JSONObject();
         if (ref != null && ref.runtimeProject != null && ref.runtimeProject.getProjectConfig() != null) {
             ProjectConfig cfg = ref.runtimeProject.getProjectConfig();
-            JSONObject cfgJson = new JSONObject();
-            cfgJson.put("name", cfg.getProjectName());
-            cfgJson.put("path", ref.path == null ? "" : ref.path);
-            response.put("config", cfgJson);
+            response.put("config", projectConfigToJson(cfg, ref.path));
         } else {
             response.put("config", new JSONObject());
         }
         writeJson(ctx, response);
+    }
+
+    private JSONObject projectConfigToJson(ProjectConfig cfg, String path) {
+        JSONObject cfgJson = new JSONObject();
+        cfgJson.put("name", cfg.getProjectName());
+        cfgJson.put("path", path == null ? "" : path);
+        JSONArray pluginsJson = new JSONArray();
+        Set<String> seenPlugins = new HashSet<>();
+        for (PluginConfig plugin : cfg.getPluginConfigList()) {
+            String pluginName = plugin.getPluginName() == null ? "" : plugin.getPluginName();
+            String pluginKey = pluginName.trim().toLowerCase();
+            if (!pluginKey.isEmpty() && !seenPlugins.add(pluginKey)) {
+                continue;
+            }
+            JSONObject entry = new JSONObject();
+            entry.put("type", plugin.getPluginType());
+            entry.put("name", plugin.getPluginName());
+            entry.put("className", plugin.getClassName());
+            entry.put("load", plugin.isMarkedtoLoad());
+            entry.put("features", configFeaturesToJson(plugin.getEntryList()));
+            pluginsJson.put(entry);
+        }
+        JSONArray agentsJson = new JSONArray();
+        Set<String> seenAgents = new HashSet<>();
+        for (AgentConfig agent : cfg.getAgentConfigList()) {
+            String agentName = agent.getAgentName() == null ? "" : agent.getAgentName();
+            String agentKey = agentName.trim().toLowerCase();
+            if (!agentKey.isEmpty() && !seenAgents.add(agentKey)) {
+                continue;
+            }
+            JSONObject entry = new JSONObject();
+            entry.put("name", agent.getAgentName());
+            entry.put("device", agent.getDeviceName());
+            entry.put("features", configFeaturesToJson(agent.getEntryList()));
+            agentsJson.put(entry);
+        }
+        JSONObject playerJson = new JSONObject();
+        PlayerConfig player = cfg.getPlayerConfig();
+        playerJson.put("features", configFeaturesToJson(player != null ? player.getEntryList() : null));
+        cfgJson.put("plugins", pluginsJson);
+        cfgJson.put("agents", agentsJson);
+        cfgJson.put("player", playerJson);
+        return cfgJson;
+    }
+
+    private void applyProjectConfigFromJson(ProjectRef ref, ProjectConfig cfg, JSONObject configJson) {
+        String name = configJson.optString("name", cfg.getProjectName());
+        if (ref.runtimeProject != null) {
+            ref.runtimeProject.setProjectName(name);
+        } else {
+            cfg.setProjectName(name);
+        }
+
+        JSONArray pluginsJson = configJson.optJSONArray("plugins");
+        cfg.getPluginConfigList().clear();
+        Set<String> seenPlugins = new HashSet<>();
+        if (pluginsJson != null) {
+            for (int i = 0; i < pluginsJson.length(); i++) {
+                JSONObject entry = pluginsJson.optJSONObject(i);
+                if (entry == null) continue;
+                String pluginName = entry.optString("name", "");
+                String pluginKey = pluginName.trim().toLowerCase();
+                if (!pluginKey.isEmpty() && !seenPlugins.add(pluginKey)) {
+                    continue;
+                }
+                PluginConfig plugin = new PluginConfig(
+                        entry.optString("type", ""),
+                        pluginName,
+                        entry.optString("className", ""),
+                        entry.optBoolean("load", true)
+                );
+                JSONArray features = entry.optJSONArray("features");
+                if (features != null) {
+                    for (int j = 0; j < features.length(); j++) {
+                        JSONObject feature = features.optJSONObject(j);
+                        if (feature == null) continue;
+                        String key = feature.optString("key", "");
+                        String value = feature.optString("value", "");
+                        if (!key.isEmpty()) {
+                            plugin.getEntryList().add(new ConfigFeature("Feature", key, value));
+                        }
+                    }
+                }
+                cfg.getPluginConfigList().add(plugin);
+            }
+        }
+
+        JSONArray agentsJson = configJson.optJSONArray("agents");
+        cfg.getAgentConfigList().clear();
+        Set<String> seenAgents = new HashSet<>();
+        if (agentsJson != null) {
+            for (int i = 0; i < agentsJson.length(); i++) {
+                JSONObject entry = agentsJson.optJSONObject(i);
+                if (entry == null) continue;
+                String agentName = entry.optString("name", "");
+                String agentKey = agentName.trim().toLowerCase();
+                if (!agentKey.isEmpty() && !seenAgents.add(agentKey)) {
+                    continue;
+                }
+                AgentConfig agent = new AgentConfig(
+                        agentName,
+                        entry.optString("device", "")
+                );
+                JSONArray features = entry.optJSONArray("features");
+                if (features != null) {
+                    for (int j = 0; j < features.length(); j++) {
+                        JSONObject feature = features.optJSONObject(j);
+                        if (feature == null) continue;
+                        String key = feature.optString("key", "");
+                        String value = feature.optString("value", "");
+                        if (!key.isEmpty()) {
+                            agent.getEntryList().add(new ConfigFeature("Feature", key, value));
+                        }
+                    }
+                }
+                cfg.getAgentConfigList().add(agent);
+            }
+        }
+
+        JSONObject playerJson = configJson.optJSONObject("player");
+        PlayerConfig player = cfg.getPlayerConfig();
+        if (player != null) {
+            player.getEntryList().clear();
+            if (playerJson != null) {
+                JSONArray features = playerJson.optJSONArray("features");
+                if (features != null) {
+                    for (int j = 0; j < features.length(); j++) {
+                        JSONObject feature = features.optJSONObject(j);
+                        if (feature == null) continue;
+                        String key = feature.optString("key", "");
+                        String value = feature.optString("value", "");
+                        if (!key.isEmpty()) {
+                            player.getEntryList().add(new ConfigFeature("Feature", key, value));
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private JSONArray configFeaturesToJson(List<de.dfki.vsm.model.config.ConfigFeature> features) {
+        JSONArray list = new JSONArray();
+        if (features == null) return list;
+        for (de.dfki.vsm.model.config.ConfigFeature feature : features) {
+            JSONObject entry = new JSONObject();
+            entry.put("key", feature.getKey() == null ? "" : feature.getKey());
+            entry.put("value", feature.getValue() == null ? "" : feature.getValue());
+            list.put(entry);
+        }
+        return list;
     }
 
     private void handleEditorConfig(Context ctx) {
@@ -1073,363 +1336,26 @@ public final class WebUiServer implements EventListener {
     }
 
     private SuperNode resolveSuperNode(SceneFlow sceneFlow, String superNodeId) {
-        if (superNodeId == null || superNodeId.isBlank() || "__root__".equals(superNodeId)) {
-            return sceneFlow;
-        }
-        return findSuperNodeById(sceneFlow, superNodeId);
-    }
-
-    private SuperNode findSuperNodeById(SuperNode parent, String id) {
-        if (parent == null) return null;
-        if (id.equals(parent.getId())) return parent;
-        for (SuperNode child : parent.getSuperNodeList()) {
-            SuperNode found = findSuperNodeById(child, id);
-            if (found != null) return found;
-        }
-        return null;
+        return SceneFlowSnapshotBuilder.resolveSuperNode(sceneFlow, superNodeId);
     }
 
     private JSONObject createSceneFlowSnapshot(RunTimeProject rtp, String projectId, SuperNode superNode, SceneFlow sceneFlow) {
-        JSONObject snapshot = new JSONObject();
-        snapshot.put("projectId", projectId);
-        snapshot.put("superNodeId", superNode.getId() != null ? superNode.getId() : "");
-        snapshot.put("revision", superNode.hashCode());
-
         ProjectRef ref = projectStore.get(projectId);
+        JSONObject undoState = null;
         if (ref != null) {
-            JSONObject undoState = buildUndoState(ref);
-            if (undoState != null) {
-                snapshot.put("undoState", undoState);
-            }
+            undoState = buildUndoState(ref);
         }
         int nodeWidth = getEditorConfigInt(ref, "node_width", 90);
         int nodeHeight = getEditorConfigInt(ref, "node_height", nodeWidth);
-
-        // SuperNode info
-        JSONObject superNodeJson = new JSONObject();
-        superNodeJson.put("id", superNode.getId() != null ? superNode.getId() : "");
-        superNodeJson.put("name", superNode.getName() != null ? superNode.getName() : "SceneFlow");
-        superNodeJson.put("flavour", superNode.getFlavour() != null ? superNode.getFlavour().name() : "None");
-        snapshot.put("superNode", superNodeJson);
-
-        // Build path
-        JSONArray path = new JSONArray();
-        JSONArray pathNodes = new JSONArray();
-        List<SuperNode> pathList = findPathToSuperNode(sceneFlow, superNode.getId());
-        if (pathList == null || pathList.isEmpty()) {
-            pathList = new ArrayList<>();
-            pathList.add(superNode);
-        }
-        for (SuperNode node : pathList) {
-            String nodeName = node.getName();
-            if (nodeName == null || nodeName.isBlank()) {
-                nodeName = "SceneFlow";
-            }
-            String nodeId = node.getId();
-            if (nodeId == null || nodeId.isBlank()) {
-                nodeId = "__root__";
-            }
-            path.put(nodeName);
-            JSONObject pathEntry = new JSONObject();
-            pathEntry.put("id", nodeId);
-            pathEntry.put("name", nodeName);
-            pathEntry.put("isRoot", node.getParentNode() == null);
-            pathNodes.put(pathEntry);
-        }
-        snapshot.put("path", path);
-        snapshot.put("pathNodes", pathNodes);
-
-        // SuperNode data
-        Set<String> altStartIds = collectAltStartIds(superNode);
-        JSONObject superNodeData = nodeToJsonCore(superNode, superNode, altStartIds, nodeWidth, nodeHeight);
-        superNodeData.put("isStart", superNode.getParentNode() == null ||
-            (superNode.getParentNode() != null && superNode.getParentNode().getStartNodeMap().containsKey(superNode.getId())));
-        superNodeData.put("isRoot", superNode.getParentNode() == null);
-        snapshot.put("superNodeData", superNodeData);
-
-        // Nodes at current level only
-        JSONArray nodes = new JSONArray();
-        for (BasicNode node : superNode.getNodeAndSuperNodeList()) {
-            nodes.put(nodeToJsonCore(node, superNode, altStartIds, nodeWidth, nodeHeight));
-        }
-        snapshot.put("nodes", nodes);
-
-        // Edges at current level only
-        JSONArray edges = new JSONArray();
-        int edgeIndex = 0;
-        for (BasicNode node : superNode.getNodeAndSuperNodeList()) {
-            for (AbstractEdge edge : node.getEdgeList()) {
-                edges.put(edgeToJsonCore(edge, edgeIndex++));
-            }
-        }
-        snapshot.put("edges", edges);
-
-        // Comments
-        JSONArray comments = new JSONArray();
-        int commentIndex = 0;
-        for (CommentBadge comment : superNode.getCommentList()) {
-            comments.put(commentToJsonCore(comment, commentIndex++));
-        }
-        snapshot.put("comments", comments);
-
-        return snapshot;
+        return SceneFlowSnapshotBuilder.createSnapshot(projectId, superNode, sceneFlow, nodeWidth, nodeHeight, undoState);
     }
 
-    private List<SuperNode> findPathToSuperNode(SuperNode root, String targetId) {
-        if (root == null) return null;
-        List<SuperNode> path = new ArrayList<>();
-        if (findPathRecursive(root, targetId, path)) {
-            return path;
-        }
-        return null;
-    }
+    // Path/altStart helpers are now in SceneFlowSnapshotBuilder
 
-    private boolean findPathRecursive(SuperNode current, String targetId, List<SuperNode> path) {
-        path.add(current);
-        String currentId = current.getId();
-        if ((currentId != null && currentId.equals(targetId)) ||
-            (currentId == null && targetId == null) ||
-            ("__root__".equals(targetId) && current.getParentNode() == null)) {
-            return true;
-        }
-        for (SuperNode child : current.getSuperNodeList()) {
-            if (findPathRecursive(child, targetId, path)) {
-                return true;
-            }
-        }
-        path.remove(path.size() - 1);
-        return false;
-    }
+    // nodeToJsonCore, typeDefsToJsonCore, varDefsToJsonCore, commandsToJsonCore
+    // are now in SceneFlowSnapshotBuilder (nodeToJson, varDefsToJson, etc.)
 
-    private Set<String> collectAltStartIds(SuperNode target) {
-        Set<String> altStartIds = new java.util.LinkedHashSet<>();
-        SuperNode parent = target.getParentNode();
-        if (parent == null) {
-            return altStartIds;
-        }
-        for (BasicNode node : parent.getNodeAndSuperNodeList()) {
-            for (AbstractEdge edge : node.getEdgeList()) {
-                if (!target.getId().equals(edge.getTargetUnid())) {
-                    continue;
-                }
-                Map<de.dfki.vsm.util.tpl.Tuple<String, BasicNode>, de.dfki.vsm.util.tpl.Tuple<String, BasicNode>> altMap = edge.getAltMap();
-                if (altMap == null) {
-                    continue;
-                }
-                for (de.dfki.vsm.util.tpl.Tuple<String, BasicNode> alt : altMap.values()) {
-                    if (alt != null && alt.getFirst() != null && !alt.getFirst().isEmpty()) {
-                        altStartIds.add(alt.getFirst());
-                    }
-                }
-            }
-        }
-        return altStartIds;
-    }
-
-    private JSONObject nodeToJsonCore(BasicNode node, SuperNode superNode, Set<String> altStartIds, int nodeWidth, int nodeHeight) {
-        JSONObject json = new JSONObject();
-        json.put("id", node.getId());
-        json.put("type", (node instanceof SuperNode) ? "Super" : "Basic");
-        json.put("name", node.getName() != null ? node.getName() : "");
-        json.put("comment", node.getComment() != null ? node.getComment() : "");
-        json.put("flavour", node.getFlavour() != null ? node.getFlavour().name() : "None");
-        json.put("isStart", superNode.getStartNodeMap().containsKey(node.getId()));
-        json.put("isAltStart", altStartIds.contains(node.getId()));
-        json.put("isHistory", node.isHistoryNode());
-
-        int childCount = 0;
-        if (node instanceof SuperNode) {
-            childCount = ((SuperNode) node).getNodeAndSuperNodeList().size();
-        }
-        json.put("childCount", childCount);
-
-        JSONObject graphics = new JSONObject();
-        int x = 0, y = 0;
-        if (node.getGraphics() != null && node.getGraphics().getPosition() != null) {
-            x = node.getGraphics().getPosition().getXPos();
-            y = node.getGraphics().getPosition().getYPos();
-        }
-        graphics.put("x", x);
-        graphics.put("y", y);
-        json.put("graphics", graphics);
-
-        JSONObject size = new JSONObject();
-        size.put("w", nodeWidth);
-        size.put("h", nodeHeight);
-        json.put("size", size);
-
-        // Type definitions
-        json.put("typeDefs", typeDefsToJsonCore(node.getTypeDefList()));
-        json.put("varDefs", varDefsToJsonCore(node.getVarDefList()));
-        json.put("commands", commandsToJsonCore(node.getCmdList()));
-
-        return json;
-    }
-
-    private JSONArray typeDefsToJsonCore(List<DataTypeDefinition> defs) {
-        JSONArray list = new JSONArray();
-        if (defs == null) return list;
-        for (DataTypeDefinition def : defs) {
-            if (def != null) {
-                JSONObject json = new JSONObject();
-                json.put("name", def.getName());
-                json.put("flavour", def.getFlavour() != null ? def.getFlavour().name() : "");
-                json.put("syntax", def.getConcreteSyntax());
-                if (def instanceof ListTypeDefinition) {
-                    ListTypeDefinition listDef = (ListTypeDefinition) def;
-                    if (listDef.getType() != null) {
-                        json.put("elementType", listDef.getType());
-                    }
-                } else if (def instanceof StructTypeDefinition) {
-                    StructTypeDefinition structDef = (StructTypeDefinition) def;
-                    JSONArray members = new JSONArray();
-                    if (structDef.getMemberList() != null) {
-                        for (MemberDefinition member : structDef.getMemberList()) {
-                            if (member == null) continue;
-                            JSONObject memberJson = new JSONObject();
-                            memberJson.put("name", member.getName());
-                            memberJson.put("type", member.getType());
-                            members.put(memberJson);
-                        }
-                    }
-                    json.put("members", members);
-                }
-                list.put(json);
-            }
-        }
-        return list;
-    }
-
-    private JSONArray varDefsToJsonCore(List<VariableDefinition> defs) {
-        JSONArray list = new JSONArray();
-        if (defs == null) return list;
-        for (VariableDefinition def : defs) {
-            if (def != null) {
-                JSONObject json = new JSONObject();
-                json.put("name", def.getName());
-                json.put("type", def.getType());
-                json.put("expression", def.getExp() != null ? def.getExp().getConcreteSyntax() : "");
-                json.put("syntax", def.getConcreteSyntax());
-                list.put(json);
-            }
-        }
-        return list;
-    }
-
-    private JSONArray commandsToJsonCore(List<Command> commands) {
-        JSONArray list = new JSONArray();
-        if (commands == null) return list;
-        for (Command cmd : commands) {
-            if (cmd != null) {
-                JSONObject json = new JSONObject();
-                json.put("text", cmd.getConcreteSyntax());
-                json.put("syntax", cmd.getConcreteSyntax());
-                list.put(json);
-            }
-        }
-        return list;
-    }
-
-    private JSONObject edgeToJsonCore(AbstractEdge edge, int index) {
-        JSONObject json = new JSONObject();
-        json.put("id", "E" + index);
-        json.put("type", getEdgeType(edge));
-
-        String sourceId = edge.getSourceUnid();
-        if (sourceId == null || sourceId.isBlank()) {
-            sourceId = edge.getSourceNode() != null ? edge.getSourceNode().getId() : "";
-        }
-        String targetId = edge.getTargetUnid();
-        if (targetId == null || targetId.isBlank()) {
-            targetId = edge.getTargetNode() != null ? edge.getTargetNode().getId() : "";
-        }
-        json.put("sourceId", sourceId);
-        json.put("targetId", targetId);
-
-        // Edge graphics
-        JSONObject graphics = new JSONObject();
-        EdgeGraphics eg = edge.getGraphics();
-        EdgeArrow arrow = eg != null ? eg.getConnection() : null;
-        JSONArray points = new JSONArray();
-        if (arrow != null) {
-            for (EdgePoint point : arrow.getPointList()) {
-                JSONObject p = new JSONObject();
-                p.put("x", point.getXPos());
-                p.put("y", point.getYPos());
-                p.put("cx", point.getCtrlXPos());
-                p.put("cy", point.getCtrlYPos());
-                points.put(p);
-            }
-        }
-        graphics.put("points", points);
-        graphics.put("docked", points.length() >= 2);
-        json.put("graphics", graphics);
-
-        // Edge condition/expression
-        String conditionText = "";
-        if (edge instanceof GuargedEdge) {
-            GuargedEdge ge = (GuargedEdge) edge;
-            if (ge.getCondition() != null) {
-                conditionText = ge.getCondition().getConcreteSyntax();
-            }
-        } else if (edge instanceof InterruptEdge) {
-            InterruptEdge ie = (InterruptEdge) edge;
-            if (ie.getCondition() != null) {
-                conditionText = ie.getCondition().getConcreteSyntax();
-            }
-        }
-        json.put("condition", conditionText);
-
-        // Only set probability for RandomEdge (PEDGE) - don't set for other types
-        // so frontend can distinguish and show correct label
-        if (edge instanceof RandomEdge) {
-            json.put("probability", ((RandomEdge) edge).getProbability());
-        }
-
-        // Timeout edge fields: timeoutMs (numeric) and timeoutExpr (expression string)
-        if (edge instanceof TimeoutEdge) {
-            TimeoutEdge te = (TimeoutEdge) edge;
-            json.put("timeoutMs", te.getTimeout());
-            json.put("timeoutExpr", te.getExpression() != null ? te.getExpression().getConcreteSyntax() : "");
-        }
-
-        return json;
-    }
-
-    private String getEdgeType(AbstractEdge edge) {
-        if (edge instanceof GuargedEdge) return "CEDGE";  // Conditional/Guarded edge
-        if (edge instanceof RandomEdge) return "PEDGE";   // Probabilistic edge
-        if (edge instanceof InterruptEdge) return "IEDGE"; // Interrupt edge
-        if (edge instanceof ForkingEdge) return "FEDGE";  // Forking edge
-        if (edge instanceof TimeoutEdge) return "TEDGE";  // Timeout edge
-        if (edge instanceof EpsilonEdge) return "EEDGE";  // Epsilon edge
-        return "EEDGE"; // Default to epsilon
-    }
-
-    private JSONObject commentToJsonCore(CommentBadge comment, int index) {
-        JSONObject json = new JSONObject();
-        json.put("id", "C" + index);
-        json.put("text", comment.getHTMLText() != null ? comment.getHTMLText() : "");
-
-        // Use "rect" key to match editor's format
-        JSONObject rectJson = new JSONObject();
-        CommentGraphics cg = comment.getGraphics();
-        CommentBoundary rect = cg != null ? cg.getRectangle() : null;
-        if (rect != null) {
-            rectJson.put("x", rect.getXPos());
-            rectJson.put("y", rect.getYPos());
-            rectJson.put("w", rect.getWidth());
-            rectJson.put("h", rect.getHeight());
-        } else {
-            rectJson.put("x", 0);
-            rectJson.put("y", 0);
-            rectJson.put("w", 0);
-            rectJson.put("h", 0);
-        }
-        json.put("rect", rectJson);
-
-        return json;
-    }
+    // edgeToJsonCore, getEdgeType, commentToJsonCore are now in SceneFlowSnapshotBuilder
 
     private void handleRuntime(Context ctx) {
         String pid = ctx.pathParam("pid");
@@ -2123,6 +2049,32 @@ public final class WebUiServer implements EventListener {
                         broadcaster.accept(evt.toString());
                     }
                 }
+                return response;
+            }
+            case "ProjectConfig.Update": {
+                String pid = params.optString("projectId", "");
+                JSONObject configJson = params.optJSONObject("config");
+                if (pid.isBlank()) {
+                    return errorResponse("BAD_REQUEST", "Missing projectId");
+                }
+                if (configJson == null) {
+                    return errorResponse("BAD_REQUEST", "Missing config");
+                }
+                ProjectRef ref = projectStore.get(pid);
+                if (ref == null || ref.runtimeProject == null) {
+                    return errorResponse("PROJECT_NOT_FOUND", "Project not found");
+                }
+                ProjectConfig cfg = ref.runtimeProject.getProjectConfig();
+                if (cfg == null) {
+                    return errorResponse("PROJECT_NOT_FOUND", "Project config not available");
+                }
+                applyProjectConfigFromJson(ref, cfg, configJson);
+                ref.dirty = true;
+                JSONObject response = new JSONObject();
+                response.put("status", "ok");
+                response.put("config", projectConfigToJson(cfg, ref.path));
+                response.put("saved", false);
+                response.put("pending", true);
                 return response;
             }
             case "Preferences.Update": {
