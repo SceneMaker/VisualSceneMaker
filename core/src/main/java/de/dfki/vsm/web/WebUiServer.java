@@ -798,17 +798,32 @@ public final class WebUiServer implements EventListener {
     }
 
     private List<URL> collectDeviceScanUrls() {
-        List<URL> urls = new ArrayList<>();
+        Set<URL> urls = new HashSet<>();
         try {
             java.security.CodeSource codeSource = WebUiServer.class.getProtectionDomain().getCodeSource();
             if (codeSource != null && codeSource.getLocation() != null) {
                 URL location = codeSource.getLocation();
                 File file = new File(location.toURI());
-                if (file.isFile() && file.getName().endsWith(".jar")) {
+                if ((file.isFile() && file.getName().endsWith(".jar")) || file.isDirectory()) {
                     urls.add(location);
                 }
             }
         } catch (Exception ignored) {
+        }
+        String classPath = System.getProperty("java.class.path", "");
+        if (!classPath.isBlank()) {
+            String[] entries = classPath.split(File.pathSeparator);
+            for (String entry : entries) {
+                if (entry == null || entry.isBlank()) continue;
+                File file = new File(entry);
+                if (!file.exists()) continue;
+                if (file.isDirectory() || (file.isFile() && entry.toLowerCase().endsWith(".jar"))) {
+                    try {
+                        urls.add(file.toURI().toURL());
+                    } catch (Exception ignored) {
+                    }
+                }
+            }
         }
         File baseDir = new File(System.getProperty("user.dir", "."));
         File pluginsDir = new File(baseDir, "plugins");
@@ -835,7 +850,7 @@ public final class WebUiServer implements EventListener {
                 }
             }
         }
-        return urls;
+        return new ArrayList<>(urls);
     }
 
     private void handleDevices(Context ctx) {
@@ -1038,6 +1053,7 @@ public final class WebUiServer implements EventListener {
         cfgJson.put("plugins", pluginsJson);
         cfgJson.put("agents", agentsJson);
         cfgJson.put("player", playerJson);
+        sLogger.message("[PROJECT-CONFIG] Serialized plugins=" + pluginsJson.length() + " agents=" + agentsJson.length());
         return cfgJson;
     }
 
@@ -1050,7 +1066,14 @@ public final class WebUiServer implements EventListener {
         }
 
         JSONArray pluginsJson = configJson.optJSONArray("plugins");
-        cfg.getPluginConfigList().clear();
+        Map<String, PluginConfig> pluginByName = new HashMap<>();
+        for (PluginConfig existing : cfg.getPluginConfigList()) {
+            String existingName = existing.getPluginName() == null ? "" : existing.getPluginName();
+            String key = existingName.trim().toLowerCase();
+            if (!key.isEmpty()) {
+                pluginByName.put(key, existing);
+            }
+        }
         Set<String> seenPlugins = new HashSet<>();
         if (pluginsJson != null) {
             for (int i = 0; i < pluginsJson.length(); i++) {
@@ -1058,33 +1081,66 @@ public final class WebUiServer implements EventListener {
                 if (entry == null) continue;
                 String pluginName = entry.optString("name", "");
                 String pluginKey = pluginName.trim().toLowerCase();
-                if (!pluginKey.isEmpty() && !seenPlugins.add(pluginKey)) {
-                    continue;
-                }
-                PluginConfig plugin = new PluginConfig(
-                        entry.optString("type", ""),
-                        pluginName,
-                        entry.optString("className", ""),
-                        entry.optBoolean("load", true)
-                );
-                JSONArray features = entry.optJSONArray("features");
-                if (features != null) {
-                    for (int j = 0; j < features.length(); j++) {
-                        JSONObject feature = features.optJSONObject(j);
-                        if (feature == null) continue;
-                        String key = feature.optString("key", "");
-                        String value = feature.optString("value", "");
-                        if (!key.isEmpty()) {
-                            plugin.getEntryList().add(new ConfigFeature("Feature", key, value));
+                if (!pluginKey.isEmpty() && !seenPlugins.add(pluginKey)) continue;
+                PluginConfig plugin = pluginByName.get(pluginKey);
+                if (plugin == null) {
+                    PluginConfig created = new PluginConfig(
+                            entry.optString("type", ""),
+                            pluginName,
+                            entry.optString("className", ""),
+                            entry.optBoolean("load", true)
+                    );
+                    JSONArray features = entry.optJSONArray("features");
+                    if (features != null) {
+                        created.getEntryList().clear();
+                        for (int j = 0; j < features.length(); j++) {
+                            JSONObject feature = features.optJSONObject(j);
+                            if (feature == null) continue;
+                            String key = feature.optString("key", "");
+                            String value = feature.optString("value", "");
+                            if (!key.isEmpty()) {
+                                created.getEntryList().add(new ConfigFeature("Feature", key, value));
+                            }
                         }
                     }
+                    cfg.getPluginConfigList().add(created);
+                } else {
+                    ArrayList<ConfigFeature> featuresList = plugin.copyEntryList();
+                    JSONArray features = entry.optJSONArray("features");
+                    if (features != null) {
+                        featuresList = new ArrayList<>();
+                        for (int j = 0; j < features.length(); j++) {
+                            JSONObject feature = features.optJSONObject(j);
+                            if (feature == null) continue;
+                            String key = feature.optString("key", "");
+                            String value = feature.optString("value", "");
+                            if (!key.isEmpty()) {
+                                featuresList.add(new ConfigFeature("Feature", key, value));
+                            }
+                        }
+                    }
+                    PluginConfig updated = new PluginConfig(
+                            entry.optString("type", plugin.getPluginType()),
+                            pluginName.isBlank() ? plugin.getPluginName() : pluginName,
+                            entry.optString("className", plugin.getClassName()),
+                            entry.optBoolean("load", plugin.isMarkedtoLoad()),
+                            featuresList
+                    );
+                    cfg.getPluginConfigList().remove(pluginByName.get(pluginKey));
+                    cfg.getPluginConfigList().add(updated);
                 }
-                cfg.getPluginConfigList().add(plugin);
             }
         }
 
         JSONArray agentsJson = configJson.optJSONArray("agents");
-        cfg.getAgentConfigList().clear();
+        Map<String, AgentConfig> agentByName = new HashMap<>();
+        for (AgentConfig existing : cfg.getAgentConfigList()) {
+            String existingName = existing.getAgentName() == null ? "" : existing.getAgentName();
+            String key = existingName.trim().toLowerCase();
+            if (!key.isEmpty()) {
+                agentByName.put(key, existing);
+            }
+        }
         Set<String> seenAgents = new HashSet<>();
         if (agentsJson != null) {
             for (int i = 0; i < agentsJson.length(); i++) {
@@ -1092,36 +1148,60 @@ public final class WebUiServer implements EventListener {
                 if (entry == null) continue;
                 String agentName = entry.optString("name", "");
                 String agentKey = agentName.trim().toLowerCase();
-                if (!agentKey.isEmpty() && !seenAgents.add(agentKey)) {
-                    continue;
-                }
-                AgentConfig agent = new AgentConfig(
-                        agentName,
-                        entry.optString("device", "")
-                );
-                JSONArray features = entry.optJSONArray("features");
-                if (features != null) {
-                    for (int j = 0; j < features.length(); j++) {
-                        JSONObject feature = features.optJSONObject(j);
-                        if (feature == null) continue;
-                        String key = feature.optString("key", "");
-                        String value = feature.optString("value", "");
-                        if (!key.isEmpty()) {
-                            agent.getEntryList().add(new ConfigFeature("Feature", key, value));
+                if (!agentKey.isEmpty() && !seenAgents.add(agentKey)) continue;
+                AgentConfig agent = agentByName.get(agentKey);
+                if (agent == null) {
+                    AgentConfig created = new AgentConfig(
+                            agentName,
+                            entry.optString("device", "")
+                    );
+                    JSONArray features = entry.optJSONArray("features");
+                    if (features != null) {
+                        created.getEntryList().clear();
+                        for (int j = 0; j < features.length(); j++) {
+                            JSONObject feature = features.optJSONObject(j);
+                            if (feature == null) continue;
+                            String key = feature.optString("key", "");
+                            String value = feature.optString("value", "");
+                            if (!key.isEmpty()) {
+                                created.getEntryList().add(new ConfigFeature("Feature", key, value));
+                            }
                         }
                     }
+                    cfg.getAgentConfigList().add(created);
+                } else {
+                    ArrayList<ConfigFeature> featuresList = agent.copyEntryList();
+                    JSONArray features = entry.optJSONArray("features");
+                    if (features != null) {
+                        featuresList = new ArrayList<>();
+                        for (int j = 0; j < features.length(); j++) {
+                            JSONObject feature = features.optJSONObject(j);
+                            if (feature == null) continue;
+                            String key = feature.optString("key", "");
+                            String value = feature.optString("value", "");
+                            if (!key.isEmpty()) {
+                                featuresList.add(new ConfigFeature("Feature", key, value));
+                            }
+                        }
+                    }
+                    AgentConfig updated = new AgentConfig(
+                            agentName.isBlank() ? agent.getAgentName() : agentName,
+                            entry.optString("device", agent.getDeviceName()),
+                            featuresList
+                    );
+                    cfg.getAgentConfigList().remove(agentByName.get(agentKey));
+                    cfg.getAgentConfigList().add(updated);
                 }
-                cfg.getAgentConfigList().add(agent);
             }
         }
 
         JSONObject playerJson = configJson.optJSONObject("player");
         PlayerConfig player = cfg.getPlayerConfig();
         if (player != null) {
-            player.getEntryList().clear();
             if (playerJson != null) {
                 JSONArray features = playerJson.optJSONArray("features");
                 if (features != null) {
+                    player.getEntryList().clear();
                     for (int j = 0; j < features.length(); j++) {
                         JSONObject feature = features.optJSONObject(j);
                         if (feature == null) continue;
@@ -1134,6 +1214,8 @@ public final class WebUiServer implements EventListener {
                 }
             }
         }
+        sLogger.message("[PROJECT-CONFIG] Applied plugins=" + cfg.getPluginConfigList().size()
+                + " agents=" + cfg.getAgentConfigList().size());
     }
 
     private JSONArray configFeaturesToJson(List<de.dfki.vsm.model.config.ConfigFeature> features) {
