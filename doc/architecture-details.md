@@ -362,49 +362,57 @@ Path: `editor/web-ui/src/App.svelte`
 
 #### Backend Server
 
-**WebUiServer**
+**WebUiServer** (Unified, dual-mode)
 Path: `core/src/main/java/de/dfki/vsm/web/WebUiServer.java`
 
+The server supports two modes via `ServerMode` enum:
+- **`FULL_EDITOR`** (default) — Multi-project editing, all WS commands, used by SceneMaker3/4
+- **`RUNTIME_ONLY`** — Single project, runtime control only, editing commands rejected, used by RuntimeMain
+
 ```java
-public final class WebUiServer {
+public final class WebUiServer implements EventListener {
+    public enum ServerMode { RUNTIME_ONLY, FULL_EDITOR }
+
+    private ServerMode mMode = ServerMode.FULL_EDITOR;
+    private String mAuthToken;
     private Javalin mApp;
     private Map<String, ProjectRef> projectStore;
     private Set<WsContext> wsSessions;
 
-    public void start() {
-        mApp = Javalin.create(config -> {
-            config.addStaticFiles("/web-ui", Location.CLASSPATH);
-            config.addSinglePageRoot("/", "/web-ui/index.html", Location.CLASSPATH);
-        }).start("127.0.0.1", 8090);
+    // Default start (FULL_EDITOR mode)
+    public void start(int port, boolean allowExternal) { ... }
 
-        registerRoutes();
-    }
+    // Mode-specific start (used by RuntimeMain)
+    public void start(int port, String bindHost, String token, ServerMode mode) { ... }
+
+    // Runtime-only project management
+    public boolean loadProject(String path) { ... }
+    public boolean startRuntime() { ... }
 
     private void registerRoutes() {
-        // REST endpoints
+        // Common endpoints (both modes)
+        mApp.get(API_PREFIX + "/info", this::handleInfo);
         mApp.get(API_PREFIX + "/projects", this::handleProjects);
-        mApp.post(API_PREFIX + "/projects/open", this::handleProjectOpen);
-        mApp.get(API_PREFIX + "/projects/{pid}/sceneflow", this::handleSceneflow);
+        // ...
 
-        // WebSocket
-        mApp.ws("/ws", ws -> {
-            ws.onConnect(ctx -> wsSessions.add(ctx));
-            ws.onMessage(ctx -> handleWsMessage(ctx.message(), ctx::send, ...));
-        });
+        // Editor-only endpoints (gated on FULL_EDITOR)
+        if (mMode == ServerMode.FULL_EDITOR) { ... }
+
+        // Runtime-only REST endpoints (gated on RUNTIME_ONLY)
+        if (mMode == ServerMode.RUNTIME_ONLY) { ... }
     }
 }
 ```
 
 **REST API Endpoints** (`/api/v1`):
 
+*Both modes:*
+
 | Endpoint | Method | Purpose |
 |----------|--------|---------|
-| `/info` | GET | Server information |
-| `/token` | GET | Development token |
+| `/info` | GET | Server information (includes `mode` field) |
+| `/token` | GET | Auth token |
 | `/projects` | GET | List active projects |
-| `/projects/open` | POST | Open project file |
-| `/projects` | POST | Create new project |
-| `/projects/{pid}/save` | POST | Save project |
 | `/projects/{pid}/sceneflow` | GET | Get sceneflow graph |
 | `/projects/{pid}/script` | GET | Get scene script |
 | `/projects/{pid}/runtime` | GET | Get runtime state |
@@ -412,22 +420,48 @@ public final class WebUiServer {
 | `/preferences` | GET | Get user preferences |
 | `/devices` | GET | Get available devices |
 
-**WebSocket Methods:**
+*FULL_EDITOR mode only:*
 
-| Method | Purpose |
-|--------|---------|
-| `SceneFlow.Get` | Fetch current sceneflow snapshot |
-| `SceneFlow.Node.Add` | Create new node |
-| `SceneFlow.Node.Update` | Update node properties |
-| `SceneFlow.Node.Delete` | Delete node |
-| `SceneFlow.Edge.Add` | Create new edge |
-| `SceneFlow.Edge.Update` | Update edge properties |
-| `SceneFlow.Edge.Delete` | Delete edge |
-| `SceneFlow.Comment.Add/Update/Delete` | Comment management |
-| `Runtime.Start` | Start execution |
-| `Runtime.Pause` | Pause execution |
-| `Runtime.Stop` | Stop execution |
-| `Project.Save` | Save project |
+| Endpoint | Method | Purpose |
+|----------|--------|---------|
+| `/projects/open` | POST | Open project file |
+| `/projects` | POST | Create new project |
+| `/projects/{pid}/save` | POST | Save project |
+| `/projects/{pid}/close` | POST | Close project |
+
+*RUNTIME_ONLY mode only:*
+
+| Endpoint | Method | Purpose |
+|----------|--------|---------|
+| `/runtime/load` | POST | Load project by path |
+| `/runtime/start` | POST | Start runtime |
+| `/runtime/pause` | POST | Pause runtime |
+| `/runtime/resume` | POST | Resume runtime |
+| `/runtime/stop` | POST | Stop runtime |
+| `/runtime/unload` | POST | Unload project |
+| `/runtime/status` | GET | Get runtime status |
+| `/runtime/variables` | GET | Get runtime variables |
+
+**WebSocket Methods** (both modes):
+
+| Method | Purpose | Mode |
+|--------|---------|------|
+| `SceneFlow.Get` | Fetch current sceneflow snapshot | Both |
+| `Runtime.Start` | Start execution | Both |
+| `Runtime.Pause` | Pause execution | Both |
+| `Runtime.Stop` | Stop execution | Both |
+| `Runtime.Variable.Set` | Set runtime variable | Both |
+| `SceneFlow.Node.Add` | Create new node | FULL_EDITOR only |
+| `SceneFlow.Node.Update` | Update node properties | FULL_EDITOR only |
+| `SceneFlow.Node.Delete` | Delete node | FULL_EDITOR only |
+| `SceneFlow.Edge.Add` | Create new edge | FULL_EDITOR only |
+| `SceneFlow.Edge.Update` | Update edge properties | FULL_EDITOR only |
+| `SceneFlow.Edge.Delete` | Delete edge | FULL_EDITOR only |
+| `SceneFlow.Comment.*` | Comment management | FULL_EDITOR only |
+| `Script.Update` | Update scene script | FULL_EDITOR only |
+| `Project.Save` | Save project | FULL_EDITOR only |
+
+Editing commands sent in RUNTIME_ONLY mode return `{"error": "EDITING_NOT_SUPPORTED", "message": "..."}`.
 
 ---
 
@@ -1137,9 +1171,10 @@ include 'plugins:myplugin'
 ## Appendix: Key File Paths Reference
 
 ### Entry Points
-- `src/main/java/de/dfki/vsm/SceneMaker3.java` - Main launcher
-- `src/main/java/de/dfki/vsm/SceneMaker4.java` - Web-only launcher
-- `core/src/main/java/de/dfki/vsm/Core.java` - Runtime-only entry
+- `src/main/java/de/dfki/vsm/SceneMaker3.java` - Main launcher (Swing + Web, FULL_EDITOR)
+- `src/main/java/de/dfki/vsm/SceneMaker4.java` - Web-only launcher (FULL_EDITOR)
+- `runtime-server/src/main/java/de/dfki/vsm/runtime/RuntimeMain.java` - Standalone runtime (RUNTIME_ONLY)
+- `core/src/main/java/de/dfki/vsm/Core.java` - Headless runtime entry
 
 ### Core Model
 - `core/src/main/java/de/dfki/vsm/model/project/ProjectConfig.java`
@@ -1162,7 +1197,8 @@ include 'plugins:myplugin'
 - `editor/src/main/java/de/dfki/vsm/editor/EditorMenuBar.java`
 
 ### Web UI
-- `core/src/main/java/de/dfki/vsm/web/WebUiServer.java`
+- `core/src/main/java/de/dfki/vsm/web/WebUiServer.java` - Unified server (FULL_EDITOR + RUNTIME_ONLY)
+- `core/src/main/java/de/dfki/vsm/web/SceneFlowSnapshotBuilder.java` - Shared snapshot builder
 - `editor/web-ui/src/App.svelte`
 - `editor/web-ui/src/SceneFlowView.svelte`
 - `editor/web-ui/src/ScriptEditor.svelte`
@@ -1173,8 +1209,8 @@ include 'plugins:myplugin'
 
 ---
 
-**Document Version:** 1.0
-**Last Updated:** 2026-01-11
-**Author:** Architecture Analysis (Claude Sonnet 4.5)
+**Document Version:** 1.1
+**Last Updated:** 2026-02-03
+**Author:** Architecture Analysis
 **Repository:** `/Users/gebhard/Code/Repo/VisualSceneMaker`
 **Branch:** `web2026`
