@@ -1,6 +1,6 @@
 package de.dfki.vsm.runtime;
 
-import de.dfki.vsm.runtime.server.RuntimeServerImpl;
+import de.dfki.vsm.web.WebUiServer;
 
 /**
  * Standalone runtime server entry point.
@@ -62,12 +62,12 @@ public class RuntimeMain {
         System.out.println("==============================================");
         System.out.println();
 
-        // Start the runtime server
-        RuntimeServerImpl server = new RuntimeServerImpl();
+        // Start the runtime server using WebUiServer in RUNTIME_ONLY mode
+        WebUiServer server = WebUiServer.getInstance();
         String bindHost = allowLan ? "0.0.0.0" : "127.0.0.1";
 
         try {
-            server.start(port, bindHost, token);
+            server.start(port, bindHost, token, WebUiServer.ServerMode.RUNTIME_ONLY);
 
             System.out.println("Runtime server started:");
             System.out.println("  URL:   " + server.getLocalUrl());
