@@ -1550,9 +1550,11 @@
     const draftKey = nodeEditorTarget.id || "__root__";
     if (draftKey !== superNodeDraftId) {
       const isRoot = !!nodeEditorTarget.isRoot;
+      const draftName = (nodeEditorTarget.name ?? "").trim();
+      const displayName = isRoot && !draftName ? "SceneFlow" : nodeEditorTarget.name ?? "";
       superNodeDraftId = draftKey;
       superNodeDraft = {
-        name: nodeEditorTarget.name ?? "",
+        name: displayName,
         isStart: isRoot ? true : !!nodeEditorTarget.isStart
       };
       superNodeEditError = "";
@@ -7872,6 +7874,9 @@
               >
                 {autoSaveStatus}
               </span>
+            {/if}
+            {#if headerDirty}
+              <span class="unsaved-indicator" aria-live="polite">Unsaved</span>
             {/if}
             {#if projectRequiresSaveAs}
               <button

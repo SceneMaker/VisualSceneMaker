@@ -228,6 +228,10 @@ task run(type: JavaExec) {
     group = 'application'
     description = 'Runs the VisualSceneMaker web editor'
     mainClass = 'de.dfki.vsm.SceneMaker4'
+    systemProperty 'vsm.buildDate', new Date().format("yyyy-MM-dd HH:mm:ss")
+    systemProperty 'vsm.buildRevision', versioning.info.commit
+    systemProperty 'vsm.version', versioning.info.lastTag
+    systemProperty 'vsm.build', versioning.info.build
     classpath = sourceSets.main.runtimeClasspath
     if (org.gradle.internal.os.OperatingSystem.current().isMacOsX()) {
         jvmArgs(
