@@ -12,11 +12,11 @@ VisualSceneMaker is a visual dialogue authoring system with a hierarchical state
 - **Runtime Server** (`runtime-server/`): Standalone headless runtime (Java 17, Android-compatible)
 - **Plugins** (`plugins/`): 24+ extensible runtime plugins (Java 17)
 
-## ⚠️ Ongoing Refactoring (2026-01-26)
+## ⚠️ Ongoing Refactoring (2026-02-03)
 
 **Status**: Removing Swing UI and creating distributed runtime architecture
 
-**Current Progress**: Phases 1, 6, 7 Complete ✅
+**Current Progress**: Phases 1, 6, 7, 8 Complete ✅
 
 The project is undergoing a major refactoring to:
 - Remove all Swing/JavaFX desktop UI code
@@ -27,14 +27,17 @@ The project is undergoing a major refactoring to:
 **Important Documents**:
 - **Implementation Plan**: `/Users/gebhard/.claude/plans/curried-noodling-milner.md` - Full 8-phase plan
 - **Runtime Server Guide**: `doc/runtime-server.md` - Standalone runtime documentation
-- **Phase 2 Guide**: `doc/phase-2-implementation-guide.md` - Service extraction guide
+- **Architecture Guide**: `doc/architecture-details.md` - Comprehensive architecture documentation
 
 **Completed Phases**:
 - ✅ Phase 1: Core module decoupled from editor (Android-ready)
 - ✅ Phase 6: WebUiServer refactored for headless operation
 - ✅ Phase 7: Standalone `runtime-server` module created
+- ✅ Phase 8: Unified server with mode switching, remote connection UI
 
-**Next Phase**: Phase 8 - Service extraction and remote connection infrastructure
+**Key architectural decision (Phase 8.3)**: Rather than maintaining separate server classes, `WebUiServer` supports two modes via `ServerMode` enum:
+- `FULL_EDITOR` — Multi-project editing, full WS commands (default, used by SceneMaker3/4)
+- `RUNTIME_ONLY` — Single project, runtime control only, editing commands rejected (used by RuntimeMain)
 
 ## Build Commands
 
@@ -82,6 +85,7 @@ java -jar build/libs/VisualSceneMaker-*.jar --no-swing
 ```
 
 ### Standalone Runtime Server
+Uses `WebUiServer` in `RUNTIME_ONLY` mode — editing commands are rejected, runtime REST endpoints are available.
 ```bash
 # Build
 ./gradlew :runtime-server:jar
@@ -94,6 +98,9 @@ java -jar runtime-server/build/libs/runtime-server-*.jar --project=/path/to/proj
 
 # Run with LAN access (for remote Web UI)
 java -jar runtime-server/build/libs/runtime-server-*.jar --allow-lan --port=8091
+
+# With explicit auth token
+java -jar runtime-server/build/libs/runtime-server-*.jar --token=mysecret --port=8091
 ```
 
 ### Command-Line Options
@@ -119,10 +126,12 @@ VisualSceneMaker/
 │   ├── runtime/       # Interpreter, ActivityExecutor, plugin system
 │   ├── event/         # EventDispatcher (pub/sub system)
 │   ├── ui/protocol/   # UiEventBus, UiEventBridge (domain → UI translation)
-│   └── web/           # WebUiServer (Javalin-based REST + WebSocket)
+│   └── web/           # WebUiServer (Javalin REST + WebSocket, dual-mode)
 ├── editor/            # UI layer (Java 21)
 │   ├── src/.../editor/ # Swing/JavaFX desktop UI
 │   └── web-ui/        # Svelte web UI (builds to resources/web-ui/)
+├── runtime-server/    # Standalone headless runtime (Java 17, Android-compatible)
+│   └── RuntimeMain    # Entry point, uses WebUiServer in RUNTIME_ONLY mode
 ├── plugins/           # Runtime plugin modules (Java 17)
 │   ├── charamel-ws/   # Character animation (WebSocket)
 │   ├── htmlgui-ws/    # Custom HTML UI during runtime
@@ -146,7 +155,7 @@ VisualSceneMaker/
 - `EventDispatcher` (core/event/) - Singleton pub/sub with `CopyOnWriteArrayList`
 - `UiEventBridge` (core/ui/protocol/) - Implements `EventListener`, translates events
 - `UiEventBus` (core/ui/protocol/) - UI-specific event sink with lazy evaluation
-- `WebUiServer` (core/web/) - Javalin server, broadcasts to WebSocket clients
+- `WebUiServer` (core/web/) - Javalin server with `ServerMode` (FULL_EDITOR / RUNTIME_ONLY)
 
 ### Runtime Execution Model
 
@@ -182,11 +191,20 @@ VisualSceneMaker/
   - Response: `{ "id": "uuid", "status": "ok", "result": {...} }`
   - Broadcast: `{ "event": "sceneflow.snapshot", "projectId": "...", "snapshot": {...} }`
 
-**Key Endpoints**:
+**Key Endpoints** (both modes):
+- `GET /api/v1/info` - Server info (includes `mode` field)
 - `GET /api/v1/projects` - List active projects
-- `POST /api/v1/projects/open` - Open project file
 - `GET /api/v1/projects/{pid}/sceneflow` - Get SceneFlow graph snapshot
 - `GET /api/v1/projects/{pid}/runtime` - Get runtime state
+
+**Editor-only endpoints** (FULL_EDITOR mode):
+- `POST /api/v1/projects/open` - Open project file
+- `POST /api/v1/projects/{pid}/save` - Save project
+
+**Runtime-only endpoints** (RUNTIME_ONLY mode):
+- `POST /api/v1/runtime/load` - Load project by path
+- `POST /api/v1/runtime/start` / `stop` / `pause` / `resume` - Runtime control
+- `GET /api/v1/runtime/status` - Runtime status
 
 ### Plugin System
 
@@ -268,7 +286,8 @@ mLogger.failure("Error message");
 - `core/src/main/java/de/dfki/vsm/event/EventDispatcher.java` - Central event bus
 
 ### Web Server
-- `core/src/main/java/de/dfki/vsm/web/WebUiServer.java` - Javalin REST + WebSocket server
+- `core/src/main/java/de/dfki/vsm/web/WebUiServer.java` - Unified Javalin server (FULL_EDITOR + RUNTIME_ONLY modes)
+- `core/src/main/java/de/dfki/vsm/web/SceneFlowSnapshotBuilder.java` - Shared snapshot JSON builder
 - `core/src/main/java/de/dfki/vsm/ui/protocol/UiEventBridge.java` - Domain → UI event translation
 
 ### Model Layer
@@ -288,8 +307,8 @@ mLogger.failure("Error message");
 ## Documentation
 
 Additional architecture details are in `doc/`:
+- `architecture-details.md` - Comprehensive architecture guide (unified server model)
 - `runtime-server.md` - Standalone runtime server guide (deployment, API, usage)
-- `architecture-details.md` - Comprehensive architecture guide
 - `scenemaker-java-compatibility.md` - Java 17/21 compatibility policy
 - `scenemaker-ui-protocol.md` - UI event protocol specification
 - `scenemaker-web-ui-api.md` - REST/WebSocket API documentation

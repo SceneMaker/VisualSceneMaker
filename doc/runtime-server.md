@@ -18,8 +18,10 @@ The `runtime-server` module provides a standalone, headless runtime server for V
 **Key Features:**
 - Headless operation (no GUI required)
 - Java 17 compatible (Android-ready)
-- REST API for project management
-- WebSocket for real-time events
+- Uses `WebUiServer` in `RUNTIME_ONLY` mode (unified server, editing commands rejected)
+- REST API for runtime control and project management
+- WebSocket for real-time events and runtime commands
+- Auth token support (auto-generated or user-specified)
 - Configurable port and network binding
 - Auto-load projects on startup
 
@@ -53,6 +55,7 @@ java -jar runtime-server.jar [options]
 | `--allow-lan` | Bind to 0.0.0.0 (allow external connections) | localhost only |
 | `--project=PATH` | Auto-load project on startup | none |
 | `--autostart` | Start runtime after loading project | false |
+| `--token=TOKEN` | Set authentication token | auto-generated |
 | `--help`, `-h` | Show help message | - |
 
 ### Examples
@@ -106,19 +109,17 @@ Response:
 ### 3. Programmatically (Java)
 
 ```java
-import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.web.WebUiServer;
 
-// Load project
-RunTimeProject project = new RunTimeProject(new File("/path/to/project"));
-project.launch();
-
-// Register with server for API access
+// Start server in RUNTIME_ONLY mode
 WebUiServer server = WebUiServer.getInstance();
-String projectId = server.registerProject(project);
+server.start(8091, "127.0.0.1", null, WebUiServer.ServerMode.RUNTIME_ONLY);
+
+// Load project (parses, launches, stores in project map)
+server.loadProject("/path/to/project");
 
 // Optionally start execution
-project.start();
+server.startRuntime();
 ```
 
 ## REST API
@@ -136,18 +137,38 @@ Response:
 {
   "name": "SceneMaker Web",
   "port": 8091,
+  "mode": "runtime_only",
   "tokenRequired": true
 }
 ```
+
+The `mode` field indicates the server's operating mode:
+- `"runtime_only"` — Runtime control only, editing commands rejected
+- `"full_editor"` — Full editing and runtime support
 
 ### Project Management
 
 | Endpoint | Method | Description |
 |----------|--------|-------------|
-| `/projects` | GET | List all loaded projects |
-| `/projects/open` | POST | Load project by path |
-| `/projects/{pid}/close` | POST | Close/unload project |
-| `/projects/{pid}/save` | POST | Save project |
+| `/projects` | GET | List loaded projects |
+| `/projects/{pid}/sceneflow` | GET | Get sceneflow snapshot |
+| `/projects/{pid}/runtime` | GET | Get runtime state and variables |
+| `/projects/{pid}/config` | GET | Get editor config |
+| `/projects/{pid}/project-config` | GET | Get project config |
+
+### Runtime Control (RUNTIME_ONLY mode)
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/runtime/load` | POST | Load project by path (`{"projectPath": "..."}`) |
+| `/runtime/start` | POST | Start runtime execution |
+| `/runtime/pause` | POST | Pause execution |
+| `/runtime/resume` | POST | Resume execution |
+| `/runtime/stop` | POST | Stop execution |
+| `/runtime/unload` | POST | Unload project |
+| `/runtime/status` | GET | Get runtime status |
+| `/runtime/variables` | GET | Get runtime variables |
+| `/runtime/sceneflow` | GET | Get sceneflow (legacy) |
 
 #### List Projects
 
@@ -330,8 +351,8 @@ nohup java -jar runtime-server.jar \
 The runtime-server JAR is Java 17 compatible and can run on Android:
 
 1. Include `core` module as dependency in Android project
-2. Create Android Service wrapping `WebUiServer`
-3. Start server on device, note IP address
+2. Create Android Service wrapping `WebUiServer` in `RUNTIME_ONLY` mode
+3. Start server on device, note IP address and auth token
 4. Connect from desktop Web UI
 
 ```kotlin
@@ -339,15 +360,16 @@ The runtime-server JAR is Java 17 compatible and can run on Android:
 class RuntimeService : Service() {
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
         val server = WebUiServer.getInstance()
-        server.start(8091, true)  // port, allowExternal
+        server.start(8091, "0.0.0.0", null, WebUiServer.ServerMode.RUNTIME_ONLY)
 
         val projectPath = intent.getStringExtra("projectPath")
         if (projectPath != null) {
-            val project = RunTimeProject(File(projectPath))
-            project.launch()
-            server.registerProject(project)
+            server.loadProject(projectPath)
+            server.startRuntime()
         }
 
+        // Show notification with connection info
+        showNotification("Runtime on :8091", server.authToken)
         return START_STICKY
     }
 }
@@ -389,8 +411,10 @@ java -jar runtime-server.jar --allow-lan --port=8091
 
 ### Authentication
 
-Token-based authentication is available but optional in the current implementation:
-- `GET /api/v1/token` returns a session token (localhost only)
+Token-based authentication is available:
+- Auth token is auto-generated on startup (or set via `--token=`)
+- Token is printed to the console on startup
+- `GET /api/v1/token` returns the session token
 - Include token in WebSocket URL: `ws://host:port/ws?token=...`
 - Include token in HTTP header: `Authorization: Bearer <token>`
 
@@ -437,11 +461,27 @@ See also:
 - `doc/scenemaker-ui-protocol.md` - Event protocol and message formats
 - `doc/architecture-details.md` - System architecture overview
 
+## Architecture
+
+The runtime server uses the same `WebUiServer` class as the full editor, but in `RUNTIME_ONLY` mode:
+
+```
+WebUiServer (core module)
+├── ServerMode.FULL_EDITOR  ← used by SceneMaker3/4 (multi-project, editing)
+└── ServerMode.RUNTIME_ONLY ← used by RuntimeMain (single project, no editing)
+```
+
+In `RUNTIME_ONLY` mode:
+- Editor-only REST endpoints are not registered (open, save, close, etc.)
+- Runtime control REST endpoints are registered (`/runtime/load`, `/start`, etc.)
+- WebSocket editing commands return `EDITING_NOT_SUPPORTED` error
+- Read-only and runtime WS commands work normally
+
 ## Module Dependencies
 
 ```
 runtime-server
-├── core (runtime engine, WebUiServer)
+├── core (runtime engine, WebUiServer in RUNTIME_ONLY mode)
 ├── plugins:console
 ├── plugins:timer
 └── org.slf4j:slf4j-simple

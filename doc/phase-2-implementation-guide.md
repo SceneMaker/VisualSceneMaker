@@ -684,7 +684,7 @@ After completing Phase 2, verify:
 Once Phase 2 is complete, Phase 3 will use these services:
 
 ```java
-// In RuntimeServerImpl (Phase 3)
+// In WebUiServer (FULL_EDITOR mode)
 // For editor mode, inject services:
 private EditorProjectService projectService = new EditorProjectService();
 private SceneFlowService sceneflowService = new SceneFlowService();
