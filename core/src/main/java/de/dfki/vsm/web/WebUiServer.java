@@ -110,6 +110,16 @@ import de.dfki.vsm.model.visicon.VisiconViseme;
 
 public final class WebUiServer implements EventListener {
 
+    /**
+     * Server operation modes.
+     * RUNTIME_ONLY: Single project, runtime control, no editing commands.
+     * FULL_EDITOR: Multi-project, full editing and runtime support.
+     */
+    public enum ServerMode {
+        RUNTIME_ONLY,
+        FULL_EDITOR
+    }
+
     private static final LOGDefaultLogger sLogger = LOGDefaultLogger.getInstance();
     private static final String API_PREFIX = "/api/v1";
     private static final int RECENT_MAX = 8;
@@ -118,6 +128,8 @@ public final class WebUiServer implements EventListener {
 
     private Javalin mApp;
     private boolean mAllowExternal = false;
+    private ServerMode mMode = ServerMode.FULL_EDITOR;
+    private String mAuthToken;
     private final Map<String, ProjectRef> projectStore = new HashMap<>();
     private final java.util.Set<WsContext> wsSessions = ConcurrentHashMap.newKeySet();
 
@@ -170,6 +182,84 @@ public final class WebUiServer implements EventListener {
         // Register for runtime events to broadcast to WebSocket clients
         EventDispatcher.getInstance().register(this);
         sLogger.message("Web UI server started on " + getLocalUrl());
+    }
+
+    /**
+     * Starts the server in a specific mode with auth token support.
+     * Used by RuntimeMain for RUNTIME_ONLY mode.
+     */
+    public void start(int port, String bindHost, String token, ServerMode mode) {
+        mMode = mode;
+        mAuthToken = (token != null) ? token : generateToken();
+        start(port, "0.0.0.0".equals(bindHost));
+    }
+
+    public ServerMode getMode() {
+        return mMode;
+    }
+
+    public String getAuthToken() {
+        return mAuthToken;
+    }
+
+    /**
+     * Loads a project from the filesystem into the project store.
+     * Used primarily in RUNTIME_ONLY mode for single-project loading.
+     */
+    public boolean loadProject(String path) {
+        // Unload any existing project in the store
+        for (ProjectRef ref : projectStore.values()) {
+            if (ref.runtimeProject != null && ref.runtimeProject.wasExecuted()) {
+                ref.runtimeProject.unload();
+            }
+        }
+        projectStore.clear();
+
+        try {
+            RunTimeProject rtp = new RunTimeProject(new File(path));
+            if (rtp.parse(path)) {
+                String pid = UUID.randomUUID().toString();
+                if (rtp.launch()) {
+                    String name = rtp.getProjectName() != null ? rtp.getProjectName() : new File(path).getName();
+                    ProjectRef ref = new ProjectRef(pid, name, path);
+                    ref.runtimeProject = rtp;
+                    ref.runtimeState = "stopped";
+                    projectStore.put(pid, ref);
+                    broadcastRuntimeState(pid, "stopped");
+                    sLogger.message("Loaded project: " + path);
+                    return true;
+                } else {
+                    sLogger.failure("Failed to launch project: " + path);
+                }
+            } else {
+                sLogger.failure("Failed to parse project: " + path);
+            }
+        } catch (Exception e) {
+            sLogger.failure("Error loading project: " + e.getMessage());
+        }
+        return false;
+    }
+
+    /**
+     * Starts runtime on the first loaded project.
+     * Used primarily in RUNTIME_ONLY mode.
+     */
+    public boolean startRuntime() {
+        if (projectStore.isEmpty()) {
+            return false;
+        }
+        Map.Entry<String, ProjectRef> entry = projectStore.entrySet().iterator().next();
+        ProjectRef ref = entry.getValue();
+        if (ref.runtimeProject == null) {
+            return false;
+        }
+        if (ref.runtimeProject.start()) {
+            ref.runtimeState = "running";
+            broadcastRuntimeState(entry.getKey(), "running");
+            sLogger.message("Runtime started");
+            return true;
+        }
+        return false;
     }
 
     public void stop() {
@@ -343,31 +433,36 @@ public final class WebUiServer implements EventListener {
         }
     }
 
+    private void broadcastRuntimeState(String projectId, String state) {
+        JSONObject message = new JSONObject();
+        message.put("type", "event");
+        message.put("ts", System.currentTimeMillis());
+        message.put("channel", "runtime");
+        message.put("event", "runtime.state");
+        JSONObject payload = new JSONObject();
+        payload.put("state", state);
+        payload.put("status", state);
+        if (projectId != null) {
+            payload.put("projectId", projectId);
+        }
+        message.put("payload", payload);
+        broadcastToAll(message.toString());
+    }
+
     public String getLocalUrl() {
         return "http://127.0.0.1:" + mPort;
     }
 
     private void registerRoutes() {
+        // Common endpoints (available in both modes)
         mApp.get(API_PREFIX + "/info", this::handleInfo);
         mApp.get(API_PREFIX + "/token", this::handleToken);
+        mApp.get(API_PREFIX + "/projects", this::handleProjects);
         mApp.get(API_PREFIX + "/projects/recent", this::handleRecentProjects);
         mApp.get(API_PREFIX + "/projects/samples", ctx -> handleStaticProjectList(ctx, "res/prj"));
         mApp.get(API_PREFIX + "/projects/tutorials", ctx -> handleStaticProjectList(ctx, "res/tutorials"));
-        mApp.get(API_PREFIX + "/projects", this::handleProjects);
         mApp.get(API_PREFIX + "/preferences", this::handlePreferences);
         mApp.get(API_PREFIX + "/devices", this::handleDevices);
-        mApp.post(API_PREFIX + "/projects/recent/remove", this::handleRecentRemove);
-        mApp.post(API_PREFIX + "/projects/recent/add", this::handleRecentAdd);
-        // Basic hooks for opens/saves from other clients
-        mApp.post(API_PREFIX + "/projects/opened", this::handleProjectOpened);
-        mApp.post(API_PREFIX + "/projects/saved", this::handleProjectSaved);
-
-        // Project lifecycle and data endpoints (minimal placeholders).
-        mApp.post(API_PREFIX + "/projects/open", this::handleProjectOpen);
-        mApp.post(API_PREFIX + "/projects", this::handleProjectCreate);
-        mApp.post(API_PREFIX + "/projects/{pid}/save", this::handleProjectSave);
-        mApp.post(API_PREFIX + "/projects/{pid}/save-as", this::handleProjectSaveAs);
-        mApp.post(API_PREFIX + "/projects/{pid}/close", this::handleProjectClose);
         mApp.get(API_PREFIX + "/projects/{pid}/config", this::handleEditorConfig);
         mApp.get(API_PREFIX + "/projects/{pid}/project-config", this::handleProjectConfig);
         mApp.get(API_PREFIX + "/projects/{pid}/project-config/keys", this::handleProjectConfigKeys);
@@ -378,7 +473,34 @@ public final class WebUiServer implements EventListener {
         mApp.get(API_PREFIX + "/projects/{pid}/runtime", this::handleRuntime);
         mApp.get(API_PREFIX + "/projects/{pid}/history/commands", this::handleCommandLog);
         mApp.post(API_PREFIX + "/projects/{pid}/sceneflow/navigate", this::handleSceneflowNavigate);
-        mApp.post(API_PREFIX + "/projects/{pid}/script/diagnostics", this::handleScriptDiagnostics);
+
+        // Editor-only endpoints (not available in RUNTIME_ONLY mode)
+        if (mMode == ServerMode.FULL_EDITOR) {
+            mApp.post(API_PREFIX + "/projects/open", this::handleProjectOpen);
+            mApp.post(API_PREFIX + "/projects", this::handleProjectCreate);
+            mApp.post(API_PREFIX + "/projects/{pid}/save", this::handleProjectSave);
+            mApp.post(API_PREFIX + "/projects/{pid}/save-as", this::handleProjectSaveAs);
+            mApp.post(API_PREFIX + "/projects/{pid}/close", this::handleProjectClose);
+            mApp.post(API_PREFIX + "/projects/recent/remove", this::handleRecentRemove);
+            mApp.post(API_PREFIX + "/projects/recent/add", this::handleRecentAdd);
+            mApp.post(API_PREFIX + "/projects/opened", this::handleProjectOpened);
+            mApp.post(API_PREFIX + "/projects/saved", this::handleProjectSaved);
+            mApp.post(API_PREFIX + "/projects/{pid}/script/diagnostics", this::handleScriptDiagnostics);
+            mApp.get("/images/{file}", this::handleImage);
+        }
+
+        // Runtime-only REST endpoints (direct runtime control via REST)
+        if (mMode == ServerMode.RUNTIME_ONLY) {
+            mApp.post(API_PREFIX + "/runtime/load", this::handleRuntimeLoad);
+            mApp.post(API_PREFIX + "/runtime/start", this::handleRuntimeStart);
+            mApp.post(API_PREFIX + "/runtime/pause", this::handleRuntimePause);
+            mApp.post(API_PREFIX + "/runtime/resume", this::handleRuntimeResume);
+            mApp.post(API_PREFIX + "/runtime/stop", this::handleRuntimeStopRest);
+            mApp.post(API_PREFIX + "/runtime/unload", this::handleRuntimeUnload);
+            mApp.get(API_PREFIX + "/runtime/status", this::handleRuntimeStatus);
+            mApp.get(API_PREFIX + "/runtime/variables", this::handleRuntimeVariables);
+            mApp.get(API_PREFIX + "/runtime/sceneflow", this::handleRuntimeSceneflowLegacy);
+        }
 
         // WebSocket endpoint: accepts requests and replies with JSON. Broadcasts snapshots/runtime state after mutations.
         mApp.ws("/ws", ws -> {
@@ -400,10 +522,194 @@ public final class WebUiServer implements EventListener {
                 handleWsMessage(ctx.message(), ctx::send, msg -> broadcast(ctx, msg));
             });
         });
-
-        // Serve packaged images (e.g., vsm_logo.svg) explicitly.
-        mApp.get("/images/{file}", this::handleImage);
     }
+
+    // ========== Runtime-Only REST Endpoints ==========
+
+    private void handleRuntimeLoad(Context ctx) {
+        JSONObject body = new JSONObject(ctx.body());
+        String path = body.optString("projectPath", "");
+        if (path.isEmpty()) {
+            ctx.status(400).result("Missing projectPath");
+            return;
+        }
+        if (loadProject(path)) {
+            Map.Entry<String, ProjectRef> entry = projectStore.entrySet().iterator().next();
+            ProjectRef ref = entry.getValue();
+            JSONObject response = new JSONObject();
+            response.put("status", "ok");
+            response.put("state", ref.runtimeState);
+            response.put("projectPath", ref.path);
+            response.put("projectName", ref.runtimeProject != null ? ref.runtimeProject.getProjectName() : "");
+            writeJson(ctx, response);
+        } else {
+            ctx.status(500).result("Failed to load project");
+        }
+    }
+
+    private void handleRuntimeStart(Context ctx) {
+        if (projectStore.isEmpty()) {
+            ctx.status(400).result("No project loaded");
+            return;
+        }
+        if (startRuntime()) {
+            Map.Entry<String, ProjectRef> entry = projectStore.entrySet().iterator().next();
+            JSONObject response = new JSONObject();
+            response.put("status", "ok");
+            response.put("state", entry.getValue().runtimeState);
+            writeJson(ctx, response);
+        } else {
+            ctx.status(500).result("Failed to start runtime");
+        }
+    }
+
+    private void handleRuntimePause(Context ctx) {
+        if (projectStore.isEmpty()) {
+            ctx.status(400).result("No project loaded");
+            return;
+        }
+        Map.Entry<String, ProjectRef> entry = projectStore.entrySet().iterator().next();
+        ProjectRef ref = entry.getValue();
+        if (ref.runtimeProject != null && ref.runtimeProject.pause()) {
+            ref.runtimeState = "paused";
+            broadcastRuntimeState(entry.getKey(), "paused");
+            JSONObject response = new JSONObject();
+            response.put("status", "ok");
+            response.put("state", ref.runtimeState);
+            writeJson(ctx, response);
+        } else {
+            ctx.status(500).result("Failed to pause runtime");
+        }
+    }
+
+    private void handleRuntimeResume(Context ctx) {
+        if (projectStore.isEmpty()) {
+            ctx.status(400).result("No project loaded");
+            return;
+        }
+        Map.Entry<String, ProjectRef> entry = projectStore.entrySet().iterator().next();
+        ProjectRef ref = entry.getValue();
+        if (ref.runtimeProject != null && ref.runtimeProject.proceed()) {
+            ref.runtimeState = "running";
+            broadcastRuntimeState(entry.getKey(), "running");
+            JSONObject response = new JSONObject();
+            response.put("status", "ok");
+            response.put("state", ref.runtimeState);
+            writeJson(ctx, response);
+        } else {
+            ctx.status(500).result("Failed to resume runtime");
+        }
+    }
+
+    private void handleRuntimeStopRest(Context ctx) {
+        if (projectStore.isEmpty()) {
+            ctx.status(400).result("No project loaded");
+            return;
+        }
+        Map.Entry<String, ProjectRef> entry = projectStore.entrySet().iterator().next();
+        ProjectRef ref = entry.getValue();
+        if (ref.runtimeProject != null && ref.runtimeProject.isRunning()) {
+            ref.runtimeProject.abort();
+        }
+        ref.runtimeState = "stopped";
+        broadcastRuntimeState(entry.getKey(), "stopped");
+        JSONObject response = new JSONObject();
+        response.put("status", "ok");
+        response.put("state", ref.runtimeState);
+        writeJson(ctx, response);
+    }
+
+    private void handleRuntimeUnload(Context ctx) {
+        if (projectStore.isEmpty()) {
+            ctx.status(400).result("No project loaded");
+            return;
+        }
+        Map.Entry<String, ProjectRef> entry = projectStore.entrySet().iterator().next();
+        ProjectRef ref = entry.getValue();
+        if (ref.runtimeProject != null && ref.runtimeProject.wasExecuted()) {
+            ref.runtimeProject.unload();
+        }
+        projectStore.remove(entry.getKey());
+        broadcastRuntimeState(null, "stopped");
+        JSONObject response = new JSONObject();
+        response.put("status", "ok");
+        response.put("state", "stopped");
+        writeJson(ctx, response);
+    }
+
+    private void handleRuntimeStatus(Context ctx) {
+        JSONObject response = new JSONObject();
+        if (!projectStore.isEmpty()) {
+            Map.Entry<String, ProjectRef> entry = projectStore.entrySet().iterator().next();
+            ProjectRef ref = entry.getValue();
+            response.put("state", ref.runtimeState);
+            response.put("projectPath", ref.path != null ? ref.path : "");
+            if (ref.runtimeProject != null) {
+                response.put("projectName", ref.runtimeProject.getProjectName());
+                response.put("isRunning", ref.runtimeProject.isRunning());
+                response.put("isPaused", ref.runtimeProject.isPaused());
+            }
+        } else {
+            response.put("state", "stopped");
+        }
+        writeJson(ctx, response);
+    }
+
+    private void handleRuntimeVariables(Context ctx) {
+        JSONObject response = new JSONObject();
+        if (!projectStore.isEmpty()) {
+            Map.Entry<String, ProjectRef> entry = projectStore.entrySet().iterator().next();
+            ProjectRef ref = entry.getValue();
+            if (ref.runtimeProject != null && ref.runtimeProject.getSceneFlow() != null) {
+                try {
+                    SceneFlow sceneFlow = ref.runtimeProject.getSceneFlow();
+                    Map<String, DataTypeDefinition> typeMap = new HashMap<>();
+                    for (DataTypeDefinition def : sceneFlow.getTypeDefList()) {
+                        typeMap.put(def.getName(), def);
+                    }
+                    JSONArray vars = new JSONArray();
+                    for (VariableDefinition def : sceneFlow.getVarDefList()) {
+                        vars.put(variableToJsonCore(def, typeMap, "global", ref.runtimeProject));
+                    }
+                    response.put("variables", vars);
+                } catch (Exception e) {
+                    response.put("variables", new JSONArray());
+                }
+            } else {
+                response.put("variables", new JSONArray());
+            }
+        } else {
+            response.put("variables", new JSONArray());
+        }
+        writeJson(ctx, response);
+    }
+
+    private void handleRuntimeSceneflowLegacy(Context ctx) {
+        if (projectStore.isEmpty()) {
+            JSONObject empty = new JSONObject();
+            empty.put("nodes", new JSONArray());
+            empty.put("edges", new JSONArray());
+            empty.put("comments", new JSONArray());
+            writeJson(ctx, empty);
+            return;
+        }
+        Map.Entry<String, ProjectRef> entry = projectStore.entrySet().iterator().next();
+        ProjectRef ref = entry.getValue();
+        if (ref.runtimeProject == null || ref.runtimeProject.getSceneFlow() == null) {
+            JSONObject empty = new JSONObject();
+            empty.put("nodes", new JSONArray());
+            empty.put("edges", new JSONArray());
+            empty.put("comments", new JSONArray());
+            writeJson(ctx, empty);
+            return;
+        }
+        SceneFlow sceneFlow = ref.runtimeProject.getSceneFlow();
+        JSONObject snapshot = SceneFlowSnapshotBuilder.createSnapshot(
+                entry.getKey(), sceneFlow, sceneFlow, 90, 90, null);
+        writeJson(ctx, snapshot);
+    }
+
+    // ========== Standard REST Endpoints ==========
 
     private void handleInfo(Context ctx) {
         JSONObject info = new JSONObject();
@@ -449,12 +755,13 @@ public final class WebUiServer implements EventListener {
         info.put("revision", revision);
         info.put("version", version);
         info.put("build", build);
+        info.put("mode", mMode.name().toLowerCase());
         writeJson(ctx, info);
     }
 
     private void handleToken(Context ctx) {
         JSONObject token = new JSONObject();
-        token.put("token", "dev-token");
+        token.put("token", mAuthToken != null ? mAuthToken : "dev-token");
         writeJson(ctx, token);
     }
 
@@ -2040,6 +2347,12 @@ public final class WebUiServer implements EventListener {
     }
 
     private JSONObject dispatchWs(String method, JSONObject params, java.util.function.Consumer<String> broadcaster) {
+        // Gate editing commands in RUNTIME_ONLY mode
+        if (mMode == ServerMode.RUNTIME_ONLY && isEditingCommand(method)) {
+            return errorResponse("EDITING_NOT_SUPPORTED",
+                    "Editing not supported in runtime-only mode");
+        }
+
         switch (method) {
             case "SceneFlow.Get":
             case "SceneFlow.Snapshot":
@@ -3297,6 +3610,23 @@ public final class WebUiServer implements EventListener {
                 unknown.put("message", "Unhandled method: " + method);
                 return unknown;
         }
+    }
+
+    /**
+     * Returns true if the given WS method is an editing command
+     * (as opposed to read-only queries or runtime control).
+     */
+    private boolean isEditingCommand(String method) {
+        if (method == null) return false;
+        return method.startsWith("SceneFlow.Node.")
+                || method.startsWith("SceneFlow.Edge.")
+                || method.startsWith("SceneFlow.Comment.")
+                || "SceneFlow.Undo".equals(method)
+                || "SceneFlow.Redo".equals(method)
+                || method.startsWith("Script.")
+                || "Config.Update".equals(method)
+                || "ProjectConfig.Update".equals(method)
+                || "Preferences.Update".equals(method);
     }
 
     private JSONObject snapshotPayload(String projectId) {
@@ -5616,6 +5946,10 @@ public final class WebUiServer implements EventListener {
             sLogger.warning("Warning: Cannot resolve resource path '" + directory + "': " + exc.getMessage());
         }
         return null;
+    }
+
+    private String generateToken() {
+        return UUID.randomUUID().toString().replace("-", "");
     }
 
     private void writeJson(Context ctx, JSONObject obj) {
