@@ -1,0 +1,70 @@
+{
+    "schemaVersion": "1.0",
+    "generated": false,
+    "plugin": {
+        "id": "email",
+        "name": "email",
+        "className": "GMailExecutor",
+        "executors": [
+            "GMailExecutor"
+        ],
+        "description": "Send Emails",
+        "tags": [
+            "email"
+        ]
+    },
+    "categories": {
+        "primary": "output",
+        "secondary": [
+            
+        ],
+        "confidence": 0.5,
+        "inferred": true,
+        "reason": [
+            
+        ]
+    },
+    "commands": [
+        
+    ],
+    "writes": [
+        
+    ],
+    "reads": [
+        
+    ],
+    "config": [
+        {
+            "key": "sender",
+            "type": "string",
+            "required": false,
+            "default": "",
+            "description": "",
+            "inferred": true
+        },
+        {
+            "key": "target",
+            "type": "string",
+            "required": false,
+            "default": "",
+            "description": "",
+            "inferred": true
+        },
+        {
+            "key": "username",
+            "type": "string",
+            "required": false,
+            "default": "",
+            "description": "",
+            "inferred": true
+        },
+        {
+            "key": "password",
+            "type": "string",
+            "required": false,
+            "default": "",
+            "description": "",
+            "inferred": true
+        }
+    ]
+}

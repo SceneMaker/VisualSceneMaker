@@ -1,0 +1,171 @@
+{
+    "schemaVersion": "1.0",
+    "generated": true,
+    "plugin": {
+        "id": "timer",
+        "name": "timer",
+        "className": "TimerExecutor",
+        "executors": [
+            "TimerExecutor"
+        ],
+        "description": "Measuring time. Generating specific time descriptions, e.g., part of day",
+        "tags": [ "timer", "time descriptions"
+            
+        ]
+    },
+    "categories": {
+        "primary": "processing",
+        "secondary": [
+            
+        ],
+        "confidence": 1.0,
+        "inferred": true,
+        "reason": [
+            "logic:state"
+        ]
+    },
+    "commands": [
+        {
+            "name": "clear",
+            "summary": "",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "init",
+            "summary": "",
+            "type": "action",
+            "params": [
+                {
+                    "name": "id",
+                    "type": "string",
+                    "required": true,
+                    "description": "",
+                    "inferred": true
+                }
+            ]
+        },
+        {
+            "name": "time",
+            "summary": "",
+            "type": "action",
+            "params": [
+                {
+                    "name": "id",
+                    "type": "string",
+                    "required": true,
+                    "description": "",
+                    "inferred": true
+                },
+                {
+                    "name": "var",
+                    "type": "string",
+                    "required": true,
+                    "description": "",
+                    "inferred": true
+                }
+            ]
+        },
+        {
+            "name": "systime",
+            "summary": "",
+            "type": "action",
+            "params": [
+                {
+                    "name": "var",
+                    "type": "string",
+                    "required": true,
+                    "description": "",
+                    "inferred": true
+                }
+            ]
+        },
+        {
+            "name": "timediff",
+            "summary": "",
+            "type": "action",
+            "params": [
+                {
+                    "name": "lasttime",
+                    "type": "string",
+                    "required": true,
+                    "description": "",
+                    "inferred": true
+                },
+                {
+                    "name": "var",
+                    "type": "string",
+                    "required": true,
+                    "description": "",
+                    "inferred": true
+                }
+            ]
+        },
+        {
+            "name": "day",
+            "summary": "",
+            "type": "action",
+            "params": [
+                {
+                    "name": "var",
+                    "type": "string",
+                    "required": true,
+                    "description": "",
+                    "inferred": true
+                }
+            ]
+        },
+        {
+            "name": "dayverbose",
+            "summary": "",
+            "type": "action",
+            "params": [
+                {
+                    "name": "var",
+                    "type": "string",
+                    "required": true,
+                    "description": "",
+                    "inferred": true
+                }
+            ]
+        },
+        {
+            "name": "partofday",
+            "summary": "",
+            "type": "action",
+            "params": [
+                {
+                    "name": "var",
+                    "type": "string",
+                    "required": true,
+                    "description": "",
+                    "inferred": true
+                }
+            ]
+        }
+    ],
+    "writes": [
+        {
+            "var": "<dynamic>",
+            "expression": "activity.get(\"var\")",
+            "type": "unknown",
+            "scope": "global",
+            "inferred": true
+        },
+        {
+            "var": "<dynamic>",
+            "expression": "var",
+            "type": "unknown",
+            "scope": "global",
+            "inferred": true
+        }
+    ],
+    "reads": [
+        
+    ],
+    "config": [
+        
+    ]
+}

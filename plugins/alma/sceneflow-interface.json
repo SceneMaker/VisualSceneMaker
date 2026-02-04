@@ -1,0 +1,66 @@
+{
+    "schemaVersion": "1.0",
+    "generated": false,
+    "plugin": {
+        "id": "alma",
+        "name": "alma",
+        "className": "ALMAExecutor",
+        "executors": [
+            "ALMAExecutor"
+        ],
+        "description": "Simulation of emotions, mood based on appraisal and personality values",
+        "tags": [ "emotion"
+            
+        ]
+    },
+    "categories": {
+        "primary": "processing",
+        "secondary": [
+            
+        ],
+        "confidence": 1.0,
+        "inferred": true,
+        "reason": [
+            "logic:state"
+        ]
+    },
+    "commands": [
+        {
+            "name": "reset",
+            "summary": "",
+            "type": "action",
+            "params": [
+                
+            ]
+        }
+    ],
+    "writes": [
+        {
+            "var": "useremotions",
+            "type": "string",
+            "scope": "global",
+            "inferred": true
+        }
+    ],
+    "reads": [
+        
+    ],
+    "config": [
+        {
+            "key": "computation",
+            "type": "string",
+            "required": false,
+            "default": "",
+            "description": "",
+            "inferred": true
+        },
+        {
+            "key": "definition",
+            "type": "string",
+            "required": false,
+            "default": "",
+            "description": "",
+            "inferred": true
+        }
+    ]
+}

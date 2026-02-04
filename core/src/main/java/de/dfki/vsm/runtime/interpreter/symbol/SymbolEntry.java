@@ -4,6 +4,7 @@ import de.dfki.vsm.event.EventDispatcher;
 import de.dfki.vsm.event.event.VariableChangedEvent;
 import de.dfki.vsm.runtime.interpreter.error.InterpreterError;
 import de.dfki.vsm.runtime.interpreter.value.AbstractValue;
+import de.dfki.vsm.runtime.interpreter.value.EventValue;
 import de.dfki.vsm.runtime.interpreter.value.ListValue;
 import de.dfki.vsm.runtime.interpreter.value.StructValue;
 import de.dfki.vsm.util.cpy.Copyable;
@@ -29,6 +30,14 @@ public final class SymbolEntry implements Copyable {
 
     //
     public final AbstractValue write(final AbstractValue value) throws InterpreterError {
+
+        // Event variables: enqueue instead of replace
+        if (mValue.getType() == AbstractValue.Type.EVENT) {
+            ((EventValue) mValue).enqueue(value);
+            EventDispatcher.getInstance().convey(new VariableChangedEvent(this,
+                    new Tuple<>(mSymbol, mValue.getFormattedSyntax())));
+            return mValue;
+        }
 
         // Check if the type is valid
         if (mValue.getType() == value.getType()) {

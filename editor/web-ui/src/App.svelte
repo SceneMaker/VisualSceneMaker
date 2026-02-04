@@ -775,6 +775,7 @@
   let projectConfigError = "";
   let projectConfigSaved = null;
   let projectConfigPending = false;
+  let projectConfigApplyTimer = null;
   let projectConfigSelection = { type: "project" };
   let projectConfigNewPlugin = { name: "", className: "", type: "device", load: true };
   let projectConfigNewAgent = { name: "", device: "" };
@@ -782,6 +783,10 @@
   let availableDevices = [];
   let availableDevicesLoading = false;
   let availableDevicesError = "";
+  let pluginInterfaces = [];
+  let pluginInterfacesLoading = false;
+  let pluginInterfacesError = "";
+  let lastPluginInterfacesProjectId = "";
   let exportableKeyCache = {};
   let exportableKeyLoading = {};
   let exportableKeyError = {};
@@ -848,7 +853,7 @@
   let sceneFlowViewBox = null;
   let sceneFlowSelection = null;
   let sceneFlowMultiSelection = [];
-  let nodeEditorTypeOptions = ["Int", "Bool", "Float", "String"];
+  let nodeEditorTypeOptions = ["Int", "Bool", "Float", "String", "Event"];
   let nodeEditorTypeCatalog = [];
   let pinnedNodeSelectionId = "";
   let pinnedNodeSelectionRevision = null;
@@ -956,18 +961,36 @@
   let cmdInlineDrafts = [];
   let cmdDialogNodeId = "";
   let cmdInlineInputEls = [];
+  let cmdInlineWarnings = [];
   let cmdHelperOpen = false;
   let cmdHelperType = "PlayScene";
   let cmdHelperScene = "";
   let cmdHelperAgent = "";
   let cmdHelperAction = "";
   let cmdHelperArgs = [];
+  let cmdHelperAgentCommands = [];
+  let cmdHelperPluginCommands = [];
+  let cmdHelperPluginWrites = [];
+  let cmdHelperPluginReads = [];
+  let cmdHelperPluginConfig = [];
+  let cmdHelperPluginCommandsList = [];
+  let cmdHelperPluginWritesList = [];
+  let cmdHelperPluginReadsList = [];
+  let cmdHelperPluginConfigList = [];
   let cmdHelperVarName = "";
   let cmdHelperVarType = "Int";
   let cmdHelperVarExpr = "";
   let cmdHelperVarStep = "1";
+  let lastCmdHelperAction = "";
+  let cmdHelperActionDescriptor = null;
+  let cmdHelperDescriptor = null;
+  let cmdHelperWarnings = [];
   let cmdHelperSceneBindings = {};
   let cmdHelperVarScope = "global";
+  let cmdHelperShowWrites = false;
+  let cmdHelperShowReads = false;
+  let cmdHelperShowConfig = false;
+  let lastCmdHelperDescriptorKey = "";
   let lastNodeDefsId = "";
   let loadConfirmOpen = false;
   let loadConfirmReasons = [];
@@ -1316,7 +1339,7 @@
     ? nodeEditorTarget.typeCatalog
     : buildTypeCatalog(nodeEditorTypeDefs);
   $: {
-    const base = ["Int", "Bool", "Float", "String"];
+    const base = ["Int", "Bool", "Float", "String", "Event"];
     const serverOptions = Array.isArray(nodeEditorTarget?.typeOptions) ? nodeEditorTarget.typeOptions : base;
     const extras = nodeEditorTypeCatalog.map((entry) => entry.name).filter(Boolean);
     nodeEditorTypeOptions = Array.from(new Set([...serverOptions, ...extras]));
@@ -1522,6 +1545,52 @@
   })();
   $: sceneLanguageOptions = sceneLanguageOptionList(scriptScenesLive.length ? scriptScenesLive : scriptScenes);
   $: filteredScriptElements = filterScriptElements(scriptElements, scriptElementsFilter);
+  $: cmdHelperAgentCommands = pluginCommandsForAgent(cmdHelperAgent);
+  $: cmdHelperDescriptor = pluginInterfaceForAgent(cmdHelperAgent);
+  $: cmdHelperActionDescriptor =
+    (cmdHelperAgentCommands || []).find((entry) => entry?.name === cmdHelperAction) || null;
+  $: cmdHelperPluginCommands = Array.isArray(cmdHelperDescriptor?.commands) ? cmdHelperDescriptor.commands : [];
+  $: cmdHelperPluginWrites = Array.isArray(cmdHelperDescriptor?.writes) ? cmdHelperDescriptor.writes : [];
+  $: cmdHelperPluginReads = Array.isArray(cmdHelperDescriptor?.reads) ? cmdHelperDescriptor.reads : [];
+  $: cmdHelperPluginConfig = Array.isArray(cmdHelperDescriptor?.config) ? cmdHelperDescriptor.config : [];
+  $: cmdHelperPluginCommandsList = cmdHelperPluginCommands;
+  $: cmdHelperPluginWritesList = cmdHelperPluginWrites;
+  $: cmdHelperPluginReadsList = cmdHelperPluginReads;
+  $: cmdHelperPluginConfigList = cmdHelperPluginConfig;
+  $: {
+    const normalize = (value) => String(value || "").trim().toLowerCase();
+    const isUnknown = (value) => !value || normalize(value) === "unknown";
+    const isDynamic = (value) => String(value || "").trim().startsWith("<");
+    const writesUnclear = cmdHelperPluginWritesList.length > 0 &&
+      cmdHelperPluginWritesList.every((entry) => isDynamic(entry?.var) && isUnknown(entry?.type));
+    const readsUnclear = cmdHelperPluginReadsList.length > 0 &&
+      cmdHelperPluginReadsList.every((entry) => isDynamic(entry?.var) && isUnknown(entry?.type));
+    const configUnclear = cmdHelperPluginConfigList.length > 0 &&
+      cmdHelperPluginConfigList.every((entry) => !entry?.key && isUnknown(entry?.type));
+    const descriptorKey = [
+      cmdHelperAgent,
+      cmdHelperDescriptor?.plugin?.id,
+      cmdHelperDescriptor?.plugin?.name,
+      cmdHelperDescriptor?.plugin?.className
+    ]
+      .filter(Boolean)
+      .join("|");
+    if (descriptorKey !== lastCmdHelperDescriptorKey) {
+      lastCmdHelperDescriptorKey = descriptorKey;
+      cmdHelperShowWrites = cmdHelperPluginWritesList.length > 0 && !writesUnclear;
+      cmdHelperShowReads = cmdHelperPluginReadsList.length > 0 && !readsUnclear;
+      cmdHelperShowConfig = cmdHelperPluginConfigList.length > 0 && !configUnclear;
+    }
+  }
+  $: cmdHelperWarnings =
+    cmdHelperType === "PlayAction"
+      ? playActionWarnings(cmdHelperAgent, cmdHelperAction, cmdHelperArgs, pluginInterfaceForAgent(cmdHelperAgent))
+      : [];
+  $: cmdInlineWarnings = (cmdInlineDrafts || []).map((cmdText) => {
+    const parsed = parsePlayActionCommand(cmdText);
+    if (!parsed) return [];
+    return playActionWarnings(parsed.agent, parsed.action, parsed.args, pluginInterfaceForAgent(parsed.agent));
+  });
   $: sceneAgentNames = extractSceneAgents(scriptDraft);
   $: deviceAgentNames = extractDeviceAgents(projectConfigAgents);
   $: agentGroups = buildAgentGroups(sceneAgentNames, deviceAgentNames);
@@ -1721,6 +1790,10 @@
     lastProjectConfigProjectId = selectedProjectId;
     loadProjectConfig(selectedProjectId);
   }
+  $: if (sessionReady && selectedProjectId && selectedProjectId !== lastPluginInterfacesProjectId) {
+    lastPluginInterfacesProjectId = selectedProjectId;
+    loadPluginInterfaces(selectedProjectId);
+  }
 
   $: if (sessionReady && selectedProjectId && selectedProjectId !== lastScriptProjectId) {
     lastScriptProjectId = selectedProjectId;
@@ -1754,12 +1827,16 @@
 
   $: if (!selectedProjectId) {
     lastProjectConfigProjectId = "";
+    lastPluginInterfacesProjectId = "";
     projectConfig = null;
     projectConfigDraft = null;
     projectConfigError = "";
     projectConfigLoading = false;
     projectConfigSaved = null;
     projectConfigPending = false;
+    pluginInterfaces = [];
+    pluginInterfacesError = "";
+    pluginInterfacesLoading = false;
     scriptText = "";
     scriptDraft = "";
     scriptVersion = null;
@@ -2532,6 +2609,21 @@
     }
   }
 
+  async function loadPluginInterfaces(projectId) {
+    if (!projectId) return;
+    pluginInterfacesLoading = true;
+    pluginInterfacesError = "";
+    try {
+      const data = await apiGet(`/api/v1/projects/${projectId}/plugin-interfaces`);
+      pluginInterfaces = Array.isArray(data.interfaces) ? data.interfaces : [];
+    } catch (err) {
+      pluginInterfacesError = err.message || "Failed to load plugin interfaces.";
+      pluginInterfaces = [];
+    } finally {
+      pluginInterfacesLoading = false;
+    }
+  }
+
   async function loadAvailableDevices() {
     availableDevicesLoading = true;
     availableDevicesError = "";
@@ -2588,7 +2680,6 @@
     if (!selectedProjectId || !projectConfigDraft) return;
     projectConfigError = "";
     if (!projectConfigDirty) {
-      projectConfigError = "No project configuration changes to apply.";
       return;
     }
     try {
@@ -2605,11 +2696,30 @@
     }
   }
 
+  function scheduleProjectConfigApply() {
+    if (
+      !projectConfigDialogOpen ||
+      !selectedProjectId ||
+      !wsConnected ||
+      !projectConfigDraft ||
+      projectConfigLoading
+    ) {
+      return;
+    }
+    if (projectConfigApplyTimer) {
+      clearTimeout(projectConfigApplyTimer);
+    }
+    projectConfigApplyTimer = setTimeout(() => {
+      projectConfigApplyTimer = null;
+      applyProjectConfig();
+    }, 350);
+  }
+
   function openProjectConfigDialog() {
     if (!selectedProjectId) return;
     rememberFocus();
     projectConfigDialogOpen = true;
-    projectConfigSelection = { type: "project" };
+    projectConfigSelection = { type: "devices" };
     projectConfigError = "";
     projectConfigSaved = null;
     projectConfigPending = false;
@@ -2629,10 +2739,14 @@
   function closeProjectConfigDialog() {
     projectConfigDialogOpen = false;
     projectConfigError = "";
-    projectConfigSelection = { type: "project" };
+    projectConfigSelection = { type: "devices" };
     projectConfigNewPlugin = { name: "", className: "", type: "device", load: true };
     projectConfigNewAgent = { name: "", device: "" };
     projectConfigNewFeature = { key: "", value: "" };
+    if (projectConfigApplyTimer) {
+      clearTimeout(projectConfigApplyTimer);
+      projectConfigApplyTimer = null;
+    }
     restoreFocus();
   }
 
@@ -2653,6 +2767,23 @@
       ...projectConfigDraft,
       name: value
     };
+    scheduleProjectConfigApply();
+  }
+
+  function resolveAvailableDeviceClass(name) {
+    const needle = (name || "").trim().toLowerCase();
+    if (!needle || !availableDevices?.length) return "";
+    const match =
+      availableDevices.find((device) => (device?.name || "").trim().toLowerCase() === needle) ||
+      availableDevices.find((device) => (device?.className || "").trim().toLowerCase() === needle);
+    return match?.className || "";
+  }
+
+  function deriveDeviceNameFromClass(className) {
+    const trimmed = (className || "").trim();
+    if (!trimmed) return "";
+    const parts = trimmed.split(".");
+    return parts[parts.length - 1] || trimmed;
   }
 
   function updatePluginField(index, field, value) {
@@ -2663,6 +2794,7 @@
       ...projectConfigDraft,
       plugins
     };
+    scheduleProjectConfigApply();
   }
 
   function updatePluginName(index, value) {
@@ -2679,6 +2811,7 @@
       plugins,
       agents
     };
+    scheduleProjectConfigApply();
   }
 
   function updateAgentField(index, field, value) {
@@ -2689,6 +2822,7 @@
       ...projectConfigDraft,
       agents
     };
+    scheduleProjectConfigApply();
   }
 
   function updateFeatureList(list, index, field, value) {
@@ -2704,6 +2838,7 @@
     const features = updateFeatureList(plugin.features, featureIndex, field, value);
     plugins[pluginIndex] = { ...plugin, features };
     projectConfigDraft = { ...projectConfigDraft, plugins };
+    scheduleProjectConfigApply();
   }
 
   function updateAgentFeature(agentIndex, featureIndex, field, value) {
@@ -2713,6 +2848,7 @@
     const features = updateFeatureList(agent.features, featureIndex, field, value);
     agents[agentIndex] = { ...agent, features };
     projectConfigDraft = { ...projectConfigDraft, agents };
+    scheduleProjectConfigApply();
   }
 
   function updatePlayerFeature(featureIndex, field, value) {
@@ -2721,6 +2857,7 @@
       ...projectConfigDraft,
       player: { features }
     };
+    scheduleProjectConfigApply();
   }
 
   function addFeatureToSelection() {
@@ -2755,6 +2892,7 @@
     }
     projectConfigNewFeature = { key: "", value: "" };
     projectConfigError = "";
+    scheduleProjectConfigApply();
   }
 
   function removePluginFeature(pluginIndex, featureIndex) {
@@ -2764,6 +2902,7 @@
     const features = plugin.features.filter((_, idx) => idx !== featureIndex);
     plugins[pluginIndex] = { ...plugin, features };
     projectConfigDraft = { ...projectConfigDraft, plugins };
+    scheduleProjectConfigApply();
   }
 
   function removeAgentFeature(agentIndex, featureIndex) {
@@ -2773,6 +2912,7 @@
     const features = agent.features.filter((_, idx) => idx !== featureIndex);
     agents[agentIndex] = { ...agent, features };
     projectConfigDraft = { ...projectConfigDraft, agents };
+    scheduleProjectConfigApply();
   }
 
   function removePlayerFeature(featureIndex) {
@@ -2781,14 +2921,16 @@
       ...projectConfigDraft,
       player: { features }
     };
+    scheduleProjectConfigApply();
   }
 
   function addPlugin() {
     const name = (projectConfigNewPlugin.name || "").trim();
-    const className = (projectConfigNewPlugin.className || "").trim();
+    const className =
+      (projectConfigNewPlugin.className || "").trim() || resolveAvailableDeviceClass(name);
     const type = (projectConfigNewPlugin.type || "device").trim() || "device";
     if (!name || !className) {
-      projectConfigError = "Device name and class are required.";
+      projectConfigError = "Module and name are required.";
       return;
     }
     if (projectConfigPlugins.some((plugin) => plugin.name === name)) {
@@ -2806,6 +2948,7 @@
     projectConfigDraft = { ...projectConfigDraft, plugins };
     projectConfigNewPlugin = { name: "", className: "", type: "device", load: true };
     selectProjectConfig({ type: "plugin", pluginIndex: plugins.length - 1 });
+    scheduleProjectConfigApply();
   }
 
   function addAgent(deviceOverride) {
@@ -2828,9 +2971,13 @@
     projectConfigDraft = { ...projectConfigDraft, agents };
     projectConfigNewAgent = { name: "", device };
     selectProjectConfig({ type: "agent", agentIndex: agents.length - 1 });
+    scheduleProjectConfigApply();
   }
 
   function removePlugin(index) {
+    if (!projectConfigDraft) {
+      projectConfigDraft = cloneProjectConfig(projectConfigView);
+    }
     const plugin = projectConfigPlugins[index];
     if (!plugin) return;
     const plugins = projectConfigPlugins.filter((_, idx) => idx !== index);
@@ -2839,14 +2986,19 @@
     if (projectConfigSelection.type === "plugin" && projectConfigSelection.pluginIndex === index) {
       projectConfigSelection = { type: "project" };
     }
+    scheduleProjectConfigApply();
   }
 
   function removeAgent(index) {
+    if (!projectConfigDraft) {
+      projectConfigDraft = cloneProjectConfig(projectConfigView);
+    }
     const agents = projectConfigAgents.filter((_, idx) => idx !== index);
     projectConfigDraft = { ...projectConfigDraft, agents };
     if (projectConfigSelection.type === "agent" && projectConfigSelection.agentIndex === index) {
       projectConfigSelection = { type: "project" };
     }
+    scheduleProjectConfigApply();
   }
 
   function readConfigValue(key, fallback) {
@@ -5608,6 +5760,10 @@
     cmdDialogNodeId = "";
     cmdInlineInputEls = [];
     cmdHelperOpen = false;
+    cmdHelperShowWrites = false;
+    cmdHelperShowReads = false;
+    cmdHelperShowConfig = false;
+    lastCmdHelperDescriptorKey = "";
   }
 
   function syncCmdInlineDrafts() {
@@ -5655,6 +5811,7 @@
     if (name === "Bool") return preferHint ? "true / false" : "true";
     if (name === "Float") return preferHint ? "0.0" : "0.0";
     if (name === "String") return preferHint ? "\"text\"" : "\"\"";
+    if (name === "Event") return "";
     const match = nodeEditorTypeCatalog.find((entry) => entry?.name === name);
     if (!match || depth > 2) {
       return "";
@@ -5688,8 +5845,28 @@
     return {
       name: "",
       type: preferred,
-      expression: ""
+      expression: "",
+      eventElementType: "",
+      eventCapacity: 0
     };
+  }
+
+  function parseEventTypeString(typeStr) {
+    const str = (typeStr || "").trim();
+    const match = str.match(/^Event\(([^,)]*?)(?:,\s*(\d+))?\)$/i);
+    if (!match) return { elementType: "", capacity: 0 };
+    const et = (match[1] || "").trim();
+    const cap = parseInt(match[2]) || 0;
+    return { elementType: et === "*" ? "" : et, capacity: cap };
+  }
+
+  function buildEventTypeString(elementType, capacity) {
+    const et = (elementType || "").trim();
+    const cap = parseInt(capacity) || 0;
+    if (!et && cap <= 0) return "Event";
+    if (!et && cap > 0) return `Event(*, ${cap})`;
+    if (et && cap <= 0) return `Event(${et})`;
+    return `Event(${et}, ${cap})`;
   }
 
   function typeDefSummary(def) {
@@ -5973,10 +6150,15 @@
     varDefError = "";
     varDefEditIndex = index;
     varDefSelectedIndex = index;
+    const rawType = (def.type ?? "").trim();
+    const isEvent = rawType.toLowerCase().startsWith("event");
+    const eventParsed = isEvent ? parseEventTypeString(rawType) : { elementType: "", capacity: 0 };
     varDefDraft = {
       name: def.name ?? "",
-      type: def.type ?? (nodeEditorTypeOptions[0] || "Bool"),
-      expression: def.expression ?? ""
+      type: isEvent ? "Event" : (rawType || nodeEditorTypeOptions[0] || "Bool"),
+      expression: def.expression ?? "",
+      eventElementType: eventParsed.elementType,
+      eventCapacity: eventParsed.capacity
     };
     focusDialog(varDefDialogEl, varDefNameInputEl);
   }
@@ -5991,6 +6173,12 @@
 
   function updateVarDefType() {
     if (!varDefDraft) return;
+    if (varDefDraft.type === "Event") {
+      varDefDraft.expression = "";
+    } else {
+      varDefDraft.eventElementType = "";
+      varDefDraft.eventCapacity = 0;
+    }
   }
 
   async function applyVarDefEdit() {
@@ -6001,11 +6189,14 @@
       varDefError = "Variable name is required.";
       return;
     }
-    const type = (varDefDraft.type ?? "").trim();
-    if (!type) {
+    const baseType = (varDefDraft.type ?? "").trim();
+    if (!baseType) {
       varDefError = "Variable type is required.";
       return;
     }
+    const type = baseType === "Event"
+      ? buildEventTypeString(varDefDraft.eventElementType, varDefDraft.eventCapacity)
+      : baseType;
     const payload = {
       name,
       type,
@@ -6145,6 +6336,36 @@
   function updateCmdInlineDraft(index, value) {
     cmdError = "";
     cmdInlineDrafts = cmdInlineDrafts.map((entry, idx) => (idx === index ? value : entry));
+  }
+
+  function buildPlayActionExampleText(agentName, commandEntry) {
+    const agent = (agentName || "").trim();
+    const command = (commandEntry?.name || "").trim();
+    if (!agent || !command) return "";
+    if (Array.isArray(commandEntry?.examples) && commandEntry.examples.length) {
+      const example = commandEntry.examples.find((ex) => ex?.playAction) || commandEntry.examples[0];
+      const exampleText = (example?.playAction || "").trim();
+      if (exampleText) return exampleText;
+    }
+    let payload = `${agent} ${command}`;
+    if (Array.isArray(commandEntry?.params) && commandEntry.params.length) {
+      const required = commandEntry.params.filter((param) => param?.required);
+      if (required.length) {
+        const placeholders = required
+          .map((param) => `${param?.name || "param"}=<${param?.type || "value"}>`)
+          .join(" ");
+        payload = `${payload} ${placeholders}`;
+      }
+    }
+    return `PlayAction("[${payload}]")`;
+  }
+
+  function applyPlayActionExample(commandEntry) {
+    if (cmdSelectedIndex === null || cmdSelectedIndex === undefined) return;
+    const text = buildPlayActionExampleText(cmdHelperAgent, commandEntry);
+    if (!text) return;
+    updateCmdInlineDraft(cmdSelectedIndex, text);
+    statusMessage = `Applied: ${text}`;
   }
 
   function handleCmdInlineKeydown(event, index) {
@@ -6304,9 +6525,10 @@
   function openCmdHelper() {
     cmdHelperType = "PlayScene";
     cmdHelperScene = helperScenes?.[0] || "";
-    cmdHelperAgent = "";
-    const actionOption = Array.isArray(scriptElements?.acticon) ? scriptElements.acticon[0] : null;
-    cmdHelperAction = actionOption?.name || actionOption?.script || "";
+    cmdHelperAgent = projectConfigAgents?.[0]?.name || "";
+    const pluginActionOption = pluginCommandsForAgent(cmdHelperAgent)?.[0] || null;
+    const fallbackActionOption = Array.isArray(scriptElements?.acticon) ? scriptElements.acticon[0] : null;
+    cmdHelperAction = pluginActionOption?.name || fallbackActionOption?.name || fallbackActionOption?.script || "";
     cmdHelperArgs = [];
     cmdHelperVarName = helperVarCandidates?.[0]?.name || "";
     cmdHelperVarType = helperVarCandidates?.[0]?.type || "Int";
@@ -6326,6 +6548,9 @@
     if (cmdHelperType === "Assign") {
       cmdHelperVarExpr = cmdHelperVarExpr || "";
     }
+    if (cmdHelperType !== "PlayAction") {
+      lastCmdHelperAction = "";
+    }
   }
 
   $: if (cmdHelperOpen && cmdHelperType === "PlayScene") {
@@ -6335,6 +6560,26 @@
       next[param] = cmdHelperSceneBindings?.[param] || "";
     });
     cmdHelperSceneBindings = next;
+  }
+  $: if (cmdHelperOpen && cmdHelperType === "PlayAction") {
+    const options = cmdHelperAgentCommands || [];
+    if (cmdHelperAgent && options.length && !options.some((entry) => entry?.name === cmdHelperAction)) {
+      cmdHelperAction = options[0]?.name || "";
+    }
+    const actionName = (cmdHelperAction || "").trim();
+    if (actionName && actionName !== lastCmdHelperAction) {
+      const action = options.find((entry) => entry?.name === actionName);
+      if (action && Array.isArray(action.params) && action.params.length) {
+        const existing = new Map(cmdHelperArgs.map((entry) => [entry?.key, entry?.value]));
+        cmdHelperArgs = action.params
+          .map((param) => ({
+            key: param?.name || "",
+            value: existing.get(param?.name) || ""
+          }))
+          .filter((entry) => entry.key);
+      }
+      lastCmdHelperAction = actionName;
+    }
   }
 
   function closeCmdHelper() {
@@ -6351,6 +6596,184 @@
 
   function updateCmdHelperArg(index, field, value) {
     cmdHelperArgs = cmdHelperArgs.map((entry, idx) => (idx === index ? { ...entry, [field]: value } : entry));
+  }
+
+  function pluginInterfaceForAgent(agentName) {
+    const agent = (projectConfigView?.agents || []).find((entry) => entry?.name === agentName);
+    if (!agent) return null;
+    const deviceName = agent?.device || "";
+    const plugin = (projectConfigView?.plugins || []).find((entry) => entry?.name === deviceName);
+    const className = plugin?.className || "";
+    const normalizeKey = (value) => String(value || "").trim().toLowerCase();
+    const simpleClassName = (value) => {
+      const text = String(value || "").trim();
+      if (!text) return "";
+      const parts = text.split(".");
+      return parts[parts.length - 1] || text;
+    };
+    const matchesDescriptor = (descriptor, key, simpleKey) => {
+      const descriptorPlugin = descriptor?.plugin || {};
+      const id = normalizeKey(descriptorPlugin.id);
+      const name = normalizeKey(descriptorPlugin.name);
+      const classKey = normalizeKey(descriptorPlugin.className);
+      return [id, name, classKey].some((entry) => entry && (entry === key || (simpleKey && entry === simpleKey)));
+    };
+    if (className) {
+      const classKey = normalizeKey(className);
+      const simpleKey = normalizeKey(simpleClassName(className));
+      const match = pluginInterfaces.find((entry) => matchesDescriptor(entry, classKey, simpleKey));
+      if (match) return match;
+    }
+    if (deviceName) {
+      const deviceKey = normalizeKey(deviceName);
+      const simpleKey = normalizeKey(simpleClassName(deviceName));
+      const match = pluginInterfaces.find((entry) => matchesDescriptor(entry, deviceKey, simpleKey));
+      if (match) return match;
+    }
+    return null;
+  }
+
+  function pluginCommandsForAgent(agentName) {
+    const descriptor = pluginInterfaceForAgent(agentName);
+    return Array.isArray(descriptor?.commands) ? descriptor.commands : [];
+  }
+
+  function cmdParamMeta(paramKey) {
+    if (!paramKey || !cmdHelperActionDescriptor) return null;
+    const params = Array.isArray(cmdHelperActionDescriptor?.params) ? cmdHelperActionDescriptor.params : [];
+    return params.find((param) => param?.name === paramKey) || null;
+  }
+
+  function cmdParamHint(meta) {
+    if (!meta) return "";
+    const type = meta.type ? String(meta.type) : "";
+    const required = meta.required ? "required" : "optional";
+    const enumList = Array.isArray(meta.enum) ? meta.enum.filter(Boolean) : [];
+    const enumHint = enumList.length ? `enum: ${enumList.slice(0, 4).join(", ")}${enumList.length > 4 ? "…" : ""}` : "";
+    return [required, type, enumHint].filter(Boolean).join(" · ");
+  }
+
+  function cmdParamValuePlaceholder(meta) {
+    if (!meta) return "value";
+    const enumList = Array.isArray(meta.enum) ? meta.enum.filter(Boolean) : [];
+    if (enumList.length) {
+      return `one of: ${enumList.slice(0, 3).join(", ")}${enumList.length > 3 ? "…" : ""}`;
+    }
+    return meta.type ? `${meta.type} value` : "value";
+  }
+
+  function pluginWritesForAgent(agentName) {
+    const descriptor = pluginInterfaceForAgent(agentName);
+    return Array.isArray(descriptor?.writes) ? descriptor.writes : [];
+  }
+
+  function normalizeVarType(typeValue) {
+    const raw = String(typeValue || "").trim().toLowerCase();
+    if (raw === "int" || raw === "integer") return "Int";
+    if (raw === "float" || raw === "double" || raw === "number") return "Float";
+    if (raw === "bool" || raw === "boolean") return "Bool";
+    if (raw === "list") return "List";
+    if (raw === "struct") return "Struct";
+    if (raw === "string") return "String";
+    return "String";
+  }
+
+  function pluginWriteExists(writeEntry) {
+    const name = (writeEntry?.var || "").trim();
+    if (!name || name.startsWith("<")) return false;
+    return helperVarCandidates.some((entry) => entry.name === name);
+  }
+
+  function playActionWarnings(agentName, actionName, args, descriptor) {
+    const warnings = [];
+    if (!agentName) {
+      warnings.push("Agent name is required.");
+      return warnings;
+    }
+    if (!descriptor) {
+      warnings.push("No plugin descriptor; autocompletion disabled.");
+      return warnings;
+    }
+    if (!actionName) {
+      warnings.push("Action name is required.");
+      return warnings;
+    }
+    const commands = Array.isArray(descriptor?.commands) ? descriptor.commands : [];
+    const command = commands.find((entry) => entry?.name === actionName);
+    if (!command) {
+      warnings.push(`Unknown action "${actionName}" for ${agentName}.`);
+      return warnings;
+    }
+    const params = Array.isArray(command?.params) ? command.params : [];
+    const required = params.filter((param) => param?.required);
+    const providedKeys = new Set((args || []).map((entry) => (entry?.key || "").trim()).filter(Boolean));
+    required.forEach((param) => {
+      if (param?.name && !providedKeys.has(param.name)) {
+        warnings.push(`Missing required param: ${param.name}`);
+      }
+    });
+    providedKeys.forEach((key) => {
+      if (!params.some((param) => param?.name === key)) {
+        warnings.push(`Unknown param: ${key}`);
+      }
+    });
+    return warnings;
+  }
+
+  function tokenizeCommandPayload(payload) {
+    const tokens = [];
+    let current = "";
+    let quote = null;
+    for (let i = 0; i < payload.length; i += 1) {
+      const ch = payload[i];
+      if (quote) {
+        if (ch === quote) {
+          quote = null;
+        } else {
+          current += ch;
+        }
+        continue;
+      }
+      if (ch === "'" || ch === '"') {
+        quote = ch;
+        continue;
+      }
+      if (/\s/.test(ch)) {
+        if (current) {
+          tokens.push(current);
+          current = "";
+        }
+        continue;
+      }
+      current += ch;
+    }
+    if (current) {
+      tokens.push(current);
+    }
+    return tokens;
+  }
+
+  function parsePlayActionCommand(text) {
+    if (!text) return null;
+    const match = String(text).match(/PlayAction\s*\(\s*["']([\s\S]+?)["']\s*\)/);
+    if (!match) return null;
+    let payload = match[1].trim();
+    if (payload.startsWith("[") && payload.endsWith("]")) {
+      payload = payload.slice(1, -1).trim();
+    }
+    if (!payload) return null;
+    const tokens = tokenizeCommandPayload(payload);
+    if (!tokens.length) return null;
+    const agent = tokens[0] || "";
+    const action = tokens[1] || "";
+    const args = tokens.slice(2).map((token) => {
+      const idx = token.indexOf("=");
+      if (idx === -1) {
+        return { key: token, value: "" };
+      }
+      return { key: token.slice(0, idx), value: token.slice(idx + 1) };
+    });
+    return { agent, action, args };
   }
 
   function commandFromHelper() {
@@ -6419,6 +6842,32 @@
     if (cmdHelperVarScope === "local") {
       targetNodeId = nodeEditorTarget?.id || "";
     } else if (cmdHelperVarScope === "parent") {
+      const path = Array.isArray(sceneFlowPathNodes) ? sceneFlowPathNodes : [];
+      if (path.length > 1) {
+        targetNodeId = path[path.length - 2]?.id || "";
+      }
+    }
+    const payload = {
+      projectId: selectedProjectId,
+      superNodeId: sceneFlow?.superNodeId,
+      nodeId: targetNodeId,
+      varDef: {
+        name,
+        type,
+        expression: defaultVarExpression(type)
+      }
+    };
+    const response = await runSceneFlowCommand("SceneFlow.Node.VarDef.Add", payload);
+    return !!response;
+  }
+
+  async function createHelperVariable(name, type, scope = "global") {
+    if (!name || !selectedProjectId) return false;
+    if (helperVarCandidates.some((entry) => entry.name === name)) return true;
+    let targetNodeId = "";
+    if (scope === "local") {
+      targetNodeId = nodeEditorTarget?.id || "";
+    } else if (scope === "parent") {
       const path = Array.isArray(sceneFlowPathNodes) ? sceneFlowPathNodes : [];
       if (path.length > 1) {
         targetNodeId = path[path.length - 2]?.id || "";
@@ -7578,10 +8027,6 @@
     }
     if (prefsDialogOpen) {
       closePrefsDialog();
-      return true;
-    }
-    if (projectConfigDialogOpen) {
-      closeProjectConfigDialog();
       return true;
     }
     if (missingAgentDialogOpen) {
@@ -9837,11 +10282,7 @@
   {/if}
 
   {#if projectConfigDialogOpen}
-    <div
-      class="modal-backdrop"
-      on:click|self={closeProjectConfigDialog}
-      role="presentation"
-    >
+    <div class="modal-backdrop project-config-backdrop" role="presentation">
       <div class="modal project-config-modal" bind:this={projectConfigDialogEl} role="dialog" aria-modal="true" aria-labelledby="project-config-title" tabindex="-1">
         <div class="project-config-header">
           <div class="project-config-title">
@@ -9849,31 +10290,39 @@
               <IconPuzzle className="icon" />
             </span>
             <div>
-              <h3 id="project-config-title">Project settings</h3>
-              <span class="muted">Stored in project.xml</span>
+              <h3 id="project-config-title">Project Settings</h3>
             </div>
           </div>
-          <div class="project-config-header-actions">
-            <button
-              type="button"
-              class="ghost"
-              on:click={() => loadProjectConfig(selectedProjectId)}
-              disabled={!selectedProject || projectConfigLoading}
-            >
-              Reload
-            </button>
-          </div>
+          <button
+            type="button"
+            class="ghost icon-button project-config-close"
+            on:click={closeProjectConfigDialog}
+            aria-label="Close project settings"
+            title="Close"
+          >
+            ×
+          </button>
         </div>
         <div class="project-config-body">
+          <div class="project-config-overview">
+            <div class="project-config-panel project-config-panel--overview">
+              <div class="project-config-overview-grid">
+                <div class="project-config-overview-label">Description</div>
+                <div class="project-config-overview-field">
+                  <input
+                    id="project-name-input"
+                    value={projectConfigView.name}
+                    on:input={(event) => updateProjectName(event.target.value)}
+                  />
+                  <div class="project-config-meta">
+                    <span>{projectConfigPlugins.length} devices</span>
+                    <span>{projectConfigAgents.length} agents</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
           <aside class="project-config-tree">
-            <button
-              type="button"
-              class="project-config-tree-item root"
-              class:active={projectConfigSelection.type === "project"}
-              on:click={() => selectProjectConfig({ type: "project" })}
-            >
-              <span>{projectConfigView.name || "Project"}</span>
-            </button>
             <div class="project-config-tree-section">
               <button
                 type="button"
@@ -9931,61 +10380,60 @@
             {:else if projectConfigError}
               <p class="error">{projectConfigError}</p>
             {:else}
-              {#if projectConfigSelection.type === "project"}
-                <div class="project-config-panel">
-                  <div class="project-config-panel-header">
-                    <h4>Project</h4>
-                    <span class="muted">project.xml</span>
-                  </div>
-                  <div class="project-config-grid">
-                    <label for="project-name-input">Project name</label>
-                    <input
-                      id="project-name-input"
-                      value={projectConfigView.name}
-                      on:input={(event) => updateProjectName(event.target.value)}
-                    />
-                  </div>
-                  <div class="project-config-meta">
-                    <span>{projectConfigPlugins.length} devices</span>
-                    <span>{projectConfigAgents.length} agents</span>
-                  </div>
-                </div>
-              {:else if projectConfigSelection.type === "devices"}
+              {#if projectConfigSelection.type === "devices"}
                 <div class="project-config-panel">
                   <div class="project-config-panel-header">
                     <h4>Add device</h4>
-                    <span class="muted">Plugins loaded by this project</span>
+                    <span class="muted"></span>
                   </div>
                   <div class="project-config-grid">
-                    <label for="device-name">Device name</label>
-                    <input id="device-name" bind:value={projectConfigNewPlugin.name} />
-                    <label for="device-class-select">Available devices</label>
+                    <label for="device-module">Module</label>
                     <select
-                      id="device-class-select"
+                      id="device-module"
                       value={projectConfigNewPlugin.className}
                       disabled={availableDevicesLoading || availableDevices.length === 0}
                       on:change={(event) => {
-                        projectConfigNewPlugin = { ...projectConfigNewPlugin, className: event.target.value };
+                        const className = event.target.value;
+                        const derivedName = deriveDeviceNameFromClass(className);
+                        projectConfigNewPlugin = {
+                          ...projectConfigNewPlugin,
+                          className,
+                          name: projectConfigNewPlugin.name ? projectConfigNewPlugin.name : derivedName
+                        };
                       }}
                     >
-                      <option value="">Select a device class</option>
+                      <option value="">Select module</option>
                       {#each availableDevices as device}
-                        <option value={device.className}>{device.name}</option>
+                        <option value={device.className}>{device.className}</option>
                       {/each}
                     </select>
-                    <label for="device-class">Class</label>
+                    <label for="device-name">Name</label>
                     <input
-                      id="device-class"
-                      list="device-class-list"
-                      bind:value={projectConfigNewPlugin.className}
-                      placeholder={availableDevicesLoading ? "Loading devices..." : "Select or enter class"}
+                      id="device-name"
+                      value={projectConfigNewPlugin.name}
+                      on:input={(event) => {
+                        const name = event.target.value;
+                        projectConfigNewPlugin = { ...projectConfigNewPlugin, name };
+                      }}
                     />
+                  </div>
+                  <div class="project-config-inline">
+                    <label class="project-config-toggle project-config-inline-toggle">
+                      <span>Load plugin</span>
+                      <input
+                        type="checkbox"
+                        checked={projectConfigNewPlugin.load !== false}
+                        on:change={(event) => {
+                          projectConfigNewPlugin = { ...projectConfigNewPlugin, load: event.target.checked };
+                        }}
+                      />
+                    </label>
                   </div>
                   {#if availableDevicesError}
                     <p class="error">{availableDevicesError}</p>
                   {/if}
                   <div class="actions">
-                    <button type="button" class="ghost" on:click={addPlugin}>Add device</button>
+                    <button type="button" class="primary" on:click={addPlugin}>Add</button>
                   </div>
                 </div>
               {:else if projectConfigSelection.type === "plugin" && selectedProjectPlugin}
@@ -9993,7 +10441,6 @@
                   <div class="project-config-panel-header">
                     <div>
                       <h4>Device</h4>
-                      <span class="muted">{selectedProjectPlugin.name || "Unnamed device"}</span>
                     </div>
                     <button type="button" class="ghost danger" on:click={() => removePlugin(projectConfigSelection.pluginIndex)}>
                       Delete
@@ -10001,48 +10448,29 @@
                   </div>
                   <div class="project-config-info-grid">
                     <div class="project-config-info-row">
-                      <label for="plugin-name" class="project-config-info-label">Device name</label>
+                      <label for="plugin-name" class="project-config-info-label">Name</label>
                       <input
                         id="plugin-name"
                         value={selectedProjectPlugin.name}
                         on:input={(event) => updatePluginName(projectConfigSelection.pluginIndex, event.target.value)}
                       />
+                      <span class="project-config-info-label">Load plugin</span>
                     </div>
                     <div class="project-config-info-row">
-                      <label for="plugin-class-select" class="project-config-info-label">Available devices</label>
-                      <select
-                        id="plugin-class-select"
-                        value={selectedProjectPlugin.className}
-                        disabled={availableDevicesLoading || availableDevices.length === 0}
-                        on:change={(event) =>
-                          updatePluginField(projectConfigSelection.pluginIndex, "className", event.target.value)
-                        }
-                      >
-                        <option value="">Select a device class</option>
-                        {#each availableDevices as device}
-                          <option value={device.className}>{device.name}</option>
-                        {/each}
-                      </select>
+                      <label class="project-config-info-label">Module</label>
+                      <div class="project-config-module">
+                        <span class="project-config-info-value">{selectedProjectPlugin.className || "Unknown"}</span>
+                        <label class="project-config-module-toggle">
+                          <input
+                            type="checkbox"
+                            checked={selectedProjectPlugin.load}
+                            on:change={(event) =>
+                              updatePluginField(projectConfigSelection.pluginIndex, "load", event.target.checked)
+                            }
+                          />
+                        </label>
+                      </div>
                     </div>
-                    <div class="project-config-info-row">
-                      <label for="plugin-class" class="project-config-info-label">Class</label>
-                      <input
-                        id="plugin-class"
-                        list="device-class-list"
-                        value={selectedProjectPlugin.className}
-                        on:input={(event) => updatePluginField(projectConfigSelection.pluginIndex, "className", event.target.value)}
-                      />
-                    </div>
-                    <label class="project-config-toggle">
-                      <input
-                        type="checkbox"
-                        checked={selectedProjectPlugin.load}
-                        on:change={(event) =>
-                          updatePluginField(projectConfigSelection.pluginIndex, "load", event.target.checked)
-                        }
-                      />
-                      <span>Load plugin</span>
-                    </label>
                   </div>
                   <div class="project-config-table">
                     <div class="project-config-table-header">
@@ -10093,7 +10521,7 @@
                     <div class="project-config-table-add">
                       <input list="plugin-key-hints" placeholder="key" bind:value={projectConfigNewFeature.key} />
                       <input placeholder="value" bind:value={projectConfigNewFeature.value} />
-                      <button type="button" class="ghost" on:click={addFeatureToSelection}>Add</button>
+                      <button type="button" class="primary" on:click={addFeatureToSelection}>Add</button>
                     </div>
                     <datalist id="plugin-key-hints">
                       {#each pluginKeyOptions as option}
@@ -10154,7 +10582,7 @@
                     <div class="project-config-agent-add-title">Add agent</div>
                     <div class="project-config-agent-add-row">
                       <input placeholder="Agent name" bind:value={projectConfigNewAgent.name} />
-                      <button type="button" class="ghost" on:click={() => addAgent(selectedProjectPlugin.name)}>
+                      <button type="button" class="primary" on:click={() => addAgent(selectedProjectPlugin.name)}>
                         Add
                       </button>
                     </div>
@@ -10194,21 +10622,23 @@
                     </div>
                     <div class="project-config-info-row">
                       <span class="project-config-info-label">Class</span>
-                      <span class="project-config-info-value">{activeProjectPlugin?.className || "Unknown"}</span>
+                      <div class="project-config-inline">
+                        <span class="project-config-info-value">{activeProjectPlugin?.className || "Unknown"}</span>
+                        <label class="project-config-toggle project-config-inline-toggle">
+                          <span>Load plugin</span>
+                          <input
+                            type="checkbox"
+                            checked={activeProjectPlugin?.load ?? true}
+                            disabled={activeProjectPluginIndex < 0}
+                            on:change={(event) => {
+                              if (activeProjectPluginIndex >= 0) {
+                                updatePluginField(activeProjectPluginIndex, "load", event.target.checked);
+                              }
+                            }}
+                          />
+                        </label>
+                      </div>
                     </div>
-                    <label class="project-config-toggle">
-                      <input
-                        type="checkbox"
-                        checked={activeProjectPlugin?.load ?? true}
-                        disabled={activeProjectPluginIndex < 0}
-                        on:change={(event) => {
-                          if (activeProjectPluginIndex >= 0) {
-                            updatePluginField(activeProjectPluginIndex, "load", event.target.checked);
-                          }
-                        }}
-                      />
-                      <span>Load plugin</span>
-                    </label>
                   </div>
                   <div class="project-config-table">
                     <div class="project-config-table-header">
@@ -10249,7 +10679,7 @@
                     <div class="project-config-table-add">
                       <input list="agent-key-hints" placeholder="key" bind:value={projectConfigNewFeature.key} />
                       <input placeholder="value" bind:value={projectConfigNewFeature.value} />
-                      <button type="button" class="ghost" on:click={addFeatureToSelection}>Add</button>
+                      <button type="button" class="primary" on:click={addFeatureToSelection}>Add</button>
                     </div>
                     <datalist id="agent-key-hints">
                       {#each agentKeyOptions as option}
@@ -10343,7 +10773,7 @@
                     <div class="project-config-table-add">
                       <input placeholder="key" bind:value={projectConfigNewFeature.key} />
                       <input placeholder="value" bind:value={projectConfigNewFeature.value} />
-                      <button type="button" class="ghost" on:click={addFeatureToSelection}>Add</button>
+                      <button type="button" class="primary" on:click={addFeatureToSelection}>Add</button>
                     </div>
                   </div>
                 </div>
@@ -10351,37 +10781,9 @@
             {/if}
           </section>
         </div>
-        <datalist id="device-class-list">
-          {#each availableDevices as device}
-            <option value={device.className} label={device.name}>{device.name}</option>
-          {/each}
-        </datalist>
-        <div class="project-config-footer">
-          <div class="project-config-status">
-            {#if projectConfigError}
-              <span class="error">{projectConfigError}</span>
-            {/if}
-            {#if !projectConfigError && !projectConfigDirty}
-              <span class="muted">No pending changes</span>
-            {/if}
-            {#if projectConfigSaved !== null}
-              <span class="muted">
-                {projectConfigSaved ? "Saved" : projectConfigPending ? "Pending save" : "Not saved"}
-              </span>
-            {/if}
-          </div>
-          <div class="actions">
-            <button
-              type="button"
-              class="primary"
-              on:click={applyProjectConfig}
-              disabled={!selectedProject || !wsConnected || !projectConfigDraft || !projectConfigDirty}
-            >
-              Apply
-            </button>
-            <button type="button" class="ghost" on:click={closeProjectConfigDialog}>Close</button>
-          </div>
-        </div>
+        {#if projectConfigError}
+          <p class="error">{projectConfigError}</p>
+        {/if}
       </div>
     </div>
   {/if}
@@ -10911,7 +11313,18 @@
   {#if cmdDialogOpen}
     <div class="modal-backdrop cmd-modal-backdrop">
       <div class="modal cmd-modal" bind:this={cmdDialogEl} role="dialog" aria-modal="true" aria-labelledby="cmd-dialog-title" tabindex="-1">
-        <h3 id="cmd-dialog-title">Command executions of {nodeEditorTarget?.name || "(unnamed)"}</h3>
+        <div class="cmd-modal-header">
+          <h3 id="cmd-dialog-title">Command executions of {nodeEditorTarget?.name || "(unnamed)"}</h3>
+          <button
+            type="button"
+            class="ghost icon-button cmd-modal-close"
+            on:click={closeCmdDialog}
+            aria-label="Close command dialog"
+            title="Close"
+          >
+            ×
+          </button>
+        </div>
         <div class="cmd-dialog">
           <div class="def-table cmd-inline-table">
             <div
@@ -10937,6 +11350,13 @@
                       on:keydown={(event) => handleCmdInlineKeydown(event, index)}
                       disabled={!wsConnected || sceneFlowBusy}
                     />
+                    {#if cmdInlineWarnings[index]?.length}
+                      <div class="cmd-inline-warnings">
+                        {#each cmdInlineWarnings[index] as warning}
+                          <p class="cmd-inline-warning">{warning}</p>
+                        {/each}
+                      </div>
+                    {/if}
                   </div>
                 {/each}
               {/if}
@@ -11008,7 +11428,7 @@
           {#if cmdHelperOpen}
             <div class="cmd-helper">
               <div class="cmd-helper-header">
-                <h4>Command helper</h4>
+                <h4>{cmdHelperType === "PlayAction" ? `${cmdHelperAgent || "Agent"} command helper` : "Command helper"}</h4>
                 <button type="button" class="ghost" on:click={closeCmdHelper}>Close</button>
               </div>
               <label for="cmd-helper-type">Command</label>
@@ -11061,12 +11481,27 @@
                 <label for="cmd-helper-action">Action</label>
                 <input id="cmd-helper-action" bind:value={cmdHelperAction} list="cmd-helper-action-list" placeholder="Action name" />
                 <datalist id="cmd-helper-action-list">
-                  {#each scriptElements.acticon as action}
-                    <option value={action?.name || action?.script}>{action?.name || action?.script}</option>
-                  {/each}
+                  {#if cmdHelperAgentCommands.length}
+                    {#each cmdHelperAgentCommands as action}
+                      <option value={action?.name}>{action?.name}</option>
+                    {/each}
+                  {:else}
+                    {#each scriptElements.acticon as action}
+                      <option value={action?.name || action?.script}>{action?.name || action?.script}</option>
+                    {/each}
+                  {/if}
                 </datalist>
-                {#if !scriptElements.acticon.length}
-                  <p class="muted">No actions loaded.</p>
+                {#if cmdHelperAgent && !cmdHelperDescriptor && !pluginInterfacesLoading && !pluginInterfacesError}
+                  <p class="muted">No plugin descriptor; autocompletion disabled.</p>
+                {/if}
+                {#if cmdHelperAgentCommands.length === 0}
+                  {#if pluginInterfacesLoading}
+                    <p class="muted">Loading plugin actions...</p>
+                  {:else if pluginInterfacesError}
+                    <p class="muted">Plugin actions unavailable: {pluginInterfacesError}</p>
+                  {:else if !scriptElements.acticon.length}
+                    <p class="muted">No actions loaded.</p>
+                  {/if}
                 {/if}
                 <div class="cmd-helper-args">
                   <div class="cmd-helper-args-header">
@@ -11079,6 +11514,7 @@
                     <p class="muted">No arguments.</p>
                   {:else}
                     {#each cmdHelperArgs as arg, argIndex}
+                      {@const paramMeta = cmdParamMeta(arg?.key)}
                       <div class="cmd-helper-arg-row">
                         <input
                           placeholder="key"
@@ -11086,7 +11522,7 @@
                           on:input={(event) => updateCmdHelperArg(argIndex, "key", event.target.value)}
                         />
                         <input
-                          placeholder="value"
+                          placeholder={cmdParamValuePlaceholder(paramMeta)}
                           value={arg.value}
                           on:input={(event) => updateCmdHelperArg(argIndex, "value", event.target.value)}
                         />
@@ -11099,9 +11535,197 @@
                           <IconTrash className="icon" />
                         </button>
                       </div>
+                      {#if paramMeta}
+                        <div class="cmd-helper-arg-meta">
+                          <span>{cmdParamHint(paramMeta)}</span>
+                          {#if paramMeta.description}
+                            <span class="muted">{paramMeta.description}</span>
+                          {/if}
+                        </div>
+                      {/if}
                     {/each}
                   {/if}
                 </div>
+                {#if cmdHelperDescriptor}
+                  <div class="definition-section">
+                    <header class="definition-header">
+                      <h4>Plugin interface</h4>
+                      <span class="muted">{cmdHelperPluginCommandsList.length}</span>
+                    </header>
+                    <div class="definition-list">
+                      {#if cmdHelperPluginCommandsList.length === 0}
+                        <div class="definition-row muted">No commands listed.</div>
+                      {:else}
+                        {#each cmdHelperPluginCommandsList as entry}
+                          <div class="definition-row">
+                            <div class="definition-main">
+                              <span class="definition-title">{entry?.name || "command"}</span>
+                              {#if entry?.summary}
+                                <span class="definition-meta">{entry.summary}</span>
+                              {/if}
+                              {#if entry?.params?.length}
+                                <span class="definition-meta">
+                                  Params: {(entry?.params || []).map((param) => param?.name || "param").join(", ")}
+                                </span>
+                              {/if}
+                            </div>
+                            <div class="definition-row-actions">
+                              <span class="muted">{entry?.params?.length || 0} params</span>
+                              <button
+                                type="button"
+                                class="ghost"
+                                on:click={() => applyPlayActionExample(entry)}
+                                disabled={cmdSelectedIndex === null}
+                              >
+                                Apply
+                              </button>
+                            </div>
+                          </div>
+                        {/each}
+                      {/if}
+                    </div>
+                  </div>
+                  <div class="definition-section">
+                    <header class="definition-header">
+                      <h4>Writes</h4>
+                      <span class="muted">{cmdHelperPluginWritesList.length}</span>
+                      <button
+                        type="button"
+                        class="ghost icon-button"
+                        on:click={() => (cmdHelperShowWrites = !cmdHelperShowWrites)}
+                        aria-label="Toggle writes"
+                      >
+                        {cmdHelperShowWrites ? "-" : "+"}
+                      </button>
+                    </header>
+                    {#if cmdHelperShowWrites}
+                      <div class="cmd-helper-writes">
+                        {#if cmdHelperPluginWritesList.length === 0}
+                          <p class="muted">No declared variables.</p>
+                        {:else}
+                          {#each cmdHelperPluginWritesList as writeEntry}
+                            <div class="cmd-helper-write-row">
+                              <div class="cmd-helper-write-name">
+                                {writeEntry?.var || "var"}
+                                {#if writeEntry?.type}
+                                  <span class="muted">({writeEntry.type})</span>
+                                {/if}
+                              </div>
+                              {#if writeEntry?.var && !writeEntry.var.startsWith("<")}
+                                {#if pluginWriteExists(writeEntry)}
+                                  <span class="muted">exists</span>
+                                {:else}
+                                  <button
+                                    type="button"
+                                    class="ghost"
+                                    on:click={() => createHelperVariable(writeEntry.var, normalizeVarType(writeEntry.type))}
+                                    disabled={!wsConnected || sceneFlowBusy}
+                                  >
+                                    Add variable
+                                  </button>
+                                {/if}
+                              {:else}
+                                <span class="muted">dynamic</span>
+                              {/if}
+                            </div>
+                            {#if writeEntry?.description}
+                              <div class="cmd-helper-arg-meta">
+                                <span class="muted">{writeEntry.description}</span>
+                              </div>
+                            {/if}
+                          {/each}
+                        {/if}
+                      </div>
+                    {/if}
+                  </div>
+                  <div class="definition-section">
+                    <header class="definition-header">
+                      <h4>Reads</h4>
+                      <span class="muted">{cmdHelperPluginReadsList.length}</span>
+                      <button
+                        type="button"
+                        class="ghost icon-button"
+                        on:click={() => (cmdHelperShowReads = !cmdHelperShowReads)}
+                        aria-label="Toggle reads"
+                      >
+                        {cmdHelperShowReads ? "-" : "+"}
+                      </button>
+                    </header>
+                    {#if cmdHelperShowReads}
+                      <div class="definition-list">
+                        {#if cmdHelperPluginReadsList.length === 0}
+                          <div class="definition-row muted">No variables listed.</div>
+                        {:else}
+                          {#each cmdHelperPluginReadsList as entry}
+                            <div class="definition-row">
+                              <div class="definition-main">
+                                <span class="definition-title">{entry?.var || "var"}</span>
+                                {#if entry?.description}
+                                  <span class="definition-meta">{entry.description}</span>
+                                {/if}
+                              </div>
+                              <div class="definition-row-actions">
+                                <span class="muted">
+                                  {[entry?.type, entry?.scope].filter(Boolean).join(" · ") || "String"}
+                                </span>
+                              </div>
+                            </div>
+                          {/each}
+                        {/if}
+                      </div>
+                    {/if}
+                  </div>
+                  <div class="definition-section">
+                    <header class="definition-header">
+                      <h4>Config</h4>
+                      <span class="muted">{cmdHelperPluginConfigList.length}</span>
+                      <button
+                        type="button"
+                        class="ghost icon-button"
+                        on:click={() => (cmdHelperShowConfig = !cmdHelperShowConfig)}
+                        aria-label="Toggle config"
+                      >
+                        {cmdHelperShowConfig ? "-" : "+"}
+                      </button>
+                    </header>
+                    {#if cmdHelperShowConfig}
+                      <div class="definition-list">
+                        {#if cmdHelperPluginConfigList.length === 0}
+                          <div class="definition-row muted">No config keys listed.</div>
+                        {:else}
+                          {#each cmdHelperPluginConfigList as entry}
+                            <div class="definition-row">
+                              <div class="definition-main">
+                                <span class="definition-title">{entry?.key || "key"}</span>
+                                {#if entry?.description}
+                                  <span class="definition-meta">{entry.description}</span>
+                                {/if}
+                              </div>
+                              <div class="definition-row-actions">
+                                <span class="muted">
+                                  {[
+                                    entry?.type,
+                                    entry?.required ? "required" : "",
+                                    entry?.default !== undefined && entry?.default !== null ? `default: ${entry.default}` : ""
+                                  ]
+                                    .filter(Boolean)
+                                    .join(" · ") || "config"}
+                                </span>
+                              </div>
+                            </div>
+                          {/each}
+                        {/if}
+                      </div>
+                    {/if}
+                  </div>
+                {/if}
+                {#if cmdHelperWarnings.length}
+                  <div class="cmd-helper-warnings">
+                    {#each cmdHelperWarnings as warning}
+                      <p class="cmd-helper-warning">{warning}</p>
+                    {/each}
+                  </div>
+                {/if}
               {:else}
                 <label for="cmd-helper-var">Variable</label>
                 <input
@@ -11151,9 +11775,6 @@
               </div>
             </div>
           {/if}
-          <div class="actions cmd-dialog-actions">
-            <button type="button" class="primary cmd-close" on:click={closeCmdDialog}>Close</button>
-          </div>
           {#if cmdError}
             <p class="error">{cmdError}</p>
           {/if}
@@ -11184,13 +11805,34 @@
               <option value={option}>{option}</option>
             {/each}
           </select>
-          <label for="var-def-exp">Expression</label>
-          <input
-            id="var-def-exp"
-            bind:value={varDefDraft.expression}
-            placeholder={varExpressionHint(varDefDraft.type)}
-            on:keydown={handleVarDefKeydown}
-          />
+          {#if varDefDraft.type !== "Event"}
+            <label for="var-def-exp">Expression</label>
+            <input
+              id="var-def-exp"
+              bind:value={varDefDraft.expression}
+              placeholder={varExpressionHint(varDefDraft.type)}
+              on:keydown={handleVarDefKeydown}
+            />
+          {:else}
+            <label for="var-def-event-eltype">Element type</label>
+            <select id="var-def-event-eltype" bind:value={varDefDraft.eventElementType}>
+              <option value="">Any</option>
+              <option value="String">String</option>
+              <option value="Int">Int</option>
+              <option value="Bool">Bool</option>
+              <option value="Float">Float</option>
+            </select>
+            <label for="var-def-event-cap">Queue capacity</label>
+            <input
+              id="var-def-event-cap"
+              type="number"
+              min="0"
+              bind:value={varDefDraft.eventCapacity}
+              placeholder="0 = unlimited"
+              on:keydown={handleVarDefKeydown}
+            />
+            <p class="hint">FIFO queue. Capacity 0 means unlimited. Oldest events are dropped when full.</p>
+          {/if}
         </div>
         <div class="actions">
           <button type="button" class="primary" on:click={applyVarDefEdit} disabled={!wsConnected || sceneFlowBusy}>

@@ -1,0 +1,839 @@
+{
+    "schemaVersion": "1.0",
+    "generated": false,
+    "plugin": {
+        "id": "charamel-ws",
+        "name": "charamel-ws",
+        "className": "charamelWsExecutor",
+        "executors": [
+            "charamelWsExecutor"
+        ],
+        "description": "Interactive web based virtual character",
+        "tags": [ "SIA", "web"
+            
+        ]
+    },
+    "categories": {
+        "primary": "output",
+        "secondary": [
+            
+        ],
+        "confidence": 1.0,
+        "inferred": true,
+        "reason": [
+            "io:outbound"
+        ]
+    },
+    "commands": [
+        {
+            "name": "test",
+            "summary": "",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "stop",
+            "summary": "",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "angry",
+            "summary": "",
+            "type": "action",
+            "params": [
+                {
+                    "name": "intensity",
+                    "type": "string",
+                    "required": false,
+                    "description": "",
+                    "inferred": true
+                }
+            ]
+        },
+        {
+            "name": "bored",
+            "summary": "",
+            "type": "action",
+            "params": [
+                {
+                    "name": "intensity",
+                    "type": "string",
+                    "required": false,
+                    "description": "",
+                    "inferred": true
+                }
+            ]
+        },
+        {
+            "name": "crazy",
+            "summary": "",
+            "type": "action",
+            "params": [
+                {
+                    "name": "intensity",
+                    "type": "string",
+                    "required": false,
+                    "description": "",
+                    "inferred": true
+                }
+            ]
+        },
+        {
+            "name": "demanding",
+            "summary": "",
+            "type": "action",
+            "params": [
+                {
+                    "name": "intensity",
+                    "type": "string",
+                    "required": false,
+                    "description": "",
+                    "inferred": true
+                }
+            ]
+        },
+        {
+            "name": "disappointed",
+            "summary": "",
+            "type": "action",
+            "params": [
+                {
+                    "name": "intensity",
+                    "type": "string",
+                    "required": false,
+                    "description": "",
+                    "inferred": true
+                }
+            ]
+        },
+        {
+            "name": "disgust",
+            "summary": "",
+            "type": "action",
+            "params": [
+                {
+                    "name": "intensity",
+                    "type": "string",
+                    "required": false,
+                    "description": "",
+                    "inferred": true
+                }
+            ]
+        },
+        {
+            "name": "happy",
+            "summary": "",
+            "type": "action",
+            "params": [
+                {
+                    "name": "intensity",
+                    "type": "string",
+                    "required": false,
+                    "description": "",
+                    "inferred": true
+                },
+                {
+                    "name": "attack",
+                    "type": "string",
+                    "required": false,
+                    "description": "",
+                    "inferred": true
+                }
+            ]
+        },
+        {
+            "name": "pensively",
+            "summary": "",
+            "type": "action",
+            "params": [
+                {
+                    "name": "intensity",
+                    "type": "string",
+                    "required": false,
+                    "description": "",
+                    "inferred": true
+                }
+            ]
+        },
+        {
+            "name": "sad",
+            "summary": "",
+            "type": "action",
+            "params": [
+                {
+                    "name": "intensity",
+                    "type": "string",
+                    "required": false,
+                    "description": "",
+                    "inferred": true
+                }
+            ]
+        },
+        {
+            "name": "smile",
+            "summary": "",
+            "type": "action",
+            "params": [
+                {
+                    "name": "intensity",
+                    "type": "string",
+                    "required": false,
+                    "description": "",
+                    "inferred": true
+                },
+                {
+                    "name": "attack",
+                    "type": "string",
+                    "required": false,
+                    "description": "",
+                    "inferred": true
+                }
+            ]
+        },
+        {
+            "name": "surprised",
+            "summary": "",
+            "type": "action",
+            "params": [
+                {
+                    "name": "intensity",
+                    "type": "string",
+                    "required": false,
+                    "description": "",
+                    "inferred": true
+                }
+            ]
+        },
+        {
+            "name": "blink",
+            "summary": "",
+            "type": "action",
+            "params": [
+                {
+                    "name": "intensity",
+                    "type": "string",
+                    "required": false,
+                    "description": "",
+                    "inferred": true
+                }
+            ]
+        },
+        {
+            "name": "blow",
+            "summary": "",
+            "type": "action",
+            "params": [
+                {
+                    "name": "intensity",
+                    "type": "string",
+                    "required": false,
+                    "description": "",
+                    "inferred": true
+                }
+            ]
+        },
+        {
+            "name": "wink",
+            "summary": "",
+            "type": "action",
+            "params": [
+                {
+                    "name": "intensity",
+                    "type": "string",
+                    "required": false,
+                    "description": "",
+                    "inferred": true
+                }
+            ]
+        },
+        {
+            "name": "camera",
+            "summary": "",
+            "type": "action",
+            "params": [
+                {
+                    "name": "position",
+                    "type": "string",
+                    "required": false,
+                    "description": "",
+                    "inferred": true
+                }
+            ]
+        },
+        {
+            "name": "lookat",
+            "summary": "",
+            "type": "action",
+            "params": [
+                {
+                    "name": "x",
+                    "type": "string",
+                    "required": false,
+                    "description": "",
+                    "inferred": true
+                },
+                {
+                    "name": "y",
+                    "type": "string",
+                    "required": false,
+                    "description": "",
+                    "inferred": true
+                }
+            ]
+        },
+        {
+            "name": "headtilt",
+            "summary": "",
+            "type": "action",
+            "params": [
+                {
+                    "name": "xrot",
+                    "type": "string",
+                    "required": false,
+                    "description": "",
+                    "inferred": true
+                },
+                {
+                    "name": "yrot",
+                    "type": "string",
+                    "required": false,
+                    "description": "",
+                    "inferred": true
+                },
+                {
+                    "name": "zrot",
+                    "type": "string",
+                    "required": false,
+                    "description": "",
+                    "inferred": true
+                }
+            ]
+        },
+        {
+            "name": "armscrossed",
+            "summary": "",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "armbewegungen",
+            "summary": "",
+            "type": "action",
+            "params": [
+                {
+                    "name": "direction",
+                    "type": "string",
+                    "required": false,
+                    "description": "",
+                    "inferred": true
+                }
+            ]
+        },
+        {
+            "name": "background",
+            "summary": "",
+            "type": "action",
+            "params": [
+                {
+                    "name": "url",
+                    "type": "string",
+                    "required": false,
+                    "description": "",
+                    "inferred": true
+                }
+            ]
+        },
+        {
+            "name": "converse",
+            "summary": "",
+            "type": "action",
+            "params": [
+                {
+                    "name": "direction",
+                    "type": "string",
+                    "required": false,
+                    "description": "",
+                    "inferred": true
+                }
+            ]
+        },
+        {
+            "name": "countleft",
+            "summary": "",
+            "type": "action",
+            "params": [
+                {
+                    "name": "number",
+                    "type": "string",
+                    "required": false,
+                    "description": "",
+                    "inferred": true
+                }
+            ]
+        },
+        {
+            "name": "emphasis",
+            "summary": "",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "explain",
+            "summary": "",
+            "type": "action",
+            "params": [
+                {
+                    "name": "number",
+                    "type": "string",
+                    "required": false,
+                    "description": "",
+                    "inferred": true
+                }
+            ]
+        },
+        {
+            "name": "foldhands",
+            "summary": "",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "hairback",
+            "summary": "",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "handontable",
+            "summary": "",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "handscircle",
+            "summary": "",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "handstogether",
+            "summary": "",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "headshake",
+            "summary": "",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "interogative",
+            "summary": "",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "introduce",
+            "summary": "",
+            "type": "action",
+            "params": [
+                {
+                    "name": "number",
+                    "type": "string",
+                    "required": false,
+                    "description": "",
+                    "inferred": true
+                }
+            ]
+        },
+        {
+            "name": "leftfist",
+            "summary": "",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "legscrossed",
+            "summary": "",
+            "type": "action",
+            "params": [
+                {
+                    "name": "direction",
+                    "type": "string",
+                    "required": false,
+                    "description": "",
+                    "inferred": true
+                }
+            ]
+        },
+        {
+            "name": "lookatdirection",
+            "summary": "",
+            "type": "action",
+            "params": [
+                {
+                    "name": "clockX",
+                    "type": "string",
+                    "required": false,
+                    "description": "",
+                    "inferred": true
+                },
+                {
+                    "name": "clockY",
+                    "type": "string",
+                    "required": false,
+                    "description": "",
+                    "inferred": true
+                }
+            ]
+        },
+        {
+            "name": "lookleft",
+            "summary": "",
+            "type": "action",
+            "params": [
+                {
+                    "name": "stepping",
+                    "type": "string",
+                    "required": false,
+                    "description": "",
+                    "inferred": true
+                }
+            ]
+        },
+        {
+            "name": "lookright",
+            "summary": "",
+            "type": "action",
+            "params": [
+                {
+                    "name": "stepping",
+                    "type": "string",
+                    "required": false,
+                    "description": "",
+                    "inferred": true
+                }
+            ]
+        },
+        {
+            "name": "luemmeln",
+            "summary": "",
+            "type": "action",
+            "params": [
+                {
+                    "name": "variant",
+                    "type": "string",
+                    "required": false,
+                    "description": "",
+                    "inferred": true
+                }
+            ]
+        },
+        {
+            "name": "nod",
+            "summary": "",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "openarm",
+            "summary": "",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "openfists",
+            "summary": "",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "pointopenpalm",
+            "summary": "",
+            "type": "action",
+            "params": [
+                {
+                    "name": "direction",
+                    "type": "string",
+                    "required": false,
+                    "description": "",
+                    "inferred": true
+                }
+            ]
+        },
+        {
+            "name": "pointovershoulder",
+            "summary": "",
+            "type": "action",
+            "params": [
+                {
+                    "name": "direction",
+                    "type": "string",
+                    "required": false,
+                    "description": "",
+                    "inferred": true
+                }
+            ]
+        },
+        {
+            "name": "pointdownleft",
+            "summary": "",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "pointdownright",
+            "summary": "",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "protectassertive",
+            "summary": "",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "protectdefensive",
+            "summary": "",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "shakehead",
+            "summary": "",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "showpalm",
+            "summary": "",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "showpalmdirection",
+            "summary": "",
+            "type": "action",
+            "params": [
+                {
+                    "name": "direction",
+                    "type": "string",
+                    "required": false,
+                    "description": "",
+                    "inferred": true
+                }
+            ]
+        },
+        {
+            "name": "sitbrave",
+            "summary": "",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "sit",
+            "summary": "",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "sitnodd",
+            "summary": "",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "sittalk",
+            "summary": "",
+            "type": "action",
+            "params": [
+                {
+                    "name": "step",
+                    "type": "string",
+                    "required": false,
+                    "description": "",
+                    "inferred": true
+                }
+            ]
+        },
+        {
+            "name": "supportive",
+            "summary": "",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "think",
+            "summary": "",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "ups",
+            "summary": "",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "wave",
+            "summary": "",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "sequence",
+            "summary": "",
+            "type": "action",
+            "params": [
+                {
+                    "name": "name",
+                    "type": "string",
+                    "required": false,
+                    "description": "",
+                    "inferred": true
+                }
+            ]
+        }
+    ],
+    "writes": [
+        {
+            "var": "<dynamic>",
+            "expression": "mVSMCharacterTurnVar",
+            "type": "unknown",
+            "scope": "global",
+            "inferred": true
+        },
+        {
+            "var": "<dynamic>",
+            "expression": "mVSMCharacterSpeakingVar",
+            "type": "unknown",
+            "scope": "global",
+            "inferred": true
+        },
+        {
+            "var": "<dynamic>",
+            "expression": "mVSMCharacterGestureVar",
+            "type": "unknown",
+            "scope": "global",
+            "inferred": true
+        },
+        {
+            "var": "<dynamic>",
+            "expression": "sceneflowVar",
+            "type": "unknown",
+            "scope": "global",
+            "inferred": true
+        },
+        {
+            "var": "<dynamic>",
+            "expression": "mVSMCharacterSystemVar",
+            "type": "unknown",
+            "scope": "global",
+            "inferred": true
+        }
+    ],
+    "reads": [
+        
+    ],
+    "config": [
+        {
+            "key": "wss_port",
+            "type": "string",
+            "required": false,
+            "default": "",
+            "description": "",
+            "inferred": true
+        },
+        {
+            "key": "ws_port",
+            "type": "string",
+            "required": false,
+            "default": "",
+            "description": "",
+            "inferred": true
+        },
+        {
+            "key": "sceneflowVar",
+            "type": "string",
+            "required": false,
+            "default": "",
+            "description": "",
+            "inferred": true
+        },
+        {
+            "key": "characterSpeaking",
+            "type": "string",
+            "required": false,
+            "default": "",
+            "description": "",
+            "inferred": true
+        },
+        {
+            "key": "certificate",
+            "type": "string",
+            "required": false,
+            "default": "",
+            "description": "",
+            "inferred": true
+        }
+    ]
+}

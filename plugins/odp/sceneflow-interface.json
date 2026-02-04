@@ -1,0 +1,303 @@
+{
+    "schemaVersion": "1.0",
+    "generated": true,
+    "plugin": {
+        "id": "odp",
+        "name": "odp",
+        "className": "ODPExecutor",
+        "executors": [
+            "ODPExecutor"
+        ],
+        "description": "",
+        "tags": [
+            
+        ]
+    },
+    "categories": {
+        "primary": "input",
+        "secondary": [
+            
+        ],
+        "confidence": 1.0,
+        "inferred": true,
+        "reason": [
+            "io:inbound"
+        ]
+    },
+    "commands": [
+        {
+            "name": "stop",
+            "summary": "",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "charspeak",
+            "summary": "",
+            "type": "action",
+            "params": [
+                {
+                    "name": "state",
+                    "type": "string",
+                    "required": false,
+                    "description": "",
+                    "inferred": true
+                }
+            ]
+        },
+        {
+            "name": "send",
+            "summary": "",
+            "type": "action",
+            "params": [
+                {
+                    "name": "task",
+                    "type": "string",
+                    "required": false,
+                    "description": "",
+                    "inferred": true
+                },
+                {
+                    "name": "func",
+                    "type": "string",
+                    "required": false,
+                    "description": "",
+                    "inferred": true
+                },
+                {
+                    "name": "cont",
+                    "type": "string",
+                    "required": false,
+                    "description": "",
+                    "inferred": true
+                },
+                {
+                    "name": "post",
+                    "type": "string",
+                    "required": false,
+                    "description": "",
+                    "inferred": true
+                }
+            ]
+        }
+    ],
+    "writes": [
+        {
+            "var": "userUtteranceMainTopic",
+            "type": "string",
+            "scope": "global",
+            "inferred": true
+        },
+        {
+            "var": "userUtterance",
+            "type": "string",
+            "scope": "global",
+            "inferred": true
+        },
+        {
+            "var": "transcriptionSource",
+            "type": "string",
+            "scope": "global",
+            "inferred": true
+        },
+        {
+            "var": "transcriptionID",
+            "type": "string",
+            "scope": "global",
+            "inferred": true
+        },
+        {
+            "var": "debug",
+            "type": "string",
+            "scope": "global",
+            "inferred": true
+        },
+        {
+            "var": "userUtterancePronoun",
+            "type": "float",
+            "scope": "global",
+            "inferred": true
+        },
+        {
+            "var": "userUtteranceMyself",
+            "type": "float",
+            "scope": "global",
+            "inferred": true
+        },
+        {
+            "var": "userUtteranceWe",
+            "type": "float",
+            "scope": "global",
+            "inferred": true
+        },
+        {
+            "var": "userUtteranceSelf",
+            "type": "float",
+            "scope": "global",
+            "inferred": true
+        },
+        {
+            "var": "userUtteranceYou",
+            "type": "float",
+            "scope": "global",
+            "inferred": true
+        },
+        {
+            "var": "userUtteranceOther",
+            "type": "float",
+            "scope": "global",
+            "inferred": true
+        },
+        {
+            "var": "userUtterancePosAffect",
+            "type": "float",
+            "scope": "global",
+            "inferred": true
+        },
+        {
+            "var": "userUtteranceNegAffect",
+            "type": "float",
+            "scope": "global",
+            "inferred": true
+        },
+        {
+            "var": "userUtteranceOptimism",
+            "type": "float",
+            "scope": "global",
+            "inferred": true
+        },
+        {
+            "var": "userUtteranceAnxiety",
+            "type": "float",
+            "scope": "global",
+            "inferred": true
+        },
+        {
+            "var": "userUtteranceDiscrepancy",
+            "type": "float",
+            "scope": "global",
+            "inferred": true
+        },
+        {
+            "var": "userUtteranceInsight",
+            "type": "float",
+            "scope": "global",
+            "inferred": true
+        },
+        {
+            "var": "userUtteranceTentative",
+            "type": "float",
+            "scope": "global",
+            "inferred": true
+        },
+        {
+            "var": "userUtteranceBody",
+            "type": "float",
+            "scope": "global",
+            "inferred": true
+        },
+        {
+            "var": "userUtteranceSex",
+            "type": "float",
+            "scope": "global",
+            "inferred": true
+        },
+        {
+            "var": "userUtteranceEat",
+            "type": "float",
+            "scope": "global",
+            "inferred": true
+        },
+        {
+            "var": "userUtteranceSleep",
+            "type": "float",
+            "scope": "global",
+            "inferred": true
+        },
+        {
+            "var": "userUtteranceSchool",
+            "type": "float",
+            "scope": "global",
+            "inferred": true
+        },
+        {
+            "var": "userUtteranceJob",
+            "type": "float",
+            "scope": "global",
+            "inferred": true
+        },
+        {
+            "var": "userUtteranceAchieve",
+            "type": "float",
+            "scope": "global",
+            "inferred": true
+        },
+        {
+            "var": "userUtteranceTotalWords",
+            "type": "int",
+            "scope": "global",
+            "inferred": true
+        },
+        {
+            "var": "userUtteranceTopics",
+            "type": "string",
+            "scope": "global",
+            "inferred": true
+        },
+        {
+            "var": "odpstate",
+            "type": "string",
+            "scope": "global",
+            "inferred": true
+        },
+        {
+            "var": "user_speaking",
+            "type": "bool",
+            "scope": "global",
+            "inferred": true
+        },
+        {
+            "var": "<dynamic>",
+            "expression": "mSceneFlowTaskVar",
+            "type": "unknown",
+            "scope": "global",
+            "inferred": true
+        },
+        {
+            "var": "<dynamic>",
+            "expression": "mSceneFlowFuncVar",
+            "type": "unknown",
+            "scope": "global",
+            "inferred": true
+        },
+        {
+            "var": "<dynamic>",
+            "expression": "mSceneFlowContVar",
+            "type": "unknown",
+            "scope": "global",
+            "inferred": true
+        },
+        {
+            "var": "<dynamic>",
+            "expression": "mSceneFlowNumbVar",
+            "type": "unknown",
+            "scope": "global",
+            "inferred": true
+        },
+        {
+            "var": "<dynamic>",
+            "expression": "mSceneFlowActiVar",
+            "type": "unknown",
+            "scope": "global",
+            "inferred": true
+        }
+    ],
+    "reads": [
+        
+    ],
+    "config": [
+        
+    ]
+}

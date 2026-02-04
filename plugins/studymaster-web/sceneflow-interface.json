@@ -1,0 +1,73 @@
+{
+    "schemaVersion": "1.0",
+    "generated": false,
+    "plugin": {
+        "id": "studymaster-web",
+        "name": "studymaster-web",
+        "className": "WebStudyMasterExecutor",
+        "executors": [
+            "WebStudyMasterExecutor"
+        ],
+        "description": "Wizard of Oz interface for remote control VSM projects",
+        "tags": [
+            "control"
+        ]
+    },
+    "categories": {
+        "primary": "input",
+        "secondary": [
+            "output"
+        ],
+        "confidence": 1.0,
+        "inferred": true,
+        "reason": [
+            "io:outbound"
+        ]
+    },
+    "commands": [
+        {
+            "name": "stop",
+            "summary": "",
+            "type": "action",
+            "params": [
+                
+            ]
+        }
+    ],
+    "writes": [
+        {
+            "var": "<dynamic>",
+            "expression": "mGUIConnectedVar",
+            "type": "unknown",
+            "scope": "global",
+            "inferred": true
+        },
+        {
+            "var": "<dynamic>",
+            "expression": "var",
+            "type": "unknown",
+            "scope": "global",
+            "inferred": true
+        },
+        {
+            "var": "<dynamic>",
+            "expression": "mSceneflowGoVar",
+            "type": "unknown",
+            "scope": "global",
+            "inferred": true
+        },
+        {
+            "var": "<dynamic>",
+            "expression": "sSTUDYMASTER_INFO_VAR",
+            "type": "unknown",
+            "scope": "global",
+            "inferred": true
+        }
+    ],
+    "reads": [
+        
+    ],
+    "config": [
+        
+    ]
+}

@@ -1,0 +1,66 @@
+{
+    "schemaVersion": "1.0",
+    "generated": false,
+    "plugin": {
+        "id": "fortunecookie",
+        "name": "fortunecookie",
+        "className": "FortuneCookieExecutor",
+        "executors": [
+            "FortuneCookieExecutor"
+        ],
+        "description": "QR code based fortune cookie generator",
+        "tags": [
+            "gimmick", "fortune cookie"
+        ]
+    },
+    "categories": {
+        "primary": "processing",
+        "secondary": [
+            
+        ],
+        "confidence": 1.0,
+        "inferred": true,
+        "reason": [
+            "logic:state"
+        ]
+    },
+    "commands": [
+        {
+            "name": "getCookie",
+            "summary": "",
+            "type": "action",
+            "params": [
+                
+            ]
+        }
+    ],
+    "writes": [
+        {
+            "var": "code",
+            "type": "string",
+            "scope": "global",
+            "inferred": true
+        }
+    ],
+    "reads": [
+        
+    ],
+    "config": [
+        {
+            "key": "cookies",
+            "type": "string",
+            "required": false,
+            "default": "",
+            "description": "",
+            "inferred": true
+        },
+        {
+            "key": "users",
+            "type": "string",
+            "required": false,
+            "default": "",
+            "description": "",
+            "inferred": true
+        }
+    ]
+}

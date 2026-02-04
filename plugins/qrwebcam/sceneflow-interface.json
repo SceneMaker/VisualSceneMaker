@@ -1,0 +1,51 @@
+{
+    "schemaVersion": "1.0",
+    "generated": true,
+    "plugin": {
+        "id": "qrwebcam",
+        "name": "qrwebcam",
+        "className": "",
+        "executors": [
+            
+        ],
+        "description": "",
+        "tags": [
+            
+        ]
+    },
+    "categories": {
+        "primary": "processing",
+        "secondary": [
+            
+        ],
+        "confidence": 1.0,
+        "inferred": true,
+        "reason": [
+            "logic:state"
+        ]
+    },
+    "commands": [
+        {
+            "name": "grab",
+            "summary": "",
+            "type": "action",
+            "params": [
+                
+            ]
+        }
+    ],
+    "writes": [
+        {
+            "var": "code",
+            "type": "string",
+            "scope": "global",
+            "inferred": true
+        }
+    ],
+    "reads": [
+        
+    ],
+    "config": [
+        
+    ]
+}

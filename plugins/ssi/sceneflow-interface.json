@@ -1,0 +1,225 @@
+{
+    "schemaVersion": "1.0",
+    "generated": false,
+    "plugin": {
+        "id": "ssi",
+        "name": "ssi",
+        "className": "SSICmdExecutor",
+        "executors": [
+            "SSICmdExecutor"
+        ],
+        "description": "Social signal analsis",
+        "tags": [ "analysis", "social signals"
+            
+        ]
+    },
+    "categories": {
+        "primary": "input",
+        "secondary": [
+            "processing"
+        ],
+        "confidence": 1.0,
+        "inferred": false,
+        "reason": [
+            "logic:state"
+        ]
+    },
+    "commands": [
+        {
+            "name": "start",
+            "summary": "",
+            "type": "action",
+            "params": [
+                {
+                    "name": "pipe",
+                    "type": "string",
+                    "required": false,
+                    "description": "",
+                    "inferred": true
+                }
+            ]
+        },
+        {
+            "name": "stop",
+            "summary": "",
+            "type": "action",
+            "params": [
+                {
+                    "name": "pipe",
+                    "type": "string",
+                    "required": false,
+                    "description": "",
+                    "inferred": true
+                }
+            ]
+        },
+        {
+            "name": "request",
+            "summary": "",
+            "type": "action",
+            "params": [
+                {
+                    "name": "var",
+                    "type": "string",
+                    "required": false,
+                    "description": "",
+                    "inferred": true
+                },
+                {
+                    "name": "values",
+                    "type": "string",
+                    "required": false,
+                    "description": "",
+                    "inferred": true
+                }
+            ]
+        },
+        {
+            "name": "log",
+            "summary": "",
+            "type": "action",
+            "params": [
+                {
+                    "name": "content",
+                    "type": "string",
+                    "required": false,
+                    "description": "",
+                    "inferred": true
+                }
+            ]
+        }
+    ],
+    "writes": [
+        {
+            "var": "<dynamic>",
+            "expression": "mLogVar",
+            "type": "unknown",
+            "scope": "global",
+            "inferred": true
+        },
+        {
+            "var": "<dynamic>",
+            "expression": "var",
+            "type": "unknown",
+            "scope": "global",
+            "inferred": true
+        }
+    ],
+    "reads": [
+        
+    ],
+    "config": [
+        {
+            "key": "logvar",
+            "type": "string",
+            "required": false,
+            "default": "",
+            "description": "",
+            "inferred": true
+        },
+        {
+            "key": "loghost",
+            "type": "string",
+            "required": false,
+            "default": "",
+            "description": "",
+            "inferred": true
+        },
+        {
+            "key": "logport",
+            "type": "string",
+            "required": false,
+            "default": "",
+            "description": "",
+            "inferred": true
+        },
+        {
+            "key": "pipes",
+            "type": "string",
+            "required": false,
+            "default": "",
+            "description": "",
+            "inferred": true
+        },
+        {
+            "key": "broadcast",
+            "type": "string",
+            "required": false,
+            "default": "",
+            "description": "",
+            "inferred": true
+        },
+        {
+            "key": "broadcastport",
+            "type": "string",
+            "required": false,
+            "default": "",
+            "description": "",
+            "inferred": true
+        },
+        {
+            "key": "listentostudymaster",
+            "type": "string",
+            "required": false,
+            "default": "",
+            "description": "",
+            "inferred": true
+        },
+        {
+            "key": "studymasterport",
+            "type": "string",
+            "required": false,
+            "default": "",
+            "description": "",
+            "inferred": true
+        },
+        {
+            "key": "hlhost",
+            "type": "string",
+            "required": false,
+            "default": "",
+            "description": "",
+            "inferred": true
+        },
+        {
+            "key": "hlport",
+            "type": "string",
+            "required": false,
+            "default": "",
+            "description": "",
+            "inferred": true
+        },
+        {
+            "key": "slhost",
+            "type": "string",
+            "required": false,
+            "default": "",
+            "description": "",
+            "inferred": true
+        },
+        {
+            "key": "slport",
+            "type": "string",
+            "required": false,
+            "default": "",
+            "description": "",
+            "inferred": true
+        },
+        {
+            "key": "srhost",
+            "type": "string",
+            "required": false,
+            "default": "",
+            "description": "",
+            "inferred": true
+        },
+        {
+            "key": "srport",
+            "type": "string",
+            "required": false,
+            "default": "",
+            "description": "",
+            "inferred": true
+        }
+    ]
+}
