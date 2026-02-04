@@ -1,0 +1,28 @@
+{
+  "providers": {
+    "de.dfki.vsm.xtension.yallah.YallahExecutor": {
+      "plugin": {
+        "required": [
+          {
+            "name": "launchMode",
+            "type": "list",
+            "default": "None",
+            "options": ["None", "App", "WebPage"],
+            "description": "How to launch the Yallah client application"
+          },
+          {
+            "name": "port",
+            "type": "string",
+            "default": 5000,
+            "description": "The port on which to listen the incoming WebSocket connections"
+          }
+        ],
+        "optional": []
+      },
+      "agent": {
+        "required": [],
+        "optional": []
+      }
+    }
+  }
+}

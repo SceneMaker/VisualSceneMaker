@@ -1938,6 +1938,7 @@ summary {
   padding: 0.6rem;
   max-height: 75vh;
   overflow: hidden;
+  grid-template-rows: auto minmax(0, 1fr);
 }
 
 .modal.monitor-modal {
@@ -2589,11 +2590,17 @@ summary {
   gap: 0.3rem;
   min-width: 0;
   min-height: 0;
-  overflow: auto;
+  overflow: hidden;
   align-content: start;
   background: #e7e1d8;
   border-radius: var(--radius-md);
   padding: 0.2rem;
+}
+
+.project-config-main-scroll {
+  display: grid;
+  min-height: 0;
+  height: 100%;
 }
 
 .project-config-panel {
@@ -2604,6 +2611,22 @@ summary {
   box-shadow: none;
   display: grid;
   gap: 0.25rem;
+}
+
+.project-config-panel--scroll {
+  grid-template-rows: auto minmax(0, 1fr);
+  min-height: 0;
+  max-height: 100%;
+  overflow: hidden;
+}
+
+.project-config-panel-body {
+  display: grid;
+  gap: 0.25rem;
+  min-height: 0;
+  max-height: 100%;
+  overflow: auto;
+  padding-right: 0.1rem;
 }
 
 .project-config-panel-header {
@@ -2702,7 +2725,8 @@ summary {
   border: 1px solid var(--stroke);
   background: #f9f6ed;
   overflow: hidden;
-  display: grid;
+  display: flex;
+  flex-direction: column;
 }
 
 .project-config-table-header {
@@ -2715,6 +2739,7 @@ summary {
   letter-spacing: 0.08em;
   color: var(--muted);
   background: #e7e1d8;
+  flex: 0 0 auto;
 }
 
 .project-config-table-row,
@@ -2724,6 +2749,7 @@ summary {
   gap: 0.3rem;
   align-items: center;
   padding: 0.2rem 0.35rem;
+  flex: 0 0 auto;
 }
 
 .project-config-table-row {
@@ -2735,11 +2761,18 @@ summary {
   font-size: 0.85rem;
   color: var(--muted);
   border-top: 1px solid var(--stroke);
+  flex: 0 0 auto;
 }
 
 .project-config-table-add {
   border-top: 1px dashed var(--stroke);
   background: #e7e1d8;
+}
+
+.project-config-table-body {
+  display: grid;
+  max-height: 220px;
+  overflow: auto;
 }
 
 .project-config-table-row input,

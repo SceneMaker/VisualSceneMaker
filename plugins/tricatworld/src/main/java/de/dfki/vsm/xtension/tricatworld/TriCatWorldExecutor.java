@@ -1,8 +1,5 @@
 package de.dfki.vsm.xtension.tricatworld;
 
-import de.dfki.vsm.model.project.property.ExportableProperties;
-import de.dfki.vsm.model.project.property.ProjectProperty;
-import de.dfki.vsm.model.project.property.value.ProjectValueProperty;
 import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
 import de.dfki.vsm.runtime.activity.AbstractActivity.Type;
@@ -16,7 +13,6 @@ import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.jpl.JPLEngine;
 import de.dfki.vsm.util.xml.XMLUtilities;
 import de.dfki.vsm.util.WordMapping;
-import de.dfki.vsm.xtension.tricatworld.util.property.TricatWorldtProjectProperty;
 import de.dfki.vsm.xtension.tricatworld.xml.command.TriCatWorldCommand;
 import de.dfki.vsm.xtension.tricatworld.xml.command.object.TriCatWorldCmdObject;
 import de.dfki.vsm.xtension.tricatworld.xml.command.object.action.TriCatWorldActObject;
@@ -37,7 +33,7 @@ import java.util.Map.Entry;
  * @author Gregor Mehlmann
  * @author Patrick Gebhard
  */
-public final class TriCatWorldExecutor extends ActivityExecutor implements ExportableProperties {
+public final class TriCatWorldExecutor extends ActivityExecutor {
 
     // The tworld listener
     private TriCatWorldListener mListener;
@@ -55,7 +51,6 @@ public final class TriCatWorldExecutor extends ActivityExecutor implements Expor
     private final boolean mUseJPL;
     // The flag for executables
     private final boolean mUseExe;
-    private final ExportableProperties exportableProperties = new TricatWorldtProjectProperty();
 
     // Construct the executor
     public TriCatWorldExecutor(
@@ -724,13 +719,4 @@ public final class TriCatWorldExecutor extends ActivityExecutor implements Expor
         return file.exists() && file.isDirectory();
     }
 
-    @Override
-    public Map<ProjectProperty, ProjectValueProperty> getExportableProperties() {
-        return exportableProperties.getExportableProperties();
-    }
-
-    @Override
-    public Map<ProjectProperty, ProjectValueProperty> getExportableAgentProperties() {
-        return null;
-    }
 }

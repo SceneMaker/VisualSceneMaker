@@ -769,6 +769,7 @@
   let lastConfigProjectId = "";
   let lastProjectConfigProjectId = "";
   let projectConfigDialogOpen = false;
+  let projectConfigPrevBodyOverflow = "";
   let projectConfig = null;
   let projectConfigDraft = null;
   let projectConfigLoading = false;
@@ -2719,6 +2720,8 @@
     if (!selectedProjectId) return;
     rememberFocus();
     projectConfigDialogOpen = true;
+    projectConfigPrevBodyOverflow = document.body.style.overflow || "";
+    document.body.style.overflow = "hidden";
     projectConfigSelection = { type: "devices" };
     projectConfigError = "";
     projectConfigSaved = null;
@@ -2747,6 +2750,7 @@
       clearTimeout(projectConfigApplyTimer);
       projectConfigApplyTimer = null;
     }
+    document.body.style.overflow = projectConfigPrevBodyOverflow;
     restoreFocus();
   }
 
@@ -10380,6 +10384,7 @@
             {:else if projectConfigError}
               <p class="error">{projectConfigError}</p>
             {:else}
+              <div class="project-config-main-scroll">
               {#if projectConfigSelection.type === "devices"}
                 <div class="project-config-panel">
                   <div class="project-config-panel-header">
@@ -10437,7 +10442,7 @@
                   </div>
                 </div>
               {:else if projectConfigSelection.type === "plugin" && selectedProjectPlugin}
-                <div class="project-config-panel">
+                <div class="project-config-panel project-config-panel--scroll">
                   <div class="project-config-panel-header">
                     <div>
                       <h4>Device</h4>
@@ -10446,78 +10451,81 @@
                       Delete
                     </button>
                   </div>
-                  <div class="project-config-info-grid">
-                    <div class="project-config-info-row">
-                      <label for="plugin-name" class="project-config-info-label">Name</label>
-                      <input
-                        id="plugin-name"
-                        value={selectedProjectPlugin.name}
-                        on:input={(event) => updatePluginName(projectConfigSelection.pluginIndex, event.target.value)}
-                      />
-                      <span class="project-config-info-label">Load plugin</span>
-                    </div>
-                    <div class="project-config-info-row">
-                      <label class="project-config-info-label">Module</label>
-                      <div class="project-config-module">
-                        <span class="project-config-info-value">{selectedProjectPlugin.className || "Unknown"}</span>
-                        <label class="project-config-module-toggle">
-                          <input
-                            type="checkbox"
-                            checked={selectedProjectPlugin.load}
-                            on:change={(event) =>
-                              updatePluginField(projectConfigSelection.pluginIndex, "load", event.target.checked)
-                            }
-                          />
-                        </label>
+                  <div class="project-config-panel-body">
+                    <div class="project-config-info-grid">
+                      <div class="project-config-info-row">
+                        <label for="plugin-name" class="project-config-info-label">Name</label>
+                        <input
+                          id="plugin-name"
+                          value={selectedProjectPlugin.name}
+                          on:input={(event) => updatePluginName(projectConfigSelection.pluginIndex, event.target.value)}
+                        />
+                        <span class="project-config-info-label">Load plugin</span>
+                      </div>
+                      <div class="project-config-info-row">
+                        <label class="project-config-info-label">Module</label>
+                        <div class="project-config-module">
+                          <span class="project-config-info-value">{selectedProjectPlugin.className || "Unknown"}</span>
+                          <label class="project-config-module-toggle">
+                            <input
+                              type="checkbox"
+                              checked={selectedProjectPlugin.load}
+                              on:change={(event) =>
+                                updatePluginField(projectConfigSelection.pluginIndex, "load", event.target.checked)
+                              }
+                            />
+                          </label>
+                        </div>
                       </div>
                     </div>
-                  </div>
                   <div class="project-config-table">
                     <div class="project-config-table-header">
                       <span>Key</span>
                       <span>Value</span>
                       <span></span>
                     </div>
-                    {#if selectedProjectPlugin.features.length === 0}
-                      <div class="project-config-table-empty">No entries yet.</div>
-                    {:else}
-                      {#each selectedProjectPlugin.features as feature, featureIndex}
-                        <div class="project-config-table-row">
-                          <input
-                            list="plugin-key-hints"
-                            value={feature.key}
-                            placeholder="key"
-                            on:input={(event) =>
-                              updatePluginFeature(
-                                projectConfigSelection.pluginIndex,
-                                featureIndex,
-                                "key",
-                                event.target.value
-                              )
-                            }
-                          />
-                          <input
-                            value={feature.value}
-                            placeholder="value"
-                            on:input={(event) =>
-                              updatePluginFeature(
-                                projectConfigSelection.pluginIndex,
-                                featureIndex,
-                                "value",
-                                event.target.value
-                              )
-                            }
-                          />
-                          <button
-                            type="button"
-                            class="ghost icon-button danger"
-                            on:click={() => removePluginFeature(projectConfigSelection.pluginIndex, featureIndex)}
-                          >
-                            <IconTrash className="icon" />
-                          </button>
-                        </div>
-                      {/each}
-                    {/if}
+                    <div class="project-config-table-body">
+                      {#if selectedProjectPlugin.features.length === 0}
+                        <div class="project-config-table-empty">No entries yet.</div>
+                      {:else}
+                        {#each selectedProjectPlugin.features as feature, featureIndex}
+                          <div class="project-config-table-row">
+                            <input
+                              list="plugin-key-hints"
+                              value={feature.key}
+                              placeholder="key"
+                              on:input={(event) =>
+                                updatePluginFeature(
+                                  projectConfigSelection.pluginIndex,
+                                  featureIndex,
+                                  "key",
+                                  event.target.value
+                                )
+                              }
+                            />
+                            <input
+                              value={feature.value}
+                              placeholder="value"
+                              on:input={(event) =>
+                                updatePluginFeature(
+                                  projectConfigSelection.pluginIndex,
+                                  featureIndex,
+                                  "value",
+                                  event.target.value
+                                )
+                              }
+                            />
+                            <button
+                              type="button"
+                              class="ghost icon-button danger"
+                              on:click={() => removePluginFeature(projectConfigSelection.pluginIndex, featureIndex)}
+                            >
+                              <IconTrash className="icon" />
+                            </button>
+                          </div>
+                        {/each}
+                      {/if}
+                    </div>
                     <div class="project-config-table-add">
                       <input list="plugin-key-hints" placeholder="key" bind:value={projectConfigNewFeature.key} />
                       <input placeholder="value" bind:value={projectConfigNewFeature.value} />
@@ -10529,67 +10537,68 @@
                       {/each}
                     </datalist>
                   </div>
-                  {#if selectedProjectPluginKeysLoading}
-                    <p class="muted">Loading key hints...</p>
-                  {:else if selectedProjectPluginKeysError}
-                    <p class="error">{selectedProjectPluginKeysError}</p>
-                  {:else if selectedProjectPluginKeys}
-                    {#if selectedProjectPluginKeys.supported === false}
-                      <p class="muted">No key hints provided by this extension.</p>
-                    {:else}
-                      <div class="project-config-keylist">
-                        <div class="project-config-keylist-title">Key hints</div>
-                        <div class="project-config-keygrid">
-                          <div>
-                            <div class="project-config-key-title">Required</div>
-                            {#if selectedProjectPluginKeys.required?.length}
-                              <div class="project-config-key-list">
-                                {#each selectedProjectPluginKeys.required as entry}
-                                  <div class="project-config-key-item">
-                                    <span>{entry.name}</span>
-                                    {#if entry.description}
-                                      <span class="project-config-key-desc">{entry.description}</span>
-                                    {/if}
-                                  </div>
-                                {/each}
-                              </div>
-                            {:else}
-                              <div class="muted">None</div>
-                            {/if}
-                          </div>
-                          <div>
-                            <div class="project-config-key-title">Optional</div>
-                            {#if selectedProjectPluginKeys.optional?.length}
-                              <div class="project-config-key-list">
-                                {#each selectedProjectPluginKeys.optional as entry}
-                                  <div class="project-config-key-item">
-                                    <span>{entry.name}</span>
-                                    {#if entry.description}
-                                      <span class="project-config-key-desc">{entry.description}</span>
-                                    {/if}
-                                  </div>
-                                {/each}
-                              </div>
-                            {:else}
-                              <div class="muted">None</div>
-                            {/if}
+                    {#if selectedProjectPluginKeysLoading}
+                      <p class="muted">Loading key hints...</p>
+                    {:else if selectedProjectPluginKeysError}
+                      <p class="error">{selectedProjectPluginKeysError}</p>
+                    {:else if selectedProjectPluginKeys}
+                      {#if selectedProjectPluginKeys.supported === false}
+                        <p class="muted">No key hints provided by this extension.</p>
+                      {:else}
+                        <div class="project-config-keylist">
+                          <div class="project-config-keylist-title">Key hints</div>
+                          <div class="project-config-keygrid">
+                            <div>
+                              <div class="project-config-key-title">Required</div>
+                              {#if selectedProjectPluginKeys.required?.length}
+                                <div class="project-config-key-list">
+                                  {#each selectedProjectPluginKeys.required as entry}
+                                    <div class="project-config-key-item">
+                                      <span>{entry.name}</span>
+                                      {#if entry.description}
+                                        <span class="project-config-key-desc">{entry.description}</span>
+                                      {/if}
+                                    </div>
+                                  {/each}
+                                </div>
+                              {:else}
+                                <div class="muted">None</div>
+                              {/if}
+                            </div>
+                            <div>
+                              <div class="project-config-key-title">Optional</div>
+                              {#if selectedProjectPluginKeys.optional?.length}
+                                <div class="project-config-key-list">
+                                  {#each selectedProjectPluginKeys.optional as entry}
+                                    <div class="project-config-key-item">
+                                      <span>{entry.name}</span>
+                                      {#if entry.description}
+                                        <span class="project-config-key-desc">{entry.description}</span>
+                                      {/if}
+                                    </div>
+                                  {/each}
+                                </div>
+                              {:else}
+                                <div class="muted">None</div>
+                              {/if}
+                            </div>
                           </div>
                         </div>
-                      </div>
+                      {/if}
                     {/if}
-                  {/if}
-                  <div class="project-config-agent-add">
-                    <div class="project-config-agent-add-title">Add agent</div>
-                    <div class="project-config-agent-add-row">
-                      <input placeholder="Agent name" bind:value={projectConfigNewAgent.name} />
-                      <button type="button" class="primary" on:click={() => addAgent(selectedProjectPlugin.name)}>
-                        Add
-                      </button>
+                    <div class="project-config-agent-add">
+                      <div class="project-config-agent-add-title">Add agent</div>
+                      <div class="project-config-agent-add-row">
+                        <input placeholder="Agent name" bind:value={projectConfigNewAgent.name} />
+                        <button type="button" class="primary" on:click={() => addAgent(selectedProjectPlugin.name)}>
+                          Add
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
               {:else if projectConfigSelection.type === "agent" && selectedProjectAgent}
-                <div class="project-config-panel">
+                <div class="project-config-panel project-config-panel--scroll">
                   <div class="project-config-panel-header">
                     <div>
                       <h4>Agent</h4>
@@ -10599,83 +10608,86 @@
                       Delete
                     </button>
                   </div>
-                  <div class="project-config-info-grid">
-                    <div class="project-config-info-row">
-                      <label for="agent-name-edit" class="project-config-info-label">Agent name</label>
-                      <input
-                        id="agent-name-edit"
-                        value={selectedProjectAgent.name}
-                        on:input={(event) => updateAgentField(projectConfigSelection.agentIndex, "name", event.target.value)}
-                      />
-                    </div>
-                    <div class="project-config-info-row">
-                      <label for="agent-device-edit" class="project-config-info-label">Device</label>
-                      <select
-                        id="agent-device-edit"
-                        value={selectedProjectAgent.device}
-                        on:change={(event) => updateAgentField(projectConfigSelection.agentIndex, "device", event.target.value)}
-                      >
-                        {#each projectConfigPlugins as plugin}
-                          <option value={plugin.name}>{plugin.name}</option>
-                        {/each}
-                      </select>
-                    </div>
-                    <div class="project-config-info-row">
-                      <span class="project-config-info-label">Class</span>
-                      <div class="project-config-inline">
-                        <span class="project-config-info-value">{activeProjectPlugin?.className || "Unknown"}</span>
-                        <label class="project-config-toggle project-config-inline-toggle">
-                          <span>Load plugin</span>
-                          <input
-                            type="checkbox"
-                            checked={activeProjectPlugin?.load ?? true}
-                            disabled={activeProjectPluginIndex < 0}
-                            on:change={(event) => {
-                              if (activeProjectPluginIndex >= 0) {
-                                updatePluginField(activeProjectPluginIndex, "load", event.target.checked);
-                              }
-                            }}
-                          />
-                        </label>
+                  <div class="project-config-panel-body">
+                    <div class="project-config-info-grid">
+                      <div class="project-config-info-row">
+                        <label for="agent-name-edit" class="project-config-info-label">Agent name</label>
+                        <input
+                          id="agent-name-edit"
+                          value={selectedProjectAgent.name}
+                          on:input={(event) => updateAgentField(projectConfigSelection.agentIndex, "name", event.target.value)}
+                        />
+                      </div>
+                      <div class="project-config-info-row">
+                        <label for="agent-device-edit" class="project-config-info-label">Device</label>
+                        <select
+                          id="agent-device-edit"
+                          value={selectedProjectAgent.device}
+                          on:change={(event) => updateAgentField(projectConfigSelection.agentIndex, "device", event.target.value)}
+                        >
+                          {#each projectConfigPlugins as plugin}
+                            <option value={plugin.name}>{plugin.name}</option>
+                          {/each}
+                        </select>
+                      </div>
+                      <div class="project-config-info-row">
+                        <span class="project-config-info-label">Class</span>
+                        <div class="project-config-inline">
+                          <span class="project-config-info-value">{activeProjectPlugin?.className || "Unknown"}</span>
+                          <label class="project-config-toggle project-config-inline-toggle">
+                            <span>Load plugin</span>
+                            <input
+                              type="checkbox"
+                              checked={activeProjectPlugin?.load ?? true}
+                              disabled={activeProjectPluginIndex < 0}
+                              on:change={(event) => {
+                                if (activeProjectPluginIndex >= 0) {
+                                  updatePluginField(activeProjectPluginIndex, "load", event.target.checked);
+                                }
+                              }}
+                            />
+                          </label>
+                        </div>
                       </div>
                     </div>
-                  </div>
                   <div class="project-config-table">
                     <div class="project-config-table-header">
                       <span>Key</span>
                       <span>Value</span>
                       <span></span>
                     </div>
-                    {#if selectedProjectAgent.features.length === 0}
-                      <div class="project-config-table-empty">No entries yet.</div>
-                    {:else}
-                      {#each selectedProjectAgent.features as feature, featureIndex}
-                        <div class="project-config-table-row">
-                          <input
-                            list="agent-key-hints"
-                            value={feature.key}
-                            placeholder="key"
-                            on:input={(event) =>
-                              updateAgentFeature(projectConfigSelection.agentIndex, featureIndex, "key", event.target.value)
-                            }
-                          />
-                          <input
-                            value={feature.value}
-                            placeholder="value"
-                            on:input={(event) =>
-                              updateAgentFeature(projectConfigSelection.agentIndex, featureIndex, "value", event.target.value)
-                            }
-                          />
-                          <button
-                            type="button"
-                            class="ghost icon-button danger"
-                            on:click={() => removeAgentFeature(projectConfigSelection.agentIndex, featureIndex)}
-                          >
-                            <IconTrash className="icon" />
-                          </button>
-                        </div>
-                      {/each}
-                    {/if}
+                    <div class="project-config-table-body">
+                      {#if selectedProjectAgent.features.length === 0}
+                        <div class="project-config-table-empty">No entries yet.</div>
+                      {:else}
+                        {#each selectedProjectAgent.features as feature, featureIndex}
+                          <div class="project-config-table-row">
+                            <input
+                              list="agent-key-hints"
+                              value={feature.key}
+                              placeholder="key"
+                              on:input={(event) =>
+                                updateAgentFeature(projectConfigSelection.agentIndex, featureIndex, "key", event.target.value)
+                              }
+                            />
+                            <input
+                              value={feature.value}
+                              placeholder="value"
+                              on:input={(event) =>
+                                updateAgentFeature(projectConfigSelection.agentIndex, featureIndex, "value", event.target.value)
+                              }
+                            />
+                            <button
+                              type="button"
+                              class="ghost icon-button danger"
+                              on:click={() => removeAgentFeature(projectConfigSelection.agentIndex, featureIndex)}
+                            >
+                              <IconTrash className="icon" />
+                            </button>
+                          </div>
+                        {/each}
+                      {/if}
+                    </div>
                     <div class="project-config-table-add">
                       <input list="agent-key-hints" placeholder="key" bind:value={projectConfigNewFeature.key} />
                       <input placeholder="value" bind:value={projectConfigNewFeature.value} />
@@ -10687,55 +10699,56 @@
                       {/each}
                     </datalist>
                   </div>
-                  {#if selectedProjectAgentKeysLoading}
-                    <p class="muted">Loading key hints...</p>
-                  {:else if selectedProjectAgentKeysError}
-                    <p class="error">{selectedProjectAgentKeysError}</p>
-                  {:else if selectedProjectAgentKeys}
-                    {#if selectedProjectAgentKeys.supported === false}
-                      <p class="muted">No key hints provided by this extension.</p>
-                    {:else}
-                      <div class="project-config-keylist">
-                        <div class="project-config-keylist-title">Key hints</div>
-                        <div class="project-config-keygrid">
-                          <div>
-                            <div class="project-config-key-title">Required</div>
-                            {#if selectedProjectAgentKeys.required?.length}
-                              <div class="project-config-key-list">
-                                {#each selectedProjectAgentKeys.required as entry}
-                                  <div class="project-config-key-item">
-                                    <span>{entry.name}</span>
-                                    {#if entry.description}
-                                      <span class="project-config-key-desc">{entry.description}</span>
-                                    {/if}
-                                  </div>
-                                {/each}
-                              </div>
-                            {:else}
-                              <div class="muted">None</div>
-                            {/if}
-                          </div>
-                          <div>
-                            <div class="project-config-key-title">Optional</div>
-                            {#if selectedProjectAgentKeys.optional?.length}
-                              <div class="project-config-key-list">
-                                {#each selectedProjectAgentKeys.optional as entry}
-                                  <div class="project-config-key-item">
-                                    <span>{entry.name}</span>
-                                    {#if entry.description}
-                                      <span class="project-config-key-desc">{entry.description}</span>
-                                    {/if}
-                                  </div>
-                                {/each}
-                              </div>
-                            {:else}
-                              <div class="muted">None</div>
-                            {/if}
+                    {#if selectedProjectAgentKeysLoading}
+                      <p class="muted">Loading key hints...</p>
+                    {:else if selectedProjectAgentKeysError}
+                      <p class="error">{selectedProjectAgentKeysError}</p>
+                    {:else if selectedProjectAgentKeys}
+                      {#if selectedProjectAgentKeys.supported === false}
+                        <p class="muted">No key hints provided by this extension.</p>
+                      {:else}
+                        <div class="project-config-keylist">
+                          <div class="project-config-keylist-title">Key hints</div>
+                          <div class="project-config-keygrid">
+                            <div>
+                              <div class="project-config-key-title">Required</div>
+                              {#if selectedProjectAgentKeys.required?.length}
+                                <div class="project-config-key-list">
+                                  {#each selectedProjectAgentKeys.required as entry}
+                                    <div class="project-config-key-item">
+                                      <span>{entry.name}</span>
+                                      {#if entry.description}
+                                        <span class="project-config-key-desc">{entry.description}</span>
+                                      {/if}
+                                    </div>
+                                  {/each}
+                                </div>
+                              {:else}
+                                <div class="muted">None</div>
+                              {/if}
+                            </div>
+                            <div>
+                              <div class="project-config-key-title">Optional</div>
+                              {#if selectedProjectAgentKeys.optional?.length}
+                                <div class="project-config-key-list">
+                                  {#each selectedProjectAgentKeys.optional as entry}
+                                    <div class="project-config-key-item">
+                                      <span>{entry.name}</span>
+                                      {#if entry.description}
+                                        <span class="project-config-key-desc">{entry.description}</span>
+                                      {/if}
+                                    </div>
+                                  {/each}
+                                </div>
+                              {:else}
+                                <div class="muted">None</div>
+                              {/if}
+                            </div>
                           </div>
                         </div>
-                      </div>
+                      {/if}
                     {/if}
-                  {/if}
+                  </div>
                 </div>
               {:else if projectConfigSelection.type === "player"}
                 <div class="project-config-panel">
@@ -10778,6 +10791,7 @@
                   </div>
                 </div>
               {/if}
+              </div>
             {/if}
           </section>
         </div>

@@ -10,6 +10,10 @@ import de.dfki.vsm.model.project.ProjectConfig;
 import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.model.project.AgentConfig;
 import de.dfki.vsm.model.project.PlayerConfig;
+import de.dfki.vsm.model.project.property.ExportableProperties;
+import de.dfki.vsm.model.project.property.ProjectProperty;
+import de.dfki.vsm.model.project.property.value.ProjectValueProperty;
+import de.dfki.vsm.model.project.property.value.ValueTYPE;
 import de.dfki.vsm.model.config.ConfigFeature;
 import de.dfki.vsm.model.scenescript.SceneObject;
 import de.dfki.vsm.model.scenescript.ScriptDiagnostics;
@@ -93,6 +97,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.Enumeration;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -111,6 +116,20 @@ import de.dfki.vsm.model.visicon.VisiconConfig;
 import de.dfki.vsm.model.visicon.VisiconViseme;
 
 public final class WebUiServer implements EventListener {
+
+    private static final Map<String, ExportablePropertyEntry> EXPORTABLE_PROPERTY_PROVIDERS = new HashMap<>();
+
+    private static final class ExportablePropertyEntry {
+        private final String providerClass;
+        private final JSONObject pluginSpec;
+        private final JSONObject agentSpec;
+
+        private ExportablePropertyEntry(String providerClass, JSONObject pluginSpec, JSONObject agentSpec) {
+            this.providerClass = providerClass;
+            this.pluginSpec = pluginSpec;
+            this.agentSpec = agentSpec;
+        }
+    }
 
     /**
      * Server operation modes.
@@ -165,6 +184,7 @@ public final class WebUiServer implements EventListener {
         mPort = port;
         mAllowExternal = allowExternal;
         Preferences.load();
+        loadExportablePropertyProviders();
         mApp = Javalin.create(config -> {
             // Try to add static files if available (editor mode)
             // These may not be present in runtime-only mode
@@ -1531,9 +1551,242 @@ public final class WebUiServer implements EventListener {
     }
 
     private void handleProjectConfigKeys(Context ctx) {
+        String pid = ctx.pathParam("pid");
+        String scope = ctx.queryParam("scope");
+        if (scope == null || scope.isBlank()) {
+            scope = "plugin";
+        }
+        String deviceName = ctx.queryParam("device");
+        if (deviceName == null) {
+            deviceName = "";
+        }
+        String className = ctx.queryParam("className");
+        if (className == null) {
+            className = "";
+        }
+
+        ProjectRef ref = projectStore.get(pid);
+        if ((className == null || className.isBlank()) && ref != null && ref.runtimeProject != null) {
+            className = resolvePluginClassName(ref.runtimeProject.getProjectConfig(), deviceName);
+        }
+
+        ExportablePropertyEntry entry = resolveExportablePropertyEntry(className);
+        JSONObject spec = resolveSpecForScope(entry, scope);
+        if (spec != null) {
+            JSONObject response = buildSpecResponse(spec);
+            response.put("supported", true);
+            writeJson(ctx, response);
+            return;
+        }
+
+        ExportableProperties provider = resolveExportableProperties(entry);
+        boolean supported = provider != null;
+
+        Map<ProjectProperty, ProjectValueProperty> properties = new HashMap<>();
+        if (supported) {
+            if ("agent".equalsIgnoreCase(scope)) {
+                properties = provider.getExportableAgentProperties();
+            } else {
+                properties = provider.getExportableProperties();
+            }
+        }
+
+        JSONArray required = new JSONArray();
+        JSONArray optional = new JSONArray();
+        if (properties != null) {
+            for (Map.Entry<ProjectProperty, ProjectValueProperty> itemEntry : properties.entrySet()) {
+                ProjectProperty property = itemEntry.getKey();
+                ProjectValueProperty value = itemEntry.getValue();
+                if (property == null) {
+                    continue;
+                }
+                JSONObject item = new JSONObject();
+                item.put("name", property.getName() == null ? "" : property.getName());
+                if (property.getDescription() != null && !property.getDescription().isBlank()) {
+                    item.put("description", property.getDescription());
+                }
+                item.put("required", property.isRequired());
+                if (value != null) {
+                    ValueTYPE type = value.getType();
+                    if (type != null) {
+                        item.put("type", type.name().toLowerCase());
+                    }
+                    Object defaultValue = value.getDefaultValue();
+                    if (defaultValue != null) {
+                        item.put("default", defaultValue);
+                    }
+                    if (value.getOptions() != null && !value.getOptions().isEmpty()) {
+                        JSONArray options = new JSONArray();
+                        for (String option : value.getOptions()) {
+                            options.put(option);
+                        }
+                        item.put("options", options);
+                    }
+                }
+                if (property.isRequired()) {
+                    required.put(item);
+                } else {
+                    optional.put(item);
+                }
+            }
+        }
+
         JSONObject response = new JSONObject();
-        response.put("keys", new JSONArray());
+        response.put("supported", supported);
+        response.put("required", required);
+        response.put("optional", optional);
         writeJson(ctx, response);
+    }
+
+    private void loadExportablePropertyProviders() {
+        EXPORTABLE_PROPERTY_PROVIDERS.clear();
+        String resourceName = "plugin-properties.json";
+        try {
+            ClassLoader cl = getClass().getClassLoader();
+            Enumeration<URL> urls = cl.getResources(resourceName);
+            int sourceCount = 0;
+            while (urls.hasMoreElements()) {
+                URL url = urls.nextElement();
+                sourceCount += 1;
+                try (InputStream stream = url.openStream()) {
+                    String json = new String(stream.readAllBytes(), StandardCharsets.UTF_8);
+                    JSONObject root = new JSONObject(json);
+                    JSONObject providers = root.optJSONObject("providers");
+                    JSONObject source = providers != null ? providers : root;
+                    for (String key : source.keySet()) {
+                        if (key == null || key.isBlank()) {
+                            continue;
+                        }
+                        Object rawValue = source.opt(key);
+                        String providerClass = null;
+                        JSONObject pluginSpec = null;
+                        JSONObject agentSpec = null;
+                        if (rawValue instanceof JSONObject) {
+                            JSONObject value = (JSONObject) rawValue;
+                            if (value.has("plugin") || value.has("agent")) {
+                                pluginSpec = value.optJSONObject("plugin");
+                                agentSpec = value.optJSONObject("agent");
+                            } else if (value.has("required") || value.has("optional")) {
+                                pluginSpec = value;
+                            }
+                        } else if (rawValue != null) {
+                            providerClass = String.valueOf(rawValue).trim();
+                        }
+                        if ((providerClass != null && !providerClass.isEmpty()) || pluginSpec != null || agentSpec != null) {
+                            EXPORTABLE_PROPERTY_PROVIDERS.put(
+                                    key.trim(),
+                                    new ExportablePropertyEntry(providerClass, pluginSpec, agentSpec));
+                        }
+                    }
+                }
+            }
+            if (sourceCount == 0) {
+                sLogger.warning("Warning: no plugin-properties.json resources found on classpath.");
+            } else {
+                sLogger.message("[PROJECT-CONFIG] Loaded exportable properties registry with "
+                        + EXPORTABLE_PROPERTY_PROVIDERS.size() + " entries from " + sourceCount + " resources.");
+            }
+        } catch (Exception exc) {
+            sLogger.warning("Warning: failed to load exportable property registry: " + exc.getMessage());
+        }
+    }
+
+    private String resolvePluginClassName(ProjectConfig config, String deviceName) {
+        if (config == null || deviceName == null || deviceName.isBlank()) {
+            return "";
+        }
+        for (PluginConfig plugin : config.getPluginConfigList()) {
+            if (plugin != null && deviceName.equals(plugin.getPluginName())) {
+                return plugin.getClassName() == null ? "" : plugin.getClassName();
+            }
+        }
+        return "";
+    }
+
+    private ExportablePropertyEntry resolveExportablePropertyEntry(String className) {
+        if (className == null || className.isBlank()) {
+            return null;
+        }
+        return EXPORTABLE_PROPERTY_PROVIDERS.get(className.trim());
+    }
+
+    private JSONObject resolveSpecForScope(ExportablePropertyEntry entry, String scope) {
+        if (entry == null) {
+            return null;
+        }
+        if ("agent".equalsIgnoreCase(scope)) {
+            return entry.agentSpec;
+        }
+        return entry.pluginSpec;
+    }
+
+    private JSONObject buildSpecResponse(JSONObject spec) {
+        JSONArray required = normalizeSpecArray(spec.optJSONArray("required"), true);
+        JSONArray optional = normalizeSpecArray(spec.optJSONArray("optional"), false);
+        JSONObject response = new JSONObject();
+        response.put("required", required);
+        response.put("optional", optional);
+        return response;
+    }
+
+    private JSONArray normalizeSpecArray(JSONArray items, boolean required) {
+        JSONArray output = new JSONArray();
+        if (items == null) {
+            return output;
+        }
+        for (int i = 0; i < items.length(); i += 1) {
+            Object raw = items.get(i);
+            if (!(raw instanceof JSONObject)) {
+                continue;
+            }
+            JSONObject entry = (JSONObject) raw;
+            String name = entry.optString("name", "").trim();
+            if (name.isEmpty()) {
+                continue;
+            }
+            JSONObject item = new JSONObject();
+            item.put("name", name);
+            item.put("required", required);
+            String description = entry.optString("description", "").trim();
+            if (!description.isEmpty()) {
+                item.put("description", description);
+            }
+            String type = entry.optString("type", "").trim();
+            if (!type.isEmpty()) {
+                item.put("type", type);
+            }
+            if (entry.has("default")) {
+                item.put("default", entry.get("default"));
+            }
+            JSONArray options = entry.optJSONArray("options");
+            if (options != null && options.length() > 0) {
+                item.put("options", options);
+            }
+            output.put(item);
+        }
+        return output;
+    }
+
+    private ExportableProperties resolveExportableProperties(ExportablePropertyEntry entry) {
+        if (entry == null || entry.providerClass == null || entry.providerClass.isBlank()) {
+            return null;
+        }
+        return instantiateExportableProperties(entry.providerClass);
+    }
+
+    private ExportableProperties instantiateExportableProperties(String className) {
+        try {
+            Class<?> klass = Class.forName(className);
+            if (!ExportableProperties.class.isAssignableFrom(klass)) {
+                return null;
+            }
+            if (Modifier.isAbstract(klass.getModifiers())) {
+                return null;
+            }
+            return (ExportableProperties) klass.getDeclaredConstructor().newInstance();
+        } catch (Exception exc) {
+            return null;
+        }
     }
 
     private void handleScript(Context ctx) {
@@ -5938,6 +6191,7 @@ public final class WebUiServer implements EventListener {
         }
         return null;
     }
+
 
     private String generateToken() {
         return UUID.randomUUID().toString().replace("-", "");

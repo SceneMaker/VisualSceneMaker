@@ -1,8 +1,5 @@
 package de.dfki.vsm.xtension.yallah;
 
-import de.dfki.vsm.model.project.property.ExportableProperties;
-import de.dfki.vsm.model.project.property.ProjectProperty;
-import de.dfki.vsm.model.project.property.value.ProjectValueProperty;
 import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.model.scenescript.ActionFeature;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
@@ -20,10 +17,13 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Objects;
 
-public class YallahExecutor extends ActivityExecutor implements ExportableProperties {
+public class YallahExecutor extends ActivityExecutor {
 
-    /** The properties of ths plugin. */
-    private final YallahProperties mYallahProperties = new YallahProperties() ;
+    public enum LaunchMode {
+        None,
+        App,
+        WebPage
+    }
 
     /** The websocket server reading messages coming from the YALLAH visualizer. */
     private Javalin mWebSocketServer;
@@ -109,7 +109,7 @@ public class YallahExecutor extends ActivityExecutor implements ExportableProper
         //
         //
         String launch_mode = mConfig.getProperty("launchMode") ;
-        YallahProperties.LaunchMode lm = YallahProperties.LaunchMode.valueOf(launch_mode) ;
+        LaunchMode lm = LaunchMode.valueOf(launch_mode) ;
         switch (lm) {
             case None:
                 break ;
@@ -273,17 +273,4 @@ public class YallahExecutor extends ActivityExecutor implements ExportableProper
     }
 
 
-    //
-    // Plugin Properties
-    //
-
-    @Override
-    public Map<ProjectProperty, ProjectValueProperty> getExportableProperties() {
-        return mYallahProperties.getExportableProperties();
-    }
-
-    @Override
-    public Map<ProjectProperty, ProjectValueProperty> getExportableAgentProperties() {
-        return mYallahProperties.getExportableAgentProperties();
-    }
 }

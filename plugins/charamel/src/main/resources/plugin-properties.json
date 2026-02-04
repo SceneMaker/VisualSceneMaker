@@ -1,0 +1,24 @@
+{
+  "providers": {
+    "de.dfki.vsm.xtension.charamel.CharamelExecutor": {
+      "plugin": {
+        "required": [
+          { "name": "tworldexe", "type": "filepath" },
+          { "name": "tworldcmd", "type": "filepath" },
+          { "name": "cactordir", "type": "filepath" },
+          { "name": "cactorexe", "type": "filepath" },
+          { "name": "cactorcmd", "type": "filepath" }
+        ],
+        "optional": [
+          { "name": "usejpl", "type": "boolean", "default": false },
+          { "name": "useexe", "type": "boolean", "default": false },
+          { "name": "tworlddir", "type": "filepath" }
+        ]
+      },
+      "agent": {
+        "required": [],
+        "optional": []
+      }
+    }
+  }
+}
