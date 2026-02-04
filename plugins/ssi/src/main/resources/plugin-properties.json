@@ -1,0 +1,64 @@
+{
+  "providers": {
+    "de.dfki.vsm.xtension.ssi.SSICmdExecutor": {
+      "plugin": {
+        "required": [
+          {
+            "name": "loghost",
+            "type": "string",
+            "default": "127.0.0.1",
+            "description": "Host that runs the SSI.\n If SSI runs on a different computer, this field should hold the IP address of the computer"
+          },
+          {
+            "name": "logport",
+            "type": "numeric",
+            "default": 8989,
+            "description": "Port to connect to SSI.\n This field holds the SSI listening port."
+          },
+          {
+            "name": "logvar",
+            "type": "string",
+            "default": "SSIMessages",
+            "description": "A VSM Sceneflow var that gets messages from SSI"
+          },
+          {
+            "name": "pipes",
+            "type": "string",
+            "default": "interview:127.0.0.1:1111",
+            "description": "SSI recognition pipeline description"
+          }
+        ],
+        "optional": [
+          {
+            "name": "broadcast",
+            "type": "boolean",
+            "default": false,
+            "description": "Broadcast messages in local network. Set to \"true\" for StudyMaster remote control"
+          },
+          {
+            "name": "broadcastport",
+            "type": "numeric",
+            "default": 9898,
+            "description": "Port on which messages are broadcasted."
+          },
+          {
+            "name": "listentostudymaster",
+            "type": "boolean",
+            "default": false,
+            "description": "Listen to StudyMaster input. Set to \"true\" for StudyMaster remote control"
+          },
+          {
+            "name": "studymasterport",
+            "type": "numeric",
+            "default": 9898,
+            "description": "Port on which StudyMaster receives messages."
+          }
+        ]
+      },
+      "agent": {
+        "required": [],
+        "optional": []
+      }
+    }
+  }
+}

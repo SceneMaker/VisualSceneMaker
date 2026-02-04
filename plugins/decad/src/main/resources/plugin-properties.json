@@ -1,0 +1,27 @@
+{
+  "providers": {
+    "de.dfki.vsm.xtension.decad.DecadExecutor": {
+      "plugin": {
+        "required": [
+          {
+            "name": "url",
+            "type": "string",
+            "default": "http://localhost",
+            "description": "Url to connect VSM with DECAD.\n "
+          },
+          {
+            "name": "port",
+            "type": "numeric",
+            "default": 5005,
+            "description": "Port to connect VSM with DECAD.\n This field represents the port of the web server."
+          }
+        ],
+        "optional": []
+      },
+      "agent": {
+        "required": [],
+        "optional": []
+      }
+    }
+  }
+}

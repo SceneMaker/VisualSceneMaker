@@ -1,0 +1,44 @@
+{
+  "providers": {
+    "de.dfki.vsm.xtension.tricatworld.TriCatWorldExecutor": {
+      "plugin": {
+        "required": [
+          { "name": "tworldexe", "type": "filepath" },
+          { "name": "tworldcmd", "type": "filepath" },
+          { "name": "cactordir", "type": "filepath" },
+          { "name": "cactorexe", "type": "filepath" },
+          { "name": "cactorcmd", "type": "filepath" }
+        ],
+        "optional": [
+          { "name": "usejpl", "type": "boolean", "default": false },
+          { "name": "useexe", "type": "boolean", "default": false },
+          { "name": "tworlddir", "type": "filepath" }
+        ]
+      },
+      "agent": {
+        "required": [],
+        "optional": []
+      }
+    },
+    "de.dfki.vsm.xtension.tricatworld.TriCatWorldSSIPlugin": {
+      "plugin": {
+        "required": [
+          { "name": "tworldexe", "type": "filepath" },
+          { "name": "tworldcmd", "type": "filepath" },
+          { "name": "cactordir", "type": "filepath" },
+          { "name": "cactorexe", "type": "filepath" },
+          { "name": "cactorcmd", "type": "filepath" }
+        ],
+        "optional": [
+          { "name": "usejpl", "type": "boolean", "default": false },
+          { "name": "useexe", "type": "boolean", "default": false },
+          { "name": "tworlddir", "type": "filepath" }
+        ]
+      },
+      "agent": {
+        "required": [],
+        "optional": []
+      }
+    }
+  }
+}

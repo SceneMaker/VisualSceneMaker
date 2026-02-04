@@ -1,8 +1,5 @@
 package de.dfki.vsm.xtension.charamel;
 
-import de.dfki.vsm.model.project.property.ExportableProperties;
-import de.dfki.vsm.model.project.property.ProjectProperty;
-import de.dfki.vsm.model.project.property.value.ProjectValueProperty;
 import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
 import de.dfki.vsm.runtime.activity.AbstractActivity.Type;
@@ -13,7 +10,6 @@ import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.jpl.JPLEngine;
 import de.dfki.vsm.util.xml.XMLUtilities;
 import de.dfki.vsm.util.WordMapping;
-import de.dfki.vsm.xtension.charamel.util.property.CharamelProjectProperty;
 import de.dfki.vsm.xtension.charamel.xml.command.object.action.CharamelActObject;
 import de.dfki.vsm.xtension.charamel.xml.feedback.action.*;
 import de.dfki.vsm.xtension.charamel.xml.util.CharamelActionLoader;
@@ -32,7 +28,7 @@ import java.util.Map.Entry;
  * @author Gregor Mehlmann
  * @author Patrick Gebhard
  */
-public final class CharamelExecutor extends ActivityExecutor implements ExportableProperties {
+public final class CharamelExecutor extends ActivityExecutor {
 
     // The tworld listener
     private CharamelListener mListener;
@@ -50,7 +46,6 @@ public final class CharamelExecutor extends ActivityExecutor implements Exportab
     private final boolean mUseJPL;
     // The flag for executables
     private final boolean mUseExe;
-    private final ExportableProperties exportableProperties = new CharamelProjectProperty();
     // The TCP socket connection 
     private Socket mSocket;
 
@@ -456,16 +451,6 @@ public final class CharamelExecutor extends ActivityExecutor implements Exportab
     private boolean exists(final String path) {
         final File file = new File(path);
         return file.exists() && file.isDirectory();
-    }
-
-    @Override
-    public Map<ProjectProperty, ProjectValueProperty> getExportableProperties() {
-        return exportableProperties.getExportableProperties();
-    }
-
-    @Override
-    public Map<ProjectProperty, ProjectValueProperty> getExportableAgentProperties() {
-        return null;
     }
 
     public void handle(Feedback feedback) {

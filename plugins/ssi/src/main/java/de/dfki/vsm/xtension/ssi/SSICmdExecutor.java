@@ -1,27 +1,22 @@
 package de.dfki.vsm.xtension.ssi;
 
-import de.dfki.vsm.model.project.property.ExportableProperties;
-import de.dfki.vsm.model.project.property.ProjectProperty;
-import de.dfki.vsm.model.project.property.value.ProjectValueProperty;
 import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
 import de.dfki.vsm.runtime.interpreter.value.StringValue;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.xtension.ssi.logger.SSILoggerMessage;
-import de.dfki.vsm.xtension.ssi.util.property.SSIProjectProperty;
 
 import java.io.IOException;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Enumeration;
-import java.util.Map;
 
 /**
  * @author Patrick Gebhard
  * @author Gregor Mehlmann
  */
-public final class SSICmdExecutor extends ActivityExecutor implements ExportableProperties {
+public final class SSICmdExecutor extends ActivityExecutor {
 
     // The SSI receiver data
     private final String mLogHost;
@@ -33,7 +28,6 @@ public final class SSICmdExecutor extends ActivityExecutor implements Exportable
     private final String mStudyMasterPort;  // 9.6.17 add by PG
     private final String[] mSSIPipe;
     private StudyMasterReceiverThread mSMReceiver; // 9.6.17 add by PG
-    private final ExportableProperties exportableProperties = new SSIProjectProperty();
 
     // Construct executor
     public SSICmdExecutor(
@@ -246,15 +240,5 @@ public final class SSICmdExecutor extends ActivityExecutor implements Exportable
     public void setSceneFlowVariable(String var, String value) {
         mLogger.message("Assigning sceneflow variable " + var + " with value " + value);
         mProject.setVariable(var, new StringValue(value));
-    }
-
-    @Override
-    public Map<ProjectProperty, ProjectValueProperty> getExportableProperties() {
-        return exportableProperties.getExportableProperties();
-    }
-
-    @Override
-    public Map<ProjectProperty, ProjectValueProperty> getExportableAgentProperties() {
-        return exportableProperties.getExportableAgentProperties();
     }
 }
