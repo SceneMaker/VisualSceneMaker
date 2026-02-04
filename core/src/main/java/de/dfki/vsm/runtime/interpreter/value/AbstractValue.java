@@ -8,7 +8,7 @@ import de.dfki.vsm.util.cpy.Copyable;
 public abstract class AbstractValue implements Copyable {
 
     public enum Type {
-        BYTE, SHORT, INT, LONG, FLOAT, DOUBLE, BOOLEAN, CHAR, STRING, LIST, STRUCT, VOID, OBJECT
+        BYTE, SHORT, INT, LONG, FLOAT, DOUBLE, BOOLEAN, CHAR, STRING, LIST, STRUCT, VOID, OBJECT, EVENT
     }
 
     public abstract String getAbstractSyntax();

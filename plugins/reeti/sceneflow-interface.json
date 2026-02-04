@@ -1,0 +1,105 @@
+{
+    "schemaVersion": "1.0",
+    "generated": true,
+    "plugin": {
+        "id": "reeti",
+        "name": "reeti",
+        "className": "ReetiExecutor",
+        "executors": [
+            "ReetiExecutor"
+        ],
+        "description": "",
+        "tags": [
+            
+        ]
+    },
+    "categories": {
+        "primary": "processing",
+        "secondary": [
+            
+        ],
+        "confidence": 1.0,
+        "inferred": true,
+        "reason": [
+            "logic:state"
+        ]
+    },
+    "commands": [
+        
+    ],
+    "writes": [
+        {
+            "var": "UserIsSpeaking",
+            "type": "bool",
+            "scope": "global",
+            "inferred": true
+        },
+        {
+            "var": "UserSaidKeyword",
+            "type": "string",
+            "scope": "global",
+            "inferred": true
+        }
+    ],
+    "reads": [
+        
+    ],
+    "config": [
+        {
+            "key": "lhost",
+            "type": "string",
+            "required": false,
+            "default": "",
+            "description": "",
+            "inferred": true
+        },
+        {
+            "key": "rhost",
+            "type": "string",
+            "required": false,
+            "default": "",
+            "description": "",
+            "inferred": true
+        },
+        {
+            "key": "lport",
+            "type": "string",
+            "required": false,
+            "default": "",
+            "description": "",
+            "inferred": true
+        },
+        {
+            "key": "rport",
+            "type": "string",
+            "required": false,
+            "default": "",
+            "description": "",
+            "inferred": true
+        },
+        {
+            "key": "useSSI",
+            "type": "string",
+            "required": false,
+            "default": "",
+            "description": "",
+            "inferred": true
+        },
+        {
+            "key": "usejpl",
+            "type": "string",
+            "required": false,
+            "default": "",
+            "description": "",
+            "inferred": true
+        },
+        {
+            "key": "useexe",
+            "type": "string",
+            "required": false,
+            "default": "",
+            "description": "",
+            "inferred": true
+        }
+    ]
+}

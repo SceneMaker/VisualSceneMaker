@@ -32,6 +32,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author Gregor Mehlmann
@@ -48,12 +50,36 @@ public final class Evaluator {
         mInterpreter = interpreter;
     }
 
+    // Pattern for parsing Event type: Event, Event(Type), Event(Type, Capacity), Event(*, Capacity)
+    private static final Pattern EVENT_TYPE_PATTERN = Pattern.compile(
+            "^Event(?:\\(([^,)]*?)(?:,\\s*(\\d+))?\\))?$", Pattern.CASE_INSENSITIVE);
+
     // Execute a definition
     public final void define(
             final VariableDefinition def,
             final Environment env) throws InterpreterError {
-        // Create a new environment entry
-        env.create(def.getName(), evaluate(def.getExp(), env));
+        // Event variables start with an empty queue
+        String typeStr = def.getType() != null ? def.getType().trim() : "";
+        if (typeStr.toLowerCase().startsWith("event")) {
+            int capacity = 0;
+            String elementType = null;
+            Matcher m = EVENT_TYPE_PATTERN.matcher(typeStr);
+            if (m.matches()) {
+                String et = m.group(1);
+                if (et != null) {
+                    et = et.trim();
+                    if (!et.isEmpty() && !et.equals("*")) {
+                        elementType = et;
+                    }
+                }
+                if (m.group(2) != null) {
+                    capacity = Integer.parseInt(m.group(2));
+                }
+            }
+            env.create(def.getName(), new EventValue(capacity, elementType));
+        } else {
+            env.create(def.getName(), evaluate(def.getExp(), env));
+        }
     }
 
     // Execute a command
@@ -161,6 +187,16 @@ public final class Evaluator {
             return new StructValue(evaluateAsgList(((StructExpression) exp).getExpList(), env));
         } else if (exp instanceof BinaryExpression) {
             final BinaryExpression bin = (BinaryExpression) exp;
+            // Event variable comparisons: resolve event queue directly, peek + compare + conditional consume.
+            // Must happen before eager evaluation of both sides, because the SimpleVariable branch
+            // would auto-consume the event and return BooleanValue, causing a type mismatch.
+            if (bin.getOperator() == BinaryExpression.BinaryOp.Eq
+                    || bin.getOperator() == BinaryExpression.BinaryOp.Neq) {
+                BooleanValue eventResult = tryEventComparison(bin, env);
+                if (eventResult != null) {
+                    return eventResult;
+                }
+            }
             final AbstractValue left = evaluate(bin.getLeftExp(), env);
             final AbstractValue right = evaluate(bin.getRightExp(), env);
             final BinaryExpression.BinaryOp operator = bin.getOperator();
@@ -393,7 +429,18 @@ public final class Evaluator {
                 throw new InterpreterError(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated");
             }
         } else if (exp instanceof SimpleVariable) {
-            return env.read(((SimpleVariable) exp).getName());
+            AbstractValue val = env.read(((SimpleVariable) exp).getName());
+            // Event variables: consume-on-evaluate (like TimeoutQuery)
+            if (val instanceof EventValue) {
+                EventValue ev = (EventValue) val;
+                if (!ev.isEmpty()) {
+                    ev.dequeue();
+                    return new BooleanValue(true);
+                } else {
+                    return new BooleanValue(false);
+                }
+            }
+            return val;
         } else if (exp instanceof ArrayVariable) {
             AbstractValue index = evaluate(((ArrayVariable) exp).getExpression(), env);
             if (index.getType() == AbstractValue.Type.INT) {
@@ -709,6 +756,87 @@ public final class Evaluator {
             return true;
         } else {
             return false;
+        }
+    }
+
+    /**
+     * Check if a binary == or != expression involves an event variable.
+     * If so, peek at the queue front, compare with the other operand,
+     * and consume only when the comparison condition is satisfied.
+     *
+     * Returns null if neither side is an event variable (caller falls
+     * through to normal evaluation).
+     */
+    private BooleanValue tryEventComparison(
+            final BinaryExpression bin,
+            final Environment env) throws InterpreterError {
+        final boolean isEq = bin.getOperator() == BinaryExpression.BinaryOp.Eq;
+        // Check left side
+        EventValue leftEvent = resolveEventVariable(bin.getLeftExp(), env);
+        if (leftEvent != null) {
+            AbstractValue right = evaluate(bin.getRightExp(), env);
+            return evaluateEventCompare(leftEvent, right, isEq);
+        }
+        // Check right side
+        EventValue rightEvent = resolveEventVariable(bin.getRightExp(), env);
+        if (rightEvent != null) {
+            AbstractValue left = evaluate(bin.getLeftExp(), env);
+            return evaluateEventCompare(rightEvent, left, isEq);
+        }
+        return null;
+    }
+
+    /**
+     * Resolve a SimpleVariable expression to its EventValue without
+     * going through evaluate() (which would auto-consume).
+     * Returns null if the expression is not a SimpleVariable or its
+     * value is not an EventValue.
+     */
+    private EventValue resolveEventVariable(
+            final Expression exp,
+            final Environment env) {
+        if (exp instanceof SimpleVariable) {
+            try {
+                AbstractValue val = env.read(((SimpleVariable) exp).getName());
+                if (val instanceof EventValue) {
+                    return (EventValue) val;
+                }
+            } catch (InterpreterError ignored) {
+                // Variable not found — not an event variable
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Compare an event queue's front element with another value.
+     * For ==: empty→false, peek matches→consume+true, no match→false.
+     * For !=: empty→false, peek matches→false, no match→consume+true.
+     * Consume happens only when the overall condition is true, following
+     * the same pattern as TimeoutQuery (consumed when condition fires).
+     */
+    private BooleanValue evaluateEventCompare(
+            final EventValue ev,
+            final AbstractValue other,
+            final boolean isEq) {
+        if (ev.isEmpty()) {
+            return new BooleanValue(false);
+        }
+        AbstractValue front = ev.peek();
+        boolean matches = front.getType() == other.getType() && front.equalsValue(other);
+        if (isEq) {
+            if (matches) {
+                ev.dequeue();
+                return new BooleanValue(true);
+            }
+            return new BooleanValue(false);
+        } else {
+            // != : true when front does NOT match
+            if (!matches) {
+                ev.dequeue();
+                return new BooleanValue(true);
+            }
+            return new BooleanValue(false);
         }
     }
 }

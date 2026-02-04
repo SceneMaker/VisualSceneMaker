@@ -1,0 +1,54 @@
+{
+    "schemaVersion": "1.0",
+    "generated": false,
+    "plugin": {
+        "id": "yallah",
+        "name": "yallah",
+        "className": "YallahExecutor",
+        "executors": [
+            "YallahExecutor"
+        ],
+        "description": "Yet another low-level agent handler (YALLAH)",
+        "tags": [
+            
+        ]
+    },
+    "categories": {
+        "primary": "output",
+        "secondary": [
+            
+        ],
+        "confidence": 1.0,
+        "inferred": true,
+        "reason": [
+            "io:outbound"
+        ]
+    },
+    "commands": [
+        
+    ],
+    "writes": [
+        
+    ],
+    "reads": [
+        
+    ],
+    "config": [
+        {
+            "key": "port",
+            "type": "string",
+            "required": false,
+            "default": "",
+            "description": "",
+            "inferred": true
+        },
+        {
+            "key": "launchMode",
+            "type": "string",
+            "required": false,
+            "default": "",
+            "description": "",
+            "inferred": true
+        }
+    ]
+}

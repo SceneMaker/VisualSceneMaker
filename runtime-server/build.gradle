@@ -17,7 +17,6 @@ dependencies {
     implementation project(':core')
 
     // Minimal plugins for runtime (optional, can be configured per deployment)
-    implementation project(':plugins:console')
     implementation project(':plugins:timer')
 
     // SLF4J for Javalin logging

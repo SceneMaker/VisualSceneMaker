@@ -1,0 +1,791 @@
+{
+    "schemaVersion": "1.0",
+    "generated": false,
+    "plugin": {
+        "id": "charamel",
+        "name": "charamel",
+        "className": "CharamelExecutor",
+        "executors": [
+            "CharamelExecutor"
+        ],
+        "description": "Interactive web based virtual character (legacy)",
+        "tags": [ "SIA", "web"
+            
+        ]
+    },
+    "categories": {
+        "primary": "output",
+        "secondary": [
+            
+        ],
+        "confidence": 1.0,
+        "inferred": false,
+        "reason": [
+            "io:outbound",
+            "logic:state"
+        ]
+    },
+    "commands": [
+        {
+            "name": "cai_event",
+            "summary": "",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "tts",
+            "summary": "",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "action",
+            "summary": "",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "status",
+            "summary": "",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "cai_command",
+            "summary": "",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "cai_response",
+            "summary": "",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "feedback",
+            "summary": "",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "Object",
+            "summary": "",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "Action",
+            "summary": "",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "SetCamera",
+            "summary": "",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "SetClothing",
+            "summary": "",
+            "type": "action",
+            "params": [
+                {
+                    "name": "style",
+                    "type": "string",
+                    "required": false,
+                    "description": "",
+                    "inferred": true
+                }
+            ]
+        },
+        {
+            "name": "HideAvatar",
+            "summary": "",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "GetCamera",
+            "summary": "",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "SittingStart",
+            "summary": "",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "SittingSop",
+            "summary": "",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "StopSpeaking",
+            "summary": "",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "Reject",
+            "summary": "",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "Challenge",
+            "summary": "",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "SittingStop",
+            "summary": "",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "ShowPalms",
+            "summary": "",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "OpenArms",
+            "summary": "",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "LookLeft",
+            "summary": "",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "LookRight",
+            "summary": "",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "No",
+            "summary": "",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "StrongNo",
+            "summary": "",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "PointLeft",
+            "summary": "",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "PointRight",
+            "summary": "",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "PresentLeft",
+            "summary": "",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "PresentRight",
+            "summary": "",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "Welcome",
+            "summary": "",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "Yes",
+            "summary": "",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "StrongYes",
+            "summary": "",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "Angry",
+            "summary": "",
+            "type": "action",
+            "params": [
+                {
+                    "name": "intensity",
+                    "type": "string",
+                    "required": false,
+                    "description": "",
+                    "inferred": true
+                }
+            ]
+        },
+        {
+            "name": "Demanding",
+            "summary": "",
+            "type": "action",
+            "params": [
+                {
+                    "name": "intensity",
+                    "type": "string",
+                    "required": false,
+                    "description": "",
+                    "inferred": true
+                }
+            ]
+        },
+        {
+            "name": "Disgust",
+            "summary": "",
+            "type": "action",
+            "params": [
+                {
+                    "name": "intensity",
+                    "type": "string",
+                    "required": false,
+                    "description": "",
+                    "inferred": true
+                }
+            ]
+        },
+        {
+            "name": "Neutral",
+            "summary": "",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "Sad",
+            "summary": "",
+            "type": "action",
+            "params": [
+                {
+                    "name": "intensity",
+                    "type": "string",
+                    "required": false,
+                    "description": "",
+                    "inferred": true
+                }
+            ]
+        },
+        {
+            "name": "Smile",
+            "summary": "",
+            "type": "action",
+            "params": [
+                {
+                    "name": "intensity",
+                    "type": "string",
+                    "required": false,
+                    "description": "",
+                    "inferred": true
+                }
+            ]
+        },
+        {
+            "name": "Happy",
+            "summary": "",
+            "type": "action",
+            "params": [
+                {
+                    "name": "intensity",
+                    "type": "string",
+                    "required": false,
+                    "description": "",
+                    "inferred": true
+                }
+            ]
+        },
+        {
+            "name": "InitJointAnimation",
+            "summary": "",
+            "type": "action",
+            "params": [
+                {
+                    "name": "joint",
+                    "type": "string",
+                    "required": false,
+                    "description": "",
+                    "inferred": true
+                }
+            ]
+        },
+        {
+            "name": "ConfigureJointAnimation",
+            "summary": "",
+            "type": "action",
+            "params": [
+                {
+                    "name": "joint",
+                    "type": "string",
+                    "required": false,
+                    "description": "",
+                    "inferred": true
+                },
+                {
+                    "name": "factor",
+                    "type": "string",
+                    "required": false,
+                    "description": "",
+                    "inferred": true
+                },
+                {
+                    "name": "interpolation",
+                    "type": "string",
+                    "required": false,
+                    "description": "",
+                    "inferred": true
+                }
+            ]
+        },
+        {
+            "name": "OrientJoint",
+            "summary": "",
+            "type": "action",
+            "params": [
+                {
+                    "name": "joint",
+                    "type": "string",
+                    "required": false,
+                    "description": "",
+                    "inferred": true
+                },
+                {
+                    "name": "interpolation",
+                    "type": "string",
+                    "required": false,
+                    "description": "",
+                    "inferred": true
+                },
+                {
+                    "name": "x",
+                    "type": "string",
+                    "required": false,
+                    "description": "",
+                    "inferred": true
+                },
+                {
+                    "name": "y",
+                    "type": "string",
+                    "required": false,
+                    "description": "",
+                    "inferred": true
+                },
+                {
+                    "name": "z",
+                    "type": "string",
+                    "required": false,
+                    "description": "",
+                    "inferred": true
+                }
+            ]
+        },
+        {
+            "name": "MoveCamera",
+            "summary": "",
+            "type": "action",
+            "params": [
+                {
+                    "name": "posX",
+                    "type": "string",
+                    "required": false,
+                    "description": "",
+                    "inferred": true
+                },
+                {
+                    "name": "posY",
+                    "type": "string",
+                    "required": false,
+                    "description": "",
+                    "inferred": true
+                },
+                {
+                    "name": "posZ",
+                    "type": "string",
+                    "required": false,
+                    "description": "",
+                    "inferred": true
+                },
+                {
+                    "name": "lookX",
+                    "type": "string",
+                    "required": false,
+                    "description": "",
+                    "inferred": true
+                },
+                {
+                    "name": "lookY",
+                    "type": "string",
+                    "required": false,
+                    "description": "",
+                    "inferred": true
+                },
+                {
+                    "name": "lookZ",
+                    "type": "string",
+                    "required": false,
+                    "description": "",
+                    "inferred": true
+                },
+                {
+                    "name": "upX",
+                    "type": "string",
+                    "required": false,
+                    "description": "",
+                    "inferred": true
+                },
+                {
+                    "name": "upY",
+                    "type": "string",
+                    "required": false,
+                    "description": "",
+                    "inferred": true
+                },
+                {
+                    "name": "upZ",
+                    "type": "string",
+                    "required": false,
+                    "description": "",
+                    "inferred": true
+                }
+            ]
+        },
+        {
+            "name": "start",
+            "summary": "",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "text_maker",
+            "summary": "",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "text_marker",
+            "summary": "",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "end",
+            "summary": "",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "armsopen",
+            "summary": "",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "armscrossed",
+            "summary": "",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "righthandheadtouch",
+            "summary": "",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "lefthandheadtouch",
+            "summary": "",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "lookleft",
+            "summary": "",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "lookright",
+            "summary": "",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "waving",
+            "summary": "",
+            "type": "action",
+            "params": [
+                
+            ]
+        }
+    ],
+    "writes": [
+        {
+            "var": "AgentIsSpeaking",
+            "type": "bool",
+            "scope": "global",
+            "inferred": true
+        },
+        {
+            "var": "<dynamic>",
+            "expression": "variable",
+            "type": "unknown",
+            "scope": "global",
+            "inferred": true
+        },
+        {
+            "var": "UserHeadOrientation",
+            "type": "string",
+            "scope": "global",
+            "inferred": true
+        },
+        {
+            "var": "UserHeadTilt",
+            "type": "string",
+            "scope": "global",
+            "inferred": true
+        },
+        {
+            "var": "UserHeadNod",
+            "type": "string",
+            "scope": "global",
+            "inferred": true
+        },
+        {
+            "var": "UserLeanPosture",
+            "type": "string",
+            "scope": "global",
+            "inferred": true
+        },
+        {
+            "var": "UserHeadPositionX",
+            "type": "string",
+            "scope": "global",
+            "inferred": true
+        },
+        {
+            "var": "UserHeadPositionY",
+            "type": "string",
+            "scope": "global",
+            "inferred": true
+        },
+        {
+            "var": "UserSmiling",
+            "type": "bool",
+            "scope": "global",
+            "inferred": true
+        },
+        {
+            "var": "UserIsSpeaking",
+            "type": "bool",
+            "scope": "global",
+            "inferred": true
+        },
+        {
+            "var": "UserSaidKeyword",
+            "type": "string",
+            "scope": "global",
+            "inferred": true
+        },
+        {
+            "var": "KeywordList",
+            "type": "string",
+            "scope": "global",
+            "inferred": true
+        },
+        {
+            "var": "usercues",
+            "type": "struct",
+            "scope": "global",
+            "inferred": true
+        },
+        {
+            "var": "<dynamic>",
+            "expression": "value.getKey()",
+            "type": "unknown",
+            "scope": "global",
+            "inferred": true
+        }
+    ],
+    "reads": [
+        
+    ],
+    "config": [
+        {
+            "key": "usejpl",
+            "type": "string",
+            "required": false,
+            "default": "",
+            "description": "",
+            "inferred": true
+        },
+        {
+            "key": "useexe",
+            "type": "string",
+            "required": false,
+            "default": "",
+            "description": "",
+            "inferred": true
+        },
+        {
+            "key": "cactordir",
+            "type": "string",
+            "required": false,
+            "default": "",
+            "description": "",
+            "inferred": true
+        },
+        {
+            "key": "cactorexe",
+            "type": "string",
+            "required": false,
+            "default": "",
+            "description": "",
+            "inferred": true
+        },
+        {
+            "key": "cactorcmd",
+            "type": "string",
+            "required": false,
+            "default": "",
+            "description": "",
+            "inferred": true
+        },
+        {
+            "key": "uselst",
+            "type": "string",
+            "required": false,
+            "default": "",
+            "description": "",
+            "inferred": true
+        },
+        {
+            "key": "usesuperevent",
+            "type": "string",
+            "required": false,
+            "default": "",
+            "description": "",
+            "inferred": true
+        },
+        {
+            "key": "ssidir",
+            "type": "string",
+            "required": false,
+            "default": "",
+            "description": "",
+            "inferred": true
+        },
+        {
+            "key": "ssibat",
+            "type": "string",
+            "required": false,
+            "default": "",
+            "description": "",
+            "inferred": true
+        }
+    ]
+}
