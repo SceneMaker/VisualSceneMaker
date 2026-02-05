@@ -10,6 +10,7 @@ import de.dfki.vsm.model.project.ProjectConfig;
 import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.model.project.AgentConfig;
 import de.dfki.vsm.model.project.PlayerConfig;
+import de.dfki.vsm.model.project.LLMConfig;
 import de.dfki.vsm.model.project.property.ExportableProperties;
 import de.dfki.vsm.model.project.property.ProjectProperty;
 import de.dfki.vsm.model.project.property.value.ProjectValueProperty;
@@ -70,6 +71,7 @@ import de.dfki.vsm.runtime.interpreter.value.AbstractValue;
 import de.dfki.vsm.runtime.interpreter.value.EventValue;
 import java.util.List;
 import java.util.ArrayList;
+import de.dfki.vsm.util.llm.LLMSupport;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 import de.dfki.vsm.util.xml.XMLUtilities;
 import io.javalin.Javalin;
@@ -111,6 +113,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.time.Duration;
 import de.dfki.vsm.model.visicon.VisiconAgent;
 import de.dfki.vsm.model.visicon.VisiconConfig;
 import de.dfki.vsm.model.visicon.VisiconViseme;
@@ -496,6 +499,11 @@ public final class WebUiServer implements EventListener {
         mApp.get(API_PREFIX + "/projects/{pid}/runtime", this::handleRuntime);
         mApp.get(API_PREFIX + "/projects/{pid}/history/commands", this::handleCommandLog);
         mApp.post(API_PREFIX + "/projects/{pid}/sceneflow/navigate", this::handleSceneflowNavigate);
+
+        // LLM endpoints (authoring tools)
+        mApp.post(API_PREFIX + "/llm/models", this::handleLLMModels);
+        mApp.post(API_PREFIX + "/llm/test", this::handleLLMTest);
+        mApp.post(API_PREFIX + "/llm/generate", this::handleLLMGenerate);
 
         // Editor-only endpoints (not available in RUNTIME_ONLY mode)
         if (mMode == ServerMode.FULL_EDITOR) {
@@ -1395,10 +1403,38 @@ public final class WebUiServer implements EventListener {
         JSONObject playerJson = new JSONObject();
         PlayerConfig player = cfg.getPlayerConfig();
         playerJson.put("features", configFeaturesToJson(player != null ? player.getEntryList() : null));
+        JSONArray llmsJson = new JSONArray();
+        Set<String> seenLLMs = new HashSet<>();
+        for (LLMConfig llm : cfg.getLLMConfigList()) {
+            String llmName = llm.getLLMName() == null ? "" : llm.getLLMName();
+            String llmKey = llmName.trim().toLowerCase();
+            if (!llmKey.isEmpty() && !seenLLMs.add(llmKey)) {
+                continue;
+            }
+            JSONObject entry = new JSONObject();
+            entry.put("name", llm.getLLMName());
+            entry.put("features", configFeaturesToJson(llm.getEntryList()));
+            llmsJson.put(entry);
+        }
         cfgJson.put("plugins", pluginsJson);
         cfgJson.put("agents", agentsJson);
+        cfgJson.put("llms", llmsJson);
         cfgJson.put("player", playerJson);
-        sLogger.message("[PROJECT-CONFIG] Serialized plugins=" + pluginsJson.length() + " agents=" + agentsJson.length());
+        // Serialize LLM prompts
+        JSONObject llmPromptsJson = new JSONObject();
+        de.dfki.vsm.model.config.ConfigElement prompts = cfg.getLLMPrompts();
+        String formatPrompt = prompts.getProperty("formatPrompt");
+        llmPromptsJson.put("formatPrompt", formatPrompt != null ? formatPrompt : "");
+        JSONArray actionPrompts = new JSONArray();
+        for (int i = 0; ; i++) {
+            String val = prompts.getProperty("actionPrompt." + i);
+            if (val == null) break;
+            actionPrompts.put(val);
+        }
+        llmPromptsJson.put("actionPrompts", actionPrompts);
+        cfgJson.put("llmPrompts", llmPromptsJson);
+        sLogger.message("[PROJECT-CONFIG] Serialized plugins=" + pluginsJson.length()
+                + " agents=" + agentsJson.length() + " llms=" + llmsJson.length());
         return cfgJson;
     }
 
@@ -1502,6 +1538,35 @@ public final class WebUiServer implements EventListener {
         cfg.getAgentConfigList().clear();
         cfg.getAgentConfigList().addAll(nextAgents);
 
+        JSONArray llmsJson = configJson.optJSONArray("llms");
+        List<LLMConfig> nextLLMs = new ArrayList<>();
+        Set<String> seenLLMs = new HashSet<>();
+        if (llmsJson != null) {
+            for (int i = 0; i < llmsJson.length(); i++) {
+                JSONObject entry = llmsJson.optJSONObject(i);
+                if (entry == null) continue;
+                String llmName = entry.optString("name", "");
+                String llmKey = llmName.trim().toLowerCase();
+                if (!llmKey.isEmpty() && !seenLLMs.add(llmKey)) continue;
+                ArrayList<ConfigFeature> featuresList = new ArrayList<>();
+                JSONArray features = entry.optJSONArray("features");
+                if (features != null) {
+                    for (int j = 0; j < features.length(); j++) {
+                        JSONObject feature = features.optJSONObject(j);
+                        if (feature == null) continue;
+                        String key = feature.optString("key", "");
+                        String value = feature.optString("value", "");
+                        if (!key.isEmpty()) {
+                            featuresList.add(new ConfigFeature("Feature", key, value));
+                        }
+                    }
+                }
+                nextLLMs.add(new LLMConfig(llmName, featuresList));
+            }
+        }
+        cfg.getLLMConfigList().clear();
+        cfg.getLLMConfigList().addAll(nextLLMs);
+
         JSONObject playerJson = configJson.optJSONObject("player");
         PlayerConfig player = cfg.getPlayerConfig();
         if (player != null) {
@@ -1521,8 +1586,31 @@ public final class WebUiServer implements EventListener {
                 }
             }
         }
+        // Apply LLM prompts
+        JSONObject llmPromptsJson = configJson.optJSONObject("llmPrompts");
+        if (llmPromptsJson != null) {
+            de.dfki.vsm.model.config.ConfigElement prompts = cfg.getLLMPrompts();
+            prompts.getEntryList().clear();
+            String formatPrompt = llmPromptsJson.optString("formatPrompt", "");
+            if (!formatPrompt.isEmpty()) {
+                prompts.addProperty("formatPrompt", formatPrompt);
+            }
+            JSONArray actionPrompts = llmPromptsJson.optJSONArray("actionPrompts");
+            if (actionPrompts != null) {
+                for (int i = 0; i < actionPrompts.length(); i++) {
+                    String val = actionPrompts.optString(i, "");
+                    if (!val.isEmpty()) {
+                        prompts.addProperty("actionPrompt." + i, val);
+                    }
+                }
+            }
+            sLogger.message("[PROJECT-CONFIG] Applied llmPrompts: formatPrompt="
+                    + (formatPrompt.isEmpty() ? "(empty)" : "(set)")
+                    + " actionPrompts=" + (actionPrompts != null ? actionPrompts.length() : 0));
+        }
         sLogger.message("[PROJECT-CONFIG] Applied plugins=" + cfg.getPluginConfigList().size()
-                + " agents=" + cfg.getAgentConfigList().size());
+                + " agents=" + cfg.getAgentConfigList().size()
+                + " llms=" + cfg.getLLMConfigList().size());
     }
 
     private JSONArray configFeaturesToJson(List<de.dfki.vsm.model.config.ConfigFeature> features) {
@@ -1535,6 +1623,143 @@ public final class WebUiServer implements EventListener {
             list.put(entry);
         }
         return list;
+    }
+
+    private LLMSupport createLLMSupport(LLMConfig llmConfig) {
+        String baseUrl = llmConfig.getProperty("baseUrl", "http://localhost:8234/v1/");
+        String apiKey = llmConfig.getProperty("apiKey", null);
+        String timeoutStr = llmConfig.getProperty("timeout", "30");
+        Duration timeout = Duration.ofSeconds(Long.parseLong(timeoutStr));
+        LLMSupport llm = new LLMSupport(baseUrl, apiKey, timeout);
+        String model = llmConfig.getProperty("model", null);
+        if (model != null && !model.isBlank()) {
+            llm.setSelectedModel(model);
+        }
+        String tempStr = llmConfig.getProperty("temperature", null);
+        if (tempStr != null && !tempStr.isBlank()) {
+            llm.setDefaultTemperature(Double.parseDouble(tempStr));
+        }
+        return llm;
+    }
+
+    private void handleLLMModels(Context ctx) {
+        JSONObject body = new JSONObject(ctx.body());
+        String baseUrl = body.optString("baseUrl", "").trim();
+        String apiKey = body.optString("apiKey", null);
+        JSONObject response = new JSONObject();
+        if (baseUrl.isEmpty()) {
+            ctx.status(400);
+            response.put("error", "baseUrl is required");
+            writeJson(ctx, response);
+            return;
+        }
+        try {
+            LLMSupport llm = new LLMSupport(baseUrl, apiKey, Duration.ofSeconds(15));
+            List<LLMSupport.LLMModel> models = llm.fetchAvailableModels();
+            JSONArray modelsJson = new JSONArray();
+            for (LLMSupport.LLMModel model : models) {
+                JSONObject m = new JSONObject();
+                m.put("id", model.id());
+                if (model.ownedBy() != null) m.put("ownedBy", model.ownedBy());
+                modelsJson.put(m);
+            }
+            response.put("models", modelsJson);
+        } catch (Exception e) {
+            ctx.status(502);
+            response.put("error", "Failed to fetch models: " + e.getMessage());
+        }
+        writeJson(ctx, response);
+    }
+
+    private void handleLLMTest(Context ctx) {
+        JSONObject body = new JSONObject(ctx.body());
+        String baseUrl = body.optString("baseUrl", "").trim();
+        String apiKey = body.optString("apiKey", null);
+        JSONObject response = new JSONObject();
+        if (baseUrl.isEmpty()) {
+            ctx.status(400);
+            response.put("error", "baseUrl is required");
+            writeJson(ctx, response);
+            return;
+        }
+        try {
+            LLMSupport llm = new LLMSupport(baseUrl, apiKey, Duration.ofSeconds(15));
+            List<LLMSupport.LLMModel> models = llm.fetchAvailableModels();
+            response.put("ok", true);
+            response.put("modelCount", models.size());
+            response.put("baseUrl", llm.getBaseUri().toString());
+        } catch (Exception e) {
+            response.put("ok", false);
+            response.put("error", e.getMessage());
+        }
+        writeJson(ctx, response);
+    }
+
+    private void handleLLMGenerate(Context ctx) {
+        JSONObject body = new JSONObject(ctx.body());
+        String baseUrl = body.optString("baseUrl", "").trim();
+        String apiKey = body.optString("apiKey", null);
+        String model = body.optString("model", "").trim();
+        double temperature = body.optDouble("temperature", 0.7);
+        int timeout = body.optInt("timeout", 60);
+        String formatPrompt = body.optString("formatPrompt", "").trim();
+        String actionPrompt = body.optString("actionPrompt", "").trim();
+        JSONObject response = new JSONObject();
+        if (baseUrl.isEmpty()) {
+            ctx.status(400);
+            response.put("error", "baseUrl is required");
+            writeJson(ctx, response);
+            return;
+        }
+        if (model.isEmpty()) {
+            ctx.status(400);
+            response.put("error", "model is required");
+            writeJson(ctx, response);
+            return;
+        }
+        if (actionPrompt.isEmpty()) {
+            ctx.status(400);
+            response.put("error", "actionPrompt is required");
+            writeJson(ctx, response);
+            return;
+        }
+        try {
+            LLMSupport llm = new LLMSupport(baseUrl, apiKey, Duration.ofSeconds(timeout));
+            llm.setSelectedModel(model);
+            llm.setDefaultTemperature(temperature);
+            LLMSupport.LLMPrompt.Builder promptBuilder = LLMSupport.LLMPrompt.builder();
+            if (!formatPrompt.isEmpty()) {
+                promptBuilder.addSystemMessage(formatPrompt);
+            }
+            promptBuilder.addUserMessage(actionPrompt);
+            LLMSupport.LLMCompletion completion = llm.sendPrompt(promptBuilder.build());
+            String text = completion.content();
+            // Strip markdown code fences if present
+            if (text != null) {
+                text = text.trim();
+                if (text.startsWith("```")) {
+                    int firstNewline = text.indexOf('\n');
+                    if (firstNewline >= 0) {
+                        text = text.substring(firstNewline + 1);
+                    }
+                    if (text.endsWith("```")) {
+                        text = text.substring(0, text.length() - 3);
+                    }
+                    text = text.trim();
+                }
+            }
+            response.put("text", text != null ? text : "");
+            response.put("model", completion.modelId() != null ? completion.modelId() : model);
+            JSONObject usage = new JSONObject();
+            usage.put("promptTokens", completion.usage().promptTokens());
+            usage.put("completionTokens", completion.usage().completionTokens());
+            usage.put("totalTokens", completion.usage().totalTokens());
+            response.put("usage", usage);
+        } catch (Exception e) {
+            ctx.status(502);
+            response.put("error", "LLM generation failed: " + e.getMessage());
+        }
+        writeJson(ctx, response);
     }
 
     private void handleEditorConfig(Context ctx) {
@@ -2620,6 +2845,10 @@ public final class WebUiServer implements EventListener {
                 return updateCommentForProject(params, broadcaster);
             case "SceneFlow.Comment.Delete":
                 return deleteCommentForProject(params, broadcaster);
+            case "SceneFlow.Selection.Copy":
+                return copySelectionForProject(params);
+            case "SceneFlow.Selection.Paste":
+                return pasteSelectionForProject(params, broadcaster);
             case "SceneFlow.Undo":
                 return undoProject(params, broadcaster);
             case "SceneFlow.Redo":
@@ -2710,6 +2939,13 @@ public final class WebUiServer implements EventListener {
                 response.put("config", projectConfigToJson(cfg, ref.path));
                 response.put("saved", false);
                 response.put("pending", true);
+                if (broadcaster != null) {
+                    JSONObject dirtyEvt = new JSONObject();
+                    dirtyEvt.put("event", "project.dirty");
+                    dirtyEvt.put("projectId", pid);
+                    dirtyEvt.put("areas", new JSONArray().put("config"));
+                    broadcaster.accept(dirtyEvt.toString());
+                }
                 return response;
             }
             case "Preferences.Update": {
@@ -3772,11 +4008,16 @@ public final class WebUiServer implements EventListener {
                 SuperNode snapshotTarget = resolveSuperNode(sceneFlow, superNodeId);
                 SuperNode activeSuperNode = snapshotTarget != null ? snapshotTarget : sceneFlow;
 
-                // Get grid and node dimensions from preferences
-                int gridX = getEditorConfigInt(ref, "grid_x", 10);
-                int gridY = getEditorConfigInt(ref, "grid_y", 10);
+                // Get node dimensions and grid settings
                 int nodeW = getEditorConfigInt(ref, "node_width", 90);
                 int nodeH = getEditorConfigInt(ref, "node_height", nodeW);
+                // Grid scale factors (1 = one node width/height per grid cell)
+                int gridScaleX = getEditorConfigInt(ref, "grid_x", 1);
+                int gridScaleY = getEditorConfigInt(ref, "grid_y", gridScaleX);
+                // Actual grid cell size in pixels
+                int gridX = Math.max(8, nodeW * gridScaleX);
+                int gridY = Math.max(8, nodeH * gridScaleY);
+                // Grid origin offset (matches frontend)
                 double snapOriginX = nodeW / 2.0 + nodeW / 3.0;
                 double snapOriginY = nodeH / 2.0 + nodeH / 3.0;
 
@@ -3796,7 +4037,8 @@ public final class WebUiServer implements EventListener {
                         return errorResponse("BAD_REQUEST", "Missing node id or coordinates");
                     }
 
-                    BasicNode dataNode = resolveNodeById(activeSuperNode, moveId);
+                    // Use findNodeRecursive like single-node move to find nodes anywhere in hierarchy
+                    BasicNode dataNode = findNodeRecursive(sceneFlow, moveId);
                     if (dataNode == null) {
                         return errorResponse("NODE_NOT_FOUND", "Node not found: " + moveId);
                     }
@@ -3837,9 +4079,9 @@ public final class WebUiServer implements EventListener {
                     updateEdgeEndpointsForMovedNode(movedNode, activeSuperNode, oldPos[0], oldPos[1]);
                 }
 
-                JSONObject response = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
-                response.put("status", "ok");
-                broadcastSceneFlowSnapshot(broadcaster, pid, response);
+                JSONObject snapshot = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
+                JSONObject response = buildSceneFlowResponse(snapshot);
+                broadcastSceneFlowSnapshot(broadcaster, pid, snapshot);
                 recordHistory(ref, "SceneFlow.Node.MoveGroup");
                 recordCommand(ref, "SceneFlow.Node.MoveGroup", params);
                 return response;
@@ -4210,8 +4452,13 @@ public final class WebUiServer implements EventListener {
 
         int nodeW = getEditorConfigInt(ref, "node_width", 90);
         int nodeH = getEditorConfigInt(ref, "node_height", nodeW);
-        int gridX = getEditorConfigInt(ref, "grid_x", 10);
-        int gridY = getEditorConfigInt(ref, "grid_y", 10);
+        // Grid scale factors (1 = one node width/height per grid cell)
+        int gridScaleX = getEditorConfigInt(ref, "grid_x", 1);
+        int gridScaleY = getEditorConfigInt(ref, "grid_y", gridScaleX);
+        // Actual grid cell size in pixels
+        int gridX = Math.max(8, nodeW * gridScaleX);
+        int gridY = Math.max(8, nodeH * gridScaleY);
+        // Grid origin offset (matches frontend)
         double snapOriginX = nodeW / 2.0 + nodeW / 3.0;
         double snapOriginY = nodeH / 2.0 + nodeH / 3.0;
 
@@ -4664,6 +4911,323 @@ public final class WebUiServer implements EventListener {
                 recordCommand(ref, "SceneFlow.Comment.Delete", params);
                 return resp;
             }
+
+    // ===== Copy/Paste Selection Methods =====
+
+    private JSONObject copySelectionForProject(JSONObject params) {
+        String pid = params.optString("projectId", "");
+        ProjectRef ref = projectStore.get(pid);
+        if (ref == null || ref.runtimeProject == null) {
+            return errorResponse("PROJECT_NOT_FOUND", "Project not found");
+        }
+
+        JSONArray nodeIdsJson = params.optJSONArray("nodeIds");
+        if (nodeIdsJson == null || nodeIdsJson.isEmpty()) {
+            return errorResponse("BAD_REQUEST", "Missing nodeIds");
+        }
+
+        SceneFlow sceneFlow = ref.runtimeProject.getSceneFlow();
+        Set<String> nodeIdSet = new java.util.HashSet<>();
+        for (int i = 0; i < nodeIdsJson.length(); i++) {
+            nodeIdSet.add(nodeIdsJson.getString(i));
+        }
+
+        // Clear existing clipboard
+        ref.clipboard.clear();
+        ref.clipboardEdges.clear();
+
+        // Deep copy each selected node
+        for (String nodeId : nodeIdSet) {
+            BasicNode node = findNodeRecursive(sceneFlow, nodeId);
+            if (node != null) {
+                ref.clipboard.add(node.getCopy());
+            }
+        }
+
+        // Collect edges between selected nodes
+        for (BasicNode node : ref.clipboard) {
+            String sourceId = node.getId();
+            // Collect all edge types
+            collectEdgesForClipboard(ref, node.getCEdgeList(), sourceId, "CEDGE", nodeIdSet);
+            collectEdgesForClipboard(ref, node.getPEdgeList(), sourceId, "PEDGE", nodeIdSet);
+            collectEdgesForClipboard(ref, node.getIEdgeList(), sourceId, "IEDGE", nodeIdSet);
+            collectEdgesForClipboard(ref, node.getFEdgeList(), sourceId, "FEDGE", nodeIdSet);
+            AbstractEdge dEdge = node.getDedge();
+            if (dEdge != null && nodeIdSet.contains(dEdge.getTargetUnid())) {
+                String edgeType = dEdge instanceof TimeoutEdge ? "TEDGE" : "EEDGE";
+                long timeout = dEdge instanceof TimeoutEdge ? ((TimeoutEdge) dEdge).getTimeout() : 0;
+                ref.clipboardEdges.add(new ClipboardEdge(sourceId, dEdge.getTargetUnid(),
+                    edgeType, null, 0, timeout));
+            }
+        }
+
+        JSONObject response = new JSONObject();
+        response.put("status", "ok");
+        response.put("copiedCount", ref.clipboard.size());
+        return response;
+    }
+
+    private void collectEdgesForClipboard(ProjectRef ref, List<? extends AbstractEdge> edges,
+            String sourceId, String edgeType, Set<String> nodeIdSet) {
+        if (edges == null) return;
+        for (AbstractEdge edge : edges) {
+            String targetId = edge.getTargetUnid();
+            if (nodeIdSet.contains(targetId)) {
+                String condition = null;
+                int probability = 0;
+                if (edge instanceof GuargedEdge) {
+                    Expression cond = ((GuargedEdge) edge).getCondition();
+                    condition = cond != null ? cond.getFormattedSyntax() : "true";
+                } else if (edge instanceof InterruptEdge) {
+                    Expression cond = ((InterruptEdge) edge).getCondition();
+                    condition = cond != null ? cond.getFormattedSyntax() : "true";
+                } else if (edge instanceof RandomEdge) {
+                    probability = ((RandomEdge) edge).getProbability();
+                }
+                ref.clipboardEdges.add(new ClipboardEdge(sourceId, targetId,
+                    edgeType, condition, probability, 0));
+            }
+        }
+    }
+
+    private JSONObject pasteSelectionForProject(JSONObject params,
+            java.util.function.Consumer<String> broadcaster) {
+        String pid = params.optString("projectId", "");
+        ProjectRef ref = projectStore.get(pid);
+        if (ref == null || ref.runtimeProject == null) {
+            return errorResponse("PROJECT_NOT_FOUND", "Project not found");
+        }
+
+        if (ref.clipboard.isEmpty()) {
+            JSONObject response = new JSONObject();
+            response.put("status", "ok");
+            response.put("nodeIds", new JSONArray());
+            return response;
+        }
+
+        int dx = params.optInt("dx", 50);
+        int dy = params.optInt("dy", 50);
+        String superNodeId = params.optString("superNodeId", null);
+
+        SceneFlow sceneFlow = ref.runtimeProject.getSceneFlow();
+        SuperNode snapshotTarget = resolveSuperNode(sceneFlow, superNodeId);
+        SuperNode activeSuperNode = snapshotTarget != null ? snapshotTarget : sceneFlow;
+
+        // Get node dimensions and grid settings for position calculations
+        int nodeWidth = getEditorConfigInt(ref, "node_width", 90);
+        int nodeHeight = getEditorConfigInt(ref, "node_height", nodeWidth);
+        // Grid scale factors (1 = one node width/height per grid cell)
+        int gridScaleX = getEditorConfigInt(ref, "grid_x", 1);
+        int gridScaleY = getEditorConfigInt(ref, "grid_y", gridScaleX);
+        // Actual grid cell size in pixels
+        int gridX = Math.max(8, nodeWidth * gridScaleX);
+        int gridY = Math.max(8, nodeHeight * gridScaleY);
+        // Grid origin offset (matches frontend: nodeWidth/2 + nodeWidth/3 = nodeWidth * 5/6)
+        double originX = nodeWidth / 2.0 + nodeWidth / 3.0;
+        double originY = nodeHeight / 2.0 + nodeHeight / 3.0;
+
+        // Collect all existing node IDs for uniqueness check
+        Set<String> usedIds = new java.util.HashSet<>();
+        List<BasicNode> existingNodes = new ArrayList<>();
+        collectNodes(sceneFlow, existingNodes);
+        for (BasicNode existing : existingNodes) {
+            if (existing != null && existing.getId() != null) {
+                usedIds.add(existing.getId());
+            }
+        }
+
+        // Collect existing node positions in the active supernode for collision detection
+        // Use a list of int[] pairs for distance-based collision checking
+        List<int[]> occupiedPositions = new ArrayList<>();
+        for (BasicNode node : activeSuperNode.getNodeAndSuperNodeList()) {
+            NodeGraphics g = node.getGraphics();
+            if (g != null && g.getPosition() != null) {
+                int nx = g.getPosition().getXPos();
+                int ny = g.getPosition().getYPos();
+                // Skip invalid positions (Integer.MIN_VALUE is default unset value)
+                if (nx > Integer.MIN_VALUE + 1000 && ny > Integer.MIN_VALUE + 1000) {
+                    occupiedPositions.add(new int[]{nx, ny});
+                }
+            }
+        }
+
+        // Collision threshold - nodes closer than this are considered overlapping
+        int collisionThreshold = Math.max(nodeWidth, nodeHeight);
+
+        // Map old node IDs to new node IDs
+        Map<String, String> idMapping = new java.util.HashMap<>();
+        List<String> newNodeIds = new ArrayList<>();
+        List<BasicNode> newNodes = new ArrayList<>();
+
+        // Create new nodes from clipboard
+        for (BasicNode clipboardNode : ref.clipboard) {
+            String oldId = clipboardNode.getId();
+            boolean isSuperNode = clipboardNode instanceof SuperNode;
+            String newId = allocateNodeId(ref, isSuperNode, usedIds);
+            usedIds.add(newId);
+            idMapping.put(oldId, newId);
+
+            // Create new node with offset position
+            BasicNode newNode = isSuperNode ? new SuperNode() : new BasicNode();
+            newNode.setId(newId);
+            newNode.setName(clipboardNode.getName());
+            newNode.setComment(clipboardNode.getComment());
+            newNode.setHistoryNodeFlag(clipboardNode.isHistoryNode());
+
+            // Copy variable definitions
+            for (VariableDefinition varDef : clipboardNode.getVarDefList()) {
+                newNode.addVarDef(varDef.getCopy());
+            }
+
+            // Copy type definitions
+            for (DataTypeDefinition typeDef : clipboardNode.getTypeDefList()) {
+                newNode.addTypeDef(typeDef.getCopy());
+            }
+
+            // Copy commands
+            for (Command cmd : clipboardNode.getCmdList()) {
+                newNode.addCmd(cmd.getCopy());
+            }
+
+            // Calculate initial position with offset
+            NodeGraphics oldGraphics = clipboardNode.getGraphics();
+            int x = (oldGraphics != null && oldGraphics.getPosition() != null ? oldGraphics.getPosition().getXPos() : 0) + dx;
+            int y = (oldGraphics != null && oldGraphics.getPosition() != null ? oldGraphics.getPosition().getYPos() : 0) + dy;
+
+            // Apply grid snap - snap node CENTER to grid, then convert back to position
+            // 1. Convert position (top-left) to center
+            double centerX = x + nodeWidth / 2.0;
+            double centerY = y + nodeHeight / 2.0;
+            // 2. Snap center to grid relative to origin
+            double snappedCenterX = originX + Math.round((centerX - originX) / gridX) * gridX;
+            double snappedCenterY = originY + Math.round((centerY - originY) / gridY) * gridY;
+            // 3. Convert back to position (top-left)
+            x = Math.max(1, (int) Math.round(snappedCenterX - nodeWidth / 2.0));
+            y = Math.max(1, (int) Math.round(snappedCenterY - nodeHeight / 2.0));
+
+            // Find a free position if the target position is occupied (using distance-based collision)
+            // Use grid cell size as the step to maintain grid alignment
+            int attempts = 0;
+            while (isPositionOccupied(x, y, occupiedPositions, collisionThreshold) && attempts < 100) {
+                // Move to next grid cell to find a free position
+                attempts++;
+                x += gridX;
+                if (attempts % 5 == 0) {
+                    x -= 5 * gridX;
+                    y += gridY;
+                }
+            }
+
+            // Mark this position as occupied for subsequent nodes
+            occupiedPositions.add(new int[]{x, y});
+
+            newNode.setGraphics(new NodeGraphics(x, y));
+
+            // Add to parent
+            newNode.setParentNode(activeSuperNode);
+            if (isSuperNode) {
+                activeSuperNode.addSuperNode((SuperNode) newNode);
+            } else {
+                activeSuperNode.addNode(newNode);
+            }
+
+            newNodeIds.add(newId);
+            newNodes.add(newNode);
+        }
+
+        // Recreate edges between pasted nodes
+        for (ClipboardEdge ce : ref.clipboardEdges) {
+            String newSourceId = idMapping.get(ce.sourceId);
+            String newTargetId = idMapping.get(ce.targetId);
+            if (newSourceId == null || newTargetId == null) continue;
+
+            BasicNode sourceNode = resolveNodeById(activeSuperNode, newSourceId);
+            BasicNode targetNode = resolveNodeById(activeSuperNode, newTargetId);
+            if (sourceNode == null || targetNode == null) continue;
+
+            createEdgeFromClipboard(ref, sourceNode, targetNode, ce);
+        }
+
+        // Mark dirty and create snapshot
+        ref.dirty = true;
+        JSONObject snapshot = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
+        JSONObject resp = buildSceneFlowResponse(snapshot);
+        resp.put("nodeIds", new JSONArray(newNodeIds));
+        broadcastSceneFlowSnapshot(broadcaster, pid, snapshot);
+        recordHistory(ref, "SceneFlow.Selection.Paste");
+
+        return resp;
+    }
+
+    private void createEdgeFromClipboard(ProjectRef ref, BasicNode sourceNode,
+            BasicNode targetNode, ClipboardEdge ce) {
+        AbstractEdge edge;
+        switch (ce.edgeType) {
+            case "CEDGE":
+                GuargedEdge cedge = new GuargedEdge();
+                cedge.setCondition(parseExpressionOrNull(ce.condition != null ? ce.condition : "true"));
+                sourceNode.addCEdge(cedge);
+                edge = cedge;
+                break;
+            case "IEDGE":
+                InterruptEdge iedge = new InterruptEdge();
+                iedge.setCondition(parseExpressionOrNull(ce.condition != null ? ce.condition : "true"));
+                sourceNode.addIEdge(iedge);
+                edge = iedge;
+                break;
+            case "PEDGE":
+                RandomEdge pedge = new RandomEdge();
+                pedge.setProbability(ce.probability);
+                sourceNode.addPEdge(pedge);
+                edge = pedge;
+                break;
+            case "FEDGE":
+                ForkingEdge fedge = new ForkingEdge();
+                sourceNode.addFEdge(fedge);
+                edge = fedge;
+                break;
+            case "TEDGE":
+                TimeoutEdge tedge = new TimeoutEdge();
+                tedge.setTimeout(ce.timeout);
+                sourceNode.setDedge(tedge);
+                edge = tedge;
+                break;
+            case "EEDGE":
+            default:
+                EpsilonEdge eedge = new EpsilonEdge();
+                sourceNode.setDedge(eedge);
+                edge = eedge;
+                break;
+        }
+
+        edge.setSourceNode(sourceNode);
+        edge.setTargetNode(targetNode);
+        edge.setSourceUnid(sourceNode.getId());
+        edge.setTargetUnid(targetNode.getId());
+        edge.setGraphics(new EdgeGraphics());
+        int nodeWidth = getEditorConfigInt(ref, "node_width", 90);
+        int nodeHeight = getEditorConfigInt(ref, "node_height", nodeWidth);
+        mEdgeLayout.initializeEdgeDockPoints(edge, nodeWidth, nodeHeight);
+        mEdgeLayout.normalizeEdge(edge, nodeWidth, nodeHeight);
+    }
+
+    /**
+     * Check if a position is too close to any existing occupied position.
+     * Uses distance-based collision detection rather than exact matching.
+     */
+    private boolean isPositionOccupied(int x, int y, List<int[]> occupiedPositions, int threshold) {
+        for (int[] pos : occupiedPositions) {
+            int dx = Math.abs(x - pos[0]);
+            int dy = Math.abs(y - pos[1]);
+            // Use Manhattan distance for simpler/faster check
+            if (dx < threshold && dy < threshold) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // ===== End Copy/Paste Selection Methods =====
 
     private JSONObject updateScriptForProject(JSONObject params, java.util.function.Consumer<String> broadcaster) {
         String pid = params.optString("projectId", "");
@@ -6030,6 +6594,9 @@ public final class WebUiServer implements EventListener {
         int commandCount = 0;
         boolean commandLogLoaded = false;
         boolean commandLogSuspended = false;
+        // Clipboard for copy/paste operations
+        List<BasicNode> clipboard = new ArrayList<>();
+        List<ClipboardEdge> clipboardEdges = new ArrayList<>();
 
         ProjectRef(String id, String name, String path) {
             this.id = id;
@@ -6039,6 +6606,26 @@ public final class WebUiServer implements EventListener {
             this.scriptText = null;
             this.scriptVersion = 1;
             this.scriptParseOk = true;
+        }
+    }
+
+    // Helper class for storing edge data in clipboard
+    private static class ClipboardEdge {
+        final String sourceId;
+        final String targetId;
+        final String edgeType;  // "EEDGE", "CEDGE", "PEDGE", "IEDGE", "FEDGE", "TEDGE"
+        final String condition; // For CEDGE, IEDGE
+        final int probability;  // For PEDGE
+        final long timeout;     // For TEDGE
+
+        ClipboardEdge(String sourceId, String targetId, String edgeType,
+                      String condition, int probability, long timeout) {
+            this.sourceId = sourceId;
+            this.targetId = targetId;
+            this.edgeType = edgeType;
+            this.condition = condition;
+            this.probability = probability;
+            this.timeout = timeout;
         }
     }
 

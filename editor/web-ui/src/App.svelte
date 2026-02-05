@@ -8,6 +8,7 @@
   import IconGear from "./icons/IconGear.svelte";
   import IconPencil from "./icons/IconPencil.svelte";
   import IconPlus from "./icons/IconPlus.svelte";
+  import IconDocument from "./icons/IconDocument.svelte";
   import IconPuzzle from "./icons/IconPuzzle.svelte";
   import IconPause from "./icons/IconPause.svelte";
   import IconStart from "./icons/IconStart.svelte";
@@ -781,6 +782,11 @@
   let projectConfigNewPlugin = { name: "", className: "", type: "device", load: true };
   let projectConfigNewAgent = { name: "", device: "" };
   let projectConfigNewFeature = { key: "", value: "" };
+  let llmExpandedIndex = -1;
+  let llmNewName = "";
+  let llmModels = {};
+  let llmModelsLoading = {};
+  let llmTestResult = {};
   let availableDevices = [];
   let availableDevicesLoading = false;
   let availableDevicesError = "";
@@ -795,6 +801,9 @@
   let prefsDialogDraft = null;
   let prefsDialogError = "";
   let prefsDialogBusy = false;
+  let prefsDialogApplyTimer = null;
+  let prefsDialogFingerprintValue = "";
+  let prefsDialogPrevBodyOverflow = "";
   let prefsPreviewStyle = "";
   let projectSaving = false;
   let autoSaveTimer = null;
@@ -840,6 +849,35 @@
   let missingAgentBusy = false;
   const SELECTION_PREVIEW_LIMIT = 6;
 
+  // Generate panel state
+  let generatePanelOpen = false;
+  let generateLLMIndex = 0;
+  let generateLanguage = "en";
+  let generateSceneName = "new_scene";
+  let generateSceneCount = 1;
+  let generateActors = "";
+  let generateFormatPrompt = "";
+  let generateActionPrompt = "";
+  let generateActionLibrary = [];
+  let generateResult = "";
+  let generateLoading = false;
+  let generateError = "";
+  let generateShowFormatPrompt = false;
+
+  const DEFAULT_FORMAT_PROMPT = `You generate {{number}} dialogue scene(s) for a virtual agent system. Each scene starts with a header line:
+
+scene {{language}} {{scene_name}}
+
+Followed by one or more dialogue turns:
+
+{{actor_name}}: Utterance text with punctuation.
+
+Inline actions can be enclosed in square brackets, like [Smile] or [Wave].
+
+The available actors are: {{actors}}
+
+Generate only the scene text. Do not include explanations, markdown formatting, or code blocks.`;
+
   let sceneFlow = null;
   let sceneFlowError = "";
   let sceneFlowLoading = false;
@@ -882,6 +920,7 @@
   let runtimeLoading = false;
   let runtimeLoaded = false;
   let monitorDialogOpen = false;
+  let monitorDialogPrevBodyOverflow = "";
   let monitorSelectedKey = "";
   let monitorSelectedVar = null;
   let monitorValueDraft = "";
@@ -949,10 +988,12 @@
   let typeDefEditIndex = null;
   let typeDefError = "";
   let typeDefSelectedIndex = null;
+  let typeDefPrevBodyOverflow = "";
   let varDefDraft = null;
   let varDefEditIndex = null;
   let varDefError = "";
   let varDefSelectedIndex = null;
+  let varDefPrevBodyOverflow = "";
   let cmdDraft = "";
   let cmdEditIndex = null;
   let cmdError = "";
@@ -1027,6 +1068,8 @@
   $: headerDirty = !!(selectedProject?.dirty || sceneFlowDirty || scriptDirty || projectConfigDirty);
   $: projectConfigPlugins = projectConfigView.plugins;
   $: projectConfigAgents = projectConfigView.agents;
+  $: projectConfigLLMs = projectConfigView.llms;
+  $: projectConfigLLMPrompts = projectConfigView.llmPrompts;
   $: projectConfigPlayer = projectConfigView.player;
   $: projectConfigAgentsByPlugin = projectConfigPlugins.map((plugin) =>
     projectConfigAgents
@@ -1599,6 +1642,13 @@
   $: missingAgentDeviceOptions = buildMissingAgentDeviceOptions(projectConfigPlugins);
   $: monitorSelectedVar = findMonitorVar(monitorSelectedKey);
   $: prefsPreviewStyle = buildPrefsPreviewStyle(prefsDialogDraft);
+  $: if (prefsDialogOpen && prefsDialogDraft) {
+    const nextFingerprint = prefsDialogFingerprint(prefsDialogDraft);
+    if (nextFingerprint && nextFingerprint !== prefsDialogFingerprintValue) {
+      prefsDialogFingerprintValue = nextFingerprint;
+      schedulePrefsApply();
+    }
+  }
   $: projectConfigDirty =
     projectConfigFingerprint(projectConfigDraft) !== projectConfigFingerprint(projectConfig);
 
@@ -1637,8 +1687,8 @@
 
   $: if (nodeEditorTargetId && nodeEditorTargetId !== lastNodeDefsId) {
     lastNodeDefsId = nodeEditorTargetId;
-    resetTypeDefEditor();
-    resetVarDefEditor();
+    closeTypeDefDialog();
+    closeVarDefDialog();
     if (cmdDialogOpen) {
       syncCmdInlineDrafts();
       cmdSelectedIndex = null;
@@ -2692,6 +2742,12 @@
       projectConfigDraft = cloneProjectConfig(projectConfig);
       projectConfigSaved = response.saved ?? null;
       projectConfigPending = response.pending === true;
+      // Mark project as dirty (has unsaved changes) but NOT pending (which would require save-as)
+      if (response.pending === true) {
+        projects = projects.map((project) =>
+          project.projectId === selectedProjectId ? { ...project, dirty: true } : project
+        );
+      }
     } catch (err) {
       projectConfigError = err.message || "Failed to update project config.";
     }
@@ -3005,6 +3061,113 @@
     scheduleProjectConfigApply();
   }
 
+  // --- LLM config functions ---
+
+  function getLLMFeature(llm, key, fallback) {
+    const f = (llm?.features || []).find((f) => f.key === key);
+    return f ? f.value : (fallback ?? "");
+  }
+
+  function setLLMFeature(llmIndex, key, value) {
+    const llms = [...projectConfigLLMs];
+    const llm = llms[llmIndex];
+    if (!llm) return;
+    const features = llm.features.filter((f) => f.key !== key);
+    if (value !== "" && value != null) {
+      features.push({ key, value });
+    }
+    llms[llmIndex] = { ...llm, features };
+    projectConfigDraft = { ...projectConfigDraft, llms };
+    scheduleProjectConfigApply();
+  }
+
+  function addLLM() {
+    const name = (llmNewName || "").trim();
+    if (!name) {
+      projectConfigError = "LLM name is required.";
+      return;
+    }
+    if (projectConfigLLMs.some((l) => l.name.toLowerCase() === name.toLowerCase())) {
+      projectConfigError = "LLM name already exists.";
+      return;
+    }
+    const entry = {
+      name,
+      features: [
+        { key: "baseUrl", value: "http://localhost:8234/v1/" },
+        { key: "temperature", value: "0.7" },
+        { key: "timeout", value: "30" }
+      ]
+    };
+    const llms = [...projectConfigLLMs, entry];
+    projectConfigDraft = { ...projectConfigDraft, llms };
+    llmNewName = "";
+    llmExpandedIndex = llms.length - 1;
+    scheduleProjectConfigApply();
+  }
+
+  function removeLLM(index) {
+    const llms = projectConfigLLMs.filter((_, idx) => idx !== index);
+    projectConfigDraft = { ...projectConfigDraft, llms };
+    if (llmExpandedIndex === index) {
+      llmExpandedIndex = -1;
+    } else if (llmExpandedIndex > index) {
+      llmExpandedIndex--;
+    }
+    scheduleProjectConfigApply();
+  }
+
+  function updateLLMName(index, value) {
+    const llms = [...projectConfigLLMs];
+    llms[index] = { ...llms[index], name: value };
+    projectConfigDraft = { ...projectConfigDraft, llms };
+    scheduleProjectConfigApply();
+  }
+
+  async function fetchLLMModels(index) {
+    const llm = projectConfigLLMs[index];
+    if (!llm) return;
+    const baseUrl = getLLMFeature(llm, "baseUrl", "").trim();
+    if (!baseUrl) {
+      llmTestResult = { ...llmTestResult, [index]: { ok: false, error: "Base URL is empty" } };
+      return;
+    }
+    llmModelsLoading = { ...llmModelsLoading, [index]: true };
+    llmTestResult = { ...llmTestResult, [index]: null };
+    try {
+      const data = await apiPost("/api/v1/llm/models", {
+        baseUrl,
+        apiKey: getLLMFeature(llm, "apiKey", "") || null
+      });
+      llmModels = { ...llmModels, [index]: data.models || [] };
+      llmModelsLoading = { ...llmModelsLoading, [index]: false };
+    } catch (err) {
+      llmModels = { ...llmModels, [index]: [] };
+      llmModelsLoading = { ...llmModelsLoading, [index]: false };
+      llmTestResult = { ...llmTestResult, [index]: { ok: false, error: err.message || "Failed" } };
+    }
+  }
+
+  async function testLLMConnection(index) {
+    const llm = projectConfigLLMs[index];
+    if (!llm) return;
+    const baseUrl = getLLMFeature(llm, "baseUrl", "").trim();
+    if (!baseUrl) {
+      llmTestResult = { ...llmTestResult, [index]: { ok: false, error: "Base URL is empty" } };
+      return;
+    }
+    llmTestResult = { ...llmTestResult, [index]: null };
+    try {
+      const data = await apiPost("/api/v1/llm/test", {
+        baseUrl,
+        apiKey: getLLMFeature(llm, "apiKey", "") || null
+      });
+      llmTestResult = { ...llmTestResult, [index]: data };
+    } catch (err) {
+      llmTestResult = { ...llmTestResult, [index]: { ok: false, error: err.message || "Failed" } };
+    }
+  }
+
   function readConfigValue(key, fallback) {
     if (Object.prototype.hasOwnProperty.call(configDraft, key)) {
       const value = configDraft[key];
@@ -3091,6 +3254,31 @@
     return `font-family:${family}, monospace; font-size:${fontSize}px;`;
   }
 
+  function prefsDialogFingerprint(draft) {
+    try {
+      return JSON.stringify(draft || {});
+    } catch (err) {
+      return "";
+    }
+  }
+
+  function schedulePrefsApply() {
+    if (!prefsDialogOpen || !prefsDialogDraft || !wsConnected) {
+      return;
+    }
+    if (prefsDialogApplyTimer) {
+      clearTimeout(prefsDialogApplyTimer);
+    }
+    prefsDialogApplyTimer = setTimeout(() => {
+      prefsDialogApplyTimer = null;
+      if (!prefsDialogBusy) {
+        applyPrefsDialog();
+      } else {
+        schedulePrefsApply();
+      }
+    }, 350);
+  }
+
 
   function openPrefsDialog() {
     if (!selectedProjectId) return;
@@ -3098,25 +3286,25 @@
     const width = readConfigInt("node_width", PREF_NODE_DEFAULT);
     const height = readConfigInt("node_height", width);
     const nodeSize = width || height || PREF_NODE_DEFAULT;
-      prefsDialogDraft = {
-        nodeSize: String(nodeSize),
-        gridScale: String(readConfigInt("grid_x", PREF_GRID_DEFAULT)),
-        workspaceFontSize: String(readConfigInt("workspace_fontsize", PREF_WORKSPACE_FONT_DEFAULT)),
-        drawGrid: readConfigBool("grid", true),
-        activityVisualization: readConfigBool("visualization", true),
-        activityTrace: readConfigBool("visualizationtrace", true),
-        showNodeId: readConfigBool("shownodeid", true),
-        autoSaveEnabled: readConfigBool("autosave", true),
-        undoMaxDepth: String(readConfigInt("undo_max_depth", PREF_UNDO_DEFAULT)),
-        commandLogMax: String(readConfigInt("command_log_max", PREF_COMMAND_LOG_DEFAULT)),
-        scriptFontType: readConfigString("scriptfonttype", PREF_SCRIPT_FONT_DEFAULT),
-        scriptFontSize: String(readConfigInt("scriptfonsize", PREF_SCRIPT_FONT_SIZE_DEFAULT)),
-      sceneflowNamespace: readPreferenceString("xmlns", "xml.sceneflow.dfki.de"),
-      sceneflowInstance: readPreferenceString("xmlns_xsi", "http://www.w3.org/2001/XMLSchema-instance"),
-      sceneflowSchema: readPreferenceString("xsi_schemeLocation", "res/xsd/sceneflow.xsd")
+    prefsDialogDraft = {
+      nodeSize: String(nodeSize),
+      gridScale: String(readConfigInt("grid_x", PREF_GRID_DEFAULT)),
+      workspaceFontSize: String(readConfigInt("workspace_fontsize", PREF_WORKSPACE_FONT_DEFAULT)),
+      drawGrid: readConfigBool("grid", true),
+      activityVisualization: readConfigBool("visualization", true),
+      activityTrace: readConfigBool("visualizationtrace", true),
+      showNodeId: readConfigBool("shownodeid", true),
+      autoSaveEnabled: readConfigBool("autosave", true),
+      undoMaxDepth: String(readConfigInt("undo_max_depth", PREF_UNDO_DEFAULT)),
+      commandLogMax: String(readConfigInt("command_log_max", PREF_COMMAND_LOG_DEFAULT)),
+      scriptFontType: readConfigString("scriptfonttype", PREF_SCRIPT_FONT_DEFAULT),
+      scriptFontSize: String(readConfigInt("scriptfonsize", PREF_SCRIPT_FONT_SIZE_DEFAULT))
     };
     prefsDialogError = "";
     prefsDialogOpen = true;
+    prefsDialogPrevBodyOverflow = document.body.style.overflow || "";
+    document.body.style.overflow = "hidden";
+    prefsDialogFingerprintValue = prefsDialogFingerprint(prefsDialogDraft);
     focusDialog(prefsDialogEl);
   }
 
@@ -3124,6 +3312,11 @@
     prefsDialogOpen = false;
     prefsDialogDraft = null;
     prefsDialogError = "";
+    if (prefsDialogApplyTimer) {
+      clearTimeout(prefsDialogApplyTimer);
+      prefsDialogApplyTimer = null;
+    }
+    document.body.style.overflow = prefsDialogPrevBodyOverflow;
     restoreFocus();
   }
 
@@ -3197,11 +3390,7 @@
     addConfigChange("command_log_max", commandLogMax);
     addConfigChange("scriptfonsize", scriptFontSize);
     addConfigChange("scriptfonttype", scriptFontType);
-    addPrefChange("xmlns", prefsDialogDraft.sceneflowNamespace);
-    addPrefChange("xmlns_xsi", prefsDialogDraft.sceneflowInstance);
-    addPrefChange("xsi_schemeLocation", prefsDialogDraft.sceneflowSchema);
     if (!Object.keys(configChanges).length && !Object.keys(prefChanges).length) {
-      prefsDialogError = "No changes to apply.";
       return;
     }
     prefsDialogBusy = true;
@@ -3243,7 +3432,6 @@
         );
       }
       statusMessage = messages.filter(Boolean).join(" ");
-      closePrefsDialog();
     } catch (err) {
       prefsDialogError = err.message || "Failed to update preferences.";
     } finally {
@@ -3341,6 +3529,159 @@
   function insertScriptSnippet(snippet) {
     if (!snippet) return;
     scriptEditorRef?.insertText(snippet);
+  }
+
+  function openGeneratePanel() {
+    generatePanelOpen = true;
+    generateResult = "";
+    generateError = "";
+    generateLoading = false;
+    generateShowFormatPrompt = false;
+    // Pre-fill actors from project agents
+    const agents = (projectConfigView?.agents || []).map((a) => a.name).filter(Boolean);
+    generateActors = agents.join(", ");
+    // Load format prompt from config or default
+    const stored = projectConfigLLMPrompts?.formatPrompt;
+    generateFormatPrompt = stored || DEFAULT_FORMAT_PROMPT;
+    // Load action prompt library from config
+    generateActionLibrary = Array.isArray(projectConfigLLMPrompts?.actionPrompts)
+      ? [...projectConfigLLMPrompts.actionPrompts]
+      : [];
+    // Default to first LLM
+    generateLLMIndex = 0;
+  }
+
+  function closeGeneratePanel() {
+    generatePanelOpen = false;
+    generateResult = "";
+    generateError = "";
+    generateLoading = false;
+    generateActionPrompt = "";
+  }
+
+  async function generateScene() {
+    const llm = projectConfigLLMs[generateLLMIndex];
+    if (!llm) {
+      generateError = "No LLM service selected.";
+      return;
+    }
+    const baseUrl = getLLMFeature(llm, "baseUrl", "").trim();
+    const apiKey = getLLMFeature(llm, "apiKey", "") || null;
+    const model = getLLMFeature(llm, "model", "").trim();
+    const temperature = parseFloat(getLLMFeature(llm, "temperature", "0.7")) || 0.7;
+    const timeout = parseInt(getLLMFeature(llm, "timeout", "60"), 10) || 60;
+    if (!baseUrl) {
+      generateError = "LLM base URL is not configured.";
+      return;
+    }
+    if (!model) {
+      generateError = "No model selected for this LLM service.";
+      return;
+    }
+    if (!generateActionPrompt.trim()) {
+      generateError = "Please enter an action prompt.";
+      return;
+    }
+    // Substitute placeholders in format prompt
+    let resolvedFormat = generateFormatPrompt
+      .replace(/\{\{number\}\}/g, String(generateSceneCount || 1))
+      .replace(/\{\{language\}\}/g, generateLanguage || "en")
+      .replace(/\{\{scene_name\}\}/g, generateSceneName || "new_scene")
+      .replace(/\{\{actors\}\}/g, generateActors || "agent");
+    generateLoading = true;
+    generateError = "";
+    generateResult = "";
+    try {
+      const data = await apiPost("/api/v1/llm/generate", {
+        baseUrl,
+        apiKey,
+        model,
+        temperature,
+        timeout,
+        formatPrompt: resolvedFormat,
+        actionPrompt: generateActionPrompt.trim()
+      });
+      if (data.error) {
+        generateError = data.error;
+      } else {
+        generateResult = data.text || "";
+      }
+    } catch (err) {
+      generateError = err.message || "Generation failed.";
+    } finally {
+      generateLoading = false;
+    }
+  }
+
+  function insertGeneratedScene() {
+    if (!generateResult) return;
+    scriptEditorRef?.insertText("\n\n" + generateResult);
+    generateResult = "";
+  }
+
+  async function applyLLMPromptsConfig() {
+    // Apply config changes from generate panel (doesn't require dialog to be open)
+    if (!selectedProjectId || !projectConfigDraft || !wsConnected) {
+      console.log("[Generate] applyLLMPromptsConfig skipped:", { selectedProjectId, hasDraft: !!projectConfigDraft, wsConnected });
+      return;
+    }
+    console.log("[Generate] applyLLMPromptsConfig sending:", projectConfigDraft?.llmPrompts);
+    try {
+      const response = await sendCommand("ProjectConfig.Update", {
+        projectId: selectedProjectId,
+        config: projectConfigDraft
+      });
+      console.log("[Generate] applyLLMPromptsConfig response:", response?.status, response?.pending);
+      projectConfig = normalizeProjectConfig(response.config || {});
+      projectConfigDraft = cloneProjectConfig(projectConfig);
+      // Mark project as dirty (has unsaved changes) but NOT pending (which would require save-as)
+      if (response.pending === true) {
+        projects = projects.map((project) =>
+          project.projectId === selectedProjectId ? { ...project, dirty: true } : project
+        );
+      }
+    } catch (err) {
+      console.error("[Generate] Failed to save LLM prompts config:", err);
+    }
+  }
+
+  function saveActionPromptToLibrary() {
+    const text = generateActionPrompt.trim();
+    if (!text) return;
+    if (generateActionLibrary.includes(text)) return;
+    generateActionLibrary = [...generateActionLibrary, text];
+    // Save to project config
+    if (!projectConfigDraft) {
+      projectConfigDraft = cloneProjectConfig(projectConfigView);
+    }
+    projectConfigDraft.llmPrompts = {
+      ...projectConfigDraft.llmPrompts,
+      actionPrompts: [...generateActionLibrary]
+    };
+    applyLLMPromptsConfig();
+  }
+
+  function removeActionPromptFromLibrary(index) {
+    generateActionLibrary = generateActionLibrary.filter((_, i) => i !== index);
+    if (!projectConfigDraft) {
+      projectConfigDraft = cloneProjectConfig(projectConfigView);
+    }
+    projectConfigDraft.llmPrompts = {
+      ...projectConfigDraft.llmPrompts,
+      actionPrompts: [...generateActionLibrary]
+    };
+    applyLLMPromptsConfig();
+  }
+
+  function saveFormatPrompt() {
+    if (!projectConfigDraft) {
+      projectConfigDraft = cloneProjectConfig(projectConfigView);
+    }
+    projectConfigDraft.llmPrompts = {
+      ...projectConfigDraft.llmPrompts,
+      formatPrompt: generateFormatPrompt
+    };
+    applyLLMPromptsConfig();
   }
 
   async function applyScript() {
@@ -4306,6 +4647,8 @@
     if (!selectedProjectId) return;
     rememberFocus();
     monitorDialogOpen = true;
+    monitorDialogPrevBodyOverflow = document.body.style.overflow || "";
+    document.body.style.overflow = "hidden";
     monitorError = "";
     monitorStatus = "";
     monitorValueDraft = "";
@@ -4328,6 +4671,7 @@
     monitorValueDraft = "";
     monitorStatus = "";
     monitorError = "";
+    document.body.style.overflow = monitorDialogPrevBodyOverflow;
     restoreFocus();
   }
 
@@ -4671,6 +5015,7 @@
     const safe = config || {};
     return {
       name: safe.name ?? "",
+      path: safe.path ?? "",
       plugins: Array.isArray(safe.plugins)
         ? safe.plugins.map((plugin) => ({
             type: plugin?.type ?? "device",
@@ -4687,8 +5032,18 @@
             features: normalizeConfigFeatures(agent?.features)
           }))
         : [],
+      llms: Array.isArray(safe.llms)
+        ? safe.llms.map((llm) => ({
+            name: llm?.name ?? "",
+            features: normalizeConfigFeatures(llm?.features)
+          }))
+        : [],
       player: {
         features: normalizeConfigFeatures(safe.player?.features)
+      },
+      llmPrompts: {
+        formatPrompt: safe.llmPrompts?.formatPrompt ?? "",
+        actionPrompts: Array.isArray(safe.llmPrompts?.actionPrompts) ? [...safe.llmPrompts.actionPrompts] : []
       }
     };
   }
@@ -5558,6 +5913,7 @@
     if (sceneFlowClipboard.nodeIds?.length) {
       const response = await runSceneFlowCommand("SceneFlow.Selection.Paste", {
         projectId: selectedProjectId,
+        superNodeId: sceneFlow?.superNodeId || "",
         dx,
         dy
       });
@@ -5575,6 +5931,7 @@
     for (const comment of sceneFlowClipboard.comments || []) {
       const response = await runSceneFlowCommand("SceneFlow.Comment.Create", {
         projectId: selectedProjectId,
+        superNodeId: sceneFlow?.superNodeId || "",
         x: comment.x + dx,
         y: comment.y + dy,
         width: comment.w,
@@ -5747,11 +6104,13 @@
 
   function closeTypeDefDialog() {
     resetTypeDefEditor();
+    document.body.style.overflow = typeDefPrevBodyOverflow;
     restoreFocus();
   }
 
   function closeVarDefDialog() {
     resetVarDefEditor();
+    document.body.style.overflow = varDefPrevBodyOverflow;
     restoreFocus();
   }
 
@@ -5986,6 +6345,8 @@
     typeDefEditIndex = -1;
     typeDefSelectedIndex = null;
     typeDefDraft = defaultTypeDefDraft();
+    typeDefPrevBodyOverflow = document.body.style.overflow || "";
+    document.body.style.overflow = "hidden";
     focusDialog(typeDefDialogEl, typeDefNameInputEl);
   }
 
@@ -6002,6 +6363,8 @@
       elementType: def.elementType ?? "Int",
       members: Array.isArray(def.members) ? def.members.map((member) => ({ ...member })) : []
     };
+    typeDefPrevBodyOverflow = document.body.style.overflow || "";
+    document.body.style.overflow = "hidden";
     focusDialog(typeDefDialogEl, typeDefNameInputEl);
   }
 
@@ -6144,6 +6507,8 @@
     varDefEditIndex = -1;
     varDefSelectedIndex = null;
     varDefDraft = defaultVarDefDraft();
+    varDefPrevBodyOverflow = document.body.style.overflow || "";
+    document.body.style.overflow = "hidden";
     focusDialog(varDefDialogEl, varDefNameInputEl);
   }
 
@@ -6164,6 +6529,8 @@
       eventElementType: eventParsed.elementType,
       eventCapacity: eventParsed.capacity
     };
+    varDefPrevBodyOverflow = document.body.style.overflow || "";
+    document.body.style.overflow = "hidden";
     focusDialog(varDefDialogEl, varDefNameInputEl);
   }
 
@@ -8017,20 +8384,7 @@
       closeCmdDialog();
       return true;
     }
-    if (typeDefDraft) {
-      closeTypeDefDialog();
-      return true;
-    }
-    if (varDefDraft) {
-      closeVarDefDialog();
-      return true;
-    }
     if (monitorDialogOpen) {
-      closeMonitorDialog();
-      return true;
-    }
-    if (prefsDialogOpen) {
-      closePrefsDialog();
       return true;
     }
     if (missingAgentDialogOpen) {
@@ -8927,14 +9281,6 @@
                     <option value={option.value}>{option.label}</option>
                   {/each}
                 </select>
-                <button
-                  type="button"
-                  class="ghost"
-                  on:click={() => loadScriptScenes(selectedProjectId)}
-                  disabled={!selectedProject}
-                >
-                  Reload
-                </button>
               </div>
               <input
                 class="search"
@@ -10004,6 +10350,16 @@
             >
               Next issue
             </button>
+            <button
+              type="button"
+              class="panel-save script-generate"
+              on:click={openGeneratePanel}
+              disabled={!selectedProject || projectConfigLLMs.length === 0}
+              title={projectConfigLLMs.length === 0 ? "Configure an LLM service in Project Settings first" : "Generate scene text using LLM"}
+            >
+              <IconDocument className="icon" />
+              Generate Scenes
+            </button>
             {#if scriptVersion !== null}
               <span class="muted">v{scriptVersion}</span>
             {/if}
@@ -10011,6 +10367,112 @@
               <span class="muted">Unsaved edits</span>
             {/if}
           </div>
+          {#if generatePanelOpen}
+            <div class="generate-panel">
+              <div class="generate-panel-header">
+                <strong>Generate Scene</strong>
+                <button type="button" class="ghost" on:click={closeGeneratePanel}>Close</button>
+              </div>
+              <div class="generate-panel-body">
+                <div class="generate-row">
+                  <label>
+                    LLM Service
+                    <select bind:value={generateLLMIndex}>
+                      {#each projectConfigLLMs as llm, i}
+                        <option value={i}>{llm.name || `LLM ${i + 1}`}</option>
+                      {/each}
+                    </select>
+                  </label>
+                  <label>
+                    Language
+                    <input type="text" bind:value={generateLanguage} placeholder="en" />
+                  </label>
+                  <label>
+                    Scene Name
+                    <input type="text" bind:value={generateSceneName} placeholder="greeting" />
+                  </label>
+                  <label>
+                    Scenes
+                    <input type="number" bind:value={generateSceneCount} min="1" max="10" style="width: 60px;" />
+                  </label>
+                </div>
+                <div class="generate-row">
+                  <label class="generate-full">
+                    Actors
+                    <input type="text" bind:value={generateActors} placeholder="charly, susanne" />
+                  </label>
+                  <button type="button" class="ghost" on:click={() => generateShowFormatPrompt = !generateShowFormatPrompt}>
+                    {generateShowFormatPrompt ? "Hide Format Prompt" : "Show Format Prompt"}
+                  </button>
+                </div>
+                {#if generateShowFormatPrompt}
+                  <div class="generate-row">
+                    <label class="generate-full">
+                      Format Prompt
+                      <textarea bind:value={generateFormatPrompt} rows="6"></textarea>
+                    </label>
+                  </div>
+                  <div class="generate-action-row">
+                    <button type="button" class="ghost" on:click={saveFormatPrompt}>Save Format Prompt</button>
+                  </div>
+                {/if}
+                <div class="generate-row">
+                  <label class="generate-full">
+                    Action Prompt
+                    <textarea bind:value={generateActionPrompt} rows="3" placeholder="Describe the scene you want to generate..."></textarea>
+                  </label>
+                </div>
+                {#if generateActionLibrary.length > 0}
+                  <div class="generate-saved-prompts">
+                    <span class="generate-saved-label">Saved Prompts</span>
+                    <div class="generate-saved-list">
+                      {#each generateActionLibrary as prompt, i}
+                        <div class="generate-saved-item">
+                          <button
+                            type="button"
+                            class="generate-saved-text"
+                            on:click={() => generateActionPrompt = prompt}
+                            title={prompt}
+                          >
+                            {prompt.length > 50 ? prompt.substring(0, 50) + "..." : prompt}
+                          </button>
+                          <button
+                            type="button"
+                            class="generate-saved-delete"
+                            on:click={() => removeActionPromptFromLibrary(i)}
+                            title="Delete this prompt"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      {/each}
+                    </div>
+                  </div>
+                {/if}
+                <div class="generate-actions">
+                  <button type="button" on:click={generateScene} disabled={generateLoading || !generateActionPrompt.trim()}>
+                    {generateLoading ? "Generating..." : "Generate"}
+                  </button>
+                  <button type="button" class="ghost" on:click={saveActionPromptToLibrary} disabled={!generateActionPrompt.trim()}>
+                    Save Prompt
+                  </button>
+                </div>
+                {#if generateError}
+                  <p class="error">{generateError}</p>
+                {/if}
+                {#if generateResult}
+                  <div class="generate-result">
+                    <strong>Result</strong>
+                    <pre class="generate-preview">{generateResult}</pre>
+                    <div class="generate-result-actions">
+                      <button type="button" on:click={insertGeneratedScene}>Insert into Script</button>
+                      <button type="button" class="ghost" on:click={() => generateResult = ""}>Discard</button>
+                    </div>
+                  </div>
+                {/if}
+              </div>
+            </div>
+          {/if}
           <div class="script-editor" class:has-error={!scriptParseOk}>
             {#if !selectedProject}
               <p class="muted">Select a project to edit the scene script.</p>
@@ -10326,6 +10788,122 @@
               </div>
             </div>
           </div>
+          <div class="project-config-llm-panel">
+            <div class="project-config-llm-header">
+              <h4>LLM Services</h4>
+              <div class="project-config-llm-add">
+                <input
+                  placeholder="Name"
+                  bind:value={llmNewName}
+                  on:keydown={(e) => { if (e.key === "Enter") addLLM(); }}
+                />
+                <button type="button" class="primary icon-button" on:click={addLLM} aria-label="Add LLM" title="Add LLM">+</button>
+              </div>
+            </div>
+            {#if projectConfigLLMs.length === 0}
+              <p class="muted project-config-llm-empty">No LLM services configured.</p>
+            {:else}
+              <div class="project-config-llm-list">
+                {#each projectConfigLLMs as llm, index}
+                  <div class="project-config-llm-entry" class:expanded={llmExpandedIndex === index}>
+                    <button
+                      type="button"
+                      class="project-config-llm-row"
+                      on:click={() => { llmExpandedIndex = llmExpandedIndex === index ? -1 : index; }}
+                    >
+                      <span class="project-config-llm-name">{llm.name || "Unnamed"}</span>
+                      <span class="project-config-llm-url">{getLLMFeature(llm, "baseUrl", "—")}</span>
+                      <span class="project-config-llm-model">{getLLMFeature(llm, "model", "—")}</span>
+                      <button
+                        type="button"
+                        class="ghost icon-button danger project-config-llm-delete"
+                        on:click|stopPropagation={() => removeLLM(index)}
+                        aria-label="Remove LLM"
+                        title="Remove"
+                      >×</button>
+                    </button>
+                    {#if llmExpandedIndex === index}
+                      <div class="project-config-llm-detail">
+                        <div class="project-config-llm-grid">
+                          <label>Name</label>
+                          <input
+                            value={llm.name}
+                            on:input={(e) => updateLLMName(index, e.target.value)}
+                          />
+                          <label>Base URL</label>
+                          <input
+                            value={getLLMFeature(llm, "baseUrl")}
+                            placeholder="http://localhost:8234/v1/"
+                            on:input={(e) => setLLMFeature(index, "baseUrl", e.target.value)}
+                          />
+                          <label>API Key</label>
+                          <input
+                            type="password"
+                            value={getLLMFeature(llm, "apiKey")}
+                            placeholder="Optional"
+                            on:input={(e) => setLLMFeature(index, "apiKey", e.target.value)}
+                          />
+                          <label>Model</label>
+                          <div class="project-config-llm-model-row">
+                            <select
+                              value={getLLMFeature(llm, "model")}
+                              on:change={(e) => setLLMFeature(index, "model", e.target.value)}
+                            >
+                              <option value="">Select model</option>
+                              {#if llmModels[index]}
+                                {#each llmModels[index] as m}
+                                  <option value={m.id}>{m.id}</option>
+                                {/each}
+                              {/if}
+                              {#if getLLMFeature(llm, "model") && !(llmModels[index] || []).some(m => m.id === getLLMFeature(llm, "model"))}
+                                <option value={getLLMFeature(llm, "model")}>{getLLMFeature(llm, "model")}</option>
+                              {/if}
+                            </select>
+                            <button
+                              type="button"
+                              class="ghost icon-button"
+                              on:click={() => fetchLLMModels(index)}
+                              disabled={llmModelsLoading[index]}
+                              aria-label="Fetch models"
+                              title="Fetch available models"
+                            >{llmModelsLoading[index] ? "..." : "↻"}</button>
+                          </div>
+                          <label>Temperature</label>
+                          <input
+                            type="number"
+                            min="0" max="2" step="0.1"
+                            value={getLLMFeature(llm, "temperature", "0.7")}
+                            on:change={(e) => setLLMFeature(index, "temperature", e.target.value)}
+                          />
+                          <label>Timeout (s)</label>
+                          <input
+                            type="number"
+                            step="1"
+                            value={getLLMFeature(llm, "timeout", "30")}
+                            on:change={(e) => setLLMFeature(index, "timeout", e.target.value || "30")}
+                          />
+                        </div>
+                        <div class="project-config-llm-actions">
+                          <button
+                            type="button"
+                            class="ghost"
+                            on:click={() => testLLMConnection(index)}
+                          >Test Connection</button>
+                          {#if llmTestResult[index]}
+                            <span class={llmTestResult[index].ok ? "llm-test-ok" : "llm-test-fail"}>
+                              {llmTestResult[index].ok
+                                ? `Connected (${llmTestResult[index].modelCount} models)`
+                                : llmTestResult[index].error || "Failed"}
+                            </span>
+                          {/if}
+                        </div>
+                      </div>
+                    {/if}
+                  </div>
+                {/each}
+              </div>
+            {/if}
+          </div>
           <aside class="project-config-tree">
             <div class="project-config-tree-section">
               <button
@@ -10367,13 +10945,6 @@
                   </div>
                 {/each}
               {/if}
-              <button
-                type="button"
-                class="project-config-tree-add"
-                on:click={() => selectProjectConfig({ type: "devices" })}
-              >
-                + Add device
-              </button>
             </div>
           </aside>
           <section class="project-config-main">
@@ -10438,7 +11009,15 @@
                     <p class="error">{availableDevicesError}</p>
                   {/if}
                   <div class="actions">
-                    <button type="button" class="primary" on:click={addPlugin}>Add</button>
+                    <button
+                      type="button"
+                      class="primary icon-button"
+                      on:click={addPlugin}
+                      aria-label="Add device"
+                      title="Add device"
+                    >
+                      <IconPlus className="icon" />
+                    </button>
                   </div>
                 </div>
               {:else if projectConfigSelection.type === "plugin" && selectedProjectPlugin}
@@ -10447,8 +11026,14 @@
                     <div>
                       <h4>Device</h4>
                     </div>
-                    <button type="button" class="ghost danger" on:click={() => removePlugin(projectConfigSelection.pluginIndex)}>
-                      Delete
+                    <button
+                      type="button"
+                      class="ghost icon-button danger"
+                      on:click={() => removePlugin(projectConfigSelection.pluginIndex)}
+                      aria-label="Delete device"
+                      title="Delete device"
+                    >
+                      <IconTrash className="icon" />
                     </button>
                   </div>
                   <div class="project-config-panel-body">
@@ -10529,7 +11114,15 @@
                     <div class="project-config-table-add">
                       <input list="plugin-key-hints" placeholder="key" bind:value={projectConfigNewFeature.key} />
                       <input placeholder="value" bind:value={projectConfigNewFeature.value} />
-                      <button type="button" class="primary" on:click={addFeatureToSelection}>Add</button>
+                      <button
+                        type="button"
+                        class="primary icon-button"
+                        on:click={addFeatureToSelection}
+                        aria-label="Add key value"
+                        title="Add key value"
+                      >
+                        <IconPlus className="icon" />
+                      </button>
                     </div>
                     <datalist id="plugin-key-hints">
                       {#each pluginKeyOptions as option}
@@ -10587,11 +11180,19 @@
                       {/if}
                     {/if}
                     <div class="project-config-agent-add">
-                      <div class="project-config-agent-add-title">Add agent</div>
+                      <div class="project-config-panel-header">
+                          <h4>Add Agent</h4>
+                      </div>
                       <div class="project-config-agent-add-row">
                         <input placeholder="Agent name" bind:value={projectConfigNewAgent.name} />
-                        <button type="button" class="primary" on:click={() => addAgent(selectedProjectPlugin.name)}>
-                          Add
+                        <button
+                          type="button"
+                          class="primary icon-button"
+                          on:click={() => addAgent(selectedProjectPlugin.name)}
+                          aria-label="Add agent"
+                          title="Add agent"
+                        >
+                          <IconPlus className="icon" />
                         </button>
                       </div>
                     </div>
@@ -10602,16 +11203,21 @@
                   <div class="project-config-panel-header">
                     <div>
                       <h4>Agent</h4>
-                      <span class="muted">{selectedProjectAgent.name || "Unnamed agent"}</span>
                     </div>
-                    <button type="button" class="ghost danger" on:click={() => removeAgent(projectConfigSelection.agentIndex)}>
-                      Delete
+                    <button
+                      type="button"
+                      class="ghost icon-button danger"
+                      on:click={() => removeAgent(projectConfigSelection.agentIndex)}
+                      aria-label="Delete agent"
+                      title="Delete agent"
+                    >
+                      <IconTrash className="icon" />
                     </button>
                   </div>
                   <div class="project-config-panel-body">
                     <div class="project-config-info-grid">
                       <div class="project-config-info-row">
-                        <label for="agent-name-edit" class="project-config-info-label">Agent name</label>
+                        <label for="agent-name-edit" class="project-config-info-label">Name</label>
                         <input
                           id="agent-name-edit"
                           value={selectedProjectAgent.name}
@@ -10619,35 +11225,8 @@
                         />
                       </div>
                       <div class="project-config-info-row">
-                        <label for="agent-device-edit" class="project-config-info-label">Device</label>
-                        <select
-                          id="agent-device-edit"
-                          value={selectedProjectAgent.device}
-                          on:change={(event) => updateAgentField(projectConfigSelection.agentIndex, "device", event.target.value)}
-                        >
-                          {#each projectConfigPlugins as plugin}
-                            <option value={plugin.name}>{plugin.name}</option>
-                          {/each}
-                        </select>
-                      </div>
-                      <div class="project-config-info-row">
-                        <span class="project-config-info-label">Class</span>
-                        <div class="project-config-inline">
-                          <span class="project-config-info-value">{activeProjectPlugin?.className || "Unknown"}</span>
-                          <label class="project-config-toggle project-config-inline-toggle">
-                            <span>Load plugin</span>
-                            <input
-                              type="checkbox"
-                              checked={activeProjectPlugin?.load ?? true}
-                              disabled={activeProjectPluginIndex < 0}
-                              on:change={(event) => {
-                                if (activeProjectPluginIndex >= 0) {
-                                  updatePluginField(activeProjectPluginIndex, "load", event.target.checked);
-                                }
-                              }}
-                            />
-                          </label>
-                        </div>
+                        <label class="project-config-info-label">Module</label>
+                        <div class="project-config-info-value">{selectedProjectAgent.device || "Unknown"}</div>
                       </div>
                     </div>
                   <div class="project-config-table">
@@ -10691,7 +11270,15 @@
                     <div class="project-config-table-add">
                       <input list="agent-key-hints" placeholder="key" bind:value={projectConfigNewFeature.key} />
                       <input placeholder="value" bind:value={projectConfigNewFeature.value} />
-                      <button type="button" class="primary" on:click={addFeatureToSelection}>Add</button>
+                      <button
+                        type="button"
+                        class="primary icon-button"
+                        on:click={addFeatureToSelection}
+                        aria-label="Add key value"
+                        title="Add key value"
+                      >
+                        <IconPlus className="icon" />
+                      </button>
                     </div>
                     <datalist id="agent-key-hints">
                       {#each agentKeyOptions as option}
@@ -10786,7 +11373,15 @@
                     <div class="project-config-table-add">
                       <input placeholder="key" bind:value={projectConfigNewFeature.key} />
                       <input placeholder="value" bind:value={projectConfigNewFeature.value} />
-                      <button type="button" class="primary" on:click={addFeatureToSelection}>Add</button>
+                      <button
+                        type="button"
+                        class="primary icon-button"
+                        on:click={addFeatureToSelection}
+                        aria-label="Add key value"
+                        title="Add key value"
+                      >
+                        <IconPlus className="icon" />
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -10803,11 +11398,7 @@
   {/if}
 
   {#if prefsDialogOpen && prefsDialogDraft}
-    <div
-      class="modal-backdrop"
-      on:click|self={closePrefsDialog}
-      role="presentation"
-    >
+    <div class="modal-backdrop prefs-backdrop" role="presentation">
       <div class="modal prefs-modal" bind:this={prefsDialogEl} role="dialog" aria-modal="true" aria-labelledby="prefs-dialog-title" tabindex="-1">
         <div class="prefs-header">
           <div class="prefs-title">
@@ -10815,12 +11406,18 @@
               <IconGear className="icon" />
             </span>
             <div>
-              <h3 id="prefs-dialog-title">Preferences</h3>
-              <span class="prefs-subtitle">
-                Preferences of VSM Project {selectedProject ? selectedProject.name : "the active project"}
-              </span>
+              <h3 id="prefs-dialog-title">Editor Preferences</h3>
             </div>
           </div>
+          <button
+            type="button"
+            class="ghost icon-button prefs-close"
+            on:click={closePrefsDialog}
+            aria-label="Close preferences"
+            title="Close"
+          >
+            ×
+          </button>
         </div>
         <div class="prefs-body">
           <section class="prefs-card">
@@ -10967,44 +11564,7 @@
               {/each}
             </datalist>
           </section>
-          <section class="prefs-card">
-            <header class="prefs-card-header">
-              <h4>Sceneflow syntax</h4>
-              <span class="muted">XML namespace and schema references.</span>
-            </header>
-            <div class="prefs-group">
-              <div class="prefs-rows">
-                <div class="prefs-row">
-                  <div class="prefs-field">
-                    <label for="pref-xmlns">Namespace</label>
-                    <span class="prefs-help">Used as the sceneflow XML namespace.</span>
-                  </div>
-                  <div class="prefs-control">
-                    <input id="pref-xmlns" class="prefs-input" bind:value={prefsDialogDraft.sceneflowNamespace} />
-                  </div>
-                </div>
-                <div class="prefs-row">
-                  <div class="prefs-field">
-                    <label for="pref-xmlns-xsi">Instance</label>
-                    <span class="prefs-help">XML schema instance namespace.</span>
-                  </div>
-                  <div class="prefs-control">
-                    <input id="pref-xmlns-xsi" class="prefs-input" bind:value={prefsDialogDraft.sceneflowInstance} />
-                  </div>
-                </div>
-                <div class="prefs-row">
-                  <div class="prefs-field">
-                    <label for="pref-xsd-location">XSD location</label>
-                    <span class="prefs-help">Schema location used when exporting sceneflow.</span>
-                  </div>
-                  <div class="prefs-control">
-                    <input id="pref-xsd-location" class="prefs-input" bind:value={prefsDialogDraft.sceneflowSchema} />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </section>
-          <section class="prefs-card">
+          <section class="prefs-card prefs-card--wide">
             <header class="prefs-card-header">
               <h4>Undo/Redo Management</h4>
               <span class="muted">History depth for this project.</span>
@@ -11065,19 +11625,6 @@
             </div>
           </section>
         </div>
-        <div class="actions">
-          <button
-            type="button"
-            class="primary"
-            on:click={applyPrefsDialog}
-            disabled={!wsConnected || prefsDialogBusy}
-          >
-            Apply
-          </button>
-          <button type="button" class="ghost" on:click={closePrefsDialog} disabled={prefsDialogBusy}>
-            Cancel
-          </button>
-        </div>
         {#if prefsDialogError}
           <p class="error">{prefsDialogError}</p>
         {/if}
@@ -11086,18 +11633,22 @@
   {/if}
 
   {#if monitorDialogOpen}
-    <div
-      class="modal-backdrop"
-      on:click|self={closeMonitorDialog}
-      role="presentation"
-    >
+    <div class="modal-backdrop monitor-backdrop" role="presentation">
       <div class="modal monitor-modal" bind:this={monitorDialogEl} role="dialog" aria-modal="true" aria-labelledby="monitor-dialog-title" tabindex="-1">
         <div class="monitor-header">
           <div>
             <h3 id="monitor-dialog-title">Runtime Monitor</h3>
             <span class="muted">State: {runtimeStateLabel}</span>
           </div>
-          <button type="button" class="ghost" on:click={closeMonitorDialog}>Close</button>
+          <button
+            type="button"
+            class="ghost icon-button monitor-close"
+            on:click={closeMonitorDialog}
+            aria-label="Close runtime monitor"
+            title="Close"
+          >
+            ×
+          </button>
         </div>
         <div class="monitor-body">
           <div class="monitor-lists">
@@ -11224,14 +11775,21 @@
   {/if}
 
   {#if typeDefDraft}
-    <div
-      class="modal-backdrop"
-      on:click|self={closeTypeDefDialog}
-      role="presentation"
-    >
-      <div class="modal" bind:this={typeDefDialogEl} role="dialog" aria-modal="true" aria-labelledby="type-def-dialog-title" tabindex="-1">
-        <h3 id="type-def-dialog-title">{typeDefEditIndex >= 0 ? "Edit type definition" : "Add type definition"}</h3>
-        <div class="modal-body">
+    <div class="modal-backdrop def-backdrop" role="presentation">
+      <div class="modal def-modal type-def-modal" bind:this={typeDefDialogEl} role="dialog" aria-modal="true" aria-labelledby="type-def-dialog-title" tabindex="-1">
+        <div class="def-header">
+          <h3 id="type-def-dialog-title">{typeDefEditIndex >= 0 ? "Edit type definition" : "Add type definition"}</h3>
+          <button
+            type="button"
+            class="ghost icon-button def-close"
+            on:click={closeTypeDefDialog}
+            aria-label="Close type definition"
+            title="Close"
+          >
+            ×
+          </button>
+        </div>
+        <div class="modal-body def-body">
           <label for="type-def-name">Name</label>
           <input id="type-def-name" bind:this={typeDefNameInputEl} bind:value={typeDefDraft.name} />
           <label for="type-def-flavour">Flavour</label>
@@ -11311,11 +11869,10 @@
             {/if}
           {/if}
         </div>
-        <div class="actions">
+        <div class="actions def-actions">
           <button type="button" class="primary" on:click={applyTypeDefEdit} disabled={!wsConnected || sceneFlowBusy}>
             {typeDefEditIndex >= 0 ? "Save" : "Add"}
           </button>
-          <button type="button" class="ghost" on:click={closeTypeDefDialog}>Cancel</button>
         </div>
         {#if typeDefError}
           <p class="error">{typeDefError}</p>
@@ -11798,14 +12355,21 @@
   {/if}
 
   {#if varDefDraft}
-    <div
-      class="modal-backdrop"
-      on:click|self={closeVarDefDialog}
-      role="presentation"
-    >
-      <div class="modal" bind:this={varDefDialogEl} role="dialog" aria-modal="true" aria-labelledby="var-def-dialog-title" tabindex="-1">
-        <h3 id="var-def-dialog-title">{varDefEditIndex >= 0 ? "Edit variable definition" : "Add variable definition"}</h3>
-        <div class="modal-body">
+    <div class="modal-backdrop def-backdrop" role="presentation">
+      <div class="modal def-modal var-def-modal" bind:this={varDefDialogEl} role="dialog" aria-modal="true" aria-labelledby="var-def-dialog-title" tabindex="-1">
+        <div class="def-header">
+          <h3 id="var-def-dialog-title">{varDefEditIndex >= 0 ? "Edit variable definition" : "Add variable definition"}</h3>
+          <button
+            type="button"
+            class="ghost icon-button def-close"
+            on:click={closeVarDefDialog}
+            aria-label="Close variable definition"
+            title="Close"
+          >
+            ×
+          </button>
+        </div>
+        <div class="modal-body def-body">
           <label for="var-def-name">Name</label>
           <input
             id="var-def-name"
@@ -11848,11 +12412,10 @@
             <p class="hint">FIFO queue. Capacity 0 means unlimited. Oldest events are dropped when full.</p>
           {/if}
         </div>
-        <div class="actions">
+        <div class="actions def-actions">
           <button type="button" class="primary" on:click={applyVarDefEdit} disabled={!wsConnected || sceneFlowBusy}>
             {varDefEditIndex >= 0 ? "Save" : "Add"}
           </button>
-          <button type="button" class="ghost" on:click={closeVarDefDialog}>Cancel</button>
         </div>
         {#if varDefError}
           <p class="error">{varDefError}</p>
