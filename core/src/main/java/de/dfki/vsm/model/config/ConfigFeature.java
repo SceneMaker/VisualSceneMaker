@@ -86,7 +86,18 @@ public final class ConfigFeature implements ModelObject, Comparable {
     // Get String Representation
     @Override
     public final String toString() {
-        return "<" + mFeatureName + " key=\"" + mFeatureKey + "\" val=\"" + mFeatureValue + "\"/>";
+        return "<" + mFeatureName + " key=\"" + escapeXmlAttribute(mFeatureKey) + "\" val=\"" + escapeXmlAttribute(mFeatureValue) + "\"/>";
+    }
+
+    // Escape special characters for XML attribute values
+    private static String escapeXmlAttribute(String value) {
+        if (value == null) return "";
+        return value
+            .replace("&", "&amp;")   // Must be first
+            .replace("<", "&lt;")
+            .replace(">", "&gt;")
+            .replace("\"", "&quot;")
+            .replace("'", "&apos;");
     }
 
     // Get A Copy Of This Entry

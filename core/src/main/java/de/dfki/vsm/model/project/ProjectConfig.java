@@ -1,6 +1,7 @@
 package de.dfki.vsm.model.project;
 
 import de.dfki.vsm.model.ModelObject;
+import de.dfki.vsm.model.config.ConfigElement;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 import de.dfki.vsm.util.xml.XMLParseAction;
@@ -29,6 +30,10 @@ public final class ProjectConfig implements ModelObject {
     private final List<PluginConfig> mPluginList;
     // The list of agent configurations
     private final List<AgentConfig> mAgentList;
+    // The list of LLM configurations
+    private final List<LLMConfig> mLLMList;
+    // The LLM prompts configuration (formatPrompt, actionPrompt.0, etc.)
+    private final ConfigElement mLLMPrompts;
 
     // Construct an empty project
     public ProjectConfig() {
@@ -38,6 +43,10 @@ public final class ProjectConfig implements ModelObject {
         mPluginList = new ArrayList<>();
         // Initialize The Agent List
         mAgentList = new ArrayList<>();
+        // Initialize The LLM List
+        mLLMList = new ArrayList<>();
+        // Initialize The LLM Prompts
+        mLLMPrompts = new ConfigElement("LLMPrompts", "Feature");
         // Initialize the player config
         mPlayerConfig = new PlayerConfig();
     }
@@ -47,12 +56,35 @@ public final class ProjectConfig implements ModelObject {
                          final List<PluginConfig> plugins,
                          final List<AgentConfig> agents,
                          final PlayerConfig player) {
+        this(name, plugins, agents, new ArrayList<>(), player);
+    }
+
+    // Construct a project with LLM configurations
+    public ProjectConfig(final String name,
+                         final List<PluginConfig> plugins,
+                         final List<AgentConfig> agents,
+                         final List<LLMConfig> llms,
+                         final PlayerConfig player) {
+        this(name, plugins, agents, llms, new ConfigElement("LLMPrompts", "Feature"), player);
+    }
+
+    // Construct a project with LLM configurations and LLM prompts
+    public ProjectConfig(final String name,
+                         final List<PluginConfig> plugins,
+                         final List<AgentConfig> agents,
+                         final List<LLMConfig> llms,
+                         final ConfigElement llmPrompts,
+                         final PlayerConfig player) {
         // Initialize The Project Name
         mProjectName = name;
         // Initialize The Plugin List
         mPluginList = plugins;
         // Initialize The Agent List
         mAgentList = agents;
+        // Initialize The LLM List
+        mLLMList = llms;
+        // Initialize The LLM Prompts
+        mLLMPrompts = llmPrompts;
         // Initialize the player config
         mPlayerConfig = player;
     }
@@ -108,6 +140,26 @@ public final class ProjectConfig implements ModelObject {
         return mPluginList;
     }
 
+    // Get the list of LLM configurations
+    public final List<LLMConfig> getLLMConfigList() {
+        return mLLMList;
+    }
+
+    // Get a specific LLM configuration by name
+    public final LLMConfig getLLMConfig(final String name) {
+        for (final LLMConfig config : mLLMList) {
+            if (config.getLLMName().equals(name)) {
+                return config;
+            }
+        }
+        return null;
+    }
+
+    // Get the LLM prompts configuration
+    public final ConfigElement getLLMPrompts() {
+        return mLLMPrompts;
+    }
+
     // Write the project configuration
     @Override
     public final void writeXML(final IOSIndentWriter stream) throws XMLWriteError {
@@ -126,6 +178,19 @@ public final class ProjectConfig implements ModelObject {
             //stream.endl();
         }
         stream.pop().println("</Agents>");
+        // Write the LLM configurations
+        if (!mLLMList.isEmpty()) {
+            stream.println("<LLMs>").push();
+            for (final LLMConfig llm : mLLMList) {
+                llm.writeXML(stream);
+            }
+            stream.pop().println("</LLMs>");
+        }
+        // Write the LLM prompts configuration
+        if (!mLLMPrompts.getEntryList().isEmpty()) {
+            mLLMPrompts.writeXML(stream);
+            stream.endl();
+        }
         // Write the player configurations
         mPlayerConfig.writeXML(stream);
         stream.pop().print("</Project>").flush();
@@ -182,6 +247,19 @@ public final class ProjectConfig implements ModelObject {
                                 }
                             });
                             break;
+                        case "LLMs":
+                            XMLParseAction.processChildNodes(element, "LLM", new XMLParseAction() {
+                                @Override
+                                public void run(Element element) throws XMLParseError {
+                                    final LLMConfig llm = new LLMConfig();
+                                    llm.parseXML(element);
+                                    mLLMList.add(llm);
+                                }
+                            });
+                            break;
+                        case "LLMPrompts":
+                            mLLMPrompts.parseXML(element);
+                            break;
                         case "Player":
                             // Parse the player configuration
                             mPlayerConfig.parseXML(element);
@@ -225,8 +303,15 @@ public final class ProjectConfig implements ModelObject {
                 .map(AgentConfig::getCopy)
                 .collect(Collectors.toList());
 
+        List<LLMConfig> llms = getLLMConfigList().stream()
+                .map(LLMConfig::getCopy)
+                .collect(Collectors.toList());
+
+        ConfigElement llmPromptsCopy = new ConfigElement("LLMPrompts", "Feature",
+                mLLMPrompts.copyEntryList());
+
         PlayerConfig player = getPlayerConfig().getCopy();
 
-        return new ProjectConfig(mProjectName, plugins, agents, player);
+        return new ProjectConfig(mProjectName, plugins, agents, llms, llmPromptsCopy, player);
     }
 }
