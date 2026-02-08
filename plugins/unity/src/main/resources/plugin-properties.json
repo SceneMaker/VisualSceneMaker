@@ -1,0 +1,46 @@
+{
+  "schemaVersion": "1.0",
+  "plugin": {
+    "id": "unity",
+    "name": "Unity",
+    "className": "de.dfki.vsm.xtension.unity.UnityConnectionExecutor",
+    "description": "Unity3D integration for game engine-based virtual characters",
+    "tags": ["game engine", "3D", "virtual character"]
+  },
+  "categories": {
+    "primary": "output",
+    "secondary": []
+  },
+  "config": {
+    "required": [],
+    "optional": [
+      { "name": "path", "type": "string", "description": "Path to Unity project" },
+      { "name": "exe", "type": "string", "description": "Unity executable" },
+      { "name": "port", "type": "string", "description": "Communication port" },
+      { "name": "tworlddir", "type": "filepath", "description": "TriCat World directory" },
+      { "name": "tworldexe", "type": "filepath", "description": "TriCat World executable" },
+      { "name": "tworldcmd", "type": "string", "description": "TriCat World command" },
+      { "name": "cactordir", "type": "filepath", "description": "Character Actor directory" },
+      { "name": "cactorexe", "type": "filepath", "description": "Character Actor executable" },
+      { "name": "cactorcmd", "type": "string", "description": "Character Actor command" }
+    ]
+  },
+  "commands": [
+    {
+      "name": "Options",
+      "type": "action",
+      "summary": "Set display options",
+      "params": [
+        { "name": "display", "type": "string", "required": false },
+        { "name": "value", "type": "string", "required": false }
+      ]
+    }
+  ],
+  "variables": {
+    "writes": [
+      { "var": "name", "type": "string", "scope": "global" },
+      { "var": "unitytrigger", "type": "string", "scope": "global" }
+    ],
+    "reads": []
+  }
+}

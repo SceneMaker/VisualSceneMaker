@@ -164,6 +164,12 @@ tasks.withType(Javadoc).configureEach {
     options.addStringOption('Xdoclint:none', '-quiet')
 }
 
+tasks.register('compileServices') {
+    group = 'build'
+    description = 'Compile all services subprojects.'
+    dependsOn(subprojects.findAll { it.path.startsWith(':services:') }.collect { it.path + ':compileJava' })
+}
+
 tasks.register('generatePluginDescriptors') {
     group = 'documentation'
     description = 'Generate draft sceneflow-interface.json files for plugins.'

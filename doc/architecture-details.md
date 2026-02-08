@@ -847,7 +847,6 @@ Path: `plugins/*/`
 - `yallah` - Custom action system
 - `tricatworld` - Virtual world integration
 - `DriveSimulator` - Driving simulation
-- `VLCRemoteController` - VLC media player control
 
 ---
 

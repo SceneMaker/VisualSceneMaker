@@ -4,7 +4,6 @@
   import { EditorView, keymap } from "@codemirror/view";
   import { indentUnit } from "@codemirror/language";
   import { lintGutter, nextDiagnostic, previousDiagnostic, setDiagnostics } from "@codemirror/lint";
-  import { openSearchPanel } from "@codemirror/search";
   import { indentWithTab } from "@codemirror/commands";
   import { basicSetup } from "codemirror";
   import { sceneScript } from "./sceneScriptLanguage";
@@ -20,6 +19,7 @@
   let view;
   let suppress = false;
   let currentReadOnly = readOnly;
+  let currentSearchQuery = "";
 
   function collectDiagnostics(text) {
     const diagnostics = [];
@@ -178,10 +178,34 @@
     }
   });
 
-  export function openSearch() {
-    if (!view) return;
-    openSearchPanel(view);
+  function findMatch(query, direction) {
+    if (!view || !query) return;
+    const text = view.state.doc.toString();
+    if (!text) return;
+    const selection = view.state.selection.main;
+    const start = direction > 0 ? selection.to : selection.from - 1;
+    let index = direction > 0 ? text.indexOf(query, start) : text.lastIndexOf(query, start);
+    if (index === -1) {
+      index = direction > 0 ? text.indexOf(query) : text.lastIndexOf(query);
+    }
+    if (index === -1) return;
+    view.dispatch({
+      selection: { anchor: index, head: index + query.length },
+      scrollIntoView: true
+    });
     view.focus();
+  }
+
+  export function setSearchQuery(query) {
+    currentSearchQuery = String(query || "");
+  }
+
+  export function findNext() {
+    findMatch(currentSearchQuery, 1);
+  }
+
+  export function findPrevious() {
+    findMatch(currentSearchQuery, -1);
   }
 
   export function insertText(text) {

@@ -1,0 +1,97 @@
+plugins {
+    id 'java'
+    id 'application'
+    id 'com.github.johnrengelman.shadow'
+}
+
+group = 'de.dfki'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'io.javalin:javalin:4.6.8'
+    implementation 'org.json:json:20171018'
+    implementation 'org.slf4j:slf4j-simple:1.7.25'
+    implementation 'com.microsoft.onnxruntime:onnxruntime:1.18.0'
+    implementation 'ai.djl.huggingface:tokenizers:0.25.0'
+}
+
+application {
+    mainClass = 'de.dfki.vsm.services.embeddings.EmbeddingsService'
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': application.mainClass.get()
+    }
+}
+
+shadowJar {
+    archiveClassifier.set('all')
+}
+
+tasks.register('downloadModel') {
+    group = 'resources'
+    description = 'Download the paraphrase-multilingual-MiniLM-L12-v2 ONNX model and tokenizer.'
+    doLast {
+        def baseDir = project.rootProject.file('models/paraphrase-multilingual-MiniLM-L12-v2')
+        if (!baseDir.exists()) {
+            baseDir.mkdirs()
+        }
+        def modelFile = new File(baseDir, 'model.onnx')
+        def tokenizerFile = new File(baseDir, 'tokenizer.json')
+        def modelHashFile = new File(baseDir, 'model.onnx.sha256')
+        def tokenizerHashFile = new File(baseDir, 'tokenizer.json.sha256')
+        def modelUrl = 'https://huggingface.co/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2/resolve/main/onnx/model.onnx'
+        def tokenizerUrl = 'https://huggingface.co/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2/resolve/main/tokenizer.json'
+
+        def computeSha256 = { File file ->
+            def digest = java.security.MessageDigest.getInstance('SHA-256')
+            file.withInputStream { stream ->
+                byte[] buffer = new byte[8192]
+                int read
+                while ((read = stream.read(buffer)) > 0) {
+                    digest.update(buffer, 0, read)
+                }
+            }
+            digest.digest().encodeHex().toString()
+        }
+
+        def verifyOrDownload = { File file, File hashFile, String url ->
+            if (file.exists() && hashFile.exists()) {
+                def expected = hashFile.text.trim()
+                def actual = computeSha256(file)
+                if (expected.equalsIgnoreCase(actual)) {
+                    println("Verified ${file.name}")
+                    return
+                }
+                println("Checksum mismatch for ${file.name}, re-downloading.")
+                file.delete()
+            }
+            if (!file.exists()) {
+                new URL(url).withInputStream { input ->
+                    file.withOutputStream { out -> out << input }
+                }
+            }
+            def actual = computeSha256(file)
+            hashFile.text = actual + System.lineSeparator()
+            println("Stored checksum for ${file.name}")
+        }
+
+        verifyOrDownload(modelFile, modelHashFile, modelUrl)
+        verifyOrDownload(tokenizerFile, tokenizerHashFile, tokenizerUrl)
+        println("Model files ready at: ${baseDir}")
+    }
+}

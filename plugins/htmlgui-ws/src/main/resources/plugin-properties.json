@@ -1,0 +1,91 @@
+{
+  "schemaVersion": "1.0",
+  "plugin": {
+    "id": "htmlgui-ws",
+    "name": "HTML GUI /statusWebSocket",
+    "className": "de.dfki.vsm.xtension.responsiveweb.HtmlGuiWsExecutor",
+    "description": "Versatile HTML GUI with agent-based control via WebSocket",
+    "tags": ["html gui", "web-based interaction controls"]
+  },
+  "categories": {
+    "primary": "output",
+    "secondary": ["input"]
+  },
+  "config": {
+    "required": [
+      { "name": "wss_port", "type": "int", "default": 4040, "readonly": true, "description": "Secure WebSocket port" },
+      { "name": "ws_port", "type": "int", "default": 4041, "readonly": true, "description": "WebSocket port" },
+      { "name": "html_port", "type": "int", "default": 8080, "description": "HTTP server port" },
+      { "name": "sceneflowStateVar", "type": "string", "sceneflowtype": "Bool", "default": "gui_connected", "description": "SceneFlow variable for connection state" },
+      { "name": "sceneflowInfoVar", "type": "string", "sceneflowtype": "String", "default": "gui_info", "description": "SceneFlow variable for GUI messages" },
+      { "name": "guifiles", "type": "filepath", "default": "gui", "readonly": true, "description": "Directory for GUI files" },
+      { "name": "audiofiles", "type": "filepath", "default": "audio", "readonly": true, "description": "Directory for audio files" }
+    ],
+    "optional": [
+      { "name": "certificate", "type": "filepath", "description": "Path to SSL certificate" }
+    ],
+    "pluginSpecific": [
+      { "name": "autostart_browser", "type": "boolean", "default": false, "description": "Auto-start browser on plugin launch" },
+      { "name": "browser_fullscreen", "type": "boolean", "default": false, "description": "Start browser in full-screen mode" },
+      { "name": "browser_ignore_cert_errors", "type": "boolean", "default": true, "description": "Ignore SSL certificate errors" }
+    ]
+  },
+  "templates": {
+    "resourcePath": "templates/",
+    "targetDirs": ["gui", "audio"]
+  },
+  "commands": [
+    { "name": "set", "type": "action", "summary": "Set an element value", "params": [
+      { "name": "element", "type": "string", "required": true },
+      { "name": "value", "type": "string", "required": true }
+    ]},
+    { "name": "setMoodGraph", "type": "action", "params": [
+      { "name": "element", "type": "string" },
+      { "name": "day", "type": "string" },
+      { "name": "type", "type": "string" },
+      { "name": "value", "type": "string" }
+    ]},
+    { "name": "setWorkHrsGraph", "type": "action", "params": [
+      { "name": "element", "type": "string" },
+      { "name": "day", "type": "string" },
+      { "name": "type", "type": "string" },
+      { "name": "value", "type": "string" }
+    ]},
+    { "name": "setSpeechBubble", "type": "action", "params": [
+      { "name": "element", "type": "string" },
+      { "name": "producer", "type": "string" },
+      { "name": "value", "type": "string" }
+    ]},
+    { "name": "setMenuItem", "type": "action", "params": [
+      { "name": "id", "type": "string" },
+      { "name": "value", "type": "string" },
+      { "name": "type", "type": "string" }
+    ]},
+    { "name": "showElement", "type": "action", "params": [{ "name": "id", "type": "string" }]},
+    { "name": "hideElement", "type": "action", "params": [{ "name": "id", "type": "string" }]},
+    { "name": "setcss", "type": "action", "params": [
+      { "name": "var", "type": "string" },
+      { "name": "value", "type": "string" }
+    ]},
+    { "name": "muteMic", "type": "action", "params": [] },
+    { "name": "openMic", "type": "action", "params": [] },
+    { "name": "setAudioItem", "type": "action", "params": [
+      { "name": "element", "type": "string" },
+      { "name": "audio", "type": "string" }
+    ]},
+    { "name": "controlAudio", "type": "action", "params": [
+      { "name": "element", "type": "string" },
+      { "name": "type", "type": "string" }
+    ]},
+    { "name": "stop", "type": "action", "params": [] },
+    { "name": "guiToFront", "type": "action", "params": [] },
+    { "name": "vcToFront", "type": "action", "params": [] }
+  ],
+  "variables": {
+    "writes": [
+      { "var": "sceneflowStateVar", "type": "Bool", "description": "Set to true when GUI connects" },
+      { "var": "sceneflowInfoVar", "type": "String", "description": "Receives messages from GUI" }
+    ],
+    "reads": []
+  }
+}

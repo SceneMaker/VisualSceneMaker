@@ -25,6 +25,7 @@ import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.*;
 
 /**
@@ -41,6 +42,8 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
     private String mSceneflowInfoVar = "";
     private final static String svalueSeparatorChar = "#";
     private final static String sCmdSeperatorChar = "$";
+    // Browser process reference for cleanup
+    private Process mBrowserProcess = null;
 
     public HtmlGuiWsExecutor(PluginConfig config, RunTimeProject project) {
         super(config, project);
@@ -134,6 +137,143 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
             });
             ws.onError(ctx -> mLogger.failure("Error handling ws message exchange"));
         });
+
+        // Auto-start browser if configured
+        boolean autostartBrowser = "true".equalsIgnoreCase(mConfig.getProperty("autostart_browser"));
+        if (autostartBrowser) {
+            boolean fullscreen = "true".equalsIgnoreCase(mConfig.getProperty("browser_fullscreen"));
+            boolean ignoreCertErrors = !"false".equalsIgnoreCase(mConfig.getProperty("browser_ignore_cert_errors"));
+            String url = "http://127.0.0.1:" + html_port;
+            launchBrowser(url, fullscreen, ignoreCertErrors);
+        }
+    }
+
+    /**
+     * Launches Chrome browser with the specified URL.
+     * Supports macOS, Windows, and Linux.
+     * The browser process is stored so it can be terminated when the plugin unloads.
+     */
+    private void launchBrowser(String url, boolean fullscreen, boolean ignoreCertErrors) {
+        String os = System.getProperty("os.name", "").toLowerCase();
+        List<String> command = new ArrayList<>();
+
+        if (os.contains("mac")) {
+            // macOS: launch Chrome directly to get a killable process
+            String chromePath = findMacChrome();
+            if (chromePath == null) {
+                mLogger.warning("Chrome not found on macOS. Cannot auto-start browser.");
+                return;
+            }
+            command.add(chromePath);
+            if (ignoreCertErrors) {
+                command.add("--ignore-certificate-errors");
+            }
+            if (fullscreen) {
+                command.add("--start-fullscreen");
+            }
+            command.add("--new-window");
+            command.add(url);
+        } else if (os.contains("win")) {
+            // Windows: launch Chrome directly to get a killable process
+            String chromePath = findWindowsChrome();
+            if (chromePath == null) {
+                mLogger.warning("Chrome not found on Windows. Cannot auto-start browser.");
+                return;
+            }
+            command.add(chromePath);
+            if (ignoreCertErrors) {
+                command.add("--ignore-certificate-errors");
+            }
+            if (fullscreen) {
+                command.add("--start-fullscreen");
+            }
+            command.add("--new-window");
+            command.add(url);
+        } else if (os.contains("linux")) {
+            // Linux: try google-chrome or chromium-browser
+            String browser = findLinuxChrome();
+            if (browser == null) {
+                mLogger.warning("Chrome/Chromium not found on Linux. Cannot auto-start browser.");
+                return;
+            }
+            command.add(browser);
+            if (ignoreCertErrors) {
+                command.add("--ignore-certificate-errors");
+            }
+            if (fullscreen) {
+                command.add("--start-fullscreen");
+            }
+            command.add("--new-window");
+            command.add(url);
+        } else {
+            mLogger.warning("Unsupported OS for browser auto-start: " + os);
+            return;
+        }
+
+        try {
+            mLogger.message("Launching browser: " + String.join(" ", command));
+            ProcessBuilder pb = new ProcessBuilder(command);
+            pb.inheritIO();
+            mBrowserProcess = pb.start();
+        } catch (IOException e) {
+            mLogger.failure("Failed to launch browser: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Finds Chrome executable on macOS.
+     */
+    private String findMacChrome() {
+        String[] candidates = {
+            "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+            "/Applications/Chromium.app/Contents/MacOS/Chromium",
+            System.getProperty("user.home") + "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+        };
+        for (String path : candidates) {
+            if (new File(path).exists()) {
+                return path;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Finds Chrome executable on Windows.
+     */
+    private String findWindowsChrome() {
+        String[] candidates = {
+            System.getenv("ProgramFiles") + "\\Google\\Chrome\\Application\\chrome.exe",
+            System.getenv("ProgramFiles(x86)") + "\\Google\\Chrome\\Application\\chrome.exe",
+            System.getenv("LOCALAPPDATA") + "\\Google\\Chrome\\Application\\chrome.exe"
+        };
+        for (String path : candidates) {
+            if (path != null && new File(path).exists()) {
+                return path;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Finds Chrome/Chromium executable on Linux.
+     */
+    private String findLinuxChrome() {
+        String[] candidates = {
+            "google-chrome",
+            "google-chrome-stable",
+            "chromium-browser",
+            "chromium"
+        };
+        for (String candidate : candidates) {
+            try {
+                Process p = Runtime.getRuntime().exec(new String[]{"which", candidate});
+                if (p.waitFor() == 0) {
+                    return candidate;
+                }
+            } catch (Exception ignored) {
+            }
+        }
+        return null;
     }
 
     private synchronized void handleMessage(WsMessageContext ctx) {
@@ -186,6 +326,21 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
     public void unload() {
         websockets.clear();
         app.stop();
+        // Terminate browser process if we started one
+        if (mBrowserProcess != null) {
+            mLogger.message("Terminating browser process...");
+            mBrowserProcess.destroy();
+            try {
+                // Give it a moment to terminate gracefully
+                if (!mBrowserProcess.waitFor(2, java.util.concurrent.TimeUnit.SECONDS)) {
+                    // Force kill if it doesn't terminate
+                    mBrowserProcess.destroyForcibly();
+                }
+            } catch (InterruptedException e) {
+                mBrowserProcess.destroyForcibly();
+            }
+            mBrowserProcess = null;
+        }
     }
 
     private SslContextFactory getSslContextFactory() {

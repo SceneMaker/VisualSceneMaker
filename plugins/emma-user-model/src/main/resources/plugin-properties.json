@@ -1,0 +1,93 @@
+{
+  "schemaVersion": "1.0",
+  "plugin": {
+    "id": "emma-user-model",
+    "name": "EMMA User Model",
+    "className": "de.dfki.vsm.xtension.emmausermodel.EmmaUserModel",
+    "description": "General user model storing timecoded interaction based cues",
+    "tags": ["user model", "timecode", "diary"]
+  },
+  "categories": {
+    "primary": "processing",
+    "secondary": []
+  },
+  "config": {
+    "required": [],
+    "optional": [
+      { "name": "umdir", "type": "string", "description": "User model directory" },
+      { "name": "umfile", "type": "string", "description": "User model file" }
+    ]
+  },
+  "commands": [
+    { "name": "set", "type": "action", "summary": "Set a value", "params": [] },
+    { "name": "setcontext", "type": "action", "summary": "Set context", "params": [
+      { "name": "value", "type": "string", "required": false }
+    ]},
+    { "name": "get", "type": "action", "summary": "Get a value", "params": [
+      { "name": "strVar", "type": "string", "required": false },
+      { "name": "intVar", "type": "string", "required": false }
+    ]},
+    { "name": "load", "type": "action", "summary": "Load user model", "params": [
+      { "name": "name", "type": "string", "required": false }
+    ]},
+    { "name": "currentday", "type": "action", "summary": "Get current day", "params": [] },
+    { "name": "diaryday", "type": "action", "summary": "Get diary day", "params": [
+      { "name": "no", "type": "string", "required": false }
+    ]},
+    { "name": "dailyitems", "type": "action", "summary": "Get daily items", "params": [
+      { "name": "day", "type": "string", "required": false },
+      { "name": "context", "type": "string", "required": false }
+    ]},
+    { "name": "item", "type": "action", "summary": "Get item", "params": [
+      { "name": "no", "type": "string", "required": false },
+      { "name": "context", "type": "string", "required": false }
+    ]},
+    { "name": "updateitem", "type": "action", "summary": "Update item", "params": [
+      { "name": "dateid", "type": "string", "required": false },
+      { "name": "value", "type": "string", "required": false }
+    ]},
+    { "name": "collect_diaryemotions", "type": "action", "summary": "Collect diary emotions", "params": [] },
+    { "name": "get_diaryemotion", "type": "action", "summary": "Get diary emotion", "params": [
+      { "name": "no", "type": "string", "required": false },
+      { "name": "today", "type": "string", "required": false }
+    ]},
+    { "name": "diary_emotion", "type": "action", "summary": "Diary emotion", "params": [] },
+    { "name": "diary_mood", "type": "action", "summary": "Diary mood", "params": [] },
+    { "name": "diary_posaffect", "type": "action", "summary": "Diary positive affect", "params": [] },
+    { "name": "diary_negaffect", "type": "action", "summary": "Diary negative affect", "params": [] },
+    { "name": "diary_optimism", "type": "action", "summary": "Diary optimism", "params": [] },
+    { "name": "diary_anxiety", "type": "action", "summary": "Diary anxiety", "params": [] },
+    { "name": "diary_discrepancy", "type": "action", "summary": "Diary discrepancy", "params": [] },
+    { "name": "diary_insight", "type": "action", "summary": "Diary insight", "params": [] },
+    { "name": "diary_tentative", "type": "action", "summary": "Diary tentative", "params": [] },
+    { "name": "diary_pronoun", "type": "action", "summary": "Diary pronoun", "params": [] },
+    { "name": "diary_myself", "type": "action", "summary": "Diary myself", "params": [] },
+    { "name": "diary_we", "type": "action", "summary": "Diary we", "params": [] },
+    { "name": "diary_self", "type": "action", "summary": "Diary self", "params": [] },
+    { "name": "diary_you", "type": "action", "summary": "Diary you", "params": [] },
+    { "name": "diary_other", "type": "action", "summary": "Diary other", "params": [] },
+    { "name": "diary_body", "type": "action", "summary": "Diary body", "params": [] },
+    { "name": "diary_sex", "type": "action", "summary": "Diary sex", "params": [] },
+    { "name": "diary_eat", "type": "action", "summary": "Diary eat", "params": [] },
+    { "name": "diary_sleep", "type": "action", "summary": "Diary sleep", "params": [] },
+    { "name": "diary_school", "type": "action", "summary": "Diary school", "params": [] },
+    { "name": "diary_job", "type": "action", "summary": "Diary job", "params": [] },
+    { "name": "diary_achieve", "type": "action", "summary": "Diary achieve", "params": [] },
+    { "name": "avatar_animation", "type": "action", "summary": "Avatar animation", "params": [] },
+    { "name": "diary", "type": "action", "summary": "Diary", "params": [] },
+    { "name": "utterancestart", "type": "action", "summary": "Utterance start", "params": [] },
+    { "name": "utteranceduration", "type": "action", "summary": "Utterance duration", "params": [] },
+    { "name": "log", "type": "action", "summary": "Log", "params": [] },
+    { "name": "em_very_sad", "type": "action", "summary": "Emotion very sad", "params": [] },
+    { "name": "em_sad", "type": "action", "summary": "Emotion sad", "params": [] },
+    { "name": "em_neutral", "type": "action", "summary": "Emotion neutral", "params": [] },
+    { "name": "em_happy", "type": "action", "summary": "Emotion happy", "params": [] },
+    { "name": "em_very_happy", "type": "action", "summary": "Emotion very happy", "params": [] }
+  ],
+  "variables": {
+    "writes": [
+      { "var": "diaryDaysNum", "type": "string", "scope": "global", "description": "Number of diary days" }
+    ],
+    "reads": []
+  }
+}

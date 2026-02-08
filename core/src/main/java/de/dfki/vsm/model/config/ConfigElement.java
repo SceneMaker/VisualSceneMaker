@@ -165,6 +165,7 @@ public class ConfigElement implements ModelObject {
         final String tag = element.getTagName();
         // Check The Type Of The Config
         if (tag.equals(mElementName)) {
+            mFeatureList.clear();
             // Parse The Individual Entries
             XMLParseAction.processChildNodes(element, mFeatureName, new XMLParseAction() {
                 @Override

@@ -1,44 +1,231 @@
 {
-  "providers": {
-    "de.dfki.vsm.xtension.tricatworld.TriCatWorldExecutor": {
-      "plugin": {
-        "required": [
-          { "name": "tworldexe", "type": "filepath" },
-          { "name": "tworldcmd", "type": "filepath" },
-          { "name": "cactordir", "type": "filepath" },
-          { "name": "cactorexe", "type": "filepath" },
-          { "name": "cactorcmd", "type": "filepath" }
-        ],
-        "optional": [
-          { "name": "usejpl", "type": "boolean", "default": false },
-          { "name": "useexe", "type": "boolean", "default": false },
-          { "name": "tworlddir", "type": "filepath" }
-        ]
-      },
-      "agent": {
-        "required": [],
-        "optional": []
-      }
-    },
-    "de.dfki.vsm.xtension.tricatworld.TriCatWorldSSIPlugin": {
-      "plugin": {
-        "required": [
-          { "name": "tworldexe", "type": "filepath" },
-          { "name": "tworldcmd", "type": "filepath" },
-          { "name": "cactordir", "type": "filepath" },
-          { "name": "cactorexe", "type": "filepath" },
-          { "name": "cactorcmd", "type": "filepath" }
-        ],
-        "optional": [
-          { "name": "usejpl", "type": "boolean", "default": false },
-          { "name": "useexe", "type": "boolean", "default": false },
-          { "name": "tworlddir", "type": "filepath" }
-        ]
-      },
-      "agent": {
-        "required": [],
-        "optional": []
-      }
-    }
+  "schemaVersion": "1.0",
+  "plugin": {
+    "id": "tricatworld",
+    "name": "TriCat World",
+    "className": "de.dfki.vsm.xtension.tricatworld.TriCatWorldExecutor",
+    "description": "TriCat Spaces VR integration",
+    "tags": ["VR", "interface", "virtual world"]
+  },
+  "categories": {
+    "primary": "output",
+    "secondary": ["processing"]
+  },
+  "config": {
+    "required": [
+      { "name": "tworldexe", "type": "filepath", "description": "TriCat World executable" },
+      { "name": "tworldcmd", "type": "filepath", "description": "TriCat World command" },
+      { "name": "cactordir", "type": "filepath", "description": "Character Actor directory" },
+      { "name": "cactorexe", "type": "filepath", "description": "Character Actor executable" },
+      { "name": "cactorcmd", "type": "filepath", "description": "Character Actor command" }
+    ],
+    "optional": [
+      { "name": "usejpl", "type": "boolean", "default": false, "description": "Use JPL" },
+      { "name": "useexe", "type": "boolean", "default": false, "description": "Use executable" },
+      { "name": "tworlddir", "type": "filepath", "description": "TriCat World directory" },
+      { "name": "uselst", "type": "string", "description": "Use LST" },
+      { "name": "usesuperevent", "type": "string", "description": "Use super event" },
+      { "name": "ssidir", "type": "string", "description": "SSI directory" },
+      { "name": "ssibat", "type": "string", "description": "SSI batch" }
+    ]
+  },
+  "commands": [
+    { "name": "action", "type": "action", "summary": "Perform action", "params": [] },
+    { "name": "object", "type": "action", "summary": "Object action", "params": [] },
+    { "name": "cai_event", "type": "action", "summary": "CAI event", "params": [] },
+    { "name": "tts", "type": "action", "summary": "Text-to-speech", "params": [] },
+    { "name": "feedback", "type": "action", "summary": "Feedback", "params": [] },
+    { "name": "Action", "type": "action", "summary": "Action", "params": [] },
+    { "name": "Object", "type": "action", "summary": "Object", "params": [] },
+    { "name": "SittingStart", "type": "action", "summary": "Start sitting", "params": [] },
+    { "name": "SittingSop", "type": "action", "summary": "Sitting sop", "params": [] },
+    { "name": "StopSpeaking", "type": "action", "summary": "Stop speaking", "params": [] },
+    { "name": "Reject", "type": "action", "summary": "Reject gesture", "params": [] },
+    { "name": "Challenge", "type": "action", "summary": "Challenge gesture", "params": [] },
+    { "name": "SittingStop", "type": "action", "summary": "Stop sitting", "params": [] },
+    { "name": "ShowPalms", "type": "action", "summary": "Show palms", "params": [] },
+    { "name": "OpenArms", "type": "action", "summary": "Open arms", "params": [] },
+    { "name": "LookLeft", "type": "action", "summary": "Look left", "params": [] },
+    { "name": "LookRight", "type": "action", "summary": "Look right", "params": [] },
+    { "name": "No", "type": "action", "summary": "No gesture", "params": [] },
+    { "name": "StrongNo", "type": "action", "summary": "Strong no gesture", "params": [] },
+    { "name": "PointLeft", "type": "action", "summary": "Point left", "params": [] },
+    { "name": "PointRight", "type": "action", "summary": "Point right", "params": [] },
+    { "name": "PresentLeft", "type": "action", "summary": "Present left", "params": [] },
+    { "name": "PresentRight", "type": "action", "summary": "Present right", "params": [] },
+    { "name": "Welcome", "type": "action", "summary": "Welcome gesture", "params": [] },
+    { "name": "Yes", "type": "action", "summary": "Yes gesture", "params": [] },
+    { "name": "StrongYes", "type": "action", "summary": "Strong yes gesture", "params": [] },
+    { "name": "Angry", "type": "action", "summary": "Angry expression", "params": [
+      { "name": "intensity", "type": "string", "required": false }
+    ]},
+    { "name": "Demanding", "type": "action", "summary": "Demanding expression", "params": [
+      { "name": "intensity", "type": "string", "required": false }
+    ]},
+    { "name": "Disgust", "type": "action", "summary": "Disgust expression", "params": [
+      { "name": "intensity", "type": "string", "required": false }
+    ]},
+    { "name": "Neutral", "type": "action", "summary": "Neutral expression", "params": [] },
+    { "name": "Sad", "type": "action", "summary": "Sad expression", "params": [
+      { "name": "intensity", "type": "string", "required": false }
+    ]},
+    { "name": "Smile", "type": "action", "summary": "Smile expression", "params": [
+      { "name": "intensity", "type": "string", "required": false }
+    ]},
+    { "name": "Happy", "type": "action", "summary": "Happy expression", "params": [
+      { "name": "intensity", "type": "string", "required": false }
+    ]},
+    { "name": "InitJointAnimation", "type": "action", "summary": "Initialize joint animation", "params": [
+      { "name": "joint", "type": "string", "required": false }
+    ]},
+    { "name": "ConfigureJointAnimation", "type": "action", "summary": "Configure joint animation", "params": [
+      { "name": "joint", "type": "string", "required": false },
+      { "name": "factor", "type": "string", "required": false },
+      { "name": "interpolation", "type": "string", "required": false }
+    ]},
+    { "name": "OrientJoint", "type": "action", "summary": "Orient joint", "params": [
+      { "name": "joint", "type": "string", "required": false },
+      { "name": "interpolation", "type": "string", "required": false },
+      { "name": "x", "type": "string", "required": false },
+      { "name": "y", "type": "string", "required": false },
+      { "name": "z", "type": "string", "required": false }
+    ]},
+    { "name": "CancelMoveTo", "type": "action", "summary": "Cancel move to", "params": [] },
+    { "name": "Play", "type": "action", "summary": "Play animation", "params": [] },
+    { "name": "Stop", "type": "action", "summary": "Stop animation", "params": [] },
+    { "name": "Release", "type": "action", "summary": "Release", "params": [] },
+    { "name": "ReleaseLookAt", "type": "action", "summary": "Release look at", "params": [] },
+    { "name": "DisableNPCMeeting", "type": "action", "summary": "Disable NPC meeting", "params": [] },
+    { "name": "EnableNPCMeeting", "type": "action", "summary": "Enable NPC meeting", "params": [] },
+    { "name": "DisableAmbientSound", "type": "action", "summary": "Disable ambient sound", "params": [] },
+    { "name": "EnableAmbientSound", "type": "action", "summary": "Enable ambient sound", "params": [] },
+    { "name": "AmbientLight", "type": "action", "summary": "Set ambient light", "params": [
+      { "name": "value", "type": "string", "required": false }
+    ]},
+    { "name": "AmbientSound", "type": "action", "summary": "Set ambient sound", "params": [
+      { "name": "value", "type": "string", "required": false }
+    ]},
+    { "name": "Load", "type": "action", "summary": "Load scene", "params": [
+      { "name": "value", "type": "string", "required": false }
+    ]},
+    { "name": "Rotate", "type": "action", "summary": "Rotate", "params": [
+      { "name": "hdegree", "type": "string", "required": false },
+      { "name": "vdegree", "type": "string", "required": false },
+      { "name": "degree", "type": "string", "required": false }
+    ]},
+    { "name": "LookAt", "type": "action", "summary": "Look at target", "params": [
+      { "name": "viewtarget", "type": "string", "required": false }
+    ]},
+    { "name": "MoveTo", "type": "action", "summary": "Move to location", "params": [
+      { "name": "locname", "type": "string", "required": false }
+    ]},
+    { "name": "Say", "type": "action", "summary": "Say text", "params": [
+      { "name": "value", "type": "string", "required": false },
+      { "name": "2d", "type": "string", "required": false }
+    ]},
+    { "name": "PlayStream", "type": "action", "summary": "Play stream", "params": [
+      { "name": "file", "type": "string", "required": false },
+      { "name": "start", "type": "string", "required": false },
+      { "name": "end", "type": "string", "required": false }
+    ]},
+    { "name": "PlayTopic", "type": "action", "summary": "Play topic", "params": [
+      { "name": "playquestion", "type": "string", "required": false },
+      { "name": "playanswer", "type": "string", "required": false },
+      { "name": "topicid", "type": "string", "required": false }
+    ]},
+    { "name": "LoadDebriefing", "type": "action", "summary": "Load debriefing", "params": [
+      { "name": "eventlog", "type": "string", "required": false },
+      { "name": "screenvideo", "type": "string", "required": false },
+      { "name": "cameravideo", "type": "string", "required": false }
+    ]},
+    { "name": "HideBriefingInfo", "type": "action", "summary": "Hide briefing info", "params": [] },
+    { "name": "UnloadDebriefing", "type": "action", "summary": "Unload debriefing", "params": [] },
+    { "name": "ShowNote", "type": "action", "summary": "Show note", "params": [
+      { "name": "text", "type": "string", "required": false }
+    ]},
+    { "name": "PinNote", "type": "action", "summary": "Pin note", "params": [] },
+    { "name": "DiscardNote", "type": "action", "summary": "Discard note", "params": [] },
+    { "name": "DiscardAllNotes", "type": "action", "summary": "Discard all notes", "params": [] },
+    { "name": "PlayAudio", "type": "action", "summary": "Play audio", "params": [
+      { "name": "value", "type": "string", "required": false }
+    ]},
+    { "name": "Color", "type": "action", "summary": "Set color", "params": [
+      { "name": "r", "type": "string", "required": false },
+      { "name": "g", "type": "string", "required": false },
+      { "name": "b", "type": "string", "required": false }
+    ]},
+    { "name": "SitDown", "type": "action", "summary": "Sit down", "params": [
+      { "name": "chairname", "type": "string", "required": false }
+    ]},
+    { "name": "Warp", "type": "action", "summary": "Warp to location", "params": [
+      { "name": "viewtarget", "type": "string", "required": false },
+      { "name": "location", "type": "string", "required": false }
+    ]},
+    { "name": "WorldPosition", "type": "action", "summary": "Set world position", "params": [
+      { "name": "x", "type": "string", "required": false },
+      { "name": "y", "type": "string", "required": false },
+      { "name": "z", "type": "string", "required": false }
+    ]},
+    { "name": "MoveToWorldPosition", "type": "action", "summary": "Move to world position", "params": [
+      { "name": "x", "type": "string", "required": false },
+      { "name": "y", "type": "string", "required": false },
+      { "name": "z", "type": "string", "required": false }
+    ]},
+    { "name": "Camera", "type": "action", "summary": "Set camera", "params": [
+      { "name": "x", "type": "string", "required": false },
+      { "name": "y", "type": "string", "required": false }
+    ]},
+    { "name": "FocalLength", "type": "action", "summary": "Set focal length", "params": [
+      { "name": "value", "type": "string", "required": false },
+      { "name": "time", "type": "string", "required": false }
+    ]},
+    { "name": "FieldOfView", "type": "action", "summary": "Set field of view", "params": [
+      { "name": "value", "type": "string", "required": false },
+      { "name": "time", "type": "string", "required": false }
+    ]},
+    { "name": "ResetFieldOfView", "type": "action", "summary": "Reset field of view", "params": [
+      { "name": "time", "type": "string", "required": false }
+    ]},
+    { "name": "DefaultFocalLength", "type": "action", "summary": "Reset to default focal length", "params": [
+      { "name": "time", "type": "string", "required": false }
+    ]},
+    { "name": "CameraOffset", "type": "action", "summary": "Set camera offset", "params": [
+      { "name": "x", "type": "string", "required": false },
+      { "name": "y", "type": "string", "required": false },
+      { "name": "z", "type": "string", "required": false }
+    ]},
+    { "name": "Scale", "type": "action", "summary": "Set scale", "params": [
+      { "name": "value", "type": "string", "required": false }
+    ]},
+    { "name": "SittingAdjustment", "type": "action", "summary": "Sitting adjustment", "params": [
+      { "name": "x", "type": "string", "required": false },
+      { "name": "y", "type": "string", "required": false },
+      { "name": "z", "type": "string", "required": false }
+    ]},
+    { "name": "armsopen", "type": "action", "summary": "Arms open", "params": [] },
+    { "name": "armscrossed", "type": "action", "summary": "Arms crossed", "params": [] },
+    { "name": "righthandheadtouch", "type": "action", "summary": "Right hand head touch", "params": [] },
+    { "name": "lefthandheadtouch", "type": "action", "summary": "Left hand head touch", "params": [] },
+    { "name": "lookleft", "type": "action", "summary": "Look left", "params": [] },
+    { "name": "lookright", "type": "action", "summary": "Look right", "params": [] },
+    { "name": "waving", "type": "action", "summary": "Waving", "params": [] }
+  ],
+  "variables": {
+    "writes": [
+      { "var": "AgentIsSpeaking", "type": "bool", "scope": "global" },
+      { "var": "feedback", "type": "string", "scope": "global" },
+      { "var": "UserHeadOrientation", "type": "string", "scope": "global" },
+      { "var": "UserHeadTilt", "type": "string", "scope": "global" },
+      { "var": "UserHeadNod", "type": "string", "scope": "global" },
+      { "var": "UserLeanPosture", "type": "string", "scope": "global" },
+      { "var": "UserHeadPositionX", "type": "string", "scope": "global" },
+      { "var": "UserHeadPositionY", "type": "string", "scope": "global" },
+      { "var": "UserSmiling", "type": "bool", "scope": "global" },
+      { "var": "UserIsSpeaking", "type": "bool", "scope": "global" },
+      { "var": "UserSaidKeyword", "type": "string", "scope": "global" },
+      { "var": "KeywordList", "type": "string", "scope": "global" },
+      { "var": "usercues", "type": "struct", "scope": "global" }
+    ],
+    "reads": []
   }
 }

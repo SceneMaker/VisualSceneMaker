@@ -45,6 +45,7 @@ public class PlayerConfig extends ConfigElement {
         final String tag = element.getTagName();
         // Check The Type Of The Config
         if (tag.equals("Player")) {
+            mFeatureList.clear();
 
             // Parse The Entries
             XMLParseAction.processChildNodes(element, mFeatureName, new XMLParseAction() {

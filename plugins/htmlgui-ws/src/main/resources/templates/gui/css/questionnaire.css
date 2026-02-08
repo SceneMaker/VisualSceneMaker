@@ -1,0 +1,95 @@
+#OptionsText {
+    display: inline-block;
+	flex-wrap: wrap; /* Added this line */
+    align-items: flex-start;
+    justify-content: center;
+	height: 150vh;
+	font-size: 18px;
+	padding: 1em;  // adding padding so the text isn't right against the edge of the box
+	text-align: justify;
+	href: #curve;
+	z-index: 2;
+    touch-action: none;
+}
+
+#OptionsDisplay {
+    display: none; /* Hide the div initially */
+    padding: 1em;
+	align-items: center;
+	position: absolute;
+	background-color: white;
+	border: 1px light #000;  // adding a border, you can change color or size as you wish
+	href: #curve;
+    z-index: 2;
+    left: 5%;
+    right: 5%;
+    text-align: justify;
+    bottom: 1%;
+    touch-action: none;
+}
+
+#QuestionText{
+	display: flex;
+	font-size: 28px;
+	text-align: center;
+	font-weight: bold;
+    href: #curve;
+    z-index: 2;
+    justify-content: center;
+    touch-action: none;
+    align-items: center;
+}
+
+#QuestionDisplay {
+    position: absolute;
+    top: 1%; /* Adjust as needed, this will place them near the top of the viewport */
+    left: 1%;
+    right: 1%;
+	align-items: center;
+	background-color: white;
+	justify-content: center;
+	border: 1px light #000;  // adding a border, you can change color or size as you wish
+	padding: 40px;  // adding padding so the text isn't right against the edge of the box
+	width: 50%;  // adjust to desired width
+	height: auto;  // adjust to desired height, or remove to let it automatically size to content
+	text-align: center;
+	href: #curve;
+    z-index: 2;
+    touch-action: none;
+}
+
+#OptionsDisplay > * {
+    margin: 0 30px; /* add margin to child elements */
+}
+
+.numbered-option {
+    text-align: left;
+}
+
+.option-number {
+    text-align: justify;
+    font-weight: bolder;
+}
+
+.option-text {
+    z-index: 2;
+    left: 5%;
+    right: 5%;
+    text-align: justify;
+    touch-action: none;
+}
+
+
+.title {
+    font-weight: bolder;
+    display: block; /* Changed to inline-block so it wraps tightly around the text */
+    text-align: center;
+    background-color: #f8f9fa;
+    margin: 0 200px;
+    padding: 1px 2px; /* You can adjust these values as needed */
+   	font-size: 24px;
+}
+
+body {
+    font-family: 'ABeeZee', sans-serif;
+}

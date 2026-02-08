@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "1.0",
+  "plugin": {
+    "id": "wizard",
+    "name": "Wizard",
+    "className": "de.dfki.vsm.xtension.wizard.WizardExecutor",
+    "description": "Wizard of Oz control interface",
+    "tags": ["control", "wizard of oz"]
+  },
+  "categories": {
+    "primary": "input",
+    "secondary": []
+  },
+  "config": {
+    "required": [],
+    "optional": []
+  },
+  "commands": [],
+  "variables": {
+    "writes": [],
+    "reads": []
+  }
+}

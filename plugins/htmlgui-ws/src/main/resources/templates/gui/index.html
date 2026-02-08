@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en" class="h-100">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+
+    <!-- Connect to our server -->
+    <script defer type="text/javascript" src="js/wsclient.js"></script>
+
+    <!-- Bootstrap core CSS -->
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/custom.css">
+
+    <!-- audio enable stuff -->
+    <style>
+        /* Simple full-screen overlay to capture the user gesture outside iframes */
+        #audioOverlay {
+            position: fixed;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.65);
+            z-index: 9999;
+        }
+
+        #audioOverlay .panel {
+            background: #fff;
+            color: #000;
+            padding: 1.25rem 1.5rem;
+            border-radius: 14px;
+            max-width: 520px;
+            width: calc(100% - 2rem);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+            font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+        }
+
+        #audioOverlay .panel h3 {
+            margin: 0 0 .5rem 0;
+            font-size: 1.15rem;
+        }
+
+        #audioOverlay .panel p {
+            margin: 0 0 1rem 0;
+            opacity: 0.85;
+        }
+
+        #enableAudioBtn {
+            padding: .6rem 1rem;
+            border: 0;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+<iframe id="gui" name="GUI" src="default_gui.html" allow="autoplay" frameborder="0"
+        style="position: fixed; left:0px; top:0px; z-index:1"></iframe>
+<iframe id="sia" name="SIA" src="https://vuppetmaster.de/dev/ubidenz/?server=ws://localhost:3030/ws" allow="autoplay" frameborder="0"
+        style="position: fixed; left:0px; top:0px; z-index:-1"></iframe>
+
+<div id="audioOverlay" role="dialog" aria-modal="true" aria-labelledby="audioOverlayTitle">
+    <div class="panel">
+        <h3 id="audioOverlayTitle">Enable audio</h3>
+        <p>Chrome requires a user gesture before audio can start.</p>
+        <button id="enableAudioBtn" class="btn btn-primary">Enable audio</button>
+    </div>
+</div>
+</body>
+</html>

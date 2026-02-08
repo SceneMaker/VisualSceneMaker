@@ -1,0 +1,30 @@
+{
+  "schemaVersion": "1.0",
+  "plugin": {
+    "id": "studymaster-web",
+    "name": "StudyMaster Web",
+    "className": "de.dfki.vsm.xtension.studymasterweb.WebStudyMasterExecutor",
+    "description": "Wizard of Oz interface for remote control VSM projects",
+    "tags": ["control", "wizard of oz", "web"]
+  },
+  "categories": {
+    "primary": "input",
+    "secondary": ["output"]
+  },
+  "config": {
+    "required": [],
+    "optional": []
+  },
+  "commands": [
+    {
+      "name": "stop",
+      "type": "action",
+      "summary": "Stop StudyMaster",
+      "params": []
+    }
+  ],
+  "variables": {
+    "writes": [],
+    "reads": []
+  }
+}

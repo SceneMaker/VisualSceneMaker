@@ -29,7 +29,6 @@ graph TD
     Root --> PlugCharamelWs[:plugins:charamel-ws]
     Root --> PlugSockets[:plugins:sockets]
     Root --> PlugDrive[:plugins:DriveSimulator]
-    Root --> PlugVlc[:plugins:VLCRemoteController]
 
     Editor --> Core
     PlugAlma --> Core

@@ -1,0 +1,58 @@
+<html lang="en" class="h-100">
+<head>
+    <!-- Plotly.js -->
+    <script src="js/plotly-latest.min.js"></script>
+    <script src="js/helper.js"></script>
+
+    <link rel="stylesheet" href="css/graph_ui.css">
+
+    <!--    <style>-->
+    <!--        .id-button {-->
+    <!--            position: absolute;-->
+    <!--            top: 5vw;-->
+    <!--            left: 95vh;-->
+    <!--        }-->
+
+    <!--        .id-button button {-->
+    <!--            background: none transparent;-->
+    <!--            background-size: contain;-->
+    <!--            background-repeat: no-repeat;-->
+    <!--            border: none;-->
+    <!--            width: 10vw;-->
+    <!--            height: 4vh;-->
+    <!--            position: fixed;-->
+    <!--            z-index: 3;-->
+    <!--            top: 5vw;-->
+    <!--            left: 95vh;-->
+    <!--            cursor: pointer-->
+    <!--        }-->
+
+    <!--        .graph_ui_wrapper {-->
+    <!--            transform: rotate(-90deg);-->
+    <!--            transform-origin: left top;-->
+    <!--            position: absolute;-->
+    <!--            top: 100%;-->
+    <!--            left: 0;-->
+    <!--        }-->
+
+    <!--    </style>-->
+</head>
+
+<body>
+<div class="graph_ui_wrapper">
+    <div id="graph_arbeitszeit">
+    </div>
+
+    <div id="inset" class="id-button">
+        <button id='backbutton'
+                style="background-image: url('img/back.png');"
+                onClick="parent.postMessage('home', '*')"
+        ></button>
+    </div>
+
+</div>
+</body>
+
+<script src="js/graph_arbeitszeit.js"></script>
+
+</html>

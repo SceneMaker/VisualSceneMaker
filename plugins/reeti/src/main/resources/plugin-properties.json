@@ -1,46 +1,60 @@
 {
-  "providers": {
-    "de.dfki.vsm.xtension.reeti.ReetiExecutor": {
-      "plugin": {
-        "required": [
-          {
-            "name": "lhost",
-            "type": "string",
-            "default": "127.0.0.1",
-            "description": "The address of the computer running VSM "
-          },
-          {
-            "name": "lport",
-            "type": "numeric",
-            "default": 1421,
-            "description": "The port of the computer running VSM "
-          },
-          {
-            "name": "rhost",
-            "type": "string",
-            "default": "127.0.0.1",
-            "description": "The address of the computer running ReetiV2Engine "
-          },
-          {
-            "name": "rport",
-            "type": "numeric",
-            "default": 1241,
-            "description": "The port of the computer running ReetiV2Engine "
-          }
-        ],
-        "optional": [
-          {
-            "name": "useSSI",
-            "type": "boolean",
-            "default": false,
-            "description": "Whether to communicate with OpenSSI or not"
-          }
-        ]
+  "schemaVersion": "1.0",
+  "plugin": {
+    "id": "reeti",
+    "name": "Reeti",
+    "className": "de.dfki.vsm.xtension.reeti.ReetiExecutor",
+    "description": "Reeti robot head controller",
+    "tags": ["robot", "head", "physical agent"]
+  },
+  "categories": {
+    "primary": "processing",
+    "secondary": []
+  },
+  "config": {
+    "required": [
+      {
+        "name": "lhost",
+        "type": "string",
+        "default": "127.0.0.1",
+        "description": "The address of the computer running VSM"
       },
-      "agent": {
-        "required": [],
-        "optional": []
+      {
+        "name": "lport",
+        "type": "numeric",
+        "default": 1421,
+        "description": "The port of the computer running VSM"
+      },
+      {
+        "name": "rhost",
+        "type": "string",
+        "default": "127.0.0.1",
+        "description": "The address of the computer running ReetiV2Engine"
+      },
+      {
+        "name": "rport",
+        "type": "numeric",
+        "default": 1241,
+        "description": "The port of the computer running ReetiV2Engine"
       }
-    }
+    ],
+    "optional": [
+      {
+        "name": "useSSI",
+        "type": "boolean",
+        "default": false,
+        "description": "Whether to communicate with OpenSSI or not"
+      },
+      { "name": "usejpl", "type": "string", "description": "Use JPL" },
+      { "name": "useexe", "type": "string", "description": "Use executable" }
+    ]
+  },
+  "commands": [],
+  "variables": {
+    "writes": [
+      { "var": "UserIsSpeaking", "type": "bool", "scope": "global" },
+      { "var": "UserSaidKeyword", "type": "string", "scope": "global" }
+    ],
+    "reads": []
   }
 }

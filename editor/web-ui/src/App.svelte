@@ -9,6 +9,7 @@
   import IconPencil from "./icons/IconPencil.svelte";
   import IconPlus from "./icons/IconPlus.svelte";
   import IconDocument from "./icons/IconDocument.svelte";
+  import IconSearch from "./icons/IconSearch.svelte";
   import IconPuzzle from "./icons/IconPuzzle.svelte";
   import IconPause from "./icons/IconPause.svelte";
   import IconStart from "./icons/IconStart.svelte";
@@ -787,6 +788,9 @@
   let llmModels = {};
   let llmModelsLoading = {};
   let llmTestResult = {};
+  let deviceConfigExpanded = true;
+  let deviceBehaviorExpanded = true;
+  let agentConfigExpanded = true;
   let availableDevices = [];
   let availableDevicesLoading = false;
   let availableDevicesError = "";
@@ -838,6 +842,9 @@
   let scriptElementsError = "";
   let scriptElementsLoading = false;
   let scriptElementsLoaded = false;
+  let scriptSearchOpen = false;
+  let scriptSearchQuery = "";
+  let scriptSearchInputEl;
   let sceneAgentNames = [];
   let deviceAgentNames = [];
   let agentGroups = { input: [], processing: [], output: [] };
@@ -847,6 +854,43 @@
   let missingAgentDeviceOptions = [];
   let missingAgentError = "";
   let missingAgentBusy = false;
+  let missingVarDialogEl;
+  let missingVarDialogOpen = false;
+  let missingVarItems = [];
+  let renameSceneDialogEl;
+  let renameSceneDialogOpen = false;
+  let renameSceneOldName = "";
+  let renameSceneNewName = "";
+  let renameSceneMatches = [];
+  let renameSceneBusy = false;
+  let renameSceneError = "";
+  let renameSceneRequestId = 0;
+  let danglingSceneDialogEl;
+  let danglingSceneDialogOpen = false;
+  let danglingSceneMatches = [];
+  let danglingSceneRemoved = [];
+  let danglingSceneReplacements = [];
+  let danglingSceneBusy = false;
+  let danglingSceneError = "";
+  let danglingSceneRequestId = 0;
+  let danglingSceneCanApply = false;
+  let embeddingsAvailable = null;
+  let embeddingsChecking = false;
+  let embeddingsLastChecked = 0;
+  let embeddingsStartAttempted = false;
+  let embeddingsStarting = false;
+  let embeddingsReady = false;
+  let embeddingsModel = "";
+  let embeddingsHealthError = "";
+  const EMBEDDINGS_URL = "http://127.0.0.1:4050";
+  let sceneTitleSuggestions = new Map();
+  let sceneTitleSuggestBusy = false;
+  let sceneTitleSuggestError = "";
+  let sceneTitleSuggestMessage = "";
+  const SCENE_TITLE_CLUSTER_THRESHOLD = 0.78;
+  let sceneNamesReady = false;
+  let previousSceneNames = new Set();
+  let previousSceneTextByName = new Map();
   const SELECTION_PREVIEW_LIMIT = 6;
 
   // Generate panel state
@@ -1158,6 +1202,7 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
   $: {
     const canAutoApply =
       showEditor &&
+      autoSaveEnabled &&
       wsConnected &&
       !!selectedProjectId &&
       scriptDirty &&
@@ -1588,6 +1633,24 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
     return Array.from(helperSceneIndex.keys()).sort((a, b) => a.localeCompare(b));
   })();
   $: sceneLanguageOptions = sceneLanguageOptionList(scriptScenesLive.length ? scriptScenesLive : scriptScenes);
+  $: {
+    const currentSceneTextMap = buildSceneTextMapFromScript(scriptDraft || "");
+    const currentNames = sceneNameSetFromGroups(scriptScenesLive);
+    if (!sceneNamesReady) {
+      previousSceneNames = currentNames;
+      previousSceneTextByName = currentSceneTextMap;
+      sceneNamesReady = true;
+    } else if (!setsEqual(currentNames, previousSceneNames)) {
+      const removed = Array.from(previousSceneNames).filter((name) => !currentNames.has(name));
+      const added = Array.from(currentNames).filter((name) => !previousSceneNames.has(name));
+      const removedTextMap = previousSceneTextByName;
+      previousSceneNames = currentNames;
+      previousSceneTextByName = currentSceneTextMap;
+      void handleSceneListChange(removed, added, removedTextMap);
+    } else {
+      previousSceneTextByName = currentSceneTextMap;
+    }
+  }
   $: filteredScriptElements = filterScriptElements(scriptElements, scriptElementsFilter);
   $: cmdHelperAgentCommands = pluginCommandsForAgent(cmdHelperAgent);
   $: cmdHelperDescriptor = pluginInterfaceForAgent(cmdHelperAgent);
@@ -1854,6 +1917,8 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
       scriptDiagTimer = null;
     }
     clearScriptAutoApplyTimer();
+    sceneNamesReady = false;
+    previousSceneNames = new Set();
     loadScript(selectedProjectId);
     loadScriptScenes(selectedProjectId);
     loadScriptElements(selectedProjectId);
@@ -1862,6 +1927,10 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
   $: if (sessionReady && selectedProjectId && selectedProjectId !== lastSceneFlowProjectId) {
     lastSceneFlowProjectId = selectedProjectId;
     loadSceneFlow(selectedProjectId);
+  }
+  $: if (sessionReady && !embeddingsStartAttempted) {
+    embeddingsStartAttempted = true;
+    void checkEmbeddingsService();
   }
   $: if (sessionReady && selectedProjectId && selectedProjectId !== lastRuntimeProjectId) {
     lastRuntimeProjectId = selectedProjectId;
@@ -1901,6 +1970,8 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
     scriptElements = { acticon: [], gesticon: [], visicon: [] };
     scriptElementsError = "";
     scriptElementsLoading = false;
+    sceneNamesReady = false;
+    previousSceneNames = new Set();
     if (scriptDiagTimer) {
       clearTimeout(scriptDiagTimer);
       scriptDiagTimer = null;
@@ -2236,6 +2307,10 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
     }
   }
 
+  function hasRecentPlugins(project) {
+    return Array.isArray(project?.stats?.plugins) && project.stats.plugins.length > 0;
+  }
+
   async function loadTutorials() {
     const data = await apiGet("/api/v1/projects/tutorials");
     tutorials = data.projects || [];
@@ -2437,11 +2512,18 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
     }
   }
 
-  async function saveProject(projectId) {
+  async function saveProject(projectId, { skipScriptApply = false } = {}) {
     if (!projectId || projectSaving) return false;
     let ok = false;
     projectSaving = true;
     try {
+      if (!skipScriptApply && scriptDirty && scriptParseOk && !scriptError && scriptDiagnostics.length === 0) {
+        const applied = await applyScript();
+        if (!applied) {
+          projectSaving = false;
+          return false;
+        }
+      }
       await apiPost(`/api/v1/projects/${projectId}/save`, {});
       await loadProjects();
       await loadRecent();
@@ -2481,7 +2563,7 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
     if (scriptDirty && scriptParseOk && scriptDiagnostics.length === 0) {
       await applyScript();
     }
-    const ok = await saveProject(selectedProjectId);
+    const ok = await saveProject(selectedProjectId, { skipScriptApply: true });
     autoSaving = false;
     if (ok) {
       autoSaveStatus = "Saved";
@@ -2830,6 +2912,18 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
     scheduleProjectConfigApply();
   }
 
+  function updateSceneTitleConcepts(value) {
+    const entries = String(value || "")
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter(Boolean);
+    projectConfigDraft = {
+      ...projectConfigDraft,
+      sceneTitleConcepts: entries
+    };
+    scheduleProjectConfigApply();
+  }
+
   function resolveAvailableDeviceClass(name) {
     const needle = (name || "").trim().toLowerCase();
     if (!needle || !availableDevices?.length) return "";
@@ -2984,7 +3078,7 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
     scheduleProjectConfigApply();
   }
 
-  function addPlugin() {
+  async function addPlugin() {
     const name = (projectConfigNewPlugin.name || "").trim();
     const className =
       (projectConfigNewPlugin.className || "").trim() || resolveAvailableDeviceClass(name);
@@ -2997,18 +3091,113 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
       projectConfigError = "Device name already exists.";
       return;
     }
-    const next = {
+
+    // Request plugin template with pre-populated required keys from backend
+    let next = {
       name,
       className,
       type,
       load: projectConfigNewPlugin.load !== false,
       features: []
     };
+    let sceneflowVarsToCreate = [];
+    let hasTemplates = false;
+    try {
+      const response = await sendCommand("ProjectConfig.Plugin.Create", {
+        name,
+        className,
+        type,
+        load: projectConfigNewPlugin.load !== false
+      });
+      if (response?.plugin) {
+        // Use the backend-provided plugin with pre-populated features
+        next = {
+          name: response.plugin.name || name,
+          className: response.plugin.className || className,
+          type: response.plugin.type || type,
+          load: response.plugin.load !== false,
+          features: Array.isArray(response.plugin.features)
+            ? response.plugin.features.map((f) => ({ key: f.key || "", value: f.value || "" }))
+            : []
+        };
+      }
+      // Collect sceneflow variables to create
+      if (Array.isArray(response?.sceneflowVars)) {
+        sceneflowVarsToCreate = response.sceneflowVars;
+      }
+      // Check if plugin has templates to install
+      if (response?.templates) {
+        hasTemplates = true;
+      }
+    } catch (err) {
+      // Fallback to empty features if backend call fails
+      console.warn("Failed to get plugin template:", err);
+    }
+
     const plugins = [...projectConfigPlugins, next];
     projectConfigDraft = { ...projectConfigDraft, plugins };
     projectConfigNewPlugin = { name: "", className: "", type: "device", load: true };
     selectProjectConfig({ type: "plugin", pluginIndex: plugins.length - 1 });
     scheduleProjectConfigApply();
+
+    // Auto-create SceneFlow variables defined by the plugin
+    if (sceneflowVarsToCreate.length > 0 && selectedProjectId) {
+      for (const varDef of sceneflowVarsToCreate) {
+        await createSceneFlowVariableIfNotExists(varDef.name, varDef.type);
+      }
+    }
+
+    // Install template files if the plugin has any
+    if (hasTemplates && selectedProjectId) {
+      await installPluginTemplates(className);
+    }
+  }
+
+  async function installPluginTemplates(className) {
+    if (!className || !selectedProjectId) return;
+    try {
+      const response = await sendCommand("Project.Templates.Install", {
+        projectId: selectedProjectId,
+        className: className
+      });
+      if (response?.createdFiles?.length > 0) {
+        console.log("Created template files:", response.createdFiles);
+      }
+      if (response?.skippedFiles?.length > 0) {
+        console.log("Skipped existing files:", response.skippedFiles);
+      }
+    } catch (err) {
+      console.warn("Failed to install plugin templates:", err);
+    }
+  }
+
+  async function createSceneFlowVariableIfNotExists(varName, varType) {
+    if (!varName || !varType || !selectedProjectId) return;
+
+    // Check if variable already exists in current sceneFlow (at root level)
+    const existingVars = sceneFlow?.variables || [];
+    const exists = existingVars.some((v) => v.name === varName);
+    if (exists) {
+      console.log(`SceneFlow variable '${varName}' already exists, skipping creation`);
+      return;
+    }
+
+    // Create variable at root SceneFlow level (nodeId empty = root)
+    try {
+      await runSceneFlowCommand("SceneFlow.Node.VarDef.Add", {
+        projectId: selectedProjectId,
+        nodeId: "",  // Root SceneFlow
+        superNodeId: sceneFlow?.superNodeId || "",
+        varDef: {
+          name: varName,
+          type: varType
+          // No expression needed for Event types; for others, backend provides default
+        }
+      });
+      console.log(`Created SceneFlow variable '${varName}' of type '${varType}'`);
+    } catch (err) {
+      console.warn(`Failed to create SceneFlow variable '${varName}':`, err);
+    }
   }
 
   function addAgent(deviceOverride) {
@@ -3531,6 +3720,30 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
     scriptEditorRef?.insertText(snippet);
   }
 
+  function toggleScriptSearchPanel() {
+    scriptSearchOpen = !scriptSearchOpen;
+    if (scriptSearchOpen) {
+      if (!scriptSearchQuery) {
+        scriptSearchQuery = "";
+      }
+      scriptEditorRef?.setSearchQuery(scriptSearchQuery);
+      tick().then(() => scriptSearchInputEl?.focus());
+    }
+  }
+
+  function updateScriptSearchQuery(value) {
+    scriptSearchQuery = value;
+    scriptEditorRef?.setSearchQuery(scriptSearchQuery);
+  }
+
+  function runScriptSearchNext() {
+    scriptEditorRef?.findNext();
+  }
+
+  function runScriptSearchPrevious() {
+    scriptEditorRef?.findPrevious();
+  }
+
   function openGeneratePanel() {
     generatePanelOpen = true;
     generateResult = "";
@@ -3549,6 +3762,14 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
       : [];
     // Default to first LLM
     generateLLMIndex = 0;
+  }
+
+  function toggleGeneratePanel() {
+    if (generatePanelOpen) {
+      closeGeneratePanel();
+    } else {
+      openGeneratePanel();
+    }
   }
 
   function closeGeneratePanel() {
@@ -3698,31 +3919,34 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
       }
       const response = await sendCommand("Script.Update", payload);
       if (response.applied) {
-        scriptText = response.text ?? scriptDraft;
-        scriptDraft = scriptText;
+        const nextText = response.text ?? scriptDraft;
+        scriptText = nextText;
+        scriptDraft = nextText;
         scriptVersion = response.version ?? scriptVersion;
         scriptParseOk = response.parseOk !== false;
         scriptDiagnostics = response.parseErrors || [];
         scriptStatus = "Script updated.";
         loadScriptScenes(selectedProjectId);
-        return;
+        return true;
       }
       if (response.reason === "VERSION_MISMATCH") {
         scriptParseOk = true;
         scriptStatus = "Script changed on server. Reload to sync.";
-        return;
+        return false;
       }
       if (response.reason === "PARSE_FAILED") {
         scriptParseOk = false;
         scriptDiagnostics = response.parseErrors || [];
         scriptError = "Script parse failed. Check syntax.";
-        return;
+        return false;
       }
       scriptParseOk = response.parseOk !== false;
       scriptDiagnostics = response.parseErrors || [];
       scriptStatus = "Script update not applied.";
+      return false;
     } catch (err) {
       scriptError = err.message || "Failed to update script.";
+      return false;
     }
   }
 
@@ -3904,9 +4128,16 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
 
   async function runRuntimeCommand(command, options = {}) {
     if (!selectedProjectId) return;
-    if (command === "Runtime.Play" && !options.skipMissingAgentCheck && missingAgentNames.length) {
-      openMissingAgentDialog();
-      return;
+    if (command === "Runtime.Play") {
+      const missingVars = await checkUndefinedVariables();
+      if (missingVars.length) {
+        openMissingVarDialog(missingVars);
+        return;
+      }
+      if (!options.skipMissingAgentCheck && missingAgentNames.length) {
+        openMissingAgentDialog();
+        return;
+      }
     }
     await executeRuntimeCommand(command);
   }
@@ -5044,7 +5275,8 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
       llmPrompts: {
         formatPrompt: safe.llmPrompts?.formatPrompt ?? "",
         actionPrompts: Array.isArray(safe.llmPrompts?.actionPrompts) ? [...safe.llmPrompts.actionPrompts] : []
-      }
+      },
+      sceneTitleConcepts: Array.isArray(safe.sceneTitleConcepts) ? [...safe.sceneTitleConcepts] : []
     };
   }
 
@@ -5056,14 +5288,76 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
     const optional = Array.isArray(keys.optional)
       ? keys.optional.map((entry) => ({ ...entry, kind: "optional" }))
       : [];
-    return [...required, ...optional];
+    const pluginSpecific = Array.isArray(keys.pluginSpecific)
+      ? keys.pluginSpecific.map((entry) => ({ ...entry, kind: "pluginSpecific" }))
+      : [];
+    return [...required, ...optional, ...pluginSpecific];
   }
 
   function keyHintLabel(entry) {
     if (!entry) return "";
     const desc = (entry.description || "").trim();
-    const prefix = entry.kind === "required" ? "required" : "optional";
+    let prefix = "optional";
+    if (entry.kind === "required") prefix = "required";
+    else if (entry.kind === "pluginSpecific") prefix = "behavior";
     return desc ? `${prefix}: ${desc}` : prefix;
+  }
+
+  function findKeyHintDefault(keyOptions, keyName) {
+    if (!keyOptions || !keyName) return null;
+    const entry = keyOptions.find((opt) => opt.name === keyName);
+    if (entry && entry.default !== undefined && entry.default !== null) {
+      return String(entry.default);
+    }
+    return null;
+  }
+
+  function isKeyReadonly(keyOptions, keyName) {
+    if (!keyOptions || !keyName) return false;
+    const entry = keyOptions.find((opt) => opt.name === keyName);
+    return entry?.readonly === true;
+  }
+
+  function isKeyPluginSpecific(keyOptions, keyName) {
+    if (!keyOptions || !keyName) return false;
+    const entry = keyOptions.find((opt) => opt.name === keyName);
+    return entry?.kind === "pluginSpecific";
+  }
+
+  function getKeyType(keyOptions, keyName) {
+    if (!keyOptions || !keyName) return "string";
+    const entry = keyOptions.find((opt) => opt.name === keyName);
+    return entry?.type || "string";
+  }
+
+  function getKeyDescription(keyOptions, keyName) {
+    if (!keyOptions || !keyName) return "";
+    const entry = keyOptions.find((opt) => opt.name === keyName);
+    return entry?.description || "";
+  }
+
+  function handleNewFeatureKeyInput(event) {
+    const key = event.target.value;
+    projectConfigNewFeature.key = key;
+    // Pre-fill default value if available and value is currently empty
+    if (key && !projectConfigNewFeature.value) {
+      const defaultVal = findKeyHintDefault(pluginKeyOptions, key);
+      if (defaultVal !== null) {
+        projectConfigNewFeature.value = defaultVal;
+      }
+    }
+  }
+
+  function handleNewAgentFeatureKeyInput(event) {
+    const key = event.target.value;
+    projectConfigNewFeature.key = key;
+    // Pre-fill default value if available and value is currently empty
+    if (key && !projectConfigNewFeature.value) {
+      const defaultVal = findKeyHintDefault(agentKeyOptions, key);
+      if (defaultVal !== null) {
+        projectConfigNewFeature.value = defaultVal;
+      }
+    }
   }
 
   function cloneProjectConfig(config) {
@@ -5589,6 +5883,30 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
     restoreFocus();
   }
 
+  async function checkUndefinedVariables() {
+    if (!selectedProjectId) return [];
+    try {
+      const data = await apiGet(`/api/v1/projects/${selectedProjectId}/validate/vars`);
+      return Array.isArray(data?.missing) ? data.missing : [];
+    } catch (err) {
+      console.warn("Failed to validate variables:", err);
+      return [];
+    }
+  }
+
+  function openMissingVarDialog(items) {
+    rememberFocus();
+    missingVarItems = Array.isArray(items) ? items : [];
+    missingVarDialogOpen = true;
+    focusDialog(missingVarDialogEl);
+  }
+
+  function closeMissingVarDialog() {
+    missingVarDialogOpen = false;
+    missingVarItems = [];
+    restoreFocus();
+  }
+
   function updateMissingAgentDraft(index, field, value) {
     missingAgentDrafts = missingAgentDrafts.map((draft, idx) =>
       idx === index ? { ...draft, [field]: value } : draft
@@ -6051,6 +6369,747 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
     }
     output.sort((a, b) => String(a.language || "").localeCompare(String(b.language || "")));
     return output;
+  }
+
+  function sceneNameSetFromGroups(groups) {
+    const names = new Set();
+    if (!Array.isArray(groups)) return names;
+    groups.forEach((lang) => {
+      (lang?.groups || []).forEach((group) => {
+        if (group?.name) {
+          names.add(group.name);
+        }
+      });
+    });
+    return names;
+  }
+
+  function sceneGroupKey(language, name) {
+    return `${language || ""}::${name || ""}`;
+  }
+
+  function camelBackTitle(words) {
+    const cleaned = words
+      .filter(Boolean)
+      .slice(0, 3)
+      .map((word) => String(word).replace(/[^A-Za-z0-9]+/g, ""))
+      .filter(Boolean);
+    if (!cleaned.length) return "";
+    return cleaned
+      .map((word, idx) => {
+        const hasInternalCaps = /[A-Z]/.test(word.slice(1));
+        const normalized = hasInternalCaps ? word : word.toLowerCase();
+        return normalized.charAt(0).toUpperCase() + normalized.slice(1);
+      })
+      .join("");
+  }
+
+  function normalizeSceneTitleConceptCandidates(concepts) {
+    const candidates = new Set();
+    (concepts || []).forEach((entry) => {
+      const words = String(entry || "")
+        .trim()
+        .split(/[\s,_-]+/)
+        .filter(Boolean);
+      const title = camelBackTitle(words);
+      if (title) {
+        candidates.add(title);
+      }
+    });
+    return Array.from(candidates);
+  }
+
+  function extractSceneGroupsWithText(text) {
+    const groups = new Map();
+    if (!text) return [];
+    const lines = String(text).split(/\r?\n/);
+    let current = null;
+    let buffer = [];
+    const flush = () => {
+      if (current && buffer.length) {
+        const key = sceneGroupKey(current.language, current.name);
+        const content = buffer.join(" ").trim();
+        if (content) {
+          if (!groups.has(key)) {
+            groups.set(key, { ...current, texts: [] });
+          }
+          groups.get(key).texts.push(content);
+        }
+      }
+      current = null;
+      buffer = [];
+    };
+    for (const raw of lines) {
+      const line = raw.trim();
+      if (!line || line.startsWith("//") || line.startsWith("#")) {
+        continue;
+      }
+      const match = line.match(/^scene\s+(\S+)\s+(.+)$/i);
+      if (match) {
+        flush();
+        current = { language: match[1], name: match[2].trim() };
+        continue;
+      }
+      if (current) {
+        const stripped = line.replace(/^[^:]+:\s*/, "");
+        if (stripped) {
+          buffer.push(stripped);
+        }
+      }
+    }
+    flush();
+    const output = [];
+    groups.forEach((value) => {
+      const combined = value.texts.join(" ").slice(0, 1200);
+      output.push({ language: value.language, name: value.name, text: combined });
+    });
+    return output;
+  }
+
+  function buildSceneTextMapFromScript(text) {
+    const groups = extractSceneGroupsWithText(text);
+    const map = new Map();
+    groups.forEach((group) => {
+      const name = (group?.name || "").trim();
+      if (!name) return;
+      const existing = map.get(name);
+      const combined = existing ? `${existing} ${group.text}`.trim() : group.text;
+      map.set(name, combined);
+    });
+    return map;
+  }
+
+  function keywordsFromText(text, globalCounts = new Map(), globalSceneCount = 1) {
+    if (!text) return [];
+    const stop = new Set([
+      "the", "and", "for", "with", "that", "this", "have", "has", "are", "was", "were", "you",
+      "your", "our", "their", "they", "them", "she", "him", "her", "its", "not", "but", "can",
+      "will", "just", "from", "into", "then", "than", "about", "what", "when", "where", "who",
+      "why", "how", "say", "says", "said", "im", "i", "me", "my", "we", "us", "a", "an", "to",
+      "of", "in", "on", "at", "is", "it", "be", "as", "or", "if", "so", "do", "does", "did",
+      "yeah", "okay", "ok", "hello", "hi", "hey", "thanks", "thank", "please",
+      "du", "ich", "wir", "ihr", "sie", "er", "sein", "sein", "mein", "dein", "euer", "uns",
+      "mich", "dich", "ihn", "ihm", "ihrer", "ihre", "euch", "mir", "dir", "danke",
+      "ja", "nein", "bitte", "hallo", "tschuss", "tschüss", "okay", "ok",
+      "nicht", "kein", "keine", "keiner", "keines", "nichts",
+      "sein", "bin", "bist", "ist", "sind", "seid", "war", "waren", "wurde", "wurden",
+      "haben", "habe", "hast", "hat", "habt", "hatte", "hatten",
+      "werden", "werde", "wirst", "wird", "werdet",
+      "kann", "kannst", "können", "koennen",
+      "muss", "musst", "müssen", "muessen",
+      "soll", "sollst", "sollen",
+      "will", "willst", "wollen",
+      "darf", "darfst", "dürfen", "duerfen",
+      "geh", "gehe", "gehst", "gehen",
+      "komm", "komme", "kommst", "kommen",
+      "seh", "sehe", "siehst", "sehen",
+      "sag", "sage", "sagst", "sagen",
+      "mach", "mache", "machst", "machen",
+      "dein", "deine", "deiner", "deines",
+      "mein", "meine", "meiner", "meines"
+    ]);
+    const commonThreshold = Math.max(2, Math.ceil(globalSceneCount * 0.35));
+    const verbLike = /(st|est|en|t)$/i;
+    const tokens = String(text)
+      .toLowerCase()
+      .replace(/[^a-z0-9\s]/g, " ")
+      .split(/\s+/)
+      .filter((word) => word.length >= 4 && !stop.has(word))
+      .filter((word) => {
+        const count = globalCounts.get(word) || 0;
+        if (count >= commonThreshold) return false;
+        if (verbLike.test(word)) return false;
+        return true;
+      });
+    const counts = new Map();
+    tokens.forEach((word) => counts.set(word, (counts.get(word) || 0) + 1));
+    return Array.from(counts.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 8)
+      .map(([word]) => word);
+  }
+
+  function buildCandidateTitles(text, globalCounts, globalSceneCount) {
+    const keywords = keywordsFromText(text, globalCounts, globalSceneCount);
+    const single = keywords.map((word) => camelBackTitle([word])).filter(Boolean);
+    const candidates = new Set(single);
+    if (single.length < 3) {
+      for (let i = 0; i < Math.min(4, keywords.length); i += 1) {
+        for (let j = i + 1; j < Math.min(6, keywords.length); j += 1) {
+          const title = camelBackTitle([keywords[i], keywords[j]]);
+          if (title) {
+            candidates.add(title);
+          }
+        }
+      }
+    }
+    return Array.from(candidates);
+  }
+
+  async function fetchEmbeddings(texts) {
+    const available = await checkEmbeddingsService();
+    if (!available) return null;
+    try {
+      const response = await fetchWithTimeout(
+        `${EMBEDDINGS_URL}/embed`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ texts })
+        },
+        5000
+      );
+      if (!response.ok) {
+        return null;
+      }
+      const data = await response.json();
+      return data?.vectors || null;
+    } catch (err) {
+      return null;
+    }
+  }
+
+  function cosineSimilarity(a, b) {
+    if (!Array.isArray(a) || !Array.isArray(b) || a.length !== b.length || a.length === 0) return 0;
+    let dot = 0;
+    for (let i = 0; i < a.length; i += 1) {
+      dot += a[i] * b[i];
+    }
+    return dot;
+  }
+
+  function clusterScenesBySimilarity(items, vectors) {
+    const clusters = [];
+    const visited = new Set();
+    for (let i = 0; i < items.length; i += 1) {
+      if (visited.has(i)) continue;
+      const stack = [i];
+      const cluster = [];
+      visited.add(i);
+      while (stack.length) {
+        const idx = stack.pop();
+        cluster.push(idx);
+        for (let j = 0; j < items.length; j += 1) {
+          if (visited.has(j) || j === idx) continue;
+          const sim = cosineSimilarity(vectors[idx], vectors[j]);
+          if (sim >= SCENE_TITLE_CLUSTER_THRESHOLD) {
+            visited.add(j);
+            stack.push(j);
+          }
+        }
+      }
+      clusters.push(cluster);
+    }
+    return clusters;
+  }
+
+  function setsEqual(a, b) {
+    if (a === b) return true;
+    if (!a || !b || a.size !== b.size) return false;
+    for (const item of a) {
+      if (!b.has(item)) return false;
+    }
+    return true;
+  }
+
+  function levenshteinDistance(a, b) {
+    const s = String(a || "");
+    const t = String(b || "");
+    const m = s.length;
+    const n = t.length;
+    if (m === 0) return n;
+    if (n === 0) return m;
+    const dp = Array.from({ length: m + 1 }, () => new Array(n + 1).fill(0));
+    for (let i = 0; i <= m; i += 1) dp[i][0] = i;
+    for (let j = 0; j <= n; j += 1) dp[0][j] = j;
+    for (let i = 1; i <= m; i += 1) {
+      for (let j = 1; j <= n; j += 1) {
+        const cost = s[i - 1] === t[j - 1] ? 0 : 1;
+        dp[i][j] = Math.min(
+          dp[i - 1][j] + 1,
+          dp[i][j - 1] + 1,
+          dp[i - 1][j - 1] + cost
+        );
+      }
+    }
+    return dp[m][n];
+  }
+
+  function closestSceneName(target, candidates) {
+    const pool = Array.isArray(candidates) ? candidates.filter(Boolean) : [];
+    if (!target || pool.length === 0) return "";
+    let best = pool[0];
+    let bestScore = Infinity;
+    const targetLower = target.toLowerCase();
+    for (const candidate of pool) {
+      const score = levenshteinDistance(targetLower, String(candidate).toLowerCase());
+      if (score < bestScore) {
+        bestScore = score;
+        best = candidate;
+      }
+    }
+    return best;
+  }
+
+  async function fetchWithTimeout(url, options = {}, timeoutMs = 1200) {
+    const controller = new AbortController();
+    const id = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      const response = await fetch(url, { ...options, signal: controller.signal });
+      return response;
+    } finally {
+      clearTimeout(id);
+    }
+  }
+
+  async function checkEmbeddingsService() {
+    if (embeddingsChecking) return embeddingsAvailable === true;
+    const now = Date.now();
+    if (embeddingsAvailable !== null && now - embeddingsLastChecked < 10000) {
+      return embeddingsAvailable === true;
+    }
+    embeddingsChecking = true;
+    embeddingsLastChecked = now;
+    try {
+      const response = await fetchWithTimeout(`${EMBEDDINGS_URL}/health`, {}, 1200);
+      embeddingsAvailable = response.ok;
+      embeddingsReady = false;
+      embeddingsModel = "";
+      embeddingsHealthError = "";
+      if (response.ok) {
+        try {
+          const health = await response.json();
+          embeddingsReady = health?.ready === true;
+          embeddingsModel = health?.model || "";
+          embeddingsHealthError = health?.error || "";
+        } catch (err) {
+          // ignore parse error
+        }
+      }
+      if (!embeddingsAvailable && wsConnected && !embeddingsStarting) {
+        embeddingsStartAttempted = true;
+        embeddingsStarting = true;
+        try {
+          const startResp = await sendCommand("Embeddings.Start", {});
+          if (startResp?.error) {
+            console.warn("[embeddings] start failed:", startResp.error);
+          }
+        } catch (err) {
+          console.warn("[embeddings] start failed:", err);
+        }
+        embeddingsAvailable = await waitForEmbeddingsHealth(5000);
+        embeddingsStarting = false;
+      }
+      embeddingsChecking = false;
+      return embeddingsAvailable === true;
+    } catch (err) {
+      embeddingsAvailable = false;
+      if (wsConnected && !embeddingsStarting) {
+        embeddingsStarting = true;
+        try {
+          const startResp = await sendCommand("Embeddings.Start", {});
+          if (startResp?.error) {
+            console.warn("[embeddings] start failed:", startResp.error);
+          }
+        } catch (startErr) {
+          console.warn("[embeddings] start failed:", startErr);
+        }
+        embeddingsAvailable = await waitForEmbeddingsHealth(5000);
+        embeddingsStarting = false;
+      }
+      embeddingsChecking = false;
+      return false;
+    }
+  }
+
+  async function waitForEmbeddingsHealth(timeoutMs) {
+    const start = Date.now();
+    let delay = 300;
+    while (Date.now() - start < timeoutMs) {
+      try {
+        const resp = await fetchWithTimeout(`${EMBEDDINGS_URL}/health`, {}, 1200);
+        if (resp.ok) {
+          return true;
+        }
+      } catch (err) {
+        // ignore and retry
+      }
+      await new Promise((resolve) => setTimeout(resolve, delay));
+      delay = Math.min(1200, Math.floor(delay * 1.5));
+    }
+    return false;
+  }
+
+  async function fetchSemanticSuggestions(removed, candidates) {
+    const available = await checkEmbeddingsService();
+    console.log("[embeddings] semantic check", {
+      available,
+      ready: embeddingsReady,
+      model: embeddingsModel,
+      error: embeddingsHealthError,
+      removed,
+      candidates: candidates?.length || 0
+    });
+    if (!available) return [];
+    try {
+      const response = await fetchWithTimeout(
+        `${EMBEDDINGS_URL}/similarity`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ query: removed, candidates, topN: candidates.length })
+        },
+        4000
+      );
+      if (!response.ok) {
+        console.warn("[embeddings] similarity failed:", response.status);
+        return [];
+      }
+      const data = await response.json();
+      const results = Array.isArray(data?.results) ? data.results : [];
+      if (results.length) {
+        console.log("[embeddings] similarity results", results);
+      }
+      const normalized = results
+        .map((result) => ({
+          name: String(result?.name || ""),
+          score: Number.isFinite(result?.score) ? result.score : null,
+          model: data?.model || ""
+        }))
+        .filter((result) => result.name);
+      const top = normalized[0];
+      if (top) {
+        console.log("[embeddings] similarity result", top);
+      }
+      return normalized;
+    } catch (err) {
+      embeddingsAvailable = false;
+      console.warn("[embeddings] similarity error:", err);
+      return [];
+    }
+  }
+
+  async function fetchPlaySceneReferences(sceneName) {
+    if (!selectedProjectId || !sceneName) return [];
+    const requestId = ++renameSceneRequestId;
+    try {
+      const response = await sendCommand("SceneFlow.PlayScene.Find", {
+        projectId: selectedProjectId,
+        sceneName
+      });
+      if (requestId !== renameSceneRequestId) return [];
+      return Array.isArray(response?.matches) ? response.matches : [];
+    } catch (err) {
+      if (requestId === renameSceneRequestId) {
+        renameSceneError = err.message || "Failed to scan PlayScene references.";
+      }
+      return [];
+    }
+  }
+
+  async function fetchPlaySceneReferencesMany(sceneNames) {
+    if (!selectedProjectId || !Array.isArray(sceneNames) || sceneNames.length === 0) return [];
+    const requestId = ++danglingSceneRequestId;
+    try {
+      const response = await sendCommand("SceneFlow.PlayScene.FindMany", {
+        projectId: selectedProjectId,
+        sceneNames
+      });
+      if (requestId !== danglingSceneRequestId) return [];
+      return Array.isArray(response?.matches) ? response.matches : [];
+    } catch (err) {
+      if (requestId === danglingSceneRequestId) {
+        danglingSceneError = err.message || "Failed to scan PlayScene references.";
+      }
+      return [];
+    }
+  }
+
+  function openRenameSceneDialog(oldName, newName, matches) {
+    renameSceneOldName = oldName;
+    renameSceneNewName = newName;
+    renameSceneMatches = Array.isArray(matches) ? matches : [];
+    renameSceneError = "";
+    renameSceneBusy = false;
+    renameSceneDialogOpen = true;
+    focusDialog(renameSceneDialogEl);
+  }
+
+  function closeRenameSceneDialog() {
+    renameSceneDialogOpen = false;
+    renameSceneOldName = "";
+    renameSceneNewName = "";
+    renameSceneMatches = [];
+    renameSceneBusy = false;
+    renameSceneError = "";
+  }
+
+  function openDanglingSceneDialog(removedScenes, matches, removedTextMap = new Map()) {
+    danglingSceneRemoved = Array.isArray(removedScenes) ? removedScenes : [];
+    danglingSceneMatches = Array.isArray(matches) ? matches : [];
+    const candidates = Array.from(sceneNameSetFromGroups(scriptScenesLive));
+    danglingSceneReplacements = danglingSceneRemoved.map((name) => {
+      const suggestion = closestSceneName(name, candidates);
+      const sourceText = removedTextMap?.get(name) || "";
+      return {
+        name,
+        suggestion,
+        semantic: false,
+        selected: suggestion,
+        options: candidates,
+        sourceText
+      };
+    });
+    danglingSceneError = "";
+    danglingSceneBusy = false;
+    danglingSceneDialogOpen = true;
+    focusDialog(danglingSceneDialogEl);
+    void checkEmbeddingsService();
+    void enrichDanglingSuggestionsWithSemantic();
+  }
+
+  function closeDanglingSceneDialog() {
+    danglingSceneDialogOpen = false;
+    danglingSceneRemoved = [];
+    danglingSceneMatches = [];
+    danglingSceneReplacements = [];
+    danglingSceneBusy = false;
+    danglingSceneError = "";
+  }
+
+  function updateDanglingReplacement(index, value) {
+    danglingSceneReplacements = danglingSceneReplacements.map((entry, idx) =>
+      idx === index ? { ...entry, selected: value } : entry
+    );
+  }
+
+  async function enrichDanglingSuggestionsWithSemantic() {
+    if (!danglingSceneReplacements.length) return;
+    const candidates = Array.from(sceneNameSetFromGroups(scriptScenesLive));
+    if (!candidates.length) return;
+    const available = await checkEmbeddingsService();
+    if (!available) {
+      return;
+    }
+    const candidateTextMap = buildSceneTextMapFromScript(scriptDraft || "");
+    const updates = [];
+    for (const entry of danglingSceneReplacements) {
+      const queryText = (entry?.sourceText || "").trim();
+      if (!queryText) continue;
+      const texts = [queryText];
+      const names = [];
+      candidates.forEach((name) => {
+        const text = (candidateTextMap.get(name) || "").trim();
+        if (!text) return;
+        names.push(name);
+        texts.push(text);
+      });
+      if (names.length === 0) continue;
+      const vectors = await fetchEmbeddings(texts);
+      if (!vectors || vectors.length !== texts.length) continue;
+      const queryVector = vectors[0];
+      const scored = names
+        .map((name, idx) => ({
+          name,
+          score: cosineSimilarity(queryVector, vectors[idx + 1])
+        }))
+        .sort((a, b) => b.score - a.score);
+      const topOptions = scored.slice(0, 3);
+      const result = topOptions[0];
+      if (result && result.name) {
+        updates.push({
+          name: entry.name,
+          suggestion: result.name,
+          options: topOptions,
+          score: result.score,
+          model: embeddingsModel || ""
+        });
+      }
+    }
+    if (!updates.length) return;
+    danglingSceneReplacements = danglingSceneReplacements.map((entry) => {
+      const update = updates.find((u) => u.name === entry.name);
+      if (!update) return entry;
+      return {
+        ...entry,
+        suggestion: update.suggestion,
+        selected: update.suggestion,
+        semantic: true,
+        semanticOptions: update.options || [],
+        semanticScore: update.score,
+        semanticModel: update.model
+      };
+    });
+  }
+
+  $: danglingSceneCanApply = danglingSceneReplacements.some(
+    (entry) => entry?.selected && entry.selected !== entry.name
+  );
+
+  async function applyDanglingReplacements() {
+    if (!selectedProjectId) return;
+    danglingSceneBusy = true;
+    danglingSceneError = "";
+    let failures = 0;
+    for (const entry of danglingSceneReplacements) {
+      const target = (entry?.selected || "").trim();
+      if (!entry?.name || !target || entry.name === target) {
+        continue;
+      }
+      const response = await sendCommand("SceneFlow.PlayScene.Rename", {
+        projectId: selectedProjectId,
+        sceneName: entry.name,
+        newName: target,
+        superNodeId: sceneFlow?.superNodeId || ""
+      });
+      if (!response || response.status !== "ok") {
+        failures += 1;
+      } else if (response.snapshot) {
+        sceneFlow = response.snapshot;
+        sceneFlowDirty = true;
+      }
+    }
+    danglingSceneBusy = false;
+    if (failures > 0) {
+      danglingSceneError = `Failed to update ${failures} scene reference${failures === 1 ? "" : "s"}.`;
+      return;
+    }
+    closeDanglingSceneDialog();
+  }
+
+  async function generateSceneTitleSuggestions() {
+    if (sceneTitleSuggestBusy) return;
+    sceneTitleSuggestBusy = true;
+    sceneTitleSuggestError = "";
+    sceneTitleSuggestMessage = "";
+    try {
+      const groups = extractSceneGroupsWithText(scriptDraft);
+      if (!groups.length) {
+        sceneTitleSuggestMessage = "No scenes found in the script.";
+        return;
+      }
+      const conceptCandidates = normalizeSceneTitleConceptCandidates(projectConfigView?.sceneTitleConcepts);
+      if (!conceptCandidates.length) {
+        sceneTitleSuggestError = "Add scene title concepts in Project Settings to generate suggestions.";
+        return;
+      }
+      const texts = groups.map((group) => group.text);
+      const vectors = await fetchEmbeddings(texts);
+      if (!vectors || vectors.length !== groups.length) {
+        sceneTitleSuggestError = "Semantic model not available.";
+        return;
+      }
+      const clusters = clusterScenesBySimilarity(groups, vectors);
+      const suggestions = new Map();
+      for (const cluster of clusters) {
+        const clusterText = cluster.map((idx) => groups[idx].text).join(" ").slice(0, 1200);
+        const results = await fetchSemanticSuggestions(clusterText, conceptCandidates);
+        const topResults = results.length
+          ? results.slice(0, 3)
+          : conceptCandidates.slice(0, 3).map((name) => ({ name, score: null, model: "" }));
+        const title = topResults[0]?.name || conceptCandidates[0];
+        for (const idx of cluster) {
+          const group = groups[idx];
+          const key = sceneGroupKey(group.language, group.name);
+          suggestions.set(key, {
+            current: group.name,
+            language: group.language,
+            suggestion: title,
+            suggestions: topResults,
+            semantic: true,
+            semanticScore: topResults[0]?.score ?? null,
+            semanticModel: topResults[0]?.model ?? ""
+          });
+        }
+      }
+      sceneTitleSuggestions = suggestions;
+      sceneTitleSuggestMessage = suggestions.size ? "Suggestions ready." : "No suggestions generated.";
+    } catch (err) {
+      sceneTitleSuggestError = err.message || "Failed to generate suggestions.";
+    } finally {
+      sceneTitleSuggestBusy = false;
+    }
+  }
+
+  async function applySceneTitleSuggestion(key, overrideName = "") {
+    const suggestion = sceneTitleSuggestions.get(key);
+    const target = overrideName || suggestion?.suggestion || "";
+    if (!suggestion || !target || target === suggestion.current) {
+      sceneTitleSuggestions.delete(key);
+      sceneTitleSuggestions = new Map(sceneTitleSuggestions);
+      return;
+    }
+    const currentName = suggestion.current;
+    const newName = target;
+    const language = suggestion.language;
+    const headerRegex = new RegExp(`^(scene\\s+${language.replace(/[-/\\\\^$*+?.()|[\\]{}]/g, "\\$&")}\\s+)${currentName.replace(/[-/\\\\^$*+?.()|[\\]{}]/g, "\\$&")}(\\s*)$`, "gmi");
+    scriptDraft = scriptDraft.replace(headerRegex, `$1${newName}$2`);
+    await sendCommand("SceneFlow.PlayScene.Rename", {
+      projectId: selectedProjectId,
+      sceneName: currentName,
+      newName,
+      superNodeId: sceneFlow?.superNodeId || ""
+    });
+    sceneTitleSuggestions.delete(key);
+    sceneTitleSuggestions = new Map(sceneTitleSuggestions);
+  }
+
+  function dismissSceneTitleSuggestion(key) {
+    if (!sceneTitleSuggestions.has(key)) return;
+    sceneTitleSuggestions.delete(key);
+    sceneTitleSuggestions = new Map(sceneTitleSuggestions);
+  }
+
+  async function applyAllSceneTitleSuggestions() {
+    const keys = Array.from(sceneTitleSuggestions.keys());
+    for (const key of keys) {
+      await applySceneTitleSuggestion(key);
+    }
+  }
+
+  function dismissAllSceneTitleSuggestions() {
+    sceneTitleSuggestions = new Map();
+  }
+
+  async function applyRenameSceneReferences() {
+    if (!selectedProjectId || !renameSceneMatches.length) {
+      closeRenameSceneDialog();
+      return;
+    }
+    renameSceneBusy = true;
+    renameSceneError = "";
+    const response = await sendCommand("SceneFlow.PlayScene.Rename", {
+      projectId: selectedProjectId,
+      sceneName: renameSceneOldName,
+      newName: renameSceneNewName,
+      superNodeId: sceneFlow?.superNodeId || ""
+    });
+    renameSceneBusy = false;
+    if (!response || response.status !== "ok") {
+      renameSceneError = response?.error || "Failed to update PlayScene commands.";
+      return;
+    }
+    if (response.snapshot) {
+      sceneFlow = response.snapshot;
+      sceneFlowDirty = true;
+    }
+    closeRenameSceneDialog();
+  }
+
+  async function handleSceneListChange(removed, added, removedTextMap) {
+    if (!selectedProjectId) return;
+    if (renameSceneDialogOpen || danglingSceneDialogOpen) return;
+    if (removed.length === 1 && added.length === 1) {
+      const matches = await fetchPlaySceneReferences(removed[0]);
+      if (matches.length) {
+        openRenameSceneDialog(removed[0], added[0], matches);
+      }
+      return;
+    }
+    if (!removed.length) return;
+    const matches = await fetchPlaySceneReferencesMany(removed);
+    if (!matches.length) return;
+    openDanglingSceneDialog(removed, matches, removedTextMap);
   }
 
   function sceneLanguageOptionList(languages) {
@@ -8391,6 +9450,10 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
       closeMissingAgentDialog();
       return true;
     }
+    if (missingVarDialogOpen) {
+      closeMissingVarDialog();
+      return true;
+    }
     if (recentFailureOpen) {
       closeRecentFailureDialog();
       return true;
@@ -8627,7 +9690,7 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
         <header class="panel-title">
           <h2>Recent Projects</h2>
         </header>
-        <div class="project-list">
+        <div class="project-list project-list--recent">
           {#if recentLoading}
             <p class="muted">Loading recent projects...</p>
           {:else if recentError}
@@ -8637,8 +9700,31 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
           {:else}
             {#each recent as project}
               <button type="button" on:click={() => openRecentProject(project)}>
-                <span>{project.name}</span>
-                <span class="meta">{project.date || ""}</span>
+                <div class="project-list-info">
+                  <div class="project-list-header">
+                    <div class="project-list-name">{project.name}</div>
+                    {#if project.date}
+                      <div class="meta project-list-date">{project.date}</div>
+                    {/if}
+                  </div>
+                  {#if project.stats}
+                    <div class="meta project-list-meta">
+                      Supernodes: {project.stats.superNodes ?? 0} · Nodes: {project.stats.nodes ?? 0} · Commands: {project.stats.commands ?? 0}
+                    </div>
+                    <div class="meta project-list-meta">
+                      Plugins:
+                      {#if hasRecentPlugins(project)}
+                        {#each project.stats.plugins as plugin, idx}
+                          <span class:project-list-plugin-missing={!plugin.present}>
+                            {plugin.name || plugin.className || "Unknown"}{idx < project.stats.plugins.length - 1 ? ", " : ""}
+                          </span>
+                        {/each}
+                      {:else}
+                        —
+                      {/if}
+                    </div>
+                  {/if}
+                </div>
               </button>
             {/each}
           {/if}
@@ -8677,6 +9763,11 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
               >
                 {autoSaveStatus}
               </span>
+            {/if}
+            {#if embeddingsStarting}
+              <span class="autosave-status saving" aria-live="polite">Embeddings starting…</span>
+            {:else if embeddingsAvailable}
+              <span class="autosave-status" aria-live="polite">Embeddings ready</span>
             {/if}
             {#if headerDirty}
               <span class="unsaved-indicator" aria-live="polite">Unsaved</span>
@@ -9333,11 +10424,46 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
                                   />
                                 </svg>
                               </span>
-                              <span
-                                class="scene-name"
-                                title={group?.params?.length ? `${group.name} (${group.params.join(", ")})` : group.name}
-                                use:fitMiddleEllipsis={{ text: group?.params?.length ? `${group.name} (${group.params.join(", ")})` : group.name }}
-                              ></span>
+                              <div class="scene-title-block">
+                                <span
+                                  class="scene-name"
+                                  title={group?.params?.length ? `${group.name} (${group.params.join(", ")})` : group.name}
+                                  use:fitMiddleEllipsis={{ text: group?.params?.length ? `${group.name} (${group.params.join(", ")})` : group.name }}
+                                ></span>
+                                {#if sceneTitleSuggestions.size > 0}
+                                  {@const suggestion = sceneTitleSuggestions.get(sceneGroupKey(lang.language, group.name))}
+                                  {#if suggestion && suggestion.suggestions && suggestion.suggestions.length}
+                                    <div class="scene-title-suggestion-wrap">
+                                      <div class="scene-title-suggestion-list">
+                                        {#each suggestion.suggestions.slice(0, 3) as option, idx}
+                                          <button
+                                            type="button"
+                                            class="ghost scene-title-suggestion-line"
+                                            aria-label={`Accept suggested title ${option.name}`}
+                                            on:click={() =>
+                                              applySceneTitleSuggestion(sceneGroupKey(lang.language, group.name), option.name)
+                                            }
+                                          >
+                                            <span class="scene-title-suggestion-rank">{idx + 1}.</span>
+                                            <span class="scene-title-suggestion-text">{option.name}</span>
+                                            {#if idx === 0}
+                                              <span class="scene-title-suggestion-badge">top</span>
+                                            {/if}
+                                          </button>
+                                        {/each}
+                                      </div>
+                                      <button
+                                        type="button"
+                                        class="ghost icon-button scene-title-suggestion-dismiss"
+                                        aria-label="Dismiss suggested titles"
+                                        on:click={() => dismissSceneTitleSuggestion(sceneGroupKey(lang.language, group.name))}
+                                      >
+                                        ×
+                                      </button>
+                                    </div>
+                                  {/if}
+                                {/if}
+                              </div>
                             </div>
                             <span class="scene-count">{group.count}</span>
                           </div>
@@ -10323,17 +11449,44 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
       {#if selectedProject}
         <div class="scenescript">
           <div class="script-toolbar">
-            <button type="button" class="ghost" on:click={() => loadScript(selectedProjectId)} disabled={!selectedProject}>
-              Reload
+            <button
+              type="button"
+              class="panel-save script-search"
+              on:click={toggleScriptSearchPanel}
+              disabled={!selectedProject}
+            >
+              <IconSearch className="icon" />
+              Search
             </button>
             <button
               type="button"
-              class="ghost"
-              on:click={() => scriptEditorRef?.openSearch()}
-              disabled={!selectedProject}
+              class="panel-save script-generate"
+              on:click={toggleGeneratePanel}
+              disabled={!selectedProject || projectConfigLLMs.length === 0}
+              title={projectConfigLLMs.length === 0 ? "Configure an LLM service in Project Settings first" : "Generate scene text using LLM"}
             >
-              Search
+              <IconDocument className="icon" />
+              Generate Scenes
             </button>
+            <button
+              type="button"
+              class="panel-save script-generate"
+              on:click={generateSceneTitleSuggestions}
+              disabled={!selectedProject || sceneTitleSuggestBusy}
+              title="Suggest scene titles based on scene content"
+            >
+              <IconDocument className="icon" />
+              Title Generator
+            </button>
+            {#if sceneTitleSuggestions.size > 0}
+              <button type="button" class="ghost" on:click={applyAllSceneTitleSuggestions}>
+                Accept all
+              </button>
+              <button type="button" class="ghost" on:click={dismissAllSceneTitleSuggestions}>
+                Dismiss all
+              </button>
+            {/if}
+            <div class="script-toolbar-spacer"></div>
             <button
               type="button"
               class="ghost"
@@ -10350,28 +11503,42 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
             >
               Next issue
             </button>
-            <button
-              type="button"
-              class="panel-save script-generate"
-              on:click={openGeneratePanel}
-              disabled={!selectedProject || projectConfigLLMs.length === 0}
-              title={projectConfigLLMs.length === 0 ? "Configure an LLM service in Project Settings first" : "Generate scene text using LLM"}
-            >
-              <IconDocument className="icon" />
-              Generate Scenes
-            </button>
             {#if scriptVersion !== null}
               <span class="muted">v{scriptVersion}</span>
             {/if}
-            {#if scriptDirty}
-              <span class="muted">Unsaved edits</span>
-            {/if}
+          {#if scriptDirty}
+            <span class="muted">Unsaved edits</span>
+          {/if}
+        </div>
+        {#if scriptSearchOpen}
+          <div class="script-search-panel">
+            <label for="script-search-input">Search</label>
+            <input
+              id="script-search-input"
+              bind:this={scriptSearchInputEl}
+              value={scriptSearchQuery}
+              on:input={(event) => updateScriptSearchQuery(event.target.value)}
+              on:keydown={(event) => {
+                if (event.key === "Enter") {
+                  runScriptSearchNext();
+                }
+              }}
+              placeholder="Find..."
+            />
+            <div class="script-search-actions">
+              <button type="button" class="ghost" on:click={runScriptSearchPrevious} disabled={!scriptSearchQuery}>
+                Prev
+              </button>
+              <button type="button" class="ghost" on:click={runScriptSearchNext} disabled={!scriptSearchQuery}>
+                Next
+              </button>
+            </div>
           </div>
-          {#if generatePanelOpen}
-            <div class="generate-panel">
+        {/if}
+        {#if generatePanelOpen}
+          <div class="generate-panel">
               <div class="generate-panel-header">
                 <strong>Generate Scene</strong>
-                <button type="button" class="ghost" on:click={closeGeneratePanel}>Close</button>
               </div>
               <div class="generate-panel-body">
                 <div class="generate-row">
@@ -10434,7 +11601,7 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
                             on:click={() => generateActionPrompt = prompt}
                             title={prompt}
                           >
-                            {prompt.length > 50 ? prompt.substring(0, 50) + "..." : prompt}
+                            {prompt}
                           </button>
                           <button
                             type="button"
@@ -10747,6 +11914,202 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
     </div>
   {/if}
 
+  {#if missingVarDialogOpen}
+    <div
+      class="modal-backdrop"
+      on:click|self={closeMissingVarDialog}
+      role="presentation"
+    >
+      <div class="modal missing-var-modal" bind:this={missingVarDialogEl} role="dialog" aria-modal="true" aria-labelledby="missing-var-title" tabindex="-1">
+        <h3 id="missing-var-title">Undefined Variables</h3>
+        <div class="modal-body">
+          <p>
+            The project uses variables that are not defined in the SceneFlow. Fix these before running the project.
+          </p>
+          {#if missingVarItems.length}
+            <div class="missing-var-list">
+              {#each missingVarItems as item}
+                <div class="missing-var-row">
+                  <div class="missing-var-name">{item.name || "Unknown variable"}</div>
+                  {#if item.context}
+                    <div class="missing-var-context">{item.context}</div>
+                  {/if}
+                </div>
+              {/each}
+            </div>
+          {/if}
+        </div>
+        <div class="row row-end">
+          <button type="button" class="ghost" on:click={closeMissingVarDialog}>
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  {/if}
+
+  {#if renameSceneDialogOpen}
+    <div
+      class="modal-backdrop"
+      on:click|self={closeRenameSceneDialog}
+      role="presentation"
+    >
+      <div class="modal rename-scene-modal" bind:this={renameSceneDialogEl} role="dialog" aria-modal="true" aria-labelledby="rename-scene-title" tabindex="-1">
+        <h3 id="rename-scene-title">Rename PlayScene references?</h3>
+        <div class="modal-body">
+          <p>
+            Scene "{renameSceneOldName}" was renamed to "{renameSceneNewName}". Found {renameSceneMatches.length} PlayScene
+            command{renameSceneMatches.length === 1 ? "" : "s"} that still reference the old name.
+          </p>
+          {#if renameSceneMatches.length}
+            <div class="rename-scene-list">
+              {#each renameSceneMatches as match}
+                <div class="rename-scene-row">
+                  <div class="rename-scene-node">
+                    {match.scope === "supernode" ? "SuperNode" : match.scope === "edge" ? "Edge" : "Node"}
+                    {match.superNodeName ? ` · ${match.superNodeName}` : ""}
+                    {match.nodeName ? ` · ${match.nodeName}` : ""}
+                    {match.edgeType ? ` · ${match.edgeType}` : ""}
+                  </div>
+                  <div class="rename-scene-text">{match.commandText || match.text}</div>
+                </div>
+              {/each}
+            </div>
+          {/if}
+          {#if renameSceneError}
+            <p class="error">{renameSceneError}</p>
+          {/if}
+        </div>
+        <div class="row row-end">
+          <button type="button" class="ghost" on:click={closeRenameSceneDialog} disabled={renameSceneBusy}>
+            Ignore
+          </button>
+          <button
+            type="button"
+            class="primary"
+            on:click={applyRenameSceneReferences}
+            disabled={renameSceneBusy || !renameSceneMatches.length}
+          >
+            {renameSceneBusy ? "Updating..." : "Update Commands"}
+          </button>
+        </div>
+      </div>
+    </div>
+  {/if}
+
+  {#if danglingSceneDialogOpen}
+    <div
+      class="modal-backdrop"
+      on:click|self={closeDanglingSceneDialog}
+      role="presentation"
+    >
+      <div class="modal rename-scene-modal" bind:this={danglingSceneDialogEl} role="dialog" aria-modal="true" aria-labelledby="dangling-scene-title" tabindex="-1">
+        <h3 id="dangling-scene-title">Dangling PlayScene references</h3>
+        <div class="modal-body">
+          <p>
+            The following scene names were removed from the script but are still referenced by PlayScene commands.
+          </p>
+          {#if embeddingsStarting}
+            <p class="muted">Starting semantic suggestions service...</p>
+          {/if}
+          {#if embeddingsAvailable === false && !embeddingsStarting}
+            <p class="muted">Semantic suggestions unavailable (service offline).</p>
+          {:else if embeddingsAvailable && !embeddingsReady}
+            <p class="muted">
+              Semantic model not ready{embeddingsHealthError ? `: ${embeddingsHealthError}` : "."}
+            </p>
+          {/if}
+          {#if danglingSceneRemoved.length}
+            <div class="rename-scene-tags">
+              {#each danglingSceneRemoved as name}
+                <span class="rename-scene-tag">{name}</span>
+              {/each}
+            </div>
+          {/if}
+          {#if danglingSceneReplacements.length}
+            <div class="rename-scene-replacements">
+              {#each danglingSceneReplacements as entry, index}
+                <div class="rename-scene-replace-row">
+                  <div class="rename-scene-replace-label">
+                    {entry.name}
+                    {#if entry.semantic}
+                      <span
+                        class="rename-scene-badge"
+                        title={entry.semanticScore !== undefined && entry.semanticScore !== null
+                          ? `score ${entry.semanticScore.toFixed?.(3) ?? entry.semanticScore}`
+                          : entry.semanticModel
+                        }
+                      >
+                        semantic
+                      </span>
+                    {/if}
+                  </div>
+                  <div class="rename-scene-replace-controls">
+                    {#if entry.semanticOptions && entry.semanticOptions.length}
+                      <div class="rename-scene-suggestions">
+                        {#each entry.semanticOptions as option, idx}
+                          <button
+                            type="button"
+                            class="ghost rename-scene-suggestion"
+                            aria-label={`Use ${option.name}`}
+                            on:click={() => updateDanglingReplacement(index, option.name)}
+                          >
+                            <span class="rename-scene-suggest-rank">{idx + 1}.</span>
+                            <span class="rename-scene-suggest-name">{option.name}</span>
+                          </button>
+                        {/each}
+                      </div>
+                    {/if}
+                    <select
+                      value={entry.selected}
+                      on:change={(event) => updateDanglingReplacement(index, event.target.value)}
+                    >
+                      {#each entry.options as option}
+                        <option value={option}>{option}</option>
+                      {/each}
+                    </select>
+                  </div>
+                </div>
+              {/each}
+            </div>
+          {/if}
+          {#if danglingSceneMatches.length}
+            <div class="rename-scene-list">
+              {#each danglingSceneMatches as match}
+                <div class="rename-scene-row">
+                  <div class="rename-scene-node">
+                    {match.scope === "supernode" ? "SuperNode" : match.scope === "edge" ? "Edge" : "Node"}
+                    {match.sceneName ? ` · ${match.sceneName}` : ""}
+                    {match.superNodeName ? ` · ${match.superNodeName}` : ""}
+                    {match.nodeName ? ` · ${match.nodeName}` : ""}
+                    {match.edgeType ? ` · ${match.edgeType}` : ""}
+                  </div>
+                  <div class="rename-scene-text">{match.commandText || match.text}</div>
+                </div>
+              {/each}
+            </div>
+          {/if}
+          {#if danglingSceneError}
+            <p class="error">{danglingSceneError}</p>
+          {/if}
+        </div>
+        <div class="row row-end">
+          <button type="button" class="ghost" on:click={closeDanglingSceneDialog} disabled={danglingSceneBusy}>
+            Ignore
+          </button>
+          <button
+            type="button"
+            class="primary"
+            on:click={applyDanglingReplacements}
+            disabled={danglingSceneBusy || !danglingSceneCanApply}
+          >
+            {danglingSceneBusy ? "Updating..." : "Replace References"}
+          </button>
+        </div>
+      </div>
+    </div>
+  {/if}
+
   {#if projectConfigDialogOpen}
     <div class="modal-backdrop project-config-backdrop" role="presentation">
       <div class="modal project-config-modal" bind:this={projectConfigDialogEl} role="dialog" aria-modal="true" aria-labelledby="project-config-title" tabindex="-1">
@@ -10787,10 +12150,25 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
                 </div>
               </div>
             </div>
+            <div class="project-config-panel project-config-panel--overview project-config-panel--concepts">
+              <div class="project-config-overview-grid">
+                <div class="project-config-overview-label">Scene Title Concepts</div>
+                <div class="project-config-overview-field">
+                  <textarea
+                    class="project-config-concepts-textarea"
+                    rows="4"
+                    placeholder={"One concept per line\nEnglish, 1-3 words (CamelBack IDs)"}
+                    value={(projectConfigView.sceneTitleConcepts || []).join("\n")}
+                    on:input={(event) => updateSceneTitleConcepts(event.target.value)}
+                  ></textarea>
+                  <span class="muted project-config-concepts-help">Used by Scene Title Generator as the semantic candidate list.</span>
+                </div>
+              </div>
+            </div>
           </div>
           <div class="project-config-llm-panel">
             <div class="project-config-llm-header">
-              <h4>LLM Services</h4>
+              <h4>LLM Services ({projectConfigLLMs.length})</h4>
               <div class="project-config-llm-add">
                 <input
                   placeholder="Name"
@@ -10803,7 +12181,10 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
             {#if projectConfigLLMs.length === 0}
               <p class="muted project-config-llm-empty">No LLM services configured.</p>
             {:else}
-              <div class="project-config-llm-list">
+              <div
+                class="project-config-llm-list"
+                class:project-config-llm-list--scroll={projectConfigLLMs.length > 2}
+              >
                 {#each projectConfigLLMs as llm, index}
                   <div class="project-config-llm-entry" class:expanded={llmExpandedIndex === index}>
                     <button
@@ -10825,27 +12206,31 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
                     {#if llmExpandedIndex === index}
                       <div class="project-config-llm-detail">
                         <div class="project-config-llm-grid">
-                          <label>Name</label>
+                          <label for={`llm-name-${index}`}>Name</label>
                           <input
+                            id={`llm-name-${index}`}
                             value={llm.name}
                             on:input={(e) => updateLLMName(index, e.target.value)}
                           />
-                          <label>Base URL</label>
+                          <label for={`llm-base-url-${index}`}>Base URL</label>
                           <input
+                            id={`llm-base-url-${index}`}
                             value={getLLMFeature(llm, "baseUrl")}
                             placeholder="http://localhost:8234/v1/"
                             on:input={(e) => setLLMFeature(index, "baseUrl", e.target.value)}
                           />
-                          <label>API Key</label>
+                          <label for={`llm-api-key-${index}`}>API Key</label>
                           <input
+                            id={`llm-api-key-${index}`}
                             type="password"
                             value={getLLMFeature(llm, "apiKey")}
                             placeholder="Optional"
                             on:input={(e) => setLLMFeature(index, "apiKey", e.target.value)}
                           />
-                          <label>Model</label>
+                          <label for={`llm-model-${index}`}>Model</label>
                           <div class="project-config-llm-model-row">
                             <select
+                              id={`llm-model-${index}`}
                               value={getLLMFeature(llm, "model")}
                               on:change={(e) => setLLMFeature(index, "model", e.target.value)}
                             >
@@ -10868,15 +12253,17 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
                               title="Fetch available models"
                             >{llmModelsLoading[index] ? "..." : "↻"}</button>
                           </div>
-                          <label>Temperature</label>
+                          <label for={`llm-temperature-${index}`}>Temperature</label>
                           <input
+                            id={`llm-temperature-${index}`}
                             type="number"
                             min="0" max="2" step="0.1"
                             value={getLLMFeature(llm, "temperature", "0.7")}
                             on:change={(e) => setLLMFeature(index, "temperature", e.target.value)}
                           />
-                          <label>Timeout (s)</label>
+                          <label for={`llm-timeout-${index}`}>Timeout (s)</label>
                           <input
+                            id={`llm-timeout-${index}`}
                             type="number"
                             step="1"
                             value={getLLMFeature(llm, "timeout", "30")}
@@ -11021,10 +12408,25 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
                   </div>
                 </div>
               {:else if projectConfigSelection.type === "plugin" && selectedProjectPlugin}
-                <div class="project-config-panel project-config-panel--scroll">
+                <div class="project-config-panel project-config-panel--scroll project-config-panel--device">
                   <div class="project-config-panel-header">
-                    <div>
-                      <h4>Device</h4>
+                    <div class="project-config-panel-title">
+                      <div class="project-config-panel-title-row">
+                        <h4>Device - {selectedProjectPlugin.name || "Unnamed"}</h4>
+                        <span class="project-config-title-separator">(load at project startup</span>
+                        <label class="project-config-module-toggle project-config-title-toggle">
+                          <input
+                            type="checkbox"
+                            checked={selectedProjectPlugin.load}
+                            on:change={(event) =>
+                              updatePluginField(projectConfigSelection.pluginIndex, "load", event.target.checked)
+                            }
+                          />
+                        </label>)
+                      </div>
+                      <div class="project-config-panel-subtitle">
+                        {selectedProjectPlugin.className || "Unknown"}
+                      </div>
                     </div>
                     <button
                       type="button"
@@ -11037,147 +12439,224 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
                     </button>
                   </div>
                   <div class="project-config-panel-body">
-                    <div class="project-config-info-grid">
-                      <div class="project-config-info-row">
-                        <label for="plugin-name" class="project-config-info-label">Name</label>
-                        <input
-                          id="plugin-name"
-                          value={selectedProjectPlugin.name}
-                          on:input={(event) => updatePluginName(projectConfigSelection.pluginIndex, event.target.value)}
-                        />
-                        <span class="project-config-info-label">Load plugin</span>
+                    <div class="project-config-keylist-panel">
+                      <div class="project-config-section-header">
+                      <div class="project-config-keylist-title">Configuration ({(selectedProjectPlugin?.features ?? []).length})</div>
+                        <button
+                          type="button"
+                          class="ghost icon-button project-config-section-toggle"
+                          aria-label={deviceConfigExpanded ? "Collapse configuration" : "Expand configuration"}
+                          on:click={() => (deviceConfigExpanded = !deviceConfigExpanded)}
+                        >{deviceConfigExpanded ? "−" : "+"}</button>
                       </div>
-                      <div class="project-config-info-row">
-                        <label class="project-config-info-label">Module</label>
-                        <div class="project-config-module">
-                          <span class="project-config-info-value">{selectedProjectPlugin.className || "Unknown"}</span>
-                          <label class="project-config-module-toggle">
-                            <input
-                              type="checkbox"
-                              checked={selectedProjectPlugin.load}
-                              on:change={(event) =>
-                                updatePluginField(projectConfigSelection.pluginIndex, "load", event.target.checked)
-                              }
-                            />
-                          </label>
-                        </div>
-                      </div>
-                    </div>
-                  <div class="project-config-table">
-                    <div class="project-config-table-header">
-                      <span>Key</span>
-                      <span>Value</span>
-                      <span></span>
-                    </div>
-                    <div class="project-config-table-body">
-                      {#if selectedProjectPlugin.features.length === 0}
-                        <div class="project-config-table-empty">No entries yet.</div>
-                      {:else}
-                        {#each selectedProjectPlugin.features as feature, featureIndex}
-                          <div class="project-config-table-row">
-                            <input
-                              list="plugin-key-hints"
-                              value={feature.key}
-                              placeholder="key"
-                              on:input={(event) =>
-                                updatePluginFeature(
-                                  projectConfigSelection.pluginIndex,
-                                  featureIndex,
-                                  "key",
-                                  event.target.value
-                                )
-                              }
-                            />
-                            <input
-                              value={feature.value}
-                              placeholder="value"
-                              on:input={(event) =>
-                                updatePluginFeature(
-                                  projectConfigSelection.pluginIndex,
-                                  featureIndex,
-                                  "value",
-                                  event.target.value
-                                )
-                              }
-                            />
+                      {#if deviceConfigExpanded}
+                        <div class="project-config-table project-config-keylist-group">
+                          <div class="project-config-table-body">
+                            {#if (selectedProjectPlugin?.features ?? []).length === 0}
+                              <div class="project-config-table-empty">No entries yet.</div>
+                            {:else}
+                              {#each (selectedProjectPlugin?.features ?? []) as feature, featureIndex}
+                                {@const readonly = isKeyReadonly(pluginKeyOptions, feature.key)}
+                                <div class="project-config-table-row">
+                                  <input
+                                    list="plugin-key-hints"
+                                    value={feature.key}
+                                    placeholder="key"
+                                    disabled={readonly}
+                                    on:input={(event) =>
+                                      updatePluginFeature(
+                                        projectConfigSelection.pluginIndex,
+                                        featureIndex,
+                                        "key",
+                                        event.target.value
+                                      )
+                                    }
+                                  />
+                                  <input
+                                    value={feature.value}
+                                    placeholder="value"
+                                    disabled={readonly}
+                                    on:input={(event) =>
+                                      updatePluginFeature(
+                                        projectConfigSelection.pluginIndex,
+                                        featureIndex,
+                                        "value",
+                                        event.target.value
+                                      )
+                                    }
+                                  />
+                                  {#if readonly}
+                                    <span class="icon-button-placeholder"></span>
+                                  {:else}
+                                    <button
+                                      type="button"
+                                      class="ghost icon-button danger"
+                                      on:click={() => removePluginFeature(projectConfigSelection.pluginIndex, featureIndex)}
+                                    >
+                                      <IconTrash className="icon" />
+                                    </button>
+                                  {/if}
+                                </div>
+                              {/each}
+                            {/if}
+                          </div>
+                          <div class="project-config-table-add">
+                            <input list="plugin-key-hints" placeholder="key" value={projectConfigNewFeature.key} on:input={handleNewFeatureKeyInput} />
+                            <input placeholder="value" bind:value={projectConfigNewFeature.value} />
                             <button
                               type="button"
-                              class="ghost icon-button danger"
-                              on:click={() => removePluginFeature(projectConfigSelection.pluginIndex, featureIndex)}
+                              class="primary icon-button"
+                              on:click={addFeatureToSelection}
+                              aria-label="Add key value"
+                              title="Add key value"
                             >
-                              <IconTrash className="icon" />
+                              <IconPlus className="icon" />
                             </button>
                           </div>
-                        {/each}
-                      {/if}
-                    </div>
-                    <div class="project-config-table-add">
-                      <input list="plugin-key-hints" placeholder="key" bind:value={projectConfigNewFeature.key} />
-                      <input placeholder="value" bind:value={projectConfigNewFeature.value} />
-                      <button
-                        type="button"
-                        class="primary icon-button"
-                        on:click={addFeatureToSelection}
-                        aria-label="Add key value"
-                        title="Add key value"
-                      >
-                        <IconPlus className="icon" />
-                      </button>
-                    </div>
-                    <datalist id="plugin-key-hints">
-                      {#each pluginKeyOptions as option}
-                        <option value={option.name} label={keyHintLabel(option)}>{option.name}</option>
-                      {/each}
-                    </datalist>
-                  </div>
-                    {#if selectedProjectPluginKeysLoading}
-                      <p class="muted">Loading key hints...</p>
-                    {:else if selectedProjectPluginKeysError}
-                      <p class="error">{selectedProjectPluginKeysError}</p>
-                    {:else if selectedProjectPluginKeys}
-                      {#if selectedProjectPluginKeys.supported === false}
-                        <p class="muted">No key hints provided by this extension.</p>
-                      {:else}
-                        <div class="project-config-keylist">
-                          <div class="project-config-keylist-title">Key hints</div>
-                          <div class="project-config-keygrid">
-                            <div>
-                              <div class="project-config-key-title">Required</div>
-                              {#if selectedProjectPluginKeys.required?.length}
-                                <div class="project-config-key-list">
-                                  {#each selectedProjectPluginKeys.required as entry}
-                                    <div class="project-config-key-item">
-                                      <span>{entry.name}</span>
-                                      {#if entry.description}
-                                        <span class="project-config-key-desc">{entry.description}</span>
-                                      {/if}
-                                    </div>
-                                  {/each}
-                                </div>
-                              {:else}
-                                <div class="muted">None</div>
-                              {/if}
-                            </div>
-                            <div>
-                              <div class="project-config-key-title">Optional</div>
-                              {#if selectedProjectPluginKeys.optional?.length}
-                                <div class="project-config-key-list">
-                                  {#each selectedProjectPluginKeys.optional as entry}
-                                    <div class="project-config-key-item">
-                                      <span>{entry.name}</span>
-                                      {#if entry.description}
-                                        <span class="project-config-key-desc">{entry.description}</span>
-                                      {/if}
-                                    </div>
-                                  {/each}
-                                </div>
-                              {:else}
-                                <div class="muted">None</div>
-                              {/if}
-                            </div>
-                          </div>
+                          <datalist id="plugin-key-hints">
+                            {#each pluginKeyOptions as option}
+                              <option value={option.name} label={keyHintLabel(option)}>{option.name}</option>
+                            {/each}
+                          </datalist>
                         </div>
+                        {#if selectedProjectPluginKeysLoading}
+                          <p class="muted">Loading key hints...</p>
+                        {:else if selectedProjectPluginKeysError}
+                          <p class="error">{selectedProjectPluginKeysError}</p>
+                        {:else if selectedProjectPluginKeys}
+                          {#if selectedProjectPluginKeys.supported === false}
+                            <p class="muted">No key hints provided by this extension.</p>
+                          {:else}
+                            <div class="project-config-keylist">
+                              <div class="project-config-keygrid">
+                                <div>
+                                  <div class="project-config-key-title">Required</div>
+                                  {#if selectedProjectPluginKeys.required?.length}
+                                    <div class="project-config-key-list">
+                                      {#each selectedProjectPluginKeys.required as entry}
+                                        <div class="project-config-key-item">
+                                          <span>
+                                            {entry.name}
+                                            {#if entry.description}
+                                              <span class="project-config-key-inline-desc">({entry.description})</span>
+                                            {/if}
+                                          </span>
+                                        </div>
+                                      {/each}
+                                    </div>
+                                  {:else}
+                                    <div class="muted">None</div>
+                                  {/if}
+                                </div>
+                                <div>
+                                  <div class="project-config-key-title">Optional</div>
+                                  {#if selectedProjectPluginKeys.optional?.length}
+                                    <div class="project-config-key-list">
+                                      {#each selectedProjectPluginKeys.optional as entry}
+                                        <div class="project-config-key-item">
+                                          <span>
+                                            {entry.name}
+                                            {#if entry.description}
+                                              <span class="project-config-key-inline-desc">({entry.description})</span>
+                                            {/if}
+                                          </span>
+                                        </div>
+                                      {/each}
+                                    </div>
+                                  {:else}
+                                    <div class="muted">None</div>
+                                  {/if}
+                                </div>
+                              </div>
+                            </div>
+                          {/if}
+                        {/if}
                       {/if}
+                    </div>
+                    {#if selectedProjectPluginKeys?.pluginSpecific?.length}
+                      <div class="project-config-keylist project-config-behavior-section">
+                        <div class="project-config-section-header">
+                          <div class="project-config-keylist-title">Behavior</div>
+                          <button
+                            type="button"
+                            class="ghost icon-button project-config-section-toggle"
+                            aria-label={deviceBehaviorExpanded ? "Collapse plugin behavior" : "Expand plugin behavior"}
+                            on:click={() => (deviceBehaviorExpanded = !deviceBehaviorExpanded)}
+                          >{deviceBehaviorExpanded ? "−" : "+"}</button>
+                        </div>
+                        {#if deviceBehaviorExpanded}
+                          <div class="project-config-behavior-list">
+                            {#each selectedProjectPluginKeys.pluginSpecific as entry}
+                              {@const currentFeature = selectedProjectPlugin.features.find(f => f.key === entry.name)}
+                              {@const currentValue = currentFeature?.value ?? String(entry.default ?? "")}
+                              <div class="project-config-behavior-item">
+                                {#if entry.type === "boolean"}
+                                  <label class="project-config-behavior-checkbox">
+                                    <input
+                                      type="checkbox"
+                                      checked={currentValue === "true"}
+                                      on:change={(event) => {
+                                        const newValue = event.target.checked ? "true" : "false";
+                                        const featureIndex = selectedProjectPlugin.features.findIndex(f => f.key === entry.name);
+                                        if (featureIndex >= 0) {
+                                          updatePluginFeature(projectConfigSelection.pluginIndex, featureIndex, "value", newValue);
+                                        } else {
+                                          // Feature doesn't exist yet, add it
+                                          const plugins = [...projectConfigPlugins];
+                                          const plugin = plugins[projectConfigSelection.pluginIndex];
+                                          if (plugin) {
+                                            plugins[projectConfigSelection.pluginIndex] = {
+                                              ...plugin,
+                                              features: [...plugin.features, { key: entry.name, value: newValue }]
+                                            };
+                                            projectConfigDraft = { ...projectConfigDraft, plugins };
+                                            scheduleProjectConfigApply();
+                                          }
+                                        }
+                                      }}
+                                    />
+                                    <span>
+                                      {entry.name}
+                                      {#if entry.description}
+                                        <span class="project-config-key-inline-desc">({entry.description})</span>
+                                      {/if}
+                                    </span>
+                                  </label>
+                                {:else}
+                                  <span class="project-config-behavior-label">
+                                    {entry.name}
+                                    {#if entry.description}
+                                      <span class="project-config-key-inline-desc">({entry.description})</span>
+                                    {/if}
+                                  </span>
+                                  <input
+                                    value={currentValue}
+                                    on:input={(event) => {
+                                      const newValue = event.target.value;
+                                      const featureIndex = selectedProjectPlugin.features.findIndex(f => f.key === entry.name);
+                                      if (featureIndex >= 0) {
+                                        updatePluginFeature(projectConfigSelection.pluginIndex, featureIndex, "value", newValue);
+                                      } else {
+                                        // Feature doesn't exist yet, add it
+                                        const plugins = [...projectConfigPlugins];
+                                        const plugin = plugins[projectConfigSelection.pluginIndex];
+                                        if (plugin) {
+                                          plugins[projectConfigSelection.pluginIndex] = {
+                                            ...plugin,
+                                            features: [...plugin.features, { key: entry.name, value: newValue }]
+                                          };
+                                          projectConfigDraft = { ...projectConfigDraft, plugins };
+                                          scheduleProjectConfigApply();
+                                        }
+                                      }
+                                    }}
+                                  />
+                                {/if}
+                              </div>
+                            {/each}
+                          </div>
+                        {/if}
+                      </div>
                     {/if}
                     <div class="project-config-agent-add">
                       <div class="project-config-panel-header">
@@ -11199,10 +12678,15 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
                   </div>
                 </div>
               {:else if projectConfigSelection.type === "agent" && selectedProjectAgent}
-                <div class="project-config-panel project-config-panel--scroll">
+                <div class="project-config-panel project-config-panel--scroll project-config-panel--agent">
                   <div class="project-config-panel-header">
-                    <div>
-                      <h4>Agent</h4>
+                    <div class="project-config-panel-title">
+                      <div class="project-config-panel-title-row">
+                        <h4>Agent - {selectedProjectAgent.name || "Unnamed"}</h4>
+                      </div>
+                      <div class="project-config-panel-subtitle">
+                        {selectedProjectAgent.device || "Unknown"}
+                      </div>
                     </div>
                     <button
                       type="button"
@@ -11215,126 +12699,123 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
                     </button>
                   </div>
                   <div class="project-config-panel-body">
-                    <div class="project-config-info-grid">
-                      <div class="project-config-info-row">
-                        <label for="agent-name-edit" class="project-config-info-label">Name</label>
-                        <input
-                          id="agent-name-edit"
-                          value={selectedProjectAgent.name}
-                          on:input={(event) => updateAgentField(projectConfigSelection.agentIndex, "name", event.target.value)}
-                        />
-                      </div>
-                      <div class="project-config-info-row">
-                        <label class="project-config-info-label">Module</label>
-                        <div class="project-config-info-value">{selectedProjectAgent.device || "Unknown"}</div>
-                      </div>
-                    </div>
-                  <div class="project-config-table">
-                    <div class="project-config-table-header">
-                      <span>Key</span>
-                      <span>Value</span>
-                      <span></span>
-                    </div>
-                    <div class="project-config-table-body">
-                      {#if selectedProjectAgent.features.length === 0}
-                        <div class="project-config-table-empty">No entries yet.</div>
-                      {:else}
-                        {#each selectedProjectAgent.features as feature, featureIndex}
-                          <div class="project-config-table-row">
-                            <input
-                              list="agent-key-hints"
-                              value={feature.key}
-                              placeholder="key"
-                              on:input={(event) =>
-                                updateAgentFeature(projectConfigSelection.agentIndex, featureIndex, "key", event.target.value)
-                              }
-                            />
-                            <input
-                              value={feature.value}
-                              placeholder="value"
-                              on:input={(event) =>
-                                updateAgentFeature(projectConfigSelection.agentIndex, featureIndex, "value", event.target.value)
-                              }
-                            />
-                            <button
-                              type="button"
-                              class="ghost icon-button danger"
-                              on:click={() => removeAgentFeature(projectConfigSelection.agentIndex, featureIndex)}
-                            >
-                              <IconTrash className="icon" />
-                            </button>
-                          </div>
-                        {/each}
-                      {/if}
-                    </div>
-                    <div class="project-config-table-add">
-                      <input list="agent-key-hints" placeholder="key" bind:value={projectConfigNewFeature.key} />
-                      <input placeholder="value" bind:value={projectConfigNewFeature.value} />
+                  <div class="project-config-keylist-panel">
+                    <div class="project-config-section-header">
+                      <div class="project-config-keylist-title">Configuration ({(selectedProjectAgent?.features ?? []).length})</div>
                       <button
                         type="button"
-                        class="primary icon-button"
-                        on:click={addFeatureToSelection}
-                        aria-label="Add key value"
-                        title="Add key value"
-                      >
-                        <IconPlus className="icon" />
-                      </button>
+                        class="ghost icon-button project-config-section-toggle"
+                        aria-label={agentConfigExpanded ? "Collapse configuration" : "Expand configuration"}
+                        on:click={() => (agentConfigExpanded = !agentConfigExpanded)}
+                      >{agentConfigExpanded ? "−" : "+"}</button>
                     </div>
-                    <datalist id="agent-key-hints">
-                      {#each agentKeyOptions as option}
-                        <option value={option.name} label={keyHintLabel(option)}>{option.name}</option>
-                      {/each}
-                    </datalist>
-                  </div>
-                    {#if selectedProjectAgentKeysLoading}
-                      <p class="muted">Loading key hints...</p>
-                    {:else if selectedProjectAgentKeysError}
-                      <p class="error">{selectedProjectAgentKeysError}</p>
-                    {:else if selectedProjectAgentKeys}
-                      {#if selectedProjectAgentKeys.supported === false}
-                        <p class="muted">No key hints provided by this extension.</p>
-                      {:else}
-                        <div class="project-config-keylist">
-                          <div class="project-config-keylist-title">Key hints</div>
-                          <div class="project-config-keygrid">
-                            <div>
-                              <div class="project-config-key-title">Required</div>
-                              {#if selectedProjectAgentKeys.required?.length}
-                                <div class="project-config-key-list">
-                                  {#each selectedProjectAgentKeys.required as entry}
-                                    <div class="project-config-key-item">
-                                      <span>{entry.name}</span>
-                                      {#if entry.description}
-                                        <span class="project-config-key-desc">{entry.description}</span>
-                                      {/if}
-                                    </div>
-                                  {/each}
-                                </div>
-                              {:else}
-                                <div class="muted">None</div>
-                              {/if}
-                            </div>
-                            <div>
-                              <div class="project-config-key-title">Optional</div>
-                              {#if selectedProjectAgentKeys.optional?.length}
-                                <div class="project-config-key-list">
-                                  {#each selectedProjectAgentKeys.optional as entry}
-                                    <div class="project-config-key-item">
-                                      <span>{entry.name}</span>
-                                      {#if entry.description}
-                                        <span class="project-config-key-desc">{entry.description}</span>
-                                      {/if}
-                                    </div>
-                                  {/each}
-                                </div>
-                              {:else}
-                                <div class="muted">None</div>
-                              {/if}
+                    {#if agentConfigExpanded}
+                      <div class="project-config-table project-config-keylist-group">
+                        <div class="project-config-table-body">
+                          {#if (selectedProjectAgent?.features ?? []).length === 0}
+                            <div class="project-config-table-empty">No entries yet.</div>
+                          {:else}
+                            {#each (selectedProjectAgent?.features ?? []) as feature, featureIndex}
+                              <div class="project-config-table-row">
+                                <input
+                                  list="agent-key-hints"
+                                  value={feature.key}
+                                  placeholder="key"
+                                  on:input={(event) =>
+                                    updateAgentFeature(projectConfigSelection.agentIndex, featureIndex, "key", event.target.value)
+                                  }
+                                />
+                                <input
+                                  value={feature.value}
+                                  placeholder="value"
+                                  on:input={(event) =>
+                                    updateAgentFeature(projectConfigSelection.agentIndex, featureIndex, "value", event.target.value)
+                                  }
+                                />
+                                <button
+                                  type="button"
+                                  class="ghost icon-button danger"
+                                  on:click={() => removeAgentFeature(projectConfigSelection.agentIndex, featureIndex)}
+                                >
+                                  <IconTrash className="icon" />
+                                </button>
+                              </div>
+                            {/each}
+                          {/if}
+                        </div>
+                        <div class="project-config-table-add">
+                          <input list="agent-key-hints" placeholder="key" value={projectConfigNewFeature.key} on:input={handleNewAgentFeatureKeyInput} />
+                          <input placeholder="value" bind:value={projectConfigNewFeature.value} />
+                          <button
+                            type="button"
+                            class="primary icon-button"
+                            on:click={addFeatureToSelection}
+                            aria-label="Add key value"
+                            title="Add key value"
+                          >
+                            <IconPlus className="icon" />
+                          </button>
+                        </div>
+                        <datalist id="agent-key-hints">
+                          {#each agentKeyOptions as option}
+                            <option value={option.name} label={keyHintLabel(option)}>{option.name}</option>
+                          {/each}
+                        </datalist>
+                      </div>
+                      {#if selectedProjectAgentKeysLoading}
+                        <p class="muted">Loading key hints...</p>
+                      {:else if selectedProjectAgentKeysError}
+                        <p class="error">{selectedProjectAgentKeysError}</p>
+                      {:else if selectedProjectAgentKeys}
+                        {#if selectedProjectAgentKeys.supported === false}
+                          <p class="muted">No key hints provided by this extension.</p>
+                        {:else}
+                          <div class="project-config-keylist">
+                            <div class="project-config-keygrid">
+                              <div>
+                                <div class="project-config-key-title">Required</div>
+                                {#if selectedProjectAgentKeys.required?.length}
+                                  <div class="project-config-key-list">
+                                    {#each selectedProjectAgentKeys.required as entry}
+                                      <div class="project-config-key-item">
+                                        <span>
+                                          {entry.name}
+                                          {#if entry.description}
+                                            <span class="project-config-key-inline-desc">({entry.description})</span>
+                                          {/if}
+                                        </span>
+                                      </div>
+                                    {/each}
+                                  </div>
+                                {:else}
+                                  <div class="muted">None</div>
+                                {/if}
+                              </div>
+                              <div>
+                                <div class="project-config-key-title">Optional</div>
+                                {#if selectedProjectAgentKeys.optional?.length}
+                                  <div class="project-config-key-list">
+                                    {#each selectedProjectAgentKeys.optional as entry}
+                                      <div class="project-config-key-item">
+                                        <span>
+                                          {entry.name}
+                                          {#if entry.description}
+                                            <span class="project-config-key-inline-desc">({entry.description})</span>
+                                          {/if}
+                                        </span>
+                                      </div>
+                                    {/each}
+                                  </div>
+                                {:else}
+                                  <div class="muted">None</div>
+                                {/if}
+                              </div>
                             </div>
                           </div>
-                        </div>
+                        {/if}
                       {/if}
                     {/if}
+                  </div>
                   </div>
                 </div>
               {:else if projectConfigSelection.type === "player"}

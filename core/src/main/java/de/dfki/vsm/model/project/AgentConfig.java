@@ -80,6 +80,7 @@ public class AgentConfig extends ConfigElement {
             // Get The Attributes
             mAgentName = element.getAttribute("name");
             mDeviceName = element.getAttribute("device");
+            mFeatureList.clear();
             // Parse The Entries
             XMLParseAction.processChildNodes(element, mFeatureName, new XMLParseAction() {
                 @Override
