@@ -1,27 +1,36 @@
 {
-  "providers": {
-    "de.dfki.vsm.xtension.decad.DecadExecutor": {
-      "plugin": {
-        "required": [
-          {
-            "name": "url",
-            "type": "string",
-            "default": "http://localhost",
-            "description": "Url to connect VSM with DECAD.\n "
-          },
-          {
-            "name": "port",
-            "type": "numeric",
-            "default": 5005,
-            "description": "Port to connect VSM with DECAD.\n This field represents the port of the web server."
-          }
-        ],
-        "optional": []
+  "schemaVersion": "1.0",
+  "plugin": {
+    "id": "decad",
+    "name": "DECAD",
+    "className": "de.dfki.vsm.xtension.decad.DecadExecutor",
+    "description": "DFKI agent handler (beta)",
+    "tags": ["SIA", "agent"]
+  },
+  "categories": {
+    "primary": "output",
+    "secondary": []
+  },
+  "config": {
+    "required": [
+      {
+        "name": "url",
+        "type": "string",
+        "default": "http://localhost",
+        "description": "URL to connect VSM with DECAD"
       },
-      "agent": {
-        "required": [],
-        "optional": []
+      {
+        "name": "port",
+        "type": "numeric",
+        "default": 5005,
+        "description": "Port to connect VSM with DECAD. This field represents the port of the web server."
       }
-    }
+    ],
+    "optional": []
+  },
+  "commands": [],
+  "variables": {
+    "writes": [],
+    "reads": []
   }
 }

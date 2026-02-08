@@ -2,6 +2,7 @@ package de.dfki.vsm.model.project;
 
 import de.dfki.vsm.model.ModelObject;
 import de.dfki.vsm.model.config.ConfigElement;
+import de.dfki.vsm.model.config.ConfigFeature;
 import de.dfki.vsm.util.ios.IOSIndentWriter;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 import de.dfki.vsm.util.xml.XMLParseAction;
@@ -34,6 +35,8 @@ public final class ProjectConfig implements ModelObject {
     private final List<LLMConfig> mLLMList;
     // The LLM prompts configuration (formatPrompt, actionPrompt.0, etc.)
     private final ConfigElement mLLMPrompts;
+    // Scene title concept list for scene title generator
+    private final ConfigElement mSceneTitleConcepts;
 
     // Construct an empty project
     public ProjectConfig() {
@@ -47,6 +50,8 @@ public final class ProjectConfig implements ModelObject {
         mLLMList = new ArrayList<>();
         // Initialize The LLM Prompts
         mLLMPrompts = new ConfigElement("LLMPrompts", "Feature");
+        // Initialize Scene Title Concepts
+        mSceneTitleConcepts = new ConfigElement("SceneTitleConcepts", "Concept");
         // Initialize the player config
         mPlayerConfig = new PlayerConfig();
     }
@@ -65,7 +70,8 @@ public final class ProjectConfig implements ModelObject {
                          final List<AgentConfig> agents,
                          final List<LLMConfig> llms,
                          final PlayerConfig player) {
-        this(name, plugins, agents, llms, new ConfigElement("LLMPrompts", "Feature"), player);
+        this(name, plugins, agents, llms, new ConfigElement("LLMPrompts", "Feature"),
+                new ConfigElement("SceneTitleConcepts", "Concept"), player);
     }
 
     // Construct a project with LLM configurations and LLM prompts
@@ -74,6 +80,7 @@ public final class ProjectConfig implements ModelObject {
                          final List<AgentConfig> agents,
                          final List<LLMConfig> llms,
                          final ConfigElement llmPrompts,
+                         final ConfigElement sceneTitleConcepts,
                          final PlayerConfig player) {
         // Initialize The Project Name
         mProjectName = name;
@@ -85,8 +92,21 @@ public final class ProjectConfig implements ModelObject {
         mLLMList = llms;
         // Initialize The LLM Prompts
         mLLMPrompts = llmPrompts;
+        // Initialize Scene Title Concepts
+        mSceneTitleConcepts = sceneTitleConcepts;
         // Initialize the player config
         mPlayerConfig = player;
+    }
+
+    // Legacy signature without scene title concepts
+    public ProjectConfig(final String name,
+                         final List<PluginConfig> plugins,
+                         final List<AgentConfig> agents,
+                         final List<LLMConfig> llms,
+                         final ConfigElement llmPrompts,
+                         final PlayerConfig player) {
+        this(name, plugins, agents, llms, llmPrompts,
+                new ConfigElement("SceneTitleConcepts", "Concept"), player);
     }
 
     // Get the name of the project
@@ -160,6 +180,10 @@ public final class ProjectConfig implements ModelObject {
         return mLLMPrompts;
     }
 
+    public final ConfigElement getSceneTitleConcepts() {
+        return mSceneTitleConcepts;
+    }
+
     // Write the project configuration
     @Override
     public final void writeXML(final IOSIndentWriter stream) throws XMLWriteError {
@@ -191,6 +215,10 @@ public final class ProjectConfig implements ModelObject {
             mLLMPrompts.writeXML(stream);
             stream.endl();
         }
+        if (!mSceneTitleConcepts.getEntryList().isEmpty()) {
+            mSceneTitleConcepts.writeXML(stream);
+            stream.endl();
+        }
         // Write the player configurations
         mPlayerConfig.writeXML(stream);
         stream.pop().print("</Project>").flush();
@@ -213,6 +241,15 @@ public final class ProjectConfig implements ModelObject {
         if (tag.equals("Project")) {
             // Get The Project Name
             mProjectName = element.getAttribute("name");
+            mPluginList.clear();
+            mAgentList.clear();
+            mLLMList.clear();
+            mLLMPrompts.getEntryList().clear();
+            mSceneTitleConcepts.getEntryList().clear();
+            mPlayerConfig.getEntryList().clear();
+            final java.util.Set<String> seenPlugins = new java.util.HashSet<>();
+            final java.util.Set<String> seenAgents = new java.util.HashSet<>();
+            final java.util.Set<String> seenLLMs = new java.util.HashSet<>();
             // Parse The Individual Entries
             XMLParseAction.processChildNodes(element, new XMLParseAction() {
                 @Override
@@ -229,6 +266,10 @@ public final class ProjectConfig implements ModelObject {
                                     final PluginConfig plugin = new PluginConfig();
                                     // And Parse The Project Plugin
                                     plugin.parseXML(element);
+                                    final String name = plugin.getPluginName() == null ? "" : plugin.getPluginName().trim().toLowerCase();
+                                    if (!name.isEmpty() && !seenPlugins.add(name)) {
+                                        return;
+                                    }
                                     // And Add It To The Plugin List
                                     mPluginList.add(plugin);
                                 }
@@ -242,6 +283,10 @@ public final class ProjectConfig implements ModelObject {
                                     final AgentConfig agent = new AgentConfig();
                                     // And Parse The Project Player
                                     agent.parseXML(element);
+                                    final String name = agent.getAgentName() == null ? "" : agent.getAgentName().trim().toLowerCase();
+                                    if (!name.isEmpty() && !seenAgents.add(name)) {
+                                        return;
+                                    }
                                     // And Add It To The Player List
                                     mAgentList.add(agent);
                                 }
@@ -253,12 +298,32 @@ public final class ProjectConfig implements ModelObject {
                                 public void run(Element element) throws XMLParseError {
                                     final LLMConfig llm = new LLMConfig();
                                     llm.parseXML(element);
+                                    final String name = llm.getLLMName() == null ? "" : llm.getLLMName().trim().toLowerCase();
+                                    if (!name.isEmpty() && !seenLLMs.add(name)) {
+                                        return;
+                                    }
                                     mLLMList.add(llm);
                                 }
                             });
                             break;
                         case "LLMPrompts":
                             mLLMPrompts.parseXML(element);
+                            dedupeConfigElementByKey(mLLMPrompts);
+                            break;
+                        case "SceneTitleConcepts":
+                            mSceneTitleConcepts.parseXML(element);
+                            for (ConfigFeature feature : mSceneTitleConcepts.getEntryList()) {
+                                String key = feature.getKey() == null ? "" : feature.getKey().trim();
+                                String value = feature.getValue() == null ? "" : feature.getValue().trim();
+                                if (value.isEmpty()) {
+                                    continue;
+                                }
+                                if (key.isEmpty() || "name".equalsIgnoreCase(key)) {
+                                    feature.setKey(value);
+                                    feature.setValue(value);
+                                }
+                            }
+                            dedupeConfigElementByKey(mSceneTitleConcepts);
                             break;
                         case "Player":
                             // Parse the player configuration
@@ -309,9 +374,28 @@ public final class ProjectConfig implements ModelObject {
 
         ConfigElement llmPromptsCopy = new ConfigElement("LLMPrompts", "Feature",
                 mLLMPrompts.copyEntryList());
+        ConfigElement sceneTitleConceptsCopy = new ConfigElement("SceneTitleConcepts", "Concept",
+                mSceneTitleConcepts.copyEntryList());
 
         PlayerConfig player = getPlayerConfig().getCopy();
 
-        return new ProjectConfig(mProjectName, plugins, agents, llms, llmPromptsCopy, player);
+        return new ProjectConfig(mProjectName, plugins, agents, llms, llmPromptsCopy,
+                sceneTitleConceptsCopy, player);
+    }
+
+    private static void dedupeConfigElementByKey(final ConfigElement element) {
+        final java.util.LinkedHashMap<String, ConfigFeature> byKey = new java.util.LinkedHashMap<>();
+        for (ConfigFeature feature : element.getEntryList()) {
+            final String key = feature.getKey() == null ? "" : feature.getKey().trim().toLowerCase();
+            if (key.isEmpty()) {
+                continue;
+            }
+            if (byKey.containsKey(key)) {
+                byKey.remove(key);
+            }
+            byKey.put(key, feature);
+        }
+        element.getEntryList().clear();
+        element.getEntryList().addAll(byKey.values());
     }
 }

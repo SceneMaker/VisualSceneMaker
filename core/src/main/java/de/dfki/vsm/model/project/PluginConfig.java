@@ -120,6 +120,7 @@ public class PluginConfig extends ConfigElement {
             mClassName = element.getAttribute("class");
             
             mLoad = (element.hasAttribute("load") ? Boolean.valueOf(element.getAttribute("load")) : true);
+            mFeatureList.clear();
             
             // Parse The Entries
             XMLParseAction.processChildNodes(element, mFeatureName, new XMLParseAction() {

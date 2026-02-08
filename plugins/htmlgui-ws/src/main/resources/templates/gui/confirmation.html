@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en" class="h-100">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<title>Confirmation GUI</title>
+
+	<!-- Bootstrap core CSS -->
+	<link rel="stylesheet" href="css/bootstrap.min.css">
+	<link rel="stylesheet" href="css/custom.css">
+
+	<script type="text/javascript" src="js/helper.js"></script>
+</head>
+<body style="overflow: hidden;">
+<div id ="box">
+<main class="content_quarter">
+</main>
+<main class="content_nearlyhalf" style="overflow: scroll;">
+    <div class="row h-100" style="overflow: scroll;">
+        <div class="col align-self-center" style="overflow: scroll;">
+            <div class="d-flex flex-row small" style="overflow: scroll;">
+                <!-- content start -->
+                  <div id="chat" style="overflow: scroll;">
+                  </div>
+                <!-- content end -->
+            </div>
+        </div>
+    </div>
+</main>
+<main class="highlighted-buttons">
+	<div class="container-fluid h-100">
+		<div class="row h-100 justify-content-center">
+			<div class="btn-group col text-center">
+				<button type="button" class="btn btn-success" onclick="console.log('Yes'); parent.postMessage('yes', '*')" style="font-size:24px">&nbsp;Ja&nbsp;</button>
+			</div>
+			<div class="btn-group col text-center">
+			</div>
+			<div class="btn-group col text-center">
+				<button type="button" class="btn btn-danger" onclick="console.log('No'); parent.postMessage('no', '*')" style="font-size:24px">Nein</button>
+			</div>
+		</div>
+	</div>
+</main>
+<footer class="footer">
+    <div class="container-fluid h-100">
+        <div class="row h-100">
+            <div class="col">
+                <a class="menu-button">
+                    <span class="menu-icon" style="background-image: url('img/diary_highlight.png');"></span>
+                </a>
+            </div>
+        </div>
+    </div>
+</footer>
+
+</div>
+</body>
+</html>

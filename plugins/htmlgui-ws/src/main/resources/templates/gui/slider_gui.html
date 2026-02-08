@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en" class="h-100">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Slider GUI</title>
+
+    <!-- Bootstrap core CSS -->
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/custom.css">
+    <link rel="stylesheet" href="css/slider.css">
+
+    <script type="text/javascript" src="js/helper.js"></script>
+</head>
+<body>
+<header class="header">
+    <div class="container-fluid h-100">
+        <div class="row h-100">
+            <div class="col">
+                <a class="menu-button" id='phonebutton' onClick="parent.postMessage('phone', '*')">
+                    <span class="menu-icon" style="background-image: url('img/phone.png');"></span>
+                </a>
+            </div>
+            <div class="col">
+                <a class="menu-button" id='calendarbutton' onClick="parent.postMessage('calendar', '*')">
+                    <span class="menu-icon" style="background-image: url('img/calendar.png');"></span>
+                </a>
+            </div>
+            <div class="col">
+                <a class="menu-button" id='personsbutton' onClick="parent.postMessage('persons', '*')">
+                    <span class="menu-icon" style="background-image: url('img/persons.png');"></span>
+                </a>
+            </div>
+        </div>
+    </div>
+</header>
+
+<div class="side-nav">
+    <div class="row">
+        <div class="col">
+            <a class="menu-button" id='chatbutton' onClick="parent.postMessage('chat', '*')">
+                <span class="menu-icon" style="background-image: url('img/help.png');"></span>
+            </a>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            <a class="menu-button" id='timerbutton' onClick="parent.postMessage('stopwatch', '*')">
+                <span class="menu-icon" style="background-image: url('img/stopwatch.png');"></span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<main class="content">
+    <div class="row h-100">
+        <div class="col align-self-center">
+            <div class="d-flex justify-content-center">
+                <!-- content start -->
+                <div class="row">
+                    <div class="textbox">
+
+                        <div class="row m-1 justify-content-center small">
+                            Verchiebe den Marker auf der Skala, um zu antworten. Wie sehr trifft das folgende Wort
+                            auf deine aktuelle Stimmung zu?
+                        </div>
+
+                        <div class="row d-flex justify-content-center font-weight-bold m-2">
+                            Ungl&uuml;cklich
+                        </div>
+
+                        <div class="sliderbox">
+                            <div class="d-flex justify-content-between align-items-center small">
+                                <div class="p-2 small" style="color: white">Trifft gar nicht zu</div>
+                                <div class="p-2 small" style="color: white">Trifft voll und ganz zu</div>
+                            </div>
+                            <div class="row justify-content-center m-2">
+                                <input type="range" min="1" max="7" step="1" list="steplist">
+                            </div>
+                            <div class="row justify-content-center m-2">
+                                <datalist id="steplist">
+                                    <option value="1">1</option>
+                                    <option label="2" value="2">2</option>
+                                    <option label="3" value="2">3</option>
+                                    <option value="4">4</option>
+                                    <option label="5" value="5">5</option>
+                                    <option label="6" value="6">6</option>
+                                    <option label="7" value="7">7</option>
+                                </datalist>
+                                <div class="d-flex justify-content-between" style="width: 90%; margin-bottom: 1vh;">
+                                    <div class="small" style="color: white;">1</div>
+                                    <div class="small" style="color: white;">2</div>
+                                    <div class="small" style="color: white;">3</div>
+                                    <div class="small" style="color: white;">4</div>
+                                    <div class="small" style="color: white;">5</div>
+                                    <div class="small" style="color: white;">6</div>
+                                    <div class="small" style="color: white;">7</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row justify-content-center m-2">
+                            <button id='weiterbutton'
+                                    style="background-color: #4CAF50; /* Green */
+                                          border: none;
+                                          color: white;
+                                          padding: 2vh 4vw;
+                                          text-align: center;
+                                        "
+                                    onClick="parent.postMessage('weiter', '*')">
+                                Weiter
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <!-- content end -->
+            </div>
+        </div>
+    </div>
+</main>
+<footer class="footer">
+    <div class="container-fluid h-100">
+        <div class="row h-100">
+            <div class="col">
+                <a class="menu-button" id='personbutton' onClick="parent.postMessage('person', '*')">
+                    <span class="menu-icon" style="background-image: url('img/person.png');"></span>
+                </a>
+            </div>
+            <div class="col">
+                <a class="menu-button" id='homebutton' onClick="parent.postMessage('home', '*')">
+                    <span class="menu-icon" style="background-image: url('img/house.png');"></span>
+                </a>
+            </div>
+            <div class="col">
+                <a class="menu-button" id='diarybutton' onClick="parent.postMessage('diary', '*')">
+                    <span class="menu-icon" style="background-image: url('img/diary.png');"></span>
+                </a>
+            </div>
+        </div>
+    </div>
+</footer>
+</body>
+</html>

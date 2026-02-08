@@ -1,0 +1,58 @@
+:root {
+  --rate: 1000ms;
+}
+
+#wrapper {
+  display: flex;
+  justify-content: center;
+  height: 110vh;
+  width: 110%;
+  position: absolute;
+  z-index: 1;
+  touch-action: none;
+}
+
+#pulsingheart {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0.5;
+  touch-action: none;
+}
+
+#pulsingheart:before,
+#pulsingheart:after {
+  position: absolute;
+  content: "";
+  left: 50px;
+  top: 10px;
+  width: 50px;
+  height: 80px;
+  background: #aa0000;
+  border-radius: 50px 50px 0 0;
+  transform: rotate(-45deg);
+  transform-origin: 0 100%;
+  animation: pulsecolor var(--rate) infinite;
+}
+
+#pulsingheart:after {
+  left: 0;
+  transform: rotate(45deg);
+  transform-origin: 100% 100%;
+  animation: pulsecolor var(--rate) infinite;
+}
+
+@keyframes pulse {
+  5% {
+    transform: scale(1.05);
+  }
+  box-shadow: 0 0 0 0 rgba(255, 82, 82, 0.7);
+}
+
+@keyframes pulsecolor {
+  10% {
+    background: #dd0000;
+  }
+}
+

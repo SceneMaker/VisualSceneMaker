@@ -45,7 +45,7 @@ public class charamelWsExecutor extends ActivityExecutor {
     private String mVSMCharacterSpeakingVar = "";
 
     // PG: 18.11.2020 global Sceneflow variable for the whole turn information.
-    private final String mVSMCharacterTurnVar = "turn_utterance";
+    private String mVSMCharacterTurnVar = "turn_utterance";
     // PG: 25.05.2020 global sceneflow variable for the currently performed (animation) action
     private final String mVSMCharacterGestureVar = "avatar_animation";
     // PG: 28.07.2020 global Sceneflow variable for the whole turn information.
@@ -501,6 +501,9 @@ public class charamelWsExecutor extends ActivityExecutor {
     private void setupWS() {
         final String sceneflowVar = mConfig.getProperty("sceneflowVar");
         mVSMCharacterSpeakingVar = mConfig.getProperty("characterSpeaking");
+        mVSMCharacterTurnVar = mConfig.getProperty("sceneflowTurnUtteranceVar");
+
+        System.err.println(">>>>>>>>>>>>>mVSMCharacterTurnVar " + mVSMCharacterTurnVar);
 
         mJavaLinInstance.ws("/ws", ws -> {
             ws.onConnect(ctx -> {

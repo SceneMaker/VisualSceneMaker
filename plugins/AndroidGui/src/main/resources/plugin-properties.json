@@ -1,0 +1,42 @@
+{
+  "schemaVersion": "1.0",
+  "plugin": {
+    "id": "AndroidGui",
+    "name": "Android GUI",
+    "className": "de.dfki.vsm.xtension.AndroidGui.AndroidGuiExecutor",
+    "description": "Simple Android GUI control",
+    "tags": ["gui", "android", "mobile"]
+  },
+  "categories": {
+    "primary": "processing",
+    "secondary": []
+  },
+  "config": {
+    "required": [],
+    "optional": []
+  },
+  "commands": [
+    {
+      "name": "setval",
+      "type": "action",
+      "summary": "Set a value",
+      "params": []
+    },
+    {
+      "name": "setvar",
+      "type": "action",
+      "summary": "Set a variable",
+      "params": []
+    },
+    {
+      "name": "show",
+      "type": "action",
+      "summary": "Show an element",
+      "params": []
+    }
+  ],
+  "variables": {
+    "writes": [],
+    "reads": []
+  }
+}

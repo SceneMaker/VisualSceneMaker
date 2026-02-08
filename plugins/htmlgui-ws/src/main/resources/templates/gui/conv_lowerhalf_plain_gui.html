@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en" class="h-100">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Conversation GUI</title>
+
+    <!-- Bootstrap core CSS -->
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/custom.css">
+    <link rel="stylesheet" href="css/speech_bubbles.css">
+
+    <script type="text/javascript" src="js/helper.js"></script>
+</head>
+<body style="overflow: hidden;">
+<div id ="box">
+<header class="header">
+    <div class="container-fluid h-100">
+        <div class="row h-100">
+            <div class="col">
+                <a class="menu-button" id='phonebutton' onClick="parent.postMessage('phone', '*')">
+                    <span class="menu-icon" style="background-image: url('img/phone.png');"></span>
+                </a>
+            </div>
+            <div class="col">
+                <a class="menu-button" id='calendarbutton' onClick="parent.postMessage('calendar', '*')">
+                    <span class="menu-icon" style="background-image: url('img/calendar.png');"></span>
+                </a>
+            </div>
+            <div class="col">
+                <a class="menu-button" id='personsbutton' onClick="parent.postMessage('persons', '*')">
+                    <span class="menu-icon" style="background-image: url('img/persons.png');"></span>
+                </a>
+            </div>
+        </div>
+    </div>
+</header>
+<main class="content_quarter">
+</main>
+<main class="content_nearlyhalf" style="overflow: scroll;">
+    <div class="row h-100" style="overflow: scroll;">
+        <div class="col align-self-center" style="overflow: scroll;">
+            <div class="d-flex flex-row small" style="overflow: scroll;">
+                <!-- content start -->
+                  <div id="chat" style="overflow: scroll;">
+                  </div>
+                <!-- content end -->
+            </div>
+        </div>
+    </div>
+</main>
+<footer class="footer">
+    <div class="container-fluid h-100">
+        <div class="row h-100">
+            <div class="col">
+                <a class="menu-button" id='personbutton' onClick="parent.postMessage('person', '*')">
+                    <span class="menu-icon" style="background-image: url('img/person.png');"></span>
+                </a>
+            </div>
+            <div class="col">
+                <a class="menu-button" id='homebutton' onClick="parent.postMessage('home', '*')">
+                    <span class="menu-icon" style="background-image: url('img/house.png');"></span>
+                </a>
+            </div>
+            <div class="col">
+                <a class="menu-button" id='diarybutton' onClick="parent.postMessage('diary', '*')">
+                    <span class="menu-icon" style="background-image: url('img/diary_highlight.png');"></span>
+                </a>
+            </div>
+        </div>
+    </div>
+</footer>
+
+</div>
+</body>
+</html>

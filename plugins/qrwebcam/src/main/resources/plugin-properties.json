@@ -1,0 +1,32 @@
+{
+  "schemaVersion": "1.0",
+  "plugin": {
+    "id": "qrwebcam",
+    "name": "QR Webcam",
+    "className": "de.dfki.vsm.xtension.qrwebcam.QRWebCamExecutor",
+    "description": "QR code scanning via webcam",
+    "tags": ["webcam", "QR code", "input"]
+  },
+  "categories": {
+    "primary": "processing",
+    "secondary": []
+  },
+  "config": {
+    "required": [],
+    "optional": []
+  },
+  "commands": [
+    {
+      "name": "grab",
+      "type": "action",
+      "summary": "Grab a QR code from webcam",
+      "params": []
+    }
+  ],
+  "variables": {
+    "writes": [
+      { "var": "code", "type": "string", "scope": "global", "description": "Scanned QR code value" }
+    ],
+    "reads": []
+  }
+}

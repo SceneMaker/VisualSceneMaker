@@ -43,17 +43,42 @@ import de.dfki.vsm.model.sceneflow.glue.command.definition.datatype.MemberDefini
 import de.dfki.vsm.model.sceneflow.glue.command.definition.datatype.StructTypeDefinition;
 import de.dfki.vsm.model.sceneflow.glue.command.definition.VariableDefinition;
 import de.dfki.vsm.model.sceneflow.glue.command.Command;
+import de.dfki.vsm.model.sceneflow.glue.command.Assignment;
 import de.dfki.vsm.model.sceneflow.glue.command.Expression;
 import de.dfki.vsm.model.sceneflow.glue.command.expression.literal.BoolLiteral;
 import de.dfki.vsm.model.sceneflow.glue.command.expression.literal.FloatLiteral;
 import de.dfki.vsm.model.sceneflow.glue.command.expression.literal.IntLiteral;
 import de.dfki.vsm.model.sceneflow.glue.command.expression.literal.StringLiteral;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.BinaryExpression;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.CallingExpression;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.ConstructExpression;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.ParenExpression;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.TernaryExpression;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.UnaryExpression;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.VariableExpression;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.invocation.ContainsList;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.invocation.HistoryContains;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.invocation.HistoryRunTimeOf;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.invocation.HistoryValueOf;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.invocation.InStateQuery;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.invocation.PrologQuery;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.invocation.RandomQuery;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.invocation.TimeoutQuery;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.record.ArrayExpression;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.record.StructExpression;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.variable.ArrayVariable;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.variable.MemberVariable;
+import de.dfki.vsm.model.sceneflow.glue.command.expression.variable.SimpleVariable;
+import de.dfki.vsm.model.sceneflow.glue.command.invocation.PlayActionActivity;
+import de.dfki.vsm.model.sceneflow.glue.command.invocation.PlayDialogAction;
+import de.dfki.vsm.model.sceneflow.glue.command.invocation.PlayScenesActivity;
+import de.dfki.vsm.model.sceneflow.glue.command.invocation.StopActionActivity;
 import de.dfki.vsm.model.sceneflow.glue.command.expression.UnaryExpression;
 import de.dfki.vsm.model.sceneflow.glue.command.expression.record.ArrayExpression;
 import de.dfki.vsm.model.sceneflow.glue.command.expression.record.StructExpression;
 import de.dfki.vsm.model.sceneflow.glue.GlueParser;
 import de.dfki.vsm.runtime.project.RunTimeProject;
-import de.dfki.vsm.runtime.plugin.PluginInterfaceRegistry;
+// PluginInterfaceRegistry no longer used - plugin interfaces now loaded from classpath via plugin-properties.json
 import de.dfki.vsm.runtime.plugin.RunTimePlugin;
 import de.dfki.vsm.event.EventDispatcher;
 import de.dfki.vsm.event.EventListener;
@@ -124,13 +149,99 @@ public final class WebUiServer implements EventListener {
 
     private static final class ExportablePropertyEntry {
         private final String providerClass;
-        private final JSONObject pluginSpec;
-        private final JSONObject agentSpec;
+        private final JSONObject pluginSpec;      // config.required, config.optional, config.pluginSpecific, templates
+        private final JSONObject agentSpec;       // agent-level config
+        private final JSONObject pluginMeta;      // plugin.id, plugin.name, plugin.description, plugin.tags
+        private final JSONObject categories;      // categories.primary, categories.secondary
+        private final JSONArray commands;         // commands array
+        private final JSONObject variables;       // variables.writes, variables.reads
 
-        private ExportablePropertyEntry(String providerClass, JSONObject pluginSpec, JSONObject agentSpec) {
+        private ExportablePropertyEntry(String providerClass, JSONObject pluginSpec, JSONObject agentSpec,
+                                         JSONObject pluginMeta, JSONObject categories,
+                                         JSONArray commands, JSONObject variables) {
             this.providerClass = providerClass;
             this.pluginSpec = pluginSpec;
             this.agentSpec = agentSpec;
+            this.pluginMeta = pluginMeta;
+            this.categories = categories;
+            this.commands = commands;
+            this.variables = variables;
+        }
+
+        /**
+         * Converts this entry to the sceneflow-interface.json format for compatibility.
+         */
+        JSONObject toInterfaceJson(String className) {
+            JSONObject out = new JSONObject();
+            out.put("schemaVersion", "1.0");
+
+            // Plugin metadata
+            JSONObject plugin = new JSONObject();
+            if (pluginMeta != null) {
+                plugin.put("id", pluginMeta.optString("id", ""));
+                plugin.put("name", pluginMeta.optString("name", ""));
+                plugin.put("className", pluginMeta.optString("className", className));
+                plugin.put("description", pluginMeta.optString("description", ""));
+                plugin.put("tags", pluginMeta.optJSONArray("tags") != null ? pluginMeta.optJSONArray("tags") : new JSONArray());
+            } else {
+                // Derive from className
+                String simpleName = className.contains(".") ? className.substring(className.lastIndexOf('.') + 1) : className;
+                plugin.put("id", simpleName.toLowerCase());
+                plugin.put("name", simpleName);
+                plugin.put("className", className);
+                plugin.put("description", "");
+                plugin.put("tags", new JSONArray());
+            }
+            out.put("plugin", plugin);
+
+            // Categories
+            if (categories != null) {
+                out.put("categories", categories);
+            } else {
+                JSONObject defaultCategories = new JSONObject();
+                defaultCategories.put("primary", "unknown");
+                defaultCategories.put("secondary", new JSONArray());
+                out.put("categories", defaultCategories);
+            }
+
+            // Commands
+            out.put("commands", commands != null ? commands : new JSONArray());
+
+            // Variables
+            if (variables != null) {
+                out.put("writes", variables.optJSONArray("writes") != null ? variables.optJSONArray("writes") : new JSONArray());
+                out.put("reads", variables.optJSONArray("reads") != null ? variables.optJSONArray("reads") : new JSONArray());
+            } else {
+                out.put("writes", new JSONArray());
+                out.put("reads", new JSONArray());
+            }
+
+            // Config (from pluginSpec)
+            if (pluginSpec != null) {
+                JSONArray configArray = new JSONArray();
+                addConfigEntries(configArray, pluginSpec.optJSONArray("required"), true);
+                addConfigEntries(configArray, pluginSpec.optJSONArray("optional"), false);
+                out.put("config", configArray);
+            } else {
+                out.put("config", new JSONArray());
+            }
+
+            return out;
+        }
+
+        private void addConfigEntries(JSONArray configArray, JSONArray source, boolean required) {
+            if (source == null) return;
+            for (int i = 0; i < source.length(); i++) {
+                JSONObject entry = source.optJSONObject(i);
+                if (entry == null) continue;
+                JSONObject configEntry = new JSONObject();
+                configEntry.put("key", entry.optString("name", ""));
+                configEntry.put("type", entry.optString("type", "string"));
+                configEntry.put("required", required);
+                configEntry.put("default", entry.opt("default") != null ? String.valueOf(entry.opt("default")) : "");
+                configEntry.put("description", entry.optString("description", ""));
+                configArray.put(configEntry);
+            }
         }
     }
 
@@ -491,6 +602,7 @@ public final class WebUiServer implements EventListener {
         mApp.get(API_PREFIX + "/projects/{pid}/config", this::handleEditorConfig);
         mApp.get(API_PREFIX + "/projects/{pid}/project-config", this::handleProjectConfig);
         mApp.get(API_PREFIX + "/projects/{pid}/project-config/keys", this::handleProjectConfigKeys);
+        mApp.get(API_PREFIX + "/projects/{pid}/validate/vars", this::handleProjectVariableValidation);
         mApp.get(API_PREFIX + "/projects/{pid}/plugin-interfaces", this::handlePluginInterfaces);
         mApp.get(API_PREFIX + "/projects/{pid}/script", this::handleScript);
         mApp.get(API_PREFIX + "/projects/{pid}/script/scenes", this::handleScriptScenes);
@@ -811,11 +923,396 @@ public final class WebUiServer implements EventListener {
             if (date != null && !date.isBlank()) {
                 entry.put("date", date);
             }
+            RecentProjectStats stats = computeRecentProjectStats(path);
+            if (stats != null) {
+                entry.put("stats", stats.toJson());
+            }
             recent.put(entry);
         }
         JSONObject response = new JSONObject();
         response.put("projects", recent);
         writeJson(ctx, response);
+    }
+
+    private static final class RecentProjectStats {
+        private int superNodes;
+        private int nodes;
+        private int commands;
+        private List<RecentPluginInfo> plugins = new ArrayList<>();
+
+        public JSONObject toJson() {
+            JSONObject json = new JSONObject();
+            json.put("superNodes", superNodes);
+            json.put("nodes", nodes);
+            json.put("commands", commands);
+            JSONArray pluginArray = new JSONArray();
+            for (RecentPluginInfo plugin : plugins) {
+                pluginArray.put(plugin.toJson());
+            }
+            json.put("plugins", pluginArray);
+            return json;
+        }
+    }
+
+    private static final class RecentPluginInfo {
+        private String name;
+        private String className;
+        private boolean present;
+
+        public JSONObject toJson() {
+            JSONObject json = new JSONObject();
+            json.put("name", name);
+            json.put("className", className);
+            json.put("present", present);
+            return json;
+        }
+    }
+
+    private static final class SceneFlowStats {
+        private int superNodes;
+        private int nodes;
+        private int commands;
+    }
+
+    private RecentProjectStats computeRecentProjectStats(String path) {
+        if (path == null || path.isBlank()) {
+            return null;
+        }
+        File base = new File(path);
+        if (base.isFile() && "project.xml".equalsIgnoreCase(base.getName())) {
+            base = base.getParentFile();
+        }
+        if (base == null || !base.exists()) {
+            return null;
+        }
+        try {
+            RunTimeProject runtimeProject = new RunTimeProject(base);
+            if (!runtimeProject.parseForInformation(base.getPath())) {
+                return null;
+            }
+            RecentProjectStats stats = new RecentProjectStats();
+            ProjectConfig config = runtimeProject.getProjectConfig();
+            if (config != null && config.getPluginConfigList() != null) {
+                Set<String> seen = new HashSet<>();
+                for (PluginConfig plugin : config.getPluginConfigList()) {
+                    String className = plugin.getClassName();
+                    String name = plugin.getPluginName();
+                    String label = (name != null && !name.isBlank()) ? name : className;
+                    if (label == null || label.isBlank()) {
+                        continue;
+                    }
+                    String key = (className == null ? "" : className) + "|" + label;
+                    if (!seen.add(key)) {
+                        continue;
+                    }
+                    RecentPluginInfo info = new RecentPluginInfo();
+                    info.name = label;
+                    info.className = className;
+                    info.present = isPluginClassPresent(className);
+                    stats.plugins.add(info);
+                }
+            }
+            SceneFlow sceneFlow = runtimeProject.getSceneFlow();
+            if (sceneFlow != null) {
+                SceneFlowStats flowStats = collectSceneFlowStats(sceneFlow);
+                stats.superNodes = flowStats.superNodes;
+                stats.nodes = flowStats.nodes;
+                stats.commands = flowStats.commands;
+            }
+            return stats;
+        } catch (Exception e) {
+            sLogger.warning("Failed to compute recent project stats for " + path + ": " + e.getMessage());
+            return null;
+        }
+    }
+
+    private boolean isPluginClassPresent(String className) {
+        if (className == null || className.isBlank()) {
+            return false;
+        }
+        try {
+            Class.forName(className, false, getClass().getClassLoader());
+            return true;
+        } catch (ClassNotFoundException e) {
+            return false;
+        }
+    }
+
+    private SceneFlowStats collectSceneFlowStats(SuperNode node) {
+        SceneFlowStats stats = new SceneFlowStats();
+        stats.commands += countCommandsForNode(node);
+        for (BasicNode basicNode : node.getNodeList()) {
+            stats.nodes += 1;
+            stats.commands += countCommandsForNode(basicNode);
+        }
+        for (SuperNode superNode : node.getSuperNodeList()) {
+            stats.superNodes += 1;
+            SceneFlowStats childStats = collectSceneFlowStats(superNode);
+            stats.superNodes += childStats.superNodes;
+            stats.nodes += childStats.nodes;
+            stats.commands += childStats.commands;
+        }
+        return stats;
+    }
+
+    private int countCommandsForNode(BasicNode node) {
+        if (node == null) {
+            return 0;
+        }
+        int count = 0;
+        if (node.getCmdList() != null) {
+            count += node.getCmdList().size();
+        }
+        if (node.getEdgeList() != null) {
+            for (AbstractEdge edge : node.getEdgeList()) {
+                if (edge != null && edge.getCmdList() != null) {
+                    count += edge.getCmdList().size();
+                }
+            }
+        }
+        return count;
+    }
+
+    private List<JSONObject> collectUndefinedVariables(SceneFlow sceneFlow) {
+        if (sceneFlow == null) {
+            return new ArrayList<>();
+        }
+        Set<String> missingKeys = new HashSet<>();
+        List<JSONObject> missing = new ArrayList<>();
+        collectUndefinedVariables(sceneFlow, sceneFlow, missingKeys, missing);
+        return missing;
+    }
+
+    private void collectUndefinedVariables(SuperNode root, SuperNode current, Set<String> missingKeys, List<JSONObject> missing) {
+        String currentId = current.getId();
+        if (current.getCmdList() != null) {
+            for (Command command : current.getCmdList()) {
+                collectUndefinedFromCommand(root, command, missingKeys, missing, "SuperNode " + currentId);
+            }
+        }
+        if (current.getEdgeList() != null) {
+            for (AbstractEdge edge : current.getEdgeList()) {
+                String edgeContext = buildEdgeContext(edge);
+                if (edge.getCmdList() != null) {
+                    for (Command command : edge.getCmdList()) {
+                        collectUndefinedFromCommand(root, command, missingKeys, missing, edgeContext);
+                    }
+                }
+                if (edge instanceof GuargedEdge) {
+                    Expression condition = ((GuargedEdge) edge).getCondition();
+                    collectUndefinedFromExpression(root, condition, missingKeys, missing, edgeContext + " condition");
+                } else if (edge instanceof InterruptEdge) {
+                    Expression condition = ((InterruptEdge) edge).getCondition();
+                    collectUndefinedFromExpression(root, condition, missingKeys, missing, edgeContext + " condition");
+                } else if (edge instanceof TimeoutEdge) {
+                    Expression timeoutExpr = ((TimeoutEdge) edge).getExpression();
+                    collectUndefinedFromExpression(root, timeoutExpr, missingKeys, missing, edgeContext + " timeout");
+                }
+            }
+        }
+        for (BasicNode node : current.getNodeList()) {
+            String nodeId = node.getId();
+            if (node.getCmdList() != null) {
+                for (Command command : node.getCmdList()) {
+                    collectUndefinedFromCommand(root, command, missingKeys, missing, "Node " + nodeId);
+                }
+            }
+            if (node.getEdgeList() != null) {
+                for (AbstractEdge edge : node.getEdgeList()) {
+                    String edgeContext = buildEdgeContext(edge);
+                    if (edge.getCmdList() != null) {
+                        for (Command command : edge.getCmdList()) {
+                            collectUndefinedFromCommand(root, command, missingKeys, missing, edgeContext);
+                        }
+                    }
+                    if (edge instanceof GuargedEdge) {
+                        Expression condition = ((GuargedEdge) edge).getCondition();
+                        collectUndefinedFromExpression(root, condition, missingKeys, missing, edgeContext + " condition");
+                    } else if (edge instanceof InterruptEdge) {
+                        Expression condition = ((InterruptEdge) edge).getCondition();
+                        collectUndefinedFromExpression(root, condition, missingKeys, missing, edgeContext + " condition");
+                    } else if (edge instanceof TimeoutEdge) {
+                        Expression timeoutExpr = ((TimeoutEdge) edge).getExpression();
+                        collectUndefinedFromExpression(root, timeoutExpr, missingKeys, missing, edgeContext + " timeout");
+                    }
+                }
+            }
+        }
+        for (SuperNode child : current.getSuperNodeList()) {
+            collectUndefinedVariables(root, child, missingKeys, missing);
+        }
+    }
+
+    private void collectUndefinedFromCommand(SuperNode root, Command command, Set<String> missingKeys, List<JSONObject> missing, String context) {
+        if (command == null) {
+            return;
+        }
+        if (command instanceof Assignment) {
+            Assignment assignment = (Assignment) command;
+            collectUndefinedFromExpression(root, assignment.getLeftExpression(), missingKeys, missing, context + " assignment");
+            collectUndefinedFromExpression(root, assignment.getInitExpression(), missingKeys, missing, context + " assignment");
+            return;
+        }
+        if (command instanceof PlayActionActivity) {
+            PlayActionActivity invocation = (PlayActionActivity) command;
+            collectUndefinedFromExpression(root, invocation.getCommand(), missingKeys, missing, context + " PlayAction");
+            for (Expression exp : invocation.getArgList()) {
+                collectUndefinedFromExpression(root, exp, missingKeys, missing, context + " PlayAction");
+            }
+            return;
+        }
+        if (command instanceof PlayScenesActivity) {
+            PlayScenesActivity invocation = (PlayScenesActivity) command;
+            collectUndefinedFromExpression(root, invocation.getArgument(), missingKeys, missing, context + " PlayScene");
+            for (Expression exp : invocation.getArgList()) {
+                collectUndefinedFromExpression(root, exp, missingKeys, missing, context + " PlayScene");
+            }
+            return;
+        }
+        if (command instanceof PlayDialogAction) {
+            PlayDialogAction invocation = (PlayDialogAction) command;
+            collectUndefinedFromExpression(root, invocation.getArg(), missingKeys, missing, context + " PlayDialogAct");
+            for (Expression exp : invocation.getArgList()) {
+                collectUndefinedFromExpression(root, exp, missingKeys, missing, context + " PlayDialogAct");
+            }
+            return;
+        }
+        if (command instanceof StopActionActivity) {
+            StopActionActivity invocation = (StopActionActivity) command;
+            collectUndefinedFromExpression(root, invocation.getCommand(), missingKeys, missing, context + " StopAction");
+            for (Expression exp : invocation.getArgList()) {
+                collectUndefinedFromExpression(root, exp, missingKeys, missing, context + " StopAction");
+            }
+            return;
+        }
+        if (command instanceof Expression) {
+            collectUndefinedFromExpression(root, (Expression) command, missingKeys, missing, context);
+        }
+    }
+
+    private void collectUndefinedFromExpression(SuperNode root, Expression exp, Set<String> missingKeys, List<JSONObject> missing, String context) {
+        if (exp == null) {
+            return;
+        }
+        Set<String> vars = new HashSet<>();
+        collectVariableNames(exp, vars);
+        for (String var : vars) {
+            if (var == null || var.isBlank()) {
+                continue;
+            }
+            if (findVariableDefinitionInHierarchy(root, var) == null) {
+                String key = var + "|" + context;
+                if (missingKeys.add(key)) {
+                    JSONObject entry = new JSONObject();
+                    entry.put("name", var);
+                    entry.put("context", context);
+                    missing.add(entry);
+                }
+            }
+        }
+    }
+
+    private void collectVariableNames(Expression exp, Set<String> out) {
+        if (exp == null) {
+            return;
+        }
+        if (exp instanceof VariableExpression) {
+            if (exp instanceof SimpleVariable) {
+                out.add(((SimpleVariable) exp).getName());
+            } else if (exp instanceof MemberVariable) {
+                out.add(((MemberVariable) exp).getName());
+            } else if (exp instanceof ArrayVariable) {
+                ArrayVariable arrayVar = (ArrayVariable) exp;
+                out.add(arrayVar.getName());
+                collectVariableNames(arrayVar.getExpression(), out);
+            }
+            return;
+        }
+        if (exp instanceof BinaryExpression) {
+            BinaryExpression bin = (BinaryExpression) exp;
+            collectVariableNames(bin.getLeftExp(), out);
+            collectVariableNames(bin.getRightExp(), out);
+            return;
+        }
+        if (exp instanceof UnaryExpression) {
+            collectVariableNames(((UnaryExpression) exp).getExp(), out);
+            return;
+        }
+        if (exp instanceof ParenExpression) {
+            collectVariableNames(((ParenExpression) exp).getExp(), out);
+            return;
+        }
+        if (exp instanceof TernaryExpression) {
+            TernaryExpression ternary = (TernaryExpression) exp;
+            collectVariableNames(ternary.getCondition(), out);
+            collectVariableNames(ternary.getThenExp(), out);
+            collectVariableNames(ternary.getElseExp(), out);
+            return;
+        }
+        if (exp instanceof ConstructExpression) {
+            for (Expression arg : ((ConstructExpression) exp).getArgList()) {
+                collectVariableNames(arg, out);
+            }
+            return;
+        }
+        if (exp instanceof CallingExpression) {
+            for (Expression arg : ((CallingExpression) exp).getArgList()) {
+                collectVariableNames(arg, out);
+            }
+            return;
+        }
+        if (exp instanceof ArrayExpression) {
+            for (Expression arg : ((ArrayExpression) exp).getExpList()) {
+                collectVariableNames(arg, out);
+            }
+            return;
+        }
+        if (exp instanceof StructExpression) {
+            for (Assignment assignment : ((StructExpression) exp).getExpList()) {
+                collectVariableNames(assignment.getLeftExpression(), out);
+                collectVariableNames(assignment.getInitExpression(), out);
+            }
+            return;
+        }
+        if (exp instanceof HistoryValueOf) {
+            out.add(((HistoryValueOf) exp).getVar());
+            return;
+        }
+        if (exp instanceof HistoryRunTimeOf) {
+            return;
+        }
+        if (exp instanceof HistoryContains) {
+            return;
+        }
+        if (exp instanceof ContainsList) {
+            collectVariableNames(((ContainsList) exp).getListExp(), out);
+            collectVariableNames(((ContainsList) exp).getItemExp(), out);
+            return;
+        }
+        if (exp instanceof InStateQuery) {
+            return;
+        }
+        if (exp instanceof PrologQuery) {
+            collectVariableNames(((PrologQuery) exp).getExpression(), out);
+            return;
+        }
+        if (exp instanceof RandomQuery) {
+            collectVariableNames(((RandomQuery) exp).getExpression(), out);
+            return;
+        }
+        if (exp instanceof TimeoutQuery) {
+            collectVariableNames(((TimeoutQuery) exp).getExpression(), out);
+        }
+    }
+
+    private String buildEdgeContext(AbstractEdge edge) {
+        if (edge == null) {
+            return "Edge";
+        }
+        String source = edge.getSourceUnid();
+        String target = edge.getTargetUnid();
+        String type = edge.getEdgeType() != null ? edge.getEdgeType().name() : "Edge";
+        return type + " " + source + "→" + target;
     }
 
     private void handleRecentRemove(Context ctx) {
@@ -835,6 +1332,33 @@ public final class WebUiServer implements EventListener {
             addRecent(path, name);
         }
         handleRecentProjects(ctx);
+    }
+
+    private void handleProjectVariableValidation(Context ctx) {
+        String pid = ctx.pathParam("pid").trim();
+        if (pid.isEmpty()) {
+            writeJson(ctx, errorResponse("BAD_REQUEST", "Missing project id"));
+            return;
+        }
+        ProjectRef ref = projectStore.get(pid);
+        SceneFlow sceneFlow = null;
+        if (ref != null && ref.runtimeProject != null) {
+            sceneFlow = ref.runtimeProject.getSceneFlow();
+        }
+        if (sceneFlow == null && ref != null && ref.path != null && !ref.path.isBlank()) {
+            try {
+                RunTimeProject probe = new RunTimeProject(new File(ref.path));
+                if (probe.parseForInformation(ref.path)) {
+                    sceneFlow = probe.getSceneFlow();
+                }
+            } catch (Exception e) {
+                sLogger.warning("Variable validation failed to parse project: " + e.getMessage());
+            }
+        }
+        List<JSONObject> missing = collectUndefinedVariables(sceneFlow);
+        JSONObject response = new JSONObject();
+        response.put("missing", new JSONArray(missing));
+        writeJson(ctx, response);
     }
 
     private void handleProjectOpened(Context ctx) {
@@ -1352,18 +1876,21 @@ public final class WebUiServer implements EventListener {
     }
 
     private void handlePluginInterfaces(Context ctx) {
-        String pid = ctx.pathParam("pid");
-        ProjectRef ref = projectStore.get(pid);
-        Path projectPath = null;
-        if (ref != null && ref.path != null && !ref.path.isBlank()) {
-            try {
-                projectPath = Paths.get(ref.path);
-            } catch (Exception ignored) {
-                projectPath = null;
-            }
+        // Build plugin interfaces from the unified plugin-properties.json loaded at startup
+        JSONObject out = new JSONObject();
+        JSONArray interfaces = new JSONArray();
+
+        for (Map.Entry<String, ExportablePropertyEntry> entry : EXPORTABLE_PROPERTY_PROVIDERS.entrySet()) {
+            String className = entry.getKey();
+            ExportablePropertyEntry propEntry = entry.getValue();
+            JSONObject interfaceJson = propEntry.toInterfaceJson(className);
+            interfaces.put(interfaceJson);
         }
-        PluginInterfaceRegistry registry = PluginInterfaceRegistry.loadForProject(projectPath);
-        writeJson(ctx, registry.toJson());
+
+        out.put("interfaces", interfaces);
+        out.put("errors", new JSONArray());
+        out.put("source", "classpath");
+        writeJson(ctx, out);
     }
 
     private JSONObject projectConfigToJson(ProjectConfig cfg, String path) {
@@ -1433,6 +1960,7 @@ public final class WebUiServer implements EventListener {
         }
         llmPromptsJson.put("actionPrompts", actionPrompts);
         cfgJson.put("llmPrompts", llmPromptsJson);
+        cfgJson.put("sceneTitleConcepts", configConceptsToJson(cfg.getSceneTitleConcepts()));
         sLogger.message("[PROJECT-CONFIG] Serialized plugins=" + pluginsJson.length()
                 + " agents=" + agentsJson.length() + " llms=" + llmsJson.length());
         return cfgJson;
@@ -1608,6 +2136,19 @@ public final class WebUiServer implements EventListener {
                     + (formatPrompt.isEmpty() ? "(empty)" : "(set)")
                     + " actionPrompts=" + (actionPrompts != null ? actionPrompts.length() : 0));
         }
+        JSONArray conceptsJson = configJson.optJSONArray("sceneTitleConcepts");
+        if (conceptsJson != null) {
+            de.dfki.vsm.model.config.ConfigElement concepts = cfg.getSceneTitleConcepts();
+            concepts.getEntryList().clear();
+            Set<String> seen = new HashSet<>();
+            for (int i = 0; i < conceptsJson.length(); i++) {
+                String val = conceptsJson.optString(i, "").trim();
+                if (val.isEmpty()) continue;
+                String key = val.toLowerCase();
+                if (!seen.add(key)) continue;
+                concepts.getEntryList().add(new ConfigFeature("Concept", val, val));
+            }
+        }
         sLogger.message("[PROJECT-CONFIG] Applied plugins=" + cfg.getPluginConfigList().size()
                 + " agents=" + cfg.getAgentConfigList().size()
                 + " llms=" + cfg.getLLMConfigList().size());
@@ -1621,6 +2162,21 @@ public final class WebUiServer implements EventListener {
             entry.put("key", feature.getKey() == null ? "" : feature.getKey());
             entry.put("value", feature.getValue() == null ? "" : feature.getValue());
             list.put(entry);
+        }
+        return list;
+    }
+
+    private JSONArray configConceptsToJson(de.dfki.vsm.model.config.ConfigElement element) {
+        JSONArray list = new JSONArray();
+        if (element == null || element.getEntryList() == null) return list;
+        for (de.dfki.vsm.model.config.ConfigFeature feature : element.getEntryList()) {
+            String value = feature.getValue();
+            if (value == null || value.isBlank()) {
+                value = feature.getKey();
+            }
+            if (value != null && !value.isBlank()) {
+                list.put(value);
+            }
         }
         return list;
     }
@@ -1796,8 +2352,10 @@ public final class WebUiServer implements EventListener {
         }
 
         ExportablePropertyEntry entry = resolveExportablePropertyEntry(className);
+        System.out.println("[PROJECT-CONFIG-KEYS] Looking up className='" + className + "', found=" + (entry != null));
         JSONObject spec = resolveSpecForScope(entry, scope);
         if (spec != null) {
+            System.out.println("[PROJECT-CONFIG-KEYS] Using spec from plugin-properties.json");
             JSONObject response = buildSpecResponse(spec);
             response.put("supported", true);
             writeJson(ctx, response);
@@ -1876,44 +2434,109 @@ public final class WebUiServer implements EventListener {
                 try (InputStream stream = url.openStream()) {
                     String json = new String(stream.readAllBytes(), StandardCharsets.UTF_8);
                     JSONObject root = new JSONObject(json);
-                    JSONObject providers = root.optJSONObject("providers");
-                    JSONObject source = providers != null ? providers : root;
-                    for (String key : source.keySet()) {
-                        if (key == null || key.isBlank()) {
-                            continue;
+
+                    // Check for unified format (has "plugin" at root level with "className")
+                    JSONObject rootPlugin = root.optJSONObject("plugin");
+                    if (rootPlugin != null && rootPlugin.has("className")) {
+                        // Unified format: single plugin definition
+                        String className = rootPlugin.optString("className", "").trim();
+                        if (!className.isEmpty()) {
+                            ExportablePropertyEntry entry = parseUnifiedPluginProperties(root, rootPlugin);
+                            EXPORTABLE_PROPERTY_PROVIDERS.put(className, entry);
                         }
-                        Object rawValue = source.opt(key);
-                        String providerClass = null;
-                        JSONObject pluginSpec = null;
-                        JSONObject agentSpec = null;
-                        if (rawValue instanceof JSONObject) {
-                            JSONObject value = (JSONObject) rawValue;
-                            if (value.has("plugin") || value.has("agent")) {
-                                pluginSpec = value.optJSONObject("plugin");
-                                agentSpec = value.optJSONObject("agent");
-                            } else if (value.has("required") || value.has("optional")) {
-                                pluginSpec = value;
+                    } else {
+                        // Legacy format: providers map
+                        JSONObject providers = root.optJSONObject("providers");
+                        JSONObject source = providers != null ? providers : root;
+                        for (String key : source.keySet()) {
+                            if (key == null || key.isBlank()) {
+                                continue;
                             }
-                        } else if (rawValue != null) {
-                            providerClass = String.valueOf(rawValue).trim();
-                        }
-                        if ((providerClass != null && !providerClass.isEmpty()) || pluginSpec != null || agentSpec != null) {
-                            EXPORTABLE_PROPERTY_PROVIDERS.put(
-                                    key.trim(),
-                                    new ExportablePropertyEntry(providerClass, pluginSpec, agentSpec));
+                            Object rawValue = source.opt(key);
+                            String providerClass = null;
+                            JSONObject pluginSpec = null;
+                            JSONObject agentSpec = null;
+                            if (rawValue instanceof JSONObject) {
+                                JSONObject value = (JSONObject) rawValue;
+                                if (value.has("plugin") || value.has("agent")) {
+                                    pluginSpec = value.optJSONObject("plugin");
+                                    agentSpec = value.optJSONObject("agent");
+                                } else if (value.has("required") || value.has("optional")) {
+                                    pluginSpec = value;
+                                }
+                            } else if (rawValue != null) {
+                                providerClass = String.valueOf(rawValue).trim();
+                            }
+                            if ((providerClass != null && !providerClass.isEmpty()) || pluginSpec != null || agentSpec != null) {
+                                EXPORTABLE_PROPERTY_PROVIDERS.put(
+                                        key.trim(),
+                                        new ExportablePropertyEntry(providerClass, pluginSpec, agentSpec,
+                                                null, null, null, null));
+                            }
                         }
                     }
                 }
             }
             if (sourceCount == 0) {
-                sLogger.warning("Warning: no plugin-properties.json resources found on classpath.");
+                System.out.println("[PROJECT-CONFIG] WARNING: no plugin-properties.json resources found on classpath.");
             } else {
-                sLogger.message("[PROJECT-CONFIG] Loaded exportable properties registry with "
+                System.out.println("[PROJECT-CONFIG] Loaded exportable properties registry with "
                         + EXPORTABLE_PROPERTY_PROVIDERS.size() + " entries from " + sourceCount + " resources.");
+                for (String providerKey : EXPORTABLE_PROPERTY_PROVIDERS.keySet()) {
+                    System.out.println("[PROJECT-CONFIG]   - " + providerKey);
+                }
             }
         } catch (Exception exc) {
             sLogger.warning("Warning: failed to load exportable property registry: " + exc.getMessage());
         }
+    }
+
+    /**
+     * Parses unified plugin-properties.json format.
+     */
+    private ExportablePropertyEntry parseUnifiedPluginProperties(JSONObject root, JSONObject pluginMeta) {
+        // Extract config section
+        JSONObject config = root.optJSONObject("config");
+        JSONObject pluginSpec = null;
+        JSONObject agentSpec = null;
+        if (config != null) {
+            // Build pluginSpec from config.required, config.optional, config.pluginSpecific
+            pluginSpec = new JSONObject();
+            if (config.has("required")) {
+                pluginSpec.put("required", config.optJSONArray("required"));
+            }
+            if (config.has("optional")) {
+                pluginSpec.put("optional", config.optJSONArray("optional"));
+            }
+            if (config.has("pluginSpecific")) {
+                pluginSpec.put("pluginSpecific", config.optJSONArray("pluginSpecific"));
+            }
+            // Agent config
+            if (config.has("agent")) {
+                agentSpec = config.optJSONObject("agent");
+            }
+        }
+
+        // Templates go into pluginSpec
+        JSONObject templates = root.optJSONObject("templates");
+        if (templates != null && pluginSpec != null) {
+            pluginSpec.put("templates", templates);
+        } else if (templates != null) {
+            pluginSpec = new JSONObject();
+            pluginSpec.put("templates", templates);
+        }
+
+        // Categories
+        JSONObject categories = root.optJSONObject("categories");
+
+        // Commands
+        JSONArray commands = root.optJSONArray("commands");
+
+        // Variables
+        JSONObject variables = root.optJSONObject("variables");
+
+        return new ExportablePropertyEntry(null, pluginSpec, agentSpec,
+                pluginMeta, categories, commands, variables);
     }
 
     private String resolvePluginClassName(ProjectConfig config, String deviceName) {
@@ -1948,9 +2571,13 @@ public final class WebUiServer implements EventListener {
     private JSONObject buildSpecResponse(JSONObject spec) {
         JSONArray required = normalizeSpecArray(spec.optJSONArray("required"), true);
         JSONArray optional = normalizeSpecArray(spec.optJSONArray("optional"), false);
+        JSONArray pluginSpecific = normalizeSpecArray(spec.optJSONArray("pluginSpecific"), false);
         JSONObject response = new JSONObject();
         response.put("required", required);
         response.put("optional", optional);
+        if (pluginSpecific.length() > 0) {
+            response.put("pluginSpecific", pluginSpecific);
+        }
         return response;
     }
 
@@ -1986,6 +2613,9 @@ public final class WebUiServer implements EventListener {
             JSONArray options = entry.optJSONArray("options");
             if (options != null && options.length() > 0) {
                 item.put("options", options);
+            }
+            if (entry.optBoolean("readonly", false)) {
+                item.put("readonly", true);
             }
             output.put(item);
         }
@@ -2853,6 +3483,14 @@ public final class WebUiServer implements EventListener {
                 return undoProject(params, broadcaster);
             case "SceneFlow.Redo":
                 return redoProject(params, broadcaster);
+            case "SceneFlow.PlayScene.Find":
+                return findPlaySceneReferences(params);
+            case "SceneFlow.PlayScene.FindMany":
+                return findPlaySceneReferencesMany(params);
+            case "SceneFlow.PlayScene.Rename":
+                return renamePlaySceneReferences(params, broadcaster);
+            case "Embeddings.Start":
+                return startEmbeddingsService(params);
             case "Script.Update":
                 return updateScriptForProject(params, broadcaster);
             case "Config.Update": {
@@ -2913,6 +3551,177 @@ public final class WebUiServer implements EventListener {
                         broadcaster.accept(evt.toString());
                     }
                 }
+                return response;
+            }
+            case "ProjectConfig.Plugin.Create": {
+                // Returns a plugin template with required keys pre-populated from plugin-properties.json
+                // Also returns sceneflowVars for properties that have a sceneflowtype defined
+                String className = params.optString("className", "").trim();
+                String name = params.optString("name", "").trim();
+                String type = params.optString("type", "device").trim();
+                boolean load = params.optBoolean("load", true);
+
+                if (className.isEmpty()) {
+                    return errorResponse("BAD_REQUEST", "Missing className");
+                }
+
+                JSONObject plugin = new JSONObject();
+                plugin.put("name", name);
+                plugin.put("className", className);
+                plugin.put("type", type);
+                plugin.put("load", load);
+
+                // Look up required keys and their defaults
+                // Also collect sceneflow variable definitions
+                JSONArray features = new JSONArray();
+                JSONArray sceneflowVars = new JSONArray();
+                ExportablePropertyEntry entry = resolveExportablePropertyEntry(className);
+                if (entry != null && entry.pluginSpec != null) {
+                    JSONArray required = entry.pluginSpec.optJSONArray("required");
+                    if (required != null) {
+                        for (int i = 0; i < required.length(); i++) {
+                            JSONObject req = required.optJSONObject(i);
+                            if (req != null) {
+                                String key = req.optString("name", "").trim();
+                                if (!key.isEmpty()) {
+                                    Object defaultVal = req.opt("default");
+                                    String value = defaultVal != null ? String.valueOf(defaultVal) : "";
+                                    JSONObject feature = new JSONObject();
+                                    feature.put("key", key);
+                                    feature.put("value", value);
+                                    features.put(feature);
+
+                                    // Check if this property defines a sceneflow variable type
+                                    String sceneflowType = req.optString("sceneflowtype", "").trim();
+                                    if (!sceneflowType.isEmpty() && !value.isEmpty()) {
+                                        JSONObject varDef = new JSONObject();
+                                        varDef.put("name", value);  // The default value is the variable name
+                                        varDef.put("type", sceneflowType);
+                                        sceneflowVars.put(varDef);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    // Also add pluginSpecific items with their defaults
+                    JSONArray pluginSpecific = entry.pluginSpec.optJSONArray("pluginSpecific");
+                    if (pluginSpecific != null) {
+                        for (int i = 0; i < pluginSpecific.length(); i++) {
+                            JSONObject ps = pluginSpecific.optJSONObject(i);
+                            if (ps != null) {
+                                String key = ps.optString("name", "").trim();
+                                if (!key.isEmpty()) {
+                                    Object defaultVal = ps.opt("default");
+                                    String value = defaultVal != null ? String.valueOf(defaultVal) : "";
+                                    JSONObject feature = new JSONObject();
+                                    feature.put("key", key);
+                                    feature.put("value", value);
+                                    features.put(feature);
+                                }
+                            }
+                        }
+                    }
+                }
+                plugin.put("features", features);
+
+                // Check for templates section
+                JSONObject templates = null;
+                if (entry != null && entry.pluginSpec != null) {
+                    templates = entry.pluginSpec.optJSONObject("templates");
+                }
+
+                JSONObject response = new JSONObject();
+                response.put("status", "ok");
+                response.put("plugin", plugin);
+                response.put("sceneflowVars", sceneflowVars);
+                if (templates != null) {
+                    response.put("templates", templates);
+                }
+                return response;
+            }
+            case "Project.Templates.Install": {
+                String pid = params.optString("projectId", "");
+                String pluginClassName = params.optString("className", "").trim();
+
+                ProjectRef ref = projectStore.get(pid);
+                if (ref == null || ref.runtimeProject == null) {
+                    return errorResponse("PROJECT_NOT_FOUND", "Project not found");
+                }
+                if (pluginClassName.isEmpty()) {
+                    return errorResponse("BAD_REQUEST", "Missing className");
+                }
+
+                // Get project directory (ref.path is already the project directory, not project.xml)
+                String projectPath = ref.path;
+                if (projectPath == null || projectPath.isEmpty()) {
+                    return errorResponse("PROJECT_PATH_UNKNOWN", "Project path not available");
+                }
+                File projectDir = new File(projectPath);
+                if (!projectDir.isDirectory()) {
+                    return errorResponse("PROJECT_DIR_INVALID", "Project directory not found");
+                }
+
+                // Find templates configuration
+                ExportablePropertyEntry propEntry = resolveExportablePropertyEntry(pluginClassName);
+                if (propEntry == null || propEntry.pluginSpec == null) {
+                    JSONObject response = new JSONObject();
+                    response.put("status", "ok");
+                    response.put("createdFiles", new JSONArray());
+                    response.put("message", "No templates defined for this plugin");
+                    return response;
+                }
+
+                JSONObject templates = propEntry.pluginSpec.optJSONObject("templates");
+                if (templates == null) {
+                    JSONObject response = new JSONObject();
+                    response.put("status", "ok");
+                    response.put("createdFiles", new JSONArray());
+                    response.put("message", "No templates defined for this plugin");
+                    return response;
+                }
+
+                String resourcePath = templates.optString("resourcePath", "templates/");
+                JSONArray targetDirs = templates.optJSONArray("targetDirs");
+                if (targetDirs == null || targetDirs.isEmpty()) {
+                    JSONObject response = new JSONObject();
+                    response.put("status", "ok");
+                    response.put("createdFiles", new JSONArray());
+                    response.put("message", "No target directories specified");
+                    return response;
+                }
+
+                // Extract templates from classpath to project directory
+                JSONArray createdFiles = new JSONArray();
+                JSONArray skippedFiles = new JSONArray();
+                ClassLoader cl = getClass().getClassLoader();
+
+                for (int i = 0; i < targetDirs.length(); i++) {
+                    String targetDir = targetDirs.optString(i, "").trim();
+                    if (targetDir.isEmpty()) continue;
+
+                    File destDir = new File(projectDir, targetDir);
+                    if (!destDir.exists()) {
+                        destDir.mkdirs();
+                        createdFiles.put(targetDir + "/");
+                    }
+
+                    // Try to find and copy template files
+                    String templatePath = resourcePath + targetDir + "/";
+                    try {
+                        Enumeration<URL> resources = cl.getResources(templatePath);
+                        while (resources.hasMoreElements()) {
+                            URL resourceUrl = resources.nextElement();
+                            copyTemplateDirectory(resourceUrl, templatePath, destDir, createdFiles, skippedFiles);
+                        }
+                    } catch (Exception ex) {
+                        sLogger.warning("Failed to extract templates from " + templatePath + ": " + ex.getMessage());
+                    }
+                }
+
+                JSONObject response = new JSONObject();
+                response.put("status", "ok");
+                response.put("createdFiles", createdFiles);
+                response.put("skippedFiles", skippedFiles);
                 return response;
             }
             case "ProjectConfig.Update": {
@@ -4105,10 +4914,12 @@ public final class WebUiServer implements EventListener {
                 || method.startsWith("SceneFlow.Comment.")
                 || "SceneFlow.Undo".equals(method)
                 || "SceneFlow.Redo".equals(method)
+                || "SceneFlow.PlayScene.Rename".equals(method)
                 || method.startsWith("Script.")
                 || "Config.Update".equals(method)
                 || "ProjectConfig.Update".equals(method)
-                || "Preferences.Update".equals(method);
+                || "Preferences.Update".equals(method)
+                || "Embeddings.Start".equals(method);
     }
 
     private JSONObject snapshotPayload(String projectId) {
@@ -4164,6 +4975,95 @@ public final class WebUiServer implements EventListener {
         evt.put("projectId", projectId);
         evt.put("snapshot", snapshot);
         broadcaster.accept(evt.toString());
+    }
+
+    /**
+     * Copy template files from a classpath resource URL to a destination directory.
+     * Supports both file:// and jar:// URLs.
+     */
+    private void copyTemplateDirectory(URL resourceUrl, String basePath, File destDir,
+            JSONArray createdFiles, JSONArray skippedFiles) {
+        try {
+            String protocol = resourceUrl.getProtocol();
+            if ("file".equals(protocol)) {
+                // Resource is in filesystem (development mode)
+                File sourceDir = new File(resourceUrl.toURI());
+                if (sourceDir.isDirectory()) {
+                    copyDirectoryContents(sourceDir, destDir, destDir.getName(), createdFiles, skippedFiles);
+                }
+            } else if ("jar".equals(protocol)) {
+                // Resource is inside a JAR file
+                String jarPath = resourceUrl.getPath();
+                int jarSeparator = jarPath.indexOf("!");
+                if (jarSeparator > 0) {
+                    String jarFilePath = jarPath.substring(5, jarSeparator); // Remove "file:"
+                    String resourcePrefix = jarPath.substring(jarSeparator + 2); // Remove "!/"
+                    try (java.util.jar.JarFile jar = new java.util.jar.JarFile(jarFilePath)) {
+                        Enumeration<java.util.jar.JarEntry> entries = jar.entries();
+                        while (entries.hasMoreElements()) {
+                            java.util.jar.JarEntry entry = entries.nextElement();
+                            String entryName = entry.getName();
+                            if (entryName.startsWith(resourcePrefix) && !entry.isDirectory()) {
+                                String relativePath = entryName.substring(resourcePrefix.length());
+                                if (relativePath.isEmpty()) continue;
+                                File destFile = new File(destDir, relativePath);
+                                if (destFile.exists()) {
+                                    skippedFiles.put(destDir.getName() + "/" + relativePath);
+                                    continue;
+                                }
+                                destFile.getParentFile().mkdirs();
+                                try (InputStream in = jar.getInputStream(entry);
+                                     java.io.FileOutputStream out = new java.io.FileOutputStream(destFile)) {
+                                    byte[] buffer = new byte[4096];
+                                    int bytesRead;
+                                    while ((bytesRead = in.read(buffer)) != -1) {
+                                        out.write(buffer, 0, bytesRead);
+                                    }
+                                }
+                                createdFiles.put(destDir.getName() + "/" + relativePath);
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (Exception ex) {
+            sLogger.warning("Failed to copy template directory: " + ex.getMessage());
+        }
+    }
+
+    /**
+     * Recursively copy contents of a source directory to a destination directory.
+     */
+    private void copyDirectoryContents(File sourceDir, File destDir, String pathPrefix,
+            JSONArray createdFiles, JSONArray skippedFiles) {
+        File[] files = sourceDir.listFiles();
+        if (files == null) return;
+        for (File file : files) {
+            String relativePath = pathPrefix + "/" + file.getName();
+            File destFile = new File(destDir, file.getName());
+            if (file.isDirectory()) {
+                if (!destFile.exists()) {
+                    destFile.mkdirs();
+                }
+                copyDirectoryContents(file, destFile, relativePath, createdFiles, skippedFiles);
+            } else {
+                if (destFile.exists()) {
+                    skippedFiles.put(relativePath);
+                    continue;
+                }
+                try (InputStream in = new java.io.FileInputStream(file);
+                     java.io.FileOutputStream out = new java.io.FileOutputStream(destFile)) {
+                    byte[] buffer = new byte[4096];
+                    int bytesRead;
+                    while ((bytesRead = in.read(buffer)) != -1) {
+                        out.write(buffer, 0, bytesRead);
+                    }
+                    createdFiles.put(relativePath);
+                } catch (Exception ex) {
+                    sLogger.warning("Failed to copy file " + file.getName() + ": " + ex.getMessage());
+                }
+            }
+        }
     }
 
     private int safeRound(Double value, int fallback) {
@@ -5289,6 +6189,98 @@ public final class WebUiServer implements EventListener {
         return resp;
     }
 
+    private JSONObject findPlaySceneReferences(JSONObject params) {
+        String pid = params.optString("projectId", "");
+        String sceneName = params.optString("sceneName", "").trim();
+        ProjectRef ref = projectStore.get(pid);
+        if (ref == null || ref.runtimeProject == null) {
+            return errorResponse("PROJECT_NOT_FOUND", "Project not found");
+        }
+        if (sceneName.isBlank()) {
+            return errorResponse("BAD_REQUEST", "Missing sceneName");
+        }
+        SceneFlow sceneFlow = ref.runtimeProject.getSceneFlow();
+        if (sceneFlow == null) {
+            return errorResponse("SCENEFLOW_NOT_FOUND", "SceneFlow not available");
+        }
+        List<JSONObject> matches = new ArrayList<>();
+        collectPlaySceneReferences(sceneFlow, sceneName, matches);
+        JSONObject resp = new JSONObject();
+        resp.put("status", "ok");
+        resp.put("matches", new JSONArray(matches));
+        resp.put("count", matches.size());
+        return resp;
+    }
+
+    private JSONObject findPlaySceneReferencesMany(JSONObject params) {
+        String pid = params.optString("projectId", "");
+        JSONArray namesJson = params.optJSONArray("sceneNames");
+        ProjectRef ref = projectStore.get(pid);
+        if (ref == null || ref.runtimeProject == null) {
+            return errorResponse("PROJECT_NOT_FOUND", "Project not found");
+        }
+        if (namesJson == null || namesJson.isEmpty()) {
+            return errorResponse("BAD_REQUEST", "Missing sceneNames");
+        }
+        Set<String> names = new HashSet<>();
+        for (int i = 0; i < namesJson.length(); i++) {
+            String name = namesJson.optString(i, "").trim();
+            if (!name.isEmpty()) {
+                names.add(name);
+            }
+        }
+        if (names.isEmpty()) {
+            return errorResponse("BAD_REQUEST", "Missing sceneNames");
+        }
+        SceneFlow sceneFlow = ref.runtimeProject.getSceneFlow();
+        if (sceneFlow == null) {
+            return errorResponse("SCENEFLOW_NOT_FOUND", "SceneFlow not available");
+        }
+        List<JSONObject> matches = new ArrayList<>();
+        collectPlaySceneReferences(sceneFlow, names, matches);
+        JSONObject resp = new JSONObject();
+        resp.put("status", "ok");
+        resp.put("matches", new JSONArray(matches));
+        resp.put("count", matches.size());
+        return resp;
+    }
+
+    private JSONObject renamePlaySceneReferences(JSONObject params, java.util.function.Consumer<String> broadcaster) {
+        String pid = params.optString("projectId", "");
+        String sceneName = params.optString("sceneName", "").trim();
+        String newName = params.optString("newName", "").trim();
+        String superNodeId = params.optString("superNodeId", "").trim();
+        ProjectRef ref = projectStore.get(pid);
+        if (ref == null || ref.runtimeProject == null) {
+            return errorResponse("PROJECT_NOT_FOUND", "Project not found");
+        }
+        if (sceneName.isBlank() || newName.isBlank()) {
+            return errorResponse("BAD_REQUEST", "Missing sceneName or newName");
+        }
+        SceneFlow sceneFlow = ref.runtimeProject.getSceneFlow();
+        if (sceneFlow == null) {
+            return errorResponse("SCENEFLOW_NOT_FOUND", "SceneFlow not available");
+        }
+        int updated = renamePlaySceneReferences(sceneFlow, sceneName, newName);
+        ref.dirty = true;
+        JSONObject resp = new JSONObject();
+        resp.put("status", "ok");
+        resp.put("updated", updated);
+
+        SuperNode snapshotTarget = resolveSuperNode(sceneFlow, superNodeId);
+        if (snapshotTarget == null) {
+            snapshotTarget = sceneFlow;
+        }
+        JSONObject snapshot = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
+        resp.put("snapshot", snapshot);
+        if (broadcaster != null) {
+            broadcastSceneFlowSnapshot(broadcaster, pid, snapshot);
+        }
+        recordHistory(ref, "SceneFlow.PlayScene.Rename");
+        recordCommand(ref, "SceneFlow.PlayScene.Rename", params);
+        return resp;
+    }
+
     private JSONObject undoProject(JSONObject params, java.util.function.Consumer<String> broadcaster) {
         String pid = params.optString("projectId", "");
         ProjectRef ref = projectStore.get(pid);
@@ -5884,6 +6876,282 @@ public final class WebUiServer implements EventListener {
         saveHistoryToDisk(ref);
     }
 
+    private void collectPlaySceneReferences(SuperNode current, String sceneName, List<JSONObject> matches) {
+        if (current == null) return;
+        collectPlaySceneCommands(current, current, sceneName, "supernode", matches);
+        for (BasicNode node : current.getNodeList()) {
+            collectPlaySceneCommands(node, current, sceneName, "node", matches);
+            for (AbstractEdge edge : node.getEdgeList()) {
+                collectPlaySceneEdgeCommands(edge, node, current, sceneName, matches);
+            }
+        }
+        for (SuperNode child : current.getSuperNodeList()) {
+            collectPlaySceneReferences(child, sceneName, matches);
+        }
+    }
+
+    private void collectPlaySceneReferences(SuperNode current, Set<String> sceneNames, List<JSONObject> matches) {
+        if (current == null || sceneNames == null || sceneNames.isEmpty()) return;
+        collectPlaySceneCommands(current, current, sceneNames, "supernode", matches);
+        for (BasicNode node : current.getNodeList()) {
+            collectPlaySceneCommands(node, current, sceneNames, "node", matches);
+            for (AbstractEdge edge : node.getEdgeList()) {
+                collectPlaySceneEdgeCommands(edge, node, current, sceneNames, matches);
+            }
+        }
+        for (SuperNode child : current.getSuperNodeList()) {
+            collectPlaySceneReferences(child, sceneNames, matches);
+        }
+    }
+
+    private void collectPlaySceneCommands(BasicNode node, SuperNode owner, String sceneName, String scope, List<JSONObject> matches) {
+        if (node == null) return;
+        ArrayList<Command> commands = node.getCmdList();
+        if (commands == null) return;
+        for (int i = 0; i < commands.size(); i++) {
+            Command command = commands.get(i);
+            if (isPlaySceneLiteral(command, sceneName)) {
+                JSONObject entry = new JSONObject();
+                entry.put("scope", scope);
+                entry.put("sceneName", sceneName);
+                entry.put("superNodeId", owner.getId());
+                entry.put("superNodeName", owner.getName());
+                entry.put("nodeId", node.getId());
+                entry.put("nodeName", node.getName());
+                entry.put("commandIndex", i);
+                entry.put("commandText", command.getConcreteSyntax());
+                matches.add(entry);
+            }
+        }
+    }
+
+    private void collectPlaySceneCommands(BasicNode node, SuperNode owner, Set<String> sceneNames, String scope, List<JSONObject> matches) {
+        if (node == null || sceneNames == null || sceneNames.isEmpty()) return;
+        ArrayList<Command> commands = node.getCmdList();
+        if (commands == null) return;
+        for (int i = 0; i < commands.size(); i++) {
+            Command command = commands.get(i);
+            String literal = getPlaySceneLiteral(command);
+            if (literal != null && sceneNames.contains(literal)) {
+                JSONObject entry = new JSONObject();
+                entry.put("scope", scope);
+                entry.put("sceneName", literal);
+                entry.put("superNodeId", owner.getId());
+                entry.put("superNodeName", owner.getName());
+                entry.put("nodeId", node.getId());
+                entry.put("nodeName", node.getName());
+                entry.put("commandIndex", i);
+                entry.put("commandText", command.getConcreteSyntax());
+                matches.add(entry);
+            }
+        }
+    }
+
+    private void collectPlaySceneEdgeCommands(AbstractEdge edge, BasicNode source, SuperNode owner, String sceneName, List<JSONObject> matches) {
+        if (edge == null || edge.getCmdList() == null) return;
+        List<Command> commands = edge.getCmdList();
+        for (int i = 0; i < commands.size(); i++) {
+            Command command = commands.get(i);
+            if (isPlaySceneLiteral(command, sceneName)) {
+                JSONObject entry = new JSONObject();
+                entry.put("scope", "edge");
+                entry.put("sceneName", sceneName);
+                entry.put("superNodeId", owner.getId());
+                entry.put("superNodeName", owner.getName());
+                entry.put("nodeId", source != null ? source.getId() : "");
+                entry.put("nodeName", source != null ? source.getName() : "");
+                entry.put("commandIndex", i);
+                entry.put("commandText", command.getConcreteSyntax());
+                entry.put("edgeType", edge.getClass().getSimpleName());
+                matches.add(entry);
+            }
+        }
+    }
+
+    private void collectPlaySceneEdgeCommands(AbstractEdge edge, BasicNode source, SuperNode owner, Set<String> sceneNames, List<JSONObject> matches) {
+        if (edge == null || edge.getCmdList() == null || sceneNames == null || sceneNames.isEmpty()) return;
+        List<Command> commands = edge.getCmdList();
+        for (int i = 0; i < commands.size(); i++) {
+            Command command = commands.get(i);
+            String literal = getPlaySceneLiteral(command);
+            if (literal != null && sceneNames.contains(literal)) {
+                JSONObject entry = new JSONObject();
+                entry.put("scope", "edge");
+                entry.put("sceneName", literal);
+                entry.put("superNodeId", owner.getId());
+                entry.put("superNodeName", owner.getName());
+                entry.put("nodeId", source != null ? source.getId() : "");
+                entry.put("nodeName", source != null ? source.getName() : "");
+                entry.put("commandIndex", i);
+                entry.put("commandText", command.getConcreteSyntax());
+                entry.put("edgeType", edge.getClass().getSimpleName());
+                matches.add(entry);
+            }
+        }
+    }
+
+    private boolean isPlaySceneLiteral(Command command, String sceneName) {
+        if (!(command instanceof PlayScenesActivity)) return false;
+        PlayScenesActivity play = (PlayScenesActivity) command;
+        Expression arg = play.getArgument();
+        if (!(arg instanceof StringLiteral)) return false;
+        StringLiteral lit = (StringLiteral) arg;
+        return sceneName.equals(lit.getValue());
+    }
+
+    private String getPlaySceneLiteral(Command command) {
+        if (!(command instanceof PlayScenesActivity)) return null;
+        PlayScenesActivity play = (PlayScenesActivity) command;
+        Expression arg = play.getArgument();
+        if (!(arg instanceof StringLiteral)) return null;
+        StringLiteral lit = (StringLiteral) arg;
+        return lit.getValue();
+    }
+
+    private int renamePlaySceneReferences(SuperNode current, String sceneName, String newName) {
+        if (current == null) return 0;
+        int updated = 0;
+        updated += renamePlaySceneCommands(current, sceneName, newName);
+        for (BasicNode node : current.getNodeList()) {
+            updated += renamePlaySceneCommands(node, sceneName, newName);
+            for (AbstractEdge edge : node.getEdgeList()) {
+                updated += renamePlaySceneEdgeCommands(edge, sceneName, newName);
+            }
+        }
+        for (SuperNode child : current.getSuperNodeList()) {
+            updated += renamePlaySceneReferences(child, sceneName, newName);
+        }
+        return updated;
+    }
+
+    private int renamePlaySceneCommands(BasicNode node, String sceneName, String newName) {
+        if (node == null || node.getCmdList() == null) return 0;
+        int updated = 0;
+        ArrayList<Command> commands = node.getCmdList();
+        for (Command command : commands) {
+            if (command instanceof PlayScenesActivity) {
+                PlayScenesActivity play = (PlayScenesActivity) command;
+                Expression arg = play.getArgument();
+                if (arg instanceof StringLiteral) {
+                    StringLiteral lit = (StringLiteral) arg;
+                    if (sceneName.equals(lit.getValue())) {
+                        lit.setValue(newName);
+                        updated += 1;
+                    }
+                }
+            }
+        }
+        return updated;
+    }
+
+    private int renamePlaySceneEdgeCommands(AbstractEdge edge, String sceneName, String newName) {
+        if (edge == null || edge.getCmdList() == null) return 0;
+        int updated = 0;
+        for (Command command : edge.getCmdList()) {
+            if (command instanceof PlayScenesActivity) {
+                PlayScenesActivity play = (PlayScenesActivity) command;
+                Expression arg = play.getArgument();
+                if (arg instanceof StringLiteral) {
+                    StringLiteral lit = (StringLiteral) arg;
+                    if (sceneName.equals(lit.getValue())) {
+                        lit.setValue(newName);
+                        updated += 1;
+                    }
+                }
+            }
+        }
+        return updated;
+    }
+
+    private final Object embeddingsLock = new Object();
+    private Process embeddingsProcess = null;
+
+    private void pipeEmbeddingsOutput(Process process) {
+        if (process == null) return;
+        Thread t = new Thread(() -> {
+            try (java.io.BufferedReader reader = new java.io.BufferedReader(
+                    new java.io.InputStreamReader(process.getInputStream()))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    sLogger.message("[EMBEDDINGS] " + line);
+                }
+            } catch (Exception exc) {
+                sLogger.warning("[EMBEDDINGS] log pipe failed: " + exc.getMessage());
+            }
+        }, "embeddings-log-pipe");
+        t.setDaemon(true);
+        t.start();
+    }
+
+    private JSONObject startEmbeddingsService(JSONObject params) {
+        synchronized (embeddingsLock) {
+            if (embeddingsProcess != null && embeddingsProcess.isAlive()) {
+                return new JSONObject().put("status", "ok").put("started", false);
+            }
+            String jarPath = System.getenv("EMBEDDINGS_JAR");
+            java.nio.file.Path jar = null;
+            java.util.List<String> searched = new java.util.ArrayList<>();
+            if (jarPath != null && !jarPath.isBlank()) {
+                jar = java.nio.file.Paths.get(jarPath).toAbsolutePath().normalize();
+                searched.add(jar.toString());
+                if (!java.nio.file.Files.exists(jar)) {
+                    jar = null;
+                }
+            }
+            if (jar == null) {
+                java.nio.file.Path start = java.nio.file.Paths.get(System.getProperty("user.dir", "."))
+                        .toAbsolutePath()
+                        .normalize();
+                java.nio.file.Path cursor = start;
+                for (int i = 0; i < 6 && cursor != null; i++) {
+                    java.nio.file.Path libsDir = cursor.resolve("services/embeddings/build/libs").normalize();
+                    searched.add(libsDir.toString());
+                    if (java.nio.file.Files.exists(libsDir)) {
+                        try (java.util.stream.Stream<java.nio.file.Path> stream = java.nio.file.Files.list(libsDir)) {
+                            jar = stream
+                                    .filter(path -> path.getFileName().toString().endsWith("-all.jar"))
+                                    .findFirst()
+                                    .orElse(null);
+                        } catch (Exception ignored) {
+                            jar = null;
+                        }
+                        if (jar != null) {
+                            break;
+                        }
+                    }
+                    java.nio.file.Path parent = cursor.getParent();
+                    if (parent == null || parent.equals(cursor)) {
+                        cursor = null;
+                    } else {
+                        cursor = parent;
+                    }
+                }
+            }
+            if (jar == null || !java.nio.file.Files.exists(jar)) {
+                return errorResponse("NOT_FOUND",
+                        "Embeddings jar not found. Build with :services:embeddings:shadowJar or set EMBEDDINGS_JAR. Searched: " + searched);
+            }
+            String port = System.getenv("EMBEDDINGS_PORT");
+            if (port == null || port.isBlank()) {
+                port = "4050";
+            }
+            try {
+                ProcessBuilder pb = new ProcessBuilder("java", "-jar", jar.toString());
+                pb.environment().put("EMBEDDINGS_PORT", port);
+                pb.redirectErrorStream(true);
+                embeddingsProcess = pb.start();
+                pipeEmbeddingsOutput(embeddingsProcess);
+                JSONObject resp = new JSONObject();
+                resp.put("status", "ok");
+                resp.put("started", true);
+                resp.put("pid", embeddingsProcess.pid());
+                return resp;
+            } catch (Exception exc) {
+                return errorResponse("START_FAILED", "Failed to start embeddings service: " + exc.getMessage());
+            }
+        }
+    }
+
     private boolean applyHistoryEntry(ProjectRef ref, HistoryEntry entry) {
         if (ref == null || ref.runtimeProject == null || entry == null) {
             return false;
@@ -6240,7 +7508,7 @@ public final class WebUiServer implements EventListener {
             return new IntLiteral(0);
         }
         if (trimmed.equalsIgnoreCase("Bool")) {
-            return new BoolLiteral(true);
+            return new BoolLiteral(false);
         }
         if (trimmed.equalsIgnoreCase("Float")) {
             return new FloatLiteral(0);

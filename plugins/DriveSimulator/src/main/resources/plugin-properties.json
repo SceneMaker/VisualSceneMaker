@@ -1,0 +1,26 @@
+{
+  "schemaVersion": "1.0",
+  "plugin": {
+    "id": "DriveSimulator",
+    "name": "Drive Simulator",
+    "className": "de.dfki.vsm.xtension.DriveSimulator.DriveSimulatorExecutor",
+    "description": "Driving simulator integration",
+    "tags": ["simulator", "driving"]
+  },
+  "categories": {
+    "primary": "input",
+    "secondary": []
+  },
+  "config": {
+    "required": [],
+    "optional": []
+  },
+  "commands": [],
+  "variables": {
+    "writes": [
+      { "var": "constructionStart", "type": "string", "scope": "global" },
+      { "var": "speed", "type": "string", "scope": "global" }
+    ],
+    "reads": []
+  }
+}

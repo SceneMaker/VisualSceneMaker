@@ -1,0 +1,29 @@
+<html lang="en" class="h-100">
+<head>
+    <!-- Plotly.js -->
+    <script src="js/plotly-latest.min.js"></script>
+    <script src="js/helper.js"></script>
+    <link rel="stylesheet" href="css/graph_ui.css">
+
+</head>
+
+<body>
+<div class="graph_ui_wrapper">
+    <div id="graph_stimmungsbarometer">
+    </div>
+
+    <div id="inset" class="id-button">
+        <button id='backbutton'
+                style="background-image: url('img/back.png');"
+                onClick="parent.postMessage('back', '*')"
+        ></button>
+    </div>
+
+</div>
+
+</body>
+
+<script src="js/graph_stimmung.js"></script>
+
+</html>
+

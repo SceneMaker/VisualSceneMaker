@@ -142,7 +142,6 @@ dependencies {
     runtimeOnly project(':plugins:unity')
     runtimeOnly project(':plugins:wizard')
     runtimeOnly project(':plugins:yallah')
-    runtimeOnly project(':plugins:VLCRemoteController')
 }
 ```
 
