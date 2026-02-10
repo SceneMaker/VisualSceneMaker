@@ -958,6 +958,10 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
   let sceneFlowShowInspector = sceneFlowToggleState.showInspector;
   let agentsCollapsed = false;
   let scenesCollapsed = false;
+  let typeDefsCollapsed = true;
+  let varDefsCollapsed = false;
+  let cmdExecCollapsed = false;
+  let inspectorDefGridStyle = "";
   let sceneFlowBusy = false;
   let runtimeInfo = null;
   let runtimeError = "";
@@ -1042,14 +1046,17 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
   let cmdEditIndex = null;
   let cmdError = "";
   let cmdSelectedIndex = null;
+  let cmdEditingIndex = null;
   let startListSelectedId = "";
   let cmdDialogOpen = false;
   let cmdInlineDrafts = [];
   let cmdDialogNodeId = "";
   let cmdInlineInputEls = [];
   let cmdInlineWarnings = [];
-  let cmdHelperOpen = false;
-  let cmdHelperType = "PlayScene";
+  let cmdHelperTab = "PlayAction";
+  let cmdHelperVarOp = "Assign";
+  let cmdHelperSyncing = false;
+  let cmdHelperDetectedTab = null;
   let cmdHelperScene = "";
   let cmdHelperAgent = "";
   let cmdHelperAction = "";
@@ -1077,6 +1084,12 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
   let cmdHelperShowReads = false;
   let cmdHelperShowConfig = false;
   let lastCmdHelperDescriptorKey = "";
+  let cmdAcItems = [];
+  let cmdAcSelectedIdx = 0;
+  let cmdAcVisible = false;
+  let cmdAcReplace = null;
+  let cmdAcPrefix = "";
+  let cmdAcPos = { left: 0, top: 0, width: 0 };
   let lastNodeDefsId = "";
   let loadConfirmOpen = false;
   let loadConfirmReasons = [];
@@ -1107,6 +1120,11 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
   let pending = new Map();
 
   $: selectedProject = projects.find((p) => p.projectId === selectedProjectId) || null;
+  $: inspectorDefGridStyle = [
+    typeDefsCollapsed ? "auto" : "minmax(0, 1fr)",
+    varDefsCollapsed ? "auto" : "minmax(0, 1fr)",
+    cmdExecCollapsed ? "auto" : "minmax(0, 1fr)"
+  ].join(" ");
   $: filteredPrefs = filterKeyValues(prefDraft, prefFilter);
   $: projectConfigView = normalizeProjectConfig(projectConfigDraft || projectConfig || {});
   $: headerDirty = !!(selectedProject?.dirty || sceneFlowDirty || scriptDirty || projectConfigDirty);
@@ -1652,8 +1670,8 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
     }
   }
   $: filteredScriptElements = filterScriptElements(scriptElements, scriptElementsFilter);
-  $: cmdHelperAgentCommands = pluginCommandsForAgent(cmdHelperAgent);
-  $: cmdHelperDescriptor = pluginInterfaceForAgent(cmdHelperAgent);
+  $: cmdHelperAgentCommands = (pluginInterfaces, projectConfigView, pluginCommandsForAgent(cmdHelperAgent));
+  $: cmdHelperDescriptor = (pluginInterfaces, projectConfigView, pluginInterfaceForAgent(cmdHelperAgent));
   $: cmdHelperActionDescriptor =
     (cmdHelperAgentCommands || []).find((entry) => entry?.name === cmdHelperAction) || null;
   $: cmdHelperPluginCommands = Array.isArray(cmdHelperDescriptor?.commands) ? cmdHelperDescriptor.commands : [];
@@ -1689,18 +1707,15 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
       cmdHelperShowConfig = cmdHelperPluginConfigList.length > 0 && !configUnclear;
     }
   }
+  $: cmdHelperAgentKnown = cmdHelperAgent && (projectConfigAgents || []).some((a) => a?.name === cmdHelperAgent);
+  $: cmdHelperActionKnown = cmdHelperAction && cmdHelperAgentCommands.some((c) => c?.name === cmdHelperAction);
   $: cmdHelperWarnings =
-    cmdHelperType === "PlayAction"
+    cmdHelperTab === "PlayAction"
       ? playActionWarnings(cmdHelperAgent, cmdHelperAction, cmdHelperArgs, pluginInterfaceForAgent(cmdHelperAgent))
       : [];
-  $: cmdInlineWarnings = (cmdInlineDrafts || []).map((cmdText) => {
-    const parsed = parsePlayActionCommand(cmdText);
-    if (!parsed) return [];
-    return playActionWarnings(parsed.agent, parsed.action, parsed.args, pluginInterfaceForAgent(parsed.agent));
-  });
   $: sceneAgentNames = extractSceneAgents(scriptDraft);
   $: deviceAgentNames = extractDeviceAgents(projectConfigAgents);
-  $: agentGroups = buildAgentGroups(sceneAgentNames, deviceAgentNames);
+  $: agentGroups = buildAgentGroups(sceneAgentNames, deviceAgentNames, pluginInterfaces, projectConfigView);
   $: missingAgentNames = extractMissingAgents(sceneAgentNames, projectConfigAgents);
   $: missingAgentDeviceOptions = buildMissingAgentDeviceOptions(projectConfigPlugins);
   $: monitorSelectedVar = findMonitorVar(monitorSelectedKey);
@@ -1750,21 +1765,29 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
 
   $: if (nodeEditorTargetId && nodeEditorTargetId !== lastNodeDefsId) {
     lastNodeDefsId = nodeEditorTargetId;
+    typeDefsCollapsed = true;
+    varDefsCollapsed = nodeEditorTarget?.isRoot ? false : true;
+    cmdExecCollapsed = false;
     closeTypeDefDialog();
     closeVarDefDialog();
     if (cmdDialogOpen) {
       syncCmdInlineDrafts();
       cmdSelectedIndex = null;
+      cmdEditingIndex = null;
     } else {
       resetCmdEditor();
     }
   } else if (!nodeEditorTargetId && lastNodeDefsId) {
     lastNodeDefsId = "";
+    typeDefsCollapsed = true;
+    varDefsCollapsed = true;
+    cmdExecCollapsed = false;
     resetTypeDefEditor();
     resetVarDefEditor();
     if (cmdDialogOpen) {
       syncCmdInlineDrafts();
       cmdSelectedIndex = null;
+      cmdEditingIndex = null;
     } else {
       resetCmdEditor();
     }
@@ -1782,7 +1805,15 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
     const maxIndex = cmdDialogOpen ? cmdInlineDrafts.length : nodeEditorCommands.length;
     if (cmdSelectedIndex >= maxIndex) {
       cmdSelectedIndex = null;
+      cmdEditingIndex = null;
     }
+  }
+  $: if (cmdEditingIndex !== null && cmdEditingIndex !== cmdSelectedIndex) {
+    cmdEditingIndex = null;
+  }
+
+  $: if (cmdDialogOpen && cmdSelectedIndex !== null && !cmdHelperSyncing) {
+    syncHelperFromSelection();
   }
 
   $: if (cmdDialogOpen) {
@@ -1819,6 +1850,11 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
       nodeDraft.comment !== (selectedNode.comment ?? "") ||
       !!nodeDraft.isStart !== !!selectedNode.isStart);
   $: superNodeStartLocked = !!(superNodeDraft && nodeEditorTarget?.isRoot);
+  $: rootSceneFlowCommandEditingLocked = !!nodeEditorTarget?.isRoot;
+  $: if (rootSceneFlowCommandEditingLocked) {
+    varDefsCollapsed = false;
+    cmdExecCollapsed = true;
+  }
   $: superNodeDirty =
     !sceneFlowSelection &&
     !!superNodeDraft &&
@@ -2309,6 +2345,27 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
 
   function hasRecentPlugins(project) {
     return Array.isArray(project?.stats?.plugins) && project.stats.plugins.length > 0;
+  }
+
+  function formatRecentScenesStats(project) {
+    const total = Number(project?.stats?.scenes ?? 0);
+    const entries = Array.isArray(project?.stats?.sceneLanguages)
+      ? project.stats.sceneLanguages
+          .map((entry) => ({
+            language: String(entry?.language ?? "").trim(),
+            count: Number(entry?.count ?? 0)
+          }))
+          .filter((entry) => entry.count > 0)
+      : [];
+    if (!entries.length) {
+      return `Scenes ${total}`;
+    }
+    if (entries.length === 1) {
+      const label = entries[0].language || "?";
+      return `Scenes ${total} (${label})`;
+    }
+    const parts = entries.map((entry) => `${entry.count} (${entry.language || "?"})`);
+    return `Scenes ${total} ・ ${parts.join(" ・ ")}`;
   }
 
   async function loadTutorials() {
@@ -5802,31 +5859,110 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
     });
   }
 
-  function buildAgentGroups(sceneAgents, deviceAgents) {
-    const sceneMap = new Map();
-    const deviceMap = new Map();
+  function buildAgentGroups(sceneAgents, deviceAgents, interfaces, configView) {
+    // Merge all known agent names (from script + from config) into a deduplicated map
+    const allAgents = new Map();
     for (const name of sceneAgents || []) {
-      sceneMap.set(String(name).toLowerCase(), name);
+      const key = String(name).toLowerCase();
+      if (!allAgents.has(key)) allAgents.set(key, { name, inScript: true, inConfig: false });
+      else allAgents.get(key).inScript = true;
     }
     for (const name of deviceAgents || []) {
-      deviceMap.set(String(name).toLowerCase(), name);
+      const key = String(name).toLowerCase();
+      if (!allAgents.has(key)) allAgents.set(key, { name, inScript: false, inConfig: true });
+      else allAgents.get(key).inConfig = true;
     }
-    const output = [];
-    const processing = [];
-    for (const [key, name] of sceneMap.entries()) {
-      output.push({ name, type: "output", shared: deviceMap.has(key) });
-    }
-    output.sort((a, b) => a.name.localeCompare(b.name));
-    for (const [key, name] of deviceMap.entries()) {
-      if (sceneMap.has(key)) continue;
-      processing.push({ name, type: "processing", shared: false });
-    }
-    processing.sort((a, b) => a.name.localeCompare(b.name));
-    return {
-      input: [],
-      processing,
-      output
+
+    // Helper to resolve plugin interface categories for an agent name
+    const resolveCategories = (agentName) => {
+      const descriptor = pluginInterfaceForAgentWithContext(agentName, interfaces, configView);
+      if (!descriptor?.categories) return null;
+      const primary = String(descriptor.categories.primary || "").toLowerCase();
+      const secondary = Array.isArray(descriptor.categories.secondary)
+        ? descriptor.categories.secondary.map((s) => String(s || "").toLowerCase()).filter(Boolean)
+        : [];
+      return { primary, secondary };
     };
+
+    const input = [];
+    const processing = [];
+    const output = [];
+    const seen = { input: new Set(), processing: new Set(), output: new Set() };
+
+    const addTo = (group, seenSet, name, type) => {
+      const key = name.toLowerCase();
+      if (!seenSet.has(key)) {
+        seenSet.add(key);
+        group.push({ name, type });
+      }
+    };
+
+    for (const [, agentInfo] of allAgents) {
+      const categories = resolveCategories(agentInfo.name);
+      if (categories && categories.primary) {
+        // Place in primary category group
+        const primary = categories.primary;
+        if (primary === "input") addTo(input, seen.input, agentInfo.name, "input");
+        else if (primary === "processing") addTo(processing, seen.processing, agentInfo.name, "processing");
+        else if (primary === "output") addTo(output, seen.output, agentInfo.name, "output");
+
+        // Place in secondary category groups as well
+        for (const sec of categories.secondary) {
+          if (sec === "input") addTo(input, seen.input, agentInfo.name, "input");
+          else if (sec === "processing") addTo(processing, seen.processing, agentInfo.name, "processing");
+          else if (sec === "output") addTo(output, seen.output, agentInfo.name, "output");
+        }
+      } else {
+        // Fallback: script agents → output, config-only agents → processing
+        if (agentInfo.inScript) {
+          addTo(output, seen.output, agentInfo.name, "output");
+        } else {
+          addTo(processing, seen.processing, agentInfo.name, "processing");
+        }
+      }
+    }
+
+    input.sort((a, b) => a.name.localeCompare(b.name));
+    processing.sort((a, b) => a.name.localeCompare(b.name));
+    output.sort((a, b) => a.name.localeCompare(b.name));
+    return { input, processing, output };
+  }
+
+  function pluginInterfaceForAgentWithContext(agentName, interfaces, configView) {
+    const agents = configView?.agents || [];
+    const plugins = configView?.plugins || [];
+    const agent = agents.find((entry) => entry?.name === agentName);
+    if (!agent) return null;
+    const deviceName = agent?.device || "";
+    const plugin = plugins.find((entry) => entry?.name === deviceName);
+    const className = plugin?.className || "";
+    const normalizeKey = (value) => String(value || "").trim().toLowerCase();
+    const simpleClassName = (value) => {
+      const text = String(value || "").trim();
+      if (!text) return "";
+      const parts = text.split(".");
+      return parts[parts.length - 1] || text;
+    };
+    const matchesDescriptor = (descriptor, key, simpleKey) => {
+      const descriptorPlugin = descriptor?.plugin || {};
+      const id = normalizeKey(descriptorPlugin.id);
+      const name = normalizeKey(descriptorPlugin.name);
+      const classKey = normalizeKey(descriptorPlugin.className);
+      return [id, name, classKey].some((entry) => entry && (entry === key || (simpleKey && entry === simpleKey)));
+    };
+    if (className) {
+      const classKey = normalizeKey(className);
+      const simpleKey = normalizeKey(simpleClassName(className));
+      const match = (interfaces || []).find((entry) => matchesDescriptor(entry, classKey, simpleKey));
+      if (match) return match;
+    }
+    if (deviceName) {
+      const deviceKey = normalizeKey(deviceName);
+      const simpleKey = normalizeKey(simpleClassName(deviceName));
+      const match = (interfaces || []).find((entry) => matchesDescriptor(entry, deviceKey, simpleKey));
+      if (match) return match;
+    }
+    return null;
   }
 
   function buildMissingAgentDeviceOptions(plugins) {
@@ -7178,10 +7314,13 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
     cmdEditIndex = null;
     cmdError = "";
     cmdSelectedIndex = null;
+    cmdEditingIndex = null;
     cmdInlineDrafts = [];
     cmdDialogNodeId = "";
     cmdInlineInputEls = [];
-    cmdHelperOpen = false;
+    cmdHelperVarOp = "Assign";
+    cmdHelperSyncing = false;
+    cmdHelperDetectedTab = null;
     cmdHelperShowWrites = false;
     cmdHelperShowReads = false;
     cmdHelperShowConfig = false;
@@ -7736,6 +7875,10 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
   async function openCmdDialog(nodeId = null) {
     const targetId = nodeId || nodeEditorTarget?.id || "";
     if (!targetId && !nodeEditorTarget) return;
+    if (!nodeId && nodeEditorTarget?.isRoot) {
+      cmdError = "Command executions are disabled for the top-level SceneFlow.";
+      return;
+    }
     rememberFocus();
     if (nodeId && (sceneFlowSelection?.type !== "node" || sceneFlowSelection.id !== nodeId)) {
       sceneFlowSelection = { type: "node", id: nodeId };
@@ -7744,19 +7887,25 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
     }
     cmdDialogOpen = true;
     cmdInlineInputEls = [];
-    cmdHelperOpen = false;
+    initCmdHelper();
     syncCmdInlineDrafts();
+    if (cmdInlineDrafts.length > 0) {
+      cmdSelectedIndex = 0;
+    }
     focusDialog(cmdDialogEl);
   }
 
   async function startCmdAdd() {
+    if (nodeEditorTarget?.isRoot) return;
     await openCmdDialog();
     cmdError = "";
     cmdInlineDrafts = [...cmdInlineDrafts, ""];
     cmdSelectedIndex = cmdInlineDrafts.length - 1;
+    cmdEditingIndex = cmdSelectedIndex;
   }
 
   async function startCmdEdit(index) {
+    if (nodeEditorTarget?.isRoot) return;
     if (index < 0 || index >= nodeEditorCommands.length) return;
     await openCmdDialog();
     cmdError = "";
@@ -7801,12 +7950,45 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
   function handleCmdInlineKeydown(event, index) {
     if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) {
       event.preventDefault();
+      dismissAutocomplete();
       commitCmdInlineDraft(index);
+      cmdEditingIndex = null;
       event.currentTarget?.blur?.();
       return;
     }
+    if (cmdAcVisible && cmdAcItems.length > 0) {
+      if (event.key === "ArrowDown") {
+        event.preventDefault();
+        cmdAcSelectedIdx = (cmdAcSelectedIdx + 1) % cmdAcItems.length;
+        return;
+      }
+      if (event.key === "ArrowUp") {
+        event.preventDefault();
+        cmdAcSelectedIdx = (cmdAcSelectedIdx - 1 + cmdAcItems.length) % cmdAcItems.length;
+        return;
+      }
+      if (event.key === "Enter" || event.key === "Tab") {
+        if (cmdAcSelectedIdx >= 0 && cmdAcSelectedIdx < cmdAcItems.length) {
+          event.preventDefault();
+          acceptAcItem(event.currentTarget, cmdAcItems[cmdAcSelectedIdx]);
+          return;
+        }
+      }
+      if (event.key === "ArrowRight" && cmdAcPrefix.length > 0) {
+        if (cmdAcSelectedIdx >= 0 && cmdAcSelectedIdx < cmdAcItems.length) {
+          event.preventDefault();
+          acceptAcItem(event.currentTarget, cmdAcItems[cmdAcSelectedIdx]);
+          return;
+        }
+      }
+    }
     if (event.key === "Escape") {
       event.preventDefault();
+      if (cmdAcVisible) {
+        dismissAutocomplete();
+        return;
+      }
+      cmdEditingIndex = null;
       if (index < nodeEditorCommands.length) {
         updateCmdInlineDraft(index, nodeEditorCommands[index]?.text ?? "");
       } else {
@@ -7820,6 +8002,10 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
   }
 
   async function commitCmdInlineDraft(index) {
+    if (nodeEditorTarget?.isRoot) {
+      cmdError = "Command executions are disabled for the top-level SceneFlow.";
+      return;
+    }
     if (!selectedProjectId || !nodeEditorTarget) return;
     const raw = cmdInlineDrafts[index] ?? "";
     const text = String(raw).trim();
@@ -7834,6 +8020,7 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
         cmdInlineDrafts = cmdInlineDrafts.filter((_, idx) => idx !== index);
         if (cmdSelectedIndex === index) {
           cmdSelectedIndex = null;
+          cmdEditingIndex = null;
         }
       }
       return;
@@ -7869,6 +8056,7 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
   }
 
   async function moveCmd(index, direction) {
+    if (nodeEditorTarget?.isRoot) return null;
     if (!selectedProjectId || !nodeEditorTarget) return null;
     if (!nodeEditorCommands[index]) return null;
     const target = index + direction;
@@ -7884,6 +8072,7 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
   }
 
   async function deleteCmd(index) {
+    if (nodeEditorTarget?.isRoot) return;
     if (!selectedProjectId || !nodeEditorTarget) return;
     pinSelectedNodeSelection();
     return await runSceneFlowCommand("SceneFlow.Node.Cmd.Delete", {
@@ -7903,6 +8092,7 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
   }
 
   async function moveSelectedCmd(direction) {
+    if (nodeEditorTarget?.isRoot) return;
     if (cmdSelectedIndex === null) return;
     if (cmdSelectedIndex >= nodeEditorCommands.length) return;
     const current = cmdSelectedIndex;
@@ -7933,11 +8123,13 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
   }
 
   async function deleteSelectedCmd() {
+    if (nodeEditorTarget?.isRoot) return;
     if (cmdSelectedIndex === null) return;
     const index = cmdSelectedIndex;
     if (index >= nodeEditorCommands.length) {
       cmdInlineDrafts = cmdInlineDrafts.filter((_, idx) => idx !== index);
       cmdSelectedIndex = null;
+      cmdEditingIndex = null;
       return;
     }
     const response = await deleteCmd(index);
@@ -7945,15 +8137,18 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
       cmdInlineDrafts = cmdInlineDrafts.filter((_, idx) => idx !== index);
     }
     cmdSelectedIndex = null;
+    cmdEditingIndex = null;
   }
 
   function editSelectedCmd() {
+    if (nodeEditorTarget?.isRoot) return;
     if (cmdSelectedIndex === null) return;
     startCmdEdit(cmdSelectedIndex);
   }
 
-  function openCmdHelper() {
-    cmdHelperType = "PlayScene";
+  function initCmdHelper() {
+    cmdHelperTab = "PlayAction";
+    cmdHelperDetectedTab = null;
     cmdHelperScene = helperScenes?.[0] || "";
     cmdHelperAgent = projectConfigAgents?.[0]?.name || "";
     const pluginActionOption = pluginCommandsForAgent(cmdHelperAgent)?.[0] || null;
@@ -7966,24 +8161,34 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
     cmdHelperVarStep = "1";
     cmdHelperSceneBindings = {};
     cmdHelperVarScope = "global";
-    cmdHelperOpen = true;
+    cmdHelperVarOp = "Assign";
   }
 
-  function updateCmdHelperType() {
-    if (cmdHelperType === "Inc" || cmdHelperType === "Dec") {
-      cmdHelperVarType = "Int";
-      cmdHelperVarStep = cmdHelperVarStep || "1";
-      cmdHelperVarExpr = "";
+  function updateCmdHelperTab() {
+    if (cmdHelperTab === "Variable") {
+      cmdHelperVarOp = cmdHelperVarOp || "Assign";
+      if (cmdHelperVarOp === "Inc" || cmdHelperVarOp === "Dec") {
+        cmdHelperVarType = "Int";
+        cmdHelperVarStep = cmdHelperVarStep || "1";
+      }
     }
-    if (cmdHelperType === "Assign") {
-      cmdHelperVarExpr = cmdHelperVarExpr || "";
-    }
-    if (cmdHelperType !== "PlayAction") {
+    if (cmdHelperTab !== "PlayAction") {
       lastCmdHelperAction = "";
     }
   }
 
-  $: if (cmdHelperOpen && cmdHelperType === "PlayScene") {
+  function updateCmdHelperVarOp() {
+    if (cmdHelperVarOp === "Inc" || cmdHelperVarOp === "Dec") {
+      cmdHelperVarType = "Int";
+      cmdHelperVarStep = cmdHelperVarStep || "1";
+      cmdHelperVarExpr = "";
+    }
+    if (cmdHelperVarOp === "Assign") {
+      cmdHelperVarExpr = cmdHelperVarExpr || "";
+    }
+  }
+
+  $: if (cmdDialogOpen && cmdHelperTab === "PlayScene" && !cmdHelperSyncing) {
     const params = helperSceneIndex.get(cmdHelperScene) || [];
     const next = {};
     params.forEach((param) => {
@@ -7991,7 +8196,7 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
     });
     cmdHelperSceneBindings = next;
   }
-  $: if (cmdHelperOpen && cmdHelperType === "PlayAction") {
+  $: if (cmdDialogOpen && cmdHelperTab === "PlayAction" && !cmdHelperSyncing) {
     const options = cmdHelperAgentCommands || [];
     if (cmdHelperAgent && options.length && !options.some((entry) => entry?.name === cmdHelperAction)) {
       cmdHelperAction = options[0]?.name || "";
@@ -8010,10 +8215,6 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
       }
       lastCmdHelperAction = actionName;
     }
-  }
-
-  function closeCmdHelper() {
-    cmdHelperOpen = false;
   }
 
   function addCmdHelperArg() {
@@ -8206,8 +8407,342 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
     return { agent, action, args };
   }
 
+  function getCursorTokenContext(inputValue, cursorPos) {
+    if (!inputValue) return null;
+    const wrapperMatch = String(inputValue).match(/^(PlayAction\s*\(\s*["']\[?)([\s\S]*?)(\]?["']\s*\))$/);
+    if (!wrapperMatch) return null;
+    const prefixLen = wrapperMatch[1].length;
+    const payload = wrapperMatch[2];
+    const payloadEnd = prefixLen + payload.length;
+    if (cursorPos < prefixLen || cursorPos > payloadEnd) return null;
+    const pCursor = cursorPos - prefixLen;
+    const tokens = [];
+    let current = "";
+    let tokenStart = -1;
+    let quote = null;
+    for (let i = 0; i < payload.length; i += 1) {
+      const ch = payload[i];
+      if (quote) {
+        current += ch;
+        if (ch === quote) quote = null;
+        continue;
+      }
+      if (ch === "'" || ch === '"') {
+        if (tokenStart === -1) tokenStart = i;
+        current += ch;
+        quote = ch;
+        continue;
+      }
+      if (/\s/.test(ch)) {
+        if (current) {
+          tokens.push({ text: current, start: tokenStart, end: i });
+          current = "";
+          tokenStart = -1;
+        }
+        continue;
+      }
+      if (tokenStart === -1) tokenStart = i;
+      current += ch;
+    }
+    if (current) {
+      tokens.push({ text: current, start: tokenStart, end: payload.length });
+    }
+    let activeTokenIdx = -1;
+    for (let i = 0; i < tokens.length; i += 1) {
+      if (pCursor >= tokens[i].start && pCursor <= tokens[i].end) {
+        activeTokenIdx = i;
+        break;
+      }
+    }
+    let tokenPosition;
+    let prefix = "";
+    let replaceStart;
+    let replaceEnd;
+    if (activeTokenIdx >= 0) {
+      tokenPosition = activeTokenIdx;
+      const tok = tokens[activeTokenIdx];
+      prefix = tok.text.slice(0, pCursor - tok.start);
+      replaceStart = prefixLen + tok.start;
+      replaceEnd = prefixLen + tok.end;
+    } else {
+      let lastBefore = -1;
+      for (let i = 0; i < tokens.length; i += 1) {
+        if (tokens[i].end <= pCursor) lastBefore = i;
+      }
+      tokenPosition = lastBefore + 1;
+      prefix = "";
+      replaceStart = cursorPos;
+      replaceEnd = cursorPos;
+    }
+    if (tokenPosition === 0) return null;
+    const agent = tokens[0]?.text || "";
+    const action = tokens.length > 1 ? tokens[1]?.text || "" : "";
+    if (tokenPosition === 1) {
+      return { kind: "action", prefix, replaceStart, replaceEnd, agent, action: prefix };
+    }
+    if (activeTokenIdx >= 0) {
+      const activeText = tokens[activeTokenIdx].text;
+      const eqIdx = activeText.indexOf("=");
+      if (eqIdx >= 0 && (pCursor - tokens[activeTokenIdx].start) > eqIdx) {
+        const argKey = activeText.slice(0, eqIdx);
+        const valuePrefix = activeText.slice(eqIdx + 1, pCursor - tokens[activeTokenIdx].start);
+        return {
+          kind: "value", prefix: valuePrefix,
+          replaceStart: prefixLen + tokens[activeTokenIdx].start + eqIdx + 1,
+          replaceEnd: prefixLen + tokens[activeTokenIdx].end,
+          agent, action, argKey
+        };
+      }
+    }
+    const usedKeys = new Set();
+    for (let i = 2; i < tokens.length; i += 1) {
+      if (i === activeTokenIdx) continue;
+      const eq = tokens[i].text.indexOf("=");
+      if (eq > 0) usedKeys.add(tokens[i].text.slice(0, eq));
+      else usedKeys.add(tokens[i].text);
+    }
+    return { kind: "key", prefix, replaceStart, replaceEnd, agent, action, usedKeys };
+  }
+
+  function computeAcItems(context) {
+    if (!context) return [];
+    const lowerPrefix = (context.prefix || "").toLowerCase();
+    if (context.kind === "action") {
+      const cmds = pluginCommandsForAgent(context.agent) || [];
+      return cmds
+        .filter((c) => c?.name && c.name.toLowerCase().startsWith(lowerPrefix))
+        .map((c) => ({ label: c.name, detail: c.summary || "", kind: "action" }));
+    }
+    if (context.kind === "key") {
+      const cmds = pluginCommandsForAgent(context.agent) || [];
+      const actionCmd = cmds.find((c) => c?.name === context.action);
+      if (!actionCmd) return [];
+      const params = Array.isArray(actionCmd.params) ? actionCmd.params : [];
+      const usedKeys = context.usedKeys || new Set();
+      return params
+        .filter((p) => p?.name && !usedKeys.has(p.name) && p.name.toLowerCase().startsWith(lowerPrefix))
+        .map((p) => ({
+          label: p.name,
+          detail: [p.required ? "required" : "", p.type || ""].filter(Boolean).join(" "),
+          kind: "key"
+        }));
+    }
+    if (context.kind === "value") {
+      const cmds = pluginCommandsForAgent(context.agent) || [];
+      const actionCmd = cmds.find((c) => c?.name === context.action);
+      if (!actionCmd) return [];
+      const params = Array.isArray(actionCmd.params) ? actionCmd.params : [];
+      const param = params.find((p) => p?.name === context.argKey);
+      if (!param || !Array.isArray(param.enum)) return [];
+      return param.enum
+        .filter((v) => String(v).toLowerCase().startsWith(lowerPrefix))
+        .map((v) => ({ label: String(v), detail: "", kind: "value" }));
+    }
+    return [];
+  }
+
+  function updateAutocomplete(inputEl) {
+    if (!inputEl) { dismissAutocomplete(); return; }
+    const inputValue = inputEl.value;
+    const cursorPos = inputEl.selectionStart ?? inputValue.length;
+    const context = getCursorTokenContext(inputValue, cursorPos);
+    if (!context) { dismissAutocomplete(); return; }
+    const items = computeAcItems(context);
+    if (!items.length) { dismissAutocomplete(); return; }
+    cmdAcItems = items;
+    cmdAcSelectedIdx = 0;
+    cmdAcVisible = true;
+    cmdAcPrefix = context.prefix;
+    cmdAcReplace = { start: context.replaceStart, end: context.replaceEnd };
+    const rect = inputEl.getBoundingClientRect();
+    cmdAcPos = { left: rect.left, top: rect.bottom + 2, width: rect.width };
+  }
+
+  async function acceptAcItem(inputEl, item) {
+    if (!inputEl || !item || !cmdAcReplace) return;
+    let replacement = item.label;
+    if (item.kind === "action") replacement += " ";
+    else if (item.kind === "key") replacement += "=";
+    else if (item.kind === "value") replacement += " ";
+    inputEl.setRangeText(replacement, cmdAcReplace.start, cmdAcReplace.end, "end");
+    updateCmdInlineDraft(cmdEditingIndex, inputEl.value);
+    dismissAutocomplete();
+    await tick();
+    inputEl.focus();
+    updateAutocomplete(inputEl);
+  }
+
+  function dismissAutocomplete() {
+    cmdAcItems = [];
+    cmdAcSelectedIdx = 0;
+    cmdAcVisible = false;
+    cmdAcReplace = null;
+    cmdAcPrefix = "";
+  }
+
+  function parsePlaySceneCommand(text) {
+    if (!text) return null;
+    const match = String(text).match(
+      /PlayScene\s*\(\s*["']([\s\S]*?)["'](?:\s*,\s*\{([\s\S]*?)\})?\s*\)/
+    );
+    if (!match) return null;
+    const scene = match[1] || "";
+    const bindings = {};
+    if (match[2]) {
+      const pairs = match[2].split(",");
+      pairs.forEach((pair) => {
+        const eqIdx = pair.indexOf("=");
+        if (eqIdx === -1) return;
+        const key = pair.slice(0, eqIdx).trim();
+        const value = pair.slice(eqIdx + 1).trim().replace(/^["']|["']$/g, "");
+        if (key) bindings[key] = value;
+      });
+    }
+    return { scene, bindings };
+  }
+
+  function escapeRegexStr(str) {
+    return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  }
+
+  function parseVariableCommand(text) {
+    if (!text) return null;
+    const trimmed = String(text).trim();
+    if (trimmed.startsWith("PlayScene") || trimmed.startsWith("PlayAction")) return null;
+    const eqIdx = trimmed.indexOf("=");
+    if (eqIdx === -1) return null;
+    const name = trimmed.slice(0, eqIdx).trim();
+    const expr = trimmed.slice(eqIdx + 1).trim();
+    if (!name || !expr) return null;
+    const incMatch = expr.match(new RegExp("^" + escapeRegexStr(name) + "\\s*\\+\\s*(.+)$"));
+    if (incMatch) {
+      return { op: "Inc", name, step: incMatch[1].trim(), expr: "" };
+    }
+    const decMatch = expr.match(new RegExp("^" + escapeRegexStr(name) + "\\s*-\\s*(.+)$"));
+    if (decMatch) {
+      return { op: "Dec", name, step: decMatch[1].trim(), expr: "" };
+    }
+    return { op: "Assign", name, step: "1", expr };
+  }
+
+  function detectCommandType(text) {
+    if (!text) return null;
+    const trimmed = String(text).trim();
+    const playAction = parsePlayActionCommand(trimmed);
+    if (playAction) return { tab: "PlayAction", data: playAction };
+    const playScene = parsePlaySceneCommand(trimmed);
+    if (playScene) return { tab: "PlayScene", data: playScene };
+    const variable = parseVariableCommand(trimmed);
+    if (variable) return { tab: "Variable", data: variable };
+    return null;
+  }
+
+  function renderCommandTokens(text, agents, interfaces, configView) {
+    if (!text) return [{ text: "", type: "plain" }];
+    const str = String(text);
+    const actionMatch = str.match(/^(PlayAction\s*\(\s*["']\[?)(.+?)(\]?["']\s*\))$/);
+    if (!actionMatch) return [{ text: str, type: "plain" }];
+    const prefix = actionMatch[1];
+    const payload = actionMatch[2];
+    const suffix = actionMatch[3];
+    const tokens = [];
+    tokens.push({ text: prefix, type: "syntax" });
+    const parts = payload.split(/(\s+)/);
+    let tokenIndex = 0;
+    let agentName = "";
+    let actionName = "";
+    let agentDescriptor = null;
+    let actionDescriptor = null;
+    for (let i = 0; i < parts.length; i += 1) {
+      const part = parts[i];
+      if (/^\s+$/.test(part)) {
+        tokens.push({ text: part, type: "syntax" });
+        continue;
+      }
+      if (tokenIndex === 0) {
+        agentName = part;
+        const agentKnown = (agents || []).some((a) => a?.name === agentName);
+        tokens.push({ text: part, type: "agent", known: agentKnown });
+        if (agentKnown) {
+          agentDescriptor = pluginInterfaceForAgentWithContext(agentName, interfaces, configView);
+        }
+        tokenIndex += 1;
+      } else if (tokenIndex === 1) {
+        actionName = part;
+        const cmds = agentDescriptor?.commands || [];
+        const actionKnown = cmds.some((c) => c?.name === actionName);
+        tokens.push({ text: part, type: "action", known: actionKnown });
+        if (actionKnown) {
+          actionDescriptor = cmds.find((c) => c?.name === actionName) || null;
+        }
+        tokenIndex += 1;
+      } else {
+        const eqIdx = part.indexOf("=");
+        if (eqIdx > 0) {
+          const key = part.slice(0, eqIdx);
+          const value = part.slice(eqIdx + 1);
+          const params = actionDescriptor?.params || [];
+          const keyKnown = params.some((p) => p?.name === key);
+          tokens.push({ text: key, type: "argKey", known: keyKnown });
+          tokens.push({ text: "=", type: "syntax" });
+          tokens.push({ text: value, type: "argValue" });
+        } else {
+          tokens.push({ text: part, type: "plain" });
+        }
+        tokenIndex += 1;
+      }
+    }
+    tokens.push({ text: suffix, type: "syntax" });
+    return tokens;
+  }
+
+  function syncHelperFromSelection() {
+    if (cmdSelectedIndex === null || cmdSelectedIndex === undefined) {
+      cmdHelperDetectedTab = null;
+      return;
+    }
+    const text = (cmdInlineDrafts[cmdSelectedIndex] ?? "").trim();
+    if (!text) {
+      cmdHelperDetectedTab = null;
+      return;
+    }
+    cmdHelperSyncing = true;
+    try {
+      const detected = detectCommandType(text);
+      if (!detected) {
+        cmdHelperDetectedTab = null;
+        return;
+      }
+      cmdHelperDetectedTab = detected.tab;
+      cmdHelperTab = detected.tab;
+      if (detected.tab === "PlayAction") {
+        const { agent, action, args } = detected.data;
+        cmdHelperAgent = agent;
+        cmdHelperAction = action;
+        cmdHelperArgs = args || [];
+        lastCmdHelperAction = action;
+        cmdHelperAgentCommands = pluginCommandsForAgent(agent);
+        cmdHelperDescriptor = pluginInterfaceForAgent(agent);
+      } else if (detected.tab === "PlayScene") {
+        const { scene, bindings } = detected.data;
+        cmdHelperScene = scene;
+        cmdHelperSceneBindings = bindings || {};
+      } else if (detected.tab === "Variable") {
+        const { op, name, step, expr } = detected.data;
+        cmdHelperVarOp = op;
+        cmdHelperVarName = name;
+        cmdHelperVarStep = step || "1";
+        cmdHelperVarExpr = expr || "";
+        const known = helperVarCandidates.find((v) => v.name === name);
+        if (known) cmdHelperVarType = known.type || "Int";
+      }
+    } finally {
+      cmdHelperSyncing = false;
+    }
+  }
+
   function commandFromHelper() {
-    if (cmdHelperType === "PlayScene") {
+    if (cmdHelperTab === "PlayScene") {
       const scene = (cmdHelperScene || "").trim();
       if (!scene) return "";
       const bindings = Object.entries(cmdHelperSceneBindings || {})
@@ -8223,7 +8758,7 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
       }
       return `PlayScene("${scene}")`;
     }
-    if (cmdHelperType === "PlayAction") {
+    if (cmdHelperTab === "PlayAction") {
       const agent = (cmdHelperAgent || "").trim();
       const action = (cmdHelperAction || "").trim();
       if (!agent || !action) return "";
@@ -8239,23 +8774,25 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
       const payload = [agent, action, args].filter(Boolean).join(" ");
       return `PlayAction("[${payload}]")`;
     }
-    if (cmdHelperType === "Assign") {
-      const name = (cmdHelperVarName || "").trim();
-      const expr = (cmdHelperVarExpr || "").trim();
-      if (!name || !expr) return "";
-      return `${name} = ${expr}`;
-    }
-    if (cmdHelperType === "Inc") {
-      const name = (cmdHelperVarName || "").trim();
-      const step = (cmdHelperVarStep || "").trim() || "1";
-      if (!name) return "";
-      return `${name} = ${name} + ${step}`;
-    }
-    if (cmdHelperType === "Dec") {
-      const name = (cmdHelperVarName || "").trim();
-      const step = (cmdHelperVarStep || "").trim() || "1";
-      if (!name) return "";
-      return `${name} = ${name} - ${step}`;
+    if (cmdHelperTab === "Variable") {
+      if (cmdHelperVarOp === "Assign") {
+        const name = (cmdHelperVarName || "").trim();
+        const expr = (cmdHelperVarExpr || "").trim();
+        if (!name || !expr) return "";
+        return `${name} = ${expr}`;
+      }
+      if (cmdHelperVarOp === "Inc") {
+        const name = (cmdHelperVarName || "").trim();
+        const step = (cmdHelperVarStep || "").trim() || "1";
+        if (!name) return "";
+        return `${name} = ${name} + ${step}`;
+      }
+      if (cmdHelperVarOp === "Dec") {
+        const name = (cmdHelperVarName || "").trim();
+        const step = (cmdHelperVarStep || "").trim() || "1";
+        if (!name) return "";
+        return `${name} = ${name} - ${step}`;
+      }
     }
     return "";
   }
@@ -8339,14 +8876,18 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
   }
 
   async function applyCmdHelperInsert() {
+    if (nodeEditorTarget?.isRoot) {
+      cmdError = "Command executions are disabled for the top-level SceneFlow.";
+      return;
+    }
     cmdError = "";
-    if (cmdHelperType === "PlayAction") {
+    if (cmdHelperTab === "PlayAction") {
       if (!(cmdHelperAgent || "").trim()) {
         cmdError = "Agent name is required.";
         return;
       }
     }
-    if (cmdHelperType === "Assign" || cmdHelperType === "Inc" || cmdHelperType === "Dec") {
+    if (cmdHelperTab === "Variable") {
       const ok = await ensureHelperVarExists();
       if (!ok) return;
     }
@@ -8355,8 +8896,13 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
       cmdError = "Helper command is incomplete.";
       return;
     }
-    insertHelperCommand(text);
-    cmdHelperOpen = false;
+    if (cmdSelectedIndex !== null) {
+      updateCmdInlineDraft(cmdSelectedIndex, text);
+      cmdEditingIndex = null;
+    } else {
+      cmdInlineDrafts = [...cmdInlineDrafts, text];
+      cmdSelectedIndex = cmdInlineDrafts.length - 1;
+    }
   }
 
   function filterScriptElements(elements, query) {
@@ -8447,6 +8993,53 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
     if (flavour === "pnode") return SCENEFLOW_FRAME_COLORS.edges.pedge;
     if (flavour === "inode") return SCENEFLOW_FRAME_COLORS.edges.iedge;
     return SCENEFLOW_FRAME_COLORS.node;
+  }
+
+  function sceneFlowNodeColorByFlavour(node) {
+    const flavour = (node?.flavour || "").toLowerCase();
+    if (flavour === "enode") return SCENEFLOW_FRAME_COLORS.edges.eedge;
+    if (flavour === "fnode") return SCENEFLOW_FRAME_COLORS.edges.fedge;
+    if (flavour === "tnode") return SCENEFLOW_FRAME_COLORS.edges.tedge;
+    if (flavour === "cnode") return SCENEFLOW_FRAME_COLORS.edges.cedge;
+    if (flavour === "pnode") return SCENEFLOW_FRAME_COLORS.edges.pedge;
+    if (flavour === "inode") return SCENEFLOW_FRAME_COLORS.edges.iedge;
+    return SCENEFLOW_FRAME_COLORS.node;
+  }
+
+  function commandNodeHintStyle(node) {
+    const history = !!node?.isHistory;
+    const fill = history ? "#ffffff" : sceneFlowNodeColorByFlavour(node);
+    const text = history ? "#000000" : "#ffffff";
+    const border = history ? SCENEFLOW_FRAME_COLORS.node : fill;
+    return `--cmd-node-fill:${fill};--cmd-node-text:${text};--cmd-node-border:${border};`;
+  }
+
+  function commandNodeHintSuperPath(w = 96, h = 96, inset = 2) {
+    const power = 5;
+    const steps = 32;
+    const a = w / 2;
+    const b = h / 2;
+    const cx = inset + a;
+    const cy = inset + b;
+    const points = [];
+    for (let i = 0; i <= steps; i += 1) {
+      const theta = (Math.PI * 2 * i) / steps;
+      const cos = Math.cos(theta);
+      const sin = Math.sin(theta);
+      const x = cx + a * Math.sign(cos) * Math.pow(Math.abs(cos), 2 / power);
+      const y = cy + b * Math.sign(sin) * Math.pow(Math.abs(sin), 2 / power);
+      points.push({ x, y });
+    }
+    return points
+      .map((pt, idx) => `${idx === 0 ? "M" : "L"} ${pt.x} ${pt.y}`)
+      .concat("Z")
+      .join(" ");
+  }
+
+  function commandNodeHintTitle(node) {
+    const raw = String(node?.name || "(unnamed node)").trim();
+    if (raw.length <= 18) return raw;
+    return `${raw.slice(0, 17)}…`;
   }
 
   function sceneFlowCenter() {
@@ -9580,11 +10173,12 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
 
   <div class="grid">
     {#if !showEditor}
-    <section class="panel">
+    <section class="panel landing-panel">
       <header class="panel-title">
         <h2>Projects</h2>
       </header>
 
+      <div class="panel-body">
       <div class="project-list">
         {#if projects.length === 0}
           <p class="muted">No open projects.</p>
@@ -9685,11 +10279,13 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
         {/if}
       </form>
 
+    </div>
     </section>
-    <section class="panel">
+    <section class="panel landing-panel">
         <header class="panel-title">
-          <h2>Recent Projects</h2>
+          <h2>Recent Projects ({recent.length})</h2>
         </header>
+        <div class="panel-body">
         <div class="project-list project-list--recent">
           {#if recentLoading}
             <p class="muted">Loading recent projects...</p>
@@ -9712,6 +10308,9 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
                       Supernodes: {project.stats.superNodes ?? 0} · Nodes: {project.stats.nodes ?? 0} · Commands: {project.stats.commands ?? 0}
                     </div>
                     <div class="meta project-list-meta">
+                      {formatRecentScenesStats(project)}
+                    </div>
+                    <div class="meta project-list-meta">
                       Plugins:
                       {#if hasRecentPlugins(project)}
                         {#each project.stats.plugins as plugin, idx}
@@ -9729,11 +10328,13 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
             {/each}
           {/if}
         </div>
+        </div>
       </section>
-      <section class="panel">
+      <section class="panel landing-panel">
         <header class="panel-title">
           <h2>Tutorials</h2>
         </header>
+        <div class="panel-body">
         <div class="project-list">
           {#if tutorials.length === 0}
             <p class="muted">No tutorials available.</p>
@@ -9744,6 +10345,7 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
               </button>
             {/each}
           {/if}
+        </div>
         </div>
       </section>
     {/if}
@@ -9767,7 +10369,27 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
             {#if embeddingsStarting}
               <span class="autosave-status saving" aria-live="polite">Embeddings starting…</span>
             {:else if embeddingsAvailable}
-              <span class="autosave-status" aria-live="polite">Embeddings ready</span>
+              <span
+                class="autosave-status embeddings-badge embeddings-badge-centered"
+                aria-live="polite"
+                title="Embedding-based service for text ready"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke-width="1.5"
+                  stroke="currentColor"
+                  aria-hidden="true"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M15.75 15.75V18m-7.5-6.75h.008v.008H8.25v-.008Zm0 2.25h.008v.008H8.25V13.5Zm0 2.25h.008v.008H8.25v-.008Zm0 2.25h.008v.008H8.25V18Zm2.498-6.75h.007v.008h-.007v-.008Zm0 2.25h.007v.008h-.007V13.5Zm0 2.25h.007v.008h-.007v-.008Zm0 2.25h.007v.008h-.007V18Zm2.504-6.75h.008v.008h-.008v-.008Zm0 2.25h.008v.008h-.008V13.5Zm0 2.25h.008v.008h-.008v-.008Zm0 2.25h.008v.008h-.008V18Zm2.498-6.75h.008v.008h-.008v-.008Zm0 2.25h.008v.008h-.008V13.5ZM8.25 6h7.5v2.25h-7.5V6ZM12 2.25c-1.892 0-3.758.11-5.593.322C5.307 2.7 4.5 3.65 4.5 4.757V19.5a2.25 2.25 0 0 0 2.25 2.25h10.5a2.25 2.25 0 0 0 2.25-2.25V4.757c0-1.108-.806-2.057-1.907-2.185A48.507 48.507 0 0 0 12 2.25Z"
+                  />
+                </svg>
+                ready
+              </span>
             {/if}
             {#if headerDirty}
               <span class="unsaved-indicator" aria-live="polite">Unsaved</span>
@@ -11176,11 +11798,30 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
             {/if}
 
             {#if nodeEditorTarget && !multiSelectionActive}
+              <div class="inspector-def-grid" style={`grid-template-rows:${inspectorDefGridStyle};`}>
               <div class="definition-section">
                 <header class="definition-header">
-                  <h4>Type definitions</h4>
-                  <span class="muted">{nodeEditorTypeDefs.length} total</span>
+                  <h4>Types ({nodeEditorTypeDefs.length})</h4>
+                  <button
+                    type="button"
+                    class="ghost icon-button block-section-toggle"
+                    aria-pressed={!typeDefsCollapsed}
+                    aria-label={typeDefsCollapsed ? "Expand type definitions" : "Collapse type definitions"}
+                    title={typeDefsCollapsed ? "Expand" : "Collapse"}
+                    on:click={() => (typeDefsCollapsed = !typeDefsCollapsed)}
+                  >
+                    {#if typeDefsCollapsed}
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                      </svg>
+                    {:else}
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14" />
+                      </svg>
+                    {/if}
+                  </button>
                 </header>
+                {#if !typeDefsCollapsed}
                 <div class="def-table">
                   <div class="def-list">
                     {#if nodeEditorTypeDefs.length === 0}
@@ -11259,13 +11900,32 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
                     </button>
                   </div>
                 </div>
+                {/if}
               </div>
 
               <div class="definition-section">
                 <header class="definition-header">
-                  <h4>Variable definitions</h4>
-                  <span class="muted">{nodeEditorVarDefs.length} total</span>
+                  <h4>Variables ({nodeEditorVarDefs.length})</h4>
+                  <button
+                    type="button"
+                    class="ghost icon-button block-section-toggle"
+                    aria-pressed={!varDefsCollapsed}
+                    aria-label={varDefsCollapsed ? "Expand variable definitions" : "Collapse variable definitions"}
+                    title={varDefsCollapsed ? "Expand" : "Collapse"}
+                    on:click={() => (varDefsCollapsed = !varDefsCollapsed)}
+                  >
+                    {#if varDefsCollapsed}
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                      </svg>
+                    {:else}
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14" />
+                      </svg>
+                    {/if}
+                  </button>
                 </header>
+                {#if !varDefsCollapsed}
                 <div class="var-table">
                   <div class="var-list">
                     {#if nodeEditorVarDefs.length === 0}
@@ -11345,14 +12005,34 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
                     </button>
                   </div>
                 </div>
+                {/if}
 
               </div>
 
               <div class="definition-section">
                 <header class="definition-header">
-                  <h4>Command executions</h4>
-                  <span class="muted">{nodeEditorCommands.length} total</span>
+                  <h4>Commands ({nodeEditorCommands.length})</h4>
+                  <button
+                    type="button"
+                    class="ghost icon-button block-section-toggle"
+                    aria-pressed={!cmdExecCollapsed}
+                    aria-label={cmdExecCollapsed ? "Expand command executions" : "Collapse command executions"}
+                    title={cmdExecCollapsed ? "Expand" : "Collapse"}
+                    disabled={rootSceneFlowCommandEditingLocked}
+                    on:click={() => (cmdExecCollapsed = !cmdExecCollapsed)}
+                  >
+                    {#if cmdExecCollapsed}
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                      </svg>
+                    {:else}
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14" />
+                      </svg>
+                    {/if}
+                  </button>
                 </header>
+                {#if !cmdExecCollapsed}
                 <div class="def-table">
                   <div
                     class="def-list"
@@ -11362,7 +12042,9 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
                     on:drop={handleCommandSceneDrop}
                   >
                     {#if nodeEditorCommands.length === 0}
-                      <div class="def-empty">No commands yet.</div>
+                      <div class="def-empty">
+                        {rootSceneFlowCommandEditingLocked ? "No commands allowed here." : "No commands yet."}
+                      </div>
                     {:else}
                       {#each nodeEditorCommands as cmd, index}
                         <button
@@ -11385,7 +12067,7 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
                       type="button"
                       class="ghost icon-button"
                       on:click={startCmdAdd}
-                      disabled={!wsConnected || sceneFlowBusy}
+                      disabled={!wsConnected || sceneFlowBusy || rootSceneFlowCommandEditingLocked}
                       aria-label="Add command"
                       title="Add command"
                     >
@@ -11395,7 +12077,7 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
                       type="button"
                       class="ghost icon-button danger"
                       on:click={deleteSelectedCmd}
-                      disabled={!wsConnected || sceneFlowBusy || cmdSelectedIndex === null}
+                      disabled={!wsConnected || sceneFlowBusy || rootSceneFlowCommandEditingLocked || cmdSelectedIndex === null}
                       aria-label="Remove command"
                       title="Remove command"
                     >
@@ -11405,7 +12087,7 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
                       type="button"
                       class="ghost icon-button"
                       on:click={editSelectedCmd}
-                      disabled={!wsConnected || sceneFlowBusy || cmdSelectedIndex === null}
+                      disabled={!wsConnected || sceneFlowBusy || rootSceneFlowCommandEditingLocked || cmdSelectedIndex === null}
                       aria-label="Edit command"
                       title="Edit command"
                     >
@@ -11415,7 +12097,7 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
                       type="button"
                       class="ghost icon-button"
                       on:click={() => moveSelectedCmd(-1)}
-                      disabled={!wsConnected || sceneFlowBusy || cmdSelectedIndex === null || cmdSelectedIndex === 0}
+                      disabled={!wsConnected || sceneFlowBusy || rootSceneFlowCommandEditingLocked || cmdSelectedIndex === null || cmdSelectedIndex === 0}
                       aria-label="Move command up"
                       title="Move up"
                     >
@@ -11428,6 +12110,7 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
                       disabled={
                         !wsConnected ||
                         sceneFlowBusy ||
+                        rootSceneFlowCommandEditingLocked ||
                         cmdSelectedIndex === null ||
                         cmdSelectedIndex === nodeEditorCommands.length - 1
                       }
@@ -11438,6 +12121,8 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
                     </button>
                   </div>
                 </div>
+                {/if}
+              </div>
               </div>
             {/if}
             </aside>
@@ -13365,6 +14050,27 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
   {#if cmdDialogOpen}
     <div class="modal-backdrop cmd-modal-backdrop">
       <div class="modal cmd-modal" bind:this={cmdDialogEl} role="dialog" aria-modal="true" aria-labelledby="cmd-dialog-title" tabindex="-1">
+        {#if !rootSceneFlowCommandEditingLocked && nodeEditorTarget}
+          <div
+            class="cmd-node-hint"
+            class:is-super={nodeEditorTarget?.type === "Super"}
+            aria-hidden="true"
+            style={commandNodeHintStyle(nodeEditorTarget)}
+          >
+            <svg class="cmd-node-hint-svg" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">
+              {#if nodeEditorTarget?.type === "Super"}
+                <path class="cmd-node-hint-shape-fill" d={commandNodeHintSuperPath(96, 96, 2)} />
+              {:else}
+                <ellipse class="cmd-node-hint-shape-fill" cx="50" cy="50" rx="48" ry="48" />
+              {/if}
+              <text class="cmd-node-hint-title" x="50" y="46">{commandNodeHintTitle(nodeEditorTarget)}</text>
+              <text class="cmd-node-hint-meta" x="50" y="58">[{nodeEditorTarget?.id || ""}]</text>
+              {#if nodeEditorTarget?.isStart}
+                <polygon class="cmd-node-hint-start" points="83,10 90,23 76,23" />
+              {/if}
+            </svg>
+          </div>
+        {/if}
         <div class="cmd-modal-header">
           <h3 id="cmd-dialog-title">Command executions of {nodeEditorTarget?.name || "(unnamed)"}</h3>
           <button
@@ -13387,25 +14093,38 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
               on:drop={handleCommandSceneDrop}
             >
               {#if cmdInlineDrafts.length === 0}
-                <div class="def-empty">No commands yet.</div>
+                <div class="def-empty">
+                  {rootSceneFlowCommandEditingLocked ? "No commands allowed here." : "No commands yet."}
+                </div>
               {:else}
                 {#each cmdInlineDrafts as cmdText, index}
                   <div class="cmd-row" class:selected={cmdSelectedIndex === index}>
-                    <input
-                      class="cmd-inline-input"
-                      value={cmdText}
-                      data-cmd-index={index}
-                      on:focus={(event) => (cmdInlineInputEls[index] = event.currentTarget)}
-                      on:input={(event) => updateCmdInlineDraft(index, event.target.value)}
-                      on:focus={() => (cmdSelectedIndex = index)}
-                      on:blur={() => commitCmdInlineDraft(index)}
-                      on:keydown={(event) => handleCmdInlineKeydown(event, index)}
-                      disabled={!wsConnected || sceneFlowBusy}
-                    />
-                    {#if cmdInlineWarnings[index]?.length}
-                      <div class="cmd-inline-warnings">
-                        {#each cmdInlineWarnings[index] as warning}
-                          <p class="cmd-inline-warning">{warning}</p>
+                    {#if cmdEditingIndex === index}
+                      <input
+                        class="cmd-inline-input"
+                        value={cmdText}
+                        data-cmd-index={index}
+                        on:focus={(event) => (cmdInlineInputEls[index] = event.currentTarget)}
+                        on:input={(event) => { updateCmdInlineDraft(index, event.target.value); updateAutocomplete(event.target); }}
+                        on:blur={() => { dismissAutocomplete(); cmdEditingIndex = null; commitCmdInlineDraft(index); }}
+                        on:keydown={(event) => handleCmdInlineKeydown(event, index)}
+                        disabled={!wsConnected || sceneFlowBusy || rootSceneFlowCommandEditingLocked}
+                      />
+                    {:else}
+                      {@const tokens = renderCommandTokens(cmdText, projectConfigAgents, pluginInterfaces, projectConfigView)}
+                      <div
+                        class="cmd-inline-display"
+                        on:click={async () => { cmdSelectedIndex = index; cmdEditingIndex = index; await tick(); const inp = document.querySelector(`.cmd-inline-input[data-cmd-index="${index}"]`); if (inp) inp.focus(); }}
+                        on:keydown={(e) => { if (e.key === "Enter" || e.key === " ") { cmdSelectedIndex = index; cmdEditingIndex = index; } }}
+                        role="button"
+                        tabindex="0"
+                      >
+                        {#each tokens as token}
+                          {#if token.type === "agent" || token.type === "action" || token.type === "argKey"}
+                            <span class={token.known ? "cmd-token-known" : "cmd-token-unknown"}>{token.text}</span>
+                          {:else}
+                            <span>{token.text}</span>
+                          {/if}
                         {/each}
                       </div>
                     {/if}
@@ -13414,62 +14133,54 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
               {/if}
             </div>
             <div class="def-actions">
-              <button
-                type="button"
-                class="ghost icon-button"
-                on:click={startCmdAdd}
-                disabled={!wsConnected || sceneFlowBusy}
-                aria-label="Add command"
-                title="Add command"
-              >
+                <button
+                  type="button"
+                  class="ghost icon-button"
+                  on:click={startCmdAdd}
+                  disabled={!wsConnected || sceneFlowBusy || rootSceneFlowCommandEditingLocked}
+                  aria-label="Add command"
+                  title="Add command"
+                >
                 <IconPlus className="icon" />
               </button>
-              <button
-                type="button"
-                class="ghost icon-button"
-                on:click={openCmdHelper}
-                disabled={!wsConnected || sceneFlowBusy}
-                aria-label="Open command helper"
-                title="Command helper"
-              >
-                <IconPuzzle className="icon" />
-              </button>
-              <button
-                type="button"
-                class="ghost icon-button danger"
-                on:click={deleteSelectedCmd}
-                disabled={!wsConnected || sceneFlowBusy || cmdSelectedIndex === null}
-                aria-label="Remove command"
-                title="Remove command"
-              >
+                <button
+                  type="button"
+                  class="ghost icon-button danger"
+                  on:click={deleteSelectedCmd}
+                  disabled={!wsConnected || sceneFlowBusy || rootSceneFlowCommandEditingLocked || cmdSelectedIndex === null}
+                  aria-label="Remove command"
+                  title="Remove command"
+                >
                 <IconTrash className="icon" />
               </button>
-              <button
-                type="button"
-                class="ghost icon-button"
-                on:click={() => moveSelectedCmd(-1)}
-                disabled={
-                  !wsConnected ||
-                  sceneFlowBusy ||
-                  cmdSelectedIndex === null ||
-                  cmdSelectedIndex === 0 ||
-                  cmdSelectedIndex >= nodeEditorCommands.length
+                <button
+                  type="button"
+                  class="ghost icon-button"
+                  on:click={() => moveSelectedCmd(-1)}
+                  disabled={
+                    !wsConnected ||
+                    sceneFlowBusy ||
+                    rootSceneFlowCommandEditingLocked ||
+                    cmdSelectedIndex === null ||
+                    cmdSelectedIndex === 0 ||
+                    cmdSelectedIndex >= nodeEditorCommands.length
                 }
                 aria-label="Move command up"
                 title="Move up"
               >
                 <IconChevronUp className="icon" />
               </button>
-              <button
-                type="button"
-                class="ghost icon-button"
-                on:click={() => moveSelectedCmd(1)}
-                disabled={
-                  !wsConnected ||
-                  sceneFlowBusy ||
-                  cmdSelectedIndex === null ||
-                  cmdSelectedIndex >= nodeEditorCommands.length - 1
-                }
+                <button
+                  type="button"
+                  class="ghost icon-button"
+                  on:click={() => moveSelectedCmd(1)}
+                  disabled={
+                    !wsConnected ||
+                    sceneFlowBusy ||
+                    rootSceneFlowCommandEditingLocked ||
+                    cmdSelectedIndex === null ||
+                    cmdSelectedIndex >= nodeEditorCommands.length - 1
+                  }
                 aria-label="Move command down"
                 title="Move down"
               >
@@ -13477,84 +14188,64 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
               </button>
             </div>
           </div>
-          {#if cmdHelperOpen}
-            <div class="cmd-helper">
-              <div class="cmd-helper-header">
-                <h4>{cmdHelperType === "PlayAction" ? `${cmdHelperAgent || "Agent"} command helper` : "Command helper"}</h4>
-                <button type="button" class="ghost" on:click={closeCmdHelper}>Close</button>
+          <div class="cmd-helper">
+              <div class="cmd-helper-tabs" role="tablist">
+                <button
+                  type="button"
+                  class="cmd-helper-tab"
+                  class:active={cmdHelperTab === "PlayAction"}
+                  disabled={cmdHelperDetectedTab !== null && cmdHelperDetectedTab !== "PlayAction"}
+                  on:click={() => { cmdHelperTab = "PlayAction"; updateCmdHelperTab(); }}
+                  role="tab"
+                  aria-selected={cmdHelperTab === "PlayAction"}
+                >PlayAction</button>
+                <button
+                  type="button"
+                  class="cmd-helper-tab"
+                  class:active={cmdHelperTab === "PlayScene"}
+                  disabled={cmdHelperDetectedTab !== null && cmdHelperDetectedTab !== "PlayScene"}
+                  on:click={() => { cmdHelperTab = "PlayScene"; updateCmdHelperTab(); }}
+                  role="tab"
+                  aria-selected={cmdHelperTab === "PlayScene"}
+                >PlayScene</button>
+                <button
+                  type="button"
+                  class="cmd-helper-tab"
+                  class:active={cmdHelperTab === "Variable"}
+                  disabled={cmdHelperDetectedTab !== null && cmdHelperDetectedTab !== "Variable"}
+                  on:click={() => { cmdHelperTab = "Variable"; updateCmdHelperTab(); }}
+                  role="tab"
+                  aria-selected={cmdHelperTab === "Variable"}
+                >Variable</button>
               </div>
-              <label for="cmd-helper-type">Command</label>
-              <select id="cmd-helper-type" bind:value={cmdHelperType} on:change={updateCmdHelperType}>
-                <option value="PlayScene">PlayScene</option>
-                <option value="PlayAction">PlayAction</option>
-                <option value="Assign">Assign variable</option>
-                <option value="Inc">Increase variable</option>
-                <option value="Dec">Decrease variable</option>
-              </select>
-              {#if cmdHelperType === "PlayScene"}
-                <label for="cmd-helper-scene">Scene</label>
-                <select id="cmd-helper-scene" bind:value={cmdHelperScene}>
-                  {#each helperScenes as sceneName}
-                    <option value={sceneName}>{sceneName}</option>
+
+              {#if cmdHelperTab === "PlayAction"}
+                <label for="cmd-helper-agent">Agent</label>
+                <select
+                  id="cmd-helper-agent"
+                  bind:value={cmdHelperAgent}
+                >
+                  <option value="">Select agent...</option>
+                  {#each projectConfigAgents as agent}
+                    <option value={agent.name}>{agent.name}</option>
                   {/each}
                 </select>
-                {#if helperScenes.length === 0}
-                  <p class="muted">No scenes loaded.</p>
-                {/if}
-                {#if (helperSceneIndex.get(cmdHelperScene) || []).length}
-                  <div class="cmd-helper-args">
-                    <div class="cmd-helper-args-header">
-                      <span>Scene variables</span>
-                    </div>
-                    {#each helperSceneIndex.get(cmdHelperScene) || [] as param}
-                      <div class="cmd-helper-arg-row">
-                        <span>{param}</span>
-                        <select
-                          value={cmdHelperSceneBindings?.[param] || ""}
-                          on:change={(event) => {
-                            cmdHelperSceneBindings = {
-                              ...cmdHelperSceneBindings,
-                              [param]: event.target.value
-                            };
-                          }}
-                        >
-                          <option value="">Select variable</option>
-                          {#each helperVarCandidates as variable}
-                            <option value={variable.name}>{variable.name}</option>
-                          {/each}
-                        </select>
-                      </div>
-                    {/each}
-                  </div>
-                {/if}
-              {:else if cmdHelperType === "PlayAction"}
-                <label for="cmd-helper-agent">Agent</label>
-                <input id="cmd-helper-agent" bind:value={cmdHelperAgent} placeholder="Agent name" />
-                <label for="cmd-helper-action">Action</label>
-                <input id="cmd-helper-action" bind:value={cmdHelperAction} list="cmd-helper-action-list" placeholder="Action name" />
-                <datalist id="cmd-helper-action-list">
+                <label for="cmd-helper-action">Action{cmdHelperAgentCommands.length ? ` (${cmdHelperAgentCommands.length})` : ""}</label>
+                <select
+                  id="cmd-helper-action"
+                  bind:value={cmdHelperAction}
+                >
+                  <option value="">Select action...</option>
                   {#if cmdHelperAgentCommands.length}
                     {#each cmdHelperAgentCommands as action}
-                      <option value={action?.name}>{action?.name}</option>
+                      <option value={action?.name}>{action?.name}{action?.summary ? ` — ${action.summary}` : ""}</option>
                     {/each}
                   {:else}
                     {#each scriptElements.acticon as action}
                       <option value={action?.name || action?.script}>{action?.name || action?.script}</option>
                     {/each}
                   {/if}
-                </datalist>
-                {#if cmdHelperAgent && !cmdHelperDescriptor && !pluginInterfacesLoading && !pluginInterfacesError}
-                  <p class="muted">No plugin descriptor; autocompletion disabled.</p>
-                {/if}
-                {#if cmdHelperAgentCommands.length === 0}
-                  {#if pluginInterfacesLoading}
-                    <p class="muted">Loading plugin actions...</p>
-                  {:else if pluginInterfacesError}
-                    <p class="muted">Plugin actions unavailable: {pluginInterfacesError}</p>
-                  {:else if !scriptElements.acticon.length}
-                    <p class="muted">No actions loaded.</p>
-                  {/if}
-                {/if}
+                </select>
                 <div class="cmd-helper-args">
                   <div class="cmd-helper-args-header">
                     <span>Arguments</span>
@@ -13598,179 +14289,6 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
                     {/each}
                   {/if}
                 </div>
-                {#if cmdHelperDescriptor}
-                  <div class="definition-section">
-                    <header class="definition-header">
-                      <h4>Plugin interface</h4>
-                      <span class="muted">{cmdHelperPluginCommandsList.length}</span>
-                    </header>
-                    <div class="definition-list">
-                      {#if cmdHelperPluginCommandsList.length === 0}
-                        <div class="definition-row muted">No commands listed.</div>
-                      {:else}
-                        {#each cmdHelperPluginCommandsList as entry}
-                          <div class="definition-row">
-                            <div class="definition-main">
-                              <span class="definition-title">{entry?.name || "command"}</span>
-                              {#if entry?.summary}
-                                <span class="definition-meta">{entry.summary}</span>
-                              {/if}
-                              {#if entry?.params?.length}
-                                <span class="definition-meta">
-                                  Params: {(entry?.params || []).map((param) => param?.name || "param").join(", ")}
-                                </span>
-                              {/if}
-                            </div>
-                            <div class="definition-row-actions">
-                              <span class="muted">{entry?.params?.length || 0} params</span>
-                              <button
-                                type="button"
-                                class="ghost"
-                                on:click={() => applyPlayActionExample(entry)}
-                                disabled={cmdSelectedIndex === null}
-                              >
-                                Apply
-                              </button>
-                            </div>
-                          </div>
-                        {/each}
-                      {/if}
-                    </div>
-                  </div>
-                  <div class="definition-section">
-                    <header class="definition-header">
-                      <h4>Writes</h4>
-                      <span class="muted">{cmdHelperPluginWritesList.length}</span>
-                      <button
-                        type="button"
-                        class="ghost icon-button"
-                        on:click={() => (cmdHelperShowWrites = !cmdHelperShowWrites)}
-                        aria-label="Toggle writes"
-                      >
-                        {cmdHelperShowWrites ? "-" : "+"}
-                      </button>
-                    </header>
-                    {#if cmdHelperShowWrites}
-                      <div class="cmd-helper-writes">
-                        {#if cmdHelperPluginWritesList.length === 0}
-                          <p class="muted">No declared variables.</p>
-                        {:else}
-                          {#each cmdHelperPluginWritesList as writeEntry}
-                            <div class="cmd-helper-write-row">
-                              <div class="cmd-helper-write-name">
-                                {writeEntry?.var || "var"}
-                                {#if writeEntry?.type}
-                                  <span class="muted">({writeEntry.type})</span>
-                                {/if}
-                              </div>
-                              {#if writeEntry?.var && !writeEntry.var.startsWith("<")}
-                                {#if pluginWriteExists(writeEntry)}
-                                  <span class="muted">exists</span>
-                                {:else}
-                                  <button
-                                    type="button"
-                                    class="ghost"
-                                    on:click={() => createHelperVariable(writeEntry.var, normalizeVarType(writeEntry.type))}
-                                    disabled={!wsConnected || sceneFlowBusy}
-                                  >
-                                    Add variable
-                                  </button>
-                                {/if}
-                              {:else}
-                                <span class="muted">dynamic</span>
-                              {/if}
-                            </div>
-                            {#if writeEntry?.description}
-                              <div class="cmd-helper-arg-meta">
-                                <span class="muted">{writeEntry.description}</span>
-                              </div>
-                            {/if}
-                          {/each}
-                        {/if}
-                      </div>
-                    {/if}
-                  </div>
-                  <div class="definition-section">
-                    <header class="definition-header">
-                      <h4>Reads</h4>
-                      <span class="muted">{cmdHelperPluginReadsList.length}</span>
-                      <button
-                        type="button"
-                        class="ghost icon-button"
-                        on:click={() => (cmdHelperShowReads = !cmdHelperShowReads)}
-                        aria-label="Toggle reads"
-                      >
-                        {cmdHelperShowReads ? "-" : "+"}
-                      </button>
-                    </header>
-                    {#if cmdHelperShowReads}
-                      <div class="definition-list">
-                        {#if cmdHelperPluginReadsList.length === 0}
-                          <div class="definition-row muted">No variables listed.</div>
-                        {:else}
-                          {#each cmdHelperPluginReadsList as entry}
-                            <div class="definition-row">
-                              <div class="definition-main">
-                                <span class="definition-title">{entry?.var || "var"}</span>
-                                {#if entry?.description}
-                                  <span class="definition-meta">{entry.description}</span>
-                                {/if}
-                              </div>
-                              <div class="definition-row-actions">
-                                <span class="muted">
-                                  {[entry?.type, entry?.scope].filter(Boolean).join(" · ") || "String"}
-                                </span>
-                              </div>
-                            </div>
-                          {/each}
-                        {/if}
-                      </div>
-                    {/if}
-                  </div>
-                  <div class="definition-section">
-                    <header class="definition-header">
-                      <h4>Config</h4>
-                      <span class="muted">{cmdHelperPluginConfigList.length}</span>
-                      <button
-                        type="button"
-                        class="ghost icon-button"
-                        on:click={() => (cmdHelperShowConfig = !cmdHelperShowConfig)}
-                        aria-label="Toggle config"
-                      >
-                        {cmdHelperShowConfig ? "-" : "+"}
-                      </button>
-                    </header>
-                    {#if cmdHelperShowConfig}
-                      <div class="definition-list">
-                        {#if cmdHelperPluginConfigList.length === 0}
-                          <div class="definition-row muted">No config keys listed.</div>
-                        {:else}
-                          {#each cmdHelperPluginConfigList as entry}
-                            <div class="definition-row">
-                              <div class="definition-main">
-                                <span class="definition-title">{entry?.key || "key"}</span>
-                                {#if entry?.description}
-                                  <span class="definition-meta">{entry.description}</span>
-                                {/if}
-                              </div>
-                              <div class="definition-row-actions">
-                                <span class="muted">
-                                  {[
-                                    entry?.type,
-                                    entry?.required ? "required" : "",
-                                    entry?.default !== undefined && entry?.default !== null ? `default: ${entry.default}` : ""
-                                  ]
-                                    .filter(Boolean)
-                                    .join(" · ") || "config"}
-                                </span>
-                              </div>
-                            </div>
-                          {/each}
-                        {/if}
-                      </div>
-                    {/if}
-                  </div>
-                {/if}
                 {#if cmdHelperWarnings.length}
                   <div class="cmd-helper-warnings">
                     {#each cmdHelperWarnings as warning}
@@ -13778,7 +14296,60 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
                     {/each}
                   </div>
                 {/if}
-              {:else}
+
+              {:else if cmdHelperTab === "PlayScene"}
+                <label for="cmd-helper-scene">Scene</label>
+                <select id="cmd-helper-scene" bind:value={cmdHelperScene}>
+                  <option value="">Select scene...</option>
+                  {#each helperScenes as sceneName}
+                    <option value={sceneName}>{sceneName}</option>
+                  {/each}
+                </select>
+                {#if helperScenes.length === 0}
+                  <p class="muted">No scenes loaded.</p>
+                {/if}
+                {#if (helperSceneIndex.get(cmdHelperScene) || []).length}
+                  <div class="cmd-helper-args">
+                    <div class="cmd-helper-args-header">
+                      <span>Scene variables</span>
+                    </div>
+                    {#each helperSceneIndex.get(cmdHelperScene) || [] as param}
+                      <div class="cmd-helper-arg-row">
+                        <span>{param}</span>
+                        <select
+                          value={cmdHelperSceneBindings?.[param] || ""}
+                          on:change={(event) => {
+                            cmdHelperSceneBindings = {
+                              ...cmdHelperSceneBindings,
+                              [param]: event.target.value
+                            };
+                          }}
+                        >
+                          <option value="">Select variable</option>
+                          {#each helperVarCandidates as variable}
+                            <option value={variable.name}>{variable.name}</option>
+                          {/each}
+                        </select>
+                      </div>
+                    {/each}
+                  </div>
+                {/if}
+
+              {:else if cmdHelperTab === "Variable"}
+                <div class="cmd-helper-var-ops" role="radiogroup" aria-label="Variable operation">
+                  <label class="cmd-helper-var-op" class:active={cmdHelperVarOp === "Assign"}>
+                    <input type="radio" name="cmdVarOp" value="Assign" bind:group={cmdHelperVarOp} on:change={updateCmdHelperVarOp} />
+                    <span>Assign</span>
+                  </label>
+                  <label class="cmd-helper-var-op" class:active={cmdHelperVarOp === "Inc"}>
+                    <input type="radio" name="cmdVarOp" value="Inc" bind:group={cmdHelperVarOp} on:change={updateCmdHelperVarOp} />
+                    <span>Increment</span>
+                  </label>
+                  <label class="cmd-helper-var-op" class:active={cmdHelperVarOp === "Dec"}>
+                    <input type="radio" name="cmdVarOp" value="Dec" bind:group={cmdHelperVarOp} on:change={updateCmdHelperVarOp} />
+                    <span>Decrement</span>
+                  </label>
+                </div>
                 <label for="cmd-helper-var">Variable</label>
                 <input
                   id="cmd-helper-var"
@@ -13788,7 +14359,7 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
                   class:input-warning={!cmdHelperVarExists && cmdHelperVarName.trim().length}
                 />
                 {#if !cmdHelperVarExists && cmdHelperVarName.trim().length}
-                  <p class="muted">Variable not found. It will be created if you insert.</p>
+                  <p class="muted">Variable not found. It will be created if you apply.</p>
                 {/if}
                 <datalist id="cmd-helper-var-list">
                   {#each helperVarCandidates as variable}
@@ -13809,7 +14380,7 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
                     {/each}
                   </select>
                 {/if}
-                {#if cmdHelperType === "Assign"}
+                {#if cmdHelperVarOp === "Assign"}
                   <label for="cmd-helper-expr">Expression</label>
                   <input
                     id="cmd-helper-expr"
@@ -13821,17 +14392,44 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
                   <input id="cmd-helper-step" bind:value={cmdHelperVarStep} placeholder="1" />
                 {/if}
               {/if}
+
               <div class="actions cmd-helper-actions">
-                <button type="button" class="primary" on:click={applyCmdHelperInsert}>Insert</button>
-                <button type="button" class="ghost" on:click={closeCmdHelper}>Cancel</button>
+                <button type="button" class="primary" on:click={applyCmdHelperInsert} disabled={rootSceneFlowCommandEditingLocked}>
+                  {cmdSelectedIndex !== null ? "Update" : "Insert"}
+                </button>
               </div>
             </div>
-          {/if}
           {#if cmdError}
             <p class="error">{cmdError}</p>
           {/if}
         </div>
       </div>
+      {#if cmdAcVisible && cmdAcItems.length > 0}
+        <div
+          class="cmd-ac-dropdown"
+          role="listbox"
+          aria-label="Autocomplete suggestions"
+          style="left:{cmdAcPos.left}px; top:{cmdAcPos.top}px; width:{cmdAcPos.width}px;"
+        >
+          {#each cmdAcItems as item, i}
+            <button
+              class="cmd-ac-item"
+              class:selected={i === cmdAcSelectedIdx}
+              role="option"
+              aria-selected={i === cmdAcSelectedIdx}
+              on:mousedown|preventDefault={() => {
+                const el = cmdEditingIndex !== null ? cmdInlineInputEls[cmdEditingIndex] : null;
+                if (el) acceptAcItem(el, item);
+              }}
+            >
+              <span class="cmd-ac-label">{item.label}</span>
+              {#if item.detail}
+                <span class="cmd-ac-detail">{item.detail}</span>
+              {/if}
+            </button>
+          {/each}
+        </div>
+      {/if}
     </div>
   {/if}
 
