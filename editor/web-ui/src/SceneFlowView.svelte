@@ -1429,11 +1429,11 @@
       const start = pts[0];
       let end = pts[pts.length - 1];
       const ctrl1 = safeCtrl(start);
-      let ctrl2 = safeCtrl(end);
+      let ctrl2 = adjustedEdgeEndCtrl(start, end, safeCtrl(end));
       const trimmed = trimEdgeEnd(start, end, ctrl2, arrow?.trim);
       if (trimmed) {
         end = trimmed.end;
-        ctrl2 = trimmed.ctrl2;
+        ctrl2 = adjustedEdgeEndCtrl(start, end, trimmed.ctrl2);
       }
       return `M ${start.x} ${start.y} C ${ctrl1.x} ${ctrl1.y} ${ctrl2.x} ${ctrl2.y} ${end.x} ${end.y}`;
     }
@@ -1455,7 +1455,7 @@
   function edgeArrow(edge, drag) {
     const vector = edgeEndVector(edge, drag);
     if (!vector) return null;
-    const length = Math.max(9, baseNodeSize * 0.13, edgeStrokeWidth * 4);
+    const { length, trim } = edgeArrowMetrics();
     const width = length * 0.7;
     const inset = Math.max(0, edgeStrokeWidth * 0.6);
     const gap = Math.max(3, Math.round(edgeStrokeWidth * 2));
@@ -1475,7 +1475,6 @@
     const leftY = baseY + perpY * half;
     const rightX = baseX - perpX * half;
     const rightY = baseY - perpY * half;
-    const trim = Math.max(0, length - inset + gap);
     return { tipX, tipY, leftX, leftY, rightX, rightY, trim };
   }
 
@@ -1484,7 +1483,7 @@
     if (pts.length >= 2) {
       const start = pts[0];
       const end = pts[pts.length - 1];
-      const ctrl2 = safeCtrl(end);
+      const ctrl2 = adjustedEdgeEndCtrl(start, end, safeCtrl(end));
       let dx = end.x - ctrl2.x;
       let dy = end.y - ctrl2.y;
       if (!Number.isFinite(dx) || !Number.isFinite(dy) || Math.hypot(dx, dy) < 0.01) {
@@ -1512,6 +1511,37 @@
 
   function arrowPath(arrow) {
     return `M ${arrow.tipX} ${arrow.tipY} L ${arrow.leftX} ${arrow.leftY} L ${arrow.rightX} ${arrow.rightY} Z`;
+  }
+
+  function edgeArrowMetrics() {
+    const length = Math.max(9, baseNodeSize * 0.13, edgeStrokeWidth * 4);
+    const inset = Math.max(0, edgeStrokeWidth * 0.6);
+    const gap = Math.max(3, Math.round(edgeStrokeWidth * 2));
+    const trim = Math.max(0, length - inset + gap);
+    return { length, trim };
+  }
+
+  function adjustedEdgeEndCtrl(start, end, ctrl2) {
+    const candidate = safeCtrl(ctrl2);
+    const minTangent = Math.max(10, edgeArrowMetrics().trim + 2);
+    let dx = end.x - candidate.x;
+    let dy = end.y - candidate.y;
+    let magnitude = Math.hypot(dx, dy);
+    if (Number.isFinite(magnitude) && magnitude >= minTangent) {
+      return candidate;
+    }
+    dx = end.x - start.x;
+    dy = end.y - start.y;
+    magnitude = Math.hypot(dx, dy);
+    if (!Number.isFinite(magnitude) || magnitude < 0.01) {
+      return candidate;
+    }
+    const ux = dx / magnitude;
+    const uy = dy / magnitude;
+    return {
+      x: end.x - ux * minTangent,
+      y: end.y - uy * minTangent
+    };
   }
 
   function trimEdgeEnd(start, end, ctrl2, trim) {
@@ -1752,7 +1782,7 @@
       start,
       end,
       ctrl1: safeCtrl(start),
-      ctrl2: safeCtrl(end)
+      ctrl2: adjustedEdgeEndCtrl(start, end, safeCtrl(end))
     };
   }
 

@@ -938,6 +938,8 @@ public final class WebUiServer implements EventListener {
         private int superNodes;
         private int nodes;
         private int commands;
+        private int scenes;
+        private List<RecentSceneLanguageInfo> sceneLanguages = new ArrayList<>();
         private List<RecentPluginInfo> plugins = new ArrayList<>();
 
         public JSONObject toJson() {
@@ -945,11 +947,29 @@ public final class WebUiServer implements EventListener {
             json.put("superNodes", superNodes);
             json.put("nodes", nodes);
             json.put("commands", commands);
+            json.put("scenes", scenes);
+            JSONArray sceneLanguagesArray = new JSONArray();
+            for (RecentSceneLanguageInfo language : sceneLanguages) {
+                sceneLanguagesArray.put(language.toJson());
+            }
+            json.put("sceneLanguages", sceneLanguagesArray);
             JSONArray pluginArray = new JSONArray();
             for (RecentPluginInfo plugin : plugins) {
                 pluginArray.put(plugin.toJson());
             }
             json.put("plugins", pluginArray);
+            return json;
+        }
+    }
+
+    private static final class RecentSceneLanguageInfo {
+        private String language;
+        private int count;
+
+        public JSONObject toJson() {
+            JSONObject json = new JSONObject();
+            json.put("language", language);
+            json.put("count", count);
             return json;
         }
     }
@@ -1018,6 +1038,23 @@ public final class WebUiServer implements EventListener {
                 stats.superNodes = flowStats.superNodes;
                 stats.nodes = flowStats.nodes;
                 stats.commands = flowStats.commands;
+            }
+            de.dfki.vsm.model.scenescript.SceneScript script = runtimeProject.getSceneScript();
+            if (script != null) {
+                stats.scenes = script.getSceneListSize();
+                Map<String, Integer> perLanguage = new java.util.TreeMap<>();
+                for (SceneObject scene : script.getSceneList()) {
+                    if (scene == null) continue;
+                    String language = scene.getLanguage();
+                    String key = language == null ? "" : language.trim();
+                    perLanguage.merge(key, 1, Integer::sum);
+                }
+                for (Map.Entry<String, Integer> entry : perLanguage.entrySet()) {
+                    RecentSceneLanguageInfo languageInfo = new RecentSceneLanguageInfo();
+                    languageInfo.language = entry.getKey();
+                    languageInfo.count = entry.getValue();
+                    stats.sceneLanguages.add(languageInfo);
+                }
             }
             return stats;
         } catch (Exception e) {
