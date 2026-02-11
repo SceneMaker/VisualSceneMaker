@@ -28,7 +28,20 @@
       { "name": "autostart_browser", "type": "boolean", "default": false, "description": "Auto-start browser on plugin launch" },
       { "name": "browser_fullscreen", "type": "boolean", "default": false, "description": "Start browser in full-screen mode" },
       { "name": "browser_ignore_cert_errors", "type": "boolean", "default": true, "description": "Ignore SSL certificate errors" }
-    ]
+    ],
+    "agent": {
+      "fixed": [],
+      "dynamic": {
+        "enabled": true,
+        "keyType": "string",
+        "keyDescription": "Action name callable from SceneFlow",
+        "valueType": "filepath",
+        "valueSuffix": ".html",
+        "valueDescription": "Relative path to the HTML page to display",
+        "implicitAction": true,
+        "actionSummary": "Display page: ${value}"
+      }
+    }
   },
   "templates": {
     "resourcePath": "templates/",

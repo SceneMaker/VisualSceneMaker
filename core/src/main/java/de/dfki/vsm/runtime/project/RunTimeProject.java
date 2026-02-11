@@ -53,6 +53,25 @@ public class RunTimeProject {
     private RunTimePlayer mRunTimePlayer;
     // The default interpreter of the project
     private Interpreter mInterpreter;
+    // Scene play history (thread-safe for concurrent playback)
+    private final List<ScenePlayRecord> mSceneHistory =
+            java.util.Collections.synchronizedList(new ArrayList<>());
+
+    public static class ScenePlayRecord {
+        public final long timestamp;
+        public final String sceneName;
+        public final String language;
+        public final int lower;
+        public final int upper;
+
+        public ScenePlayRecord(String sceneName, String language, int lower, int upper) {
+            this.timestamp = System.currentTimeMillis();
+            this.sceneName = sceneName;
+            this.language = language;
+            this.lower = lower;
+            this.upper = upper;
+        }
+    }
 
     // Construct an empty runtime project
     public RunTimeProject() {
@@ -324,6 +343,7 @@ public class RunTimeProject {
     //GM
     public final boolean start() {
         if (mInterpreter != null) {
+            mSceneHistory.clear();
             // Start the interpreter
             return mInterpreter.start();
         }
@@ -373,6 +393,20 @@ public class RunTimeProject {
             return mInterpreter.isPaused();
         }
         return false;
+    }
+
+    public final void recordScenePlay(String sceneName, String language, int lower, int upper) {
+        mSceneHistory.add(new ScenePlayRecord(sceneName, language, lower, upper));
+    }
+
+    public final List<ScenePlayRecord> getSceneHistory() {
+        synchronized (mSceneHistory) {
+            return new ArrayList<>(mSceneHistory);
+        }
+    }
+
+    public final void clearSceneHistory() {
+        mSceneHistory.clear();
     }
 
     //GM
@@ -555,10 +589,6 @@ public class RunTimeProject {
             mLogger.failure("Error: Cannot parse scenescript configuration file  in path" + path);
             return false;
         }
-
-        // Print an information message in this case
-        //mLogger.message("Loaded scenescript configuration file in path'" + path + "':\n" + mSceneScript);
-        //mLogger.message("Loaded scenescript configuration file in path'" + path + "'");
 
         // Return success if the project was loaded
         return true;

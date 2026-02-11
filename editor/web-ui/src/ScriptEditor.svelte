@@ -1,7 +1,7 @@
 <script>
   import { onDestroy, onMount } from "svelte";
-  import { EditorState } from "@codemirror/state";
-  import { EditorView, keymap } from "@codemirror/view";
+  import { EditorState, StateEffect, StateField } from "@codemirror/state";
+  import { EditorView, keymap, Decoration } from "@codemirror/view";
   import { indentUnit } from "@codemirror/language";
   import { lintGutter, nextDiagnostic, previousDiagnostic, setDiagnostics } from "@codemirror/lint";
   import { indentWithTab } from "@codemirror/commands";
@@ -14,6 +14,25 @@
   export let onChange = null;
   export let hasServerError = false;
   export let diagnostics = [];
+  export let sceneHighlights = [];
+
+  // Scene highlight decoration machinery
+  const setSceneHighlightsEffect = StateEffect.define();
+
+  const playedMark = Decoration.mark({ class: "cm-scene-played" });
+  const activeMark = Decoration.mark({ class: "cm-scene-active" });
+  const activeTurnMark = Decoration.mark({ class: "cm-scene-activeTurn" });
+
+  const sceneHighlightField = StateField.define({
+    create() { return Decoration.none; },
+    update(decos, tr) {
+      for (const effect of tr.effects) {
+        if (effect.is(setSceneHighlightsEffect)) return effect.value;
+      }
+      return tr.docChanged ? decos.map(tr.changes) : decos;
+    },
+    provide: (f) => EditorView.decorations.from(f)
+  });
 
   let host;
   let view;
@@ -146,6 +165,7 @@
       EditorState.tabSize.of(2),
       EditorView.lineWrapping,
       updateListener,
+      sceneHighlightField,
       EditorState.readOnly.of(readOnly),
       EditorView.editable.of(!readOnly)
     ];
@@ -255,6 +275,29 @@
 
   $: if (view && diagnostics) {
     refreshDiagnostics();
+  }
+
+  function applySceneHighlights(highlights) {
+    if (!view) return;
+    const doc = view.state.doc;
+    const docLen = doc.length;
+    const ranges = [];
+    for (const h of highlights) {
+      // lower/upper are character offsets into the script text
+      if (h.lower < 0 || h.upper < 0 || h.lower >= docLen) continue;
+      const from = doc.lineAt(Math.min(h.lower, docLen)).from;
+      const to = doc.lineAt(Math.min(h.upper, docLen)).to;
+      if (from >= to) continue;
+      const mark = h.type === "activeTurn" ? activeTurnMark
+                 : h.type === "active" ? activeMark : playedMark;
+      ranges.push(mark.range(from, to));
+    }
+    ranges.sort((a, b) => a.from - b.from || a.to - b.to);
+    view.dispatch({ effects: setSceneHighlightsEffect.of(Decoration.set(ranges)) });
+  }
+
+  $: if (view && sceneHighlights) {
+    applySceneHighlights(sceneHighlights);
   }
 </script>
 
