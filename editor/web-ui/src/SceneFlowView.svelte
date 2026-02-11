@@ -255,6 +255,7 @@
   let edgeRetargetHoverId = null;
   let edgeCreateCursor = null;
   let dragState = null;
+  let selfLoopManualControlIds = new Set();
   let panStart = { x: 0, y: 0 };
   let panOrigin = { x: 0, y: 0 };
   let lastSnapshotKey = "";
@@ -1428,12 +1429,13 @@
     if (pts.length >= 2) {
       const start = pts[0];
       let end = pts[pts.length - 1];
-      const ctrl1 = safeCtrl(start);
-      let ctrl2 = adjustedEdgeEndCtrl(start, end, safeCtrl(end));
+      const controls = edgeCurveControls(edge, start, end, drag);
+      const ctrl1 = controls.ctrl1;
+      let ctrl2 = controls.ctrl2;
       const trimmed = trimEdgeEnd(start, end, ctrl2, arrow?.trim);
       if (trimmed) {
         end = trimmed.end;
-        ctrl2 = adjustedEdgeEndCtrl(start, end, trimmed.ctrl2);
+        ctrl2 = adjustedEdgeEndCtrl(edge, start, end, trimmed.ctrl2);
       }
       return `M ${start.x} ${start.y} C ${ctrl1.x} ${ctrl1.y} ${ctrl2.x} ${ctrl2.y} ${end.x} ${end.y}`;
     }
@@ -1455,10 +1457,13 @@
   function edgeArrow(edge, drag) {
     const vector = edgeEndVector(edge, drag);
     if (!vector) return null;
+    const selfLoop = isSelfLoopEdge(edge);
     const { length, trim } = edgeArrowMetrics();
     const width = length * 0.7;
     const inset = Math.max(0, edgeStrokeWidth * 0.6);
-    const gap = Math.max(3, Math.round(edgeStrokeWidth * 2));
+    const gap = selfLoop
+      ? Math.max(2, Math.round(edgeStrokeWidth * 1.2))
+      : Math.max(3, Math.round(edgeStrokeWidth * 2));
     const magnitude = Math.hypot(vector.dx, vector.dy);
     if (!Number.isFinite(magnitude) || magnitude < 0.01) return null;
     const ux = vector.dx / magnitude;
@@ -1475,7 +1480,10 @@
     const leftY = baseY + perpY * half;
     const rightX = baseX - perpX * half;
     const rightY = baseY - perpY * half;
-    return { tipX, tipY, leftX, leftY, rightX, rightY, trim };
+    const arrowTrim = selfLoop
+      ? Math.max(0, gap - inset + Math.max(1, edgeStrokeWidth * 0.9))
+      : trim;
+    return { tipX, tipY, leftX, leftY, rightX, rightY, trim: arrowTrim };
   }
 
   function edgeEndVector(edge, drag) {
@@ -1483,7 +1491,18 @@
     if (pts.length >= 2) {
       const start = pts[0];
       const end = pts[pts.length - 1];
-      const ctrl2 = adjustedEdgeEndCtrl(start, end, safeCtrl(end));
+      if (isSelfLoopEdge(edge)) {
+        const loopNode = nodeMap.get(edge.sourceId);
+        const center = loopNode ? nodeCenter(loopNode, drag) : null;
+        if (center) {
+          const cdx = center.x - end.x;
+          const cdy = center.y - end.y;
+          if (Number.isFinite(cdx) && Number.isFinite(cdy) && Math.hypot(cdx, cdy) >= 0.01) {
+            return { x: end.x, y: end.y, dx: cdx, dy: cdy };
+          }
+        }
+      }
+      const ctrl2 = adjustedEdgeEndCtrl(edge, start, end, safeCtrl(end));
       let dx = end.x - ctrl2.x;
       let dy = end.y - ctrl2.y;
       if (!Number.isFinite(dx) || !Number.isFinite(dy) || Math.hypot(dx, dy) < 0.01) {
@@ -1521,8 +1540,114 @@
     return { length, trim };
   }
 
-  function adjustedEdgeEndCtrl(start, end, ctrl2) {
+  function isSelfLoopEdge(edge) {
+    const sourceId = (edge?.sourceId || "").trim();
+    const targetId = (edge?.targetId || "").trim();
+    return !!sourceId && sourceId === targetId;
+  }
+
+  function edgeCurveControls(edge, start, end, drag) {
+    const ctrl1 = safeCtrl(start);
+    const ctrl2 = safeCtrl(end);
+    if (isSelfLoopEdge(edge)) {
+      if (selfLoopManualControlIds.has(edge?.id)) {
+        return { ctrl1, ctrl2 };
+      }
+      const loop = mirroredSelfLoopControls(edge, start, end, drag);
+      if (loop) {
+        return loop;
+      }
+      return { ctrl1, ctrl2 };
+    }
+    return {
+      ctrl1,
+      ctrl2: adjustedEdgeEndCtrl(edge, start, end, ctrl2)
+    };
+  }
+
+  function mirroredSelfLoopControls(edge, start, end, drag) {
+    const loopNode = nodeMap.get(edge?.sourceId);
+    if (!loopNode) return null;
+    const center = nodeCenter(loopNode, drag);
+    const mid = { x: (start.x + end.x) / 2, y: (start.y + end.y) / 2 };
+    let axisX = mid.x - center.x;
+    let axisY = mid.y - center.y;
+    let axisLen = Math.hypot(axisX, axisY);
+    if (!Number.isFinite(axisLen) || axisLen < 0.01) {
+      axisX = 0;
+      axisY = -1;
+      axisLen = 1;
+    }
+    const ux = axisX / axisLen;
+    const uy = axisY / axisLen;
+    const nx = -uy;
+    const ny = ux;
+
+    const startSide = (start.x - mid.x) * nx + (start.y - mid.y) * ny;
+    const sideSign = startSide >= 0 ? 1 : -1;
+    const span = Math.hypot(end.x - start.x, end.y - start.y);
+    const outward = Math.max(baseNodeSize * 1.17, axisLen * 1.17);
+    const lateral = Math.max(baseNodeSize * 0.62, span * 0.95);
+    const baseCtrl1 = {
+      x: mid.x + ux * outward + nx * lateral * sideSign,
+      y: mid.y + uy * outward + ny * lateral * sideSign
+    };
+    const baseCtrl2 = reflectPointAcrossAxis(baseCtrl1, mid, { x: ux, y: uy });
+    const ctrl1Side = (baseCtrl1.x - mid.x) * nx + (baseCtrl1.y - mid.y) * ny;
+    const ctrl2Side = (baseCtrl2.x - mid.x) * nx + (baseCtrl2.y - mid.y) * ny;
+    if (Math.sign(ctrl1Side) === Math.sign(ctrl2Side)) {
+      return {
+        ctrl1: baseCtrl1,
+        ctrl2: {
+          x: mid.x + ux * outward - nx * lateral * sideSign,
+          y: mid.y + uy * outward - ny * lateral * sideSign
+        }
+      };
+    }
+    return {
+      ctrl1: baseCtrl1,
+      ctrl2: baseCtrl2
+    };
+  }
+
+  function reflectPointAcrossAxis(point, axisOrigin, axisUnit) {
+    const ux = axisUnit?.x ?? 0;
+    const uy = axisUnit?.y ?? 0;
+    const len = Math.hypot(ux, uy);
+    if (!Number.isFinite(len) || len < 0.01) {
+      return { ...point };
+    }
+    const nx = ux / len;
+    const ny = uy / len;
+    const vx = point.x - axisOrigin.x;
+    const vy = point.y - axisOrigin.y;
+    const parallel = vx * nx + vy * ny;
+    const px = nx * parallel;
+    const py = ny * parallel;
+    const perpX = vx - px;
+    const perpY = vy - py;
+    return {
+      x: axisOrigin.x + px - perpX,
+      y: axisOrigin.y + py - perpY
+    };
+  }
+
+  function rotateVectorClockwise(x, y, degrees) {
+    const theta = (Number(degrees) * Math.PI) / 180;
+    const cos = Math.cos(theta);
+    const sin = Math.sin(theta);
+    return {
+      // SVG/screen coordinates use a downward-positive y axis.
+      x: x * cos - y * sin,
+      y: x * sin + y * cos
+    };
+  }
+
+  function adjustedEdgeEndCtrl(edge, start, end, ctrl2) {
     const candidate = safeCtrl(ctrl2);
+    if (isSelfLoopEdge(edge)) {
+      return candidate;
+    }
     const minTangent = Math.max(10, edgeArrowMetrics().trim + 2);
     let dx = end.x - candidate.x;
     let dy = end.y - candidate.y;
@@ -1691,13 +1816,14 @@
     if (pts.length >= 2) {
       const start = pts[0];
       const end = pts[pts.length - 1];
-      const ctrl1 = safeCtrl(start);
-      const ctrl2 = safeCtrl(end);
+      const controls = edgeCurveControls(edge, start, end, drag);
+      const ctrl1 = controls.ctrl1;
+      const ctrl2 = controls.ctrl2;
       const mid = cubicPointAt(start, ctrl1, ctrl2, end, 0.5);
       const lineMid = { x: (start.x + end.x) / 2, y: (start.y + end.y) / 2 };
       const dx = mid.x - lineMid.x;
       const dy = mid.y - lineMid.y;
-      const boost = 0.6;
+      const boost = isSelfLoopEdge(edge) ? 0.10 : 0.5;
       let x = mid.x + dx * boost;
       let y = mid.y + dy * boost;
       const offsetUnits = edgeLabelOffsets.get(edge.id) || 0;
@@ -1778,11 +1904,12 @@
     if (pts.length < 2) return null;
     const start = pts[0];
     const end = pts[pts.length - 1];
+    const controls = edgeCurveControls(edge, start, end, drag);
     return {
       start,
       end,
-      ctrl1: safeCtrl(start),
-      ctrl2: adjustedEdgeEndCtrl(start, end, safeCtrl(end))
+      ctrl1: controls.ctrl1,
+      ctrl2: controls.ctrl2
     };
   }
 
@@ -2574,6 +2701,9 @@
     event.preventDefault();
     focusStage();
     selectEdge(edge.id);
+    if (isSelfLoopEdge(edge)) {
+      selfLoopManualControlIds = new Set(selfLoopManualControlIds).add(edge.id);
+    }
     const world = eventToWorld(event);
     dragState = {
       type: "edge-control",
@@ -2624,6 +2754,9 @@
     event.preventDefault();
     focusStage();
     selectEdge(edge.id);
+    if (isSelfLoopEdge(edge)) {
+      selfLoopManualControlIds = new Set(selfLoopManualControlIds).add(edge.id);
+    }
     const world = eventToWorld(event);
     dragState = {
       type: "edge-bend",
@@ -2960,15 +3093,40 @@
 
   function adjustEdgeEndpoints(points, edge, drag) {
     if (!points?.length) return points;
-    if (edge?.graphics?.docked) {
-      return points;
-    }
     const source = nodeMap.get(edge.sourceId);
     const target = nodeMap.get(edge.targetId);
     if (!source || !target) return points;
     const lastIndex = points.length - 1;
     const start = points[0];
     const end = points[lastIndex];
+    if (isSelfLoopEdge(edge)) {
+      const selfLoopBoundaries = selfLoopDockBoundaries(source, start, end, drag);
+      if (selfLoopBoundaries) {
+        const { startBoundary, endBoundary } = selfLoopBoundaries;
+        return points.map((pt, idx) => {
+          const boundary = idx === 0 ? startBoundary : idx === lastIndex ? endBoundary : null;
+          if (!boundary || !Number.isFinite(boundary.x) || !Number.isFinite(boundary.y)) {
+            return pt;
+          }
+          const dx = boundary.x - pt.x;
+          const dy = boundary.y - pt.y;
+          if (!Number.isFinite(dx) || !Number.isFinite(dy) || (!dx && !dy)) {
+            return pt;
+          }
+          const next = { ...pt, x: boundary.x, y: boundary.y };
+          if (Number.isFinite(pt.cx)) {
+            next.cx = pt.cx + dx;
+          }
+          if (Number.isFinite(pt.cy)) {
+            next.cy = pt.cy + dy;
+          }
+          return next;
+        });
+      }
+    }
+    if (edge?.graphics?.docked) {
+      return points;
+    }
     const startGuide = edgeGuidePoint(start, end);
     const endGuide = edgeGuidePoint(end, start);
     const startBoundary = nodeBoundaryPoint(source, startGuide, drag);
@@ -2992,6 +3150,44 @@
       }
       return next;
     });
+  }
+
+  function selfLoopDockBoundaries(node, start, end, drag) {
+    if (!node || !start || !end) return null;
+    const center = nodeCenter(node, drag);
+    const mid = { x: (start.x + end.x) / 2, y: (start.y + end.y) / 2 };
+    let axisX = mid.x - center.x;
+    let axisY = mid.y - center.y;
+    ({ x: axisX, y: axisY } = rotateVectorClockwise(axisX, axisY, 45));
+    let axisLen = Math.hypot(axisX, axisY);
+    if (!Number.isFinite(axisLen) || axisLen < 0.01) {
+      axisX = 0;
+      axisY = -1;
+      axisLen = 1;
+    }
+    const ux = axisX / axisLen;
+    const uy = axisY / axisLen;
+    const nx = -uy;
+    const ny = ux;
+    const startSide = (start.x - mid.x) * nx + (start.y - mid.y) * ny;
+    const sideSign = startSide >= 0 ? 1 : -1;
+    const { w, h } = nodeSize(node);
+    const radius = Math.max(10, Math.min(w, h) / 2);
+    const axisReach = radius * 3;
+    const currentSpread = Math.abs(startSide);
+    const spread = Math.max(radius * 0.24, currentSpread * 2.0);
+    const startToward = {
+      x: center.x + ux * axisReach + nx * spread * sideSign,
+      y: center.y + uy * axisReach + ny * spread * sideSign
+    };
+    const endToward = {
+      x: center.x + ux * axisReach - nx * spread * sideSign,
+      y: center.y + uy * axisReach - ny * spread * sideSign
+    };
+    return {
+      startBoundary: nodeBoundaryPoint(node, startToward, drag),
+      endBoundary: nodeBoundaryPoint(node, endToward, drag)
+    };
   }
 
   function edgeGuidePoint(primary, fallback) {

@@ -27,7 +27,21 @@
       { "name": "usesuperevent", "type": "string", "description": "Use super event" },
       { "name": "ssidir", "type": "string", "description": "SSI directory" },
       { "name": "ssibat", "type": "string", "description": "SSI batch" }
-    ]
+    ],
+    "agent": {
+      "fixed": [
+        { "name": "aid", "type": "string", "description": "Avatar instance ID" }
+      ],
+      "dynamic": {
+        "enabled": true,
+        "keyType": "string",
+        "keyDescription": "Resource name for dynamic lookup",
+        "valueType": "filepath",
+        "valueDescription": "Path to resource file",
+        "implicitAction": false,
+        "actionSummary": ""
+      }
+    }
   },
   "commands": [
     { "name": "action", "type": "action", "summary": "Perform action", "params": [] },

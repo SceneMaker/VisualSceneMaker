@@ -27,6 +27,18 @@ export const sceneScriptTheme = EditorView.theme(
     ".cm-matchingBracket": {
       backgroundColor: "rgba(46, 93, 58, 0.2)",
       color: "#1c1b15"
+    },
+    ".cm-scene-played": {
+      backgroundColor: "rgba(46, 93, 58, 0.08)",
+      borderLeft: "3px solid rgba(46, 93, 58, 0.25)"
+    },
+    ".cm-scene-active": {
+      backgroundColor: "rgba(46, 93, 58, 0.18)",
+      borderLeft: "3px solid rgba(46, 93, 58, 0.6)"
+    },
+    ".cm-scene-activeTurn": {
+      backgroundColor: "rgba(46, 93, 58, 0.28)",
+      borderLeft: "3px solid rgba(46, 93, 58, 0.9)"
     }
   },
   { dark: false }

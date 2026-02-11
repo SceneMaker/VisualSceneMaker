@@ -831,6 +831,12 @@
   let scriptAutoApplyInFlight = false;
   let lastScriptProjectId = "";
   let scriptEditorRef;
+
+  // Scene execution tracking state
+  let activeScenes = [];   // [{ sceneName, language, lower, upper }]
+  let activeTurns = [];    // [{ speaker, lower, upper }]
+  let sceneHistory = [];   // [{ timestamp, sceneName, language, lower, upper }]
+
   let scriptScenes = [];
   let scriptScenesFilter = "";
   let scriptScenesLanguage = SCENE_LANGUAGE_ALL;
@@ -1217,6 +1223,26 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
     projectConfigSelection = { type: "project" };
   }
   $: scriptDirty = scriptDraft !== scriptText;
+
+  function buildSceneHighlights(scenes, turns, history) {
+    const highlights = [];
+    for (const h of history) {
+      highlights.push({ lower: h.lower, upper: h.upper, type: "played" });
+    }
+    for (const s of scenes) {
+      highlights.push({ lower: s.lower, upper: s.upper, type: "active" });
+    }
+    for (const t of turns) {
+      highlights.push({ lower: t.lower, upper: t.upper, type: "activeTurn" });
+    }
+    return highlights;
+  }
+
+  $: scriptClean = !scriptDirty;
+  $: sceneHighlights = scriptClean
+    ? buildSceneHighlights(activeScenes, activeTurns, sceneHistory)
+    : [];
+
   $: {
     const canAutoApply =
       showEditor &&
@@ -4643,6 +4669,11 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
         return;
       }
       const status = (payload.status || payload.state || "").toLowerCase();
+      if (status === "running") {
+        activeScenes = [];
+        activeTurns = [];
+        sceneHistory = [];
+      }
       if (status === "stopped") {
         clearSceneFlowActivity();
       }
@@ -4691,6 +4722,37 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
           (Number.isFinite(payload.elapsedMs) ? Date.now() - Number(payload.elapsedMs) : undefined);
         registerTimeoutEdge(edgeId, startedAt, payload.timeoutMs);
       }
+      return;
+    }
+    if (eventName === "runtime.scene.playing") {
+      if (!activityProjectMatches(payload)) return;
+      activeScenes = [...activeScenes, {
+        sceneName: payload.sceneName, language: payload.language,
+        lower: payload.lower, upper: payload.upper
+      }];
+      return;
+    }
+    if (eventName === "runtime.scene.turn") {
+      if (!activityProjectMatches(payload)) return;
+      activeTurns = [...activeTurns, {
+        speaker: payload.speaker, lower: payload.lower, upper: payload.upper
+      }];
+      return;
+    }
+    if (eventName === "runtime.scene.turnDone") {
+      if (!activityProjectMatches(payload)) return;
+      activeTurns = activeTurns.filter(
+        t => !(t.lower === payload.lower && t.upper === payload.upper));
+      return;
+    }
+    if (eventName === "runtime.scene.done") {
+      if (!activityProjectMatches(payload)) return;
+      activeScenes = activeScenes.filter(
+        s => !(s.lower === payload.lower && s.upper === payload.upper));
+      sceneHistory = [...sceneHistory, {
+        timestamp: Date.now(), sceneName: payload.sceneName,
+        language: payload.language, lower: payload.lower, upper: payload.upper
+      }];
       return;
     }
     if (eventName === "vars.updated") {
@@ -8264,9 +8326,34 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
     return null;
   }
 
+  function mergedCommandsForDescriptor(agentName, descriptor, configView) {
+    const staticCmds = Array.isArray(descriptor?.commands) ? descriptor.commands : [];
+    const agentSpec = descriptor?.agentSpec;
+    if (!agentSpec?.dynamic?.enabled || !agentSpec?.dynamic?.implicitAction) {
+      return staticCmds;
+    }
+    const agent = (configView?.agents || []).find((a) => a?.name === agentName);
+    const features = Array.isArray(agent?.features) ? agent.features : [];
+    const fixedNames = new Set(
+      (Array.isArray(agentSpec.fixed) ? agentSpec.fixed : []).map((f) => f?.name).filter(Boolean)
+    );
+    const staticNames = new Set(staticCmds.map((c) => c?.name).filter(Boolean));
+    const summaryTemplate = agentSpec.dynamic.actionSummary || "";
+    const dynamicCmds = features
+      .filter((f) => f?.key && f?.value && !fixedNames.has(f.key) && !staticNames.has(f.key))
+      .map((f) => ({
+        name: f.key,
+        type: "action",
+        summary: summaryTemplate.replace("${value}", f.value),
+        params: [],
+        source: "agent-feature"
+      }));
+    return [...staticCmds, ...dynamicCmds];
+  }
+
   function pluginCommandsForAgent(agentName) {
     const descriptor = pluginInterfaceForAgent(agentName);
-    return Array.isArray(descriptor?.commands) ? descriptor.commands : [];
+    return mergedCommandsForDescriptor(agentName, descriptor, projectConfigView);
   }
 
   function cmdParamMeta(paramKey) {
@@ -8329,7 +8416,7 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
       warnings.push("Action name is required.");
       return warnings;
     }
-    const commands = Array.isArray(descriptor?.commands) ? descriptor.commands : [];
+    const commands = pluginCommandsForAgent(agentName);
     const command = commands.find((entry) => entry?.name === actionName);
     if (!command) {
       warnings.push(`Unknown action "${actionName}" for ${agentName}.`);
@@ -8669,7 +8756,7 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
         tokenIndex += 1;
       } else if (tokenIndex === 1) {
         actionName = part;
-        const cmds = agentDescriptor?.commands || [];
+        const cmds = mergedCommandsForDescriptor(agentName, agentDescriptor, configView);
         const actionKnown = cmds.some((c) => c?.name === actionName);
         tokens.push({ text: part, type: "action", known: actionKnown });
         if (actionKnown) {
@@ -12335,6 +12422,7 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
                 readOnly={!selectedProject}
                 hasServerError={!scriptParseOk}
                 diagnostics={scriptDiagnostics}
+                sceneHighlights={sceneHighlights}
                 onChange={(value) => {
                   scriptDraft = value;
                   scheduleScriptDiagnostics();

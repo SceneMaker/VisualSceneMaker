@@ -47,7 +47,14 @@
       },
       { "name": "usejpl", "type": "string", "description": "Use JPL" },
       { "name": "useexe", "type": "string", "description": "Use executable" }
-    ]
+    ],
+    "agent": {
+      "fixed": [
+        { "name": "language", "type": "string", "required": true, "description": "TTS language code (e.g., 'en')" },
+        { "name": "voice", "type": "string", "required": true, "description": "TTS voice name (e.g., 'Simon')" }
+      ],
+      "dynamic": { "enabled": false }
+    }
   },
   "commands": [],
   "variables": {

@@ -88,8 +88,13 @@ import de.dfki.vsm.event.event.NodeStartedEvent;
 import de.dfki.vsm.event.event.EdgeExecutedEvent;
 import de.dfki.vsm.event.event.NodeTerminatedEvent;
 import de.dfki.vsm.event.event.TimeoutEdgeStartedEvent;
+import de.dfki.vsm.event.event.SceneExecutedEvent;
+import de.dfki.vsm.event.event.SceneDoneEvent;
 import de.dfki.vsm.event.event.SceneStoppedEvent;
+import de.dfki.vsm.event.event.TurnExecutedEvent;
+import de.dfki.vsm.event.event.TurnDoneEvent;
 import de.dfki.vsm.event.event.VariableChangedEvent;
+import de.dfki.vsm.model.scenescript.SceneTurn;
 import de.dfki.vsm.runtime.interpreter.event.TerminationEvent;
 import de.dfki.vsm.util.tpl.Tuple;
 import de.dfki.vsm.runtime.interpreter.value.AbstractValue;
@@ -214,6 +219,11 @@ public final class WebUiServer implements EventListener {
             } else {
                 out.put("writes", new JSONArray());
                 out.put("reads", new JSONArray());
+            }
+
+            // Agent spec
+            if (agentSpec != null) {
+                out.put("agentSpec", agentSpec);
             }
 
             // Config (from pluginSpec)
@@ -510,6 +520,44 @@ public final class WebUiServer implements EventListener {
             message.put("channel", "runtime");
             message.put("event", "runtime.timeoutProgress");
             System.out.println("[EVENT] → runtime.timeoutProgress");
+
+        } else if (event instanceof SceneExecutedEvent) {
+            SceneObject scene = ((SceneExecutedEvent) event).getScene();
+            if (scene == null) return;
+            payload.put("sceneName", scene.getName());
+            payload.put("language", scene.getLanguage());
+            payload.put("lower", scene.getLower());
+            payload.put("upper", scene.getUpper());
+            message.put("channel", "runtime");
+            message.put("event", "runtime.scene.playing");
+
+        } else if (event instanceof SceneDoneEvent) {
+            SceneObject scene = ((SceneDoneEvent) event).getScene();
+            if (scene == null) return;
+            payload.put("sceneName", scene.getName());
+            payload.put("language", scene.getLanguage());
+            payload.put("lower", scene.getLower());
+            payload.put("upper", scene.getUpper());
+            message.put("channel", "runtime");
+            message.put("event", "runtime.scene.done");
+
+        } else if (event instanceof TurnExecutedEvent) {
+            SceneTurn turn = ((TurnExecutedEvent) event).getTurn();
+            if (turn == null) return;
+            payload.put("speaker", turn.getSpeaker());
+            payload.put("lower", turn.getLower());
+            payload.put("upper", turn.getUpper());
+            message.put("channel", "runtime");
+            message.put("event", "runtime.scene.turn");
+
+        } else if (event instanceof TurnDoneEvent) {
+            SceneTurn turn = ((TurnDoneEvent) event).getTurn();
+            if (turn == null) return;
+            payload.put("speaker", turn.getSpeaker());
+            payload.put("lower", turn.getLower());
+            payload.put("upper", turn.getUpper());
+            message.put("channel", "runtime");
+            message.put("event", "runtime.scene.turnDone");
 
         } else if (event instanceof SceneStoppedEvent || event instanceof TerminationEvent) {
             // SceneStoppedEvent or TerminationEvent → runtime.state with status: "stopped"
@@ -2908,6 +2956,22 @@ public final class WebUiServer implements EventListener {
             response.put("globalVariables", new JSONArray());
             response.put("localVariables", new JSONArray());
         }
+
+        // Scene play history
+        JSONArray historyArr = new JSONArray();
+        if (ref != null && ref.runtimeProject != null) {
+            for (RunTimeProject.ScenePlayRecord rec : ref.runtimeProject.getSceneHistory()) {
+                JSONObject h = new JSONObject();
+                h.put("timestamp", rec.timestamp);
+                h.put("sceneName", rec.sceneName);
+                h.put("language", rec.language);
+                h.put("lower", rec.lower);
+                h.put("upper", rec.upper);
+                historyArr.put(h);
+            }
+        }
+        response.put("sceneHistory", historyArr);
+
         writeJson(ctx, response);
     }
 
@@ -6531,6 +6595,11 @@ public final class WebUiServer implements EventListener {
         }
         String scriptText = ref.runtimeProject.getSceneScript() != null ? ref.runtimeProject.getSceneScript().getText() : "";
         ref.scriptText = scriptText == null ? "" : scriptText;
+        // Reparse the generated text so mLower/mUpper character offsets match the text
+        // representation (XML-stored offsets may be stale if the script was edited outside the text parser)
+        if (ref.runtimeProject.getSceneScript() != null && !ref.scriptText.isBlank()) {
+            ref.runtimeProject.getSceneScript().parseTXT(ref.scriptText);
+        }
         ref.scriptVersion = 1;
         if (ref.scriptText == null || ref.scriptText.isBlank()) {
             ref.scriptParseOk = true;

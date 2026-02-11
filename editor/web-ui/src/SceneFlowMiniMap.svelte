@@ -5,17 +5,17 @@
   export let onCenter = null;
 
   const COLORS = {
-    node: "#7d7d7d",
+    node: "#7a7d81",
     history: "#ffffff",
     edges: {
-      eedge: "#827d78",
-      fedge: "#234d67",
-      tedge: "#543f1d",
-      cedge: "#988e34",
-      pedge: "#2a6723",
-      iedge: "#983434"
+      eedge: "#7a7d81",
+      fedge: "#5b8edc",
+      tedge: "#a06a4b",
+      cedge: "#ffc857",
+      pedge: "#5bae7a",
+      iedge: "#e26d5a"
     },
-    comment: "rgba(200, 200, 200, 0.6)"
+    comment: "rgba(232, 232, 232, 0.9)"
   };
 
   $: nodes = snapshot?.nodes || [];

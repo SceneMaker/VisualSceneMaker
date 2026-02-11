@@ -13,9 +13,15 @@ import de.dfki.vsm.event.event.NodeStartedEvent;
 import de.dfki.vsm.event.event.NodeTerminatedEvent;
 import de.dfki.vsm.event.event.NodeSelectedEvent;
 import de.dfki.vsm.event.event.ProjectChangedEvent;
+import de.dfki.vsm.event.event.SceneExecutedEvent;
+import de.dfki.vsm.event.event.SceneDoneEvent;
 import de.dfki.vsm.event.event.SceneStoppedEvent;
 import de.dfki.vsm.event.event.TimeoutEdgeStartedEvent;
+import de.dfki.vsm.event.event.TurnExecutedEvent;
+import de.dfki.vsm.event.event.TurnDoneEvent;
 import de.dfki.vsm.event.event.VariableChangedEvent;
+import de.dfki.vsm.model.scenescript.SceneObject;
+import de.dfki.vsm.model.scenescript.SceneTurn;
 import de.dfki.vsm.event.event.WorkSpaceSelectedEvent;
 import de.dfki.vsm.model.sceneflow.chart.BasicNode;
 import de.dfki.vsm.model.sceneflow.chart.SuperNode;
@@ -114,6 +120,34 @@ public final class UiEventBridge implements EventListener {
                 return;
             }
             mSink.emitLazy(() -> UiEvent.create(UiChannel.RUNTIME, "runtime.nodeStopped", nodePayload(node)));
+            return;
+        }
+        if (event instanceof SceneExecutedEvent) {
+            SceneObject scene = ((SceneExecutedEvent) event).getScene();
+            if (scene == null) return;
+            mSink.emitLazy(() -> UiEvent.create(UiChannel.RUNTIME, "runtime.scene.playing",
+                    scenePayload(scene)));
+            return;
+        }
+        if (event instanceof SceneDoneEvent) {
+            SceneObject scene = ((SceneDoneEvent) event).getScene();
+            if (scene == null) return;
+            mSink.emitLazy(() -> UiEvent.create(UiChannel.RUNTIME, "runtime.scene.done",
+                    scenePayload(scene)));
+            return;
+        }
+        if (event instanceof TurnExecutedEvent) {
+            SceneTurn turn = ((TurnExecutedEvent) event).getTurn();
+            if (turn == null) return;
+            mSink.emitLazy(() -> UiEvent.create(UiChannel.RUNTIME, "runtime.scene.turn",
+                    turnPayload(turn)));
+            return;
+        }
+        if (event instanceof TurnDoneEvent) {
+            SceneTurn turn = ((TurnDoneEvent) event).getTurn();
+            if (turn == null) return;
+            mSink.emitLazy(() -> UiEvent.create(UiChannel.RUNTIME, "runtime.scene.turnDone",
+                    turnPayload(turn)));
             return;
         }
         if (event instanceof SceneStoppedEvent) {
@@ -364,5 +398,22 @@ public final class UiEventBridge implements EventListener {
             }
         }
         return "";
+    }
+
+    private Map<String, Object> scenePayload(final SceneObject scene) {
+        Map<String, Object> payload = new LinkedHashMap<>();
+        payload.put("sceneName", scene.getName());
+        payload.put("language", scene.getLanguage());
+        payload.put("lower", scene.getLower());
+        payload.put("upper", scene.getUpper());
+        return payload;
+    }
+
+    private Map<String, Object> turnPayload(final SceneTurn turn) {
+        Map<String, Object> payload = new LinkedHashMap<>();
+        payload.put("speaker", turn.getSpeaker());
+        payload.put("lower", turn.getLower());
+        payload.put("upper", turn.getUpper());
+        return payload;
     }
 }

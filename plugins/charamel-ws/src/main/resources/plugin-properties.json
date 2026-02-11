@@ -21,7 +21,13 @@
     ],
     "optional": [
       { "name": "certificate", "type": "filepath", "description": "Path to SSL certificate" }
-    ]
+    ],
+    "agent": {
+      "fixed": [
+        { "name": "voice", "type": "string", "required": true, "description": "TTS voice name (e.g., 'Marlene')" }
+      ],
+      "dynamic": { "enabled": false }
+    }
   },
   "commands": [
     { "name": "test", "type": "action", "params": [] },

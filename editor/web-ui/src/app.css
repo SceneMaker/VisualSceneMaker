@@ -2062,6 +2062,14 @@ summary {
   height: 100%;
   overflow: auto;
   min-height: 0;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.sceneflow-scroll::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
 }
 
 .sceneflow-inspector {
@@ -3874,7 +3882,7 @@ summary {
 }
 
 .cmd-dialog .def-list {
-  max-height: calc(3 * var(--def-row-height) + 4px);
+  max-height: calc(5 * var(--def-row-height) + 4px);
   overflow-y: auto;
   background: rgba(255, 255, 255, 0.1);
 }
@@ -4048,6 +4056,12 @@ summary {
   font-size: 1.1rem;
   line-height: 1;
   padding: 0;
+}
+
+.cmd-modal .def-actions .icon-button:not(.danger),
+.cmd-modal .cmd-modal-close {
+  background: var(--bg);
+  border-color: var(--stroke);
 }
 
 .cmd-helper-args {

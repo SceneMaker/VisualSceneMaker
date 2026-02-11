@@ -12,6 +12,11 @@ import de.dfki.vsm.runtime.interpreter.error.SceneDoesNotExists;
 import de.dfki.vsm.runtime.interpreter.value.AbstractValue;
 import de.dfki.vsm.runtime.interpreter.value.StructValue;
 import de.dfki.vsm.runtime.project.RunTimeProject;
+import de.dfki.vsm.event.EventDispatcher;
+import de.dfki.vsm.event.event.SceneExecutedEvent;
+import de.dfki.vsm.event.event.SceneDoneEvent;
+import de.dfki.vsm.event.event.TurnExecutedEvent;
+import de.dfki.vsm.event.event.TurnDoneEvent;
 import de.dfki.vsm.util.jpl.JPLEngine;
 
 import java.util.HashMap;
@@ -171,6 +176,10 @@ public final class ReactivePlayer extends RunTimePlayer {
         final SceneGroup group = script.getSceneGroup(slang, name);
         final SceneObject scene = group.select();
 
+        // Fire scene-started event and record history
+        EventDispatcher.getInstance().convey(new SceneExecutedEvent(this, scene));
+        mProject.recordScenePlay(scene.getName(), scene.getLanguage(), scene.getLower(), scene.getUpper());
+
         // Create playback task
         final PlayerWorker worker = new PlayerWorker(task) {
 
@@ -183,6 +192,9 @@ public final class ReactivePlayer extends RunTimePlayer {
                 for (SceneTurn turn : scene.getTurnList()) {
                     // increment turn_cnt;
                     turn_cnt++;
+
+                    // Fire turn-started event
+                    EventDispatcher.getInstance().convey(new TurnExecutedEvent(ReactivePlayer.this, turn));
 
                     // Get executor for this turn
                     final ActivityExecutor turnActorExecutor = mProject.getAgentDevice(turn.getSpeaker());
@@ -264,7 +276,11 @@ public final class ReactivePlayer extends RunTimePlayer {
                             return;
                         }
                     }
+                    // Fire turn-done event
+                    EventDispatcher.getInstance().convey(new TurnDoneEvent(ReactivePlayer.this, turn));
                 }
+                // Fire scene-done event
+                EventDispatcher.getInstance().convey(new SceneDoneEvent(ReactivePlayer.this, scene));
             }
         };
         // Start the playback task
