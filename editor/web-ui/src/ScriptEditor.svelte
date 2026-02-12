@@ -15,9 +15,11 @@
   export let hasServerError = false;
   export let diagnostics = [];
   export let sceneHighlights = [];
+  export let semanticHighlights = { marks: [], lines: [] };
 
   // Scene highlight decoration machinery
   const setSceneHighlightsEffect = StateEffect.define();
+  const setSemanticHighlightsEffect = StateEffect.define();
 
   const playedMark = Decoration.mark({ class: "cm-scene-played" });
   const activeMark = Decoration.mark({ class: "cm-scene-active" });
@@ -28,6 +30,126 @@
     update(decos, tr) {
       for (const effect of tr.effects) {
         if (effect.is(setSceneHighlightsEffect)) return effect.value;
+      }
+      return tr.docChanged ? decos.map(tr.changes) : decos;
+    },
+    provide: (f) => EditorView.decorations.from(f)
+  });
+
+  const semanticSubjectMark = Decoration.mark({
+    class: "cm-semantic-subject",
+    attributes: {
+      style: "background: rgba(28,110,164,0.18); border-bottom: 3px solid rgba(28,110,164,0.95); border-radius: 2px;"
+    }
+  });
+  const semanticVerbMark = Decoration.mark({
+    class: "cm-semantic-verb",
+    attributes: {
+      style: "background: rgba(183,86,28,0.18); border-bottom: 3px solid rgba(183,86,28,0.95); border-radius: 2px;"
+    }
+  });
+  const semanticObjectMark = Decoration.mark({
+    class: "cm-semantic-object",
+    attributes: {
+      style: "background: rgba(70,132,54,0.18); border-bottom: 3px solid rgba(70,132,54,0.95); border-radius: 2px;"
+    }
+  });
+  const semanticPredicateMark = Decoration.mark({
+    class: "cm-semantic-predicate",
+    attributes: {
+      style: "background: rgba(88,96,120,0.18); border-bottom: 3px solid rgba(88,96,120,0.95); border-radius: 2px;"
+    }
+  });
+  const semanticAddressMark = Decoration.mark({
+    class: "cm-semantic-address",
+    attributes: {
+      style: "background: rgba(132,98,42,0.18); border-bottom: 3px solid rgba(132,98,42,0.95); border-radius: 2px;"
+    }
+  });
+  const semanticAddressHeadMark = Decoration.mark({
+    class: "cm-semantic-address-head",
+    attributes: {
+      style: "background: rgba(132,98,42,0.16); border-bottom: 3px solid rgba(132,98,42,0.95); border-radius: 2px;"
+    }
+  });
+  const semanticSubjectAdjMark = Decoration.mark({
+    class: "cm-semantic-subject-adjective",
+    attributes: {
+      style: "background: rgba(28,110,164,0.10); border-bottom: 2px dashed rgba(28,110,164,0.95); border-radius: 2px;"
+    }
+  });
+  const semanticSubjectAdvMark = Decoration.mark({
+    class: "cm-semantic-subject-adverb",
+    attributes: {
+      style: "background: rgba(28,110,164,0.08); border-bottom: 2px dotted rgba(28,110,164,0.95); border-radius: 2px;"
+    }
+  });
+  const semanticSubjectCompMark = Decoration.mark({
+    class: "cm-semantic-subject-comparison",
+    attributes: {
+      style: "background: rgba(28,110,164,0.08); border-bottom: 3px double rgba(28,110,164,0.95); border-radius: 2px;"
+    }
+  });
+  const semanticObjectAdjMark = Decoration.mark({
+    class: "cm-semantic-object-adjective",
+    attributes: {
+      style: "background: rgba(70,132,54,0.10); border-bottom: 2px dashed rgba(70,132,54,0.95); border-radius: 2px;"
+    }
+  });
+  const semanticObjectAdvMark = Decoration.mark({
+    class: "cm-semantic-object-adverb",
+    attributes: {
+      style: "background: rgba(70,132,54,0.08); border-bottom: 2px dotted rgba(70,132,54,0.95); border-radius: 2px;"
+    }
+  });
+  const semanticObjectCompMark = Decoration.mark({
+    class: "cm-semantic-object-comparison",
+    attributes: {
+      style: "background: rgba(70,132,54,0.08); border-bottom: 3px double rgba(70,132,54,0.95); border-radius: 2px;"
+    }
+  });
+  const semanticPredicateAdjMark = Decoration.mark({
+    class: "cm-semantic-predicate-adjective",
+    attributes: {
+      style: "background: rgba(88,96,120,0.10); border-bottom: 2px dashed rgba(88,96,120,0.95); border-radius: 2px;"
+    }
+  });
+  const semanticPredicateAdvMark = Decoration.mark({
+    class: "cm-semantic-predicate-adverb",
+    attributes: {
+      style: "background: rgba(88,96,120,0.08); border-bottom: 2px dotted rgba(88,96,120,0.95); border-radius: 2px;"
+    }
+  });
+  const semanticPredicateCompMark = Decoration.mark({
+    class: "cm-semantic-predicate-comparison",
+    attributes: {
+      style: "background: rgba(88,96,120,0.08); border-bottom: 3px double rgba(88,96,120,0.95); border-radius: 2px;"
+    }
+  });
+  const semanticAddressAdjMark = Decoration.mark({
+    class: "cm-semantic-address-adjective",
+    attributes: {
+      style: "background: rgba(132,98,42,0.10); border-bottom: 2px dashed rgba(132,98,42,0.95); border-radius: 2px;"
+    }
+  });
+  const semanticAddressAdvMark = Decoration.mark({
+    class: "cm-semantic-address-adverb",
+    attributes: {
+      style: "background: rgba(132,98,42,0.08); border-bottom: 2px dotted rgba(132,98,42,0.95); border-radius: 2px;"
+    }
+  });
+  const semanticAddressCompMark = Decoration.mark({
+    class: "cm-semantic-address-comparison",
+    attributes: {
+      style: "background: rgba(132,98,42,0.08); border-bottom: 3px double rgba(132,98,42,0.95); border-radius: 2px;"
+    }
+  });
+
+  const semanticHighlightField = StateField.define({
+    create() { return Decoration.none; },
+    update(decos, tr) {
+      for (const effect of tr.effects) {
+        if (effect.is(setSemanticHighlightsEffect)) return effect.value;
       }
       return tr.docChanged ? decos.map(tr.changes) : decos;
     },
@@ -166,6 +288,7 @@
       EditorView.lineWrapping,
       updateListener,
       sceneHighlightField,
+      semanticHighlightField,
       EditorState.readOnly.of(readOnly),
       EditorView.editable.of(!readOnly)
     ];
@@ -296,8 +419,68 @@
     view.dispatch({ effects: setSceneHighlightsEffect.of(Decoration.set(ranges)) });
   }
 
+  function semanticLineDecoration(badge) {
+    return Decoration.line({
+      attributes: {
+        class: "cm-semantic-line",
+        "data-semantic-badge": String(badge || "")
+      }
+    });
+  }
+
+  function applySemanticHighlights(payload) {
+    if (!view) return;
+    const doc = view.state.doc;
+    const docLen = doc.length;
+    const ranges = [];
+    const marks = Array.isArray(payload?.marks) ? payload.marks : [];
+    const lines = Array.isArray(payload?.lines) ? payload.lines : [];
+
+    for (const mark of marks) {
+      const from = Number.isFinite(mark?.from) ? Math.max(0, Math.min(docLen, mark.from)) : -1;
+      const to = Number.isFinite(mark?.to) ? Math.max(0, Math.min(docLen, mark.to)) : -1;
+      if (from < 0 || to <= from) continue;
+      const kind = String(mark?.kind || "").toLowerCase();
+      let deco = semanticSubjectMark;
+      if (kind === "verb") deco = semanticVerbMark;
+      else if (kind === "object") deco = semanticObjectMark;
+      else if (kind === "predicate") deco = semanticPredicateMark;
+      else if (kind === "address") deco = semanticAddressMark;
+      else if (kind === "address-head") deco = semanticAddressHeadMark;
+      else if (kind === "subject-adjective") deco = semanticSubjectAdjMark;
+      else if (kind === "subject-adverb") deco = semanticSubjectAdvMark;
+      else if (kind === "subject-comparison") deco = semanticSubjectCompMark;
+      else if (kind === "object-adjective") deco = semanticObjectAdjMark;
+      else if (kind === "object-adverb") deco = semanticObjectAdvMark;
+      else if (kind === "object-comparison") deco = semanticObjectCompMark;
+      else if (kind === "predicate-adjective") deco = semanticPredicateAdjMark;
+      else if (kind === "predicate-adverb") deco = semanticPredicateAdvMark;
+      else if (kind === "predicate-comparison") deco = semanticPredicateCompMark;
+      else if (kind === "address-adjective") deco = semanticAddressAdjMark;
+      else if (kind === "address-adverb") deco = semanticAddressAdvMark;
+      else if (kind === "address-comparison") deco = semanticAddressCompMark;
+      ranges.push(deco.range(from, to));
+    }
+
+    for (const meta of lines) {
+      const lineNo = Number.isFinite(meta?.line) ? Math.floor(meta.line) : -1;
+      const badge = String(meta?.badge || "").trim();
+      if (lineNo < 1 || !badge) continue;
+      const clampedLineNo = Math.min(lineNo, doc.lines);
+      const lineFrom = doc.line(clampedLineNo).from;
+      ranges.push(semanticLineDecoration(badge).range(lineFrom));
+    }
+
+    ranges.sort((a, b) => a.from - b.from || a.to - b.to);
+    view.dispatch({ effects: setSemanticHighlightsEffect.of(Decoration.set(ranges, true)) });
+  }
+
   $: if (view && sceneHighlights) {
     applySceneHighlights(sceneHighlights);
+  }
+
+  $: if (view && semanticHighlights) {
+    applySemanticHighlights(semanticHighlights);
   }
 </script>
 

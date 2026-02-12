@@ -1,0 +1,44 @@
+plugins {
+    id 'java'
+}
+
+group 'de.dfki.vsm'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+tasks.register('runService', Exec) {
+    group = 'application'
+    description = 'Run the semantic UD service (Python/Stanza).'
+    dependsOn 'installRequirements'
+    commandLine 'python3', 'server.py'
+    workingDir project.projectDir
+}
+
+tasks.register('installRequirements', Exec) {
+    group = 'application'
+    description = 'Install Python requirements for semantic-ud.'
+    commandLine 'python3', '-m', 'pip', 'install', '-r', 'requirements.txt'
+    workingDir project.projectDir
+}
+
+tasks.register('startService', Exec) {
+    group = 'application'
+    description = 'Start the semantic UD service (alias of runService).'
+    dependsOn 'installRequirements'
+    commandLine 'python3', 'server.py'
+    workingDir project.projectDir
+}
+
+tasks.register('evaluateMapping', Exec) {
+    group = 'verification'
+    description = 'Run UD S/V/O mapping evaluation against references/eval-cases.json.'
+    dependsOn 'installRequirements'
+    environment 'SEMANTIC_UD_AUTO_DOWNLOAD', 'false'
+    environment 'SEMANTIC_UD_RESOURCES_DIR', System.getenv('SEMANTIC_UD_RESOURCES_DIR') ?: "${System.getProperty('user.home')}/stanza_resources"
+    commandLine 'python3', 'eval_harness.py', '--cases', 'references/eval-cases.json'
+    workingDir project.projectDir
+}

@@ -117,6 +117,9 @@ import org.reflections.util.ConfigurationBuilder;
 
 import java.net.URI;
 import java.net.URL;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -268,6 +271,11 @@ public final class WebUiServer implements EventListener {
     private static final LOGDefaultLogger sLogger = LOGDefaultLogger.getInstance();
     private static final String API_PREFIX = "/api/v1";
     private static final int RECENT_MAX = 8;
+    private static final int SEMANTIC_DOC_VERSION = 2;
+    private static final String SEMANTIC_SCHEMA_ID = "vsm.semantic.annotations";
+    private static final String SEMANTIC_BASIC_PROVIDER = "ud";
+    private static final String SEMANTIC_UD_URL_DEFAULT = "http://127.0.0.1:4061/analyze";
+    private static final int SEMANTIC_UD_TIMEOUT_MS = 6000;
     private static WebUiServer sInstance;
     private static final String DEMO_PROJECT_ID = "demo-project";
 
@@ -655,6 +663,10 @@ public final class WebUiServer implements EventListener {
         mApp.get(API_PREFIX + "/projects/{pid}/script", this::handleScript);
         mApp.get(API_PREFIX + "/projects/{pid}/script/scenes", this::handleScriptScenes);
         mApp.get(API_PREFIX + "/projects/{pid}/script/elements", this::handleScriptElements);
+        mApp.get(API_PREFIX + "/projects/{pid}/semantic", this::handleSemanticGet);
+        mApp.put(API_PREFIX + "/projects/{pid}/semantic", this::handleSemanticPut);
+        mApp.post(API_PREFIX + "/projects/{pid}/semantic/syntax", this::handleSemanticSyntaxAnalyze);
+        mApp.post(API_PREFIX + "/projects/{pid}/semantic/analyze", this::handleSemanticAnalyze);
         mApp.get(API_PREFIX + "/projects/{pid}/sceneflow", this::handleSceneflow);
         mApp.get(API_PREFIX + "/projects/{pid}/runtime", this::handleRuntime);
         mApp.get(API_PREFIX + "/projects/{pid}/history/commands", this::handleCommandLog);
@@ -2045,6 +2057,22 @@ public final class WebUiServer implements EventListener {
         }
         llmPromptsJson.put("actionPrompts", actionPrompts);
         cfgJson.put("llmPrompts", llmPromptsJson);
+        JSONObject llmSelectionsJson = new JSONObject();
+        de.dfki.vsm.model.config.ConfigElement llmSelections = cfg.getLLMSelections();
+        String generateSelection = llmSelections.getProperty("generate");
+        String semanticSelection = llmSelections.getProperty("semantic");
+        llmSelectionsJson.put("generate", generateSelection != null ? generateSelection : "");
+        llmSelectionsJson.put("semantic", semanticSelection != null ? semanticSelection : "");
+        cfgJson.put("llmSelections", llmSelectionsJson);
+        JSONObject semanticServicesJson = new JSONObject();
+        de.dfki.vsm.model.config.ConfigElement semanticServices = cfg.getSemanticServices();
+        String basicProvider = semanticServices.getProperty("basicProvider");
+        String udUrl = semanticServices.getProperty("udUrl");
+        String udTimeoutMs = semanticServices.getProperty("udTimeoutMs");
+        semanticServicesJson.put("basicProvider", basicProvider != null ? basicProvider : "");
+        semanticServicesJson.put("udUrl", udUrl != null ? udUrl : "");
+        semanticServicesJson.put("udTimeoutMs", udTimeoutMs != null ? udTimeoutMs : "");
+        cfgJson.put("semanticServices", semanticServicesJson);
         cfgJson.put("sceneTitleConcepts", configConceptsToJson(cfg.getSceneTitleConcepts()));
         sLogger.message("[PROJECT-CONFIG] Serialized plugins=" + pluginsJson.length()
                 + " agents=" + agentsJson.length() + " llms=" + llmsJson.length());
@@ -2220,6 +2248,36 @@ public final class WebUiServer implements EventListener {
             sLogger.message("[PROJECT-CONFIG] Applied llmPrompts: formatPrompt="
                     + (formatPrompt.isEmpty() ? "(empty)" : "(set)")
                     + " actionPrompts=" + (actionPrompts != null ? actionPrompts.length() : 0));
+        }
+        JSONObject llmSelectionsJson = configJson.optJSONObject("llmSelections");
+        if (llmSelectionsJson != null) {
+            de.dfki.vsm.model.config.ConfigElement selections = cfg.getLLMSelections();
+            selections.getEntryList().clear();
+            String generateSelection = llmSelectionsJson.optString("generate", "");
+            String semanticSelection = llmSelectionsJson.optString("semantic", "");
+            if (!generateSelection.isEmpty()) {
+                selections.addProperty("generate", generateSelection);
+            }
+            if (!semanticSelection.isEmpty()) {
+                selections.addProperty("semantic", semanticSelection);
+            }
+        }
+        JSONObject semanticServicesJson = configJson.optJSONObject("semanticServices");
+        if (semanticServicesJson != null) {
+            de.dfki.vsm.model.config.ConfigElement services = cfg.getSemanticServices();
+            services.getEntryList().clear();
+            String basicProvider = semanticServicesJson.optString("basicProvider", "").trim();
+            String udUrl = semanticServicesJson.optString("udUrl", "").trim();
+            String udTimeoutMs = semanticServicesJson.optString("udTimeoutMs", "").trim();
+            if (!basicProvider.isEmpty()) {
+                services.addProperty("basicProvider", basicProvider);
+            }
+            if (!udUrl.isEmpty()) {
+                services.addProperty("udUrl", udUrl);
+            }
+            if (!udTimeoutMs.isEmpty()) {
+                services.addProperty("udTimeoutMs", udTimeoutMs);
+            }
         }
         JSONArray conceptsJson = configJson.optJSONArray("sceneTitleConcepts");
         if (conceptsJson != null) {
@@ -2860,6 +2918,721 @@ public final class WebUiServer implements EventListener {
         response.put("gesticon", gesticonJson);
         response.put("visicon", visiconJson);
         writeJson(ctx, response);
+    }
+
+    private void handleSemanticGet(Context ctx) {
+        String pid = ctx.pathParam("pid");
+        ProjectRef ref = projectStore.get(pid);
+        if (ref == null || ref.runtimeProject == null) {
+            ctx.status(404);
+            writeJson(ctx, errorResponse("PROJECT_NOT_FOUND", "Project not found"));
+            return;
+        }
+        ensureScriptLoaded(ref);
+        writeJson(ctx, loadSemanticDocument(ref));
+    }
+
+    private void handleSemanticPut(Context ctx) {
+        String pid = ctx.pathParam("pid");
+        ProjectRef ref = projectStore.get(pid);
+        if (ref == null || ref.runtimeProject == null) {
+            ctx.status(404);
+            writeJson(ctx, errorResponse("PROJECT_NOT_FOUND", "Project not found"));
+            return;
+        }
+        ensureScriptLoaded(ref);
+        try {
+            JSONObject body = new JSONObject(ctx.body());
+            JSONObject semantic = body.optJSONObject("semantic");
+            if (semantic == null) {
+                semantic = body;
+            }
+            JSONObject normalized = normalizeSemanticDocument(ref, semantic);
+            if (!saveSemanticDocument(ref, normalized)) {
+                ctx.status(500);
+                writeJson(ctx, errorResponse("SEMANTIC_SAVE_FAILED", "Failed to save semantic annotations"));
+                return;
+            }
+            writeJson(ctx, normalized);
+        } catch (Exception exc) {
+            ctx.status(400);
+            writeJson(ctx, errorResponse("SEMANTIC_INVALID", "Invalid semantic payload: " + exc.getMessage()));
+        }
+    }
+
+    private void handleSemanticSyntaxAnalyze(Context ctx) {
+        String pid = ctx.pathParam("pid");
+        ProjectRef ref = projectStore.get(pid);
+        if (ref == null || ref.runtimeProject == null) {
+            ctx.status(404);
+            writeJson(ctx, errorResponse("PROJECT_NOT_FOUND", "Project not found"));
+            return;
+        }
+        ensureScriptLoaded(ref);
+        try {
+            JSONObject body = new JSONObject(ctx.body());
+            String text = body.optString("text", ref.scriptText == null ? "" : ref.scriptText);
+            if (text == null) text = "";
+            String language = body.optString("language", "de");
+            Integer line = body.has("line") ? Integer.valueOf(body.optInt("line", 1)) : null;
+            String speaker = body.optString("speaker", "");
+            Integer baseOffset = body.has("baseOffset") ? Integer.valueOf(body.optInt("baseOffset", 0)) : null;
+            boolean persist = body.optBoolean("persist", false);
+            boolean debug = body.optBoolean("debug", false);
+
+            JSONObject syntaxLayers = new JSONObject()
+                    .put("basic", true)
+                    .put("dialogueAct", false)
+                    .put("themeRheme", false);
+            JSONObject syntax = analyzeSemanticWithUd(ref, text, syntaxLayers, language, line, speaker, baseOffset, debug);
+            if (syntax == null) {
+                syntax = analyzeSemanticHeuristic(ref, text, syntaxLayers);
+            }
+            if (!persist) {
+                writeJson(ctx, syntax);
+            } else if (saveSemanticDocument(ref, syntax)) {
+                writeJson(ctx, syntax);
+            } else {
+                ctx.status(500);
+                writeJson(ctx, errorResponse("SEMANTIC_SAVE_FAILED", "Failed to save semantic syntax analysis"));
+            }
+        } catch (Exception exc) {
+            ctx.status(500);
+            writeJson(ctx, errorResponse("SEMANTIC_SYNTAX_FAILED", "Semantic syntax analysis failed: " + exc.getMessage()));
+        }
+    }
+
+    private void handleSemanticAnalyze(Context ctx) {
+        String pid = ctx.pathParam("pid");
+        ProjectRef ref = projectStore.get(pid);
+        if (ref == null || ref.runtimeProject == null) {
+            ctx.status(404);
+            writeJson(ctx, errorResponse("PROJECT_NOT_FOUND", "Project not found"));
+            return;
+        }
+        ensureScriptLoaded(ref);
+        try {
+            JSONObject body = new JSONObject(ctx.body());
+            String text = body.optString("text", ref.scriptText == null ? "" : ref.scriptText);
+            if (text == null) text = "";
+            JSONObject layers = body.optJSONObject("layers");
+            boolean useLlm = body.optBoolean("useLlm", true);
+            boolean persist = body.optBoolean("persist", true);
+            int llmIndex = body.optInt("llmIndex", 0);
+            String systemPrompt = body.optString("systemPrompt", "");
+            String prompt = body.optString("prompt", "");
+            String language = body.optString("language", "de");
+            String basicProvider = body.optString("basicProvider",
+                    semanticBasicProvider(ref));
+            boolean includeBasic = layers == null || layers.optBoolean("basic", true);
+            boolean includeDa = layers == null || layers.optBoolean("dialogueAct", true);
+            boolean includeTr = layers == null || layers.optBoolean("themeRheme", true);
+
+            JSONObject udLayers = new JSONObject()
+                    .put("basic", includeBasic)
+                    .put("dialogueAct", false)
+                    .put("themeRheme", false);
+            JSONObject llmLayers = new JSONObject()
+                    .put("basic", includeBasic && "llm".equalsIgnoreCase(basicProvider))
+                    .put("dialogueAct", includeDa)
+                    .put("themeRheme", includeTr);
+
+            JSONObject udDoc = null;
+            if (includeBasic && !"llm".equalsIgnoreCase(basicProvider)) {
+                udDoc = analyzeSemanticWithUd(ref, text, udLayers, language, null, null, null, false);
+            }
+
+            JSONObject llmDoc = null;
+            if (useLlm && (includeDa || includeTr || "llm".equalsIgnoreCase(basicProvider))) {
+                llmDoc = analyzeSemanticWithLlm(ref, text, llmLayers, llmIndex, systemPrompt, prompt);
+            }
+
+            JSONObject semantic = null;
+            if (llmDoc != null && udDoc != null) {
+                semantic = mergeSemanticDocuments(ref, llmDoc, udDoc,
+                        includeBasic, false, false);
+                setDocumentLayerSource(semantic, "basic", "ud");
+            } else if (llmDoc != null) {
+                semantic = llmDoc;
+            } else if (udDoc != null) {
+                semantic = udDoc;
+            }
+
+            if (semantic != null && includeBasic && !hasAnyBasicAnnotations(semantic)) {
+                JSONObject basicFallback = null;
+                if (useLlm) {
+                    JSONObject llmBasicOnly = new JSONObject()
+                            .put("basic", true)
+                            .put("dialogueAct", false)
+                            .put("themeRheme", false);
+                    basicFallback = analyzeSemanticWithLlm(ref, text, llmBasicOnly, llmIndex, systemPrompt, prompt);
+                }
+                if (basicFallback == null) {
+                    JSONObject heuristicBasicOnly = new JSONObject()
+                            .put("basic", true)
+                            .put("dialogueAct", false)
+                            .put("themeRheme", false);
+                    basicFallback = analyzeSemanticHeuristic(ref, text, heuristicBasicOnly);
+                }
+                if (basicFallback != null) {
+                    semantic = mergeSemanticDocuments(ref, semantic, basicFallback, true, false, false);
+                }
+            }
+
+            if (semantic == null) {
+                semantic = analyzeSemanticHeuristic(ref, text, layers);
+            }
+            if (!persist) {
+                writeJson(ctx, semantic);
+            } else if (saveSemanticDocument(ref, semantic)) {
+                writeJson(ctx, semantic);
+            } else {
+                ctx.status(500);
+                writeJson(ctx, errorResponse("SEMANTIC_SAVE_FAILED", "Failed to save semantic analysis"));
+            }
+        } catch (Exception exc) {
+            ctx.status(500);
+            writeJson(ctx, errorResponse("SEMANTIC_ANALYSIS_FAILED", "Semantic analysis failed: " + exc.getMessage()));
+        }
+    }
+
+    private JSONObject defaultSemanticDocument(ProjectRef ref) {
+        String now = java.time.Instant.now().toString();
+        JSONObject doc = new JSONObject();
+        doc.put("version", SEMANTIC_DOC_VERSION);
+        doc.put("schema", new JSONObject()
+                .put("id", SEMANTIC_SCHEMA_ID)
+                .put("version", SEMANTIC_DOC_VERSION));
+        doc.put("scriptHash", sha256(ref != null ? ref.scriptText : ""));
+        doc.put("generatedAt", now);
+        doc.put("updatedAt", now);
+        doc.put("provenance", new JSONObject()
+                .put("source", "editor-web-ui")
+                .put("service", "")
+                .put("model", "")
+                .put("analyzedAt", now)
+                .put("layers", new JSONObject()
+                        .put("basic", "unknown")
+                        .put("dialogueAct", "unknown")
+                        .put("themeRheme", "unknown")));
+        doc.put("annotations", new JSONArray());
+        return doc;
+    }
+
+    private Path semanticDocumentPath(ProjectRef ref) {
+        if (ref == null || ref.path == null || ref.path.isBlank()) {
+            return null;
+        }
+        return Paths.get(ref.path, "semantic-annotations.json");
+    }
+
+    private JSONObject loadSemanticDocument(ProjectRef ref) {
+        JSONObject fallback = defaultSemanticDocument(ref);
+        Path path = semanticDocumentPath(ref);
+        if (path == null || !Files.exists(path)) {
+            return fallback;
+        }
+        try {
+            String raw = Files.readString(path, StandardCharsets.UTF_8);
+            JSONObject parsed = new JSONObject(raw);
+            return normalizeSemanticDocument(ref, parsed);
+        } catch (Exception exc) {
+            sLogger.warning("Warning: cannot load semantic annotations: " + exc.getMessage());
+            return fallback;
+        }
+    }
+
+    private JSONObject normalizeSemanticDocument(ProjectRef ref, JSONObject source) {
+        JSONObject fallback = defaultSemanticDocument(ref);
+        String now = java.time.Instant.now().toString();
+        JSONObject out = new JSONObject();
+        out.put("version", source == null ? SEMANTIC_DOC_VERSION : source.optInt("version", SEMANTIC_DOC_VERSION));
+        JSONObject schema = source == null ? null : source.optJSONObject("schema");
+        out.put("schema", schema == null
+                ? fallback.getJSONObject("schema")
+                : new JSONObject(schema.toString())
+                        .put("id", schema.optString("id", SEMANTIC_SCHEMA_ID))
+                        .put("version", schema.optInt("version", SEMANTIC_DOC_VERSION)));
+        out.put("scriptHash", sha256(ref != null ? ref.scriptText : ""));
+        out.put("generatedAt", source == null ? fallback.optString("generatedAt", now)
+                : source.optString("generatedAt", now));
+        out.put("updatedAt", now);
+        JSONObject provenance = source == null ? null : source.optJSONObject("provenance");
+        out.put("provenance", provenance == null
+                ? fallback.getJSONObject("provenance")
+                : new JSONObject(provenance.toString()));
+        JSONArray anns = source == null ? null : source.optJSONArray("annotations");
+        JSONArray normalizedAnnotations = new JSONArray();
+        if (anns != null) {
+            for (int i = 0; i < anns.length(); i++) {
+                JSONObject ann = anns.optJSONObject(i);
+                if (ann == null) {
+                    continue;
+                }
+                JSONObject normalized = new JSONObject(ann.toString());
+                if (!normalized.has("provenance")) {
+                    JSONObject annProv = new JSONObject().put("layers", new JSONObject());
+                    if (normalized.has("basic")) {
+                        annProv.getJSONObject("layers").put("basic", "unknown");
+                    }
+                    if (normalized.has("dialogueAct")) {
+                        annProv.getJSONObject("layers").put("dialogueAct", "unknown");
+                    }
+                    if (normalized.has("themeRheme")) {
+                        annProv.getJSONObject("layers").put("themeRheme", "unknown");
+                    }
+                    annProv.put("analyzedAt", out.optString("updatedAt", now));
+                    normalized.put("provenance", annProv);
+                }
+                normalizedAnnotations.put(normalized);
+            }
+        }
+        out.put("annotations", normalizedAnnotations);
+        return out;
+    }
+
+    private boolean hasAnyBasicAnnotations(JSONObject doc) {
+        if (doc == null) return false;
+        JSONArray anns = doc.optJSONArray("annotations");
+        if (anns == null) return false;
+        for (int i = 0; i < anns.length(); i++) {
+            JSONObject ann = anns.optJSONObject(i);
+            if (ann != null && ann.has("basic")) {
+                JSONObject basic = ann.optJSONObject("basic");
+                if (basic != null && basic.length() > 0) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private JSONObject mergeSemanticDocuments(ProjectRef ref, JSONObject baseDoc, JSONObject overlayDoc,
+                                              boolean overlayBasic, boolean overlayDa, boolean overlayTr) {
+        JSONObject base = normalizeSemanticDocument(ref, baseDoc);
+        JSONObject overlay = normalizeSemanticDocument(ref, overlayDoc);
+        JSONArray baseAnns = base.optJSONArray("annotations");
+        JSONArray overlayAnns = overlay.optJSONArray("annotations");
+        int max = Math.max(baseAnns == null ? 0 : baseAnns.length(), overlayAnns == null ? 0 : overlayAnns.length());
+        JSONArray merged = new JSONArray();
+        for (int i = 0; i < max; i++) {
+            JSONObject srcBase = baseAnns == null ? null : baseAnns.optJSONObject(i);
+            JSONObject srcOverlay = overlayAnns == null ? null : overlayAnns.optJSONObject(i);
+            JSONObject out = srcBase == null ? new JSONObject() : new JSONObject(srcBase.toString());
+            if (srcOverlay != null) {
+                if (!out.has("id") && srcOverlay.has("id")) out.put("id", srcOverlay.get("id"));
+                if (!out.has("line") && srcOverlay.has("line")) out.put("line", srcOverlay.get("line"));
+                if (!out.has("speaker") && srcOverlay.has("speaker")) out.put("speaker", srcOverlay.get("speaker"));
+                if (!out.has("text") && srcOverlay.has("text")) out.put("text", srcOverlay.get("text"));
+                if (overlayBasic && srcOverlay.has("basic")) {
+                    out.put("basic", srcOverlay.opt("basic"));
+                    setAnnotationLayerSource(out, "basic", "ud");
+                }
+                if (overlayDa && srcOverlay.has("dialogueAct")) {
+                    out.put("dialogueAct", srcOverlay.opt("dialogueAct"));
+                    setAnnotationLayerSource(out, "dialogueAct", "llm");
+                }
+                if (overlayTr && srcOverlay.has("themeRheme")) {
+                    out.put("themeRheme", srcOverlay.opt("themeRheme"));
+                    setAnnotationLayerSource(out, "themeRheme", "llm");
+                }
+            }
+            merged.put(out);
+        }
+        base.put("annotations", merged);
+        return normalizeSemanticDocument(ref, base);
+    }
+
+    private void setDocumentLayerSource(JSONObject doc, String layer, String value) {
+        if (doc == null || layer == null || layer.isBlank() || value == null || value.isBlank()) return;
+        JSONObject prov = doc.optJSONObject("provenance");
+        if (prov == null) {
+            prov = new JSONObject();
+            doc.put("provenance", prov);
+        }
+        JSONObject layers = prov.optJSONObject("layers");
+        if (layers == null) {
+            layers = new JSONObject();
+            prov.put("layers", layers);
+        }
+        layers.put(layer, value);
+        prov.put("analyzedAt", java.time.Instant.now().toString());
+    }
+
+    private void setAnnotationLayerSource(JSONObject annotation, String layer, String value) {
+        if (annotation == null || layer == null || layer.isBlank() || value == null || value.isBlank()) return;
+        JSONObject prov = annotation.optJSONObject("provenance");
+        if (prov == null) {
+            prov = new JSONObject();
+            annotation.put("provenance", prov);
+        }
+        JSONObject layers = prov.optJSONObject("layers");
+        if (layers == null) {
+            layers = new JSONObject();
+            prov.put("layers", layers);
+        }
+        layers.put(layer, value);
+        prov.put("analyzedAt", java.time.Instant.now().toString());
+    }
+
+    private JSONObject analyzeSemanticWithUd(ProjectRef ref, String text, JSONObject layers, String language,
+                                             Integer line, String speaker, Integer baseOffset, boolean debug) {
+        if (ref == null || text == null || text.isBlank()) {
+            return null;
+        }
+        if (layers != null && !layers.optBoolean("basic", true)) {
+            return null;
+        }
+        try {
+            String udUrl = semanticUdUrl(ref);
+            int timeoutMs = semanticUdTimeoutMs(ref);
+            JSONObject payload = new JSONObject();
+            payload.put("text", text);
+            payload.put("language", language == null || language.isBlank() ? "de" : language);
+            if (line != null) {
+                payload.put("line", line.intValue());
+            }
+            if (speaker != null && !speaker.isBlank()) {
+                payload.put("speaker", speaker);
+            }
+            if (baseOffset != null) {
+                payload.put("baseOffset", baseOffset.intValue());
+            }
+            if (debug) {
+                payload.put("debug", true);
+            }
+            HttpClient client = HttpClient.newBuilder()
+                    .connectTimeout(Duration.ofMillis(timeoutMs))
+                    .version(HttpClient.Version.HTTP_1_1)
+                    .build();
+            HttpRequest req = HttpRequest.newBuilder(URI.create(udUrl))
+                    .timeout(Duration.ofMillis(timeoutMs))
+                    .header("Content-Type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString(payload.toString()))
+                    .build();
+            HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString());
+            if (resp.statusCode() < 200 || resp.statusCode() >= 300) {
+                sLogger.warning("Semantic UD fallback: HTTP " + resp.statusCode() + " from " + udUrl);
+                return null;
+            }
+            String content = resp.body() == null ? "" : resp.body().trim();
+            if (content.isEmpty() || content.charAt(0) != '{') {
+                return null;
+            }
+            JSONObject doc = normalizeSemanticDocument(ref, new JSONObject(content));
+            setDocumentLayerSource(doc, "basic", "ud");
+            JSONArray anns = doc.optJSONArray("annotations");
+            if (anns != null) {
+                for (int i = 0; i < anns.length(); i++) {
+                    JSONObject ann = anns.optJSONObject(i);
+                    if (ann != null) {
+                        setAnnotationLayerSource(ann, "basic", "ud");
+                    }
+                }
+            }
+            return doc;
+        } catch (Exception exc) {
+            sLogger.warning("Semantic UD fallback to non-UD provider: " + exc.getMessage());
+            return null;
+        }
+    }
+
+    private String semanticBasicProvider(ProjectRef ref) {
+        String fromProject = null;
+        if (ref != null && ref.runtimeProject != null && ref.runtimeProject.getProjectConfig() != null) {
+            de.dfki.vsm.model.config.ConfigElement services = ref.runtimeProject.getProjectConfig().getSemanticServices();
+            if (services != null) {
+                fromProject = services.getProperty("basicProvider");
+            }
+        }
+        if (fromProject != null && !fromProject.isBlank()) {
+            return fromProject.trim();
+        }
+        return System.getProperty("semantic.basic.provider", SEMANTIC_BASIC_PROVIDER);
+    }
+
+    private String semanticUdUrl(ProjectRef ref) {
+        String fromProject = null;
+        if (ref != null && ref.runtimeProject != null && ref.runtimeProject.getProjectConfig() != null) {
+            de.dfki.vsm.model.config.ConfigElement services = ref.runtimeProject.getProjectConfig().getSemanticServices();
+            if (services != null) {
+                fromProject = services.getProperty("udUrl");
+            }
+        }
+        if (fromProject != null && !fromProject.isBlank()) {
+            return fromProject.trim();
+        }
+        return System.getProperty("semantic.ud.url", SEMANTIC_UD_URL_DEFAULT);
+    }
+
+    private int semanticUdTimeoutMs(ProjectRef ref) {
+        String fromProject = null;
+        if (ref != null && ref.runtimeProject != null && ref.runtimeProject.getProjectConfig() != null) {
+            de.dfki.vsm.model.config.ConfigElement services = ref.runtimeProject.getProjectConfig().getSemanticServices();
+            if (services != null) {
+                fromProject = services.getProperty("udTimeoutMs");
+            }
+        }
+        if (fromProject != null && !fromProject.isBlank()) {
+            try {
+                int value = Integer.parseInt(fromProject.trim());
+                if (value > 0) {
+                    return value;
+                }
+            } catch (NumberFormatException ignored) {
+                // Fall through to system/default value.
+            }
+        }
+        return Integer.getInteger("semantic.ud.timeout.ms", SEMANTIC_UD_TIMEOUT_MS);
+    }
+
+    private boolean saveSemanticDocument(ProjectRef ref, JSONObject semantic) {
+        Path path = semanticDocumentPath(ref);
+        if (path == null) {
+            return false;
+        }
+        try {
+            Files.createDirectories(path.getParent());
+            Files.writeString(
+                    path,
+                    semantic.toString(2),
+                    StandardCharsets.UTF_8,
+                    StandardOpenOption.CREATE,
+                    StandardOpenOption.TRUNCATE_EXISTING,
+                    StandardOpenOption.WRITE
+            );
+            return true;
+        } catch (Exception exc) {
+            sLogger.warning("Warning: cannot save semantic annotations: " + exc.getMessage());
+            return false;
+        }
+    }
+
+    private JSONObject analyzeSemanticWithLlm(ProjectRef ref, String text, JSONObject layers, int llmIndex, String systemPrompt, String customPrompt) {
+        if (ref == null || ref.runtimeProject == null || text == null || text.isBlank()) {
+            return null;
+        }
+        ProjectConfig cfg = ref.runtimeProject.getProjectConfig();
+        if (cfg == null || cfg.getLLMConfigList() == null || cfg.getLLMConfigList().isEmpty()) {
+            return null;
+        }
+        int selectedIndex = Math.max(0, llmIndex);
+        if (selectedIndex >= cfg.getLLMConfigList().size()) {
+            selectedIndex = 0;
+        }
+        LLMConfig llmConfig = cfg.getLLMConfigList().get(selectedIndex);
+        try {
+            LLMSupport llm = createLLMSupport(llmConfig);
+            if (llm.getSelectedModel() == null) {
+                return null;
+            }
+            String layerText = "basic:true, dialogueAct:true, themeRheme:true";
+            if (layers != null) {
+                layerText = "basic:" + layers.optBoolean("basic", true)
+                        + ", dialogueAct:" + layers.optBoolean("dialogueAct", true)
+                        + ", themeRheme:" + layers.optBoolean("themeRheme", true);
+            }
+            boolean wantBasic = layers == null || layers.optBoolean("basic", true);
+            boolean wantDa = layers == null || layers.optBoolean("dialogueAct", true);
+            boolean wantTr = layers == null || layers.optBoolean("themeRheme", true);
+            StringBuilder fields = new StringBuilder("id, line (1-based), speaker, text");
+            if (wantBasic) {
+                fields.append(", basic.subject/basic.verb/basic.object each with text/from/to absolute char offsets");
+            }
+            if (wantDa) {
+                fields.append(", dialogueAct.label/dialogueAct.confidence");
+            }
+            if (wantTr) {
+                fields.append(", themeRheme.theme/themeRheme.rheme/themeRheme.confidence");
+            }
+            String prompt = """
+                    Analyze the scene script and return JSON only (no markdown).
+                    Output object fields: version (number), annotations (array).
+                    Each annotation: %s.
+                    Layers: %s
+                    Script:
+                    %s
+                    """.formatted(fields.toString(), layerText, text);
+            if (customPrompt != null && !customPrompt.isBlank()) {
+                prompt = customPrompt
+                        .replace("{{layers}}", layerText)
+                        .replace("{{script}}", text);
+            }
+            if (systemPrompt != null && !systemPrompt.isBlank()) {
+                prompt = "System instruction:\n" + systemPrompt.trim() + "\n\nUser instruction:\n" + prompt;
+            }
+            LLMSupport.LLMCompletion completion = llm.sendPrompt(prompt);
+            String content = completion.content() == null ? "" : completion.content().trim();
+            if (content.startsWith("```")) {
+                int nl = content.indexOf('\n');
+                if (nl >= 0) {
+                    content = content.substring(nl + 1);
+                }
+                if (content.endsWith("```")) {
+                    content = content.substring(0, content.length() - 3);
+                }
+                content = content.trim();
+            }
+            if (content.isEmpty() || content.charAt(0) != '{') {
+                return null;
+            }
+            JSONObject doc = normalizeSemanticDocument(ref, new JSONObject(content));
+            if (layers == null || layers.optBoolean("basic", true)) {
+                setDocumentLayerSource(doc, "basic", "llm");
+            }
+            if (layers == null || layers.optBoolean("dialogueAct", true)) {
+                setDocumentLayerSource(doc, "dialogueAct", "llm");
+            }
+            if (layers == null || layers.optBoolean("themeRheme", true)) {
+                setDocumentLayerSource(doc, "themeRheme", "llm");
+            }
+            JSONArray anns = doc.optJSONArray("annotations");
+            if (anns != null) {
+                for (int i = 0; i < anns.length(); i++) {
+                    JSONObject ann = anns.optJSONObject(i);
+                    if (ann == null) continue;
+                    if (layers == null || layers.optBoolean("basic", true)) {
+                        setAnnotationLayerSource(ann, "basic", "llm");
+                    }
+                    if (layers == null || layers.optBoolean("dialogueAct", true)) {
+                        setAnnotationLayerSource(ann, "dialogueAct", "llm");
+                    }
+                    if (layers == null || layers.optBoolean("themeRheme", true)) {
+                        setAnnotationLayerSource(ann, "themeRheme", "llm");
+                    }
+                }
+            }
+            return doc;
+        } catch (Exception exc) {
+            sLogger.warning("Semantic LLM analysis fallback to heuristic: " + exc.getMessage());
+            return null;
+        }
+    }
+
+    private JSONObject analyzeSemanticHeuristic(ProjectRef ref, String text, JSONObject layers) {
+        JSONObject doc = defaultSemanticDocument(ref);
+        JSONArray annotations = new JSONArray();
+        if (text == null) {
+            text = "";
+        }
+        boolean includeBasic = layers == null || layers.optBoolean("basic", true);
+        boolean includeDa = layers == null || layers.optBoolean("dialogueAct", true);
+        boolean includeTr = layers == null || layers.optBoolean("themeRheme", true);
+        String[] lines = text.split("\n", -1);
+        int cursor = 0;
+        java.util.regex.Pattern tokenPattern = java.util.regex.Pattern.compile("[\\p{L}\\$][\\p{L}\\p{N}_'\\-$]*");
+        for (int i = 0; i < lines.length; i += 1) {
+            String line = lines[i];
+            int colonIndex = line.indexOf(':');
+            String speaker = "";
+            String utteranceRaw;
+            if (colonIndex > 0 && colonIndex < line.length() - 1) {
+                speaker = line.substring(0, colonIndex).trim();
+                utteranceRaw = line.substring(colonIndex + 1);
+            } else {
+                utteranceRaw = line;
+            }
+            String utterance = utteranceRaw.trim();
+            if (utterance.isEmpty()) {
+                cursor += line.length() + 1;
+                continue;
+            }
+            int lead = utteranceRaw.indexOf(utterance);
+            int utteranceStart = colonIndex > 0
+                    ? cursor + colonIndex + 1 + Math.max(0, lead)
+                    : cursor + Math.max(0, lead);
+
+            JSONArray tokens = new JSONArray();
+            java.util.regex.Matcher matcher = tokenPattern.matcher(utterance);
+            while (matcher.find()) {
+                JSONObject tok = new JSONObject();
+                tok.put("text", matcher.group());
+                tok.put("from", utteranceStart + matcher.start());
+                tok.put("to", utteranceStart + matcher.end());
+                tokens.put(tok);
+            }
+
+            JSONObject ann = new JSONObject();
+            ann.put("id", "ann-" + UUID.randomUUID());
+            ann.put("line", i + 1);
+            ann.put("speaker", speaker);
+            ann.put("text", utterance);
+
+            if (includeBasic) {
+                JSONObject basic = new JSONObject();
+                if (tokens.length() > 0) basic.put("subject", tokens.getJSONObject(0));
+                if (tokens.length() > 1) basic.put("verb", tokens.getJSONObject(1));
+                if (tokens.length() > 2) {
+                    int objStart = tokens.getJSONObject(2).optInt("from", utteranceStart);
+                    int objFrom = Math.max(utteranceStart, objStart);
+                    int objTo = utteranceStart + utterance.length();
+                    String objText = utterance.substring(Math.min(utterance.length(), Math.max(0, objFrom - utteranceStart)));
+                    JSONObject obj = new JSONObject();
+                    obj.put("text", objText);
+                    obj.put("from", objFrom);
+                    obj.put("to", objTo);
+                    basic.put("object", obj);
+                }
+                ann.put("basic", basic);
+            }
+
+            if (includeDa) {
+                JSONObject da = new JSONObject();
+                da.put("label", detectDialogueActLabel(utterance));
+                da.put("confidence", 0.55);
+                ann.put("dialogueAct", da);
+            }
+
+            if (includeTr) {
+                JSONObject tr = new JSONObject();
+                String theme = tokens.length() > 0 ? tokens.getJSONObject(0).optString("text", "") : "";
+                tr.put("theme", theme);
+                tr.put("rheme", theme.isEmpty() ? utterance : utterance.replaceFirst("^" + java.util.regex.Pattern.quote(theme) + "\\s*", ""));
+                tr.put("confidence", 0.5);
+                ann.put("themeRheme", tr);
+            }
+
+            JSONObject meta = new JSONObject();
+            meta.put("source", "heuristic");
+            meta.put("generatedAt", java.time.Instant.now().toString());
+            ann.put("meta", meta);
+            annotations.put(ann);
+            cursor += line.length() + 1;
+        }
+        doc.put("annotations", annotations);
+        if (includeBasic) {
+            setDocumentLayerSource(doc, "basic", "heuristic");
+        }
+        if (includeDa) {
+            setDocumentLayerSource(doc, "dialogueAct", "heuristic");
+        }
+        if (includeTr) {
+            setDocumentLayerSource(doc, "themeRheme", "heuristic");
+        }
+        return doc;
+    }
+
+    private String detectDialogueActLabel(String utterance) {
+        String lower = utterance == null ? "" : utterance.toLowerCase();
+        if (utterance != null && utterance.endsWith("?")) return "question";
+        if (lower.startsWith("please ") || lower.startsWith("can you") || lower.startsWith("could you")) return "request";
+        if (lower.startsWith("hi ") || lower.startsWith("hello")) return "greeting";
+        if (lower.startsWith("thanks") || lower.startsWith("thank you")) return "thank";
+        return "inform";
+    }
+
+    private String sha256(String input) {
+        try {
+            java.security.MessageDigest digest = java.security.MessageDigest.getInstance("SHA-256");
+            byte[] bytes = digest.digest((input == null ? "" : input).getBytes(StandardCharsets.UTF_8));
+            StringBuilder sb = new StringBuilder("sha256:");
+            for (byte b : bytes) {
+                sb.append(String.format("%02x", b));
+            }
+            return sb.toString();
+        } catch (Exception exc) {
+            return "sha256:";
+        }
     }
 
     private void handleSceneflow(Context ctx) {

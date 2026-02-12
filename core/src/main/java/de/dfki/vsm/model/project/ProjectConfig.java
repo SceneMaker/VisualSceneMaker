@@ -35,6 +35,10 @@ public final class ProjectConfig implements ModelObject {
     private final List<LLMConfig> mLLMList;
     // The LLM prompts configuration (formatPrompt, actionPrompt.0, etc.)
     private final ConfigElement mLLMPrompts;
+    // Selected LLM services for authoring tools (generate, semantic)
+    private final ConfigElement mLLMSelections;
+    // Semantic service configuration (UD provider, endpoint, timeout)
+    private final ConfigElement mSemanticServices;
     // Scene title concept list for scene title generator
     private final ConfigElement mSceneTitleConcepts;
 
@@ -50,6 +54,10 @@ public final class ProjectConfig implements ModelObject {
         mLLMList = new ArrayList<>();
         // Initialize The LLM Prompts
         mLLMPrompts = new ConfigElement("LLMPrompts", "Feature");
+        // Initialize The LLM selections
+        mLLMSelections = new ConfigElement("LLMSelections", "Feature");
+        // Initialize semantic services configuration
+        mSemanticServices = new ConfigElement("SemanticServices", "Feature");
         // Initialize Scene Title Concepts
         mSceneTitleConcepts = new ConfigElement("SceneTitleConcepts", "Concept");
         // Initialize the player config
@@ -92,6 +100,10 @@ public final class ProjectConfig implements ModelObject {
         mLLMList = llms;
         // Initialize The LLM Prompts
         mLLMPrompts = llmPrompts;
+        // Initialize The LLM selections
+        mLLMSelections = new ConfigElement("LLMSelections", "Feature");
+        // Initialize semantic services configuration
+        mSemanticServices = new ConfigElement("SemanticServices", "Feature");
         // Initialize Scene Title Concepts
         mSceneTitleConcepts = sceneTitleConcepts;
         // Initialize the player config
@@ -180,8 +192,16 @@ public final class ProjectConfig implements ModelObject {
         return mLLMPrompts;
     }
 
+    public final ConfigElement getLLMSelections() {
+        return mLLMSelections;
+    }
+
     public final ConfigElement getSceneTitleConcepts() {
         return mSceneTitleConcepts;
+    }
+
+    public final ConfigElement getSemanticServices() {
+        return mSemanticServices;
     }
 
     // Write the project configuration
@@ -215,6 +235,14 @@ public final class ProjectConfig implements ModelObject {
             mLLMPrompts.writeXML(stream);
             stream.endl();
         }
+        if (!mLLMSelections.getEntryList().isEmpty()) {
+            mLLMSelections.writeXML(stream);
+            stream.endl();
+        }
+        if (!mSemanticServices.getEntryList().isEmpty()) {
+            mSemanticServices.writeXML(stream);
+            stream.endl();
+        }
         if (!mSceneTitleConcepts.getEntryList().isEmpty()) {
             mSceneTitleConcepts.writeXML(stream);
             stream.endl();
@@ -245,6 +273,8 @@ public final class ProjectConfig implements ModelObject {
             mAgentList.clear();
             mLLMList.clear();
             mLLMPrompts.getEntryList().clear();
+            mLLMSelections.getEntryList().clear();
+            mSemanticServices.getEntryList().clear();
             mSceneTitleConcepts.getEntryList().clear();
             mPlayerConfig.getEntryList().clear();
             final java.util.Set<String> seenPlugins = new java.util.HashSet<>();
@@ -310,6 +340,14 @@ public final class ProjectConfig implements ModelObject {
                             mLLMPrompts.parseXML(element);
                             dedupeConfigElementByKey(mLLMPrompts);
                             break;
+                        case "LLMSelections":
+                            mLLMSelections.parseXML(element);
+                            dedupeConfigElementByKey(mLLMSelections);
+                            break;
+                        case "SemanticServices":
+                            mSemanticServices.parseXML(element);
+                            dedupeConfigElementByKey(mSemanticServices);
+                            break;
                         case "SceneTitleConcepts":
                             mSceneTitleConcepts.parseXML(element);
                             for (ConfigFeature feature : mSceneTitleConcepts.getEntryList()) {
@@ -374,13 +412,22 @@ public final class ProjectConfig implements ModelObject {
 
         ConfigElement llmPromptsCopy = new ConfigElement("LLMPrompts", "Feature",
                 mLLMPrompts.copyEntryList());
+        ConfigElement llmSelectionsCopy = new ConfigElement("LLMSelections", "Feature",
+                mLLMSelections.copyEntryList());
+        ConfigElement semanticServicesCopy = new ConfigElement("SemanticServices", "Feature",
+                mSemanticServices.copyEntryList());
         ConfigElement sceneTitleConceptsCopy = new ConfigElement("SceneTitleConcepts", "Concept",
                 mSceneTitleConcepts.copyEntryList());
 
         PlayerConfig player = getPlayerConfig().getCopy();
 
-        return new ProjectConfig(mProjectName, plugins, agents, llms, llmPromptsCopy,
+        ProjectConfig copy = new ProjectConfig(mProjectName, plugins, agents, llms, llmPromptsCopy,
                 sceneTitleConceptsCopy, player);
+        copy.getLLMSelections().getEntryList().clear();
+        copy.getLLMSelections().getEntryList().addAll(llmSelectionsCopy.copyEntryList());
+        copy.getSemanticServices().getEntryList().clear();
+        copy.getSemanticServices().getEntryList().addAll(semanticServicesCopy.copyEntryList());
+        return copy;
     }
 
     private static void dedupeConfigElementByKey(final ConfigElement element) {

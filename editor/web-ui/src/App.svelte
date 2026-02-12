@@ -831,6 +831,57 @@
   let scriptAutoApplyInFlight = false;
   let lastScriptProjectId = "";
   let scriptEditorRef;
+  let semanticDoc = null;
+  let semanticAnnotations = [];
+  let semanticMode = "full";
+  let semanticPanelOpen = false;
+  let semanticLoading = false;
+  let semanticAnalyzeBusy = false;
+  let semanticStatus = "";
+  let semanticError = "";
+  let semanticSourceText = "";
+  let semanticStale = false;
+  let semanticEditorHighlights = { marks: [], lines: [] };
+  let semanticDebug = null;
+  let semanticDebugOpen = false;
+  let semanticDebugEnabled = false;
+  let semanticUdDebug = [];
+  let semanticPreviewTimer = null;
+  let semanticPreviewRunId = 0;
+  let semanticDirty = false;
+  let semanticAnalyzeSvo = true;
+  let semanticAnalyzeDaTr = true;
+  let semanticLLMIndex = 0;
+  let semanticSystemPrompt = "You are a multilingual discourse annotation engine for dialogue utterances.";
+  let semanticPromptTemplate = `Analyze exactly one utterance sentence and return JSON only (no markdown).
+Language can be German or English; handle umlauts correctly (ä/ö/ü and ae/oe/ue variants).
+Treat placeholders like $user as normal mentions.
+Ignore bracketed stage/action tags (e.g. [wave]).
+Classify ONLY this sentence (no cross-sentence inference).
+
+Focus on:
+1) dialogueAct.label + dialogueAct.confidence
+2) themeRheme.theme + themeRheme.rheme + themeRheme.confidence
+
+Return object fields: version (number), annotations (array with exactly one item).
+Annotation fields: id, line, speaker, text, dialogueAct, themeRheme.
+Do not output basic subject/verb/object unless explicitly requested by layers.
+
+Dialogue act guideline:
+- Use short labels (e.g. greeting, question, inform, request, confirm, reject, thanks, apology, directive, commissive).
+
+Theme-rheme guideline:
+- theme = given/topic part (what the sentence is about)
+- rheme = new/focus part (what is said about the theme)
+- Keep both close to original wording.
+
+Output must be valid JSON.
+
+Layers: {{layers}}
+Speaker: {{speaker}}
+Line: {{line}}
+Sentence:
+{{script}}`;
 
   // Scene execution tracking state
   let activeScenes = [];   // [{ sceneName, language, lower, upper }]
@@ -1133,7 +1184,7 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
   ].join(" ");
   $: filteredPrefs = filterKeyValues(prefDraft, prefFilter);
   $: projectConfigView = normalizeProjectConfig(projectConfigDraft || projectConfig || {});
-  $: headerDirty = !!(selectedProject?.dirty || sceneFlowDirty || scriptDirty || projectConfigDirty);
+  $: headerDirty = !!(selectedProject?.dirty || sceneFlowDirty || scriptDirty || projectConfigDirty || semanticDirty);
   $: projectConfigPlugins = projectConfigView.plugins;
   $: projectConfigAgents = projectConfigView.agents;
   $: projectConfigLLMs = projectConfigView.llms;
@@ -1167,6 +1218,11 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
   $: activeProjectPlugin = activeProjectPluginIndex >= 0 ? projectConfigPlugins[activeProjectPluginIndex] : null;
   $: if (!projectConfigNewAgent.device && projectConfigPlugins.length) {
     projectConfigNewAgent = { ...projectConfigNewAgent, device: projectConfigPlugins[0].name || "" };
+  }
+  $: if (!Array.isArray(projectConfigLLMs) || projectConfigLLMs.length === 0) {
+    semanticLLMIndex = 0;
+  } else if (semanticLLMIndex < 0 || semanticLLMIndex >= projectConfigLLMs.length) {
+    semanticLLMIndex = 0;
   }
   $: selectedProjectPluginKeys =
     selectedProjectPlugin?.className || selectedProjectPlugin?.name
@@ -1238,10 +1294,699 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
     return highlights;
   }
 
+  function truncateSemanticText(text, maxLen = 42) {
+    const value = String(text || "").trim();
+    if (!value) return "";
+    if (value.length <= maxLen) return value;
+    return `${value.slice(0, Math.max(3, maxLen - 3)).trimEnd()}...`;
+  }
+
+  function semanticLineOffsets(text) {
+    const source = String(text || "");
+    const starts = [0];
+    for (let i = 0; i < source.length; i += 1) {
+      if (source[i] === "\n") {
+        starts.push(i + 1);
+      }
+    }
+    return starts;
+  }
+
+  function semanticFindSpanInLine(spanText, lineText, lineStart, docLength) {
+    const needle = String(spanText || "").trim();
+    if (!needle || !lineText) return null;
+    let idx = lineText.indexOf(needle);
+    if (idx < 0) {
+      idx = lineText.toLowerCase().indexOf(needle.toLowerCase());
+    }
+    if (idx < 0) return null;
+    const from = Math.max(0, Math.min(docLength, lineStart + idx));
+    const to = Math.max(from, Math.min(docLength, from + needle.length));
+    if (to <= from) return null;
+    return { from, to, text: needle };
+  }
+
+  function semanticUtteranceContext(lineText, lineStart, annText = "") {
+    const raw = String(lineText || "");
+    const colon = raw.indexOf(":");
+    if (colon < 0) {
+      return null;
+    }
+    const utteranceRaw = raw.slice(colon + 1);
+    const utterance = utteranceRaw.trim();
+    let lead = utteranceRaw.indexOf(utterance);
+    if (lead < 0) lead = 0;
+    const annNeedle = String(annText || "").trim();
+    if (annNeedle && utterance && annNeedle.length <= utteranceRaw.length) {
+      const inRaw = utteranceRaw.toLowerCase().indexOf(annNeedle.toLowerCase());
+      if (inRaw >= 0) {
+        lead = inRaw;
+      }
+    }
+    return {
+      utteranceStart: lineStart + colon + 1 + Math.max(0, lead),
+      utteranceRaw,
+      utterance
+    };
+  }
+
+  function semanticGetByAliases(source, aliases) {
+    if (!source || typeof source !== "object") return null;
+    for (const key of aliases) {
+      if (Object.prototype.hasOwnProperty.call(source, key) && source[key] != null) {
+        return source[key];
+      }
+    }
+    return null;
+  }
+
+  function semanticArrayByAliases(source, aliases) {
+    const value = semanticGetByAliases(source, aliases);
+    if (Array.isArray(value)) return value.filter((entry) => entry != null);
+    if (value == null) return [];
+    return [value];
+  }
+
+  function semanticRoleFromArray(items, aliases) {
+    if (!Array.isArray(items)) return null;
+    const lowered = aliases.map((v) => String(v).toLowerCase());
+    for (const item of items) {
+      if (!item || typeof item !== "object") continue;
+      const role = String(item.role || item.type || item.kind || "").toLowerCase();
+      if (lowered.includes(role)) {
+        return item;
+      }
+    }
+    return null;
+  }
+
+  function semanticExtractBasicSpans(ann) {
+    const basic = ann?.basic;
+    const subjectAliases = ["subject", "subj", "s", "agent"];
+    const verbAliases = ["verb", "predicate", "pred", "v"];
+    const objectAliases = ["object", "obj", "o", "patient"];
+    const predicateAliases = ["predicate", "subjectComplement", "complement", "predicative"];
+    const addressAliases = ["address", "vocative", "voc", "addressee"];
+    const addressPhraseAliases = ["addressPhrase", "address_phrase"];
+    const subjectModifiersAliases = ["subjectModifiers", "subject_modifiers", "subjectMods"];
+    const objectModifiersAliases = ["objectModifiers", "object_modifiers", "objectMods"];
+    const predicateModifiersAliases = ["predicateModifiers", "predicate_modifiers", "predicateMods"];
+    const addressModifiersAliases = ["addressModifiers", "address_modifiers", "addressMods"];
+
+    if (Array.isArray(basic)) {
+      return {
+        subject: semanticRoleFromArray(basic, subjectAliases),
+        verb: semanticRoleFromArray(basic, verbAliases),
+        object: semanticRoleFromArray(basic, objectAliases),
+        predicate: semanticRoleFromArray(basic, predicateAliases),
+        address: semanticRoleFromArray(basic, addressAliases),
+        addressHead: null,
+        subjectModifiers: [],
+        objectModifiers: [],
+        predicateModifiers: [],
+        addressModifiers: []
+      };
+    }
+    if (basic && typeof basic === "object") {
+      const addressPhraseRaw = semanticGetByAliases(basic, addressPhraseAliases);
+      const addressPhrase = addressPhraseRaw && typeof addressPhraseRaw === "object" ? addressPhraseRaw : null;
+      const phraseAnchor = addressPhrase ? semanticGetByAliases(addressPhrase, ["anchor", "address", "pronoun"]) : null;
+      const phraseHead = addressPhrase ? semanticGetByAliases(addressPhrase, ["head", "noun"]) : null;
+      const phraseModifiers = addressPhrase ? semanticArrayByAliases(addressPhrase, ["modifiers", "attributes"]) : [];
+      const explicitAddressModifiers = semanticArrayByAliases(basic, addressModifiersAliases);
+      return {
+        subject: semanticGetByAliases(basic, subjectAliases),
+        verb: semanticGetByAliases(basic, verbAliases),
+        object: semanticGetByAliases(basic, objectAliases),
+        predicate: semanticGetByAliases(basic, predicateAliases),
+        address: semanticGetByAliases(basic, addressAliases) || phraseAnchor,
+        addressHead: phraseHead,
+        subjectModifiers: semanticArrayByAliases(basic, subjectModifiersAliases),
+        objectModifiers: semanticArrayByAliases(basic, objectModifiersAliases),
+        predicateModifiers: semanticArrayByAliases(basic, predicateModifiersAliases),
+        addressModifiers: [...phraseModifiers, ...explicitAddressModifiers]
+      };
+    }
+    return {
+      subject: null,
+      verb: null,
+      object: null,
+      predicate: null,
+      address: null,
+      addressHead: null,
+      subjectModifiers: [],
+      objectModifiers: [],
+      predicateModifiers: [],
+      addressModifiers: []
+    };
+  }
+
+  function normalizeSemanticSpan(span, ann, scriptText, docLength, lineStarts, lines) {
+    if (!span) return null;
+    const spanObj = typeof span === "object" ? span : { text: String(span) };
+    const text = String(spanObj.text || "").trim();
+    const hasAbsolute = Number.isFinite(spanObj.from) && Number.isFinite(spanObj.to);
+    if (hasAbsolute) {
+      const from = Math.max(0, Math.min(docLength, Number(spanObj.from)));
+      const to = Math.max(from, Math.min(docLength, Number(spanObj.to)));
+      if (to > from) {
+        const slice = scriptText.slice(from, to);
+        if (!text || slice.toLowerCase().includes(text.toLowerCase()) || text.toLowerCase().includes(slice.toLowerCase())) {
+          return { from, to, text: text || slice };
+        }
+      }
+    }
+    const lineNo = Number(ann?.line);
+    if (Number.isFinite(lineNo) && lineNo > 0 && lineNo <= lines.length) {
+      const lineIdx = Math.floor(lineNo) - 1;
+      const lineText = lines[lineIdx] || "";
+      const lineStart = lineStarts[lineIdx] ?? 0;
+      const utteranceCtx = semanticUtteranceContext(lineText, lineStart, ann?.text || "");
+      if (!utteranceCtx) {
+        return null;
+      }
+      const inLine = semanticFindSpanInLine(text, utteranceCtx.utteranceRaw || lineText, utteranceCtx.utteranceStart, docLength)
+        || semanticFindSpanInLine(text, lineText, lineStart, docLength);
+      if (inLine) return inLine;
+      if (hasAbsolute && Number(spanObj.from) >= 0 && Number(spanObj.to) > Number(spanObj.from)) {
+        const relFrom = Math.max(0, Number(spanObj.from));
+        const relTo = Math.max(relFrom, Number(spanObj.to));
+        const utteranceLen = (utteranceCtx.utteranceRaw || "").length;
+        if (relTo <= utteranceLen) {
+          const from = Math.max(0, Math.min(docLength, utteranceCtx.utteranceStart + relFrom));
+          const to = Math.max(from, Math.min(docLength, utteranceCtx.utteranceStart + relTo));
+          if (to > from) {
+            return { from, to, text: text || (utteranceCtx.utteranceRaw || "").slice(relFrom, relTo) };
+          }
+        }
+      }
+    }
+    return null;
+  }
+
+  function semanticUtteranceRangeForLine(lineNo, lineStarts, lines, docLength) {
+    const ln = Number(lineNo);
+    if (!Number.isFinite(ln) || ln <= 0 || ln > lines.length) return null;
+    const lineIdx = Math.floor(ln) - 1;
+    const lineText = lines[lineIdx] || "";
+    const lineStart = lineStarts[lineIdx] ?? 0;
+    const ctx = semanticUtteranceContext(lineText, lineStart, "");
+    if (!ctx || !ctx.utterance || !ctx.utterance.length) return null;
+    const from = Math.max(0, Math.min(docLength, ctx.utteranceStart));
+    const to = Math.max(from, Math.min(docLength, from + ctx.utterance.length));
+    if (to <= from) return null;
+    return { from, to };
+  }
+
+  function clampSemanticSpanToRange(span, range, scriptText, docLength) {
+    if (!span || !range) return null;
+    const from = Math.max(0, Math.min(docLength, Number(span.from)));
+    const to = Math.max(from, Math.min(docLength, Number(span.to)));
+    if (to <= from) return null;
+    if (to <= range.from || from >= range.to) return null;
+    const clampedFrom = Math.max(from, range.from);
+    const clampedTo = Math.min(to, range.to);
+    if (clampedTo <= clampedFrom) return null;
+    const slice = scriptText.slice(clampedFrom, clampedTo);
+    return {
+      from: clampedFrom,
+      to: clampedTo,
+      text: String(span.text || slice || "").trim() || slice
+    };
+  }
+
+  function detectPreviewDialogueAct(utterance) {
+    const value = String(utterance || "").trim();
+    const lower = value.toLowerCase();
+    if (value.endsWith("?")) return "question";
+    if (lower.startsWith("please ") || lower.startsWith("can you") || lower.startsWith("could you")) return "request";
+    if (lower.startsWith("hi ") || lower.startsWith("hello")) return "greeting";
+    if (lower.startsWith("thanks") || lower.startsWith("thank you")) return "thank";
+    return "inform";
+  }
+
+  function createSemanticPreviewAnnotations(text, includeMeta) {
+    const annotations = [];
+    const script = String(text || "");
+    const lines = script.split("\n");
+    const starts = semanticLineOffsets(script);
+    const tokenPattern = /[A-Za-z][A-Za-z0-9_'-]*/g;
+    for (let idx = 0; idx < lines.length; idx += 1) {
+      const line = lines[idx];
+      const colon = line.indexOf(":");
+      if (colon <= 0 || colon >= line.length - 1) continue;
+      const speaker = line.slice(0, colon).trim();
+      const utteranceRaw = line.slice(colon + 1);
+      const utterance = utteranceRaw.trim();
+      if (!speaker || !utterance) continue;
+      const utteranceLead = utteranceRaw.indexOf(utterance);
+      const utteranceStart = (starts[idx] ?? 0) + colon + 1 + Math.max(0, utteranceLead);
+      const tokens = [];
+      let match = tokenPattern.exec(utterance);
+      while (match) {
+        tokens.push({
+          text: match[0],
+          from: utteranceStart + match.index,
+          to: utteranceStart + match.index + match[0].length
+        });
+        match = tokenPattern.exec(utterance);
+      }
+      const ann = {
+        id: `preview-${idx}`,
+        line: idx + 1,
+        speaker,
+        text: utterance,
+        basic: {}
+      };
+      if (tokens[0]) ann.basic.subject = tokens[0];
+      if (tokens[1]) ann.basic.verb = tokens[1];
+      if (tokens[2]) {
+        ann.basic.object = {
+          text: utterance.slice(tokens[2].from - utteranceStart),
+          from: tokens[2].from,
+          to: utteranceStart + utterance.length
+        };
+      }
+      if (includeMeta) {
+        ann.dialogueAct = { label: detectPreviewDialogueAct(utterance), confidence: 0.5 };
+        const theme = tokens[0]?.text || "";
+        ann.themeRheme = {
+          theme,
+          rheme: theme ? utterance.replace(new RegExp(`^${theme}\\s*`, "i"), "") : utterance,
+          confidence: 0.45
+        };
+      }
+      annotations.push(ann);
+    }
+    return annotations;
+  }
+
+  function isSemanticSpeakerCandidate(rawTag) {
+    const tag = String(rawTag || "").trim();
+    if (!tag) return false;
+    const lower = tag.toLowerCase();
+    if (lower === "scene" || lower === "title" || lower.startsWith("scene ") || lower.startsWith("#")) {
+      return false;
+    }
+    if (
+      tag.includes("(") || tag.includes(")") ||
+      tag.includes("[") || tag.includes("]") ||
+      tag.includes("{") || tag.includes("}") ||
+      tag.includes("=")
+    ) {
+      return false;
+    }
+    if (tag.length > 40) return false;
+    return true;
+  }
+
+  function extractSemanticSentenceUnits(script) {
+    const text = String(script || "");
+    const lineStarts = semanticLineOffsets(text);
+    const lines = text.split("\n");
+    const units = [];
+    const sentencePattern = /[^.!?]+[.!?]+|[^.!?]+$/g;
+    const sceneHeaderPattern = /^\s*scene\s+([A-Za-z][A-Za-z0-9_-]*)\b/i;
+    let currentSceneLanguage = "";
+    for (let idx = 0; idx < lines.length; idx += 1) {
+      const line = lines[idx] || "";
+      const sceneMatch = line.match(sceneHeaderPattern);
+      if (sceneMatch) {
+        currentSceneLanguage = String(sceneMatch[1] || "").trim().toLowerCase();
+      }
+      const colon = line.indexOf(":");
+      if (colon <= 0 || colon >= line.length - 1) continue;
+      const speaker = line.slice(0, colon).trim();
+      if (!isSemanticSpeakerCandidate(speaker)) continue;
+      const utteranceRaw = line.slice(colon + 1);
+      const utterance = utteranceRaw.trim();
+      if (!speaker || !utterance) continue;
+      let lead = utteranceRaw.indexOf(utterance);
+      if (lead < 0) lead = 0;
+      const utteranceStart = (lineStarts[idx] ?? 0) + colon + 1 + lead;
+      sentencePattern.lastIndex = 0;
+      let match = sentencePattern.exec(utterance);
+      while (match) {
+        const segmentRaw = match[0] || "";
+        const sentence = segmentRaw.trim();
+        if (sentence) {
+          let segLead = segmentRaw.indexOf(sentence);
+          if (segLead < 0) segLead = 0;
+          units.push({
+            line: idx + 1,
+            speaker,
+            text: sentence,
+            startOffset: utteranceStart + match.index + segLead,
+            language: currentSceneLanguage
+          });
+        }
+        match = sentencePattern.exec(utterance);
+      }
+    }
+    return units;
+  }
+
+  function shiftOffsetsDeep(value, delta) {
+    if (Array.isArray(value)) {
+      return value.map((entry) => shiftOffsetsDeep(entry, delta));
+    }
+    if (!value || typeof value !== "object") {
+      return value;
+    }
+    const out = {};
+    for (const [key, entry] of Object.entries(value)) {
+      out[key] = shiftOffsetsDeep(entry, delta);
+    }
+    if (Number.isFinite(out.from)) {
+      out.from = Number(out.from) + delta;
+    }
+    if (Number.isFinite(out.to)) {
+      out.to = Number(out.to) + delta;
+    }
+    return out;
+  }
+
+  function normalizeSentenceAnnotations(annotations, unit) {
+    if (!Array.isArray(annotations)) return [];
+    return annotations.map((ann, idx) => {
+      const source = ann && typeof ann === "object" ? ann : {};
+      const mapped = {
+        ...source,
+        id: source.id || `ann-${unit.line}-${idx}`,
+        line: unit.line,
+        speaker: source.speaker || unit.speaker,
+        text: source.text || unit.text
+      };
+      if (source.basic != null) {
+        mapped.basic = shiftOffsetsDeep(source.basic, unit.startOffset);
+      }
+      return mapped;
+    });
+  }
+
+  function mergeSentenceAnnotationLayers(syntaxAnnotations, metaAnnotations, unit) {
+    const syntax = Array.isArray(syntaxAnnotations) ? syntaxAnnotations : [];
+    const meta = Array.isArray(metaAnnotations) ? metaAnnotations : [];
+    const count = Math.max(syntax.length, meta.length);
+    const out = [];
+    for (let idx = 0; idx < count; idx += 1) {
+      const syn = syntax[idx] && typeof syntax[idx] === "object" ? syntax[idx] : {};
+      const prag = meta[idx] && typeof meta[idx] === "object" ? meta[idx] : {};
+      const merged = {
+        ...syn,
+        ...prag,
+        id: prag.id || syn.id || `ann-${unit.line}-${idx}`,
+        line: unit.line,
+        speaker: prag.speaker || syn.speaker || unit.speaker || "",
+        text: prag.text || syn.text || unit.text || ""
+      };
+      if (syn.basic != null) {
+        merged.basic = syn.basic;
+      } else if (prag.basic != null) {
+        merged.basic = prag.basic;
+      }
+      if (prag.dialogueAct != null) {
+        merged.dialogueAct = prag.dialogueAct;
+      } else if (syn.dialogueAct != null) {
+        merged.dialogueAct = syn.dialogueAct;
+      }
+      if (prag.themeRheme != null) {
+        merged.themeRheme = prag.themeRheme;
+      } else if (syn.themeRheme != null) {
+        merged.themeRheme = syn.themeRheme;
+      }
+      const synProv = syn?.provenance && typeof syn.provenance === "object" ? syn.provenance : null;
+      const pragProv = prag?.provenance && typeof prag.provenance === "object" ? prag.provenance : null;
+      if (synProv || pragProv) {
+        const synLayers = synProv?.layers && typeof synProv.layers === "object" ? synProv.layers : {};
+        const pragLayers = pragProv?.layers && typeof pragProv.layers === "object" ? pragProv.layers : {};
+        merged.provenance = {
+          ...(synProv || {}),
+          ...(pragProv || {}),
+          layers: {
+            ...synLayers,
+            ...pragLayers
+          }
+        };
+      }
+      out.push(merged);
+    }
+    return out;
+  }
+
+  function stopSemanticPreview() {
+    semanticPreviewRunId += 1;
+    if (semanticPreviewTimer) {
+      clearInterval(semanticPreviewTimer);
+      semanticPreviewTimer = null;
+    }
+  }
+
+  function startSemanticPreview(text, includeMeta) {
+    stopSemanticPreview();
+    const preview = createSemanticPreviewAnnotations(text, includeMeta);
+    semanticAnnotations = [];
+    semanticSourceText = text || "";
+    if (!preview.length) {
+      semanticStatus = "Analyzing semantic info...";
+      return;
+    }
+    const runId = semanticPreviewRunId + 1;
+    semanticPreviewRunId = runId;
+    let shown = 0;
+    semanticStatus = `Analyzing semantic info... ${shown}/${preview.length}`;
+    semanticPreviewTimer = setInterval(() => {
+      if (runId !== semanticPreviewRunId) {
+        clearInterval(semanticPreviewTimer);
+        semanticPreviewTimer = null;
+        return;
+      }
+      const step = Math.max(1, Math.ceil(preview.length / 24));
+      shown = Math.min(preview.length, shown + step);
+      semanticAnnotations = preview.slice(0, shown);
+      semanticStatus = `Analyzing semantic info... ${shown}/${preview.length}`;
+      if (shown >= preview.length) {
+        clearInterval(semanticPreviewTimer);
+        semanticPreviewTimer = null;
+      }
+    }, 70);
+  }
+
+  function buildSemanticEditorHighlights(annotations, mode, text) {
+    const out = { marks: [], lines: [] };
+    const debug = {
+      mode,
+      annotations: Array.isArray(annotations) ? annotations.length : 0,
+      docLength: String(text || "").length,
+      basicPresent: 0,
+      spansProvided: { subject: 0, verb: 0, object: 0, predicate: 0, address: 0 },
+      spansResolved: { subject: 0, verb: 0, object: 0, predicate: 0, address: 0 },
+      missingLine: 0,
+      unresolved: []
+    };
+    if (mode === "off" || !Array.isArray(annotations) || !annotations.length) {
+      return { highlights: out, debug };
+    }
+    const scriptText = String(text || "");
+    const docLength = scriptText.length;
+    const lineStarts = semanticLineOffsets(scriptText);
+    const lines = scriptText.split("\n");
+    const includeBasic = mode === "basic" || mode === "full";
+    const includeMeta = mode === "full";
+
+    for (const ann of annotations) {
+      if (!ann || typeof ann !== "object") continue;
+      if (includeBasic && ann.basic != null) {
+        debug.basicPresent += 1;
+        const basic = semanticExtractBasicSpans(ann);
+        const hasLine = Number.isFinite(Number(ann?.line)) && Number(ann.line) > 0 && Number(ann.line) <= lines.length;
+        if (!hasLine) {
+          debug.missingLine += 1;
+        }
+        if (basic.subject != null) debug.spansProvided.subject += 1;
+        if (basic.verb != null) debug.spansProvided.verb += 1;
+        if (basic.object != null) debug.spansProvided.object += 1;
+        if (basic.predicate != null) debug.spansProvided.predicate += 1;
+        if (basic.address != null) debug.spansProvided.address += 1;
+
+        const utteranceRange = semanticUtteranceRangeForLine(ann?.line, lineStarts, lines, docLength);
+        const subject = clampSemanticSpanToRange(
+          normalizeSemanticSpan(basic.subject, ann, scriptText, docLength, lineStarts, lines),
+          utteranceRange,
+          scriptText,
+          docLength
+        );
+        const verb = clampSemanticSpanToRange(
+          normalizeSemanticSpan(basic.verb, ann, scriptText, docLength, lineStarts, lines),
+          utteranceRange,
+          scriptText,
+          docLength
+        );
+        const object = clampSemanticSpanToRange(
+          normalizeSemanticSpan(basic.object, ann, scriptText, docLength, lineStarts, lines),
+          utteranceRange,
+          scriptText,
+          docLength
+        );
+        const predicate = clampSemanticSpanToRange(
+          normalizeSemanticSpan(basic.predicate, ann, scriptText, docLength, lineStarts, lines),
+          utteranceRange,
+          scriptText,
+          docLength
+        );
+        const address = clampSemanticSpanToRange(
+          normalizeSemanticSpan(basic.address, ann, scriptText, docLength, lineStarts, lines),
+          utteranceRange,
+          scriptText,
+          docLength
+        );
+        const addressHead = clampSemanticSpanToRange(
+          normalizeSemanticSpan(basic.addressHead, ann, scriptText, docLength, lineStarts, lines),
+          utteranceRange,
+          scriptText,
+          docLength
+        );
+        const modifierGroups = [
+          { role: "subject", spans: basic.subjectModifiers || [] },
+          { role: "object", spans: basic.objectModifiers || [] },
+          { role: "predicate", spans: basic.predicateModifiers || [] },
+          { role: "address", spans: basic.addressModifiers || [] }
+        ];
+        if (subject) out.marks.push({ ...subject, kind: "subject" });
+        if (verb) out.marks.push({ ...verb, kind: "verb" });
+        if (object) out.marks.push({ ...object, kind: "object" });
+        if (predicate) out.marks.push({ ...predicate, kind: "predicate" });
+        if (address) out.marks.push({ ...address, kind: "address" });
+        if (addressHead) out.marks.push({ ...addressHead, kind: "address-head" });
+        for (const group of modifierGroups) {
+          const spans = Array.isArray(group.spans) ? group.spans : [];
+          for (const raw of spans) {
+            const normalized = clampSemanticSpanToRange(
+              normalizeSemanticSpan(raw, ann, scriptText, docLength, lineStarts, lines),
+              utteranceRange,
+              scriptText,
+              docLength
+            );
+            if (!normalized) continue;
+            const pos = String(raw?.pos || raw?.kind || raw?.type || "").toLowerCase();
+            const kind = pos.includes("compar")
+              ? `${group.role}-comparison`
+              : pos.includes("adv")
+                ? `${group.role}-adverb`
+                : `${group.role}-adjective`;
+            out.marks.push({ ...normalized, kind });
+          }
+        }
+        if (subject) {
+          debug.spansResolved.subject += 1;
+        } else if (basic.subject != null && debug.unresolved.length < 24) {
+          debug.unresolved.push({
+            line: ann?.line ?? null,
+            kind: "subject",
+            span: basic.subject
+          });
+        }
+        if (verb) {
+          debug.spansResolved.verb += 1;
+        } else if (basic.verb != null && debug.unresolved.length < 24) {
+          debug.unresolved.push({
+            line: ann?.line ?? null,
+            kind: "verb",
+            span: basic.verb
+          });
+        }
+        if (object) {
+          debug.spansResolved.object += 1;
+        } else if (basic.object != null && debug.unresolved.length < 24) {
+          debug.unresolved.push({
+            line: ann?.line ?? null,
+            kind: "object",
+            span: basic.object
+          });
+        }
+        if (predicate) {
+          debug.spansResolved.predicate += 1;
+        } else if (basic.predicate != null && debug.unresolved.length < 24) {
+          debug.unresolved.push({
+            line: ann?.line ?? null,
+            kind: "predicate",
+            span: basic.predicate
+          });
+        }
+        if (address) {
+          debug.spansResolved.address += 1;
+        } else if (basic.address != null && debug.unresolved.length < 24) {
+          debug.unresolved.push({
+            line: ann?.line ?? null,
+            kind: "address",
+            span: basic.address
+          });
+        }
+      }
+      if (includeMeta) {
+        const badgeParts = [];
+        const daLabel = String(ann?.dialogueAct?.label || "").trim();
+        if (daLabel) {
+          badgeParts.push(`DA ${truncateSemanticText(daLabel, 22)}`);
+        }
+        const theme = String(ann?.themeRheme?.theme || "").trim();
+        const rheme = String(ann?.themeRheme?.rheme || "").trim();
+        if (theme || rheme) {
+          const themeShort = truncateSemanticText(theme, 18);
+          const rhemeShort = truncateSemanticText(rheme, 24);
+          badgeParts.push(`T/R ${themeShort}${themeShort && rhemeShort ? " -> " : ""}${rhemeShort}`);
+        }
+        const line = Number(ann.line);
+        if (badgeParts.length && Number.isFinite(line) && line > 0) {
+          out.lines.push({ line: Math.floor(line), badge: badgeParts.join(" | ") });
+        }
+      }
+    }
+    debug.renderedMarks = out.marks.length;
+    debug.renderedLineBadges = out.lines.length;
+    return { highlights: out, debug };
+  }
+
   $: scriptClean = !scriptDirty;
   $: sceneHighlights = scriptClean
     ? buildSceneHighlights(activeScenes, activeTurns, sceneHistory)
     : [];
+  $: semanticStale = semanticAnnotations.length > 0 && semanticSourceText !== scriptDraft;
+  $: {
+    if (semanticStale || semanticMode === "off") {
+      semanticEditorHighlights = { marks: [], lines: [] };
+      semanticDebug = {
+        mode: semanticMode,
+        annotations: Array.isArray(semanticAnnotations) ? semanticAnnotations.length : 0,
+        spansProvided: { subject: 0, verb: 0, object: 0, predicate: 0, address: 0 },
+        spansResolved: { subject: 0, verb: 0, object: 0, predicate: 0, address: 0 },
+        unresolved: [],
+        renderedMarks: 0,
+        renderedLineBadges: 0,
+        ud: semanticUdDebug
+      };
+    } else {
+      const semanticComputed = buildSemanticEditorHighlights(semanticAnnotations, semanticMode, scriptDraft);
+      semanticEditorHighlights = semanticComputed.highlights;
+      semanticDebug = {
+        ...semanticComputed.debug,
+        ud: semanticUdDebug
+      };
+    }
+  }
+  $: if (
+    semanticDebugEnabled &&
+    semanticDebug &&
+    !semanticAnalyzeBusy &&
+    ((semanticDebug.spansProvided?.subject || 0) > 0 ||
+      (semanticDebug.spansProvided?.verb || 0) > 0 ||
+      (semanticDebug.spansProvided?.object || 0) > 0 ||
+      (semanticDebug.spansProvided?.predicate || 0) > 0 ||
+      (semanticDebug.spansProvided?.address || 0) > 0) &&
+    (semanticDebug.renderedMarks || 0) === 0
+  ) {
+    semanticDebugOpen = true;
+  }
 
   $: {
     const canAutoApply =
@@ -2026,6 +2771,14 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
     scriptError = "";
     scriptParseOk = true;
     scriptDiagnostics = [];
+    semanticDoc = null;
+    semanticAnnotations = [];
+    semanticLoading = false;
+    semanticAnalyzeBusy = false;
+    semanticStatus = "";
+    semanticError = "";
+    semanticSourceText = "";
+    semanticDirty = false;
     scriptScenes = [];
     scriptScenesError = "";
     scriptScenesLoading = false;
@@ -2317,6 +3070,7 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
 
   onDestroy(() => {
     clearAutoSaveTimer();
+    stopSemanticPreview();
     if (autoConnectTimer) {
       clearTimeout(autoConnectTimer);
       autoConnectTimer = null;
@@ -2595,7 +3349,7 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
     }
   }
 
-  async function saveProject(projectId, { skipScriptApply = false } = {}) {
+  async function saveProject(projectId, { skipScriptApply = false, saveSemantic = true } = {}) {
     if (!projectId || projectSaving) return false;
     let ok = false;
     projectSaving = true;
@@ -2607,6 +3361,10 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
           return false;
         }
       }
+      if (saveSemantic) {
+        await saveSemanticDraft(projectId);
+      }
+      await persistSemanticAnalysisSettings();
       await apiPost(`/api/v1/projects/${projectId}/save`, {});
       await loadProjects();
       await loadRecent();
@@ -2631,6 +3389,22 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
     return ok;
   }
 
+  async function saveSemanticDraft(projectId) {
+    if (!projectId || !semanticDirty) {
+      return true;
+    }
+    const payload = {
+      semantic: {
+        version: semanticDoc?.version ?? 1,
+        annotations: Array.isArray(semanticAnnotations) ? semanticAnnotations : []
+      }
+    };
+    await apiPut(`/api/v1/projects/${projectId}/semantic`, payload);
+    semanticDoc = payload.semantic;
+    semanticDirty = false;
+    return true;
+  }
+
   function clearAutoSaveTimer() {
     if (autoSaveTimer) {
       clearTimeout(autoSaveTimer);
@@ -2646,7 +3420,7 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
     if (scriptDirty && scriptParseOk && scriptDiagnostics.length === 0) {
       await applyScript();
     }
-    const ok = await saveProject(selectedProjectId, { skipScriptApply: true });
+    const ok = await saveProject(selectedProjectId, { skipScriptApply: true, saveSemantic: true });
     autoSaving = false;
     if (ok) {
       autoSaveStatus = "Saved";
@@ -2686,6 +3460,8 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
     if (!projectId || !targetPath || projectSaving) return false;
     projectSaving = true;
     try {
+      await saveSemanticDraft(projectId);
+      await persistSemanticAnalysisSettings();
       await apiPost(`/api/v1/projects/${projectId}/save-as`, { path: targetPath });
       saveAsPath = "";
       saveAsError = "";
@@ -2816,6 +3592,8 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
       const data = await apiGet(`/api/v1/projects/${projectId}/project-config`);
       projectConfig = normalizeProjectConfig(data.config || {});
       projectConfigDraft = cloneProjectConfig(projectConfig);
+      syncLLMSelectionsFromConfig(projectConfig);
+      syncSemanticAnalysisSettingsFromConfig(projectConfig);
       projectConfigSaved = data.saved ?? null;
       projectConfigPending = data.pending === true;
     } catch (err) {
@@ -2905,6 +3683,8 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
       });
       projectConfig = normalizeProjectConfig(response.config || {});
       projectConfigDraft = cloneProjectConfig(projectConfig);
+      syncLLMSelectionsFromConfig(projectConfig);
+      syncSemanticAnalysisSettingsFromConfig(projectConfig);
       projectConfigSaved = response.saved ?? null;
       projectConfigPending = response.pending === true;
       // Mark project as dirty (has unsaved changes) but NOT pending (which would require save-as)
@@ -3003,6 +3783,17 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
     projectConfigDraft = {
       ...projectConfigDraft,
       sceneTitleConcepts: entries
+    };
+    scheduleProjectConfigApply();
+  }
+
+  function updateSemanticServiceField(field, value) {
+    projectConfigDraft = {
+      ...projectConfigDraft,
+      semanticServices: {
+        ...(projectConfigDraft?.semanticServices || projectConfigView?.semanticServices || {}),
+        [field]: value
+      }
     };
     scheduleProjectConfigApply();
   }
@@ -3729,6 +4520,7 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
       scriptDiagnostics = data.parseErrors || [];
       scriptParseOk = data.parseOk !== false;
       scriptLoaded = true;
+      await loadSemanticAnnotations(projectId);
     } catch (err) {
       if (projectId !== selectedProjectId) {
         return;
@@ -3738,6 +4530,37 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
     } finally {
       if (projectId === selectedProjectId) {
         scriptLoading = false;
+      }
+    }
+  }
+
+  async function loadSemanticAnnotations(projectId) {
+    if (!projectId) return;
+    stopSemanticPreview();
+    semanticLoading = true;
+    semanticError = "";
+    semanticStatus = "";
+    try {
+      const data = await apiGet(`/api/v1/projects/${projectId}/semantic`);
+      if (projectId !== selectedProjectId) {
+        return;
+      }
+      semanticDoc = data || null;
+      semanticAnnotations = Array.isArray(data?.annotations) ? data.annotations : [];
+      semanticSourceText = scriptDraft || "";
+      semanticDirty = false;
+    } catch (err) {
+      if (projectId !== selectedProjectId) {
+        return;
+      }
+      semanticDoc = null;
+      semanticAnnotations = [];
+      semanticSourceText = "";
+      semanticDirty = false;
+      semanticError = err.message || "Failed to load semantic annotations.";
+    } finally {
+      if (projectId === selectedProjectId) {
+        semanticLoading = false;
       }
     }
   }
@@ -3843,8 +4666,8 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
     generateActionLibrary = Array.isArray(projectConfigLLMPrompts?.actionPrompts)
       ? [...projectConfigLLMPrompts.actionPrompts]
       : [];
-    // Default to first LLM
-    generateLLMIndex = 0;
+    // Restore selected LLM from project config (fallback: first LLM)
+    generateLLMIndex = llmIndexByName(projectConfigView?.llmSelections?.generate);
   }
 
   function toggleGeneratePanel() {
@@ -3861,6 +4684,145 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
     generateError = "";
     generateLoading = false;
     generateActionPrompt = "";
+  }
+
+  function toggleSemanticPanel() {
+    semanticPanelOpen = !semanticPanelOpen;
+  }
+
+  function llmNameByIndex(index) {
+    if (!Array.isArray(projectConfigLLMs) || projectConfigLLMs.length === 0) {
+      return "";
+    }
+    const idx = Number.isFinite(Number(index)) ? Number(index) : 0;
+    if (idx < 0 || idx >= projectConfigLLMs.length) return "";
+    return String(projectConfigLLMs[idx]?.name || "").trim();
+  }
+
+  function llmIndexByName(name) {
+    if (!Array.isArray(projectConfigLLMs) || projectConfigLLMs.length === 0) {
+      return 0;
+    }
+    const needle = String(name || "").trim().toLowerCase();
+    if (!needle) return 0;
+    const idx = projectConfigLLMs.findIndex((llm) => String(llm?.name || "").trim().toLowerCase() === needle);
+    return idx >= 0 ? idx : 0;
+  }
+
+  function syncLLMSelectionsFromConfig(configLike) {
+    const cfg = configLike || projectConfigView || {};
+    const selections = cfg?.llmSelections || {};
+    generateLLMIndex = llmIndexByName(selections.generate);
+    semanticLLMIndex = llmIndexByName(selections.semantic);
+  }
+
+  function boolFromSemanticService(value, fallback = true) {
+    if (typeof value === "boolean") return value;
+    const text = String(value ?? "").trim().toLowerCase();
+    if (!text) return fallback;
+    if (["true", "1", "yes", "on"].includes(text)) return true;
+    if (["false", "0", "no", "off"].includes(text)) return false;
+    return fallback;
+  }
+
+  function syncSemanticAnalysisSettingsFromConfig(configLike) {
+    const cfg = configLike || projectConfigView || {};
+    const services = cfg?.semanticServices || {};
+    semanticAnalyzeSvo = boolFromSemanticService(services.analyzeSvo, true);
+    semanticAnalyzeDaTr = boolFromSemanticService(services.analyzeDaTr, true);
+    const daTrLlm = String(services.daTrLlm || "").trim();
+    if (daTrLlm) {
+      semanticLLMIndex = llmIndexByName(daTrLlm);
+    }
+  }
+
+  function writeSemanticAnalysisSettingsToDraft() {
+    if (!projectConfigDraft) {
+      projectConfigDraft = cloneProjectConfig(projectConfigView);
+    }
+    const semanticLlm = llmNameByIndex(semanticLLMIndex);
+    projectConfigDraft.semanticServices = {
+      ...(projectConfigDraft.semanticServices || projectConfigView?.semanticServices || {}),
+      analyzeSvo: String(!!semanticAnalyzeSvo),
+      analyzeDaTr: String(!!semanticAnalyzeDaTr),
+      daTrLlm: semanticLlm
+    };
+    projectConfigDraft.llmSelections = {
+      ...(projectConfigDraft.llmSelections || projectConfigView?.llmSelections || {}),
+      semantic: semanticLlm
+    };
+  }
+
+  async function persistSemanticAnalysisSettings() {
+    if (!selectedProjectId || !wsConnected) return;
+    writeSemanticAnalysisSettingsToDraft();
+    await applyProjectConfig();
+  }
+
+  async function persistLLMSelections() {
+    if (!selectedProjectId || !wsConnected) return;
+    if (!projectConfigDraft) {
+      projectConfigDraft = cloneProjectConfig(projectConfigView);
+    }
+    const semanticLlm = llmNameByIndex(semanticLLMIndex);
+    projectConfigDraft.llmSelections = {
+      ...(projectConfigDraft.llmSelections || {}),
+      generate: llmNameByIndex(generateLLMIndex),
+      semantic: semanticLlm
+    };
+    projectConfigDraft.semanticServices = {
+      ...(projectConfigDraft.semanticServices || projectConfigView?.semanticServices || {}),
+      daTrLlm: semanticLlm
+    };
+    await applyLLMPromptsConfig();
+  }
+
+  function handleGenerateLLMSelectionChange() {
+    void persistLLMSelections();
+  }
+
+  function handleSemanticLLMSelectionChange() {
+    void persistLLMSelections();
+  }
+
+  function resetSemanticPrompts() {
+    semanticSystemPrompt = "You are a multilingual discourse annotation engine for dialogue utterances.";
+    semanticPromptTemplate = `Analyze exactly one utterance sentence and return JSON only (no markdown).
+Language can be German or English; handle umlauts correctly (ä/ö/ü and ae/oe/ue variants).
+Treat placeholders like $user as normal mentions.
+Ignore bracketed stage/action tags (e.g. [wave]).
+Classify ONLY this sentence (no cross-sentence inference).
+
+Focus on:
+1) dialogueAct.label + dialogueAct.confidence
+2) themeRheme.theme + themeRheme.rheme + themeRheme.confidence
+
+Return object fields: version (number), annotations (array with exactly one item).
+Annotation fields: id, line, speaker, text, dialogueAct, themeRheme.
+Do not output basic subject/verb/object unless explicitly requested by layers.
+
+Dialogue act guideline:
+- Use short labels (e.g. greeting, question, inform, request, confirm, reject, thanks, apology, directive, commissive).
+
+Theme-rheme guideline:
+- theme = given/topic part (what the sentence is about)
+- rheme = new/focus part (what is said about the theme)
+- Keep both close to original wording.
+
+Output must be valid JSON.
+
+Layers: {{layers}}
+Speaker: {{speaker}}
+Line: {{line}}
+Sentence:
+{{script}}`;
+  }
+
+  function semanticPreferredLanguage() {
+    const navLang = String(typeof navigator !== "undefined" ? (navigator.language || "") : "").toLowerCase();
+    if (navLang.startsWith("de")) return "de";
+    if (navLang.startsWith("en")) return "en";
+    return "de";
   }
 
   async function generateScene() {
@@ -3938,6 +4900,7 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
       console.log("[Generate] applyLLMPromptsConfig response:", response?.status, response?.pending);
       projectConfig = normalizeProjectConfig(response.config || {});
       projectConfigDraft = cloneProjectConfig(projectConfig);
+      syncLLMSelectionsFromConfig(projectConfig);
       // Mark project as dirty (has unsaved changes) but NOT pending (which would require save-as)
       if (response.pending === true) {
         projects = projects.map((project) =>
@@ -3986,6 +4949,138 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
       formatPrompt: generateFormatPrompt
     };
     applyLLMPromptsConfig();
+  }
+
+  async function runSemanticAnalysis() {
+    if (!selectedProjectId || semanticAnalyzeBusy) return;
+    semanticAnalyzeBusy = true;
+    stopSemanticPreview();
+    semanticError = "";
+    semanticStatus = "";
+    try {
+      const includeSvo = !!semanticAnalyzeSvo;
+      const includeDaTr = !!semanticAnalyzeDaTr;
+      const llmLayersText = `basic:false, dialogueAct:${includeDaTr}, themeRheme:${includeDaTr}`;
+      const language = semanticPreferredLanguage();
+      const units = extractSemanticSentenceUnits(scriptDraft || "");
+      semanticAnnotations = [];
+      semanticDoc = null;
+      semanticSourceText = scriptDraft || "";
+      semanticDirty = true;
+      semanticUdDebug = [];
+      if (!includeSvo && !includeDaTr) {
+        semanticStatus = "Enable at least one analysis layer (S/V/O or DA/TR).";
+        return;
+      }
+      if (!units.length) {
+        semanticStatus = "No utterance sentences found for semantic analysis.";
+        return;
+      }
+      let failures = 0;
+      const failureMessages = [];
+      const merged = [];
+      for (let i = 0; i < units.length; i += 1) {
+        const unit = units[i];
+        semanticStatus = `Analyzing sentence ${i + 1}/${units.length}...`;
+        const unitLanguage = String(unit.language || language || "de").trim().toLowerCase() || "de";
+        let syntaxNormalized = [];
+        let metaNormalized = [];
+        if (includeSvo) {
+          try {
+            const syntaxResponse = await apiPost(`/api/v1/projects/${selectedProjectId}/semantic/syntax`, {
+              text: unit.text,
+              persist: false,
+              language: unitLanguage,
+              debug: semanticDebugEnabled
+            });
+            syntaxNormalized = normalizeSentenceAnnotations(syntaxResponse?.annotations, unit);
+            if (semanticDebugEnabled && syntaxResponse?.debug) {
+              semanticUdDebug = [
+                ...semanticUdDebug,
+                {
+                  line: unit.line,
+                  sentence: unit.text,
+                  language: unitLanguage,
+                  trace: syntaxResponse.debug
+                }
+              ];
+            }
+          } catch (err) {
+            failures += 1;
+            if (failureMessages.length < 5) {
+              const message = err?.message ? String(err.message) : "syntax analysis call failed";
+              failureMessages.push(`line ${unit.line}: ${message}`);
+            }
+          }
+        }
+        if (includeDaTr) {
+          const prompt = String(semanticPromptTemplate || "")
+            .replace(/\{\{layers\}\}/g, llmLayersText)
+            .replace(/\{\{script\}\}/g, unit.text)
+            .replace(/\{\{line\}\}/g, String(unit.line))
+            .replace(/\{\{speaker\}\}/g, unit.speaker || "");
+          try {
+            const response = await apiPost(`/api/v1/projects/${selectedProjectId}/semantic/analyze`, {
+              text: unit.text,
+              useLlm: true,
+              persist: false,
+              basicProvider: "ud",
+              language: unitLanguage,
+              llmIndex: semanticLLMIndex,
+              systemPrompt: semanticSystemPrompt || "",
+              prompt,
+              layers: {
+                basic: false,
+                dialogueAct: includeDaTr,
+                themeRheme: includeDaTr
+              }
+            });
+            metaNormalized = normalizeSentenceAnnotations(response?.annotations, unit);
+          } catch (err) {
+            failures += 1;
+            if (failureMessages.length < 5) {
+              const message = err?.message ? String(err.message) : "dialogue/thema analysis call failed";
+              failureMessages.push(`line ${unit.line}: ${message}`);
+            }
+          }
+        }
+        const sentenceAnnotations = mergeSentenceAnnotationLayers(syntaxNormalized, metaNormalized, unit);
+        if (sentenceAnnotations.length) {
+          merged.push(...sentenceAnnotations);
+          semanticAnnotations = [...merged];
+          semanticSourceText = scriptDraft || "";
+        } else {
+          failures += 1;
+          if (failureMessages.length < 5) {
+            failureMessages.push(`line ${unit.line}: no annotations returned`);
+          }
+        }
+      }
+      stopSemanticPreview();
+      const finalDoc = {
+        version: 2,
+        schema: {
+          id: "vsm.semantic.annotations",
+          version: 2
+        },
+        annotations: merged
+      };
+      semanticDoc = finalDoc;
+      semanticAnnotations = merged;
+      semanticSourceText = scriptDraft || "";
+      semanticDirty = true;
+      semanticStatus = failures > 0
+        ? `Semantic analysis updated (${merged.length} annotations, ${failures} sentence errors).`
+        : `Semantic analysis updated (${merged.length} annotations).`;
+      semanticError = failures > 0
+        ? `Sentence analysis errors:\n${failureMessages.join("\n")}`
+        : "";
+    } catch (err) {
+      stopSemanticPreview();
+      semanticError = err.message || "Semantic analysis failed.";
+    } finally {
+      semanticAnalyzeBusy = false;
+    }
   }
 
   async function applyScript() {
@@ -4625,6 +5720,8 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
         if (!projectConfigDialogOpen) {
           projectConfigDraft = cloneProjectConfig(projectConfig);
         }
+        syncLLMSelectionsFromConfig(projectConfig);
+        syncSemanticAnalysisSettingsFromConfig(projectConfig);
         projectConfigLoading = false;
         projectConfigError = "";
       }
@@ -5116,6 +6213,14 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
     });
   }
 
+  async function apiPut(path, body) {
+    return apiFetch(path, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body || {})
+    });
+  }
+
   async function apiFetch(path, options) {
     const headers = {
       ...(options?.headers || {})
@@ -5219,6 +6324,9 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
       reasons.push("Project settings: edits are not applied.");
     } else if (projectConfigPending) {
       reasons.push("Project settings: applied but not saved to project.xml.");
+    }
+    if (semanticDirty) {
+      reasons.push("Semantic analysis: results are not saved.");
     }
     return Array.from(new Set(reasons));
   }
@@ -5394,6 +6502,18 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
       llmPrompts: {
         formatPrompt: safe.llmPrompts?.formatPrompt ?? "",
         actionPrompts: Array.isArray(safe.llmPrompts?.actionPrompts) ? [...safe.llmPrompts.actionPrompts] : []
+      },
+      llmSelections: {
+        generate: safe.llmSelections?.generate ?? "",
+        semantic: safe.llmSelections?.semantic ?? ""
+      },
+      semanticServices: {
+        basicProvider: safe.semanticServices?.basicProvider ?? "ud",
+        udUrl: safe.semanticServices?.udUrl ?? "",
+        udTimeoutMs: safe.semanticServices?.udTimeoutMs ?? "",
+        analyzeSvo: safe.semanticServices?.analyzeSvo ?? "true",
+        analyzeDaTr: safe.semanticServices?.analyzeDaTr ?? "true",
+        daTrLlm: safe.semanticServices?.daTrLlm ?? ""
       },
       sceneTitleConcepts: Array.isArray(safe.sceneTitleConcepts) ? [...safe.sceneTitleConcepts] : []
     };
@@ -6139,6 +7259,7 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
       });
       projectConfig = normalizeProjectConfig(response.config || {});
       projectConfigDraft = cloneProjectConfig(projectConfig);
+      syncLLMSelectionsFromConfig(projectConfig);
       projectConfigSaved = response.saved ?? null;
       projectConfigPending = response.pending === true;
       missingAgentDialogOpen = false;
@@ -12250,6 +13371,24 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
               <IconDocument className="icon" />
               Title Generator
             </button>
+            <button
+              type="button"
+              class="panel-save script-semantic"
+              on:click={toggleSemanticPanel}
+              disabled={!selectedProject || semanticAnalyzeBusy || semanticLoading}
+              title="Analyze semantic roles, dialogue acts, and theme-rheme"
+            >
+              <IconPuzzle className="icon" />
+              Semantic Analysis
+            </button>
+            <label class="script-semantic-mode">
+              <span class="muted">View</span>
+              <select bind:value={semanticMode} disabled={!selectedProject || semanticAnalyzeBusy}>
+                <option value="off">Off</option>
+                <option value="basic">Basic</option>
+                <option value="full">Full</option>
+              </select>
+            </label>
             {#if sceneTitleSuggestions.size > 0}
               <button type="button" class="ghost" on:click={applyAllSceneTitleSuggestions}>
                 Accept all
@@ -12316,7 +13455,7 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
                 <div class="generate-row">
                   <label>
                     LLM Service
-                    <select bind:value={generateLLMIndex}>
+                    <select bind:value={generateLLMIndex} on:change={handleGenerateLLMSelectionChange}>
                       {#each projectConfigLLMs as llm, i}
                         <option value={i}>{llm.name || `LLM ${i + 1}`}</option>
                       {/each}
@@ -12409,9 +13548,89 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
                     </div>
                   </div>
                 {/if}
+            </div>
+          </div>
+        {/if}
+        {#if semanticPanelOpen}
+          <div class="semantic-panel">
+            <div class="semantic-panel-header">
+              <strong>Semantic Analysis</strong>
+            </div>
+            <div class="semantic-panel-body">
+              <div class="generate-row">
+                <label>
+                  LLM Service
+                  <select bind:value={semanticLLMIndex} on:change={handleSemanticLLMSelectionChange} disabled={semanticAnalyzeBusy || !semanticAnalyzeDaTr || projectConfigLLMs.length === 0}>
+                    {#if projectConfigLLMs.length === 0}
+                      <option value={0}>No LLM configured</option>
+                    {:else}
+                      {#each projectConfigLLMs as llm, i}
+                        <option value={i}>{llm.name || `LLM ${i + 1}`}</option>
+                      {/each}
+                    {/if}
+                  </select>
+                </label>
+                <div class="semantic-legend">
+                  <span class="semantic-legend-title">Legend</span>
+                  <span class="semantic-legend-item"><span class="semantic-legend-swatch subject"></span>Subject</span>
+                  <span class="semantic-legend-item"><span class="semantic-legend-swatch verb"></span>Verb</span>
+                  <span class="semantic-legend-item"><span class="semantic-legend-swatch object"></span>Object</span>
+                  <span class="semantic-legend-item"><span class="semantic-legend-swatch predicate"></span>Predicate</span>
+                  <span class="semantic-legend-item"><span class="semantic-legend-swatch address"></span>Address</span>
+                  <span class="semantic-legend-note">Address head solid, Adj dashed, Adv dotted, Comp double (same role color)</span>
+                </div>
+              </div>
+              <div class="generate-row">
+                <label class="semantic-debug-toggle">
+                  <input type="checkbox" bind:checked={semanticAnalyzeSvo} disabled={semanticAnalyzeBusy} />
+                  S/V/O analysis
+                </label>
+                <label class="semantic-debug-toggle">
+                  <input type="checkbox" bind:checked={semanticAnalyzeDaTr} disabled={semanticAnalyzeBusy} />
+                  DA/TR analysis
+                </label>
+              </div>
+              <p class="muted semantic-variable-hint">
+                Hint: Use meaningful placeholders that match sentence semantics, e.g. <code>$person</code>, <code>$agent</code>,
+                <code>$object</code>, <code>$location</code>. Generic names like <code>$x</code> reduce S/V/O quality.
+              </p>
+              <div class="semantic-selections-preview" aria-label="Stored LLM selections">
+                <span class="muted">Stored selections (project.xml):</span>
+                <code>generate="{projectConfigView?.llmSelections?.generate || ""}"</code>
+                <code>semantic="{projectConfigView?.llmSelections?.semantic || ""}"</code>
+                <code>syntax="{(projectConfigView?.semanticServices?.basicProvider || "ud") === "ud" ? "ud (stanza)" : (projectConfigView?.semanticServices?.basicProvider || "llm")}"</code>
+                <code>udUrl="{projectConfigView?.semanticServices?.udUrl || "http://127.0.0.1:4061/analyze"}"</code>
+              </div>
+              <div class="generate-row">
+                <label class="generate-full">
+                  System Prompt
+                  <textarea bind:value={semanticSystemPrompt} rows="2" disabled={!semanticAnalyzeDaTr}></textarea>
+                </label>
+              </div>
+              <div class="generate-row">
+                <label class="generate-full">
+                  Analysis Prompt
+                  <textarea bind:value={semanticPromptTemplate} rows="8" disabled={!semanticAnalyzeDaTr}></textarea>
+                </label>
+              </div>
+              <div class="generate-actions">
+                <button type="button" on:click={runSemanticAnalysis} disabled={semanticAnalyzeBusy || semanticLoading}>
+                  {semanticAnalyzeBusy ? "Analyzing..." : "Analyze"}
+                </button>
+                <button type="button" class="ghost" on:click={resetSemanticPrompts} disabled={semanticAnalyzeBusy}>
+                  Reset Prompts
+                </button>
+                <label class="semantic-debug-toggle">
+                  <input type="checkbox" bind:checked={semanticDebugEnabled} />
+                  Debug
+                </label>
+                {#if semanticDirty}
+                  <span class="muted semantic-unsaved-note">Unsaved semantic results</span>
+                {/if}
               </div>
             </div>
-          {/if}
+          </div>
+        {/if}
           <div class="script-editor" class:has-error={!scriptParseOk}>
             {#if !selectedProject}
               <p class="muted">Select a project to edit the scene script.</p>
@@ -12423,6 +13642,7 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
                 hasServerError={!scriptParseOk}
                 diagnostics={scriptDiagnostics}
                 sceneHighlights={sceneHighlights}
+                semanticHighlights={semanticEditorHighlights}
                 onChange={(value) => {
                   scriptDraft = value;
                   scheduleScriptDiagnostics();
@@ -12435,6 +13655,27 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
           {/if}
           {#if scriptError}
             <p class="error">{scriptError}</p>
+          {/if}
+          {#if semanticStatus}
+            <p class="status">{semanticStatus}</p>
+          {/if}
+          {#if semanticError}
+            <p class="error">{semanticError}</p>
+          {/if}
+          {#if semanticStale}
+            <p class="muted">Semantic overlays are outdated. Run Semantic Analysis again.</p>
+          {/if}
+          {#if semanticDebugEnabled && semanticDebug}
+            <details class="semantic-debug" bind:open={semanticDebugOpen}>
+              <summary>
+                Semantic debug: anns {semanticDebug.annotations} | S {semanticDebug.spansResolved?.subject ?? 0}/{semanticDebug.spansProvided?.subject ?? 0}
+                | V {semanticDebug.spansResolved?.verb ?? 0}/{semanticDebug.spansProvided?.verb ?? 0}
+                | O {semanticDebug.spansResolved?.object ?? 0}/{semanticDebug.spansProvided?.object ?? 0}
+                | P {semanticDebug.spansResolved?.predicate ?? 0}/{semanticDebug.spansProvided?.predicate ?? 0}
+                | A {semanticDebug.spansResolved?.address ?? 0}/{semanticDebug.spansProvided?.address ?? 0}
+              </summary>
+              <pre>{JSON.stringify(semanticDebug, null, 2)}</pre>
+            </details>
           {/if}
         </div>
       {/if}
@@ -12935,6 +14176,42 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
                     on:input={(event) => updateSceneTitleConcepts(event.target.value)}
                   ></textarea>
                   <span class="muted project-config-concepts-help">Used by Scene Title Generator as the semantic candidate list.</span>
+                </div>
+              </div>
+            </div>
+            <div class="project-config-panel project-config-panel--overview">
+              <div class="project-config-overview-grid">
+                <div class="project-config-overview-label">Semantic Services</div>
+                <div class="project-config-overview-field">
+                  <div class="project-config-grid">
+                    <label for="semantic-basic-provider">S/V/O Provider</label>
+                    <select
+                      id="semantic-basic-provider"
+                      value={projectConfigView?.semanticServices?.basicProvider || "ud"}
+                      on:change={(event) => updateSemanticServiceField("basicProvider", event.target.value)}
+                    >
+                      <option value="ud">ud</option>
+                      <option value="llm">llm</option>
+                    </select>
+                    <label for="semantic-ud-url">UD URL</label>
+                    <input
+                      id="semantic-ud-url"
+                      value={projectConfigView?.semanticServices?.udUrl || ""}
+                      placeholder="http://127.0.0.1:4061/analyze"
+                      on:input={(event) => updateSemanticServiceField("udUrl", event.target.value)}
+                    />
+                    <label for="semantic-ud-timeout">UD Timeout (ms)</label>
+                    <input
+                      id="semantic-ud-timeout"
+                      type="number"
+                      min="100"
+                      step="100"
+                      value={projectConfigView?.semanticServices?.udTimeoutMs || ""}
+                      placeholder="6000"
+                      on:change={(event) => updateSemanticServiceField("udTimeoutMs", event.target.value)}
+                    />
+                  </div>
+                  <span class="muted project-config-concepts-help">Stored in project.xml as SemanticServices.</span>
                 </div>
               </div>
             </div>
