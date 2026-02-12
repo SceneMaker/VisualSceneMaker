@@ -105,24 +105,29 @@ public final class Evaluator {
         if (cmd instanceof Assignment) {
             final VariableExpression var = ((Assignment) cmd).getLeftExpression();
             final Expression exp = ((Assignment) cmd).getInitExpression();
+            String varName;
             // Simple variable assignment
             if (var instanceof SimpleVariable) {
-                env.write(((SimpleVariable) var).getName(), evaluate(exp, env));
+                varName = ((SimpleVariable) var).getName();
+                env.write(varName, evaluate(exp, env));
             } // Array variable assignment
             else if (var instanceof ArrayVariable) {
+                varName = ((ArrayVariable) var).getName();
                 final AbstractValue value = evaluate(((ArrayVariable) var).getExpression(), env);
                 if (value.getType() == AbstractValue.Type.INT) {
-                    env.write(((ArrayVariable) var).getName(), ((IntValue) value).intValue(), evaluate(exp, env));
+                    env.write(varName, ((IntValue) value).intValue(), evaluate(exp, env));
                 } else {
                     throw new InterpreterError(cmd, "'" + cmd.getConcreteSyntax() + "' cannot be executed");
                 }
             } // Member variable assignment
             else if (var instanceof MemberVariable) {
-                env.write(((MemberVariable) var).getName(), ((MemberVariable) var).getMember(), evaluate(exp, env));
+                varName = ((MemberVariable) var).getName();
+                env.write(varName, ((MemberVariable) var).getMember(), evaluate(exp, env));
             } else {
                 throw new InterpreterError(cmd, "'" + cmd.getConcreteSyntax() + "' cannot be executed");
             }
-            // Variable was modified — mark interruptor dirty for re-evaluation
+            // Variable was modified — update generation counter and mark interruptor dirty
+            mInterpreter.notifyVariableChanged(varName);
             mInterpreter.markInterruptorDirty();
         } else if (cmd instanceof HistoryClearDeep) {
             mInterpreter.getSystemHistory().eraseDeep(
@@ -242,7 +247,9 @@ public final class Evaluator {
                 if (unary.getExp() instanceof VariableExpression) {
                     final VariableExpression var = (VariableExpression) unary.getExp();
                     if (var instanceof SimpleVariable) {
-                        env.write(((SimpleVariable) var).getName(), result);
+                        String incVarName = ((SimpleVariable) var).getName();
+                        env.write(incVarName, result);
+                        mInterpreter.notifyVariableChanged(incVarName);
                     } else if (var instanceof ArrayVariable) {
                         // TODO
                         throw new InterpreterError(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated");
@@ -747,6 +754,7 @@ public final class Evaluator {
 
                     // This call returns nothing if the variable exists and and throws an exeption
                     env.write(variable, new StringValue(binding));
+                    mInterpreter.notifyVariableChanged(variable);
 
                 } catch (final InterpreterError exc) {
 

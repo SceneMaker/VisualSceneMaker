@@ -29,7 +29,9 @@ import de.dfki.vsm.util.log.LOGDefaultLogger;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Random;
+import java.util.Set;
 
 //~--- JDK imports ------------------------------------------------------------
 
@@ -609,6 +611,7 @@ public class Process extends java.lang.Thread {
 					// EXECUTE REGULAR NEXT EDGE
 					////////////////////////////////////////////////////////////
 					AbstractEdge nextEdge = null;
+					HashMap<GuargedEdge, CachedGuardResult> guardCache = new HashMap<>();
 
 					while (nextEdge == null) {
 						mInterpreter.lock();
@@ -622,8 +625,8 @@ public class Process extends java.lang.Thread {
 							break;
 						}
 
-						// Conditional edge
-						nextEdge = checkCEdgeList();
+						// Conditional edge (uses dependency-tracking cache)
+						nextEdge = checkCEdgeList(guardCache);
 
 						if (nextEdge != null) {
 							break;
@@ -1040,14 +1043,70 @@ public class Process extends java.lang.Thread {
 	}
 
 	/**
+	 * Cached guard result for dependency-tracking optimization (Priority 8).
+	 * Stores the evaluation result along with the dependency snapshot so
+	 * that re-evaluation can be skipped when no referenced variable has changed.
 	 */
-	private GuargedEdge checkCEdgeList() throws InterpreterError {
+	private static class CachedGuardResult {
+		final boolean satisfied;
+		final Set<String> deps;     // null = opaque (always re-evaluate on state change)
+		final long stateGeneration; // captured at evaluation time
+		final HashMap<String, Long> varGenerations; // per-dep variable generations (null if opaque)
+
+		CachedGuardResult(boolean satisfied, Set<String> deps, long stateGen, HashMap<String, Long> varGens) {
+			this.satisfied = satisfied;
+			this.deps = deps;
+			this.stateGeneration = stateGen;
+			this.varGenerations = varGens;
+		}
+
+		boolean isValid(Interpreter interp) {
+			if (deps == null) {
+				// Opaque: valid only if no state change at all
+				return stateGeneration == interp.getStateGeneration();
+			}
+			// Variable-dependent: valid if no referenced variable changed
+			for (String var : deps) {
+				if (interp.getVarGeneration(var) != varGenerations.getOrDefault(var, 0L)) {
+					return false;
+				}
+			}
+			return true;
+		}
+	}
+
+	/**
+	 * Check conditional edges using dependency-tracking cache.
+	 * Guards whose referenced variables haven't changed since last evaluation
+	 * are skipped, returning the cached result instead.
+	 */
+	private GuargedEdge checkCEdgeList(HashMap<GuargedEdge, CachedGuardResult> guardCache) throws InterpreterError {
 		for (GuargedEdge cedge : mCurrentNode.getCEdgeList()) {
+			// Check cache
+			CachedGuardResult cached = guardCache.get(cedge);
+			if (cached != null && cached.isValid(mInterpreter)) {
+				if (cached.satisfied) return cedge;
+				continue;
+			}
+
+			// Evaluate the guard
 			try {
 				BooleanValue value = (BooleanValue) mEvaluator.evaluate(cedge.getCondition(), mEnvironment);
+				boolean satisfied = value.getValue();
 
-				// mLogger.message(cedge.getCondition().getConcreteSyntax() + " evaluates to " + value.getValue());
-				if (value.getValue()) {
+				// Determine dependencies and cache the result
+				Set<String> deps = GuardDependencyExtractor.getDependencies(cedge.getCondition());
+				long stateGen = mInterpreter.getStateGeneration();
+				HashMap<String, Long> varGens = null;
+				if (deps != null) {
+					varGens = new HashMap<>();
+					for (String var : deps) {
+						varGens.put(var, mInterpreter.getVarGeneration(var));
+					}
+				}
+				guardCache.put(cedge, new CachedGuardResult(satisfied, deps, stateGen, varGens));
+
+				if (satisfied) {
 					return cedge;
 				}
 			} catch (ClassCastException e) {

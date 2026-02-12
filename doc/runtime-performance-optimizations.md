@@ -1,7 +1,7 @@
 # Runtime Engine Performance Optimizations
 
 **Date**: 2026-02-12
-**Status**: Priorities 1-7 implemented
+**Status**: Priorities 1-8 implemented
 **Scope**: `core/` module — Interpreter, Evaluator, Process, Configuration, EventDispatcher
 
 ## Overview
@@ -150,16 +150,33 @@ every node exit.
 **State of the art**: Functional language runtimes (Erlang, Clojure) use persistent data
 structures or COW semantics. Well-suited for fork-heavy SceneFlow models.
 
-### Priority 8: Event-Driven Guard Evaluation with Dependency Tracking
+### Priority 8: Guard Evaluation with Dependency Tracking [DONE]
 
 **Addresses**: C1, C2 (fully)
-**Effort**: High
-**Expected impact**: Optimal CPU usage, near-zero idle cost
+**Effort**: Medium
+**Expected impact**: Optimal CPU usage, near-zero idle cost for unchanged guards
 
-**Approach**: At project load time, analyze each guard expression to extract the set of
-variables it references. Build a reverse index: `variable name -> set of edges`. On variable
-write, enqueue only the affected edges for re-evaluation. Eliminates all unnecessary guard
-checks.
+**Approach**: Three-part implementation:
+
+1. **GuardDependencyExtractor** — Recursive AST walker that extracts variable names
+   referenced by a guard expression. Expressions with opaque dependencies (function calls,
+   `InStateQuery`, `RandomQuery`, `TimeoutQuery`, Prolog queries, history lookups) return
+   null, meaning "always re-evaluate". Results are cached per expression identity.
+
+2. **Per-variable generation counters** — `Interpreter.mVarGenerations` tracks a generation
+   counter per variable name, incremented on every write via `notifyVariableChanged(varName)`.
+   `mStateGeneration` increments on every `signalStateChange()` for opaque guard invalidation.
+   Write notifications added to: Evaluator (assignment, increment, Prolog), Interpreter
+   (external `setVariable()` methods).
+
+3. **Guard result cache in Process** — `CachedGuardResult` per `GuargedEdge`, storing the
+   evaluation result plus dependency snapshot (variable generations for known deps, state
+   generation for opaque deps). `checkCEdgeList()` checks cache validity before re-evaluating.
+   Cache is scoped per node (created before the edge-waiting loop).
+
+Guards with only variable dependencies skip re-evaluation when no referenced variable has
+changed. Guards with opaque dependencies skip re-evaluation when no state change has occurred
+(e.g., timeout wake-ups that don't involve any actual state mutation).
 
 **State of the art**: Reactive programming (RxJava, Reactor), incremental computation
 frameworks (Adapton, Salsa). Transforms polling into push-based propagation.
