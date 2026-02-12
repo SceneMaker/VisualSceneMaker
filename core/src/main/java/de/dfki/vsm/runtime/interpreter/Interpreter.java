@@ -13,7 +13,8 @@ import de.dfki.vsm.util.log.LOGDefaultLogger;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * @author Gregor Mehlmann
@@ -28,7 +29,9 @@ public class Interpreter {
     private final SystemHistory mSystemHistory;
     private final Evaluator mEvaluator;
     private final TimeoutManager mTimeoutManager;
-    private final ReentrantLock mLock;
+    private final ReentrantReadWriteLock mRwLock;
+    private final Lock mLock;       // write lock — used by Process, Evaluator, TimeoutManager
+    private final Lock mReadLock;   // read lock — used by getters and status queries
     private final Condition mPauseCondition;
     private final Condition mStateChangeCondition;
     private final RunTimePlayer mScenePlayer;
@@ -42,9 +45,11 @@ public class Interpreter {
         // TODO: We want only one scene player
         mScenePlayer = project.getRunTimePlayer();
         //mDialogPlayer = new DefaultPlayer(project);
-        mLock = new ReentrantLock(true);
-        mPauseCondition = mLock.newCondition();
-        mStateChangeCondition = mLock.newCondition();
+        mRwLock = new ReentrantReadWriteLock(true);
+        mLock = mRwLock.writeLock();
+        mReadLock = mRwLock.readLock();
+        mPauseCondition = mRwLock.writeLock().newCondition();
+        mStateChangeCondition = mRwLock.writeLock().newCondition();
         mConfiguration = new Configuration();
         mSystemHistory = new SystemHistory();
         mTimeoutManager = new TimeoutManager(this);
@@ -52,7 +57,7 @@ public class Interpreter {
         mEvaluator = new Evaluator(this);
     }
 
-    public ReentrantLock getLock() {
+    public Lock getLock() {
         return mLock;
     }
 
@@ -62,6 +67,14 @@ public class Interpreter {
 
     void unlock() {
         mLock.unlock();
+    }
+
+    private void readLock() {
+        mReadLock.lock();
+    }
+
+    private void readUnlock() {
+        mReadLock.unlock();
     }
 
     void await() {
@@ -100,71 +113,65 @@ public class Interpreter {
 
     public SceneFlow getSceneFlow() {
         try {
-            lock();
-
+            readLock();
             return mSceneFlow;
         } finally {
-            unlock();
+            readUnlock();
         }
     }
 
     Evaluator getEvaluator() {
         try {
-            lock();
-
+            readLock();
             return mEvaluator;
         } finally {
-            unlock();
+            readUnlock();
         }
     }
 
     // Get the scene player
     final RunTimePlayer getScenePlayer() {
         try {
-            lock();
+            readLock();
             return mScenePlayer;
         } finally {
-            unlock();
+            readUnlock();
         }
     }
 
     public Configuration getConfiguration() {
         try {
-            lock();
-
+            readLock();
             return mConfiguration;
         } finally {
-            unlock();
+            readUnlock();
         }
     }
 
     TimeoutManager getTimeoutManager() {
         try {
-            lock();
-
+            readLock();
             return mTimeoutManager;
         } finally {
-            unlock();
+            readUnlock();
         }
     }
 
     Interruptor getEventObserver() {
         try {
-            lock();
-
+            readLock();
             return mEventObserver;
         } finally {
-            unlock();
+            readUnlock();
         }
     }
 
     SystemHistory getSystemHistory() {
         try {
-            lock();
-
+            readLock();
             return mSystemHistory;
         } finally {
-            unlock();
+            readUnlock();
         }
     }
 
@@ -243,36 +250,36 @@ public class Interpreter {
 
     public boolean isPaused() {
         try {
-            lock();
+            readLock();
             if (mSceneFlowThread != null) {
                 return mSceneFlowThread.isPauseRequested();
             }
         } finally {
-            unlock();
+            readUnlock();
         }
         return false;
     }
 
     public boolean isRunning() {
         try {
-            lock();
+            readLock();
             if (mSceneFlowThread != null) {
                 return mSceneFlowThread.isRunning();
             }
         } finally {
-            unlock();
+            readUnlock();
         }
         return false;
     }
 
     public boolean wasExecuted() {
         try {
-            lock();
+            readLock();
             if (mSceneFlowThread != null) {
                 return mSceneFlowThread.wasExecuted();
             }
         } finally {
-            unlock();
+            readUnlock();
         }
         return false;
     }
@@ -295,13 +302,12 @@ public class Interpreter {
 
     public AbstractValue evaluate(String nodeId, Expression exp) {
         try {
-            lock();
-
+            readLock();
             return mEvaluator.evaluate(exp, mConfiguration.getState(nodeId).getThread().getEnvironment());
         } catch (InterpreterError e) {
             return null;
         } finally {
-            unlock();
+            readUnlock();
         }
     }
 
@@ -370,14 +376,13 @@ public class Interpreter {
 
     public boolean hasLocalVariable(String nodeId, String varName) {
         try {
-            lock();
-
+            readLock();
             return mConfiguration.getState(nodeId).getThread().getEnvironment().getActiveSymbolTable().contains(
                     varName);
         } catch (InterpreterError e) {
             return false;
         } finally {
-            unlock();
+            readUnlock();
         }
     }
 
@@ -396,79 +401,72 @@ public class Interpreter {
 
     public boolean hasVariable(String varName) {
         try {
-            lock();
+            readLock();
             mConfiguration.getState(mSceneFlow).getThread().getEnvironment().read(varName);
-
             return true;
         } catch (InterpreterError e) {
             e.printStackTrace();
             return false;
         } finally {
-            unlock();
+            readUnlock();
         }
     }
 
     public boolean hasVariable(String varName, int index) {
         try {
-            lock();
+            readLock();
             mConfiguration.getState(mSceneFlow).getThread().getEnvironment().read(varName, index);
-
             return true;
         } catch (InterpreterError e) {
             return false;
         } finally {
-            unlock();
+            readUnlock();
         }
     }
 
     public boolean hasVariable(String varName, String member) {
         try {
-            lock();
+            readLock();
             mConfiguration.getState(mSceneFlow).getThread().getEnvironment().read(varName, member);
-
             return true;
         } catch (InterpreterError e) {
-
             return false;
         } finally {
-            unlock();
+            readUnlock();
         }
     }
 
     public AbstractValue getValueOf(String varName) {
         try {
-            lock();
-
+            readLock();
             return mConfiguration.getState(mSceneFlow).getThread().getEnvironment().read(varName);
         } catch (InterpreterError e) {
             return null;
         } finally {
-            unlock();
+            readUnlock();
         }
     }
 
     // TODO let the evaluator do this over getValueOf(...)
     public AbstractValue getValueOf(String varName, int index) {
         try {
-            lock();
-
+            readLock();
             return mConfiguration.getState(mSceneFlow).getThread().getEnvironment().read(varName, index);
         } catch (InterpreterError e) {
             return null;
         } finally {
-            unlock();
+            readUnlock();
         }
     }
 
     public AbstractValue getValueOf(String varName, String member) {
         try {
-            lock();
-
+            readLock();
             return mConfiguration.getState(mSceneFlow).getThread().getEnvironment().read(varName, member);
         } catch (InterpreterError e) {
             return null;
         } finally {
-            unlock();
+            readUnlock();
         }
     }
 }

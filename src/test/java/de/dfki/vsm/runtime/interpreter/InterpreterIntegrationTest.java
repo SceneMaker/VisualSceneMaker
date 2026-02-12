@@ -241,6 +241,47 @@ public class InterpreterIntegrationTest {
         }
     }
 
+    /**
+     * Tests short-circuit && evaluation in guard conditions.
+     * Flow: N1 sets x=5, y=0. Guard condition: (x > 3) && (y > 0).
+     * Since y=0, the guard is false. N1 also has a timeout edge (100ms) to N2 as fallback.
+     * Then a second guard: (x > 3) || (y > 10) which should be true (short-circuit: x>3 is true).
+     * N2 has a CEdge with condition (x > 3 || y > 10) to N3.
+     */
+    @Test
+    void shortCircuitEvaluation() throws Exception {
+        writeProjectFiles(tempDir, SCENEFLOW_SHORT_CIRCUIT);
+        project = new RunTimeProject(tempDir.toFile());
+
+        List<String> visited = new CopyOnWriteArrayList<>();
+        CountDownLatch done = new CountDownLatch(1);
+
+        EventListener listener = event -> {
+            if (event instanceof NodeStartedEvent) {
+                String id = ((NodeStartedEvent) event).getNode().getId();
+                if (!id.equals("Test")) {
+                    visited.add(id);
+                }
+                if (id.equals("N3")) {
+                    done.countDown();
+                }
+            }
+        };
+        EventDispatcher.getInstance().register(listener);
+
+        try {
+            assertTrue(project.launch());
+            assertTrue(project.start());
+            assertTrue(done.await(5, TimeUnit.SECONDS), "Short-circuit test should complete");
+            waitForStop(5000);
+
+            // N1 -> (timeout, && guard fails) -> N2 -> (|| guard succeeds via short-circuit) -> N3
+            assertEquals(List.of("N1", "N2", "N3"), visited);
+        } finally {
+            EventDispatcher.getInstance().remove(listener);
+        }
+    }
+
     // ========== PERFORMANCE BENCHMARKS ==========
 
     /**
@@ -569,6 +610,78 @@ public class InterpreterIntegrationTest {
             "  <Node id=\"N2\" name=\"N2\" history=\"false\">\n" +
             "    <Define/>\n    <Declare/>\n    <Commands/>\n" +
             "    <Graphics><Position xPos=\"200\" yPos=\"50\"/></Graphics>\n" +
+            "  </Node>\n" +
+            "</SceneFlow>\n";
+
+    /**
+     * N1: sets x=5, y=0. CEdge (x>3 && y>0) fails, TEdge 100ms falls through to N2.
+     * N2: CEdge (x>3 || y>10) succeeds via short-circuit (x>3 is true) -> N3 (end).
+     */
+    private static final String SCENEFLOW_SHORT_CIRCUIT =
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+            "<SceneFlow id=\"Test\" name=\"Test\" start=\"N1;\"" +
+            " xmlns=\"xml.sceneflow.dfki.de\"" +
+            " xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"" +
+            " xsi:schemaLocation=\"xml.sceneflow.dfki.de res/xsd/sceneflow.xsd\">\n" +
+            "  <Define/>\n" +
+            "  <Declare>\n" +
+            "    <VariableDefinition type=\"Int\" name=\"x\">\n" +
+            "      <IntLiteral value=\"0\"/>\n" +
+            "    </VariableDefinition>\n" +
+            "    <VariableDefinition type=\"Int\" name=\"y\">\n" +
+            "      <IntLiteral value=\"0\"/>\n" +
+            "    </VariableDefinition>\n" +
+            "  </Declare>\n" +
+            "  <Commands/>\n" +
+            // N1: x=5, y=0. CEdge(x>3 && y>0) → fails. TEdge(100ms) → N2.
+            "  <Node id=\"N1\" name=\"N1\" history=\"false\">\n" +
+            "    <Define/>\n    <Declare/>\n" +
+            "    <Commands>\n" +
+            "      <Assignment>\n" +
+            "        <SimpleVariable name=\"x\"/>\n" +
+            "        <Expression><IntLiteral value=\"5\"/></Expression>\n" +
+            "      </Assignment>\n" +
+            "      <Assignment>\n" +
+            "        <SimpleVariable name=\"y\"/>\n" +
+            "        <Expression><IntLiteral value=\"0\"/></Expression>\n" +
+            "      </Assignment>\n" +
+            "    </Commands>\n" +
+            "    <CEdge target=\"N3\" start=\"\">\n" +
+            "      <AndAnd>\n" +
+            "        <Gt>\n" +
+            "          <SimpleVariable name=\"x\"/>\n" +
+            "          <IntLiteral value=\"3\"/>\n" +
+            "        </Gt>\n" +
+            "        <Gt>\n" +
+            "          <SimpleVariable name=\"y\"/>\n" +
+            "          <IntLiteral value=\"0\"/>\n" +
+            "        </Gt>\n" +
+            "      </AndAnd>\n" +
+            "    </CEdge>\n" +
+            "    <TEdge target=\"N2\" start=\"\" timeout=\"100\"/>\n" +
+            "    <Graphics><Position xPos=\"50\" yPos=\"50\"/></Graphics>\n" +
+            "  </Node>\n" +
+            // N2: CEdge(x>3 || y>10) → succeeds (x>3 is true, short-circuits) → N3
+            "  <Node id=\"N2\" name=\"N2\" history=\"false\">\n" +
+            "    <Define/>\n    <Declare/>\n    <Commands/>\n" +
+            "    <CEdge target=\"N3\" start=\"\">\n" +
+            "      <OrOr>\n" +
+            "        <Gt>\n" +
+            "          <SimpleVariable name=\"x\"/>\n" +
+            "          <IntLiteral value=\"3\"/>\n" +
+            "        </Gt>\n" +
+            "        <Gt>\n" +
+            "          <SimpleVariable name=\"y\"/>\n" +
+            "          <IntLiteral value=\"10\"/>\n" +
+            "        </Gt>\n" +
+            "      </OrOr>\n" +
+            "    </CEdge>\n" +
+            "    <Graphics><Position xPos=\"200\" yPos=\"50\"/></Graphics>\n" +
+            "  </Node>\n" +
+            // N3: end
+            "  <Node id=\"N3\" name=\"N3\" history=\"false\">\n" +
+            "    <Define/>\n    <Declare/>\n    <Commands/>\n" +
+            "    <Graphics><Position xPos=\"350\" yPos=\"50\"/></Graphics>\n" +
             "  </Node>\n" +
             "</SceneFlow>\n";
 }
