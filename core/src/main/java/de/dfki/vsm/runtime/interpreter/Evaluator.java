@@ -204,174 +204,7 @@ public final class Evaluator {
         } else if (exp instanceof StructExpression) {
             return new StructValue(evaluateAsgList(((StructExpression) exp).getExpList(), env));
         } else if (exp instanceof BinaryExpression) {
-            final BinaryExpression bin = (BinaryExpression) exp;
-            // Event variable comparisons: resolve event queue directly, peek + compare + conditional consume.
-            // Must happen before eager evaluation of both sides, because the SimpleVariable branch
-            // would auto-consume the event and return BooleanValue, causing a type mismatch.
-            if (bin.getOperator() == BinaryExpression.BinaryOp.Eq
-                    || bin.getOperator() == BinaryExpression.BinaryOp.Neq) {
-                BooleanValue eventResult = tryEventComparison(bin, env);
-                if (eventResult != null) {
-                    return eventResult;
-                }
-            }
-            final AbstractValue left = evaluate(bin.getLeftExp(), env);
-            final AbstractValue right = evaluate(bin.getRightExp(), env);
-            final BinaryExpression.BinaryOp operator = bin.getOperator();
-            //
-            if (operator == BinaryExpression.BinaryOp.Add) {
-                if ((left instanceof IntValue) && (right instanceof IntValue)) {
-                    return new IntValue(((IntValue) left).intValue() + ((IntValue) right).intValue());
-                } else if ((left instanceof FloatValue) && (right instanceof FloatValue)) {
-                    return new FloatValue(((FloatValue) left).floatValue() + ((FloatValue) right).floatValue());
-                } else if ((left instanceof LongValue) && (right instanceof LongValue)) {
-                    return new LongValue(((LongValue) left).longValue() + ((LongValue) right).longValue());
-                } else if ((left instanceof DoubleValue) && (right instanceof DoubleValue)) {
-                    return new DoubleValue(((DoubleValue) left).doubleValue() + ((DoubleValue) right).doubleValue());
-                } else if ((left instanceof StringValue) && (right instanceof StringValue)) {
-                    return new StringValue(((StringValue) left).getValue() + ((StringValue) right).getValue());
-                } else if ((left instanceof StringValue) && (right instanceof IntValue)) {
-                    return new StringValue(((StringValue) left).getValue() + ((IntValue) right).intValue());
-                } else if ((left instanceof StringValue) && (right instanceof FloatValue)) {
-                    return new StringValue(((StringValue) left).getValue() + ((FloatValue) right).floatValue());
-                } else if ((left instanceof StringValue) && (right instanceof BooleanValue)) {
-                    return new StringValue(((StringValue) left).getValue() + ((BooleanValue) right).booleanValue());
-                } else if ((left instanceof StringValue) && (right instanceof LongValue)) {
-                    return new StringValue(((StringValue) left).getValue() + ((LongValue) right).longValue());
-                } else if ((left instanceof IntValue) && (right instanceof StringValue)) {
-                    return new StringValue(((IntValue) left).intValue() + ((StringValue) right).getValue());
-                } else if ((left instanceof FloatValue) && (right instanceof StringValue)) {
-                    return new StringValue(((FloatValue) left).floatValue() + ((StringValue) right).getValue());
-                } else if ((left instanceof BooleanValue) && (right instanceof StringValue)) {
-                    return new StringValue(((BooleanValue) left).booleanValue() + ((StringValue) right).getValue());
-                } else if ((left instanceof LongValue) && (right instanceof StringValue)) {
-                    return new StringValue(((LongValue) left).longValue() + ((StringValue) right).getValue());
-                } else {
-                    throw new InterpreterError(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated");
-                }
-            } else if (operator == BinaryExpression.BinaryOp.Sub) {
-                if ((left instanceof IntValue) && (right instanceof IntValue)) {
-                    return new IntValue(((IntValue) left).intValue() - ((IntValue) right).intValue());
-                } else if ((left instanceof FloatValue) && (right instanceof FloatValue)) {
-                    return new FloatValue(((FloatValue) left).floatValue() - ((FloatValue) right).floatValue());
-                } else if ((left instanceof LongValue) && (right instanceof LongValue)) {
-                    return new LongValue(((LongValue) left).longValue() - ((LongValue) right).longValue());
-                } else if ((left instanceof DoubleValue) && (right instanceof DoubleValue)) {
-                    return new DoubleValue(((DoubleValue) left).doubleValue() - ((DoubleValue) right).doubleValue());
-                } else {
-                    throw new InterpreterError(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated");
-                }
-            } else if (operator == BinaryExpression.BinaryOp.Mul) {
-                if ((left instanceof IntValue) && (right instanceof IntValue)) {
-                    return new IntValue(((IntValue) left).intValue() * ((IntValue) right).intValue());
-                } else if ((left instanceof FloatValue) && (right instanceof FloatValue)) {
-                    return new FloatValue(((FloatValue) left).floatValue() * ((FloatValue) right).floatValue());
-                } else if ((left instanceof LongValue) && (right instanceof LongValue)) {
-                    return new LongValue(((LongValue) left).longValue() * ((LongValue) right).longValue());
-                } else if ((left instanceof DoubleValue) && (right instanceof DoubleValue)) {
-                    return new DoubleValue(((DoubleValue) left).doubleValue() * ((DoubleValue) right).doubleValue());
-                } else {
-                    throw new InterpreterError(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated");
-                }
-            } else if (operator == BinaryExpression.BinaryOp.Div) {
-                if ((left instanceof IntValue) && (right instanceof IntValue)) {
-                    return new IntValue(((IntValue) left).intValue() / ((IntValue) right).intValue());
-                } else if ((left instanceof FloatValue) && (right instanceof FloatValue)) {
-                    return new FloatValue(((FloatValue) left).floatValue() / ((FloatValue) right).floatValue());
-                } else if ((left instanceof LongValue) && (right instanceof LongValue)) {
-                    return new LongValue(((LongValue) left).longValue() / ((LongValue) right).longValue());
-                } else if ((left instanceof DoubleValue) && (right instanceof DoubleValue)) {
-                    return new DoubleValue(((DoubleValue) left).doubleValue() / ((DoubleValue) right).doubleValue());
-                } else {
-                    throw new InterpreterError(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated");
-                }
-            } else if (operator == BinaryExpression.BinaryOp.Mod) {
-                if ((left instanceof IntValue) && (right instanceof IntValue)) {
-                    return new IntValue(((IntValue) left).intValue() % ((IntValue) right).intValue());
-                } else {
-                    throw new InterpreterError(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated");
-                }
-            } else if (operator == BinaryExpression.BinaryOp.Eq) {
-                if (left.getType() == right.getType()) {
-                    return new BooleanValue(left.equalsValue(right));
-                } else {
-                    throw new InterpreterError(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated");
-                }
-            } else if (operator == BinaryExpression.BinaryOp.Neq) {
-                if (left.getType() == right.getType()) {
-                    return new BooleanValue(!(left.equalsValue(right)));
-                } else {
-                    throw new InterpreterError(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated");
-                }
-            } else if (operator == BinaryExpression.BinaryOp.Ge) {
-                if ((left instanceof IntValue) && (right instanceof IntValue)) {
-                    return new BooleanValue(((IntValue) left).intValue() >= ((IntValue) right).intValue());
-                } else if ((left instanceof FloatValue) && (right instanceof FloatValue)) {
-                    return new BooleanValue(((FloatValue) left).floatValue() >= ((FloatValue) right).floatValue());
-                } else if ((left instanceof LongValue) && (right instanceof LongValue)) {
-                    return new BooleanValue(((LongValue) left).longValue() >= ((LongValue) right).longValue());
-                } else if ((left instanceof DoubleValue) && (right instanceof DoubleValue)) {
-                    return new BooleanValue(((DoubleValue) left).doubleValue() >= ((DoubleValue) right).doubleValue());
-                } else {
-                    throw new InterpreterError(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated");
-                }
-            } else if (operator == BinaryExpression.BinaryOp.Gt) {
-                if ((left instanceof IntValue) && (right instanceof IntValue)) {
-                    return new BooleanValue(((IntValue) left).intValue() > ((IntValue) right).intValue());
-                } else if ((left instanceof FloatValue) && (right instanceof FloatValue)) {
-                    return new BooleanValue(((FloatValue) left).floatValue() > ((FloatValue) right).floatValue());
-                } else if ((left instanceof LongValue) && (right instanceof LongValue)) {
-                    return new BooleanValue(((LongValue) left).longValue() > ((LongValue) right).longValue());
-                } else if ((left instanceof DoubleValue) && (right instanceof DoubleValue)) {
-                    return new BooleanValue(((DoubleValue) left).doubleValue() > ((DoubleValue) right).doubleValue());
-                } else {
-                    throw new InterpreterError(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated");
-                }
-            } else if (operator == BinaryExpression.BinaryOp.Le) {
-                if ((left instanceof IntValue) && (right instanceof IntValue)) {
-                    return new BooleanValue(((IntValue) left).intValue() <= ((IntValue) right).intValue());
-                } else if ((left instanceof FloatValue) && (right instanceof FloatValue)) {
-                    return new BooleanValue(((FloatValue) left).floatValue() <= ((FloatValue) right).floatValue());
-                } else if ((left instanceof LongValue) && (right instanceof LongValue)) {
-                    return new BooleanValue(((LongValue) left).longValue() <= ((LongValue) right).longValue());
-                } else if ((left instanceof DoubleValue) && (right instanceof DoubleValue)) {
-                    return new BooleanValue(((DoubleValue) left).doubleValue() <= ((DoubleValue) right).doubleValue());
-                } else {
-                    throw new InterpreterError(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated");
-                }
-            } else if (operator == BinaryExpression.BinaryOp.Lt) {
-                if ((left instanceof IntValue) && (right instanceof IntValue)) {
-                    return new BooleanValue(((IntValue) left).intValue() < ((IntValue) right).intValue());
-                } else if ((left instanceof FloatValue) && (right instanceof FloatValue)) {
-                    return new BooleanValue(((FloatValue) left).floatValue() < ((FloatValue) right).floatValue());
-                } else if ((left instanceof LongValue) && (right instanceof LongValue)) {
-                    return new BooleanValue(((LongValue) left).longValue() < ((LongValue) right).longValue());
-                } else if ((left instanceof DoubleValue) && (right instanceof DoubleValue)) {
-                    return new BooleanValue(((DoubleValue) left).doubleValue() < ((DoubleValue) right).doubleValue());
-                } else {
-                    throw new InterpreterError(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated");
-                }
-            } else if (operator == BinaryExpression.BinaryOp.AndAnd) {
-                if ((left instanceof BooleanValue) && (right instanceof BooleanValue)) {
-                    return new BooleanValue(((BooleanValue) left).getValue() && ((BooleanValue) right).getValue());
-                } else {
-                    throw new InterpreterError(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated");
-                }
-            } else if (operator == BinaryExpression.BinaryOp.OrOr) {
-                if ((left instanceof BooleanValue) && (right instanceof BooleanValue)) {
-                    return new BooleanValue(((BooleanValue) left).getValue() || ((BooleanValue) right).getValue());
-                } else {
-                    throw new InterpreterError(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated");
-                }
-            } else if (operator == BinaryExpression.BinaryOp.And) {
-                throw new InterpreterError(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated");
-            } else if (operator == BinaryExpression.BinaryOp.Or) {
-                throw new InterpreterError(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated");
-            } else if (operator == BinaryExpression.BinaryOp.Xor) {
-                throw new InterpreterError(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated");
-            } else {
-                throw new InterpreterError(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated");
-            }
+            return evaluateBinary((BinaryExpression) exp, env);
         } else if (exp instanceof UnaryExpression) {
             final UnaryExpression unary = (UnaryExpression) exp;
             final AbstractValue value = evaluate(unary.getExp(), env);
@@ -435,14 +268,11 @@ public final class Evaluator {
             }
         } else if (exp instanceof TernaryExpression) {
             final AbstractValue condition = evaluate(((TernaryExpression) exp).getCondition(), env);
-            final AbstractValue thenValue = evaluate(((TernaryExpression) exp).getThenExp(), env);
-            final AbstractValue elseValue = evaluate(((TernaryExpression) exp).getElseExp(), env);
             if (condition instanceof BooleanValue) {
-                if (((BooleanValue) condition).getValue()) {
-                    return thenValue;
-                } else {
-                    return elseValue;
-                }
+                // Short-circuit: only evaluate the taken branch
+                return ((BooleanValue) condition).getValue()
+                        ? evaluate(((TernaryExpression) exp).getThenExp(), env)
+                        : evaluate(((TernaryExpression) exp).getElseExp(), env);
             } else {
                 throw new InterpreterError(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated");
             }
@@ -548,6 +378,211 @@ public final class Evaluator {
             throw new InterpreterError(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated.");
         }
 
+    }
+
+    // Evaluate a binary expression with short-circuit logic and switch dispatch
+    private AbstractValue evaluateBinary(
+            final BinaryExpression bin,
+            final Environment env) throws InterpreterError {
+        final BinaryExpression.BinaryOp operator = bin.getOperator();
+
+        // Short-circuit: && and || evaluate left first, skip right if result is determined
+        if (operator == BinaryExpression.BinaryOp.AndAnd) {
+            final AbstractValue left = evaluate(bin.getLeftExp(), env);
+            if (!(left instanceof BooleanValue)) {
+                throw new InterpreterError(bin, "'" + bin.getConcreteSyntax() + "' cannot be evaluated");
+            }
+            if (!((BooleanValue) left).getValue()) {
+                return new BooleanValue(false); // short-circuit: false && _ = false
+            }
+            final AbstractValue right = evaluate(bin.getRightExp(), env);
+            if (!(right instanceof BooleanValue)) {
+                throw new InterpreterError(bin, "'" + bin.getConcreteSyntax() + "' cannot be evaluated");
+            }
+            return right;
+        }
+        if (operator == BinaryExpression.BinaryOp.OrOr) {
+            final AbstractValue left = evaluate(bin.getLeftExp(), env);
+            if (!(left instanceof BooleanValue)) {
+                throw new InterpreterError(bin, "'" + bin.getConcreteSyntax() + "' cannot be evaluated");
+            }
+            if (((BooleanValue) left).getValue()) {
+                return new BooleanValue(true); // short-circuit: true || _ = true
+            }
+            final AbstractValue right = evaluate(bin.getRightExp(), env);
+            if (!(right instanceof BooleanValue)) {
+                throw new InterpreterError(bin, "'" + bin.getConcreteSyntax() + "' cannot be evaluated");
+            }
+            return right;
+        }
+
+        // Event variable comparisons: peek + compare + conditional consume.
+        // Must happen before eager evaluation of both sides.
+        if (operator == BinaryExpression.BinaryOp.Eq
+                || operator == BinaryExpression.BinaryOp.Neq) {
+            BooleanValue eventResult = tryEventComparison(bin, env);
+            if (eventResult != null) {
+                return eventResult;
+            }
+        }
+
+        // Eagerly evaluate both operands for all remaining operators
+        final AbstractValue left = evaluate(bin.getLeftExp(), env);
+        final AbstractValue right = evaluate(bin.getRightExp(), env);
+
+        switch (operator) {
+            case Add:
+                return evaluateAdd(left, right, bin);
+            case Sub:
+                return evaluateArithmetic(left, right, bin, operator);
+            case Mul:
+                return evaluateArithmetic(left, right, bin, operator);
+            case Div:
+                return evaluateArithmetic(left, right, bin, operator);
+            case Mod:
+                if ((left instanceof IntValue) && (right instanceof IntValue)) {
+                    return new IntValue(((IntValue) left).intValue() % ((IntValue) right).intValue());
+                }
+                throw new InterpreterError(bin, "'" + bin.getConcreteSyntax() + "' cannot be evaluated");
+            case Eq:
+                if (left.getType() == right.getType()) {
+                    return new BooleanValue(left.equalsValue(right));
+                }
+                throw new InterpreterError(bin, "'" + bin.getConcreteSyntax() + "' cannot be evaluated");
+            case Neq:
+                if (left.getType() == right.getType()) {
+                    return new BooleanValue(!left.equalsValue(right));
+                }
+                throw new InterpreterError(bin, "'" + bin.getConcreteSyntax() + "' cannot be evaluated");
+            case Ge:
+                return evaluateComparison(left, right, bin, operator);
+            case Gt:
+                return evaluateComparison(left, right, bin, operator);
+            case Le:
+                return evaluateComparison(left, right, bin, operator);
+            case Lt:
+                return evaluateComparison(left, right, bin, operator);
+            default:
+                throw new InterpreterError(bin, "'" + bin.getConcreteSyntax() + "' cannot be evaluated");
+        }
+    }
+
+    // Evaluate Add with string concatenation support
+    private AbstractValue evaluateAdd(
+            final AbstractValue left,
+            final AbstractValue right,
+            final Expression exp) throws InterpreterError {
+        if ((left instanceof IntValue) && (right instanceof IntValue)) {
+            return new IntValue(((IntValue) left).intValue() + ((IntValue) right).intValue());
+        } else if ((left instanceof FloatValue) && (right instanceof FloatValue)) {
+            return new FloatValue(((FloatValue) left).floatValue() + ((FloatValue) right).floatValue());
+        } else if ((left instanceof LongValue) && (right instanceof LongValue)) {
+            return new LongValue(((LongValue) left).longValue() + ((LongValue) right).longValue());
+        } else if ((left instanceof DoubleValue) && (right instanceof DoubleValue)) {
+            return new DoubleValue(((DoubleValue) left).doubleValue() + ((DoubleValue) right).doubleValue());
+        } else if (left instanceof StringValue || right instanceof StringValue) {
+            // String concatenation: any type can be concatenated with a String
+            return new StringValue(valueToString(left) + valueToString(right));
+        }
+        throw new InterpreterError(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated");
+    }
+
+    // Convert a value to its string representation for concatenation
+    private static String valueToString(AbstractValue val) {
+        if (val instanceof StringValue) return ((StringValue) val).getValue();
+        if (val instanceof IntValue) return String.valueOf(((IntValue) val).intValue());
+        if (val instanceof FloatValue) return String.valueOf(((FloatValue) val).floatValue());
+        if (val instanceof BooleanValue) return String.valueOf(((BooleanValue) val).booleanValue());
+        if (val instanceof LongValue) return String.valueOf(((LongValue) val).longValue());
+        return String.valueOf(val.getValue());
+    }
+
+    // Evaluate arithmetic operators (Sub, Mul, Div) on numeric types
+    private AbstractValue evaluateArithmetic(
+            final AbstractValue left,
+            final AbstractValue right,
+            final Expression exp,
+            final BinaryExpression.BinaryOp op) throws InterpreterError {
+        if ((left instanceof IntValue) && (right instanceof IntValue)) {
+            int l = ((IntValue) left).intValue(), r = ((IntValue) right).intValue();
+            switch (op) {
+                case Sub: return new IntValue(l - r);
+                case Mul: return new IntValue(l * r);
+                case Div: return new IntValue(l / r);
+                default: break;
+            }
+        } else if ((left instanceof FloatValue) && (right instanceof FloatValue)) {
+            float l = ((FloatValue) left).floatValue(), r = ((FloatValue) right).floatValue();
+            switch (op) {
+                case Sub: return new FloatValue(l - r);
+                case Mul: return new FloatValue(l * r);
+                case Div: return new FloatValue(l / r);
+                default: break;
+            }
+        } else if ((left instanceof LongValue) && (right instanceof LongValue)) {
+            long l = ((LongValue) left).longValue(), r = ((LongValue) right).longValue();
+            switch (op) {
+                case Sub: return new LongValue(l - r);
+                case Mul: return new LongValue(l * r);
+                case Div: return new LongValue(l / r);
+                default: break;
+            }
+        } else if ((left instanceof DoubleValue) && (right instanceof DoubleValue)) {
+            double l = ((DoubleValue) left).doubleValue(), r = ((DoubleValue) right).doubleValue();
+            switch (op) {
+                case Sub: return new DoubleValue(l - r);
+                case Mul: return new DoubleValue(l * r);
+                case Div: return new DoubleValue(l / r);
+                default: break;
+            }
+        }
+        throw new InterpreterError(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated");
+    }
+
+    // Evaluate comparison operators (Ge, Gt, Le, Lt) on numeric types
+    private AbstractValue evaluateComparison(
+            final AbstractValue left,
+            final AbstractValue right,
+            final Expression exp,
+            final BinaryExpression.BinaryOp op) throws InterpreterError {
+        if ((left instanceof IntValue) && (right instanceof IntValue)) {
+            int l = ((IntValue) left).intValue(), r = ((IntValue) right).intValue();
+            switch (op) {
+                case Ge: return new BooleanValue(l >= r);
+                case Gt: return new BooleanValue(l > r);
+                case Le: return new BooleanValue(l <= r);
+                case Lt: return new BooleanValue(l < r);
+                default: break;
+            }
+        } else if ((left instanceof FloatValue) && (right instanceof FloatValue)) {
+            float l = ((FloatValue) left).floatValue(), r = ((FloatValue) right).floatValue();
+            switch (op) {
+                case Ge: return new BooleanValue(l >= r);
+                case Gt: return new BooleanValue(l > r);
+                case Le: return new BooleanValue(l <= r);
+                case Lt: return new BooleanValue(l < r);
+                default: break;
+            }
+        } else if ((left instanceof LongValue) && (right instanceof LongValue)) {
+            long l = ((LongValue) left).longValue(), r = ((LongValue) right).longValue();
+            switch (op) {
+                case Ge: return new BooleanValue(l >= r);
+                case Gt: return new BooleanValue(l > r);
+                case Le: return new BooleanValue(l <= r);
+                case Lt: return new BooleanValue(l < r);
+                default: break;
+            }
+        } else if ((left instanceof DoubleValue) && (right instanceof DoubleValue)) {
+            double l = ((DoubleValue) left).doubleValue(), r = ((DoubleValue) right).doubleValue();
+            switch (op) {
+                case Ge: return new BooleanValue(l >= r);
+                case Gt: return new BooleanValue(l > r);
+                case Le: return new BooleanValue(l <= r);
+                case Lt: return new BooleanValue(l < r);
+                default: break;
+            }
+        }
+        throw new InterpreterError(exp, "'" + exp.getConcreteSyntax() + "' cannot be evaluated");
     }
 
     // Evaluate expression list

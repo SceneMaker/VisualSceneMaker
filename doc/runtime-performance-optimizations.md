@@ -1,7 +1,7 @@
 # Runtime Engine Performance Optimizations
 
 **Date**: 2026-02-12
-**Status**: Priorities 1-4 implemented
+**Status**: Priorities 1-7 implemented
 **Scope**: `core/` module — Interpreter, Evaluator, Process, Configuration, EventDispatcher
 
 ## Overview
@@ -101,7 +101,7 @@ performance after initial lookup. Standard practice in frameworks (Spring, Hiber
 map. Populate on `enterState()`, remove on `exitState()`. Replace linear scan in
 `getState(String)` and `isInState(String)` with direct lookup.
 
-### Priority 5: Read-Write Lock for Interpreter Getters
+### Priority 5: Read-Write Lock for Interpreter Getters [DONE]
 
 **Addresses**: H1, H2
 **Effort**: Low
@@ -111,31 +111,41 @@ map. Populate on `enterState()`, remove on `exitState()`. Replace linear scan in
 read lock (shared). Mutating methods acquire write lock (exclusive). Alternative: make
 frequently-read fields `volatile` and remove locking from getters where safe.
 
-### Priority 6: Visitor Pattern for Expression Evaluation
+### Priority 6: Short-Circuit Evaluation and Switch Dispatch [DONE]
 
 **Addresses**: C2 (partially)
 **Effort**: Medium
 **Expected impact**: Better branch prediction, cleaner code, enables future optimizations
 
-**Approach**: Replace 107-branch `instanceof` chain in `Evaluator.evaluate()` with
-double-dispatch visitor. Add `accept(ExpressionVisitor)` to `Expression` hierarchy.
-Implement `EvaluatingVisitor` that replaces current evaluate method.
+**Approach**: Extracted binary expression evaluation into `evaluateBinary()` with switch
+dispatch on `BinaryOp` enum (jump table instead of if/else chain). Implemented proper
+short-circuit evaluation for `&&` and `||` operators — left operand evaluated first, right
+operand skipped when result is determined. Ternary expressions also short-circuit: only the
+taken branch is evaluated. Extracted helper methods for arithmetic, comparison, add, and
+string conversion.
 
-Also implement proper short-circuit evaluation for `&&` and `||` operators (currently both
-operands are eagerly evaluated at Evaluator.java:336-347).
+Full visitor pattern was deferred (would touch ~20 model classes for limited additional
+benefit at this stage). The switch dispatch captures most of the branch-prediction benefit.
 
 **State of the art**: Standard AST evaluation pattern. Enables constant folding, partial
 evaluation, and bytecode compilation as future extensions.
 
-### Priority 7: Copy-on-Write Environments
+### Priority 7: Copy-on-Write SymbolTable [DONE]
 
-**Addresses**: C4, H5
-**Effort**: Medium
-**Expected impact**: Eliminates fork allocation spike, reduces history recording cost
+**Addresses**: H5
+**Effort**: Low
+**Expected impact**: Eliminates deep copies for read-only history snapshots
 
-**Approach**: Wrap `SymbolTable` in a COW proxy. Fork creates shallow reference to parent's
-scope chain. Deep copy deferred until first `write()` in the forked thread. Reads delegate
-to shared original.
+**Approach**: Added `mShared` flag to `SymbolTable`. `getCopy()` now returns a COW snapshot
+that shares the backing HashMap; both original and copy are marked shared. The first mutation
+(`create()`/`write()`) calls `ensureExclusive()`, which deep-copies all entries and clears
+the flag. Since history entries are read-only, the deep copy is never triggered for them.
+
+Note: `Environment.getCopy()` for fork already used shallow list copies (shared SymbolTable
+references) — this was already O(scopes), not O(variables). Fork semantics (shared memory
+between parent and child) are preserved unchanged. The COW optimization targets history
+recording (`SystemHistory.Entry.setSymbolTable()`), which calls `SymbolTable.getCopy()` on
+every node exit.
 
 **State of the art**: Functional language runtimes (Erlang, Clojure) use persistent data
 structures or COW semantics. Well-suited for fork-heavy SceneFlow models.
@@ -197,6 +207,7 @@ Integration tests are at `src/test/java/de/dfki/vsm/runtime/interpreter/Interpre
 - `guardedEdgeFiresWhenConditionIsTrue` — Variable assignment + guarded edge evaluation
 - `timeoutEdgeFiresAfterDelay` — 100ms timeout edge accuracy
 - `externalVariableChangeTriggerGuard` — External `setVariable()` triggers guard reaction
+- `shortCircuitEvaluation` — `&&` fails (short-circuits), `||` succeeds (short-circuits)
 
 **Performance benchmarks** (output via `[PERF]` log lines):
 - `benchmarkEpsilonChainThroughput` — 200-node epsilon chain, measures transitions/sec
