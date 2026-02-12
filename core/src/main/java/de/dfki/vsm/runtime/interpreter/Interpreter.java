@@ -11,6 +11,7 @@ import de.dfki.vsm.runtime.player.RunTimePlayer;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 
+import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -36,6 +37,15 @@ public class Interpreter {
     private final Condition mStateChangeCondition;
     private final RunTimePlayer mScenePlayer;
     private Process mSceneFlowThread;
+
+    // Per-variable generation counters for guard dependency tracking (Priority 8).
+    // Incremented on each write to the named variable. Used by Process to determine
+    // whether a cached guard result is still valid.
+    private final HashMap<String, Long> mVarGenerations = new HashMap<>();
+    // Global state generation counter. Incremented on every signalStateChange().
+    // Guards with opaque dependencies (function calls, InStateQuery, etc.)
+    // are invalidated whenever this counter changes.
+    private long mStateGeneration = 0;
 
     // Construct an interpreter with a project
     public Interpreter(final RunTimeProject project) {
@@ -103,7 +113,23 @@ public class Interpreter {
     // Signal all threads waiting for state changes (edge guard re-evaluation).
     // Must be called while holding the lock.
     void signalStateChange() {
+        mStateGeneration++;
         mStateChangeCondition.signalAll();
+    }
+
+    // Record that the named variable was written. Must be called while holding the lock.
+    // This increments the per-variable generation counter so that guard caches
+    // depending on this variable are invalidated.
+    void notifyVariableChanged(String varName) {
+        mVarGenerations.merge(varName, 1L, Long::sum);
+    }
+
+    long getStateGeneration() {
+        return mStateGeneration;
+    }
+
+    long getVarGeneration(String varName) {
+        return mVarGenerations.getOrDefault(varName, 0L);
     }
 
     // Mark the interruptor dirty so that next update() re-evaluates interrupt conditions.
@@ -332,6 +358,7 @@ public class Interpreter {
         try {
             lock();
             mConfiguration.getState(mSceneFlow).getThread().getEnvironment().write(varName, value);
+            notifyVariableChanged(varName);
             mEventObserver.markDirty();
             mEventObserver.update();
             signalStateChange();
@@ -348,6 +375,7 @@ public class Interpreter {
         try {
             lock();
             mConfiguration.getState(mSceneFlow).getThread().getEnvironment().write(varName, index, value);
+            notifyVariableChanged(varName);
             mEventObserver.markDirty();
             mEventObserver.update();
             signalStateChange();
@@ -363,6 +391,7 @@ public class Interpreter {
         try {
             lock();
             mConfiguration.getState(mSceneFlow).getThread().getEnvironment().write(varName, member, value);
+            notifyVariableChanged(varName);
             mEventObserver.markDirty();
             mEventObserver.update();
             signalStateChange();
