@@ -86,10 +86,9 @@ public class TimeoutManager {
                     mLogger.message("Setting true " + cond.getConcreteSyntax());
                 }
 
-                // if (mEventObserver != null) {
+                mInterpreter.markInterruptorDirty();
                 mInterpreter.getEventObserver().update();
-
-                // }
+                mInterpreter.signalStateChange();
                 cancel();
                 mInterpreter.unlock();
             }

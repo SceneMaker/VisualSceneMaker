@@ -20,14 +20,26 @@ public final class Interruptor {
             = EventDispatcher.getInstance();
     // The interpreter instance
     private final Interpreter mInterpreter;
+    // Dirty flag: when false, update() skips the full configuration scan.
+    // Volatile for visibility across threads.
+    private volatile boolean mDirty = true;
 
     // Create the interruptor
     public Interruptor(final Interpreter interpreter) {
         mInterpreter = interpreter;
     }
 
+    // Mark the interruptor dirty so next update() re-evaluates interrupt conditions.
+    public void markDirty() {
+        mDirty = true;
+    }
+
     // Update the interruptor
     public final void update() {
+        if (!mDirty) {
+            return;
+        }
+        mDirty = false;
         // Get the runtime evaluator
         final Evaluator evaluator = mInterpreter.getEvaluator();
         // Get the runtime configuration

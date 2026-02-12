@@ -23,9 +23,12 @@ import java.util.function.Function;
  */
 public class Configuration {
     private final HashMap<BasicNode, LinkedList<State>> mConfiguration = new HashMap<>();
+    // Index for O(1) lookups by node ID string (maintained alongside mConfiguration)
+    private final HashMap<String, BasicNode> mNodeIndex = new HashMap<>();
 
     public void clear() {
         mConfiguration.clear();
+        mNodeIndex.clear();
     }
 
     public void enterState(State state) {
@@ -37,6 +40,7 @@ public class Configuration {
         });
 
         mConfiguration.get(state.getNode()).addLast(state);
+        mNodeIndex.put(state.getNode().getId(), state.getNode());
     }
 
     public void exitState(BasicNode state, Process thread) throws InterpreterError {
@@ -71,6 +75,7 @@ public class Configuration {
 
         if (mConfiguration.get(state).isEmpty()) {
             mConfiguration.remove(state);
+            mNodeIndex.remove(state.getId());
         }
     }
 
@@ -91,12 +96,10 @@ public class Configuration {
     }
 
     public State getState(String id) throws InterpreterError {
-        for (BasicNode node : mConfiguration.keySet()) {
-            if (node.getId().equals(id)) {
-                return getState(node);
-            }
+        BasicNode node = mNodeIndex.get(id);
+        if (node != null) {
+            return getState(node);
         }
-
         throw new InterpreterError(this,
                                    "Configuration Error: Node " + id + " is currently not executed by any thread");
     }
@@ -122,17 +125,7 @@ public class Configuration {
     }
 
     public boolean isInState(String state) {
-        for (BasicNode node : mConfiguration.keySet()) {
-            if (node.getId().equals(state)) {
-                if (mConfiguration.get(node) != null) {
-                    if (!mConfiguration.get(node).isEmpty()) {
-                        return true;
-                    }
-                }
-            }
-        }
-
-        return false;
+        return mNodeIndex.containsKey(state);
     }
 
     public static class State implements Comparable, ModelObject {
