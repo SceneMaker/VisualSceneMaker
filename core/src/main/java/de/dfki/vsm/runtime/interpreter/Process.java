@@ -61,6 +61,7 @@ public class Process extends java.lang.Thread {
 	private TimeoutEdge mNodeTimeoutEdge = null;
 	private long mNodeTimeoutMs = Long.MIN_VALUE;
 	private final Process mParentThread;
+	private static final Random sRandom = new Random();
 	private Interpreter mInterpreter;
 
 	public Process(String name, ThreadGroup group, BasicNode currentNode, Environment environment, int level,
@@ -210,6 +211,7 @@ public class Process extends java.lang.Thread {
 		  Update the configuration by adding the new current node to it
 		 */
 		mConfiguration.enterState(new Configuration.State(mCurrentNode, this));
+		mEventObserver.markDirty();
 
 		/*
 		 * Create a new temporary history entry for the new current node
@@ -274,6 +276,7 @@ public class Process extends java.lang.Thread {
 		 * Update the configuration by removing the current node from it
 		 */
 		mConfiguration.exitState(mCurrentNode, this);
+		mEventObserver.markDirty();
 
 		/*
 		 * Reset the thread data
@@ -317,6 +320,7 @@ public class Process extends java.lang.Thread {
 		 * Update the configuration by removing the current node from it
 		 */
 		mConfiguration.exitState(mCurrentNode, this);
+		mEventObserver.markDirty();
 
 		/*
 		 * Reset the thread data
@@ -356,6 +360,7 @@ public class Process extends java.lang.Thread {
 		 * Update the configuration by removing the current node from it
 		 */
 		mConfiguration.exitState(mCurrentNode, this);
+		mEventObserver.markDirty();
 
 		/*
 		 * Set the new current node to the target node of the incoming edge
@@ -376,6 +381,7 @@ public class Process extends java.lang.Thread {
 		 * Update the configuration by adding the new current node to it
 		 */
 		mConfiguration.enterState(new Configuration.State(mCurrentNode, this));
+		mEventObserver.markDirty();
 
 		/*
 		 * Create a new temporary history entry for the new current node
@@ -438,6 +444,7 @@ public class Process extends java.lang.Thread {
 		 * Update the configuration by removing the current node from it
 		 */
 		mConfiguration.exitState(mCurrentNode, this);
+		mEventObserver.markDirty();
 
 		/*
 		 * Multicast the events for visualization
@@ -463,6 +470,7 @@ public class Process extends java.lang.Thread {
 		 * Update the configuration by adding the new current node to it
 		 */
 		mConfiguration.enterState(new Configuration.State(mCurrentNode, this));
+		mEventObserver.markDirty();
 
 		/*
 		 * Create a new temporary history entry for the new current node
@@ -579,6 +587,7 @@ public class Process extends java.lang.Thread {
 					 */
 					mEventObserver.update();
 					checkStatus();
+					mInterpreter.signalStateChange();
 					mInterpreter.unlock();
 				}
 
@@ -602,11 +611,6 @@ public class Process extends java.lang.Thread {
 					AbstractEdge nextEdge = null;
 
 					while (nextEdge == null) {
-						try {
-							Process.sleep(10);
-						} catch (InterruptedException e) {
-						}
-
 						mInterpreter.lock();
 						checkStatus();
 
@@ -638,45 +642,28 @@ public class Process extends java.lang.Thread {
 								mNodeTimeoutMs = timeoutMs;
 							}
 
-							if ((java.lang.System.currentTimeMillis() - mNodeTime) >= timeoutMs) {
+							long elapsed = java.lang.System.currentTimeMillis() - mNodeTime;
+							if (elapsed >= timeoutMs) {
 								nextEdge = tedge;
-
 								break;
-							} else {
-								nextEdge = null;
-								mInterpreter.unlock();
+							}
 
-                            }
+							// Wait for state change or remaining timeout
+							long remaining = timeoutMs - elapsed;
+							mInterpreter.awaitStateChange(remaining);
+							mInterpreter.unlock();
 						} else if (dedge instanceof EpsilonEdge) {
-							EpsilonEdge eedge = (EpsilonEdge) dedge;
-
-							nextEdge = eedge;
-
+							nextEdge = (EpsilonEdge) dedge;
+							break;
+						} else if (mCurrentNode.getCEdgeList().isEmpty()
+								&& mCurrentNode.getPEdgeList().isEmpty()) {
+							// No edges at all - end node
 							break;
 						} else {
-
-							/*
-							 * There can neither be found a conditional edge nor
-							 * a default edge that can be taken. Therefore the
-							 * current node is a possible end node and this
-							 * method returns with a null pointer. But there is
-							 * still the possibility, that this thread has
-							 * received a request for termination or
-							 * interruption since the last check of it's status
-							 * or that it will receive such a request until this
-							 * thread is allowed to savely change the
-							 * configuration. If it has received such a request
-							 * then this request will be detected in the run
-							 * method after it has acquired the configuration
-							 * lock and it's own lock. If such a request will
-							 * then be detected at tis point, then it does not
-							 * matter if this method returned with a valid edge
-							 * or a null pointer, because then this request will
-							 * be handled with higher priority and
-							 * TODO???????????????
-							 *
-							 */
-							break;
+							// No default edge but has conditional/probabilistic edges -
+							// wait for state change that might satisfy a guard condition
+							mInterpreter.awaitStateChange(0);
+							mInterpreter.unlock();
 						}
 					}
 
@@ -721,6 +708,7 @@ public class Process extends java.lang.Thread {
 					mParentThread.interrupt();
 
 					mEventObserver.update();
+					mInterpreter.signalStateChange();
 					mInterpreter.unlock();
 
 					return;
@@ -1078,7 +1066,7 @@ public class Process extends java.lang.Thread {
 	}
 
 	private RandomEdge checkPEdgeList() {
-		int random = new Random().nextInt(100);
+		int random = sRandom.nextInt(100);
 		int low = 0,
 		  high = 0;
 

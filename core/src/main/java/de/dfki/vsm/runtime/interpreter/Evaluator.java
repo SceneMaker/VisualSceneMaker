@@ -32,6 +32,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -44,6 +45,21 @@ public final class Evaluator {
     private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
     // The parent interpreter object
     private final Interpreter mInterpreter;
+
+    // Cache for resolved reflection methods to avoid Class.forName()+getMethod() per call
+    private static final ConcurrentHashMap<String, ResolvedMethod> sMethodCache = new ConcurrentHashMap<>();
+
+    private static final class ResolvedMethod {
+        final Method method;
+        final Object target; // null for static methods
+        final Class<?>[] paramTypes;
+
+        ResolvedMethod(Method method, Object target, Class<?>[] paramTypes) {
+            this.method = method;
+            this.target = target;
+            this.paramTypes = paramTypes;
+        }
+    }
 
     // Construct evaluator with interpreter
     public Evaluator(final Interpreter interpreter) {
@@ -106,6 +122,8 @@ public final class Evaluator {
             } else {
                 throw new InterpreterError(cmd, "'" + cmd.getConcreteSyntax() + "' cannot be executed");
             }
+            // Variable was modified — mark interruptor dirty for re-evaluation
+            mInterpreter.markInterruptorDirty();
         } else if (cmd instanceof HistoryClearDeep) {
             mInterpreter.getSystemHistory().eraseDeep(
                     ((HistoryClearDeep) cmd).getState());
@@ -555,6 +573,66 @@ public final class Evaluator {
         return values;
     }
 
+    // Resolve parameter types for a function definition (used for reflection)
+    private static Class<?>[] resolveParamTypes(FunctionDefinition definition) throws ClassNotFoundException {
+        final Class<?>[] paramClassList = new Class<?>[definition.getParamList().size()];
+        for (int i = 0; i < definition.getParamList().size(); i++) {
+            final ArgumentDefinition argument = definition.getParamList().get(i);
+            final String paramType = argument.getType();
+            switch (paramType) {
+                case "boolean": paramClassList[i] = boolean.class; break;
+                case "char":    paramClassList[i] = char.class; break;
+                case "short":   paramClassList[i] = short.class; break;
+                case "int":     paramClassList[i] = int.class; break;
+                case "long":    paramClassList[i] = long.class; break;
+                case "float":   paramClassList[i] = float.class; break;
+                case "double":  paramClassList[i] = double.class; break;
+                case "byte":    paramClassList[i] = byte.class; break;
+                default:        paramClassList[i] = Class.forName(paramType); break;
+            }
+        }
+        return paramClassList;
+    }
+
+    // Build a cache key from class name, method name, and parameter types
+    private static String buildMethodCacheKey(FunctionDefinition def) {
+        StringBuilder sb = new StringBuilder(def.getClassName());
+        sb.append('#').append(def.getMethod()).append('(');
+        for (int i = 0; i < def.getParamList().size(); i++) {
+            if (i > 0) sb.append(',');
+            sb.append(def.getParamList().get(i).getType());
+        }
+        sb.append(')');
+        return sb.toString();
+    }
+
+    // Resolve a method for a function definition (try static class method, then member field method)
+    private static ResolvedMethod resolveMethod(FunctionDefinition definition) throws Exception {
+        final String cmdClassName = definition.getClassName();
+        final String cmdMethodName = definition.getMethod();
+        final Class<?>[] paramTypes = resolveParamTypes(definition);
+
+        // Path 1: Static class method
+        try {
+            final Class<?> clazz = Class.forName(cmdClassName);
+            final Method method = clazz.getMethod(cmdMethodName, paramTypes);
+            return new ResolvedMethod(method, null, paramTypes);
+        } catch (final ClassNotFoundException | NoSuchMethodException ignored) {
+            // Fall through to Path 2
+        }
+
+        // Path 2: Instance method on a static field (e.g., "pkg.Class.field" -> field.method())
+        int dotIndex = cmdClassName.lastIndexOf('.');
+        final String parentClassName = cmdClassName.substring(0, dotIndex);
+        final String memberFieldName = cmdClassName.substring(dotIndex + 1);
+        final Class<?> parentClass = Class.forName(parentClassName);
+        final Field memberField = parentClass.getField(memberFieldName);
+        final Class<?> memberFieldClass = memberField.getType();
+        final Object memberFieldObject = memberField.get(null);
+        final Method method = memberFieldClass.getMethod(cmdMethodName, paramTypes);
+        return new ResolvedMethod(method, memberFieldObject, paramTypes);
+    }
+
     // Execute a Java command
     private Object executeUsrCmd(
             final CallingExpression cmd,
@@ -570,155 +648,43 @@ public final class Evaluator {
         if (definition == null) {
             throw new InterpreterError(cmd, "'" + cmd.getConcreteSyntax() + "' is not defined");
         }
-        // Get class and method name
-        final String cmdClassName = definition.getClassName();
-        final String cmdMethodName = definition.getMethod();
-        // Get parameter class list
-        final Class[] paramClassList = new Class[definition.getParamList().size()];
-        for (int i = 0; i < definition.getParamList().size(); i++) {
-            final ArgumentDefinition argument = definition.getParamList().get(i);
-            final String paramType = argument.getType();
-            Class paramClass = null;
-            switch (paramType) {
-                case "boolean":
-                    paramClass = boolean.class;
-                    break;
-                case "char":
-                    paramClass = char.class;
-                    break;
-                case "short":
-                    paramClass = short.class;
-                    break;
-                case "int":
-                    paramClass = int.class;
-                    break;
-                case "long":
-                    paramClass = long.class;
-                    break;
-                case "float":
-                    paramClass = float.class;
-                    break;
-                case "double":
-                    paramClass = double.class;
-                    break;
-                case "byte":
-                    paramClass = byte.class;
-                    break;
-                default:
-                    try {
-                        paramClass = Class.forName(paramType);
-                    } catch (final ClassNotFoundException exc) {
-                        exc.printStackTrace();
-                    }
-                    break;
-            }
-            paramClassList[i] = paramClass;
+
+        // Resolve method from cache or via reflection
+        final String cacheKey = buildMethodCacheKey(definition);
+        ResolvedMethod resolved = sMethodCache.get(cacheKey);
+        if (resolved == null) {
+            resolved = resolveMethod(definition);
+            sMethodCache.put(cacheKey, resolved);
         }
 
         // Get argument list
-        final String[] argDscrList = new String[list.size()];
         final Object[] argInstList = new Object[list.size()];
         for (int i = 0; i < list.size(); i++) {
-            // Get the java object value
             argInstList[i] = list.get(i).getValue();
-            if (argInstList[i] != null) {
-                argDscrList[i] = argInstList[i].toString();
-            } else {
-                argDscrList[i] = "NULL";
-            }
         }
         // Do the right array conversion
-        for (int i = 0; i < paramClassList.length; i++) {
-            if (paramClassList[i].isArray()) {
-
-                // This parameter is an array class
-                // Get the component type of the array class
-                Class compType = paramClassList[i].getComponentType();
-
-                // System.err.println("Component type is  " + compType.toString());
-                // Cast the argument to an object[]
+        final Class<?>[] paramTypes = resolved.paramTypes;
+        for (int i = 0; i < paramTypes.length; i++) {
+            if (paramTypes[i].isArray()) {
+                Class<?> compType = paramTypes[i].getComponentType();
                 java.lang.Object[] objArr = ((java.lang.Object[]) argInstList[i]);
                 java.lang.Object myNewArray = Array.newInstance(compType, objArr.length);
-
-                // System.err.println("New array is " + myNewArray.getClass().toString());
                 for (int j = 0; j < objArr.length; j++) {
                     Array.set(myNewArray, j, compType.cast(objArr[j]));
                 }
-
                 argInstList[i] = myNewArray;
-                argDscrList[i] = myNewArray.toString();
-
-                // System.err.println("Arglist [" + i + "] is now " + myNewArray.getClass().toString());
             }
         }
 
         try {
-            final Class clazz = Class.forName(cmdClassName);
-            final Method method = clazz.getMethod(cmdMethodName, paramClassList);
-            try {
-                // Release The Lock
-                mInterpreter.unlock();
-                // Invoke The Method
-                final Object result = method.invoke(null, argInstList);
-                //
-                mLogger.warning("Class Method Result = " + result);
-                //
-                return result;
-            } finally {
-                // Aquire The Lock
-                mInterpreter.lock();
-            }
-        } catch (final SecurityException
-                | ClassNotFoundException
-                | NoSuchMethodException
-                | IllegalAccessException
-                | InvocationTargetException exc) {
-            // Print stack trace
-            mLogger.warning(exc.toString());
-            exc.printStackTrace();
-        }
-
-        // We have an object
-        try {
-            int dotIndex = cmdClassName.lastIndexOf('.');
-            final String parentClassName = cmdClassName.substring(0, dotIndex);
-            final String memberFieldName = cmdClassName.substring(dotIndex + 1);
-
-            final Class parentClass = Class.forName(parentClassName);
-
-            final Field memberField = parentClass.getField(memberFieldName);
-            final Class memberFieldClass = memberField.getType();
-            final Object memberFieldObject = memberField.get(null);
-            // Invoke the method
-            final Method method = memberFieldClass.getMethod(cmdMethodName, paramClassList);
-
-            try {
-                // Release The Lock
-                mInterpreter.unlock();
-                mLogger.warning("Calling Member Method = " + method);
-                // Invoke The Method
-                final Object result = method.invoke(memberFieldObject, argInstList);
-                //
-                mLogger.warning("Member Method Result = " + result);
-                //
-                return result;
-            } finally {
-                // Aquire The Lock
-                mInterpreter.lock();
-            }
-        } catch (final ClassNotFoundException
-                | IllegalAccessException
-                | IllegalArgumentException
-                | NoSuchFieldException
-                | NoSuchMethodException
-                | SecurityException
-                | InvocationTargetException exc) {
-            // Print stack trace
-            //exc.printStackTrace();
-            mLogger.failure(exc.toString());
-            // Propagate exception
-            throw exc;
-            //return null;
+            // Release The Lock
+            mInterpreter.unlock();
+            // Invoke The Method
+            final Object result = resolved.method.invoke(resolved.target, argInstList);
+            return result;
+        } finally {
+            // Acquire The Lock
+            mInterpreter.lock();
         }
     }
 

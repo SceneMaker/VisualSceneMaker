@@ -11,6 +11,7 @@ import de.dfki.vsm.runtime.player.RunTimePlayer;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -29,6 +30,7 @@ public class Interpreter {
     private final TimeoutManager mTimeoutManager;
     private final ReentrantLock mLock;
     private final Condition mPauseCondition;
+    private final Condition mStateChangeCondition;
     private final RunTimePlayer mScenePlayer;
     private Process mSceneFlowThread;
 
@@ -42,6 +44,7 @@ public class Interpreter {
         //mDialogPlayer = new DefaultPlayer(project);
         mLock = new ReentrantLock(true);
         mPauseCondition = mLock.newCondition();
+        mStateChangeCondition = mLock.newCondition();
         mConfiguration = new Configuration();
         mSystemHistory = new SystemHistory();
         mTimeoutManager = new TimeoutManager(this);
@@ -67,6 +70,32 @@ public class Interpreter {
 
     void signalAll() {
         mPauseCondition.signalAll();
+    }
+
+    // Wait for a state change (variable write, timeout, etc.) or until timeoutMs elapses.
+    // Must be called while holding the lock. Atomically releases lock, waits, re-acquires.
+    void awaitStateChange(long timeoutMs) {
+        try {
+            if (timeoutMs > 0) {
+                mStateChangeCondition.await(timeoutMs, TimeUnit.MILLISECONDS);
+            } else {
+                mStateChangeCondition.await(200, TimeUnit.MILLISECONDS);
+            }
+        } catch (InterruptedException e) {
+            // Interrupted — checkStatus() will detect termination/interruption requests
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    // Signal all threads waiting for state changes (edge guard re-evaluation).
+    // Must be called while holding the lock.
+    void signalStateChange() {
+        mStateChangeCondition.signalAll();
+    }
+
+    // Mark the interruptor dirty so that next update() re-evaluates interrupt conditions.
+    void markInterruptorDirty() {
+        mEventObserver.markDirty();
     }
 
     public SceneFlow getSceneFlow() {
@@ -295,18 +324,14 @@ public class Interpreter {
 
     public boolean setVariable(String varName, AbstractValue value) {
         try {
-
             lock();
-            
             mConfiguration.getState(mSceneFlow).getThread().getEnvironment().write(varName, value);
-
-
+            mEventObserver.markDirty();
             mEventObserver.update();
-
+            signalStateChange();
             return true;
         } catch (InterpreterError e) {
             e.printStackTrace();
-
             return false;
         } finally {
             unlock();
@@ -317,8 +342,9 @@ public class Interpreter {
         try {
             lock();
             mConfiguration.getState(mSceneFlow).getThread().getEnvironment().write(varName, index, value);
+            mEventObserver.markDirty();
             mEventObserver.update();
-
+            signalStateChange();
             return true;
         } catch (InterpreterError e) {
             return false;
@@ -331,8 +357,9 @@ public class Interpreter {
         try {
             lock();
             mConfiguration.getState(mSceneFlow).getThread().getEnvironment().write(varName, member, value);
+            mEventObserver.markDirty();
             mEventObserver.update();
-
+            signalStateChange();
             return true;
         } catch (InterpreterError e) {
             return false;
