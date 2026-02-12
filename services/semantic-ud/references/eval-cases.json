@@ -1,0 +1,62 @@
+[
+  {
+    "id": "de-01",
+    "language": "de",
+    "text": "Ich sehe dich.",
+    "expected": {
+      "subject": "Ich",
+      "verb": "sehe",
+      "object": "dich"
+    }
+  },
+  {
+    "id": "de-02",
+    "language": "de",
+    "text": "Willkommen!",
+    "expected": {
+      "subject": "",
+      "verb": "Willkommen",
+      "object": ""
+    }
+  },
+  {
+    "id": "de-03",
+    "language": "de",
+    "text": "Hallo $user, wie geht's Dir heute?",
+    "expected": {
+      "subject": "",
+      "verb": "geht's",
+      "object": "Dir"
+    }
+  },
+  {
+    "id": "de-04",
+    "language": "de",
+    "text": "Freut mich, dich zu sehen.",
+    "expected": {
+      "subject": "",
+      "verb": "Freut",
+      "object": "dich"
+    }
+  },
+  {
+    "id": "en-01",
+    "language": "en",
+    "text": "I can see you.",
+    "expected": {
+      "subject": "I",
+      "verb": "see",
+      "object": "you"
+    }
+  },
+  {
+    "id": "en-02",
+    "language": "en",
+    "text": "Welcome!",
+    "expected": {
+      "subject": "",
+      "verb": "Welcome",
+      "object": ""
+    }
+  }
+]

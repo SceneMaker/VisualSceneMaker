@@ -1137,14 +1137,32 @@ summary {
 }
 
 .script-toolbar .script-generate,
-.script-toolbar .script-search {
+.script-toolbar .script-search,
+.script-toolbar .script-semantic {
   gap: 0.4rem;
 }
 
 .script-toolbar .script-generate .icon,
-.script-toolbar .script-search .icon {
+.script-toolbar .script-search .icon,
+.script-toolbar .script-semantic .icon {
   width: 16px;
   height: 16px;
+}
+
+.script-semantic-mode {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.1rem 0.25rem;
+}
+
+.script-semantic-mode select {
+  border-radius: 8px;
+  border: 1px solid var(--stroke);
+  background: #ffffff;
+  color: var(--ink);
+  padding: 0.2rem 0.45rem;
+  font-size: 0.82rem;
 }
 
 /* Generate panel */
@@ -1154,6 +1172,122 @@ summary {
   border-radius: var(--radius-md);
   padding: 0.75rem 1rem;
   margin: 0.5rem 0;
+}
+
+.semantic-panel {
+  background: var(--panel);
+  border: 1px solid var(--stroke);
+  border-radius: var(--radius-md);
+  padding: 0.75rem 1rem;
+  margin: 0.5rem 0;
+}
+
+.semantic-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.6rem;
+}
+
+.semantic-panel-body {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.semantic-legend {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-left: auto;
+}
+
+.semantic-legend-title {
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.semantic-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.75rem;
+  color: var(--ink);
+}
+
+.semantic-legend-note {
+  font-size: 0.71rem;
+  color: var(--muted);
+}
+
+.semantic-legend-swatch {
+  width: 14px;
+  height: 8px;
+  border-radius: 3px;
+  display: inline-block;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+}
+
+.semantic-legend-swatch.subject {
+  background: rgba(28, 110, 164, 0.35);
+}
+
+.semantic-legend-swatch.verb {
+  background: rgba(183, 86, 28, 0.35);
+}
+
+.semantic-legend-swatch.object {
+  background: rgba(70, 132, 54, 0.35);
+}
+
+.semantic-legend-swatch.predicate {
+  background: rgba(88, 96, 120, 0.35);
+}
+
+.semantic-legend-swatch.address {
+  background: rgba(132, 98, 42, 0.35);
+}
+
+.semantic-debug-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.semantic-unsaved-note {
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+.semantic-selections-preview {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+  font-size: 0.72rem;
+}
+
+.semantic-selections-preview code {
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid var(--stroke);
+  border-radius: 6px;
+  padding: 0.08rem 0.35rem;
+  color: #374151;
+}
+
+.semantic-variable-hint {
+  margin: 0.1rem 0 0.25rem;
+  font-size: 0.74rem;
+  line-height: 1.3;
+}
+
+.semantic-variable-hint code {
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid var(--stroke);
+  border-radius: 5px;
+  padding: 0.02rem 0.25rem;
 }
 
 .script-search-panel {
@@ -1183,6 +1317,32 @@ summary {
 .script-search-actions {
   display: inline-flex;
   gap: 0.4rem;
+}
+
+.semantic-debug {
+  margin-top: 0.35rem;
+  border: 1px solid var(--stroke);
+  border-radius: 8px;
+  background: rgba(245, 244, 240, 0.9);
+}
+
+.semantic-debug summary {
+  cursor: pointer;
+  padding: 0.3rem 0.55rem;
+  font-size: 0.75rem;
+  color: var(--muted);
+  user-select: none;
+}
+
+.semantic-debug pre {
+  margin: 0;
+  padding: 0.45rem 0.55rem 0.6rem;
+  max-height: 180px;
+  overflow: auto;
+  border-top: 1px solid var(--stroke);
+  background: rgba(255, 255, 255, 0.85);
+  color: #374151;
+  font-size: 0.7rem;
 }
 
 .generate-panel-header {
@@ -1383,6 +1543,10 @@ summary {
   padding: 0.75rem;
 }
 
+.script-editor .cm-line:nth-of-type(even) {
+  background: rgba(0, 0, 0, 0.035);
+}
+
 .script-editor .cm-gutters {
   background: #f0ede5;
   border-right: 1px solid var(--stroke);
@@ -1455,6 +1619,79 @@ summary {
   padding: 0.4rem 0.6rem;
   border-radius: 8px;
   box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+}
+
+.script-editor .cm-semantic-subject {
+  text-decoration: underline 2px rgba(28, 110, 164, 0.9);
+  text-underline-offset: 3px;
+}
+
+.script-editor .cm-semantic-verb {
+  text-decoration: underline 2px rgba(183, 86, 28, 0.9);
+  text-underline-offset: 3px;
+}
+
+.script-editor .cm-semantic-object {
+  text-decoration: underline 2px rgba(70, 132, 54, 0.9);
+  text-underline-offset: 3px;
+}
+
+.script-editor .cm-semantic-predicate {
+  text-decoration: underline 2px rgba(88, 96, 120, 0.9);
+  text-underline-offset: 3px;
+}
+
+.script-editor .cm-semantic-address {
+  text-decoration: underline 2px rgba(132, 98, 42, 0.9);
+  text-underline-offset: 3px;
+}
+
+.script-editor .cm-semantic-address-head {
+  text-decoration: underline 2px rgba(132, 98, 42, 0.9);
+  text-underline-offset: 3px;
+}
+
+.script-editor .cm-semantic-subject-adjective,
+.script-editor .cm-semantic-subject-adverb,
+.script-editor .cm-semantic-subject-comparison,
+.script-editor .cm-semantic-object-adjective,
+.script-editor .cm-semantic-object-adverb,
+.script-editor .cm-semantic-object-comparison,
+.script-editor .cm-semantic-predicate-adjective,
+.script-editor .cm-semantic-predicate-adverb,
+.script-editor .cm-semantic-predicate-comparison,
+.script-editor .cm-semantic-address-head,
+.script-editor .cm-semantic-address-adjective,
+.script-editor .cm-semantic-address-adverb,
+.script-editor .cm-semantic-address-comparison {
+  text-underline-offset: 3px;
+}
+
+.script-editor .cm-semantic-line {
+  position: relative;
+  padding-right: min(44%, 360px);
+}
+
+.script-editor .cm-semantic-line::before {
+  content: attr(data-semantic-badge);
+  position: absolute;
+  right: 0.45rem;
+  top: 50%;
+  transform: translateY(-50%);
+  max-width: min(42%, 340px);
+  padding: 0.08rem 0.45rem;
+  border-radius: 6px;
+  border: 1px solid rgba(48, 63, 71, 0.18);
+  background: rgba(242, 241, 236, 0.72);
+  color: rgba(64, 80, 87, 0.7);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  pointer-events: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  z-index: 0;
 }
 
 .sceneflow-panel {
