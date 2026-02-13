@@ -840,7 +840,7 @@ Path: `plugins/*/`
 
 **Specialized Plugins:**
 - `alma` - ALMA emotion model
-- `emma-user-model` - User modeling
+- `user-cue-service` - User modeling
 - `decad` - Decision-making
 - `odp` - ODP protocol
 - `qrwebcam` - QR code webcam scanning

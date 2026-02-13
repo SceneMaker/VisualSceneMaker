@@ -131,7 +131,7 @@ dependencies {
     runtimeOnly project(':plugins:decad')
     runtimeOnly project(':plugins:sockets')
     runtimeOnly project(':plugins:DriveSimulator')
-    runtimeOnly project(':plugins:emma-user-model')
+    runtimeOnly project(':plugins:user-cue-service')
     runtimeOnly project(':plugins:fortunecookie')
     runtimeOnly project(':plugins:htmlgui-ws')
     runtimeOnly project(':plugins:odp')

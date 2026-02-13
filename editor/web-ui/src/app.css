@@ -1194,6 +1194,18 @@ summary {
   gap: 0.5rem;
 }
 
+.semantic-config-group {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.semantic-config-heading {
+  font-size: 0.76rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
 .semantic-legend {
   display: inline-flex;
   align-items: center;
@@ -1256,8 +1268,33 @@ summary {
   color: var(--muted);
 }
 
+.semantic-toggle-btn {
+  border: 1px solid var(--stroke);
+  background: #ffffff;
+  color: var(--ink);
+  border-radius: 8px;
+  padding: 0.32rem 0.58rem;
+  font-size: 0.8rem;
+  line-height: 1.1;
+}
+
+.semantic-toggle-btn.active {
+  background: #2f6db3;
+  border-color: #2f6db3;
+  color: #ffffff;
+}
+
+.semantic-toggle-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.semantic-llm-inline {
+  min-width: 220px;
+}
+
 .semantic-unsaved-note {
-  margin-left: auto;
+  margin-left: 0;
   white-space: nowrap;
 }
 
@@ -1424,6 +1461,11 @@ summary {
   display: flex;
   gap: 0.5rem;
   align-items: center;
+  flex-wrap: wrap;
+}
+
+.generate-actions .semantic-legend {
+  margin-left: auto;
 }
 
 .generate-result {

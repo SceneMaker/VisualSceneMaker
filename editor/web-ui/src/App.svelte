@@ -4690,30 +4690,33 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
     semanticPanelOpen = !semanticPanelOpen;
   }
 
-  function llmNameByIndex(index) {
-    if (!Array.isArray(projectConfigLLMs) || projectConfigLLMs.length === 0) {
+  function llmNameByIndex(index, llmList = projectConfigLLMs) {
+    const list = Array.isArray(llmList) ? llmList : [];
+    if (list.length === 0) {
       return "";
     }
     const idx = Number.isFinite(Number(index)) ? Number(index) : 0;
-    if (idx < 0 || idx >= projectConfigLLMs.length) return "";
-    return String(projectConfigLLMs[idx]?.name || "").trim();
+    if (idx < 0 || idx >= list.length) return "";
+    return String(list[idx]?.name || "").trim();
   }
 
-  function llmIndexByName(name) {
-    if (!Array.isArray(projectConfigLLMs) || projectConfigLLMs.length === 0) {
+  function llmIndexByName(name, llmList = projectConfigLLMs) {
+    const list = Array.isArray(llmList) ? llmList : [];
+    if (list.length === 0) {
       return 0;
     }
     const needle = String(name || "").trim().toLowerCase();
     if (!needle) return 0;
-    const idx = projectConfigLLMs.findIndex((llm) => String(llm?.name || "").trim().toLowerCase() === needle);
+    const idx = list.findIndex((llm) => String(llm?.name || "").trim().toLowerCase() === needle);
     return idx >= 0 ? idx : 0;
   }
 
   function syncLLMSelectionsFromConfig(configLike) {
     const cfg = configLike || projectConfigView || {};
+    const llms = Array.isArray(cfg?.llms) ? cfg.llms : projectConfigLLMs;
     const selections = cfg?.llmSelections || {};
-    generateLLMIndex = llmIndexByName(selections.generate);
-    semanticLLMIndex = llmIndexByName(selections.semantic);
+    generateLLMIndex = llmIndexByName(selections.generate, llms);
+    semanticLLMIndex = llmIndexByName(selections.semantic, llms);
   }
 
   function boolFromSemanticService(value, fallback = true) {
@@ -4728,28 +4731,44 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
   function syncSemanticAnalysisSettingsFromConfig(configLike) {
     const cfg = configLike || projectConfigView || {};
     const services = cfg?.semanticServices || {};
-    semanticAnalyzeSvo = boolFromSemanticService(services.analyzeSvo, true);
+    const analyzeSyntaxRaw = services.analyzeSyntax ?? services.analyzeSvo;
+    semanticAnalyzeSvo = boolFromSemanticService(analyzeSyntaxRaw, true);
     semanticAnalyzeDaTr = boolFromSemanticService(services.analyzeDaTr, true);
+    const llms = Array.isArray(cfg?.llms) ? cfg.llms : projectConfigLLMs;
     const daTrLlm = String(services.daTrLlm || "").trim();
     if (daTrLlm) {
-      semanticLLMIndex = llmIndexByName(daTrLlm);
+      semanticLLMIndex = llmIndexByName(daTrLlm, llms);
+    }
+    const systemPrompt = String(services.systemPrompt || "").trim();
+    const promptTemplate = String(services.promptTemplate || "").trim();
+    if (systemPrompt) {
+      semanticSystemPrompt = systemPrompt;
+    }
+    if (promptTemplate) {
+      semanticPromptTemplate = promptTemplate;
     }
   }
 
   function writeSemanticAnalysisSettingsToDraft() {
-    if (!projectConfigDraft) {
-      projectConfigDraft = cloneProjectConfig(projectConfigView);
-    }
+    const baseDraft = projectConfigDraft ? cloneProjectConfig(projectConfigDraft) : cloneProjectConfig(projectConfigView);
     const semanticLlm = llmNameByIndex(semanticLLMIndex);
-    projectConfigDraft.semanticServices = {
-      ...(projectConfigDraft.semanticServices || projectConfigView?.semanticServices || {}),
+    const nextSemanticServices = {
+      ...(baseDraft.semanticServices || projectConfigView?.semanticServices || {}),
+      analyzeSyntax: String(!!semanticAnalyzeSvo),
       analyzeSvo: String(!!semanticAnalyzeSvo),
       analyzeDaTr: String(!!semanticAnalyzeDaTr),
-      daTrLlm: semanticLlm
+      daTrLlm: semanticLlm,
+      systemPrompt: semanticSystemPrompt || "",
+      promptTemplate: semanticPromptTemplate || ""
     };
-    projectConfigDraft.llmSelections = {
-      ...(projectConfigDraft.llmSelections || projectConfigView?.llmSelections || {}),
+    const nextLlmSelections = {
+      ...(baseDraft.llmSelections || projectConfigView?.llmSelections || {}),
       semantic: semanticLlm
+    };
+    projectConfigDraft = {
+      ...baseDraft,
+      semanticServices: nextSemanticServices,
+      llmSelections: nextLlmSelections
     };
   }
 
@@ -4759,30 +4778,59 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
     await applyProjectConfig();
   }
 
+  function stageSemanticAnalysisSettings() {
+    writeSemanticAnalysisSettingsToDraft();
+  }
+
   async function persistLLMSelections() {
     if (!selectedProjectId || !wsConnected) return;
-    if (!projectConfigDraft) {
-      projectConfigDraft = cloneProjectConfig(projectConfigView);
-    }
+    const baseDraft = projectConfigDraft ? cloneProjectConfig(projectConfigDraft) : cloneProjectConfig(projectConfigView);
     const semanticLlm = llmNameByIndex(semanticLLMIndex);
-    projectConfigDraft.llmSelections = {
-      ...(projectConfigDraft.llmSelections || {}),
+    const nextLlmSelections = {
+      ...(baseDraft.llmSelections || {}),
       generate: llmNameByIndex(generateLLMIndex),
       semantic: semanticLlm
     };
-    projectConfigDraft.semanticServices = {
-      ...(projectConfigDraft.semanticServices || projectConfigView?.semanticServices || {}),
+    const nextSemanticServices = {
+      ...(baseDraft.semanticServices || projectConfigView?.semanticServices || {}),
       daTrLlm: semanticLlm
+    };
+    projectConfigDraft = {
+      ...baseDraft,
+      llmSelections: nextLlmSelections,
+      semanticServices: nextSemanticServices
     };
     await applyLLMPromptsConfig();
   }
 
-  function handleGenerateLLMSelectionChange() {
+  function handleGenerateLLMSelectionChange(event) {
+    if (event?.target && event.target.value !== undefined) {
+      generateLLMIndex = Number(event.target.value);
+    }
     void persistLLMSelections();
   }
 
-  function handleSemanticLLMSelectionChange() {
-    void persistLLMSelections();
+  function handleSemanticLLMSelectionChange(event) {
+    if (event?.target && event.target.value !== undefined) {
+      semanticLLMIndex = Number(event.target.value);
+    }
+    stageSemanticAnalysisSettings();
+  }
+
+  function toggleSemanticAnalyzeSyntax() {
+    if (semanticAnalyzeBusy) return;
+    semanticAnalyzeSvo = !semanticAnalyzeSvo;
+    stageSemanticAnalysisSettings();
+  }
+
+  function toggleSemanticAnalyzeDaTr() {
+    if (semanticAnalyzeBusy) return;
+    semanticAnalyzeDaTr = !semanticAnalyzeDaTr;
+    stageSemanticAnalysisSettings();
+  }
+
+  function toggleSemanticDebug() {
+    semanticDebugEnabled = !semanticDebugEnabled;
   }
 
   function resetSemanticPrompts() {
@@ -4816,6 +4864,7 @@ Speaker: {{speaker}}
 Line: {{line}}
 Sentence:
 {{script}}`;
+    stageSemanticAnalysisSettings();
   }
 
   function semanticPreferredLanguage() {
@@ -4969,7 +5018,7 @@ Sentence:
       semanticDirty = true;
       semanticUdDebug = [];
       if (!includeSvo && !includeDaTr) {
-        semanticStatus = "Enable at least one analysis layer (S/V/O or DA/TR).";
+        semanticStatus = "Enable at least one analysis layer (Syntax or DA/TR).";
         return;
       }
       if (!units.length) {
@@ -6511,9 +6560,12 @@ Sentence:
         basicProvider: safe.semanticServices?.basicProvider ?? "ud",
         udUrl: safe.semanticServices?.udUrl ?? "",
         udTimeoutMs: safe.semanticServices?.udTimeoutMs ?? "",
-        analyzeSvo: safe.semanticServices?.analyzeSvo ?? "true",
+        analyzeSyntax: safe.semanticServices?.analyzeSyntax ?? safe.semanticServices?.analyzeSvo ?? "true",
+        analyzeSvo: safe.semanticServices?.analyzeSvo ?? safe.semanticServices?.analyzeSyntax ?? "true",
         analyzeDaTr: safe.semanticServices?.analyzeDaTr ?? "true",
-        daTrLlm: safe.semanticServices?.daTrLlm ?? ""
+        daTrLlm: safe.semanticServices?.daTrLlm ?? "",
+        systemPrompt: safe.semanticServices?.systemPrompt ?? "",
+        promptTemplate: safe.semanticServices?.promptTemplate ?? ""
       },
       sceneTitleConcepts: Array.isArray(safe.sceneTitleConcepts) ? [...safe.sceneTitleConcepts] : []
     };
@@ -13557,10 +13609,47 @@ Sentence:
               <strong>Semantic Analysis</strong>
             </div>
             <div class="semantic-panel-body">
-              <div class="generate-row">
-                <label>
-                  LLM Service
-                  <select bind:value={semanticLLMIndex} on:change={handleSemanticLLMSelectionChange} disabled={semanticAnalyzeBusy || !semanticAnalyzeDaTr || projectConfigLLMs.length === 0}>
+              <p class="muted semantic-variable-hint">
+                The analysis is designed with the assumption that meaningful placeholders have been used that match sentence semantics,
+                e.g. <code>$person</code>, <code>$agent</code>, <code>$object</code>, <code>$location</code>. Generic names like <code>$x</code> reduce syntax quality.
+              </p>
+              <div class="semantic-config-group">
+                <div class="semantic-config-heading">Configuration</div>
+                <div class="generate-row">
+                  <button
+                    type="button"
+                    class="semantic-toggle-btn"
+                    class:active={semanticAnalyzeSvo}
+                    disabled={semanticAnalyzeBusy}
+                    on:click={toggleSemanticAnalyzeSyntax}
+                  >
+                    Syntax Analysis (UD)
+                  </button>
+                  <button
+                    type="button"
+                    class="semantic-toggle-btn"
+                    class:active={semanticAnalyzeDaTr}
+                    disabled={semanticAnalyzeBusy}
+                    on:click={toggleSemanticAnalyzeDaTr}
+                  >
+                    DA/TR Analysis
+                  </button>
+                  <button
+                    type="button"
+                    class="semantic-toggle-btn"
+                    class:active={semanticDebugEnabled}
+                    title="Debug is session-only and not saved to project.xml"
+                    on:click={toggleSemanticDebug}
+                  >
+                    Debug (session only)
+                  </button>
+                  <select
+                    class="semantic-llm-inline"
+                    aria-label="LLM Service for DA/TR Analysis"
+                    bind:value={semanticLLMIndex}
+                    on:change={handleSemanticLLMSelectionChange}
+                    disabled={semanticAnalyzeBusy || !semanticAnalyzeDaTr || projectConfigLLMs.length === 0}
+                  >
                     {#if projectConfigLLMs.length === 0}
                       <option value={0}>No LLM configured</option>
                     {:else}
@@ -13569,31 +13658,8 @@ Sentence:
                       {/each}
                     {/if}
                   </select>
-                </label>
-                <div class="semantic-legend">
-                  <span class="semantic-legend-title">Legend</span>
-                  <span class="semantic-legend-item"><span class="semantic-legend-swatch subject"></span>Subject</span>
-                  <span class="semantic-legend-item"><span class="semantic-legend-swatch verb"></span>Verb</span>
-                  <span class="semantic-legend-item"><span class="semantic-legend-swatch object"></span>Object</span>
-                  <span class="semantic-legend-item"><span class="semantic-legend-swatch predicate"></span>Predicate</span>
-                  <span class="semantic-legend-item"><span class="semantic-legend-swatch address"></span>Address</span>
-                  <span class="semantic-legend-note">Address head solid, Adj dashed, Adv dotted, Comp double (same role color)</span>
                 </div>
               </div>
-              <div class="generate-row">
-                <label class="semantic-debug-toggle">
-                  <input type="checkbox" bind:checked={semanticAnalyzeSvo} disabled={semanticAnalyzeBusy} />
-                  S/V/O analysis
-                </label>
-                <label class="semantic-debug-toggle">
-                  <input type="checkbox" bind:checked={semanticAnalyzeDaTr} disabled={semanticAnalyzeBusy} />
-                  DA/TR analysis
-                </label>
-              </div>
-              <p class="muted semantic-variable-hint">
-                Hint: Use meaningful placeholders that match sentence semantics, e.g. <code>$person</code>, <code>$agent</code>,
-                <code>$object</code>, <code>$location</code>. Generic names like <code>$x</code> reduce S/V/O quality.
-              </p>
               <div class="semantic-selections-preview" aria-label="Stored LLM selections">
                 <span class="muted">Stored selections (project.xml):</span>
                 <code>generate="{projectConfigView?.llmSelections?.generate || ""}"</code>
@@ -13604,13 +13670,13 @@ Sentence:
               <div class="generate-row">
                 <label class="generate-full">
                   System Prompt
-                  <textarea bind:value={semanticSystemPrompt} rows="2" disabled={!semanticAnalyzeDaTr}></textarea>
+                  <textarea bind:value={semanticSystemPrompt} rows="2" disabled={!semanticAnalyzeDaTr} on:change={stageSemanticAnalysisSettings}></textarea>
                 </label>
               </div>
               <div class="generate-row">
                 <label class="generate-full">
                   Analysis Prompt
-                  <textarea bind:value={semanticPromptTemplate} rows="8" disabled={!semanticAnalyzeDaTr}></textarea>
+                  <textarea bind:value={semanticPromptTemplate} rows="8" disabled={!semanticAnalyzeDaTr} on:change={stageSemanticAnalysisSettings}></textarea>
                 </label>
               </div>
               <div class="generate-actions">
@@ -13620,13 +13686,18 @@ Sentence:
                 <button type="button" class="ghost" on:click={resetSemanticPrompts} disabled={semanticAnalyzeBusy}>
                   Reset Prompts
                 </button>
-                <label class="semantic-debug-toggle">
-                  <input type="checkbox" bind:checked={semanticDebugEnabled} />
-                  Debug
-                </label>
                 {#if semanticDirty}
                   <span class="muted semantic-unsaved-note">Unsaved semantic results</span>
                 {/if}
+                <div class="semantic-legend">
+                  <span class="semantic-legend-title">Legend</span>
+                  <span class="semantic-legend-item"><span class="semantic-legend-swatch subject"></span>Subject</span>
+                  <span class="semantic-legend-item"><span class="semantic-legend-swatch verb"></span>Verb</span>
+                  <span class="semantic-legend-item"><span class="semantic-legend-swatch object"></span>Object</span>
+                  <span class="semantic-legend-item"><span class="semantic-legend-swatch predicate"></span>Predicate</span>
+                  <span class="semantic-legend-item"><span class="semantic-legend-swatch address"></span>Address</span>
+                  <span class="semantic-legend-note">Address head solid, Adj dashed, Adv dotted, Comp double (same role color)</span>
+                </div>
               </div>
             </div>
           </div>
@@ -14184,7 +14255,7 @@ Sentence:
                 <div class="project-config-overview-label">Semantic Services</div>
                 <div class="project-config-overview-field">
                   <div class="project-config-grid">
-                    <label for="semantic-basic-provider">S/V/O Provider</label>
+                    <label for="semantic-basic-provider">Syntax Provider</label>
                     <select
                       id="semantic-basic-provider"
                       value={projectConfigView?.semanticServices?.basicProvider || "ud"}
