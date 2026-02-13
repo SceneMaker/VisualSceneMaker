@@ -12,7 +12,7 @@ graph TD
     Root --> PlugEmail[:plugins:email]
     Root --> PlugStudy[:plugins:studymaster-web]
     Root --> PlugFortune[:plugins:fortunecookie]
-    Root --> PlugEmma[:plugins:emma-user-model]
+    Root --> PlugUserCue[:plugins:user-cue-service]
     Root --> PlugDecad[:plugins:decad]
     Root --> PlugHtmlGui[:plugins:htmlgui-ws]
     Root --> PlugOdp[:plugins:odp]

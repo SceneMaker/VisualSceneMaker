@@ -51,7 +51,7 @@ dependencies {
     implementation project(":plugins:email")
     implementation project(":plugins:studymaster-web")
     implementation project(":plugins:fortunecookie")
-    implementation project(":plugins:emma-user-model")
+    implementation project(":plugins:user-cue-service")
     implementation project(":plugins:decad")
     implementation project(":plugins:htmlgui-ws")
     implementation project(":plugins:odp")
@@ -67,6 +67,7 @@ dependencies {
     implementation project(":plugins:charamel")
     implementation project(":plugins:charamel-ws")
     implementation project(":plugins:sockets")
+    implementation project(":plugins:voicetts")
     implementation project(":plugins:DriveSimulator")
     implementation "io.javalin:javalin:4.6.8"
     implementation 'org.jetbrains:annotations:16.0.2'

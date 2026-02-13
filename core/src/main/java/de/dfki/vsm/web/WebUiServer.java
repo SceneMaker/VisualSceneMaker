@@ -2069,9 +2069,21 @@ public final class WebUiServer implements EventListener {
         String basicProvider = semanticServices.getProperty("basicProvider");
         String udUrl = semanticServices.getProperty("udUrl");
         String udTimeoutMs = semanticServices.getProperty("udTimeoutMs");
+        String analyzeSyntax = semanticServices.getProperty("analyzeSyntax");
+        String analyzeSvo = semanticServices.getProperty("analyzeSvo");
+        String analyzeDaTr = semanticServices.getProperty("analyzeDaTr");
+        String daTrLlm = semanticServices.getProperty("daTrLlm");
+        String semanticSystemPrompt = semanticServices.getProperty("systemPrompt");
+        String semanticPromptTemplate = semanticServices.getProperty("promptTemplate");
         semanticServicesJson.put("basicProvider", basicProvider != null ? basicProvider : "");
         semanticServicesJson.put("udUrl", udUrl != null ? udUrl : "");
         semanticServicesJson.put("udTimeoutMs", udTimeoutMs != null ? udTimeoutMs : "");
+        semanticServicesJson.put("analyzeSyntax", analyzeSyntax != null ? analyzeSyntax : "");
+        semanticServicesJson.put("analyzeSvo", analyzeSvo != null ? analyzeSvo : "");
+        semanticServicesJson.put("analyzeDaTr", analyzeDaTr != null ? analyzeDaTr : "");
+        semanticServicesJson.put("daTrLlm", daTrLlm != null ? daTrLlm : "");
+        semanticServicesJson.put("systemPrompt", semanticSystemPrompt != null ? semanticSystemPrompt : "");
+        semanticServicesJson.put("promptTemplate", semanticPromptTemplate != null ? semanticPromptTemplate : "");
         cfgJson.put("semanticServices", semanticServicesJson);
         cfgJson.put("sceneTitleConcepts", configConceptsToJson(cfg.getSceneTitleConcepts()));
         sLogger.message("[PROJECT-CONFIG] Serialized plugins=" + pluginsJson.length()
@@ -2269,6 +2281,12 @@ public final class WebUiServer implements EventListener {
             String basicProvider = semanticServicesJson.optString("basicProvider", "").trim();
             String udUrl = semanticServicesJson.optString("udUrl", "").trim();
             String udTimeoutMs = semanticServicesJson.optString("udTimeoutMs", "").trim();
+            String analyzeSyntax = semanticServicesJson.optString("analyzeSyntax", "").trim();
+            String analyzeSvo = semanticServicesJson.optString("analyzeSvo", "").trim();
+            String analyzeDaTr = semanticServicesJson.optString("analyzeDaTr", "").trim();
+            String daTrLlm = semanticServicesJson.optString("daTrLlm", "").trim();
+            String semanticSystemPrompt = semanticServicesJson.optString("systemPrompt", "");
+            String semanticPromptTemplate = semanticServicesJson.optString("promptTemplate", "");
             if (!basicProvider.isEmpty()) {
                 services.addProperty("basicProvider", basicProvider);
             }
@@ -2277,6 +2295,29 @@ public final class WebUiServer implements EventListener {
             }
             if (!udTimeoutMs.isEmpty()) {
                 services.addProperty("udTimeoutMs", udTimeoutMs);
+            }
+            if (!analyzeSyntax.isEmpty()) {
+                services.addProperty("analyzeSyntax", analyzeSyntax);
+            } else if (!analyzeSvo.isEmpty()) {
+                services.addProperty("analyzeSyntax", analyzeSvo);
+            }
+            // Keep legacy key for compatibility with older clients.
+            if (!analyzeSvo.isEmpty()) {
+                services.addProperty("analyzeSvo", analyzeSvo);
+            } else if (!analyzeSyntax.isEmpty()) {
+                services.addProperty("analyzeSvo", analyzeSyntax);
+            }
+            if (!analyzeDaTr.isEmpty()) {
+                services.addProperty("analyzeDaTr", analyzeDaTr);
+            }
+            if (!daTrLlm.isEmpty()) {
+                services.addProperty("daTrLlm", daTrLlm);
+            }
+            if (!semanticSystemPrompt.isEmpty()) {
+                services.addProperty("systemPrompt", semanticSystemPrompt);
+            }
+            if (!semanticPromptTemplate.isEmpty()) {
+                services.addProperty("promptTemplate", semanticPromptTemplate);
             }
         }
         JSONArray conceptsJson = configJson.optJSONArray("sceneTitleConcepts");
@@ -4445,12 +4486,16 @@ public final class WebUiServer implements EventListener {
                 plugin.put("type", type);
                 plugin.put("load", load);
 
-                // Look up required keys and their defaults
+                // Look up config keys and defaults
                 // Also collect sceneflow variable definitions
                 JSONArray features = new JSONArray();
                 JSONArray sceneflowVars = new JSONArray();
+                Map<String, String> configDefaults = new HashMap<>();
+                Map<String, String> configSceneFlowTypes = new HashMap<>();
+                Set<String> sceneflowVarDedup = new HashSet<>();
                 ExportablePropertyEntry entry = resolveExportablePropertyEntry(className);
                 if (entry != null && entry.pluginSpec != null) {
+                    JSONArray optional = entry.pluginSpec.optJSONArray("optional");
                     JSONArray required = entry.pluginSpec.optJSONArray("required");
                     if (required != null) {
                         for (int i = 0; i < required.length(); i++) {
@@ -4464,13 +4509,47 @@ public final class WebUiServer implements EventListener {
                                     feature.put("key", key);
                                     feature.put("value", value);
                                     features.put(feature);
+                                    configDefaults.put(key, value);
 
                                     // Check if this property defines a sceneflow variable type
                                     String sceneflowType = req.optString("sceneflowtype", "").trim();
+                                    if (!sceneflowType.isEmpty()) {
+                                        configSceneFlowTypes.put(key, sceneflowType);
+                                    }
                                     if (!sceneflowType.isEmpty() && !value.isEmpty()) {
                                         JSONObject varDef = new JSONObject();
                                         varDef.put("name", value);  // The default value is the variable name
                                         varDef.put("type", sceneflowType);
+                                        String dedupKey = value + "::" + sceneflowType;
+                                        if (sceneflowVarDedup.add(dedupKey)) {
+                                            sceneflowVars.put(varDef);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    // Optional config keys are not auto-added to plugin features, but may still
+                    // define sceneflow variable defaults/types used for auto-creation.
+                    if (optional != null) {
+                        for (int i = 0; i < optional.length(); i++) {
+                            JSONObject opt = optional.optJSONObject(i);
+                            if (opt == null) continue;
+                            String key = opt.optString("name", "").trim();
+                            if (key.isEmpty()) continue;
+                            Object defaultVal = opt.opt("default");
+                            String value = defaultVal != null ? String.valueOf(defaultVal) : "";
+                            configDefaults.putIfAbsent(key, value);
+
+                            String sceneflowType = opt.optString("sceneflowtype", "").trim();
+                            if (!sceneflowType.isEmpty()) {
+                                configSceneFlowTypes.putIfAbsent(key, sceneflowType);
+                                if (!value.isEmpty()) {
+                                    JSONObject varDef = new JSONObject();
+                                    varDef.put("name", value);
+                                    varDef.put("type", sceneflowType);
+                                    String dedupKey = value + "::" + sceneflowType;
+                                    if (sceneflowVarDedup.add(dedupKey)) {
                                         sceneflowVars.put(varDef);
                                     }
                                 }
@@ -4491,7 +4570,50 @@ public final class WebUiServer implements EventListener {
                                     feature.put("key", key);
                                     feature.put("value", value);
                                     features.put(feature);
+                                    configDefaults.put(key, value);
+                                    String sceneflowType = ps.optString("sceneflowtype", "").trim();
+                                    if (!sceneflowType.isEmpty()) {
+                                        configSceneFlowTypes.put(key, sceneflowType);
+                                        if (!value.isEmpty()) {
+                                            JSONObject varDef = new JSONObject();
+                                            varDef.put("name", value);
+                                            varDef.put("type", sceneflowType);
+                                            String dedupKey = value + "::" + sceneflowType;
+                                            if (sceneflowVarDedup.add(dedupKey)) {
+                                                sceneflowVars.put(varDef);
+                                            }
+                                        }
+                                    }
                                 }
+                            }
+                        }
+                    }
+                }
+                // Include variables.writes from descriptor metadata as auto-created sceneflow vars.
+                // If "var" references a config key (e.g. "connectedVar"), resolve to that key's
+                // default value and type from config metadata.
+                if (entry != null && entry.variables != null) {
+                    JSONArray writes = entry.variables.optJSONArray("writes");
+                    if (writes != null) {
+                        for (int i = 0; i < writes.length(); i++) {
+                            JSONObject write = writes.optJSONObject(i);
+                            if (write == null) continue;
+                            String rawVar = write.optString("var", "").trim();
+                            if (rawVar.isEmpty()) continue;
+
+                            String resolvedVarName = configDefaults.getOrDefault(rawVar, rawVar).trim();
+                            String resolvedType = write.optString("type", "").trim();
+                            if (resolvedType.isEmpty()) {
+                                resolvedType = configSceneFlowTypes.getOrDefault(rawVar, "").trim();
+                            }
+                            if (resolvedVarName.isEmpty() || resolvedType.isEmpty()) continue;
+
+                            JSONObject varDef = new JSONObject();
+                            varDef.put("name", resolvedVarName);
+                            varDef.put("type", resolvedType);
+                            String dedupKey = resolvedVarName + "::" + resolvedType;
+                            if (sceneflowVarDedup.add(dedupKey)) {
+                                sceneflowVars.put(varDef);
                             }
                         }
                     }
