@@ -105,7 +105,8 @@ public final class ScriptDiagnostics {
     }
 
     private static List<Diagnostic> scanParseErrors(String text) {
-        ScriptLexxer lexxer = new ScriptLexxer(new StringReader(text), true, false, false);
+        String normalized = ScriptParser.preprocessInput(text);
+        ScriptLexxer lexxer = new ScriptLexxer(new StringReader(normalized), true, false, false);
         ParserWithErrors parser = new ParserWithErrors(lexxer);
         try {
             parser.parse();

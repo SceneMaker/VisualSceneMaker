@@ -14,17 +14,17 @@ import org.w3c.dom.Element;
 //~--- JDK imports ------------------------------------------------------------
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
 /**
  * @author Gregor Mehlmann
  */
 public class Configuration {
-    private final HashMap<BasicNode, LinkedList<State>> mConfiguration = new HashMap<>();
+    private final ConcurrentHashMap<BasicNode, LinkedList<State>> mConfiguration = new ConcurrentHashMap<>();
     // Index for O(1) lookups by node ID string (maintained alongside mConfiguration)
-    private final HashMap<String, BasicNode> mNodeIndex = new HashMap<>();
+    private final ConcurrentHashMap<String, BasicNode> mNodeIndex = new ConcurrentHashMap<>();
 
     public void clear() {
         mConfiguration.clear();

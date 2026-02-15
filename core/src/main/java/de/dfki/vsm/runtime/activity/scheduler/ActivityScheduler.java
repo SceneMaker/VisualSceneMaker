@@ -37,7 +37,12 @@ public final class ActivityScheduler<T extends AbstractActivity> {
         //final String marker = feedback.getMarker();
         // Start the assigned task
         synchronized (mWorkerMap) {
-            mWorkerMap.remove(marker).start();
+            ActivityWorker<T> worker = mWorkerMap.remove(marker);
+            if (worker != null) {
+                worker.start();
+            } else {
+                mLogger.warning("ActivityScheduler: no worker registered for marker '" + marker + "'");
+            }
         }
         //}
     }
