@@ -102,7 +102,13 @@ public final class ReactivePlayer extends RunTimePlayer {
                 if (syntax.startsWith("[") && syntax.endsWith("]")) {
                     // PG: changed action and action feature parser to be more powerful
                     // matching something like: agent Action x=2.5 y=0.0 z=-13.0 w=3.4254345E-5 text='Someone wants a beer!' other=bad some='things' state='Da=fuck.continued and -others']
-                    final Pattern pattern = Pattern.compile("^\\w+|\\w+\\s|\\w+]|[a-zA-Z-_]+=[a-zA-Z-_]+|\\w+=-?[0-9.]+E-?[0-9]+|\\w+=-?[0-9.]+|\\w+='[\\wäöüßÄÖÜ\\-\\s:.,!?=@/]+'");
+                    final Pattern pattern = Pattern.compile(
+                            "^\\w+|\\w+\\s|\\w+]"
+                                    + "|[A-Za-z_][A-Za-z0-9_]*='[^']*'"
+                                    + "|[A-Za-z_][A-Za-z0-9_]*=\"[^\"]*\""
+                                    + "|[A-Za-z_][A-Za-z0-9_]*=-?[0-9]+(?:\\.[0-9]+)?(?:E-?[0-9]+)?"
+                                    + "|[A-Za-z_][A-Za-z0-9_]*=[^\\s\\]]+"
+                    );
                     final Matcher matcher = pattern.matcher(syntax);
                     while (matcher.find()) {
                         final String token = matcher.group().trim();
@@ -112,7 +118,7 @@ public final class ReactivePlayer extends RunTimePlayer {
                             name = token;
                             name = (name.contains("]")) ? name.replace("]", "") : name;
                         } else if (token.contains("=")) {
-                            String[] pair = token.split("=");
+                            String[] pair = token.split("=", 2);
                             features.add(new ActionFeature(0, pair[0].length(), pair[0], pair[1]));
                         }
                         cnt++;
