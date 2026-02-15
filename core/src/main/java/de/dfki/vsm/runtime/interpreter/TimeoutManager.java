@@ -59,15 +59,22 @@ public class TimeoutManager {
     }
 
     public boolean expired(final TimeoutQuery cond) {
-        return mTimeoutCondList.get(cond).getFirst();
+        Tuple<Boolean, TimerTask> entry = mTimeoutCondList.get(cond);
+        if (entry == null) {
+            mLogger.warning("TimeoutManager: queried expired() for unknown condition " + cond.getConcreteSyntax());
+            return false;
+        }
+        return entry.getFirst();
     }
 
     public void remove(final TimeoutQuery cond) {
-
-        // mTimeoutCondList.get(cond).
-        mTimeoutCondList.get(cond).getSecond().cancel();
-        mTimeoutCondList.remove(cond);
-        mLogger.message("removing " + cond.getConcreteSyntax() + " ");
+        Tuple<Boolean, TimerTask> entry = mTimeoutCondList.remove(cond);
+        if (entry != null) {
+            entry.getSecond().cancel();
+            mLogger.message("removing " + cond.getConcreteSyntax() + " ");
+        } else {
+            mLogger.warning("TimeoutManager: tried to remove unknown condition " + cond.getConcreteSyntax());
+        }
     }
 
     public void start(final TimeoutQuery cond, int timeout) {

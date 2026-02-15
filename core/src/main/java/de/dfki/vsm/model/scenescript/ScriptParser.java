@@ -12,11 +12,16 @@ import java_cup.runtime.Symbol;
 
 import java.io.StringReader;
 import java.util.LinkedList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /** CUP v0.11a beta 20060608 generated parser.
   * @version Tue Dec 04 15:47:29 CET 2018
   */
 public class ScriptParser extends java_cup.runtime.lr_parser {
+
+  private static final Pattern ACTION_ACTOR_WITHOUT_COLON_PATTERN = Pattern.compile(
+          "^(\\s*)([\\p{L}_][\\p{L}\\p{N}_]*)\\s+([\\p{L}_][\\p{L}\\p{N}_]*)(.*)$");
 
   /** Default constructor. */
   public ScriptParser() {super();}
@@ -242,7 +247,7 @@ public class ScriptParser extends java_cup.runtime.lr_parser {
         final boolean newline,
         final boolean whitespace) {
         //
-        final String string = (action ? "[" + input + "]" : input);
+        final String string = preprocessInput(action ? "[" + input + "]" : input);
         //
         //mLogger.message("Parsing Input String '" + string + "'");
         try {
@@ -280,6 +285,47 @@ public class ScriptParser extends java_cup.runtime.lr_parser {
             // Return NULL at failure 
             return null;
         }
+    }
+
+    static String preprocessInput(final String input) {
+        if (input == null || input.indexOf('[') < 0) {
+            return input;
+        }
+        final StringBuilder out = new StringBuilder(input.length());
+        int i = 0;
+        while (i < input.length()) {
+            final char ch = input.charAt(i);
+            if (ch != '[') {
+                out.append(ch);
+                i++;
+                continue;
+            }
+            final int close = input.indexOf(']', i + 1);
+            if (close < 0) {
+                out.append(input.substring(i));
+                break;
+            }
+            final String body = input.substring(i + 1, close);
+            out.append('[').append(normalizeSingleActionBody(body)).append(']');
+            i = close + 1;
+        }
+        return out.toString();
+    }
+
+    private static String normalizeSingleActionBody(final String body) {
+        final Matcher matcher = ACTION_ACTOR_WITHOUT_COLON_PATTERN.matcher(body);
+        if (!matcher.matches()) {
+            return body;
+        }
+        final String leading = matcher.group(1);
+        final String first = matcher.group(2);
+        final String second = matcher.group(3);
+        final String rest = matcher.group(4);
+
+        if (rest.startsWith(":") || rest.startsWith("=") || first.endsWith(":")) {
+            return body;
+        }
+        return leading + first + ": " + second + rest;
     }
 
 }

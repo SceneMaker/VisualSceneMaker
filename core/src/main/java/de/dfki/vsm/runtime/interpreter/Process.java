@@ -32,6 +32,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 //~--- JDK imports ------------------------------------------------------------
 
@@ -40,17 +41,17 @@ import java.util.Set;
  */
 public class Process extends java.lang.Thread {
 
-	private boolean mIsPauseRequested = false;
-	private boolean mIsInterruptionRequested = false;
-	private boolean mIsTerminationRequested = false;
-	private boolean mIsRunning = false;
-	private boolean mWasExecuted = false;
+	private volatile boolean mIsPauseRequested = false;
+	private volatile boolean mIsInterruptionRequested = false;
+	private volatile boolean mIsTerminationRequested = false;
+	private volatile boolean mIsRunning = false;
+	private volatile boolean mWasExecuted = false;
 	private BasicNode mCurrentNode = null;
 	private AbstractEdge mInterruptEdge = null;
 	private AbstractEdge mNextEdge = null;
 	private AbstractEdge mIncomingEdge = null;
-	private final ArrayList<Process> mChildThreadList = new ArrayList<>();
-	private final ArrayList<Process> mAddChildThreadList = new ArrayList<>();
+	private final CopyOnWriteArrayList<Process> mChildThreadList = new CopyOnWriteArrayList<>();
+	private final CopyOnWriteArrayList<Process> mAddChildThreadList = new CopyOnWriteArrayList<>();
 	private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
 	private final Configuration mConfiguration;
 	private final SystemHistory mSystemHistory;
@@ -535,6 +536,21 @@ public class Process extends java.lang.Thread {
 			 */
 			mInterpreter.abort();
 			mInterpreter.unlock();
+		} catch (Exception e) {
+			/*
+			 * Catch any unexpected exception (NPE, ClassCastException, etc.)
+			 * to ensure the interpreter write lock is released. Without this,
+			 * an uncaught exception would kill this thread while holding the
+			 * lock, permanently deadlocking the entire runtime.
+			 */
+			mLogger.failure("Process " + getName() + " crashed with unexpected exception: " + e.getMessage());
+			try {
+				EventDispatcher.getInstance().convey(new TerminationEvent(this,
+						new InterpreterError(this, "Unexpected error: " + e.getMessage())));
+				mInterpreter.abort();
+			} finally {
+				mInterpreter.unlock();
+			}
 		}
 	}
 
@@ -743,28 +759,31 @@ public class Process extends java.lang.Thread {
 
 		if (!startNodeList.isEmpty()) {
 			mInterpreter.lock();
-			checkStatus();
+			try {
+				checkStatus();
 
-			for (BasicNode node : startNodeList) {
-				Process thread = new Process(node.getId(), null, node, mEnvironment.getCopy(), mLevel + 1, this,
-				  mInterpreter);
+				for (BasicNode node : startNodeList) {
+					Process thread = new Process(node.getId(), null, node, mEnvironment.getCopy(), mLevel + 1, this,
+					  mInterpreter);
 
-				mChildThreadList.add(thread);
-				thread.handleStart();
+					mChildThreadList.add(thread);
+					thread.handleStart();
+				}
+
+				/*
+				 * Here the changes to the configuration are finally performed. The
+				 * child threads are added to the configuration and are started. Now
+				 * this thread can release the write lock of the configuration. This
+				 * change is a change in the system state and it could be the case
+				 * that there exists an interruptive edge whose condition evaluates
+				 * to true now. For this reason we have to start the event observer
+				 * ...
+				 */
+				mEventObserver.update();
+				checkStatus();
+			} finally {
+				mInterpreter.unlock();
 			}
-
-			/*
-			 * Here the changes to the configuration are finally performed. The
-			 * child threads are added to the configuration and are started. Now
-			 * this thread can release the write lock of the configuration. This
-			 * change is a change in the system state and it could be the case
-			 * that there exists an interruptive edge whose condition evaluates
-			 * to true now. For this reason we have to start the event observer
-			 * ...
-			 */
-			mEventObserver.update();
-			checkStatus();    // ERROR if here terminatedRequested and lock holding then never releasing lock again
-			mInterpreter.unlock();
 
 			/*
 			 * Try to wait until all child threads are terminated. If this

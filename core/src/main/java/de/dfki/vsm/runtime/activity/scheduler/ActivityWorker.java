@@ -71,7 +71,12 @@ public final class ActivityWorker<T extends AbstractActivity> extends Thread {
             // Print some information
             mLogger.success("Executing activity '" + mActivity + "' on executor '" + mExecutor + "'");
             // Execute the activity
-            mExecutor.execute(mActivity);
+            try {
+                mExecutor.execute(mActivity);
+            } catch (Exception e) {
+                mLogger.failure("Activity '" + mActivity + "' failed on executor '"
+                        + mExecutor + "': " + e.getMessage());
+            }
         }
         // Wait for workers
         if (mList != null) {

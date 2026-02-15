@@ -51,8 +51,8 @@ public class RunTimeProject {
     private String mProjectPath = "";
     // The default scene player of the project
     private RunTimePlayer mRunTimePlayer;
-    // The default interpreter of the project
-    private Interpreter mInterpreter;
+    // The default interpreter of the project (volatile for safe cross-thread visibility)
+    private volatile Interpreter mInterpreter;
     // Scene play history (thread-safe for concurrent playback)
     private final List<ScenePlayRecord> mSceneHistory =
             java.util.Collections.synchronizedList(new ArrayList<>());
@@ -331,7 +331,9 @@ public class RunTimeProject {
     // Unload the runtime objects of the project
     public final boolean unload() {
         // Unload the scene player
-        mRunTimePlayer.unload();
+        if (mRunTimePlayer != null) {
+            mRunTimePlayer.unload();
+        }
         // Unload all plugins
         mPluginMap.values().forEach(RunTimePlugin::unload);
         // Remove the interpreter
@@ -342,55 +344,55 @@ public class RunTimeProject {
 
     //GM
     public final boolean start() {
-        if (mInterpreter != null) {
+        Interpreter interp = mInterpreter;
+        if (interp != null) {
             mSceneHistory.clear();
-            // Start the interpreter
-            return mInterpreter.start();
+            return interp.start();
         }
         return false;
     }
 
     //GM
     public final boolean abort() {
-        if (mInterpreter != null) {
-            // Abort the interpreter
-            return mInterpreter.abort();
+        Interpreter interp = mInterpreter;
+        if (interp != null) {
+            return interp.abort();
         }
         return false;
     }
 
     //GM
     public final boolean pause() {
-        if (mInterpreter != null) {
-            // Abort the interpreter
-            return mInterpreter.pause();
+        Interpreter interp = mInterpreter;
+        if (interp != null) {
+            return interp.pause();
         }
         return false;
     }
 
     //GM
     public final boolean proceed() {
-        if (mInterpreter != null) {
-            // Abort the interpreter
-            return mInterpreter.proceed();
+        Interpreter interp = mInterpreter;
+        if (interp != null) {
+            return interp.proceed();
         }
         return false;
     }
 
     //GM
     public final boolean isRunning() {
-        if (mInterpreter != null) {
-            // Abort the interpreter
-            return mInterpreter.isRunning();
+        Interpreter interp = mInterpreter;
+        if (interp != null) {
+            return interp.isRunning();
         }
         return false;
     }
 
     //GM
     public final boolean isPaused() {
-        if (mInterpreter != null) {
-            // Abort the interpreter
-            return mInterpreter.isPaused();
+        Interpreter interp = mInterpreter;
+        if (interp != null) {
+            return interp.isPaused();
         }
         return false;
     }
@@ -411,9 +413,9 @@ public class RunTimeProject {
 
     //GM
     public final boolean wasExecuted() {
-        if (mInterpreter != null) {
-            // Abort the interpreter
-            return mInterpreter.wasExecuted();
+        Interpreter interp = mInterpreter;
+        if (interp != null) {
+            return interp.wasExecuted();
         }
         return false;
     }

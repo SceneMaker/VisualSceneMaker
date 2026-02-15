@@ -55,7 +55,12 @@ public final class EventDispatcher {
     // Dispatch an event object
     private void dispatch(final EventObject event) {
         for (final EventListener listener : mListenerList) {
-            listener.update(event);
+            try {
+                listener.update(event);
+            } catch (Exception e) {
+                mLogger.failure("EventDispatcher: listener " + listener.getClass().getSimpleName()
+                        + " threw exception on " + event.getClass().getSimpleName() + ": " + e.getMessage());
+            }
         }
     }
 

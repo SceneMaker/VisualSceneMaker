@@ -10,6 +10,8 @@ import de.dfki.vsm.runtime.interpreter.value.AbstractValue;
 import de.dfki.vsm.runtime.interpreter.value.BooleanValue;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 public final class Interruptor {
 
     // The logger instance
@@ -21,8 +23,8 @@ public final class Interruptor {
     // The interpreter instance
     private final Interpreter mInterpreter;
     // Dirty flag: when false, update() skips the full configuration scan.
-    // Volatile for visibility across threads.
-    private volatile boolean mDirty = true;
+    // AtomicBoolean for thread-safe check-then-act via getAndSet().
+    private final AtomicBoolean mDirty = new AtomicBoolean(true);
 
     // Create the interruptor
     public Interruptor(final Interpreter interpreter) {
@@ -31,15 +33,14 @@ public final class Interruptor {
 
     // Mark the interruptor dirty so next update() re-evaluates interrupt conditions.
     public void markDirty() {
-        mDirty = true;
+        mDirty.set(true);
     }
 
     // Update the interruptor
     public final void update() {
-        if (!mDirty) {
+        if (!mDirty.getAndSet(false)) {
             return;
         }
-        mDirty = false;
         // Get the runtime evaluator
         final Evaluator evaluator = mInterpreter.getEvaluator();
         // Get the runtime configuration
