@@ -1071,6 +1071,12 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
   let edgeDraft = null;
   let nodeDraftId = "";
   let edgeDraftId = "";
+  let timeoutSliderOpen = false;
+  let timeoutSliderEdgeId = "";
+  let timeoutSliderLastSent = null;
+  let timeoutSliderQueuedMs = null;
+  let timeoutSliderQueuedEdgeId = "";
+  let timeoutSliderSending = false;
   let nodeDirty = false;
   let edgeDirty = false;
   let superNodeDirty = false;
@@ -2612,6 +2618,14 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
     edgeDraftId = "";
     edgeDraft = null;
     edgeEditError = "";
+  }
+  $: if ((selectedEdge?.id || "") !== timeoutSliderEdgeId) {
+    timeoutSliderEdgeId = selectedEdge?.id || "";
+    timeoutSliderOpen = false;
+    timeoutSliderLastSent = null;
+    timeoutSliderQueuedMs = null;
+    timeoutSliderQueuedEdgeId = "";
+    timeoutSliderSending = false;
   }
 
   $: nodeDirty =
@@ -6799,10 +6813,84 @@ Sentence:
     return /^\d+$/.test(String(value || "").trim());
   }
 
+  function parseTimeoutMs(value) {
+    const raw = String(value ?? "").trim();
+    if (!/^\d+$/.test(raw)) return null;
+    const parsed = Number.parseInt(raw, 10);
+    return Number.isFinite(parsed) && parsed >= 0 ? parsed : null;
+  }
+
+  function timeoutSliderConfig(value) {
+    const current = parseTimeoutMs(value);
+    if (!Number.isFinite(current)) return null;
+    const max = Math.max(5000, current, Math.ceil((current * 2) / 100) * 100);
+    let step = 1;
+    if (max >= 60000) step = 100;
+    else if (max >= 10000) step = 50;
+    else if (max >= 3000) step = 10;
+    return { min: 0, max, step, value: current };
+  }
+
   function isTimeoutVarName(value) {
     const name = String(value || "").trim();
     if (!name) return false;
     return sceneFlowIntVarNames.includes(name);
+  }
+
+  function openTimeoutSlider() {
+    if (selectedEdge?.type !== "TEDGE") return;
+    timeoutSliderOpen = true;
+  }
+
+  async function sendTimeoutSliderValue(timeoutMs, edgeId = selectedEdge?.id) {
+    if (!selectedProjectId || !edgeId) return;
+    if (!Number.isFinite(timeoutMs) || timeoutMs < 0) return;
+    if (timeoutSliderSending) {
+      timeoutSliderQueuedMs = timeoutMs;
+      timeoutSliderQueuedEdgeId = edgeId;
+      return;
+    }
+    timeoutSliderSending = true;
+    try {
+      await runSceneFlowCommand("SceneFlow.Edge.Update", {
+        projectId: selectedProjectId,
+        superNodeId: sceneFlow?.superNodeId,
+        edgeId,
+        fields: {
+          timeoutMs,
+          timeoutExpr: ""
+        }
+      });
+      timeoutSliderLastSent = timeoutMs;
+    } finally {
+      timeoutSliderSending = false;
+      const queued = timeoutSliderQueuedMs;
+      const queuedEdgeId = timeoutSliderQueuedEdgeId;
+      timeoutSliderQueuedMs = null;
+      timeoutSliderQueuedEdgeId = "";
+      if (Number.isFinite(queued) && queued !== timeoutSliderLastSent) {
+        await sendTimeoutSliderValue(queued, queuedEdgeId || selectedEdge?.id);
+      }
+    }
+  }
+
+  function handleTimeoutSliderInput(event) {
+    if (!edgeDraft) return;
+    const timeoutMs = parseTimeoutMs(event?.currentTarget?.value);
+    if (!Number.isFinite(timeoutMs)) return;
+    edgeDraft = { ...edgeDraft, timeoutSpec: String(timeoutMs) };
+    edgeEditError = "";
+    sendTimeoutSliderValue(timeoutMs, selectedEdge?.id);
+  }
+
+  function handleCanvasTimeoutEdgeUpdate(edgeId, timeoutMs) {
+    const parsed = Number(timeoutMs);
+    if (!edgeId || !Number.isFinite(parsed) || parsed < 0) return;
+    if (selectedEdge?.id === edgeId && edgeDraft) {
+      edgeDraft = { ...edgeDraft, timeoutSpec: String(Math.floor(parsed)) };
+      edgeEditError = "";
+    }
+    sendTimeoutSliderValue(Math.floor(parsed), edgeId);
   }
 
   function commentLabel(comment, index) {
@@ -12402,6 +12490,7 @@ Sentence:
                 onPasteSelection={pasteSceneFlowSelection}
                 onCutSelection={cutSceneFlowSelection}
                 onDuplicateSelection={duplicateSceneFlowSelection}
+                onTimeoutEdgeUpdate={handleCanvasTimeoutEdgeUpdate}
               />
             </div>
             <div class="sceneflow-toggles">
@@ -12914,12 +13003,34 @@ Sentence:
                     list="edge-timeout-vars"
                     placeholder="1000 or timeout_ms"
                     bind:value={edgeDraft.timeoutSpec}
+                    on:focus={openTimeoutSlider}
+                    on:click={openTimeoutSlider}
                   />
                   <datalist id="edge-timeout-vars">
                     {#each sceneFlowIntVarNames as varName}
                       <option value={varName}></option>
                     {/each}
                   </datalist>
+                  {#if timeoutSliderOpen && isTimeoutNumber(edgeDraft.timeoutSpec)}
+                    {@const slider = timeoutSliderConfig(edgeDraft.timeoutSpec)}
+                    {#if slider}
+                      <div class="edge-timeout-slider-wrap">
+                        <div class="edge-timeout-slider-head">
+                          <span>Adjust timeout</span>
+                          <span>{slider.value} ms</span>
+                        </div>
+                        <input
+                          class="edge-timeout-slider"
+                          type="range"
+                          min={slider.min}
+                          max={slider.max}
+                          step={slider.step}
+                          value={slider.value}
+                          on:input={handleTimeoutSliderInput}
+                        />
+                      </div>
+                    {/if}
+                  {/if}
                 {:else}
                   <p class="muted">No editable fields for this edge type yet.</p>
                 {/if}

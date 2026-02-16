@@ -32,6 +32,7 @@
   export let onPasteSelection = null;
   export let onCutSelection = null;
   export let onDuplicateSelection = null;
+  export let onTimeoutEdgeUpdate = null;
   export let activityNodes = [];
   export let activityEdges = [];
   export let timeoutEdges = [];
@@ -68,6 +69,10 @@
   const maxZoom = 3.5;
   const zoomStep = 1.12;
   const SUPER_NODE_SHAPE_POWER = 5;
+  const TIMEOUT_INLINE_LEFT_MAX_MS = 5000;
+  const TIMEOUT_INLINE_MAX_MS = 60000;
+  const TIMEOUT_INLINE_SLIDER_MAX = 1000;
+  const TIMEOUT_INLINE_HALF = TIMEOUT_INLINE_SLIDER_MAX / 2;
   const COMMAND_FONT_FAMILY = '"SansSerif", "Helvetica Neue", Arial, sans-serif';
   const EXPORT_STYLE_PROPS = [
     "fill",
@@ -255,6 +260,8 @@
   let edgeRetargetHoverId = null;
   let edgeCreateCursor = null;
   let dragState = null;
+  let timeoutInlineDragEdgeId = "";
+  let timeoutSliderSuppressedEdgeId = "";
   let selfLoopManualControlIds = new Set();
   let panStart = { x: 0, y: 0 };
   let panOrigin = { x: 0, y: 0 };
@@ -264,6 +271,7 @@
   const dragThreshold = 3;
   let textMeasureCtx = null;
   let lastTextMeasureSize = null;
+  let timeoutInlineDrafts = new Map();
 
   $: worldBox = baseBox;
   $: viewBoxState = currentViewBox();
@@ -274,6 +282,7 @@
       lastSnapshotKey = key;
       resetView();
       clearSelection();
+      timeoutInlineDrafts = new Map();
     }
   }
 
@@ -1136,6 +1145,7 @@
     selectedCommentId = null;
     selection = null;
     multiSelection = [];
+    timeoutSliderSuppressedEdgeId = "";
   }
 
   function selectNode(nodeId, options = {}) {
@@ -1163,6 +1173,9 @@
     if (isMulti) {
       toggleSelection("edge", edgeId);
       return;
+    }
+    if (timeoutSliderSuppressedEdgeId === edgeId) {
+      timeoutSliderSuppressedEdgeId = "";
     }
     selectedEdgeId = edgeId;
     selectedNodeId = null;
@@ -1870,6 +1883,88 @@
       return { x: (s.x + t.x) / 2, y: (s.y + t.y) / 2 };
     }
     return { x: 0, y: 0 };
+  }
+
+  function timeoutLiteralMs(edge) {
+    if (!edge || edge.type !== "TEDGE") return null;
+    if ((edge.timeoutExpr || "").trim()) return null;
+    const raw = edge.timeoutMs;
+    if (Number.isFinite(raw) && raw >= 0) {
+      return Math.floor(raw);
+    }
+    const parsed = Number.parseInt(String(raw ?? "").trim(), 10);
+    return Number.isFinite(parsed) && parsed >= 0 ? parsed : null;
+  }
+
+  function timeoutSliderPosFromMs(ms) {
+    const clamped = Math.max(0, Math.min(TIMEOUT_INLINE_MAX_MS, Math.floor(ms)));
+    if (clamped <= TIMEOUT_INLINE_LEFT_MAX_MS) {
+      return Math.round((clamped / TIMEOUT_INLINE_LEFT_MAX_MS) * TIMEOUT_INLINE_HALF);
+    }
+    return Math.round(
+      TIMEOUT_INLINE_HALF +
+      ((clamped - TIMEOUT_INLINE_LEFT_MAX_MS) / (TIMEOUT_INLINE_MAX_MS - TIMEOUT_INLINE_LEFT_MAX_MS)) * TIMEOUT_INLINE_HALF
+    );
+  }
+
+  function timeoutMsFromSliderPos(pos) {
+    const clamped = Math.max(0, Math.min(TIMEOUT_INLINE_SLIDER_MAX, Math.floor(pos)));
+    if (clamped <= TIMEOUT_INLINE_HALF) {
+      return Math.round((clamped / TIMEOUT_INLINE_HALF) * TIMEOUT_INLINE_LEFT_MAX_MS);
+    }
+    const value = TIMEOUT_INLINE_LEFT_MAX_MS +
+      ((clamped - TIMEOUT_INLINE_HALF) / TIMEOUT_INLINE_HALF) * (TIMEOUT_INLINE_MAX_MS - TIMEOUT_INLINE_LEFT_MAX_MS);
+    return Math.min(TIMEOUT_INLINE_MAX_MS, Math.max(TIMEOUT_INLINE_LEFT_MAX_MS + 1, Math.round(value)));
+  }
+
+  function edgeSliderBackground(color) {
+    if (typeof color !== "string" || !color) return "rgba(255, 255, 255, 0.94)";
+    if (color.startsWith("#")) {
+      const rgb = hexToRgb(color);
+      if (rgb) {
+        return `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.16)`;
+      }
+    }
+    return "rgba(255, 255, 255, 0.94)";
+  }
+
+  function timeoutSliderModel(edge) {
+    const base = timeoutLiteralMs(edge);
+    if (!Number.isFinite(base)) return null;
+    if (base > TIMEOUT_INLINE_MAX_MS) return null;
+    const draft = timeoutInlineDrafts.get(edge.id);
+    const valueMs = Math.max(0, Math.min(TIMEOUT_INLINE_MAX_MS, Number.isFinite(draft) ? draft : base));
+    return {
+      valueMs,
+      value: timeoutSliderPosFromMs(valueMs),
+      min: 0,
+      max: TIMEOUT_INLINE_SLIDER_MAX,
+      step: 1
+    };
+  }
+
+  function handleTimeoutInlineSliderInput(edge, event) {
+    const sliderPos = Number.parseInt(String(event?.currentTarget?.value ?? "").trim(), 10);
+    if (!edge?.id || !Number.isFinite(sliderPos)) return;
+    const value = timeoutMsFromSliderPos(sliderPos);
+    const next = new Map(timeoutInlineDrafts);
+    next.set(edge.id, value);
+    timeoutInlineDrafts = next;
+    if (typeof onTimeoutEdgeUpdate === "function") {
+      onTimeoutEdgeUpdate(edge.id, value);
+    }
+  }
+
+  function startTimeoutInlineDrag(edge, event) {
+    if (!edge?.id) return;
+    event?.stopPropagation?.();
+    timeoutInlineDragEdgeId = edge.id;
+    clearSelection();
+  }
+
+  function endTimeoutInlineDrag(event) {
+    event?.stopPropagation?.();
+    timeoutInlineDragEdgeId = "";
   }
 
   function edgeMidPoint(edge, drag) {
@@ -2862,6 +2957,7 @@
     if (!dragState || dragState.pointerId !== event.pointerId) return;
     const finished = dragState;
     dragState = null;
+    timeoutInlineDragEdgeId = "";
     edgeRetargetHoverId = null;
     const captureEl = stageEl || svgEl;
     if (captureEl && captureEl.hasPointerCapture(event.pointerId)) {
@@ -2923,6 +3019,7 @@
       const point = { x: finalX, y: finalY };
       const target = findNodeAtPoint(point, null);
       if (target && typeof onEdgeRetarget === "function") {
+        timeoutSliderSuppressedEdgeId = finished.id;
         onEdgeRetarget(finished.id, target.id, point.x, point.y);
       }
       suppressStageClick = true;
@@ -3417,8 +3514,10 @@
       {@const activity = activityEdgeMap.get(edge.id)}
       {@const timeoutEntry = timeoutEdgeMap.get(edge.id)}
       {@const timeoutProgress = edge.type === "TEDGE" ? timeoutEdgeProgress(timeoutEntry, timeoutNow) : null}
+      {@const isHandleDrag = !!dragState && dragState.id === edge.id && (dragState.type === "edge-control" || dragState.type === "edge-target" || dragState.type === "edge-bend")}
+      {@const isTimeoutSliderDrag = timeoutInlineDragEdgeId === edge.id}
       {@const controls = isSelected || isHovered ? edgeControlPoints(edge, dragState) : null}
-      {@const showHandles = isSelected || isHovered}
+      {@const showHandles = (isSelected || isHovered) && !isTimeoutSliderDrag}
       {@const baseHandleRadius = Math.max(5, Math.round(baseNodeSize * 0.08))}
       {@const handleRadius = showHandles ? (isSelected ? baseHandleRadius : Math.max(4, Math.round(baseHandleRadius * 0.8))) : 0}
       {@const handleHitRadius = showHandles ? Math.max(12, handleRadius + 8) : 0}
@@ -3426,6 +3525,9 @@
       {@const bendRadius = showHandles ? Math.max(5, Math.round(handleRadius * 0.9)) : 0}
       {@const bendHitRadius = showHandles ? Math.max(14, bendRadius + 10) : 0}
       {@const bendPos = controls ? edgeBendHandlePos(edge, dragState, label) : null}
+        {@const labelPos = edgeLabelPos(edge, dragState)}
+      {@const timeoutSlider = (isSelected || isTimeoutSliderDrag) && !isHandleDrag && timeoutSliderSuppressedEdgeId !== edge.id && edge.type === "TEDGE" ? timeoutSliderModel(edge) : null}
+      {@const timeoutSliderBg = timeoutSlider ? edgeSliderBackground(baseColor) : null}
       <g
         class="edge-group"
         class:selected={isSelected}
@@ -3545,17 +3647,51 @@
           {/if}
         {/if}
         {#if label}
-          {@const pos = edgeLabelPos(edge, dragState)}
           <text
             class="edge-label"
-            x={pos.x}
-            y={pos.y}
+            x={labelPos.x}
+            y={labelPos.y}
             text-anchor="middle"
             dominant-baseline="middle"
             style={`--edge-color:${color}`}
           >
             {label}
           </text>
+        {/if}
+        {#if timeoutSlider}
+          {@const sliderWidth = Math.max(110, Math.round(fontSize * 8.2))}
+          {@const sliderHeight = Math.max(18, Math.round(fontSize * 1.2))}
+          {@const sliderPadX = Math.max(10, Math.round(fontSize * 0.75))}
+          {@const sliderPadY = Math.max(8, Math.round(fontSize * 0.65))}
+          {@const sliderY = labelPos.y + Math.max(20, Math.round(labelLineHeight * 1.45)) + sliderHeight / 2}
+          <foreignObject
+            class="edge-timeout-inline-fo"
+            x={labelPos.x - sliderWidth / 2 - sliderPadX}
+            y={sliderY - sliderHeight / 2 - sliderPadY}
+            width={sliderWidth + sliderPadX * 2}
+            height={sliderHeight + sliderPadY * 2}
+            on:pointerdown|stopPropagation
+          >
+            <div
+              xmlns="http://www.w3.org/1999/xhtml"
+              class="edge-timeout-inline"
+              style={`--edge-color:${baseColor}; --edge-bg:${timeoutSliderBg};`}
+            >
+              <input
+                class="edge-timeout-inline-slider"
+                type="range"
+                min={timeoutSlider.min}
+                max={timeoutSlider.max}
+                step={timeoutSlider.step}
+                value={timeoutSlider.value}
+                on:pointerdown={(event) => startTimeoutInlineDrag(edge, event)}
+                on:pointerup={endTimeoutInlineDrag}
+                on:pointercancel={endTimeoutInlineDrag}
+                on:blur={endTimeoutInlineDrag}
+                on:input={(event) => handleTimeoutInlineSliderInput(edge, event)}
+              />
+            </div>
+          </foreignObject>
         {/if}
         {#if controls && bendPos && (isSelected || isHovered)}
           <circle
