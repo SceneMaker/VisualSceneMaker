@@ -21,9 +21,9 @@
   const setSceneHighlightsEffect = StateEffect.define();
   const setSemanticHighlightsEffect = StateEffect.define();
 
-  const playedMark = Decoration.mark({ class: "cm-scene-played" });
-  const activeMark = Decoration.mark({ class: "cm-scene-active" });
-  const activeTurnMark = Decoration.mark({ class: "cm-scene-activeTurn" });
+  const scenePlayedLine = Decoration.line({ attributes: { class: "cm-scene-line cm-scene-line-played" } });
+  const sceneActiveLine = Decoration.line({ attributes: { class: "cm-scene-line cm-scene-line-active" } });
+  const sceneActiveTurnLine = Decoration.line({ attributes: { class: "cm-scene-line cm-scene-line-active-turn" } });
 
   const sceneHighlightField = StateField.define({
     create() { return Decoration.none; },
@@ -403,18 +403,65 @@
   function applySceneHighlights(highlights) {
     if (!view) return;
     const doc = view.state.doc;
-    const docLen = doc.length;
+    const maxLine = doc.lines;
+    const lineTypes = new Map();
+    const weight = { played: 1, active: 2, activeTurn: 3 };
+
+    function setLineType(lineNo, type) {
+      if (lineNo < 1 || lineNo > maxLine) return;
+      const current = lineTypes.get(lineNo);
+      if (!current || weight[type] > weight[current]) {
+        lineTypes.set(lineNo, type);
+      }
+    }
+
+    function startBoundaryLine(offset) {
+      if (!Number.isFinite(offset)) return -1;
+      const clamped = Math.max(0, Math.min(doc.length, Math.floor(offset)));
+      if (doc.length === 0) return 1;
+      if (clamped >= doc.length) return doc.lines;
+      return doc.lineAt(clamped).number;
+    }
+
+    function endBoundaryLine(offset) {
+      if (!Number.isFinite(offset)) return -1;
+      const clamped = Math.max(0, Math.min(doc.length, Math.floor(offset)));
+      if (clamped <= 0) return 1;
+      return doc.lineAt(clamped - 1).number;
+    }
+
+    function firstNonEmptyLine(fromLine, toLine) {
+      const start = Math.max(1, fromLine);
+      const end = Math.min(maxLine, Math.max(start, toLine));
+      for (let lineNo = start; lineNo <= end; lineNo += 1) {
+        if (doc.line(lineNo).text.trim().length > 0) {
+          return lineNo;
+        }
+      }
+      return start;
+    }
+
     const ranges = [];
     for (const h of highlights) {
       // lower/upper are character offsets into the script text
-      if (h.lower < 0 || h.upper < 0 || h.lower >= docLen) continue;
-      const from = doc.lineAt(Math.min(h.lower, docLen)).from;
-      const to = doc.lineAt(Math.min(h.upper, docLen)).to;
-      if (from >= to) continue;
-      const mark = h.type === "activeTurn" ? activeTurnMark
-                 : h.type === "active" ? activeMark : playedMark;
-      ranges.push(mark.range(from, to));
+      const fromLine = startBoundaryLine(h.lower);
+      const toLine = endBoundaryLine(h.upper);
+      if (fromLine < 1 || toLine < fromLine) continue;
+      const type = h.type === "activeTurn" ? "activeTurn"
+                 : h.type === "active" ? "active" : "played";
+      const anchorLine = firstNonEmptyLine(fromLine, toLine);
+      if (anchorLine > 0) {
+        setLineType(anchorLine, type);
+      }
     }
+
+    for (const [lineNo, type] of lineTypes) {
+      const lineFrom = doc.line(lineNo).from;
+      const deco = type === "activeTurn" ? sceneActiveTurnLine
+        : type === "active" ? sceneActiveLine : scenePlayedLine;
+      ranges.push(deco.range(lineFrom));
+    }
+
     ranges.sort((a, b) => a.from - b.from || a.to - b.to);
     view.dispatch({ effects: setSceneHighlightsEffect.of(Decoration.set(ranges)) });
   }

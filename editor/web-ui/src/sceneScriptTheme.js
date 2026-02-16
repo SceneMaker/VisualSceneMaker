@@ -28,17 +28,28 @@ export const sceneScriptTheme = EditorView.theme(
       backgroundColor: "rgba(46, 93, 58, 0.2)",
       color: "#1c1b15"
     },
-    ".cm-scene-played": {
-      backgroundColor: "rgba(46, 93, 58, 0.08)",
-      borderLeft: "3px solid rgba(46, 93, 58, 0.25)"
+    ".cm-line.cm-scene-line": {
+      position: "relative",
+      paddingLeft: "0.95rem"
     },
-    ".cm-scene-active": {
-      backgroundColor: "rgba(46, 93, 58, 0.18)",
-      borderLeft: "3px solid rgba(46, 93, 58, 0.6)"
+    ".cm-line.cm-scene-line::before": {
+      content: "\"\"",
+      position: "absolute",
+      left: "0.2rem",
+      top: "0.14em",
+      bottom: "0.14em",
+      width: "3px",
+      borderRadius: "999px",
+      backgroundColor: "rgba(46, 93, 58, 0.28)"
     },
-    ".cm-scene-activeTurn": {
-      backgroundColor: "rgba(46, 93, 58, 0.28)",
-      borderLeft: "3px solid rgba(46, 93, 58, 0.9)"
+    ".cm-line.cm-scene-line-played::before": {
+      backgroundColor: "rgba(46, 93, 58, 0.28)"
+    },
+    ".cm-line.cm-scene-line-active::before": {
+      backgroundColor: "rgba(46, 93, 58, 0.62)"
+    },
+    ".cm-line.cm-scene-line-active-turn::before": {
+      backgroundColor: "rgba(46, 93, 58, 0.95)"
     }
   },
   { dark: false }

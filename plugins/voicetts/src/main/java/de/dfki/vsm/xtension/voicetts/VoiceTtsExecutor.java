@@ -25,6 +25,8 @@ import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
@@ -59,8 +61,16 @@ public class VoiceTtsExecutor extends ActivityExecutor {
     private volatile boolean variableWritesEnabled = true;
     private volatile String lastSpeakKey = "";
     private volatile long lastSpeakNanos = 0L;
+    /** Client-side pre-buffer: accumulate this much audio before starting playback.
+     *  Must exceed the TTS model's generation interval (~350-400ms) to prevent
+     *  buffer underruns, but kept low to minimize time-to-first-audio. */
+    private static final double AUDIO_PREBUFFER_SECONDS = 1.0;
+    private volatile ByteArrayOutputStream audioPrebuffer;
+    private volatile int audioPrebufferTarget;
+    private volatile boolean audioPlaybackStarted;
     private final Object markerLock = new Object();
     private final LinkedList<String> pendingTimemarks = new LinkedList<>();
+    private volatile ScheduledExecutorService timemarkScheduler;
 
     private static final Pattern NEXT_KV_PATTERN = Pattern.compile("\\s+[A-Za-z_][A-Za-z0-9_]*=");
 
@@ -145,6 +155,7 @@ public class VoiceTtsExecutor extends ActivityExecutor {
         stopActiveSession("plugin_unload");
         disconnectOnly();
         closeAudioLine();
+        shutdownTimemarkScheduler();
         shutdownWorker();
     }
 
@@ -406,6 +417,9 @@ public class VoiceTtsExecutor extends ActivityExecutor {
     private void stopActiveSession(final String reason) {
         streamGeneration.incrementAndGet();
 
+        // Cancel any pending scheduled timemarks before stopping audio.
+        shutdownTimemarkScheduler();
+
         // Stop local playback first so audio halts immediately.
         closeAudioLineImmediate();
 
@@ -664,6 +678,68 @@ public class VoiceTtsExecutor extends ActivityExecutor {
         }
     }
 
+    private void scheduleNextTimemarkAtPlaybackPosition(final StreamClock clock) {
+        final String next;
+        synchronized (markerLock) {
+            if (pendingTimemarks.isEmpty()) {
+                return;
+            }
+            next = pendingTimemarks.removeFirst();
+        }
+        if (next == null || next.isBlank()) {
+            return;
+        }
+
+        // Determine how far into playback we are using the audio line's hardware position.
+        double targetMs = (clock != null) ? clock.startMs() : -1.0;
+        double playbackMs = getPlaybackPositionMs();
+
+        if (targetMs < 0 || playbackMs < 0 || playbackMs >= targetMs) {
+            // Already past this point or no clock data — dispatch immediately.
+            dispatchTimemark(next);
+            return;
+        }
+
+        long delayMs = Math.max(1L, (long) (targetMs - playbackMs));
+        mLogger.message("[voicetts] scheduling timemark " + next
+                + " in " + delayMs + "ms (target=" + String.format("%.0f", targetMs)
+                + "ms playback=" + String.format("%.0f", playbackMs) + "ms)");
+        ensureTimemarkScheduler();
+        final long gen = streamGeneration.get();
+        try {
+            timemarkScheduler.schedule(() -> {
+                if (gen == streamGeneration.get()) {
+                    dispatchTimemark(next);
+                }
+            }, delayMs, TimeUnit.MILLISECONDS);
+        } catch (RejectedExecutionException ex) {
+            // Scheduler shut down — dispatch immediately as fallback.
+            dispatchTimemark(next);
+        }
+    }
+
+    private double getPlaybackPositionMs() {
+        synchronized (audioLock) {
+            SourceDataLine line = audioLine;
+            if (line == null) {
+                return -1.0;
+            }
+            return line.getMicrosecondPosition() / 1000.0;
+        }
+    }
+
+    private synchronized void ensureTimemarkScheduler() {
+        if (timemarkScheduler == null || timemarkScheduler.isShutdown()) {
+            timemarkScheduler = Executors.newSingleThreadScheduledExecutor();
+        }
+    }
+
+    private synchronized void shutdownTimemarkScheduler() {
+        if (timemarkScheduler != null && !timemarkScheduler.isShutdown()) {
+            timemarkScheduler.shutdownNow();
+        }
+    }
+
     private String sanitizeGenerationMode(final String mode) {
         final String normalized = safe(mode).trim().toLowerCase(Locale.ROOT);
         if ("stream".equals(normalized) || "streaming".equals(normalized)) {
@@ -731,13 +807,49 @@ public class VoiceTtsExecutor extends ActivityExecutor {
                     AudioFormat format = new AudioFormat(sampleRate, 16, channels, true, false);
                     DataLine.Info info = new DataLine.Info(SourceDataLine.class, format);
                     SourceDataLine line = (SourceDataLine) AudioSystem.getLine(info);
-                    line.open(format);
-                    line.start();
+                    // 4-second hardware buffer for large cushion
+                    int bufferBytes = sampleRate * 2 * channels * 4;
+                    line.open(format, bufferBytes);
+                    // Don't start yet — prebuffer first
                     audioLine = line;
                     audioSampleRate = sampleRate;
                     audioChannels = channels;
+                    audioPlaybackStarted = false;
+                    audioPrebuffer = new ByteArrayOutputStream();
+                    audioPrebufferTarget = (int) (sampleRate * 2 * channels * AUDIO_PREBUFFER_SECONDS);
                 }
                 markPlaybackStart(event);
+
+                // Phase 1: accumulate into prebuffer
+                if (!audioPlaybackStarted) {
+                    audioPrebuffer.write(pcm);
+                    // Track bytes/chunks even during prebuffering
+                    playbackBytesWritten += pcm.length;
+                    playbackChunksWritten += 1;
+                    if (playbackPcmBuffer != null) {
+                        playbackPcmBuffer.write(pcm, 0, pcm.length);
+                    }
+                    if (event.clock() != null) {
+                        long end = event.clock().endSample();
+                        if (end > playbackLastEndSample) {
+                            playbackLastEndSample = end;
+                        }
+                    }
+                    if (audioPrebuffer.size() >= audioPrebufferTarget) {
+                        byte[] buffered = audioPrebuffer.toByteArray();
+                        audioPrebuffer = null;
+                        audioLine.write(buffered, 0, buffered.length);
+                        audioLine.start();
+                        audioPlaybackStarted = true;
+                        mLogger.message("[voicetts] " + safe(activeSpeakTag)
+                                + " audio.prebuffer_flush ms="
+                                + String.format("%.0f", buffered.length * 1000.0 / (sampleRate * 2 * channels))
+                                + " chunks=" + playbackChunksWritten);
+                    }
+                    return;
+                }
+
+                // Phase 2: stream directly to audio line
                 audioLine.write(pcm, 0, pcm.length);
                 playbackBytesWritten += pcm.length;
                 playbackChunksWritten += 1;
@@ -770,6 +882,17 @@ public class VoiceTtsExecutor extends ActivityExecutor {
     }
 
     private void closeAudioLineLocked() {
+        // Flush any remaining prebuffer (short utterances that didn't reach target)
+        if (!audioPlaybackStarted && audioPrebuffer != null && audioLine != null) {
+            byte[] remaining = audioPrebuffer.toByteArray();
+            audioPrebuffer = null;
+            if (remaining.length > 0) {
+                audioLine.write(remaining, 0, remaining.length);
+                audioLine.start();
+                audioPlaybackStarted = true;
+            }
+        }
+        audioPrebuffer = null;
         markPlaybackEnd("drain");
         if (audioLine != null) {
             try {
@@ -788,6 +911,7 @@ public class VoiceTtsExecutor extends ActivityExecutor {
     }
 
     private void closeAudioLineLockedImmediate() {
+        audioPrebuffer = null;
         markPlaybackEnd("immediate");
         if (audioLine != null) {
             try {
@@ -892,7 +1016,7 @@ public class VoiceTtsExecutor extends ActivityExecutor {
             }
             setStringVar(wordVar, event.word());
             setBoolVar(wordFinalVar, true);
-            dispatchNextTimemark();
+            scheduleNextTimemarkAtPlaybackPosition(event.clock());
         }
 
         @Override
