@@ -74,6 +74,7 @@
   const TIMEOUT_INLINE_SLIDER_MAX = 1000;
   const TIMEOUT_INLINE_HALF = TIMEOUT_INLINE_SLIDER_MAX / 2;
   const COMMAND_FONT_FAMILY = '"SansSerif", "Helvetica Neue", Arial, sans-serif';
+  const SUPER_ANCHOR_INSET_PX = 0.45;
   const EXPORT_STYLE_PROPS = [
     "fill",
     "fill-opacity",
@@ -1750,7 +1751,19 @@
       const ny = halfH > 0 ? absDy / halfH : 0;
       const denom = Math.pow(nx, SUPER_NODE_SHAPE_POWER) + Math.pow(ny, SUPER_NODE_SHAPE_POWER);
       const scale = denom > 0 ? 1 / Math.pow(denom, 1 / SUPER_NODE_SHAPE_POWER) : 0;
-      return { x: cx + dx * scale, y: cy + dy * scale };
+      const bx = cx + dx * scale;
+      const by = cy + dy * scale;
+      const toCenterX = cx - bx;
+      const toCenterY = cy - by;
+      const toCenterLen = Math.hypot(toCenterX, toCenterY);
+      if (!Number.isFinite(toCenterLen) || toCenterLen < 0.0001) {
+        return { x: bx, y: by };
+      }
+      const insetWorld = SUPER_ANCHOR_INSET_PX / Math.max(0.0001, zoomLevel || 1);
+      return {
+        x: bx + (toCenterX / toCenterLen) * insetWorld,
+        y: by + (toCenterY / toCenterLen) * insetWorld
+      };
     }
     const rx = w / 2;
     const ry = h / 2;
@@ -3221,7 +3234,8 @@
         });
       }
     }
-    if (edge?.graphics?.docked) {
+    const hasSuperEndpoint = source?.type === "Super" || target?.type === "Super";
+    if (edge?.graphics?.docked && !hasSuperEndpoint) {
       return points;
     }
     const startGuide = edgeGuidePoint(start, end);
