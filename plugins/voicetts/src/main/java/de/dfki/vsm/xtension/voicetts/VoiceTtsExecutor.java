@@ -65,12 +65,45 @@ public class VoiceTtsExecutor extends ActivityExecutor {
      *  Must exceed the TTS model's generation interval (~350-400ms) to prevent
      *  buffer underruns, but kept low to minimize time-to-first-audio. */
     private static final double AUDIO_PREBUFFER_SECONDS = 1.0;
+    /** Reduced pre-buffer for cached responses where all chunks arrive instantly. */
+    private static final double AUDIO_PREBUFFER_SECONDS_CACHED = 0.05;
     private volatile ByteArrayOutputStream audioPrebuffer;
     private volatile int audioPrebufferTarget;
     private volatile boolean audioPlaybackStarted;
+    private volatile boolean sessionCached;
     private final Object markerLock = new Object();
     private final LinkedList<String> pendingTimemarks = new LinkedList<>();
     private volatile ScheduledExecutorService timemarkScheduler;
+
+    /** Delegating listener that routes events to the current session's ListenerImpl.
+     *  This allows the same TtsStreamClient (and WebSocket) to be reused across sessions. */
+    private volatile TtsStreamEventListener sessionListener;
+    private final TtsStreamEventListener persistentListener = new TtsStreamEventListener() {
+        @Override public void onSessionStarted(SessionStartedEvent event) {
+            TtsStreamEventListener l = sessionListener; if (l != null) l.onSessionStarted(event);
+        }
+        @Override public void onAudioChunk(AudioChunkEvent event) {
+            TtsStreamEventListener l = sessionListener; if (l != null) l.onAudioChunk(event);
+        }
+        @Override public void onViseme(VisemeEvent event) {
+            TtsStreamEventListener l = sessionListener; if (l != null) l.onViseme(event);
+        }
+        @Override public void onWordProvisional(WordTimingEvent event) {
+            TtsStreamEventListener l = sessionListener; if (l != null) l.onWordProvisional(event);
+        }
+        @Override public void onWordFinal(WordTimingEvent event) {
+            TtsStreamEventListener l = sessionListener; if (l != null) l.onWordFinal(event);
+        }
+        @Override public void onSessionCompleted(SessionCompletedEvent event) {
+            TtsStreamEventListener l = sessionListener; if (l != null) l.onSessionCompleted(event);
+        }
+        @Override public void onSessionError(SessionErrorEvent event) {
+            TtsStreamEventListener l = sessionListener; if (l != null) l.onSessionError(event);
+        }
+        @Override public void onTransportError(Throwable error) {
+            TtsStreamEventListener l = sessionListener; if (l != null) l.onTransportError(error);
+        }
+    };
 
     private static final Pattern NEXT_KV_PATTERN = Pattern.compile("\\s+[A-Za-z_][A-Za-z0-9_]*=");
 
@@ -283,7 +316,7 @@ public class VoiceTtsExecutor extends ActivityExecutor {
         }
     }
 
-    private void runSpeakSession(
+    protected void runSpeakSession(
             final String speakTag,
             final String generationMode,
             final String mode,
@@ -308,14 +341,35 @@ public class VoiceTtsExecutor extends ActivityExecutor {
         setStringVar(errorVar, "");
 
         final long generation = streamGeneration.get();
-        final TtsStreamEventListener listener = new ListenerImpl(generation);
-        final TtsStreamClient client = new TtsStreamClient(wsUrl, listener);
-        activeClient.set(client);
+        sessionListener = createSessionListener(generation);
+
+        // Try to reuse existing persistent connection
+        TtsStreamClient client = activeClient.get();
+        boolean reusedConnection = false;
+        if (client != null && client.isConnected() && client.isSessionDone()) {
+            client.resetForNewSession();
+            reusedConnection = true;
+        } else {
+            // Close stale client if any
+            if (client != null) {
+                try { client.close(); } catch (Exception ignore) {}
+            }
+            client = new TtsStreamClient(wsUrl, persistentListener);
+            activeClient.set(client);
+            try {
+                client.connect();
+            } catch (Exception ex) {
+                setStringVar(errorVar, "connect failed: " + ex.getMessage());
+                setStringVar(debugStateVar, "connect_failed");
+                activeClient.compareAndSet(client, null);
+                isSpeaking = false;
+                setBoolVar(speakingVar, false);
+                return;
+            }
+        }
+        setBoolVar(connectedVar, true);
 
         try {
-            client.connect();
-            setBoolVar(connectedVar, true);
-
             String effectiveRefAudioB64 = null;
             if ("clone".equals(mode)) {
                 effectiveRefAudioB64 = resolveRefAudioB64(refAudioB64Inline, refAudioPath);
@@ -343,7 +397,8 @@ public class VoiceTtsExecutor extends ActivityExecutor {
             final TtsStreamRequest request = requestBuilder.build();
 
             activeRequestId = request.requestId();
-            mLogger.message("[voicetts] " + speakTag + " session.start request_id=" + activeRequestId);
+            mLogger.message("[voicetts] " + speakTag + " session.start request_id=" + activeRequestId
+                    + " reused_connection=" + reusedConnection);
             setStringVar(debugReqVar, activeRequestId);
             setStringVar(debugStateVar, "session_start");
             client.startSession(request);
@@ -356,12 +411,11 @@ public class VoiceTtsExecutor extends ActivityExecutor {
         } catch (Exception ex) {
             setStringVar(errorVar, "TTS exception: " + ex.getMessage());
             setStringVar(debugStateVar, "exception");
-        } finally {
-            try {
-                client.close();
-            } catch (Exception ignore) {
-            }
+            // Connection may be broken — discard it
+            try { client.close(); } catch (Exception ignore) {}
             activeClient.compareAndSet(client, null);
+        } finally {
+            // Keep connection alive for reuse — only reset session state
             activeRequestId = null;
             activeSpeakTag = null;
             isSpeaking = false;
@@ -376,11 +430,10 @@ public class VoiceTtsExecutor extends ActivityExecutor {
         submitWorker(() -> {
             try {
                 TtsStreamClient existing = activeClient.get();
-                if (existing != null) {
+                if (existing != null && existing.isConnected()) {
                     return;
                 }
-                long generation = streamGeneration.get();
-                TtsStreamClient client = new TtsStreamClient(wsUrl, new ListenerImpl(generation));
+                TtsStreamClient client = new TtsStreamClient(wsUrl, persistentListener);
                 client.connect();
                 activeClient.set(client);
                 setBoolVar(connectedVar, true);
@@ -393,6 +446,7 @@ public class VoiceTtsExecutor extends ActivityExecutor {
     private void disconnectOnly() {
         try {
             TtsStreamClient client = activeClient.getAndSet(null);
+            sessionListener = null;
             if (client != null) {
                 try {
                     String req = activeRequestId;
@@ -423,16 +477,15 @@ public class VoiceTtsExecutor extends ActivityExecutor {
         // Stop local playback first so audio halts immediately.
         closeAudioLineImmediate();
 
-        TtsStreamClient client = activeClient.getAndSet(null);
+        // Cancel the running session but keep the connection alive for reuse.
+        // If the session is still in-progress on the server side, runSpeakSession
+        // will detect isSessionDone()==false and create a fresh connection.
+        TtsStreamClient client = activeClient.get();
         String req = activeRequestId;
         if (client != null && req != null && !req.isBlank()) {
             mLogger.message("[voicetts] cancel request_id=" + req + " reason=" + reason);
             try {
                 client.cancel(req, reason);
-            } catch (Exception ignore) {
-            }
-            try {
-                client.close();
             } catch (Exception ignore) {
             }
         }
@@ -816,7 +869,10 @@ public class VoiceTtsExecutor extends ActivityExecutor {
                     audioChannels = channels;
                     audioPlaybackStarted = false;
                     audioPrebuffer = new ByteArrayOutputStream();
-                    audioPrebufferTarget = (int) (sampleRate * 2 * channels * AUDIO_PREBUFFER_SECONDS);
+                    double prebufferSeconds = sessionCached
+                            ? AUDIO_PREBUFFER_SECONDS_CACHED
+                            : AUDIO_PREBUFFER_SECONDS;
+                    audioPrebufferTarget = (int) (sampleRate * 2 * channels * prebufferSeconds);
                 }
                 markPlaybackStart(event);
 
@@ -929,7 +985,11 @@ public class VoiceTtsExecutor extends ActivityExecutor {
         audioChannels = -1;
     }
 
-    private final class ListenerImpl implements TtsStreamEventListener {
+    protected TtsStreamEventListener createSessionListener(long generation) {
+        return new ListenerImpl(generation);
+    }
+
+    protected class ListenerImpl implements TtsStreamEventListener {
         private final long generation;
 
         private ListenerImpl(final long generation) {
@@ -945,8 +1005,10 @@ public class VoiceTtsExecutor extends ActivityExecutor {
             if (!isCurrentGeneration()) {
                 return;
             }
+            sessionCached = event.cached();
             mLogger.message("[voicetts] " + safe(activeSpeakTag) + " session.started request_id="
-                    + event.requestId() + " session_id=" + event.sessionId());
+                    + event.requestId() + " session_id=" + event.sessionId()
+                    + " cached=" + event.cached());
             setBoolVar(connectedVar, true);
             setStringVar(debugStateVar, "session_started");
             if (event.selectedCustomVoiceId() != null && !event.selectedCustomVoiceId().isBlank()) {
@@ -1074,6 +1136,7 @@ public class VoiceTtsExecutor extends ActivityExecutor {
             playbackPcmBuffer = null;
             playbackDumpSampleRate = -1;
             playbackDumpChannels = -1;
+            sessionCached = false;
         }
     }
 

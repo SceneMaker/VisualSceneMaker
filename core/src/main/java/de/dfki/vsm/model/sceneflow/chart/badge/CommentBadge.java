@@ -11,11 +11,6 @@ import de.dfki.vsm.util.xml.XMLParseError;
 
 import org.w3c.dom.Element;
 
-//~--- JDK imports ------------------------------------------------------------
-import java.awt.Font;
-
-import javax.swing.JEditorPane;
-
 /**
  * @author Gregor Mehlmann
  * @author Patrick Gebhard
@@ -25,8 +20,6 @@ public class CommentBadge implements ModelObject {
     protected SuperNode mParentNode = null;
     protected String mHTMLText = "";
     protected CommentGraphics mGraphics;
-    protected int mFontSize;
-    JEditorPane mTextEditor;
 
     public void setParentNode(SuperNode value) {
         mParentNode = value;
@@ -40,10 +33,6 @@ public class CommentBadge implements ModelObject {
         mGraphics = value;
     }
 
-    public void setFontSize(int value) {
-        mFontSize = value;
-    }
-
     public String getHTMLText() {
         return mHTMLText.trim();
     }
@@ -53,22 +42,9 @@ public class CommentBadge implements ModelObject {
     }
 
     private void formatHTML() {
-        // PG 30.7.2016 Da fuck? This is not allowed in the model!      
-        //mFontSize = EditorInstance.getInstance().getSelectedProjectEditor().getEditorProject().getEditorConfig().sWORKSPACEFONTSIZE;
-        mFontSize = 16;
-
-        if (mTextEditor == null) {
-            mTextEditor = new JEditorPane();
+        if (mHTMLText == null) {
+            mHTMLText = "";
         }
-
-        //mTextEditor.setContentType(new HTMLEditorKit().getContentType());
-        // now use the same font than the label!
-        Font mFont = new Font("SansSerif", Font.PLAIN, mFontSize);
-        String bodyRule = "body { font-family: " + mFont.getFamily() + "; " + "font-size: " + mFont.getSize() + "pt; }";
-
-        // ((HTMLDocument) mTextEditor.getDocument()).getStyleSheet().addRule(bodyRule);
-        mTextEditor.setText(mHTMLText);
-        mHTMLText = mTextEditor.getText();
     }
 
     public void parseXML(Element element) throws XMLParseError {
