@@ -1,0 +1,24 @@
+plugins {
+    id 'java'
+}
+
+group 'de.dfki'
+version '1.0.0'
+
+repositories {
+    mavenCentral()
+}
+
+def defaultCoreJar = '/Users/gebhard/Code/Repo/qwen3-tts-apple-silicon/stream-client-core/build/libs/stream-client-core-0.1.0.jar'
+def ttsCoreJarPath = findProperty('ttsCoreJar') ?: System.getenv('TTS_CORE_JAR') ?: defaultCoreJar
+
+dependencies {
+    implementation project(":core")
+    implementation project(":plugins:voicetts")
+    implementation files(ttsCoreJarPath)
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.18.2'
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.compilerArgs += ['-Xlint:deprecation', '-Xlint:unchecked']
+}

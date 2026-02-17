@@ -5,7 +5,6 @@ package de.dfki.vsm.util.syn;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 import java_cup.runtime.Scanner;
 
-import javax.swing.text.Segment;
 import java.io.CharArrayReader;
 import java.io.Reader;
 import java.util.LinkedList;
@@ -61,13 +60,14 @@ public abstract class SyntaxDocLexxer implements Scanner {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public LinkedList<SyntaxDocSymbol> scan_token_list(final Segment segment, final int offset) {
+    public LinkedList<SyntaxDocSymbol> scan_token_list(final char[] buffer, final int start, final int length,
+                                                       final int offset) {
 
         // Create A New List Of Symbols
         final LinkedList<SyntaxDocSymbol> list = new LinkedList<>();
 
         // Create A New Character Reader
-        final CharArrayReader reader = new CharArrayReader(segment.array, segment.offset, segment.count);
+        final CharArrayReader reader = new CharArrayReader(buffer, start, length);
 
         // Reset Lexxer With The Reader
         init(reader, true, true, true);

@@ -126,7 +126,7 @@ public class SyntaxDocument extends PlainDocument implements UndoableEditListene
             getText(0, getLength(), segment);
 
             // Scan The Segment Of Text
-            mSymbolList = mLexxer.scan_token_list(segment, 0);
+            mSymbolList = mLexxer.scan_token_list(segment.array, segment.offset, segment.count, 0);
         } catch (Exception exc) {
 
             // Catch Error Or Exception
