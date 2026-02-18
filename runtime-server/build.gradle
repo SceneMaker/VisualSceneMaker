@@ -13,8 +13,12 @@ repositories {
 }
 
 dependencies {
-    // Core module contains runtime engine and basic WebUiServer
+    // Core runtime/model
     implementation project(':core')
+    // Desktop webserver adapter module
+    implementation project(':core-webserver')
+    // Desktop logic adapter (JPL)
+    implementation project(':core-logic-jpl')
 
     // Minimal plugins for runtime (optional, can be configured per deployment)
     implementation project(':plugins:timer')

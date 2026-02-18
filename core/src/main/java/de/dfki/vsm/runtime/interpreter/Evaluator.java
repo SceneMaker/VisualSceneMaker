@@ -21,10 +21,7 @@ import de.dfki.vsm.runtime.interpreter.error.SceneDoesNotExists;
 import de.dfki.vsm.runtime.interpreter.event.TerminationEvent;
 import de.dfki.vsm.runtime.interpreter.value.*;
 import de.dfki.vsm.runtime.logic.LogicEngines;
-import de.dfki.vsm.util.jpl.JPLResult;
-import de.dfki.vsm.util.jpl.JPLUtility;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
-import org.jpl7.Term;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
@@ -734,23 +731,20 @@ public final class Evaluator {
 
         //mLogger.warning("Executing Prolog Query '" + querystr + "'");
         // Make The Query To The KB
-        final JPLResult result = LogicEngines.get().query(querystr);
-        final JPLResult clean = result.clean();
+        final de.dfki.vsm.runtime.logic.LogicQueryResult result = LogicEngines.get().query(querystr);
 
         // Check The Query Results
-        if (clean.size() == 1) {
+        if (result.size() == 1) {
             // Get The First And Single Substitution
-            Map<String, Term> subst = clean.getFirst();
+            Map<String, String> subst = result.getFirst();
             // Try To Set The Variables Locally
             // Because A Local Thread Is Trying
             // Set The Variables In The Environment
-            for (Entry<String, Term> entry : subst.entrySet()) {
+            for (Entry<String, String> entry : subst.entrySet()) {
                 try {
                     // Get the variable name
                     final String variable = entry.getKey();
-                    final Term term = entry.getValue();
-                    // Convert list and pair appearances
-                    final String binding = JPLUtility.convert(term.toString());
+                    final String binding = entry.getValue();
 
                     // This call returns nothing if the variable exists and and throws an exeption
                     env.write(variable, new StringValue(binding));

@@ -1,7 +1,5 @@
 package de.dfki.vsm.runtime.logic;
 
-import de.dfki.vsm.util.jpl.JPLResult;
-
 /**
  * Placeholder engine for platforms where Prolog/JPL is intentionally disabled.
  */
@@ -23,7 +21,7 @@ public final class DisabledLogicEngine implements LogicEngine {
     }
 
     @Override
-    public JPLResult query(final String query) {
+    public LogicQueryResult query(final String query) {
         throw new IllegalStateException("Logic engine is disabled");
     }
 }

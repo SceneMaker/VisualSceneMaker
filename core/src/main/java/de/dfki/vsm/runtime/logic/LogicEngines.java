@@ -30,6 +30,19 @@ public final class LogicEngines {
         if (vmName.contains("dalvik") || runtimeName.contains("android")) {
             return new DisabledLogicEngine();
         }
-        return new JplLogicEngine();
+        return createJplIfAvailable();
+    }
+
+    private static LogicEngine createJplIfAvailable() {
+        try {
+            Class<?> clazz = Class.forName("de.dfki.vsm.runtime.logic.JplLogicEngine");
+            Object instance = clazz.getDeclaredConstructor().newInstance();
+            if (instance instanceof LogicEngine) {
+                return (LogicEngine) instance;
+            }
+        } catch (Throwable ignored) {
+            // Fall back to disabled logic engine when the JPL adapter module is not on the classpath.
+        }
+        return new DisabledLogicEngine();
     }
 }

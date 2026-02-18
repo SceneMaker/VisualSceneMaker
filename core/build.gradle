@@ -22,33 +22,12 @@ repositories {
 dependencies {
     compileOnly group: 'com.github.vbmacher', name: 'java-cup-runtime', version: '11b-20160615'
     runtimeOnly group: 'com.github.vbmacher', name: 'java-cup-runtime', version: '11b-20160615'
-    // https://mvnrepository.com/artifact/jpl/jpl
-    implementation group: 'jpl', name: 'jpl', version: '7.4.0'
     // https://mvnrepository.com/artifact/org.jetbrains/annotations
     implementation group: 'org.jetbrains', name: 'annotations', version: '17.0.0'
-    // https://mvnrepository.com/artifact/javax.xml.bind/jaxb-api
-    implementation group: 'javax.xml.bind', name: 'jaxb-api', version: '2.4.0-b180830.0359'
-    // https://mvnrepository.com/artifact/io.javalin/javalin
-    implementation group: 'io.javalin', name: 'javalin', version: '4.6.8'
     // https://mvnrepository.com/artifact/org.json/json
     implementation group: 'org.json', name: 'json', version: '20240303'
-    // https://mvnrepository.com/artifact/org.reflections/reflections
-    implementation group: 'org.reflections', name: 'reflections', version: '0.9.12'
 
 }
-
-def webUiSourceDir = rootProject.file("editor/src/main/resources/web-ui")
-def webUiTargetDir = file("src/main/resources/web-ui")
-
-tasks.register("syncWebUi", Sync) {
-    dependsOn project(":editor").tasks.named("webUiBuild")
-    from(webUiSourceDir)
-    into(webUiTargetDir)
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-    onlyIf { webUiSourceDir.exists() }
-}
-
-processResources.dependsOn tasks.named("syncWebUi")
 
 
 jar {

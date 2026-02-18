@@ -1,0 +1,32 @@
+plugins {
+    id 'java'
+}
+
+group 'de.dfki.vsm'
+
+repositories {
+    mavenCentral()
+    maven { url "https://repo.spring.io/libs-release" }
+}
+
+dependencies {
+    implementation project(':core')
+    implementation project(':core-http-jdk')
+
+    implementation group: 'io.javalin', name: 'javalin', version: '4.6.8'
+    implementation group: 'org.reflections', name: 'reflections', version: '0.9.12'
+    implementation group: 'org.json', name: 'json', version: '20240303'
+}
+
+def webUiSourceDir = rootProject.file("editor/src/main/resources/web-ui")
+def webUiTargetDir = file("src/main/resources/web-ui")
+
+tasks.register("syncWebUi", Sync) {
+    dependsOn project(":editor").tasks.named("webUiBuild")
+    from(webUiSourceDir)
+    into(webUiTargetDir)
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    onlyIf { webUiSourceDir.exists() }
+}
+
+processResources.dependsOn tasks.named("syncWebUi")

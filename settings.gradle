@@ -1,6 +1,9 @@
 rootProject.name = 'VisualSceneMaker'
 
 include 'core'
+include 'core-webserver'
+include 'core-http-jdk'
+include 'core-logic-jpl'
 include 'editor'
 include 'runtime-server'
 include 'services'
