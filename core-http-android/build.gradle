@@ -10,6 +10,8 @@ repositories {
 
 dependencies {
     implementation project(':core')
+    implementation 'org.nanohttpd:nanohttpd:2.3.1'
+    implementation 'org.nanohttpd:nanohttpd-websocket:2.3.1'
 }
 
 tasks.register('verifyAndroidPortableApis') {

@@ -55,7 +55,6 @@ public class TimeoutManager {
         }
 
         mTimeoutCondList.clear();
-        mLogger.message("Clearing timeout manager");
     }
 
     public boolean expired(final TimeoutQuery cond) {
@@ -71,7 +70,6 @@ public class TimeoutManager {
         Tuple<Boolean, TimerTask> entry = mTimeoutCondList.remove(cond);
         if (entry != null) {
             entry.getSecond().cancel();
-            mLogger.message("removing " + cond.getConcreteSyntax() + " ");
         } else {
             mLogger.warning("TimeoutManager: tried to remove unknown condition " + cond.getConcreteSyntax());
         }
@@ -79,7 +77,6 @@ public class TimeoutManager {
 
     public void start(final TimeoutQuery cond, int timeout) {
         if (contains(cond)) {
-            mLogger.message("Already contained " + cond.getConcreteSyntax() + " -> restart");
             remove(cond);
         }
 
@@ -90,7 +87,6 @@ public class TimeoutManager {
 
                 if (contains(cond)) {
                     mTimeoutCondList.get(cond).setFirst(true);
-                    mLogger.message("Setting true " + cond.getConcreteSyntax());
                 }
 
                 mInterpreter.markInterruptorDirty();

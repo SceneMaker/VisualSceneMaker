@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SceneFlow id="" name="" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Wed, 18 Feb 2026 16:49:14" start="N1;N3;S1;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
+  <Define>
+  </Define>
+  <Declare>
+    <VariableDefinition type="Int" name ="cnt">
+      <IntLiteral value="0"/>
+    </VariableDefinition>
+    <VariableDefinition type="Int" name ="time">
+      <IntLiteral value="0"/>
+    </VariableDefinition>
+    <VariableDefinition type="String" name ="message">
+      <StringLiteral><![CDATA[]]></StringLiteral>
+    </VariableDefinition>
+  </Declare>
+  <Commands>
+  </Commands>
+  <LocalVariableBadge>
+    <Position xPos="10" yPos="10"/>
+  </LocalVariableBadge>
+  <GlobalVariableBadge>
+    <Position xPos="10" yPos="10"/>
+  </GlobalVariableBadge>
+  <Node id="N1" name="Start" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <PlayAction mode="Default">
+        <StringLiteral><![CDATA[[time init id=one]]]></StringLiteral>
+      </PlayAction>
+    </Commands>
+    <TEdge target="N2" start="" timeout="370">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="210" yPos="255" ctrlXPos="278" ctrlYPos="255"/>
+          <ControlPoint xPos="390" yPos="255" ctrlXPos="323" ctrlYPos="255"/>
+        </Connection>
+      </Graphics>
+    </TEdge>
+    <Graphics>
+      <Position xPos="120" yPos="210"/>
+    </Graphics>
+  </Node>
+  <Node id="N2" name="Increase" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <PlayAction mode="Default">
+        <StringLiteral><![CDATA[[time time id=one var=time]]]></StringLiteral>
+      </PlayAction>
+      <Assignment>
+        <SimpleVariable name="cnt"/>
+        <Expression>
+          <Add>
+            <SimpleVariable name="cnt"/>
+            <IntLiteral value="1"/>
+          </Add>
+        </Expression>
+      </Assignment>
+    </Commands>
+    <TEdge target="N1" start="" timeout="470">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="392" yPos="243" ctrlXPos="328" ctrlYPos="225"/>
+          <ControlPoint xPos="208" yPos="243" ctrlXPos="273" ctrlYPos="225"/>
+        </Connection>
+      </Graphics>
+    </TEdge>
+    <Graphics>
+      <Position xPos="390" yPos="210"/>
+    </Graphics>
+  </Node>
+  <Node id="N3" name="Start" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <EEdge target="N4" start ="">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="210" yPos="435" ctrlXPos="278" ctrlYPos="435"/>
+        <ControlPoint xPos="390" yPos="435" ctrlXPos="323" ctrlYPos="435"/>
+      </Connection>
+    </Graphics>
+    </EEdge>
+    <Graphics>
+      <Position xPos="120" yPos="390"/>
+    </Graphics>
+  </Node>
+  <Node id="N4" name="Decrease" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <Assignment>
+        <SimpleVariable name="cnt"/>
+        <Expression>
+          <Sub>
+            <SimpleVariable name="cnt"/>
+            <IntLiteral value="1"/>
+          </Sub>
+        </Expression>
+      </Assignment>
+    </Commands>
+    <TEdge target="N3" start="" timeout="1000">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="392" yPos="423" ctrlXPos="328" ctrlYPos="405"/>
+          <ControlPoint xPos="208" yPos="423" ctrlXPos="273" ctrlYPos="405"/>
+        </Connection>
+      </Graphics>
+    </TEdge>
+    <Graphics>
+      <Position xPos="390" yPos="390"/>
+    </Graphics>
+  </Node>
+  <Node id="N6" name="Done" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <Assignment>
+        <SimpleVariable name="message"/>
+        <Expression>
+          <StringLiteral><![CDATA[I'm done]]></StringLiteral>
+        </Expression>
+      </Assignment>
+    </Commands>
+    <Graphics>
+      <Position xPos="390" yPos="570"/>
+    </Graphics>
+  </Node>
+  <SuperNode id="S1" name="cnt > 3" comment="" hideLocalVar="false" hideGlobalVar="false" start="N5;">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <IEdge target="N6" start="">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="210" yPos="615" ctrlXPos="278" ctrlYPos="615"/>
+          <ControlPoint xPos="390" yPos="615" ctrlXPos="323" ctrlYPos="615"/>
+        </Connection>
+      </Graphics>
+      <Gt>
+        <SimpleVariable name="cnt"/>
+        <IntLiteral value="3"/>
+      </Gt>
+    </IEdge>
+    <Graphics>
+      <Position xPos="120" yPos="570"/>
+    </Graphics>
+    <LocalVariableBadge>
+      <Position xPos="10" yPos="10"/>
+    </LocalVariableBadge>
+    <GlobalVariableBadge>
+      <Position xPos="10" yPos="10"/>
+    </GlobalVariableBadge>
+    <Node id="N5" name="Node N5" history="false">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+      </Commands>
+      <TEdge target="N5" start="" timeout="1000">
+        <Graphics>
+          <Connection>
+            <ControlPoint xPos="287" yPos="493" ctrlXPos="287" ctrlYPos="493"/>
+            <ControlPoint xPos="223" yPos="493" ctrlXPos="223" ctrlYPos="493"/>
+          </Connection>
+        </Graphics>
+      </TEdge>
+      <Graphics>
+        <Position xPos="210" yPos="480"/>
+      </Graphics>
+    </Node>
+  </SuperNode>
+  <ClassPath>
+  </ClassPath>
+  <InitContext></InitContext>
+</SceneFlow>

@@ -100,6 +100,10 @@ import de.dfki.vsm.runtime.interpreter.event.TerminationEvent;
 import de.dfki.vsm.util.tpl.Tuple;
 import de.dfki.vsm.runtime.interpreter.value.AbstractValue;
 import de.dfki.vsm.runtime.interpreter.value.EventValue;
+import de.dfki.vsm.runtime.gateway.RuntimeGateway;
+import de.dfki.vsm.runtime.gateway.RuntimeGateways;
+import de.dfki.vsm.runtime.api.RuntimeCommandEndpoint;
+import de.dfki.vsm.runtime.api.RuntimeWsProtocol;
 import java.util.List;
 import java.util.ArrayList;
 import de.dfki.vsm.util.llm.LLMSupport;
@@ -151,7 +155,7 @@ import de.dfki.vsm.model.visicon.VisiconAgent;
 import de.dfki.vsm.model.visicon.VisiconConfig;
 import de.dfki.vsm.model.visicon.VisiconViseme;
 
-public final class WebUiServer implements EventListener {
+public final class WebUiServer implements EventListener, RuntimeCommandEndpoint {
 
     private static final Map<String, ExportablePropertyEntry> EXPORTABLE_PROPERTY_PROVIDERS = new HashMap<>();
 
@@ -284,12 +288,1347 @@ public final class WebUiServer implements EventListener {
     private ServerMode mMode = ServerMode.FULL_EDITOR;
     private String mAuthToken;
     private final Map<String, ProjectRef> projectStore = new HashMap<>();
+    private final Map<String, WsCommandHandler> wsCommandRegistry = new HashMap<>();
     private final java.util.Set<WsContext> wsSessions = ConcurrentHashMap.newKeySet();
+    private final RuntimeGateway runtimeGateway;
+    private final RuntimeCommandService runtimeCommandService = new RuntimeCommandService();
+    private final NodeVarDefCommandService nodeVarDefCommandService = new NodeVarDefCommandService();
+    private final NodeTypeDefCommandService nodeTypeDefCommandService = new NodeTypeDefCommandService();
+    private final NodeCmdCommandService nodeCmdCommandService = new NodeCmdCommandService();
+    private final CommentCommandService commentCommandService = new CommentCommandService();
+    private final SelectionCommandService selectionCommandService = new SelectionCommandService();
+    private final UndoRedoCommandService undoRedoCommandService = new UndoRedoCommandService();
+    private final PlaySceneCommandService playSceneCommandService = new PlaySceneCommandService();
+    private final ScriptCommandService scriptCommandService = new ScriptCommandService();
+    private final ConfigCommandService configCommandService = new ConfigCommandService();
+    private final PluginCreateCommandService pluginCreateCommandService = new PluginCreateCommandService();
+    private final ProjectTemplatesInstallCommandService projectTemplatesInstallCommandService = new ProjectTemplatesInstallCommandService();
+    private final ProjectConfigUpdateCommandService projectConfigUpdateCommandService = new ProjectConfigUpdateCommandService();
+    private final PreferencesCommandService preferencesCommandService = new PreferencesCommandService();
+    private final EdgeCrudCommandService edgeCrudCommandService = new EdgeCrudCommandService();
+    private final EdgeLayoutCommandService edgeLayoutCommandService = new EdgeLayoutCommandService();
+    private final EdgeRetargetCommandService edgeRetargetCommandService = new EdgeRetargetCommandService();
+    private final EdgeProbabilityCommandService edgeProbabilityCommandService = new EdgeProbabilityCommandService();
+    private final NodeMoveGroupCommandService nodeMoveGroupCommandService = new NodeMoveGroupCommandService();
+    private final RuntimeCommandService.Context runtimeCommandContext;
+    private final NodeVarDefCommandService.Context nodeVarDefCommandContext = new NodeVarDefCommandService.Context() {
+        @Override
+        public RunTimeProject runtimeProject(String projectId) {
+            ProjectRef ref = projectStore.get(projectId);
+            return ref != null ? ref.runtimeProject : null;
+        }
+
+        @Override
+        public JSONObject errorResponse(String code, String message) {
+            return WebUiServer.this.errorResponse(code, message);
+        }
+
+        @Override
+        public BasicNode findNodeRecursive(SuperNode root, String nodeId) {
+            return WebUiServer.this.findNodeRecursive(root, nodeId);
+        }
+
+        @Override
+        public SuperNode resolveSuperNode(SceneFlow sceneFlow, String superNodeId) {
+            return WebUiServer.this.resolveSuperNode(sceneFlow, superNodeId);
+        }
+
+        @Override
+        public VariableDefinition parseVarDef(JSONObject source, BasicNode node, StringBuilder error) {
+            return WebUiServer.this.parseVarDef(source, node, error);
+        }
+
+        @Override
+        public JSONObject createSceneFlowSnapshot(RunTimeProject project, String projectId, SuperNode snapshotTarget, SceneFlow sceneFlow) {
+            return WebUiServer.this.createSceneFlowSnapshot(project, projectId, snapshotTarget, sceneFlow);
+        }
+
+        @Override
+        public JSONObject buildSceneFlowResponse(JSONObject snapshot) {
+            return WebUiServer.this.buildSceneFlowResponse(snapshot);
+        }
+
+        @Override
+        public void broadcastSceneFlowSnapshot(java.util.function.Consumer<String> broadcaster, String projectId, JSONObject snapshot) {
+            WebUiServer.this.broadcastSceneFlowSnapshot(broadcaster, projectId, snapshot);
+        }
+
+        @Override
+        public void recordHistory(String projectId, String action) {
+            ProjectRef ref = projectStore.get(projectId);
+            if (ref != null) {
+                WebUiServer.this.recordHistory(ref, action);
+            }
+        }
+
+        @Override
+        public void recordCommand(String projectId, String action, JSONObject params) {
+            ProjectRef ref = projectStore.get(projectId);
+            if (ref != null) {
+                WebUiServer.this.recordCommand(ref, action, params);
+            }
+        }
+    };
+    private final NodeTypeDefCommandService.Context nodeTypeDefCommandContext = new NodeTypeDefCommandService.Context() {
+        @Override
+        public RunTimeProject runtimeProject(String projectId) {
+            ProjectRef ref = projectStore.get(projectId);
+            return ref != null ? ref.runtimeProject : null;
+        }
+
+        @Override
+        public JSONObject errorResponse(String code, String message) {
+            return WebUiServer.this.errorResponse(code, message);
+        }
+
+        @Override
+        public BasicNode findNodeRecursive(SuperNode root, String nodeId) {
+            return WebUiServer.this.findNodeRecursive(root, nodeId);
+        }
+
+        @Override
+        public SuperNode resolveSuperNode(SceneFlow sceneFlow, String superNodeId) {
+            return WebUiServer.this.resolveSuperNode(sceneFlow, superNodeId);
+        }
+
+        @Override
+        public DataTypeDefinition parseTypeDef(JSONObject source, StringBuilder error) {
+            return WebUiServer.this.parseTypeDef(source, error);
+        }
+
+        @Override
+        public JSONObject createSceneFlowSnapshot(RunTimeProject project, String projectId, SuperNode snapshotTarget, SceneFlow sceneFlow) {
+            return WebUiServer.this.createSceneFlowSnapshot(project, projectId, snapshotTarget, sceneFlow);
+        }
+
+        @Override
+        public JSONObject buildSceneFlowResponse(JSONObject snapshot) {
+            return WebUiServer.this.buildSceneFlowResponse(snapshot);
+        }
+
+        @Override
+        public void broadcastSceneFlowSnapshot(java.util.function.Consumer<String> broadcaster, String projectId, JSONObject snapshot) {
+            WebUiServer.this.broadcastSceneFlowSnapshot(broadcaster, projectId, snapshot);
+        }
+
+        @Override
+        public void recordHistory(String projectId, String action) {
+            ProjectRef ref = projectStore.get(projectId);
+            if (ref != null) {
+                WebUiServer.this.recordHistory(ref, action);
+            }
+        }
+
+        @Override
+        public void recordCommand(String projectId, String action, JSONObject params) {
+            ProjectRef ref = projectStore.get(projectId);
+            if (ref != null) {
+                WebUiServer.this.recordCommand(ref, action, params);
+            }
+        }
+    };
+    private final NodeCmdCommandService.Context nodeCmdCommandContext = new NodeCmdCommandService.Context() {
+        @Override
+        public RunTimeProject runtimeProject(String projectId) {
+            ProjectRef ref = projectStore.get(projectId);
+            return ref != null ? ref.runtimeProject : null;
+        }
+
+        @Override
+        public JSONObject errorResponse(String code, String message) {
+            return WebUiServer.this.errorResponse(code, message);
+        }
+
+        @Override
+        public BasicNode findNodeRecursive(SuperNode root, String nodeId) {
+            return WebUiServer.this.findNodeRecursive(root, nodeId);
+        }
+
+        @Override
+        public SuperNode resolveSuperNode(SceneFlow sceneFlow, String superNodeId) {
+            return WebUiServer.this.resolveSuperNode(sceneFlow, superNodeId);
+        }
+
+        @Override
+        public Command parseCommandText(String text, StringBuilder error) {
+            return WebUiServer.this.parseCommandText(text, error);
+        }
+
+        @Override
+        public JSONObject createSceneFlowSnapshot(RunTimeProject project, String projectId, SuperNode snapshotTarget, SceneFlow sceneFlow) {
+            return WebUiServer.this.createSceneFlowSnapshot(project, projectId, snapshotTarget, sceneFlow);
+        }
+
+        @Override
+        public JSONObject buildSceneFlowResponse(JSONObject snapshot) {
+            return WebUiServer.this.buildSceneFlowResponse(snapshot);
+        }
+
+        @Override
+        public void broadcastSceneFlowSnapshot(java.util.function.Consumer<String> broadcaster, String projectId, JSONObject snapshot) {
+            WebUiServer.this.broadcastSceneFlowSnapshot(broadcaster, projectId, snapshot);
+        }
+
+        @Override
+        public void recordHistory(String projectId, String action) {
+            ProjectRef ref = projectStore.get(projectId);
+            if (ref != null) {
+                WebUiServer.this.recordHistory(ref, action);
+            }
+        }
+
+        @Override
+        public void recordCommand(String projectId, String action, JSONObject params) {
+            ProjectRef ref = projectStore.get(projectId);
+            if (ref != null) {
+                WebUiServer.this.recordCommand(ref, action, params);
+            }
+        }
+    };
+    private final EdgeLayoutCommandService.Context edgeLayoutCommandContext = new EdgeLayoutCommandService.Context() {
+        @Override
+        public RunTimeProject runtimeProject(String projectId) {
+            ProjectRef ref = projectStore.get(projectId);
+            return ref != null ? ref.runtimeProject : null;
+        }
+
+        @Override
+        public JSONObject errorResponse(String code, String message) {
+            return WebUiServer.this.errorResponse(code, message);
+        }
+
+        @Override
+        public SuperNode resolveSuperNode(SceneFlow sceneFlow, String superNodeId) {
+            return WebUiServer.this.resolveSuperNode(sceneFlow, superNodeId);
+        }
+
+        @Override
+        public AbstractEdge resolveEdgeById(SuperNode root, String edgeId) {
+            return WebUiServer.this.resolveEdgeById(root, edgeId);
+        }
+
+        @Override
+        public int getEditorConfigInt(String projectId, String key, int fallback) {
+            ProjectRef ref = projectStore.get(projectId);
+            return ref != null ? WebUiServer.this.getEditorConfigInt(ref, key, fallback) : fallback;
+        }
+
+        @Override
+        public void relayoutEdgesInOrder(List<AbstractEdge> edges, int nodeWidth, int nodeHeight) {
+            mEdgeLayout.relayoutEdgesInOrder(edges, nodeWidth, nodeHeight);
+        }
+
+        @Override
+        public void normalizeEdge(AbstractEdge edge, int nodeWidth, int nodeHeight) {
+            mEdgeLayout.normalizeEdge(edge, nodeWidth, nodeHeight);
+        }
+
+        @Override
+        public void clearDockPointsRecursive(SuperNode root) {
+            mEdgeLayout.clearDockPointsRecursive(root);
+        }
+
+        @Override
+        public void occupyStartSignDockPointsRecursive(SuperNode root) {
+            mEdgeLayout.occupyStartSignDockPointsRecursive(root);
+        }
+
+        @Override
+        public void collectEdgesRecursive(SuperNode root, List<AbstractEdge> edges, Set<AbstractEdge> seen) {
+            mEdgeLayout.collectEdgesRecursive(root, edges, seen);
+        }
+
+        @Override
+        public JSONObject createSceneFlowSnapshot(RunTimeProject project, String projectId, SuperNode snapshotTarget, SceneFlow sceneFlow) {
+            return WebUiServer.this.createSceneFlowSnapshot(project, projectId, snapshotTarget, sceneFlow);
+        }
+
+        @Override
+        public void broadcastSceneFlowSnapshot(java.util.function.Consumer<String> broadcaster, String projectId, JSONObject snapshot) {
+            WebUiServer.this.broadcastSceneFlowSnapshot(broadcaster, projectId, snapshot);
+        }
+
+        @Override
+        public void recordHistory(String projectId, String action) {
+            ProjectRef ref = projectStore.get(projectId);
+            if (ref != null) {
+                WebUiServer.this.recordHistory(ref, action);
+            }
+        }
+
+        @Override
+        public void recordCommand(String projectId, String action, JSONObject params) {
+            ProjectRef ref = projectStore.get(projectId);
+            if (ref != null) {
+                WebUiServer.this.recordCommand(ref, action, params);
+            }
+        }
+    };
+    private final EdgeRetargetCommandService.Context edgeRetargetCommandContext = new EdgeRetargetCommandService.Context() {
+        @Override
+        public RunTimeProject runtimeProject(String projectId) {
+            ProjectRef ref = projectStore.get(projectId);
+            return ref != null ? ref.runtimeProject : null;
+        }
+
+        @Override
+        public JSONObject errorResponse(String code, String message) {
+            return WebUiServer.this.errorResponse(code, message);
+        }
+
+        @Override
+        public SuperNode resolveSuperNode(SceneFlow sceneFlow, String superNodeId) {
+            return WebUiServer.this.resolveSuperNode(sceneFlow, superNodeId);
+        }
+
+        @Override
+        public AbstractEdge resolveEdgeById(SuperNode root, String edgeId) {
+            return WebUiServer.this.resolveEdgeById(root, edgeId);
+        }
+
+        @Override
+        public BasicNode resolveNodeById(SuperNode root, String nodeId) {
+            return WebUiServer.this.resolveNodeById(root, nodeId);
+        }
+
+        @Override
+        public int getEditorConfigInt(String projectId, String key, int fallback) {
+            ProjectRef ref = projectStore.get(projectId);
+            return ref != null ? WebUiServer.this.getEditorConfigInt(ref, key, fallback) : fallback;
+        }
+
+        @Override
+        public int findDockPointIndex(double nodeX, double nodeY, int nodeWidth, int nodeHeight, boolean isSuperNode, double pointX, double pointY) {
+            return mEdgeLayout.findDockPointIndex(nodeX, nodeY, nodeWidth, nodeHeight, isSuperNode, pointX, pointY);
+        }
+
+        @Override
+        public void releaseDockPoint(String nodeId, int dockIndex, boolean isSource) {
+            mEdgeLayout.releaseDockPoint(nodeId, dockIndex, isSource);
+        }
+
+        @Override
+        public int[] findSelfLoopDockPointPair(String nodeId, int nodeWidth, int nodeHeight, boolean isSuperNode) {
+            return mEdgeLayout.findSelfLoopDockPointPair(nodeId, nodeWidth, nodeHeight, isSuperNode);
+        }
+
+        @Override
+        public int[] findBestDockPointPair(String sourceNodeId, double srcX, double srcY, int srcWidth, int srcHeight, boolean srcIsSuperNode, String targetNodeId, double tgtX, double tgtY, int tgtWidth, int tgtHeight, boolean tgtIsSuperNode) {
+            return mEdgeLayout.findBestDockPointPair(sourceNodeId, srcX, srcY, srcWidth, srcHeight, srcIsSuperNode,
+                    targetNodeId, tgtX, tgtY, tgtWidth, tgtHeight, tgtIsSuperNode);
+        }
+
+        @Override
+        public void occupyDockPoint(String nodeId, int dockIndex, boolean isSource) {
+            mEdgeLayout.occupyDockPoint(nodeId, dockIndex, isSource);
+        }
+
+        @Override
+        public double[] getDockPointPosition(double nodeX, double nodeY, int nodeWidth, int nodeHeight, boolean isSuperNode, int dockIndex) {
+            return mEdgeLayout.getDockPointPosition(nodeX, nodeY, nodeWidth, nodeHeight, isSuperNode, dockIndex);
+        }
+
+        @Override
+        public double[] computeSelfLoopControlPoints(double startX, double startY, double endX, double endY, double nodeCenterX, double nodeCenterY, int nodeWidth, int nodeHeight) {
+            return mEdgeLayout.computeSelfLoopControlPoints(startX, startY, endX, endY, nodeCenterX, nodeCenterY, nodeWidth, nodeHeight);
+        }
+
+        @Override
+        public double[] computeInitialControlPoint(double startX, double startY, double endX, double endY, boolean isStart) {
+            return mEdgeLayout.computeInitialControlPoint(startX, startY, endX, endY, isStart);
+        }
+
+        @Override
+        public JSONObject createSceneFlowSnapshot(RunTimeProject project, String projectId, SuperNode snapshotTarget, SceneFlow sceneFlow) {
+            return WebUiServer.this.createSceneFlowSnapshot(project, projectId, snapshotTarget, sceneFlow);
+        }
+
+        @Override
+        public void broadcastSceneFlowSnapshot(java.util.function.Consumer<String> broadcaster, String projectId, JSONObject snapshot) {
+            WebUiServer.this.broadcastSceneFlowSnapshot(broadcaster, projectId, snapshot);
+        }
+
+        @Override
+        public void recordHistory(String projectId, String action) {
+            ProjectRef ref = projectStore.get(projectId);
+            if (ref != null) {
+                WebUiServer.this.recordHistory(ref, action);
+            }
+        }
+
+        @Override
+        public void recordCommand(String projectId, String action, JSONObject params) {
+            ProjectRef ref = projectStore.get(projectId);
+            if (ref != null) {
+                WebUiServer.this.recordCommand(ref, action, params);
+            }
+        }
+    };
+    private final EdgeProbabilityCommandService.Context edgeProbabilityCommandContext = new EdgeProbabilityCommandService.Context() {
+        @Override
+        public RunTimeProject runtimeProject(String projectId) {
+            ProjectRef ref = projectStore.get(projectId);
+            return ref != null ? ref.runtimeProject : null;
+        }
+
+        @Override
+        public JSONObject errorResponse(String code, String message) {
+            return WebUiServer.this.errorResponse(code, message);
+        }
+
+        @Override
+        public SuperNode resolveSuperNode(SceneFlow sceneFlow, String superNodeId) {
+            return WebUiServer.this.resolveSuperNode(sceneFlow, superNodeId);
+        }
+
+        @Override
+        public BasicNode resolveNodeById(SuperNode root, String nodeId) {
+            return WebUiServer.this.resolveNodeById(root, nodeId);
+        }
+
+        @Override
+        public RandomEdge resolvePEdgeForSource(SuperNode root, BasicNode sourceNode, String edgeId, String targetId) {
+            return WebUiServer.this.resolvePEdgeForSource(root, sourceNode, edgeId, targetId);
+        }
+
+        @Override
+        public JSONObject createSceneFlowSnapshot(RunTimeProject project, String projectId, SuperNode snapshotTarget, SceneFlow sceneFlow) {
+            return WebUiServer.this.createSceneFlowSnapshot(project, projectId, snapshotTarget, sceneFlow);
+        }
+
+        @Override
+        public void broadcastSceneFlowSnapshot(java.util.function.Consumer<String> broadcaster, String projectId, JSONObject snapshot) {
+            WebUiServer.this.broadcastSceneFlowSnapshot(broadcaster, projectId, snapshot);
+        }
+
+        @Override
+        public void recordHistory(String projectId, String action) {
+            ProjectRef ref = projectStore.get(projectId);
+            if (ref != null) {
+                WebUiServer.this.recordHistory(ref, action);
+            }
+        }
+
+        @Override
+        public void recordCommand(String projectId, String action, JSONObject params) {
+            ProjectRef ref = projectStore.get(projectId);
+            if (ref != null) {
+                WebUiServer.this.recordCommand(ref, action, params);
+            }
+        }
+    };
+    private final NodeMoveGroupCommandService.Context nodeMoveGroupCommandContext = new NodeMoveGroupCommandService.Context() {
+        @Override
+        public RunTimeProject runtimeProject(String projectId) {
+            ProjectRef ref = projectStore.get(projectId);
+            return ref != null ? ref.runtimeProject : null;
+        }
+
+        @Override
+        public JSONObject errorResponse(String code, String message) {
+            return WebUiServer.this.errorResponse(code, message);
+        }
+
+        @Override
+        public SuperNode resolveSuperNode(SceneFlow sceneFlow, String superNodeId) {
+            return WebUiServer.this.resolveSuperNode(sceneFlow, superNodeId);
+        }
+
+        @Override
+        public int getEditorConfigInt(String projectId, String key, int fallback) {
+            ProjectRef ref = projectStore.get(projectId);
+            return ref != null ? WebUiServer.this.getEditorConfigInt(ref, key, fallback) : fallback;
+        }
+
+        @Override
+        public BasicNode findNodeRecursive(SuperNode root, String nodeId) {
+            return WebUiServer.this.findNodeRecursive(root, nodeId);
+        }
+
+        @Override
+        public void updateEdgeEndpointsForMovedNode(BasicNode movedNode, SuperNode activeSuperNode, int oldX, int oldY) {
+            WebUiServer.this.updateEdgeEndpointsForMovedNode(movedNode, activeSuperNode, oldX, oldY);
+        }
+
+        @Override
+        public JSONObject createSceneFlowSnapshot(RunTimeProject project, String projectId, SuperNode snapshotTarget, SceneFlow sceneFlow) {
+            return WebUiServer.this.createSceneFlowSnapshot(project, projectId, snapshotTarget, sceneFlow);
+        }
+
+        @Override
+        public JSONObject buildSceneFlowResponse(JSONObject snapshot) {
+            return WebUiServer.this.buildSceneFlowResponse(snapshot);
+        }
+
+        @Override
+        public void broadcastSceneFlowSnapshot(java.util.function.Consumer<String> broadcaster, String projectId, JSONObject snapshot) {
+            WebUiServer.this.broadcastSceneFlowSnapshot(broadcaster, projectId, snapshot);
+        }
+
+        @Override
+        public void recordHistory(String projectId, String action) {
+            ProjectRef ref = projectStore.get(projectId);
+            if (ref != null) {
+                WebUiServer.this.recordHistory(ref, action);
+            }
+        }
+
+        @Override
+        public void recordCommand(String projectId, String action, JSONObject params) {
+            ProjectRef ref = projectStore.get(projectId);
+            if (ref != null) {
+                WebUiServer.this.recordCommand(ref, action, params);
+            }
+        }
+    };
+    private final CommentCommandService.Context commentCommandContext = new CommentCommandService.Context() {
+        @Override
+        public RunTimeProject runtimeProject(String projectId) {
+            ProjectRef ref = projectStore.get(projectId);
+            return ref != null ? ref.runtimeProject : null;
+        }
+
+        @Override
+        public JSONObject mutateAndSnapshotLegacy(String projectId, String operation, JSONObject params, java.util.function.Consumer<String> broadcaster) {
+            switch (operation) {
+                case "add":
+                    return WebUiServer.this.mutateAndSnapshot(projectId, () -> WebUiServer.this.addComment(params), broadcaster);
+                case "update":
+                    return WebUiServer.this.mutateAndSnapshot(projectId, () -> WebUiServer.this.updateComment(params), broadcaster);
+                case "delete":
+                    return WebUiServer.this.mutateAndSnapshot(projectId, () -> WebUiServer.this.deleteComment(params), broadcaster);
+                default:
+                    return WebUiServer.this.errorResponse("BAD_REQUEST", "Unsupported legacy comment operation: " + operation);
+            }
+        }
+
+        @Override
+        public JSONObject errorResponse(String code, String message) {
+            return WebUiServer.this.errorResponse(code, message);
+        }
+
+        @Override
+        public SuperNode resolveSuperNode(SceneFlow sceneFlow, String superNodeId) {
+            return WebUiServer.this.resolveSuperNode(sceneFlow, superNodeId);
+        }
+
+        @Override
+        public JSONObject createSceneFlowSnapshot(RunTimeProject project, String projectId, SuperNode snapshotTarget, SceneFlow sceneFlow) {
+            return WebUiServer.this.createSceneFlowSnapshot(project, projectId, snapshotTarget, sceneFlow);
+        }
+
+        @Override
+        public JSONObject buildSceneFlowResponse(JSONObject snapshot) {
+            return WebUiServer.this.buildSceneFlowResponse(snapshot);
+        }
+
+        @Override
+        public void broadcastSceneFlowSnapshot(java.util.function.Consumer<String> broadcaster, String projectId, JSONObject snapshot) {
+            WebUiServer.this.broadcastSceneFlowSnapshot(broadcaster, projectId, snapshot);
+        }
+
+        @Override
+        public void recordHistory(String projectId, String action) {
+            ProjectRef ref = projectStore.get(projectId);
+            if (ref != null) {
+                WebUiServer.this.recordHistory(ref, action);
+            }
+        }
+
+        @Override
+        public void recordCommand(String projectId, String action, JSONObject params) {
+            ProjectRef ref = projectStore.get(projectId);
+            if (ref != null) {
+                WebUiServer.this.recordCommand(ref, action, params);
+            }
+        }
+    };
+    private final SelectionCommandService.Context selectionCommandContext = new SelectionCommandService.Context() {
+        @Override
+        public RunTimeProject runtimeProject(String projectId) {
+            ProjectRef ref = projectStore.get(projectId);
+            return ref != null ? ref.runtimeProject : null;
+        }
+
+        @Override
+        public JSONObject errorResponse(String code, String message) {
+            return WebUiServer.this.errorResponse(code, message);
+        }
+
+        @Override
+        public BasicNode findNodeRecursive(SuperNode root, String nodeId) {
+            return WebUiServer.this.findNodeRecursive(root, nodeId);
+        }
+
+        @Override
+        public SuperNode resolveSuperNode(SceneFlow sceneFlow, String superNodeId) {
+            return WebUiServer.this.resolveSuperNode(sceneFlow, superNodeId);
+        }
+
+        @Override
+        public int getEditorConfigInt(String projectId, String key, int fallback) {
+            ProjectRef ref = projectStore.get(projectId);
+            return ref != null ? WebUiServer.this.getEditorConfigInt(ref, key, fallback) : fallback;
+        }
+
+        @Override
+        public void collectNodes(SuperNode node, List<BasicNode> out) {
+            WebUiServer.this.collectNodes(node, out);
+        }
+
+        @Override
+        public String allocateNodeId(String projectId, boolean superNode, Set<String> used) {
+            ProjectRef ref = projectStore.get(projectId);
+            if (ref == null) {
+                return superNode ? "S1" : "N1";
+            }
+            return WebUiServer.this.allocateNodeId(ref, superNode, used);
+        }
+
+        @Override
+        public BasicNode resolveNodeById(SuperNode root, String nodeId) {
+            return WebUiServer.this.resolveNodeById(root, nodeId);
+        }
+
+        @Override
+        public Expression parseExpressionOrNull(String text) {
+            return WebUiServer.this.parseExpressionOrNull(text);
+        }
+
+        @Override
+        public void initializeEdgeDockPoints(AbstractEdge edge, int nodeWidth, int nodeHeight) {
+            mEdgeLayout.initializeEdgeDockPoints(edge, nodeWidth, nodeHeight);
+        }
+
+        @Override
+        public void normalizeEdge(AbstractEdge edge, int nodeWidth, int nodeHeight) {
+            mEdgeLayout.normalizeEdge(edge, nodeWidth, nodeHeight);
+        }
+
+        @Override
+        public JSONObject createSceneFlowSnapshot(RunTimeProject project, String projectId, SuperNode snapshotTarget, SceneFlow sceneFlow) {
+            return WebUiServer.this.createSceneFlowSnapshot(project, projectId, snapshotTarget, sceneFlow);
+        }
+
+        @Override
+        public JSONObject buildSceneFlowResponse(JSONObject snapshot) {
+            return WebUiServer.this.buildSceneFlowResponse(snapshot);
+        }
+
+        @Override
+        public void broadcastSceneFlowSnapshot(java.util.function.Consumer<String> broadcaster, String projectId, JSONObject snapshot) {
+            WebUiServer.this.broadcastSceneFlowSnapshot(broadcaster, projectId, snapshot);
+        }
+
+        @Override
+        public void recordHistory(String projectId, String action) {
+            ProjectRef ref = projectStore.get(projectId);
+            if (ref != null) {
+                WebUiServer.this.recordHistory(ref, action);
+            }
+        }
+
+        @Override
+        public void markDirty(String projectId) {
+            ProjectRef ref = projectStore.get(projectId);
+            if (ref != null) {
+                ref.dirty = true;
+            }
+        }
+
+        @Override
+        public List<BasicNode> clipboardNodes(String projectId) {
+            ProjectRef ref = projectStore.get(projectId);
+            return ref != null ? ref.clipboard : new ArrayList<>();
+        }
+
+        @Override
+        public List<SelectionCommandService.ClipboardEdgeData> clipboardEdges(String projectId) {
+            ProjectRef ref = projectStore.get(projectId);
+            return ref != null ? ref.clipboardEdges : new ArrayList<>();
+        }
+    };
+    private final UndoRedoCommandService.Context undoRedoCommandContext = new UndoRedoCommandService.Context() {
+        @Override
+        public RunTimeProject runtimeProject(String projectId) {
+            ProjectRef ref = projectStore.get(projectId);
+            return ref != null ? ref.runtimeProject : null;
+        }
+
+        @Override
+        public JSONObject errorResponse(String code, String message) {
+            return WebUiServer.this.errorResponse(code, message);
+        }
+
+        @Override
+        public void ensureHistoryLoaded(String projectId) {
+            ProjectRef ref = projectStore.get(projectId);
+            if (ref != null) {
+                WebUiServer.this.ensureHistoryLoaded(ref);
+            }
+        }
+
+        @Override
+        public int historyIndex(String projectId) {
+            ProjectRef ref = projectStore.get(projectId);
+            return ref != null ? ref.historyIndex : -1;
+        }
+
+        @Override
+        public int historySize(String projectId) {
+            ProjectRef ref = projectStore.get(projectId);
+            return ref != null ? ref.history.size() : 0;
+        }
+
+        @Override
+        public void setHistoryIndex(String projectId, int index) {
+            ProjectRef ref = projectStore.get(projectId);
+            if (ref != null) {
+                ref.historyIndex = index;
+            }
+        }
+
+        @Override
+        public void setHistorySuspended(String projectId, boolean value) {
+            ProjectRef ref = projectStore.get(projectId);
+            if (ref != null) {
+                ref.historySuspended = value;
+            }
+        }
+
+        @Override
+        public void setCommandLogSuspended(String projectId, boolean value) {
+            ProjectRef ref = projectStore.get(projectId);
+            if (ref != null) {
+                ref.commandLogSuspended = value;
+            }
+        }
+
+        @Override
+        public boolean applyHistoryEntryAtIndex(String projectId, int index) {
+            ProjectRef ref = projectStore.get(projectId);
+            if (ref == null || index < 0 || index >= ref.history.size()) {
+                return false;
+            }
+            return WebUiServer.this.applyHistoryEntry(ref, ref.history.get(index));
+        }
+
+        @Override
+        public void saveHistoryToDisk(String projectId) {
+            ProjectRef ref = projectStore.get(projectId);
+            if (ref != null) {
+                WebUiServer.this.saveHistoryToDisk(ref);
+            }
+        }
+
+        @Override
+        public JSONObject createSceneFlowSnapshot(RunTimeProject project, String projectId, SceneFlow snapshotTarget, SceneFlow sceneFlow) {
+            return WebUiServer.this.createSceneFlowSnapshot(project, projectId, snapshotTarget, sceneFlow);
+        }
+
+        @Override
+        public JSONObject buildSceneFlowResponse(JSONObject snapshot) {
+            return WebUiServer.this.buildSceneFlowResponse(snapshot);
+        }
+
+        @Override
+        public void broadcastSceneFlowSnapshot(java.util.function.Consumer<String> broadcaster, String projectId, JSONObject snapshot) {
+            WebUiServer.this.broadcastSceneFlowSnapshot(broadcaster, projectId, snapshot);
+        }
+
+        @Override
+        public JSONObject buildScriptSnapshot(String projectId) {
+            ProjectRef ref = projectStore.get(projectId);
+            return ref != null ? WebUiServer.this.buildScriptSnapshot(ref) : new JSONObject();
+        }
+
+        @Override
+        public void broadcastScriptSnapshot(java.util.function.Consumer<String> broadcaster, String projectId, JSONObject snapshot) {
+            WebUiServer.this.broadcastScriptSnapshot(broadcaster, projectId, snapshot);
+        }
+    };
+    private final PlaySceneCommandService.Context playSceneCommandContext = new PlaySceneCommandService.Context() {
+        @Override
+        public RunTimeProject runtimeProject(String projectId) {
+            ProjectRef ref = projectStore.get(projectId);
+            return ref != null ? ref.runtimeProject : null;
+        }
+
+        @Override
+        public JSONObject errorResponse(String code, String message) {
+            return WebUiServer.this.errorResponse(code, message);
+        }
+
+        @Override
+        public void collectPlaySceneReferences(SuperNode root, String sceneName, List<JSONObject> matches) {
+            WebUiServer.this.collectPlaySceneReferences(root, sceneName, matches);
+        }
+
+        @Override
+        public void collectPlaySceneReferences(SuperNode root, Set<String> sceneNames, List<JSONObject> matches) {
+            WebUiServer.this.collectPlaySceneReferences(root, sceneNames, matches);
+        }
+
+        @Override
+        public int renamePlaySceneReferences(SuperNode root, String sceneName, String newName) {
+            return WebUiServer.this.renamePlaySceneReferences(root, sceneName, newName);
+        }
+
+        @Override
+        public void markDirty(String projectId) {
+            ProjectRef ref = projectStore.get(projectId);
+            if (ref != null) {
+                ref.dirty = true;
+            }
+        }
+
+        @Override
+        public SuperNode resolveSuperNode(SceneFlow sceneFlow, String superNodeId) {
+            return WebUiServer.this.resolveSuperNode(sceneFlow, superNodeId);
+        }
+
+        @Override
+        public JSONObject createSceneFlowSnapshot(RunTimeProject project, String projectId, SuperNode snapshotTarget, SceneFlow sceneFlow) {
+            return WebUiServer.this.createSceneFlowSnapshot(project, projectId, snapshotTarget, sceneFlow);
+        }
+
+        @Override
+        public void broadcastSceneFlowSnapshot(java.util.function.Consumer<String> broadcaster, String projectId, JSONObject snapshot) {
+            WebUiServer.this.broadcastSceneFlowSnapshot(broadcaster, projectId, snapshot);
+        }
+
+        @Override
+        public void recordHistory(String projectId, String action) {
+            ProjectRef ref = projectStore.get(projectId);
+            if (ref != null) {
+                WebUiServer.this.recordHistory(ref, action);
+            }
+        }
+
+        @Override
+        public void recordCommand(String projectId, String action, JSONObject params) {
+            ProjectRef ref = projectStore.get(projectId);
+            if (ref != null) {
+                WebUiServer.this.recordCommand(ref, action, params);
+            }
+        }
+    };
+    private final ScriptCommandService.Context scriptCommandContext = new ScriptCommandService.Context() {
+        @Override
+        public RunTimeProject runtimeProject(String projectId) {
+            ProjectRef ref = projectStore.get(projectId);
+            return ref != null ? ref.runtimeProject : null;
+        }
+
+        @Override
+        public JSONObject errorResponse(String code, String message) {
+            return WebUiServer.this.errorResponse(code, message);
+        }
+
+        @Override
+        public void ensureScriptLoaded(String projectId) {
+            ProjectRef ref = projectStore.get(projectId);
+            if (ref != null) {
+                WebUiServer.this.ensureScriptLoaded(ref);
+            }
+        }
+
+        @Override
+        public int scriptVersion(String projectId) {
+            ProjectRef ref = projectStore.get(projectId);
+            return ref != null ? ref.scriptVersion : 1;
+        }
+
+        @Override
+        public String scriptText(String projectId) {
+            ProjectRef ref = projectStore.get(projectId);
+            return ref != null ? (ref.scriptText == null ? "" : ref.scriptText) : "";
+        }
+
+        @Override
+        public boolean scriptParseOk(String projectId) {
+            ProjectRef ref = projectStore.get(projectId);
+            return ref != null && ref.scriptParseOk;
+        }
+
+        @Override
+        public JSONArray scriptParseErrors(String projectId) {
+            ProjectRef ref = projectStore.get(projectId);
+            return ref != null ? WebUiServer.this.diagnosticsToJson(ref.scriptParseErrors) : new JSONArray();
+        }
+
+        @Override
+        public String serializeSceneScript(String projectId) {
+            ProjectRef ref = projectStore.get(projectId);
+            return ref != null ? WebUiServer.this.serializeSceneScript(ref.runtimeProject) : "";
+        }
+
+        @Override
+        public boolean applyScriptText(String projectId, String text) {
+            ProjectRef ref = projectStore.get(projectId);
+            return ref != null && WebUiServer.this.applyScriptText(ref.runtimeProject, text);
+        }
+
+        @Override
+        public void setScriptText(String projectId, String text) {
+            ProjectRef ref = projectStore.get(projectId);
+            if (ref != null) {
+                ref.scriptText = text;
+            }
+        }
+
+        @Override
+        public void setScriptVersion(String projectId, int version) {
+            ProjectRef ref = projectStore.get(projectId);
+            if (ref != null) {
+                ref.scriptVersion = version;
+            }
+        }
+
+        @Override
+        public void setScriptParseOk(String projectId, boolean value) {
+            ProjectRef ref = projectStore.get(projectId);
+            if (ref != null) {
+                ref.scriptParseOk = value;
+            }
+        }
+
+        @Override
+        public void clearScriptParseErrors(String projectId) {
+            ProjectRef ref = projectStore.get(projectId);
+            if (ref != null) {
+                ref.scriptParseErrors.clear();
+            }
+        }
+
+        @Override
+        public void markDirty(String projectId) {
+            ProjectRef ref = projectStore.get(projectId);
+            if (ref != null) {
+                ref.dirty = true;
+            }
+        }
+
+        @Override
+        public void broadcastScriptSnapshot(java.util.function.Consumer<String> broadcaster, String projectId, JSONObject snapshot) {
+            WebUiServer.this.broadcastScriptSnapshot(broadcaster, projectId, snapshot);
+        }
+
+        @Override
+        public void recordHistory(String projectId, String action) {
+            ProjectRef ref = projectStore.get(projectId);
+            if (ref != null) {
+                WebUiServer.this.recordHistory(ref, action);
+            }
+        }
+
+        @Override
+        public void recordCommand(String projectId, String action, JSONObject params) {
+            ProjectRef ref = projectStore.get(projectId);
+            if (ref != null) {
+                WebUiServer.this.recordCommand(ref, action, params);
+            }
+        }
+
+        @Override
+        public JSONArray diagnosticsToJson(List<ScriptDiagnostics.Diagnostic> diagnostics) {
+            return WebUiServer.this.diagnosticsToJson(diagnostics);
+        }
+    };
+    private final ConfigCommandService.Context configCommandContext = new ConfigCommandService.Context() {
+        @Override
+        public JSONObject errorResponse(String code, String message) {
+            return WebUiServer.this.errorResponse(code, message);
+        }
+
+        @Override
+        public boolean projectExists(String projectId) {
+            return projectStore.containsKey(projectId);
+        }
+
+        @Override
+        public Properties loadEditorConfig(String projectId) {
+            ProjectRef ref = projectStore.get(projectId);
+            return ref != null ? WebUiServer.this.loadEditorConfig(ref) : new Properties();
+        }
+
+        @Override
+        public boolean saveEditorConfig(String projectId) {
+            ProjectRef ref = projectStore.get(projectId);
+            return ref != null && WebUiServer.this.saveEditorConfig(ref);
+        }
+
+        @Override
+        public String projectPath(String projectId) {
+            ProjectRef ref = projectStore.get(projectId);
+            return ref != null ? ref.path : "";
+        }
+
+        @Override
+        public void setEditorConfigDirty(String projectId, boolean value) {
+            ProjectRef ref = projectStore.get(projectId);
+            if (ref != null) {
+                ref.editorConfigDirty = value;
+            }
+        }
+
+        @Override
+        public void setProjectDirty(String projectId, boolean value) {
+            ProjectRef ref = projectStore.get(projectId);
+            if (ref != null) {
+                ref.dirty = value;
+            }
+        }
+
+        @Override
+        public JSONObject editorConfigToJson(Properties props) {
+            return WebUiServer.this.editorConfigToJson(props);
+        }
+
+        @Override
+        public RunTimeProject runtimeProject(String projectId) {
+            ProjectRef ref = projectStore.get(projectId);
+            return ref != null ? ref.runtimeProject : null;
+        }
+
+        @Override
+        public SuperNode resolveSuperNode(SceneFlow sceneFlow, String superNodeId) {
+            return WebUiServer.this.resolveSuperNode(sceneFlow, superNodeId);
+        }
+
+        @Override
+        public JSONObject createSceneFlowSnapshot(RunTimeProject project, String projectId, SuperNode snapshotTarget, SceneFlow sceneFlow) {
+            return WebUiServer.this.createSceneFlowSnapshot(project, projectId, snapshotTarget, sceneFlow);
+        }
+    };
+    private final PluginCreateCommandService.Context pluginCreateCommandContext = new PluginCreateCommandService.Context() {
+        @Override
+        public JSONObject errorResponse(String code, String message) {
+            return WebUiServer.this.errorResponse(code, message);
+        }
+
+        @Override
+        public JSONObject pluginSpec(String className) {
+            ExportablePropertyEntry entry = resolveExportablePropertyEntry(className);
+            return entry != null ? entry.pluginSpec : null;
+        }
+
+        @Override
+        public JSONObject variablesSpec(String className) {
+            ExportablePropertyEntry entry = resolveExportablePropertyEntry(className);
+            return entry != null ? entry.variables : null;
+        }
+    };
+    private final ProjectTemplatesInstallCommandService.Context projectTemplatesInstallCommandContext = new ProjectTemplatesInstallCommandService.Context() {
+        @Override
+        public JSONObject errorResponse(String code, String message) {
+            return WebUiServer.this.errorResponse(code, message);
+        }
+
+        @Override
+        public boolean hasRuntimeProject(String projectId) {
+            ProjectRef ref = projectStore.get(projectId);
+            return ref != null && ref.runtimeProject != null;
+        }
+
+        @Override
+        public String projectPath(String projectId) {
+            ProjectRef ref = projectStore.get(projectId);
+            return ref != null ? ref.path : "";
+        }
+
+        @Override
+        public JSONObject pluginSpec(String className) {
+            ExportablePropertyEntry entry = resolveExportablePropertyEntry(className);
+            return entry != null ? entry.pluginSpec : null;
+        }
+
+        @Override
+        public ClassLoader classLoader() {
+            return WebUiServer.this.getClass().getClassLoader();
+        }
+
+        @Override
+        public void copyTemplateDirectory(URL resourceUrl, String basePath, File destDir, JSONArray createdFiles, JSONArray skippedFiles) {
+            WebUiServer.this.copyTemplateDirectory(resourceUrl, basePath, destDir, createdFiles, skippedFiles);
+        }
+
+        @Override
+        public void warn(String message) {
+            sLogger.warning(message);
+        }
+    };
+    private final ProjectConfigUpdateCommandService.Context projectConfigUpdateCommandContext = new ProjectConfigUpdateCommandService.Context() {
+        @Override
+        public JSONObject errorResponse(String code, String message) {
+            return WebUiServer.this.errorResponse(code, message);
+        }
+
+        @Override
+        public boolean hasRuntimeProject(String projectId) {
+            ProjectRef ref = projectStore.get(projectId);
+            return ref != null && ref.runtimeProject != null;
+        }
+
+        @Override
+        public ProjectConfig projectConfig(String projectId) {
+            ProjectRef ref = projectStore.get(projectId);
+            return (ref != null && ref.runtimeProject != null) ? ref.runtimeProject.getProjectConfig() : null;
+        }
+
+        @Override
+        public void applyProjectConfigFromJson(String projectId, ProjectConfig config, JSONObject configJson) {
+            ProjectRef ref = projectStore.get(projectId);
+            if (ref != null) {
+                WebUiServer.this.applyProjectConfigFromJson(ref, config, configJson);
+            }
+        }
+
+        @Override
+        public void markDirty(String projectId) {
+            ProjectRef ref = projectStore.get(projectId);
+            if (ref != null) {
+                ref.dirty = true;
+            }
+        }
+
+        @Override
+        public JSONObject projectConfigToJson(ProjectConfig config, String projectPath) {
+            return WebUiServer.this.projectConfigToJson(config, projectPath);
+        }
+
+        @Override
+        public String projectPath(String projectId) {
+            ProjectRef ref = projectStore.get(projectId);
+            return ref != null ? ref.path : "";
+        }
+    };
+    private final PreferencesCommandService.Context preferencesCommandContext = new PreferencesCommandService.Context() {
+        @Override
+        public JSONObject errorResponse(String code, String message) {
+            return WebUiServer.this.errorResponse(code, message);
+        }
+
+        @Override
+        public void removePreference(String key) {
+            Preferences.removeProperty(key);
+        }
+
+        @Override
+        public void setPreference(String key, String value) {
+            Preferences.setProperty(key, value);
+        }
+
+        @Override
+        public void savePreferences() {
+            Preferences.save();
+        }
+
+        @Override
+        public JSONObject preferencesToJson() {
+            return WebUiServer.this.preferencesToJson();
+        }
+    };
+    private final EdgeCrudCommandService.Context edgeCrudCommandContext = new EdgeCrudCommandService.Context() {
+        @Override
+        public RunTimeProject runtimeProject(String projectId) {
+            ProjectRef ref = projectStore.get(projectId);
+            return ref != null ? ref.runtimeProject : null;
+        }
+
+        @Override
+        public JSONObject mutateAndSnapshotLegacy(String projectId, String operation, JSONObject params, java.util.function.Consumer<String> broadcaster) {
+            switch (operation) {
+                case "add":
+                    return WebUiServer.this.mutateAndSnapshot(projectId, () -> WebUiServer.this.addEdge(params), broadcaster);
+                case "update":
+                    return WebUiServer.this.mutateAndSnapshot(projectId, () -> WebUiServer.this.updateEdge(params), broadcaster);
+                case "delete":
+                    return WebUiServer.this.mutateAndSnapshot(projectId, () -> WebUiServer.this.deleteEdge(params), broadcaster);
+                default:
+                    return WebUiServer.this.errorResponse("BAD_REQUEST", "Unsupported legacy edge operation: " + operation);
+            }
+        }
+
+        @Override
+        public JSONObject errorResponse(String code, String message) {
+            return WebUiServer.this.errorResponse(code, message);
+        }
+
+        @Override
+        public SuperNode resolveSuperNode(SceneFlow sceneFlow, String superNodeId) {
+            return WebUiServer.this.resolveSuperNode(sceneFlow, superNodeId);
+        }
+
+        @Override
+        public BasicNode resolveNodeById(SuperNode root, String nodeId) {
+            return WebUiServer.this.resolveNodeById(root, nodeId);
+        }
+
+        @Override
+        public AbstractEdge resolveEdgeById(SuperNode root, String edgeId) {
+            return WebUiServer.this.resolveEdgeById(root, edgeId);
+        }
+
+        @Override
+        public Expression parseExpressionOrNull(String text) {
+            return WebUiServer.this.parseExpressionOrNull(text);
+        }
+
+        @Override
+        public int getEditorConfigInt(String projectId, String key, int fallback) {
+            ProjectRef ref = projectStore.get(projectId);
+            return ref != null ? WebUiServer.this.getEditorConfigInt(ref, key, fallback) : fallback;
+        }
+
+        @Override
+        public void initializeEdgeDockPoints(AbstractEdge edge, int nodeWidth, int nodeHeight) {
+            mEdgeLayout.initializeEdgeDockPoints(edge, nodeWidth, nodeHeight);
+        }
+
+        @Override
+        public void normalizeEdge(AbstractEdge edge, int nodeWidth, int nodeHeight) {
+            mEdgeLayout.normalizeEdge(edge, nodeWidth, nodeHeight);
+        }
+
+        @Override
+        public void releaseEdgeDockPoints(AbstractEdge edge, int nodeWidth, int nodeHeight) {
+            mEdgeLayout.releaseEdgeDockPoints(edge, nodeWidth, nodeHeight);
+        }
+
+        @Override
+        public JSONObject createSceneFlowSnapshot(RunTimeProject project, String projectId, SuperNode snapshotTarget, SceneFlow sceneFlow) {
+            return WebUiServer.this.createSceneFlowSnapshot(project, projectId, snapshotTarget, sceneFlow);
+        }
+
+        @Override
+        public JSONObject buildSceneFlowResponse(JSONObject snapshot) {
+            return WebUiServer.this.buildSceneFlowResponse(snapshot);
+        }
+
+        @Override
+        public void broadcastSceneFlowSnapshot(java.util.function.Consumer<String> broadcaster, String projectId, JSONObject snapshot) {
+            WebUiServer.this.broadcastSceneFlowSnapshot(broadcaster, projectId, snapshot);
+        }
+
+        @Override
+        public void recordHistory(String projectId, String action) {
+            ProjectRef ref = projectStore.get(projectId);
+            if (ref != null) {
+                WebUiServer.this.recordHistory(ref, action);
+            }
+        }
+
+        @Override
+        public void recordCommand(String projectId, String action, JSONObject params) {
+            ProjectRef ref = projectStore.get(projectId);
+            if (ref != null) {
+                WebUiServer.this.recordCommand(ref, action, params);
+            }
+        }
+    };
 
     // Edge layout service (dock points, normalization, straightening)
     private final EdgeLayoutService mEdgeLayout = new EdgeLayoutService();
 
+    @FunctionalInterface
+    private interface WsCommandHandler {
+        JSONObject handle(String method, JSONObject params, java.util.function.Consumer<String> broadcaster);
+    }
+
     private WebUiServer() {
+        runtimeGateway = RuntimeGateways.createDefault(this::dispatchCommand, this::snapshot);
+        runtimeCommandContext = new WebUiRuntimeCommandContext(
+                this::loadProject,
+                this::firstLoadedProjectId,
+                this::runtimeProjectForId,
+                this::runtimeStateForId,
+                this::setRuntimeStateForId,
+                this::projectPathForId,
+                this::projectNameForId,
+                this::removeProjectById,
+                this::errorResponse,
+                this::addRuntimeCapabilities,
+                sLogger::message,
+                this::handleRuntimeVariableSetCommand,
+                this::handleRuntimeQueryCommand
+        );
+        initializeWsCommandRegistry();
+    }
+
+    private void registerWsCommands(final WsCommandHandler handler, final String... methods) {
+        for (String method : methods) {
+            wsCommandRegistry.put(method, handler);
+        }
+    }
+
+    private void initializeWsCommandRegistry() {
+        registerSceneFlowWsCommands();
+        registerProjectWsCommands();
+        registerRuntimeWsCommands();
+    }
+
+    private void registerSceneFlowWsCommands() {
+        registerWsCommands((method, params, broadcaster) -> runtimeGateway.snapshot(params.optString("projectId", "")),
+                "SceneFlow.Get", "SceneFlow.Snapshot");
+        registerWsCommands((method, params, broadcaster) -> createNodeForProject(params, broadcaster),
+                "SceneFlow.Node.Add", "SceneFlow.Node.Create");
+        registerWsCommands((method, params, broadcaster) -> updateNodeForProject(params, broadcaster),
+                "SceneFlow.Node.Update");
+        registerWsCommands((method, params, broadcaster) -> deleteNodeForProject(params, broadcaster),
+                "SceneFlow.Node.Delete");
+        registerWsCommands((method, params, broadcaster) -> moveNodeForProject(params, broadcaster),
+                "SceneFlow.Node.Move");
+        registerWsCommands((method, params, broadcaster) -> edgeCrudCommandService.dispatch(method, params, broadcaster, edgeCrudCommandContext),
+                "SceneFlow.Edge.Add", "SceneFlow.Edge.Create", "SceneFlow.Edge.Update", "SceneFlow.Edge.Delete");
+        registerWsCommands((method, params, broadcaster) -> commentCommandService.dispatch(method, params, broadcaster, commentCommandContext),
+                "SceneFlow.Comment.Add", "SceneFlow.Comment.Create", "SceneFlow.Comment.Update", "SceneFlow.Comment.Delete");
+        registerWsCommands((method, params, broadcaster) -> selectionCommandService.dispatch(method, params, broadcaster, selectionCommandContext),
+                "SceneFlow.Selection.Copy", "SceneFlow.Selection.Paste");
+        registerWsCommands((method, params, broadcaster) -> undoRedoCommandService.dispatch(method, params, broadcaster, undoRedoCommandContext),
+                "SceneFlow.Undo", "SceneFlow.Redo");
+        registerWsCommands((method, params, broadcaster) -> playSceneCommandService.dispatch(method, params, broadcaster, playSceneCommandContext),
+                "SceneFlow.PlayScene.Find", "SceneFlow.PlayScene.FindMany", "SceneFlow.PlayScene.Rename");
+        registerWsCommands((method, params, broadcaster) -> nodeVarDefCommandService.dispatch(method, params, broadcaster, nodeVarDefCommandContext),
+                "SceneFlow.Node.VarDef.Add", "SceneFlow.Node.VarDef.Update", "SceneFlow.Node.VarDef.Delete", "SceneFlow.Node.VarDef.Move");
+        registerWsCommands((method, params, broadcaster) -> nodeTypeDefCommandService.dispatch(method, params, broadcaster, nodeTypeDefCommandContext),
+                "SceneFlow.Node.TypeDef.Add", "SceneFlow.Node.TypeDef.Update", "SceneFlow.Node.TypeDef.Delete", "SceneFlow.Node.TypeDef.Move");
+        registerWsCommands((method, params, broadcaster) -> nodeCmdCommandService.dispatch(method, params, broadcaster, nodeCmdCommandContext),
+                "SceneFlow.Node.Cmd.Add", "SceneFlow.Node.Cmd.Update", "SceneFlow.Node.Cmd.Delete", "SceneFlow.Node.Cmd.Move");
+        registerWsCommands((method, params, broadcaster) -> edgeLayoutCommandService.dispatch(method, params, broadcaster, edgeLayoutCommandContext),
+                "SceneFlow.Edge.Normalize", "SceneFlow.Edge.Straighten", "SceneFlow.Edge.NormalizeAll", "SceneFlow.Edge.StraightenAll",
+                "SceneFlow.Edge.NormalizeGroup", "SceneFlow.Edge.StraightenGroup");
+        registerWsCommands((method, params, broadcaster) -> edgeRetargetCommandService.dispatch(params, broadcaster, edgeRetargetCommandContext),
+                "SceneFlow.Edge.Retarget");
+        registerWsCommands((method, params, broadcaster) -> edgeProbabilityCommandService.dispatch(params, broadcaster, edgeProbabilityCommandContext),
+                "SceneFlow.Edge.PEdge.UpdateGroup");
+        registerWsCommands((method, params, broadcaster) -> nodeMoveGroupCommandService.dispatch(params, broadcaster, nodeMoveGroupCommandContext),
+                "SceneFlow.Node.MoveGroup");
+    }
+
+    private void registerProjectWsCommands() {
+        registerWsCommands((method, params, broadcaster) -> startEmbeddingsService(params),
+                "Embeddings.Start");
+        registerWsCommands((method, params, broadcaster) -> scriptCommandService.dispatch(params, broadcaster, scriptCommandContext),
+                "Script.Update");
+        registerWsCommands((method, params, broadcaster) -> configCommandService.dispatch(params, broadcaster, configCommandContext),
+                "Config.Update");
+        registerWsCommands((method, params, broadcaster) -> pluginCreateCommandService.dispatch(params, pluginCreateCommandContext),
+                "ProjectConfig.Plugin.Create");
+        registerWsCommands((method, params, broadcaster) -> projectTemplatesInstallCommandService.dispatch(params, projectTemplatesInstallCommandContext),
+                "Project.Templates.Install");
+        registerWsCommands((method, params, broadcaster) -> projectConfigUpdateCommandService.dispatch(params, broadcaster, projectConfigUpdateCommandContext),
+                "ProjectConfig.Update");
+        registerWsCommands((method, params, broadcaster) -> preferencesCommandService.dispatch(params, broadcaster, preferencesCommandContext),
+                "Preferences.Update");
+        registerWsCommands((method, params, broadcaster) -> new JSONObject().put("status", "ok"),
+                "Project.Save", "Project.SaveAs", "Project.Close");
+    }
+
+    private void registerRuntimeWsCommands() {
+        registerWsCommands((method, params, broadcaster) -> runtimeCommandService.dispatchRuntimeCommand(method, params, broadcaster, runtimeCommandContext),
+                "Runtime.Load", "Runtime.Play", "Runtime.Start", "Runtime.Resume", "Runtime.Pause", "Runtime.Stop",
+                "Runtime.Unload", "Runtime.Variable.Set", "Runtime.Query");
     }
 
     public static synchronized WebUiServer getInstance() {
@@ -297,6 +1636,20 @@ public final class WebUiServer implements EventListener {
             sInstance = new WebUiServer();
         }
         return sInstance;
+    }
+
+    public RuntimeGateway getRuntimeGateway() {
+        return runtimeGateway;
+    }
+
+    @Override
+    public JSONObject dispatchCommand(String method, JSONObject params, java.util.function.Consumer<String> broadcaster) {
+        return dispatchWs(method, params, broadcaster);
+    }
+
+    @Override
+    public JSONObject snapshot(String projectId) {
+        return snapshotPayload(projectId);
     }
 
     public void setAllowExternal(boolean allow) {
@@ -434,7 +1787,6 @@ public final class WebUiServer implements EventListener {
         if (event == null) {
             return;
         }
-        System.out.println("[EVENT] Received: " + event.getClass().getSimpleName());
 
         // Handle VariableChangedEvent first (matches UiEventBridge order)
         if (event instanceof VariableChangedEvent) {
@@ -456,7 +1808,6 @@ public final class WebUiServer implements EventListener {
             payload.put("name", pair.getFirst());
             payload.put("value", pair.getSecond() != null ? pair.getSecond() : "");
             message.put("payload", payload);
-            System.out.println("[EVENT] → vars.updated: " + pair.getFirst() + " = " + pair.getSecond());
             broadcastToAll(message.toString());
             return;
         }
@@ -481,7 +1832,6 @@ public final class WebUiServer implements EventListener {
             }
             message.put("channel", "runtime");
             message.put("event", "runtime.nodeActive");
-            System.out.println("[EVENT] → runtime.nodeActive: " + node.getId());
 
         } else if (event instanceof NodeExecutedEvent || event instanceof NodeTerminatedEvent) {
             // Both NodeExecutedEvent and NodeTerminatedEvent → runtime.nodeStopped
@@ -496,7 +1846,6 @@ public final class WebUiServer implements EventListener {
             }
             message.put("channel", "runtime");
             message.put("event", "runtime.nodeStopped");
-            System.out.println("[EVENT] → runtime.nodeStopped: " + node.getId());
 
         } else if (event instanceof EdgeExecutedEvent) {
             // EdgeExecutedEvent → runtime.edgeActive
@@ -509,7 +1858,6 @@ public final class WebUiServer implements EventListener {
             payload.put("edgeType", getEdgeTypeLowercase(edge));
             message.put("channel", "runtime");
             message.put("event", "runtime.edgeActive");
-            System.out.println("[EVENT] → runtime.edgeActive: " + sourceId + " -> " + targetId);
 
         } else if (event instanceof TimeoutEdgeStartedEvent) {
             // TimeoutEdgeStartedEvent → runtime.timeoutProgress
@@ -527,7 +1875,6 @@ public final class WebUiServer implements EventListener {
             payload.put("ratio", 0.0);
             message.put("channel", "runtime");
             message.put("event", "runtime.timeoutProgress");
-            System.out.println("[EVENT] → runtime.timeoutProgress");
 
         } else if (event instanceof SceneExecutedEvent) {
             SceneObject scene = ((SceneExecutedEvent) event).getScene();
@@ -572,7 +1919,6 @@ public final class WebUiServer implements EventListener {
             payload.put("status", "stopped");
             message.put("channel", "runtime");
             message.put("event", "runtime.state");
-            System.out.println("[EVENT] → runtime.state: stopped");
             // Update runtime state in project store
             if (projectId != null) {
                 ProjectRef ref = projectStore.get(projectId);
@@ -583,12 +1929,10 @@ public final class WebUiServer implements EventListener {
 
         } else {
             // Unknown event type, skip
-            System.out.println("[EVENT] Unknown, skipping: " + event.getClass().getName());
             return;
         }
 
         message.put("payload", payload);
-        System.out.println("[EVENT] Broadcasting to " + wsSessions.size() + " clients");
         broadcastToAll(message.toString());
     }
 
@@ -613,6 +1957,114 @@ public final class WebUiServer implements EventListener {
             return projectStore.keySet().iterator().next();
         }
         return null;
+    }
+
+    private String firstLoadedProjectId() {
+        if (projectStore.isEmpty()) {
+            return null;
+        }
+        return projectStore.keySet().iterator().next();
+    }
+
+    private RunTimeProject runtimeProjectForId(String projectId) {
+        ProjectRef ref = projectStore.get(projectId);
+        return ref != null ? ref.runtimeProject : null;
+    }
+
+    private String runtimeStateForId(String projectId) {
+        ProjectRef ref = projectStore.get(projectId);
+        return ref != null ? ref.runtimeState : null;
+    }
+
+    private void setRuntimeStateForId(String projectId, String state) {
+        ProjectRef ref = projectStore.get(projectId);
+        if (ref != null) {
+            ref.runtimeState = state;
+        }
+    }
+
+    private String projectPathForId(String projectId) {
+        ProjectRef ref = projectStore.get(projectId);
+        return ref != null && ref.path != null ? ref.path : "";
+    }
+
+    private String projectNameForId(String projectId) {
+        ProjectRef ref = projectStore.get(projectId);
+        if (ref == null || ref.runtimeProject == null || ref.runtimeProject.getProjectName() == null) {
+            return "";
+        }
+        return ref.runtimeProject.getProjectName();
+    }
+
+    private void removeProjectById(String projectId) {
+        projectStore.remove(projectId);
+    }
+
+    private JSONObject handleRuntimeVariableSetCommand(String projectId, String name, String valueExpr) {
+        ProjectRef ref = projectStore.get(projectId);
+        if (ref == null || ref.runtimeProject == null) {
+            return errorResponse("PROJECT_NOT_FOUND", "Project not found");
+        }
+
+        RunTimeProject runtimeProject = ref.runtimeProject;
+        SceneFlow sceneFlow = runtimeProject.getSceneFlow();
+        VariableDefinition varDef = findVariableDefinitionInHierarchy(sceneFlow, name);
+        if (varDef == null) {
+            return errorResponse("VAR_NOT_FOUND", "Variable not found: " + name);
+        }
+
+        Expression exp;
+        try {
+            Object parsed = GlueParser.run(valueExpr.trim());
+            if (!(parsed instanceof Expression)) {
+                return errorResponse("PARSE_FAILED", "Expression could not be parsed");
+            }
+            exp = (Expression) parsed;
+        } catch (Exception exc) {
+            return errorResponse("PARSE_FAILED", exc.getMessage() != null ? exc.getMessage() : "Parse failed");
+        }
+
+        if (!isSupportedRuntimeExpression(exp)) {
+            return errorResponse("UNSUPPORTED_EXPRESSION", "Expression type is not supported");
+        }
+
+        boolean setOk = applyRuntimeExpression(runtimeProject, name, exp);
+        if (!setOk) {
+            return errorResponse("SET_FAILED", "Failed to update variable");
+        }
+
+        JSONObject response = new JSONObject();
+        response.put("status", "ok");
+        response.put("projectId", projectId);
+        response.put("name", name);
+        String currentValue = resolveVariableValue(runtimeProject, name);
+        if (currentValue != null) {
+            response.put("value", currentValue);
+        }
+        addRuntimeCapabilities(response);
+        return response;
+    }
+
+    private JSONObject handleRuntimeQueryCommand(String projectId, String query) {
+        ProjectRef ref = projectStore.get(projectId);
+        if (ref == null || ref.runtimeProject == null) {
+            return errorResponse("PROJECT_NOT_FOUND", "Project not found");
+        }
+        if (!isLogicEnabled()) {
+            return errorResponse("UNSUPPORTED_FEATURE", "Logic engine is disabled on this platform");
+        }
+
+        JSONObject response = new JSONObject();
+        response.put("status", "ok");
+        int count = 0;
+        try {
+            count = LogicEngines.get().query(query.trim()).size();
+        } catch (Exception exc) {
+            sLogger.warning("Runtime.Query failed: " + exc.getMessage());
+        }
+        response.put("count", count);
+        addRuntimeCapabilities(response);
+        return response;
     }
 
     private void broadcastToAll(String message) {
@@ -648,6 +2100,7 @@ public final class WebUiServer implements EventListener {
     private void registerRoutes() {
         // Common endpoints (available in both modes)
         mApp.get(API_PREFIX + "/info", this::handleInfo);
+        mApp.get(API_PREFIX + "/transport", this::handleTransport);
         mApp.get(API_PREFIX + "/token", this::handleToken);
         mApp.get(API_PREFIX + "/projects", this::handleProjects);
         mApp.get(API_PREFIX + "/projects/recent", this::handleRecentProjects);
@@ -694,12 +2147,21 @@ public final class WebUiServer implements EventListener {
 
         // Runtime-only REST endpoints (direct runtime control via REST)
         if (mMode == ServerMode.RUNTIME_ONLY) {
-            mApp.post(API_PREFIX + "/runtime/load", this::handleRuntimeLoad);
-            mApp.post(API_PREFIX + "/runtime/start", this::handleRuntimeStart);
-            mApp.post(API_PREFIX + "/runtime/pause", this::handleRuntimePause);
-            mApp.post(API_PREFIX + "/runtime/resume", this::handleRuntimeResume);
-            mApp.post(API_PREFIX + "/runtime/stop", this::handleRuntimeStopRest);
-            mApp.post(API_PREFIX + "/runtime/unload", this::handleRuntimeUnload);
+            if (isRuntimeRestMutationsEnabled()) {
+                mApp.post(API_PREFIX + "/runtime/load", this::handleRuntimeLoad);
+                mApp.post(API_PREFIX + "/runtime/start", this::handleRuntimeStart);
+                mApp.post(API_PREFIX + "/runtime/pause", this::handleRuntimePause);
+                mApp.post(API_PREFIX + "/runtime/resume", this::handleRuntimeResume);
+                mApp.post(API_PREFIX + "/runtime/stop", this::handleRuntimeStopRest);
+                mApp.post(API_PREFIX + "/runtime/unload", this::handleRuntimeUnload);
+            } else {
+                mApp.post(API_PREFIX + "/runtime/load", this::handleRuntimeMutationDeprecatedUnavailable);
+                mApp.post(API_PREFIX + "/runtime/start", this::handleRuntimeMutationDeprecatedUnavailable);
+                mApp.post(API_PREFIX + "/runtime/pause", this::handleRuntimeMutationDeprecatedUnavailable);
+                mApp.post(API_PREFIX + "/runtime/resume", this::handleRuntimeMutationDeprecatedUnavailable);
+                mApp.post(API_PREFIX + "/runtime/stop", this::handleRuntimeMutationDeprecatedUnavailable);
+                mApp.post(API_PREFIX + "/runtime/unload", this::handleRuntimeMutationDeprecatedUnavailable);
+            }
             mApp.get(API_PREFIX + "/runtime/status", this::handleRuntimeStatus);
             mApp.get(API_PREFIX + "/runtime/variables", this::handleRuntimeVariables);
             mApp.get(API_PREFIX + "/runtime/sceneflow", this::handleRuntimeSceneflowLegacy);
@@ -708,20 +2170,17 @@ public final class WebUiServer implements EventListener {
         // WebSocket endpoint: accepts requests and replies with JSON. Broadcasts snapshots/runtime state after mutations.
         mApp.ws("/ws", ws -> {
             ws.onConnect(ctx -> {
-                System.out.println("[WS-CORE] Client connected: " + ctx.getSessionId());
-                sLogger.message("[WS-CORE] Client connected: " + ctx.getSessionId());
+                sLogger.message("WS client connected: " + ctx.getSessionId());
                 wsSessions.add(ctx);
             });
             ws.onClose(ctx -> {
-                System.out.println("[WS-CORE] Client disconnected: " + ctx.getSessionId());
                 wsSessions.remove(ctx);
             });
             ws.onError(ctx -> {
-                System.out.println("[WS-CORE] WebSocket error: " + ctx.getSessionId());
+                sLogger.warning("WS client error: " + ctx.getSessionId());
                 wsSessions.remove(ctx);
             });
             ws.onMessage(ctx -> {
-                System.out.println("[WS-CORE] Message received from " + ctx.getSessionId() + ": " + ctx.message());
                 handleWsMessage(ctx.message(), ctx::send, msg -> broadcast(ctx, msg));
             });
         });
@@ -730,114 +2189,115 @@ public final class WebUiServer implements EventListener {
     // ========== Runtime-Only REST Endpoints ==========
 
     private void handleRuntimeLoad(Context ctx) {
-        JSONObject body = new JSONObject(ctx.body());
-        String path = body.optString("projectPath", "");
-        if (path.isEmpty()) {
-            ctx.status(400).result("Missing projectPath");
+        JSONObject body;
+        try {
+            body = new JSONObject(ctx.body());
+        } catch (Exception exc) {
+            writeRuntimeMutationResponse(ctx, errorResponse("BAD_REQUEST", "Invalid JSON body"));
             return;
         }
-        if (loadProject(path)) {
-            Map.Entry<String, ProjectRef> entry = projectStore.entrySet().iterator().next();
-            ProjectRef ref = entry.getValue();
-            JSONObject response = new JSONObject();
-            response.put("status", "ok");
-            response.put("state", ref.runtimeState);
-            response.put("projectPath", ref.path);
-            response.put("projectName", ref.runtimeProject != null ? ref.runtimeProject.getProjectName() : "");
-            writeJson(ctx, response);
-        } else {
-            ctx.status(500).result("Failed to load project");
-        }
+        dispatchRuntimeMutation(ctx, "Runtime.Load", body);
     }
 
     private void handleRuntimeStart(Context ctx) {
-        if (projectStore.isEmpty()) {
-            ctx.status(400).result("No project loaded");
-            return;
-        }
-        if (startRuntime()) {
-            Map.Entry<String, ProjectRef> entry = projectStore.entrySet().iterator().next();
-            JSONObject response = new JSONObject();
-            response.put("status", "ok");
-            response.put("state", entry.getValue().runtimeState);
-            writeJson(ctx, response);
-        } else {
-            ctx.status(500).result("Failed to start runtime");
-        }
+        dispatchRuntimeMutation(ctx, "Runtime.Start", runtimeCommandParamsWithProjectId());
     }
 
     private void handleRuntimePause(Context ctx) {
-        if (projectStore.isEmpty()) {
-            ctx.status(400).result("No project loaded");
-            return;
-        }
-        Map.Entry<String, ProjectRef> entry = projectStore.entrySet().iterator().next();
-        ProjectRef ref = entry.getValue();
-        if (ref.runtimeProject != null && ref.runtimeProject.pause()) {
-            ref.runtimeState = "paused";
-            broadcastRuntimeState(entry.getKey(), "paused");
-            JSONObject response = new JSONObject();
-            response.put("status", "ok");
-            response.put("state", ref.runtimeState);
-            writeJson(ctx, response);
-        } else {
-            ctx.status(500).result("Failed to pause runtime");
-        }
+        dispatchRuntimeMutation(ctx, "Runtime.Pause", runtimeCommandParamsWithProjectId());
     }
 
     private void handleRuntimeResume(Context ctx) {
-        if (projectStore.isEmpty()) {
-            ctx.status(400).result("No project loaded");
-            return;
-        }
-        Map.Entry<String, ProjectRef> entry = projectStore.entrySet().iterator().next();
-        ProjectRef ref = entry.getValue();
-        if (ref.runtimeProject != null && ref.runtimeProject.proceed()) {
-            ref.runtimeState = "running";
-            broadcastRuntimeState(entry.getKey(), "running");
-            JSONObject response = new JSONObject();
-            response.put("status", "ok");
-            response.put("state", ref.runtimeState);
-            writeJson(ctx, response);
-        } else {
-            ctx.status(500).result("Failed to resume runtime");
-        }
+        dispatchRuntimeMutation(ctx, "Runtime.Resume", runtimeCommandParamsWithProjectId());
     }
 
     private void handleRuntimeStopRest(Context ctx) {
-        if (projectStore.isEmpty()) {
-            ctx.status(400).result("No project loaded");
-            return;
-        }
-        Map.Entry<String, ProjectRef> entry = projectStore.entrySet().iterator().next();
-        ProjectRef ref = entry.getValue();
-        if (ref.runtimeProject != null && ref.runtimeProject.isRunning()) {
-            ref.runtimeProject.abort();
-        }
-        ref.runtimeState = "stopped";
-        broadcastRuntimeState(entry.getKey(), "stopped");
-        JSONObject response = new JSONObject();
-        response.put("status", "ok");
-        response.put("state", ref.runtimeState);
-        writeJson(ctx, response);
+        dispatchRuntimeMutation(ctx, "Runtime.Stop", runtimeCommandParamsWithProjectId());
     }
 
     private void handleRuntimeUnload(Context ctx) {
-        if (projectStore.isEmpty()) {
-            ctx.status(400).result("No project loaded");
-            return;
-        }
-        Map.Entry<String, ProjectRef> entry = projectStore.entrySet().iterator().next();
-        ProjectRef ref = entry.getValue();
-        if (ref.runtimeProject != null && ref.runtimeProject.wasExecuted()) {
-            ref.runtimeProject.unload();
-        }
-        projectStore.remove(entry.getKey());
-        broadcastRuntimeState(null, "stopped");
-        JSONObject response = new JSONObject();
-        response.put("status", "ok");
-        response.put("state", "stopped");
+        dispatchRuntimeMutation(ctx, "Runtime.Unload", runtimeCommandParamsWithProjectId());
+    }
+
+    private void handleRuntimeMutationDeprecatedUnavailable(Context ctx) {
+        markRuntimeMutationDeprecated(ctx);
+        JSONObject response = errorResponse("ENDPOINT_DEPRECATED",
+                "Runtime REST mutation endpoints are disabled. Use WebSocket /ws commands.");
+        response.put("status", "error");
+        response.put("preferredTransport", "ws");
+        ctx.status(410);
         writeJson(ctx, response);
+    }
+
+    private void dispatchRuntimeMutation(Context ctx, String method, JSONObject params) {
+        markRuntimeMutationDeprecated(ctx);
+        JSONObject result = runtimeGateway.dispatch(method, params, this::broadcastToAll);
+        writeRuntimeMutationResponse(ctx, result);
+    }
+
+    private JSONObject runtimeCommandParamsWithProjectId() {
+        JSONObject params = new JSONObject();
+        String pid = firstLoadedProjectId();
+        if (pid != null && !pid.isBlank()) {
+            params.put("projectId", pid);
+        }
+        return params;
+    }
+
+    private void markRuntimeMutationDeprecated(Context ctx) {
+        ctx.header("Warning", "299 - \"Deprecated runtime REST mutation endpoint; use WebSocket /ws commands\"");
+        ctx.header("Deprecation", "true");
+        ctx.header("X-VSM-Preferred-Transport", "ws");
+    }
+
+    private void writeRuntimeMutationResponse(Context ctx, JSONObject payload) {
+        JSONObject response = normalizeRuntimeMutationPayload(payload);
+        String status = response.optString("status", "ok");
+        if ("error".equalsIgnoreCase(status)) {
+            String code = response.optString("error", "");
+            if ("BAD_REQUEST".equals(code)) {
+                ctx.status(400);
+            } else if ("PROJECT_NOT_FOUND".equals(code)) {
+                ctx.status(404);
+            } else if ("UNSUPPORTED_FEATURE".equals(code)) {
+                ctx.status(501);
+            } else {
+                ctx.status(500);
+            }
+        }
+        writeJson(ctx, response);
+    }
+
+    private JSONObject normalizeRuntimeMutationPayload(JSONObject payload) {
+        if (payload == null) {
+            JSONObject err = errorResponse("INTERNAL_ERROR", "No response from runtime command");
+            err.put("status", "error");
+            return err;
+        }
+        JSONObject normalized = new JSONObject(payload.toString());
+        if (normalized.has("error") && normalized.opt("error") instanceof JSONObject) {
+            JSONObject errorObj = normalized.optJSONObject("error");
+            String code = errorObj != null ? errorObj.optString("code", "ERROR") : "ERROR";
+            String message = errorObj != null ? errorObj.optString("message", "") : "";
+            normalized.remove("error");
+            normalized.put("status", "error");
+            normalized.put("error", code);
+            if (!message.isBlank()) {
+                normalized.put("message", message);
+            }
+            addRuntimeCapabilities(normalized);
+            return normalized;
+        }
+        if (normalized.has("error")) {
+            normalized.put("status", "error");
+            addRuntimeCapabilities(normalized);
+            return normalized;
+        }
+        if (!normalized.has("status")) {
+            normalized.put("status", "ok");
+        }
+        addRuntimeCapabilities(normalized);
+        return normalized;
     }
 
     private void handleRuntimeStatus(Context ctx) {
@@ -962,6 +2422,28 @@ public final class WebUiServer implements EventListener {
         info.put("mode", mMode.name().toLowerCase());
         addRuntimeCapabilities(info);
         writeJson(ctx, info);
+    }
+
+    private void handleTransport(Context ctx) {
+        JSONObject response = new JSONObject();
+        response.put("status", "ok");
+        response.put("preferred", "ws");
+        response.put("commandTransport", "ws");
+        response.put("eventTransport", "ws");
+        response.put("bootstrapTransport", "http");
+        response.put("runtimeRestMutationsEnabled", isRuntimeRestMutationsEnabled());
+        response.put("wsPath", "/ws");
+        response.put("apiPrefix", API_PREFIX);
+
+        JSONArray bootstrapEndpoints = new JSONArray();
+        bootstrapEndpoints.put(API_PREFIX + "/info");
+        bootstrapEndpoints.put(API_PREFIX + "/token");
+        bootstrapEndpoints.put(API_PREFIX + "/projects");
+        bootstrapEndpoints.put(API_PREFIX + "/projects/{pid}/sceneflow");
+        bootstrapEndpoints.put(API_PREFIX + "/runtime/status");
+        response.put("bootstrapEndpoints", bootstrapEndpoints);
+
+        writeJson(ctx, response);
     }
 
     private void handleToken(Context ctx) {
@@ -2538,10 +4020,8 @@ public final class WebUiServer implements EventListener {
         }
 
         ExportablePropertyEntry entry = resolveExportablePropertyEntry(className);
-        System.out.println("[PROJECT-CONFIG-KEYS] Looking up className='" + className + "', found=" + (entry != null));
         JSONObject spec = resolveSpecForScope(entry, scope);
         if (spec != null) {
-            System.out.println("[PROJECT-CONFIG-KEYS] Using spec from plugin-properties.json");
             JSONObject response = buildSpecResponse(spec);
             response.put("supported", true);
             writeJson(ctx, response);
@@ -2664,13 +4144,10 @@ public final class WebUiServer implements EventListener {
                 }
             }
             if (sourceCount == 0) {
-                System.out.println("[PROJECT-CONFIG] WARNING: no plugin-properties.json resources found on classpath.");
+                sLogger.warning("No plugin-properties.json resources found on classpath.");
             } else {
-                System.out.println("[PROJECT-CONFIG] Loaded exportable properties registry with "
+                sLogger.message("Loaded exportable properties registry with "
                         + EXPORTABLE_PROPERTY_PROVIDERS.size() + " entries from " + sourceCount + " resources.");
-                for (String providerKey : EXPORTABLE_PROPERTY_PROVIDERS.keySet()) {
-                    System.out.println("[PROJECT-CONFIG]   - " + providerKey);
-                }
             }
         } catch (Exception exc) {
             sLogger.warning("Warning: failed to load exportable property registry: " + exc.getMessage());
@@ -4311,46 +5788,17 @@ public final class WebUiServer implements EventListener {
 
     // --- WebSocket handling -------------------------------------------------
     private void handleWsMessage(String raw, java.util.function.Consumer<String> sender, java.util.function.Consumer<String> broadcaster) {
-        System.out.println("[WS-HANDLE] Starting handleWsMessage");
         try {
-            System.out.println("[WS-HANDLE] Parsing message...");
-            JSONObject msg = new JSONObject(raw);
-            String id = msg.optString("id", "");
-            // Support both "method" (editor style) and "name" (web-ui style) for the command name
-            String method = msg.optString("method", "");
-            if (method.isEmpty()) {
-                method = msg.optString("name", "");
-            }
-            // Support both "params" (editor style) and "payload" (web-ui style) for parameters
-            JSONObject params = msg.optJSONObject("params");
-            if (params == null) {
-                params = msg.optJSONObject("payload");
-            }
-            System.out.println("[WS-HANDLE] Dispatching method: " + method + ", id: " + id);
-            JSONObject result = dispatchWs(method, params == null ? new JSONObject() : params, broadcaster);
-            System.out.println("[WS-HANDLE] Dispatch returned: " + (result != null ? result.toString() : "null"));
-            // Send response in the format the Web UI expects
-            // Web UI expects: { type: "response", id, payload } or { type: "error", payload: { message } }
-            JSONObject resp = new JSONObject();
-            resp.put("type", "response");
-            if (!id.isEmpty()) {
-                resp.put("id", id);
-            }
-            resp.put("payload", result);
-            // Also include status for backward compatibility
-            resp.put("status", "ok");
-            System.out.println("[WS-HANDLE] Sending response: " + resp.toString());
+            RuntimeWsProtocol.CommandRequest request = RuntimeWsProtocol.parseRequest(raw);
+            String id = request.id();
+            String method = request.method();
+            JSONObject params = request.params();
+            JSONObject result = runtimeGateway.dispatch(method, params, broadcaster);
+            JSONObject resp = RuntimeWsProtocol.successResponse(id, result);
             sender.accept(resp.toString());
-            System.out.println("[WS-HANDLE] Response sent successfully");
         } catch (Exception exc) {
-            System.out.println("[WS-HANDLE] ERROR: " + exc.getMessage());
-            exc.printStackTrace();
-            JSONObject resp = new JSONObject();
-            resp.put("type", "error");
-            JSONObject payload = new JSONObject();
-            payload.put("message", exc.getMessage());
-            resp.put("payload", payload);
-            resp.put("status", "error");
+            sLogger.failure("WS message handling failed: " + exc.getMessage());
+            JSONObject resp = RuntimeWsProtocol.errorResponse(exc.getMessage());
             sender.accept(resp.toString());
         }
     }
@@ -4361,1545 +5809,14 @@ public final class WebUiServer implements EventListener {
             return errorResponse("EDITING_NOT_SUPPORTED",
                     "Editing not supported in runtime-only mode");
         }
-
-        switch (method) {
-            case "SceneFlow.Get":
-            case "SceneFlow.Snapshot":
-                return snapshotPayload(params.optString("projectId", ""));
-            case "SceneFlow.Node.Add":
-            case "SceneFlow.Node.Create":
-                return createNodeForProject(params, broadcaster);
-            case "SceneFlow.Node.Update":
-                return updateNodeForProject(params, broadcaster);
-            case "SceneFlow.Node.Delete":
-                return deleteNodeForProject(params, broadcaster);
-            case "SceneFlow.Node.Move":
-                return moveNodeForProject(params, broadcaster);
-            case "SceneFlow.Edge.Add":
-            case "SceneFlow.Edge.Create":
-                return createEdgeForProject(params, broadcaster);
-            case "SceneFlow.Edge.Update":
-                return updateEdgeForProject(params, broadcaster);
-            case "SceneFlow.Edge.Delete":
-                return deleteEdgeForProject(params, broadcaster);
-            case "SceneFlow.Comment.Add":
-            case "SceneFlow.Comment.Create":
-                return createCommentForProject(params, broadcaster);
-            case "SceneFlow.Comment.Update":
-                return updateCommentForProject(params, broadcaster);
-            case "SceneFlow.Comment.Delete":
-                return deleteCommentForProject(params, broadcaster);
-            case "SceneFlow.Selection.Copy":
-                return copySelectionForProject(params);
-            case "SceneFlow.Selection.Paste":
-                return pasteSelectionForProject(params, broadcaster);
-            case "SceneFlow.Undo":
-                return undoProject(params, broadcaster);
-            case "SceneFlow.Redo":
-                return redoProject(params, broadcaster);
-            case "SceneFlow.PlayScene.Find":
-                return findPlaySceneReferences(params);
-            case "SceneFlow.PlayScene.FindMany":
-                return findPlaySceneReferencesMany(params);
-            case "SceneFlow.PlayScene.Rename":
-                return renamePlaySceneReferences(params, broadcaster);
-            case "Embeddings.Start":
-                return startEmbeddingsService(params);
-            case "Script.Update":
-                return updateScriptForProject(params, broadcaster);
-            case "Config.Update": {
-                String pid = params.optString("projectId", "");
-                JSONObject values = params.optJSONObject("values");
-                if (pid.isBlank()) {
-                    return errorResponse("BAD_REQUEST", "Missing projectId");
-                }
-                if (values == null) {
-                    return errorResponse("BAD_REQUEST", "Missing values");
-                }
-                ProjectRef ref = projectStore.get(pid);
-                if (ref == null) {
-                    return errorResponse("PROJECT_NOT_FOUND", "Project not found");
-                }
-                Properties config = loadEditorConfig(ref);
-                for (String key : values.keySet()) {
-                    Object raw = values.get(key);
-                    if (raw == null || raw == JSONObject.NULL) {
-                        config.remove(key);
-                    } else {
-                        config.setProperty(key, String.valueOf(raw));
-                    }
-                }
-                boolean saved = false;
-                boolean pending = false;
-                String path = ref.path == null ? "" : ref.path.trim();
-                if (!path.isBlank()) {
-                    saved = saveEditorConfig(ref);
-                    if (!saved) {
-                        return errorResponse("CONFIG_SAVE_FAILED", "Failed to save editor config");
-                    }
-                } else {
-                    pending = true;
-                    ref.editorConfigDirty = true;
-                    ref.dirty = true;
-                }
-                JSONObject response = new JSONObject();
-                response.put("status", "ok");
-                response.put("config", editorConfigToJson(config));
-                response.put("saved", saved);
-                response.put("pending", pending);
-                if (ref.runtimeProject != null) {
-                    SceneFlow sceneFlow = ref.runtimeProject.getSceneFlow();
-                    String superNodeId = params.optString("superNodeId", "");
-                    SuperNode snapshotTarget = resolveSuperNode(sceneFlow, superNodeId);
-                    JSONObject snapshot = createSceneFlowSnapshot(
-                            ref.runtimeProject,
-                            pid,
-                            snapshotTarget != null ? snapshotTarget : sceneFlow,
-                            sceneFlow
-                    );
-                    response.put("snapshot", snapshot);
-                    if (broadcaster != null) {
-                        JSONObject evt = new JSONObject();
-                        evt.put("event", "sceneflow.snapshot");
-                        evt.put("snapshot", snapshot);
-                        broadcaster.accept(evt.toString());
-                    }
-                }
-                return response;
-            }
-            case "ProjectConfig.Plugin.Create": {
-                // Returns a plugin template with required keys pre-populated from plugin-properties.json
-                // Also returns sceneflowVars for properties that have a sceneflowtype defined
-                String className = params.optString("className", "").trim();
-                String name = params.optString("name", "").trim();
-                String type = params.optString("type", "device").trim();
-                boolean load = params.optBoolean("load", true);
-
-                if (className.isEmpty()) {
-                    return errorResponse("BAD_REQUEST", "Missing className");
-                }
-
-                JSONObject plugin = new JSONObject();
-                plugin.put("name", name);
-                plugin.put("className", className);
-                plugin.put("type", type);
-                plugin.put("load", load);
-
-                // Look up config keys and defaults
-                // Also collect sceneflow variable definitions
-                JSONArray features = new JSONArray();
-                JSONArray sceneflowVars = new JSONArray();
-                Map<String, String> configDefaults = new HashMap<>();
-                Map<String, String> configSceneFlowTypes = new HashMap<>();
-                Set<String> sceneflowVarDedup = new HashSet<>();
-                ExportablePropertyEntry entry = resolveExportablePropertyEntry(className);
-                if (entry != null && entry.pluginSpec != null) {
-                    JSONArray optional = entry.pluginSpec.optJSONArray("optional");
-                    JSONArray required = entry.pluginSpec.optJSONArray("required");
-                    if (required != null) {
-                        for (int i = 0; i < required.length(); i++) {
-                            JSONObject req = required.optJSONObject(i);
-                            if (req != null) {
-                                String key = req.optString("name", "").trim();
-                                if (!key.isEmpty()) {
-                                    Object defaultVal = req.opt("default");
-                                    String value = defaultVal != null ? String.valueOf(defaultVal) : "";
-                                    JSONObject feature = new JSONObject();
-                                    feature.put("key", key);
-                                    feature.put("value", value);
-                                    features.put(feature);
-                                    configDefaults.put(key, value);
-
-                                    // Check if this property defines a sceneflow variable type
-                                    String sceneflowType = req.optString("sceneflowtype", "").trim();
-                                    if (!sceneflowType.isEmpty()) {
-                                        configSceneFlowTypes.put(key, sceneflowType);
-                                    }
-                                    if (!sceneflowType.isEmpty() && !value.isEmpty()) {
-                                        JSONObject varDef = new JSONObject();
-                                        varDef.put("name", value);  // The default value is the variable name
-                                        varDef.put("type", sceneflowType);
-                                        String dedupKey = value + "::" + sceneflowType;
-                                        if (sceneflowVarDedup.add(dedupKey)) {
-                                            sceneflowVars.put(varDef);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    // Optional config keys are not auto-added to plugin features, but may still
-                    // define sceneflow variable defaults/types used for auto-creation.
-                    if (optional != null) {
-                        for (int i = 0; i < optional.length(); i++) {
-                            JSONObject opt = optional.optJSONObject(i);
-                            if (opt == null) continue;
-                            String key = opt.optString("name", "").trim();
-                            if (key.isEmpty()) continue;
-                            Object defaultVal = opt.opt("default");
-                            String value = defaultVal != null ? String.valueOf(defaultVal) : "";
-                            configDefaults.putIfAbsent(key, value);
-
-                            String sceneflowType = opt.optString("sceneflowtype", "").trim();
-                            if (!sceneflowType.isEmpty()) {
-                                configSceneFlowTypes.putIfAbsent(key, sceneflowType);
-                                if (!value.isEmpty()) {
-                                    JSONObject varDef = new JSONObject();
-                                    varDef.put("name", value);
-                                    varDef.put("type", sceneflowType);
-                                    String dedupKey = value + "::" + sceneflowType;
-                                    if (sceneflowVarDedup.add(dedupKey)) {
-                                        sceneflowVars.put(varDef);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    // Also add pluginSpecific items with their defaults
-                    JSONArray pluginSpecific = entry.pluginSpec.optJSONArray("pluginSpecific");
-                    if (pluginSpecific != null) {
-                        for (int i = 0; i < pluginSpecific.length(); i++) {
-                            JSONObject ps = pluginSpecific.optJSONObject(i);
-                            if (ps != null) {
-                                String key = ps.optString("name", "").trim();
-                                if (!key.isEmpty()) {
-                                    Object defaultVal = ps.opt("default");
-                                    String value = defaultVal != null ? String.valueOf(defaultVal) : "";
-                                    JSONObject feature = new JSONObject();
-                                    feature.put("key", key);
-                                    feature.put("value", value);
-                                    features.put(feature);
-                                    configDefaults.put(key, value);
-                                    String sceneflowType = ps.optString("sceneflowtype", "").trim();
-                                    if (!sceneflowType.isEmpty()) {
-                                        configSceneFlowTypes.put(key, sceneflowType);
-                                        if (!value.isEmpty()) {
-                                            JSONObject varDef = new JSONObject();
-                                            varDef.put("name", value);
-                                            varDef.put("type", sceneflowType);
-                                            String dedupKey = value + "::" + sceneflowType;
-                                            if (sceneflowVarDedup.add(dedupKey)) {
-                                                sceneflowVars.put(varDef);
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                // Include variables.writes from descriptor metadata as auto-created sceneflow vars.
-                // If "var" references a config key (e.g. "connectedVar"), resolve to that key's
-                // default value and type from config metadata.
-                if (entry != null && entry.variables != null) {
-                    JSONArray writes = entry.variables.optJSONArray("writes");
-                    if (writes != null) {
-                        for (int i = 0; i < writes.length(); i++) {
-                            JSONObject write = writes.optJSONObject(i);
-                            if (write == null) continue;
-                            String rawVar = write.optString("var", "").trim();
-                            if (rawVar.isEmpty()) continue;
-
-                            String resolvedVarName = configDefaults.getOrDefault(rawVar, rawVar).trim();
-                            String resolvedType = write.optString("type", "").trim();
-                            if (resolvedType.isEmpty()) {
-                                resolvedType = configSceneFlowTypes.getOrDefault(rawVar, "").trim();
-                            }
-                            if (resolvedVarName.isEmpty() || resolvedType.isEmpty()) continue;
-
-                            JSONObject varDef = new JSONObject();
-                            varDef.put("name", resolvedVarName);
-                            varDef.put("type", resolvedType);
-                            String dedupKey = resolvedVarName + "::" + resolvedType;
-                            if (sceneflowVarDedup.add(dedupKey)) {
-                                sceneflowVars.put(varDef);
-                            }
-                        }
-                    }
-                }
-                plugin.put("features", features);
-
-                // Check for templates section
-                JSONObject templates = null;
-                if (entry != null && entry.pluginSpec != null) {
-                    templates = entry.pluginSpec.optJSONObject("templates");
-                }
-
-                JSONObject response = new JSONObject();
-                response.put("status", "ok");
-                response.put("plugin", plugin);
-                response.put("sceneflowVars", sceneflowVars);
-                if (templates != null) {
-                    response.put("templates", templates);
-                }
-                return response;
-            }
-            case "Project.Templates.Install": {
-                String pid = params.optString("projectId", "");
-                String pluginClassName = params.optString("className", "").trim();
-
-                ProjectRef ref = projectStore.get(pid);
-                if (ref == null || ref.runtimeProject == null) {
-                    return errorResponse("PROJECT_NOT_FOUND", "Project not found");
-                }
-                if (pluginClassName.isEmpty()) {
-                    return errorResponse("BAD_REQUEST", "Missing className");
-                }
-
-                // Get project directory (ref.path is already the project directory, not project.xml)
-                String projectPath = ref.path;
-                if (projectPath == null || projectPath.isEmpty()) {
-                    return errorResponse("PROJECT_PATH_UNKNOWN", "Project path not available");
-                }
-                File projectDir = new File(projectPath);
-                if (!projectDir.isDirectory()) {
-                    return errorResponse("PROJECT_DIR_INVALID", "Project directory not found");
-                }
-
-                // Find templates configuration
-                ExportablePropertyEntry propEntry = resolveExportablePropertyEntry(pluginClassName);
-                if (propEntry == null || propEntry.pluginSpec == null) {
-                    JSONObject response = new JSONObject();
-                    response.put("status", "ok");
-                    response.put("createdFiles", new JSONArray());
-                    response.put("message", "No templates defined for this plugin");
-                    return response;
-                }
-
-                JSONObject templates = propEntry.pluginSpec.optJSONObject("templates");
-                if (templates == null) {
-                    JSONObject response = new JSONObject();
-                    response.put("status", "ok");
-                    response.put("createdFiles", new JSONArray());
-                    response.put("message", "No templates defined for this plugin");
-                    return response;
-                }
-
-                String resourcePath = templates.optString("resourcePath", "templates/");
-                JSONArray targetDirs = templates.optJSONArray("targetDirs");
-                if (targetDirs == null || targetDirs.isEmpty()) {
-                    JSONObject response = new JSONObject();
-                    response.put("status", "ok");
-                    response.put("createdFiles", new JSONArray());
-                    response.put("message", "No target directories specified");
-                    return response;
-                }
-
-                // Extract templates from classpath to project directory
-                JSONArray createdFiles = new JSONArray();
-                JSONArray skippedFiles = new JSONArray();
-                ClassLoader cl = getClass().getClassLoader();
-
-                for (int i = 0; i < targetDirs.length(); i++) {
-                    String targetDir = targetDirs.optString(i, "").trim();
-                    if (targetDir.isEmpty()) continue;
-
-                    File destDir = new File(projectDir, targetDir);
-                    if (!destDir.exists()) {
-                        destDir.mkdirs();
-                        createdFiles.put(targetDir + "/");
-                    }
-
-                    // Try to find and copy template files
-                    String templatePath = resourcePath + targetDir + "/";
-                    try {
-                        Enumeration<URL> resources = cl.getResources(templatePath);
-                        while (resources.hasMoreElements()) {
-                            URL resourceUrl = resources.nextElement();
-                            copyTemplateDirectory(resourceUrl, templatePath, destDir, createdFiles, skippedFiles);
-                        }
-                    } catch (Exception ex) {
-                        sLogger.warning("Failed to extract templates from " + templatePath + ": " + ex.getMessage());
-                    }
-                }
-
-                JSONObject response = new JSONObject();
-                response.put("status", "ok");
-                response.put("createdFiles", createdFiles);
-                response.put("skippedFiles", skippedFiles);
-                return response;
-            }
-            case "ProjectConfig.Update": {
-                String pid = params.optString("projectId", "");
-                JSONObject configJson = params.optJSONObject("config");
-                if (pid.isBlank()) {
-                    return errorResponse("BAD_REQUEST", "Missing projectId");
-                }
-                if (configJson == null) {
-                    return errorResponse("BAD_REQUEST", "Missing config");
-                }
-                ProjectRef ref = projectStore.get(pid);
-                if (ref == null || ref.runtimeProject == null) {
-                    return errorResponse("PROJECT_NOT_FOUND", "Project not found");
-                }
-                ProjectConfig cfg = ref.runtimeProject.getProjectConfig();
-                if (cfg == null) {
-                    return errorResponse("PROJECT_NOT_FOUND", "Project config not available");
-                }
-                applyProjectConfigFromJson(ref, cfg, configJson);
-                ref.dirty = true;
-                JSONObject response = new JSONObject();
-                response.put("status", "ok");
-                response.put("config", projectConfigToJson(cfg, ref.path));
-                response.put("saved", false);
-                response.put("pending", true);
-                if (broadcaster != null) {
-                    JSONObject dirtyEvt = new JSONObject();
-                    dirtyEvt.put("event", "project.dirty");
-                    dirtyEvt.put("projectId", pid);
-                    dirtyEvt.put("areas", new JSONArray().put("config"));
-                    broadcaster.accept(dirtyEvt.toString());
-                }
-                return response;
-            }
-            case "Preferences.Update": {
-                JSONObject values = params.optJSONObject("values");
-                if (values == null) {
-                    return errorResponse("BAD_REQUEST", "Missing values");
-                }
-                for (String key : values.keySet()) {
-                    Object raw = values.get(key);
-                    if (raw == null || raw == JSONObject.NULL) {
-                        Preferences.removeProperty(key);
-                    } else {
-                        Preferences.setProperty(key, String.valueOf(raw));
-                    }
-                }
-                Preferences.save();
-                JSONObject prefs = preferencesToJson();
-                if (broadcaster != null) {
-                    JSONObject evt = new JSONObject();
-                    evt.put("event", "system.preferences");
-                    evt.put("preferences", prefs);
-                    broadcaster.accept(evt.toString());
-                }
-                JSONObject response = new JSONObject();
-                response.put("status", "ok");
-                response.put("preferences", prefs);
-                return response;
-            }
-            case "Project.Save":
-            case "Project.SaveAs":
-            case "Project.Close":
-                JSONObject ok = new JSONObject();
-                ok.put("status", "ok");
-                return ok;
-            case "Runtime.Play":
-            case "Runtime.Start":
-            case "Runtime.Pause":
-            case "Runtime.Stop": {
-                String pid = params.optString("projectId", "");
-                System.out.println("[RUNTIME] " + method + " called for project: " + pid);
-                ProjectRef ref = projectStore.get(pid);
-                if (ref == null || ref.runtimeProject == null) {
-                    System.out.println("[RUNTIME] Project not found: " + pid);
-                    JSONObject err = new JSONObject();
-                    err.put("error", "PROJECT_NOT_FOUND");
-                    err.put("message", "Project not found: " + pid);
-                    return err;
-                }
-                RunTimeProject rtp = ref.runtimeProject;
-                boolean success = false;
-                String newState = ref.runtimeState;
-
-                if ("Runtime.Play".equals(method) || "Runtime.Start".equals(method)) {
-                    System.out.println("[RUNTIME] Play/Start: isRunning=" + rtp.isRunning() + ", isPaused=" + rtp.isPaused());
-                    if (rtp.isRunning()) {
-                        if (rtp.isPaused()) {
-                            success = rtp.proceed();
-                            System.out.println("[RUNTIME] proceed() returned: " + success);
-                            newState = success ? "running" : "paused";
-                        } else {
-                            success = true;
-                            newState = "running";
-                        }
-                    } else {
-                        boolean launched = rtp.launch();
-                        System.out.println("[RUNTIME] launch() returned: " + launched);
-                        if (launched) {
-                            success = rtp.start();
-                            System.out.println("[RUNTIME] start() returned: " + success);
-                            newState = success ? "running" : "stopped";
-                        } else {
-                            System.out.println("[RUNTIME] launch() failed");
-                        }
-                    }
-                } else if ("Runtime.Pause".equals(method)) {
-                    if (rtp.isRunning() && !rtp.isPaused()) {
-                        success = rtp.pause();
-                        newState = success ? "paused" : "running";
-                    } else {
-                        success = true;
-                        newState = rtp.isPaused() ? "paused" : (rtp.isRunning() ? "running" : "stopped");
-                    }
-                } else if ("Runtime.Stop".equals(method)) {
-                    if (rtp.isRunning()) {
-                        success = rtp.abort();
-                        if (success) {
-                            rtp.unload();
-                        }
-                        newState = "stopped";
-                    } else {
-                        success = true;
-                        newState = "stopped";
-                    }
-                }
-
-                ref.runtimeState = newState;
-                sLogger.message("[RUNTIME] Final state: " + newState + ", success=" + success);
-                JSONObject rt = new JSONObject();
-                rt.put("state", newState);
-                rt.put("projectId", pid);
-                if (broadcaster != null) {
-                    JSONObject evt = new JSONObject();
-                    evt.put("event", "runtime.state");
-                    evt.put("state", newState);
-                    evt.put("projectId", pid);
-                    broadcaster.accept(evt.toString());
-                }
-                return rt;
-            }
-
-            // Variable definition operations
-            case "SceneFlow.Node.VarDef.Add": {
-                String pid = params.optString("projectId", "");
-                String nodeId = params.optString("nodeId", "");
-                String superNodeId = params.optString("superNodeId", null);
-                JSONObject varDefJson = params.optJSONObject("varDef");
-                int index = params.has("index") ? params.optInt("index", -1) : -1;
-
-                ProjectRef ref = projectStore.get(pid);
-                if (ref == null || ref.runtimeProject == null) {
-                    return errorResponse("PROJECT_NOT_FOUND", "Project not found");
-                }
-                if (varDefJson == null) {
-                    return errorResponse("BAD_REQUEST", "Missing varDef");
-                }
-
-                SceneFlow sceneFlow = ref.runtimeProject.getSceneFlow();
-                BasicNode dataNode = nodeId.isBlank() ? sceneFlow : findNodeRecursive(sceneFlow, nodeId);
-                if (dataNode == null) {
-                    return errorResponse("NODE_NOT_FOUND", "Node not found: " + nodeId);
-                }
-
-                StringBuilder error = new StringBuilder();
-                VariableDefinition varDef = parseVarDef(varDefJson, dataNode, error);
-                if (varDef == null) {
-                    return errorResponse("VARDEF_INVALID", error.length() > 0 ? error.toString() : "Invalid variable definition");
-                }
-
-                List<VariableDefinition> list = dataNode.getVarDefList();
-                int insertIndex = index < 0 || index > list.size() ? list.size() : index;
-                list.add(insertIndex, varDef);
-
-                SuperNode snapshotTarget = resolveSuperNode(sceneFlow, superNodeId);
-                JSONObject snapshot = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
-                JSONObject response = buildSceneFlowResponse(snapshot);
-                broadcastSceneFlowSnapshot(broadcaster, pid, snapshot);
-                recordHistory(ref, "SceneFlow.Node.VarDef.Add");
-                recordCommand(ref, "SceneFlow.Node.VarDef.Add", params);
-                return response;
-            }
-
-            case "SceneFlow.Node.VarDef.Update": {
-                String pid = params.optString("projectId", "");
-                String nodeId = params.optString("nodeId", "");
-                String superNodeId = params.optString("superNodeId", null);
-                JSONObject varDefJson = params.optJSONObject("varDef");
-                int index = params.optInt("index", -1);
-
-                ProjectRef ref = projectStore.get(pid);
-                if (ref == null || ref.runtimeProject == null) {
-                    return errorResponse("PROJECT_NOT_FOUND", "Project not found");
-                }
-                if (varDefJson == null || index < 0) {
-                    return errorResponse("BAD_REQUEST", "Missing varDef or index");
-                }
-
-                SceneFlow sceneFlow = ref.runtimeProject.getSceneFlow();
-                BasicNode dataNode = nodeId.isBlank() ? sceneFlow : findNodeRecursive(sceneFlow, nodeId);
-                if (dataNode == null) {
-                    return errorResponse("NODE_NOT_FOUND", "Node not found: " + nodeId);
-                }
-
-                List<VariableDefinition> list = dataNode.getVarDefList();
-                if (index >= list.size()) {
-                    return errorResponse("VARDEF_NOT_FOUND", "Variable definition not found at index: " + index);
-                }
-
-                StringBuilder error = new StringBuilder();
-                VariableDefinition varDef = parseVarDef(varDefJson, dataNode, error);
-                if (varDef == null) {
-                    return errorResponse("VARDEF_INVALID", error.length() > 0 ? error.toString() : "Invalid variable definition");
-                }
-
-                list.set(index, varDef);
-
-                SuperNode snapshotTarget = resolveSuperNode(sceneFlow, superNodeId);
-                JSONObject snapshot = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
-                JSONObject response = buildSceneFlowResponse(snapshot);
-                broadcastSceneFlowSnapshot(broadcaster, pid, snapshot);
-                recordHistory(ref, "SceneFlow.Node.VarDef.Update");
-                recordCommand(ref, "SceneFlow.Node.VarDef.Update", params);
-                return response;
-            }
-
-            case "SceneFlow.Node.VarDef.Delete": {
-                String pid = params.optString("projectId", "");
-                String nodeId = params.optString("nodeId", "");
-                String superNodeId = params.optString("superNodeId", null);
-                int index = params.optInt("index", -1);
-
-                ProjectRef ref = projectStore.get(pid);
-                if (ref == null || ref.runtimeProject == null) {
-                    return errorResponse("PROJECT_NOT_FOUND", "Project not found");
-                }
-                if (index < 0) {
-                    return errorResponse("BAD_REQUEST", "Missing index");
-                }
-
-                SceneFlow sceneFlow = ref.runtimeProject.getSceneFlow();
-                BasicNode dataNode = nodeId.isBlank() ? sceneFlow : findNodeRecursive(sceneFlow, nodeId);
-                if (dataNode == null) {
-                    return errorResponse("NODE_NOT_FOUND", "Node not found: " + nodeId);
-                }
-
-                List<VariableDefinition> list = dataNode.getVarDefList();
-                if (index >= list.size()) {
-                    return errorResponse("VARDEF_NOT_FOUND", "Variable definition not found at index: " + index);
-                }
-
-                list.remove(index);
-
-                SuperNode snapshotTarget = resolveSuperNode(sceneFlow, superNodeId);
-                JSONObject snapshot = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
-                JSONObject response = buildSceneFlowResponse(snapshot);
-                broadcastSceneFlowSnapshot(broadcaster, pid, snapshot);
-                recordHistory(ref, "SceneFlow.Node.VarDef.Delete");
-                recordCommand(ref, "SceneFlow.Node.VarDef.Delete", params);
-                return response;
-            }
-
-            case "SceneFlow.Node.VarDef.Move": {
-                String pid = params.optString("projectId", "");
-                String nodeId = params.optString("nodeId", "");
-                String superNodeId = params.optString("superNodeId", null);
-                int from = params.optInt("from", -1);
-                int to = params.optInt("to", -1);
-
-                ProjectRef ref = projectStore.get(pid);
-                if (ref == null || ref.runtimeProject == null) {
-                    return errorResponse("PROJECT_NOT_FOUND", "Project not found");
-                }
-                if (from < 0 || to < 0) {
-                    return errorResponse("BAD_REQUEST", "Missing from or to index");
-                }
-
-                SceneFlow sceneFlow = ref.runtimeProject.getSceneFlow();
-                BasicNode dataNode = nodeId.isBlank() ? sceneFlow : findNodeRecursive(sceneFlow, nodeId);
-                if (dataNode == null) {
-                    return errorResponse("NODE_NOT_FOUND", "Node not found: " + nodeId);
-                }
-
-                List<VariableDefinition> list = dataNode.getVarDefList();
-                if (from >= list.size() || to >= list.size()) {
-                    return errorResponse("VARDEF_NOT_FOUND", "Invalid index");
-                }
-
-                if (from != to) {
-                    VariableDefinition entry = list.remove(from);
-                    list.add(to, entry);
-                }
-
-                SuperNode snapshotTarget = resolveSuperNode(sceneFlow, superNodeId);
-                JSONObject snapshot = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
-                JSONObject response = buildSceneFlowResponse(snapshot);
-                broadcastSceneFlowSnapshot(broadcaster, pid, snapshot);
-                recordHistory(ref, "SceneFlow.Node.VarDef.Move");
-                recordCommand(ref, "SceneFlow.Node.VarDef.Move", params);
-                return response;
-            }
-
-            // Type definition operations
-            case "SceneFlow.Node.TypeDef.Add": {
-                String pid = params.optString("projectId", "");
-                String nodeId = params.optString("nodeId", "");
-                String superNodeId = params.optString("superNodeId", null);
-                JSONObject typeDefJson = params.optJSONObject("typeDef");
-                int index = params.has("index") ? params.optInt("index", -1) : -1;
-
-                ProjectRef ref = projectStore.get(pid);
-                if (ref == null || ref.runtimeProject == null) {
-                    return errorResponse("PROJECT_NOT_FOUND", "Project not found");
-                }
-                if (typeDefJson == null) {
-                    return errorResponse("BAD_REQUEST", "Missing typeDef");
-                }
-
-                SceneFlow sceneFlow = ref.runtimeProject.getSceneFlow();
-                BasicNode dataNode = nodeId.isBlank() ? sceneFlow : findNodeRecursive(sceneFlow, nodeId);
-                if (dataNode == null) {
-                    return errorResponse("NODE_NOT_FOUND", "Node not found: " + nodeId);
-                }
-
-                StringBuilder error = new StringBuilder();
-                DataTypeDefinition typeDef = parseTypeDef(typeDefJson, error);
-                if (typeDef == null) {
-                    return errorResponse("TYPEDEF_INVALID", error.length() > 0 ? error.toString() : "Invalid type definition");
-                }
-
-                List<DataTypeDefinition> list = dataNode.getTypeDefList();
-                int insertIndex = index < 0 || index > list.size() ? list.size() : index;
-                list.add(insertIndex, typeDef);
-
-                SuperNode snapshotTarget = resolveSuperNode(sceneFlow, superNodeId);
-                JSONObject snapshot = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
-                JSONObject response = buildSceneFlowResponse(snapshot);
-                broadcastSceneFlowSnapshot(broadcaster, pid, snapshot);
-                recordHistory(ref, "SceneFlow.Node.TypeDef.Add");
-                recordCommand(ref, "SceneFlow.Node.TypeDef.Add", params);
-                return response;
-            }
-
-            case "SceneFlow.Node.TypeDef.Update": {
-                String pid = params.optString("projectId", "");
-                String nodeId = params.optString("nodeId", "");
-                String superNodeId = params.optString("superNodeId", null);
-                JSONObject typeDefJson = params.optJSONObject("typeDef");
-                int index = params.optInt("index", -1);
-
-                ProjectRef ref = projectStore.get(pid);
-                if (ref == null || ref.runtimeProject == null) {
-                    return errorResponse("PROJECT_NOT_FOUND", "Project not found");
-                }
-                if (typeDefJson == null || index < 0) {
-                    return errorResponse("BAD_REQUEST", "Missing typeDef or index");
-                }
-
-                SceneFlow sceneFlow = ref.runtimeProject.getSceneFlow();
-                BasicNode dataNode = nodeId.isBlank() ? sceneFlow : findNodeRecursive(sceneFlow, nodeId);
-                if (dataNode == null) {
-                    return errorResponse("NODE_NOT_FOUND", "Node not found: " + nodeId);
-                }
-
-                List<DataTypeDefinition> list = dataNode.getTypeDefList();
-                if (index >= list.size()) {
-                    return errorResponse("TYPEDEF_NOT_FOUND", "Type definition not found at index: " + index);
-                }
-
-                StringBuilder error = new StringBuilder();
-                DataTypeDefinition typeDef = parseTypeDef(typeDefJson, error);
-                if (typeDef == null) {
-                    return errorResponse("TYPEDEF_INVALID", error.length() > 0 ? error.toString() : "Invalid type definition");
-                }
-
-                list.set(index, typeDef);
-
-                SuperNode snapshotTarget = resolveSuperNode(sceneFlow, superNodeId);
-                JSONObject snapshot = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
-                JSONObject response = buildSceneFlowResponse(snapshot);
-                broadcastSceneFlowSnapshot(broadcaster, pid, snapshot);
-                recordHistory(ref, "SceneFlow.Node.TypeDef.Update");
-                recordCommand(ref, "SceneFlow.Node.TypeDef.Update", params);
-                return response;
-            }
-
-            case "SceneFlow.Node.TypeDef.Delete": {
-                String pid = params.optString("projectId", "");
-                String nodeId = params.optString("nodeId", "");
-                String superNodeId = params.optString("superNodeId", null);
-                int index = params.optInt("index", -1);
-
-                ProjectRef ref = projectStore.get(pid);
-                if (ref == null || ref.runtimeProject == null) {
-                    return errorResponse("PROJECT_NOT_FOUND", "Project not found");
-                }
-                if (index < 0) {
-                    return errorResponse("BAD_REQUEST", "Missing index");
-                }
-
-                SceneFlow sceneFlow = ref.runtimeProject.getSceneFlow();
-                BasicNode dataNode = nodeId.isBlank() ? sceneFlow : findNodeRecursive(sceneFlow, nodeId);
-                if (dataNode == null) {
-                    return errorResponse("NODE_NOT_FOUND", "Node not found: " + nodeId);
-                }
-
-                List<DataTypeDefinition> list = dataNode.getTypeDefList();
-                if (index >= list.size()) {
-                    return errorResponse("TYPEDEF_NOT_FOUND", "Type definition not found at index: " + index);
-                }
-
-                list.remove(index);
-
-                SuperNode snapshotTarget = resolveSuperNode(sceneFlow, superNodeId);
-                JSONObject snapshot = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
-                JSONObject response = buildSceneFlowResponse(snapshot);
-                broadcastSceneFlowSnapshot(broadcaster, pid, snapshot);
-                recordHistory(ref, "SceneFlow.Node.TypeDef.Delete");
-                recordCommand(ref, "SceneFlow.Node.TypeDef.Delete", params);
-                return response;
-            }
-
-            case "SceneFlow.Node.TypeDef.Move": {
-                String pid = params.optString("projectId", "");
-                String nodeId = params.optString("nodeId", "");
-                String superNodeId = params.optString("superNodeId", null);
-                int from = params.optInt("from", -1);
-                int to = params.optInt("to", -1);
-
-                ProjectRef ref = projectStore.get(pid);
-                if (ref == null || ref.runtimeProject == null) {
-                    return errorResponse("PROJECT_NOT_FOUND", "Project not found");
-                }
-                if (from < 0 || to < 0) {
-                    return errorResponse("BAD_REQUEST", "Missing from or to index");
-                }
-
-                SceneFlow sceneFlow = ref.runtimeProject.getSceneFlow();
-                BasicNode dataNode = nodeId.isBlank() ? sceneFlow : findNodeRecursive(sceneFlow, nodeId);
-                if (dataNode == null) {
-                    return errorResponse("NODE_NOT_FOUND", "Node not found: " + nodeId);
-                }
-
-                List<DataTypeDefinition> list = dataNode.getTypeDefList();
-                if (from >= list.size() || to >= list.size()) {
-                    return errorResponse("TYPEDEF_NOT_FOUND", "Invalid index");
-                }
-
-                if (from != to) {
-                    DataTypeDefinition entry = list.remove(from);
-                    list.add(to, entry);
-                }
-
-                SuperNode snapshotTarget = resolveSuperNode(sceneFlow, superNodeId);
-                JSONObject snapshot = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
-                JSONObject response = buildSceneFlowResponse(snapshot);
-                broadcastSceneFlowSnapshot(broadcaster, pid, snapshot);
-                recordHistory(ref, "SceneFlow.Node.TypeDef.Move");
-                recordCommand(ref, "SceneFlow.Node.TypeDef.Move", params);
-                return response;
-            }
-
-            // Command operations
-            case "SceneFlow.Node.Cmd.Add": {
-                String pid = params.optString("projectId", "");
-                String nodeId = params.optString("nodeId", "");
-                String superNodeId = params.optString("superNodeId", null);
-                JSONObject commandJson = params.optJSONObject("command");
-                int index = params.has("index") ? params.optInt("index", -1) : -1;
-
-                ProjectRef ref = projectStore.get(pid);
-                if (ref == null || ref.runtimeProject == null) {
-                    return errorResponse("PROJECT_NOT_FOUND", "Project not found");
-                }
-                if (commandJson == null) {
-                    return errorResponse("BAD_REQUEST", "Missing command");
-                }
-
-                SceneFlow sceneFlow = ref.runtimeProject.getSceneFlow();
-                BasicNode dataNode = nodeId.isBlank() ? sceneFlow : findNodeRecursive(sceneFlow, nodeId);
-                if (dataNode == null) {
-                    return errorResponse("NODE_NOT_FOUND", "Node not found: " + nodeId);
-                }
-
-                StringBuilder error = new StringBuilder();
-                Command command = parseCommandText(commandJson.optString("text", ""), error);
-                if (command == null) {
-                    return errorResponse("COMMAND_INVALID", error.length() > 0 ? error.toString() : "Invalid command");
-                }
-
-                List<Command> list = dataNode.getCmdList();
-                int insertIndex = index < 0 || index > list.size() ? list.size() : index;
-                list.add(insertIndex, command);
-
-                SuperNode snapshotTarget = resolveSuperNode(sceneFlow, superNodeId);
-                JSONObject snapshot = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
-                JSONObject response = buildSceneFlowResponse(snapshot);
-                broadcastSceneFlowSnapshot(broadcaster, pid, snapshot);
-                recordHistory(ref, "SceneFlow.Node.Cmd.Add");
-                recordCommand(ref, "SceneFlow.Node.Cmd.Add", params);
-                return response;
-            }
-
-            case "SceneFlow.Node.Cmd.Update": {
-                String pid = params.optString("projectId", "");
-                String nodeId = params.optString("nodeId", "");
-                String superNodeId = params.optString("superNodeId", null);
-                JSONObject commandJson = params.optJSONObject("command");
-                int index = params.optInt("index", -1);
-
-                ProjectRef ref = projectStore.get(pid);
-                if (ref == null || ref.runtimeProject == null) {
-                    return errorResponse("PROJECT_NOT_FOUND", "Project not found");
-                }
-                if (commandJson == null || index < 0) {
-                    return errorResponse("BAD_REQUEST", "Missing command or index");
-                }
-
-                SceneFlow sceneFlow = ref.runtimeProject.getSceneFlow();
-                BasicNode dataNode = nodeId.isBlank() ? sceneFlow : findNodeRecursive(sceneFlow, nodeId);
-                if (dataNode == null) {
-                    return errorResponse("NODE_NOT_FOUND", "Node not found: " + nodeId);
-                }
-
-                List<Command> list = dataNode.getCmdList();
-                if (index >= list.size()) {
-                    return errorResponse("COMMAND_NOT_FOUND", "Command not found at index: " + index);
-                }
-
-                StringBuilder error = new StringBuilder();
-                Command command = parseCommandText(commandJson.optString("text", ""), error);
-                if (command == null) {
-                    return errorResponse("COMMAND_INVALID", error.length() > 0 ? error.toString() : "Invalid command");
-                }
-
-                list.set(index, command);
-
-                SuperNode snapshotTarget = resolveSuperNode(sceneFlow, superNodeId);
-                JSONObject snapshot = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
-                JSONObject response = buildSceneFlowResponse(snapshot);
-                broadcastSceneFlowSnapshot(broadcaster, pid, snapshot);
-                recordHistory(ref, "SceneFlow.Node.Cmd.Update");
-                recordCommand(ref, "SceneFlow.Node.Cmd.Update", params);
-                return response;
-            }
-
-            case "SceneFlow.Node.Cmd.Delete": {
-                String pid = params.optString("projectId", "");
-                String nodeId = params.optString("nodeId", "");
-                String superNodeId = params.optString("superNodeId", null);
-                int index = params.optInt("index", -1);
-
-                ProjectRef ref = projectStore.get(pid);
-                if (ref == null || ref.runtimeProject == null) {
-                    return errorResponse("PROJECT_NOT_FOUND", "Project not found");
-                }
-                if (index < 0) {
-                    return errorResponse("BAD_REQUEST", "Missing index");
-                }
-
-                SceneFlow sceneFlow = ref.runtimeProject.getSceneFlow();
-                BasicNode dataNode = nodeId.isBlank() ? sceneFlow : findNodeRecursive(sceneFlow, nodeId);
-                if (dataNode == null) {
-                    return errorResponse("NODE_NOT_FOUND", "Node not found: " + nodeId);
-                }
-
-                List<Command> list = dataNode.getCmdList();
-                if (index >= list.size()) {
-                    return errorResponse("COMMAND_NOT_FOUND", "Command not found at index: " + index);
-                }
-
-                list.remove(index);
-
-                SuperNode snapshotTarget = resolveSuperNode(sceneFlow, superNodeId);
-                JSONObject snapshot = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
-                JSONObject response = buildSceneFlowResponse(snapshot);
-                broadcastSceneFlowSnapshot(broadcaster, pid, snapshot);
-                recordHistory(ref, "SceneFlow.Node.Cmd.Delete");
-                recordCommand(ref, "SceneFlow.Node.Cmd.Delete", params);
-                return response;
-            }
-
-            case "SceneFlow.Node.Cmd.Move": {
-                String pid = params.optString("projectId", "");
-                String nodeId = params.optString("nodeId", "");
-                String superNodeId = params.optString("superNodeId", null);
-                int from = params.optInt("from", -1);
-                int to = params.optInt("to", -1);
-
-                ProjectRef ref = projectStore.get(pid);
-                if (ref == null || ref.runtimeProject == null) {
-                    return errorResponse("PROJECT_NOT_FOUND", "Project not found");
-                }
-                if (from < 0 || to < 0) {
-                    return errorResponse("BAD_REQUEST", "Missing from or to index");
-                }
-
-                SceneFlow sceneFlow = ref.runtimeProject.getSceneFlow();
-                BasicNode dataNode = nodeId.isBlank() ? sceneFlow : findNodeRecursive(sceneFlow, nodeId);
-                if (dataNode == null) {
-                    return errorResponse("NODE_NOT_FOUND", "Node not found: " + nodeId);
-                }
-
-                List<Command> list = dataNode.getCmdList();
-                if (from >= list.size() || to >= list.size()) {
-                    return errorResponse("COMMAND_NOT_FOUND", "Invalid index");
-                }
-
-                if (from != to) {
-                    Command entry = list.remove(from);
-                    list.add(to, entry);
-                }
-
-                SuperNode snapshotTarget = resolveSuperNode(sceneFlow, superNodeId);
-                JSONObject snapshot = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
-                JSONObject response = buildSceneFlowResponse(snapshot);
-                broadcastSceneFlowSnapshot(broadcaster, pid, snapshot);
-                recordHistory(ref, "SceneFlow.Node.Cmd.Move");
-                recordCommand(ref, "SceneFlow.Node.Cmd.Move", params);
-                return response;
-            }
-
-            // Edge path operations
-            case "SceneFlow.Edge.Normalize":
-            case "SceneFlow.Edge.Straighten": {
-                String pid = params.optString("projectId", "");
-                String superNodeId = params.optString("superNodeId", null);
-                String edgeId = params.optString("edgeId", "");
-
-                ProjectRef ref = projectStore.get(pid);
-                if (ref == null || ref.runtimeProject == null) {
-                    return errorResponse("PROJECT_NOT_FOUND", "Project not found");
-                }
-                if (edgeId.isBlank()) {
-                    return errorResponse("BAD_REQUEST", "Missing edgeId");
-                }
-
-                SceneFlow sceneFlow = ref.runtimeProject.getSceneFlow();
-                SuperNode snapshotTarget = resolveSuperNode(sceneFlow, superNodeId);
-                AbstractEdge dataEdge = resolveEdgeById(snapshotTarget != null ? snapshotTarget : sceneFlow, edgeId);
-                if (dataEdge == null) {
-                    return errorResponse("EDGE_NOT_FOUND", "Edge not found: " + edgeId);
-                }
-
-                boolean isNormalize = "SceneFlow.Edge.Normalize".equals(method);
-                int nodeWidth = getEditorConfigInt(ref, "node_width", 90);
-                int nodeHeight = getEditorConfigInt(ref, "node_height", nodeWidth);
-                if (!isNormalize) {
-                    List<AbstractEdge> relayout = new ArrayList<>();
-                    relayout.add(dataEdge);
-                    mEdgeLayout.relayoutEdgesInOrder(relayout, nodeWidth, nodeHeight);
-                }
-                mEdgeLayout.normalizeEdge(dataEdge, nodeWidth, nodeHeight);
-
-                JSONObject response = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
-                response.put("status", "ok");
-                broadcastSceneFlowSnapshot(broadcaster, pid, response);
-                recordHistory(ref, method);
-                recordCommand(ref, method, params);
-                return response;
-            }
-
-            case "SceneFlow.Edge.NormalizeAll":
-            case "SceneFlow.Edge.StraightenAll": {
-                String pid = params.optString("projectId", "");
-                String superNodeId = params.optString("superNodeId", null);
-
-                ProjectRef ref = projectStore.get(pid);
-                if (ref == null || ref.runtimeProject == null) {
-                    return errorResponse("PROJECT_NOT_FOUND", "Project not found");
-                }
-
-                SceneFlow sceneFlow = ref.runtimeProject.getSceneFlow();
-                SuperNode snapshotTarget = resolveSuperNode(sceneFlow, superNodeId);
-                SuperNode targetNode = snapshotTarget != null ? snapshotTarget : sceneFlow;
-
-                boolean isNormalize = "SceneFlow.Edge.NormalizeAll".equals(method);
-                int nodeWidth = getEditorConfigInt(ref, "node_width", 90);
-                int nodeHeight = getEditorConfigInt(ref, "node_height", nodeWidth);
-                if (!isNormalize) {
-                    mEdgeLayout.clearDockPointsRecursive(targetNode);
-                    mEdgeLayout.occupyStartSignDockPointsRecursive(targetNode);
-                    List<AbstractEdge> relayout = new ArrayList<>();
-                    Set<AbstractEdge> seen = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
-                    mEdgeLayout.collectEdgesRecursive(targetNode, relayout, seen);
-                    mEdgeLayout.relayoutEdgesInOrder(relayout, nodeWidth, nodeHeight);
-                }
-                for (BasicNode node : targetNode.getNodeAndSuperNodeList()) {
-                    for (AbstractEdge edge : node.getEdgeList()) {
-                        mEdgeLayout.normalizeEdge(edge, nodeWidth, nodeHeight);
-                    }
-                }
-
-                JSONObject response = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
-                response.put("status", "ok");
-                broadcastSceneFlowSnapshot(broadcaster, pid, response);
-                recordHistory(ref, method);
-                recordCommand(ref, method, params);
-                return response;
-            }
-
-            case "SceneFlow.Edge.NormalizeGroup":
-            case "SceneFlow.Edge.StraightenGroup": {
-                String pid = params.optString("projectId", "");
-                String superNodeId = params.optString("superNodeId", null);
-                JSONArray edgeIds = params.optJSONArray("edgeIds");
-
-                ProjectRef ref = projectStore.get(pid);
-                if (ref == null || ref.runtimeProject == null) {
-                    return errorResponse("PROJECT_NOT_FOUND", "Project not found");
-                }
-                if (edgeIds == null || edgeIds.length() == 0) {
-                    return errorResponse("BAD_REQUEST", "Missing edgeIds");
-                }
-
-                SceneFlow sceneFlow = ref.runtimeProject.getSceneFlow();
-                SuperNode snapshotTarget = resolveSuperNode(sceneFlow, superNodeId);
-                SuperNode targetNode = snapshotTarget != null ? snapshotTarget : sceneFlow;
-
-                boolean isNormalize = "SceneFlow.Edge.NormalizeGroup".equals(method);
-                int nodeWidth = getEditorConfigInt(ref, "node_width", 90);
-                int nodeHeight = getEditorConfigInt(ref, "node_height", nodeWidth);
-                List<AbstractEdge> groupEdges = new ArrayList<>();
-                for (int i = 0; i < edgeIds.length(); i++) {
-                    String edgeId = edgeIds.optString(i, "").trim();
-                    if (edgeId.isEmpty()) continue;
-                    AbstractEdge dataEdge = resolveEdgeById(targetNode, edgeId);
-                    if (dataEdge != null) {
-                        groupEdges.add(dataEdge);
-                    }
-                }
-                if (!isNormalize && !groupEdges.isEmpty()) {
-                    mEdgeLayout.relayoutEdgesInOrder(groupEdges, nodeWidth, nodeHeight);
-                }
-                for (AbstractEdge dataEdge : groupEdges) {
-                    mEdgeLayout.normalizeEdge(dataEdge, nodeWidth, nodeHeight);
-                }
-
-                JSONObject response = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
-                response.put("status", "ok");
-                broadcastSceneFlowSnapshot(broadcaster, pid, response);
-                recordHistory(ref, method);
-                recordCommand(ref, method, params);
-                return response;
-            }
-
-            // Phase 8: Edge retargeting operation
-            case "SceneFlow.Edge.Retarget": {
-                String pid = params.optString("projectId", "");
-                String superNodeId = params.optString("superNodeId", null);
-                String edgeId = params.optString("edgeId", "");
-                String targetId = params.optString("targetId", "");
-
-                if (pid.isBlank() || edgeId.isBlank() || targetId.isBlank()) {
-                    return errorResponse("BAD_REQUEST", "Missing projectId, edgeId, or targetId");
-                }
-
-                ProjectRef ref = projectStore.get(pid);
-                if (ref == null || ref.runtimeProject == null) {
-                    return errorResponse("PROJECT_NOT_FOUND", "Project not found");
-                }
-
-                SceneFlow sceneFlow = ref.runtimeProject.getSceneFlow();
-                SuperNode snapshotTarget = resolveSuperNode(sceneFlow, superNodeId);
-
-                // Find the edge in the active supernode
-                AbstractEdge dataEdge = resolveEdgeById(snapshotTarget != null ? snapshotTarget : sceneFlow, edgeId);
-                if (dataEdge == null) {
-                    return errorResponse("EDGE_NOT_FOUND", "Edge not found: " + edgeId);
-                }
-
-                // Find source, old target, and new target nodes
-                BasicNode sourceNode = dataEdge.getSourceNode();
-                BasicNode oldTargetNode = dataEdge.getTargetNode();
-                BasicNode newTargetNode = resolveNodeById(snapshotTarget != null ? snapshotTarget : sceneFlow, targetId);
-
-                if (sourceNode == null || newTargetNode == null) {
-                    return errorResponse("NODE_NOT_FOUND", "Source or target node not found");
-                }
-
-                // Get node dimensions for dock point handling
-                int nodeWidth = getEditorConfigInt(ref, "node_width", 90);
-                int nodeHeight = getEditorConfigInt(ref, "node_height", nodeWidth);
-
-                // Release old target's dock point
-                if (oldTargetNode != null) {
-                    EdgeGraphics edgeGraphics = dataEdge.getGraphics();
-                    if (edgeGraphics != null && edgeGraphics.getConnection() != null) {
-                        List<EdgePoint> points = edgeGraphics.getConnection().getPointList();
-                        if (points != null && points.size() >= 2) {
-                            EdgePoint endPt = points.get(points.size() - 1);
-                            NodeGraphics oldTgtGraphics = oldTargetNode.getGraphics();
-                            NodePosition oldTgtPos = oldTgtGraphics != null ? oldTgtGraphics.getPosition() : null;
-                            double oldTgtX = oldTgtPos != null ? oldTgtPos.getXPos() : 0;
-                            double oldTgtY = oldTgtPos != null ? oldTgtPos.getYPos() : 0;
-                            int oldDockIdx = mEdgeLayout.findDockPointIndex(oldTgtX, oldTgtY, nodeWidth, nodeHeight,
-                                    oldTargetNode instanceof SuperNode, endPt.getXPos(), endPt.getYPos());
-                            if (oldDockIdx >= 0) {
-                                mEdgeLayout.releaseDockPoint(oldTargetNode.getId(), oldDockIdx, false);
-                            }
-                        }
-                    }
-                }
-
-                // Find and occupy new dock point on new target, update edge endpoint
-                NodeGraphics newTgtGraphics = newTargetNode.getGraphics();
-                NodePosition newTgtPos = newTgtGraphics != null ? newTgtGraphics.getPosition() : null;
-                double newTgtX = newTgtPos != null ? newTgtPos.getXPos() : 0;
-                double newTgtY = newTgtPos != null ? newTgtPos.getYPos() : 0;
-                boolean newTgtIsSuperNode = newTargetNode instanceof SuperNode;
-
-                // Get source position for dock point selection
-                NodeGraphics srcGraphics = sourceNode.getGraphics();
-                NodePosition srcPos = srcGraphics != null ? srcGraphics.getPosition() : null;
-                double srcX = srcPos != null ? srcPos.getXPos() : 0;
-                double srcY = srcPos != null ? srcPos.getYPos() : 0;
-                boolean srcIsSuperNode = sourceNode instanceof SuperNode;
-
-                // Find best dock point pair for new configuration
-                int[] dockPair;
-                boolean isSelfLoop = sourceNode.getId().equals(newTargetNode.getId());
-                if (isSelfLoop) {
-                    dockPair = mEdgeLayout.findSelfLoopDockPointPair(sourceNode.getId(), nodeWidth, nodeHeight, srcIsSuperNode);
-                } else {
-                    dockPair = mEdgeLayout.findBestDockPointPair(
-                        sourceNode.getId(), srcX, srcY, nodeWidth, nodeHeight, srcIsSuperNode,
-                        newTargetNode.getId(), newTgtX, newTgtY, nodeWidth, nodeHeight, newTgtIsSuperNode
-                    );
-                }
-                int newTgtDockIdx = dockPair[1];
-                mEdgeLayout.occupyDockPoint(newTargetNode.getId(), newTgtDockIdx, false);
-
-                // Update edge endpoint to new dock position
-                double[] newTgtDock = mEdgeLayout.getDockPointPosition(newTgtX, newTgtY, nodeWidth, nodeHeight, newTgtIsSuperNode, newTgtDockIdx);
-                EdgeGraphics edgeGraphics = dataEdge.getGraphics();
-                if (edgeGraphics != null && edgeGraphics.getConnection() != null) {
-                    List<EdgePoint> points = edgeGraphics.getConnection().getPointList();
-                    if (points != null && points.size() >= 2) {
-                        EdgePoint endPt = points.get(points.size() - 1);
-                        EdgePoint startPt = points.get(0);
-                        // Update end position
-                        endPt.setXPos((int) Math.round(newTgtDock[0]));
-                        endPt.setYPos((int) Math.round(newTgtDock[1]));
-                        // Update control point
-                        if (isSelfLoop) {
-                            // For self-loops, use special control points
-                            double nodeCenterX = srcX + nodeWidth / 2.0;
-                            double nodeCenterY = srcY + nodeHeight / 2.0;
-                            double[] loopCtrl = mEdgeLayout.computeSelfLoopControlPoints(
-                                startPt.getXPos(), startPt.getYPos(),
-                                newTgtDock[0], newTgtDock[1],
-                                nodeCenterX, nodeCenterY, nodeWidth, nodeHeight
-                            );
-                            startPt.setCtrlXPos((int) Math.round(loopCtrl[0]));
-                            startPt.setCtrlYPos((int) Math.round(loopCtrl[1]));
-                            endPt.setCtrlXPos((int) Math.round(loopCtrl[2]));
-                            endPt.setCtrlYPos((int) Math.round(loopCtrl[3]));
-                        } else {
-                            double[] tgtCtrl = mEdgeLayout.computeInitialControlPoint(
-                                startPt.getXPos(), startPt.getYPos(),
-                                newTgtDock[0], newTgtDock[1], false
-                            );
-                            endPt.setCtrlXPos((int) Math.round(tgtCtrl[0]));
-                            endPt.setCtrlYPos((int) Math.round(tgtCtrl[1]));
-                        }
-                    }
-                }
-
-                // Retarget the edge - remove from source's edge list
-                if (dataEdge instanceof GuargedEdge) {
-                    sourceNode.removeCEdge((GuargedEdge) dataEdge);
-                } else if (dataEdge instanceof InterruptEdge) {
-                    sourceNode.removeIEdge((InterruptEdge) dataEdge);
-                } else if (dataEdge instanceof RandomEdge) {
-                    sourceNode.removePEdge((RandomEdge) dataEdge);
-                } else if (dataEdge instanceof ForkingEdge) {
-                    sourceNode.removeFEdge((ForkingEdge) dataEdge);
-                } else if (dataEdge instanceof TimeoutEdge || dataEdge instanceof EpsilonEdge) {
-                    sourceNode.removeDEdge();
-                }
-
-                // Update target references
-                dataEdge.setTargetNode(newTargetNode);
-                dataEdge.setTargetUnid(newTargetNode.getId());
-
-                // Add edge back to source node's edge list with new target
-                if (dataEdge instanceof GuargedEdge) {
-                    sourceNode.addCEdge((GuargedEdge) dataEdge);
-                } else if (dataEdge instanceof InterruptEdge) {
-                    sourceNode.addIEdge((InterruptEdge) dataEdge);
-                } else if (dataEdge instanceof RandomEdge) {
-                    sourceNode.addPEdge((RandomEdge) dataEdge);
-                } else if (dataEdge instanceof ForkingEdge) {
-                    sourceNode.addFEdge((ForkingEdge) dataEdge);
-                } else if (dataEdge instanceof TimeoutEdge || dataEdge instanceof EpsilonEdge) {
-                    sourceNode.setDedge(dataEdge);
-                }
-
-                JSONObject response = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
-                response.put("status", "ok");
-                response.put("edgeId", edgeId);
-                broadcastSceneFlowSnapshot(broadcaster, pid, response);
-                recordHistory(ref, "SceneFlow.Edge.Retarget");
-                recordCommand(ref, "SceneFlow.Edge.Retarget", params);
-                return response;
-            }
-
-            // Runtime variable operations
-            case "Runtime.Variable.Set": {
-                String pid = params.optString("projectId", "");
-                String varName = params.optString("name", "");
-                String valueExpr = params.optString("value", "");
-                if (valueExpr.isBlank()) {
-                    valueExpr = params.optString("valueExpr", "");
-                }
-
-                ProjectRef ref = projectStore.get(pid);
-                if (ref == null || ref.runtimeProject == null) {
-                    return errorResponse("PROJECT_NOT_FOUND", "Project not found");
-                }
-                if (varName.isBlank() || valueExpr.isBlank()) {
-                    return errorResponse("BAD_REQUEST", "Missing name or value");
-                }
-
-                RunTimeProject rtp = ref.runtimeProject;
-                SceneFlow sceneFlow = rtp.getSceneFlow();
-
-                // Find the variable definition
-                VariableDefinition varDef = findVariableDefinitionInHierarchy(sceneFlow, varName);
-                if (varDef == null) {
-                    return errorResponse("VAR_NOT_FOUND", "Variable not found: " + varName);
-                }
-
-                // Parse the expression
-                Expression exp;
-                try {
-                    Object parsed = GlueParser.run(valueExpr.trim());
-                    if (!(parsed instanceof Expression)) {
-                        return errorResponse("PARSE_FAILED", "Expression could not be parsed");
-                    }
-                    exp = (Expression) parsed;
-                } catch (Exception exc) {
-                    return errorResponse("PARSE_FAILED", exc.getMessage() != null ? exc.getMessage() : "Parse failed");
-                }
-
-                // Check if expression type is supported
-                if (!isSupportedRuntimeExpression(exp)) {
-                    return errorResponse("UNSUPPORTED_EXPRESSION", "Expression type is not supported");
-                }
-
-                // Apply the expression
-                boolean setOk = applyRuntimeExpression(rtp, varName, exp);
-                if (!setOk) {
-                    return errorResponse("SET_FAILED", "Failed to update variable");
-                }
-
-                JSONObject response = new JSONObject();
-                response.put("status", "ok");
-                response.put("projectId", pid);
-                response.put("name", varName);
-                String currentValue = resolveVariableValue(rtp, varName);
-                if (currentValue != null) {
-                    response.put("value", currentValue);
-                }
-                return response;
-            }
-
-            case "Runtime.Query": {
-                String pid = params.optString("projectId", "");
-                String query = params.optString("query", "");
-
-                ProjectRef ref = projectStore.get(pid);
-                if (ref == null || ref.runtimeProject == null) {
-                    return errorResponse("PROJECT_NOT_FOUND", "Project not found");
-                }
-                if (query.isBlank()) {
-                    return errorResponse("BAD_REQUEST", "Missing query");
-                }
-                if (!isLogicEnabled()) {
-                    return errorResponse("UNSUPPORTED_FEATURE", "Logic engine is disabled on this platform");
-                }
-
-                JSONObject response = new JSONObject();
-                response.put("status", "ok");
-                int count = 0;
-                try {
-                    count = LogicEngines.get().query(query.trim()).size();
-                } catch (Exception exc) {
-                    sLogger.warning("Runtime.Query failed: " + exc.getMessage());
-                }
-                response.put("count", count);
-                addRuntimeCapabilities(response);
-                return response;
-            }
-
-            case "SceneFlow.Edge.PEdge.UpdateGroup": {
-                String pid = params.optString("projectId", "");
-                String superNodeId = params.optString("superNodeId", null);
-                String sourceId = params.optString("sourceId", "");
-                JSONArray updates = params.optJSONArray("updates");
-
-                ProjectRef ref = projectStore.get(pid);
-                if (ref == null || ref.runtimeProject == null) {
-                    return errorResponse("PROJECT_NOT_FOUND", "Project not found");
-                }
-                if (sourceId.isBlank() || updates == null) {
-                    return errorResponse("BAD_REQUEST", "Missing sourceId or updates");
-                }
-
-                SceneFlow sceneFlow = ref.runtimeProject.getSceneFlow();
-                SuperNode snapshotTarget = resolveSuperNode(sceneFlow, superNodeId);
-                SuperNode targetNode = snapshotTarget != null ? snapshotTarget : sceneFlow;
-
-                BasicNode sourceNode = resolveNodeById(targetNode, sourceId);
-                if (sourceNode == null) {
-                    return errorResponse("NODE_NOT_FOUND", "Source node not found: " + sourceId);
-                }
-
-                List<RandomEdge> edges = sourceNode.getPEdgeList();
-                if (edges.isEmpty()) {
-                    return errorResponse("EDGE_NOT_FOUND", "No probability edges found");
-                }
-
-                // Build update map
-                java.util.LinkedHashMap<RandomEdge, Integer> updateMap = new java.util.LinkedHashMap<>();
-                for (int i = 0; i < updates.length(); i++) {
-                    JSONObject entry = updates.optJSONObject(i);
-                    if (entry == null) {
-                        return errorResponse("INVALID_PAYLOAD", "Invalid edge update entry");
-                    }
-                    String edgeId = entry.optString("edgeId", "");
-                    String targetId = entry.optString("targetId", "");
-                    RandomEdge edge = resolvePEdgeForSource(targetNode, sourceNode, edgeId, targetId);
-                    if (edge == null) {
-                        return errorResponse("EDGE_NOT_FOUND", "Edge not found");
-                    }
-                    if (updateMap.containsKey(edge)) {
-                        return errorResponse("DUPLICATE_EDGE", "Duplicate edge entry");
-                    }
-                    Object raw = entry.opt("probability");
-                    int probability;
-                    try {
-                        probability = Integer.parseInt(String.valueOf(raw));
-                    } catch (NumberFormatException ex) {
-                        return errorResponse("INVALID_PROBABILITY", "Probability must be a number");
-                    }
-                    if (probability < 0 || probability > 100) {
-                        return errorResponse("INVALID_PROBABILITY", "Probability must be between 0 and 100");
-                    }
-                    updateMap.put(edge, probability);
-                }
-
-                if (updateMap.size() != edges.size()) {
-                    return errorResponse("EDGE_COUNT_MISMATCH", "Provide probabilities for all P-edges");
-                }
-
-                int sum = 0;
-                for (int probability : updateMap.values()) {
-                    sum += probability;
-                }
-                if (sum != 100) {
-                    return errorResponse("PROBABILITY_SUM_INVALID", "Total probability must be 100%");
-                }
-
-                // Apply probabilities
-                for (java.util.Map.Entry<RandomEdge, Integer> entry : updateMap.entrySet()) {
-                    RandomEdge edge = entry.getKey();
-                    if (edge != null) {
-                        edge.setProbability(entry.getValue());
-                    }
-                }
-
-                JSONObject response = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
-                response.put("status", "ok");
-                broadcastSceneFlowSnapshot(broadcaster, pid, response);
-                recordHistory(ref, "SceneFlow.Edge.PEdge.UpdateGroup");
-                recordCommand(ref, "SceneFlow.Edge.PEdge.UpdateGroup", params);
-                return response;
-            }
-
-            case "SceneFlow.Node.MoveGroup": {
-                String pid = params.optString("projectId", "");
-                String superNodeId = params.optString("superNodeId", null);
-                JSONArray nodesPayload = params.optJSONArray("nodes");
-                boolean snap = params.optBoolean("snap", false);
-
-                ProjectRef ref = projectStore.get(pid);
-                if (ref == null || ref.runtimeProject == null) {
-                    return errorResponse("PROJECT_NOT_FOUND", "Project not found");
-                }
-                if (nodesPayload == null || nodesPayload.length() == 0) {
-                    return errorResponse("BAD_REQUEST", "Missing nodes");
-                }
-
-                SceneFlow sceneFlow = ref.runtimeProject.getSceneFlow();
-                SuperNode snapshotTarget = resolveSuperNode(sceneFlow, superNodeId);
-                SuperNode activeSuperNode = snapshotTarget != null ? snapshotTarget : sceneFlow;
-
-                // Get node dimensions and grid settings
-                int nodeW = getEditorConfigInt(ref, "node_width", 90);
-                int nodeH = getEditorConfigInt(ref, "node_height", nodeW);
-                // Grid scale factors (1 = one node width/height per grid cell)
-                int gridScaleX = getEditorConfigInt(ref, "grid_x", 1);
-                int gridScaleY = getEditorConfigInt(ref, "grid_y", gridScaleX);
-                // Actual grid cell size in pixels
-                int gridX = Math.max(8, nodeW * gridScaleX);
-                int gridY = Math.max(8, nodeH * gridScaleY);
-                // Grid origin offset (matches frontend)
-                double snapOriginX = nodeW / 2.0 + nodeW / 3.0;
-                double snapOriginY = nodeH / 2.0 + nodeH / 3.0;
-
-                // Store old positions and moved nodes
-                java.util.IdentityHashMap<BasicNode, int[]> oldPositions = new java.util.IdentityHashMap<>();
-                List<BasicNode> movedNodes = new ArrayList<>();
-
-                for (int i = 0; i < nodesPayload.length(); i++) {
-                    JSONObject entry = nodesPayload.optJSONObject(i);
-                    if (entry == null) {
-                        return errorResponse("BAD_REQUEST", "Invalid nodes entry");
-                    }
-                    String moveId = entry.optString("id", "");
-                    double moveX = entry.has("x") ? entry.optDouble("x", Double.NaN) : Double.NaN;
-                    double moveY = entry.has("y") ? entry.optDouble("y", Double.NaN) : Double.NaN;
-                    if (moveId.isBlank() || Double.isNaN(moveX) || Double.isNaN(moveY)) {
-                        return errorResponse("BAD_REQUEST", "Missing node id or coordinates");
-                    }
-
-                    // Use findNodeRecursive like single-node move to find nodes anywhere in hierarchy
-                    BasicNode dataNode = findNodeRecursive(sceneFlow, moveId);
-                    if (dataNode == null) {
-                        return errorResponse("NODE_NOT_FOUND", "Node not found: " + moveId);
-                    }
-
-                    // Capture old position
-                    NodeGraphics oldGraphics = dataNode.getGraphics();
-                    NodePosition oldPos = oldGraphics != null ? oldGraphics.getPosition() : null;
-                    int oldX = oldPos != null ? oldPos.getXPos() : 0;
-                    int oldY = oldPos != null ? oldPos.getYPos() : 0;
-                    oldPositions.put(dataNode, new int[] { oldX, oldY });
-
-                    // Calculate target position
-                    int targetX = Math.max(1, (int) Math.round(moveX));
-                    int targetY = Math.max(1, (int) Math.round(moveY));
-                    if (snap) {
-                        double centerX = targetX + nodeW / 2.0;
-                        double centerY = targetY + nodeH / 2.0;
-                        double snappedCenterX = snapOriginX + Math.round((centerX - snapOriginX) / gridX) * gridX;
-                        double snappedCenterY = snapOriginY + Math.round((centerY - snapOriginY) / gridY) * gridY;
-                        targetX = (int) Math.round(snappedCenterX - nodeW / 2.0);
-                        targetY = (int) Math.round(snappedCenterY - nodeH / 2.0);
-                    }
-
-                    // Update node graphics
-                    NodeGraphics graphics = dataNode.getGraphics();
-                    if (graphics == null) {
-                        graphics = new NodeGraphics(targetX, targetY);
-                        dataNode.setGraphics(graphics);
-                    } else {
-                        graphics.setPosition(targetX, targetY);
-                    }
-                    movedNodes.add(dataNode);
-                }
-
-                // Update edge endpoints
-                for (BasicNode movedNode : movedNodes) {
-                    int[] oldPos = oldPositions.get(movedNode);
-                    updateEdgeEndpointsForMovedNode(movedNode, activeSuperNode, oldPos[0], oldPos[1]);
-                }
-
-                JSONObject snapshot = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
-                JSONObject response = buildSceneFlowResponse(snapshot);
-                broadcastSceneFlowSnapshot(broadcaster, pid, snapshot);
-                recordHistory(ref, "SceneFlow.Node.MoveGroup");
-                recordCommand(ref, "SceneFlow.Node.MoveGroup", params);
-                return response;
-            }
-
-            default:
-                JSONObject unknown = new JSONObject();
-                unknown.put("message", "Unhandled method: " + method);
-                return unknown;
+        JSONObject safeParams = params != null ? params : new JSONObject();
+        WsCommandHandler handler = wsCommandRegistry.get(method);
+        if (handler != null) {
+            return handler.handle(method, safeParams, broadcaster);
         }
+        JSONObject unknown = new JSONObject();
+        unknown.put("message", "Unhandled method: " + method);
+        return unknown;
     }
 
     /**
@@ -6390,1009 +6307,6 @@ public final class WebUiServer implements EventListener {
                 recordCommand(ref, "SceneFlow.Node.Move", params);
                 return resp;
             }
-
-    private JSONObject createEdgeForProject(JSONObject params, java.util.function.Consumer<String> broadcaster) {
-        String pid = params.optString("projectId", "");
-        ProjectRef ref = projectStore.get(pid);
-        if (ref == null || ref.runtimeProject == null) {
-            return mutateAndSnapshot(pid, () -> addEdge(params), broadcaster);
-        }
-
-        SceneFlow sceneFlow = ref.runtimeProject.getSceneFlow();
-        String superNodeId = params.optString("superNodeId", null);
-        SuperNode snapshotTarget = resolveSuperNode(sceneFlow, superNodeId);
-        SuperNode activeSuperNode = snapshotTarget != null ? snapshotTarget : sceneFlow;
-
-        String sourceId = params.optString("sourceId", params.optString("source", ""));
-        String targetId = params.optString("targetId", params.optString("target", ""));
-        if (sourceId.isBlank() || targetId.isBlank()) {
-            return errorResponse("BAD_REQUEST", "Missing sourceId or targetId");
-        }
-
-        BasicNode sourceNode = resolveNodeById(activeSuperNode, sourceId);
-        BasicNode targetNode = resolveNodeById(activeSuperNode, targetId);
-        if (sourceNode == null || targetNode == null) {
-            return errorResponse("NODE_NOT_FOUND", "Source or target node not found");
-        }
-
-        String edgeType = params.optString("edgeType", params.optString("type", "EEDGE")).trim().toUpperCase();
-        String edgeConstraintError = validateEdgeCreateConstraints(sourceNode, edgeType);
-        if (edgeConstraintError != null) {
-            return errorResponse("EDGE_NOT_ALLOWED", edgeConstraintError);
-        }
-        AbstractEdge edge;
-        switch (edgeType) {
-            case "CEDGE":
-                edge = new GuargedEdge();
-                if (sourceNode.getCEdgeList() == null || sourceNode.getCEdgeList().isEmpty()) {
-                    ((GuargedEdge) edge).setCondition(parseExpressionOrNull("true"));
-                } else {
-                    ((GuargedEdge) edge).setCondition(parseExpressionOrNull("false"));
-                }
-                sourceNode.addCEdge((GuargedEdge) edge);
-                break;
-            case "IEDGE":
-                edge = new InterruptEdge();
-                if (sourceNode.getIEdgeList() == null || sourceNode.getIEdgeList().isEmpty()) {
-                    ((InterruptEdge) edge).setCondition(parseExpressionOrNull("true"));
-                } else {
-                    ((InterruptEdge) edge).setCondition(parseExpressionOrNull("false"));
-                }
-                sourceNode.addIEdge((InterruptEdge) edge);
-                break;
-            case "PEDGE": {
-                RandomEdge redge = new RandomEdge();
-                int probability = (sourceNode.getPEdgeList() == null || sourceNode.getPEdgeList().isEmpty()) ? 100 : 0;
-                redge.setProbability(probability);
-                edge = redge;
-                sourceNode.addPEdge((RandomEdge) edge);
-                break;
-            }
-            case "FEDGE":
-                edge = new ForkingEdge();
-                sourceNode.addFEdge((ForkingEdge) edge);
-                break;
-            case "TEDGE": {
-                TimeoutEdge ted = new TimeoutEdge();
-                try {
-                    ted.setTimeout(1000);
-                } catch (NumberFormatException ignore) {
-                    // ignore
-                }
-                edge = ted;
-                sourceNode.setDedge(edge);
-                break;
-            }
-            case "EEDGE":
-            default:
-                edge = new EpsilonEdge();
-                sourceNode.setDedge(edge);
-                break;
-        }
-
-        edge.setSourceNode(sourceNode);
-        edge.setTargetNode(targetNode);
-        edge.setSourceUnid(sourceNode.getId());
-        edge.setTargetUnid(targetNode.getId());
-        edge.setGraphics(new EdgeGraphics());
-        int nodeWidth = getEditorConfigInt(ref, "node_width", 90);
-        int nodeHeight = getEditorConfigInt(ref, "node_height", nodeWidth);
-        mEdgeLayout.initializeEdgeDockPoints(edge, nodeWidth, nodeHeight);
-        mEdgeLayout.normalizeEdge(edge, nodeWidth, nodeHeight);
-
-        JSONObject snapshot = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
-        JSONObject resp = buildSceneFlowResponse(snapshot);
-        broadcastSceneFlowSnapshot(broadcaster, pid, snapshot);
-                recordHistory(ref, "SceneFlow.Edge.Create");
-                recordCommand(ref, "SceneFlow.Edge.Create", params);
-                return resp;
-            }
-
-    private String validateEdgeCreateConstraints(BasicNode sourceNode, String edgeType) {
-        if (sourceNode == null) {
-            return "Source node not found";
-        }
-        String type = edgeType == null ? "" : edgeType.trim().toUpperCase();
-        boolean hasC = sourceNode.getCEdgeList() != null && !sourceNode.getCEdgeList().isEmpty();
-        boolean hasP = sourceNode.getPEdgeList() != null && !sourceNode.getPEdgeList().isEmpty();
-        boolean hasI = sourceNode.getIEdgeList() != null && !sourceNode.getIEdgeList().isEmpty();
-        boolean hasF = sourceNode.getFEdgeList() != null && !sourceNode.getFEdgeList().isEmpty();
-        AbstractEdge dEdge = sourceNode.getDedge();
-        boolean hasE = dEdge instanceof EpsilonEdge;
-        boolean hasT = dEdge instanceof TimeoutEdge;
-        boolean hasD = dEdge != null;
-
-        if (hasP) {
-            return "PEDGE".equals(type) ? null : "Only probabilistic edges are allowed on this node";
-        }
-        if (hasI) {
-            return "IEDGE".equals(type) ? null : "Only interrupt edges are allowed on this node";
-        }
-        if (hasF) {
-            return "FEDGE".equals(type) ? null : "Only fork edges are allowed on this node";
-        }
-
-        if (hasC) {
-            if ("CEDGE".equals(type)) {
-                return null;
-            }
-            if ("EEDGE".equals(type) || "TEDGE".equals(type)) {
-                return hasD ? "Only one default/timeout edge is allowed on this node" : null;
-            }
-            return "Only conditional edges are allowed (plus one epsilon or timeout edge)";
-        }
-
-        if (hasD) {
-            if ("CEDGE".equals(type)) {
-                return null;
-            }
-            if (hasE) {
-                return "Only conditional edges can be combined with an epsilon edge";
-            }
-            if (hasT) {
-                return "Only conditional edges can be combined with a timeout edge";
-            }
-            return "Only conditional edges can be combined with the default edge";
-        }
-
-        return null;
-    }
-
-    private JSONObject updateEdgeForProject(JSONObject params, java.util.function.Consumer<String> broadcaster) {
-        String pid = params.optString("projectId", "");
-        ProjectRef ref = projectStore.get(pid);
-        if (ref == null || ref.runtimeProject == null) {
-            return mutateAndSnapshot(pid, () -> updateEdge(params), broadcaster);
-        }
-
-        SceneFlow sceneFlow = ref.runtimeProject.getSceneFlow();
-        String superNodeId = params.optString("superNodeId", null);
-        SuperNode snapshotTarget = resolveSuperNode(sceneFlow, superNodeId);
-        SuperNode activeSuperNode = snapshotTarget != null ? snapshotTarget : sceneFlow;
-        String edgeId = params.optString("edgeId", "");
-        if (edgeId.isBlank()) {
-            return errorResponse("BAD_REQUEST", "Missing edgeId");
-        }
-        AbstractEdge edge = resolveEdgeById(activeSuperNode, edgeId);
-        if (edge == null) {
-            return errorResponse("EDGE_NOT_FOUND", "Edge not found: " + edgeId);
-        }
-
-        JSONObject fields = params.optJSONObject("fields");
-        if (fields == null) {
-            fields = new JSONObject();
-        }
-
-        if (fields.has("points")) {
-            JSONArray points = fields.optJSONArray("points");
-            if (points != null) {
-                EdgeGraphics graphics = edge.getGraphics();
-                if (graphics == null) {
-                    graphics = new EdgeGraphics();
-                    edge.setGraphics(graphics);
-                }
-                EdgeArrow arrow = graphics.getConnection();
-                if (arrow == null) {
-                    arrow = new EdgeArrow();
-                    graphics.setConnection(arrow);
-                }
-                ArrayList<EdgePoint> pointList = new ArrayList<>();
-                for (int i = 0; i < points.length(); i++) {
-                    JSONObject pt = points.optJSONObject(i);
-                    if (pt == null) continue;
-                    int x = safeRound(pt.has("x") ? pt.optDouble("x") : null, 0);
-                    int y = safeRound(pt.has("y") ? pt.optDouble("y") : null, 0);
-                    int cx = safeRound(pt.has("cx") ? pt.optDouble("cx") : null, x);
-                    int cy = safeRound(pt.has("cy") ? pt.optDouble("cy") : null, y);
-                    pointList.add(new EdgePoint(x, cx, y, cy));
-                }
-                arrow.setPointList(pointList);
-            }
-        }
-
-        if (fields.has("condition")) {
-            String conditionText = fields.optString("condition", "").trim();
-            if (edge instanceof GuargedEdge) {
-                ((GuargedEdge) edge).setCondition(parseExpressionOrNull(conditionText));
-            } else if (edge instanceof InterruptEdge) {
-                ((InterruptEdge) edge).setCondition(parseExpressionOrNull(conditionText));
-            }
-        }
-        if (fields.has("timeoutMs") || fields.has("timeoutExpr")) {
-            if (edge instanceof TimeoutEdge) {
-                TimeoutEdge te = (TimeoutEdge) edge;
-                if (fields.has("timeoutMs")) {
-                    try {
-                        te.setTimeout(fields.optLong("timeoutMs", 0));
-                        te.setExpression(null);
-                    } catch (NumberFormatException ignore) {
-                        // ignore invalid timeout
-                    }
-                } else {
-                    String exprText = fields.optString("timeoutExpr", "").trim();
-                    te.setExpression(parseExpressionOrNull(exprText));
-                }
-            }
-        }
-        if (fields.has("altStartMap") && (edge instanceof GuargedEdge || edge instanceof InterruptEdge)) {
-            JSONArray entries = fields.optJSONArray("altStartMap");
-            if (entries != null) {
-                edge.getAltMap().clear();
-                for (int i = 0; i < entries.length(); i++) {
-                    JSONObject entry = entries.optJSONObject(i);
-                    if (entry == null) continue;
-                    String startId = entry.optString("startId", "").trim();
-                    String altStartId = entry.optString("altStartId", "").trim();
-                    if (startId.isEmpty() || altStartId.isEmpty()) continue;
-                    BasicNode startNode = resolveNodeById(activeSuperNode, startId);
-                    BasicNode altNode = resolveNodeById(activeSuperNode, altStartId);
-                    if (startNode == null || altNode == null) continue;
-                    Tuple<String, BasicNode> startTuple = new Tuple<>(startId, startNode);
-                    Tuple<String, BasicNode> altTuple = new Tuple<>(altStartId, altNode);
-                    edge.getAltMap().put(startTuple, altTuple);
-                }
-            }
-        }
-
-        JSONObject snapshot = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
-        JSONObject resp = buildSceneFlowResponse(snapshot);
-        broadcastSceneFlowSnapshot(broadcaster, pid, snapshot);
-                recordHistory(ref, "SceneFlow.Edge.Update");
-                recordCommand(ref, "SceneFlow.Edge.Update", params);
-                return resp;
-            }
-
-    private JSONObject deleteEdgeForProject(JSONObject params, java.util.function.Consumer<String> broadcaster) {
-        String pid = params.optString("projectId", "");
-        ProjectRef ref = projectStore.get(pid);
-        if (ref == null || ref.runtimeProject == null) {
-            return mutateAndSnapshot(pid, () -> deleteEdge(params), broadcaster);
-        }
-
-        SceneFlow sceneFlow = ref.runtimeProject.getSceneFlow();
-        String superNodeId = params.optString("superNodeId", null);
-        SuperNode snapshotTarget = resolveSuperNode(sceneFlow, superNodeId);
-        SuperNode activeSuperNode = snapshotTarget != null ? snapshotTarget : sceneFlow;
-        String edgeId = params.optString("edgeId", "");
-        if (edgeId.isBlank()) {
-            return errorResponse("BAD_REQUEST", "Missing edgeId");
-        }
-        AbstractEdge dataEdge = resolveEdgeById(activeSuperNode, edgeId);
-        if (dataEdge == null) {
-            return errorResponse("EDGE_NOT_FOUND", "Edge not found: " + edgeId);
-        }
-        BasicNode sourceNode = dataEdge.getSourceNode();
-        if (sourceNode != null) {
-            if (dataEdge instanceof GuargedEdge) {
-                sourceNode.removeCEdge((GuargedEdge) dataEdge);
-            } else if (dataEdge instanceof InterruptEdge) {
-                sourceNode.removeIEdge((InterruptEdge) dataEdge);
-            } else if (dataEdge instanceof RandomEdge) {
-                sourceNode.removePEdge((RandomEdge) dataEdge);
-            } else if (dataEdge instanceof ForkingEdge) {
-                sourceNode.removeFEdge((ForkingEdge) dataEdge);
-            } else if (dataEdge instanceof TimeoutEdge || dataEdge instanceof EpsilonEdge) {
-                sourceNode.removeDEdge();
-            }
-        }
-        int nodeWidth = getEditorConfigInt(ref, "node_width", 90);
-        int nodeHeight = getEditorConfigInt(ref, "node_height", nodeWidth);
-        mEdgeLayout.releaseEdgeDockPoints(dataEdge, nodeWidth, nodeHeight);
-
-        JSONObject snapshot = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
-        JSONObject resp = buildSceneFlowResponse(snapshot);
-        broadcastSceneFlowSnapshot(broadcaster, pid, snapshot);
-                recordHistory(ref, "SceneFlow.Edge.Delete");
-                recordCommand(ref, "SceneFlow.Edge.Delete", params);
-                return resp;
-            }
-
-    private JSONObject createCommentForProject(JSONObject params, java.util.function.Consumer<String> broadcaster) {
-        String pid = params.optString("projectId", "");
-        ProjectRef ref = projectStore.get(pid);
-        if (ref == null || ref.runtimeProject == null) {
-            return mutateAndSnapshot(pid, () -> addComment(params), broadcaster);
-        }
-
-        SceneFlow sceneFlow = ref.runtimeProject.getSceneFlow();
-        String superNodeId = params.optString("superNodeId", null);
-        SuperNode snapshotTarget = resolveSuperNode(sceneFlow, superNodeId);
-        SuperNode activeSuperNode = snapshotTarget != null ? snapshotTarget : sceneFlow;
-
-        CommentBadge comment = new CommentBadge();
-        comment.setParentNode(activeSuperNode);
-        CommentBoundary rect = new CommentBoundary(
-            safeRound(params.has("x") ? params.optDouble("x") : null, 0),
-            safeRound(params.has("y") ? params.optDouble("y") : null, 0),
-            200,
-            120
-        );
-        comment.setGraphics(new CommentGraphics(rect));
-        comment.setHTMLText(params.optString("text", ""));
-        activeSuperNode.getCommentList().add(comment);
-
-        JSONObject snapshot = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
-        JSONObject resp = buildSceneFlowResponse(snapshot);
-        String commentId = "C" + Math.max(0, activeSuperNode.getCommentList().size() - 1);
-        resp.put("commentId", commentId);
-        broadcastSceneFlowSnapshot(broadcaster, pid, snapshot);
-                recordHistory(ref, "SceneFlow.Comment.Create");
-                recordCommand(ref, "SceneFlow.Comment.Create", params);
-                return resp;
-            }
-
-    private JSONObject updateCommentForProject(JSONObject params, java.util.function.Consumer<String> broadcaster) {
-        String pid = params.optString("projectId", "");
-        ProjectRef ref = projectStore.get(pid);
-        if (ref == null || ref.runtimeProject == null) {
-            return mutateAndSnapshot(pid, () -> updateComment(params), broadcaster);
-        }
-
-        SceneFlow sceneFlow = ref.runtimeProject.getSceneFlow();
-        String superNodeId = params.optString("superNodeId", null);
-        SuperNode snapshotTarget = resolveSuperNode(sceneFlow, superNodeId);
-        SuperNode activeSuperNode = snapshotTarget != null ? snapshotTarget : sceneFlow;
-        String commentId = params.optString("commentId", "");
-        if (commentId.isBlank()) {
-            return errorResponse("BAD_REQUEST", "Missing commentId");
-        }
-        CommentBadge comment = resolveCommentById(activeSuperNode, commentId);
-        if (comment == null) {
-            return errorResponse("COMMENT_NOT_FOUND", "Comment not found: " + commentId);
-        }
-
-        if (params.has("text")) {
-            comment.setHTMLText(params.optString("text", ""));
-        }
-        CommentGraphics cg = comment.getGraphics();
-        if (cg == null) {
-            cg = new CommentGraphics();
-            comment.setGraphics(cg);
-        }
-        CommentBoundary boundary = cg.getRectangle();
-        if (boundary == null) {
-            boundary = new CommentBoundary();
-            cg.setRectangle(boundary);
-        }
-        if (params.has("x")) {
-            boundary.setXPos(safeRound(params.optDouble("x"), boundary.getXPos()));
-        }
-        if (params.has("y")) {
-            boundary.setYPos(safeRound(params.optDouble("y"), boundary.getYPos()));
-        }
-        if (params.has("width")) {
-            boundary.setWidth(safeRound(params.optDouble("width"), boundary.getWidth()));
-        }
-        if (params.has("height")) {
-            boundary.setHeight(safeRound(params.optDouble("height"), boundary.getHeight()));
-        }
-        JSONObject rect = params.optJSONObject("rect");
-        if (rect != null) {
-            boundary.setXPos(safeRound(rect.has("x") ? rect.optDouble("x") : null, boundary.getXPos()));
-            boundary.setYPos(safeRound(rect.has("y") ? rect.optDouble("y") : null, boundary.getYPos()));
-            boundary.setWidth(safeRound(rect.has("w") ? rect.optDouble("w") : null, boundary.getWidth()));
-            boundary.setHeight(safeRound(rect.has("h") ? rect.optDouble("h") : null, boundary.getHeight()));
-        }
-
-        JSONObject snapshot = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
-        JSONObject resp = buildSceneFlowResponse(snapshot);
-        broadcastSceneFlowSnapshot(broadcaster, pid, snapshot);
-                recordHistory(ref, "SceneFlow.Comment.Update");
-                recordCommand(ref, "SceneFlow.Comment.Update", params);
-                return resp;
-            }
-
-    private JSONObject deleteCommentForProject(JSONObject params, java.util.function.Consumer<String> broadcaster) {
-        String pid = params.optString("projectId", "");
-        ProjectRef ref = projectStore.get(pid);
-        if (ref == null || ref.runtimeProject == null) {
-            return mutateAndSnapshot(pid, () -> deleteComment(params), broadcaster);
-        }
-
-        SceneFlow sceneFlow = ref.runtimeProject.getSceneFlow();
-        String superNodeId = params.optString("superNodeId", null);
-        SuperNode snapshotTarget = resolveSuperNode(sceneFlow, superNodeId);
-        SuperNode activeSuperNode = snapshotTarget != null ? snapshotTarget : sceneFlow;
-        String commentId = params.optString("commentId", "");
-        if (commentId.isBlank()) {
-            return errorResponse("BAD_REQUEST", "Missing commentId");
-        }
-        CommentBadge comment = resolveCommentById(activeSuperNode, commentId);
-        if (comment == null) {
-            return errorResponse("COMMENT_NOT_FOUND", "Comment not found: " + commentId);
-        }
-        activeSuperNode.getCommentList().remove(comment);
-
-        JSONObject snapshot = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
-        JSONObject resp = buildSceneFlowResponse(snapshot);
-        broadcastSceneFlowSnapshot(broadcaster, pid, snapshot);
-                recordHistory(ref, "SceneFlow.Comment.Delete");
-                recordCommand(ref, "SceneFlow.Comment.Delete", params);
-                return resp;
-            }
-
-    // ===== Copy/Paste Selection Methods =====
-
-    private JSONObject copySelectionForProject(JSONObject params) {
-        String pid = params.optString("projectId", "");
-        ProjectRef ref = projectStore.get(pid);
-        if (ref == null || ref.runtimeProject == null) {
-            return errorResponse("PROJECT_NOT_FOUND", "Project not found");
-        }
-
-        JSONArray nodeIdsJson = params.optJSONArray("nodeIds");
-        if (nodeIdsJson == null || nodeIdsJson.isEmpty()) {
-            return errorResponse("BAD_REQUEST", "Missing nodeIds");
-        }
-
-        SceneFlow sceneFlow = ref.runtimeProject.getSceneFlow();
-        Set<String> nodeIdSet = new java.util.HashSet<>();
-        for (int i = 0; i < nodeIdsJson.length(); i++) {
-            nodeIdSet.add(nodeIdsJson.getString(i));
-        }
-
-        // Clear existing clipboard
-        ref.clipboard.clear();
-        ref.clipboardEdges.clear();
-
-        // Deep copy each selected node
-        for (String nodeId : nodeIdSet) {
-            BasicNode node = findNodeRecursive(sceneFlow, nodeId);
-            if (node != null) {
-                ref.clipboard.add(node.getCopy());
-            }
-        }
-
-        // Collect edges between selected nodes
-        for (BasicNode node : ref.clipboard) {
-            String sourceId = node.getId();
-            // Collect all edge types
-            collectEdgesForClipboard(ref, node.getCEdgeList(), sourceId, "CEDGE", nodeIdSet);
-            collectEdgesForClipboard(ref, node.getPEdgeList(), sourceId, "PEDGE", nodeIdSet);
-            collectEdgesForClipboard(ref, node.getIEdgeList(), sourceId, "IEDGE", nodeIdSet);
-            collectEdgesForClipboard(ref, node.getFEdgeList(), sourceId, "FEDGE", nodeIdSet);
-            AbstractEdge dEdge = node.getDedge();
-            if (dEdge != null && nodeIdSet.contains(dEdge.getTargetUnid())) {
-                String edgeType = dEdge instanceof TimeoutEdge ? "TEDGE" : "EEDGE";
-                long timeout = dEdge instanceof TimeoutEdge ? ((TimeoutEdge) dEdge).getTimeout() : 0;
-                ref.clipboardEdges.add(new ClipboardEdge(sourceId, dEdge.getTargetUnid(),
-                    edgeType, null, 0, timeout));
-            }
-        }
-
-        JSONObject response = new JSONObject();
-        response.put("status", "ok");
-        response.put("copiedCount", ref.clipboard.size());
-        return response;
-    }
-
-    private void collectEdgesForClipboard(ProjectRef ref, List<? extends AbstractEdge> edges,
-            String sourceId, String edgeType, Set<String> nodeIdSet) {
-        if (edges == null) return;
-        for (AbstractEdge edge : edges) {
-            String targetId = edge.getTargetUnid();
-            if (nodeIdSet.contains(targetId)) {
-                String condition = null;
-                int probability = 0;
-                if (edge instanceof GuargedEdge) {
-                    Expression cond = ((GuargedEdge) edge).getCondition();
-                    condition = cond != null ? cond.getFormattedSyntax() : "true";
-                } else if (edge instanceof InterruptEdge) {
-                    Expression cond = ((InterruptEdge) edge).getCondition();
-                    condition = cond != null ? cond.getFormattedSyntax() : "true";
-                } else if (edge instanceof RandomEdge) {
-                    probability = ((RandomEdge) edge).getProbability();
-                }
-                ref.clipboardEdges.add(new ClipboardEdge(sourceId, targetId,
-                    edgeType, condition, probability, 0));
-            }
-        }
-    }
-
-    private JSONObject pasteSelectionForProject(JSONObject params,
-            java.util.function.Consumer<String> broadcaster) {
-        String pid = params.optString("projectId", "");
-        ProjectRef ref = projectStore.get(pid);
-        if (ref == null || ref.runtimeProject == null) {
-            return errorResponse("PROJECT_NOT_FOUND", "Project not found");
-        }
-
-        if (ref.clipboard.isEmpty()) {
-            JSONObject response = new JSONObject();
-            response.put("status", "ok");
-            response.put("nodeIds", new JSONArray());
-            return response;
-        }
-
-        int dx = params.optInt("dx", 50);
-        int dy = params.optInt("dy", 50);
-        String superNodeId = params.optString("superNodeId", null);
-
-        SceneFlow sceneFlow = ref.runtimeProject.getSceneFlow();
-        SuperNode snapshotTarget = resolveSuperNode(sceneFlow, superNodeId);
-        SuperNode activeSuperNode = snapshotTarget != null ? snapshotTarget : sceneFlow;
-
-        // Get node dimensions and grid settings for position calculations
-        int nodeWidth = getEditorConfigInt(ref, "node_width", 90);
-        int nodeHeight = getEditorConfigInt(ref, "node_height", nodeWidth);
-        // Grid scale factors (1 = one node width/height per grid cell)
-        int gridScaleX = getEditorConfigInt(ref, "grid_x", 1);
-        int gridScaleY = getEditorConfigInt(ref, "grid_y", gridScaleX);
-        // Actual grid cell size in pixels
-        int gridX = Math.max(8, nodeWidth * gridScaleX);
-        int gridY = Math.max(8, nodeHeight * gridScaleY);
-        // Grid origin offset (matches frontend: nodeWidth/2 + nodeWidth/3 = nodeWidth * 5/6)
-        double originX = nodeWidth / 2.0 + nodeWidth / 3.0;
-        double originY = nodeHeight / 2.0 + nodeHeight / 3.0;
-
-        // Collect all existing node IDs for uniqueness check
-        Set<String> usedIds = new java.util.HashSet<>();
-        List<BasicNode> existingNodes = new ArrayList<>();
-        collectNodes(sceneFlow, existingNodes);
-        for (BasicNode existing : existingNodes) {
-            if (existing != null && existing.getId() != null) {
-                usedIds.add(existing.getId());
-            }
-        }
-
-        // Collect existing node positions in the active supernode for collision detection
-        // Use a list of int[] pairs for distance-based collision checking
-        List<int[]> occupiedPositions = new ArrayList<>();
-        for (BasicNode node : activeSuperNode.getNodeAndSuperNodeList()) {
-            NodeGraphics g = node.getGraphics();
-            if (g != null && g.getPosition() != null) {
-                int nx = g.getPosition().getXPos();
-                int ny = g.getPosition().getYPos();
-                // Skip invalid positions (Integer.MIN_VALUE is default unset value)
-                if (nx > Integer.MIN_VALUE + 1000 && ny > Integer.MIN_VALUE + 1000) {
-                    occupiedPositions.add(new int[]{nx, ny});
-                }
-            }
-        }
-
-        // Collision threshold - nodes closer than this are considered overlapping
-        int collisionThreshold = Math.max(nodeWidth, nodeHeight);
-
-        // Map old node IDs to new node IDs
-        Map<String, String> idMapping = new java.util.HashMap<>();
-        List<String> newNodeIds = new ArrayList<>();
-        List<BasicNode> newNodes = new ArrayList<>();
-
-        // Create new nodes from clipboard
-        for (BasicNode clipboardNode : ref.clipboard) {
-            String oldId = clipboardNode.getId();
-            boolean isSuperNode = clipboardNode instanceof SuperNode;
-            String newId = allocateNodeId(ref, isSuperNode, usedIds);
-            usedIds.add(newId);
-            idMapping.put(oldId, newId);
-
-            // Create new node with offset position
-            BasicNode newNode = isSuperNode ? new SuperNode() : new BasicNode();
-            newNode.setId(newId);
-            newNode.setName(clipboardNode.getName());
-            newNode.setComment(clipboardNode.getComment());
-            newNode.setHistoryNodeFlag(clipboardNode.isHistoryNode());
-
-            // Copy variable definitions
-            for (VariableDefinition varDef : clipboardNode.getVarDefList()) {
-                newNode.addVarDef(varDef.getCopy());
-            }
-
-            // Copy type definitions
-            for (DataTypeDefinition typeDef : clipboardNode.getTypeDefList()) {
-                newNode.addTypeDef(typeDef.getCopy());
-            }
-
-            // Copy commands
-            for (Command cmd : clipboardNode.getCmdList()) {
-                newNode.addCmd(cmd.getCopy());
-            }
-
-            // Calculate initial position with offset
-            NodeGraphics oldGraphics = clipboardNode.getGraphics();
-            int x = (oldGraphics != null && oldGraphics.getPosition() != null ? oldGraphics.getPosition().getXPos() : 0) + dx;
-            int y = (oldGraphics != null && oldGraphics.getPosition() != null ? oldGraphics.getPosition().getYPos() : 0) + dy;
-
-            // Apply grid snap - snap node CENTER to grid, then convert back to position
-            // 1. Convert position (top-left) to center
-            double centerX = x + nodeWidth / 2.0;
-            double centerY = y + nodeHeight / 2.0;
-            // 2. Snap center to grid relative to origin
-            double snappedCenterX = originX + Math.round((centerX - originX) / gridX) * gridX;
-            double snappedCenterY = originY + Math.round((centerY - originY) / gridY) * gridY;
-            // 3. Convert back to position (top-left)
-            x = Math.max(1, (int) Math.round(snappedCenterX - nodeWidth / 2.0));
-            y = Math.max(1, (int) Math.round(snappedCenterY - nodeHeight / 2.0));
-
-            // Find a free position if the target position is occupied (using distance-based collision)
-            // Use grid cell size as the step to maintain grid alignment
-            int attempts = 0;
-            while (isPositionOccupied(x, y, occupiedPositions, collisionThreshold) && attempts < 100) {
-                // Move to next grid cell to find a free position
-                attempts++;
-                x += gridX;
-                if (attempts % 5 == 0) {
-                    x -= 5 * gridX;
-                    y += gridY;
-                }
-            }
-
-            // Mark this position as occupied for subsequent nodes
-            occupiedPositions.add(new int[]{x, y});
-
-            newNode.setGraphics(new NodeGraphics(x, y));
-
-            // Add to parent
-            newNode.setParentNode(activeSuperNode);
-            if (isSuperNode) {
-                activeSuperNode.addSuperNode((SuperNode) newNode);
-            } else {
-                activeSuperNode.addNode(newNode);
-            }
-
-            newNodeIds.add(newId);
-            newNodes.add(newNode);
-        }
-
-        // Recreate edges between pasted nodes
-        for (ClipboardEdge ce : ref.clipboardEdges) {
-            String newSourceId = idMapping.get(ce.sourceId);
-            String newTargetId = idMapping.get(ce.targetId);
-            if (newSourceId == null || newTargetId == null) continue;
-
-            BasicNode sourceNode = resolveNodeById(activeSuperNode, newSourceId);
-            BasicNode targetNode = resolveNodeById(activeSuperNode, newTargetId);
-            if (sourceNode == null || targetNode == null) continue;
-
-            createEdgeFromClipboard(ref, sourceNode, targetNode, ce);
-        }
-
-        // Mark dirty and create snapshot
-        ref.dirty = true;
-        JSONObject snapshot = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
-        JSONObject resp = buildSceneFlowResponse(snapshot);
-        resp.put("nodeIds", new JSONArray(newNodeIds));
-        broadcastSceneFlowSnapshot(broadcaster, pid, snapshot);
-        recordHistory(ref, "SceneFlow.Selection.Paste");
-
-        return resp;
-    }
-
-    private void createEdgeFromClipboard(ProjectRef ref, BasicNode sourceNode,
-            BasicNode targetNode, ClipboardEdge ce) {
-        AbstractEdge edge;
-        switch (ce.edgeType) {
-            case "CEDGE":
-                GuargedEdge cedge = new GuargedEdge();
-                cedge.setCondition(parseExpressionOrNull(ce.condition != null ? ce.condition : "true"));
-                sourceNode.addCEdge(cedge);
-                edge = cedge;
-                break;
-            case "IEDGE":
-                InterruptEdge iedge = new InterruptEdge();
-                iedge.setCondition(parseExpressionOrNull(ce.condition != null ? ce.condition : "true"));
-                sourceNode.addIEdge(iedge);
-                edge = iedge;
-                break;
-            case "PEDGE":
-                RandomEdge pedge = new RandomEdge();
-                pedge.setProbability(ce.probability);
-                sourceNode.addPEdge(pedge);
-                edge = pedge;
-                break;
-            case "FEDGE":
-                ForkingEdge fedge = new ForkingEdge();
-                sourceNode.addFEdge(fedge);
-                edge = fedge;
-                break;
-            case "TEDGE":
-                TimeoutEdge tedge = new TimeoutEdge();
-                tedge.setTimeout(ce.timeout);
-                sourceNode.setDedge(tedge);
-                edge = tedge;
-                break;
-            case "EEDGE":
-            default:
-                EpsilonEdge eedge = new EpsilonEdge();
-                sourceNode.setDedge(eedge);
-                edge = eedge;
-                break;
-        }
-
-        edge.setSourceNode(sourceNode);
-        edge.setTargetNode(targetNode);
-        edge.setSourceUnid(sourceNode.getId());
-        edge.setTargetUnid(targetNode.getId());
-        edge.setGraphics(new EdgeGraphics());
-        int nodeWidth = getEditorConfigInt(ref, "node_width", 90);
-        int nodeHeight = getEditorConfigInt(ref, "node_height", nodeWidth);
-        mEdgeLayout.initializeEdgeDockPoints(edge, nodeWidth, nodeHeight);
-        mEdgeLayout.normalizeEdge(edge, nodeWidth, nodeHeight);
-    }
-
-    /**
-     * Check if a position is too close to any existing occupied position.
-     * Uses distance-based collision detection rather than exact matching.
-     */
-    private boolean isPositionOccupied(int x, int y, List<int[]> occupiedPositions, int threshold) {
-        for (int[] pos : occupiedPositions) {
-            int dx = Math.abs(x - pos[0]);
-            int dy = Math.abs(y - pos[1]);
-            // Use Manhattan distance for simpler/faster check
-            if (dx < threshold && dy < threshold) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    // ===== End Copy/Paste Selection Methods =====
-
-    private JSONObject updateScriptForProject(JSONObject params, java.util.function.Consumer<String> broadcaster) {
-        String pid = params.optString("projectId", "");
-        ProjectRef ref = projectStore.get(pid);
-        if (ref == null || ref.runtimeProject == null) {
-            return errorResponse("PROJECT_NOT_FOUND", "Project not found");
-        }
-        ensureScriptLoaded(ref);
-        String text = params.optString("text", "");
-        if (params.has("version")) {
-            int clientVersion = params.optInt("version", ref.scriptVersion);
-            if (clientVersion != ref.scriptVersion) {
-                JSONObject mismatch = new JSONObject();
-                mismatch.put("applied", false);
-                mismatch.put("reason", "VERSION_MISMATCH");
-                mismatch.put("version", ref.scriptVersion);
-                mismatch.put("text", ref.scriptText == null ? "" : ref.scriptText);
-                mismatch.put("parseOk", ref.scriptParseOk);
-                mismatch.put("parseErrors", diagnosticsToJson(ref.scriptParseErrors));
-                return mismatch;
-            }
-        }
-
-        String previousText = ref.scriptText == null ? serializeSceneScript(ref.runtimeProject) : ref.scriptText;
-        boolean ok = applyScriptText(ref.runtimeProject, text);
-        if (!ok) {
-            applyScriptText(ref.runtimeProject, previousText);
-            ScriptDiagnostics.Result result = ScriptDiagnostics.analyze(text);
-            JSONObject failed = new JSONObject();
-            failed.put("applied", false);
-            failed.put("reason", "PARSE_FAILED");
-            failed.put("parseOk", result.isParseOk());
-            failed.put("parseErrors", diagnosticsToJson(result.getDiagnostics()));
-            return failed;
-        }
-
-        ref.scriptText = text;
-        ref.scriptVersion = Math.max(1, ref.scriptVersion + 1);
-        ref.scriptParseOk = true;
-        ref.scriptParseErrors.clear();
-        ref.dirty = true;
-
-        JSONObject resp = new JSONObject();
-        resp.put("applied", true);
-        resp.put("text", ref.scriptText);
-        resp.put("version", ref.scriptVersion);
-        resp.put("parseOk", ref.scriptParseOk);
-        resp.put("parseErrors", diagnosticsToJson(ref.scriptParseErrors));
-        if (broadcaster != null) {
-            broadcastScriptSnapshot(broadcaster, pid, resp);
-            JSONObject dirtyEvt = new JSONObject();
-            dirtyEvt.put("event", "project.dirty");
-            dirtyEvt.put("projectId", pid);
-            dirtyEvt.put("areas", new JSONArray().put("script"));
-            broadcaster.accept(dirtyEvt.toString());
-        }
-        recordHistory(ref, "Script.Update");
-        recordCommand(ref, "Script.Update", params);
-        return resp;
-    }
-
-    private JSONObject findPlaySceneReferences(JSONObject params) {
-        String pid = params.optString("projectId", "");
-        String sceneName = params.optString("sceneName", "").trim();
-        ProjectRef ref = projectStore.get(pid);
-        if (ref == null || ref.runtimeProject == null) {
-            return errorResponse("PROJECT_NOT_FOUND", "Project not found");
-        }
-        if (sceneName.isBlank()) {
-            return errorResponse("BAD_REQUEST", "Missing sceneName");
-        }
-        SceneFlow sceneFlow = ref.runtimeProject.getSceneFlow();
-        if (sceneFlow == null) {
-            return errorResponse("SCENEFLOW_NOT_FOUND", "SceneFlow not available");
-        }
-        List<JSONObject> matches = new ArrayList<>();
-        collectPlaySceneReferences(sceneFlow, sceneName, matches);
-        JSONObject resp = new JSONObject();
-        resp.put("status", "ok");
-        resp.put("matches", new JSONArray(matches));
-        resp.put("count", matches.size());
-        return resp;
-    }
-
-    private JSONObject findPlaySceneReferencesMany(JSONObject params) {
-        String pid = params.optString("projectId", "");
-        JSONArray namesJson = params.optJSONArray("sceneNames");
-        ProjectRef ref = projectStore.get(pid);
-        if (ref == null || ref.runtimeProject == null) {
-            return errorResponse("PROJECT_NOT_FOUND", "Project not found");
-        }
-        if (namesJson == null || namesJson.isEmpty()) {
-            return errorResponse("BAD_REQUEST", "Missing sceneNames");
-        }
-        Set<String> names = new HashSet<>();
-        for (int i = 0; i < namesJson.length(); i++) {
-            String name = namesJson.optString(i, "").trim();
-            if (!name.isEmpty()) {
-                names.add(name);
-            }
-        }
-        if (names.isEmpty()) {
-            return errorResponse("BAD_REQUEST", "Missing sceneNames");
-        }
-        SceneFlow sceneFlow = ref.runtimeProject.getSceneFlow();
-        if (sceneFlow == null) {
-            return errorResponse("SCENEFLOW_NOT_FOUND", "SceneFlow not available");
-        }
-        List<JSONObject> matches = new ArrayList<>();
-        collectPlaySceneReferences(sceneFlow, names, matches);
-        JSONObject resp = new JSONObject();
-        resp.put("status", "ok");
-        resp.put("matches", new JSONArray(matches));
-        resp.put("count", matches.size());
-        return resp;
-    }
-
-    private JSONObject renamePlaySceneReferences(JSONObject params, java.util.function.Consumer<String> broadcaster) {
-        String pid = params.optString("projectId", "");
-        String sceneName = params.optString("sceneName", "").trim();
-        String newName = params.optString("newName", "").trim();
-        String superNodeId = params.optString("superNodeId", "").trim();
-        ProjectRef ref = projectStore.get(pid);
-        if (ref == null || ref.runtimeProject == null) {
-            return errorResponse("PROJECT_NOT_FOUND", "Project not found");
-        }
-        if (sceneName.isBlank() || newName.isBlank()) {
-            return errorResponse("BAD_REQUEST", "Missing sceneName or newName");
-        }
-        SceneFlow sceneFlow = ref.runtimeProject.getSceneFlow();
-        if (sceneFlow == null) {
-            return errorResponse("SCENEFLOW_NOT_FOUND", "SceneFlow not available");
-        }
-        int updated = renamePlaySceneReferences(sceneFlow, sceneName, newName);
-        ref.dirty = true;
-        JSONObject resp = new JSONObject();
-        resp.put("status", "ok");
-        resp.put("updated", updated);
-
-        SuperNode snapshotTarget = resolveSuperNode(sceneFlow, superNodeId);
-        if (snapshotTarget == null) {
-            snapshotTarget = sceneFlow;
-        }
-        JSONObject snapshot = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
-        resp.put("snapshot", snapshot);
-        if (broadcaster != null) {
-            broadcastSceneFlowSnapshot(broadcaster, pid, snapshot);
-        }
-        recordHistory(ref, "SceneFlow.PlayScene.Rename");
-        recordCommand(ref, "SceneFlow.PlayScene.Rename", params);
-        return resp;
-    }
-
-    private JSONObject undoProject(JSONObject params, java.util.function.Consumer<String> broadcaster) {
-        String pid = params.optString("projectId", "");
-        ProjectRef ref = projectStore.get(pid);
-        if (ref == null || ref.runtimeProject == null) {
-            return errorResponse("PROJECT_NOT_FOUND", "Project not found");
-        }
-        ensureHistoryLoaded(ref);
-        if (ref.historyIndex <= 0) {
-            JSONObject resp = new JSONObject();
-            resp.put("status", "ok");
-            resp.put("applied", false);
-            return resp;
-        }
-        ref.historySuspended = true;
-        ref.commandLogSuspended = true;
-        try {
-            ref.historyIndex = Math.max(0, ref.historyIndex - 1);
-            HistoryEntry entry = ref.history.get(ref.historyIndex);
-            if (!applyHistoryEntry(ref, entry)) {
-                return errorResponse("UNDO_FAILED", "Failed to apply undo");
-            }
-        } finally {
-            ref.historySuspended = false;
-            ref.commandLogSuspended = false;
-        }
-        saveHistoryToDisk(ref);
-
-        SceneFlow sceneFlow = ref.runtimeProject.getSceneFlow();
-        SuperNode snapshotTarget = sceneFlow;
-        JSONObject snapshot = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
-        broadcastSceneFlowSnapshot(broadcaster, pid, snapshot);
-        JSONObject scriptSnapshot = buildScriptSnapshot(ref);
-        broadcastScriptSnapshot(broadcaster, pid, scriptSnapshot);
-
-        JSONObject resp = buildSceneFlowResponse(snapshot);
-        resp.put("script", scriptSnapshot);
-        resp.put("applied", true);
-        if (broadcaster != null) {
-            JSONObject dirtyEvt = new JSONObject();
-            dirtyEvt.put("event", "project.dirty");
-            dirtyEvt.put("projectId", pid);
-            dirtyEvt.put("areas", new JSONArray().put("sceneflow").put("script"));
-            broadcaster.accept(dirtyEvt.toString());
-        }
-        return resp;
-    }
-
-    private JSONObject redoProject(JSONObject params, java.util.function.Consumer<String> broadcaster) {
-        String pid = params.optString("projectId", "");
-        ProjectRef ref = projectStore.get(pid);
-        if (ref == null || ref.runtimeProject == null) {
-            return errorResponse("PROJECT_NOT_FOUND", "Project not found");
-        }
-        ensureHistoryLoaded(ref);
-        if (ref.historyIndex >= ref.history.size() - 1) {
-            JSONObject resp = new JSONObject();
-            resp.put("status", "ok");
-            resp.put("applied", false);
-            return resp;
-        }
-        ref.historySuspended = true;
-        ref.commandLogSuspended = true;
-        try {
-            ref.historyIndex = Math.min(ref.history.size() - 1, ref.historyIndex + 1);
-            HistoryEntry entry = ref.history.get(ref.historyIndex);
-            if (!applyHistoryEntry(ref, entry)) {
-                return errorResponse("REDO_FAILED", "Failed to apply redo");
-            }
-        } finally {
-            ref.historySuspended = false;
-            ref.commandLogSuspended = false;
-        }
-        saveHistoryToDisk(ref);
-
-        SceneFlow sceneFlow = ref.runtimeProject.getSceneFlow();
-        SuperNode snapshotTarget = sceneFlow;
-        JSONObject snapshot = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
-        broadcastSceneFlowSnapshot(broadcaster, pid, snapshot);
-        JSONObject scriptSnapshot = buildScriptSnapshot(ref);
-        broadcastScriptSnapshot(broadcaster, pid, scriptSnapshot);
-
-        JSONObject resp = buildSceneFlowResponse(snapshot);
-        resp.put("script", scriptSnapshot);
-        resp.put("applied", true);
-        if (broadcaster != null) {
-            JSONObject dirtyEvt = new JSONObject();
-            dirtyEvt.put("event", "project.dirty");
-            dirtyEvt.put("projectId", pid);
-            dirtyEvt.put("areas", new JSONArray().put("sceneflow").put("script"));
-            broadcaster.accept(dirtyEvt.toString());
-        }
-        return resp;
-    }
-
-    private CommentBadge resolveCommentById(SuperNode superNode, String commentId) {
-        if (superNode == null || commentId == null) {
-            return null;
-        }
-        String normalized = commentId.trim();
-        if (normalized.startsWith("C")) {
-            normalized = normalized.substring(1);
-        }
-        int index;
-        try {
-            index = Integer.parseInt(normalized);
-        } catch (NumberFormatException ex) {
-            return null;
-        }
-        if (index < 0 || index >= superNode.getCommentList().size()) {
-            return null;
-        }
-        return superNode.getCommentList().get(index);
-    }
 
     private Expression parseExpressionOrNull(String text) {
         if (text == null || text.isBlank()) {
@@ -8449,6 +7363,18 @@ public final class WebUiServer implements EventListener {
         }
         target.put("logicEnabled", isLogicEnabled());
         target.put("platform", runtimePlatform());
+        target.put("preferredTransport", "ws");
+        target.put("commandTransport", "ws");
+        target.put("eventTransport", "ws");
+        target.put("bootstrapTransport", "http");
+        target.put("runtimeRestMutationsEnabled", isRuntimeRestMutationsEnabled());
+        target.put("wsPath", "/ws");
+        target.put("apiPrefix", API_PREFIX);
+    }
+
+    private boolean isRuntimeRestMutationsEnabled() {
+        String value = System.getProperty("vsm.runtime.rest.mutations.enabled", "false");
+        return "true".equalsIgnoreCase(value) || "1".equals(value) || "yes".equalsIgnoreCase(value);
     }
 
     private BasicNode findNodeRecursive(SuperNode parent, String nodeId) {
@@ -8894,7 +7820,7 @@ public final class WebUiServer implements EventListener {
         boolean commandLogSuspended = false;
         // Clipboard for copy/paste operations
         List<BasicNode> clipboard = new ArrayList<>();
-        List<ClipboardEdge> clipboardEdges = new ArrayList<>();
+        List<SelectionCommandService.ClipboardEdgeData> clipboardEdges = new ArrayList<>();
 
         ProjectRef(String id, String name, String path) {
             this.id = id;
@@ -8904,26 +7830,6 @@ public final class WebUiServer implements EventListener {
             this.scriptText = null;
             this.scriptVersion = 1;
             this.scriptParseOk = true;
-        }
-    }
-
-    // Helper class for storing edge data in clipboard
-    private static class ClipboardEdge {
-        final String sourceId;
-        final String targetId;
-        final String edgeType;  // "EEDGE", "CEDGE", "PEDGE", "IEDGE", "FEDGE", "TEDGE"
-        final String condition; // For CEDGE, IEDGE
-        final int probability;  // For PEDGE
-        final long timeout;     // For TEDGE
-
-        ClipboardEdge(String sourceId, String targetId, String edgeType,
-                      String condition, int probability, long timeout) {
-            this.sourceId = sourceId;
-            this.targetId = targetId;
-            this.edgeType = edgeType;
-            this.condition = condition;
-            this.probability = probability;
-            this.timeout = timeout;
         }
     }
 

@@ -1,0 +1,114 @@
+plugins {
+    id 'com.android.application'
+}
+
+configurations.configureEach {
+    exclude group: 'org.jetbrains', module: 'annotations'
+}
+
+android {
+    namespace 'de.dfki.vsm.androidstub'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "de.dfki.vsm.androidstub"
+        minSdk 26
+        targetSdk 34
+        versionCode 1
+        versionName "1.0"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    packaging {
+        resources {
+            excludes += ['META-INF/*', 'META-INF/versions/**']
+        }
+    }
+}
+
+def repoRoot = file("${rootDir}/..")
+def coreLibsDir = file("${repoRoot}/core/build/libs")
+def timerLibsDir = file("${repoRoot}/plugins/timer/build/libs")
+def appLibsDir = file("${projectDir}/libs")
+def simpleProjectSourceDir = file("${repoRoot}/doc/SimpleProject")
+def simpleProjectAssetsDir = file("${projectDir}/src/main/assets/SimpleProject")
+
+tasks.register('buildVsmJars', Exec) {
+    workingDir repoRoot
+    commandLine './gradlew', ':core:jar', ':core-http-android:jar', ':plugins:timer:jar'
+}
+
+tasks.register('syncVsmJars') {
+    dependsOn tasks.named('buildVsmJars')
+    doLast {
+        appLibsDir.mkdirs()
+
+        def coreJar = coreLibsDir.listFiles()?.find {
+            it.name.endsWith('.jar') && !it.name.contains('-sources') && !it.name.contains('-javadoc')
+        }
+        if (coreJar == null) {
+            throw new GradleException("No core jar found in ${coreLibsDir}")
+        }
+        copy {
+            from coreJar
+            into appLibsDir
+            rename { 'core-android.jar' }
+        }
+
+        def timerJar = timerLibsDir.listFiles()?.find {
+            it.name.startsWith('timer-') && it.name.endsWith('.jar') && !it.name.contains('-sources') && !it.name.contains('-javadoc')
+        }
+        if (timerJar == null) {
+            throw new GradleException("No timer jar found in ${timerLibsDir}")
+        }
+        copy {
+            from timerJar
+            into appLibsDir
+            rename { 'timer-plugin.jar' }
+        }
+
+        def androidHttpLibDir = file("${repoRoot}/core-http-android/build/libs")
+        def androidHttpJar = androidHttpLibDir.listFiles()?.find {
+            it.name.startsWith('core-http-android') && it.name.endsWith('.jar') && !it.name.contains('-sources') && !it.name.contains('-javadoc')
+        }
+        if (androidHttpJar == null) {
+            throw new GradleException("No core-http-android jar found in ${androidHttpLibDir}")
+        }
+        copy {
+            from androidHttpJar
+            into appLibsDir
+            rename { 'core-http-android.jar' }
+        }
+    }
+}
+
+tasks.register('syncSimpleProjectAssets', Copy) {
+    from simpleProjectSourceDir
+    into simpleProjectAssetsDir
+    include '*.xml'
+}
+
+tasks.named('preBuild') {
+    dependsOn tasks.named('syncVsmJars')
+    dependsOn tasks.named('syncSimpleProjectAssets')
+}
+
+dependencies {
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'com.google.android.material:material:1.12.0'
+    implementation 'org.nanohttpd:nanohttpd:2.3.1'
+    implementation 'org.nanohttpd:nanohttpd-websocket:2.3.1'
+
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+}
