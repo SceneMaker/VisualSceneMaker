@@ -1,0 +1,56 @@
+plugins {
+    id 'java'
+}
+
+group 'de.dfki.vsm'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation project(':core')
+}
+
+tasks.register('verifyAndroidPortableApis') {
+    group = 'verification'
+    description = 'Fails when core-http-android uses desktop/server-only APIs.'
+
+    doLast {
+        def forbiddenImportPrefixes = [
+                'java.awt.',
+                'javax.swing.',
+                'javafx.',
+                'org.jpl7.',
+                'io.javalin.',
+                'org.reflections.',
+                'java.net.http.',
+                'javax.xml.bind.'
+        ]
+        def violations = []
+        fileTree("${projectDir}/src/main/java").matching { include '**/*.java' }.files.each { file ->
+            int lineNo = 0
+            file.eachLine { line ->
+                lineNo++
+                def trimmed = line.trim()
+                if (trimmed.startsWith('import ')) {
+                    forbiddenImportPrefixes.each { prefix ->
+                        if (trimmed.contains(prefix)) {
+                            violations << "${file}:${lineNo}: forbidden import '${prefix}'"
+                        }
+                    }
+                }
+            }
+        }
+        if (!violations.isEmpty()) {
+            throw new GradleException(
+                    "Android portability guard failed for core-http-android:\n - "
+                            + violations.join('\n - ')
+            )
+        }
+    }
+}
+
+tasks.named('check') {
+    dependsOn tasks.named('verifyAndroidPortableApis')
+}

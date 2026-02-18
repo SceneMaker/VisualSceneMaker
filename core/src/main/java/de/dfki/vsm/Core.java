@@ -1,6 +1,7 @@
 package de.dfki.vsm;
 
 import de.dfki.vsm.runtime.CoreRuntime;
+import de.dfki.vsm.runtime.bootstrap.PlatformBootstrap;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 
 import java.io.File;
@@ -9,6 +10,7 @@ import java.io.IOException;
 public class Core {
     // Start the runtime with some project
     public static void runtime(final File file) {
+        PlatformBootstrap.configureForCurrentVm();
         final CoreRuntime runtime = new CoreRuntime(new RunTimeProject(file));
         if (runtime.launch()) {
             // Start the runtime with the project
@@ -35,6 +37,7 @@ public class Core {
         }
     }
     public static void main(String[] args){
+        PlatformBootstrap.configureForCurrentVm();
         if (args.length == 2) {
             // Read the first command line argument
             final String mode = args[0];

@@ -49,3 +49,59 @@ jar {
     }
     duplicatesStrategy = 'exclude'
 }
+
+tasks.register('verifyPortableCoreApis') {
+    group = 'verification'
+    description = 'Fails when :core uses desktop/server-only APIs.'
+
+    doLast {
+        def forbiddenImportPrefixes = [
+                'java.awt.',
+                'javax.swing.',
+                'javafx.',
+                'org.jpl7.',
+                'java.net.http.',
+                'io.javalin.',
+                'org.reflections.',
+                'javax.xml.bind.'
+        ]
+        def forbiddenUsagePatterns = [
+                'org.jpl7.',
+                'java.net.http.',
+                'io.javalin.',
+                'org.reflections.'
+        ]
+
+        def violations = []
+        fileTree("${projectDir}/src/main/java").matching { include '**/*.java' }.files.each { file ->
+            int lineNo = 0
+            file.eachLine { line ->
+                lineNo++
+                def trimmed = line.trim()
+                if (trimmed.startsWith('import ')) {
+                    forbiddenImportPrefixes.each { prefix ->
+                        if (trimmed.contains(prefix)) {
+                            violations << "${file}:${lineNo}: forbidden import '${prefix}'"
+                        }
+                    }
+                }
+                forbiddenUsagePatterns.each { pattern ->
+                    if (line.contains(pattern)) {
+                        violations << "${file}:${lineNo}: forbidden usage '${pattern}'"
+                    }
+                }
+            }
+        }
+
+        if (!violations.isEmpty()) {
+            throw new GradleException(
+                    "Core portability guard failed. Forbidden APIs found:\n - "
+                            + violations.join('\n - ')
+            )
+        }
+    }
+}
+
+tasks.named('check') {
+    dependsOn tasks.named('verifyPortableCoreApis')
+}

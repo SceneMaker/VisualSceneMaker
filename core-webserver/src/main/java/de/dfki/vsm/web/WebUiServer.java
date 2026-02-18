@@ -855,6 +855,7 @@ public final class WebUiServer implements EventListener {
         } else {
             response.put("state", "stopped");
         }
+        addRuntimeCapabilities(response);
         writeJson(ctx, response);
     }
 
@@ -959,6 +960,7 @@ public final class WebUiServer implements EventListener {
         info.put("version", version);
         info.put("build", build);
         info.put("mode", mMode.name().toLowerCase());
+        addRuntimeCapabilities(info);
         writeJson(ctx, info);
     }
 
@@ -5694,6 +5696,9 @@ public final class WebUiServer implements EventListener {
                 if (query.isBlank()) {
                     return errorResponse("BAD_REQUEST", "Missing query");
                 }
+                if (!isLogicEnabled()) {
+                    return errorResponse("UNSUPPORTED_FEATURE", "Logic engine is disabled on this platform");
+                }
 
                 JSONObject response = new JSONObject();
                 response.put("status", "ok");
@@ -5704,6 +5709,7 @@ public final class WebUiServer implements EventListener {
                     sLogger.warning("Runtime.Query failed: " + exc.getMessage());
                 }
                 response.put("count", count);
+                addRuntimeCapabilities(response);
                 return response;
             }
 
@@ -8416,7 +8422,33 @@ public final class WebUiServer implements EventListener {
         JSONObject err = new JSONObject();
         err.put("error", code);
         err.put("message", message);
+        addRuntimeCapabilities(err);
         return err;
+    }
+
+    private boolean isLogicEnabled() {
+        return LogicEngines.get().isEnabled();
+    }
+
+    private String runtimePlatform() {
+        String forced = System.getProperty("vsm.platform", "").trim().toLowerCase();
+        if (!forced.isBlank()) {
+            return forced;
+        }
+        String vmName = System.getProperty("java.vm.name", "").toLowerCase();
+        String runtimeName = System.getProperty("java.runtime.name", "").toLowerCase();
+        if (vmName.contains("dalvik") || runtimeName.contains("android")) {
+            return "android";
+        }
+        return "desktop";
+    }
+
+    private void addRuntimeCapabilities(JSONObject target) {
+        if (target == null) {
+            return;
+        }
+        target.put("logicEnabled", isLogicEnabled());
+        target.put("platform", runtimePlatform());
     }
 
     private BasicNode findNodeRecursive(SuperNode parent, String nodeId) {
