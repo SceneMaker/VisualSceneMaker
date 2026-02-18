@@ -40,3 +40,23 @@ The guiding rule is: **core and plugins compile as Java 17**.
 ## Verification (planned)
 - Add a CI task to compile `:core` and `:plugins:*` with `--release 17`.
 - Add a compatibility note in plugin READMEs if they are desktop-only.
+
+## Next Step After Core Android Sanitization
+Once `:core` is sanitized for Android (no desktop-only APIs on portable paths), the next architectural phase is enabling a desktop web server/UI to connect to a remote core running on Android.
+
+Concrete implementation steps:
+1. Extract web server code from `:core` into a desktop adapter module (for example `:core-webserver`) that depends on `:core`.
+2. Define a stable runtime API contract (`core-api` DTOs) for commands, snapshots, and runtime events.
+3. Add a `RuntimeGateway` abstraction in `:core` for command execution and event streaming.
+4. Implement an Android-side gateway host (HTTP + WebSocket) in an Android `Service`.
+5. Implement a desktop remote gateway client and switch web server logic from direct in-memory runtime access to gateway calls.
+6. Keep dual-mode operation:
+   - Local mode (desktop): in-process gateway.
+   - Remote mode (desktop to Android): network gateway.
+7. Add reconnect/synchronization behavior:
+   - Initial full snapshot fetch.
+   - Ordered delta/event stream with sequence numbers.
+   - Snapshot re-fetch on sequence gaps.
+8. Add capability negotiation (for example logic engine disabled on Android) so desktop UI hides unsupported actions.
+9. Secure the connection (token auth, CORS policy, optional TLS).
+10. Add CI/integration tests for both local and remote modes.

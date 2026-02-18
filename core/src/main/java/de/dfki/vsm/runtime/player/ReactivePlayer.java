@@ -17,7 +17,7 @@ import de.dfki.vsm.event.event.SceneExecutedEvent;
 import de.dfki.vsm.event.event.SceneDoneEvent;
 import de.dfki.vsm.event.event.TurnExecutedEvent;
 import de.dfki.vsm.event.event.TurnDoneEvent;
-import de.dfki.vsm.util.jpl.JPLEngine;
+import de.dfki.vsm.runtime.logic.LogicEngines;
 
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -63,7 +63,7 @@ public final class ReactivePlayer extends RunTimePlayer {
         mLogger.message("Launching reactive player '" + this + "'");
         // Load the fact base
         if (mUseJPL) {
-            JPLEngine.load("swi/logic.pl");
+            LogicEngines.get().load("swi/logic.pl");
         }
     }
 
