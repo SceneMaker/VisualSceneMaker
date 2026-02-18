@@ -20,7 +20,7 @@ import de.dfki.vsm.runtime.interpreter.error.InterpreterError;
 import de.dfki.vsm.runtime.interpreter.error.SceneDoesNotExists;
 import de.dfki.vsm.runtime.interpreter.event.TerminationEvent;
 import de.dfki.vsm.runtime.interpreter.value.*;
-import de.dfki.vsm.util.jpl.JPLEngine;
+import de.dfki.vsm.runtime.logic.LogicEngines;
 import de.dfki.vsm.util.jpl.JPLResult;
 import de.dfki.vsm.util.jpl.JPLUtility;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
@@ -734,7 +734,7 @@ public final class Evaluator {
 
         //mLogger.warning("Executing Prolog Query '" + querystr + "'");
         // Make The Query To The KB
-        final JPLResult result = JPLEngine.query(querystr);
+        final JPLResult result = LogicEngines.get().query(querystr);
         final JPLResult clean = result.clean();
 
         // Check The Query Results

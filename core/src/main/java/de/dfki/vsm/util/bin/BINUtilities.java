@@ -4,7 +4,7 @@ package de.dfki.vsm.util.bin;
 
 //~--- JDK imports ------------------------------------------------------------
 
-import javax.xml.bind.DatatypeConverter;
+import java.util.Base64;
 
 /**
  * @author Gregor Mehlmann
@@ -212,12 +212,23 @@ public final class BINUtilities {
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
+    private static final char[] HEX_ALPHABET = "0123456789ABCDEF".toCharArray();
+
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
     public final static String BytesToHexString(final byte[] value) {
-        return DatatypeConverter.printHexBinary(value);
+        final char[] out = new char[value.length * 2];
+        for (int i = 0; i < value.length; i++) {
+            final int b = value[i] & 0xFF;
+            out[i * 2] = HEX_ALPHABET[b >>> 4];
+            out[i * 2 + 1] = HEX_ALPHABET[b & 0x0F];
+        }
+        return new String(out);
     }
 
     public final static String BytesToBase64String(final byte[] value) {
-        return DatatypeConverter.printBase64Binary(value);
+        return Base64.getEncoder().encodeToString(value);
     }
 
     ////////////////////////////////////////////////////////////////////////////

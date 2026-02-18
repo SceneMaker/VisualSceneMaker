@@ -7,12 +7,10 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -25,7 +23,7 @@ public class LLMSupport {
 
     private static final LOGDefaultLogger sLogger = LOGDefaultLogger.getInstance();
 
-    private final HttpClient mHttpClient;
+    private final HttpTransport mHttpTransport;
     private final URI mBaseUri;
     private final String mApiKey;
     private final Duration mRequestTimeout;
@@ -33,23 +31,23 @@ public class LLMSupport {
     private volatile Double mDefaultTemperature = null;
 
     public LLMSupport() {
-        this(defaultHttpClient(), "http://localhost:8234/v1/", null, Duration.ofSeconds(30));
+        this(defaultHttpTransport(), "http://localhost:8234/v1/", null, Duration.ofSeconds(30));
     }
 
     public LLMSupport(String baseUrl) {
-        this(defaultHttpClient(), baseUrl, null, Duration.ofSeconds(30));
+        this(defaultHttpTransport(), baseUrl, null, Duration.ofSeconds(30));
     }
 
     public LLMSupport(String baseUrl, Duration requestTimeout) {
-        this(defaultHttpClient(), baseUrl, null, requestTimeout);
+        this(defaultHttpTransport(), baseUrl, null, requestTimeout);
     }
 
     public LLMSupport(String baseUrl, String apiKey, Duration requestTimeout) {
-        this(defaultHttpClient(), baseUrl, apiKey, requestTimeout);
+        this(defaultHttpTransport(), baseUrl, apiKey, requestTimeout);
     }
 
-    public LLMSupport(HttpClient httpClient, String baseUrl, String apiKey, Duration requestTimeout) {
-        this.mHttpClient = Objects.requireNonNull(httpClient, "httpClient");
+    public LLMSupport(HttpTransport httpTransport, String baseUrl, String apiKey, Duration requestTimeout) {
+        this.mHttpTransport = Objects.requireNonNull(httpTransport, "httpTransport");
         String normalized = Objects.requireNonNull(baseUrl, "baseUrl");
         if (!normalized.endsWith("/")) {
             normalized = normalized + "/";
@@ -64,11 +62,11 @@ public class LLMSupport {
      */
     public List<LLMModel> fetchAvailableModels() throws IOException, InterruptedException {
         sLogger.message("Requesting LLM models from " + mBaseUri);
-        HttpRequest request = baseRequest("models")
-                .header("Accept", "application/json")
-                .GET()
-                .build();
-        HttpResponse<String> response = mHttpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        HttpTransport.HttpResponseData response = mHttpTransport.get(
+                mBaseUri.resolve("models"),
+                headers("Accept", "application/json"),
+                mRequestTimeout
+        );
         if (response.statusCode() >= 300) {
             throw new IOException("LLM /models failed: " + response.statusCode() + " - " + response.body());
         }
@@ -127,12 +125,15 @@ public class LLMSupport {
         }
         sLogger.message("Sending LLM prompt to model " + model.id());
         JSONObject payload = prompt.toJson(model.id(), mDefaultTemperature);
-        HttpRequest request = baseRequest("chat/completions")
-                .header("Content-Type", "application/json")
-                .header("Accept", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString(payload.toString()))
-                .build();
-        HttpResponse<String> response = mHttpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        HttpTransport.HttpResponseData response = mHttpTransport.postJson(
+                mBaseUri.resolve("chat/completions"),
+                payload.toString(),
+                headers(
+                        "Content-Type", "application/json",
+                        "Accept", "application/json"
+                ),
+                mRequestTimeout
+        );
         if (response.statusCode() >= 300) {
             throw new IOException("LLM chat completion failed: " + response.statusCode() + " - " + response.body());
         }
@@ -167,15 +168,15 @@ public class LLMSupport {
         return new LLMCompletion(modelId, content, Instant.ofEpochSecond(created), usage, body);
     }
 
-    private HttpRequest.Builder baseRequest(String path) {
-        URI target = mBaseUri.resolve(path);
-        HttpRequest.Builder builder = HttpRequest.newBuilder(target)
-                .timeout(mRequestTimeout)
-                .version(HttpClient.Version.HTTP_1_1);
-        if (mApiKey != null && !mApiKey.isBlank()) {
-            builder.header("Authorization", "Bearer " + mApiKey);
+    private Map<String, String> headers(String... keyValues) {
+        Map<String, String> headers = new LinkedHashMap<>();
+        for (int i = 0; i + 1 < keyValues.length; i += 2) {
+            headers.put(keyValues[i], keyValues[i + 1]);
         }
-        return builder;
+        if (mApiKey != null && !mApiKey.isBlank()) {
+            headers.put("Authorization", "Bearer " + mApiKey);
+        }
+        return headers;
     }
 
     public static String normalizeBaseUrl(String baseUrl, Integer port) {
@@ -211,11 +212,8 @@ public class LLMSupport {
         }
     }
 
-    private static HttpClient defaultHttpClient() {
-        return HttpClient.newBuilder()
-                .version(HttpClient.Version.HTTP_1_1)
-                .connectTimeout(Duration.ofSeconds(10))
-                .build();
+    private static HttpTransport defaultHttpTransport() {
+        return new JdkHttpTransport();
     }
 
     // --- Value types ---

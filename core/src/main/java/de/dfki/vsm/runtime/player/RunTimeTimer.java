@@ -1,6 +1,6 @@
 package de.dfki.vsm.runtime.player;
 
-import de.dfki.vsm.util.jpl.JPLEngine;
+import de.dfki.vsm.runtime.logic.LogicEngines;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 
 /**
@@ -73,7 +73,7 @@ public final class RunTimeTimer extends Thread {
                     = System.currentTimeMillis() - mStartupTime;
             if (mUserJPLEngine) {
                 // Assert the new time now
-                JPLEngine.query("retractall(now(_)),"
+                LogicEngines.get().query("retractall(now(_)),"
                         + "assertz(now(" + mCurrentTime + ")).");
             }
         }

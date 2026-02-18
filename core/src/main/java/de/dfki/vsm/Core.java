@@ -1,27 +1,18 @@
 package de.dfki.vsm;
 
-
-import de.dfki.vsm.event.EventDispatcher;
-import de.dfki.vsm.event.EventListener;
-import de.dfki.vsm.event.EventObject;
-import de.dfki.vsm.event.event.ForceShutdownEvent;
+import de.dfki.vsm.runtime.CoreRuntime;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Core {
     // Start the runtime with some project
     public static void runtime(final File file) {
-        // Get an editor project from file
-        final RunTimeProject runTimeProject = new RunTimeProject(file);
-        // Get the singleton runtime instance
-        //final RunTimeInstance sRunTime = RunTimeInstance.getInstance();
-        // Launch the runtime with the project
-        if (/*sRunTime.launch(runTimeProject)*/runTimeProject.launch()) {
+        final CoreRuntime runtime = new CoreRuntime(new RunTimeProject(file));
+        if (runtime.launch()) {
             // Start the runtime with the project
-            if (/*sRunTime.start(runTimeProject)*/runTimeProject.start()) {
+            if (runtime.start()) {
                 // Wait until user aborts execution
                 System.err.println("Press Key To Abort ...");
                 // TODO: Stop waiting if execution
@@ -31,45 +22,15 @@ public class Core {
                     if (in != -1) {
                         // Aborting the execution now
                     } else { // For the case there is no access to System.in
-                        ProjectTerminationWaiter waiter = new ProjectTerminationWaiter(runTimeProject);
-                        waiter.waitTillFinished();
+                        runtime.waitTillFinished();
                     }
 
                 } catch (final IOException | InterruptedException exc) {
                     // Do nothing
                 } finally {
-                    // Abort the runtime with the project
-                    //sRunTime.abort(runTimeProject);
-                    runTimeProject.abort();
-                    // Unload the project from the runtime
-                    //sRunTime.unload(runTimeProject);
-                    runTimeProject.unload();
+                    runtime.shutdown();
                 }
 
-            }
-        }
-    }
-
-
-    private static class ProjectTerminationWaiter implements EventListener {
-        private final RunTimeProject runTimeProject;
-        private final AtomicBoolean isRunning = new AtomicBoolean(true);
-
-        private ProjectTerminationWaiter(RunTimeProject runTimeProject){
-            EventDispatcher.getInstance().register(this);
-            this.runTimeProject = runTimeProject;
-        }
-        @Override
-        public synchronized void update(EventObject event) {
-            if(event instanceof ForceShutdownEvent) {
-                isRunning.set(false);
-            }
-        }
-
-        public void waitTillFinished() throws InterruptedException {
-            while (isRunning.get()) {
-                Thread.sleep(200);
-                isRunning.compareAndSet(true, runTimeProject.isRunning());
             }
         }
     }

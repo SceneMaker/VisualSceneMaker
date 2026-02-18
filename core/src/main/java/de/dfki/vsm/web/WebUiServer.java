@@ -95,6 +95,7 @@ import de.dfki.vsm.event.event.TurnExecutedEvent;
 import de.dfki.vsm.event.event.TurnDoneEvent;
 import de.dfki.vsm.event.event.VariableChangedEvent;
 import de.dfki.vsm.model.scenescript.SceneTurn;
+import de.dfki.vsm.runtime.logic.LogicEngines;
 import de.dfki.vsm.runtime.interpreter.event.TerminationEvent;
 import de.dfki.vsm.util.tpl.Tuple;
 import de.dfki.vsm.runtime.interpreter.value.AbstractValue;
@@ -102,6 +103,8 @@ import de.dfki.vsm.runtime.interpreter.value.EventValue;
 import java.util.List;
 import java.util.ArrayList;
 import de.dfki.vsm.util.llm.LLMSupport;
+import de.dfki.vsm.util.llm.HttpTransport;
+import de.dfki.vsm.util.llm.JdkHttpTransport;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 import de.dfki.vsm.util.xml.XMLUtilities;
 import io.javalin.Javalin;
@@ -117,9 +120,6 @@ import org.reflections.util.ConfigurationBuilder;
 
 import java.net.URI;
 import java.net.URL;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -3342,16 +3342,13 @@ public final class WebUiServer implements EventListener {
             if (debug) {
                 payload.put("debug", true);
             }
-            HttpClient client = HttpClient.newBuilder()
-                    .connectTimeout(Duration.ofMillis(timeoutMs))
-                    .version(HttpClient.Version.HTTP_1_1)
-                    .build();
-            HttpRequest req = HttpRequest.newBuilder(URI.create(udUrl))
-                    .timeout(Duration.ofMillis(timeoutMs))
-                    .header("Content-Type", "application/json")
-                    .POST(HttpRequest.BodyPublishers.ofString(payload.toString()))
-                    .build();
-            HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString());
+            HttpTransport transport = new JdkHttpTransport();
+            HttpTransport.HttpResponseData resp = transport.postJson(
+                    URI.create(udUrl),
+                    payload.toString(),
+                    Map.of("Content-Type", "application/json"),
+                    Duration.ofMillis(timeoutMs)
+            );
             if (resp.statusCode() < 200 || resp.statusCode() >= 300) {
                 sLogger.warning("Semantic UD fallback: HTTP " + resp.statusCode() + " from " + udUrl);
                 return null;
@@ -5702,7 +5699,7 @@ public final class WebUiServer implements EventListener {
                 response.put("status", "ok");
                 int count = 0;
                 try {
-                    count = de.dfki.vsm.util.jpl.JPLEngine.query(query.trim()).size();
+                    count = LogicEngines.get().query(query.trim()).size();
                 } catch (Exception exc) {
                     sLogger.warning("Runtime.Query failed: " + exc.getMessage());
                 }
