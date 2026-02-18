@@ -1,0 +1,15 @@
+plugins {
+    id 'java'
+}
+
+group 'de.dfki.vsm'
+
+repositories {
+    mavenCentral()
+    maven { url "https://repo.spring.io/libs-release" }
+}
+
+dependencies {
+    implementation project(':core')
+    implementation group: 'jpl', name: 'jpl', version: '7.4.0'
+}

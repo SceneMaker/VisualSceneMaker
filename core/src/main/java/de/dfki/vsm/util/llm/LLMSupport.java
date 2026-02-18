@@ -213,7 +213,16 @@ public class LLMSupport {
     }
 
     private static HttpTransport defaultHttpTransport() {
-        return new JdkHttpTransport();
+        try {
+            Class<?> clazz = Class.forName("de.dfki.vsm.util.llm.JdkHttpTransport");
+            Object instance = clazz.getDeclaredConstructor().newInstance();
+            if (instance instanceof HttpTransport) {
+                return (HttpTransport) instance;
+            }
+        } catch (Throwable ignored) {
+            // Fall through to explicit error.
+        }
+        throw new IllegalStateException("No default HttpTransport available. Provide an explicit transport.");
     }
 
     // --- Value types ---
