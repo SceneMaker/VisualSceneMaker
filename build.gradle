@@ -16,6 +16,7 @@ subprojects {
         def isJava17Module = project.path == ':core'
                 || project.path == ':core-webserver'
                 || project.path == ':core-http-jdk'
+                || project.path == ':core-http-android'
                 || project.path == ':core-logic-jpl'
                 || project.path == ':runtime-server'
                 || project.path.startsWith(':plugins:')
@@ -132,6 +133,23 @@ tasks.named('processResources') {
 
 tasks.named('build') {
     dependsOn ':core-webserver:syncWebUi'
+}
+
+tasks.register('verifyPortableCore') {
+    group = 'verification'
+    description = 'Runs portability guard checks for the core module.'
+    dependsOn ':core:verifyPortableCoreApis'
+}
+
+tasks.register('verifyAndroidPortable') {
+    group = 'verification'
+    description = 'Runs Android portability checks and compile gates for portable modules.'
+    dependsOn 'verifyPortableCore'
+    dependsOn ':core-http-android:verifyAndroidPortableApis'
+    dependsOn ':plugins:AndroidGui:verifyAndroidPortableApis'
+    dependsOn ':core:compileJava'
+    dependsOn ':core-http-android:compileJava'
+    dependsOn ':plugins:AndroidGui:compileJava'
 }
 
 tasks.register('generateIcns') {

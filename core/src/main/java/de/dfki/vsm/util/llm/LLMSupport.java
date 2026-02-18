@@ -14,6 +14,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Supplier;
 
 /**
  * Lightweight helper that talks to an LM Studio (or OpenAI-compatible) REST endpoint.
@@ -22,6 +23,7 @@ import java.util.Objects;
 public class LLMSupport {
 
     private static final LOGDefaultLogger sLogger = LOGDefaultLogger.getInstance();
+    private static volatile Supplier<HttpTransport> sDefaultTransportFactory = null;
 
     private final HttpTransport mHttpTransport;
     private final URI mBaseUri;
@@ -213,6 +215,10 @@ public class LLMSupport {
     }
 
     private static HttpTransport defaultHttpTransport() {
+        Supplier<HttpTransport> factory = sDefaultTransportFactory;
+        if (factory != null) {
+            return Objects.requireNonNull(factory.get(), "default HttpTransport factory returned null");
+        }
         try {
             Class<?> clazz = Class.forName("de.dfki.vsm.util.llm.JdkHttpTransport");
             Object instance = clazz.getDeclaredConstructor().newInstance();
@@ -223,6 +229,10 @@ public class LLMSupport {
             // Fall through to explicit error.
         }
         throw new IllegalStateException("No default HttpTransport available. Provide an explicit transport.");
+    }
+
+    public static void setDefaultTransportFactory(Supplier<HttpTransport> factory) {
+        sDefaultTransportFactory = factory;
     }
 
     // --- Value types ---
