@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<SceneFlow id="" name="" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Wed, 18 Feb 2026 16:49:14" start="N1;N3;S1;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
+<SceneFlow id="" name="" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Thu, 19 Feb 2026 19:10:24" start="N1;N3;S1;S2;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
   <Define>
   </Define>
   <Declare>
@@ -11,6 +11,14 @@
     </VariableDefinition>
     <VariableDefinition type="String" name ="message">
       <StringLiteral><![CDATA[]]></StringLiteral>
+    </VariableDefinition>
+    <VariableDefinition type="String" name ="inputField">
+      <StringLiteral><![CDATA[]]></StringLiteral>
+    </VariableDefinition>
+    <VariableDefinition type="String" name ="submitButton">
+      <StringLiteral><![CDATA[]]></StringLiteral>
+    </VariableDefinition>
+    <VariableDefinition type="Event" name ="UIEvent">
     </VariableDefinition>
   </Declare>
   <Commands>
@@ -30,17 +38,23 @@
       <PlayAction mode="Default">
         <StringLiteral><![CDATA[[time init id=one]]]></StringLiteral>
       </PlayAction>
+      <PlayAction mode="Default">
+        <StringLiteral><![CDATA[[phone show name='Simple Project Started']]]></StringLiteral>
+      </PlayAction>
+      <PlayAction mode="Default">
+        <StringLiteral><![CDATA[[phone setval id=messageLabel value='Runtime started']]]></StringLiteral>
+      </PlayAction>
     </Commands>
-    <TEdge target="N2" start="" timeout="370">
+    <TEdge target="N2" start="" timeout="1210">
       <Graphics>
         <Connection>
-          <ControlPoint xPos="210" yPos="255" ctrlXPos="278" ctrlYPos="255"/>
-          <ControlPoint xPos="390" yPos="255" ctrlXPos="323" ctrlYPos="255"/>
+          <ControlPoint xPos="300" yPos="255" ctrlXPos="458" ctrlYPos="255"/>
+          <ControlPoint xPos="660" yPos="255" ctrlXPos="503" ctrlYPos="255"/>
         </Connection>
       </Graphics>
     </TEdge>
     <Graphics>
-      <Position xPos="120" yPos="210"/>
+      <Position xPos="210" yPos="210"/>
     </Graphics>
   </Node>
   <Node id="N2" name="Increase" history="false">
@@ -61,17 +75,23 @@
           </Add>
         </Expression>
       </Assignment>
+      <PlayAction mode="Default">
+        <StringLiteral><![CDATA[[phone setvar id=counterLabel value=cnt]]]></StringLiteral>
+      </PlayAction>
+      <PlayAction mode="Default">
+        <StringLiteral><![CDATA[[phone setvar id=messageLabel value=time]]]></StringLiteral>
+      </PlayAction>
     </Commands>
-    <TEdge target="N1" start="" timeout="470">
+    <TEdge target="N2" start="" timeout="18420">
       <Graphics>
         <Connection>
-          <ControlPoint xPos="392" yPos="243" ctrlXPos="328" ctrlYPos="225"/>
-          <ControlPoint xPos="208" yPos="243" ctrlXPos="273" ctrlYPos="225"/>
+          <ControlPoint xPos="737" yPos="223" ctrlXPos="814" ctrlYPos="155"/>
+          <ControlPoint xPos="673" yPos="223" ctrlXPos="687" ctrlYPos="145"/>
         </Connection>
       </Graphics>
     </TEdge>
     <Graphics>
-      <Position xPos="390" yPos="210"/>
+      <Position xPos="660" yPos="210"/>
     </Graphics>
   </Node>
   <Node id="N3" name="Start" history="false">
@@ -84,13 +104,13 @@
     <EEdge target="N4" start ="">
     <Graphics>
       <Connection>
-        <ControlPoint xPos="210" yPos="435" ctrlXPos="278" ctrlYPos="435"/>
-        <ControlPoint xPos="390" yPos="435" ctrlXPos="323" ctrlYPos="435"/>
+        <ControlPoint xPos="300" yPos="435" ctrlXPos="368" ctrlYPos="435"/>
+        <ControlPoint xPos="480" yPos="435" ctrlXPos="413" ctrlYPos="435"/>
       </Connection>
     </Graphics>
     </EEdge>
     <Graphics>
-      <Position xPos="120" yPos="390"/>
+      <Position xPos="210" yPos="390"/>
     </Graphics>
   </Node>
   <Node id="N4" name="Decrease" history="false">
@@ -108,17 +128,26 @@
           </Sub>
         </Expression>
       </Assignment>
+      <Assignment>
+        <SimpleVariable name="message"/>
+        <Expression>
+          <Add>
+            <StringLiteral><![CDATA[Nachrichtenzähler ist ]]></StringLiteral>
+            <SimpleVariable name="cnt"/>
+          </Add>
+        </Expression>
+      </Assignment>
     </Commands>
     <TEdge target="N3" start="" timeout="1000">
       <Graphics>
         <Connection>
-          <ControlPoint xPos="392" yPos="423" ctrlXPos="328" ctrlYPos="405"/>
-          <ControlPoint xPos="208" yPos="423" ctrlXPos="273" ctrlYPos="405"/>
+          <ControlPoint xPos="482" yPos="423" ctrlXPos="418" ctrlYPos="405"/>
+          <ControlPoint xPos="298" yPos="423" ctrlXPos="363" ctrlYPos="405"/>
         </Connection>
       </Graphics>
     </TEdge>
     <Graphics>
-      <Position xPos="390" yPos="390"/>
+      <Position xPos="480" yPos="390"/>
     </Graphics>
   </Node>
   <Node id="N6" name="Done" history="false">
@@ -133,12 +162,37 @@
           <StringLiteral><![CDATA[I'm done]]></StringLiteral>
         </Expression>
       </Assignment>
+      <PlayAction mode="Default">
+        <StringLiteral><![CDATA[[phone setvar id=messageLabel value=message]]]></StringLiteral>
+      </PlayAction>
     </Commands>
     <Graphics>
-      <Position xPos="390" yPos="570"/>
+      <Position xPos="480" yPos="570"/>
     </Graphics>
   </Node>
-  <SuperNode id="S1" name="cnt > 3" comment="" hideLocalVar="false" hideGlobalVar="false" start="N5;">
+  <Node id="N10" name="Set UI label" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <PlayAction mode="Default">
+        <StringLiteral><![CDATA[[phone setvar id=messageLabel value=inputField]]]></StringLiteral>
+      </PlayAction>
+    </Commands>
+    <EEdge target="S2" start ="">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="480" yPos="795" ctrlXPos="413" ctrlYPos="795"/>
+        <ControlPoint xPos="300" yPos="795" ctrlXPos="368" ctrlYPos="795"/>
+      </Connection>
+    </Graphics>
+    </EEdge>
+    <Graphics>
+      <Position xPos="480" yPos="750"/>
+    </Graphics>
+  </Node>
+  <SuperNode id="S1" name="Wait" comment="" hideLocalVar="false" hideGlobalVar="false" start="N5;">
     <Define>
     </Define>
     <Declare>
@@ -148,8 +202,8 @@
     <IEdge target="N6" start="">
       <Graphics>
         <Connection>
-          <ControlPoint xPos="210" yPos="615" ctrlXPos="278" ctrlYPos="615"/>
-          <ControlPoint xPos="390" yPos="615" ctrlXPos="323" ctrlYPos="615"/>
+          <ControlPoint xPos="300" yPos="615" ctrlXPos="368" ctrlYPos="615"/>
+          <ControlPoint xPos="480" yPos="615" ctrlXPos="413" ctrlYPos="615"/>
         </Connection>
       </Graphics>
       <Gt>
@@ -158,7 +212,7 @@
       </Gt>
     </IEdge>
     <Graphics>
-      <Position xPos="120" yPos="570"/>
+      <Position xPos="210" yPos="570"/>
     </Graphics>
     <LocalVariableBadge>
       <Position xPos="10" yPos="10"/>
@@ -176,13 +230,61 @@
       <TEdge target="N5" start="" timeout="1000">
         <Graphics>
           <Connection>
-            <ControlPoint xPos="287" yPos="493" ctrlXPos="287" ctrlYPos="493"/>
-            <ControlPoint xPos="223" yPos="493" ctrlXPos="223" ctrlYPos="493"/>
+            <ControlPoint xPos="377" yPos="313" ctrlXPos="377" ctrlYPos="313"/>
+            <ControlPoint xPos="313" yPos="313" ctrlXPos="313" ctrlYPos="313"/>
           </Connection>
         </Graphics>
       </TEdge>
       <Graphics>
-        <Position xPos="210" yPos="480"/>
+        <Position xPos="300" yPos="300"/>
+      </Graphics>
+    </Node>
+  </SuperNode>
+  <SuperNode id="S2" name="Handling UI events" comment="" hideLocalVar="false" hideGlobalVar="false" start="N11;">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <IEdge target="N10" start="">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="300" yPos="807" ctrlXPos="368" ctrlYPos="825"/>
+          <ControlPoint xPos="482" yPos="807" ctrlXPos="418" ctrlYPos="825"/>
+        </Connection>
+      </Graphics>
+      <Eq>
+        <SimpleVariable name="UIEvent"/>
+        <StringLiteral><![CDATA[submitButton]]></StringLiteral>
+      </Eq>
+    </IEdge>
+    <Graphics>
+      <Position xPos="210" yPos="750"/>
+    </Graphics>
+    <LocalVariableBadge>
+      <Position xPos="10" yPos="10"/>
+    </LocalVariableBadge>
+    <GlobalVariableBadge>
+      <Position xPos="10" yPos="10"/>
+    </GlobalVariableBadge>
+    <Node id="N11" name="Node N11" history="false">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+      </Commands>
+      <TEdge target="N11" start="" timeout="1000">
+        <Graphics>
+          <Connection>
+            <ControlPoint xPos="557" yPos="223" ctrlXPos="557" ctrlYPos="223"/>
+            <ControlPoint xPos="493" yPos="223" ctrlXPos="493" ctrlYPos="223"/>
+          </Connection>
+        </Graphics>
+      </TEdge>
+      <Graphics>
+        <Position xPos="480" yPos="210"/>
       </Graphics>
     </Node>
   </SuperNode>

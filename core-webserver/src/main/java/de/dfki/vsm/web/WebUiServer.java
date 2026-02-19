@@ -195,6 +195,7 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
                 plugin.put("className", pluginMeta.optString("className", className));
                 plugin.put("description", pluginMeta.optString("description", ""));
                 plugin.put("tags", pluginMeta.optJSONArray("tags") != null ? pluginMeta.optJSONArray("tags") : new JSONArray());
+                plugin.put("androidCompatible", pluginMeta.optBoolean("androidCompatible", false));
             } else {
                 // Derive from className
                 String simpleName = className.contains(".") ? className.substring(className.lastIndexOf('.') + 1) : className;
@@ -203,6 +204,7 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
                 plugin.put("className", className);
                 plugin.put("description", "");
                 plugin.put("tags", new JSONArray());
+                plugin.put("androidCompatible", false);
             }
             out.put("plugin", plugin);
 
@@ -2470,6 +2472,7 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
             RecentProjectStats stats = computeRecentProjectStats(path);
             if (stats != null) {
                 entry.put("stats", stats.toJson());
+                entry.put("androidProject", stats.androidProject);
             }
             recent.put(entry);
         }
@@ -2483,6 +2486,7 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         private int nodes;
         private int commands;
         private int scenes;
+        private boolean androidProject;
         private List<RecentSceneLanguageInfo> sceneLanguages = new ArrayList<>();
         private List<RecentPluginInfo> plugins = new ArrayList<>();
 
@@ -2492,6 +2496,7 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
             json.put("nodes", nodes);
             json.put("commands", commands);
             json.put("scenes", scenes);
+            json.put("androidProject", androidProject);
             JSONArray sceneLanguagesArray = new JSONArray();
             for (RecentSceneLanguageInfo language : sceneLanguages) {
                 sceneLanguagesArray.put(language.toJson());
@@ -2556,6 +2561,9 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
             }
             RecentProjectStats stats = new RecentProjectStats();
             ProjectConfig config = runtimeProject.getProjectConfig();
+            if (config != null) {
+                stats.androidProject = config.isAndroidProject();
+            }
             if (config != null && config.getPluginConfigList() != null) {
                 Set<String> seen = new HashSet<>();
                 for (PluginConfig plugin : config.getPluginConfigList()) {
@@ -3087,6 +3095,11 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
             entry.put("dirty", ref.dirty);
             entry.put("pending", false);
             entry.put("runtimeState", ref.runtimeState);
+            boolean androidProject = false;
+            if (ref.runtimeProject != null && ref.runtimeProject.getProjectConfig() != null) {
+                androidProject = ref.runtimeProject.getProjectConfig().isAndroidProject();
+            }
+            entry.put("androidProject", androidProject);
             list.put(entry);
         }
         response.put("projects", list);
@@ -3478,6 +3491,7 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         JSONObject cfgJson = new JSONObject();
         cfgJson.put("name", cfg.getProjectName());
         cfgJson.put("path", path == null ? "" : path);
+        cfgJson.put("androidProject", cfg.isAndroidProject());
         JSONArray pluginsJson = new JSONArray();
         Set<String> seenPlugins = new HashSet<>();
         for (PluginConfig plugin : cfg.getPluginConfigList()) {
@@ -3577,11 +3591,15 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
 
     private void applyProjectConfigFromJson(ProjectRef ref, ProjectConfig cfg, JSONObject configJson) {
         String name = configJson.optString("name", cfg.getProjectName());
+        boolean androidProject = configJson.has("androidProject")
+                ? configJson.optBoolean("androidProject", cfg.isAndroidProject())
+                : cfg.isAndroidProject();
         if (ref.runtimeProject != null) {
             ref.runtimeProject.setProjectName(name);
         } else {
             cfg.setProjectName(name);
         }
+        cfg.setAndroidProject(androidProject);
 
         JSONArray pluginsJson = configJson.optJSONArray("plugins");
         Map<String, PluginConfig> pluginByName = new HashMap<>();

@@ -4,6 +4,7 @@
     "id": "charamel-ws",
     "name": "Charamel WebSocket",
     "className": "de.dfki.vsm.xtension.charamelWs.charamelWsExecutor",
+    "androidCompatible": false,
     "description": "Interactive web-based virtual character",
     "tags": ["SIA", "web", "avatar", "virtual character"]
   },

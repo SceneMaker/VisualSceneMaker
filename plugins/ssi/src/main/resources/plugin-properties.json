@@ -4,6 +4,7 @@
     "id": "ssi",
     "name": "SSI",
     "className": "de.dfki.vsm.xtension.ssi.SSICmdExecutor",
+    "androidCompatible": true,
     "description": "Social signal analysis",
     "tags": ["analysis", "social signals"]
   },

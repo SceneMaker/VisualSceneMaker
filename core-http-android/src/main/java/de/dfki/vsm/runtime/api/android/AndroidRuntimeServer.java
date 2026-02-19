@@ -158,11 +158,13 @@ public final class AndroidRuntimeServer extends NanoWSD {
             JSONObject payload = new JSONObject();
             JSONArray projects = new JSONArray();
             JSONObject project = new JSONObject();
+            ProjectConfig cfg = endpoint.runtimeProject().getProjectConfig();
             project.put("projectId", endpoint.projectId());
             project.put("name", endpoint.projectName());
             project.put("path", endpoint.projectPath());
             project.put("dirty", false);
             project.put("pending", false);
+            project.put("androidProject", cfg != null && cfg.isAndroidProject());
             projects.put(project);
             payload.put("projects", projects);
             return jsonResponse(Response.Status.OK, payload);
@@ -456,6 +458,7 @@ public final class AndroidRuntimeServer extends NanoWSD {
         if (cfg == null) {
             cfgJson.put("name", "");
             cfgJson.put("path", path == null ? "" : path);
+            cfgJson.put("androidProject", false);
             cfgJson.put("plugins", new JSONArray());
             cfgJson.put("agents", new JSONArray());
             cfgJson.put("llms", new JSONArray());
@@ -471,6 +474,7 @@ public final class AndroidRuntimeServer extends NanoWSD {
 
         cfgJson.put("name", cfg.getProjectName() == null ? "" : cfg.getProjectName());
         cfgJson.put("path", path == null ? "" : path);
+        cfgJson.put("androidProject", cfg.isAndroidProject());
 
         JSONArray pluginsJson = new JSONArray();
         for (PluginConfig plugin : cfg.getPluginConfigList()) {

@@ -22,6 +22,8 @@ import java.util.*;
  * Created by Patrick
  */
 public class UserCueService extends ActivityExecutor {
+    private static final String DEFAULT_UM_DIR = ".";
+    private static final String DEFAULT_UM_FILE = "user-cue-log.json";
 
     // List of all users
     private JSONObject mUserProfiles = new JSONObject();
@@ -924,34 +926,21 @@ public class UserCueService extends ActivityExecutor {
 
     private void loadUserModel() {
         mLogger.message("Loading User Cue Service ...");
-
-        if ((mConfig.getProperty("umdir") != null) && (!mConfig.getProperty("umdir").isEmpty())) {
-            umDir = mConfig.getProperty("umdir");
-        } else {
-            mLogger.failure("<Feature key=\"umdir\" val=\"<directory>\"/> is not specified in VSM project file. Aborting!");
-            System.exit(0);
-        }
-        if ((mConfig.getProperty("umfile") != null) && (!mConfig.getProperty("umfile").isEmpty())) {
-            umFile = mConfig.getProperty("umfile");
-        } else {
-            mLogger.failure("<Feature key=\"umfile\" val=\"<file name>\"/> is not specified in VSM project file. Aborting!");
-            System.exit(0);
-        }
-
-        String umf = (mProject.getProjectPath() + File.separator + umDir + File.separator + umFile).replace("\\", "/");
+        final File userModelFile = resolveUserModelFile();
         String input = "";
         try {
-            BufferedReader br = new BufferedReader(new FileReader(umf));
-            StringBuilder sb = new StringBuilder();
-            String line = br.readLine();
-            while (line != null) {
-                sb.append(line);
-                line = br.readLine();
-                //mLogger.message("Raw input line: " + line);
+            try (BufferedReader br = new BufferedReader(new FileReader(userModelFile))) {
+                StringBuilder sb = new StringBuilder();
+                String line = br.readLine();
+                while (line != null) {
+                    sb.append(line);
+                    line = br.readLine();
+                    //mLogger.message("Raw input line: " + line);
+                }
+                input = sb.toString();
             }
-            input = sb.toString();
         } catch (FileNotFoundException e) {
-            mLogger.warning("No User Model found in " + umf + ", creating new.");
+            mLogger.warning("No User Model found in " + userModelFile.getAbsolutePath() + ", creating new.");
 
             // create first entry, with the first user - id 0
             //out object and user array object
@@ -964,7 +953,7 @@ public class UserCueService extends ActivityExecutor {
 
             input = jsonOut.toString();
         } catch (Exception e) {
-            e.printStackTrace();
+            mLogger.failure("Error loading user model from " + userModelFile.getAbsolutePath() + ": " + e.getMessage());
         }
 
         //mLogger.message("Raw input: " + input);
@@ -979,18 +968,41 @@ public class UserCueService extends ActivityExecutor {
     }
 
     private synchronized void saveUserModel() {
-        String umf = (mProject.getProjectPath() + File.separator + umDir + File.separator + umFile).replace("\\", "/");
+        final File userModelFile = resolveUserModelFile();
         synchronized (mUserProfiles) {
-            try {
-                FileWriter umfw = new FileWriter(umf);
-
+            try (FileWriter umfw = new FileWriter(userModelFile)) {
                 umfw.write(mUserProfiles.toString());
                 umfw.flush();
-                umfw.close();
             } catch (IOException e) {
-                mLogger.failure("Error writing UM to " + umf);
+                mLogger.failure("Error writing UM to " + userModelFile.getAbsolutePath());
             }
         }
+    }
+
+    private File resolveUserModelFile() {
+        final String configuredDir = mConfig.getProperty("umdir");
+        final String configuredFile = mConfig.getProperty("umfile");
+
+        umDir = (configuredDir == null || configuredDir.trim().isEmpty())
+                ? DEFAULT_UM_DIR : configuredDir.trim();
+        umFile = (configuredFile == null || configuredFile.trim().isEmpty())
+                ? DEFAULT_UM_FILE : configuredFile.trim();
+
+        if (configuredDir == null || configuredDir.trim().isEmpty()) {
+            mLogger.warning("UserCueService: 'umdir' missing, using default '.'");
+        }
+        if (DEFAULT_UM_FILE.equals(umFile) && (configuredFile == null || configuredFile.trim().isEmpty())) {
+            mLogger.warning("UserCueService: 'umfile' missing, using default '" + DEFAULT_UM_FILE + "'");
+        }
+
+        final String projectPath = mProject.getProjectPath() == null || mProject.getProjectPath().trim().isEmpty()
+                ? "." : mProject.getProjectPath();
+        final File baseDir = new File(projectPath);
+        final File targetDir = DEFAULT_UM_DIR.equals(umDir) ? baseDir : new File(baseDir, umDir);
+        if (!targetDir.exists() && !targetDir.mkdirs()) {
+            mLogger.failure("UserCueService: cannot create directory '" + targetDir.getAbsolutePath() + "'");
+        }
+        return new File(targetDir, umFile);
     }
 
     @Override

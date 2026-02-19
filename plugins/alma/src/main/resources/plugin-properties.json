@@ -4,6 +4,7 @@
     "id": "alma",
     "name": "ALMA",
     "className": "de.dfki.vsm.xtension.alma.ALMAExecutor",
+    "androidCompatible": false,
     "description": "Simulation of emotions, mood based on appraisal and personality values",
     "tags": ["emotion", "affective computing"]
   },

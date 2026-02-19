@@ -4,6 +4,7 @@
     "id": "htmlgui-ws",
     "name": "HTML GUI /statusWebSocket",
     "className": "de.dfki.vsm.xtension.responsiveweb.HtmlGuiWsExecutor",
+    "androidCompatible": false,
     "description": "Versatile HTML GUI with agent-based control via WebSocket",
     "tags": ["html gui", "web-based interaction controls"]
   },

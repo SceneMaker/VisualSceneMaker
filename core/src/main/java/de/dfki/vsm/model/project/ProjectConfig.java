@@ -41,6 +41,8 @@ public final class ProjectConfig implements ModelObject {
     private final ConfigElement mSemanticServices;
     // Scene title concept list for scene title generator
     private final ConfigElement mSceneTitleConcepts;
+    // Android project flag (portable/runtime-oriented project profile)
+    private boolean mAndroidProject;
 
     // Construct an empty project
     public ProjectConfig() {
@@ -62,6 +64,8 @@ public final class ProjectConfig implements ModelObject {
         mSceneTitleConcepts = new ConfigElement("SceneTitleConcepts", "Concept");
         // Initialize the player config
         mPlayerConfig = new PlayerConfig();
+        // Initialize Android project flag
+        mAndroidProject = false;
     }
 
     // Construct an empty project
@@ -108,6 +112,8 @@ public final class ProjectConfig implements ModelObject {
         mSceneTitleConcepts = sceneTitleConcepts;
         // Initialize the player config
         mPlayerConfig = player;
+        // Initialize Android project flag
+        mAndroidProject = false;
     }
 
     // Legacy signature without scene title concepts
@@ -204,10 +210,18 @@ public final class ProjectConfig implements ModelObject {
         return mSemanticServices;
     }
 
+    public final boolean isAndroidProject() {
+        return mAndroidProject;
+    }
+
+    public final void setAndroidProject(final boolean androidProject) {
+        mAndroidProject = androidProject;
+    }
+
     // Write the project configuration
     @Override
     public final void writeXML(final IOSIndentWriter stream) throws XMLWriteError {
-        stream.println("<Project name=\"" + mProjectName + "\">");
+        stream.println("<Project name=\"" + mProjectName + "\" androidProject=\"" + mAndroidProject + "\">");
         stream.push();
         // Write the plugin configurations
         stream.println("<Plugins>").push();
@@ -269,6 +283,7 @@ public final class ProjectConfig implements ModelObject {
         if (tag.equals("Project")) {
             // Get The Project Name
             mProjectName = element.getAttribute("name");
+            mAndroidProject = Boolean.parseBoolean(element.getAttribute("androidProject"));
             mPluginList.clear();
             mAgentList.clear();
             mLLMList.clear();
@@ -423,6 +438,7 @@ public final class ProjectConfig implements ModelObject {
 
         ProjectConfig copy = new ProjectConfig(mProjectName, plugins, agents, llms, llmPromptsCopy,
                 sceneTitleConceptsCopy, player);
+        copy.setAndroidProject(mAndroidProject);
         copy.getLLMSelections().getEntryList().clear();
         copy.getLLMSelections().getEntryList().addAll(llmSelectionsCopy.copyEntryList());
         copy.getSemanticServices().getEntryList().clear();

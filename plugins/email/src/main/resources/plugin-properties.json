@@ -4,6 +4,7 @@
     "id": "email",
     "name": "Email",
     "className": "de.dfki.vsm.xtension.email.GMailExecutor",
+    "androidCompatible": false,
     "description": "Send Emails via Gmail SMTP",
     "tags": ["email", "communication"]
   },

@@ -4,7 +4,10 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
+import android.text.Editable;
+import android.text.TextWatcher;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -13,6 +16,10 @@ import de.dfki.vsm.runtime.api.android.AndroidRuntimeEndpoint;
 import de.dfki.vsm.runtime.api.android.AndroidRuntimeServer;
 import de.dfki.vsm.runtime.bootstrap.PlatformBootstrap;
 import de.dfki.vsm.runtime.interpreter.value.AbstractValue;
+import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
+import de.dfki.vsm.xtension.androidGui.AndroidActivity;
+import de.dfki.vsm.xtension.androidGui.AndroidGuiExecutor;
+import de.dfki.vsm.xtension.androidGui.AndroidLabel;
 import org.json.JSONObject;
 
 import java.io.File;
@@ -39,11 +46,16 @@ public class MainActivity extends AppCompatActivity {
 
     private TextView statusText;
     private TextView logText;
+    private TextView counterLabel;
+    private TextView messageLabel;
+    private EditText inputField;
+    private Button submitButton;
 
     private CoreRuntime runtime;
     private AndroidRuntimeEndpoint runtimeEndpoint;
     private AndroidRuntimeServer runtimeServer;
     private Runnable monitorTask;
+    private boolean androidGuiBound;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,6 +64,10 @@ public class MainActivity extends AppCompatActivity {
 
         statusText = findViewById(R.id.statusText);
         logText = findViewById(R.id.logText);
+        counterLabel = findViewById(R.id.counterLabel);
+        messageLabel = findViewById(R.id.messageLabel);
+        inputField = findViewById(R.id.inputField);
+        submitButton = findViewById(R.id.submitButton);
         Button startButton = findViewById(R.id.startButton);
         Button stopButton = findViewById(R.id.stopButton);
 
@@ -122,6 +138,7 @@ public class MainActivity extends AppCompatActivity {
         if (runtime == null) {
             runtime = new CoreRuntime(projectDir);
             runtimeEndpoint = new AndroidRuntimeEndpoint(runtime, projectDir);
+            bindAndroidGuiBridge();
         }
 
         if (runtimeServer == null) {
@@ -130,6 +147,99 @@ public class MainActivity extends AppCompatActivity {
             appendLogFromWorker("Android runtime server listening on port 8091.");
             appendLogFromWorker("From desktop: adb forward tcp:8091 tcp:8091");
             appendLogFromWorker("Then open Web UI against http://127.0.0.1:8091");
+        }
+    }
+
+    private void bindAndroidGuiBridge() {
+        if (runtime == null || runtime.getRunTimeProject() == null || androidGuiBound) {
+            return;
+        }
+        final ActivityExecutor executor = runtime.getRunTimeProject().getAgentDevice("phone");
+        if (!(executor instanceof AndroidGuiExecutor)) {
+            appendLogFromWorker("AndroidGuiExecutor not loaded for agent 'phone'.");
+            return;
+        }
+        final AndroidGuiExecutor guiExecutor = (AndroidGuiExecutor) executor;
+        final AndroidActivity androidActivity = guiExecutor.getActivity("phone");
+        guiExecutor.bindLauncher(name -> appendLogFromWorker("Android GUI show: " + name));
+
+        final TextView counterView = counterLabel;
+        if (counterView != null) {
+            androidActivity.getLabels().put("counterLabel", new AndroidLabel() {
+                @Override
+                public void accept(String value) {
+                    mainHandler.post(() -> counterView.setText(value == null ? "" : value));
+                }
+            });
+        }
+
+        final TextView messageView = messageLabel;
+        if (messageView != null) {
+            androidActivity.getLabels().put("messageLabel", new AndroidLabel() {
+                @Override
+                public void accept(String value) {
+                    mainHandler.post(() -> messageView.setText(value == null ? "" : value));
+                }
+            });
+        }
+
+        final EditText inputView = inputField;
+        if (inputView != null) {
+            if (androidActivity.getEditFields().containsKey("inputField")) {
+                androidActivity.getEditFields().get("inputField").setText = value ->
+                        mainHandler.post(() -> {
+                            final String next = value == null ? "" : value;
+                            final String current = inputView.getText() == null ? "" : inputView.getText().toString();
+                            if (!next.equals(current)) {
+                                inputView.setText(next);
+                                inputView.setSelection(next.length());
+                            }
+                        });
+            }
+            inputView.addTextChangedListener(new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                }
+
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                }
+
+                @Override
+                public void afterTextChanged(Editable s) {
+                    pushInputFieldToRuntime(androidActivity, s == null ? "" : s.toString());
+                }
+            });
+            inputView.setOnFocusChangeListener((v, hasFocus) -> {
+                if (!hasFocus) {
+                    pushInputFieldToRuntime(androidActivity, inputView.getText() == null ? "" : inputView.getText().toString());
+                }
+            });
+        }
+
+        final Button submitView = submitButton;
+        if (submitView != null && androidActivity.getButtons().containsKey("submitButton")) {
+            androidActivity.getButtons().get("submitButton").setText = text ->
+                    mainHandler.post(() -> submitView.setText(text == null ? "" : text));
+            submitView.setOnClickListener(v -> {
+                if (inputView != null) {
+                    pushInputFieldToRuntime(androidActivity,
+                            inputView.getText() == null ? "" : inputView.getText().toString());
+                }
+                if (androidActivity.getButtons().get("submitButton").onClick != null) {
+                    androidActivity.getButtons().get("submitButton").onClick.accept(null);
+                }
+            });
+        }
+
+        androidGuiBound = true;
+        appendLogFromWorker("AndroidGui bridge bound for agent 'phone'.");
+    }
+
+    private void pushInputFieldToRuntime(AndroidActivity androidActivity, String value) {
+        if (androidActivity.getEditFields().containsKey("inputField")
+                && androidActivity.getEditFields().get("inputField").textChanged != null) {
+            androidActivity.getEditFields().get("inputField").textChanged.accept(value == null ? "" : value);
         }
     }
 

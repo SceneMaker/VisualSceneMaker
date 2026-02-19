@@ -4,6 +4,7 @@
     "id": "DriveSimulator",
     "name": "Drive Simulator",
     "className": "de.dfki.vsm.xtension.DriveSimulator.DriveSimulatorExecutor",
+    "androidCompatible": false,
     "description": "Driving simulator integration",
     "tags": ["simulator", "driving"]
   },

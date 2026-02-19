@@ -58,23 +58,3 @@ tasks.register('verifyAndroidPortableApis') {
 tasks.named('check') {
     dependsOn tasks.named('verifyAndroidPortableApis')
 }
-
-jar {
-    doFirst {
-        project.ext.set('flavor', 'android')
-        project.ext.set('buildInfo', 'android')
-    }
-
-    from {
-        (configurations.runtimeClasspath).collect {
-            it.isDirectory() ? it : zipTree(it)
-        }
-    }
-    manifest {
-        attributes(
-                'Main-Class': 'de.dfki.vsm.Core'
-
-        )
-    }
-    duplicatesStrategy = 'exclude'
-}

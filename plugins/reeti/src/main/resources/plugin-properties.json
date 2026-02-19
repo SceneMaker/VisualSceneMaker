@@ -4,6 +4,7 @@
     "id": "reeti",
     "name": "Reeti",
     "className": "de.dfki.vsm.xtension.reeti.ReetiExecutor",
+    "androidCompatible": false,
     "description": "Reeti robot head controller",
     "tags": ["robot", "head", "physical agent"]
   },

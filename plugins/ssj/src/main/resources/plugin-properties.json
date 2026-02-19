@@ -4,6 +4,7 @@
     "id": "ssj",
     "name": "SSJ",
     "className": "de.dfki.vsm.xtension.ssj.SSJExecutor",
+    "androidCompatible": true,
     "description": "Mobile social signal analysis",
     "tags": ["analysis", "social signals", "mobile"]
   },

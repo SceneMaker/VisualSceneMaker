@@ -4,6 +4,7 @@
     "id": "voicetts",
     "name": "Voice TTS Stream",
     "className": "de.dfki.vsm.xtension.voicetts.VoiceTtsExecutor",
+    "androidCompatible": false,
     "description": "Streaming TTS plugin using qwen3 stream-client-core",
     "tags": ["tts", "streaming", "viseme", "word-timing"]
   },

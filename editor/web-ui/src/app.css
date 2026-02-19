@@ -647,6 +647,16 @@ button.ghost.danger:active {
   flex: 1 1 auto;
 }
 
+.project-list button.android-project {
+  background: linear-gradient(135deg, #4f8a63 0%, #4f7fbf 56%, #5b8edc 100%);
+  border-color: #4f7fbf;
+}
+
+.project-list button.android-project.selected {
+  background: linear-gradient(135deg, #467b58 0%, #466faa 56%, #4f7fbf 100%);
+  border-color: #466faa;
+}
+
 .project-row-close {
   flex: 0 0 auto;
   padding: 0.55rem 0.7rem;
@@ -3927,6 +3937,22 @@ summary {
   gap: 0.35rem;
   font-size: 0.85rem;
   color: var(--muted);
+}
+
+.project-config-android-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+}
+
+.project-config-toggle--checkbox-end {
+  gap: 0.45rem;
+  white-space: nowrap;
+}
+
+.project-config-android-row .project-config-meta {
+  margin-left: auto;
 }
 
 .project-config-table {

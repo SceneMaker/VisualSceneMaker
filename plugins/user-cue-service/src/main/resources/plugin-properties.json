@@ -4,6 +4,7 @@
     "id": "user-cue-service",
     "name": "User Cue Service",
     "className": "de.dfki.vsm.xtension.service.UserCueService",
+    "androidCompatible": true,
     "description": "General service for storing timecoded interaction based cues",
     "tags": ["user cues", "interaction","timecode", "diary"]
   },
@@ -36,8 +37,8 @@
   "config": {
     "required": [],
     "optional": [
-      { "name": "umdir", "type": "string", "description": "User model directory" },
-      { "name": "umfile", "type": "string", "description": "User model file" }
+      { "name": "umdir", "type": "string", "default": ".", "description": "User model directory (default: project root)" },
+      { "name": "umfile", "type": "string", "default": "user-cue-log.json", "description": "User model file" }
     ]
   },
   "commands": [

@@ -4,6 +4,7 @@
     "id": "sockets",
     "name": "Sockets",
     "className": "de.dfki.vsm.xtension.sockets.SocketsExecutor",
+    "androidCompatible": true,
     "description": "Generic socket communication plugin",
     "tags": ["network", "communication"]
   },
