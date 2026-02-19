@@ -4,6 +4,7 @@
     "id": "qrwebcam",
     "name": "QR Webcam",
     "className": "de.dfki.vsm.xtension.qrwebcam.QRWebCamExecutor",
+    "androidCompatible": false,
     "description": "QR code scanning via webcam",
     "tags": ["webcam", "QR code", "input"]
   },

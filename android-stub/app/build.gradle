@@ -32,7 +32,7 @@ android {
 
     packaging {
         resources {
-            excludes += ['META-INF/*', 'META-INF/versions/**']
+            excludes += ['META-INF/*', 'META-INF/versions/**', 'plugin-properties.json']
         }
     }
 }
@@ -40,13 +40,14 @@ android {
 def repoRoot = file("${rootDir}/..")
 def coreLibsDir = file("${repoRoot}/core/build/libs")
 def timerLibsDir = file("${repoRoot}/plugins/timer/build/libs")
+def androidGuiLibsDir = file("${repoRoot}/plugins/AndroidGui/build/libs")
 def appLibsDir = file("${projectDir}/libs")
 def simpleProjectSourceDir = file("${repoRoot}/doc/SimpleProject")
 def simpleProjectAssetsDir = file("${projectDir}/src/main/assets/SimpleProject")
 
 tasks.register('buildVsmJars', Exec) {
     workingDir repoRoot
-    commandLine './gradlew', ':core:jar', ':core-http-android:jar', ':plugins:timer:jar'
+    commandLine './gradlew', ':core:jar', ':core-http-android:jar', ':plugins:timer:jar', ':plugins:AndroidGui:jar'
 }
 
 tasks.register('syncVsmJars') {
@@ -76,6 +77,18 @@ tasks.register('syncVsmJars') {
             from timerJar
             into appLibsDir
             rename { 'timer-plugin.jar' }
+        }
+
+        def androidGuiJar = androidGuiLibsDir.listFiles()?.find {
+            it.name.startsWith('AndroidGui-') && it.name.endsWith('.jar') && !it.name.contains('-sources') && !it.name.contains('-javadoc')
+        }
+        if (androidGuiJar == null) {
+            throw new GradleException("No AndroidGui jar found in ${androidGuiLibsDir}")
+        }
+        copy {
+            from androidGuiJar
+            into appLibsDir
+            rename { 'androidgui-plugin.jar' }
         }
 
         def androidHttpLibDir = file("${repoRoot}/core-http-android/build/libs")

@@ -4,6 +4,7 @@
     "id": "tricatworld",
     "name": "TriCat World",
     "className": "de.dfki.vsm.xtension.tricatworld.TriCatWorldExecutor",
+    "androidCompatible": false,
     "description": "TriCat Spaces VR integration",
     "tags": ["VR", "interface", "virtual world"]
   },

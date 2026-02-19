@@ -4,6 +4,7 @@
     "id": "timer",
     "name": "Timer",
     "className": "de.dfki.vsm.xtension.timer.TimerExecutor",
+    "androidCompatible": true,
     "description": "Measuring time. Generating specific time descriptions, e.g., part of day",
     "tags": ["timer", "time descriptions", "utility"]
   },

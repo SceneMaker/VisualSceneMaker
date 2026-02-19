@@ -46,6 +46,37 @@
             android:text="Stop" />
     </LinearLayout>
 
+    <TextView
+        android:id="@+id/counterLabel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:text="counterLabel"
+        android:textSize="14sp" />
+
+    <TextView
+        android:id="@+id/messageLabel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:text="messageLabel"
+        android:textSize="14sp" />
+
+    <EditText
+        android:id="@+id/inputField"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:hint="Type text for inputField variable"
+        android:singleLine="true" />
+
+    <Button
+        android:id="@+id/submitButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="submitButton" />
+
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"

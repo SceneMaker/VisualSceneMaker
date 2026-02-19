@@ -13,8 +13,14 @@ public class AndroidActivity {
     private Map<String, AndroidTextField> editMap = new HashMap<>();
     private Map<String, AndroidButton> buttonMap = new HashMap<>();
     private boolean initialized;
+    private final Consumer<String> uiEventPublisher;
 
     public AndroidActivity(String name, RunTimeProject mProject) {
+        this(name, mProject, null);
+    }
+
+    public AndroidActivity(String name, RunTimeProject mProject, Consumer<String> uiEventPublisher) {
+        this.uiEventPublisher = uiEventPublisher;
         AgentConfig agentConfig = mProject.getAgentConfig(name);
         if (agentConfig == null) {
             throw new NullPointerException("Android activity has no corresponding agent");
@@ -23,7 +29,10 @@ public class AndroidActivity {
         if (textFields != null) {
             String[] ids = textFields.split(",");
             for (String textField : ids) {
-                textMap.put(textField, null);
+                final String id = textField == null ? "" : textField.trim();
+                if (!id.isEmpty()) {
+                    textMap.put(id, null);
+                }
             }
         }
 
@@ -31,11 +40,14 @@ public class AndroidActivity {
         if (editFields != null) {
             String[] ids = editFields.split(",");
             for (String editField : ids) {
-                System.out.println(editField);
-                editMap.put(editField, new AndroidTextField(new Consumer<String>() {
+                final String id = editField == null ? "" : editField.trim();
+                if (id.isEmpty()) {
+                    continue;
+                }
+                editMap.put(id, new AndroidTextField(new Consumer<String>() {
                             @Override
                             public void accept(String s) {
-                                mProject.setVariable(editField, new StringValue(s));
+                                mProject.setVariable(id, new StringValue(s));
                             }
                         }, null)
                 );
@@ -46,10 +58,17 @@ public class AndroidActivity {
         if (buttons != null) {
             String[] ids = buttons.split(",");
             for (String button : ids) {
-                buttonMap.put(button, new AndroidButton(new Consumer<Void>() {
+                final String id = button == null ? "" : button.trim();
+                if (id.isEmpty()) {
+                    continue;
+                }
+                buttonMap.put(id, new AndroidButton(new Consumer<Void>() {
                     @Override
                     public void accept(Void aVoid) {
-                        mProject.setVariable(button, new StringValue(button));
+                        mProject.setVariable(id, new StringValue(id));
+                        if (AndroidActivity.this.uiEventPublisher != null) {
+                            AndroidActivity.this.uiEventPublisher.accept(id);
+                        }
                     }
                 }, null));
             }

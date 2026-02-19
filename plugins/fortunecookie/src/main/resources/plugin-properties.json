@@ -4,6 +4,7 @@
     "id": "fortunecookie",
     "name": "Fortune Cookie",
     "className": "de.dfki.vsm.xtension.fortunecookie.FortuneCookieExecutor",
+    "androidCompatible": true,
     "description": "QR code based fortune cookie generator",
     "tags": ["gimmick", "fortune cookie", "QR"]
   },

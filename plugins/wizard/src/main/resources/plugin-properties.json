@@ -4,6 +4,7 @@
     "id": "wizard",
     "name": "Wizard",
     "className": "de.dfki.vsm.xtension.wizard.WizardExecutor",
+    "androidCompatible": false,
     "description": "Wizard of Oz control interface",
     "tags": ["control", "wizard of oz"]
   },

@@ -4,6 +4,7 @@
     "id": "charamel",
     "name": "Charamel",
     "className": "de.dfki.vsm.xtension.charamel.CharamelExecutor",
+    "androidCompatible": false,
     "description": "Interactive web based virtual character (legacy)",
     "tags": ["SIA", "web", "avatar"]
   },

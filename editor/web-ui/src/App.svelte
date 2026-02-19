@@ -798,6 +798,8 @@
   let pluginInterfacesLoading = false;
   let pluginInterfacesError = "";
   let lastPluginInterfacesProjectId = "";
+  let androidCompatibleDeviceKeys = new Set();
+  let selectableAvailableDevices = [];
   let exportableKeyCache = {};
   let exportableKeyLoading = {};
   let exportableKeyError = {};
@@ -1268,6 +1270,28 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
           keyHintId(selectedProjectAgent?.device || "", "agent", activeProjectPlugin?.className || "")
         ]
       : "";
+  $: androidCompatibleDeviceKeys = new Set(
+    (Array.isArray(pluginInterfaces) ? pluginInterfaces : [])
+      .filter((entry) => entry?.plugin?.androidCompatible === true)
+      .flatMap((entry) => {
+        const className = (entry?.plugin?.className || "").trim();
+        const simple = simpleClassName(className);
+        return [className, simple];
+      })
+      .map((value) => String(value || "").trim().toLowerCase())
+      .filter(Boolean)
+  );
+  $: selectableAvailableDevices =
+    projectConfigView?.androidProject === true
+      ? availableDevices.filter((device) => isAndroidCompatibleDeviceClass(device?.className))
+      : availableDevices;
+  $: if (
+    projectConfigView?.androidProject === true &&
+    projectConfigNewPlugin.className &&
+    !isAndroidCompatibleDeviceClass(projectConfigNewPlugin.className)
+  ) {
+    projectConfigNewPlugin = { ...projectConfigNewPlugin, className: "" };
+  }
   $: if (
     projectConfigSelection?.type === "plugin" &&
     (projectConfigSelection.pluginIndex == null ||
@@ -3641,14 +3665,38 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
       availableDevices = list
         .map((device) => ({
           name: device?.name ?? "",
-          className: device?.className ?? ""
+          className: device?.className ?? "",
+          displayName: simpleClassName(device?.className ?? "")
         }))
-        .filter((device) => device.className);
+        .filter((device) => device.className)
+        .sort((a, b) => {
+          const byDisplay = String(a.displayName || "").localeCompare(String(b.displayName || ""), undefined, {
+            sensitivity: "base"
+          });
+          if (byDisplay !== 0) return byDisplay;
+          return String(a.className || "").localeCompare(String(b.className || ""), undefined, {
+            sensitivity: "base"
+          });
+        });
     } catch (err) {
       availableDevicesError = err.message || "Failed to load device list.";
     } finally {
       availableDevicesLoading = false;
     }
+  }
+
+  function simpleClassName(value) {
+    const text = String(value || "").trim();
+    if (!text) return "";
+    const parts = text.split(".");
+    return parts[parts.length - 1] || text;
+  }
+
+  function isAndroidCompatibleDeviceClass(className) {
+    const full = String(className || "").trim().toLowerCase();
+    if (!full) return false;
+    const simple = simpleClassName(full).toLowerCase();
+    return androidCompatibleDeviceKeys.has(full) || androidCompatibleDeviceKeys.has(simple);
   }
 
   function keyHintId(deviceName, scope, className = "") {
@@ -3789,6 +3837,14 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
     scheduleProjectConfigApply();
   }
 
+  function updateAndroidProject(value) {
+    projectConfigDraft = {
+      ...projectConfigDraft,
+      androidProject: value === true
+    };
+    scheduleProjectConfigApply();
+  }
+
   function updateSceneTitleConcepts(value) {
     const entries = String(value || "")
       .split(/\r?\n/)
@@ -3817,15 +3873,13 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
     if (!needle || !availableDevices?.length) return "";
     const match =
       availableDevices.find((device) => (device?.name || "").trim().toLowerCase() === needle) ||
-      availableDevices.find((device) => (device?.className || "").trim().toLowerCase() === needle);
+      availableDevices.find((device) => (device?.className || "").trim().toLowerCase() === needle) ||
+      availableDevices.find((device) => (device?.displayName || "").trim().toLowerCase() === needle);
     return match?.className || "";
   }
 
   function deriveDeviceNameFromClass(className) {
-    const trimmed = (className || "").trim();
-    if (!trimmed) return "";
-    const parts = trimmed.split(".");
-    return parts[parts.length - 1] || trimmed;
+    return simpleClassName(className);
   }
 
   function updatePluginField(index, field, value) {
@@ -6536,6 +6590,7 @@ Sentence:
     const safe = config || {};
     return {
       name: safe.name ?? "",
+      androidProject: safe.androidProject === true,
       path: safe.path ?? "",
       plugins: Array.isArray(safe.plugins)
         ? safe.plugins.map((plugin) => ({
@@ -11536,6 +11591,7 @@ Sentence:
             <button
               type="button"
               class:selected={project.projectId === selectedProjectId}
+              class:android-project={project.androidProject === true}
               on:click={() => openProjectFromLanding(project)}
             >
               <span>{project.name}</span>
@@ -11643,7 +11699,11 @@ Sentence:
             <p class="muted">No recent projects.</p>
           {:else}
             {#each recent as project}
-              <button type="button" on:click={() => openRecentProject(project)}>
+              <button
+                type="button"
+                class:android-project={project.androidProject === true || project?.stats?.androidProject === true}
+                on:click={() => openRecentProject(project)}
+              >
                 <div class="project-list-info">
                   <div class="project-list-header">
                     <div class="project-list-name">{project.name}</div>
@@ -14339,9 +14399,19 @@ Sentence:
                     value={projectConfigView.name}
                     on:input={(event) => updateProjectName(event.target.value)}
                   />
-                  <div class="project-config-meta">
-                    <span>{projectConfigPlugins.length} devices</span>
-                    <span>{projectConfigAgents.length} agents</span>
+                  <div class="project-config-android-row">
+                    <label class="project-config-toggle project-config-toggle--checkbox-end">
+                      <span>Android Project</span>
+                      <input
+                        type="checkbox"
+                        checked={projectConfigView.androidProject === true}
+                        on:change={(event) => updateAndroidProject(event.target.checked)}
+                      />
+                    </label>
+                    <div class="project-config-meta">
+                      <span>{projectConfigPlugins.length} devices</span>
+                      <span>{projectConfigAgents.length} agents</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -14586,7 +14656,7 @@ Sentence:
                     <select
                       id="device-module"
                       value={projectConfigNewPlugin.className}
-                      disabled={availableDevicesLoading || availableDevices.length === 0}
+                      disabled={availableDevicesLoading || selectableAvailableDevices.length === 0}
                       on:change={(event) => {
                         const className = event.target.value;
                         const derivedName = deriveDeviceNameFromClass(className);
@@ -14598,8 +14668,8 @@ Sentence:
                       }}
                     >
                       <option value="">Select module</option>
-                      {#each availableDevices as device}
-                        <option value={device.className}>{device.className}</option>
+                      {#each selectableAvailableDevices as device}
+                        <option value={device.className}>{device.displayName || device.className}</option>
                       {/each}
                     </select>
                     <label for="device-name">Name</label>
@@ -14657,7 +14727,7 @@ Sentence:
                         </label>)
                       </div>
                       <div class="project-config-panel-subtitle">
-                        {selectedProjectPlugin.className || "Unknown"}
+                        {simpleClassName(selectedProjectPlugin.className) || selectedProjectPlugin.className || "Unknown"}
                       </div>
                     </div>
                     <button

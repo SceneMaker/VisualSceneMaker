@@ -4,6 +4,7 @@
     "id": "unity",
     "name": "Unity",
     "className": "de.dfki.vsm.xtension.unity.UnityConnectionExecutor",
+    "androidCompatible": true,
     "description": "Unity3D integration for game engine-based virtual characters",
     "tags": ["game engine", "3D", "virtual character"]
   },

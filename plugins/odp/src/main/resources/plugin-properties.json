@@ -4,6 +4,7 @@
     "id": "odp",
     "name": "ODP",
     "className": "de.dfki.vsm.xtension.odp.ODPExecutor",
+    "androidCompatible": true,
     "description": "Open Dialog Platform integration",
     "tags": ["dialog", "NLU"]
   },

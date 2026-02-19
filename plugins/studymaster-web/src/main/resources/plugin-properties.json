@@ -4,6 +4,7 @@
     "id": "studymaster-web",
     "name": "StudyMaster Web",
     "className": "de.dfki.vsm.xtension.studymasterweb.WebStudyMasterExecutor",
+    "androidCompatible": false,
     "description": "Wizard of Oz interface for remote control VSM projects",
     "tags": ["control", "wizard of oz", "web"]
   },

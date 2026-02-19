@@ -13,9 +13,13 @@ For a full integration guide (including plugin packaging/loading), see:
   - `core` jar (renamed to `core-android.jar`)
   - `core-http-android` jar (renamed to `core-http-android.jar`)
   - `plugins/timer` jar (renamed to `timer-plugin.jar`)
+  - `plugins/AndroidGui` jar (renamed to `androidgui-plugin.jar`)
 - Starts the runtime with `CoreRuntime`.
 - Starts an embedded Android runtime HTTP/WS server from `core-http-android` on port `8091`.
 - Executes the project and shows live `cnt` and `time` variable values.
+- Demonstrates Android GUI roundtrip:
+  - SceneFlow updates `counterLabel` / `messageLabel`
+  - Android `inputField` and `submitButton` write back to SceneFlow variables
 
 ## Run in emulator
 
@@ -26,7 +30,7 @@ For a full integration guide (including plugin packaging/loading), see:
 
 The app build runs these tasks automatically before `preBuild`:
 
-- `buildVsmJars` (`../gradlew :core:jar :core-http-android:jar :plugins:timer:jar`)
+- `buildVsmJars` (`../gradlew :core:jar :core-http-android:jar :plugins:timer:jar :plugins:AndroidGui:jar`)
 - `syncVsmJars` (copies jars to `app/libs`)
 - `syncSimpleProjectAssets` (copies project XML files)
 

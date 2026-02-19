@@ -4,6 +4,7 @@
     "id": "yallah",
     "name": "YALLAH",
     "className": "de.dfki.vsm.xtension.yallah.YallahExecutor",
+    "androidCompatible": false,
     "description": "Yet another low-level agent handler (YALLAH)",
     "tags": ["agent", "character"]
   },

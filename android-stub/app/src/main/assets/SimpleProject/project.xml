@@ -3,9 +3,16 @@
   <Plugins>
     <Plugin type="device" name="TimerExecutor" class="de.dfki.vsm.xtension.timer.TimerExecutor" load="true">
     </Plugin>
+    <Plugin type="device" name="AndroidGuiExecutor" class="de.dfki.vsm.xtension.androidGui.AndroidGuiExecutor" load="true">
+    </Plugin>
   </Plugins>
   <Agents>
     <Agent name="time" device="TimerExecutor">
+    </Agent>
+    <Agent name="phone" device="AndroidGuiExecutor">
+      <Feature key="textFields" val="counterLabel,messageLabel"/>
+      <Feature key="editFields" val="inputField"/>
+      <Feature key="buttons" val="submitButton"/>
     </Agent>
   </Agents>
   <SemanticServices>
