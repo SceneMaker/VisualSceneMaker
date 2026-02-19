@@ -59,6 +59,7 @@ public final class AndroidRuntimeServer extends NanoWSD {
 
     public void stopServer() {
         eventBridge.stop();
+        wsAdapter.sessions().shutdown();
         stop();
     }
 
@@ -799,7 +800,7 @@ public final class AndroidRuntimeServer extends NanoWSD {
         public void sendText(final String message) {
             try {
                 send(message);
-            } catch (IOException ignored) {
+            } catch (Exception ignored) {
                 wsAdapter.onClose(this);
             }
         }
