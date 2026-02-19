@@ -2,6 +2,9 @@ package de.dfki.vsm.runtime.api.android;
 
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 import java.util.function.Consumer;
 
 /**
@@ -10,6 +13,14 @@ import java.util.function.Consumer;
 public final class AndroidRuntimeWsSessionRegistry {
 
     private final Set<AndroidRuntimeWsSession> sessions = ConcurrentHashMap.newKeySet();
+    private final ExecutorService broadcastExecutor = Executors.newSingleThreadExecutor(new ThreadFactory() {
+        @Override
+        public Thread newThread(final Runnable runnable) {
+            Thread thread = new Thread(runnable, "vsm-android-ws-broadcast");
+            thread.setDaemon(true);
+            return thread;
+        }
+    });
 
     public void add(final AndroidRuntimeWsSession session) {
         if (session != null) {
@@ -31,13 +42,21 @@ public final class AndroidRuntimeWsSessionRegistry {
             if (message == null) {
                 return;
             }
-            for (AndroidRuntimeWsSession session : sessions) {
-                try {
-                    session.sendText(message);
-                } catch (Exception ignored) {
-                    // Session transport errors are ignored; caller can remove dead sessions via onClose hooks.
+            broadcastExecutor.execute(() -> {
+                for (AndroidRuntimeWsSession session : sessions) {
+                    try {
+                        session.sendText(message);
+                    } catch (Exception ignored) {
+                        // Drop broken sessions to avoid repeated failures.
+                        sessions.remove(session);
+                    }
                 }
-            }
+            });
         };
+    }
+
+    public void shutdown() {
+        broadcastExecutor.shutdownNow();
+        sessions.clear();
     }
 }
