@@ -9,13 +9,30 @@ repositories {
     mavenCentral()
 }
 
-def defaultCoreJar = '/Users/gebhard/Code/Repo/qwen3-tts-apple-silicon/stream-client-core/build/libs/stream-client-core-0.1.0.jar'
-def ttsCoreJarPath = findProperty('ttsCoreJar') ?: System.getenv('TTS_CORE_JAR') ?: defaultCoreJar
+def bundledCoreJar = file("${project.projectDir}/lib/stream-client-core-0.1.0.jar")
+def ttsCoreJarPath = findProperty('ttsCoreJar') ?: System.getenv('TTS_CORE_JAR') ?: bundledCoreJar.absolutePath
+def ttsCoreJarFile = file(ttsCoreJarPath)
+def ttsCoreJarAvailable = ttsCoreJarFile.exists()
 
 dependencies {
     implementation project(":core")
-    implementation files(ttsCoreJarPath)
+    if (ttsCoreJarAvailable) {
+        implementation files(ttsCoreJarFile)
+    }
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.18.2'
+}
+
+if (!ttsCoreJarAvailable) {
+    logger.warn("voicetts: stream-client-core jar not found at '${ttsCoreJarPath}'. " +
+            "Skipping Java sources for this module. Set -PttsCoreJar=/path/to/stream-client-core-*.jar " +
+            "or TTS_CORE_JAR to enable voicetts compilation.")
+    sourceSets {
+        main {
+            java {
+                setSrcDirs([])
+            }
+        }
+    }
 }
 
 tasks.withType(JavaCompile).configureEach {
