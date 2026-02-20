@@ -7,7 +7,10 @@ javadoc { options.encoding = 'UTF-8' }
 
 group 'de.dfki'
 def resolvedVersionTag = versioning.info.lastTag
-if (resolvedVersionTag == null || resolvedVersionTag.isBlank() || resolvedVersionTag == 'WebEditor_v0.1') {
+if (resolvedVersionTag == null
+        || resolvedVersionTag.isBlank()
+        || resolvedVersionTag == 'WebEditor_v0.1'
+        || !resolvedVersionTag.toLowerCase().startsWith('web-')) {
     resolvedVersionTag = 'Web-v1.0'
 }
 allprojects {
