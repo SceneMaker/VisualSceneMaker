@@ -2389,6 +2389,14 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
   $: infoRevision = info?.revision || info?.buildRevision || info?.build || info?.version || "unknown";
   $: infoRevisionSlug = revisionSlug(infoRevision);
   $: infoBuildDate = info?.buildDate || info?.buildTime || "unknown";
+  $: infoBuildYear = (() => {
+    const raw = String(infoBuildDate || "");
+    const matchedYear = raw.match(/\b(19|20)\d{2}\b/);
+    if (matchedYear) return matchedYear[0];
+    const parsed = Date.parse(raw);
+    if (!Number.isNaN(parsed)) return String(new Date(parsed).getFullYear());
+    return String(new Date().getFullYear());
+  })();
   $: projectRequiresSaveAs = (() => {
     if (!selectedProject) return false;
     if (selectedProject.saveAsOnly !== undefined) {
@@ -16133,5 +16141,63 @@ Sentence:
         {/if}
       </div>
     </div>
+  {/if}
+
+  {#if !showEditor}
+    <footer class="landing-footer" aria-label="Credits">
+      <div class="landing-footer-logos">
+        <span class="landing-footer-lead">
+          build with
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke-width="1.5"
+            stroke="currentColor"
+            class="landing-footer-icon"
+            aria-hidden="true"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z"
+            />
+          </svg>
+          and
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke-width="1.5"
+            stroke="currentColor"
+            class="landing-footer-icon"
+            aria-hidden="true"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M8.25 3v1.5M4.5 8.25H3m18 0h-1.5M4.5 12H3m18 0h-1.5m-15 3.75H3m18 0h-1.5M8.25 19.5V21M12 3v1.5m0 15V21m3.75-18v1.5m0 15V21m-9-1.5h10.5a2.25 2.25 0 0 0 2.25-2.25V6.75a2.25 2.25 0 0 0-2.25-2.25H6.75A2.25 2.25 0 0 0 4.5 6.75v10.5a2.25 2.25 0 0 0 2.25 2.25Zm.75-12h9v9h-9v-9Z"
+            />
+          </svg>
+        </span>by
+        <a
+          class="landing-footer-link landing-footer-link--scaai"
+          href="https://scaai.dfki.de"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <img class="landing-footer-logo landing-footer-logo--scaai" src="/images/scaai_logo.svg" alt="SCAAI" />
+        </a>
+        <span class="landing-footer-sep" aria-hidden="true">@</span>
+        <span>
+          <a
+            class="landing-footer-link"
+            href="https://www.dfki.de"
+            target="_blank"
+            rel="noopener noreferrer"
+          >dfki</a>, 2003-{infoBuildYear}.
+        </span>
+      </div>
+    </footer>
   {/if}
 </main>

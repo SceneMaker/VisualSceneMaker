@@ -261,7 +261,6 @@
   let edgeRetargetHoverId = null;
   let edgeCreateCursor = null;
   let dragState = null;
-  let timeoutInlineDragEdgeId = "";
   let timeoutSliderSuppressedEdgeId = "";
   let selfLoopManualControlIds = new Set();
   let panStart = { x: 0, y: 0 };
@@ -1930,54 +1929,76 @@
     return Math.min(TIMEOUT_INLINE_MAX_MS, Math.max(TIMEOUT_INLINE_LEFT_MAX_MS + 1, Math.round(value)));
   }
 
-  function edgeSliderBackground(color) {
-    if (typeof color !== "string" || !color) return "rgba(255, 255, 255, 0.94)";
-    if (color.startsWith("#")) {
-      const rgb = hexToRgb(color);
-      if (rgb) {
-        return `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.16)`;
-      }
-    }
-    return "rgba(255, 255, 255, 0.94)";
-  }
-
   function timeoutSliderModel(edge) {
     const base = timeoutLiteralMs(edge);
     if (!Number.isFinite(base)) return null;
     if (base > TIMEOUT_INLINE_MAX_MS) return null;
     const draft = timeoutInlineDrafts.get(edge.id);
-    const valueMs = Math.max(0, Math.min(TIMEOUT_INLINE_MAX_MS, Number.isFinite(draft) ? draft : base));
+    const dragPos =
+      dragState?.type === "timeout-slider" &&
+      dragState?.id === edge.id &&
+      Number.isFinite(dragState?.sliderPos)
+        ? dragState.sliderPos
+        : null;
+    const valueMs = Number.isFinite(dragPos)
+      ? timeoutMsFromSliderPos(dragPos)
+      : Math.max(0, Math.min(TIMEOUT_INLINE_MAX_MS, Number.isFinite(draft) ? draft : base));
     return {
       valueMs,
-      value: timeoutSliderPosFromMs(valueMs),
+      value: Number.isFinite(dragPos) ? Math.round(dragPos) : timeoutSliderPosFromMs(valueMs),
       min: 0,
       max: TIMEOUT_INLINE_SLIDER_MAX,
       step: 1
     };
   }
 
-  function handleTimeoutInlineSliderInput(edge, event) {
-    const sliderPos = Number.parseInt(String(event?.currentTarget?.value ?? "").trim(), 10);
-    if (!edge?.id || !Number.isFinite(sliderPos)) return;
-    const value = timeoutMsFromSliderPos(sliderPos);
+  function setTimeoutInlineSliderPosById(edgeId, sliderPos) {
+    if (!edgeId || !Number.isFinite(sliderPos)) return;
+    const value = timeoutMsFromSliderPos(Math.round(sliderPos));
     const next = new Map(timeoutInlineDrafts);
-    next.set(edge.id, value);
+    next.set(edgeId, value);
     timeoutInlineDrafts = next;
+  }
+
+  function timeoutInlineSliderPosFromPointer(event, sliderX, sliderWidth) {
+    if (!Number.isFinite(sliderX) || !Number.isFinite(sliderWidth) || sliderWidth <= 0) return null;
+    const world = eventToWorld(event);
+    const ratio = clamp((world.x - sliderX) / sliderWidth, 0, 1);
+    return Math.round(ratio * TIMEOUT_INLINE_SLIDER_MAX);
+  }
+
+  function commitTimeoutInlineSliderById(edgeId) {
+    if (!edgeId) return;
+    const draft = timeoutInlineDrafts.get(edgeId);
+    if (!Number.isFinite(draft) || draft < 0) return;
     if (typeof onTimeoutEdgeUpdate === "function") {
-      onTimeoutEdgeUpdate(edge.id, value);
+      onTimeoutEdgeUpdate(edgeId, draft);
     }
   }
 
-  function startTimeoutInlineDrag(edge, event) {
+  function startTimeoutInlineDrag(edge, event, sliderX, sliderWidth) {
     if (!edge?.id) return;
     event?.stopPropagation?.();
-    timeoutInlineDragEdgeId = edge.id;
-    clearSelection();
-  }
-
-  function endTimeoutInlineDrag(event) {
-    event?.stopPropagation?.();
-    timeoutInlineDragEdgeId = "";
+    event?.preventDefault?.();
+    focusStage();
+    selectEdge(edge.id);
+    const pointerId = event?.pointerId;
+    const captureEl = stageEl || svgEl;
+    if (Number.isFinite(pointerId) && captureEl?.setPointerCapture) {
+      captureEl?.setPointerCapture(pointerId);
+    }
+    const sliderPos = timeoutInlineSliderPosFromPointer(event, sliderX, sliderWidth);
+    const safePos = Number.isFinite(sliderPos) ? sliderPos : timeoutSliderPosFromMs(timeoutLiteralMs(edge) || 0);
+    dragState = {
+      type: "timeout-slider",
+      id: edge.id,
+      pointerId,
+      sliderX,
+      sliderWidth,
+      sliderPos: safePos,
+      moved: false
+    };
+    setTimeoutInlineSliderPosById(edge.id, safePos);
   }
 
   function edgeMidPoint(edge, drag) {
@@ -2890,6 +2911,17 @@
     const dragPoint = world;
     const dx = world.x - dragState.startX;
     const dy = world.y - dragState.startY;
+    if (dragState.type === "timeout-slider") {
+      const sliderPos = timeoutInlineSliderPosFromPointer(event, dragState.sliderX, dragState.sliderWidth);
+      if (!Number.isFinite(sliderPos)) return;
+      dragState = {
+        ...dragState,
+        sliderPos,
+        moved: dragState.moved || Math.abs(sliderPos - (dragState.sliderPos ?? sliderPos)) > 0
+      };
+      setTimeoutInlineSliderPosById(dragState.id, sliderPos);
+      return;
+    }
     if (dragState.type === "group") {
       const clampedDx = Math.max(dx, dragState.minDx ?? dx);
       const clampedDy = Math.max(dy, dragState.minDy ?? dy);
@@ -2970,11 +3002,14 @@
     if (!dragState || dragState.pointerId !== event.pointerId) return;
     const finished = dragState;
     dragState = null;
-    timeoutInlineDragEdgeId = "";
     edgeRetargetHoverId = null;
     const captureEl = stageEl || svgEl;
     if (captureEl && captureEl.hasPointerCapture(event.pointerId)) {
       captureEl.releasePointerCapture(event.pointerId);
+    }
+    if (finished.type === "timeout-slider") {
+      commitTimeoutInlineSliderById(finished.id);
+      return;
     }
     if (!finished.moved) {
       return;
@@ -3529,9 +3564,8 @@
       {@const timeoutEntry = timeoutEdgeMap.get(edge.id)}
       {@const timeoutProgress = edge.type === "TEDGE" ? timeoutEdgeProgress(timeoutEntry, timeoutNow) : null}
       {@const isHandleDrag = !!dragState && dragState.id === edge.id && (dragState.type === "edge-control" || dragState.type === "edge-target" || dragState.type === "edge-bend")}
-      {@const isTimeoutSliderDrag = timeoutInlineDragEdgeId === edge.id}
       {@const controls = isSelected || isHovered ? edgeControlPoints(edge, dragState) : null}
-      {@const showHandles = (isSelected || isHovered) && !isTimeoutSliderDrag}
+      {@const showHandles = isSelected || isHovered}
       {@const baseHandleRadius = Math.max(5, Math.round(baseNodeSize * 0.08))}
       {@const handleRadius = showHandles ? (isSelected ? baseHandleRadius : Math.max(4, Math.round(baseHandleRadius * 0.8))) : 0}
       {@const handleHitRadius = showHandles ? Math.max(12, handleRadius + 8) : 0}
@@ -3540,8 +3574,7 @@
       {@const bendHitRadius = showHandles ? Math.max(14, bendRadius + 10) : 0}
       {@const bendPos = controls ? edgeBendHandlePos(edge, dragState, label) : null}
         {@const labelPos = edgeLabelPos(edge, dragState)}
-      {@const timeoutSlider = (isSelected || isTimeoutSliderDrag) && !isHandleDrag && timeoutSliderSuppressedEdgeId !== edge.id && edge.type === "TEDGE" ? timeoutSliderModel(edge) : null}
-      {@const timeoutSliderBg = timeoutSlider ? edgeSliderBackground(baseColor) : null}
+      {@const timeoutSlider = isSelected && !isHandleDrag && timeoutSliderSuppressedEdgeId !== edge.id && edge.type === "TEDGE" ? timeoutSliderModel(edge) : null}
       <g
         class="edge-group"
         class:selected={isSelected}
@@ -3674,38 +3707,43 @@
         {/if}
         {#if timeoutSlider}
           {@const sliderWidth = Math.max(110, Math.round(fontSize * 8.2))}
-          {@const sliderHeight = Math.max(18, Math.round(fontSize * 1.2))}
+          {@const sliderHeight = Math.max(20, Math.round(fontSize * 1.25))}
           {@const sliderPadX = Math.max(10, Math.round(fontSize * 0.75))}
           {@const sliderPadY = Math.max(8, Math.round(fontSize * 0.65))}
-          {@const sliderY = labelPos.y + Math.max(20, Math.round(labelLineHeight * 1.45)) + sliderHeight / 2}
-          <foreignObject
-            class="edge-timeout-inline-fo"
-            x={labelPos.x - sliderWidth / 2 - sliderPadX}
-            y={sliderY - sliderHeight / 2 - sliderPadY}
-            width={sliderWidth + sliderPadX * 2}
-            height={sliderHeight + sliderPadY * 2}
-            on:pointerdown|stopPropagation
+          {@const sliderY = labelPos.y + Math.max(20, Math.round(labelLineHeight * 1.45))}
+          {@const sliderLeft = labelPos.x - sliderWidth / 2}
+          {@const sliderRatio = timeoutSlider.max > 0 ? timeoutSlider.value / timeoutSlider.max : 0}
+          {@const knobX = sliderLeft + sliderWidth * sliderRatio}
+          <g
+            class="edge-timeout-inline"
+            style={`--edge-color:${baseColor};`}
+            on:pointerdown|stopPropagation={(event) => startTimeoutInlineDrag(edge, event, sliderLeft, sliderWidth)}
           >
-            <div
-              xmlns="http://www.w3.org/1999/xhtml"
-              class="edge-timeout-inline"
-              style={`--edge-color:${baseColor}; --edge-bg:${timeoutSliderBg};`}
-            >
-              <input
-                class="edge-timeout-inline-slider"
-                type="range"
-                min={timeoutSlider.min}
-                max={timeoutSlider.max}
-                step={timeoutSlider.step}
-                value={timeoutSlider.value}
-                on:pointerdown={(event) => startTimeoutInlineDrag(edge, event)}
-                on:pointerup={endTimeoutInlineDrag}
-                on:pointercancel={endTimeoutInlineDrag}
-                on:blur={endTimeoutInlineDrag}
-                on:input={(event) => handleTimeoutInlineSliderInput(edge, event)}
-              />
-            </div>
-          </foreignObject>
+            <rect
+              class="edge-timeout-inline-bg"
+              x={sliderLeft - sliderPadX}
+              y={sliderY - sliderHeight / 2 - sliderPadY}
+              width={sliderWidth + sliderPadX * 2}
+              height={sliderHeight + sliderPadY * 2}
+              rx={(sliderHeight + sliderPadY * 2) / 2}
+              ry={(sliderHeight + sliderPadY * 2) / 2}
+            />
+            <line
+              class="edge-timeout-inline-track"
+              x1={sliderLeft}
+              y1={sliderY}
+              x2={sliderLeft + sliderWidth}
+              y2={sliderY}
+            />
+            <line
+              class="edge-timeout-inline-fill"
+              x1={sliderLeft}
+              y1={sliderY}
+              x2={knobX}
+              y2={sliderY}
+            />
+            <circle class="edge-timeout-inline-knob" cx={knobX} cy={sliderY} r={Math.max(8, Math.round(fontSize * 0.58))} />
+          </g>
         {/if}
         {#if controls && bendPos && (isSelected || isHovered)}
           <circle
