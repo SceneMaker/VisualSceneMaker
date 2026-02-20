@@ -5296,6 +5296,74 @@ button.badge:active {
   color: var(--muted);
 }
 
+.landing-footer {
+  position: fixed;
+  left: 50%;
+  bottom: 0.25rem;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  text-align: center;
+  z-index: 30;
+  pointer-events: auto;
+  color: #0071bc;
+}
+
+.landing-footer-logos {
+  display: inline-flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 0.12rem;
+}
+
+.landing-footer-logo {
+  height: 56px;
+  width: auto;
+  object-fit: contain;
+  display: block;
+  align-self: flex-end;
+}
+
+.landing-footer-logo--scaai {
+  height: 43px;
+  transform: translateY(0.25px);
+}
+
+.landing-footer-sep {
+  display: inline-flex;
+  align-items: center;
+  font-weight: 600;
+  color: #0071bc;
+  margin: 0 0.04rem;
+}
+
+.landing-footer-link {
+  color: #0071bc;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: flex-end;
+}
+
+.landing-footer-link--scaai {
+  margin: 0 0.08rem 0 0.04rem;
+}
+
+.landing-footer-lead {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.18rem;
+}
+
+.landing-footer-icon {
+  width: 0.95em;
+  height: 0.95em;
+  stroke-width: 1.8;
+  vertical-align: -0.08em;
+}
+
 @keyframes rise {
   from {
     opacity: 0;
@@ -5317,6 +5385,19 @@ button.badge:active {
   .row {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .landing-footer-logo {
+    height: 44px;
+  }
+
+  .landing-footer {
+    bottom: 0.15rem;
+  }
+
+  .landing-footer-logo--scaai {
+    height: 70px;
+    transform: translateY(10px);
   }
 
   .kv-row {
