@@ -1,62 +1,88 @@
-# Java Language Compatibility (Core + Plugins)
+# Java Language Compatibility (Current State)
 
-This document defines the language level policy needed for Android compatibility.
-The guiding rule is: **core and plugins compile as Java 17**.
+This document describes the Java compatibility policy as currently enforced by Gradle in the `web2026` architecture.
 
-## Targets
-- Core: Java 17 (Android-compatible bytecode).
-- Plugins: Java 17 (same guarantee as core).
-- Editor (web UI + Swing reference): Java 21 is acceptable.
-- Root application: Java 21 is acceptable for desktop packaging.
+## Policy Summary
 
-## Rationale
-- Android runtime currently targets Java 17 language level.
-- Keeping core/plugins at 17 ensures portability to Android.
-- Editor and desktop-only tooling can use newer Java features.
+- Portable/runtime-critical modules compile with Java 17 API/bytecode compatibility.
+- Desktop/editor/services modules use Java 21.
+- Root packaging uses Java 21 and assembles both sets.
 
-## Build enforcement (planned)
-- `:core` Gradle:
-  - Toolchain `languageVersion = 17`.
-  - `JavaCompile.options.release = 17` to lock APIs.
-- `:plugins:*` Gradle:
-  - Toolchain `languageVersion = 17`.
-  - `JavaCompile.options.release = 17`.
-- `:editor` and root can remain on 21.
+## Compatibility Matrix
 
-## Compatibility rules
-- Do not use Java 18+ language features in core/plugins.
-- Avoid JDK 18+ APIs in core/plugins (enforced by `--release 17`).
-- UI toolkits (Swing/JavaFX) must stay in editor only.
+| Module / Group | Java Level | Primary Enforcement | Notes |
+|---|---|---|---|
+| `:core` | 17 (`--release 17`) | `:core:verifyPortableCoreApis` | Portable runtime/model baseline |
+| `:core-webserver` | 17 (`--release 17`) | Root Java 17 module set | Desktop/server adapter (`WebUiServer`) |
+| `:core-http-jdk` | 17 (`--release 17`) | Root Java 17 module set | JDK HTTP transport adapter |
+| `:core-http-android` | 17 (`--release 17`) | `:core-http-android:verifyAndroidPortableApis` | Android HTTP/WS transport |
+| `:core-logic-jpl` | 17 (`--release 17`) | Root Java 17 module set | JPL logic adapter module |
+| `:runtime-server` | 17 (`--release 17`) | Root Java 17 module set | `RuntimeMain` runtime-only launcher |
+| `:plugins:*` | 17 (`--release 17`) | Root Java 17 module set + plugin-specific checks (for example `:plugins:AndroidGui:verifyAndroidPortableApis`) | Plugin ecosystem remains Java 17-compatible |
+| `:editor` | 21 (toolchain) | Root Java 21 toolchain rule | Web UI build + editor-side service layer |
+| `:services`, `:services:*` | 21 (toolchain) | Root Java 21 toolchain rule | Includes embeddings/semantic services |
+| root app project | 21 (toolchain) | Root Java toolchain + packaging tasks | `SceneMaker4` packaging and desktop run tasks |
 
-## Dependency constraints
-- Core/plugins dependencies must support Java 17.
-- If a plugin requires a higher JDK or desktop-only APIs, mark it as
-  desktop-only and exclude it from Android builds.
+## Java 17-Compatible Modules
 
-## Android build inputs
-- Android build uses `:core` + compatible plugins only.
-- Editor module is excluded from Android packaging.
+The root `build.gradle` marks these modules as Java 17-compatible by applying:
 
-## Verification (planned)
-- Add a CI task to compile `:core` and `:plugins:*` with `--release 17`.
-- Add a compatibility note in plugin READMEs if they are desktop-only.
+- `tasks.withType(JavaCompile).configureEach { options.release = 17 }`
 
-## Next Step After Core Android Sanitization
-Once `:core` is sanitized for Android (no desktop-only APIs on portable paths), the next architectural phase is enabling a desktop web server/UI to connect to a remote core running on Android.
+Modules:
 
-Concrete implementation steps:
-1. Extract web server code from `:core` into a desktop adapter module (for example `:core-webserver`) that depends on `:core`.
-2. Define a stable runtime API contract (`core-api` DTOs) for commands, snapshots, and runtime events.
-3. Add a `RuntimeGateway` abstraction in `:core` for command execution and event streaming.
-4. Implement an Android-side gateway host (HTTP + WebSocket) in an Android `Service`.
-5. Implement a desktop remote gateway client and switch web server logic from direct in-memory runtime access to gateway calls.
-6. Keep dual-mode operation:
-   - Local mode (desktop): in-process gateway.
-   - Remote mode (desktop to Android): network gateway.
-7. Add reconnect/synchronization behavior:
-   - Initial full snapshot fetch.
-   - Ordered delta/event stream with sequence numbers.
-   - Snapshot re-fetch on sequence gaps.
-8. Add capability negotiation (for example logic engine disabled on Android) so desktop UI hides unsupported actions.
-9. Secure the connection (token auth, CORS policy, optional TLS).
-10. Add CI/integration tests for both local and remote modes.
+- `:core`
+- `:core-webserver`
+- `:core-http-jdk`
+- `:core-http-android`
+- `:core-logic-jpl`
+- `:runtime-server`
+- `:plugins:*` (all plugin subprojects)
+
+## Java 21 Modules
+
+For Java subprojects that are not in the Java 17 set, the root build applies:
+
+- `java.toolchain.languageVersion = 21`
+
+This includes:
+
+- `:editor`
+- `:services`
+- `:services:embeddings`
+- `:services:semantic-analysis`
+- `:services:semantic-ud`
+- root application project
+
+## Enforcement Tasks
+
+Portability checks are implemented and wired in:
+
+- `:core:verifyPortableCoreApis`
+- `:core-http-android:verifyAndroidPortableApis`
+- `:plugins:AndroidGui:verifyAndroidPortableApis`
+- Root convenience tasks:
+  - `./gradlew verifyPortableCore`
+  - `./gradlew verifyAndroidPortable`
+
+These checks fail the build on imports/usages that violate portability boundaries (for example Swing/JavaFX/Javalin/JPL in Android-portable modules).
+
+## Practical Rules
+
+- In Java 17-compatible modules, do not use Java 18+ language features or APIs.
+- Keep desktop/server-only APIs out of portable modules:
+  - UI toolkits (`java.awt`, `javax.swing`, `javafx`)
+  - Desktop HTTP/server libraries where not allowed by module policy
+  - JPL usage outside `:core-logic-jpl` and explicitly desktop-targeted code
+- Put Android transport code in `:core-http-android`.
+- Put desktop web server code in `:core-webserver`.
+
+## Architecture Context
+
+The old monolithic desktop path has been split:
+
+- `SceneMaker4` (root app) runs full editor mode via `:core-webserver`.
+- `RuntimeMain` (`:runtime-server`) runs runtime-only mode.
+- Android integration uses `:core-http-android` (plus Android stub/app flows).
+
+This split is why Java 17 compatibility is enforced for runtime-critical modules while higher-level editor/services remain on Java 21.

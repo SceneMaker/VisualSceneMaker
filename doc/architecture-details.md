@@ -1,7 +1,7 @@
 # VisualSceneMaker Architecture - Detailed Documentation
 
 **Branch:** web2026
-**Date:** 2026-01-11
+**Date:** 2026-02-20
 **Purpose:** Developer guide for understanding the MVC architecture and code organization
 
 ---
@@ -23,17 +23,21 @@
 
 ## Overview
 
-VisualSceneMaker implements a **layered MVC + Event-Driven architecture** with support for both desktop (Swing/JavaFX) and web (Svelte) user interfaces. The architecture emphasizes:
+VisualSceneMaker implements a **layered MVC + Event-Driven architecture** centered on a web-first editor/runtime UI, plus headless/runtime-only and Android transport variants. The architecture emphasizes:
 
 - **Separation of concerns**: Pure model layer independent of UI
-- **Dual UI support**: Desktop and Web UIs share the same runtime engine
+- **Web-first UX**: Svelte frontend served by Javalin (`WebUiServer`)
+- **Mode-aware server**: `FULL_EDITOR` and `RUNTIME_ONLY` operation modes
+- **Runtime portability**: Java 17-compatible runtime path for Android/headless use
 - **Event-driven communication**: Asynchronous pub/sub for cross-cutting concerns
 - **Plugin extensibility**: Dynamic loading of custom agents and actions
 - **Thread safety**: Lock-based synchronization for concurrent execution
 
 ### Architecture Diagram
 
-See `doc/architecture-overview.svg` for a visual representation of the system architecture.
+See `doc/architecture-overview-Feb-26.svg` for the current architecture snapshot and
+`doc/architecture-overview-Jan-26.svg` for the previous baseline.
+For future iOS-native runtime planning, see `doc/ios-core-implementation-plan.md`.
 
 ---
 
@@ -45,9 +49,9 @@ See `doc/architecture-overview.svg` for a visual representation of the system ar
 - **Dependencies**: None (pure POJOs with XML serialization)
 
 ### View Layer (User Interfaces)
-- **Desktop UI**: `editor/src/main/java/de/dfki/vsm/editor/` (Swing/JavaFX)
 - **Web UI**: `editor/web-ui/src/` (Svelte components)
-- **Web Server**: `core/src/main/java/de/dfki/vsm/web/` (Javalin)
+- **Web Server**: `core-webserver/src/main/java/de/dfki/vsm/web/` (Javalin)
+- **Android runtime API transport**: `core-http-android/src/main/java/de/dfki/vsm/runtime/api/android/`
 
 ### Controller Layer (Coordination)
 - **Event System**: `core/src/main/java/de/dfki/vsm/event/`
@@ -246,79 +250,50 @@ Path: `core/src/main/java/de/dfki/vsm/runtime/activity/`
 
 ## View Layer
 
-### Desktop UI (Swing/JavaFX)
+### Launchers and Runtime Clients
 
-#### Main Entry Point
+#### Main Launcher (Full Editor Mode)
 
-**SceneMaker3**
-Path: `src/main/java/de/dfki/vsm/SceneMaker3.java`
+**SceneMaker4**
+Path: `src/main/java/de/dfki/vsm/SceneMaker4.java`
 
 ```java
-public final class SceneMaker3 {
+public final class SceneMaker4 {
     public static void main(final String[] args) {
-        // Parse args: --allow-lan, --no-browser, --no-swing
-
-        // Start Web UI server
+        // Parse args: --allow-lan (or --allow-external), --no-browser
         WebUiServer server = WebUiServer.getInstance();
         server.setAllowExternal(allowLan);
-        server.start();
-
-        // Open browser
+        server.start(); // FULL_EDITOR mode
         if (openBrowser) {
             openBrowser(server.getLocalUrl());
         }
-
-        // Start Swing UI (unless --no-swing)
-        if (!noSwing) {
-            SwingUtilities.invokeLater(() -> {
-                EditorInstance.getInstance().setVisible(true);
-            });
-        }
+        // Optional compatibility path:
+        // runtime <projectPath> => Core.runtime(file)
     }
 }
 ```
 
-**Launch Modes:**
-- `editor` - Desktop editor with optional project
-- `runtime` - Headless runtime execution
-- `--no-swing` - Web-only mode (no desktop UI)
+**Launch Flags:**
+- `--allow-lan` / `--allow-external` - bind server on `0.0.0.0`
+- `--no-browser` - do not auto-open browser
 
-#### Editor Instance
+#### Standalone Runtime Launcher (Runtime-Only Mode)
 
-**Main Window**
-Path: `editor/src/main/java/de/dfki/vsm/editor/EditorInstance.java`
+**RuntimeMain**
+Path: `runtime-server/src/main/java/de/dfki/vsm/runtime/RuntimeMain.java`
 
-```java
-public class EditorInstance extends JFrame implements EventListener {
-    private JTabbedPane mProjectTabbedPane;
-    private EditorMenuBar mMenuBar;
-    private HashMap<String, ProjectEditor> mProjectEditorMap;
+- Starts `WebUiServer` in `RUNTIME_ONLY` mode
+- Supports `--port`, `--allow-lan`, `--project`, `--autostart`, `--token`
+- Designed for headless deployment and Android-compatible runtime use cases
 
-    // Event handling
-    @Override
-    public void update(EventObject event) {
-        if (event instanceof ProjectChangedEvent) {
-            // Update UI
-        }
-    }
-}
-```
+#### Editor Module Service Layer (Headless Java side)
 
-**Key Components:**
-- Tabbed project workspace
-- Menu bar (File, Edit, Run, Tools, Help)
-- Clipboard system for copy/paste
-- Event listener for runtime updates
+The `editor` module no longer provides the primary Swing UI launcher; it contains service and project coordination classes used by the web-first stack.
 
-#### Project Editor
-
-**Per-Project View**
-Path: `editor/src/main/java/de/dfki/vsm/editor/project/ProjectEditor.java`
-
-- Graph visualization canvas
-- Script editor integration
-- Node/edge selection handling
-- Variable badge display
+Key classes:
+- `editor/src/main/java/de/dfki/vsm/editor/service/EditorProjectService.java`
+- `editor/src/main/java/de/dfki/vsm/editor/project/EditorProject.java`
+- `editor/src/main/java/de/dfki/vsm/editor/connection/RuntimeConnectionManager.java`
 
 ### Web UI (Svelte + Javalin)
 
@@ -363,10 +338,10 @@ Path: `editor/web-ui/src/App.svelte`
 #### Backend Server
 
 **WebUiServer** (Unified, dual-mode)
-Path: `core/src/main/java/de/dfki/vsm/web/WebUiServer.java`
+Path: `core-webserver/src/main/java/de/dfki/vsm/web/WebUiServer.java`
 
 The server supports two modes via `ServerMode` enum:
-- **`FULL_EDITOR`** (default) — Multi-project editing, all WS commands, used by SceneMaker3/4
+- **`FULL_EDITOR`** (default) — Multi-project editing, all WS commands, used by SceneMaker4
 - **`RUNTIME_ONLY`** — Single project, runtime control only, editing commands rejected, used by RuntimeMain
 
 ```java
@@ -699,20 +674,7 @@ public class UiProtocol {
 ### Opening a Project
 
 ```
-Desktop UI Path:
-1. User: File → Open → select project.xml
-2. EditorInstance.openProject(file)
-3. Create new EditorProject(file)
-4. EditorProject extends RunTimeProject
-5. RunTimeProject.launch()
-   - Parse projectconfig.xml
-   - Load sceneflow.xml
-   - Load scenescript.xml
-   - Initialize Interpreter
-6. Add tab to JTabbedPane
-7. Register event listeners
-
-Web UI Path:
+FULL_EDITOR (SceneMaker4) Path:
 1. User: Click "Open Project" → browse file
 2. Send: POST /api/v1/projects/open { "path": "..." }
 3. WebUiServer.handleProjectOpen()
@@ -722,6 +684,12 @@ Web UI Path:
 7. Return: { "projectId": "...", "config": {...} }
 8. Frontend: Fetch sceneflow/script/runtime data
 9. Render UI with loaded data
+
+RUNTIME_ONLY (RuntimeMain) Path:
+1. RuntimeMain starts server in `RUNTIME_ONLY` mode
+2. Load project via `--project=...` or `POST /api/v1/runtime/load`
+3. Server creates/launches a single RunTimeProject instance
+4. Runtime control is exposed via `/api/v1/runtime/*` and `Runtime.*` WS methods
 ```
 
 ### Runtime Execution Flow
@@ -753,9 +721,9 @@ Web UI Path:
 4. EventDispatcher multicasts to listeners
 5. UiEventBridge translates to UiEvent(VARS, "var.x", {value: 5})
 6. UiEventBus emits to registered listeners
-7. Desktop UI: Update variable badge display
-8. Web UI: Broadcast to WebSocket clients
-9. Svelte component: Update reactive state, re-render
+7. WebUiServer broadcasts update to WebSocket clients
+8. Web UI (Svelte): Update reactive state and re-render
+9. Android runtime API bridge (if used): propagate variable snapshot/event to mobile client
 ```
 
 ---
@@ -950,14 +918,14 @@ public class WebUiServer {
 
 ```
 Main Thread
-├─ Swing EDT (Desktop UI)
 ├─ Javalin Thread Pool (Web Server)
 │  ├─ HTTP Request Handlers
 │  └─ WebSocket Handlers
 ├─ Interpreter Thread (per project)
 ├─ ActivityScheduler Threads (per project)
 │  └─ ActivityWorker Pool
-└─ EventDispatcher Timer Thread
+├─ EventDispatcher Timer Thread
+└─ Android runtime WS broadcast executor (core-http-android, when enabled)
 ```
 
 ---
@@ -983,7 +951,7 @@ public class CustomNode extends BasicNode {
 
 // 3. Add Interpreter support for execution
 
-// 4. Update UI rendering (Desktop & Web)
+// 4. Update UI rendering (Web UI + runtime API clients)
 ```
 
 #### 2. New REST API Endpoint
@@ -1120,8 +1088,8 @@ include 'plugins:myplugin'
    - Test WebSocket protocol
 
 3. **UI Tests:**
-   - Desktop: Use TestFX for JavaFX/Swing
    - Web: Use Playwright/Cypress for E2E tests
+   - Runtime API: Use integration tests for `/api/v1/runtime/*` and WebSocket `Runtime.*` flows
 
 ### Performance Considerations
 
@@ -1170,7 +1138,6 @@ include 'plugins:myplugin'
 ## Appendix: Key File Paths Reference
 
 ### Entry Points
-- `src/main/java/de/dfki/vsm/SceneMaker3.java` - Main launcher (Swing + Web, FULL_EDITOR)
 - `src/main/java/de/dfki/vsm/SceneMaker4.java` - Web-only launcher (FULL_EDITOR)
 - `runtime-server/src/main/java/de/dfki/vsm/runtime/RuntimeMain.java` - Standalone runtime (RUNTIME_ONLY)
 - `core/src/main/java/de/dfki/vsm/Core.java` - Headless runtime entry
@@ -1190,26 +1157,26 @@ include 'plugins:myplugin'
 - `core/src/main/java/de/dfki/vsm/ui/protocol/UiEventBus.java`
 - `core/src/main/java/de/dfki/vsm/ui/protocol/UiEventBridge.java`
 
-### Desktop UI
-- `editor/src/main/java/de/dfki/vsm/editor/EditorInstance.java`
+### Editor Services
 - `editor/src/main/java/de/dfki/vsm/editor/project/EditorProject.java`
-- `editor/src/main/java/de/dfki/vsm/editor/EditorMenuBar.java`
+- `editor/src/main/java/de/dfki/vsm/editor/service/EditorProjectService.java`
+- `editor/src/main/java/de/dfki/vsm/editor/connection/RuntimeConnectionManager.java`
 
 ### Web UI
-- `core/src/main/java/de/dfki/vsm/web/WebUiServer.java` - Unified server (FULL_EDITOR + RUNTIME_ONLY)
-- `core/src/main/java/de/dfki/vsm/web/SceneFlowSnapshotBuilder.java` - Shared snapshot builder
+- `core-webserver/src/main/java/de/dfki/vsm/web/WebUiServer.java` - Unified server (FULL_EDITOR + RUNTIME_ONLY)
+- `core-webserver/src/main/java/de/dfki/vsm/web/SceneFlowSnapshotBuilder.java` - Shared snapshot builder
+- `core-http-android/src/main/java/de/dfki/vsm/runtime/api/android/AndroidRuntimeServer.java` - Android runtime HTTP/WS transport
 - `editor/web-ui/src/App.svelte`
 - `editor/web-ui/src/SceneFlowView.svelte`
 - `editor/web-ui/src/ScriptEditor.svelte`
 
 ### Configuration
 - `core/src/main/java/de/dfki/vsm/Preferences.java`
-- `editor/src/main/java/de/dfki/vsm/PreferencesDesktop.java`
 
 ---
 
-**Document Version:** 1.1
-**Last Updated:** 2026-02-03
+**Document Version:** 1.2
+**Last Updated:** 2026-02-20
 **Author:** Architecture Analysis
 **Repository:** `/Users/gebhard/Code/Repo/VisualSceneMaker`
 **Branch:** `web2026`
