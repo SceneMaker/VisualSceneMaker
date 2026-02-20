@@ -207,6 +207,59 @@ tasks.withType(Test).configureEach {
         setFailOnNoMatchingTests(false)
     }
 }
+
+def androidThinBaseProjects = [
+        project(':core'),
+        project(':core-http-android')
+]
+def androidThinPluginProjects = subprojects.findAll { candidate ->
+    if (!candidate.path.startsWith(':plugins:')) {
+        return false
+    }
+    def descriptorFile = candidate.file('src/main/resources/plugin-properties.json')
+    if (!descriptorFile.exists()) {
+        return false
+    }
+    try {
+        def descriptor = new groovy.json.JsonSlurper().parse(descriptorFile)
+        return descriptor?.plugin?.androidCompatible == true
+    } catch (Exception ignored) {
+        return false
+    }
+}
+def androidThinJarProjects = (androidThinBaseProjects + androidThinPluginProjects).unique()
+def androidThinJarOutputDir = layout.projectDirectory.dir('android-thin-jars')
+
+configure(androidThinJarProjects) {
+    plugins.withId('java') {
+        tasks.register('androidThinJar', Jar) {
+            group = 'build'
+            description = "Builds a thin Android jar for ${project.path} (without bundled dependencies)."
+            archiveClassifier.set('android-thin')
+            duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+            from sourceSets.main.output
+        }
+    }
+}
+
+tasks.register('assembleAndroidThinJars', Sync) {
+    group = 'build'
+    description = 'Builds and collects Android thin jars into /android-thin-jars (core + androidCompatible plugins).'
+    dependsOn(androidThinJarProjects.collect { it.tasks.named('androidThinJar') })
+    from(androidThinJarProjects.collect { it.tasks.named('androidThinJar').flatMap { jarTask -> jarTask.archiveFile } })
+    into(androidThinJarOutputDir)
+}
+
+tasks.register('cleanAndroidThinJars', Delete) {
+    group = 'build'
+    description = 'Deletes the collected Android thin jars directory.'
+    delete(androidThinJarOutputDir)
+}
+
+tasks.named('clean') {
+    dependsOn(tasks.named('cleanAndroidThinJars'))
+}
+
 def includeJavaFxRuntime = project.hasProperty("includeJavaFx") &&
         !"false".equalsIgnoreCase(project.property("includeJavaFx").toString())
 def runtimeClasspathForJar = {
