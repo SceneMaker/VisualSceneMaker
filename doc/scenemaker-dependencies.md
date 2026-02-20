@@ -1,70 +1,100 @@
-# SceneMaker Dependency Map
+# SceneMaker Dependency Map (Web-v1.0)
 
-This document describes the Gradle module dependencies after introducing the `editor` subproject.
+This document reflects the current Gradle multi-project dependency layout.
 
 ```mermaid
 graph TD
-    Root["root (SceneMaker3)"] --> Core[:core]
+    Root["root app (SceneMaker4)"] --> Core[:core]
+    Root --> CoreWeb[:core-webserver]
+    Root --> CoreHttpJdk[:core-http-jdk]
+    Root --> CoreLogicJpl[:core-logic-jpl]
     Root --> Editor[:editor]
-    Root --> PlugAlma[:plugins:alma]
-    Root --> PlugAndroid[:plugins:AndroidGui]
-    Root --> PlugConsole[:plugins:console]
-    Root --> PlugEmail[:plugins:email]
-    Root --> PlugStudy[:plugins:studymaster-web]
-    Root --> PlugFortune[:plugins:fortunecookie]
-    Root --> PlugUserCue[:plugins:user-cue-service]
-    Root --> PlugDecad[:plugins:decad]
-    Root --> PlugHtmlGui[:plugins:htmlgui-ws]
-    Root --> PlugOdp[:plugins:odp]
-    Root --> PlugQr[:plugins:qrwebcam]
-    Root --> PlugUnity[:plugins:unity]
-    Root --> PlugWizard[:plugins:wizard]
-    Root --> PlugYallah[:plugins:yallah]
-    Root --> PlugSsi[:plugins:ssi]
-    Root --> PlugSsj[:plugins:ssj]
-    Root --> PlugReeti[:plugins:reeti]
-    Root --> PlugTimer[:plugins:timer]
-    Root --> PlugTriCat[:plugins:tricatworld]
-    Root --> PlugCharamel[:plugins:charamel]
-    Root --> PlugCharamelWs[:plugins:charamel-ws]
-    Root --> PlugSockets[:plugins:sockets]
-    Root --> PlugDrive[:plugins:DriveSimulator]
+    Root --> PAlma[:plugins:alma]
+    Root --> PAndroid[:plugins:AndroidGui]
+    Root --> PEmail[:plugins:email]
+    Root --> PStudy[:plugins:studymaster-web]
+    Root --> PFortune[:plugins:fortunecookie]
+    Root --> PUserCue[:plugins:user-cue-service]
+    Root --> PDecad[:plugins:decad]
+    Root --> PHtml[:plugins:htmlgui-ws]
+    Root --> POdp[:plugins:odp]
+    Root --> PQr[:plugins:qrwebcam]
+    Root --> PUnity[:plugins:unity]
+    Root --> PWizard[:plugins:wizard]
+    Root --> PYallah[:plugins:yallah]
+    Root --> PSsi[:plugins:ssi]
+    Root --> PSsj[:plugins:ssj]
+    Root --> PReeti[:plugins:reeti]
+    Root --> PTimer[:plugins:timer]
+    Root --> PTri[:plugins:tricatworld]
+    Root --> PChar[:plugins:charamel]
+    Root --> PCharWs[:plugins:charamel-ws]
+    Root --> PSockets[:plugins:sockets]
+    Root --> PDrive[:plugins:DriveSimulator]
+    Root --> PVoice[:plugins:voicetts]
+
+    CoreWeb --> Core
+    CoreWeb --> CoreHttpJdk
+    CoreHttpJdk --> Core
+    CoreHttpAndroid[:core-http-android] --> Core
+    CoreLogicJpl --> Core
 
     Editor --> Core
-    PlugAlma --> Core
-    PlugAndroid --> Core
-    PlugConsole --> Core
-    PlugEmail --> Core
-    PlugStudy --> Core
-    PlugFortune --> Core
-    PlugEmma --> Core
-    PlugDecad --> Core
-    PlugHtmlGui --> Core
-    PlugOdp --> Core
-    PlugQr --> Core
-    PlugUnity --> Core
-    PlugWizard --> Core
-    PlugYallah --> Core
-    PlugSsi --> Core
-    PlugSsj --> Core
-    PlugReeti --> Core
-    PlugTimer --> Core
-    PlugTriCat --> Core
-    PlugCharamel --> Core
-    PlugCharamelWs --> Core
-    PlugSockets --> Core
-    PlugDrive --> Core
-    PlugDrive --> PlugSockets
-    PlugVlc --> Core
+    Editor --> CoreLogicJpl
+
+    RuntimeServer[:runtime-server] --> Core
+    RuntimeServer --> CoreWeb
+    RuntimeServer --> CoreLogicJpl
+    RuntimeServer --> PTimer
+
+    PAlma --> Core
+    PAndroid --> Core
+    PAndroid --> CoreHttpAndroid
+    PEmail --> Core
+    PStudy --> Core
+    PFortune --> Core
+    PUserCue --> Core
+    PDecad --> Core
+    PHtml --> Core
+    POdp --> Core
+    PQr --> Core
+    PUnity --> Core
+    PWizard --> Core
+    PWizard --> CoreLogicJpl
+    PYallah --> Core
+    PSsi --> Core
+    PSsj --> Core
+    PReeti --> Core
+    PReeti --> CoreLogicJpl
+    PReeti --> PSsi
+    PTimer --> Core
+    PTri --> Core
+    PTri --> CoreLogicJpl
+    PTri --> PSsi
+    PChar --> Core
+    PChar --> CoreLogicJpl
+    PChar --> PSsi
+    PChar --> PTri
+    PCharWs --> Core
+    PSockets --> Core
+    PDrive --> Core
+    PDrive --> PSockets
+    PVoice --> Core
+
+    Services[:services aggregator] --> SEmb[:services:embeddings]
+    Services --> SSem[:services:semantic-analysis]
+    Services --> SUd[:services:semantic-ud]
 
     Core --> Cup["java-cup-runtime (compileOnly/runtimeOnly)"]
-    Core --> Jpl["jpl"]
-    Core --> Jaxb["jaxb-api"]
-    Core --> Anno["annotations"]
+    CoreLogicJpl --> Jpl["jpl"]
+    Core --> Json["org.json"]
 ```
 
-Notes:
-- `root` assembles the runnable jar and depends on `:editor`, `:core`, and all plugins.
-- `:editor` contains the Swing UI, web server, and web UI build (`editor/web-ui`).
-- `:core` remains independent of editor code and provides runtime + model.
-- Plugins depend on `:core`; shared project property types now live in `core` under `de.dfki.vsm.model.project.property`.
+## Notes
+
+- The root app is web-first (`SceneMaker4`) and assembles `:core`, server/transport modules, `:editor`, and the plugin set.
+- `:core-webserver` hosts `WebUiServer` and depends on `:core` + `:core-http-jdk`.
+- `:runtime-server` is the standalone runtime entry (`RuntimeMain`) and depends on `:core`, `:core-webserver`, `:core-logic-jpl`, and `:plugins:timer`.
+- `:core-http-android` is the Android HTTP/WS transport module (used directly by `:plugins:AndroidGui` and Android integration flows).
+- `:editor` is no longer the Swing launcher; it provides web UI build assets and editor-side services.
+- Services are independent subprojects under `:services:*` and are not packaged into the main root app jar by default.
