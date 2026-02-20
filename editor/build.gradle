@@ -63,36 +63,49 @@ def npmAvailable = {
         return cmdFile.exists()
     }
     def pathEnv = System.getenv("PATH")
-    if (pathEnv == null || pathEnv.isBlank()) {
+    if (pathEnv == null || pathEnv.trim().isEmpty()) {
         return false
     }
     def separator = java.util.regex.Pattern.quote(File.pathSeparator)
-    return pathEnv.split(separator).any { new File(it, cmd).exists() }
+    return pathEnv.split(separator).any { pathEntry ->
+        if (pathEntry == null || pathEntry.trim().isEmpty()) {
+            return false
+        }
+        new File(pathEntry, cmd).exists()
+    }
 }
 
 def shouldRunWebUiTasks = {
-    if (!webUiDir.exists() || !file("${webUiDir}/package.json").exists()) {
+    try {
+        if (!webUiDir.exists() || !file("${webUiDir}/package.json").exists()) {
+            if (!webUiSkipLogged) {
+                logger.lifecycle("Skipping web UI build: web-ui package.json not found.")
+                webUiSkipLogged = true
+            }
+            return false
+        }
+        if (skipWebUi) {
+            if (!webUiSkipLogged) {
+                logger.lifecycle("Skipping web UI build: skipWebUi=true.")
+                webUiSkipLogged = true
+            }
+            return false
+        }
+        if (!npmAvailable()) {
+            if (!webUiSkipLogged) {
+                logger.warn("Skipping web UI build: npm not found. Install Node.js or set -PnpmCommand=/path/to/npm.")
+                webUiSkipLogged = true
+            }
+            return false
+        }
+        return true
+    } catch (Exception ex) {
         if (!webUiSkipLogged) {
-            logger.lifecycle("Skipping web UI build: web-ui package.json not found.")
+            logger.warn("Skipping web UI build: failed to evaluate environment (${ex.class.simpleName}: ${ex.message}).")
             webUiSkipLogged = true
         }
         return false
     }
-    if (skipWebUi) {
-        if (!webUiSkipLogged) {
-            logger.lifecycle("Skipping web UI build: skipWebUi=true.")
-            webUiSkipLogged = true
-        }
-        return false
-    }
-    if (!npmAvailable()) {
-        if (!webUiSkipLogged) {
-            logger.warn("Skipping web UI build: npm not found. Install Node.js or set -PnpmCommand=/path/to/npm.")
-            webUiSkipLogged = true
-        }
-        return false
-    }
-    return true
 }
 
 tasks.register("webUiInstall", Exec) {
