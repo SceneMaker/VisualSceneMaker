@@ -1079,6 +1079,8 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
   let timeoutSliderQueuedMs = null;
   let timeoutSliderQueuedEdgeId = "";
   let timeoutSliderSending = false;
+  let timeoutSliderMax = 5000;
+  let timeoutSliderStep = 1;
   let nodeDirty = false;
   let edgeDirty = false;
   let superNodeDirty = false;
@@ -2650,6 +2652,8 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
     timeoutSliderQueuedMs = null;
     timeoutSliderQueuedEdgeId = "";
     timeoutSliderSending = false;
+    timeoutSliderMax = 5000;
+    timeoutSliderStep = 1;
   }
 
   $: nodeDirty =
@@ -6878,12 +6882,17 @@ Sentence:
   function timeoutSliderConfig(value) {
     const current = parseTimeoutMs(value);
     if (!Number.isFinite(current)) return null;
+    const max = Math.max(timeoutSliderMax, current);
+    return { min: 0, max, step: timeoutSliderStep, value: current };
+  }
+
+  function computeTimeoutSliderRange(current) {
     const max = Math.max(5000, current, Math.ceil((current * 2) / 100) * 100);
     let step = 1;
     if (max >= 60000) step = 100;
     else if (max >= 10000) step = 50;
     else if (max >= 3000) step = 10;
-    return { min: 0, max, step, value: current };
+    return { max, step };
   }
 
   function isTimeoutVarName(value) {
@@ -6894,6 +6903,12 @@ Sentence:
 
   function openTimeoutSlider() {
     if (selectedEdge?.type !== "TEDGE") return;
+    const current = parseTimeoutMs(edgeDraft?.timeoutSpec);
+    if (Number.isFinite(current)) {
+      const range = computeTimeoutSliderRange(current);
+      timeoutSliderMax = range.max;
+      timeoutSliderStep = range.step;
+    }
     timeoutSliderOpen = true;
   }
 
