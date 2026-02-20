@@ -8,6 +8,8 @@ group 'de.dfki.vsm'
 if(!project.hasProperty('flavor')){
     apply plugin: 'java'
     version "android-4.0.1"
+    project.ext.set('flavor', 'android')
+    project.ext.set('buildInfo', 'android')
 
     println("Building jar for ANDROID")
 }
@@ -31,11 +33,6 @@ dependencies {
 
 
 jar {
-    doFirst {
-        project.ext.set('flavor', 'android')
-        project.ext.set('buildInfo', 'android')
-    }
-
     from {
         (configurations.runtimeClasspath).collect {
             it.isDirectory() ? it : zipTree(it)
@@ -53,6 +50,9 @@ jar {
 tasks.register('verifyPortableCoreApis') {
     group = 'verification'
     description = 'Fails when :core uses desktop/server-only APIs.'
+    def sourceFiles = project.fileTree("${project.projectDir}/src/main/java") {
+        include '**/*.java'
+    }.files
 
     doLast {
         def forbiddenImportPrefixes = [
@@ -73,7 +73,7 @@ tasks.register('verifyPortableCoreApis') {
         ]
 
         def violations = []
-        fileTree("${projectDir}/src/main/java").matching { include '**/*.java' }.files.each { file ->
+        sourceFiles.each { file ->
             int lineNo = 0
             file.eachLine { line ->
                 lineNo++

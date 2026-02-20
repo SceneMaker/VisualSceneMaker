@@ -50,60 +50,40 @@ dependencies {
 import java.util.Locale
 
 def webUiDir = file("web-ui")
+def webUiPackageJson = file("web-ui/package.json")
 def isWindows = System.getProperty("os.name").toLowerCase(Locale.ROOT).contains("windows")
 def defaultNpmCmd = isWindows ? "npm.cmd" : "npm"
-def npmCommand = project.findProperty("npmCommand") ?: defaultNpmCmd
+def npmCommand = (project.findProperty("npmCommand") ?: defaultNpmCmd).toString()
 def skipWebUi = project.hasProperty("skipWebUi") && !"false".equalsIgnoreCase(project.property("skipWebUi").toString())
-def webUiSkipLogged = false
 
-def npmAvailable = {
-    def cmd = npmCommand.toString()
-    File cmdFile = new File(cmd)
-    if (cmdFile.isAbsolute()) {
-        return cmdFile.exists()
-    }
-    def pathEnv = System.getenv("PATH")
-    if (pathEnv == null || pathEnv.trim().isEmpty()) {
-        return false
-    }
-    def separator = java.util.regex.Pattern.quote(File.pathSeparator)
-    return pathEnv.split(separator).any { pathEntry ->
-        if (pathEntry == null || pathEntry.trim().isEmpty()) {
-            return false
-        }
-        new File(pathEntry, cmd).exists()
-    }
-}
-
-def shouldRunWebUiTasks = {
+def canRunWebUiTask = {
     try {
-        if (!webUiDir.exists() || !file("${webUiDir}/package.json").exists()) {
-            if (!webUiSkipLogged) {
-                logger.lifecycle("Skipping web UI build: web-ui package.json not found.")
-                webUiSkipLogged = true
-            }
+        if (!webUiDir.exists() || !webUiPackageJson.exists()) {
             return false
         }
+
         if (skipWebUi) {
-            if (!webUiSkipLogged) {
-                logger.lifecycle("Skipping web UI build: skipWebUi=true.")
-                webUiSkipLogged = true
-            }
             return false
         }
-        if (!npmAvailable()) {
-            if (!webUiSkipLogged) {
-                logger.warn("Skipping web UI build: npm not found. Install Node.js or set -PnpmCommand=/path/to/npm.")
-                webUiSkipLogged = true
-            }
+
+        File cmdFile = new File(npmCommand)
+        if (cmdFile.isAbsolute()) {
+            return cmdFile.exists()
+        }
+
+        def pathEnv = System.getenv("PATH")
+        if (pathEnv == null || pathEnv.trim().isEmpty()) {
             return false
         }
-        return true
+
+        def separator = java.util.regex.Pattern.quote(File.pathSeparator)
+        return pathEnv.split(separator).any { pathEntry ->
+            if (pathEntry == null || pathEntry.trim().isEmpty()) {
+                return false
+            }
+            new File(pathEntry, npmCommand).exists()
+        }
     } catch (Exception ex) {
-        if (!webUiSkipLogged) {
-            logger.warn("Skipping web UI build: failed to evaluate environment (${ex.class.simpleName}: ${ex.message}).")
-            webUiSkipLogged = true
-        }
         return false
     }
 }
@@ -111,9 +91,9 @@ def shouldRunWebUiTasks = {
 tasks.register("webUiInstall", Exec) {
     workingDir webUiDir
     commandLine npmCommand, "install"
-    inputs.file(file("${webUiDir}/package.json"))
+    inputs.file(webUiPackageJson)
     outputs.dir(file("${webUiDir}/node_modules"))
-    onlyIf { shouldRunWebUiTasks() }
+    onlyIf { canRunWebUiTask() }
 }
 
 tasks.register("webUiBuild", Exec) {
@@ -124,9 +104,9 @@ tasks.register("webUiBuild", Exec) {
     inputs.file(file("${webUiDir}/index.html"))
     inputs.file(file("${webUiDir}/vite.config.js"))
     inputs.file(file("${webUiDir}/svelte.config.js"))
-    inputs.file(file("${webUiDir}/package.json"))
+    inputs.file(webUiPackageJson)
     outputs.dir(file("src/main/resources/web-ui"))
-    onlyIf { shouldRunWebUiTasks() }
+    onlyIf { canRunWebUiTask() }
 }
 
 processResources.dependsOn tasks.named("webUiBuild")

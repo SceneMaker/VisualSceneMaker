@@ -17,6 +17,9 @@ dependencies {
 tasks.register('verifyAndroidPortableApis') {
     group = 'verification'
     description = 'Fails when core-http-android uses desktop/server-only APIs.'
+    def sourceFiles = project.fileTree("${project.projectDir}/src/main/java") {
+        include '**/*.java'
+    }.files
 
     doLast {
         def forbiddenImportPrefixes = [
@@ -30,7 +33,7 @@ tasks.register('verifyAndroidPortableApis') {
                 'javax.xml.bind.'
         ]
         def violations = []
-        fileTree("${projectDir}/src/main/java").matching { include '**/*.java' }.files.each { file ->
+        sourceFiles.each { file ->
             int lineNo = 0
             file.eachLine { line ->
                 lineNo++
