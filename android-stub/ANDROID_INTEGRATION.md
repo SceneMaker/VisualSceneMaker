@@ -46,6 +46,15 @@ In `android-stub`, this is automated by Gradle tasks in `android-stub/app/build.
 - `syncVsmJars`
 
 These tasks build jars from the main repo and copy them into `android-stub/app/libs`.
+For reusable Android integration across projects, you can instead build thin jars once in the repo root:
+
+- `./gradlew assembleAndroidThinJars`
+
+This produces jars under `android-thin-jars/` for:
+
+- `core`
+- `core-http-android`
+- plugins with `plugin-properties.json` where `plugin.androidCompatible` is `true`
 
 ## 3.2 Add Android dependencies
 
@@ -113,6 +122,27 @@ A plugin that works on desktop may fail on Android if it depends on:
 - desktop-only network/server APIs
 
 For Android portability, plugin code should depend only on Android-safe/core Java APIs available on Android.
+
+If you package multiple plugin jars, Android may fail with duplicate Java resources:
+
+- `2 files found with path 'plugin-properties.json'`
+
+Each plugin jar contains a root-level `plugin-properties.json`, so add a packaging rule in your Android app:
+
+```gradle
+android {
+    packaging {
+        resources {
+            excludes += ['plugin-properties.json']
+        }
+    }
+}
+```
+
+Notes:
+
+- `pickFirsts += ['plugin-properties.json']` keeps only one descriptor and is usually not desired.
+- `excludes` is safe when runtime plugin loading does not require reading these descriptor files from inside the APK.
 
 ## 5. Remote Web UI connection
 

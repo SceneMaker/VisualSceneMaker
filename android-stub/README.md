@@ -34,6 +34,12 @@ The app build runs these tasks automatically before `preBuild`:
 - `syncVsmJars` (copies jars to `app/libs`)
 - `syncSimpleProjectAssets` (copies project XML files)
 
+For external Android apps, prefer building Android thin jars from the repo root:
+
+- `./gradlew assembleAndroidThinJars`
+
+This writes jars to `android-thin-jars/` (core + plugins where `plugin-properties.json` has `plugin.androidCompatible: true`).
+
 ## Connect from desktop Web UI
 
 1. Run the app in emulator/device and tap `Start`.

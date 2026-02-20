@@ -31,6 +31,7 @@ Website: [scenemaker.dfki.de](http://scenemaker.dfki.de)
 - Full build: `./gradlew build`
 - Tests only: `./gradlew test`
 - Fat jar: `./gradlew shadowJar`
+- Android thin jars (core + `androidCompatible` plugins): `./gradlew assembleAndroidThinJars`
 - Clean: `./gradlew clean`
 - Build with JavaFX runtime bundled in jar (legacy packaging): `./gradlew build -PincludeJavaFx=true`
 
