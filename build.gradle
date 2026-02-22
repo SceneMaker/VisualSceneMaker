@@ -211,6 +211,270 @@ tasks.withType(Test).configureEach {
     }
 }
 
+tasks.register('generateCapabilitySnapshot') {
+    group = 'verification'
+    description = 'Generates a capability snapshot JSON from project.xml + sceneflow.xml.'
+
+    doLast {
+        def snapshotProjectDir = (findProperty('snapshotProjectDir')
+                ?: "${projectDir}/doc/DesignPatterns").toString()
+        def snapshotOutPath = (findProperty('snapshotOut')
+                ?: "${layout.buildDirectory.get().asFile}/reports/capability-snapshot.json").toString()
+
+        def sourceDir = file(snapshotProjectDir)
+        def projectXmlFile = file("${sourceDir}/project.xml")
+        def sceneFlowXmlFile = file("${sourceDir}/sceneflow.xml")
+
+        if (!sourceDir.exists()) {
+            throw new GradleException("Snapshot source directory not found: ${sourceDir}")
+        }
+        if (!sceneFlowXmlFile.exists()) {
+            throw new GradleException("sceneflow.xml not found in: ${sourceDir}")
+        }
+
+        def slurper = new XmlSlurper(false, false)
+        def sceneFlow = slurper.parse(sceneFlowXmlFile)
+        def projectXml = projectXmlFile.exists() ? slurper.parse(projectXmlFile) : null
+
+        def edgeTypeMap = [
+                EEdge: 'EEDGE',
+                CEdge: 'CEDGE',
+                PEdge: 'PEDGE',
+                TEdge: 'TEDGE',
+                FEdge: 'FEDGE',
+                IEdge: 'IEDGE'
+        ]
+
+        def allowedEdgeTypes = ['EEDGE', 'CEDGE', 'PEDGE', 'TEDGE', 'FEDGE', 'IEDGE']
+
+        def parseBoolean = { String value ->
+            value != null && value.trim().equalsIgnoreCase('true')
+        }
+
+        def parseIntSafe = { String value ->
+            try {
+                return Integer.parseInt(value?.trim())
+            } catch (Exception ignored) {
+                return null
+            }
+        }
+
+        def literalValue = { node ->
+            def tag = node.name().toString()
+            if (tag == 'StringLiteral') {
+                return "\"${node.text()}\""
+            }
+            if (tag == 'SimpleVariable') {
+                return node.@name.text()
+            }
+            if (tag == 'IntLiteral' || tag == 'FloatLiteral' || tag == 'BoolLiteral') {
+                def attr = node.@value.text()
+                return attr ? attr : node.text()
+            }
+            return node.text()
+        }
+
+        def expressionToText
+        expressionToText = { node ->
+            def tag = node.name().toString()
+            def children = node.children().findAll { it instanceof groovy.util.slurpersupport.NodeChild }
+
+            if (children.isEmpty()) {
+                return literalValue(node)?.toString()?.trim()
+            }
+
+            if (tag == 'Eq' && children.size() == 2) {
+                return "${expressionToText(children[0])} == ${expressionToText(children[1])}"
+            }
+            if (tag == 'Ne' && children.size() == 2) {
+                return "${expressionToText(children[0])} != ${expressionToText(children[1])}"
+            }
+            if (tag == 'Lt' && children.size() == 2) {
+                return "${expressionToText(children[0])} < ${expressionToText(children[1])}"
+            }
+            if (tag == 'Le' && children.size() == 2) {
+                return "${expressionToText(children[0])} <= ${expressionToText(children[1])}"
+            }
+            if (tag == 'Gt' && children.size() == 2) {
+                return "${expressionToText(children[0])} > ${expressionToText(children[1])}"
+            }
+            if (tag == 'Ge' && children.size() == 2) {
+                return "${expressionToText(children[0])} >= ${expressionToText(children[1])}"
+            }
+            if (tag == 'Neg' && children.size() == 1) {
+                return "-${expressionToText(children[0])}"
+            }
+            if (tag == 'And' && children.size() == 2) {
+                return "${expressionToText(children[0])} && ${expressionToText(children[1])}"
+            }
+            if (tag == 'Or' && children.size() == 2) {
+                return "${expressionToText(children[0])} || ${expressionToText(children[1])}"
+            }
+
+            def renderedChildren = children.collect { expressionToText(it) }.findAll { it != null && !it.isBlank() }
+            if (renderedChildren.isEmpty()) {
+                return tag
+            }
+            return "${tag}(${renderedChildren.join(', ')})"
+        }
+
+        def plugins = []
+        if (projectXml != null) {
+            projectXml.Plugins.Plugin.each { p ->
+                plugins << [
+                        name     : p.@name.text(),
+                        className: p.@class.text(),
+                        type     : p.@type.text(),
+                        load     : parseBoolean(p.@load.text())
+                ]
+            }
+        }
+
+        def agents = []
+        if (projectXml != null) {
+            projectXml.Agents.Agent.each { a ->
+                def features = []
+                a.Feature.each { f ->
+                    features << [
+                            key  : f.@key.text(),
+                            value: f.@val.text()
+                    ]
+                }
+                agents << [
+                        name    : a.@name.text(),
+                        device  : a.@device.text(),
+                        features: features
+                ]
+            }
+        }
+
+        def variables = []
+        sceneFlow.Declare.VariableDefinition.each { v ->
+            variables << [
+                    name       : v.@name.text(),
+                    type       : v.@type.text(),
+                    scope      : 'global',
+                    ownerNodeId: 'SceneFlow'
+            ]
+        }
+
+        def nodes = []
+        def edges = []
+
+        def extractEdgeCondition = { edgeNode ->
+            def exprNode = edgeNode.children().find {
+                if (!(it instanceof groovy.util.slurpersupport.NodeChild)) {
+                    return false
+                }
+                def n = it.name().toString()
+                return n != 'Graphics' && n != 'Commands'
+            }
+            if (exprNode == null) {
+                return null
+            }
+            return expressionToText(exprNode)
+        }
+
+        def collectEdgesForOwner = { ownerId, ownerNode ->
+            edgeTypeMap.each { xmlTag, canonicalType ->
+                ownerNode."${xmlTag}".each { e ->
+                    def edgeEntry = [
+                            type       : canonicalType,
+                            sourceNodeId: ownerId,
+                            targetNodeId: e.@target.text()
+                    ]
+                    if (canonicalType == 'TEDGE') {
+                        def timeout = parseIntSafe(e.@timeout.text())
+                        if (timeout != null) {
+                            edgeEntry.timeoutMs = timeout
+                        }
+                    }
+                    if (canonicalType == 'PEDGE') {
+                        def probability = parseIntSafe(e.@probability.text())
+                        if (probability != null) {
+                            edgeEntry.probability = probability
+                        }
+                    }
+                    if (canonicalType == 'CEDGE' || canonicalType == 'IEDGE') {
+                        def conditionText = extractEdgeCondition(e)
+                        if (conditionText) {
+                            edgeEntry.conditionText = conditionText
+                        }
+                    }
+                    edges << edgeEntry
+                }
+            }
+        }
+
+        def collectNodeTree
+        collectNodeTree = { container, parentSuperNodeId ->
+            container.Node.each { n ->
+                def nodeId = n.@id.text()
+                nodes << [
+                        id               : nodeId,
+                        name             : n.@name.text(),
+                        parentSuperNodeId: parentSuperNodeId,
+                        isSuperNode      : false,
+                        isHistoryNode    : parseBoolean(n.@history.text()),
+                        commandCount     : n.Commands.Command.size()
+                ]
+                collectEdgesForOwner(nodeId, n)
+            }
+
+            container.SuperNode.each { s ->
+                def superNodeId = s.@id.text()
+                def startNodeIds = s.@start.text().split(';').findAll { it != null && !it.trim().isEmpty() }
+                nodes << [
+                        id               : superNodeId,
+                        name             : s.@name.text(),
+                        parentSuperNodeId: parentSuperNodeId,
+                        isSuperNode      : true,
+                        isHistoryNode    : false,
+                        startNodeIds     : startNodeIds,
+                        commandCount     : s.Commands.Command.size()
+                ]
+                collectEdgesForOwner(superNodeId, s)
+                collectNodeTree(s, superNodeId)
+            }
+        }
+
+        collectNodeTree(sceneFlow, 'SceneFlow')
+
+        def startNodeIds = sceneFlow.@start.text().split(';').findAll { it != null && !it.trim().isEmpty() }
+        def rootId = sceneFlow.@id.text()?.trim()
+        if (!rootId) {
+            rootId = 'SceneFlow'
+        }
+
+        def snapshot = [
+                snapshotVersion: '1.0',
+                generatedAt    : new Date().format("yyyy-MM-dd'T'HH:mm:ssXXX"),
+                source         : sourceDir.absolutePath,
+                project        : [
+                        name          : projectXml?.@name?.text() ?: sourceDir.name,
+                        androidProject: parseBoolean(projectXml?.@androidProject?.text()),
+                        plugins       : plugins,
+                        agents        : agents
+                ],
+                flow           : [
+                        rootId          : rootId,
+                        startNodeIds    : startNodeIds,
+                        variables       : variables,
+                        allowedEdgeTypes: allowedEdgeTypes,
+                        nodes           : nodes,
+                        edges           : edges
+                ]
+        ]
+
+        def outFile = file(snapshotOutPath)
+        outFile.parentFile.mkdirs()
+        outFile.text = groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(snapshot)) + System.lineSeparator()
+
+        logger.lifecycle("Capability snapshot written to: ${outFile}")
+        logger.lifecycle("Source project directory: ${sourceDir}")
+    }
+}
+
 def androidThinBaseProjects = [
         project(':core'),
         project(':core-http-android')

@@ -1,0 +1,312 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://scenemaker.dfki.de/schema/sceneflow-ir/v1/capability-snapshot.schema.json",
+  "title": "SceneFlow Capability Snapshot v1",
+  "description": "Runtime/project capability context used to constrain LLM IR generation and semantic validation.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "snapshotVersion",
+    "generatedAt",
+    "project",
+    "flow"
+  ],
+  "properties": {
+    "snapshotVersion": {
+      "type": "string",
+      "const": "1.0"
+    },
+    "generatedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "source": {
+      "type": "string",
+      "description": "Where this snapshot was derived from."
+    },
+    "project": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "androidProject": {
+          "type": "boolean"
+        },
+        "plugins": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/plugin"
+          },
+          "default": []
+        },
+        "agents": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/agent"
+          },
+          "default": []
+        }
+      }
+    },
+    "flow": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "rootId",
+        "startNodeIds",
+        "variables",
+        "allowedEdgeTypes",
+        "nodes",
+        "edges"
+      ],
+      "properties": {
+        "rootId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "startNodeIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "default": []
+        },
+        "variables": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/variable"
+          },
+          "default": []
+        },
+        "allowedEdgeTypes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "EEDGE",
+              "CEDGE",
+              "PEDGE",
+              "TEDGE",
+              "FEDGE",
+              "IEDGE"
+            ]
+          },
+          "uniqueItems": true,
+          "minItems": 1
+        },
+        "nodes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/node"
+          },
+          "default": []
+        },
+        "edges": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/edge"
+          },
+          "default": []
+        }
+      }
+    }
+  },
+  "$defs": {
+    "feature": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "key",
+        "value"
+      ],
+      "properties": {
+        "key": {
+          "type": "string",
+          "minLength": 1
+        },
+        "value": {
+          "type": "string"
+        }
+      }
+    },
+    "plugin": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "className",
+        "type",
+        "load"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "className": {
+          "type": "string",
+          "minLength": 1
+        },
+        "type": {
+          "type": "string",
+          "minLength": 1
+        },
+        "load": {
+          "type": "boolean"
+        }
+      }
+    },
+    "agent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "device"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "device": {
+          "type": "string",
+          "minLength": 1
+        },
+        "features": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/feature"
+          },
+          "default": []
+        }
+      }
+    },
+    "variable": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "type",
+        "scope"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "Int",
+            "Bool",
+            "Float",
+            "String",
+            "Event"
+          ]
+        },
+        "scope": {
+          "type": "string",
+          "enum": [
+            "global",
+            "local"
+          ]
+        },
+        "ownerNodeId": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "node": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "name",
+        "parentSuperNodeId",
+        "isSuperNode",
+        "isHistoryNode"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string"
+        },
+        "parentSuperNodeId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "isSuperNode": {
+          "type": "boolean"
+        },
+        "isHistoryNode": {
+          "type": "boolean"
+        },
+        "startNodeIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "default": []
+        },
+        "commandCount": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "edge": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "sourceNodeId",
+        "targetNodeId"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "EEDGE",
+            "CEDGE",
+            "PEDGE",
+            "TEDGE",
+            "FEDGE",
+            "IEDGE"
+          ]
+        },
+        "sourceNodeId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "targetNodeId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "conditionText": {
+          "type": "string"
+        },
+        "timeoutMs": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "probability": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        }
+      }
+    }
+  }
+}
