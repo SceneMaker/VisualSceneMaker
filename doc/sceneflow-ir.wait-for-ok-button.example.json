@@ -1,0 +1,61 @@
+{
+  "irVersion": "1.0",
+  "mode": "patch",
+  "metadata": {
+    "requestId": "example-wait-ok-001",
+    "source": "manual-example",
+    "situation": "Wait until the user presses the Okay button.",
+    "createdAt": "2026-02-21T12:00:00Z"
+  },
+  "assumptions": [
+    "Variable UIEvent already exists in the current flow context.",
+    "Root supernode id is SceneFlow."
+  ],
+  "capabilitySnapshotRef": "snapshot://example/current-project",
+  "operations": [
+    {
+      "op": "create_supernode",
+      "opId": "op-001",
+      "parentSuperNodeId": "SceneFlow",
+      "superNodeId": "WaitForOkay",
+      "name": "WaitForOkay",
+      "comment": "Poll until UIEvent signals OkayButton."
+    },
+    {
+      "op": "create_node",
+      "opId": "op-002",
+      "parentSuperNodeId": "WaitForOkay",
+      "nodeId": "WaitLoop",
+      "name": "WaitLoop"
+    },
+    {
+      "op": "create_edge",
+      "opId": "op-003",
+      "edgeId": "WaitLoopTimeout",
+      "edgeType": "TEDGE",
+      "sourceNodeId": "WaitLoop",
+      "targetNodeId": "WaitLoop",
+      "payload": {
+        "timeoutMs": 1000
+      }
+    },
+    {
+      "op": "create_node",
+      "opId": "op-004",
+      "parentSuperNodeId": "SceneFlow",
+      "nodeId": "AfterOkay",
+      "name": "AfterOkay"
+    },
+    {
+      "op": "create_edge",
+      "opId": "op-005",
+      "edgeId": "WaitLoopInterrupt",
+      "edgeType": "IEDGE",
+      "sourceNodeId": "WaitForOkay",
+      "targetNodeId": "AfterOkay",
+      "payload": {
+        "conditionText": "UIEvent == \"OkayButton\""
+      }
+    }
+  ]
+}

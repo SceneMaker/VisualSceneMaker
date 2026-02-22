@@ -1,0 +1,367 @@
+{
+    "snapshotVersion": "1.0",
+    "generatedAt": "2026-02-22T08:50:38+01:00",
+    "source": "/Users/gebhard/Code/Repo/VisualSceneMaker/doc/DesignPatterns",
+    "project": {
+        "name": "DesignPatterns",
+        "androidProject": false,
+        "plugins": [
+            {
+                "name": "TimerExecutor",
+                "className": "de.dfki.vsm.xtension.timer.TimerExecutor",
+                "type": "device",
+                "load": true
+            }
+        ],
+        "agents": [
+            {
+                "name": "timer",
+                "device": "TimerExecutor",
+                "features": [
+                    
+                ]
+            }
+        ]
+    },
+    "flow": {
+        "rootId": "SceneFlow",
+        "startNodeIds": [
+            "S1"
+        ],
+        "variables": [
+            {
+                "name": "event",
+                "type": "Event(*, 10)",
+                "scope": "global",
+                "ownerNodeId": "SceneFlow"
+            },
+            {
+                "name": "state",
+                "type": "Bool",
+                "scope": "global",
+                "ownerNodeId": "SceneFlow"
+            },
+            {
+                "name": "timeout",
+                "type": "Int",
+                "scope": "global",
+                "ownerNodeId": "SceneFlow"
+            },
+            {
+                "name": "cnt",
+                "type": "Int",
+                "scope": "global",
+                "ownerNodeId": "SceneFlow"
+            }
+        ],
+        "allowedEdgeTypes": [
+            "EEDGE",
+            "CEDGE",
+            "PEDGE",
+            "TEDGE",
+            "FEDGE",
+            "IEDGE"
+        ],
+        "nodes": [
+            {
+                "id": "N1",
+                "name": "React",
+                "parentSuperNodeId": "SceneFlow",
+                "isSuperNode": false,
+                "isHistoryNode": false,
+                "commandCount": 0
+            },
+            {
+                "id": "N3",
+                "name": "Toss the dice",
+                "parentSuperNodeId": "SceneFlow",
+                "isSuperNode": false,
+                "isHistoryNode": false,
+                "commandCount": 0
+            },
+            {
+                "id": "N4",
+                "name": "Option 1",
+                "parentSuperNodeId": "SceneFlow",
+                "isSuperNode": false,
+                "isHistoryNode": false,
+                "commandCount": 0
+            },
+            {
+                "id": "N5",
+                "name": "Option 2",
+                "parentSuperNodeId": "SceneFlow",
+                "isSuperNode": false,
+                "isHistoryNode": false,
+                "commandCount": 0
+            },
+            {
+                "id": "N6",
+                "name": "Option 3",
+                "parentSuperNodeId": "SceneFlow",
+                "isSuperNode": false,
+                "isHistoryNode": false,
+                "commandCount": 0
+            },
+            {
+                "id": "N7",
+                "name": "react if something changed after 1 second",
+                "parentSuperNodeId": "SceneFlow",
+                "isSuperNode": false,
+                "isHistoryNode": false,
+                "commandCount": 0
+            },
+            {
+                "id": "N8",
+                "name": "React",
+                "parentSuperNodeId": "SceneFlow",
+                "isSuperNode": false,
+                "isHistoryNode": false,
+                "commandCount": 0
+            },
+            {
+                "id": "N9",
+                "name": "Lauch separate actions",
+                "parentSuperNodeId": "SceneFlow",
+                "isSuperNode": false,
+                "isHistoryNode": false,
+                "commandCount": 0
+            },
+            {
+                "id": "N10",
+                "name": "Action 1",
+                "parentSuperNodeId": "SceneFlow",
+                "isSuperNode": false,
+                "isHistoryNode": false,
+                "commandCount": 0
+            },
+            {
+                "id": "N11",
+                "name": "Action 2",
+                "parentSuperNodeId": "SceneFlow",
+                "isSuperNode": false,
+                "isHistoryNode": false,
+                "commandCount": 0
+            },
+            {
+                "id": "N12",
+                "name": "If, then, or then, or else",
+                "parentSuperNodeId": "SceneFlow",
+                "isSuperNode": false,
+                "isHistoryNode": false,
+                "commandCount": 0
+            },
+            {
+                "id": "N13",
+                "name": "Case1",
+                "parentSuperNodeId": "SceneFlow",
+                "isSuperNode": false,
+                "isHistoryNode": false,
+                "commandCount": 0
+            },
+            {
+                "id": "N14",
+                "name": "Case2",
+                "parentSuperNodeId": "SceneFlow",
+                "isSuperNode": false,
+                "isHistoryNode": false,
+                "commandCount": 0
+            },
+            {
+                "id": "N15",
+                "name": "Case3",
+                "parentSuperNodeId": "SceneFlow",
+                "isSuperNode": false,
+                "isHistoryNode": false,
+                "commandCount": 0
+            },
+            {
+                "id": "N16",
+                "name": "Case2",
+                "parentSuperNodeId": "SceneFlow",
+                "isSuperNode": false,
+                "isHistoryNode": false,
+                "commandCount": 0
+            },
+            {
+                "id": "N17",
+                "name": "Case1",
+                "parentSuperNodeId": "SceneFlow",
+                "isSuperNode": false,
+                "isHistoryNode": false,
+                "commandCount": 0
+            },
+            {
+                "id": "N18",
+                "name": "Case3",
+                "parentSuperNodeId": "SceneFlow",
+                "isSuperNode": false,
+                "isHistoryNode": false,
+                "commandCount": 0
+            },
+            {
+                "id": "N19",
+                "name": "If, then, or then, or else but wait a bit",
+                "parentSuperNodeId": "SceneFlow",
+                "isSuperNode": false,
+                "isHistoryNode": false,
+                "commandCount": 0
+            },
+            {
+                "id": "N20",
+                "name": "Wait a bit; absolute time",
+                "parentSuperNodeId": "SceneFlow",
+                "isSuperNode": false,
+                "isHistoryNode": false,
+                "commandCount": 0
+            },
+            {
+                "id": "N21",
+                "name": "Node N21",
+                "parentSuperNodeId": "SceneFlow",
+                "isSuperNode": false,
+                "isHistoryNode": false,
+                "commandCount": 0
+            },
+            {
+                "id": "N22",
+                "name": "Node N21",
+                "parentSuperNodeId": "SceneFlow",
+                "isSuperNode": false,
+                "isHistoryNode": false,
+                "commandCount": 0
+            },
+            {
+                "id": "N23",
+                "name": "Wait a bit; variable time",
+                "parentSuperNodeId": "SceneFlow",
+                "isSuperNode": false,
+                "isHistoryNode": false,
+                "commandCount": 0
+            },
+            {
+                "id": "S1",
+                "name": "Directly react at an event or something changed",
+                "parentSuperNodeId": "SceneFlow",
+                "isSuperNode": true,
+                "isHistoryNode": false,
+                "startNodeIds": [
+                    "N2"
+                ],
+                "commandCount": 0
+            },
+            {
+                "id": "N2",
+                "name": "easiest way to wait",
+                "parentSuperNodeId": "S1",
+                "isSuperNode": false,
+                "isHistoryNode": false,
+                "commandCount": 0
+            }
+        ],
+        "edges": [
+            {
+                "type": "EEDGE",
+                "sourceNodeId": "N1",
+                "targetNodeId": "S1"
+            },
+            {
+                "type": "PEDGE",
+                "sourceNodeId": "N3",
+                "targetNodeId": "N4",
+                "probability": 34
+            },
+            {
+                "type": "PEDGE",
+                "sourceNodeId": "N3",
+                "targetNodeId": "N5",
+                "probability": 33
+            },
+            {
+                "type": "PEDGE",
+                "sourceNodeId": "N3",
+                "targetNodeId": "N6",
+                "probability": 33
+            },
+            {
+                "type": "CEDGE",
+                "sourceNodeId": "N7",
+                "targetNodeId": "N8",
+                "conditionText": "state"
+            },
+            {
+                "type": "TEDGE",
+                "sourceNodeId": "N7",
+                "targetNodeId": "N7",
+                "timeoutMs": 1000
+            },
+            {
+                "type": "FEDGE",
+                "sourceNodeId": "N9",
+                "targetNodeId": "N10"
+            },
+            {
+                "type": "FEDGE",
+                "sourceNodeId": "N9",
+                "targetNodeId": "N11"
+            },
+            {
+                "type": "EEDGE",
+                "sourceNodeId": "N12",
+                "targetNodeId": "N15"
+            },
+            {
+                "type": "CEDGE",
+                "sourceNodeId": "N12",
+                "targetNodeId": "N13",
+                "conditionText": "cnt == 1"
+            },
+            {
+                "type": "CEDGE",
+                "sourceNodeId": "N12",
+                "targetNodeId": "N14",
+                "conditionText": "cnt == 2"
+            },
+            {
+                "type": "CEDGE",
+                "sourceNodeId": "N19",
+                "targetNodeId": "N17"
+            },
+            {
+                "type": "CEDGE",
+                "sourceNodeId": "N19",
+                "targetNodeId": "N16"
+            },
+            {
+                "type": "TEDGE",
+                "sourceNodeId": "N19",
+                "targetNodeId": "N18",
+                "timeoutMs": 1000
+            },
+            {
+                "type": "TEDGE",
+                "sourceNodeId": "N20",
+                "targetNodeId": "N21",
+                "timeoutMs": 1000
+            },
+            {
+                "type": "TEDGE",
+                "sourceNodeId": "N23",
+                "targetNodeId": "N22",
+                "timeoutMs": 1000
+            },
+            {
+                "type": "IEDGE",
+                "sourceNodeId": "S1",
+                "targetNodeId": "N1",
+                "conditionText": "event == \"OkayButtonPressed\""
+            },
+            {
+                "type": "TEDGE",
+                "sourceNodeId": "N2",
+                "targetNodeId": "N2",
+                "timeoutMs": 1000
+            }
+        ]
+    }
+}

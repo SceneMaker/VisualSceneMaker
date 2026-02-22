@@ -1,0 +1,689 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://scenemaker.dfki.de/schema/sceneflow-ir/v1/sceneflow-ir.schema.json",
+  "title": "SceneFlow Intermediate Representation (IR) v1",
+  "description": "Constrained intermediate format for LLM-assisted SceneFlow generation. This schema validates IR before XML compilation.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "irVersion",
+    "mode",
+    "operations"
+  ],
+  "properties": {
+    "irVersion": {
+      "type": "string",
+      "const": "1.0"
+    },
+    "mode": {
+      "type": "string",
+      "enum": [
+        "patch",
+        "replace"
+      ],
+      "description": "patch = mutate existing flow; replace = regenerate full flow artifact."
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "requestId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source": {
+          "type": "string",
+          "minLength": 1
+        },
+        "situation": {
+          "type": "string",
+          "minLength": 1
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "assumptions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "default": []
+    },
+    "capabilitySnapshotRef": {
+      "type": "string",
+      "description": "Opaque reference to capability snapshot used for generation."
+    },
+    "operations": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "oneOf": [
+          {
+            "$ref": "#/$defs/createSuperNodeOperation"
+          },
+          {
+            "$ref": "#/$defs/createNodeOperation"
+          },
+          {
+            "$ref": "#/$defs/updateNodeOperation"
+          },
+          {
+            "$ref": "#/$defs/deleteNodeOperation"
+          },
+          {
+            "$ref": "#/$defs/createEdgeOperation"
+          },
+          {
+            "$ref": "#/$defs/updateEdgeOperation"
+          },
+          {
+            "$ref": "#/$defs/deleteEdgeOperation"
+          },
+          {
+            "$ref": "#/$defs/addNodeCommandOperation"
+          },
+          {
+            "$ref": "#/$defs/updateNodeCommandOperation"
+          },
+          {
+            "$ref": "#/$defs/deleteNodeCommandOperation"
+          },
+          {
+            "$ref": "#/$defs/addVariableDefinitionOperation"
+          },
+          {
+            "$ref": "#/$defs/updateVariableDefinitionOperation"
+          },
+          {
+            "$ref": "#/$defs/deleteVariableDefinitionOperation"
+          }
+        ]
+      }
+    }
+  },
+  "$defs": {
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9._:-]+$"
+    },
+    "edgeKind": {
+      "type": "string",
+      "enum": [
+        "EEDGE",
+        "CEDGE",
+        "PEDGE",
+        "TEDGE",
+        "FEDGE",
+        "IEDGE"
+      ]
+    },
+    "position": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "x",
+        "y"
+      ],
+      "properties": {
+        "x": {
+          "type": "number"
+        },
+        "y": {
+          "type": "number"
+        }
+      }
+    },
+    "commandText": {
+      "type": "string",
+      "minLength": 1
+    },
+    "variableDefinition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "type"
+      ],
+      "properties": {
+        "name": {
+          "$ref": "#/$defs/id"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "Int",
+            "Bool",
+            "Float",
+            "String",
+            "Event"
+          ]
+        },
+        "expression": {
+          "type": "string"
+        },
+        "eventElementType": {
+          "type": "string"
+        },
+        "eventCapacity": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "edgePayload": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "conditionText": {
+          "type": "string",
+          "description": "Condition expression for CEDGE/IEDGE."
+        },
+        "timeoutMs": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Timeout in milliseconds for TEDGE."
+        },
+        "probability": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Probability for PEDGE."
+        },
+        "commands": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/commandText"
+          },
+          "default": []
+        }
+      }
+    },
+    "baseOperation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "op"
+      ],
+      "properties": {
+        "op": {
+          "type": "string"
+        },
+        "opId": {
+          "$ref": "#/$defs/id"
+        },
+        "reason": {
+          "type": "string"
+        }
+      }
+    },
+    "createSuperNodeOperation": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/baseOperation"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "op",
+            "parentSuperNodeId",
+            "superNodeId",
+            "name"
+          ],
+          "properties": {
+            "op": {
+              "const": "create_supernode"
+            },
+            "opId": {
+              "$ref": "#/$defs/id"
+            },
+            "parentSuperNodeId": {
+              "$ref": "#/$defs/id"
+            },
+            "superNodeId": {
+              "$ref": "#/$defs/id"
+            },
+            "name": {
+              "type": "string",
+              "minLength": 1
+            },
+            "comment": {
+              "type": "string"
+            },
+            "position": {
+              "$ref": "#/$defs/position"
+            },
+            "isStartNode": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        }
+      ]
+    },
+    "createNodeOperation": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/baseOperation"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "op",
+            "parentSuperNodeId",
+            "nodeId",
+            "name"
+          ],
+          "properties": {
+            "op": {
+              "const": "create_node"
+            },
+            "opId": {
+              "$ref": "#/$defs/id"
+            },
+            "parentSuperNodeId": {
+              "$ref": "#/$defs/id"
+            },
+            "nodeId": {
+              "$ref": "#/$defs/id"
+            },
+            "name": {
+              "type": "string",
+              "minLength": 1
+            },
+            "comment": {
+              "type": "string"
+            },
+            "position": {
+              "$ref": "#/$defs/position"
+            },
+            "isStartNode": {
+              "type": "boolean",
+              "default": false
+            },
+            "isHistoryNode": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        }
+      ]
+    },
+    "updateNodeOperation": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/baseOperation"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "op",
+            "nodeId"
+          ],
+          "properties": {
+            "op": {
+              "const": "update_node"
+            },
+            "opId": {
+              "$ref": "#/$defs/id"
+            },
+            "nodeId": {
+              "$ref": "#/$defs/id"
+            },
+            "name": {
+              "type": "string",
+              "minLength": 1
+            },
+            "comment": {
+              "type": "string"
+            },
+            "position": {
+              "$ref": "#/$defs/position"
+            },
+            "isStartNode": {
+              "type": "boolean"
+            },
+            "isHistoryNode": {
+              "type": "boolean"
+            }
+          },
+          "minProperties": 3
+        }
+      ]
+    },
+    "deleteNodeOperation": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/baseOperation"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "op",
+            "nodeId"
+          ],
+          "properties": {
+            "op": {
+              "const": "delete_node"
+            },
+            "opId": {
+              "$ref": "#/$defs/id"
+            },
+            "nodeId": {
+              "$ref": "#/$defs/id"
+            }
+          }
+        }
+      ]
+    },
+    "createEdgeOperation": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/baseOperation"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "op",
+            "edgeId",
+            "edgeType",
+            "sourceNodeId",
+            "targetNodeId"
+          ],
+          "properties": {
+            "op": {
+              "const": "create_edge"
+            },
+            "opId": {
+              "$ref": "#/$defs/id"
+            },
+            "edgeId": {
+              "$ref": "#/$defs/id"
+            },
+            "edgeType": {
+              "$ref": "#/$defs/edgeKind"
+            },
+            "sourceNodeId": {
+              "$ref": "#/$defs/id"
+            },
+            "targetNodeId": {
+              "$ref": "#/$defs/id"
+            },
+            "payload": {
+              "$ref": "#/$defs/edgePayload"
+            }
+          }
+        }
+      ]
+    },
+    "updateEdgeOperation": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/baseOperation"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "op",
+            "edgeId"
+          ],
+          "properties": {
+            "op": {
+              "const": "update_edge"
+            },
+            "opId": {
+              "$ref": "#/$defs/id"
+            },
+            "edgeId": {
+              "$ref": "#/$defs/id"
+            },
+            "targetNodeId": {
+              "$ref": "#/$defs/id"
+            },
+            "payload": {
+              "$ref": "#/$defs/edgePayload"
+            }
+          },
+          "minProperties": 3
+        }
+      ]
+    },
+    "deleteEdgeOperation": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/baseOperation"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "op",
+            "edgeId"
+          ],
+          "properties": {
+            "op": {
+              "const": "delete_edge"
+            },
+            "opId": {
+              "$ref": "#/$defs/id"
+            },
+            "edgeId": {
+              "$ref": "#/$defs/id"
+            }
+          }
+        }
+      ]
+    },
+    "addNodeCommandOperation": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/baseOperation"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "op",
+            "nodeId",
+            "commandText"
+          ],
+          "properties": {
+            "op": {
+              "const": "add_node_command"
+            },
+            "opId": {
+              "$ref": "#/$defs/id"
+            },
+            "nodeId": {
+              "$ref": "#/$defs/id"
+            },
+            "index": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "commandText": {
+              "$ref": "#/$defs/commandText"
+            }
+          }
+        }
+      ]
+    },
+    "updateNodeCommandOperation": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/baseOperation"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "op",
+            "nodeId",
+            "index",
+            "commandText"
+          ],
+          "properties": {
+            "op": {
+              "const": "update_node_command"
+            },
+            "opId": {
+              "$ref": "#/$defs/id"
+            },
+            "nodeId": {
+              "$ref": "#/$defs/id"
+            },
+            "index": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "commandText": {
+              "$ref": "#/$defs/commandText"
+            }
+          }
+        }
+      ]
+    },
+    "deleteNodeCommandOperation": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/baseOperation"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "op",
+            "nodeId",
+            "index"
+          ],
+          "properties": {
+            "op": {
+              "const": "delete_node_command"
+            },
+            "opId": {
+              "$ref": "#/$defs/id"
+            },
+            "nodeId": {
+              "$ref": "#/$defs/id"
+            },
+            "index": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        }
+      ]
+    },
+    "addVariableDefinitionOperation": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/baseOperation"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "op",
+            "ownerNodeId",
+            "varDef"
+          ],
+          "properties": {
+            "op": {
+              "const": "add_variable_definition"
+            },
+            "opId": {
+              "$ref": "#/$defs/id"
+            },
+            "ownerNodeId": {
+              "$ref": "#/$defs/id",
+              "description": "Use SceneFlow root id for global declarations."
+            },
+            "index": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "varDef": {
+              "$ref": "#/$defs/variableDefinition"
+            }
+          }
+        }
+      ]
+    },
+    "updateVariableDefinitionOperation": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/baseOperation"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "op",
+            "ownerNodeId",
+            "index",
+            "varDef"
+          ],
+          "properties": {
+            "op": {
+              "const": "update_variable_definition"
+            },
+            "opId": {
+              "$ref": "#/$defs/id"
+            },
+            "ownerNodeId": {
+              "$ref": "#/$defs/id"
+            },
+            "index": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "varDef": {
+              "$ref": "#/$defs/variableDefinition"
+            }
+          }
+        }
+      ]
+    },
+    "deleteVariableDefinitionOperation": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/baseOperation"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "op",
+            "ownerNodeId",
+            "index"
+          ],
+          "properties": {
+            "op": {
+              "const": "delete_variable_definition"
+            },
+            "opId": {
+              "$ref": "#/$defs/id"
+            },
+            "ownerNodeId": {
+              "$ref": "#/$defs/id"
+            },
+            "index": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        }
+      ]
+    }
+  }
+}
