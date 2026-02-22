@@ -916,6 +916,11 @@ Sentence:
   let missingVarDialogEl;
   let missingVarDialogOpen = false;
   let missingVarItems = [];
+  let varRenameDialogEl;
+  let varRenameDialogOpen = false;
+  let varRenameOldName = "";
+  let varRenameNewName = "";
+  let varRenameUsageCount = 0;
   let renameSceneDialogEl;
   let renameSceneDialogOpen = false;
   let renameSceneOldName = "";
@@ -1079,7 +1084,7 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
   let timeoutSliderQueuedMs = null;
   let timeoutSliderQueuedEdgeId = "";
   let timeoutSliderSending = false;
-  let timeoutSliderMax = 5000;
+  let timeoutSliderMax = 60000;
   let timeoutSliderStep = 1;
   let nodeDirty = false;
   let edgeDirty = false;
@@ -2660,7 +2665,7 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
     timeoutSliderQueuedMs = null;
     timeoutSliderQueuedEdgeId = "";
     timeoutSliderSending = false;
-    timeoutSliderMax = 5000;
+    timeoutSliderMax = 60000;
     timeoutSliderStep = 1;
   }
 
@@ -6890,17 +6895,7 @@ Sentence:
   function timeoutSliderConfig(value) {
     const current = parseTimeoutMs(value);
     if (!Number.isFinite(current)) return null;
-    const max = Math.max(timeoutSliderMax, current);
-    return { min: 0, max, step: timeoutSliderStep, value: current };
-  }
-
-  function computeTimeoutSliderRange(current) {
-    const max = Math.max(5000, current, Math.ceil((current * 2) / 100) * 100);
-    let step = 1;
-    if (max >= 60000) step = 100;
-    else if (max >= 10000) step = 50;
-    else if (max >= 3000) step = 10;
-    return { max, step };
+    return { min: 0, max: timeoutSliderMax, step: timeoutSliderStep, value: current };
   }
 
   function isTimeoutVarName(value) {
@@ -6911,12 +6906,6 @@ Sentence:
 
   function openTimeoutSlider() {
     if (selectedEdge?.type !== "TEDGE") return;
-    const current = parseTimeoutMs(edgeDraft?.timeoutSpec);
-    if (Number.isFinite(current)) {
-      const range = computeTimeoutSliderRange(current);
-      timeoutSliderMax = range.max;
-      timeoutSliderStep = range.step;
-    }
     timeoutSliderOpen = true;
   }
 
@@ -7440,6 +7429,23 @@ Sentence:
   function closeMissingVarDialog() {
     missingVarDialogOpen = false;
     missingVarItems = [];
+    restoreFocus();
+  }
+
+  function openVarRenameDialog(oldName, newName, usageCount) {
+    rememberFocus();
+    varRenameOldName = oldName || "";
+    varRenameNewName = newName || "";
+    varRenameUsageCount = Math.max(0, Number(usageCount) || 0);
+    varRenameDialogOpen = true;
+    focusDialog(varRenameDialogEl);
+  }
+
+  function closeVarRenameDialog() {
+    varRenameDialogOpen = false;
+    varRenameOldName = "";
+    varRenameNewName = "";
+    varRenameUsageCount = 0;
     restoreFocus();
   }
 
@@ -9154,6 +9160,8 @@ Sentence:
   async function applyVarDefEdit() {
     varDefError = "";
     if (!selectedProjectId || !nodeEditorTarget || !varDefDraft) return;
+    const previousName =
+      varDefEditIndex >= 0 ? String(nodeEditorVarDefs[varDefEditIndex]?.name ?? "").trim() : "";
     const name = (varDefDraft.name ?? "").trim();
     if (!name) {
       varDefError = "Variable name is required.";
@@ -9193,6 +9201,14 @@ Sentence:
       loadScript(selectedProjectId);
       loadScriptScenes(selectedProjectId);
       loadScriptElements(selectedProjectId);
+    }
+    if (
+      varDefEditIndex >= 0 &&
+      previousName &&
+      previousName !== name &&
+      (response.renamedReferences ?? 0) > 0
+    ) {
+      openVarRenameDialog(previousName, name, response.renamedReferences);
     }
     refreshRuntimeVars(nodeEditorTarget);
   }
@@ -11473,6 +11489,10 @@ Sentence:
       closeMissingVarDialog();
       return true;
     }
+    if (varRenameDialogOpen) {
+      closeVarRenameDialog();
+      return true;
+    }
     if (recentFailureOpen) {
       closeRecentFailureDialog();
       return true;
@@ -13098,10 +13118,6 @@ Sentence:
                     {@const slider = timeoutSliderConfig(edgeDraft.timeoutSpec)}
                     {#if slider}
                       <div class="edge-timeout-slider-wrap">
-                        <div class="edge-timeout-slider-head">
-                          <span>Adjust timeout</span>
-                          <span>{slider.value} ms</span>
-                        </div>
                         <input
                           class="edge-timeout-slider"
                           type="range"
@@ -13111,6 +13127,10 @@ Sentence:
                           value={slider.value}
                           on:input={handleTimeoutSliderInput}
                         />
+                        <div class="edge-timeout-slider-scale" aria-hidden="true">
+                          <span>{slider.min} ms</span>
+                          <span>{slider.max} ms</span>
+                        </div>
                       </div>
                     {/if}
                   {/if}
@@ -14221,6 +14241,32 @@ Sentence:
         <div class="row row-end">
           <button type="button" class="ghost" on:click={closeMissingVarDialog}>
             Close
+          </button>
+        </div>
+      </div>
+    </div>
+  {/if}
+
+  {#if varRenameDialogOpen}
+    <div
+      class="modal-backdrop"
+      on:click|self={closeVarRenameDialog}
+      role="presentation"
+    >
+      <div class="modal rename-scene-modal" bind:this={varRenameDialogEl} role="dialog" aria-modal="true" aria-labelledby="var-rename-title" tabindex="-1">
+        <h3 id="var-rename-title">Variable Name Updated</h3>
+        <div class="modal-body">
+          <p>
+            You changed the variable name from "{varRenameOldName}" to "{varRenameNewName}".
+            To avoid broken logic, SceneMaker also updated every matching usage in your scene flow.
+          </p>
+          <p>
+            Updated usages: {varRenameUsageCount}
+          </p>
+        </div>
+        <div class="row row-end">
+          <button type="button" class="primary" on:click={closeVarRenameDialog}>
+            OK
           </button>
         </div>
       </div>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<SceneFlow id="" name="" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Thu, 19 Feb 2026 18:34:00" start="N1;N3;S1;S2;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
+<SceneFlow id="" name="" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Fri, 20 Feb 2026 14:17:17" start="N1;N3;S1;S2;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
   <Define>
   </Define>
   <Declare>
@@ -206,10 +206,12 @@
           <ControlPoint xPos="480" yPos="615" ctrlXPos="413" ctrlYPos="615"/>
         </Connection>
       </Graphics>
-      <Gt>
+      <Lt>
         <SimpleVariable name="cnt"/>
-        <IntLiteral value="3"/>
-      </Gt>
+        <Neg>
+          <IntLiteral value="10"/>
+        </Neg>
+      </Lt>
     </IEdge>
     <Graphics>
       <Position xPos="210" yPos="570"/>

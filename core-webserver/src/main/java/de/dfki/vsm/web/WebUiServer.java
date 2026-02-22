@@ -141,6 +141,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.jar.Manifest;
 import java.util.jar.Attributes;
@@ -353,6 +354,11 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         @Override
         public void broadcastSceneFlowSnapshot(java.util.function.Consumer<String> broadcaster, String projectId, JSONObject snapshot) {
             WebUiServer.this.broadcastSceneFlowSnapshot(broadcaster, projectId, snapshot);
+        }
+
+        @Override
+        public int renameVariableReferences(SuperNode root, String oldName, String newName) {
+            return WebUiServer.this.renameVariableReferences(root, oldName, newName);
         }
 
         @Override
@@ -1716,6 +1722,7 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
      * Used primarily in RUNTIME_ONLY mode for single-project loading.
      */
     public boolean loadProject(String path) {
+        final String normalizedPath = normalizeProjectPath(path);
         // Unload any existing project in the store
         for (ProjectRef ref : projectStore.values()) {
             if (ref.runtimeProject != null && ref.runtimeProject.wasExecuted()) {
@@ -1725,23 +1732,23 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         projectStore.clear();
 
         try {
-            RunTimeProject rtp = new RunTimeProject(new File(path));
-            if (rtp.parse(path)) {
+            RunTimeProject rtp = new RunTimeProject();
+            if (rtp.parse(normalizedPath)) {
                 String pid = UUID.randomUUID().toString();
                 if (rtp.launch()) {
-                    String name = rtp.getProjectName() != null ? rtp.getProjectName() : new File(path).getName();
-                    ProjectRef ref = new ProjectRef(pid, name, path);
+                    String name = rtp.getProjectName() != null ? rtp.getProjectName() : new File(normalizedPath).getName();
+                    ProjectRef ref = new ProjectRef(pid, name, normalizedPath);
                     ref.runtimeProject = rtp;
                     ref.runtimeState = "stopped";
                     projectStore.put(pid, ref);
                     broadcastRuntimeState(pid, "stopped");
-                    sLogger.message("Loaded project: " + path);
+                    sLogger.message("Loaded project: " + normalizedPath);
                     return true;
                 } else {
-                    sLogger.failure("Failed to launch project: " + path);
+                    sLogger.failure("Failed to launch project: " + normalizedPath);
                 }
             } else {
-                sLogger.failure("Failed to parse project: " + path);
+                sLogger.failure("Failed to parse project: " + normalizedPath);
             }
         } catch (Exception e) {
             sLogger.failure("Error loading project: " + e.getMessage());
@@ -3346,24 +3353,29 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
     private void handleProjectOpen(Context ctx) {
         JSONObject body = new JSONObject(ctx.body());
         String path = body.optString("path", "");
+        String normalizedPath = normalizeProjectPath(path);
         JSONObject response = new JSONObject();
         if (path.isBlank()) {
             ctx.status(400).result("Missing path");
             return;
         }
-        String projectId = ensureProject(path, fileName(path));
-        addRecent(path, fileName(path));
+        String projectId = ensureProject(normalizedPath, fileName(normalizedPath), false);
+        if (projectId == null || projectId.isBlank()) {
+            ctx.status(400).result("Failed to open project: " + normalizedPath);
+            return;
+        }
+        addRecent(normalizedPath, fileName(normalizedPath));
         response.put("projectId", projectId);
-        response.put("path", path);
-        response.put("name", fileName(path));
+        response.put("path", normalizedPath);
+        response.put("name", fileName(normalizedPath));
         writeJson(ctx, response);
     }
 
     private void handleProjectCreate(Context ctx) {
         JSONObject body = new JSONObject(ctx.body());
         String name = body.optString("name", "Untitled");
-        String baseDir = body.optString("baseDir", "");
-        String projectId = ensureProject(baseDir, name);
+        String baseDir = normalizeProjectPath(body.optString("baseDir", ""));
+        String projectId = ensureProject(baseDir, name, true);
         JSONObject response = new JSONObject();
         response.put("projectId", projectId);
         response.put("name", name);
@@ -6148,6 +6160,24 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         } else {
             activeSuperNode.addNode(node);
         }
+
+        if (node instanceof SuperNode) {
+            SuperNode createdSuperNode = (SuperNode) node;
+            BasicNode historyNode = createdSuperNode.getHistoryNode();
+            if (historyNode == null) {
+                String historyNodeId = allocateNodeId(ref, false, usedIds);
+                usedIds.add(historyNodeId);
+                historyNode = new BasicNode();
+                historyNode.setId(historyNodeId);
+                historyNode.setName("History");
+                historyNode.setHistoryNodeFlag(true);
+                historyNode.setGraphics(new NodeGraphics(15, 15));
+                historyNode.setParentNode(createdSuperNode);
+                createdSuperNode.addNode(historyNode);
+                createdSuperNode.setHistoryNode(historyNode);
+            }
+        }
+
         boolean hasStart = activeSuperNode.getStartNodeMap() != null && !activeSuperNode.getStartNodeMap().isEmpty();
         if (params.optBoolean("isStart", false) || !hasStart) {
             activeSuperNode.addStartNode(node);
@@ -6193,7 +6223,13 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
             dataNode.setComment(fields.optString("comment", ""));
         }
         if (fields.has("isHistory")) {
-            dataNode.setHistoryNodeFlag(fields.optBoolean("isHistory", false));
+            boolean nextHistory = fields.optBoolean("isHistory", false);
+            SuperNode parent = dataNode.getParentNode();
+            boolean isParentHistoryNode = parent != null && parent.getHistoryNode() == dataNode;
+            if (isParentHistoryNode && !nextHistory) {
+                return errorResponse("BAD_REQUEST", "Cannot remove history flag from a supernode history node.");
+            }
+            dataNode.setHistoryNodeFlag(nextHistory);
         }
         if (fields.has("isStart") && dataNode != activeSuperNode) {
             boolean isStart = fields.optBoolean("isStart", false);
@@ -6230,6 +6266,9 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         BasicNode dataNode = findNodeRecursive(sceneFlow, nodeId);
         if (dataNode == null) {
             return errorResponse("NODE_NOT_FOUND", "Node not found: " + nodeId);
+        }
+        if (dataNode.isHistoryNode()) {
+            return errorResponse("BAD_REQUEST", "History nodes cannot be deleted.");
         }
         SuperNode activeSuperNode = dataNode.getParentNode() != null ? dataNode.getParentNode() : sceneFlow;
         activeSuperNode.removeStartNode(dataNode);
@@ -6999,6 +7038,232 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         return updated;
     }
 
+    private int renameVariableReferences(SuperNode current, String oldName, String newName) {
+        if (current == null || oldName == null || oldName.isBlank() || newName == null || newName.isBlank() || oldName.equals(newName)) {
+            return 0;
+        }
+        int updated = 0;
+        updated += renameVariableReferencesInVarDefs(current.getVarDefList(), oldName, newName);
+        updated += renameVariableReferencesInCommands(current.getCmdList(), oldName, newName);
+        if (current.getEdgeList() != null) {
+            for (AbstractEdge edge : current.getEdgeList()) {
+                updated += renameVariableReferencesInEdge(edge, oldName, newName);
+            }
+        }
+        for (BasicNode node : current.getNodeList()) {
+            updated += renameVariableReferencesInVarDefs(node.getVarDefList(), oldName, newName);
+            updated += renameVariableReferencesInCommands(node.getCmdList(), oldName, newName);
+            if (node.getEdgeList() != null) {
+                for (AbstractEdge edge : node.getEdgeList()) {
+                    updated += renameVariableReferencesInEdge(edge, oldName, newName);
+                }
+            }
+        }
+        for (SuperNode child : current.getSuperNodeList()) {
+            updated += renameVariableReferences(child, oldName, newName);
+        }
+        return updated;
+    }
+
+    private int renameVariableReferencesInVarDefs(List<VariableDefinition> varDefs, String oldName, String newName) {
+        if (varDefs == null || varDefs.isEmpty()) {
+            return 0;
+        }
+        int updated = 0;
+        for (VariableDefinition varDef : varDefs) {
+            if (varDef != null) {
+                updated += renameVariableReferencesInExpression(varDef.getExp(), oldName, newName);
+            }
+        }
+        return updated;
+    }
+
+    private int renameVariableReferencesInCommands(List<Command> commands, String oldName, String newName) {
+        if (commands == null || commands.isEmpty()) {
+            return 0;
+        }
+        int updated = 0;
+        for (Command command : commands) {
+            updated += renameVariableReferencesInCommand(command, oldName, newName);
+        }
+        return updated;
+    }
+
+    private int renameVariableReferencesInEdge(AbstractEdge edge, String oldName, String newName) {
+        if (edge == null) {
+            return 0;
+        }
+        int updated = renameVariableReferencesInCommands(edge.getCmdList(), oldName, newName);
+        if (edge instanceof GuargedEdge) {
+            updated += renameVariableReferencesInExpression(((GuargedEdge) edge).getCondition(), oldName, newName);
+        } else if (edge instanceof InterruptEdge) {
+            updated += renameVariableReferencesInExpression(((InterruptEdge) edge).getCondition(), oldName, newName);
+        } else if (edge instanceof TimeoutEdge) {
+            updated += renameVariableReferencesInExpression(((TimeoutEdge) edge).getExpression(), oldName, newName);
+        }
+        return updated;
+    }
+
+    private int renameVariableReferencesInCommand(Command command, String oldName, String newName) {
+        if (command == null) {
+            return 0;
+        }
+        if (command instanceof Assignment) {
+            Assignment assignment = (Assignment) command;
+            int updated = renameVariableReferencesInExpression(assignment.getLeftExpression(), oldName, newName);
+            updated += renameVariableReferencesInExpression(assignment.getInitExpression(), oldName, newName);
+            return updated;
+        }
+        if (command instanceof PlayActionActivity) {
+            PlayActionActivity invocation = (PlayActionActivity) command;
+            int updated = renameVariableReferencesInExpression(invocation.getCommand(), oldName, newName);
+            for (Expression exp : invocation.getArgList()) {
+                updated += renameVariableReferencesInExpression(exp, oldName, newName);
+            }
+            return updated;
+        }
+        if (command instanceof PlayScenesActivity) {
+            PlayScenesActivity invocation = (PlayScenesActivity) command;
+            int updated = renameVariableReferencesInExpression(invocation.getArgument(), oldName, newName);
+            for (Expression exp : invocation.getArgList()) {
+                updated += renameVariableReferencesInExpression(exp, oldName, newName);
+            }
+            return updated;
+        }
+        if (command instanceof PlayDialogAction) {
+            PlayDialogAction invocation = (PlayDialogAction) command;
+            int updated = renameVariableReferencesInExpression(invocation.getArg(), oldName, newName);
+            for (Expression exp : invocation.getArgList()) {
+                updated += renameVariableReferencesInExpression(exp, oldName, newName);
+            }
+            return updated;
+        }
+        if (command instanceof StopActionActivity) {
+            StopActionActivity invocation = (StopActionActivity) command;
+            int updated = renameVariableReferencesInExpression(invocation.getCommand(), oldName, newName);
+            for (Expression exp : invocation.getArgList()) {
+                updated += renameVariableReferencesInExpression(exp, oldName, newName);
+            }
+            return updated;
+        }
+        if (command instanceof Expression) {
+            return renameVariableReferencesInExpression((Expression) command, oldName, newName);
+        }
+        return 0;
+    }
+
+    private int renameVariableReferencesInExpression(Expression exp, String oldName, String newName) {
+        if (exp == null) {
+            return 0;
+        }
+        if (exp instanceof SimpleVariable) {
+            return renameVariableNameField(exp, "mName", ((SimpleVariable) exp).getName(), oldName, newName);
+        }
+        if (exp instanceof MemberVariable) {
+            return renameVariableNameField(exp, "mName", ((MemberVariable) exp).getName(), oldName, newName);
+        }
+        if (exp instanceof ArrayVariable) {
+            ArrayVariable arrayVar = (ArrayVariable) exp;
+            int updated = renameVariableNameField(exp, "mName", arrayVar.getName(), oldName, newName);
+            updated += renameVariableReferencesInExpression(arrayVar.getExpression(), oldName, newName);
+            return updated;
+        }
+        if (exp instanceof BinaryExpression) {
+            BinaryExpression binary = (BinaryExpression) exp;
+            int updated = renameVariableReferencesInExpression(binary.getLeftExp(), oldName, newName);
+            updated += renameVariableReferencesInExpression(binary.getRightExp(), oldName, newName);
+            return updated;
+        }
+        if (exp instanceof UnaryExpression) {
+            return renameVariableReferencesInExpression(((UnaryExpression) exp).getExp(), oldName, newName);
+        }
+        if (exp instanceof ParenExpression) {
+            return renameVariableReferencesInExpression(((ParenExpression) exp).getExp(), oldName, newName);
+        }
+        if (exp instanceof TernaryExpression) {
+            TernaryExpression ternary = (TernaryExpression) exp;
+            int updated = renameVariableReferencesInExpression(ternary.getCondition(), oldName, newName);
+            updated += renameVariableReferencesInExpression(ternary.getThenExp(), oldName, newName);
+            updated += renameVariableReferencesInExpression(ternary.getElseExp(), oldName, newName);
+            return updated;
+        }
+        if (exp instanceof ConstructExpression) {
+            int updated = 0;
+            for (Expression arg : ((ConstructExpression) exp).getArgList()) {
+                updated += renameVariableReferencesInExpression(arg, oldName, newName);
+            }
+            return updated;
+        }
+        if (exp instanceof CallingExpression) {
+            int updated = 0;
+            for (Expression arg : ((CallingExpression) exp).getArgList()) {
+                updated += renameVariableReferencesInExpression(arg, oldName, newName);
+            }
+            return updated;
+        }
+        if (exp instanceof ArrayExpression) {
+            int updated = 0;
+            for (Expression arg : ((ArrayExpression) exp).getExpList()) {
+                updated += renameVariableReferencesInExpression(arg, oldName, newName);
+            }
+            return updated;
+        }
+        if (exp instanceof StructExpression) {
+            int updated = 0;
+            for (Assignment assignment : ((StructExpression) exp).getExpList()) {
+                updated += renameVariableReferencesInExpression(assignment.getLeftExpression(), oldName, newName);
+                updated += renameVariableReferencesInExpression(assignment.getInitExpression(), oldName, newName);
+            }
+            return updated;
+        }
+        if (exp instanceof HistoryValueOf) {
+            return renameVariableNameField(exp, "mVariable", ((HistoryValueOf) exp).getVar(), oldName, newName);
+        }
+        if (exp instanceof ContainsList) {
+            ContainsList containsList = (ContainsList) exp;
+            int updated = renameVariableReferencesInExpression(containsList.getListExp(), oldName, newName);
+            updated += renameVariableReferencesInExpression(containsList.getItemExp(), oldName, newName);
+            return updated;
+        }
+        if (exp instanceof PrologQuery) {
+            return renameVariableReferencesInExpression(((PrologQuery) exp).getExpression(), oldName, newName);
+        }
+        if (exp instanceof RandomQuery) {
+            return renameVariableReferencesInExpression(((RandomQuery) exp).getExpression(), oldName, newName);
+        }
+        if (exp instanceof TimeoutQuery) {
+            return renameVariableReferencesInExpression(((TimeoutQuery) exp).getExpression(), oldName, newName);
+        }
+        return 0;
+    }
+
+    private int renameVariableNameField(Object target, String fieldName, String currentValue, String oldName, String newName) {
+        if (target == null || currentValue == null || !oldName.equals(currentValue)) {
+            return 0;
+        }
+        return setStringField(target, fieldName, newName) ? 1 : 0;
+    }
+
+    private boolean setStringField(Object target, String fieldName, String value) {
+        if (target == null || fieldName == null || fieldName.isBlank()) {
+            return false;
+        }
+        Class<?> clazz = target.getClass();
+        while (clazz != null && clazz != Object.class) {
+            try {
+                Field field = clazz.getDeclaredField(fieldName);
+                field.setAccessible(true);
+                field.set(target, value);
+                return true;
+            } catch (NoSuchFieldException ignored) {
+                clazz = clazz.getSuperclass();
+            } catch (IllegalAccessException ignored) {
+                return false;
+            }
+        }
+        return false;
+    }
+
     private final Object embeddingsLock = new Object();
     private Process embeddingsProcess = null;
 
@@ -7234,18 +7499,9 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         ProjectRef ref = new ProjectRef(id, name, path);
         ref.runtimeProject = project;
         ref.runtimeState = project.isRunning() ? "running" : "stopped";
-        ref.nextNodeIndex = computeNextNodeIndex(project);
-        ref.nextSuperNodeIndex = computeNextSuperNodeIndex(project);
-        normalizeSceneFlowIds(ref);
-        ref.nodes = serializeNodes(project);
-        ref.edges = serializeEdges(project);
-        ref.comments = serializeComments(project);
+        initializeProjectRefCaches(ref);
         projectStore.put(id, ref);
-        ensureScriptLoaded(ref);
-        // Phase 8: Initialize dock points for the registered project
-        initializeDockPointsForProject(ref);
-        ensureHistoryLoaded(ref);
-        ensureCommandLogLoaded(ref);
+        initializeProjectRefPersistenceState(ref);
         sLogger.message("Registered project: " + name + " (id=" + id + ")");
         return id;
     }
@@ -7276,68 +7532,154 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         }
     }
 
-    private String ensureProject(String path, String name) {
+    private String ensureProject(String path, String name, boolean allowEmptyFallback) {
+        final String normalizedPath = normalizeProjectPath(path);
         // Reuse existing entry by path if present.
         for (ProjectRef ref : projectStore.values()) {
-            if (ref.path != null && !ref.path.isBlank() && ref.path.equals(path)) {
+            if (ref.path != null && !ref.path.isBlank() && ref.path.equals(normalizedPath)) {
                 return ref.id;
             }
         }
 
         // Try to load a real project if a path was given
         RunTimeProject rtp = null;
-        if (path != null && !path.isBlank()) {
+        if (normalizedPath != null && !normalizedPath.isBlank()) {
             try {
-                rtp = new RunTimeProject(new java.io.File(path));
-                rtp.parse(path);
+                rtp = new RunTimeProject();
+                if (!rtp.parse(normalizedPath)) {
+                    sLogger.warning("Warning: failed to parse project from " + normalizedPath);
+                    if (!allowEmptyFallback) {
+                        return null;
+                    }
+                    rtp = null;
+                }
+                if (rtp != null) {
                 String id = UUID.randomUUID().toString();
-                ProjectRef ref = new ProjectRef(id, name, path);
+                ProjectRef ref = new ProjectRef(id, name, normalizedPath);
                 ref.runtimeProject = rtp;
                 ref.runtimeState = "stopped";
-                ref.nextNodeIndex = computeNextNodeIndex(rtp);
-                ref.nextSuperNodeIndex = computeNextSuperNodeIndex(rtp);
-                boolean idChanged = normalizeSceneFlowIds(ref);
-                ref.nodes = serializeNodes(rtp);
-                ref.edges = serializeEdges(rtp);
-                ref.comments = serializeComments(rtp);
+                boolean idChanged = initializeProjectRefCaches(ref);
                 projectStore.put(id, ref);
-                ensureScriptLoaded(ref);
-                // Phase 8: Initialize dock points for the loaded project
-                initializeDockPointsForProject(ref);
-                ensureHistoryLoaded(ref);
-                ensureCommandLogLoaded(ref);
+                initializeProjectRefPersistenceState(ref);
                 if (idChanged) {
-                    rtp.write(new java.io.File(path));
+                    rtp.write(new java.io.File(normalizedPath));
                 }
-                return id;
+                    return id;
+                }
             } catch (Exception exc) {
-                sLogger.warning("Warning: failed to load project from " + path + ": " + exc.getMessage());
+                sLogger.warning("Warning: failed to load project from " + normalizedPath + ": " + exc.getMessage());
+                if (!allowEmptyFallback) {
+                    return null;
+                }
             }
         }
 
+        if (!allowEmptyFallback) {
+            return null;
+        }
+
         String id = UUID.randomUUID().toString();
-        ProjectRef ref = new ProjectRef(id, name, path);
+        ProjectRef ref = new ProjectRef(id, name, normalizedPath);
         rtp = new RunTimeProject();
-        if (path != null && !path.isBlank()) {
-            rtp.setProjectPath(path);
+        if (normalizedPath != null && !normalizedPath.isBlank()) {
+            rtp.setProjectPath(normalizedPath);
         }
         if (name != null && !name.isBlank()) {
             rtp.setProjectName(name);
         }
         ref.runtimeProject = rtp;
         ref.runtimeState = "stopped";
-        ref.nextNodeIndex = computeNextNodeIndex(rtp);
-        ref.nextSuperNodeIndex = computeNextSuperNodeIndex(rtp);
-        normalizeSceneFlowIds(ref);
-        ref.nodes = serializeNodes(rtp);
-        ref.edges = serializeEdges(rtp);
-        ref.comments = serializeComments(rtp);
+        initializeProjectRefCaches(ref);
         projectStore.put(id, ref);
-        ensureScriptLoaded(ref);
-        initializeDockPointsForProject(ref);
-        ensureHistoryLoaded(ref);
-        ensureCommandLogLoaded(ref);
+        initializeProjectRefPersistenceState(ref);
         return id;
+    }
+
+    private boolean initializeProjectRefCaches(ProjectRef ref) {
+        if (ref == null || ref.runtimeProject == null) {
+            return false;
+        }
+        boolean idChanged = false;
+        try {
+            ref.nextNodeIndex = computeNextNodeIndex(ref.runtimeProject);
+            ref.nextSuperNodeIndex = computeNextSuperNodeIndex(ref.runtimeProject);
+        } catch (Exception exc) {
+            sLogger.warning("Warning: failed to compute node indices: " + exc.getMessage());
+        }
+        try {
+            idChanged = normalizeSceneFlowIds(ref);
+        } catch (Exception exc) {
+            sLogger.warning("Warning: failed to normalize scene flow ids: " + exc.getMessage());
+        }
+        try {
+            ref.nodes = serializeNodes(ref.runtimeProject);
+        } catch (Exception exc) {
+            ref.nodes = new ArrayList<>();
+            sLogger.warning("Warning: failed to serialize nodes: " + exc.getMessage());
+        }
+        try {
+            ref.edges = serializeEdges(ref.runtimeProject);
+        } catch (Exception exc) {
+            ref.edges = new ArrayList<>();
+            sLogger.warning("Warning: failed to serialize edges: " + exc.getMessage());
+        }
+        try {
+            ref.comments = serializeComments(ref.runtimeProject);
+        } catch (Exception exc) {
+            ref.comments = new ArrayList<>();
+            sLogger.warning("Warning: failed to serialize comments: " + exc.getMessage());
+        }
+        try {
+            initializeDockPointsForProject(ref);
+        } catch (Exception exc) {
+            sLogger.warning("Warning: failed to initialize dock points: " + exc.getMessage());
+        }
+        return idChanged;
+    }
+
+    private void initializeProjectRefPersistenceState(ProjectRef ref) {
+        if (ref == null) {
+            return;
+        }
+        try {
+            ensureScriptLoaded(ref);
+        } catch (Exception exc) {
+            sLogger.warning("Warning: failed to load script state: " + exc.getMessage());
+        }
+        try {
+            ensureHistoryLoaded(ref);
+        } catch (Exception exc) {
+            sLogger.warning("Warning: failed to load history: " + exc.getMessage());
+        }
+        try {
+            ensureCommandLogLoaded(ref);
+        } catch (Exception exc) {
+            sLogger.warning("Warning: failed to load command log: " + exc.getMessage());
+        }
+    }
+
+    private String normalizeProjectPath(String path) {
+        if (path == null) {
+            return "";
+        }
+        String trimmed = path.trim();
+        if (trimmed.isEmpty()) {
+            return "";
+        }
+        File base = new File(trimmed);
+        if (base.isFile() && "project.xml".equalsIgnoreCase(base.getName())) {
+            File parent = base.getParentFile();
+            if (parent != null) {
+                return parent.getPath();
+            }
+        }
+        if ("project.xml".equalsIgnoreCase(base.getName())) {
+            File parent = base.getParentFile();
+            if (parent != null) {
+                return parent.getPath();
+            }
+        }
+        return trimmed;
     }
 
     private void markClean(String pid) {
