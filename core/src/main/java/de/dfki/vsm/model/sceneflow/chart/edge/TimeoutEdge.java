@@ -24,6 +24,8 @@ import java.util.Map;
  */
 public class TimeoutEdge extends AbstractEdge {
     protected long       mTimeout    = Long.MIN_VALUE;
+    protected long       mTimeoutMin = Long.MIN_VALUE;
+    protected long       mTimeoutMax = Long.MIN_VALUE;
     protected Expression mExpression = null;
 
     public TimeoutEdge() {}
@@ -64,6 +66,31 @@ public class TimeoutEdge extends AbstractEdge {
         return mExpression;
     }
 
+    public long getTimeoutMin() {
+        return mTimeoutMin;
+    }
+
+    public long getTimeoutMax() {
+        return mTimeoutMax;
+    }
+
+    public boolean hasTimeoutRange() {
+        return mTimeoutMin >= 0 && mTimeoutMax >= mTimeoutMin;
+    }
+
+    public void clearTimeoutRange() {
+        mTimeoutMin = Long.MIN_VALUE;
+        mTimeoutMax = Long.MIN_VALUE;
+    }
+
+    public void setTimeoutRange(long min, long max) throws NumberFormatException {
+        if (min < 0 || max < min) {
+            throw new NumberFormatException("Invalid timeout range");
+        }
+        mTimeoutMin = min;
+        mTimeoutMax = max;
+    }
+
     public EdgeType getEdgeType() {
         return EdgeType.TimeoutEdge;
     }
@@ -84,6 +111,8 @@ public class TimeoutEdge extends AbstractEdge {
     public TimeoutEdge getCopy() {
         TimeoutEdge copy = new TimeoutEdge(mTargetUnid, mSourceUnid, mTargetNode, mSourceNode, mGraphics.getCopy(), getCopyOfCmdList(),
                 getCopyOfAltStartNodeMap(), mTimeout);
+        copy.mTimeoutMin = mTimeoutMin;
+        copy.mTimeoutMax = mTimeoutMax;
         if (mExpression != null) {
             copy.setExpression(mExpression.getCopy());
         }
@@ -101,7 +130,19 @@ public class TimeoutEdge extends AbstractEdge {
             start.append(startNodeData.getFirst()).append("/").append(altStartNodeData.getFirst()).append(";");
         }
 
-        out.println("<TEdge target=\"" + mTargetUnid + "\" start=\"" + start + "\" timeout=\"" + mTimeout + "\">").push();
+        long timeoutAttr = mTimeout;
+        if (timeoutAttr < 0 && mTimeoutMin >= 0) {
+            timeoutAttr = mTimeoutMin;
+        }
+        StringBuilder tag = new StringBuilder();
+        tag.append("<TEdge target=\"").append(mTargetUnid).append("\" start=\"").append(start)
+                .append("\" timeout=\"").append(timeoutAttr).append("\"");
+        if (hasTimeoutRange()) {
+            tag.append(" timeoutMin=\"").append(mTimeoutMin).append("\"");
+            tag.append(" timeoutMax=\"").append(mTimeoutMax).append("\"");
+        }
+        tag.append(">");
+        out.println(tag.toString()).push();
 
         if (mGraphics != null) {
             mGraphics.writeXML(out);
@@ -135,6 +176,24 @@ public class TimeoutEdge extends AbstractEdge {
             }
         } else {
             mTimeout = Long.MIN_VALUE;
+        }
+        String timeoutMinAttr = element.getAttribute("timeoutMin");
+        String timeoutMaxAttr = element.getAttribute("timeoutMax");
+        if (timeoutMinAttr != null && !timeoutMinAttr.isBlank() && timeoutMaxAttr != null && !timeoutMaxAttr.isBlank()) {
+            try {
+                long min = java.lang.Long.parseLong(timeoutMinAttr);
+                long max = java.lang.Long.parseLong(timeoutMaxAttr);
+                if (min >= 0 && max >= min) {
+                    mTimeoutMin = min;
+                    mTimeoutMax = max;
+                } else {
+                    clearTimeoutRange();
+                }
+            } catch (NumberFormatException ignored) {
+                clearTimeoutRange();
+            }
+        } else {
+            clearTimeoutRange();
         }
 
         String[] altStartNodes = element.getAttribute("start").split(";");

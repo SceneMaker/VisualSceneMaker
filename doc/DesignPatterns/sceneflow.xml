@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<SceneFlow id="" name="" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Sun, 22 Feb 2026 12:20:20" start="S1;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
+<SceneFlow id="" name="" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Sun, 22 Feb 2026 17:26:17" start="N3;N19;N7;N41;N9;N20;N31;S1;N23;N12;N33;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
   <Define>
   </Define>
   <Declare>
@@ -9,9 +9,12 @@
       <BoolLiteral value="false"/>
     </VariableDefinition>
     <VariableDefinition type="Int" name ="timeout">
-      <IntLiteral value="0"/>
+      <IntLiteral value="10"/>
     </VariableDefinition>
     <VariableDefinition type="Int" name ="cnt">
+      <IntLiteral value="0"/>
+    </VariableDefinition>
+    <VariableDefinition type="Int" name ="time">
       <IntLiteral value="0"/>
     </VariableDefinition>
   </Declare>
@@ -25,7 +28,7 @@
   </GlobalVariableBadge>
   <Comment>
     <Graphics>
-      <Boundary xPos="67" yPos="1" width="351" height="154"/>
+      <Boundary xPos="68" yPos="10" width="382" height="148"/>
     </Graphics>
     <Text style="color:blue">
       Nodes and their function
@@ -39,6 +42,14 @@
       Connect Nodes with edges; unconditional connection is with epsilon edges, or e-edges
     </Text>
   </Comment>
+  <Comment>
+    <Graphics>
+      <Boundary xPos="64" yPos="362" width="1162" height="159"/>
+    </Graphics>
+    <Text style="color:blue">
+      Connect Nodes with edges; timeout edge (t-edge). Wait before go on to the next node. 3 options: fixed number, interval a - b (random between), a less or equal to b, variable with pos. number
+    </Text>
+  </Comment>
   <Node id="N1" name="React" history="false">
     <Define>
     </Define>
@@ -49,16 +60,16 @@
     <EEdge target="S1" start ="">
     <Graphics>
       <Connection>
-        <ControlPoint xPos="840" yPos="1065" ctrlXPos="728" ctrlYPos="1065"/>
-        <ControlPoint xPos="570" yPos="1065" ctrlXPos="683" ctrlYPos="1065"/>
+        <ControlPoint xPos="390" yPos="1335" ctrlXPos="323" ctrlYPos="1335"/>
+        <ControlPoint xPos="210" yPos="1335" ctrlXPos="278" ctrlYPos="1335"/>
       </Connection>
     </Graphics>
     </EEdge>
     <Graphics>
-      <Position xPos="840" yPos="1020"/>
+      <Position xPos="390" yPos="1290"/>
     </Graphics>
   </Node>
-  <Node id="N3" name="Toss the dice" history="false">
+  <Node id="N3" name="Proceed randomly" history="false">
     <Define>
     </Define>
     <Declare>
@@ -68,29 +79,29 @@
     <PEdge target="N4" start="" probability="34">
       <Graphics>
         <Connection>
-          <ControlPoint xPos="204" yPos="952" ctrlXPos="233" ctrlYPos="935"/>
-          <ControlPoint xPos="306" yPos="907" ctrlXPos="277" ctrlYPos="923"/>
+          <ControlPoint xPos="204" yPos="682" ctrlXPos="233" ctrlYPos="665"/>
+          <ControlPoint xPos="306" yPos="637" ctrlXPos="277" ctrlYPos="653"/>
         </Connection>
       </Graphics>
     </PEdge>
     <PEdge target="N5" start="" probability="33">
       <Graphics>
         <Connection>
-          <ControlPoint xPos="210" yPos="975" ctrlXPos="233" ctrlYPos="975"/>
-          <ControlPoint xPos="300" yPos="975" ctrlXPos="278" ctrlYPos="975"/>
+          <ControlPoint xPos="210" yPos="705" ctrlXPos="233" ctrlYPos="705"/>
+          <ControlPoint xPos="300" yPos="705" ctrlXPos="278" ctrlYPos="705"/>
         </Connection>
       </Graphics>
     </PEdge>
     <PEdge target="N6" start="" probability="33">
       <Graphics>
         <Connection>
-          <ControlPoint xPos="204" yPos="998" ctrlXPos="233" ctrlYPos="1015"/>
-          <ControlPoint xPos="306" yPos="1042" ctrlXPos="277" ctrlYPos="1025"/>
+          <ControlPoint xPos="204" yPos="728" ctrlXPos="233" ctrlYPos="745"/>
+          <ControlPoint xPos="306" yPos="772" ctrlXPos="277" ctrlYPos="755"/>
         </Connection>
       </Graphics>
     </PEdge>
     <Graphics>
-      <Position xPos="120" yPos="930"/>
+      <Position xPos="120" yPos="660"/>
     </Graphics>
   </Node>
   <Node id="N4" name="Option 1" history="false">
@@ -101,7 +112,7 @@
     <Commands>
     </Commands>
     <Graphics>
-      <Position xPos="300" yPos="840"/>
+      <Position xPos="300" yPos="570"/>
     </Graphics>
   </Node>
   <Node id="N5" name="Option 2" history="false">
@@ -112,7 +123,7 @@
     <Commands>
     </Commands>
     <Graphics>
-      <Position xPos="300" yPos="930"/>
+      <Position xPos="300" yPos="660"/>
     </Graphics>
   </Node>
   <Node id="N6" name="Option 3" history="false">
@@ -123,10 +134,10 @@
     <Commands>
     </Commands>
     <Graphics>
-      <Position xPos="300" yPos="1020"/>
+      <Position xPos="300" yPos="750"/>
     </Graphics>
   </Node>
-  <Node id="N7" name="react if something changed after 1 second" history="false">
+  <Node id="N7" name="OKAY: react realized with a time loop" history="false">
     <Define>
     </Define>
     <Declare>
@@ -136,8 +147,8 @@
     <CEdge target="N8" start="">
       <Graphics>
         <Connection>
-          <ControlPoint xPos="210" yPos="615" ctrlXPos="233" ctrlYPos="615"/>
-          <ControlPoint xPos="300" yPos="615" ctrlXPos="278" ctrlYPos="615"/>
+          <ControlPoint xPos="660" yPos="1155" ctrlXPos="683" ctrlYPos="1155"/>
+          <ControlPoint xPos="750" yPos="1155" ctrlXPos="728" ctrlYPos="1155"/>
         </Connection>
       </Graphics>
       <SimpleVariable name="state"/>
@@ -145,13 +156,13 @@
     <TEdge target="N7" start="" timeout="1000">
       <Graphics>
         <Connection>
-          <ControlPoint xPos="197" yPos="583" ctrlXPos="274" ctrlYPos="515"/>
-          <ControlPoint xPos="133" yPos="583" ctrlXPos="147" ctrlYPos="505"/>
+          <ControlPoint xPos="647" yPos="1123" ctrlXPos="724" ctrlYPos="1055"/>
+          <ControlPoint xPos="583" yPos="1123" ctrlXPos="597" ctrlYPos="1045"/>
         </Connection>
       </Graphics>
     </TEdge>
     <Graphics>
-      <Position xPos="120" yPos="570"/>
+      <Position xPos="570" yPos="1110"/>
     </Graphics>
   </Node>
   <Node id="N8" name="React" history="false">
@@ -162,10 +173,10 @@
     <Commands>
     </Commands>
     <Graphics>
-      <Position xPos="300" yPos="570"/>
+      <Position xPos="750" yPos="1110"/>
     </Graphics>
   </Node>
-  <Node id="N9" name="Lauch separate actions" history="false">
+  <Node id="N9" name="Lauch separate states parallel" history="false">
     <Define>
     </Define>
     <Declare>
@@ -175,29 +186,29 @@
     <FEdge target="N10" start="">
       <Graphics>
         <Connection>
-          <ControlPoint xPos="834" yPos="862" ctrlXPos="863" ctrlYPos="845"/>
-          <ControlPoint xPos="936" yPos="817" ctrlXPos="907" ctrlYPos="833"/>
+          <ControlPoint xPos="564" yPos="682" ctrlXPos="593" ctrlYPos="665"/>
+          <ControlPoint xPos="666" yPos="637" ctrlXPos="637" ctrlYPos="653"/>
         </Connection>
       </Graphics>
     </FEdge>
     <FEdge target="N11" start="">
       <Graphics>
         <Connection>
-          <ControlPoint xPos="840" yPos="885" ctrlXPos="863" ctrlYPos="885"/>
-          <ControlPoint xPos="930" yPos="885" ctrlXPos="908" ctrlYPos="885"/>
+          <ControlPoint xPos="570" yPos="705" ctrlXPos="593" ctrlYPos="705"/>
+          <ControlPoint xPos="660" yPos="705" ctrlXPos="638" ctrlYPos="705"/>
         </Connection>
       </Graphics>
     </FEdge>
     <FEdge target="N24" start="">
       <Graphics>
         <Connection>
-          <ControlPoint xPos="834" yPos="908" ctrlXPos="863" ctrlYPos="925"/>
-          <ControlPoint xPos="936" yPos="952" ctrlXPos="907" ctrlYPos="935"/>
+          <ControlPoint xPos="564" yPos="728" ctrlXPos="593" ctrlYPos="745"/>
+          <ControlPoint xPos="666" yPos="772" ctrlXPos="637" ctrlYPos="755"/>
         </Connection>
       </Graphics>
     </FEdge>
     <Graphics>
-      <Position xPos="750" yPos="840"/>
+      <Position xPos="480" yPos="660"/>
     </Graphics>
   </Node>
   <Node id="N10" name="Action 1" history="false">
@@ -208,7 +219,7 @@
     <Commands>
     </Commands>
     <Graphics>
-      <Position xPos="930" yPos="750"/>
+      <Position xPos="660" yPos="570"/>
     </Graphics>
   </Node>
   <Node id="N11" name="Action 2" history="false">
@@ -219,10 +230,10 @@
     <Commands>
     </Commands>
     <Graphics>
-      <Position xPos="930" yPos="840"/>
+      <Position xPos="660" yPos="660"/>
     </Graphics>
   </Node>
-  <Node id="N12" name="If, then, or then, or else" history="false">
+  <Node id="N12" name="If then else" history="false">
     <Define>
     </Define>
     <Declare>
@@ -232,8 +243,8 @@
     <CEdge target="N13" start="">
       <Graphics>
         <Connection>
-          <ControlPoint xPos="564" yPos="592" ctrlXPos="593" ctrlYPos="575"/>
-          <ControlPoint xPos="666" yPos="547" ctrlXPos="637" ctrlYPos="563"/>
+          <ControlPoint xPos="204" yPos="1042" ctrlXPos="233" ctrlYPos="1025"/>
+          <ControlPoint xPos="306" yPos="997" ctrlXPos="277" ctrlYPos="1013"/>
         </Connection>
       </Graphics>
       <Eq>
@@ -244,8 +255,8 @@
     <CEdge target="N14" start="">
       <Graphics>
         <Connection>
-          <ControlPoint xPos="570" yPos="615" ctrlXPos="593" ctrlYPos="615"/>
-          <ControlPoint xPos="660" yPos="615" ctrlXPos="638" ctrlYPos="615"/>
+          <ControlPoint xPos="210" yPos="1065" ctrlXPos="233" ctrlYPos="1065"/>
+          <ControlPoint xPos="300" yPos="1065" ctrlXPos="278" ctrlYPos="1065"/>
         </Connection>
       </Graphics>
       <Eq>
@@ -256,13 +267,13 @@
     <EEdge target="N15" start ="">
     <Graphics>
       <Connection>
-        <ControlPoint xPos="564" yPos="638" ctrlXPos="593" ctrlYPos="655"/>
-        <ControlPoint xPos="666" yPos="682" ctrlXPos="637" ctrlYPos="665"/>
+        <ControlPoint xPos="204" yPos="1088" ctrlXPos="233" ctrlYPos="1105"/>
+        <ControlPoint xPos="306" yPos="1132" ctrlXPos="277" ctrlYPos="1115"/>
       </Connection>
     </Graphics>
     </EEdge>
     <Graphics>
-      <Position xPos="480" yPos="570"/>
+      <Position xPos="120" yPos="1020"/>
     </Graphics>
   </Node>
   <Node id="N13" name="Case1" history="false">
@@ -273,7 +284,7 @@
     <Commands>
     </Commands>
     <Graphics>
-      <Position xPos="660" yPos="480"/>
+      <Position xPos="300" yPos="930"/>
     </Graphics>
   </Node>
   <Node id="N14" name="Case2" history="false">
@@ -284,7 +295,7 @@
     <Commands>
     </Commands>
     <Graphics>
-      <Position xPos="660" yPos="570"/>
+      <Position xPos="300" yPos="1020"/>
     </Graphics>
   </Node>
   <Node id="N15" name="Case3" history="false">
@@ -295,7 +306,7 @@
     <Commands>
     </Commands>
     <Graphics>
-      <Position xPos="660" yPos="660"/>
+      <Position xPos="300" yPos="1110"/>
     </Graphics>
   </Node>
   <Node id="N16" name="Case2" history="false">
@@ -306,7 +317,7 @@
     <Commands>
     </Commands>
     <Graphics>
-      <Position xPos="1020" yPos="570"/>
+      <Position xPos="1020" yPos="930"/>
     </Graphics>
   </Node>
   <Node id="N17" name="Case1" history="false">
@@ -317,7 +328,7 @@
     <Commands>
     </Commands>
     <Graphics>
-      <Position xPos="1020" yPos="480"/>
+      <Position xPos="1020" yPos="840"/>
     </Graphics>
   </Node>
   <Node id="N18" name="Case3" history="false">
@@ -328,10 +339,10 @@
     <Commands>
     </Commands>
     <Graphics>
-      <Position xPos="1020" yPos="660"/>
+      <Position xPos="1020" yPos="1020"/>
     </Graphics>
   </Node>
-  <Node id="N19" name="If, then, or then, or else but wait a bit" history="false">
+  <Node id="N19" name="If, then or else within a timeframe" history="false">
     <Define>
     </Define>
     <Declare>
@@ -341,29 +352,37 @@
     <CEdge target="N17" start="">
       <Graphics>
         <Connection>
-          <ControlPoint xPos="924" yPos="592" ctrlXPos="953" ctrlYPos="575"/>
-          <ControlPoint xPos="1026" yPos="547" ctrlXPos="997" ctrlYPos="563"/>
+          <ControlPoint xPos="924" yPos="952" ctrlXPos="953" ctrlYPos="935"/>
+          <ControlPoint xPos="1026" yPos="907" ctrlXPos="997" ctrlYPos="923"/>
         </Connection>
       </Graphics>
+      <Eq>
+        <SimpleVariable name="cnt"/>
+        <IntLiteral value="10"/>
+      </Eq>
     </CEdge>
     <CEdge target="N16" start="">
       <Graphics>
         <Connection>
-          <ControlPoint xPos="930" yPos="615" ctrlXPos="953" ctrlYPos="615"/>
-          <ControlPoint xPos="1020" yPos="615" ctrlXPos="998" ctrlYPos="615"/>
+          <ControlPoint xPos="930" yPos="975" ctrlXPos="953" ctrlYPos="975"/>
+          <ControlPoint xPos="1020" yPos="975" ctrlXPos="998" ctrlYPos="975"/>
         </Connection>
       </Graphics>
+      <Eq>
+        <SimpleVariable name="cnt"/>
+        <IntLiteral value="3"/>
+      </Eq>
     </CEdge>
     <TEdge target="N18" start="" timeout="1000">
       <Graphics>
         <Connection>
-          <ControlPoint xPos="924" yPos="638" ctrlXPos="953" ctrlYPos="655"/>
-          <ControlPoint xPos="1026" yPos="682" ctrlXPos="997" ctrlYPos="665"/>
+          <ControlPoint xPos="924" yPos="998" ctrlXPos="953" ctrlYPos="1015"/>
+          <ControlPoint xPos="1026" yPos="1042" ctrlXPos="997" ctrlYPos="1025"/>
         </Connection>
       </Graphics>
     </TEdge>
     <Graphics>
-      <Position xPos="840" yPos="570"/>
+      <Position xPos="840" yPos="930"/>
     </Graphics>
   </Node>
   <Node id="N20" name="Wait a bit; absolute time" history="false">
@@ -373,11 +392,11 @@
     </Declare>
     <Commands>
     </Commands>
-    <TEdge target="N21" start="" timeout="5000">
+    <TEdge target="N21" start="" timeout="1000">
       <Graphics>
         <Connection>
           <ControlPoint xPos="210" yPos="435" ctrlXPos="233" ctrlYPos="435"/>
-          <ControlPoint xPos="390" yPos="435" ctrlXPos="368" ctrlYPos="435"/>
+          <ControlPoint xPos="300" yPos="435" ctrlXPos="278" ctrlYPos="435"/>
         </Connection>
       </Graphics>
     </TEdge>
@@ -392,8 +411,16 @@
     </Declare>
     <Commands>
     </Commands>
+    <EEdge target="N20" start ="">
     <Graphics>
-      <Position xPos="390" yPos="390"/>
+      <Connection>
+        <ControlPoint xPos="302" yPos="423" ctrlXPos="280" ctrlYPos="410"/>
+        <ControlPoint xPos="208" yPos="423" ctrlXPos="229" ctrlYPos="410"/>
+      </Connection>
+    </Graphics>
+    </EEdge>
+    <Graphics>
+      <Position xPos="300" yPos="390"/>
     </Graphics>
   </Node>
   <Node id="N22" name="After waiting do something" history="false">
@@ -403,8 +430,16 @@
     </Declare>
     <Commands>
     </Commands>
+    <EEdge target="N23" start ="">
     <Graphics>
-      <Position xPos="840" yPos="390"/>
+      <Connection>
+        <ControlPoint xPos="1110" yPos="435" ctrlXPos="1088" ctrlYPos="435"/>
+        <ControlPoint xPos="1020" yPos="435" ctrlXPos="1043" ctrlYPos="435"/>
+      </Connection>
+    </Graphics>
+    </EEdge>
+    <Graphics>
+      <Position xPos="1110" yPos="390"/>
     </Graphics>
   </Node>
   <Node id="N23" name="Wait a bit; variable time" history="false">
@@ -417,14 +452,14 @@
     <TEdge target="N22" start="" timeout="1000">
       <Graphics>
         <Connection>
-          <ControlPoint xPos="660" yPos="435" ctrlXPos="683" ctrlYPos="435"/>
-          <ControlPoint xPos="840" yPos="435" ctrlXPos="818" ctrlYPos="435"/>
+          <ControlPoint xPos="1018" yPos="447" ctrlXPos="1040" ctrlYPos="461"/>
+          <ControlPoint xPos="1112" yPos="447" ctrlXPos="1091" ctrlYPos="461"/>
         </Connection>
       </Graphics>
       <SimpleVariable name="timeout"/>
     </TEdge>
     <Graphics>
-      <Position xPos="570" yPos="390"/>
+      <Position xPos="930" yPos="390"/>
     </Graphics>
   </Node>
   <Node id="N24" name="Action 3" history="false">
@@ -435,7 +470,7 @@
     <Commands>
     </Commands>
     <Graphics>
-      <Position xPos="930" yPos="930"/>
+      <Position xPos="660" yPos="750"/>
     </Graphics>
   </Node>
   <Node id="N26" name="State in which actions are executed" history="false">
@@ -510,7 +545,96 @@
       <Position xPos="480" yPos="210"/>
     </Graphics>
   </Node>
-  <SuperNode id="S1" name="Directly react at an event or something changed" comment="" hideLocalVar="false" hideGlobalVar="false" start="N2;">
+  <Node id="N36" name="BAD: react directly if a variable changed" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <CEdge target="N37" start="">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="750" yPos="1335" ctrlXPos="773" ctrlYPos="1335"/>
+          <ControlPoint xPos="840" yPos="1335" ctrlXPos="818" ctrlYPos="1335"/>
+        </Connection>
+      </Graphics>
+      <SimpleVariable name="state"/>
+    </CEdge>
+    <EEdge target="N36" start ="">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="737" yPos="1303" ctrlXPos="814" ctrlYPos="1235"/>
+        <ControlPoint xPos="673" yPos="1303" ctrlXPos="687" ctrlYPos="1225"/>
+      </Connection>
+    </Graphics>
+    </EEdge>
+    <Graphics>
+      <Position xPos="660" yPos="1290"/>
+    </Graphics>
+  </Node>
+  <Node id="N37" name="React" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <Graphics>
+      <Position xPos="840" yPos="1290"/>
+    </Graphics>
+  </Node>
+  <Node id="N41" name="Node N41" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <PlayAction mode="Default">
+        <StringLiteral><![CDATA[[timer init id=two]]]></StringLiteral>
+      </PlayAction>
+    </Commands>
+    <TEdge target="N42" start="" timeout="200" timeoutMin="200" timeoutMax="1000">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="570" yPos="435" ctrlXPos="638" ctrlYPos="435"/>
+          <ControlPoint xPos="750" yPos="435" ctrlXPos="683" ctrlYPos="435"/>
+        </Connection>
+      </Graphics>
+    </TEdge>
+    <Graphics>
+      <Position xPos="480" yPos="390"/>
+    </Graphics>
+  </Node>
+  <Node id="N42" name="Node N42" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <PlayAction mode="Default">
+        <StringLiteral><![CDATA[[timer time id=two var=time]]]></StringLiteral>
+      </PlayAction>
+      <Assignment>
+        <SimpleVariable name="timeout"/>
+        <Expression>
+          <SimpleVariable name="time"/>
+        </Expression>
+      </Assignment>
+    </Commands>
+    <EEdge target="N41" start ="">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="752" yPos="423" ctrlXPos="688" ctrlYPos="405"/>
+        <ControlPoint xPos="568" yPos="423" ctrlXPos="633" ctrlYPos="405"/>
+      </Connection>
+    </Graphics>
+    </EEdge>
+    <Graphics>
+      <Position xPos="750" yPos="390"/>
+    </Graphics>
+  </Node>
+  <SuperNode id="S1" name="GOOD: How to react directly if a var value changed" comment="" hideLocalVar="false" hideGlobalVar="false" start="N2;">
     <Define>
     </Define>
     <Declare>
@@ -520,8 +644,8 @@
     <IEdge target="N1" start="">
       <Graphics>
         <Connection>
-          <ControlPoint xPos="570" yPos="1077" ctrlXPos="683" ctrlYPos="1107"/>
-          <ControlPoint xPos="842" yPos="1077" ctrlXPos="735" ctrlYPos="1107"/>
+          <ControlPoint xPos="210" yPos="1347" ctrlXPos="278" ctrlYPos="1365"/>
+          <ControlPoint xPos="392" yPos="1347" ctrlXPos="328" ctrlYPos="1365"/>
         </Connection>
       </Graphics>
       <Eq>
@@ -530,7 +654,7 @@
       </Eq>
     </IEdge>
     <Graphics>
-      <Position xPos="480" yPos="1020"/>
+      <Position xPos="120" yPos="1290"/>
     </Graphics>
     <LocalVariableBadge>
       <Position xPos="10" yPos="10"/>
@@ -635,7 +759,7 @@
       </Graphics>
     </Node>
   </SuperNode>
-  <SuperNode id="S4" name="Second" comment="" hideLocalVar="false" hideGlobalVar="false" start="">
+  <SuperNode id="S4" name="Second" comment="" hideLocalVar="false" hideGlobalVar="false" start="N39;">
     <Define>
     </Define>
     <Declare>
@@ -659,7 +783,56 @@
       <Commands>
       </Commands>
       <Graphics>
-        <Position xPos="15" yPos="15"/>
+        <Position xPos="30" yPos="30"/>
+      </Graphics>
+    </Node>
+    <Node id="N38" name="Execute" history="false">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+      </Commands>
+      <EEdge target="N40" start ="">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="300" yPos="165" ctrlXPos="300" ctrlYPos="165"/>
+          <ControlPoint xPos="390" yPos="165" ctrlXPos="390" ctrlYPos="165"/>
+        </Connection>
+      </Graphics>
+      </EEdge>
+      <Graphics>
+        <Position xPos="210" yPos="120"/>
+      </Graphics>
+    </Node>
+    <Node id="N39" name="Prepare" history="false">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+      </Commands>
+      <EEdge target="N38" start ="">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="120" yPos="165" ctrlXPos="120" ctrlYPos="165"/>
+          <ControlPoint xPos="210" yPos="165" ctrlXPos="210" ctrlYPos="165"/>
+        </Connection>
+      </Graphics>
+      </EEdge>
+      <Graphics>
+        <Position xPos="30" yPos="120"/>
+      </Graphics>
+    </Node>
+    <Node id="N40" name="End" history="false">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+      </Commands>
+      <Graphics>
+        <Position xPos="390" yPos="120"/>
       </Graphics>
     </Node>
   </SuperNode>

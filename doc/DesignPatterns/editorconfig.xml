@@ -3,11 +3,13 @@
 <properties>
 <comment>VSM Editor Config</comment>
 <entry key="visualization">true</entry>
-<entry key="showsceneelements">false</entry>
 <entry key="autosave">false</entry>
+<entry key="showsceneelements">false</entry>
 <entry key="num_magnets">8</entry>
+<entry key="runtime_viz_rate">100</entry>
 <entry key="grid_x">1</entry>
 <entry key="scriptfonttype">Monospaced</entry>
+<entry key="runtime_viz_burst">200</entry>
 <entry key="node_width">90</entry>
 <entry key="shownodeid">true</entry>
 <entry key="node_height">90</entry>

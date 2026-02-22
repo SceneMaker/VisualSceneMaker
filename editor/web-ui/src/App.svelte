@@ -90,6 +90,17 @@
   const VAR_BADGE_MIN_WIDTH = 180;
   const VAR_BADGE_MIN_HEIGHT = 90;
   const ACTIVITY_SUPERNODE_DECAY_MS = 900;
+  const ACTIVITY_NODE_MIN_HIGHLIGHT_MS = 200;
+  const EVENT_OVERPROD_WINDOW_MS = 2000;
+  const EVENT_OVERPROD_TOTAL_THRESHOLD = 2500;
+  const EVENT_OVERPROD_FLOW_THRESHOLD = 1200;
+  const EVENT_OVERPROD_REQUIRED_WINDOWS = 2;
+  const RUNTIME_VIZ_RATE_DEFAULT = 1500;
+  const RUNTIME_VIZ_RATE_MIN = 100;
+  const RUNTIME_VIZ_RATE_MAX = 20000;
+  const RUNTIME_VIZ_BURST_DEFAULT = 3000;
+  const RUNTIME_VIZ_BURST_MIN = 200;
+  const RUNTIME_VIZ_BURST_MAX = 40000;
   const VAR_BADGE_HANDLE_SIZE = 18;
   const VAR_BADGE_HANDLE_PATH = buildVarBadgeHandlePath(VAR_BADGE_HANDLE_SIZE);
   const RUNTIME_STATE_LABELS = {
@@ -783,6 +794,13 @@
   let projectConfigNewPlugin = { name: "", className: "", type: "device", load: true };
   let projectConfigNewAgent = { name: "", device: "" };
   let projectConfigNewFeature = { key: "", value: "" };
+  let runtimeVizRateDraft = String(RUNTIME_VIZ_RATE_DEFAULT);
+  let runtimeVizBurstDraft = String(RUNTIME_VIZ_BURST_DEFAULT);
+  let runtimeVizApplyTimer = null;
+  let runtimeVizBusy = false;
+  let runtimeVizError = "";
+  let runtimeVizCalibrationBusy = false;
+  let runtimeVizCalibrationStatus = "";
   let llmExpandedIndex = -1;
   let llmNewName = "";
   let llmModels = {};
@@ -913,6 +931,12 @@ Sentence:
   let missingAgentDeviceOptions = [];
   let missingAgentError = "";
   let missingAgentBusy = false;
+  let eventOverprodDialogOpen = false;
+  let eventOverprodMessage = "";
+  let eventOverprodRate = "";
+  let eventOverprodFlowLabel = "";
+  let eventOverprodFlowRate = "";
+  let eventOverprodMutedForRun = false;
   let missingVarDialogEl;
   let missingVarDialogOpen = false;
   let missingVarItems = [];
@@ -1048,12 +1072,20 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
   let runtimeInitialValues = {};
   let runtimeInitialProjectId = "";
   let runtimeInitialState = "stopped";
+  let runtimeStopRequested = false;
   let activityNodeCounts = new Map();
   let activityNodeDecayTokens = new Map();
+  let activityNodeHoldUntil = new Map();
   let activityEdgeHits = new Map();
   let activityNodeIds = [];
   let activityEdgeList = [];
   let timeoutEdgeRuns = new Map();
+  let overprodWindowStart = 0;
+  let overprodWindowTotal = 0;
+  let overprodWindowByKey = new Map();
+  let overprodWindowMeta = new Map();
+  let overprodStreak = 0;
+  let overprodNotifiedForRun = false;
   let timeoutEdgeList = [];
   let varBadgeState = loadVarBadgeState();
   let varBadgeDrag = null;
@@ -2645,11 +2677,15 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
   }
 
   $: if (selectedEdge && selectedEdge.id !== edgeDraftId) {
+    const timeoutMode = timeoutModeFromEdge(selectedEdge);
     edgeDraftId = selectedEdge.id;
     edgeDraft = {
       condition: selectedEdge.condition ?? "",
       probability: selectedEdge.probability !== undefined ? String(selectedEdge.probability) : "",
       timeoutSpec: edgeTimeoutSpec(selectedEdge),
+      timeoutMinSpec: timeoutMode === "interval" ? String(selectedEdge.timeoutMinMs) : "",
+      timeoutMaxSpec: timeoutMode === "interval" ? String(selectedEdge.timeoutMaxMs) : "",
+      timeoutMode,
       altStartText: formatAltStartMap(selectedEdge)
     };
     edgeEditError = "";
@@ -2699,6 +2735,15 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
       return altDirty;
     }
     if (selectedEdge.type === "TEDGE") {
+      const mode = edgeDraft.timeoutMode || "fixed";
+      if (mode !== timeoutModeFromEdge(selectedEdge)) return true;
+      if (mode === "interval") {
+        const minNow = String(edgeDraft.timeoutMinSpec ?? "").trim();
+        const maxNow = String(edgeDraft.timeoutMaxSpec ?? "").trim();
+        const minEdge = String(selectedEdge.timeoutMinMs ?? "").trim();
+        const maxEdge = String(selectedEdge.timeoutMaxMs ?? "").trim();
+        return minNow !== minEdge || maxNow !== maxEdge || altDirty;
+      }
       return edgeTimeoutSpec(selectedEdge) !== String(edgeDraft.timeoutSpec ?? "") || altDirty;
     }
     return altDirty;
@@ -2862,8 +2907,24 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
     runtimeInitialValues = {};
     runtimeInitialProjectId = "";
     runtimeInitialState = "stopped";
+    runtimeStopRequested = false;
     activityNodeCounts = new Map();
     activityEdgeHits = new Map();
+    runtimeVizRateDraft = String(RUNTIME_VIZ_RATE_DEFAULT);
+    runtimeVizBurstDraft = String(RUNTIME_VIZ_BURST_DEFAULT);
+    runtimeVizError = "";
+    runtimeVizCalibrationStatus = "";
+    runtimeVizCalibrationBusy = false;
+    runtimeVizBusy = false;
+    if (runtimeVizApplyTimer) {
+      clearTimeout(runtimeVizApplyTimer);
+      runtimeVizApplyTimer = null;
+    }
+    resetEventOverproductionMonitoring({ resetMute: true });
+    eventOverprodMessage = "";
+    eventOverprodRate = "";
+    eventOverprodFlowLabel = "";
+    eventOverprodFlowRate = "";
     resetProjectLoadState();
     projectLoadAttempted = false;
     projectLoadProjectId = "";
@@ -3639,6 +3700,180 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
     statusMessage = response.pending ? "Config stored; save the project to persist." : "Config updated.";
   }
 
+  function clampNumber(value, min, max) {
+    const parsed = Number(value);
+    if (!Number.isFinite(parsed)) return min;
+    return Math.max(min, Math.min(max, parsed));
+  }
+
+  function readRuntimeVizProjectInt(configLike, key, fallback) {
+    const raw = configLike?.semanticServices?.[key];
+    const text = String(raw ?? "").trim();
+    if (!text) return fallback;
+    const parsed = Number.parseInt(text, 10);
+    return Number.isFinite(parsed) ? parsed : fallback;
+  }
+
+  function syncRuntimeVizGuardFromProjectConfig(configLike = projectConfigDraft || projectConfig || {}) {
+    const cfg = normalizeProjectConfig(configLike || {});
+    const rate = clampNumber(
+      readRuntimeVizProjectInt(cfg, "runtimeVizRate", RUNTIME_VIZ_RATE_DEFAULT),
+      RUNTIME_VIZ_RATE_MIN,
+      RUNTIME_VIZ_RATE_MAX
+    );
+    const burst = clampNumber(
+      readRuntimeVizProjectInt(cfg, "runtimeVizBurst", RUNTIME_VIZ_BURST_DEFAULT),
+      RUNTIME_VIZ_BURST_MIN,
+      RUNTIME_VIZ_BURST_MAX
+    );
+    runtimeVizRateDraft = String(Math.round(rate));
+    runtimeVizBurstDraft = String(Math.round(burst));
+  }
+
+  function hasRuntimeVizGuardInProjectConfig(configLike = projectConfigDraft || projectConfig || {}) {
+    const services = configLike?.semanticServices || {};
+    const rateRaw = String(services.runtimeVizRate ?? "").trim();
+    const burstRaw = String(services.runtimeVizBurst ?? "").trim();
+    if (!rateRaw || !burstRaw) {
+      return false;
+    }
+    const rate = Number.parseInt(rateRaw, 10);
+    const burst = Number.parseInt(burstRaw, 10);
+    return (
+      Number.isFinite(rate) &&
+      Number.isFinite(burst) &&
+      rate >= RUNTIME_VIZ_RATE_MIN &&
+      rate <= RUNTIME_VIZ_RATE_MAX &&
+      burst >= RUNTIME_VIZ_BURST_MIN &&
+      burst <= RUNTIME_VIZ_BURST_MAX
+    );
+  }
+
+  function scheduleRuntimeVizGuardApply() {
+    if (!projectConfigDialogOpen || !selectedProjectId || runtimeVizBusy || runtimeVizCalibrationBusy) {
+      return;
+    }
+    if (runtimeVizApplyTimer) {
+      clearTimeout(runtimeVizApplyTimer);
+    }
+    runtimeVizApplyTimer = setTimeout(() => {
+      runtimeVizApplyTimer = null;
+      applyRuntimeVizGuardConfig();
+    }, 350);
+  }
+
+  function updateRuntimeVizGuardField(field, value) {
+    if (field === "rate") {
+      runtimeVizRateDraft = value;
+    } else {
+      runtimeVizBurstDraft = value;
+    }
+    runtimeVizError = "";
+    runtimeVizCalibrationStatus = "";
+    scheduleRuntimeVizGuardApply();
+  }
+
+  async function applyRuntimeVizGuardConfig({ silentNoChange = false } = {}) {
+    if (!selectedProjectId || runtimeVizBusy) return false;
+    const rate = Number.parseInt(String(runtimeVizRateDraft || "").trim(), 10);
+    const burst = Number.parseInt(String(runtimeVizBurstDraft || "").trim(), 10);
+    if (!Number.isFinite(rate) || rate < RUNTIME_VIZ_RATE_MIN || rate > RUNTIME_VIZ_RATE_MAX) {
+      runtimeVizError = `Rate must be between ${RUNTIME_VIZ_RATE_MIN} and ${RUNTIME_VIZ_RATE_MAX}.`;
+      return false;
+    }
+    if (!Number.isFinite(burst) || burst < RUNTIME_VIZ_BURST_MIN || burst > RUNTIME_VIZ_BURST_MAX) {
+      runtimeVizError = `Burst must be between ${RUNTIME_VIZ_BURST_MIN} and ${RUNTIME_VIZ_BURST_MAX}.`;
+      return false;
+    }
+    const base = normalizeProjectConfig(projectConfigDraft || projectConfig || {});
+    const currentRate = readRuntimeVizProjectInt(base, "runtimeVizRate", RUNTIME_VIZ_RATE_DEFAULT);
+    const currentBurst = readRuntimeVizProjectInt(base, "runtimeVizBurst", RUNTIME_VIZ_BURST_DEFAULT);
+    if (rate === currentRate && burst === currentBurst) {
+      runtimeVizError = "";
+      return true;
+    }
+    runtimeVizBusy = true;
+    runtimeVizError = "";
+    try {
+      const nextConfig = {
+        ...base,
+        semanticServices: {
+          ...(base.semanticServices || {}),
+          runtimeVizRate: String(rate),
+          runtimeVizBurst: String(burst)
+        }
+      };
+      const response = await sendCommand("ProjectConfig.Update", {
+        projectId: selectedProjectId,
+        config: nextConfig
+      });
+      projectConfig = normalizeProjectConfig(response.config || {});
+      projectConfigDraft = cloneProjectConfig(projectConfig);
+      syncLLMSelectionsFromConfig(projectConfig);
+      syncSemanticAnalysisSettingsFromConfig(projectConfig);
+      syncRuntimeVizGuardFromProjectConfig(projectConfig);
+      projectConfigSaved = response.saved ?? null;
+      projectConfigPending = response.pending === true;
+      if (response.pending === true) {
+        projects = projects.map((project) =>
+          project.projectId === selectedProjectId ? { ...project, dirty: true } : project
+        );
+      }
+      if (!silentNoChange) {
+        runtimeVizCalibrationStatus = runtimeVizCalibrationStatus || "Runtime visualization guard updated.";
+      }
+      return true;
+    } catch (err) {
+      runtimeVizError = err.message || "Failed to update runtime visualization guard.";
+      return false;
+    } finally {
+      runtimeVizBusy = false;
+    }
+  }
+
+  async function calibrateRuntimeVizGuard({ automated = false } = {}) {
+    if (runtimeVizCalibrationBusy || runtimeVizBusy) return false;
+    runtimeVizCalibrationBusy = true;
+    runtimeVizCalibrationStatus = "";
+    runtimeVizError = "";
+    try {
+      const start = performance.now();
+      const durationMs = 1400;
+      const end = start + durationMs;
+      const scratch = new Map();
+      let ops = 0;
+      while (performance.now() < end) {
+        for (let i = 0; i < 2500; i += 1) {
+          const idx = ops & 255;
+          const key = `n${idx}`;
+          scratch.set(key, (scratch.get(key) || 0) + 1);
+          if ((ops & 31) === 0) {
+            scratch.delete(`n${(idx + 67) & 255}`);
+          }
+          ops += 1;
+        }
+        await new Promise((resolve) => requestAnimationFrame(resolve));
+      }
+      const elapsedSec = Math.max(0.2, (performance.now() - start) / 1000);
+      const opsPerSec = ops / elapsedSec;
+      const rate = Math.round(clampNumber(opsPerSec * 0.00035, RUNTIME_VIZ_RATE_MIN, RUNTIME_VIZ_RATE_MAX));
+      const burst = Math.round(clampNumber(rate * 2, RUNTIME_VIZ_BURST_MIN, RUNTIME_VIZ_BURST_MAX));
+      runtimeVizRateDraft = String(rate);
+      runtimeVizBurstDraft = String(burst);
+      runtimeVizCalibrationStatus = `Calibrated for this computer: ${Math.round(opsPerSec)} synthetic ops/s.`;
+      const applied = await applyRuntimeVizGuardConfig({ silentNoChange: automated });
+      if (applied && automated) {
+        statusMessage = "Runtime visualization guard auto-calibrated for this computer. Save project to persist values.";
+      }
+      return applied;
+    } catch (err) {
+      runtimeVizError = err.message || "Calibration failed.";
+      return false;
+    } finally {
+      runtimeVizCalibrationBusy = false;
+    }
+  }
+
   async function loadProjectConfig(projectId) {
     if (!projectId) return;
     projectConfigLoading = true;
@@ -3649,6 +3884,7 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
       projectConfigDraft = cloneProjectConfig(projectConfig);
       syncLLMSelectionsFromConfig(projectConfig);
       syncSemanticAnalysisSettingsFromConfig(projectConfig);
+      syncRuntimeVizGuardFromProjectConfig(projectConfig);
       projectConfigSaved = data.saved ?? null;
       projectConfigPending = data.pending === true;
     } catch (err) {
@@ -3764,6 +4000,7 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
       projectConfigDraft = cloneProjectConfig(projectConfig);
       syncLLMSelectionsFromConfig(projectConfig);
       syncSemanticAnalysisSettingsFromConfig(projectConfig);
+      syncRuntimeVizGuardFromProjectConfig(projectConfig);
       projectConfigSaved = response.saved ?? null;
       projectConfigPending = response.pending === true;
       // Mark project as dirty (has unsaved changes) but NOT pending (which would require save-as)
@@ -3806,7 +4043,11 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
     projectConfigError = "";
     projectConfigSaved = null;
     projectConfigPending = false;
+    runtimeVizError = "";
+    runtimeVizCalibrationStatus = "";
+    syncRuntimeVizGuardFromProjectConfig();
     loadProjectConfig(selectedProjectId);
+    loadConfig(selectedProjectId);
     loadAvailableDevices();
     focusDialog(projectConfigDialogEl);
   }
@@ -3830,6 +4071,12 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
       clearTimeout(projectConfigApplyTimer);
       projectConfigApplyTimer = null;
     }
+    if (runtimeVizApplyTimer) {
+      clearTimeout(runtimeVizApplyTimer);
+      runtimeVizApplyTimer = null;
+    }
+    runtimeVizError = "";
+    runtimeVizCalibrationStatus = "";
     document.body.style.overflow = projectConfigPrevBodyOverflow;
     restoreFocus();
   }
@@ -5438,8 +5685,28 @@ Sentence:
     }
   }
 
+  async function ensureRuntimeVizGuardBeforeFirstRun() {
+    if (!selectedProjectId) return false;
+    if (!projectConfig || lastProjectConfigProjectId !== selectedProjectId) {
+      await loadProjectConfig(selectedProjectId);
+    }
+    const cfg = normalizeProjectConfig(projectConfigDraft || projectConfig || {});
+    if (hasRuntimeVizGuardInProjectConfig(cfg)) {
+      syncRuntimeVizGuardFromProjectConfig(cfg);
+      return true;
+    }
+    return calibrateRuntimeVizGuard({ automated: true });
+  }
+
   async function runRuntimeCommand(command, options = {}) {
     if (!selectedProjectId) return;
+    if (command === "Runtime.Stop") {
+      runtimeStopRequested = true;
+      clearSceneFlowActivity();
+      resetEventOverproductionMonitoring({ resetMute: true });
+    } else if (command === "Runtime.Play" || command === "Runtime.Start" || command === "Runtime.Resume") {
+      runtimeStopRequested = false;
+    }
     if (command === "Runtime.Play") {
       const missingVars = await checkUndefinedVariables();
       if (missingVars.length) {
@@ -5448,6 +5715,11 @@ Sentence:
       }
       if (!options.skipMissingAgentCheck && missingAgentNames.length) {
         openMissingAgentDialog();
+        return;
+      }
+      const guardReady = await ensureRuntimeVizGuardBeforeFirstRun();
+      if (!guardReady) {
+        runtimeError = runtimeVizError || projectConfigError || "Runtime visualization guard calibration failed.";
         return;
       }
     }
@@ -5462,8 +5734,151 @@ Sentence:
       }
       activityNodeDecayTokens = new Map();
     }
+    activityNodeHoldUntil = new Map();
     activityEdgeHits = new Map();
     timeoutEdgeRuns = new Map();
+  }
+
+  function resetEventOverproductionMonitoring({ resetMute = false } = {}) {
+    overprodWindowStart = 0;
+    overprodWindowTotal = 0;
+    overprodWindowByKey = new Map();
+    overprodWindowMeta = new Map();
+    overprodStreak = 0;
+    overprodNotifiedForRun = false;
+    if (resetMute) {
+      eventOverprodMutedForRun = false;
+    }
+    eventOverprodDialogOpen = false;
+  }
+
+  function closeEventOverprodDialog() {
+    eventOverprodDialogOpen = false;
+  }
+
+  function muteEventOverprodDialogForRun() {
+    eventOverprodMutedForRun = true;
+    eventOverprodDialogOpen = false;
+  }
+
+  function formatFlowNodeLabel(nodeId) {
+    if (!nodeId || !sceneFlow?.nodes?.length) return nodeId || "";
+    const node = sceneFlow.nodes.find((entry) => entry.id === nodeId);
+    if (!node) return nodeId;
+    const name = String(node.name || "").trim();
+    return name ? `${name} (${nodeId})` : nodeId;
+  }
+
+  function makeOverprodFlowLabel(meta) {
+    if (!meta) return "unknown flow";
+    if (meta.sourceId && meta.targetId) {
+      return `${formatFlowNodeLabel(meta.sourceId)} -> ${formatFlowNodeLabel(meta.targetId)}`;
+    }
+    if (meta.nodeId) {
+      return formatFlowNodeLabel(meta.nodeId);
+    }
+    return meta.key || "unknown flow";
+  }
+
+  function evaluateEventOverproductionWindow(now) {
+    if (!overprodWindowStart || overprodWindowTotal <= 0) {
+      overprodWindowStart = now;
+      return;
+    }
+    const elapsedMs = Math.max(1, now - overprodWindowStart);
+    const elapsedSec = elapsedMs / 1000;
+    const totalRate = overprodWindowTotal / elapsedSec;
+    let topKey = "";
+    let topCount = 0;
+    for (const [key, count] of overprodWindowByKey.entries()) {
+      if (count > topCount) {
+        topKey = key;
+        topCount = count;
+      }
+    }
+    const topRate = topCount / elapsedSec;
+    const topMeta = overprodWindowMeta.get(topKey) || null;
+    const zeroTimeoutHotspot = !!topMeta?.zeroTimeout;
+    const configuredRateLimit = readRuntimeVizProjectInt(
+      projectConfigDraft || projectConfig || {},
+      "runtimeVizRate",
+      RUNTIME_VIZ_RATE_DEFAULT
+    );
+    const dynamicTotalThreshold = Math.max(80, Math.round(configuredRateLimit * 0.85));
+    const dynamicFlowThreshold = Math.max(50, Math.round(dynamicTotalThreshold * 0.6));
+    const overloaded =
+      totalRate >= dynamicTotalThreshold &&
+      (topRate >= dynamicFlowThreshold || zeroTimeoutHotspot);
+    overprodStreak = overloaded ? (overprodStreak + 1) : 0;
+    if (
+      overloaded &&
+      overprodStreak >= EVENT_OVERPROD_REQUIRED_WINDOWS &&
+      !overprodNotifiedForRun &&
+      !eventOverprodMutedForRun
+    ) {
+      eventOverprodMessage = zeroTimeoutHotspot
+        ? "Realtime parallel visualization is overloaded by an ultra-fast timeout loop (0 ms). Consider redesigning this subflow to an event-based approach instead of continuous immediate transitions."
+        : "Realtime parallel visualization is overloaded by a very high event rate in one subflow. Consider redesigning this subflow to an event-based approach.";
+      eventOverprodFlowLabel = makeOverprodFlowLabel(topMeta);
+      eventOverprodRate = `${Math.round(totalRate)} runtime events/s`;
+      eventOverprodFlowRate = `${Math.round(topRate)} events/s in this subflow`;
+      openEventOverprodDialog();
+      overprodNotifiedForRun = true;
+    }
+    overprodWindowStart = now;
+    overprodWindowTotal = 0;
+    overprodWindowByKey = new Map();
+    overprodWindowMeta = new Map();
+  }
+
+  function recordRuntimeEventForOverproduction(eventName, payload = {}) {
+    if (!selectedProjectId) return;
+    const now = Date.now();
+    if (!overprodWindowStart) {
+      overprodWindowStart = now;
+    } else if (now - overprodWindowStart >= EVENT_OVERPROD_WINDOW_MS) {
+      evaluateEventOverproductionWindow(now);
+    }
+
+    let key = "";
+    let meta = null;
+    if (eventName === "runtime.edgeActive" || eventName === "runtime.timeoutProgress") {
+      const edgeType = normalizeProtocolEdgeType(payload.edgeType);
+      const sourceId = String(payload.sourceId || "").trim();
+      const targetId = String(payload.targetId || "").trim();
+      if (sourceId && targetId) {
+        key = `edge:${edgeType}:${sourceId}->${targetId}`;
+        meta = { key, sourceId, targetId, edgeType };
+      }
+      if (eventName === "runtime.timeoutProgress") {
+        const timeoutMs = Number(payload.timeoutMs);
+        if (meta && Number.isFinite(timeoutMs) && timeoutMs <= 0) {
+          meta.zeroTimeout = true;
+        }
+      }
+    } else if (eventName === "runtime.nodeActive" || eventName === "runtime.nodeStopped") {
+      const nodeId = resolveActivityNodeId(payload);
+      if (nodeId) {
+        key = `node:${nodeId}`;
+        meta = { key, nodeId };
+      }
+    }
+    if (!key) return;
+
+    overprodWindowTotal += 1;
+    const next = new Map(overprodWindowByKey);
+    next.set(key, (next.get(key) || 0) + 1);
+    overprodWindowByKey = next;
+    if (meta) {
+      const metaMap = new Map(overprodWindowMeta);
+      const current = metaMap.get(key);
+      if (current) {
+        metaMap.set(key, { ...current, ...meta, zeroTimeout: current.zeroTimeout || meta.zeroTimeout });
+      } else {
+        metaMap.set(key, meta);
+      }
+      overprodWindowMeta = metaMap;
+    }
   }
 
   function activityProjectMatches(payload) {
@@ -5507,20 +5922,65 @@ Sentence:
     return match?.type === "Super";
   }
 
-  function scheduleSuperNodeDecay(nodeId) {
+  function clearActivityNodeDecay(nodeId) {
     if (!nodeId) return;
     const existing = activityNodeDecayTokens.get(nodeId);
     if (existing) {
       clearTimeout(existing);
+      const nextTokens = new Map(activityNodeDecayTokens);
+      nextTokens.delete(nodeId);
+      activityNodeDecayTokens = nextTokens;
     }
+  }
+
+  function scheduleActivityNodeDecay(nodeId) {
+    if (!nodeId) return;
+    clearActivityNodeDecay(nodeId);
+    const now = Date.now();
+    const holdUntil = Number(activityNodeHoldUntil.get(nodeId) || 0);
+    const holdDelay = holdUntil > now ? (holdUntil - now + 20) : 0;
+    const delay = isSuperNodeId(nodeId)
+      ? Math.max(ACTIVITY_SUPERNODE_DECAY_MS, holdDelay)
+      : Math.max(0, holdDelay);
     const token = setTimeout(() => {
       const current = activityNodeDecayTokens.get(nodeId);
       if (current === token) {
-        activityNodeDecayTokens.delete(nodeId);
+        const nextTokens = new Map(activityNodeDecayTokens);
+        nextTokens.delete(nodeId);
+        activityNodeDecayTokens = nextTokens;
+        const currentHold = Number(activityNodeHoldUntil.get(nodeId) || 0);
+        if (currentHold > Date.now()) {
+          scheduleActivityNodeDecay(nodeId);
+          return;
+        }
+        const nextHold = new Map(activityNodeHoldUntil);
+        nextHold.delete(nodeId);
+        activityNodeHoldUntil = nextHold;
         clearActivityNode(nodeId);
       }
-    }, ACTIVITY_SUPERNODE_DECAY_MS);
-    activityNodeDecayTokens.set(nodeId, token);
+    }, delay);
+    const nextTokens = new Map(activityNodeDecayTokens);
+    nextTokens.set(nodeId, token);
+    activityNodeDecayTokens = nextTokens;
+  }
+
+  function scheduleSuperNodeDecay(nodeId) {
+    scheduleActivityNodeDecay(nodeId);
+  }
+
+  function holdActivityNodeUntil(nodeId, untilTs) {
+    if (!nodeId) return;
+    const until = Number(untilTs);
+    if (!Number.isFinite(until) || until <= Date.now()) return;
+    const prev = Number(activityNodeHoldUntil.get(nodeId) || 0);
+    if (until > prev) {
+      const next = new Map(activityNodeHoldUntil);
+      next.set(nodeId, until);
+      activityNodeHoldUntil = next;
+    }
+    if (activityNodeCounts.has(nodeId)) {
+      scheduleActivityNodeDecay(nodeId);
+    }
   }
 
   function clearActivityNode(nodeId) {
@@ -5532,9 +5992,12 @@ Sentence:
 
   function incrementActivityNode(nodeId) {
     if (!nodeId) return;
+    holdActivityNodeUntil(nodeId, Date.now() + ACTIVITY_NODE_MIN_HIGHLIGHT_MS);
+    clearActivityNodeDecay(nodeId);
     if (isSuperNodeId(nodeId)) {
       const next = new Map(activityNodeCounts);
-      next.set(nodeId, 1);
+      const count = next.get(nodeId) || 0;
+      next.set(nodeId, count + 1);
       activityNodeCounts = next;
       scheduleSuperNodeDecay(nodeId);
       return;
@@ -5548,23 +6011,50 @@ Sentence:
   function decrementActivityNode(nodeId) {
     if (!nodeId) return;
     if (isSuperNodeId(nodeId)) {
-      clearActivityNode(nodeId);
-      const existing = activityNodeDecayTokens.get(nodeId);
-      if (existing) {
-        clearTimeout(existing);
-        activityNodeDecayTokens.delete(nodeId);
+      const next = new Map(activityNodeCounts);
+      const count = next.get(nodeId) || 0;
+      if (count > 1) {
+        next.set(nodeId, count - 1);
+        activityNodeCounts = next;
+        scheduleSuperNodeDecay(nodeId);
+        return;
       }
+      const holdUntil = Number(activityNodeHoldUntil.get(nodeId) || 0);
+      if (holdUntil > Date.now()) {
+        next.set(nodeId, 1);
+        activityNodeCounts = next;
+        scheduleActivityNodeDecay(nodeId);
+        return;
+      }
+      next.delete(nodeId);
+      activityNodeCounts = next;
+      const holdNext = new Map(activityNodeHoldUntil);
+      holdNext.delete(nodeId);
+      activityNodeHoldUntil = holdNext;
+      clearActivityNodeDecay(nodeId);
       return;
     }
     const next = new Map(activityNodeCounts);
     const count = next.get(nodeId);
     if (!count) return;
-    if (count <= 1) {
-      next.delete(nodeId);
-    } else {
+    if (count > 1) {
       next.set(nodeId, count - 1);
+      activityNodeCounts = next;
+      return;
     }
+    const holdUntil = Number(activityNodeHoldUntil.get(nodeId) || 0);
+    if (holdUntil > Date.now()) {
+      next.set(nodeId, 1);
+      activityNodeCounts = next;
+      scheduleActivityNodeDecay(nodeId);
+      return;
+    }
+    next.delete(nodeId);
     activityNodeCounts = next;
+    const holdNext = new Map(activityNodeHoldUntil);
+    holdNext.delete(nodeId);
+    activityNodeHoldUntil = holdNext;
+    clearActivityNodeDecay(nodeId);
   }
 
   function registerEdgeActivity(edgeId) {
@@ -5901,12 +6391,19 @@ Sentence:
       }
       const status = (payload.status || payload.state || "").toLowerCase();
       if (status === "running") {
+        runtimeStopRequested = false;
         activeScenes = [];
         activeTurns = [];
         sceneHistory = [];
+        resetEventOverproductionMonitoring();
+      }
+      if (status === "paused") {
+        runtimeStopRequested = false;
       }
       if (status === "stopped") {
+        runtimeStopRequested = false;
         clearSceneFlowActivity();
+        resetEventOverproductionMonitoring({ resetMute: true });
       }
       if (selectedProjectId) {
         loadRuntime(selectedProjectId);
@@ -5915,6 +6412,8 @@ Sentence:
     }
     if (eventName === "runtime.nodeActive") {
       if (!activityProjectMatches(payload)) return;
+      if (runtimeStopRequested) return;
+      recordRuntimeEventForOverproduction(eventName, payload);
       const nodeId = resolveActivityNodeId(payload);
       if (nodeId) {
         incrementActivityNode(nodeId);
@@ -5923,6 +6422,8 @@ Sentence:
     }
     if (eventName === "runtime.nodeStopped") {
       if (!activityProjectMatches(payload)) return;
+      if (runtimeStopRequested) return;
+      recordRuntimeEventForOverproduction(eventName, payload);
       const nodeId = resolveActivityNodeId(payload);
       if (nodeId) {
         decrementActivityNode(nodeId);
@@ -5932,6 +6433,8 @@ Sentence:
     }
     if (eventName === "runtime.edgeActive") {
       if (!activityProjectMatches(payload)) return;
+      if (runtimeStopRequested) return;
+      recordRuntimeEventForOverproduction(eventName, payload);
       const edgeType = normalizeProtocolEdgeType(payload.edgeType);
       const edgeId = resolveActivityEdgeId({ ...payload, edgeType });
       if (edgeId) {
@@ -5945,12 +6448,22 @@ Sentence:
     }
     if (eventName === "runtime.timeoutProgress") {
       if (!activityProjectMatches(payload)) return;
+      if (runtimeStopRequested) return;
+      recordRuntimeEventForOverproduction(eventName, payload);
       const edgeType = normalizeProtocolEdgeType(payload.edgeType);
+      const timeoutMs = Number(payload.timeoutMs);
+      const startedAt = Number.isFinite(Number(payload.startedAt))
+        ? Number(payload.startedAt)
+        : (Number.isFinite(Number(payload.elapsedMs)) ? Date.now() - Number(payload.elapsedMs) : Date.now());
+      const sourceNodeId = resolveActivityNodeId({
+        nodeId: payload.sourceId,
+        parentId: payload.sourceParentId
+      });
+      if (sourceNodeId && isSuperNodeId(sourceNodeId) && Number.isFinite(timeoutMs) && timeoutMs > 0) {
+        holdActivityNodeUntil(sourceNodeId, startedAt + timeoutMs);
+      }
       const edgeId = resolveActivityEdgeId({ ...payload, edgeType });
       if (edgeId) {
-        const startedAt =
-          payload.startedAt ??
-          (Number.isFinite(payload.elapsedMs) ? Date.now() - Number(payload.elapsedMs) : undefined);
         registerTimeoutEdge(edgeId, startedAt, payload.timeoutMs);
       }
       return;
@@ -6651,7 +7164,9 @@ Sentence:
         analyzeDaTr: safe.semanticServices?.analyzeDaTr ?? "true",
         daTrLlm: safe.semanticServices?.daTrLlm ?? "",
         systemPrompt: safe.semanticServices?.systemPrompt ?? "",
-        promptTemplate: safe.semanticServices?.promptTemplate ?? ""
+        promptTemplate: safe.semanticServices?.promptTemplate ?? "",
+        runtimeVizRate: safe.semanticServices?.runtimeVizRate ?? "",
+        runtimeVizBurst: safe.semanticServices?.runtimeVizBurst ?? ""
       },
       sceneTitleConcepts: Array.isArray(safe.sceneTitleConcepts) ? [...safe.sceneTitleConcepts] : []
     };
@@ -6873,12 +7388,30 @@ Sentence:
 
   function edgeTimeoutSpec(edge) {
     if (!edge) return "";
+    if (hasTimeoutInterval(edge)) {
+      return `${edge.timeoutMinMs}-${edge.timeoutMaxMs}`;
+    }
     const expr = (edge.timeoutExpr ?? "").trim();
     if (expr) return expr;
     if (edge.timeoutMs !== undefined && edge.timeoutMs !== null) {
       return String(edge.timeoutMs);
     }
     return "";
+  }
+
+  function hasTimeoutInterval(edge) {
+    if (!edge) return false;
+    const min = Number(edge.timeoutMinMs);
+    const max = Number(edge.timeoutMaxMs);
+    return Number.isFinite(min) && Number.isFinite(max) && min >= 0 && max >= min;
+  }
+
+  function timeoutModeFromEdge(edge) {
+    if (!edge) return "fixed";
+    if (hasTimeoutInterval(edge)) return "interval";
+    const expr = String(edge.timeoutExpr ?? "").trim();
+    if (expr) return "var";
+    return "fixed";
   }
 
   function isTimeoutNumber(value) {
@@ -6906,6 +7439,7 @@ Sentence:
 
   function openTimeoutSlider() {
     if (selectedEdge?.type !== "TEDGE") return;
+    if ((edgeDraft?.timeoutMode || "fixed") !== "fixed") return;
     timeoutSliderOpen = true;
   }
 
@@ -6945,7 +7479,7 @@ Sentence:
     if (!edgeDraft) return;
     const timeoutMs = parseTimeoutMs(event?.currentTarget?.value);
     if (!Number.isFinite(timeoutMs)) return;
-    edgeDraft = { ...edgeDraft, timeoutSpec: String(timeoutMs) };
+    edgeDraft = { ...edgeDraft, timeoutMode: "fixed", timeoutSpec: String(timeoutMs) };
     edgeEditError = "";
     sendTimeoutSliderValue(timeoutMs, selectedEdge?.id);
   }
@@ -6954,7 +7488,7 @@ Sentence:
     const parsed = Number(timeoutMs);
     if (!edgeId || !Number.isFinite(parsed) || parsed < 0) return;
     if (selectedEdge?.id === edgeId && edgeDraft) {
-      edgeDraft = { ...edgeDraft, timeoutSpec: String(Math.floor(parsed)) };
+      edgeDraft = { ...edgeDraft, timeoutMode: "fixed", timeoutSpec: String(Math.floor(parsed)) };
       edgeEditError = "";
     }
     sendTimeoutSliderValue(Math.floor(parsed), edgeId);
@@ -7408,6 +7942,21 @@ Sentence:
     restoreFocus();
   }
 
+  function openEventOverprodDialog() {
+    rememberFocus();
+    eventOverprodDialogOpen = true;
+  }
+
+  function closeEventOverprodDialogAndRestoreFocus() {
+    closeEventOverprodDialog();
+    restoreFocus();
+  }
+
+  function muteEventOverprodDialogForRunAndClose() {
+    muteEventOverprodDialogForRun();
+    restoreFocus();
+  }
+
   async function checkUndefinedVariables() {
     if (!selectedProjectId) return [];
     try {
@@ -7484,11 +8033,13 @@ Sentence:
       projectConfig = normalizeProjectConfig(response.config || {});
       projectConfigDraft = cloneProjectConfig(projectConfig);
       syncLLMSelectionsFromConfig(projectConfig);
+      syncSemanticAnalysisSettingsFromConfig(projectConfig);
+      syncRuntimeVizGuardFromProjectConfig(projectConfig);
       projectConfigSaved = response.saved ?? null;
       projectConfigPending = response.pending === true;
       missingAgentDialogOpen = false;
       missingAgentDrafts = [];
-      await executeRuntimeCommand("Runtime.Play");
+      await runRuntimeCommand("Runtime.Play", { skipMissingAgentCheck: true });
     } catch (err) {
       missingAgentError = err.message || "Failed to update project config.";
     } finally {
@@ -11253,11 +11804,15 @@ Sentence:
 
   function resetEdgeDraft() {
     if (!selectedEdge) return;
+    const timeoutMode = timeoutModeFromEdge(selectedEdge);
     edgeDraftId = selectedEdge.id;
     edgeDraft = {
       condition: selectedEdge.condition ?? "",
       probability: selectedEdge.probability !== undefined ? String(selectedEdge.probability) : "",
       timeoutSpec: edgeTimeoutSpec(selectedEdge),
+      timeoutMinSpec: timeoutMode === "interval" ? String(selectedEdge.timeoutMinMs) : "",
+      timeoutMaxSpec: timeoutMode === "interval" ? String(selectedEdge.timeoutMaxMs) : "",
+      timeoutMode,
       altStartText: formatAltStartMap(selectedEdge)
     };
     edgeEditError = "";
@@ -11348,28 +11903,32 @@ Sentence:
     } else if (type === "PEDGE") {
       // Probability edits are managed via the probability manager.
     } else if (type === "TEDGE") {
-      const raw = String(edgeDraft.timeoutSpec ?? "").trim();
-      if (!raw) {
-        edgeEditError = "Timeout is required.";
-        return;
-      }
-      if (isTimeoutNumber(raw)) {
-        const parsed = Number.parseInt(raw, 10);
-        if (!Number.isFinite(parsed)) {
+      const mode = edgeDraft.timeoutMode || "fixed";
+      if (mode === "fixed") {
+        const raw = String(edgeDraft.timeoutSpec ?? "").trim();
+        if (!raw) {
+          edgeEditError = "Timeout is required.";
+          return;
+        }
+        if (!isTimeoutNumber(raw)) {
           edgeEditError = "Timeout must be a number.";
           return;
         }
-        if (parsed < 0) {
+        const parsed = Number.parseInt(raw, 10);
+        if (!Number.isFinite(parsed) || parsed < 0) {
           edgeEditError = "Timeout must be >= 0.";
           return;
         }
         if (parsed !== (selectedEdge.timeoutMs ?? 0)) {
           fields.timeoutMs = parsed;
         }
-        if (selectedEdge.timeoutExpr) {
-          fields.timeoutExpr = "";
+        fields.timeoutExpr = "";
+      } else if (mode === "var") {
+        const raw = String(edgeDraft.timeoutSpec ?? "").trim();
+        if (!raw) {
+          edgeEditError = "Timeout variable is required.";
+          return;
         }
-      } else {
         if (!isTimeoutVarName(raw)) {
           edgeEditError = sceneFlowIntVarNames.length
             ? "Timeout must be an integer sceneflow variable."
@@ -11379,6 +11938,25 @@ Sentence:
         if (raw !== (selectedEdge.timeoutExpr ?? "")) {
           fields.timeoutExpr = raw;
         }
+      } else {
+        const minRaw = String(edgeDraft.timeoutMinSpec ?? "").trim();
+        const maxRaw = String(edgeDraft.timeoutMaxSpec ?? "").trim();
+        if (!isTimeoutNumber(minRaw) || !isTimeoutNumber(maxRaw)) {
+          edgeEditError = "Timeout interval must be two numbers.";
+          return;
+        }
+        const min = Number.parseInt(minRaw, 10);
+        const max = Number.parseInt(maxRaw, 10);
+        if (!Number.isFinite(min) || !Number.isFinite(max) || min < 0 || max < 0) {
+          edgeEditError = "Timeout interval values must be >= 0.";
+          return;
+        }
+        if (max <= min) {
+          edgeEditError = "Timeout interval must satisfy min < max.";
+          return;
+        }
+        fields.timeoutMinMs = min;
+        fields.timeoutMaxMs = max;
       }
     } else {
       edgeEditError = "Selected edge has no editable fields yet.";
@@ -13099,40 +13677,87 @@ Sentence:
                     {/if}
                   </div>
                 {:else if selectedEdge.type === "TEDGE"}
-                  <label for="edge-timeout">Timeout (ms or int variable)</label>
-                  <input
-                    id="edge-timeout"
-                    type="text"
-                    list="edge-timeout-vars"
-                    placeholder="1000 or timeout_ms"
-                    bind:value={edgeDraft.timeoutSpec}
-                    on:focus={openTimeoutSlider}
-                    on:click={openTimeoutSlider}
-                  />
-                  <datalist id="edge-timeout-vars">
-                    {#each sceneFlowIntVarNames as varName}
-                      <option value={varName}></option>
-                    {/each}
-                  </datalist>
-                  {#if timeoutSliderOpen && isTimeoutNumber(edgeDraft.timeoutSpec)}
-                    {@const slider = timeoutSliderConfig(edgeDraft.timeoutSpec)}
-                    {#if slider}
-                      <div class="edge-timeout-slider-wrap">
-                        <input
-                          class="edge-timeout-slider"
-                          type="range"
-                          min={slider.min}
-                          max={slider.max}
-                          step={slider.step}
-                          value={slider.value}
-                          on:input={handleTimeoutSliderInput}
-                        />
-                        <div class="edge-timeout-slider-scale" aria-hidden="true">
-                          <span>{slider.min} ms</span>
-                          <span>{slider.max} ms</span>
+                  <label for="edge-timeout-mode">Timeout mode</label>
+                  <select
+                    id="edge-timeout-mode"
+                    bind:value={edgeDraft.timeoutMode}
+                    on:change={() => {
+                      edgeEditError = "";
+                      timeoutSliderOpen = edgeDraft.timeoutMode === "fixed";
+                    }}
+                  >
+                    <option value="fixed">Fixed milliseconds</option>
+                    <option value="var">Integer variable</option>
+                    <option value="interval">Random interval</option>
+                  </select>
+                  {#if edgeDraft.timeoutMode === "fixed"}
+                    <label for="edge-timeout">Timeout (ms)</label>
+                    <input
+                      id="edge-timeout"
+                      type="text"
+                      placeholder="1000"
+                      bind:value={edgeDraft.timeoutSpec}
+                      on:focus={openTimeoutSlider}
+                      on:click={openTimeoutSlider}
+                    />
+                    {#if timeoutSliderOpen && isTimeoutNumber(edgeDraft.timeoutSpec)}
+                      {@const slider = timeoutSliderConfig(edgeDraft.timeoutSpec)}
+                      {#if slider}
+                        <div class="edge-timeout-slider-wrap">
+                          <input
+                            class="edge-timeout-slider"
+                            type="range"
+                            min={slider.min}
+                            max={slider.max}
+                            step={slider.step}
+                            value={slider.value}
+                            on:input={handleTimeoutSliderInput}
+                          />
+                          <div class="edge-timeout-slider-scale" aria-hidden="true">
+                            <span>{slider.min} ms</span>
+                            <span>{slider.max} ms</span>
+                          </div>
                         </div>
-                      </div>
+                      {/if}
                     {/if}
+                  {:else if edgeDraft.timeoutMode === "var"}
+                    <label for="edge-timeout">Timeout variable (int)</label>
+                    <input
+                      id="edge-timeout"
+                      type="text"
+                      list="edge-timeout-vars"
+                      placeholder="timeout_ms"
+                      bind:value={edgeDraft.timeoutSpec}
+                    />
+                    <datalist id="edge-timeout-vars">
+                      {#each sceneFlowIntVarNames as varName}
+                        <option value={varName}></option>
+                      {/each}
+                    </datalist>
+                  {:else}
+                    <label for="edge-timeout-min">Timeout interval (ms)</label>
+                    <div class="edge-timeout-interval">
+                      <input
+                        id="edge-timeout-min"
+                        type="number"
+                        min="0"
+                        max="60000"
+                        step="1"
+                        placeholder="min"
+                        bind:value={edgeDraft.timeoutMinSpec}
+                      />
+                      <span>to</span>
+                      <input
+                        id="edge-timeout-max"
+                        type="number"
+                        min="0"
+                        max="60000"
+                        step="1"
+                        placeholder="max"
+                        bind:value={edgeDraft.timeoutMaxSpec}
+                      />
+                    </div>
+                    <p class="muted">Runtime picks one random timeout between min and max when this node becomes active.</p>
                   {/if}
                 {:else}
                   <p class="muted">No editable fields for this edge type yet.</p>
@@ -14213,6 +14838,35 @@ Sentence:
     </div>
   {/if}
 
+  {#if eventOverprodDialogOpen}
+    <div
+      class="modal-backdrop"
+      on:click|self={closeEventOverprodDialogAndRestoreFocus}
+      role="presentation"
+    >
+      <div class="modal rename-scene-modal" role="dialog" aria-modal="true" aria-labelledby="event-overprod-title" tabindex="-1">
+        <h3 id="event-overprod-title">Realtime Visualization Limited</h3>
+        <div class="modal-body">
+          <p>{eventOverprodMessage}</p>
+          <p><strong>Hot subflow:</strong> {eventOverprodFlowLabel}</p>
+          <p><strong>Current rate:</strong> {eventOverprodRate} ({eventOverprodFlowRate})</p>
+          <p class="muted">
+            Runtime execution continues, but the canvas cannot display every transition in parallel at this speed.
+            Hint: avoid 0 ms timeout loops; use a positive timeout (for example 20-100 ms) or redesign this cycle.
+          </p>
+        </div>
+        <div class="row row-end">
+          <button type="button" class="ghost" on:click={muteEventOverprodDialogForRunAndClose}>
+            Don't show again this run
+          </button>
+          <button type="button" class="primary" on:click={closeEventOverprodDialogAndRestoreFocus}>
+            OK
+          </button>
+        </div>
+      </div>
+    </div>
+  {/if}
+
   {#if missingVarDialogOpen}
     <div
       class="modal-backdrop"
@@ -14533,6 +15187,61 @@ Sentence:
                     />
                   </div>
                   <span class="muted project-config-concepts-help">Stored in project.xml as SemanticServices.</span>
+                </div>
+              </div>
+            </div>
+            <div class="project-config-panel project-config-panel--overview">
+              <div class="project-config-overview-grid">
+                <div class="project-config-overview-label">Runtime Visualization Guard</div>
+                <div class="project-config-overview-field">
+                  <div class="project-config-grid">
+                    <label for="runtime-viz-rate">Event rate limit (events/s)</label>
+                    <input
+                      id="runtime-viz-rate"
+                      type="number"
+                      min={RUNTIME_VIZ_RATE_MIN}
+                      max={RUNTIME_VIZ_RATE_MAX}
+                      step="50"
+                      value={runtimeVizRateDraft}
+                      on:input={(event) => updateRuntimeVizGuardField("rate", event.target.value)}
+                      disabled={runtimeVizBusy || runtimeVizCalibrationBusy}
+                    />
+                    <label for="runtime-viz-burst">Burst capacity (events)</label>
+                    <input
+                      id="runtime-viz-burst"
+                      type="number"
+                      min={RUNTIME_VIZ_BURST_MIN}
+                      max={RUNTIME_VIZ_BURST_MAX}
+                      step="100"
+                      value={runtimeVizBurstDraft}
+                      on:input={(event) => updateRuntimeVizGuardField("burst", event.target.value)}
+                      disabled={runtimeVizBusy || runtimeVizCalibrationBusy}
+                    />
+                  </div>
+                  <div class="project-config-inline project-config-runtime-viz-actions">
+                    <button
+                      type="button"
+                      class="primary"
+                      on:click={calibrateRuntimeVizGuard}
+                      disabled={runtimeVizBusy || runtimeVizCalibrationBusy}
+                    >
+                      {runtimeVizCalibrationBusy ? "Calibrating..." : "Calibrate for this computer"}
+                    </button>
+                  </div>
+                  <span class="muted project-config-concepts-help">
+                    Limits visualization event flood (e.g. 0 ms loops) so the server and UI stay responsive.
+                  </span>
+                  {#if !hasRuntimeVizGuardInProjectConfig(projectConfigView)}
+                    <span class="muted project-config-concepts-help">
+                      Not calibrated yet. Click “Calibrate for this computer” to write the initial values into <code>project.xml</code>.
+                    </span>
+                  {/if}
+                  {#if runtimeVizCalibrationStatus}
+                    <span class="muted project-config-concepts-help">{runtimeVizCalibrationStatus}</span>
+                  {/if}
+                  {#if runtimeVizError}
+                    <p class="error">{runtimeVizError}</p>
+                  {/if}
                 </div>
               </div>
             </div>

@@ -237,6 +237,8 @@ public final class SceneFlowSnapshotBuilder {
             TimeoutEdge te = (TimeoutEdge) edge;
             json.put("timeoutMs", te.getTimeout());
             json.put("timeoutExpr", te.getExpression() != null ? te.getExpression().getConcreteSyntax() : "");
+            json.put("timeoutMinMs", te.getTimeoutMin());
+            json.put("timeoutMaxMs", te.getTimeoutMax());
         }
 
         return json;

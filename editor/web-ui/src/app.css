@@ -2570,6 +2570,19 @@ summary {
   font-variant-numeric: tabular-nums;
 }
 
+.edge-timeout-interval {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.edge-timeout-interval span {
+  font-size: 0.85rem;
+  color: var(--muted);
+  text-align: center;
+}
+
 .definition-section {
   margin-top: 0.7rem;
   padding-top: 0.5rem;
@@ -3525,6 +3538,10 @@ summary {
   align-items: center;
   gap: 0.6rem;
   flex-wrap: wrap;
+}
+
+.project-config-runtime-viz-actions {
+  margin-top: 0.2rem;
 }
 
 .project-config-inline-toggle {
@@ -4927,7 +4944,7 @@ summary {
   font-family: "SansSerif", "Helvetica Neue", Arial, sans-serif;
   font-weight: 600;
   paint-order: stroke;
-  stroke: rgba(255, 255, 255, 0.8);
+  stroke: var(--edge-outline, #75716c);
   stroke-width: calc(var(--sf-font-size, 16px) * 0.62);
   stroke-linejoin: round;
   pointer-events: none;
@@ -5054,6 +5071,16 @@ summary {
   pointer-events: none;
 }
 
+.node-activity-border {
+  fill: none;
+  stroke: #e84a4f;
+  stroke-width: calc(var(--sf-node-stroke, 3px) * 1.8);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  pointer-events: none;
+  animation: node-activity-border 0.8s ease-in-out infinite alternate;
+}
+
 .node.node-super .node-activity {
   fill: rgba(255, 255, 255, 0.5);
 }
@@ -5135,7 +5162,7 @@ summary {
 }
 
 .node-id {
-  fill: #ffffff;
+  fill: var(--node-id-text, var(--node-text, #ffffff));
   font-weight: 400;
 }
 
@@ -5155,6 +5182,15 @@ summary {
   }
   to {
     opacity: 0;
+  }
+}
+
+@keyframes node-activity-border {
+  from {
+    opacity: 0.55;
+  }
+  to {
+    opacity: 1;
   }
 }
 
