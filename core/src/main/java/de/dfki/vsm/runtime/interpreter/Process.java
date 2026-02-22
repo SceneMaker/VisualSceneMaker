@@ -543,14 +543,16 @@ public class Process extends java.lang.Thread {
 			 * an uncaught exception would kill this thread while holding the
 			 * lock, permanently deadlocking the entire runtime.
 			 */
-			mLogger.failure("Process " + getName() + " crashed with unexpected exception: " + e.getMessage());
-			try {
-				EventDispatcher.getInstance().convey(new TerminationEvent(this,
-						new InterpreterError(this, "Unexpected error: " + e.getMessage())));
-				mInterpreter.abort();
-			} finally {
-				unlockIfHeld();
-			}
+			mLogger.failure("Process " + getName() + " crashed with unexpected exception: "
+					+ e.getClass().getName() + ": " + e.getMessage());
+				try {
+					EventDispatcher.getInstance().convey(new TerminationEvent(this,
+							new InterpreterError(this, "Unexpected error: "
+									+ e.getClass().getName() + ": " + e.getMessage())));
+					mInterpreter.abort();
+				} finally {
+					unlockIfHeld();
+				}
 		}
 	}
 
@@ -572,16 +574,17 @@ public class Process extends java.lang.Thread {
 			return;
 		}
 
-		while (true) {
+			while (true) {
+				ensureLockHeld();
 
-			/*
-			 * Start the event observer to detect the changes that have been
-			 * introduced by the change of the configuration and the
-			 * initialization of the nodes that have been entered to the
-			 * configuration.
-			 */
-			mEventObserver.update();
-			mInterpreter.unlock();
+				/*
+				 * Start the event observer to detect the changes that have been
+				 * introduced by the change of the configuration and the
+				 * initialization of the nodes that have been entered to the
+				 * configuration.
+				 */
+				mEventObserver.update();
+				unlockIfHeld();
 
 			try {
 
@@ -736,19 +739,21 @@ public class Process extends java.lang.Thread {
 			/////////////////////////////////////////////////////////////
 			// HANDLE INTERRUPTION REQUESTS AND TERMINATIOJ REQUESTS
 			////////////////////////////////////////////////////////////
-			catch (InterruptionSignal e) {
+				catch (InterruptionSignal e) {
 
-				// mLogger.message("Interpreter: Process " + getName() + " catched an interruption request");
-				handleInterruption();
+					// mLogger.message("Interpreter: Process " + getName() + " catched an interruption request");
+					ensureLockHeld();
+					handleInterruption();
 
-            } catch (TerminationSignal e) {
+	            } catch (TerminationSignal e) {
 
-				// mLogger.message("Interpreter: Process " + getName() + " catched a termination request");
-				handleTermination();
+					// mLogger.message("Interpreter: Process " + getName() + " catched a termination request");
+					ensureLockHeld();
+					handleTermination();
 
-				break;
+					break;
+				}
 			}
-		}
 
 		// mLogger.message("Interpreter: Process " + getName() + " has been terminated in node " + mCurrentNode.getId());
 		unlockIfHeld();
@@ -757,6 +762,12 @@ public class Process extends java.lang.Thread {
 	private void unlockIfHeld() {
 		if (mInterpreter.isWriteLockHeldByCurrentThread()) {
 			mInterpreter.unlock();
+		}
+	}
+
+	private void ensureLockHeld() {
+		if (!mInterpreter.isWriteLockHeldByCurrentThread()) {
+			mInterpreter.lock();
 		}
 	}
 

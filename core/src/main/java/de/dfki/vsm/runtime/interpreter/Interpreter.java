@@ -96,7 +96,18 @@ public class Interpreter {
     }
 
     void signalAll() {
-        mPauseCondition.signalAll();
+        boolean lockedHere = false;
+        if (!isWriteLockHeldByCurrentThread()) {
+            mLock.lock();
+            lockedHere = true;
+        }
+        try {
+            mPauseCondition.signalAll();
+        } finally {
+            if (lockedHere) {
+                mLock.unlock();
+            }
+        }
     }
 
     // Wait for a state change (variable write, timeout, etc.) or until timeoutMs elapses.
@@ -117,8 +128,19 @@ public class Interpreter {
     // Signal all threads waiting for state changes (edge guard re-evaluation).
     // Must be called while holding the lock.
     void signalStateChange() {
-        mStateGeneration++;
-        mStateChangeCondition.signalAll();
+        boolean lockedHere = false;
+        if (!isWriteLockHeldByCurrentThread()) {
+            mLock.lock();
+            lockedHere = true;
+        }
+        try {
+            mStateGeneration++;
+            mStateChangeCondition.signalAll();
+        } finally {
+            if (lockedHere) {
+                mLock.unlock();
+            }
+        }
     }
 
     // Record that the named variable was written. Must be called while holding the lock.

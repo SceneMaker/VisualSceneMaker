@@ -30,6 +30,9 @@ public final class SymbolEntry implements Copyable {
 
     //
     public final AbstractValue write(final AbstractValue value) throws InterpreterError {
+        if (value == null) {
+            throw new InterpreterError(this, "null value cannot be written to variable '" + mSymbol + "'");
+        }
 
         // Event variables: enqueue instead of replace
         if (mValue.getType() == AbstractValue.Type.EVENT) {

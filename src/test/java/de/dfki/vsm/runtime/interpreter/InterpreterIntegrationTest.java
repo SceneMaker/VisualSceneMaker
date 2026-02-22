@@ -427,6 +427,95 @@ public class InterpreterIntegrationTest {
         }
     }
 
+    @Test
+    void externalNullWriteToEventVariableIsRejectedWithoutRuntimeCrash() throws Exception {
+        writeProjectFiles(tempDir, SCENEFLOW_EVENT_BUFFER_EXTERNAL_WRITES);
+        project = new RunTimeProject(tempDir.toFile());
+
+        CountDownLatch reachedN1 = new CountDownLatch(1);
+        List<String> terminationErrors = new CopyOnWriteArrayList<>();
+
+        EventListener listener = event -> {
+            if (event instanceof NodeStartedEvent) {
+                String id = ((NodeStartedEvent) event).getNode().getId();
+                if (id.equals("N1")) {
+                    reachedN1.countDown();
+                }
+            } else if (event instanceof TerminationEvent) {
+                terminationErrors.add(((TerminationEvent) event).getMessage());
+            }
+        };
+        EventDispatcher.getInstance().register(listener);
+
+        try {
+            assertTrue(project.launch());
+            assertTrue(project.start());
+            assertTrue(reachedN1.await(5, TimeUnit.SECONDS), "Should reach N1 and wait on ready guard");
+
+            // Explicit null write through public API must be rejected gracefully.
+            assertFalse(project.setVariable("event", (AbstractValue) null));
+
+            Thread.sleep(150);
+            assertTrue(project.isRunning(), "Runtime should remain alive after rejected null event write");
+            assertTrue(terminationErrors.isEmpty(),
+                    "No termination expected after rejected null event write, got: " + terminationErrors);
+        } finally {
+            EventDispatcher.getInstance().remove(listener);
+        }
+    }
+
+    @Test
+    void eventConsumerDrainsQueuedTestEventsAfterOtherEventsAreEvicted() throws Exception {
+        writeProjectFiles(tempDir, SCENEFLOW_EVENT_CONSUMER_DRAIN);
+        project = new RunTimeProject(tempDir.toFile());
+
+        CountDownLatch reachedWaitNode = new CountDownLatch(1);
+        CountDownLatch reachedDoneNode = new CountDownLatch(1);
+        List<String> terminationErrors = new CopyOnWriteArrayList<>();
+
+        EventListener listener = event -> {
+            if (event instanceof NodeStartedEvent) {
+                String id = ((NodeStartedEvent) event).getNode().getId();
+                if (id.equals("N1")) {
+                    reachedWaitNode.countDown();
+                } else if (id.equals("N3")) {
+                    reachedDoneNode.countDown();
+                }
+            } else if (event instanceof TerminationEvent) {
+                terminationErrors.add(((TerminationEvent) event).getMessage());
+            }
+        };
+        EventDispatcher.getInstance().register(listener);
+
+        try {
+            assertTrue(project.launch());
+            assertTrue(project.start());
+            assertTrue(reachedWaitNode.await(5, TimeUnit.SECONDS), "Should reach event waiting node N1");
+
+            // 1) First matching event should be consumed immediately.
+            assertTrue(project.setVariable("event", "test"));
+            Thread.sleep(120);
+
+            // 2) Fill queue with non-matching events beyond capacity.
+            for (int i = 1; i <= 12; i++) {
+                assertTrue(project.setVariable("event", "other-" + i));
+            }
+
+            // 3) Then enqueue 10 matching events; capacity should evict older "other-*" entries.
+            for (int i = 1; i <= 10; i++) {
+                assertTrue(project.setVariable("event", "test"));
+            }
+
+            assertTrue(reachedDoneNode.await(8, TimeUnit.SECONDS),
+                    "Consumer should eventually drain matching test events and reach N3");
+            waitForStop(5000);
+            assertTrue(terminationErrors.isEmpty(),
+                    "No interpreter termination expected, got: " + terminationErrors);
+        } finally {
+            EventDispatcher.getInstance().remove(listener);
+        }
+    }
+
     // ========== PERFORMANCE BENCHMARKS ==========
 
     /**
@@ -898,6 +987,69 @@ public class InterpreterIntegrationTest {
             "  <Node id=\"N2\" name=\"N2\" history=\"false\">\n" +
             "    <Define/>\n    <Declare/>\n    <Commands/>\n" +
             "    <Graphics><Position xPos=\"200\" yPos=\"50\"/></Graphics>\n" +
+            "  </Node>\n" +
+            "</SceneFlow>\n";
+
+    /**
+     * N1 waits for Event == "test".
+     * N2 increments count and loops until count reaches 11, then N3 (end).
+     */
+    private static final String SCENEFLOW_EVENT_CONSUMER_DRAIN =
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+            "<SceneFlow id=\"Test\" name=\"Test\" start=\"N1;\"" +
+            " xmlns=\"xml.sceneflow.dfki.de\"" +
+            " xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"" +
+            " xsi:schemaLocation=\"xml.sceneflow.dfki.de res/xsd/sceneflow.xsd\">\n" +
+            "  <Define/>\n" +
+            "  <Declare>\n" +
+            "    <VariableDefinition type=\"Int\" name=\"count\">\n" +
+            "      <IntLiteral value=\"0\"/>\n" +
+            "    </VariableDefinition>\n" +
+            "    <VariableDefinition type=\"Event(*, 10)\" name=\"event\">\n" +
+            "      <BoolLiteral value=\"false\"/>\n" +
+            "    </VariableDefinition>\n" +
+            "  </Declare>\n" +
+            "  <Commands/>\n" +
+            "  <Node id=\"N1\" name=\"N1\" history=\"false\">\n" +
+            "    <Define/>\n    <Declare/>\n    <Commands/>\n" +
+            "    <CEdge target=\"N2\" start=\"\">\n" +
+            "      <Eq>\n" +
+            "        <SimpleVariable name=\"event\"/>\n" +
+            "        <StringLiteral value=\"test\"/>\n" +
+            "      </Eq>\n" +
+            "    </CEdge>\n" +
+            "    <Graphics><Position xPos=\"50\" yPos=\"50\"/></Graphics>\n" +
+            "  </Node>\n" +
+            "  <Node id=\"N2\" name=\"N2\" history=\"false\">\n" +
+            "    <Define/>\n    <Declare/>\n" +
+            "    <Commands>\n" +
+            "      <Assignment>\n" +
+            "        <SimpleVariable name=\"count\"/>\n" +
+            "        <Expression>\n" +
+            "          <Add>\n" +
+            "            <SimpleVariable name=\"count\"/>\n" +
+            "            <IntLiteral value=\"1\"/>\n" +
+            "          </Add>\n" +
+            "        </Expression>\n" +
+            "      </Assignment>\n" +
+            "    </Commands>\n" +
+            "    <CEdge target=\"N1\" start=\"\">\n" +
+            "      <Lt>\n" +
+            "        <SimpleVariable name=\"count\"/>\n" +
+            "        <IntLiteral value=\"11\"/>\n" +
+            "      </Lt>\n" +
+            "    </CEdge>\n" +
+            "    <CEdge target=\"N3\" start=\"\">\n" +
+            "      <Ge>\n" +
+            "        <SimpleVariable name=\"count\"/>\n" +
+            "        <IntLiteral value=\"11\"/>\n" +
+            "      </Ge>\n" +
+            "    </CEdge>\n" +
+            "    <Graphics><Position xPos=\"220\" yPos=\"50\"/></Graphics>\n" +
+            "  </Node>\n" +
+            "  <Node id=\"N3\" name=\"N3\" history=\"false\">\n" +
+            "    <Define/>\n    <Declare/>\n    <Commands/>\n" +
+            "    <Graphics><Position xPos=\"390\" yPos=\"50\"/></Graphics>\n" +
             "  </Node>\n" +
             "</SceneFlow>\n";
 }
