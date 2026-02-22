@@ -5,7 +5,11 @@ import de.dfki.vsm.event.EventListener;
 import de.dfki.vsm.event.EventObject;
 import de.dfki.vsm.event.event.NodeStartedEvent;
 import de.dfki.vsm.event.event.TimeoutEdgeStartedEvent;
+import de.dfki.vsm.runtime.interpreter.event.TerminationEvent;
 import de.dfki.vsm.runtime.project.RunTimeProject;
+import de.dfki.vsm.runtime.interpreter.value.AbstractValue;
+import de.dfki.vsm.runtime.interpreter.value.EventValue;
+import de.dfki.vsm.runtime.interpreter.value.StringValue;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -357,6 +361,67 @@ public class InterpreterIntegrationTest {
 
             // N1 -> (timeout, && guard fails) -> N2 -> (|| guard succeeds via short-circuit) -> N3
             assertEquals(List.of("N1", "N2", "N3"), visited);
+        } finally {
+            EventDispatcher.getInstance().remove(listener);
+        }
+    }
+
+    /**
+     * Regression test for Event(*, 10) with external writes while a node is waiting.
+     * Verifies 11th write does not crash runtime, queue stays bounded to 10,
+     * oldest element is dropped, and flow can still continue afterward.
+     */
+    @Test
+    void eventQueueWithCapacityTenHandlesEleventhExternalWrite() throws Exception {
+        writeProjectFiles(tempDir, SCENEFLOW_EVENT_BUFFER_EXTERNAL_WRITES);
+        project = new RunTimeProject(tempDir.toFile());
+
+        CountDownLatch reachedN1 = new CountDownLatch(1);
+        CountDownLatch reachedN2 = new CountDownLatch(1);
+        List<String> terminationErrors = new CopyOnWriteArrayList<>();
+
+        EventListener listener = event -> {
+            if (event instanceof NodeStartedEvent) {
+                String id = ((NodeStartedEvent) event).getNode().getId();
+                if (id.equals("N1")) {
+                    reachedN1.countDown();
+                } else if (id.equals("N2")) {
+                    reachedN2.countDown();
+                }
+            } else if (event instanceof TerminationEvent) {
+                terminationErrors.add(((TerminationEvent) event).getMessage());
+            }
+        };
+        EventDispatcher.getInstance().register(listener);
+
+        try {
+            assertTrue(project.launch());
+            assertTrue(project.start());
+            assertTrue(reachedN1.await(5, TimeUnit.SECONDS), "Should reach N1 and wait on ready guard");
+
+            // Push beyond configured capacity (10) via external API.
+            for (int i = 1; i <= 11; i++) {
+                assertTrue(project.setVariable("event", "e" + i), "setVariable(event) failed at i=" + i);
+            }
+
+            AbstractValue raw = project.getValueOf("event");
+            assertNotNull(raw, "event variable should exist");
+            assertTrue(raw instanceof EventValue, "event variable should be EventValue");
+            EventValue eventQueue = (EventValue) raw;
+
+            assertEquals(10, eventQueue.size(), "Event queue must remain bounded at capacity 10");
+
+            AbstractValue first = eventQueue.dequeue();
+            assertTrue(first instanceof StringValue, "Dequeued event should be StringValue");
+            assertEquals("e2", ((StringValue) first).getValue(),
+                    "Oldest element (e1) must be dropped after 11th enqueue");
+
+            // Ensure runtime is still healthy and can continue.
+            assertTrue(project.setVariable("ready", true), "ready=true should be accepted");
+            assertTrue(reachedN2.await(5, TimeUnit.SECONDS), "Flow should continue to N2");
+            waitForStop(5000);
+            assertTrue(terminationErrors.isEmpty(),
+                    "No interpreter termination expected during event writes, got: " + terminationErrors);
         } finally {
             EventDispatcher.getInstance().remove(listener);
         }
@@ -800,6 +865,39 @@ public class InterpreterIntegrationTest {
             "  <Node id=\"N3\" name=\"N3\" history=\"false\">\n" +
             "    <Define/>\n    <Declare/>\n    <Commands/>\n" +
             "    <Graphics><Position xPos=\"350\" yPos=\"50\"/></Graphics>\n" +
+            "  </Node>\n" +
+            "</SceneFlow>\n";
+
+    /**
+     * N1 waits on ready==true. External caller pushes into Event(*,10).
+     * This keeps the process alive while testing external event writes.
+     */
+    private static final String SCENEFLOW_EVENT_BUFFER_EXTERNAL_WRITES =
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+            "<SceneFlow id=\"Test\" name=\"Test\" start=\"N1;\"" +
+            " xmlns=\"xml.sceneflow.dfki.de\"" +
+            " xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"" +
+            " xsi:schemaLocation=\"xml.sceneflow.dfki.de res/xsd/sceneflow.xsd\">\n" +
+            "  <Define/>\n" +
+            "  <Declare>\n" +
+            "    <VariableDefinition type=\"Bool\" name=\"ready\">\n" +
+            "      <BoolLiteral value=\"false\"/>\n" +
+            "    </VariableDefinition>\n" +
+            "    <VariableDefinition type=\"Event(*, 10)\" name=\"event\">\n" +
+            "      <BoolLiteral value=\"false\"/>\n" +
+            "    </VariableDefinition>\n" +
+            "  </Declare>\n" +
+            "  <Commands/>\n" +
+            "  <Node id=\"N1\" name=\"N1\" history=\"false\">\n" +
+            "    <Define/>\n    <Declare/>\n    <Commands/>\n" +
+            "    <CEdge target=\"N2\" start=\"\">\n" +
+            "      <SimpleVariable name=\"ready\"/>\n" +
+            "    </CEdge>\n" +
+            "    <Graphics><Position xPos=\"50\" yPos=\"50\"/></Graphics>\n" +
+            "  </Node>\n" +
+            "  <Node id=\"N2\" name=\"N2\" history=\"false\">\n" +
+            "    <Define/>\n    <Declare/>\n    <Commands/>\n" +
+            "    <Graphics><Position xPos=\"200\" yPos=\"50\"/></Graphics>\n" +
             "  </Node>\n" +
             "</SceneFlow>\n";
 }

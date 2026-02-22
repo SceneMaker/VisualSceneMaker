@@ -535,7 +535,7 @@ public class Process extends java.lang.Thread {
 			 * Stop the interpreter
 			 */
 			mInterpreter.abort();
-			mInterpreter.unlock();
+			unlockIfHeld();
 		} catch (Exception e) {
 			/*
 			 * Catch any unexpected exception (NPE, ClassCastException, etc.)
@@ -549,7 +549,7 @@ public class Process extends java.lang.Thread {
 						new InterpreterError(this, "Unexpected error: " + e.getMessage())));
 				mInterpreter.abort();
 			} finally {
-				mInterpreter.unlock();
+				unlockIfHeld();
 			}
 		}
 	}
@@ -751,7 +751,13 @@ public class Process extends java.lang.Thread {
 		}
 
 		// mLogger.message("Interpreter: Process " + getName() + " has been terminated in node " + mCurrentNode.getId());
-		mInterpreter.unlock();
+		unlockIfHeld();
+	}
+
+	private void unlockIfHeld() {
+		if (mInterpreter.isWriteLockHeldByCurrentThread()) {
+			mInterpreter.unlock();
+		}
 	}
 
 	private void executeStartNodeList() throws InterruptionSignal, TerminationSignal, InterpreterError {

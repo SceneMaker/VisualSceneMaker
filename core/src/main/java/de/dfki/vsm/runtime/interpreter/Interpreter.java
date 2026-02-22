@@ -79,6 +79,10 @@ public class Interpreter {
         mLock.unlock();
     }
 
+    boolean isWriteLockHeldByCurrentThread() {
+        return mRwLock.isWriteLockedByCurrentThread();
+    }
+
     private void readLock() {
         mReadLock.lock();
     }
