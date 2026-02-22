@@ -475,6 +475,20 @@ tasks.register('generateCapabilitySnapshot') {
     }
 }
 
+tasks.register('validateSceneFlowIr', JavaExec) {
+    group = 'verification'
+    description = 'Validates SceneFlow IR semantics against a capability snapshot.'
+    dependsOn tasks.named('classes')
+
+    def irPath = (findProperty('ir') ?: "${projectDir}/doc/sceneflow-ir.wait-for-ok-button.example.json").toString()
+    def snapshotPath = (findProperty('snapshot')
+            ?: "${projectDir}/doc/capability-snapshot.designpatterns.json").toString()
+
+    mainClass = 'de.dfki.vsm.sceneflow.ir.SceneFlowIrSemanticValidatorCli'
+    classpath = sourceSets.main.runtimeClasspath
+    args irPath, snapshotPath
+}
+
 def androidThinBaseProjects = [
         project(':core'),
         project(':core-http-android')

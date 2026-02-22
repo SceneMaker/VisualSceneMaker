@@ -8,7 +8,7 @@
     "createdAt": "2026-02-21T12:00:00Z"
   },
   "assumptions": [
-    "Variable UIEvent already exists in the current flow context.",
+    "Variable event already exists in the current flow context.",
     "Root supernode id is SceneFlow."
   ],
   "capabilitySnapshotRef": "snapshot://example/current-project",
@@ -54,7 +54,7 @@
       "sourceNodeId": "WaitForOkay",
       "targetNodeId": "AfterOkay",
       "payload": {
-        "conditionText": "UIEvent == \"OkayButton\""
+        "conditionText": "event == \"OkayButton\""
       }
     }
   ]
