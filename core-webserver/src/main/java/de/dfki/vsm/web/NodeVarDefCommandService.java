@@ -32,6 +32,8 @@ public final class NodeVarDefCommandService {
 
         void broadcastSceneFlowSnapshot(Consumer<String> broadcaster, String projectId, JSONObject snapshot);
 
+        int renameVariableReferences(SuperNode root, String oldName, String newName);
+
         void recordHistory(String projectId, String action);
 
         void recordCommand(String projectId, String action, JSONObject params);
@@ -119,6 +121,8 @@ public final class NodeVarDefCommandService {
         if (index >= list.size()) {
             return context.errorResponse("VARDEF_NOT_FOUND", "Variable definition not found at index: " + index);
         }
+        final VariableDefinition current = list.get(index);
+        final String oldName = current != null ? current.getName() : "";
 
         final StringBuilder error = new StringBuilder();
         final VariableDefinition varDef = context.parseVarDef(varDefJson, dataNode, error);
@@ -127,9 +131,17 @@ public final class NodeVarDefCommandService {
         }
 
         list.set(index, varDef);
+        int renamedReferences = 0;
+        final String newName = varDef.getName();
+        if (oldName != null && !oldName.isBlank() && newName != null && !newName.isBlank() && !oldName.equals(newName)) {
+            renamedReferences = context.renameVariableReferences(sceneFlow, oldName, newName);
+        }
 
-        return snapshotAndRecord(context, project, pid, superNodeId, sceneFlow,
+        final JSONObject response = snapshotAndRecord(context, project, pid, superNodeId, sceneFlow,
                 "SceneFlow.Node.VarDef.Update", params, broadcaster);
+        response.put("scriptChanged", renamedReferences > 0);
+        response.put("renamedReferences", renamedReferences);
+        return response;
     }
 
     private JSONObject handleDelete(final JSONObject params,

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Project name="Simple">
+<Project name="Simple" androidProject="true">
   <Plugins>
     <Plugin type="device" name="TimerExecutor" class="de.dfki.vsm.xtension.timer.TimerExecutor" load="true">
     </Plugin>
