@@ -1204,6 +1204,48 @@
     return COLORS.edges[key] || COLORS.edges.eedge;
   }
 
+  function edgeLabelTextColor(edge, fallbackColor) {
+    const type = (edge?.type || "").toLowerCase();
+    const isSelfLoopTedge = type === "tedge" && edge?.sourceId && edge?.sourceId === edge?.targetId;
+    if (type === "eedge" || type === "tedge" || isSelfLoopTedge) {
+      return "#ffffff";
+    }
+    if (type === "pedge" || type === "iedge" || type === "cedge") {
+      return "#000000";
+    }
+    return fallbackColor;
+  }
+
+  function edgeLabelOutlineColor(edge, fallbackColor, displayEdgeColor = null) {
+    const type = (edge?.type || "").toLowerCase();
+    const isSelfLoopTedge = type === "tedge" && edge?.sourceId && edge?.sourceId === edge?.targetId;
+    if (type === "eedge" || type === "tedge" || isSelfLoopTedge) {
+      return COLORS.edges.tedge;
+    }
+    if (type === "pedge" || type === "iedge") {
+      const base = displayEdgeColor || edgeColor(edge) || fallbackColor;
+      return lightenColor(base, 0.30);
+    }
+    if (type === "cedge") {
+      return displayEdgeColor || edgeColor(edge) || fallbackColor;
+    }
+    const useNodeIdContrastColor =
+      type === "iedge" || type === "tedge" || isSelfLoopTedge;
+    let outline = fallbackColor;
+    if (useNodeIdContrastColor) {
+      const sourceNode = nodeMap.get(edge?.sourceId);
+      const targetNode = nodeMap.get(edge?.targetId);
+      const nodes = [sourceNode, targetNode].filter(Boolean);
+      for (const node of nodes) {
+        if (nodeTextColor(node) === "#ffffff") {
+          outline = nodeIdTextColor(node);
+          break;
+        }
+      }
+    }
+    return outline;
+  }
+
   function nodeFill(node) {
     if (node?.isHistory) {
       return COLORS.history;
@@ -1219,7 +1261,83 @@
   }
 
   function nodeTextColor(node) {
-    return node?.isHistory ? COLORS.textHistory : COLORS.text;
+    if (node?.isHistory) {
+      return COLORS.textHistory;
+    }
+    const fill = nodeFill(node);
+    return bestTextColorForBackground(fill);
+  }
+
+  function nodeIdTextColor(node) {
+    const base = nodeTextColor(node);
+    return softenMonochrome(base);
+  }
+
+  function softenMonochrome(base) {
+    if (base === "#000000") {
+      // Reduce blackness by 15% for IDs.
+      return "#262626";
+    }
+    if (base === "#ffffff") {
+      // Reduce whiteness by 15% for IDs.
+      return "#d9d9d9";
+    }
+    return base;
+  }
+
+
+  function bestTextColorForBackground(backgroundColor) {
+    const rgb = parseHexColor(backgroundColor);
+    if (!rgb) {
+      return COLORS.text;
+    }
+    const bgLuminance = relativeLuminance(rgb.r, rgb.g, rgb.b);
+    const whiteContrast = contrastRatio(bgLuminance, 1);
+    const blackContrast = contrastRatio(bgLuminance, 0);
+    // Tune for VSM node palette: prefer white on medium-dark fills unless it
+    // gets too weak; switch to black for bright fills (e.g., yellow c-nodes).
+    if (whiteContrast >= 4.2) {
+      return "#ffffff";
+    }
+    if (whiteContrast >= 3.6 && blackContrast / Math.max(whiteContrast, 0.01) < 1.35) {
+      return "#ffffff";
+    }
+    return "#000000";
+  }
+
+  function parseHexColor(color) {
+    if (typeof color !== "string") return null;
+    const normalized = color.trim();
+    const match = normalized.match(/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/);
+    if (!match) return null;
+    const hex = match[1];
+    if (hex.length === 3) {
+      const r = parseInt(`${hex[0]}${hex[0]}`, 16);
+      const g = parseInt(`${hex[1]}${hex[1]}`, 16);
+      const b = parseInt(`${hex[2]}${hex[2]}`, 16);
+      return { r, g, b };
+    }
+    const r = parseInt(hex.slice(0, 2), 16);
+    const g = parseInt(hex.slice(2, 4), 16);
+    const b = parseInt(hex.slice(4, 6), 16);
+    return { r, g, b };
+  }
+
+  function relativeLuminance(r, g, b) {
+    const toLinear = (channel) => {
+      const s = channel / 255;
+      return s <= 0.04045 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4);
+    };
+    const R = toLinear(r);
+    const G = toLinear(g);
+    const B = toLinear(b);
+    return 0.2126 * R + 0.7152 * G + 0.0722 * B;
+  }
+
+  function contrastRatio(l1, l2) {
+    const lighter = Math.max(l1, l2);
+    const darker = Math.min(l1, l2);
+    return (lighter + 0.05) / (darker + 0.05);
   }
 
   function nodeLines(node, w) {
@@ -1407,6 +1525,20 @@
     const r = Math.round(rgb.r * scale);
     const g = Math.round(rgb.g * scale);
     const b = Math.round(rgb.b * scale);
+    return `rgb(${r}, ${g}, ${b})`;
+  }
+
+  function lightenColor(hexColor, factor = 0.10) {
+    if (!hexColor || hexColor[0] !== "#") {
+      return hexColor;
+    }
+    const rgb = hexToRgb(hexColor);
+    if (!rgb) {
+      return hexColor;
+    }
+    const r = Math.round(rgb.r + (255 - rgb.r) * factor);
+    const g = Math.round(rgb.g + (255 - rgb.g) * factor);
+    const b = Math.round(rgb.b + (255 - rgb.b) * factor);
     return `rgb(${r}, ${g}, ${b})`;
   }
 
@@ -1805,6 +1937,9 @@
     if (edge.probability !== undefined && edge.probability !== null) {
       return `${edge.probability}%`;
     }
+    if (hasTimeoutInterval(edge)) {
+      return `${edge.timeoutMinMs}-${edge.timeoutMaxMs}ms`;
+    }
     if (edge.timeoutExpr) {
       if (state === "running") {
         const runtimeValue = runtimeNumericValue(edge.timeoutExpr, values);
@@ -1899,6 +2034,7 @@
 
   function timeoutLiteralMs(edge) {
     if (!edge || edge.type !== "TEDGE") return null;
+    if (hasTimeoutInterval(edge)) return null;
     if ((edge.timeoutExpr || "").trim()) return null;
     const raw = edge.timeoutMs;
     if (Number.isFinite(raw) && raw >= 0) {
@@ -1906,6 +2042,13 @@
     }
     const parsed = Number.parseInt(String(raw ?? "").trim(), 10);
     return Number.isFinite(parsed) && parsed >= 0 ? parsed : null;
+  }
+
+  function hasTimeoutInterval(edge) {
+    if (!edge || edge.type !== "TEDGE") return false;
+    const min = Number(edge.timeoutMinMs);
+    const max = Number(edge.timeoutMaxMs);
+    return Number.isFinite(min) && Number.isFinite(max) && min >= 0 && max >= min;
   }
 
   function timeoutSliderPosFromMs(ms) {
@@ -2104,6 +2247,10 @@
     }
     if (edge.probability !== undefined && edge.probability !== null) {
       lines.push(`Probability: ${edge.probability}`);
+    }
+    if (hasTimeoutInterval(edge)) {
+      lines.push(`Timeout interval: ${edge.timeoutMinMs}-${edge.timeoutMaxMs}ms`);
+      return lines.join("\n");
     }
     if (edge.timeoutExpr) {
       const expr = edge.timeoutExpr.trim();
@@ -3557,6 +3704,8 @@
       {@const isHovered = hoveredEdgeId === edge.id}
       {@const isSelected = selectedEdgeIds.has(edge.id)}
       {@const color = isSelected ? COLORS.selected : baseColor}
+      {@const labelTextColor = edgeLabelTextColor(edge, color)}
+      {@const labelOutline = edgeLabelOutlineColor(edge, "#75716c", color)}
       {@const arrow = edgeArrow(edge, dragState)}
       {@const arrowPathData = arrow ? arrowPath(arrow) : ""}
       {@const path = edgePath(edge, dragState, arrow)}
@@ -3700,7 +3849,7 @@
             y={labelPos.y}
             text-anchor="middle"
             dominant-baseline="middle"
-            style={`--edge-color:${color}`}
+            style={`--edge-color:${labelTextColor}; --edge-outline:${labelOutline};`}
           >
             {label}
           </text>
@@ -3808,7 +3957,7 @@
         }}
         role="button"
         tabindex="0"
-        style={`--node-fill:${fill}; --node-text:${textColor}; --node-stroke:${stroke}`}
+        style={`--node-fill:${fill}; --node-text:${textColor}; --node-id-text:${nodeIdTextColor(node)}; --node-stroke:${stroke}`}
         class:selected={isSelected}
         class:active={isActive}
         class:edge-source={edgeCreateMode && edgeCreateSourceId === node.id}
@@ -3849,8 +3998,10 @@
         {#if isActive}
           {#if node.type === "Super"}
             <path class="node-activity" d={superNodePath(w, h)} />
+            <path class="node-activity-border" d={superNodePath(w, h)} />
           {:else}
             <ellipse class="node-activity" cx={w / 2} cy={h / 2} rx={w / 2} ry={h / 2} />
+            <ellipse class="node-activity-border" cx={w / 2} cy={h / 2} rx={w / 2} ry={h / 2} />
           {/if}
         {/if}
         {#if label}

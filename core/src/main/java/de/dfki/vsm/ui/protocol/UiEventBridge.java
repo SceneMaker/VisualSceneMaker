@@ -261,6 +261,12 @@ public final class UiEventBridge implements EventListener {
         if (targetId != null && !targetId.isBlank()) {
             payload.put("targetId", targetId);
         }
+        if (edge.getSourceNode() != null && edge.getSourceNode().getParentNode() != null) {
+            payload.put("sourceParentId", edge.getSourceNode().getParentNode().getId());
+        }
+        if (edge.getTargetNode() != null && edge.getTargetNode().getParentNode() != null) {
+            payload.put("targetParentId", edge.getTargetNode().getParentNode().getId());
+        }
         payload.put("edgeType", edgeType(edge));
         return payload;
     }

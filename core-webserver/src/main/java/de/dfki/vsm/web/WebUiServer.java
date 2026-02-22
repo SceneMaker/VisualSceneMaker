@@ -283,6 +283,13 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
     private static final String SEMANTIC_BASIC_PROVIDER = "ud";
     private static final String SEMANTIC_UD_URL_DEFAULT = "http://127.0.0.1:4061/analyze";
     private static final int SEMANTIC_UD_TIMEOUT_MS = 6000;
+    private static final double RUNTIME_VIZ_EVENT_RATE_PER_SEC = 1500.0d;
+    private static final double RUNTIME_VIZ_EVENT_BURST = 3000.0d;
+    private static final int RUNTIME_VIZ_EVENT_RATE_MIN = 100;
+    private static final int RUNTIME_VIZ_EVENT_RATE_MAX = 20000;
+    private static final int RUNTIME_VIZ_EVENT_BURST_MIN = 200;
+    private static final int RUNTIME_VIZ_EVENT_BURST_MAX = 40000;
+    private static final long RUNTIME_VIZ_DROP_LOG_INTERVAL_MS = 2000L;
     private static WebUiServer sInstance;
     private static final String DEMO_PROJECT_ID = "demo-project";
 
@@ -293,6 +300,7 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
     private final Map<String, ProjectRef> projectStore = new HashMap<>();
     private final Map<String, WsCommandHandler> wsCommandRegistry = new HashMap<>();
     private final java.util.Set<WsContext> wsSessions = ConcurrentHashMap.newKeySet();
+    private final ConcurrentHashMap<String, RuntimeVizRateLimiter> runtimeVizRateLimiters = new ConcurrentHashMap<>();
     private final RuntimeGateway runtimeGateway;
     private final RuntimeCommandService runtimeCommandService = new RuntimeCommandService();
     private final NodeVarDefCommandService nodeVarDefCommandService = new NodeVarDefCommandService();
@@ -313,6 +321,45 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
     private final EdgeRetargetCommandService edgeRetargetCommandService = new EdgeRetargetCommandService();
     private final EdgeProbabilityCommandService edgeProbabilityCommandService = new EdgeProbabilityCommandService();
     private final NodeMoveGroupCommandService nodeMoveGroupCommandService = new NodeMoveGroupCommandService();
+
+    private static final class RuntimeVizRateLimiter {
+        private double tokens = RUNTIME_VIZ_EVENT_BURST;
+        private long lastRefillNanos = 0L;
+        private long droppedSinceLastLog = 0L;
+        private long lastLogTs = 0L;
+
+        private synchronized boolean allow(final long nowNanos, final double ratePerSec, final double burst) {
+            if (lastRefillNanos <= 0L) {
+                lastRefillNanos = nowNanos;
+            }
+            long elapsedNanos = Math.max(0L, nowNanos - lastRefillNanos);
+            tokens = Math.min(tokens, Math.max(1.0d, burst));
+            double refill = (elapsedNanos / 1_000_000_000.0d) * Math.max(1.0d, ratePerSec);
+            if (refill > 0.0d) {
+                tokens = Math.min(Math.max(1.0d, burst), tokens + refill);
+                lastRefillNanos = nowNanos;
+            }
+            if (tokens >= 1.0d) {
+                tokens -= 1.0d;
+                return true;
+            }
+            droppedSinceLastLog++;
+            return false;
+        }
+
+        private synchronized long consumeDroppedForLog(final long nowMs) {
+            if (droppedSinceLastLog <= 0L) {
+                return 0L;
+            }
+            if (lastLogTs > 0L && (nowMs - lastLogTs) < RUNTIME_VIZ_DROP_LOG_INTERVAL_MS) {
+                return 0L;
+            }
+            long dropped = droppedSinceLastLog;
+            droppedSinceLastLog = 0L;
+            lastLogTs = nowMs;
+            return dropped;
+        }
+    }
     private final RuntimeCommandService.Context runtimeCommandContext;
     private final NodeVarDefCommandService.Context nodeVarDefCommandContext = new NodeVarDefCommandService.Context() {
         @Override
@@ -1822,6 +1869,9 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         }
 
         String projectId = findProjectIdForEvent(event);
+        if (isRuntimeVisualizationEvent(event) && shouldDropRuntimeVisualizationEvent(projectId, event)) {
+            return;
+        }
         JSONObject message = new JSONObject();
         message.put("type", "event");
         message.put("ts", System.currentTimeMillis());
@@ -1864,6 +1914,12 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
             String targetId = edge.getTargetNode() != null ? edge.getTargetNode().getId() : "";
             payload.put("sourceId", sourceId);
             payload.put("targetId", targetId);
+            if (edge.getSourceNode() != null && edge.getSourceNode().getParentNode() != null) {
+                payload.put("sourceParentId", edge.getSourceNode().getParentNode().getId());
+            }
+            if (edge.getTargetNode() != null && edge.getTargetNode().getParentNode() != null) {
+                payload.put("targetParentId", edge.getTargetNode().getParentNode().getId());
+            }
             payload.put("edgeType", getEdgeTypeLowercase(edge));
             message.put("channel", "runtime");
             message.put("event", "runtime.edgeActive");
@@ -1877,6 +1933,12 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
             String targetId = edge.getTargetNode() != null ? edge.getTargetNode().getId() : "";
             payload.put("sourceId", sourceId);
             payload.put("targetId", targetId);
+            if (edge.getSourceNode() != null && edge.getSourceNode().getParentNode() != null) {
+                payload.put("sourceParentId", edge.getSourceNode().getParentNode().getId());
+            }
+            if (edge.getTargetNode() != null && edge.getTargetNode().getParentNode() != null) {
+                payload.put("targetParentId", edge.getTargetNode().getParentNode().getId());
+            }
             payload.put("edgeType", "timeout");
             payload.put("timeoutMs", te.getTimeoutMs());
             payload.put("startedAt", te.getStartedAt());
@@ -1928,6 +1990,11 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
             payload.put("status", "stopped");
             message.put("channel", "runtime");
             message.put("event", "runtime.state");
+            if (projectId != null && !projectId.isBlank()) {
+                runtimeVizRateLimiters.remove(projectId);
+            } else {
+                runtimeVizRateLimiters.remove("__global__");
+            }
             // Update runtime state in project store
             if (projectId != null) {
                 ProjectRef ref = projectStore.get(projectId);
@@ -1943,6 +2010,97 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
 
         message.put("payload", payload);
         broadcastToAll(message.toString());
+    }
+
+    private boolean isRuntimeVisualizationEvent(final EventObject event) {
+        return event instanceof NodeStartedEvent
+                || event instanceof NodeExecutedEvent
+                || event instanceof NodeTerminatedEvent
+                || event instanceof EdgeExecutedEvent
+                || event instanceof TimeoutEdgeStartedEvent;
+    }
+
+    private boolean shouldDropRuntimeVisualizationEvent(final String projectId, final EventObject event) {
+        final String limiterKey = (projectId == null || projectId.isBlank()) ? "__global__" : projectId;
+        final RuntimeVizRateLimiter limiter = runtimeVizRateLimiters.computeIfAbsent(limiterKey, ignored -> new RuntimeVizRateLimiter());
+        final double ratePerSec = getRuntimeVizRatePerSec(projectId);
+        final double burst = getRuntimeVizBurst(projectId);
+        final long nowNanos = System.nanoTime();
+        if (limiter.allow(nowNanos, ratePerSec, burst)) {
+            return false;
+        }
+        final long droppedToLog = limiter.consumeDroppedForLog(System.currentTimeMillis());
+        if (droppedToLog > 0L) {
+            sLogger.warning("[RuntimeViz] Dropping " + droppedToLog
+                    + " high-frequency visualization events for project "
+                    + limiterKey + " to keep server responsive (latest event="
+                    + event.getClass().getSimpleName() + ", rate="
+                    + Math.round(ratePerSec) + "/s, burst=" + Math.round(burst) + ").");
+        }
+        return true;
+    }
+
+    private double getRuntimeVizRatePerSec(final String projectId) {
+        if (projectId == null || projectId.isBlank()) {
+            return RUNTIME_VIZ_EVENT_RATE_PER_SEC;
+        }
+        final ProjectRef ref = projectStore.get(projectId);
+        if (ref == null) {
+            return RUNTIME_VIZ_EVENT_RATE_PER_SEC;
+        }
+        int configured = readRuntimeVizIntFromProjectConfig(ref, "runtimeVizRate", -1);
+        if (configured <= 0) {
+            configured = getEditorConfigInt(ref, "runtime_viz_rate", (int) Math.round(RUNTIME_VIZ_EVENT_RATE_PER_SEC));
+        }
+        final int clamped = Math.max(RUNTIME_VIZ_EVENT_RATE_MIN, Math.min(RUNTIME_VIZ_EVENT_RATE_MAX, configured));
+        return clamped;
+    }
+
+    private double getRuntimeVizBurst(final String projectId) {
+        if (projectId == null || projectId.isBlank()) {
+            return RUNTIME_VIZ_EVENT_BURST;
+        }
+        final ProjectRef ref = projectStore.get(projectId);
+        if (ref == null) {
+            return RUNTIME_VIZ_EVENT_BURST;
+        }
+        int configured = readRuntimeVizIntFromProjectConfig(ref, "runtimeVizBurst", -1);
+        if (configured <= 0) {
+            configured = getEditorConfigInt(ref, "runtime_viz_burst", (int) Math.round(RUNTIME_VIZ_EVENT_BURST));
+        }
+        final int clamped = Math.max(RUNTIME_VIZ_EVENT_BURST_MIN, Math.min(RUNTIME_VIZ_EVENT_BURST_MAX, configured));
+        return clamped;
+    }
+
+    private int readRuntimeVizIntFromProjectConfig(final ProjectRef ref, final String key, final int fallback) {
+        if (ref == null || ref.runtimeProject == null || ref.runtimeProject.getProjectConfig() == null) {
+            return fallback;
+        }
+        de.dfki.vsm.model.config.ConfigElement services = ref.runtimeProject.getProjectConfig().getSemanticServices();
+        if (services == null) {
+            return fallback;
+        }
+        String value = services.getProperty(key);
+        if (value == null || value.isBlank()) {
+            return fallback;
+        }
+        try {
+            return Integer.parseInt(value.trim());
+        } catch (NumberFormatException ignored) {
+            return fallback;
+        }
+    }
+
+    private Integer parseRuntimeVizConfigValue(final String raw, final int min, final int max) {
+        if (raw == null || raw.isBlank()) {
+            return null;
+        }
+        try {
+            int parsed = Integer.parseInt(raw.trim());
+            return Math.max(min, Math.min(max, parsed));
+        } catch (NumberFormatException ignored) {
+            return null;
+        }
     }
 
     /**
@@ -3585,6 +3743,8 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         String daTrLlm = semanticServices.getProperty("daTrLlm");
         String semanticSystemPrompt = semanticServices.getProperty("systemPrompt");
         String semanticPromptTemplate = semanticServices.getProperty("promptTemplate");
+        String runtimeVizRate = semanticServices.getProperty("runtimeVizRate");
+        String runtimeVizBurst = semanticServices.getProperty("runtimeVizBurst");
         semanticServicesJson.put("basicProvider", basicProvider != null ? basicProvider : "");
         semanticServicesJson.put("udUrl", udUrl != null ? udUrl : "");
         semanticServicesJson.put("udTimeoutMs", udTimeoutMs != null ? udTimeoutMs : "");
@@ -3594,6 +3754,8 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         semanticServicesJson.put("daTrLlm", daTrLlm != null ? daTrLlm : "");
         semanticServicesJson.put("systemPrompt", semanticSystemPrompt != null ? semanticSystemPrompt : "");
         semanticServicesJson.put("promptTemplate", semanticPromptTemplate != null ? semanticPromptTemplate : "");
+        semanticServicesJson.put("runtimeVizRate", runtimeVizRate != null ? runtimeVizRate : "");
+        semanticServicesJson.put("runtimeVizBurst", runtimeVizBurst != null ? runtimeVizBurst : "");
         cfgJson.put("semanticServices", semanticServicesJson);
         cfgJson.put("sceneTitleConcepts", configConceptsToJson(cfg.getSceneTitleConcepts()));
         sLogger.message("[PROJECT-CONFIG] Serialized plugins=" + pluginsJson.length()
@@ -3801,6 +3963,8 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
             String daTrLlm = semanticServicesJson.optString("daTrLlm", "").trim();
             String semanticSystemPrompt = semanticServicesJson.optString("systemPrompt", "");
             String semanticPromptTemplate = semanticServicesJson.optString("promptTemplate", "");
+            String runtimeVizRate = semanticServicesJson.optString("runtimeVizRate", "").trim();
+            String runtimeVizBurst = semanticServicesJson.optString("runtimeVizBurst", "").trim();
             if (!basicProvider.isEmpty()) {
                 services.addProperty("basicProvider", basicProvider);
             }
@@ -3832,6 +3996,14 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
             }
             if (!semanticPromptTemplate.isEmpty()) {
                 services.addProperty("promptTemplate", semanticPromptTemplate);
+            }
+            Integer runtimeVizRateInt = parseRuntimeVizConfigValue(runtimeVizRate, RUNTIME_VIZ_EVENT_RATE_MIN, RUNTIME_VIZ_EVENT_RATE_MAX);
+            if (runtimeVizRateInt != null) {
+                services.addProperty("runtimeVizRate", String.valueOf(runtimeVizRateInt));
+            }
+            Integer runtimeVizBurstInt = parseRuntimeVizConfigValue(runtimeVizBurst, RUNTIME_VIZ_EVENT_BURST_MIN, RUNTIME_VIZ_EVENT_BURST_MAX);
+            if (runtimeVizBurstInt != null) {
+                services.addProperty("runtimeVizBurst", String.valueOf(runtimeVizBurstInt));
             }
         }
         JSONArray conceptsJson = configJson.optJSONArray("sceneTitleConcepts");

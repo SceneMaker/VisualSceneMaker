@@ -4,6 +4,7 @@ import de.dfki.vsm.event.EventDispatcher;
 import de.dfki.vsm.event.EventListener;
 import de.dfki.vsm.event.EventObject;
 import de.dfki.vsm.event.event.NodeStartedEvent;
+import de.dfki.vsm.event.event.TimeoutEdgeStartedEvent;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -178,6 +179,85 @@ public class InterpreterIntegrationTest {
             assertTrue(elapsed >= 95, "Timeout should wait at least ~95ms, was " + elapsed + "ms");
             assertTrue(elapsed < 130, "Timeout should fire within 130ms, was " + elapsed + "ms");
             System.out.println("[PERF] Timeout 100ms edge actual latency: " + elapsed + "ms");
+        } finally {
+            EventDispatcher.getInstance().remove(listener);
+        }
+    }
+
+    @Test
+    void timeoutEdgeIntervalChoosesValueInConfiguredRange() throws Exception {
+        writeProjectFiles(tempDir, SCENEFLOW_TIMEOUT_INTERVAL);
+        project = new RunTimeProject(tempDir.toFile());
+
+        CountDownLatch done = new CountDownLatch(1);
+        long[] times = new long[2]; // [0] = N1 start, [1] = N2 start
+        long[] selectedTimeout = new long[1];
+
+        EventListener listener = event -> {
+            if (event instanceof NodeStartedEvent) {
+                String id = ((NodeStartedEvent) event).getNode().getId();
+                if (id.equals("N1")) {
+                    times[0] = System.currentTimeMillis();
+                } else if (id.equals("N2")) {
+                    times[1] = System.currentTimeMillis();
+                    done.countDown();
+                }
+            } else if (event instanceof TimeoutEdgeStartedEvent) {
+                selectedTimeout[0] = ((TimeoutEdgeStartedEvent) event).getTimeoutMs();
+            }
+        };
+        EventDispatcher.getInstance().register(listener);
+
+        try {
+            assertTrue(project.launch());
+            assertTrue(project.start());
+            assertTrue(done.await(5, TimeUnit.SECONDS), "Timeout interval should transition within 5s");
+            waitForStop(5000);
+
+            assertTrue(selectedTimeout[0] >= 40 && selectedTimeout[0] <= 80,
+                    "Selected timeout must be in [40,80], was " + selectedTimeout[0]);
+            long elapsed = times[1] - times[0];
+            assertTrue(elapsed >= 35, "Interval timeout should wait at least ~35ms, was " + elapsed + "ms");
+            assertTrue(elapsed < 160, "Interval timeout should fire well below 160ms, was " + elapsed + "ms");
+        } finally {
+            EventDispatcher.getInstance().remove(listener);
+        }
+    }
+
+    @Test
+    void invalidTimeoutIntervalFallsBackToFixedTimeout() throws Exception {
+        writeProjectFiles(tempDir, SCENEFLOW_TIMEOUT_INTERVAL_INVALID);
+        project = new RunTimeProject(tempDir.toFile());
+
+        CountDownLatch done = new CountDownLatch(1);
+        long[] times = new long[2]; // [0] = N1 start, [1] = N2 start
+        long[] selectedTimeout = new long[1];
+
+        EventListener listener = event -> {
+            if (event instanceof NodeStartedEvent) {
+                String id = ((NodeStartedEvent) event).getNode().getId();
+                if (id.equals("N1")) {
+                    times[0] = System.currentTimeMillis();
+                } else if (id.equals("N2")) {
+                    times[1] = System.currentTimeMillis();
+                    done.countDown();
+                }
+            } else if (event instanceof TimeoutEdgeStartedEvent) {
+                selectedTimeout[0] = ((TimeoutEdgeStartedEvent) event).getTimeoutMs();
+            }
+        };
+        EventDispatcher.getInstance().register(listener);
+
+        try {
+            assertTrue(project.launch());
+            assertTrue(project.start());
+            assertTrue(done.await(5, TimeUnit.SECONDS), "Fallback timeout should transition within 5s");
+            waitForStop(5000);
+
+            assertEquals(120, selectedTimeout[0], "Invalid interval must fall back to fixed timeout");
+            long elapsed = times[1] - times[0];
+            assertTrue(elapsed >= 110, "Fallback timeout should wait at least ~110ms, was " + elapsed + "ms");
+            assertTrue(elapsed < 220, "Fallback timeout should fire below 220ms, was " + elapsed + "ms");
         } finally {
             EventDispatcher.getInstance().remove(listener);
         }
@@ -575,6 +655,44 @@ public class InterpreterIntegrationTest {
             "  <Node id=\"N1\" name=\"N1\" history=\"false\">\n" +
             "    <Define/>\n    <Declare/>\n    <Commands/>\n" +
             "    <TEdge target=\"N2\" start=\"\" timeout=\"100\"/>\n" +
+            "    <Graphics><Position xPos=\"50\" yPos=\"50\"/></Graphics>\n" +
+            "  </Node>\n" +
+            "  <Node id=\"N2\" name=\"N2\" history=\"false\">\n" +
+            "    <Define/>\n    <Declare/>\n    <Commands/>\n" +
+            "    <Graphics><Position xPos=\"200\" yPos=\"50\"/></Graphics>\n" +
+            "  </Node>\n" +
+            "</SceneFlow>\n";
+
+    /** N1 --(random timeout in [40,80]ms)--> N2 (end) */
+    private static final String SCENEFLOW_TIMEOUT_INTERVAL =
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+            "<SceneFlow id=\"Test\" name=\"Test\" start=\"N1;\"" +
+            " xmlns=\"xml.sceneflow.dfki.de\"" +
+            " xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"" +
+            " xsi:schemaLocation=\"xml.sceneflow.dfki.de res/xsd/sceneflow.xsd\">\n" +
+            "  <Define/>\n  <Declare/>\n  <Commands/>\n" +
+            "  <Node id=\"N1\" name=\"N1\" history=\"false\">\n" +
+            "    <Define/>\n    <Declare/>\n    <Commands/>\n" +
+            "    <TEdge target=\"N2\" start=\"\" timeout=\"40\" timeoutMin=\"40\" timeoutMax=\"80\"/>\n" +
+            "    <Graphics><Position xPos=\"50\" yPos=\"50\"/></Graphics>\n" +
+            "  </Node>\n" +
+            "  <Node id=\"N2\" name=\"N2\" history=\"false\">\n" +
+            "    <Define/>\n    <Declare/>\n    <Commands/>\n" +
+            "    <Graphics><Position xPos=\"200\" yPos=\"50\"/></Graphics>\n" +
+            "  </Node>\n" +
+            "</SceneFlow>\n";
+
+    /** Invalid interval attributes must fall back to fixed timeout=120ms. */
+    private static final String SCENEFLOW_TIMEOUT_INTERVAL_INVALID =
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+            "<SceneFlow id=\"Test\" name=\"Test\" start=\"N1;\"" +
+            " xmlns=\"xml.sceneflow.dfki.de\"" +
+            " xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"" +
+            " xsi:schemaLocation=\"xml.sceneflow.dfki.de res/xsd/sceneflow.xsd\">\n" +
+            "  <Define/>\n  <Declare/>\n  <Commands/>\n" +
+            "  <Node id=\"N1\" name=\"N1\" history=\"false\">\n" +
+            "    <Define/>\n    <Declare/>\n    <Commands/>\n" +
+            "    <TEdge target=\"N2\" start=\"\" timeout=\"120\" timeoutMin=\"120\" timeoutMax=\"100\"/>\n" +
             "    <Graphics><Position xPos=\"50\" yPos=\"50\"/></Graphics>\n" +
             "  </Node>\n" +
             "  <Node id=\"N2\" name=\"N2\" history=\"false\">\n" +

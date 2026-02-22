@@ -1028,6 +1028,22 @@ public class Process extends java.lang.Thread {
 		if (expressionValue != null && expressionValue >= 0) {
 			return expressionValue;
 		}
+		if (edge.hasTimeoutRange()) {
+			long min = edge.getTimeoutMin();
+			long max = edge.getTimeoutMax();
+			if (max >= min) {
+				long span = max - min + 1;
+				if (span <= 0) {
+					mLogger.warning("Timeout range overflow on edge " + edge.getSourceUnid() + " -> " + edge.getTargetUnid()
+							+ ", falling back to min value.");
+					return min;
+				}
+				long offset = (long) Math.floor(sRandom.nextDouble() * span);
+				return min + offset;
+			}
+			mLogger.warning("Invalid timeout range on edge " + edge.getSourceUnid() + " -> " + edge.getTargetUnid()
+					+ ": [" + min + ", " + max + "]");
+		}
 		long fallback = edge.getTimeout();
 		if (fallback < 0) {
 			return 0;

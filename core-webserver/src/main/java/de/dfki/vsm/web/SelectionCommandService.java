@@ -40,15 +40,22 @@ public final class SelectionCommandService {
         final String condition;
         final int probability;
         final long timeout;
+        final String timeoutExpr;
+        final long timeoutMin;
+        final long timeoutMax;
 
         public ClipboardEdgeData(String sourceId, String targetId, String edgeType,
-                                 String condition, int probability, long timeout) {
+                                 String condition, int probability, long timeout,
+                                 String timeoutExpr, long timeoutMin, long timeoutMax) {
             this.sourceId = sourceId;
             this.targetId = targetId;
             this.edgeType = edgeType;
             this.condition = condition;
             this.probability = probability;
             this.timeout = timeout;
+            this.timeoutExpr = timeoutExpr;
+            this.timeoutMin = timeoutMin;
+            this.timeoutMax = timeoutMax;
         }
     }
 
@@ -144,8 +151,13 @@ public final class SelectionCommandService {
             if (dEdge != null && nodeIdSet.contains(dEdge.getTargetUnid())) {
                 String edgeType = dEdge instanceof TimeoutEdge ? "TEDGE" : "EEDGE";
                 long timeout = dEdge instanceof TimeoutEdge ? ((TimeoutEdge) dEdge).getTimeout() : 0;
+                String timeoutExpr = dEdge instanceof TimeoutEdge && ((TimeoutEdge) dEdge).getExpression() != null
+                        ? ((TimeoutEdge) dEdge).getExpression().getConcreteSyntax()
+                        : null;
+                long timeoutMin = dEdge instanceof TimeoutEdge ? ((TimeoutEdge) dEdge).getTimeoutMin() : Long.MIN_VALUE;
+                long timeoutMax = dEdge instanceof TimeoutEdge ? ((TimeoutEdge) dEdge).getTimeoutMax() : Long.MIN_VALUE;
                 clipboardEdges.add(new ClipboardEdgeData(sourceId, dEdge.getTargetUnid(),
-                        edgeType, null, 0, timeout));
+                        edgeType, null, 0, timeout, timeoutExpr, timeoutMin, timeoutMax));
             }
         }
 
@@ -177,7 +189,8 @@ public final class SelectionCommandService {
                 } else if (edge instanceof RandomEdge) {
                     probability = ((RandomEdge) edge).getProbability();
                 }
-                clipboardEdges.add(new ClipboardEdgeData(sourceId, targetId, edgeType, condition, probability, 0));
+                clipboardEdges.add(new ClipboardEdgeData(sourceId, targetId, edgeType, condition, probability, 0,
+                        null, Long.MIN_VALUE, Long.MIN_VALUE));
             }
         }
     }
@@ -354,6 +367,12 @@ public final class SelectionCommandService {
             case "TEDGE":
                 TimeoutEdge tedge = new TimeoutEdge();
                 tedge.setTimeout(ce.timeout);
+                if (ce.timeoutExpr != null && !ce.timeoutExpr.isBlank()) {
+                    tedge.setExpression(context.parseExpressionOrNull(ce.timeoutExpr));
+                }
+                if (ce.timeoutMin >= 0 && ce.timeoutMax >= ce.timeoutMin) {
+                    tedge.setTimeoutRange(ce.timeoutMin, ce.timeoutMax);
+                }
                 sourceNode.setDedge(tedge);
                 edge = tedge;
                 break;

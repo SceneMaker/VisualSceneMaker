@@ -237,18 +237,32 @@ public final class EdgeCrudCommandService {
                 ((InterruptEdge) edge).setCondition(context.parseExpressionOrNull(conditionText));
             }
         }
-        if (fields.has("timeoutMs") || fields.has("timeoutExpr")) {
+        if (fields.has("timeoutMs") || fields.has("timeoutExpr") || fields.has("timeoutMinMs") || fields.has("timeoutMaxMs")) {
             if (edge instanceof TimeoutEdge) {
                 TimeoutEdge te = (TimeoutEdge) edge;
                 if (fields.has("timeoutMs")) {
                     try {
                         te.setTimeout(fields.optLong("timeoutMs", 0));
                         te.setExpression(null);
+                        te.clearTimeoutRange();
                     } catch (NumberFormatException ignore) {
                         // ignore invalid timeout
                     }
-                } else {
+                } else if (fields.has("timeoutMinMs") || fields.has("timeoutMaxMs")) {
+                    long min = fields.optLong("timeoutMinMs", Long.MIN_VALUE);
+                    long max = fields.optLong("timeoutMaxMs", Long.MIN_VALUE);
+                    if (min >= 0 && max >= min) {
+                        try {
+                            te.setTimeoutRange(min, max);
+                            te.setTimeout(min);
+                            te.setExpression(null);
+                        } catch (NumberFormatException ignore) {
+                            // ignore invalid timeout range
+                        }
+                    }
+                } else if (fields.has("timeoutExpr")) {
                     String exprText = fields.optString("timeoutExpr", "").trim();
+                    te.clearTimeoutRange();
                     te.setExpression(context.parseExpressionOrNull(exprText));
                 }
             }
