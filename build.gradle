@@ -525,6 +525,23 @@ tasks.register('generateFlowFromSituation', JavaExec) {
     args([snapshotPath, sceneFlowPath, outputPath] + irArgs)
 }
 
+tasks.register('generateSceneFlowIrTemplates', JavaExec) {
+    group = 'verification'
+    description = 'Generates template-based IR candidates from a natural-language situation.'
+    dependsOn tasks.named('classes')
+
+    def snapshotPath = (findProperty('snapshot')
+            ?: "${projectDir}/doc/capability-snapshot.designpatterns.json").toString()
+    def outDir = (findProperty('outDir')
+            ?: "${layout.buildDirectory.get().asFile}/reports/sceneflow-ir-templates").toString()
+    def situation = (findProperty('situation')
+            ?: "Wait until the user pressed the Okay button").toString()
+
+    mainClass = 'de.dfki.vsm.sceneflow.ir.SceneFlowIrTemplateGeneratorCli'
+    classpath = sourceSets.main.runtimeClasspath
+    args snapshotPath, outDir, situation
+}
+
 def androidThinBaseProjects = [
         project(':core'),
         project(':core-http-android')
