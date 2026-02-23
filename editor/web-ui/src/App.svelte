@@ -5922,6 +5922,12 @@ Sentence:
     return match?.type === "Super";
   }
 
+  function isEpsilonOnlyNode(nodeId) {
+    if (!nodeId || !sceneFlow?.edges?.length) return false;
+    const outgoing = sceneFlow.edges.filter((edge) => edge.sourceId === nodeId);
+    return outgoing.length === 1 && (outgoing[0]?.type || "") === "EEDGE";
+  }
+
   function clearActivityNodeDecay(nodeId) {
     if (!nodeId) return;
     const existing = activityNodeDecayTokens.get(nodeId);
@@ -6006,6 +6012,9 @@ Sentence:
     const count = next.get(nodeId) || 0;
     next.set(nodeId, count + 1);
     activityNodeCounts = next;
+    if (isEpsilonOnlyNode(nodeId)) {
+      scheduleActivityNodeDecay(nodeId);
+    }
   }
 
   function decrementActivityNode(nodeId) {
@@ -7672,8 +7681,19 @@ Sentence:
     const hasE = types.includes("EEDGE");
     const hasT = types.includes("TEDGE");
     const hasD = hasE || hasT;
+    const hasSelfLoopT = edges.some((edge) => {
+      if (normalizeEdgeType(edge?.type) !== "TEDGE") return false;
+      const targetId = String(edge?.targetId ?? "").trim();
+      return targetId === sourceKey;
+    });
     if (hasP) return new Set(["PEDGE"]);
-    if (hasI) return new Set(["IEDGE"]);
+    if (hasI) {
+      // Interruptive edges may coexist with a timeout default edge.
+      // The data model still allows only one default edge (E/T), so this
+      // does not create multiple timeout defaults.
+      const allowed = new Set(["IEDGE", "TEDGE"]);
+      return allowed;
+    }
     if (hasF) return new Set(["FEDGE"]);
     if (hasC) {
       const allowed = new Set(["CEDGE"]);
@@ -7681,15 +7701,27 @@ Sentence:
         allowed.add("EEDGE");
         allowed.add("TEDGE");
       }
+      if (hasSelfLoopT) {
+        allowed.add("IEDGE");
+      }
       return allowed;
     }
-    if (hasD) return new Set(["CEDGE"]);
+    if (hasD) {
+      const allowed = new Set(["CEDGE"]);
+      if (hasSelfLoopT) {
+        allowed.add("IEDGE");
+      }
+      return allowed;
+    }
     return new Set(ALL_EDGE_TYPES);
   }
 
   function edgeTypeAllowedForSource(type, nodeId) {
-    if (!nodeId) return true;
-    const allowed = edgeRestrictionAllowed;
+    const sourceId = String(nodeId || "").trim();
+    if (!sourceId) return true;
+    const allowed = sourceId === edgeRestrictionNodeId
+      ? edgeRestrictionAllowed
+      : allowedEdgeTypesForSource(sourceId, sceneFlow);
     return allowed.has(normalizeEdgeType(type));
   }
 
