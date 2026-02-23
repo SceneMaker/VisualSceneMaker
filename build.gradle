@@ -557,9 +557,21 @@ tasks.register('generateSceneFlowFromSituation', JavaExec) {
             ?: "${layout.buildDirectory.get().asFile}/reports/sceneflow-generation-report.json").toString()
     def situation = (findProperty('situation')
             ?: "Wait until the user pressed the Okay button").toString()
+    def mode = (findProperty('mode') ?: "template").toString()
+    def llmBaseUrl = (findProperty('llmBaseUrl') ?: "").toString()
+    def llmApiKey = (findProperty('llmApiKey') ?: "").toString()
+    def llmModel = (findProperty('llmModel') ?: "").toString()
+    def llmTimeoutSec = (findProperty('llmTimeoutSec') ?: "30").toString()
+    def llmMaxCandidates = (findProperty('llmMaxCandidates') ?: "3").toString()
 
     mainClass = 'de.dfki.vsm.sceneflow.ir.SceneFlowSituationPipelineCli'
     classpath = sourceSets.main.runtimeClasspath
+    systemProperty 'sceneflow.pipeline.mode', mode
+    systemProperty 'sceneflow.llm.baseUrl', llmBaseUrl
+    systemProperty 'sceneflow.llm.apiKey', llmApiKey
+    systemProperty 'sceneflow.llm.model', llmModel
+    systemProperty 'sceneflow.llm.timeoutSec', llmTimeoutSec
+    systemProperty 'sceneflow.llm.maxCandidates', llmMaxCandidates
     args snapshotPath, sceneFlowPath, outputPath, reportPath, situation
 }
 

@@ -12,8 +12,49 @@ import java.nio.file.Path;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public final class SceneFlowSituationPipeline {
+
+    public enum CandidateMode {
+        TEMPLATE,
+        LLM,
+        HYBRID;
+
+        public static CandidateMode from(final String value) {
+            if (value == null || value.isBlank()) {
+                return TEMPLATE;
+            }
+            switch (value.trim().toLowerCase(Locale.ROOT)) {
+                case "template":
+                    return TEMPLATE;
+                case "llm":
+                    return LLM;
+                case "hybrid":
+                    return HYBRID;
+                default:
+                    return TEMPLATE;
+            }
+        }
+    }
+
+    public static final class Settings {
+        private final CandidateMode mode;
+        private final SceneFlowIrLlmCandidateProvider.Config llm;
+
+        public Settings(final CandidateMode mode, final SceneFlowIrLlmCandidateProvider.Config llm) {
+            this.mode = mode == null ? CandidateMode.TEMPLATE : mode;
+            this.llm = llm;
+        }
+
+        public CandidateMode mode() {
+            return mode;
+        }
+
+        public SceneFlowIrLlmCandidateProvider.Config llm() {
+            return llm;
+        }
+    }
 
     public JSONObject run(
             final Path snapshotPath,
@@ -21,9 +62,25 @@ public final class SceneFlowSituationPipeline {
             final Path outputPath,
             final Path reportPath,
             final String situation) throws SceneFlowIrCompileException {
+        return run(snapshotPath, baseSceneFlowPath, outputPath, reportPath, situation,
+                new Settings(CandidateMode.TEMPLATE, null));
+    }
+
+    public JSONObject run(
+            final Path snapshotPath,
+            final Path baseSceneFlowPath,
+            final Path outputPath,
+            final Path reportPath,
+            final String situation,
+            final Settings settings) throws SceneFlowIrCompileException {
         final JSONObject snapshot = readJson(snapshotPath);
         final SceneFlow baseFlow = loadSceneFlow(baseSceneFlowPath);
-        final List<JSONObject> candidates = new SceneFlowIrTemplateLibrary().generateCandidates(situation, snapshot);
+        final Settings effectiveSettings = settings == null
+                ? new Settings(CandidateMode.TEMPLATE, null)
+                : settings;
+        final List<String> generationWarnings = new ArrayList<>();
+        final List<JSONObject> candidates = generateCandidates(
+                situation, snapshot, effectiveSettings, generationWarnings);
 
         final SceneFlowIrSemanticValidator semanticValidator = new SceneFlowIrSemanticValidator();
         final SceneFlowIrCompiler compiler = new SceneFlowIrCompiler();
@@ -80,8 +137,10 @@ public final class SceneFlowSituationPipeline {
                 .put("snapshotPath", snapshotPath.toAbsolutePath().toString())
                 .put("sceneFlowPath", baseSceneFlowPath.toAbsolutePath().toString())
                 .put("outputPath", outputPath.toAbsolutePath().toString())
+                .put("candidateMode", effectiveSettings.mode().name().toLowerCase(Locale.ROOT))
                 .put("attemptCount", attempts.length())
-                .put("attempts", attempts);
+                .put("attempts", attempts)
+                .put("generationWarnings", new JSONArray(generationWarnings));
 
         if (chosen != null) {
             final JSONObject metadata = chosen.optJSONObject("metadata");
@@ -100,6 +159,33 @@ public final class SceneFlowSituationPipeline {
 
         writeJson(reportPath, report);
         return report;
+    }
+
+    private List<JSONObject> generateCandidates(
+            final String situation,
+            final JSONObject snapshot,
+            final Settings settings,
+            final List<String> warnings) throws SceneFlowIrCompileException {
+        final SceneFlowIrTemplateLibrary templateLibrary = new SceneFlowIrTemplateLibrary();
+        final SceneFlowIrLlmCandidateProvider llmProvider = new SceneFlowIrLlmCandidateProvider();
+
+        switch (settings.mode()) {
+            case TEMPLATE:
+                return templateLibrary.generateCandidates(situation, snapshot);
+            case LLM:
+                return llmProvider.generateCandidates(situation, snapshot, settings.llm());
+            case HYBRID:
+                final List<JSONObject> merged = new ArrayList<>();
+                try {
+                    merged.addAll(llmProvider.generateCandidates(situation, snapshot, settings.llm()));
+                } catch (SceneFlowIrCompileException exc) {
+                    warnings.add("LLM generation unavailable, falling back to template candidates: " + exc.getMessage());
+                }
+                merged.addAll(templateLibrary.generateCandidates(situation, snapshot));
+                return merged;
+            default:
+                return templateLibrary.generateCandidates(situation, snapshot);
+        }
     }
 
     private JSONObject readJson(final Path path) throws SceneFlowIrCompileException {
@@ -132,4 +218,3 @@ public final class SceneFlowSituationPipeline {
         return sceneFlow;
     }
 }
-
