@@ -505,6 +505,26 @@ tasks.register('compileSceneFlowIr', JavaExec) {
     args irPath, sceneFlowPath, outputPath
 }
 
+tasks.register('generateFlowFromSituation', JavaExec) {
+    group = 'verification'
+    description = 'Runs validate->compile orchestration with bounded IR retries.'
+    dependsOn tasks.named('classes')
+
+    def snapshotPath = (findProperty('snapshot')
+            ?: "${projectDir}/doc/capability-snapshot.designpatterns.json").toString()
+    def sceneFlowPath = (findProperty('sceneflow')
+            ?: "${projectDir}/doc/DesignPatterns/sceneflow.xml").toString()
+    def outputPath = (findProperty('out')
+            ?: "${layout.buildDirectory.get().asFile}/reports/sceneflow-orchestrated.xml").toString()
+    def irs = (findProperty('irs')
+            ?: "${projectDir}/doc/sceneflow-ir.wait-for-ok-button.example.json").toString()
+    def irArgs = irs.split(',').collect { it.trim() }.findAll { !it.isEmpty() }
+
+    mainClass = 'de.dfki.vsm.sceneflow.ir.SceneFlowIrOrchestratorCli'
+    classpath = sourceSets.main.runtimeClasspath
+    args([snapshotPath, sceneFlowPath, outputPath] + irArgs)
+}
+
 def androidThinBaseProjects = [
         project(':core'),
         project(':core-http-android')
