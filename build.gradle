@@ -542,6 +542,27 @@ tasks.register('generateSceneFlowIrTemplates', JavaExec) {
     args snapshotPath, outDir, situation
 }
 
+tasks.register('generateSceneFlowFromSituation', JavaExec) {
+    group = 'verification'
+    description = 'End-to-end pipeline: template candidates -> semantic validation -> compile -> report.'
+    dependsOn tasks.named('classes')
+
+    def snapshotPath = (findProperty('snapshot')
+            ?: "${projectDir}/doc/capability-snapshot.designpatterns.json").toString()
+    def sceneFlowPath = (findProperty('sceneflow')
+            ?: "${projectDir}/doc/DesignPatterns/sceneflow.xml").toString()
+    def outputPath = (findProperty('out')
+            ?: "${layout.buildDirectory.get().asFile}/reports/sceneflow-generated.xml").toString()
+    def reportPath = (findProperty('report')
+            ?: "${layout.buildDirectory.get().asFile}/reports/sceneflow-generation-report.json").toString()
+    def situation = (findProperty('situation')
+            ?: "Wait until the user pressed the Okay button").toString()
+
+    mainClass = 'de.dfki.vsm.sceneflow.ir.SceneFlowSituationPipelineCli'
+    classpath = sourceSets.main.runtimeClasspath
+    args snapshotPath, sceneFlowPath, outputPath, reportPath, situation
+}
+
 def androidThinBaseProjects = [
         project(':core'),
         project(':core-http-android')
