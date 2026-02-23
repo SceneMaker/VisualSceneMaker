@@ -363,12 +363,18 @@ public final class EdgeCrudCommandService {
         boolean hasE = dEdge instanceof EpsilonEdge;
         boolean hasT = dEdge instanceof TimeoutEdge;
         boolean hasD = dEdge != null;
+        boolean hasSelfLoopT = hasT
+                && sourceNode.getId() != null
+                && sourceNode.getId().equals(dEdge.getTargetUnid());
 
         if (hasP) {
             return "PEDGE".equals(type) ? null : "Only probabilistic edges are allowed on this node";
         }
         if (hasI) {
-            return "IEDGE".equals(type) ? null : "Only interrupt edges are allowed on this node";
+            if ("IEDGE".equals(type) || "TEDGE".equals(type)) {
+                return null;
+            }
+            return "Only interrupt edges are allowed on this node (plus one timeout edge)";
         }
         if (hasF) {
             return "FEDGE".equals(type) ? null : "Only fork edges are allowed on this node";
@@ -381,11 +387,17 @@ public final class EdgeCrudCommandService {
             if ("EEDGE".equals(type) || "TEDGE".equals(type)) {
                 return hasD ? "Only one default/timeout edge is allowed on this node" : null;
             }
+            if ("IEDGE".equals(type) && hasSelfLoopT) {
+                return null;
+            }
             return "Only conditional edges are allowed (plus one epsilon or timeout edge)";
         }
 
         if (hasD) {
             if ("CEDGE".equals(type)) {
+                return null;
+            }
+            if ("IEDGE".equals(type) && hasSelfLoopT) {
                 return null;
             }
             if (hasE) {

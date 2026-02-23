@@ -489,6 +489,22 @@ tasks.register('validateSceneFlowIr', JavaExec) {
     args irPath, snapshotPath
 }
 
+tasks.register('compileSceneFlowIr', JavaExec) {
+    group = 'verification'
+    description = 'Compiles SceneFlow IR patch operations into canonical sceneflow.xml output.'
+    dependsOn tasks.named('classes')
+
+    def irPath = (findProperty('ir') ?: "${projectDir}/doc/sceneflow-ir.wait-for-ok-button.example.json").toString()
+    def sceneFlowPath = (findProperty('sceneflow')
+            ?: "${projectDir}/doc/DesignPatterns/sceneflow.xml").toString()
+    def outputPath = (findProperty('out')
+            ?: "${layout.buildDirectory.get().asFile}/reports/sceneflow-ir-compiled.xml").toString()
+
+    mainClass = 'de.dfki.vsm.sceneflow.ir.SceneFlowIrCompilerCli'
+    classpath = sourceSets.main.runtimeClasspath
+    args irPath, sceneFlowPath, outputPath
+}
+
 def androidThinBaseProjects = [
         project(':core'),
         project(':core-http-android')
