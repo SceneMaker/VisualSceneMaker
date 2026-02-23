@@ -18,10 +18,24 @@ public final class SceneFlowSituationPipelineCli {
         final Path outputPath = Path.of(args[2]);
         final Path reportPath = Path.of(args[3]);
         final String situation = args[4];
+        final SceneFlowSituationPipeline.CandidateMode mode = SceneFlowSituationPipeline.CandidateMode
+                .from(System.getProperty("sceneflow.pipeline.mode", "template"));
+        final SceneFlowIrLlmCandidateProvider.Config llmConfig = new SceneFlowIrLlmCandidateProvider.Config(
+                System.getProperty("sceneflow.llm.baseUrl", ""),
+                System.getProperty("sceneflow.llm.apiKey", ""),
+                System.getProperty("sceneflow.llm.model", ""),
+                parseInt(System.getProperty("sceneflow.llm.timeoutSec", "30"), 30),
+                parseInt(System.getProperty("sceneflow.llm.maxCandidates", "3"), 3)
+        );
 
         try {
             final JSONObject report = new SceneFlowSituationPipeline().run(
-                    snapshotPath, sceneFlowPath, outputPath, reportPath, situation);
+                    snapshotPath,
+                    sceneFlowPath,
+                    outputPath,
+                    reportPath,
+                    situation,
+                    new SceneFlowSituationPipeline.Settings(mode, llmConfig));
             if ("success".equals(report.optString("status", ""))) {
                 System.out.println("OK: generated flow written to " + outputPath.toAbsolutePath());
                 System.out.println("OK: report written to " + reportPath.toAbsolutePath());
@@ -34,5 +48,12 @@ public final class SceneFlowSituationPipelineCli {
             System.exit(1);
         }
     }
-}
 
+    private static int parseInt(final String value, final int fallback) {
+        try {
+            return Integer.parseInt(value);
+        } catch (NumberFormatException ignored) {
+            return fallback;
+        }
+    }
+}
