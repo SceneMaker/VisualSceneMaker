@@ -4,6 +4,10 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Set;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class SceneFlowIrSemanticValidatorTest {
@@ -33,7 +37,7 @@ class SceneFlowIrSemanticValidatorTest {
     }
 
     @Test
-    void rejectsUnknownVariableInCondition() {
+    void reportsUnknownVariableInConditionAsWarningByDefault() {
         JSONObject snapshot = baseSnapshot();
         JSONObject ir = new JSONObject()
                 .put("irVersion", "1.0")
@@ -49,8 +53,80 @@ class SceneFlowIrSemanticValidatorTest {
                                         .put("conditionText", "MissingVar == \"OkayButton\""))));
 
         SemanticValidationResult result = new SceneFlowIrSemanticValidator().validate(ir, snapshot);
-        assertTrue(result.hasErrors(), "Expected semantic issues");
-        assertTrue(result.getIssues().stream().anyMatch(issue -> "VAR_REF_UNKNOWN".equals(issue.getCode())));
+        assertFalse(result.hasErrors(), "Unknown variable should be reported as warning by default");
+        assertTrue(result.hasIssues(), "Expected semantic warning issues");
+        assertTrue(result.getIssues().stream().anyMatch(issue ->
+                "VAR_REF_UNKNOWN".equals(issue.getCode())
+                        && "warning".equalsIgnoreCase(issue.getSeverity())));
+    }
+
+    @Test
+    void canDisableRuleByIdViaMappingConfig() throws Exception {
+        Path mapping = Files.createTempFile("semantic-rules", ".json");
+        Files.writeString(mapping, """
+                {
+                  "ruleDefinitions": [
+                    { "id": "VAR_REF_UNKNOWN", "scope": "general", "activation": {} }
+                  ],
+                  "disabledRules": ["VAR_REF_UNKNOWN"]
+                }
+                """);
+
+        JSONObject snapshot = baseSnapshot();
+        JSONObject ir = new JSONObject()
+                .put("irVersion", "1.0")
+                .put("mode", "patch")
+                .put("operations", new JSONArray()
+                        .put(new JSONObject()
+                                .put("op", "create_edge")
+                                .put("edgeId", "Interrupt1")
+                                .put("edgeType", "IEDGE")
+                                .put("sourceNodeId", "SceneFlow")
+                                .put("targetNodeId", "N1")
+                                .put("payload", new JSONObject()
+                                        .put("conditionText", "MissingVar == \"OkayButton\""))));
+
+        SemanticValidationResult result = new SceneFlowIrSemanticValidator(mapping).validate(ir, snapshot);
+        assertFalse(result.getIssues().stream().anyMatch(issue -> "VAR_REF_UNKNOWN".equals(issue.getCode())));
+    }
+
+    @Test
+    void warningSeverityDoesNotTriggerSemanticErrorRejection() throws Exception {
+        Path mapping = Files.createTempFile("semantic-rules-warning", ".json");
+        Files.writeString(mapping, """
+                {
+                  "ruleDefinitions": [
+                    {
+                      "id": "VAR_REF_UNKNOWN",
+                      "scope": "general",
+                      "severity": "warning",
+                      "activation": {}
+                    }
+                  ],
+                  "disabledRules": []
+                }
+                """);
+
+        JSONObject snapshot = baseSnapshot();
+        JSONObject ir = new JSONObject()
+                .put("irVersion", "1.0")
+                .put("mode", "patch")
+                .put("operations", new JSONArray()
+                        .put(new JSONObject()
+                                .put("op", "create_edge")
+                                .put("edgeId", "Interrupt1")
+                                .put("edgeType", "IEDGE")
+                                .put("sourceNodeId", "SceneFlow")
+                                .put("targetNodeId", "N1")
+                                .put("payload", new JSONObject()
+                                        .put("conditionText", "MissingVar == \"OkayButton\""))));
+
+        SemanticValidationResult result = new SceneFlowIrSemanticValidator(mapping).validate(ir, snapshot);
+        assertFalse(result.hasErrors(), "Warning-only findings should not count as semantic errors");
+        assertTrue(result.hasIssues(), "Warning should still be reported");
+        assertTrue(result.getIssues().stream()
+                .anyMatch(issue -> "VAR_REF_UNKNOWN".equals(issue.getCode())
+                        && "warning".equalsIgnoreCase(issue.getSeverity())));
     }
 
     @Test
@@ -91,6 +167,98 @@ class SceneFlowIrSemanticValidatorTest {
 
         SemanticValidationResult result = new SceneFlowIrSemanticValidator().validate(ir, snapshot);
         assertFalse(result.hasErrors(), "Expected no semantic issues");
+    }
+
+    @Test
+    void rejectsConstrainedSupernodeWithoutInternalLivenessLoop() {
+        JSONObject snapshot = baseSnapshot();
+        JSONObject ir = new JSONObject()
+                .put("irVersion", "1.0")
+                .put("mode", "patch")
+                .put("operations", new JSONArray()
+                        .put(new JSONObject()
+                                .put("op", "create_supernode")
+                                .put("parentSuperNodeId", "SceneFlow")
+                                .put("superNodeId", "S100")
+                                .put("name", "WaitForEvent"))
+                        .put(new JSONObject()
+                                .put("op", "create_node")
+                                .put("parentSuperNodeId", "S100")
+                                .put("nodeId", "N100")
+                                .put("name", "Waiting"))
+                        .put(new JSONObject()
+                                .put("op", "create_node")
+                                .put("parentSuperNodeId", "SceneFlow")
+                                .put("nodeId", "N101")
+                                .put("name", "After"))
+                        .put(new JSONObject()
+                                .put("op", "create_edge")
+                                .put("edgeId", "Interrupt100")
+                                .put("edgeType", "IEDGE")
+                                .put("sourceNodeId", "S100")
+                                .put("targetNodeId", "N101")
+                                .put("payload", new JSONObject()
+                                        .put("conditionText", "UIEvent == \"OkayButton\""))));
+
+        SemanticValidationResult result = new SceneFlowIrSemanticValidator().validate(ir, snapshot);
+        assertTrue(result.hasErrors(), "Expected semantic issues");
+        assertTrue(result.getIssues().stream().anyMatch(issue ->
+                "SUPERNODE_INTERNAL_LIVENESS_MISSING".equals(issue.getCode())));
+    }
+
+    @Test
+    void rejectsSupernodeExitTargetInsideSupernodeScope() {
+        JSONObject snapshot = baseSnapshot();
+        JSONObject ir = new JSONObject()
+                .put("irVersion", "1.0")
+                .put("mode", "patch")
+                .put("operations", new JSONArray()
+                        .put(new JSONObject()
+                                .put("op", "create_supernode")
+                                .put("parentSuperNodeId", "SceneFlow")
+                                .put("superNodeId", "S100")
+                                .put("name", "WaitForEvent"))
+                        .put(new JSONObject()
+                                .put("op", "create_node")
+                                .put("parentSuperNodeId", "S100")
+                                .put("nodeId", "N100")
+                                .put("name", "Waiting"))
+                        .put(new JSONObject()
+                                .put("op", "create_edge")
+                                .put("edgeId", "WaitLoop100")
+                                .put("edgeType", "TEDGE")
+                                .put("sourceNodeId", "N100")
+                                .put("targetNodeId", "N100")
+                                .put("payload", new JSONObject().put("timeoutMs", 1000)))
+                        .put(new JSONObject()
+                                .put("op", "create_edge")
+                                .put("edgeId", "Interrupt100")
+                                .put("edgeType", "IEDGE")
+                                .put("sourceNodeId", "S100")
+                                .put("targetNodeId", "N100")
+                                .put("payload", new JSONObject()
+                                        .put("conditionText", "UIEvent == \"OkayButton\""))));
+
+        SemanticValidationResult result = new SceneFlowIrSemanticValidator().validate(ir, snapshot);
+        assertTrue(result.hasErrors(), "Expected semantic issues");
+        assertTrue(result.getIssues().stream().anyMatch(issue ->
+                "SUPERNODE_EXIT_TARGET_IN_SCOPE".equals(issue.getCode())));
+    }
+
+    @Test
+    void mappingRuleDefinitionsAreKnownToValidator() throws Exception {
+        JSONObject mapping = new JSONObject(Files.readString(Path.of("doc/meta-to-sceneflow-mapping.json")));
+        JSONArray defs = mapping.optJSONArray("ruleDefinitions");
+        assertNotNull(defs);
+        Set<String> known = SceneFlowIrSemanticValidator.knownRuleIds();
+        for (int i = 0; i < defs.length(); i++) {
+            JSONObject def = defs.getJSONObject(i);
+            String id = def.optString("id", "");
+            String severity = def.optString("severity", "");
+            assertTrue(known.contains(id), "Unknown ruleDefinitions id in mapping: " + id);
+            assertTrue("error".equals(severity) || "warning".equals(severity),
+                    "Rule severity must be error|warning for " + id + " but was: " + severity);
+        }
     }
 
     private JSONObject baseSnapshot() {

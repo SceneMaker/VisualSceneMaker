@@ -25,13 +25,22 @@ public final class SceneFlowIrSemanticValidatorCli {
         final SemanticValidationResult result = validator.validate(ir, snapshot);
 
         if (!result.hasErrors()) {
-            System.out.println("OK: semantic validation passed");
+            if (result.hasIssues()) {
+                System.out.println("OK: semantic validation passed with warnings (" + result.getIssues().size() + ")");
+                for (SemanticIssue issue : result.getIssues()) {
+                    System.out.println(issue.getSeverity() + " " + issue.getCode() + " "
+                            + issue.getPath() + " :: " + issue.getMessage());
+                }
+            } else {
+                System.out.println("OK: semantic validation passed");
+            }
             return;
         }
 
         System.err.println("FAILED: semantic validation found " + result.getIssues().size() + " issue(s)");
         for (SemanticIssue issue : result.getIssues()) {
-            System.err.println(issue.getCode() + " " + issue.getPath() + " :: " + issue.getMessage());
+            System.err.println(issue.getSeverity() + " " + issue.getCode() + " "
+                    + issue.getPath() + " :: " + issue.getMessage());
         }
         System.exit(1);
     }

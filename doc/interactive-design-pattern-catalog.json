@@ -1,0 +1,327 @@
+{
+  "catalogVersion": "1.0",
+  "updatedAt": "2026-02-24",
+  "purpose": "Scientific grounding and executable mapping for constrained activity modeling in SceneFlow generation.",
+  "metaModel": {
+    "name": "ConstrainedActivityModel",
+    "description": "Abstract layer for describing interaction as constraint + constrained activity + policy + completion.",
+    "fields": [
+      {
+        "name": "constraint",
+        "description": "Defines the condition that must become true to leave the waiting/monitoring scope.",
+        "required": true,
+        "shape": {
+          "variable": "string",
+          "operator": "==|!=|<|>|<=|>=|custom",
+          "value": "string|number|boolean"
+        },
+        "example": {
+          "variable": "event",
+          "operator": "==",
+          "value": "OkayButtonPressed"
+        }
+      },
+      {
+        "name": "constrainedActivity",
+        "description": "Describes what the system should keep doing while the constraint is false.",
+        "required": true,
+        "shape": {
+          "kind": "minimal_liveness|reminder|multimodal_activity|social_behavior",
+          "parameters": "object"
+        }
+      },
+      {
+        "name": "policy",
+        "description": "Controls cadence, limits, and interruption strategy for the constrained activity.",
+        "required": true,
+        "shape": {
+          "intervalMs": "integer",
+          "maxRepeats": "integer|null",
+          "escalation": "none|levelled|custom",
+          "interruptibility": "always|attention_aware|custom"
+        },
+        "defaults": {
+          "intervalMs": 1000,
+          "maxRepeats": null,
+          "escalation": "none",
+          "interruptibility": "always"
+        }
+      },
+      {
+        "name": "completion",
+        "description": "Specifies the transition behavior once the constraint is satisfied.",
+        "required": true,
+        "shape": {
+          "onConstraintSatisfied": "transition",
+          "targetNodeStrategy": "create_after_node|reuse_existing_node"
+        }
+      }
+    ]
+  },
+  "patternLibrary": [
+    {
+      "id": "constrained_activity_base",
+      "label": "Constrained Activity Base",
+      "humanDescription": "Minimal realizable interaction pattern: keep an internal flow alive and exit immediately when the constraint event/condition is met.",
+      "status": "implemented",
+      "layer": "executable_pattern",
+      "mapsToTemplateSource": "template-constrained-activity",
+      "sceneFlowMapping": {
+        "supernode": "create_supernode",
+        "internalLiveness": "create_node + TEDGE self-loop",
+        "constraintExit": "IEDGE from supernode to external continuation node"
+      },
+      "supportsMeta": {
+        "constrainedActivity.kind": [
+          "minimal_liveness"
+        ],
+        "policy.interruptibility": [
+          "always"
+        ]
+      },
+      "scientificSources": [
+        {
+          "type": "paper",
+          "title": "Statecharts: a visual formalism for complex systems",
+          "authors": [
+            "David Harel"
+          ],
+          "year": 1987,
+          "venue": "Science of Computer Programming",
+          "doi": "10.1016/0167-6423(87)90035-9",
+          "url": "https://doi.org/10.1016/0167-6423(87)90035-9",
+          "relevance": "Formal basis for hierarchical/reactive state modeling used by supernode + transition composition."
+        },
+        {
+          "type": "paper",
+          "title": "Workflow Patterns",
+          "authors": [
+            "W. M. P. van der Aalst",
+            "A. H. M. ter Hofstede",
+            "B. Kiepuszewski",
+            "A. P. Barros"
+          ],
+          "year": 2003,
+          "venue": "Distributed and Parallel Databases",
+          "doi": "10.1023/A:1022883727209",
+          "url": "https://doi.org/10.1023/A:1022883727209",
+          "relevance": "Pattern-oriented control-flow decomposition supports reusable construction of wait/exit structures."
+        }
+      ]
+    },
+    {
+      "id": "periodic_reminder_while_waiting",
+      "label": "Periodic Reminder While Waiting",
+      "humanDescription": "While waiting for a constraint to become true, periodically run a reminder action and return to waiting.",
+      "status": "implemented",
+      "layer": "executable_pattern",
+      "mapsToTemplateSource": "template-constrained-activity",
+      "sceneFlowMapping": {
+        "internalCycle": "Waiting --TEDGE(intervalMs)--> Reminder --TEDGE(1000ms)--> Waiting",
+        "constraintExit": "IEDGE from supernode to external continuation node"
+      },
+      "supportsMeta": {
+        "constrainedActivity.kind": [
+          "reminder"
+        ],
+        "policy.intervalMs": "parsed_from_text_or_default"
+      },
+      "scientificSources": [
+        {
+          "type": "paper",
+          "title": "Cognitive Offloading",
+          "authors": [
+            "Evan F. Risko",
+            "Sam J. Gilbert"
+          ],
+          "year": 2016,
+          "venue": "Trends in Cognitive Sciences",
+          "doi": "10.1016/j.tics.2016.07.002",
+          "url": "https://doi.org/10.1016/j.tics.2016.07.002",
+          "relevance": "Explains why external reminders reduce cognitive demand during delayed intentions."
+        },
+        {
+          "type": "paper",
+          "title": "Prospective memory reminders: a laboratory investigation of initiation source and age effects",
+          "authors": [
+            "Julie D. Henry",
+            "Peter G. Rendell",
+            "Louise H. Phillips",
+            "Leigh Dunlop",
+            "Matthias Kliegel"
+          ],
+          "year": 2012,
+          "venue": "Quarterly Journal of Experimental Psychology",
+          "doi": "10.1080/17470218.2011.651091",
+          "url": "https://doi.org/10.1080/17470218.2011.651091",
+          "relevance": "Empirical evidence that reminders can improve prospective memory performance."
+        }
+      ]
+    },
+    {
+      "id": "attention_aware_interruptibility",
+      "label": "Attention-Aware Interruptibility",
+      "humanDescription": "Delay or gate reminder/activity execution until interruption is likely acceptable for the user/context.",
+      "status": "planned",
+      "layer": "policy_pattern",
+      "mapsToTemplateSource": null,
+      "sceneFlowMapping": {
+        "policyGuard": "condition/score gate before reminder action",
+        "effect": "defer reminder until acceptable interruption point"
+      },
+      "supportsMeta": {
+        "policy.interruptibility": [
+          "attention_aware"
+        ]
+      },
+      "scientificSources": [
+        {
+          "type": "paper",
+          "title": "If not now, when? The effects of interruption at different moments within task execution",
+          "authors": [
+            "Piotr D. Adamczyk",
+            "Brian P. Bailey"
+          ],
+          "year": 2004,
+          "venue": "CHI",
+          "doi": "10.1145/985692.985727",
+          "url": "https://doi.org/10.1145/985692.985727",
+          "relevance": "Shows interruption timing influences user outcomes; motivates attention-aware policy gates."
+        },
+        {
+          "type": "paper",
+          "title": "The cost of interrupted work: more speed and stress",
+          "authors": [
+            "Gloria Mark",
+            "Daniela Gudith",
+            "Ulrich Klocke"
+          ],
+          "year": 2008,
+          "venue": "CHI",
+          "doi": "10.1145/1357054.1357072",
+          "url": "https://doi.org/10.1145/1357054.1357072",
+          "relevance": "Demonstrates interruption costs (stress/pressure), guiding conservative reminder scheduling."
+        }
+      ]
+    },
+    {
+      "id": "mixed_initiative_prompting",
+      "label": "Mixed-Initiative Prompting",
+      "humanDescription": "Choose adaptively between automatic intervention, suggestion, or no intervention to balance automation and user control.",
+      "status": "planned",
+      "layer": "interaction_policy_pattern",
+      "mapsToTemplateSource": null,
+      "sceneFlowMapping": {
+        "decisionPoint": "select between automatic action, suggestion, or no intervention",
+        "effect": "balance user control with automation"
+      },
+      "supportsMeta": {
+        "policy.interruptibility": [
+          "always",
+          "attention_aware"
+        ],
+        "constrainedActivity.kind": [
+          "reminder",
+          "multimodal_activity",
+          "social_behavior"
+        ]
+      },
+      "scientificSources": [
+        {
+          "type": "paper",
+          "title": "Principles of Mixed-Initiative User Interfaces",
+          "authors": [
+            "Eric Horvitz"
+          ],
+          "year": 1999,
+          "venue": "CHI",
+          "doi": "10.1145/302979.303030",
+          "url": "https://doi.org/10.1145/302979.303030",
+          "relevance": "Foundational principles for balancing automation and user control in timing and action decisions."
+        },
+        {
+          "type": "paper",
+          "title": "Mixed-Initiative Interaction",
+          "authors": [
+            "James E. Allen",
+            "Christopher Guinn",
+            "Eric Horvitz"
+          ],
+          "year": 1999,
+          "venue": "IEEE Intelligent Systems",
+          "doi": "10.1109/5254.796083",
+          "url": "https://doi.org/10.1109/5254.796083",
+          "relevance": "Provides taxonomy and evaluation framing for mixed-initiative decision points."
+        }
+      ]
+    },
+    {
+      "id": "socially_assistive_engagement_while_waiting",
+      "label": "Socially Assistive Engagement While Waiting",
+      "humanDescription": "Use social or multimodal engagement behaviors during waiting to support adherence and keep interaction meaningful.",
+      "status": "planned",
+      "layer": "activity_pattern",
+      "mapsToTemplateSource": null,
+      "sceneFlowMapping": {
+        "activities": [
+          "play_music",
+          "show_visuals",
+          "social_gaze_or_agent_behavior"
+        ],
+        "execution": "cycle or schedule activities while constraint remains unsatisfied"
+      },
+      "supportsMeta": {
+        "constrainedActivity.kind": [
+          "multimodal_activity",
+          "social_behavior"
+        ]
+      },
+      "scientificSources": [
+        {
+          "type": "paper",
+          "title": "Socially assistive robotics [Grand challenges of robotics]",
+          "authors": [
+            "Adrian Tapus",
+            "Maja J. Mataric",
+            "Brian Scassellati"
+          ],
+          "year": 2007,
+          "venue": "IEEE Robotics & Automation Magazine",
+          "doi": "10.1109/MRA.2007.339605",
+          "url": "https://doi.org/10.1109/MRA.2007.339605",
+          "relevance": "Frames socially assistive behavior dimensions (engagement, adaptation, empathy) for non-contact assistance."
+        },
+        {
+          "type": "paper",
+          "title": "Socially assistive robotics for post-stroke rehabilitation",
+          "authors": [
+            "Maja J. Mataric",
+            "Jon Eriksson",
+            "David J. Feil-Seifer",
+            "Carolee J. Winstein"
+          ],
+          "year": 2007,
+          "venue": "Journal of NeuroEngineering and Rehabilitation",
+          "doi": "10.1186/1743-0003-4-5",
+          "url": "https://doi.org/10.1186/1743-0003-4-5",
+          "relevance": "Evidence that socially assistive, non-contact interventions can support adherence and engagement."
+        }
+      ]
+    }
+  ],
+  "integrationHints": {
+    "selectionOrder": [
+      "extract metaModel fields from situation",
+      "select compatible patternLibrary entries by supportsMeta",
+      "compose executable operations",
+      "validate semantic invariants",
+      "compile to SceneFlow XML"
+    ],
+    "requiredInvariants": [
+      "active internal flow exists while waiting",
+      "interrupt edge has valid external target node id",
+      "no illegal cross-supernode node-edge target",
+      "constraint variable exists or is created according to output mode"
+    ]
+  }
+}

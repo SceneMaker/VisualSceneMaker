@@ -213,6 +213,51 @@ Expected semantic pattern:
 
 This pattern should be encoded as a reusable template so the LLM selects and parameterizes it instead of inventing structure each time.
 
+## Meta-Level Pattern Model (Implemented)
+
+The template library now uses a meta-level abstraction:
+
+- `constraint`: what must become true (for example `event == "OkayButtonPressed"`).
+- `constrained activity`: what runs while the constraint is false.
+- `policy`: cadence/liveness strategy for the constrained activity.
+- `completion`: exit transition once the constraint is satisfied.
+
+In implementation terms:
+
+- Meta spec type: `ConstrainedActivitySpec`
+- Concrete pattern source: `template-constrained-activity`
+- Prompt resolver: maps situation text to meta fields (`activity kind`, `interruptibility`)
+- Pattern selector: data-driven match against `/Users/gebhard/Code/Repo/VisualSceneMaker/doc/interactive-design-pattern-catalog.json` (`patternLibrary[*].supportsMeta`), with base fallback only if no implemented match exists
+- Default constrained activity: minimal liveness loop (`TEDGE` self-loop)
+- Optional constrained activity: reminder loop (wait -> reminder -> wait via `TEDGE`)
+
+This keeps natural-language generation on an abstract level while compiling deterministically into valid SceneFlow operations.
+
+Catalog artifact:
+
+- `/Users/gebhard/Code/Repo/VisualSceneMaker/doc/interactive-design-pattern-catalog.json`
+- Contains both layers (`metaModel`, `patternLibrary`) and scientific references for each pattern entry.
+
+## Realization Matrix: Meta/Pattern -> SceneFlow
+
+Human-readable summary:
+
+- `constraint` maps to `IEDGE`/`CEDGE` with normalized condition expressions; for reactive waiting, exit source should be the supernode.
+- `constrainedActivity` maps to internal active subflow inside supernode:
+  - minimal liveness: one waiting node with self `TEDGE`
+  - reminder: waiting/reminder timed cycle
+  - richer activities: additional internal nodes/edges (multimodal/social behavior)
+- `policy` maps to edge timing and guard/control logic:
+  - `intervalMs` -> `TEDGE.timeout`
+  - `maxRepeats` -> counter variable + command updates + guard edge
+  - `interruptibility` -> guarding `CEDGE` before activity transitions
+- `completion` maps to explicit continuation transition with valid target node id outside constrained supernode scope.
+
+Machine-readable mapping artifact:
+
+- `/Users/gebhard/Code/Repo/VisualSceneMaker/doc/meta-to-sceneflow-mapping.json`
+- Intended for validator/compiler alignment and future auto-check generation.
+
 ## Implementation Plan
 
 ### Phase 0: Groundwork
@@ -290,7 +335,7 @@ Deliverables:
 ### Phase 6: Templates and Quality Improvements
 
 1. Add high-value templates:
-   - wait-for-event
+   - constrained-activity (meta-level pattern family)
    - timeout-retry
    - command-on-condition
 2. Add few-shot examples tied to templates.

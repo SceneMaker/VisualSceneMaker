@@ -2,6 +2,7 @@
 set -euo pipefail
 
 MODE="template"
+OUTPUT_MODE="standalone"
 LLM_BASE_URL=""
 LLM_API_KEY=""
 LLM_MODEL=""
@@ -12,6 +13,7 @@ SNAPSHOT=""
 SCENEFLOW=""
 OUT=""
 REPORT=""
+OUT_PROJECT_DIR=""
 
 usage() {
   cat <<'EOF'
@@ -27,11 +29,13 @@ Core options:
   --llm-max-candidates N
 
 Additional options:
+  --output-mode patch|standalone
   --situation TEXT
   --snapshot PATH
   --sceneflow PATH
   --out PATH
   --report PATH
+  --out-project-dir PATH
   -h, --help
 
 Examples:
@@ -74,6 +78,10 @@ while [[ $# -gt 0 ]]; do
       LLM_MAX_CANDIDATES="${2:-}"
       shift 2
       ;;
+    --output-mode)
+      OUTPUT_MODE="${2:-}"
+      shift 2
+      ;;
     --situation)
       SITUATION="${2:-}"
       shift 2
@@ -94,6 +102,10 @@ while [[ $# -gt 0 ]]; do
       REPORT="${2:-}"
       shift 2
       ;;
+    --out-project-dir)
+      OUT_PROJECT_DIR="${2:-}"
+      shift 2
+      ;;
     -h|--help)
       usage
       exit 0
@@ -110,10 +122,15 @@ if [[ "$MODE" != "template" && "$MODE" != "llm" && "$MODE" != "hybrid" ]]; then
   echo "Invalid --mode '$MODE'. Use template|llm|hybrid." >&2
   exit 2
 fi
+if [[ "$OUTPUT_MODE" != "patch" && "$OUTPUT_MODE" != "standalone" ]]; then
+  echo "Invalid --output-mode '$OUTPUT_MODE'. Use patch|standalone." >&2
+  exit 2
+fi
 
 GRADLE_ARGS=(
   "generateSceneFlowFromSituation"
   "-Pmode=$MODE"
+  "-PoutputMode=$OUTPUT_MODE"
   "-PllmBaseUrl=$LLM_BASE_URL"
   "-PllmApiKey=$LLM_API_KEY"
   "-PllmModel=$LLM_MODEL"
@@ -134,6 +151,8 @@ fi
 if [[ -n "$REPORT" ]]; then
   GRADLE_ARGS+=("-Preport=$REPORT")
 fi
+if [[ -n "$OUT_PROJECT_DIR" ]]; then
+  GRADLE_ARGS+=("-PoutProjectDir=$OUT_PROJECT_DIR")
+fi
 
 exec ./gradlew "${GRADLE_ARGS[@]}"
-

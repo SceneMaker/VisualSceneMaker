@@ -8,7 +8,11 @@ public final class SemanticValidationResult {
     private final List<SemanticIssue> issues = new ArrayList<>();
 
     public void addIssue(final String code, final String path, final String message) {
-        issues.add(new SemanticIssue(code, path, message));
+        addIssue(code, path, message, "error");
+    }
+
+    public void addIssue(final String code, final String path, final String message, final String severity) {
+        issues.add(new SemanticIssue(code, path, message, severity));
     }
 
     public List<SemanticIssue> getIssues() {
@@ -16,6 +20,10 @@ public final class SemanticValidationResult {
     }
 
     public boolean hasErrors() {
+        return issues.stream().anyMatch(issue -> "error".equalsIgnoreCase(issue.getSeverity()));
+    }
+
+    public boolean hasIssues() {
         return !issues.isEmpty();
     }
 }
