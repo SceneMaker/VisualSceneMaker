@@ -2021,6 +2021,14 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
     }
 
     private boolean shouldDropRuntimeVisualizationEvent(final String projectId, final EventObject event) {
+        // Never drop node lifecycle events, otherwise UI activity counters can
+        // desynchronize (nodeActive without matching nodeStopped) and nodes may
+        // appear permanently active.
+        if (event instanceof NodeStartedEvent
+                || event instanceof NodeExecutedEvent
+                || event instanceof NodeTerminatedEvent) {
+            return false;
+        }
         final String limiterKey = (projectId == null || projectId.isBlank()) ? "__global__" : projectId;
         final RuntimeVizRateLimiter limiter = runtimeVizRateLimiters.computeIfAbsent(limiterKey, ignored -> new RuntimeVizRateLimiter());
         final double ratePerSec = getRuntimeVizRatePerSec(projectId);

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<SceneFlow id="" name="" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Mon, 23 Feb 2026 08:05:31" start="S3;S5;N3;N7;N41;N9;N20;N31;N23;N12;N33;N44;N46;N26;N19;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
+<SceneFlow id="" name="" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Mon, 23 Feb 2026 17:21:32" start="S3;S5;N3;N7;N41;N9;N20;N31;N23;N12;N33;N44;N46;N26;N19;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
   <Define>
   </Define>
   <Declare>
@@ -80,6 +80,15 @@
     </Graphics>
     <Text style="color:blue">
       Connect nodes with edges: I-edge to interrupt what's going on and react directly
+    </Text>
+  </Comment>
+  <Comment>
+    <Graphics>
+      <Boundary xPos="62" yPos="1647" width="577" height="180"/>
+    </Graphics>
+    <Text style="color:blue">
+      Differences between I-edge and c-edge:  the i-edge is a preemptive abort of the executing action(s) - however they need to be implemented as "interruptible"; the c-edge is a deferred check that waits for
+        the action to complete naturally.
     </Text>
   </Comment>
   <Node id="N1" name="React" history="false">

@@ -555,9 +555,12 @@ tasks.register('generateSceneFlowFromSituation', JavaExec) {
             ?: "${layout.buildDirectory.get().asFile}/reports/sceneflow-generated.xml").toString()
     def reportPath = (findProperty('report')
             ?: "${layout.buildDirectory.get().asFile}/reports/sceneflow-generation-report.json").toString()
+    def projectOutDir = (findProperty('outProjectDir')
+            ?: "${layout.buildDirectory.get().asFile}/reports/sceneflow-generated-project").toString()
     def situation = (findProperty('situation')
             ?: "Wait until the user pressed the Okay button").toString()
     def mode = (findProperty('mode') ?: "template").toString()
+    def outputMode = (findProperty('outputMode') ?: "standalone").toString()
     def llmBaseUrl = (findProperty('llmBaseUrl') ?: "").toString()
     def llmApiKey = (findProperty('llmApiKey') ?: "").toString()
     def llmModel = (findProperty('llmModel') ?: "").toString()
@@ -567,6 +570,8 @@ tasks.register('generateSceneFlowFromSituation', JavaExec) {
     mainClass = 'de.dfki.vsm.sceneflow.ir.SceneFlowSituationPipelineCli'
     classpath = sourceSets.main.runtimeClasspath
     systemProperty 'sceneflow.pipeline.mode', mode
+    systemProperty 'sceneflow.pipeline.outputMode', outputMode
+    systemProperty 'sceneflow.pipeline.projectOutDir', projectOutDir
     systemProperty 'sceneflow.llm.baseUrl', llmBaseUrl
     systemProperty 'sceneflow.llm.apiKey', llmApiKey
     systemProperty 'sceneflow.llm.model', llmModel
