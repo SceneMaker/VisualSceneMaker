@@ -20,6 +20,8 @@ public final class SceneFlowSituationPipelineCli {
         final String situation = args[4];
         final SceneFlowSituationPipeline.CandidateMode mode = SceneFlowSituationPipeline.CandidateMode
                 .from(System.getProperty("sceneflow.pipeline.mode", "template"));
+        final SceneFlowSituationPipeline.OutputMode outputMode = SceneFlowSituationPipeline.OutputMode
+                .from(System.getProperty("sceneflow.pipeline.outputMode", "standalone"));
         final SceneFlowIrLlmCandidateProvider.Config llmConfig = new SceneFlowIrLlmCandidateProvider.Config(
                 System.getProperty("sceneflow.llm.baseUrl", ""),
                 System.getProperty("sceneflow.llm.apiKey", ""),
@@ -27,6 +29,12 @@ public final class SceneFlowSituationPipelineCli {
                 parseInt(System.getProperty("sceneflow.llm.timeoutSec", "30"), 30),
                 parseInt(System.getProperty("sceneflow.llm.maxCandidates", "3"), 3)
         );
+        final Path generatedProjectPath = Path.of(System.getProperty(
+                "sceneflow.pipeline.projectOutDir",
+                outputPath.toAbsolutePath().getParent() == null
+                        ? "build/reports/sceneflow-generated-project"
+                        : outputPath.toAbsolutePath().getParent().resolve("sceneflow-generated-project").toString()
+        ));
 
         try {
             final JSONObject report = new SceneFlowSituationPipeline().run(
@@ -35,9 +43,13 @@ public final class SceneFlowSituationPipelineCli {
                     outputPath,
                     reportPath,
                     situation,
-                    new SceneFlowSituationPipeline.Settings(mode, llmConfig));
+                    new SceneFlowSituationPipeline.Settings(mode, outputMode, llmConfig),
+                    generatedProjectPath);
             if ("success".equals(report.optString("status", ""))) {
                 System.out.println("OK: generated flow written to " + outputPath.toAbsolutePath());
+                if (!report.isNull("generatedProjectPath")) {
+                    System.out.println("OK: generated VSM project written to " + report.optString("generatedProjectPath"));
+                }
                 System.out.println("OK: report written to " + reportPath.toAbsolutePath());
                 return;
             }

@@ -8,6 +8,7 @@ import java.nio.file.Path;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class SceneFlowIrTemplateLibraryTest {
@@ -20,8 +21,66 @@ class SceneFlowIrTemplateLibraryTest {
                 "Wait until the user pressed the Okay button", snapshot);
 
         assertFalse(candidates.isEmpty());
+        assertTrue("template-constrained-activity".equals(
+                candidates.get(0).optJSONObject("metadata").optString("source")));
+        assertTrue("constrained_activity_base".equals(
+                candidates.get(0)
+                        .optJSONObject("metadata")
+                        .optJSONObject("interactiveDesignPattern")
+                        .optString("selectedPatternId")));
         SemanticValidationResult result = new SceneFlowIrSemanticValidator().validate(candidates.get(0), snapshot);
         assertFalse(result.hasErrors(), "Expected first candidate to be semantically valid");
+    }
+
+    @Test
+    void constrainedActivityTemplateUsesReminderLoopWhenPromptMentionsReminder() throws Exception {
+        JSONObject snapshot = new JSONObject(Files.readString(Path.of("doc/capability-snapshot.designpatterns.json")));
+        List<JSONObject> candidates = new SceneFlowIrTemplateLibrary().generateCandidates(
+                "Wait until the user pressed the Okay button and remind every 5 seconds", snapshot);
+
+        JSONObject constrained = candidates.stream()
+                .filter(candidate -> "template-constrained-activity".equals(
+                        candidate.optJSONObject("metadata").optString("source")))
+                .findFirst()
+                .orElse(null);
+        assertNotNull(constrained);
+        assertTrue("periodic_reminder_while_waiting".equals(
+                constrained.optJSONObject("metadata")
+                        .optJSONObject("interactiveDesignPattern")
+                        .optString("selectedPatternId")));
+        assertTrue("reminder".equals(
+                constrained.optJSONObject("metadata")
+                        .optJSONObject("interactiveDesignPattern")
+                        .optJSONObject("resolvedMeta")
+                        .optJSONObject("constrainedActivity")
+                        .optString("kind")));
+        String operationsText = constrained.getJSONArray("operations").toString();
+        assertTrue(operationsText.contains("\"name\":\"Reminder\""));
+        assertTrue(operationsText.contains("\"timeoutMs\":5000"));
+    }
+
+    @Test
+    void plannedOnlyActivityKindsFallbackToImplementedBasePattern() throws Exception {
+        JSONObject snapshot = new JSONObject(Files.readString(Path.of("doc/capability-snapshot.designpatterns.json")));
+        List<JSONObject> candidates = new SceneFlowIrTemplateLibrary().generateCandidates(
+                "Wait until the user pressed the Okay button while playing music", snapshot);
+
+        JSONObject constrained = candidates.stream()
+                .filter(candidate -> "template-constrained-activity".equals(
+                        candidate.optJSONObject("metadata").optString("source")))
+                .findFirst()
+                .orElse(null);
+        assertNotNull(constrained);
+        assertTrue("constrained_activity_base".equals(
+                constrained.optJSONObject("metadata")
+                        .optJSONObject("interactiveDesignPattern")
+                        .optString("selectedPatternId")));
+        assertTrue("multimodal_activity".equals(
+                constrained.optJSONObject("metadata")
+                        .optJSONObject("interactiveDesignPattern")
+                        .optJSONObject("resolvedMeta")
+                        .optJSONObject("constrainedActivity")
+                        .optString("kind")));
     }
 
     @Test
@@ -48,4 +107,3 @@ class SceneFlowIrTemplateLibraryTest {
         assertTrue(hasConditionalTemplate);
     }
 }
-

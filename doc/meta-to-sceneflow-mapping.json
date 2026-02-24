@@ -1,0 +1,332 @@
+{
+  "version": "1.1",
+  "updatedAt": "2026-02-24",
+  "purpose": "Machine-readable realization matrix from constrained-activity meta model to Visual SceneMaker SceneFlow concepts.",
+  "metaToSceneFlow": [
+    {
+      "metaElement": "constraint",
+      "description": "Condition that controls when the constrained activity stops.",
+      "primarySceneFlowConcepts": [
+        "IEDGE",
+        "CEDGE"
+      ],
+      "realizationRules": [
+        "Use IEDGE for interrupt/event style constraints.",
+        "Use CEDGE for state/value guard constraints.",
+        "Constraint exit edge should originate at supernode for immediate reactive exit."
+      ],
+      "requiredFields": [
+        "variable",
+        "operator",
+        "value"
+      ],
+      "invariants": [
+        "Condition expression is non-empty.",
+        "Constraint variable exists or is auto-created according to mode."
+      ]
+    },
+    {
+      "metaElement": "constrainedActivity",
+      "description": "Behavior executed while constraint is unsatisfied.",
+      "primarySceneFlowConcepts": [
+        "create_supernode",
+        "create_node",
+        "TEDGE"
+      ],
+      "kinds": [
+        {
+          "kind": "minimal_liveness",
+          "sceneFlowPattern": "Waiting node with self TEDGE(timeoutMs)."
+        },
+        {
+          "kind": "reminder",
+          "sceneFlowPattern": "Waiting --TEDGE(intervalMs)--> Reminder --TEDGE(1000ms)--> Waiting."
+        },
+        {
+          "kind": "multimodal_activity",
+          "sceneFlowPattern": "Waiting cycle with one or more activity nodes (music/picture/etc.) connected via TEDGE/FEDGE."
+        },
+        {
+          "kind": "social_behavior",
+          "sceneFlowPattern": "Waiting cycle with socially assistive action nodes and policy gates."
+        }
+      ],
+      "invariants": [
+        "At least one active internal loop exists while waiting.",
+        "All activity nodes belong to the constrained-activity supernode."
+      ]
+    },
+    {
+      "metaElement": "policy",
+      "description": "Controls timing, repetition, escalation, and interruption behavior.",
+      "primarySceneFlowConcepts": [
+        "TEDGE.timeout",
+        "CEDGE",
+        "add_variable_definition",
+        "add_node_command"
+      ],
+      "policyMapping": [
+        {
+          "field": "intervalMs",
+          "sceneFlowRealization": "TEDGE.payload.timeoutMs"
+        },
+        {
+          "field": "maxRepeats",
+          "sceneFlowRealization": "counter variable + update command + CEDGE guard"
+        },
+        {
+          "field": "escalation",
+          "sceneFlowRealization": "levelled subflow/supernode stages with transition guards"
+        },
+        {
+          "field": "interruptibility",
+          "sceneFlowRealization": "CEDGE guard before reminder/activity transitions"
+        }
+      ]
+    },
+    {
+      "metaElement": "completion",
+      "description": "Transition behavior once constraint is satisfied.",
+      "primarySceneFlowConcepts": [
+        "create_node",
+        "IEDGE",
+        "CEDGE"
+      ],
+      "realizationRules": [
+        "Create/reuse continuation node at parent level.",
+        "Set exit edge target to continuation node id (never node name)."
+      ],
+      "invariants": [
+        "Exit edge has valid target node id.",
+        "No child-node edge targets outside supernode scope."
+      ]
+    }
+  ],
+  "ruleDefinitions": [
+    {
+      "id": "IR_EMPTY",
+      "scope": "general",
+      "severity": "error",
+      "description": "IR operation list must not be empty.",
+      "activation": {}
+    },
+    {
+      "id": "OP_INVALID",
+      "scope": "general",
+      "severity": "error",
+      "description": "Each operation entry must be a valid object.",
+      "activation": {}
+    },
+    {
+      "id": "OP_MISSING_KIND",
+      "scope": "general",
+      "severity": "error",
+      "description": "Each operation must define its kind.",
+      "activation": {}
+    },
+    {
+      "id": "OP_UNSUPPORTED",
+      "scope": "general",
+      "severity": "error",
+      "description": "Operation type must be supported by the IR compiler.",
+      "activation": {}
+    },
+    {
+      "id": "NODE_ID_MISSING",
+      "scope": "general",
+      "severity": "error",
+      "description": "Node creation requires a node id.",
+      "activation": {}
+    },
+    {
+      "id": "NODE_DUPLICATE",
+      "scope": "general",
+      "severity": "error",
+      "description": "Node ids must be unique in snapshot+patch scope.",
+      "activation": {}
+    },
+    {
+      "id": "NODE_REF_MISSING",
+      "scope": "general",
+      "severity": "error",
+      "description": "Node references in operations must be provided.",
+      "activation": {}
+    },
+    {
+      "id": "NODE_REF_UNKNOWN",
+      "scope": "general",
+      "severity": "error",
+      "description": "Node references must resolve to known nodes.",
+      "activation": {}
+    },
+    {
+      "id": "EDGE_ID_MISSING",
+      "scope": "general",
+      "severity": "error",
+      "description": "Edge creation requires an edge id.",
+      "activation": {}
+    },
+    {
+      "id": "EDGE_DUPLICATE",
+      "scope": "general",
+      "severity": "error",
+      "description": "Edge ids must be unique in snapshot+patch scope.",
+      "activation": {}
+    },
+    {
+      "id": "EDGE_REF_MISSING",
+      "scope": "general",
+      "severity": "error",
+      "description": "Edge references in updates/deletes must be provided.",
+      "activation": {}
+    },
+    {
+      "id": "EDGE_REF_UNKNOWN",
+      "scope": "general",
+      "severity": "error",
+      "description": "Edge references must resolve to known edges.",
+      "activation": {}
+    },
+    {
+      "id": "EDGE_TYPE_INVALID",
+      "scope": "general",
+      "severity": "error",
+      "description": "Edge type must be one of the supported SceneFlow edge types.",
+      "activation": {}
+    },
+    {
+      "id": "EDGE_TYPE_NOT_ALLOWED",
+      "scope": "general",
+      "severity": "error",
+      "description": "Edge type must be allowed by capability snapshot.",
+      "activation": {}
+    },
+    {
+      "id": "EDGE_CONDITION_MISSING",
+      "scope": "general",
+      "severity": "error",
+      "description": "Conditional/interrupt edges must provide conditionText.",
+      "activation": {}
+    },
+    {
+      "id": "EDGE_TIMEOUT_MISSING",
+      "scope": "general",
+      "severity": "error",
+      "description": "Timed edges must provide timeoutMs.",
+      "activation": {}
+    },
+    {
+      "id": "EDGE_TIMEOUT_INVALID",
+      "scope": "general",
+      "severity": "error",
+      "description": "Timed edge timeout must be non-negative.",
+      "activation": {}
+    },
+    {
+      "id": "EDGE_PROBABILITY_MISSING",
+      "scope": "general",
+      "severity": "error",
+      "description": "Probabilistic edges must provide probability.",
+      "activation": {}
+    },
+    {
+      "id": "EDGE_PROBABILITY_INVALID",
+      "scope": "general",
+      "severity": "error",
+      "description": "Probability must be in range [0,100].",
+      "activation": {}
+    },
+    {
+      "id": "EDGE_CROSS_SUPERNODE_FORBIDDEN",
+      "scope": "general",
+      "severity": "error",
+      "description": "Node-in-supernode edges must not target outside that supernode scope.",
+      "activation": {}
+    },
+    {
+      "id": "VARDEF_MISSING",
+      "scope": "general",
+      "severity": "error",
+      "description": "Variable definition operation requires varDef payload.",
+      "activation": {}
+    },
+    {
+      "id": "VARDEF_NAME_MISSING",
+      "scope": "general",
+      "severity": "error",
+      "description": "Variable definition requires name.",
+      "activation": {}
+    },
+    {
+      "id": "VARDEF_TYPE_INVALID",
+      "scope": "general",
+      "severity": "error",
+      "description": "Variable definition type must be supported.",
+      "activation": {}
+    },
+    {
+      "id": "VAR_REF_UNKNOWN",
+      "scope": "general",
+      "severity": "warning",
+      "description": "Condition expressions may only reference known variables.",
+      "activation": {}
+    },
+    {
+      "id": "SUPERNODE_EXIT_TARGET_OUTSIDE_SCOPE",
+      "scope": "general",
+      "severity": "error",
+      "description": "Supernode exit edges must target nodes outside the originating supernode scope.",
+      "activation": {
+        "edgeTypes": [
+          "IEDGE",
+          "CEDGE"
+        ]
+      }
+    },
+    {
+      "id": "SUPERNODE_INTERNAL_LIVENESS_REQUIRED",
+      "scope": "context",
+      "severity": "error",
+      "description": "Constrained wait supernodes must keep at least one internal active timed loop alive.",
+      "activation": {
+        "context": "constrained_wait_supernode",
+        "patterns": [
+          "constrained_activity_base",
+          "periodic_reminder_while_waiting"
+        ]
+      }
+    },
+    {
+      "id": "SUPERNODE_EXIT_TARGET_IN_SCOPE",
+      "scope": "context",
+      "severity": "error",
+      "description": "Violation code emitted when supernode exit target remains inside supernode scope.",
+      "activation": {
+        "context": "constrained_wait_supernode",
+        "patterns": [
+          "constrained_activity_base",
+          "periodic_reminder_while_waiting"
+        ]
+      }
+    },
+    {
+      "id": "SUPERNODE_INTERNAL_LIVENESS_MISSING",
+      "scope": "context",
+      "severity": "error",
+      "description": "Violation code emitted when constrained supernode has no internal liveness flow.",
+      "activation": {
+        "context": "constrained_wait_supernode",
+        "patterns": [
+          "constrained_activity_base",
+          "periodic_reminder_while_waiting"
+        ]
+      }
+    }
+  ],
+  "disabledRules": [],
+  "globalInvariants": [
+    "No illegal cross-supernode node-edge target.",
+    "All created node positions are visible and non-overlapping where possible.",
+    "Generated flow compiles and passes semantic validation."
+  ]
+}
