@@ -12,6 +12,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public final class SceneFlowIrTemplateLibrary {
     private static final Path DEFAULT_PATTERN_CATALOG_PATH = Path.of("doc", "interactive-design-pattern-catalog.json");
@@ -73,9 +75,8 @@ public final class SceneFlowIrTemplateLibrary {
         final String superNodeId = "S" + nextSuperNodeIdx;
         final String waitNodeId = "N" + nextNodeIdx;
         final String activityNodeId = spec.activityType() == ActivityType.MINIMAL_LIVENESS ? null : "N" + (nextNodeIdx + 1);
-        final String afterNodeId = "N" + (activityNodeId == null ? nextNodeIdx + 1 : nextNodeIdx + 2);
         final String policyEdgeId = "WaitPolicy_" + suffix;
-        final String edgeInterruptId = "ConstraintSatisfied_" + suffix;
+        final int nextAfterNodeIdx = activityNodeId == null ? nextNodeIdx + 1 : nextNodeIdx + 2;
 
         final JSONArray operations = new JSONArray()
                 .put(new JSONObject()
@@ -136,7 +137,8 @@ public final class SceneFlowIrTemplateLibrary {
                                         .put("constraint", new JSONObject()
                                                 .put("variable", spec.constraintVariable())
                                                 .put("operator", "==")
-                                                .put("value", spec.constraintLabel()))
+                                                .put("value", spec.constraintLabel())
+                                                .put("values", new JSONArray(spec.constraintLabels())))
                                         .put("constrainedActivity", new JSONObject()
                                                 .put("kind", spec.activityKind())
                                                 .put("parameters", new JSONObject()))
@@ -151,20 +153,11 @@ public final class SceneFlowIrTemplateLibrary {
                         .put("selected-pattern-id: " + spec.selectedPatternId())
                         .put("Constraint variable " + spec.constraintVariable() + " exists or will be auto-created.")
                         .put("Resolved activity kind: " + spec.activityKind()))
-                .put("operations", operations
-                        .put(new JSONObject()
-                                .put("op", "create_node")
-                                .put("parentSuperNodeId", spec.rootId())
-                                .put("nodeId", afterNodeId)
-                                .put("name", "After_" + suffix))
-                        .put(new JSONObject()
-                                .put("op", "create_edge")
-                                .put("edgeId", edgeInterruptId)
-                                .put("edgeType", "IEDGE")
-                                .put("sourceNodeId", superNodeId)
-                                .put("targetNodeId", afterNodeId)
-                                .put("payload", new JSONObject()
-                                        .put("conditionText", spec.constraintVariable() + " == \"" + spec.constraintLabel() + "\""))));
+                .put("operations", appendConstraintExitOps(
+                        operations,
+                        spec,
+                        superNodeId,
+                        nextAfterNodeIdx));
     }
 
     private JSONObject timeoutRetryTemplate(final String situation, final String rootId) {
@@ -274,36 +267,13 @@ public final class SceneFlowIrTemplateLibrary {
         return "UIEvent";
     }
 
-    private String extractLabel(final String text, final String fallback) {
-        if (text == null) {
-            return fallback;
-        }
-        final int quoteStart = text.indexOf('"');
-        if (quoteStart >= 0) {
-            final int quoteEnd = text.indexOf('"', quoteStart + 1);
-            if (quoteEnd > quoteStart + 1) {
-                return text.substring(quoteStart + 1, quoteEnd);
-            }
-        }
-        final String lower = text.toLowerCase(Locale.ROOT);
-        if ((lower.contains("ok") || lower.contains("okay")) && lower.contains("pressed")) {
-            return "OkayButtonPressed";
-        }
-        if (lower.contains("ok") || lower.contains("okay")) {
-            return "OkayButton";
-        }
-        if (lower.contains("cancel")) {
-            return "CancelButton";
-        }
-        return fallback;
-    }
-
     private ConstrainedActivitySpec constrainedActivitySpec(
             final String situation,
             final String rootId,
             final String eventVar,
             final JSONObject snapshot) {
-        final String constraintLabel = extractLabel(situation, "OkayButtonPressed");
+        final List<String> constraintLabels = extractConstraintLabels(situation, "OkayButtonPressed");
+        final String constraintLabel = constraintLabels.get(0);
         final int intervalMs = extractPolicyIntervalMs(situation);
         final PromptResolution resolution = resolvePromptToMetaModel(situation);
         final ActivityType activityType = inferActivityType(resolution.activityKind());
@@ -314,12 +284,91 @@ public final class SceneFlowIrTemplateLibrary {
                 rootId,
                 constraintVariable,
                 constraintLabel,
+                constraintLabels,
                 activityType,
                 intervalMs,
                 resolution.activityKind(),
                 resolution.interruptibility(),
                 selection.patternId(),
                 selection.reason());
+    }
+
+    private JSONArray appendConstraintExitOps(
+            final JSONArray operations,
+            final ConstrainedActivitySpec spec,
+            final String superNodeId,
+            final int firstAfterNodeIndex) {
+        int nodeIdx = firstAfterNodeIndex;
+        int edgeIdx = 1;
+        for (String label : spec.constraintLabels()) {
+            final String labelSuffix = sanitizeId(label);
+            final String afterNodeId = "N" + nodeIdx++;
+            operations.put(new JSONObject()
+                    .put("op", "create_node")
+                    .put("parentSuperNodeId", spec.rootId())
+                    .put("nodeId", afterNodeId)
+                    .put("name", "After_" + labelSuffix));
+            operations.put(new JSONObject()
+                    .put("op", "create_edge")
+                    .put("edgeId", "ConstraintSatisfied_" + labelSuffix + "_" + edgeIdx++)
+                    .put("edgeType", "IEDGE")
+                    .put("sourceNodeId", superNodeId)
+                    .put("targetNodeId", afterNodeId)
+                    .put("payload", new JSONObject()
+                            .put("conditionText", spec.constraintVariable() + " == \"" + label + "\"")));
+        }
+        return operations;
+    }
+
+    private List<String> extractConstraintLabels(final String text, final String fallback) {
+        final LinkedHashSet<String> labels = new LinkedHashSet<>();
+        if (text != null) {
+            final Matcher quoted = Pattern.compile("\"([^\"]+)\"").matcher(text);
+            while (quoted.find()) {
+                final String normalized = normalizeButtonLabel(quoted.group(1));
+                if (!normalized.isBlank()) {
+                    labels.add(normalized);
+                }
+            }
+            final String lower = text.toLowerCase(Locale.ROOT);
+            if (containsWord(lower, "ok") || containsWord(lower, "okay")) {
+                labels.add("OkayButtonPressed");
+            }
+            if (containsWord(lower, "cancel") || containsWord(lower, "canel")) {
+                labels.add("CancelButtonPressed");
+            }
+            if (containsWord(lower, "yes")) {
+                labels.add("YesButtonPressed");
+            }
+            if (containsWord(lower, "no")) {
+                labels.add("NoButtonPressed");
+            }
+        }
+        if (labels.isEmpty()) {
+            labels.add(fallback);
+        }
+        return new ArrayList<>(labels);
+    }
+
+    private boolean containsWord(final String lower, final String word) {
+        return Pattern.compile("\\b" + Pattern.quote(word) + "\\b").matcher(lower).find();
+    }
+
+    private String normalizeButtonLabel(final String value) {
+        if (value == null) {
+            return "";
+        }
+        final String trimmed = value.trim();
+        if (trimmed.isEmpty()) {
+            return "";
+        }
+        if (trimmed.toLowerCase(Locale.ROOT).endsWith("pressed")) {
+            return trimmed;
+        }
+        if (trimmed.toLowerCase(Locale.ROOT).contains("button")) {
+            return trimmed + "Pressed";
+        }
+        return trimmed + "ButtonPressed";
     }
 
     private ActivityType inferActivityType(final String activityKind) {
@@ -534,6 +583,7 @@ public final class SceneFlowIrTemplateLibrary {
             String rootId,
             String constraintVariable,
             String constraintLabel,
+            List<String> constraintLabels,
             ActivityType activityType,
             int policyIntervalMs,
             String activityKind,

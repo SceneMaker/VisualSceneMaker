@@ -810,6 +810,7 @@ public final class SceneFlowSituationPipeline {
 
         final JSONObject superNodeCreateOp = findWaitSuperNodeCreate(operations);
         if (superNodeCreateOp == null) {
+            ensureInterruptSourceNodeLiveness(operations, situation);
             return candidate;
         }
         final String superNodeId = superNodeCreateOp.optString("superNodeId", "").trim();
@@ -842,27 +843,27 @@ public final class SceneFlowSituationPipeline {
             return candidate;
         }
 
-        int interruptEdgeIndex = findInterruptEdgeIndex(operations);
-        JSONObject interruptEdgeOp = interruptEdgeIndex >= 0 ? operations.optJSONObject(interruptEdgeIndex) : null;
-        if (interruptEdgeOp == null) {
-            interruptEdgeOp = new JSONObject()
+        final Set<String> currentChildNodeIds = childNodeIdsOf(operations, superNodeId);
+        final List<JSONObject> interruptEdges = findInterruptEdgesFromSourceOrChildren(
+                operations, superNodeId, currentChildNodeIds);
+        if (interruptEdges.isEmpty()) {
+            operations.put(new JSONObject()
                     .put("op", "create_edge")
                     .put("edgeId", uniqueEdgeId("WaitInterrupt_" + waitSuffix, operations))
                     .put("edgeType", "IEDGE")
                     .put("sourceNodeId", superNodeId)
-                    .put("payload", new JSONObject().put("conditionText", "event == \"" + waitLabel + "\""));
-            operations.put(interruptEdgeOp);
-            interruptEdgeIndex = operations.length() - 1;
+                    .put("payload", new JSONObject().put("conditionText", "event == \"" + waitLabel + "\"")));
         } else {
-            interruptEdgeOp.put("sourceNodeId", superNodeId);
-        }
-
-        if (!interruptEdgeOp.has("payload") || interruptEdgeOp.optJSONObject("payload") == null) {
-            interruptEdgeOp.put("payload", new JSONObject());
-        }
-        final JSONObject iPayload = interruptEdgeOp.getJSONObject("payload");
-        if (iPayload.optString("conditionText", "").isBlank()) {
-            iPayload.put("conditionText", "event == \"" + waitLabel + "\"");
+            for (JSONObject edgeOp : interruptEdges) {
+                edgeOp.put("sourceNodeId", superNodeId);
+                if (!edgeOp.has("payload") || edgeOp.optJSONObject("payload") == null) {
+                    edgeOp.put("payload", new JSONObject());
+                }
+                final JSONObject iPayload = edgeOp.getJSONObject("payload");
+                if (iPayload.optString("conditionText", "").isBlank()) {
+                    iPayload.put("conditionText", "event == \"" + waitLabel + "\"");
+                }
+            }
         }
 
         final Set<String> childNodeIds = childNodeIdsOf(operations, superNodeId);
@@ -872,24 +873,46 @@ public final class SceneFlowSituationPipeline {
             ensureReminderInternalFlow(operations, waitingNodeId, superNodeId, allKnownNodeIds, reminderTimeoutMs);
         }
 
-        String iTarget = interruptEdgeOp.optString("targetNodeId", "").trim();
-        final boolean standaloneUnknownTarget = outputMode == OutputMode.STANDALONE && !allKnownNodeIds.contains(iTarget);
-        if (iTarget.isEmpty() || childNodeIds.contains(iTarget) || standaloneUnknownTarget) {
-            String afterNodeId = nextNumericId(allKnownNodeIds, "N", 1000);
-            JSONObject afterOp = new JSONObject()
-                    .put("op", "create_node")
-                    .put("parentSuperNodeId", rootId)
-                    .put("nodeId", afterNodeId)
-                    .put("name", "After_" + waitSuffix);
-            if (interruptEdgeIndex >= 0) {
-                operations = insertOperationAt(operations, interruptEdgeIndex, afterOp);
-                candidate.put("operations", operations);
-                interruptEdgeIndex += 1;
-                interruptEdgeOp = operations.optJSONObject(interruptEdgeIndex);
-            } else {
-                operations.put(afterOp);
+        final Map<String, String> continuationNodeBySuffix = new HashMap<>();
+        final List<JSONObject> normalizedInterruptEdges = findInterruptEdgesFromSource(operations, superNodeId);
+        for (JSONObject interruptEdgeOp : normalizedInterruptEdges) {
+            final JSONObject payload = interruptEdgeOp.optJSONObject("payload");
+            final String conditionText = payload == null ? "" : payload.optString("conditionText", "");
+            final String conditionSuffix = conditionText.isBlank()
+                    ? waitSuffix
+                    : sanitizeId(extractConditionLiteral(conditionText, waitLabel));
+
+            String iTarget = interruptEdgeOp.optString("targetNodeId", "").trim();
+            final boolean unknownTarget = !allKnownNodeIds.contains(iTarget);
+            final boolean targetNeedsRewrite = iTarget.isEmpty()
+                    || childNodeIds.contains(iTarget)
+                    || unknownTarget
+                    || (outputMode == OutputMode.STANDALONE && unknownTarget);
+            if (!targetNeedsRewrite) {
+                continue;
             }
-            allKnownNodeIds.add(afterNodeId);
+            final String suffixKey = conditionSuffix.isBlank() ? waitSuffix : conditionSuffix;
+            String afterNodeId = continuationNodeBySuffix.get(suffixKey);
+            if (afterNodeId == null || afterNodeId.isBlank()) {
+                afterNodeId = findNodeIdByName(operations, rootId, "After_" + suffixKey);
+                if (afterNodeId == null || afterNodeId.isBlank()) {
+                    afterNodeId = nextNumericId(allKnownNodeIds, "N", 1000);
+                    final JSONObject afterNodeOp = new JSONObject()
+                            .put("op", "create_node")
+                            .put("parentSuperNodeId", rootId)
+                            .put("nodeId", afterNodeId)
+                            .put("name", "After_" + suffixKey);
+                    final int edgeIndex = findOperationIndex(operations, interruptEdgeOp);
+                    if (edgeIndex >= 0) {
+                        operations = insertOperationAt(operations, edgeIndex, afterNodeOp);
+                        candidate.put("operations", operations);
+                    } else {
+                        operations.put(afterNodeOp);
+                    }
+                    allKnownNodeIds.add(afterNodeId);
+                }
+                continuationNodeBySuffix.put(suffixKey, afterNodeId);
+            }
             interruptEdgeOp.put("targetNodeId", afterNodeId);
         }
 
@@ -904,6 +927,24 @@ public final class SceneFlowSituationPipeline {
             operations.put(tEdgeOp);
         }
         return candidate;
+    }
+
+    private void ensureInterruptSourceNodeLiveness(final JSONArray operations, final String situation) {
+        final String sourceNodeId = findPrimaryInterruptSourceNodeId(operations);
+        if (sourceNodeId.isBlank()) {
+            return;
+        }
+        if (hasSelfTimeoutEdge(operations, sourceNodeId)) {
+            return;
+        }
+        final String waitSuffix = sanitizeId(extractLabel(situation, "Wait"));
+        operations.put(new JSONObject()
+                .put("op", "create_edge")
+                .put("edgeId", uniqueEdgeId("WaitTimeout_" + waitSuffix, operations))
+                .put("edgeType", "TEDGE")
+                .put("sourceNodeId", sourceNodeId)
+                .put("targetNodeId", sourceNodeId)
+                .put("payload", new JSONObject().put("timeoutMs", 1000)));
     }
 
     private boolean looksLikeReminderSituation(final String situation) {
@@ -1043,16 +1084,64 @@ public final class SceneFlowSituationPipeline {
         return null;
     }
 
-    private int findInterruptEdgeIndex(final JSONArray operations) {
+    private List<JSONObject> findInterruptEdgesFromSource(final JSONArray operations, final String sourceNodeId) {
+        final List<JSONObject> edges = new ArrayList<>();
         for (int i = 0; i < operations.length(); i++) {
             final JSONObject op = operations.optJSONObject(i);
             if (op != null
                     && "create_edge".equals(op.optString("op", ""))
-                    && "IEDGE".equals(op.optString("edgeType", ""))) {
-                return i;
+                    && "IEDGE".equals(op.optString("edgeType", ""))
+                    && sourceNodeId.equals(op.optString("sourceNodeId", ""))) {
+                edges.add(op);
             }
         }
-        return -1;
+        return edges;
+    }
+
+    private String findPrimaryInterruptSourceNodeId(final JSONArray operations) {
+        final Map<String, Integer> counts = new HashMap<>();
+        for (int i = 0; i < operations.length(); i++) {
+            final JSONObject op = operations.optJSONObject(i);
+            if (op == null
+                    || !"create_edge".equals(op.optString("op", ""))
+                    || !"IEDGE".equals(op.optString("edgeType", ""))) {
+                continue;
+            }
+            final String source = op.optString("sourceNodeId", "").trim();
+            if (source.isEmpty()) {
+                continue;
+            }
+            counts.put(source, counts.getOrDefault(source, 0) + 1);
+        }
+        String bestId = "";
+        int bestCount = 0;
+        for (Map.Entry<String, Integer> entry : counts.entrySet()) {
+            if (entry.getValue() > bestCount) {
+                bestCount = entry.getValue();
+                bestId = entry.getKey();
+            }
+        }
+        return bestId;
+    }
+
+    private List<JSONObject> findInterruptEdgesFromSourceOrChildren(
+            final JSONArray operations,
+            final String superNodeId,
+            final Set<String> childNodeIds) {
+        final List<JSONObject> edges = new ArrayList<>();
+        for (int i = 0; i < operations.length(); i++) {
+            final JSONObject op = operations.optJSONObject(i);
+            if (op == null
+                    || !"create_edge".equals(op.optString("op", ""))
+                    || !"IEDGE".equals(op.optString("edgeType", ""))) {
+                continue;
+            }
+            final String source = op.optString("sourceNodeId", "");
+            if (superNodeId.equals(source) || childNodeIds.contains(source)) {
+                edges.add(op);
+            }
+        }
+        return edges;
     }
 
     private boolean hasSelfTimeoutEdge(final JSONArray operations, final String nodeId) {
@@ -1106,6 +1195,48 @@ public final class SceneFlowSituationPipeline {
             }
         }
         return "";
+    }
+
+    private String findNodeIdByName(final JSONArray operations, final String parentSuperNodeId, final String exactName) {
+        for (int i = 0; i < operations.length(); i++) {
+            final JSONObject op = operations.optJSONObject(i);
+            if (op == null || !"create_node".equals(op.optString("op", ""))) {
+                continue;
+            }
+            if (!parentSuperNodeId.equals(op.optString("parentSuperNodeId", ""))) {
+                continue;
+            }
+            if (exactName.equals(op.optString("name", ""))) {
+                return op.optString("nodeId", "");
+            }
+        }
+        return "";
+    }
+
+    private int findOperationIndex(final JSONArray operations, final JSONObject target) {
+        if (operations == null || target == null) {
+            return -1;
+        }
+        for (int i = 0; i < operations.length(); i++) {
+            if (operations.optJSONObject(i) == target) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private String extractConditionLiteral(final String conditionText, final String fallback) {
+        if (conditionText == null || conditionText.isBlank()) {
+            return fallback;
+        }
+        final Matcher matcher = Pattern.compile("\"([^\"]+)\"").matcher(conditionText);
+        if (matcher.find()) {
+            final String literal = matcher.group(1).trim();
+            if (!literal.isEmpty()) {
+                return literal;
+            }
+        }
+        return fallback;
     }
 
     private Set<String> snapshotNodeIds(final JSONObject snapshot) {
@@ -1300,51 +1431,14 @@ public final class SceneFlowSituationPipeline {
         final JSONObject project = snapshot == null ? null : snapshot.optJSONObject("project");
         final String projectName = xmlEscape(project == null ? "GeneratedSceneFlow" : project.optString("name", "GeneratedSceneFlow"));
         final boolean androidProject = project != null && project.optBoolean("androidProject", false);
-        final JSONArray plugins = project == null ? null : project.optJSONArray("plugins");
-        final JSONArray agents = project == null ? null : project.optJSONArray("agents");
 
         final StringBuilder xml = new StringBuilder();
         xml.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
         xml.append("<Project name=\"").append(projectName).append("\" androidProject=\"")
                 .append(androidProject).append("\">\n");
         xml.append("  <Plugins>\n");
-        if (plugins != null) {
-            for (int i = 0; i < plugins.length(); i++) {
-                final JSONObject plugin = plugins.optJSONObject(i);
-                if (plugin == null) {
-                    continue;
-                }
-                xml.append("    <Plugin type=\"").append(xmlEscape(plugin.optString("type", "device")))
-                        .append("\" name=\"").append(xmlEscape(plugin.optString("name", "")))
-                        .append("\" class=\"").append(xmlEscape(plugin.optString("className", "")))
-                        .append("\" load=\"").append(plugin.optBoolean("load", true)).append("\">\n");
-                xml.append("    </Plugin>\n");
-            }
-        }
         xml.append("  </Plugins>\n");
         xml.append("  <Agents>\n");
-        if (agents != null) {
-            for (int i = 0; i < agents.length(); i++) {
-                final JSONObject agent = agents.optJSONObject(i);
-                if (agent == null) {
-                    continue;
-                }
-                xml.append("    <Agent name=\"").append(xmlEscape(agent.optString("name", "")))
-                        .append("\" device=\"").append(xmlEscape(agent.optString("device", ""))).append("\">\n");
-                final JSONArray features = agent.optJSONArray("features");
-                if (features != null) {
-                    for (int j = 0; j < features.length(); j++) {
-                        final JSONObject feature = features.optJSONObject(j);
-                        if (feature == null) {
-                            continue;
-                        }
-                        xml.append("      <Feature key=\"").append(xmlEscape(feature.optString("key", "")))
-                                .append("\" val=\"").append(xmlEscape(feature.optString("value", ""))).append("\"/>\n");
-                    }
-                }
-                xml.append("    </Agent>\n");
-            }
-        }
         xml.append("  </Agents>\n");
         xml.append("  <SemanticServices>\n");
         xml.append("  </SemanticServices>\n");

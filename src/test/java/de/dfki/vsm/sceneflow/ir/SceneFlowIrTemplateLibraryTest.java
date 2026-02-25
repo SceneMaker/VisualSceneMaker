@@ -6,8 +6,10 @@ import org.junit.jupiter.api.Test;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -105,5 +107,34 @@ class SceneFlowIrTemplateLibraryTest {
                 .anyMatch(candidate -> "template-command-on-condition".equals(
                         candidate.optJSONObject("metadata").optString("source")));
         assertTrue(hasConditionalTemplate);
+    }
+
+    @Test
+    void waitForMultipleButtonsGeneratesOneInterruptEdgePerButton() throws Exception {
+        JSONObject snapshot = new JSONObject(Files.readString(Path.of("doc/capability-snapshot.designpatterns.json")));
+        List<JSONObject> candidates = new SceneFlowIrTemplateLibrary().generateCandidates(
+                "Wait until the user pressed the Okay button or the Cancel button", snapshot);
+
+        JSONObject constrained = candidates.stream()
+                .filter(candidate -> "template-constrained-activity".equals(
+                        candidate.optJSONObject("metadata").optString("source")))
+                .findFirst()
+                .orElse(null);
+        assertNotNull(constrained);
+
+        var ops = constrained.getJSONArray("operations");
+        List<String> conditions = java.util.stream.IntStream.range(0, ops.length())
+                .mapToObj(ops::getJSONObject)
+                .filter(op -> "create_edge".equals(op.optString("op", ""))
+                        && "IEDGE".equals(op.optString("edgeType", "")))
+                .map(op -> op.getJSONObject("payload").optString("conditionText", ""))
+                .collect(Collectors.toList());
+
+        assertEquals(2, conditions.size());
+        assertTrue(conditions.contains("event == \"OkayButtonPressed\""));
+        assertTrue(conditions.contains("event == \"CancelButtonPressed\""));
+
+        SemanticValidationResult result = new SceneFlowIrSemanticValidator().validate(constrained, snapshot);
+        assertFalse(result.hasErrors(), "Expected multi-button wait template to be semantically valid");
     }
 }
