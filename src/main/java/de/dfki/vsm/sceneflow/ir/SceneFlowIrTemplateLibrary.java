@@ -145,6 +145,11 @@ public final class SceneFlowIrTemplateLibrary {
                                 .put("mode", spec.constraintResolutionMode().name().toLowerCase(Locale.ROOT))
                                 .put("resolvedLabels", new JSONArray(spec.constraintLabels()))
                                 .put("unresolvedLabels", new JSONArray(spec.unresolvedConstraintLabels())))
+                        .put("promptResolution", new JSONObject()
+                                .put("activityKind", spec.activityKind())
+                                .put("interruptibility", spec.interruptibility())
+                                .put("confidence", spec.promptResolutionConfidence())
+                                .put("ambiguities", new JSONArray(spec.promptResolutionAmbiguities())))
                         .put("interactiveDesignPattern", new JSONObject()
                                 .put("selectedPatternId", spec.selectedPatternId())
                                 .put("selectionReason", spec.selectionReason())
@@ -308,6 +313,8 @@ public final class SceneFlowIrTemplateLibrary {
                 intervalMs,
                 promptResolution.activityKind(),
                 promptResolution.interruptibility(),
+                promptResolution.confidence(),
+                promptResolution.ambiguities(),
                 selection.patternId(),
                 selection.reason());
     }
@@ -431,29 +438,49 @@ public final class SceneFlowIrTemplateLibrary {
 
     private PromptResolution resolvePromptToMetaModel(final String situation) {
         final String lower = situation == null ? "" : situation.toLowerCase(Locale.ROOT);
-        final String activityKind;
+        final List<String> activitySignals = new ArrayList<>();
         if (lower.contains("remind") || lower.contains("reminder")) {
-            activityKind = "reminder";
-        } else if (lower.contains("music")
+            activitySignals.add("reminder");
+        }
+        if (lower.contains("music")
                 || lower.contains("picture")
                 || lower.contains("image")
                 || lower.contains("video")) {
-            activityKind = "multimodal_activity";
-        } else if (lower.contains("social")
+            activitySignals.add("multimodal_activity");
+        }
+        if (lower.contains("social")
                 || lower.contains("agent")
                 || lower.contains("watch")
                 || lower.contains("gaze")) {
-            activityKind = "social_behavior";
-        } else {
-            activityKind = "minimal_liveness";
+            activitySignals.add("social_behavior");
         }
-        final String interruptibility = (lower.contains("busy")
+
+        final String activityKind = activitySignals.isEmpty() ? "minimal_liveness" : activitySignals.get(0);
+        final List<String> ambiguities = new ArrayList<>();
+        double confidence;
+        if (activitySignals.isEmpty()) {
+            confidence = 0.55;
+            ambiguities.add("No explicit constrained activity cue detected; defaulted to minimal_liveness.");
+        } else if (activitySignals.size() == 1) {
+            confidence = 0.95;
+        } else {
+            confidence = 0.65;
+            ambiguities.add("Multiple constrained activity cues detected " + activitySignals
+                    + "; selected " + activityKind + " by precedence.");
+        }
+
+        final boolean attentionAwareCue = (lower.contains("busy")
                 || lower.contains("appropriate moment")
                 || lower.contains("do not interrupt")
-                || lower.contains("don't interrupt"))
-                ? "attention_aware"
-                : "always";
-        return new PromptResolution(activityKind, interruptibility);
+                || lower.contains("don't interrupt"));
+        final boolean explicitImmediateCue = lower.contains("always interrupt")
+                || lower.contains("interrupt immediately");
+        final String interruptibility = attentionAwareCue ? "attention_aware" : "always";
+        if (attentionAwareCue && explicitImmediateCue) {
+            confidence = Math.max(0.1, confidence - 0.2);
+            ambiguities.add("Conflicting interruptibility cues detected; selected attention_aware.");
+        }
+        return new PromptResolution(activityKind, interruptibility, confidence, ambiguities);
     }
 
     private PatternSelection selectPattern(final String activityKind) {
@@ -638,6 +665,8 @@ public final class SceneFlowIrTemplateLibrary {
             int policyIntervalMs,
             String activityKind,
             String interruptibility,
+            double promptResolutionConfidence,
+            List<String> promptResolutionAmbiguities,
             String selectedPatternId,
             String selectionReason) {
     }
@@ -645,7 +674,11 @@ public final class SceneFlowIrTemplateLibrary {
     private record ConstraintResolution(List<String> resolved, List<String> unresolved) {
     }
 
-    private record PromptResolution(String activityKind, String interruptibility) {
+    private record PromptResolution(
+            String activityKind,
+            String interruptibility,
+            double confidence,
+            List<String> ambiguities) {
     }
 
     private record PatternSelection(String patternId, String reason) {

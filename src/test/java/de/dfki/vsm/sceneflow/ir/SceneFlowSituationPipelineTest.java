@@ -44,6 +44,7 @@ class SceneFlowSituationPipelineTest {
         assertTrue(report.getJSONArray("attempts").getJSONObject(0).has("candidate"));
         assertTrue(report.getJSONArray("attempts").getJSONObject(0).has("activeSemanticRules"));
         assertTrue(report.getJSONArray("attempts").getJSONObject(0).has("semanticRuleExecution"));
+        assertTrue(report.getJSONArray("attempts").getJSONObject(0).has("promptResolution"));
         assertTrue(report.has("activeSemanticRulesSummary"));
         assertTrue(report.has("semanticRuleExecutionSummary"));
         assertTrue(report.has("executedRuleCount"));
@@ -80,6 +81,30 @@ class SceneFlowSituationPipelineTest {
         assertTrue(candidate.getJSONArray("operations").toString().contains("\"sourceNodeId\":\"S"));
         assertTrue(Files.readString(outXml).contains("Event(*, 10)"));
         assertTrue(Files.readString(outXml).contains("OkayButtonPressed"));
+    }
+
+    @Test
+    void lowPromptResolutionConfidenceIsReportedAsGenerationWarning() throws Exception {
+        Path tempDir = Files.createTempDirectory("sceneflow-pipeline-confidence-warning-test");
+        Path outXml = tempDir.resolve("generated.xml");
+        Path reportJson = tempDir.resolve("report.json");
+
+        JSONObject report = new SceneFlowSituationPipeline().run(
+                Path.of("doc/capability-snapshot.designpatterns.json"),
+                Path.of("doc/DesignPatterns/sceneflow.xml"),
+                outXml,
+                reportJson,
+                "Wait and remind while showing pictures",
+                new SceneFlowSituationPipeline.Settings(
+                        SceneFlowSituationPipeline.CandidateMode.TEMPLATE,
+                        SceneFlowSituationPipeline.OutputMode.STANDALONE,
+                        null));
+
+        assertEquals("success", report.optString("status"));
+        assertTrue(report.optJSONArray("generationWarnings").toString().contains("low prompt-resolution confidence"));
+        JSONObject attempt = report.getJSONArray("attempts").getJSONObject(0);
+        assertTrue(attempt.getJSONObject("promptResolution").optDouble("confidence", 1.0) < 0.8);
+        assertTrue(attempt.getJSONObject("promptResolution").getJSONArray("ambiguities").length() >= 1);
     }
 
     @Test
