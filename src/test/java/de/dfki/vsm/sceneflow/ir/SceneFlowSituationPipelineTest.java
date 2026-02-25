@@ -3,12 +3,14 @@ package de.dfki.vsm.sceneflow.ir;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
 
+import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class SceneFlowSituationPipelineTest {
@@ -50,6 +52,9 @@ class SceneFlowSituationPipelineTest {
         assertEquals(outProjectDir.toAbsolutePath().toString(), report.optString("generatedProjectPath"));
         assertTrue(Files.exists(outProjectDir.resolve("project.xml")));
         assertTrue(Files.exists(outProjectDir.resolve("sceneflow.xml")));
+        String projectXml = Files.readString(outProjectDir.resolve("project.xml"));
+        assertFalse(projectXml.contains("TimerExecutor"));
+        assertFalse(projectXml.contains("<Agent "));
 
         JSONObject idp = report.getJSONArray("attempts").getJSONObject(0).getJSONObject("interactiveDesignPattern");
         assertEquals(true, idp.optBoolean("available"));
@@ -166,5 +171,173 @@ class SceneFlowSituationPipelineTest {
 
         assertEquals(configuredRuleIds, reportedRuleIds,
                 "Attempt metadata should expose all configured rule definitions.");
+    }
+
+    @Test
+    void canonicalizationRewritesAllSupernodeInterruptTargetsOutsideScope() throws Exception {
+        JSONObject snapshot = new JSONObject(Files.readString(Path.of("doc/capability-snapshot.designpatterns.json")));
+        JSONObject candidate = new JSONObject()
+                .put("irVersion", "1.0")
+                .put("mode", "patch")
+                .put("operations", new org.json.JSONArray()
+                        .put(new JSONObject()
+                                .put("op", "create_supernode")
+                                .put("superNodeId", "S100")
+                                .put("name", "Wait for Okay or Cancel")
+                                .put("parentSuperNodeId", "SceneFlow"))
+                        .put(new JSONObject()
+                                .put("op", "create_node")
+                                .put("nodeId", "N100")
+                                .put("name", "Waiting")
+                                .put("parentSuperNodeId", "S100"))
+                        .put(new JSONObject()
+                                .put("op", "create_node")
+                                .put("nodeId", "N101")
+                                .put("name", "Okay pressed")
+                                .put("parentSuperNodeId", "S100"))
+                        .put(new JSONObject()
+                                .put("op", "create_node")
+                                .put("nodeId", "N102")
+                                .put("name", "Cancel pressed")
+                                .put("parentSuperNodeId", "S100"))
+                        .put(new JSONObject()
+                                .put("op", "create_node")
+                                .put("nodeId", "N1000")
+                                .put("name", "After_OkayButtonPressed")
+                                .put("parentSuperNodeId", "SceneFlow"))
+                        .put(new JSONObject()
+                                .put("op", "create_edge")
+                                .put("edgeId", "E100")
+                                .put("edgeType", "IEDGE")
+                                .put("sourceNodeId", "S100")
+                                .put("targetNodeId", "N1000")
+                                .put("payload", new JSONObject().put("conditionText", "event == \"OkayButtonPressed\"")))
+                        .put(new JSONObject()
+                                .put("op", "create_edge")
+                                .put("edgeId", "E101")
+                                .put("edgeType", "IEDGE")
+                                .put("sourceNodeId", "S100")
+                                .put("targetNodeId", "N102")
+                                .put("payload", new JSONObject().put("conditionText", "event == \"CancelButtonPressed\"")))
+                        .put(new JSONObject()
+                                .put("op", "create_edge")
+                                .put("edgeId", "WaitTimeout")
+                                .put("edgeType", "TEDGE")
+                                .put("sourceNodeId", "N100")
+                                .put("targetNodeId", "N100")
+                                .put("payload", new JSONObject().put("timeoutMs", 1000))));
+
+        SceneFlowSituationPipeline pipeline = new SceneFlowSituationPipeline();
+        Method canonicalize = SceneFlowSituationPipeline.class.getDeclaredMethod(
+                "enforceWaitLoopCanonicalShape",
+                JSONObject.class,
+                JSONObject.class,
+                String.class,
+                SceneFlowSituationPipeline.OutputMode.class);
+        canonicalize.setAccessible(true);
+        JSONObject normalized = (JSONObject) canonicalize.invoke(
+                pipeline,
+                candidate,
+                snapshot,
+                "Wait until the user pressed the Okay button or the Cancel button",
+                SceneFlowSituationPipeline.OutputMode.STANDALONE);
+
+        Set<String> childNodeIds = new HashSet<>();
+        org.json.JSONArray operations = normalized.getJSONArray("operations");
+        for (int i = 0; i < operations.length(); i++) {
+            JSONObject op = operations.getJSONObject(i);
+            if ("create_node".equals(op.optString("op", "")) && "S100".equals(op.optString("parentSuperNodeId", ""))) {
+                childNodeIds.add(op.optString("nodeId", ""));
+            }
+        }
+        for (int i = 0; i < operations.length(); i++) {
+            JSONObject op = operations.getJSONObject(i);
+            if (!"create_edge".equals(op.optString("op", ""))) {
+                continue;
+            }
+            if (!"IEDGE".equals(op.optString("edgeType", ""))) {
+                continue;
+            }
+            if (!"S100".equals(op.optString("sourceNodeId", ""))) {
+                continue;
+            }
+            assertFalse(childNodeIds.contains(op.optString("targetNodeId", "")),
+                    "Interrupt edge target must be outside supernode scope.");
+        }
+
+        SemanticValidationResult result = new SceneFlowIrSemanticValidator().validate(normalized, snapshot);
+        assertFalse(result.getIssues().stream().anyMatch(i -> "SUPERNODE_EXIT_TARGET_IN_SCOPE".equals(i.getCode())));
+        assertFalse(result.getIssues().stream().anyMatch(i -> "NODE_REF_UNKNOWN".equals(i.getCode())));
+    }
+
+    @Test
+    void canonicalizationAddsSelfTimeoutForFlatInterruptWaitNode() throws Exception {
+        JSONObject snapshot = new JSONObject(Files.readString(Path.of("doc/capability-snapshot.designpatterns.json")));
+        JSONObject candidate = new JSONObject()
+                .put("irVersion", "1.0")
+                .put("mode", "patch")
+                .put("operations", new org.json.JSONArray()
+                        .put(new JSONObject()
+                                .put("op", "create_node")
+                                .put("nodeId", "N100")
+                                .put("name", "Wait for Okay or Cancel")
+                                .put("parentSuperNodeId", "SceneFlow"))
+                        .put(new JSONObject()
+                                .put("op", "create_node")
+                                .put("nodeId", "N101")
+                                .put("name", "Okay pressed")
+                                .put("parentSuperNodeId", "SceneFlow"))
+                        .put(new JSONObject()
+                                .put("op", "create_node")
+                                .put("nodeId", "N102")
+                                .put("name", "Cancel pressed")
+                                .put("parentSuperNodeId", "SceneFlow"))
+                        .put(new JSONObject()
+                                .put("op", "create_edge")
+                                .put("edgeId", "E100")
+                                .put("edgeType", "IEDGE")
+                                .put("sourceNodeId", "N100")
+                                .put("targetNodeId", "N101")
+                                .put("payload", new JSONObject().put("conditionText", "event == \"OkayButtonPressed\"")))
+                        .put(new JSONObject()
+                                .put("op", "create_edge")
+                                .put("edgeId", "E101")
+                                .put("edgeType", "IEDGE")
+                                .put("sourceNodeId", "N100")
+                                .put("targetNodeId", "N102")
+                                .put("payload", new JSONObject().put("conditionText", "event == \"CancelButtonPressed\""))));
+
+        SceneFlowSituationPipeline pipeline = new SceneFlowSituationPipeline();
+        Method canonicalize = SceneFlowSituationPipeline.class.getDeclaredMethod(
+                "enforceWaitLoopCanonicalShape",
+                JSONObject.class,
+                JSONObject.class,
+                String.class,
+                SceneFlowSituationPipeline.OutputMode.class);
+        canonicalize.setAccessible(true);
+        JSONObject normalized = (JSONObject) canonicalize.invoke(
+                pipeline,
+                candidate,
+                snapshot,
+                "Wait until the user pressed the Okay button or the Cancel button",
+                SceneFlowSituationPipeline.OutputMode.STANDALONE);
+
+        org.json.JSONArray operations = normalized.getJSONArray("operations");
+        boolean hasSelfTimeout = false;
+        for (int i = 0; i < operations.length(); i++) {
+            JSONObject op = operations.getJSONObject(i);
+            if (!"create_edge".equals(op.optString("op", ""))) {
+                continue;
+            }
+            if (!"TEDGE".equals(op.optString("edgeType", ""))) {
+                continue;
+            }
+            if ("N100".equals(op.optString("sourceNodeId", ""))
+                    && "N100".equals(op.optString("targetNodeId", ""))) {
+                hasSelfTimeout = true;
+                break;
+            }
+        }
+        assertTrue(hasSelfTimeout, "Flat interrupt wait source node must get a self timeout loop.");
     }
 }

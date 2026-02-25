@@ -353,6 +353,18 @@ public final class SceneFlowIrLlmCandidateProvider {
         if (explicit != null) {
             return explicit;
         }
+        final JSONObject data = op.optJSONObject("data");
+        if (data != null) {
+            if ("create_node".equals(opName)
+                    || "update_node".equals(opName)
+                    || "delete_node".equals(opName)
+                    || "create_supernode".equals(opName)) {
+                if (data.has("id") || data.has("nodeId") || data.has("parentSuperNodeId")
+                        || data.has("isSuperNode") || data.has("name")) {
+                    return data;
+                }
+            }
+        }
         final JSONObject payload = op.optJSONObject("payload");
         if (payload == null) {
             return null;
@@ -372,6 +384,18 @@ public final class SceneFlowIrLlmCandidateProvider {
         final JSONObject explicit = op.optJSONObject("edge");
         if (explicit != null) {
             return explicit;
+        }
+        final JSONObject data = op.optJSONObject("data");
+        if (data != null) {
+            if ("create_edge".equals(opName)
+                    || "update_edge".equals(opName)
+                    || "delete_edge".equals(opName)) {
+                if (data.has("type") || data.has("edgeType") || data.has("sourceNodeId")
+                        || data.has("targetNodeId") || data.has("id") || data.has("edgeId")
+                        || data.has("payload")) {
+                    return data;
+                }
+            }
         }
         final JSONObject payload = op.optJSONObject("payload");
         if (payload == null) {
@@ -399,10 +423,17 @@ public final class SceneFlowIrLlmCandidateProvider {
 
     private String firstNonBlank(final JSONObject source, final String... keys) {
         final JSONObject nestedEdge = source.optJSONObject("edge");
+        final JSONObject nestedData = source.optJSONObject("data");
         for (String key : keys) {
             final String value = resolveStringValue(source, key);
             if (!value.isBlank()) {
                 return value;
+            }
+            if (nestedData != null) {
+                final String nestedDataValue = resolveStringValue(nestedData, key);
+                if (!nestedDataValue.isBlank()) {
+                    return nestedDataValue;
+                }
             }
             if (nestedEdge != null) {
                 final String nestedValue = resolveStringValue(nestedEdge, key);
@@ -416,6 +447,7 @@ public final class SceneFlowIrLlmCandidateProvider {
 
     private Integer firstInt(final JSONObject source, final String... keys) {
         final JSONObject nestedEdge = source.optJSONObject("edge");
+        final JSONObject nestedData = source.optJSONObject("data");
         for (String key : keys) {
             try {
                 final Integer direct = resolveIntValue(source, key);
@@ -424,6 +456,16 @@ public final class SceneFlowIrLlmCandidateProvider {
                 }
             } catch (RuntimeException ignored) {
                 // continue
+            }
+            if (nestedData != null) {
+                try {
+                    final Integer nested = resolveIntValue(nestedData, key);
+                    if (nested != null) {
+                        return nested;
+                    }
+                } catch (RuntimeException ignored) {
+                    // continue
+                }
             }
             if (nestedEdge != null) {
                 try {

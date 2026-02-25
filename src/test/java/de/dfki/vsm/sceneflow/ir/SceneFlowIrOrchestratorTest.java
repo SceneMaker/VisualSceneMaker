@@ -29,11 +29,11 @@ class SceneFlowIrOrchestratorTest {
                         .put(new JSONObject()
                                 .put("op", "create_edge")
                                 .put("edgeId", "Bad1")
-                                .put("edgeType", "IEDGE")
-                                .put("sourceNodeId", "SceneFlow")
+                                .put("edgeType", "TEDGE")
+                                .put("sourceNodeId", "N1")
                                 .put("targetNodeId", "N1")
                                 .put("payload", new JSONObject()
-                                        .put("conditionText", "UnknownVar == \"X\""))));
+                                        .put("timeoutMs", -1))));
         JSONObject valid = new JSONObject(Files.readString(Path.of("doc/sceneflow-ir.wait-for-ok-button.example.json")));
 
         Files.writeString(badIr, invalid.toString(2));
@@ -50,7 +50,7 @@ class SceneFlowIrOrchestratorTest {
         assertEquals(2, result.getAttempts().size());
         assertFalse(result.getAttempts().get(0).isSuccess());
         assertTrue(result.getAttempts().get(0).getSemanticIssues().stream()
-                .anyMatch(issue -> "VAR_REF_UNKNOWN".equals(issue.getCode())));
+                .anyMatch(issue -> "EDGE_TIMEOUT_INVALID".equals(issue.getCode())));
         assertTrue(result.getAttempts().get(1).isSuccess());
     }
 
@@ -86,4 +86,3 @@ class SceneFlowIrOrchestratorTest {
         assertFalse(Files.exists(out));
     }
 }
-
