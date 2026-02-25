@@ -3,6 +3,7 @@ set -euo pipefail
 
 MODE="template"
 OUTPUT_MODE="standalone"
+CONSTRAINT_RESOLUTION_MODE="permissive"
 LLM_BASE_URL=""
 LLM_API_KEY=""
 LLM_MODEL=""
@@ -30,6 +31,7 @@ Core options:
 
 Additional options:
   --output-mode patch|standalone
+  --constraint-resolution-mode strict|permissive
   --situation TEXT
   --snapshot PATH
   --sceneflow PATH
@@ -82,6 +84,10 @@ while [[ $# -gt 0 ]]; do
       OUTPUT_MODE="${2:-}"
       shift 2
       ;;
+    --constraint-resolution-mode)
+      CONSTRAINT_RESOLUTION_MODE="${2:-}"
+      shift 2
+      ;;
     --situation)
       SITUATION="${2:-}"
       shift 2
@@ -126,11 +132,16 @@ if [[ "$OUTPUT_MODE" != "patch" && "$OUTPUT_MODE" != "standalone" ]]; then
   echo "Invalid --output-mode '$OUTPUT_MODE'. Use patch|standalone." >&2
   exit 2
 fi
+if [[ "$CONSTRAINT_RESOLUTION_MODE" != "strict" && "$CONSTRAINT_RESOLUTION_MODE" != "permissive" ]]; then
+  echo "Invalid --constraint-resolution-mode '$CONSTRAINT_RESOLUTION_MODE'. Use strict|permissive." >&2
+  exit 2
+fi
 
 GRADLE_ARGS=(
   "generateSceneFlowFromSituation"
   "-Pmode=$MODE"
   "-PoutputMode=$OUTPUT_MODE"
+  "-PconstraintResolutionMode=$CONSTRAINT_RESOLUTION_MODE"
   "-PllmBaseUrl=$LLM_BASE_URL"
   "-PllmApiKey=$LLM_API_KEY"
   "-PllmModel=$LLM_MODEL"

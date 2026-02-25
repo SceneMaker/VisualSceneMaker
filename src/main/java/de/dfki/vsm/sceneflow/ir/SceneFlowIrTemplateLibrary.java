@@ -28,14 +28,24 @@ public final class SceneFlowIrTemplateLibrary {
     }
 
     public List<JSONObject> generateCandidates(final String situation, final JSONObject snapshot) {
+        return generateCandidates(situation, snapshot, ConstraintResolutionMode.PERMISSIVE);
+    }
+
+    public List<JSONObject> generateCandidates(
+            final String situation,
+            final JSONObject snapshot,
+            final ConstraintResolutionMode constraintResolutionMode) {
         final String prompt = situation == null ? "" : situation.trim();
         final String lower = prompt.toLowerCase(Locale.ROOT);
         final String rootId = resolveRootId(snapshot);
         final String eventVar = resolveEventVariable(snapshot);
+        final ConstraintResolutionMode mode = constraintResolutionMode == null
+                ? ConstraintResolutionMode.PERMISSIVE
+                : constraintResolutionMode;
 
         final List<JSONObject> candidates = new ArrayList<>();
         if (looksLikeWaitForEvent(lower)) {
-            final ConstrainedActivitySpec spec = constrainedActivitySpec(prompt, rootId, eventVar, snapshot);
+            final ConstrainedActivitySpec spec = constrainedActivitySpec(prompt, rootId, eventVar, snapshot, mode);
             candidates.add(constrainedActivityTemplate(spec, snapshot));
         }
         if (looksLikeTimeoutRetry(lower)) {
@@ -46,7 +56,8 @@ public final class SceneFlowIrTemplateLibrary {
         }
         if (candidates.isEmpty()) {
             final String fallbackPrompt = prompt.isEmpty() ? "Wait for event" : prompt;
-            final ConstrainedActivitySpec spec = constrainedActivitySpec(fallbackPrompt, rootId, eventVar, snapshot);
+            final ConstrainedActivitySpec spec = constrainedActivitySpec(
+                    fallbackPrompt, rootId, eventVar, snapshot, mode);
             candidates.add(constrainedActivityTemplate(spec, snapshot));
         }
         return candidates;
@@ -130,6 +141,10 @@ public final class SceneFlowIrTemplateLibrary {
                 .put("irVersion", "1.0")
                 .put("mode", "patch")
                 .put("metadata", metadata("template-constrained-activity", spec.situation())
+                        .put("constraintResolution", new JSONObject()
+                                .put("mode", spec.constraintResolutionMode().name().toLowerCase(Locale.ROOT))
+                                .put("resolvedLabels", new JSONArray(spec.constraintLabels()))
+                                .put("unresolvedLabels", new JSONArray(spec.unresolvedConstraintLabels())))
                         .put("interactiveDesignPattern", new JSONObject()
                                 .put("selectedPatternId", spec.selectedPatternId())
                                 .put("selectionReason", spec.selectionReason())
@@ -271,13 +286,15 @@ public final class SceneFlowIrTemplateLibrary {
             final String situation,
             final String rootId,
             final String eventVar,
-            final JSONObject snapshot) {
-        final List<String> constraintLabels = extractConstraintLabels(situation, "OkayButtonPressed");
-        final String constraintLabel = constraintLabels.get(0);
+            final JSONObject snapshot,
+            final ConstraintResolutionMode mode) {
+        final ConstraintResolution constraintResolution = resolveConstraintLabels(situation, "OkayButtonPressed", mode);
+        final List<String> constraintLabels = constraintResolution.resolved();
+        final String constraintLabel = constraintLabels.isEmpty() ? "UnresolvedConstraint" : constraintLabels.get(0);
         final int intervalMs = extractPolicyIntervalMs(situation);
-        final PromptResolution resolution = resolvePromptToMetaModel(situation);
-        final ActivityType activityType = inferActivityType(resolution.activityKind());
-        final PatternSelection selection = selectPattern(resolution.activityKind());
+        final PromptResolution promptResolution = resolvePromptToMetaModel(situation);
+        final ActivityType activityType = inferActivityType(promptResolution.activityKind());
+        final PatternSelection selection = selectPattern(promptResolution.activityKind());
         final String constraintVariable = resolveConstraintVariable(eventVar, snapshot);
         return new ConstrainedActivitySpec(
                 situation,
@@ -285,10 +302,12 @@ public final class SceneFlowIrTemplateLibrary {
                 constraintVariable,
                 constraintLabel,
                 constraintLabels,
+                constraintResolution.unresolved(),
+                mode,
                 activityType,
                 intervalMs,
-                resolution.activityKind(),
-                resolution.interruptibility(),
+                promptResolution.activityKind(),
+                promptResolution.interruptibility(),
                 selection.patternId(),
                 selection.reason());
     }
@@ -320,41 +339,59 @@ public final class SceneFlowIrTemplateLibrary {
         return operations;
     }
 
-    private List<String> extractConstraintLabels(final String text, final String fallback) {
-        final LinkedHashSet<String> labels = new LinkedHashSet<>();
+    private ConstraintResolution resolveConstraintLabels(
+            final String text,
+            final String fallback,
+            final ConstraintResolutionMode mode) {
+        final LinkedHashSet<String> resolved = new LinkedHashSet<>();
+        final LinkedHashSet<String> unresolved = new LinkedHashSet<>();
         if (text != null) {
             final Matcher quoted = Pattern.compile("\"([^\"]+)\"").matcher(text);
             while (quoted.find()) {
-                final String normalized = normalizeButtonLabel(quoted.group(1));
-                if (!normalized.isBlank()) {
-                    labels.add(normalized);
+                final String raw = quoted.group(1).trim();
+                final String canonical = canonicalButtonLabel(raw);
+                if (!canonical.isBlank()) {
+                    resolved.add(canonical);
+                } else if (!raw.isBlank()) {
+                    unresolved.add(raw);
                 }
             }
             final String lower = text.toLowerCase(Locale.ROOT);
             if (containsWord(lower, "ok") || containsWord(lower, "okay")) {
-                labels.add("OkayButtonPressed");
+                resolved.add("OkayButtonPressed");
             }
             if (containsWord(lower, "cancel") || containsWord(lower, "canel")) {
-                labels.add("CancelButtonPressed");
+                resolved.add("CancelButtonPressed");
             }
             if (containsWord(lower, "yes")) {
-                labels.add("YesButtonPressed");
+                resolved.add("YesButtonPressed");
             }
             if (containsWord(lower, "no")) {
-                labels.add("NoButtonPressed");
+                resolved.add("NoButtonPressed");
+            }
+            final Matcher buttonTokens = Pattern.compile("\\b([A-Za-z][A-Za-z0-9_]*)\\s+button\\b", Pattern.CASE_INSENSITIVE)
+                    .matcher(text);
+            while (buttonTokens.find()) {
+                final String raw = buttonTokens.group(1).trim();
+                final String canonical = canonicalButtonLabel(raw);
+                if (!canonical.isBlank()) {
+                    resolved.add(canonical);
+                } else if (!raw.isBlank()) {
+                    unresolved.add(raw);
+                }
             }
         }
-        if (labels.isEmpty()) {
-            labels.add(fallback);
+        if (resolved.isEmpty() && mode == ConstraintResolutionMode.PERMISSIVE) {
+            resolved.add(fallback);
         }
-        return new ArrayList<>(labels);
+        return new ConstraintResolution(new ArrayList<>(resolved), new ArrayList<>(unresolved));
     }
 
     private boolean containsWord(final String lower, final String word) {
         return Pattern.compile("\\b" + Pattern.quote(word) + "\\b").matcher(lower).find();
     }
 
-    private String normalizeButtonLabel(final String value) {
+    private String canonicalButtonLabel(final String value) {
         if (value == null) {
             return "";
         }
@@ -362,13 +399,24 @@ public final class SceneFlowIrTemplateLibrary {
         if (trimmed.isEmpty()) {
             return "";
         }
-        if (trimmed.toLowerCase(Locale.ROOT).endsWith("pressed")) {
-            return trimmed;
+        final String lower = trimmed.toLowerCase(Locale.ROOT);
+        if (lower.equals("ok") || lower.equals("okay")
+                || lower.equals("okaybutton") || lower.equals("okbutton")
+                || lower.equals("okaybuttonpressed") || lower.equals("okbuttonpressed")) {
+            return "OkayButtonPressed";
         }
-        if (trimmed.toLowerCase(Locale.ROOT).contains("button")) {
-            return trimmed + "Pressed";
+        if (lower.equals("cancel") || lower.equals("canel")
+                || lower.equals("cancelbutton") || lower.equals("canelbutton")
+                || lower.equals("cancelbuttonpressed") || lower.equals("canelbuttonpressed")) {
+            return "CancelButtonPressed";
         }
-        return trimmed + "ButtonPressed";
+        if (lower.equals("yes") || lower.equals("yesbutton") || lower.equals("yesbuttonpressed")) {
+            return "YesButtonPressed";
+        }
+        if (lower.equals("no") || lower.equals("nobutton") || lower.equals("nobuttonpressed")) {
+            return "NoButtonPressed";
+        }
+        return "";
     }
 
     private ActivityType inferActivityType(final String activityKind) {
@@ -584,12 +632,17 @@ public final class SceneFlowIrTemplateLibrary {
             String constraintVariable,
             String constraintLabel,
             List<String> constraintLabels,
+            List<String> unresolvedConstraintLabels,
+            ConstraintResolutionMode constraintResolutionMode,
             ActivityType activityType,
             int policyIntervalMs,
             String activityKind,
             String interruptibility,
             String selectedPatternId,
             String selectionReason) {
+    }
+
+    private record ConstraintResolution(List<String> resolved, List<String> unresolved) {
     }
 
     private record PromptResolution(String activityKind, String interruptibility) {
