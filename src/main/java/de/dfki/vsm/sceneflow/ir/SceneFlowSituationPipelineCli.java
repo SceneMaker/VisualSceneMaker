@@ -22,6 +22,8 @@ public final class SceneFlowSituationPipelineCli {
                 .from(System.getProperty("sceneflow.pipeline.mode", "template"));
         final SceneFlowSituationPipeline.OutputMode outputMode = SceneFlowSituationPipeline.OutputMode
                 .from(System.getProperty("sceneflow.pipeline.outputMode", "standalone"));
+        final ConstraintResolutionMode constraintResolutionMode = ConstraintResolutionMode
+                .from(System.getProperty("sceneflow.pipeline.constraintResolutionMode", "permissive"));
         final SceneFlowIrLlmCandidateProvider.Config llmConfig = new SceneFlowIrLlmCandidateProvider.Config(
                 System.getProperty("sceneflow.llm.baseUrl", ""),
                 System.getProperty("sceneflow.llm.apiKey", ""),
@@ -43,7 +45,7 @@ public final class SceneFlowSituationPipelineCli {
                     outputPath,
                     reportPath,
                     situation,
-                    new SceneFlowSituationPipeline.Settings(mode, outputMode, llmConfig),
+                    new SceneFlowSituationPipeline.Settings(mode, outputMode, llmConfig, constraintResolutionMode),
                     generatedProjectPath);
             if ("success".equals(report.optString("status", ""))) {
                 System.out.println("OK: generated flow written to " + outputPath.toAbsolutePath());

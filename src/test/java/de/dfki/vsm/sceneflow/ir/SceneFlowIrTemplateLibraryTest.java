@@ -137,4 +137,24 @@ class SceneFlowIrTemplateLibraryTest {
         SemanticValidationResult result = new SceneFlowIrSemanticValidator().validate(constrained, snapshot);
         assertFalse(result.hasErrors(), "Expected multi-button wait template to be semantically valid");
     }
+
+    @Test
+    void unresolvedButtonLabelIsReportedInConstraintResolutionMetadata() throws Exception {
+        JSONObject snapshot = new JSONObject(Files.readString(Path.of("doc/capability-snapshot.designpatterns.json")));
+        List<JSONObject> candidates = new SceneFlowIrTemplateLibrary().generateCandidates(
+                "Wait until the user pressed the Foobar button",
+                snapshot,
+                ConstraintResolutionMode.PERMISSIVE);
+
+        JSONObject constrained = candidates.stream()
+                .filter(candidate -> "template-constrained-activity".equals(
+                        candidate.optJSONObject("metadata").optString("source")))
+                .findFirst()
+                .orElse(null);
+        assertNotNull(constrained);
+        JSONObject resolution = constrained.optJSONObject("metadata").optJSONObject("constraintResolution");
+        assertNotNull(resolution);
+        assertTrue(resolution.optJSONArray("unresolvedLabels").toString().contains("Foobar"));
+        assertTrue(resolution.optJSONArray("resolvedLabels").length() >= 1);
+    }
 }

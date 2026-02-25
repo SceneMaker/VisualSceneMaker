@@ -53,14 +53,26 @@ public final class SceneFlowSituationPipeline {
         private final CandidateMode mode;
         private final OutputMode outputMode;
         private final SceneFlowIrLlmCandidateProvider.Config llm;
+        private final ConstraintResolutionMode constraintResolutionMode;
 
         public Settings(
                 final CandidateMode mode,
                 final OutputMode outputMode,
                 final SceneFlowIrLlmCandidateProvider.Config llm) {
+            this(mode, outputMode, llm, ConstraintResolutionMode.PERMISSIVE);
+        }
+
+        public Settings(
+                final CandidateMode mode,
+                final OutputMode outputMode,
+                final SceneFlowIrLlmCandidateProvider.Config llm,
+                final ConstraintResolutionMode constraintResolutionMode) {
             this.mode = mode == null ? CandidateMode.TEMPLATE : mode;
             this.outputMode = outputMode == null ? OutputMode.PATCH : outputMode;
             this.llm = llm;
+            this.constraintResolutionMode = constraintResolutionMode == null
+                    ? ConstraintResolutionMode.PERMISSIVE
+                    : constraintResolutionMode;
         }
 
         public CandidateMode mode() {
@@ -73,6 +85,10 @@ public final class SceneFlowSituationPipeline {
 
         public SceneFlowIrLlmCandidateProvider.Config llm() {
             return llm;
+        }
+
+        public ConstraintResolutionMode constraintResolutionMode() {
+            return constraintResolutionMode;
         }
     }
 
@@ -163,6 +179,33 @@ public final class SceneFlowSituationPipeline {
             final JSONArray activeSemanticRules = semanticValidator.describeActiveRules(candidate, snapshot);
             attempt.put("activeSemanticRules", activeSemanticRules);
             accumulateActiveRuleSummary(activeRulesSummary, activeSemanticRules, i + 1);
+            final JSONObject constraintResolution = extractConstraintResolution(candidate, effectiveSettings.constraintResolutionMode());
+            attempt.put("constraintResolution", constraintResolution);
+
+            if ("strict".equalsIgnoreCase(constraintResolution.optString("mode", ""))
+                    && constraintResolution.optJSONArray("unresolvedLabels") != null
+                    && constraintResolution.optJSONArray("unresolvedLabels").length() > 0) {
+                final JSONArray unresolved = constraintResolution.getJSONArray("unresolvedLabels");
+                final JSONArray issues = new JSONArray();
+                for (int u = 0; u < unresolved.length(); u++) {
+                    final String label = unresolved.optString(u, "").trim();
+                    if (label.isEmpty()) {
+                        continue;
+                    }
+                    issues.put(new JSONObject()
+                            .put("code", "UNRESOLVED_CONSTRAINT_LABEL")
+                            .put("path", "/metadata/constraintResolution/unresolvedLabels/" + u)
+                            .put("message", "Unresolved constraint label: " + label)
+                            .put("severity", "error"));
+                }
+                attempt.put("semanticIssues", issues);
+                attempt.put("semanticErrorCount", issues.length());
+                attempt.put("semanticWarningCount", 0);
+                attempt.put("semanticRuleExecution", new JSONArray());
+                attempt.put("status", "semantic_rejected");
+                attempts.put(attempt);
+                continue;
+            }
 
             final SemanticValidationResult semantic = semanticValidator.validate(candidate, snapshot);
             final JSONArray semanticRuleExecution = semanticValidator.describeRuleExecution(candidate, snapshot, semantic);
@@ -269,7 +312,7 @@ public final class SceneFlowSituationPipeline {
 
         switch (settings.mode()) {
             case TEMPLATE:
-                return templateLibrary.generateCandidates(situation, snapshot);
+                return templateLibrary.generateCandidates(situation, snapshot, settings.constraintResolutionMode());
             case LLM:
                 return llmProvider.generateCandidates(situation, snapshot, settings.llm(), settings.outputMode());
             case HYBRID:
@@ -280,11 +323,27 @@ public final class SceneFlowSituationPipeline {
                 } catch (SceneFlowIrCompileException exc) {
                     warnings.add("LLM generation unavailable, falling back to template candidates: " + exc.getMessage());
                 }
-                merged.addAll(templateLibrary.generateCandidates(situation, snapshot));
+                merged.addAll(templateLibrary.generateCandidates(
+                        situation, snapshot, settings.constraintResolutionMode()));
                 return merged;
             default:
-                return templateLibrary.generateCandidates(situation, snapshot);
+                return templateLibrary.generateCandidates(situation, snapshot, settings.constraintResolutionMode());
         }
+    }
+
+    private JSONObject extractConstraintResolution(
+            final JSONObject candidate,
+            final ConstraintResolutionMode fallbackMode) {
+        final JSONObject metadata = candidate == null ? null : candidate.optJSONObject("metadata");
+        final JSONObject fromMetadata = metadata == null ? null : metadata.optJSONObject("constraintResolution");
+        if (fromMetadata != null) {
+            return new JSONObject(fromMetadata.toString());
+        }
+        return new JSONObject()
+                .put("mode", (fallbackMode == null ? ConstraintResolutionMode.PERMISSIVE : fallbackMode)
+                        .name().toLowerCase(Locale.ROOT))
+                .put("resolvedLabels", new JSONArray())
+                .put("unresolvedLabels", new JSONArray());
     }
 
     private JSONObject readJson(final Path path) throws SceneFlowIrCompileException {

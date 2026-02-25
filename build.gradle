@@ -561,6 +561,7 @@ tasks.register('generateSceneFlowFromSituation', JavaExec) {
             ?: "Wait until the user pressed the Okay button").toString()
     def mode = (findProperty('mode') ?: "template").toString()
     def outputMode = (findProperty('outputMode') ?: "standalone").toString()
+    def constraintResolutionMode = (findProperty('constraintResolutionMode') ?: "permissive").toString()
     def llmBaseUrl = (findProperty('llmBaseUrl') ?: "").toString()
     def llmApiKey = (findProperty('llmApiKey') ?: "").toString()
     def llmModel = (findProperty('llmModel') ?: "").toString()
@@ -571,6 +572,7 @@ tasks.register('generateSceneFlowFromSituation', JavaExec) {
     classpath = sourceSets.main.runtimeClasspath
     systemProperty 'sceneflow.pipeline.mode', mode
     systemProperty 'sceneflow.pipeline.outputMode', outputMode
+    systemProperty 'sceneflow.pipeline.constraintResolutionMode', constraintResolutionMode
     systemProperty 'sceneflow.pipeline.projectOutDir', projectOutDir
     systemProperty 'sceneflow.llm.baseUrl', llmBaseUrl
     systemProperty 'sceneflow.llm.apiKey', llmApiKey

@@ -340,4 +340,29 @@ class SceneFlowSituationPipelineTest {
         }
         assertTrue(hasSelfTimeout, "Flat interrupt wait source node must get a self timeout loop.");
     }
+
+    @Test
+    void strictConstraintResolutionRejectsUnresolvedLabels() throws Exception {
+        Path tempDir = Files.createTempDirectory("sceneflow-pipeline-strict-resolution-test");
+        Path outXml = tempDir.resolve("generated.xml");
+        Path reportJson = tempDir.resolve("report.json");
+
+        JSONObject report = new SceneFlowSituationPipeline().run(
+                Path.of("doc/capability-snapshot.designpatterns.json"),
+                Path.of("doc/DesignPatterns/sceneflow.xml"),
+                outXml,
+                reportJson,
+                "Wait until the user pressed the Foobar button",
+                new SceneFlowSituationPipeline.Settings(
+                        SceneFlowSituationPipeline.CandidateMode.TEMPLATE,
+                        SceneFlowSituationPipeline.OutputMode.STANDALONE,
+                        null,
+                        ConstraintResolutionMode.STRICT));
+
+        assertEquals("failed", report.optString("status"));
+        JSONObject attempt = report.getJSONArray("attempts").getJSONObject(0);
+        assertEquals("semantic_rejected", attempt.optString("status"));
+        assertTrue(attempt.getJSONArray("semanticIssues").toString().contains("UNRESOLVED_CONSTRAINT_LABEL"));
+        assertTrue(attempt.getJSONObject("constraintResolution").getJSONArray("unresolvedLabels").length() >= 1);
+    }
 }
