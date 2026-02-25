@@ -157,4 +157,25 @@ class SceneFlowIrTemplateLibraryTest {
         assertTrue(resolution.optJSONArray("unresolvedLabels").toString().contains("Foobar"));
         assertTrue(resolution.optJSONArray("resolvedLabels").length() >= 1);
     }
+
+    @Test
+    void promptResolutionReportsAmbiguityAndConfidenceForMixedSignals() throws Exception {
+        JSONObject snapshot = new JSONObject(Files.readString(Path.of("doc/capability-snapshot.designpatterns.json")));
+        List<JSONObject> candidates = new SceneFlowIrTemplateLibrary().generateCandidates(
+                "Wait and remind the user while showing pictures",
+                snapshot,
+                ConstraintResolutionMode.PERMISSIVE);
+
+        JSONObject constrained = candidates.stream()
+                .filter(candidate -> "template-constrained-activity".equals(
+                        candidate.optJSONObject("metadata").optString("source")))
+                .findFirst()
+                .orElse(null);
+        assertNotNull(constrained);
+        JSONObject promptResolution = constrained.optJSONObject("metadata").optJSONObject("promptResolution");
+        assertNotNull(promptResolution);
+        assertTrue(promptResolution.optDouble("confidence", 1.0) < 0.8);
+        assertTrue(promptResolution.optJSONArray("ambiguities").length() >= 1);
+        assertEquals("reminder", promptResolution.optString("activityKind"));
+    }
 }

@@ -125,6 +125,12 @@ Prompt rules:
 - "Reference existing IDs only when patching"
 - "Declare unresolved assumptions explicitly"
 
+Prompt resolution now also emits:
+
+- confidence score (`0.0 .. 1.0`)
+- explicit ambiguity notes when mixed/conflicting cues are detected
+- selected interpretation trace (`activityKind`, `interruptibility`)
+
 ### 3. LLM Generates Constrained IR
 
 LLM output is a typed IR document, for example:
@@ -232,6 +238,24 @@ In implementation terms:
 - Optional constrained activity: reminder loop (wait -> reminder -> wait via `TEDGE`)
 
 This keeps natural-language generation on an abstract level while compiling deterministically into valid SceneFlow operations.
+
+## Future Work: Reverse Explanation (SceneFlow -> Words)
+
+The same constrained pipeline can be used in reverse to explain existing SceneFlows in natural language.
+
+Proposed reverse pipeline:
+
+1. Parse `sceneflow.xml` into normalized structural IR (nodes, edges, scopes, variables).
+2. Detect known pattern and meta-pattern instances (constraint, constrained activity, policy, completion).
+3. Build a traceable explanation model linked to concrete ids (which edge/node realizes which claim).
+4. Render deterministic textual explanations from templates first.
+5. Optionally paraphrase with an LLM as a second pass, while preserving id-level provenance.
+
+Why this is pragmatic:
+
+- explanations stay auditable and reproducible
+- no direct hallucination-prone XML narration
+- same rule base can validate both generation and explanation consistency
 
 Catalog artifact:
 

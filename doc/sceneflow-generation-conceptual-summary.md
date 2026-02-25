@@ -156,17 +156,19 @@ Implemented and working:
 - Mapping-driven semantic rule configuration (`ruleDefinitions`, `disabledRules`, `severity`)
 - Rule-level observability in generation reports (active/executed/violated + severity)
 - Warning-capable semantic gating (non-blocking warnings, blocking errors)
+- Prompt-resolution traceability with confidence + ambiguity reporting in candidate metadata and pipeline reports
 
 Partially implemented / planned:
 
 - Attention-aware interruptibility
 - Mixed-initiative prompting policies
 - Social/multimodal constrained activities beyond base fallback
+- Reverse explanation pipeline (SceneFlow -> natural-language explanation with id-level traceability)
 
 ## 10. Recommended Next Steps
 
 1. Make validator rules data-driven from `meta-to-sceneflow-mapping.json` to avoid rule drift.
 2. Add executable realizations for currently planned pattern entries.
 3. Add evaluation metrics per pattern (compile success, semantic pass rate, runtime behavior quality).
-4. Extend prompt resolver with confidence scoring and explicit ambiguity handling.
+4. Build reverse explanation pipeline: parse -> pattern detection -> deterministic explanation templates -> optional LLM paraphrase.
 5. Add optional policy profiles for severity (strict vs permissive) by context/pattern.

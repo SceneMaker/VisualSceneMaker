@@ -176,6 +176,13 @@ public final class SceneFlowSituationPipeline {
             attempt.put("candidateSummary", summarizeCandidate(candidate));
             attempt.put("candidate", new JSONObject(candidate.toString()));
             attempt.put("interactiveDesignPattern", summarizePatternSelection(candidate, patternCatalog));
+            final JSONObject promptResolution = extractPromptResolution(candidate);
+            attempt.put("promptResolution", promptResolution);
+            if (promptResolution.optDouble("confidence", 1.0d) < 0.8d) {
+                generationWarnings.add("Attempt " + (i + 1)
+                        + " has low prompt-resolution confidence ("
+                        + promptResolution.optDouble("confidence", 1.0d) + ").");
+            }
             final JSONArray activeSemanticRules = semanticValidator.describeActiveRules(candidate, snapshot);
             attempt.put("activeSemanticRules", activeSemanticRules);
             accumulateActiveRuleSummary(activeRulesSummary, activeSemanticRules, i + 1);
@@ -344,6 +351,19 @@ public final class SceneFlowSituationPipeline {
                         .name().toLowerCase(Locale.ROOT))
                 .put("resolvedLabels", new JSONArray())
                 .put("unresolvedLabels", new JSONArray());
+    }
+
+    private JSONObject extractPromptResolution(final JSONObject candidate) {
+        final JSONObject metadata = candidate == null ? null : candidate.optJSONObject("metadata");
+        final JSONObject fromMetadata = metadata == null ? null : metadata.optJSONObject("promptResolution");
+        if (fromMetadata != null) {
+            return new JSONObject(fromMetadata.toString());
+        }
+        return new JSONObject()
+                .put("activityKind", "unknown")
+                .put("interruptibility", "unknown")
+                .put("confidence", 1.0d)
+                .put("ambiguities", new JSONArray());
     }
 
     private JSONObject readJson(final Path path) throws SceneFlowIrCompileException {
