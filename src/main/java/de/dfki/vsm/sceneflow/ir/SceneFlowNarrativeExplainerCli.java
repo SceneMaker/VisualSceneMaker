@@ -18,8 +18,11 @@ public final class SceneFlowNarrativeExplainerCli {
 
         final Path sceneFlowPath = Path.of(args[0]);
         final Path outPath = Path.of(args[1]);
+        final boolean includeIds = Boolean.parseBoolean(
+                System.getProperty("sceneflow.explain.includeIds", "false"));
         try {
-            final JSONObject report = new SceneFlowNarrativeExplainer().explain(sceneFlowPath);
+            final JSONObject report = new SceneFlowNarrativeExplainer()
+                    .explain(sceneFlowPath, new SceneFlowNarrativeExplainer.NarrativeStyle(includeIds));
             if (outPath.getParent() != null) {
                 Files.createDirectories(outPath.getParent());
             }

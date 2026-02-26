@@ -7,6 +7,8 @@ import de.dfki.vsm.model.sceneflow.chart.edge.AbstractEdge;
 import de.dfki.vsm.model.sceneflow.chart.edge.GuargedEdge;
 import de.dfki.vsm.model.sceneflow.chart.edge.InterruptEdge;
 import de.dfki.vsm.model.sceneflow.chart.edge.TimeoutEdge;
+import de.dfki.vsm.model.sceneflow.glue.command.Assignment;
+import de.dfki.vsm.model.sceneflow.glue.command.Command;
 import de.dfki.vsm.model.sceneflow.glue.command.Expression;
 import de.dfki.vsm.util.xml.XMLUtilities;
 import org.json.JSONArray;
@@ -25,13 +27,18 @@ import java.util.Set;
 public final class SceneFlowNarrativeExplainer {
 
     public JSONObject explain(final Path sceneFlowPath) throws SceneFlowIrCompileException {
+        return explain(sceneFlowPath, new NarrativeStyle(false));
+    }
+
+    public JSONObject explain(final Path sceneFlowPath, final NarrativeStyle style) throws SceneFlowIrCompileException {
+        final NarrativeStyle effectiveStyle = style == null ? new NarrativeStyle(false) : style;
         final SceneFlow flow = loadSceneFlow(sceneFlowPath);
         final Map<String, BasicNode> nodeById = indexNodes(flow);
         final JSONArray patterns = new JSONArray();
         final JSONArray summary = new JSONArray();
 
         for (SuperNode superNode : collectSuperNodes(flow)) {
-            final JSONObject waitPattern = detectConstrainedActivityWaitPattern(superNode, nodeById);
+            final JSONObject waitPattern = detectConstrainedActivityWaitPattern(superNode, nodeById, effectiveStyle);
             if (waitPattern == null) {
                 continue;
             }
@@ -39,20 +46,20 @@ public final class SceneFlowNarrativeExplainer {
             summary.put(waitPattern.optString("description", ""));
         }
         for (BasicNode node : collectBasicNodes(flow)) {
-            final JSONObject interruptWaitPattern = detectNodeInterruptWaitPattern(node, nodeById);
+            final JSONObject interruptWaitPattern = detectNodeInterruptWaitPattern(node, nodeById, effectiveStyle);
             if (interruptWaitPattern != null) {
                 patterns.put(interruptWaitPattern);
                 summary.put(interruptWaitPattern.optString("description", ""));
             }
 
-            final JSONObject timeoutRetryPattern = detectTimeoutRetryOrEscalationPattern(node, nodeById);
+            final JSONObject timeoutRetryPattern = detectTimeoutRetryOrEscalationPattern(node, nodeById, effectiveStyle);
             if (timeoutRetryPattern != null) {
                 patterns.put(timeoutRetryPattern);
                 summary.put(timeoutRetryPattern.optString("description", ""));
                 continue;
             }
 
-            final JSONObject guardedWaitPattern = detectNodeGuardedWaitPattern(node, nodeById);
+            final JSONObject guardedWaitPattern = detectNodeGuardedWaitPattern(node, nodeById, effectiveStyle);
             if (guardedWaitPattern != null) {
                 patterns.put(guardedWaitPattern);
                 summary.put(guardedWaitPattern.optString("description", ""));
@@ -85,7 +92,8 @@ public final class SceneFlowNarrativeExplainer {
 
     private JSONObject detectConstrainedActivityWaitPattern(
             final SuperNode superNode,
-            final Map<String, BasicNode> nodeById) {
+            final Map<String, BasicNode> nodeById,
+            final NarrativeStyle style) {
         final Set<String> scopeNodeIds = collectScopeNodeIds(superNode);
         final WaitLoopEvidence waitLoop = detectWaitLoop(superNode, scopeNodeIds);
         if (waitLoop == null) {
@@ -99,6 +107,7 @@ public final class SceneFlowNarrativeExplainer {
 
         final JSONArray exitJson = new JSONArray();
         final List<String> conditions = new ArrayList<>();
+        final List<String> exitClauses = new ArrayList<>();
         for (InterruptEdgeEvidence exit : exits) {
             exitJson.put(new JSONObject()
                     .put("sourceId", superNode.getId())
@@ -106,17 +115,25 @@ public final class SceneFlowNarrativeExplainer {
                     .put("targetName", exit.targetName())
                     .put("condition", exit.condition()));
             conditions.add(exit.condition() + " -> " + exit.targetId());
+            final String targetLabel = label("Node", exit.targetName(), exit.targetId(), style);
+            final String eventName = extractEventName(exit.condition());
+            if (!eventName.isBlank()) {
+                exitClauses.add("the event \"" + eventName + "\" occurs and " + targetLabel + " is activated");
+            } else {
+                exitClauses.add("the condition \"" + exit.condition() + "\" holds and " + targetLabel + " is activated");
+            }
         }
 
-        final String description = "Supernode " + superNode.getId() + " (" + quoted(superNode.getName()) + ")"
-                + " remains active by "
-                + (waitLoop.onSuperNodeSelf()
-                ? "a self " + EdgeLabelMapper.toHumanLabel("TEDGE") + " on the supernode"
-                : "the internal node " + waitLoop.nodeId() + " with a self "
-                + EdgeLabelMapper.toHumanLabel("TEDGE"))
-                + " every " + waitLoop.timeoutMs()
-                + " ms and exits via " + EdgeLabelMapper.toHumanLabel("IEDGE") + " when "
-                + String.join("; ", conditions) + ".";
+        final String supernodeLabel = label("Supernode", superNode.getName(), superNode.getId(), style);
+        final String firstSentence = supernodeLabel + " waits until " + joinWithOr(exitClauses) + ".";
+        final String secondSentence = waitLoop.onSuperNodeSelf()
+                ? "The supernode is kept alive by a self " + EdgeLabelMapper.toHumanLabel("TEDGE")
+                + " every " + waitLoop.timeoutMs() + " ms."
+                : "The supernode is kept alive by a minimal internal flow consisting of "
+                + label("node", waitLoop.nodeName(), waitLoop.nodeId(), style)
+                + " with a self " + EdgeLabelMapper.toHumanLabel("TEDGE")
+                + " every " + waitLoop.timeoutMs() + " ms.";
+        final String description = firstSentence + " " + secondSentence;
 
         return new JSONObject()
                 .put("patternType", "constrained_activity_wait_for_interrupt")
@@ -134,7 +151,8 @@ public final class SceneFlowNarrativeExplainer {
 
     private JSONObject detectNodeInterruptWaitPattern(
             final BasicNode node,
-            final Map<String, BasicNode> nodeById) {
+            final Map<String, BasicNode> nodeById,
+            final NarrativeStyle style) {
         if (node == null || node instanceof SuperNode) {
             return null;
         }
@@ -172,7 +190,7 @@ public final class SceneFlowNarrativeExplainer {
         final SuperNode parent = node.getParentNode();
         final String parentId = parent == null ? "" : parent.getId();
         final String parentName = parent == null ? "" : parent.getName();
-        final String description = "Node " + node.getId() + " (" + quoted(node.getName()) + ")"
+        final String description = label("Node", node.getName(), node.getId(), style)
                 + " remains active with a self " + EdgeLabelMapper.toHumanLabel("TEDGE")
                 + " every " + timeoutEdge.getTimeout()
                 + " ms and reacts via " + EdgeLabelMapper.toHumanLabel("IEDGE") + " when "
@@ -196,7 +214,8 @@ public final class SceneFlowNarrativeExplainer {
 
     private JSONObject detectNodeGuardedWaitPattern(
             final BasicNode node,
-            final Map<String, BasicNode> nodeById) {
+            final Map<String, BasicNode> nodeById,
+            final NarrativeStyle style) {
         if (node == null || node instanceof SuperNode) {
             return null;
         }
@@ -231,11 +250,31 @@ public final class SceneFlowNarrativeExplainer {
             return null;
         }
 
-        final String description = "Node " + node.getId() + " (" + quoted(node.getName()) + ")"
-                + " remains active with a self " + EdgeLabelMapper.toHumanLabel("TEDGE")
-                + " every " + timeoutEdge.getTimeout()
-                + " ms and proceeds via " + EdgeLabelMapper.toHumanLabel("CEDGE")
-                + " when " + String.join("; ", conditions) + ".";
+        final String sourceLabel = label("Node", node.getName(), node.getId(), style, true);
+        final String firstSentence = sourceLabel + " is evaluated in a timed loop with a self "
+                + EdgeLabelMapper.toHumanLabel("TEDGE") + " every " + timeoutEdge.getTimeout() + " ms.";
+        final List<String> clauses = new ArrayList<>();
+        for (int i = 0; i < exits.length(); i++) {
+            final JSONObject exit = exits.getJSONObject(i);
+            final String condition = exit.optString("condition", "");
+            final String variable = simpleBooleanVariable(condition);
+            final String targetLabel = label(
+                    "node",
+                    exit.optString("targetName", ""),
+                    exit.optString("targetId", ""),
+                    style,
+                    true);
+            if (!variable.isBlank()) {
+                clauses.add("If the variable \"" + variable + "\" is true during a loop cycle, "
+                        + targetLabel + " is activated.");
+            } else {
+                clauses.add("If the condition \"" + condition + "\" is true during a loop cycle, "
+                        + targetLabel + " is activated.");
+            }
+        }
+        final String commandSentence = commandSentence(node, style);
+        final String description = firstSentence + " " + String.join(" ", clauses)
+                + (commandSentence.isBlank() ? "" : " " + commandSentence);
         return new JSONObject()
                 .put("patternType", "node_guarded_wait_loop")
                 .put("description", description)
@@ -252,7 +291,8 @@ public final class SceneFlowNarrativeExplainer {
 
     private JSONObject detectTimeoutRetryOrEscalationPattern(
             final BasicNode node,
-            final Map<String, BasicNode> nodeById) {
+            final Map<String, BasicNode> nodeById,
+            final NarrativeStyle style) {
         if (node == null || node instanceof SuperNode) {
             return null;
         }
@@ -294,7 +334,7 @@ public final class SceneFlowNarrativeExplainer {
             return null;
         }
 
-        final String description = "Node " + node.getId() + " (" + quoted(node.getName()) + ")"
+        final String description = label("Node", node.getName(), node.getId(), style)
                 + " implements timeout retry/escalation: it stays active with a self "
                 + EdgeLabelMapper.toHumanLabel("TEDGE") + " every "
                 + timeoutEdge.getTimeout() + " ms and exits when threshold guard(s) hold: "
@@ -441,6 +481,96 @@ public final class SceneFlowNarrativeExplainer {
         return "\"" + (value == null ? "" : value) + "\"";
     }
 
+    private String label(
+            final String kind,
+            final String name,
+            final String id,
+            final NarrativeStyle style) {
+        return label(kind, name, id, style, false);
+    }
+
+    private String label(
+            final String kind,
+            final String name,
+            final String id,
+            final NarrativeStyle style,
+            final boolean forceId) {
+        final String base = (kind == null ? "" : kind + " ") + quoted(nonBlank(name, nonBlank(id, "unknown")));
+        if ((forceId || (style != null && style.includeIds())) && id != null && !id.isBlank()) {
+            return base + " (" + id + ")";
+        }
+        return base;
+    }
+
+    private String extractEventName(final String condition) {
+        if (condition == null || condition.isBlank()) {
+            return "";
+        }
+        final java.util.regex.Matcher m = java.util.regex.Pattern.compile("\"([^\"]+)\"").matcher(condition);
+        if (m.find()) {
+            return m.group(1).trim();
+        }
+        return "";
+    }
+
+    private String joinWithOr(final List<String> parts) {
+        if (parts == null || parts.isEmpty()) {
+            return "a configured interrupt condition occurs";
+        }
+        if (parts.size() == 1) {
+            return parts.get(0);
+        }
+        return String.join(" or ", parts);
+    }
+
+    private String simpleBooleanVariable(final String condition) {
+        if (condition == null) {
+            return "";
+        }
+        final String trimmed = condition.trim();
+        if (trimmed.matches("[A-Za-z_][A-Za-z0-9_]*")) {
+            return trimmed;
+        }
+        return "";
+    }
+
+    private String commandSentence(final BasicNode node, final NarrativeStyle style) {
+        if (node == null || node.getCmdList() == null || node.getCmdList().isEmpty()) {
+            return "";
+        }
+        final List<String> summarized = new ArrayList<>();
+        for (Command command : node.getCmdList()) {
+            if (command == null) {
+                continue;
+            }
+            if (command instanceof Assignment assignment) {
+                summarized.add("assignment " + quoted(nonBlank(assignment.getConcreteSyntax(), "expression")));
+                continue;
+            }
+            final String simpleName = command.getClass().getSimpleName();
+            if ("PlayActionActivity".equals(simpleName)) {
+                summarized.add("PlayAction");
+                continue;
+            }
+            if ("PlayScenesActivity".equals(simpleName)) {
+                summarized.add("PlayScene");
+                continue;
+            }
+            if ("StopActionActivity".equals(simpleName)) {
+                summarized.add("StopAction");
+                continue;
+            }
+            final String concrete = nonBlank(command.getConcreteSyntax(), simpleName);
+            summarized.add(concrete);
+        }
+        if (summarized.isEmpty()) {
+            return "";
+        }
+        return "Before evaluating the conditional edge, commands of "
+                + label("node", node.getName(), node.getId(), style, true)
+                + " are processed: " + String.join(", ", summarized) + ".";
+    }
+
     private String nonBlank(final String value, final String fallback) {
         if (value == null || value.isBlank()) {
             return fallback;
@@ -452,5 +582,8 @@ public final class SceneFlowNarrativeExplainer {
     }
 
     private record InterruptEdgeEvidence(String targetId, String targetName, String condition) {
+    }
+
+    public record NarrativeStyle(boolean includeIds) {
     }
 }
