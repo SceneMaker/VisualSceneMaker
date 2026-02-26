@@ -88,7 +88,8 @@ class SceneFlowNarrativeExplainerTest {
         JSONObject waitLoop = pattern.getJSONObject("evidence").getJSONObject("waitLoop");
         assertEquals("supernode_self", waitLoop.optString("scope"));
         assertEquals("S1", waitLoop.optString("nodeId"));
-        assertTrue(pattern.optString("description", "").contains("self timeout edge on the supernode"));
+        assertTrue(pattern.optString("description", "").contains("waits until the event \"OkayButtonPressed\" occurs"));
+        assertTrue(pattern.optString("description", "").contains("The supernode is kept alive by a self timeout edge every 1000 ms."));
     }
 
     @Test
@@ -134,5 +135,15 @@ class SceneFlowNarrativeExplainerTest {
             assertEquals("N1", pattern.getJSONObject("evidence").optString("nodeId"));
         }
         assertTrue(found, "Expected timeout retry/escalation pattern.");
+    }
+
+    @Test
+    void includeIdsStyleAddsIdsInBrackets() throws Exception {
+        JSONObject report = new SceneFlowNarrativeExplainer()
+                .explain(
+                        Path.of("doc/DesignPatterns/sceneflow.xml"),
+                        new SceneFlowNarrativeExplainer.NarrativeStyle(true));
+        assertTrue(report.getJSONArray("summary").toString().contains("(S5)"));
+        assertTrue(report.getJSONArray("summary").toString().contains("(N1)"));
     }
 }
