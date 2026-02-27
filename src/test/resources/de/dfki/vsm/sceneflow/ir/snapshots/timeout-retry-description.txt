@@ -1,0 +1,1 @@
+Node "RetryLoop" implements timeout retry/escalation: it stays active with a self timeout edge every 1000 ms and exits when the threshold condition "retryCounter >= 3" holds and node "Escalate" (N2) is activated.

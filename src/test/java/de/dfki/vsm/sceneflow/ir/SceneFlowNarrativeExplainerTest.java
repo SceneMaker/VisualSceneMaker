@@ -1,8 +1,12 @@
 package de.dfki.vsm.sceneflow.ir;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -11,6 +15,15 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class SceneFlowNarrativeExplainerTest {
+
+    @Test
+    void conceptsMatchDesignPatternsSnapshot() throws Exception {
+        JSONObject report = new SceneFlowNarrativeExplainer()
+                .explain(Path.of("doc/DesignPatterns/sceneflow.xml"));
+        String actual = joinLines(report.getJSONArray("concepts"));
+        String expected = loadSnapshot("designpatterns-concepts.txt");
+        assertEquals(expected, actual);
+    }
 
     @Test
     void detectsConstrainedActivityWaitPatternInDesignPatternsSceneFlow() throws Exception {
@@ -88,8 +101,9 @@ class SceneFlowNarrativeExplainerTest {
         JSONObject waitLoop = pattern.getJSONObject("evidence").getJSONObject("waitLoop");
         assertEquals("supernode_self", waitLoop.optString("scope"));
         assertEquals("S1", waitLoop.optString("nodeId"));
-        assertTrue(pattern.optString("description", "").contains("waits until the event \"OkayButtonPressed\" occurs"));
-        assertTrue(pattern.optString("description", "").contains("The supernode is kept alive by a self timeout edge every 1000 ms."));
+        assertEquals(
+                loadSnapshot("supernode-self-timeout-description.txt"),
+                pattern.optString("description", ""));
     }
 
     @Test
@@ -131,7 +145,9 @@ class SceneFlowNarrativeExplainerTest {
                 continue;
             }
             found = true;
-            assertTrue(pattern.optString("description", "").contains("threshold"));
+            assertEquals(
+                    loadSnapshot("timeout-retry-description.txt"),
+                    pattern.optString("description", ""));
             assertEquals("N1", pattern.getJSONObject("evidence").optString("nodeId"));
         }
         assertTrue(found, "Expected timeout retry/escalation pattern.");
@@ -145,5 +161,26 @@ class SceneFlowNarrativeExplainerTest {
                         new SceneFlowNarrativeExplainer.NarrativeStyle(true));
         assertTrue(report.getJSONArray("summary").toString().contains("(S5)"));
         assertTrue(report.getJSONArray("summary").toString().contains("(N1)"));
+    }
+
+    private String joinLines(final JSONArray array) {
+        StringBuilder out = new StringBuilder();
+        for (int i = 0; i < array.length(); i++) {
+            if (i > 0) {
+                out.append('\n');
+            }
+            out.append(array.optString(i, ""));
+        }
+        return out.toString();
+    }
+
+    private String loadSnapshot(final String fileName) throws IOException {
+        final String resourcePath = "/de/dfki/vsm/sceneflow/ir/snapshots/" + fileName;
+        try (InputStream in = SceneFlowNarrativeExplainerTest.class.getResourceAsStream(resourcePath)) {
+            if (in == null) {
+                throw new IOException("Missing snapshot resource: " + resourcePath);
+            }
+            return new String(in.readAllBytes(), StandardCharsets.UTF_8).replace("\r\n", "\n").trim();
+        }
     }
 }
