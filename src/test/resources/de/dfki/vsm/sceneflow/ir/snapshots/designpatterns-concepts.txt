@@ -1,0 +1,7 @@
+A flow describes a sequence of actions in a particular configuration represented by nodes and their connections.
+Actions are executed by agents and grouped into input, processing, and output categories.
+Input agents acquire information from outside the SceneFlow and update variables in the background, for example ASR or facial-expression recognition.
+Processing agents transform or interpret data to support decision-making, for example LLMs, affect simulation, user modeling, or logging.
+Output agents control external presentation or actuation channels, for example socially interactive agents, text-to-speech, or 3D environments.
+Active flows are started when "Play" is pressed.
+Non-active flows remain idle.

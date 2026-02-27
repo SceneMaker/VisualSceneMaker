@@ -1,0 +1,1 @@
+Supernode "WaitSupernode" waits until the event "OkayButtonPressed" occurs and Node "After" is activated. The supernode is kept alive by a self timeout edge every 1000 ms.

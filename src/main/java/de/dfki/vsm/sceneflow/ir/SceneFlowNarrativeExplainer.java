@@ -17,6 +17,7 @@ import org.json.JSONObject;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -36,6 +37,25 @@ public final class SceneFlowNarrativeExplainer {
         final Map<String, BasicNode> nodeById = indexNodes(flow);
         final JSONArray patterns = new JSONArray();
         final JSONArray summary = new JSONArray();
+        final FlowOverview overview = buildFlowOverview(flow, nodeById, effectiveStyle);
+
+        if (overview.activeCount() > 0) {
+            summary.put("This sceneflow consists of " + overview.activeCount()
+                    + " active flows, defined by the start nodes: "
+                    + joinAsList(overview.activeLabels()) + ".");
+        } else {
+            summary.put("This sceneflow has no active flows.");
+        }
+        if (overview.inactiveCount() > 0) {
+            summary.put("Overview of non-active flows: "
+                    + joinAsList(overview.inactiveLabels()) + ".");
+        } else {
+            summary.put("There are no non-active flows.");
+        }
+        summary.put("A flow describes a sequence of actions in a particular configuration represented by nodes and their connections.");
+        summary.put("Actions are executed by agents and grouped into input, processing, and output categories.");
+        summary.put("Active flows are started when \"Play\" is pressed.");
+        summary.put("Non-active flows remain idle.");
 
         for (SuperNode superNode : collectSuperNodes(flow)) {
             final JSONObject waitPattern = detectConstrainedActivityWaitPattern(superNode, nodeById, effectiveStyle);
@@ -75,6 +95,19 @@ public final class SceneFlowNarrativeExplainer {
                 .put("sceneFlowPath", sceneFlowPath.toAbsolutePath().toString())
                 .put("sceneFlowId", nonBlank(flow.getId(), "SceneFlow"))
                 .put("sceneFlowName", nonBlank(flow.getName(), nonBlank(flow.getId(), "SceneFlow")))
+                .put("globalSummary", new JSONObject()
+                        .put("activeFlowCount", overview.activeCount())
+                        .put("inactiveFlowCount", overview.inactiveCount()))
+                .put("concepts", new JSONArray()
+                        .put("A flow describes a sequence of actions in a particular configuration represented by nodes and their connections.")
+                        .put("Actions are executed by agents and grouped into input, processing, and output categories.")
+                        .put("Input agents acquire information from outside the SceneFlow and update variables in the background, for example ASR or facial-expression recognition.")
+                        .put("Processing agents transform or interpret data to support decision-making, for example LLMs, affect simulation, user modeling, or logging.")
+                        .put("Output agents control external presentation or actuation channels, for example socially interactive agents, text-to-speech, or 3D environments.")
+                        .put("Active flows are started when \"Play\" is pressed.")
+                        .put("Non-active flows remain idle."))
+                .put("activeFlows", overview.activeFlows())
+                .put("inactiveFlows", overview.inactiveFlows())
                 .put("summary", summary)
                 .put("patterns", patterns);
     }
@@ -168,7 +201,7 @@ public final class SceneFlowNarrativeExplainer {
         }
 
         final JSONArray exits = new JSONArray();
-        final List<String> conditions = new ArrayList<>();
+        final List<String> exitClauses = new ArrayList<>();
         for (InterruptEdge edge : node.getIEdgeList()) {
             final String targetId = edge.getTargetUnid();
             if (targetId == null || targetId.isBlank()) {
@@ -181,7 +214,18 @@ public final class SceneFlowNarrativeExplainer {
                     .put("targetId", targetId)
                     .put("targetName", target == null ? "" : target.getName())
                     .put("condition", condition));
-            conditions.add(condition + " -> " + targetId);
+            final String targetLabel = label(
+                    "node",
+                    target == null ? "" : target.getName(),
+                    targetId,
+                    style,
+                    true);
+            final String eventName = extractEventName(condition);
+            if (!eventName.isBlank()) {
+                exitClauses.add("the event \"" + eventName + "\" occurs and " + targetLabel + " is activated");
+            } else {
+                exitClauses.add("the condition \"" + condition + "\" holds and " + targetLabel + " is activated");
+            }
         }
         if (exits.isEmpty()) {
             return null;
@@ -191,10 +235,10 @@ public final class SceneFlowNarrativeExplainer {
         final String parentId = parent == null ? "" : parent.getId();
         final String parentName = parent == null ? "" : parent.getName();
         final String description = label("Node", node.getName(), node.getId(), style)
-                + " remains active with a self " + EdgeLabelMapper.toHumanLabel("TEDGE")
-                + " every " + timeoutEdge.getTimeout()
-                + " ms and reacts via " + EdgeLabelMapper.toHumanLabel("IEDGE") + " when "
-                + String.join("; ", conditions) + ".";
+                + " waits in a timed loop with a self " + EdgeLabelMapper.toHumanLabel("TEDGE")
+                + " every " + timeoutEdge.getTimeout() + " ms. "
+                + "It reacts via " + EdgeLabelMapper.toHumanLabel("IEDGE")
+                + " when " + joinWithOr(exitClauses) + ".";
 
         return new JSONObject()
                 .put("patternType", "node_interrupt_wait_loop")
@@ -308,7 +352,7 @@ public final class SceneFlowNarrativeExplainer {
         }
 
         final JSONArray thresholdExits = new JSONArray();
-        final List<String> thresholdDescriptions = new ArrayList<>();
+        final List<String> thresholdClauses = new ArrayList<>();
         for (GuargedEdge edge : node.getCEdgeList()) {
             final String condition = expressionToText(edge.getCondition());
             final String lower = condition.toLowerCase(Locale.ROOT);
@@ -328,7 +372,8 @@ public final class SceneFlowNarrativeExplainer {
                     .put("targetId", targetId)
                     .put("targetName", target == null ? "" : target.getName())
                     .put("condition", condition));
-            thresholdDescriptions.add(condition + " -> " + targetId);
+            final String targetLabel = label("node", target == null ? "" : target.getName(), targetId, style, true);
+            thresholdClauses.add("the threshold condition \"" + condition + "\" holds and " + targetLabel + " is activated");
         }
         if (thresholdExits.isEmpty()) {
             return null;
@@ -337,8 +382,8 @@ public final class SceneFlowNarrativeExplainer {
         final String description = label("Node", node.getName(), node.getId(), style)
                 + " implements timeout retry/escalation: it stays active with a self "
                 + EdgeLabelMapper.toHumanLabel("TEDGE") + " every "
-                + timeoutEdge.getTimeout() + " ms and exits when threshold guard(s) hold: "
-                + String.join("; ", thresholdDescriptions) + ".";
+                + timeoutEdge.getTimeout() + " ms and exits when "
+                + joinWithOr(thresholdClauses) + ".";
         return new JSONObject()
                 .put("patternType", "timeout_retry_or_escalation")
                 .put("description", description)
@@ -520,7 +565,21 @@ public final class SceneFlowNarrativeExplainer {
         if (parts.size() == 1) {
             return parts.get(0);
         }
-        return String.join(" or ", parts);
+        return joinWithConjunction(parts, "or");
+    }
+
+    private String joinWithConjunction(final List<String> parts, final String conjunction) {
+        if (parts == null || parts.isEmpty()) {
+            return "";
+        }
+        if (parts.size() == 1) {
+            return parts.get(0);
+        }
+        if (parts.size() == 2) {
+            return parts.get(0) + " " + conjunction + " " + parts.get(1);
+        }
+        final String prefix = String.join(", ", parts.subList(0, parts.size() - 1));
+        return prefix + ", " + conjunction + " " + parts.get(parts.size() - 1);
     }
 
     private String simpleBooleanVariable(final String condition) {
@@ -578,10 +637,76 @@ public final class SceneFlowNarrativeExplainer {
         return value;
     }
 
+    private FlowOverview buildFlowOverview(
+            final SceneFlow flow,
+            final Map<String, BasicNode> nodeById,
+            final NarrativeStyle style) {
+        final List<String> activeIds = new ArrayList<>(flow.getStartNodeMap().keySet());
+        activeIds.sort(Comparator.naturalOrder());
+        final JSONArray activeFlows = new JSONArray();
+        final List<String> activeLabels = new ArrayList<>();
+        for (String id : activeIds) {
+            final BasicNode node = nodeById.get(id);
+            final String name = node == null ? id : nonBlank(node.getName(), id);
+            final String type = node instanceof SuperNode ? "supernode" : "node";
+            final String label = label(type, name, id, style, true);
+            activeLabels.add(label);
+            activeFlows.put(new JSONObject()
+                    .put("id", id)
+                    .put("name", name)
+                    .put("type", type));
+        }
+
+        final Set<String> activeSet = new HashSet<>(activeIds);
+        final List<String> inactiveIds = new ArrayList<>();
+        for (BasicNode node : flow.getNodeList()) {
+            if (node.getId() != null && !node.getId().isBlank() && !activeSet.contains(node.getId())) {
+                inactiveIds.add(node.getId());
+            }
+        }
+        for (SuperNode node : flow.getSuperNodeList()) {
+            if (node.getId() != null && !node.getId().isBlank() && !activeSet.contains(node.getId())) {
+                inactiveIds.add(node.getId());
+            }
+        }
+        inactiveIds.sort(Comparator.naturalOrder());
+        final JSONArray inactiveFlows = new JSONArray();
+        final List<String> inactiveLabels = new ArrayList<>();
+        for (String id : inactiveIds) {
+            final BasicNode node = nodeById.get(id);
+            final String name = node == null ? id : nonBlank(node.getName(), id);
+            final String type = node instanceof SuperNode ? "supernode" : "node";
+            final String label = label(type, name, id, style, true);
+            inactiveLabels.add(label);
+            inactiveFlows.put(new JSONObject()
+                    .put("id", id)
+                    .put("name", name)
+                    .put("type", type));
+        }
+
+        return new FlowOverview(activeFlows, inactiveFlows, activeLabels, inactiveLabels, activeLabels.size(), inactiveLabels.size());
+    }
+
+    private String joinAsList(final List<String> values) {
+        if (values == null || values.isEmpty()) {
+            return "none";
+        }
+        return String.join(", ", values);
+    }
+
     private record WaitLoopEvidence(String nodeId, String nodeName, long timeoutMs, boolean onSuperNodeSelf) {
     }
 
     private record InterruptEdgeEvidence(String targetId, String targetName, String condition) {
+    }
+
+    private record FlowOverview(
+            JSONArray activeFlows,
+            JSONArray inactiveFlows,
+            List<String> activeLabels,
+            List<String> inactiveLabels,
+            int activeCount,
+            int inactiveCount) {
     }
 
     public record NarrativeStyle(boolean includeIds) {
