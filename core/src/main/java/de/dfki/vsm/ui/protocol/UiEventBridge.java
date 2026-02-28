@@ -123,17 +123,33 @@ public final class UiEventBridge implements EventListener {
             return;
         }
         if (event instanceof SceneExecutedEvent) {
-            SceneObject scene = ((SceneExecutedEvent) event).getScene();
+            SceneExecutedEvent sceneEvent = (SceneExecutedEvent) event;
+            SceneObject scene = sceneEvent.getScene();
             if (scene == null) return;
+            Map<String, Object> payload = scenePayload(scene);
+            if (!sceneEvent.getNodeId().isBlank()) {
+                payload.put("nodeId", sceneEvent.getNodeId());
+            }
+            if (!sceneEvent.getParentId().isBlank()) {
+                payload.put("parentId", sceneEvent.getParentId());
+            }
             mSink.emitLazy(() -> UiEvent.create(UiChannel.RUNTIME, "runtime.scene.playing",
-                    scenePayload(scene)));
+                    payload));
             return;
         }
         if (event instanceof SceneDoneEvent) {
-            SceneObject scene = ((SceneDoneEvent) event).getScene();
+            SceneDoneEvent sceneEvent = (SceneDoneEvent) event;
+            SceneObject scene = sceneEvent.getScene();
             if (scene == null) return;
+            Map<String, Object> payload = scenePayload(scene);
+            if (!sceneEvent.getNodeId().isBlank()) {
+                payload.put("nodeId", sceneEvent.getNodeId());
+            }
+            if (!sceneEvent.getParentId().isBlank()) {
+                payload.put("parentId", sceneEvent.getParentId());
+            }
             mSink.emitLazy(() -> UiEvent.create(UiChannel.RUNTIME, "runtime.scene.done",
-                    scenePayload(scene)));
+                    payload));
             return;
         }
         if (event instanceof TurnExecutedEvent) {

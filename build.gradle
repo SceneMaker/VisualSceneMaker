@@ -582,6 +582,25 @@ tasks.register('generateSceneFlowFromSituation', JavaExec) {
     args snapshotPath, sceneFlowPath, outputPath, reportPath, situation
 }
 
+tasks.register('explainSceneFlow', JavaExec) {
+    group = 'verification'
+    description = 'Generates a deterministic natural-language explanation report from sceneflow.xml.'
+    dependsOn tasks.named('classes')
+
+    def sceneFlowPath = (findProperty('sceneflow')
+            ?: "${projectDir}/doc/DesignPatterns/sceneflow.xml").toString()
+    def outputPath = (findProperty('out')
+            ?: "${layout.buildDirectory.get().asFile}/reports/sceneflow-explanation.json").toString()
+    def explainIncludeIds = (findProperty('explainIncludeIds') ?: "false").toString()
+    def explainAudience = (findProperty('explainAudience') ?: "reader-friendly").toString()
+
+    mainClass = 'de.dfki.vsm.sceneflow.ir.SceneFlowNarrativeExplainerCli'
+    classpath = sourceSets.main.runtimeClasspath
+    systemProperty 'sceneflow.explain.includeIds', explainIncludeIds
+    systemProperty 'sceneflow.explain.audience', explainAudience
+    args sceneFlowPath, outputPath
+}
+
 def androidThinBaseProjects = [
         project(':core'),
         project(':core-http-android')

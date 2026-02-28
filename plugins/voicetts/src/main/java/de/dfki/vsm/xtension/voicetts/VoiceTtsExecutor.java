@@ -16,12 +16,25 @@ import javax.sound.sampled.DataLine;
 import javax.sound.sampled.SourceDataLine;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpServer;
+import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.WebSocket;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.Base64;
 import java.util.LinkedList;
 import java.util.Locale;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
@@ -75,6 +88,14 @@ public class VoiceTtsExecutor extends ActivityExecutor {
     private final LinkedList<String> pendingTimemarks = new LinkedList<>();
     private volatile ScheduledExecutorService timemarkScheduler;
 
+    // Anchor for word-var scheduling: set when audioLine.start() fires.
+    private volatile long   playbackAnchorWallMs      = -1;
+    private volatile double playbackAnchorAccumulatedMs = 0.0;
+    private final LinkedList<WordTimingEvent> pendingWordVarEvents = new LinkedList<>();
+    /** Measured DAC output latency; updated once after the first audio line is opened. */
+    private volatile long hwLatencyMs = 50;
+    private volatile boolean hwLatencyMeasured = false;
+
     /** Delegating listener that routes events to the current session's ListenerImpl.
      *  This allows the same TtsStreamClient (and WebSocket) to be reused across sessions. */
     private volatile TtsStreamEventListener sessionListener;
@@ -120,6 +141,12 @@ public class VoiceTtsExecutor extends ActivityExecutor {
     private String defaultCloneRefText;
     private boolean debugDumpWavEnabled;
     private String debugDumpDir;
+    private String portraitUrl;
+    private final HttpClient portraitHttpClient = HttpClient.newHttpClient();
+    private final AtomicReference<WebSocket> portraitWs = new AtomicReference<>();
+    private int avatarSsePort;
+    private AvatarSseServer avatarSse;
+    private volatile String avatarSessionId = "";
 
     private String connectedVar;
     private String speakingVar;
@@ -159,6 +186,8 @@ public class VoiceTtsExecutor extends ActivityExecutor {
         defaultCloneRefText = configOrDefault("clone_ref_text", ".");
         debugDumpWavEnabled = Boolean.parseBoolean(configOrDefault("debug_dump_wav_enabled", "true"));
         debugDumpDir = configOrDefault("debug_dump_wav_dir", "/tmp/voicetts-dumps");
+        portraitUrl = configOrDefault("portrait_url", "");
+        avatarSsePort = parseIntOrDefault(configOrDefault("avatar_sse_port", "0"), 0);
 
         connectedVar = configOrDefault("connectedVar", "tts_connected");
         speakingVar = configOrDefault("speakingVar", "tts_speaking");
@@ -179,6 +208,17 @@ public class VoiceTtsExecutor extends ActivityExecutor {
         setStringVar(debugStateVar, "launch");
 
         connectOnly();
+        if (!portraitUrl.isBlank()) {
+            connectPortrait();
+        }
+        if (avatarSsePort > 0) {
+            try {
+                avatarSse = new AvatarSseServer(avatarSsePort);
+                mLogger.message("VoiceTtsExecutor avatar SSE → http://127.0.0.1:" + avatarSsePort + "/events");
+            } catch (IOException ex) {
+                mLogger.warning("VoiceTtsExecutor failed to start avatar SSE on port " + avatarSsePort + ": " + ex.getMessage());
+            }
+        }
         mLogger.message("VoiceTtsExecutor launched, ws_url=" + wsUrl);
     }
 
@@ -187,6 +227,11 @@ public class VoiceTtsExecutor extends ActivityExecutor {
         variableWritesEnabled = false;
         stopActiveSession("plugin_unload");
         disconnectOnly();
+        disconnectPortrait();
+        if (avatarSse != null) {
+            avatarSse.stop();
+            avatarSse = null;
+        }
         closeAudioLine();
         shutdownTimemarkScheduler();
         shutdownWorker();
@@ -391,7 +436,11 @@ public class VoiceTtsExecutor extends ActivityExecutor {
                     .visemeHopMs(visemeHopMs)
                     .generationStreamingIntervalMs(generationStreamingIntervalMs)
                     .refAudioB64(effectiveRefAudioB64)
-                    .refText("clone".equals(mode) ? refText : null);
+                    .refText("clone".equals(mode) ? refText : null)
+                    // Only request word.final — provisional events are unused (onWordProvisional
+                    // intentionally does not write scene variables; the scheduled word.final is
+                    // the single authoritative, correctly-timed update).
+                    .wordTiming(new WordTimingOptions(false, true));
 
             requestBuilder = applyGenerationModeIfSupported(requestBuilder, generationMode);
             final TtsStreamRequest request = requestBuilder.build();
@@ -468,11 +517,67 @@ public class VoiceTtsExecutor extends ActivityExecutor {
         }
     }
 
+    private void connectPortrait() {
+        try {
+            portraitHttpClient.newWebSocketBuilder()
+                    .buildAsync(URI.create(portraitUrl), new WebSocket.Listener() {
+                        @Override
+                        public void onOpen(WebSocket ws) {
+                            ws.request(Long.MAX_VALUE);
+                            portraitWs.set(ws);
+                            sendPortrait("{\"type\":\"portrait.register\",\"role\":\"controller\"}");
+                            mLogger.message("[voicetts] portrait relay connected url=" + portraitUrl);
+                        }
+                        @Override
+                        public java.util.concurrent.CompletionStage<?> onClose(WebSocket ws, int status, String reason) {
+                            portraitWs.compareAndSet(ws, null);
+                            mLogger.message("[voicetts] portrait relay disconnected status=" + status);
+                            return null;
+                        }
+                        @Override
+                        public void onError(WebSocket ws, Throwable error) {
+                            portraitWs.compareAndSet(ws, null);
+                            mLogger.warning("[voicetts] portrait relay error: " + error.getMessage());
+                        }
+                    })
+                    .exceptionally(ex -> {
+                        mLogger.warning("[voicetts] portrait relay connect failed: " + ex.getMessage());
+                        return null;
+                    });
+        } catch (Exception ex) {
+            mLogger.warning("[voicetts] portrait relay connect failed: " + ex.getMessage());
+        }
+    }
+
+    private void disconnectPortrait() {
+        WebSocket ws = portraitWs.getAndSet(null);
+        if (ws != null) {
+            try {
+                ws.sendClose(WebSocket.NORMAL_CLOSURE, "");
+            } catch (Exception ignore) {
+            }
+        }
+    }
+
+    private void sendPortrait(final String json) {
+        WebSocket ws = portraitWs.get();
+        if (ws == null) {
+            return;
+        }
+        try {
+            ws.sendText(json, true);
+        } catch (Exception ex) {
+            // Drop silently — typical for rapid viseme streams with a pending send.
+        }
+    }
+
     private void stopActiveSession(final String reason) {
         streamGeneration.incrementAndGet();
 
         // Cancel any pending scheduled timemarks before stopping audio.
         shutdownTimemarkScheduler();
+        synchronized (markerLock) { pendingWordVarEvents.clear(); }
+        playbackAnchorWallMs = -1;
 
         // Stop local playback first so audio halts immediately.
         closeAudioLineImmediate();
@@ -793,6 +898,52 @@ public class VoiceTtsExecutor extends ActivityExecutor {
         }
     }
 
+    /**
+     * Measures the DAC output latency by writing silence to a short-lived probe line and
+     * timing how long until the hardware actually starts consuming frames.
+     * Mirrors the approach in StreamingCliClient.ConsoleListener.measureHardwareLatencyMs().
+     */
+    private static long measureHardwareLatencyMs(final AudioFormat format) {
+        SourceDataLine probe = null;
+        try {
+            DataLine.Info info = new DataLine.Info(SourceDataLine.class, format);
+            probe = (SourceDataLine) AudioSystem.getLine(info);
+            int silenceBytes = (int)(format.getSampleRate() * 0.08) * format.getFrameSize();
+            probe.open(format, silenceBytes);
+            probe.write(new byte[silenceBytes], 0, silenceBytes);
+            long t0 = System.nanoTime();
+            probe.start();
+            long deadline = t0 + 400_000_000L; // 400 ms max
+            while (System.nanoTime() < deadline) {
+                if (probe.getLongFramePosition() > 0)
+                    return (System.nanoTime() - t0) / 1_000_000;
+                Thread.sleep(1);
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        } catch (Exception ignored) {
+        } finally {
+            if (probe != null) { probe.stop(); probe.close(); }
+        }
+        return 50; // safe fallback
+    }
+
+    /**
+     * Kicks off a background thread that measures the DAC latency for the given format
+     * and stores the result in {@link #hwLatencyMs}.  Only runs once per plugin lifecycle.
+     */
+    private void maybeStartHwLatencyMeasurement(final AudioFormat format) {
+        if (hwLatencyMeasured) return;
+        hwLatencyMeasured = true;
+        Thread t = new Thread(() -> {
+            long measured = measureHardwareLatencyMs(format);
+            hwLatencyMs = measured;
+            mLogger.message("[voicetts] hw_latency measured=" + measured + "ms");
+        }, "voicetts-hw-latency");
+        t.setDaemon(true);
+        t.start();
+    }
+
     private String sanitizeGenerationMode(final String mode) {
         final String normalized = safe(mode).trim().toLowerCase(Locale.ROOT);
         if ("stream".equals(normalized) || "streaming".equals(normalized)) {
@@ -863,6 +1014,7 @@ public class VoiceTtsExecutor extends ActivityExecutor {
                     // 4-second hardware buffer for large cushion
                     int bufferBytes = sampleRate * 2 * channels * 4;
                     line.open(format, bufferBytes);
+                    maybeStartHwLatencyMeasurement(format);
                     // Don't start yet — prebuffer first
                     audioLine = line;
                     audioSampleRate = sampleRate;
@@ -897,6 +1049,8 @@ public class VoiceTtsExecutor extends ActivityExecutor {
                         audioLine.write(buffered, 0, buffered.length);
                         audioLine.start();
                         audioPlaybackStarted = true;
+                        broadcastPlaybackAnchor(System.currentTimeMillis(),
+                                buffered.length * 1000.0 / (sampleRate * 2.0 * channels));
                         mLogger.message("[voicetts] " + safe(activeSpeakTag)
                                 + " audio.prebuffer_flush ms="
                                 + String.format("%.0f", buffered.length * 1000.0 / (sampleRate * 2 * channels))
@@ -946,6 +1100,8 @@ public class VoiceTtsExecutor extends ActivityExecutor {
                 audioLine.write(remaining, 0, remaining.length);
                 audioLine.start();
                 audioPlaybackStarted = true;
+                broadcastPlaybackAnchor(System.currentTimeMillis(),
+                        remaining.length * 1000.0 / (audioSampleRate * 2.0 * audioChannels));
             }
         }
         audioPrebuffer = null;
@@ -1006,6 +1162,10 @@ public class VoiceTtsExecutor extends ActivityExecutor {
                 return;
             }
             sessionCached = event.cached();
+            avatarSessionId = event.sessionId() != null ? event.sessionId() : "";
+            playbackAnchorWallMs = -1;
+            playbackAnchorAccumulatedMs = 0.0;
+            synchronized (markerLock) { pendingWordVarEvents.clear(); }
             mLogger.message("[voicetts] " + safe(activeSpeakTag) + " session.started request_id="
                     + event.requestId() + " session_id=" + event.sessionId()
                     + " cached=" + event.cached());
@@ -1013,6 +1173,13 @@ public class VoiceTtsExecutor extends ActivityExecutor {
             setStringVar(debugStateVar, "session_started");
             if (event.selectedCustomVoiceId() != null && !event.selectedCustomVoiceId().isBlank()) {
                 mLogger.message("voicetts session started with custom_voice_id=" + event.selectedCustomVoiceId());
+            }
+            sendPortrait("{\"type\":\"portrait.session_start\"}");
+            AvatarSseServer sseSt = avatarSse;
+            if (sseSt != null) {
+                sseSt.broadcast("session.started", String.format(
+                        "{\"session_id\":\"%s\",\"cached\":%b}",
+                        esc(avatarSessionId), event.cached()));
             }
         }
 
@@ -1060,6 +1227,22 @@ public class VoiceTtsExecutor extends ActivityExecutor {
                 return;
             }
             setStringVar(visemeVar, event.viseme());
+            double startMs = event.clock() != null ? event.clock().startMs() : 0.0;
+            double endMs   = event.clock() != null ? event.clock().endMs()   : 0.0;
+            String wJson   = weightsJson(event.weights(), event.viseme());
+            // Portrait relay (WebSocket)
+            sendPortrait(String.format(Locale.ROOT,
+                    "{\"type\":\"viseme.frame\",\"clock_ms\":%.3f,\"weights\":%s}",
+                    startMs, wJson));
+            // Avatar SSE
+            AvatarSseServer sseV = avatarSse;
+            if (sseV != null && event.clock() != null) {
+                sseV.broadcast("viseme.frame", String.format(Locale.ROOT,
+                        "{\"session_id\":\"%s\",\"start_ms\":%.1f,\"end_ms\":%.1f," +
+                        "\"viseme\":\"%s\",\"confidence\":%.3f,\"weights\":%s}",
+                        esc(avatarSessionId), startMs, endMs,
+                        esc(event.viseme()), event.confidence(), wJson));
+            }
         }
 
         @Override
@@ -1067,8 +1250,10 @@ public class VoiceTtsExecutor extends ActivityExecutor {
             if (!isCurrentGeneration()) {
                 return;
             }
-            setStringVar(wordVar, event.word());
-            setBoolVar(wordFinalVar, false);
+            // Provisional words are intentionally not written to the scene variable.
+            // The scheduled word.final write (scheduleWordVarAtPlaybackPosition) is the
+            // authoritative, correctly-timed update. Writing here too would produce a
+            // visible double-write at an earlier, incorrect wall-clock time.
         }
 
         @Override
@@ -1076,9 +1261,17 @@ public class VoiceTtsExecutor extends ActivityExecutor {
             if (!isCurrentGeneration()) {
                 return;
             }
-            setStringVar(wordVar, event.word());
-            setBoolVar(wordFinalVar, true);
+            scheduleWordVarAtPlaybackPosition(event);
             scheduleNextTimemarkAtPlaybackPosition(event.clock());
+            AvatarSseServer sseW = avatarSse;
+            if (sseW != null && event.clock() != null) {
+                sseW.broadcast("word.final", String.format(Locale.ROOT,
+                        "{\"session_id\":\"%s\",\"start_ms\":%.1f,\"end_ms\":%.1f," +
+                        "\"word\":\"%s\",\"confidence\":%.3f}",
+                        esc(avatarSessionId),
+                        event.clock().startMs(), event.clock().endMs(),
+                        esc(event.word()), event.confidence()));
+            }
         }
 
         @Override
@@ -1092,6 +1285,13 @@ public class VoiceTtsExecutor extends ActivityExecutor {
             setStringVar(debugStateVar, "session_completed");
             dispatchAllRemainingTimemarks();
             closeAudioLine();
+            sendPortrait("{\"type\":\"portrait.session_end\"}");
+            AvatarSseServer sseCmp = avatarSse;
+            if (sseCmp != null) {
+                sseCmp.broadcast("session.completed", String.format(Locale.ROOT,
+                        "{\"session_id\":\"%s\",\"duration_ms\":%.1f}",
+                        esc(avatarSessionId), event.durationMs()));
+            }
         }
 
         @Override
@@ -1107,6 +1307,7 @@ public class VoiceTtsExecutor extends ActivityExecutor {
             setStringVar(debugStateVar, "session_error:" + event.code());
             clearPendingTimemarks();
             closeAudioLine();
+            sendPortrait("{\"type\":\"portrait.session_end\"}");
         }
 
         @Override
@@ -1227,6 +1428,98 @@ public class VoiceTtsExecutor extends ActivityExecutor {
         }
     }
 
+    private void broadcastPlaybackAnchor(final long wallMs, final double prebufferMs) {
+        // Store anchor so word-var scheduling can compute correct fire times.
+        playbackAnchorWallMs       = wallMs;
+        playbackAnchorAccumulatedMs = prebufferMs;
+        // Flush any word events that queued up before the anchor was ready.
+        flushPendingWordVarEvents();
+        AvatarSseServer sse = avatarSse;
+        if (sse != null) {
+            sse.broadcast("playback.anchor", String.format(Locale.ROOT,
+                    "{\"session_id\":\"%s\",\"wall_ms\":%d,\"accumulated_ms\":%.1f,\"hw_latency_ms\":%d}",
+                    esc(avatarSessionId), wallMs, prebufferMs, hwLatencyMs));
+        }
+    }
+
+    /** Drain and schedule all word events that arrived before the playback anchor was set. */
+    private void flushPendingWordVarEvents() {
+        final LinkedList<WordTimingEvent> copy;
+        synchronized (markerLock) {
+            if (pendingWordVarEvents.isEmpty()) return;
+            copy = new LinkedList<>(pendingWordVarEvents);
+            pendingWordVarEvents.clear();
+        }
+        for (WordTimingEvent ev : copy) {
+            scheduleWordVarAtPlaybackPosition(ev);
+        }
+    }
+
+    /**
+     * Schedule the wordVar / wordFinalVar updates to fire at the wall-clock instant the
+     * corresponding audio sample is actually audible, using the same anchor math as avatar.html:
+     *   fireAt = anchorWallMs + word.startMs − anchorAccumulatedMs + HW_LATENCY_MS
+     *
+     * Words that arrive before the playback anchor is set are queued and replayed once
+     * broadcastPlaybackAnchor() fires (i.e. when audioLine.start() is called).
+     */
+    private void scheduleWordVarAtPlaybackPosition(final WordTimingEvent event) {
+        final String word     = event.word();
+        final double targetMs = (event.clock() != null) ? event.clock().startMs() : -1.0;
+        final long   anchor   = playbackAnchorWallMs;
+        final double accum    = playbackAnchorAccumulatedMs;
+
+        if (targetMs < 0 || anchor < 0) {
+            // Anchor not yet set — queue for when audioLine.start() fires.
+            synchronized (markerLock) { pendingWordVarEvents.add(event); }
+            return;
+        }
+
+        final long fireAtWallMs = anchor + (long)(targetMs - accum) + hwLatencyMs;
+        final long delayMs      = fireAtWallMs - System.currentTimeMillis();
+
+        if (delayMs <= 0) {
+            setStringVar(wordVar, word);
+            setBoolVar(wordFinalVar, true);
+            return;
+        }
+
+        ensureTimemarkScheduler();
+        final long gen = streamGeneration.get();
+        try {
+            timemarkScheduler.schedule(() -> {
+                if (gen == streamGeneration.get()) {
+                    setStringVar(wordVar, word);
+                    setBoolVar(wordFinalVar, true);
+                }
+            }, delayMs, TimeUnit.MILLISECONDS);
+        } catch (RejectedExecutionException ex) {
+            setStringVar(wordVar, word);
+            setBoolVar(wordFinalVar, true);
+        }
+    }
+
+    private static String esc(final String s) {
+        if (s == null) return "";
+        return s.replace("\\", "\\\\").replace("\"", "\\\"");
+    }
+
+    private static String weightsJson(final Map<String, Double> weights, final String fallbackViseme) {
+        if (weights != null && !weights.isEmpty()) {
+            StringBuilder sb = new StringBuilder("{");
+            boolean first = true;
+            for (Map.Entry<String, Double> entry : weights.entrySet()) {
+                if (!first) sb.append(',');
+                sb.append('"').append(esc(entry.getKey())).append("\":");
+                sb.append(String.format(Locale.ROOT, "%.4f", entry.getValue()));
+                first = false;
+            }
+            sb.append('}');
+            return sb.toString();
+        }
+        return "{\"" + esc(fallbackViseme) + "\":1.0}";
+    }
+
     private String sanitizeFileToken(final String value) {
         String v = safe(value);
         v = v.replaceAll("[^A-Za-z0-9._-]", "_");
@@ -1234,5 +1527,77 @@ public class VoiceTtsExecutor extends ActivityExecutor {
             v = v.substring(0, 80);
         }
         return v;
+    }
+
+    // ── Embedded SSE server for avatar.html ──────────────────────────────────
+
+    private static final class AvatarSseServer {
+        private static final class SseClient {
+            final OutputStream out;
+            final CountDownLatch done;
+            SseClient(OutputStream out, CountDownLatch done) {
+                this.out = out;
+                this.done = done;
+            }
+        }
+
+        private final HttpServer server;
+        private final ConcurrentHashMap<String, SseClient> clients = new ConcurrentHashMap<>();
+
+        AvatarSseServer(final int port) throws IOException {
+            server = HttpServer.create(new InetSocketAddress(port), 32); // all interfaces (IPv4 + IPv6 via OS)
+            server.createContext("/events", this::handleEvents);
+            server.setExecutor(Executors.newCachedThreadPool());
+            server.start();
+        }
+
+        private void handleEvents(final HttpExchange ex) throws IOException {
+            if (!"GET".equalsIgnoreCase(ex.getRequestMethod())) {
+                ex.sendResponseHeaders(405, -1);
+                return;
+            }
+            ex.getResponseHeaders().set("Content-Type",  "text/event-stream; charset=utf-8");
+            ex.getResponseHeaders().set("Cache-Control", "no-cache");
+            ex.getResponseHeaders().set("Connection",    "keep-alive");
+            ex.getResponseHeaders().set("Access-Control-Allow-Origin", "*");
+            ex.sendResponseHeaders(200, 0);
+
+            final String id = UUID.randomUUID().toString();
+            final OutputStream out = ex.getResponseBody();
+            final CountDownLatch done = new CountDownLatch(1);
+            clients.put(id, new SseClient(out, done));
+            try {
+                out.write(": connected\n\n".getBytes(StandardCharsets.UTF_8));
+                out.flush();
+                done.await();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            } finally {
+                clients.remove(id);
+                try { out.close(); } catch (IOException ignored) {}
+            }
+        }
+
+        void broadcast(final String eventType, final String data) {
+            byte[] msg = ("event: " + eventType + "\ndata: " + data + "\n\n")
+                    .getBytes(StandardCharsets.UTF_8);
+            clients.forEach((id, c) -> {
+                try {
+                    c.out.write(msg);
+                    c.out.flush();
+                } catch (IOException e) {
+                    clients.remove(id);
+                    c.done.countDown();
+                }
+            });
+        }
+
+        void stop() {
+            clients.values().forEach(c -> {
+                try { c.out.close(); } catch (IOException ignored) {}
+                c.done.countDown();
+            });
+            server.stop(1);
+        }
     }
 }
