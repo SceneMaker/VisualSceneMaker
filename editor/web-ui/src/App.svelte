@@ -1076,6 +1076,13 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
   let activityNodeCounts = new Map();
   let activityNodeDecayTokens = new Map();
   let activityNodeHoldUntil = new Map();
+  let commandActivityHeldNodeIds = new Set();
+  let commandActivityKindByNodeId = new Map();
+  let playSceneHeldNodeQueue = [];
+  let playSceneHoldBySceneKey = new Map();
+  let recentActiveNodeQueue = [];
+  let recentStoppedNodeQueue = [];
+  let pendingPlaySceneStartQueue = [];
   let activityEdgeHits = new Map();
   let activityNodeIds = [];
   let activityEdgeList = [];
@@ -5735,6 +5742,13 @@ Sentence:
       activityNodeDecayTokens = new Map();
     }
     activityNodeHoldUntil = new Map();
+    commandActivityHeldNodeIds = new Set();
+    commandActivityKindByNodeId = new Map();
+    playSceneHeldNodeQueue = [];
+    playSceneHoldBySceneKey = new Map();
+    recentActiveNodeQueue = [];
+    recentStoppedNodeQueue = [];
+    pendingPlaySceneStartQueue = [];
     activityEdgeHits = new Map();
     timeoutEdgeRuns = new Map();
   }
@@ -6127,6 +6141,170 @@ Sentence:
     }
   }
 
+  function longRunningCommandKindForNode(nodeId) {
+    if (!nodeId || !sceneFlow?.nodes?.length) return null;
+    const node = sceneFlow.nodes.find((entry) => entry?.id === nodeId);
+    if (!node) return null;
+    const commands = Array.isArray(node.commands) ? node.commands : [];
+    for (const cmd of commands) {
+      const text =
+        typeof cmd === "string"
+          ? cmd
+          : String(cmd?.text || cmd?.syntax || cmd?.name || cmd?.type || cmd?.label || "");
+      const normalized = text.trim();
+      if (/\bPlayScene\b/i.test(normalized)) {
+        return "playScene";
+      }
+      if (/\bPlayAction\b/i.test(normalized)) {
+        return "playAction";
+      }
+    }
+    return null;
+  }
+
+  function holdCommandActivityNode(nodeId, forcedKind = null) {
+    if (!nodeId) return;
+    const kind = forcedKind || longRunningCommandKindForNode(nodeId);
+    if (!kind) return;
+    // Cancel any pending min-highlight decay so command-driven activity stays visible.
+    clearActivityNodeDecay(nodeId);
+    const held = new Set(commandActivityHeldNodeIds);
+    held.add(nodeId);
+    commandActivityHeldNodeIds = held;
+    const kinds = new Map(commandActivityKindByNodeId);
+    kinds.set(nodeId, kind);
+    commandActivityKindByNodeId = kinds;
+    if (kind === "playScene" && !playSceneHeldNodeQueue.includes(nodeId)) {
+      playSceneHeldNodeQueue = [...playSceneHeldNodeQueue, nodeId];
+    }
+    const nextCounts = new Map(activityNodeCounts);
+    const current = Number(nextCounts.get(nodeId) || 0);
+    if (current < 1) {
+      nextCounts.set(nodeId, 1);
+      activityNodeCounts = nextCounts;
+    }
+  }
+
+  function releaseCommandActivityNode(nodeId) {
+    if (!nodeId || !commandActivityHeldNodeIds.has(nodeId)) return;
+    const held = new Set(commandActivityHeldNodeIds);
+    held.delete(nodeId);
+    commandActivityHeldNodeIds = held;
+    const kinds = new Map(commandActivityKindByNodeId);
+    kinds.delete(nodeId);
+    commandActivityKindByNodeId = kinds;
+    if (playSceneHeldNodeQueue.length) {
+      playSceneHeldNodeQueue = playSceneHeldNodeQueue.filter((id) => id !== nodeId);
+    }
+    decrementActivityNode(nodeId);
+  }
+
+  function releaseNextPlaySceneHeldNode() {
+    if (!playSceneHeldNodeQueue.length) return;
+    const queue = [...playSceneHeldNodeQueue];
+    while (queue.length) {
+      const nodeId = queue.shift();
+      if (nodeId && commandActivityHeldNodeIds.has(nodeId) && commandActivityKindByNodeId.get(nodeId) === "playScene") {
+        playSceneHeldNodeQueue = queue;
+        releaseCommandActivityNode(nodeId);
+        return;
+      }
+    }
+    playSceneHeldNodeQueue = [];
+  }
+
+  function pushRecentStoppedNode(nodeId) {
+    if (!nodeId) return;
+    const now = Date.now();
+    const windowMs = 4000;
+    const next = recentStoppedNodeQueue
+      .filter((entry) => entry && entry.nodeId && (now - Number(entry.ts || 0)) <= windowMs)
+      .filter((entry) => entry.nodeId !== nodeId);
+    next.push({ nodeId, ts: now });
+    recentStoppedNodeQueue = next.slice(-24);
+  }
+
+  function pushRecentActiveNode(nodeId) {
+    if (!nodeId) return;
+    const now = Date.now();
+    const windowMs = 4000;
+    const next = recentActiveNodeQueue
+      .filter((entry) => entry && entry.nodeId && (now - Number(entry.ts || 0)) <= windowMs)
+      .filter((entry) => entry.nodeId !== nodeId);
+    next.push({ nodeId, ts: now });
+    recentActiveNodeQueue = next.slice(-24);
+  }
+
+  function bindPlaySceneToRecentActiveNode() {
+    if (!recentActiveNodeQueue.length) return null;
+    const now = Date.now();
+    const windowMs = 4000;
+    const queue = [...recentActiveNodeQueue];
+    while (queue.length) {
+      const entry = queue.pop();
+      if (!entry?.nodeId) continue;
+      if ((now - Number(entry.ts || 0)) > windowMs) {
+        continue;
+      }
+      recentActiveNodeQueue = queue;
+      holdCommandActivityNode(entry.nodeId, "playScene");
+      return entry.nodeId;
+    }
+    recentActiveNodeQueue = [];
+    return null;
+  }
+
+  function bindPlaySceneToRecentStoppedNode() {
+    if (!recentStoppedNodeQueue.length) return null;
+    const now = Date.now();
+    const windowMs = 4000;
+    const queue = [...recentStoppedNodeQueue];
+    while (queue.length) {
+      const entry = queue.shift();
+      if (!entry?.nodeId) continue;
+      if ((now - Number(entry.ts || 0)) > windowMs) {
+        continue;
+      }
+      recentStoppedNodeQueue = queue;
+      holdCommandActivityNode(entry.nodeId, "playScene");
+      return entry.nodeId;
+    }
+    recentStoppedNodeQueue = [];
+    return null;
+  }
+
+  function queuePendingPlaySceneStart() {
+    const now = Date.now();
+    const windowMs = 4000;
+    const next = pendingPlaySceneStartQueue
+      .filter((ts) => Number.isFinite(Number(ts)) && (now - Number(ts)) <= windowMs);
+    next.push(now);
+    pendingPlaySceneStartQueue = next.slice(-24);
+  }
+
+  function consumePendingPlaySceneStart() {
+    if (!pendingPlaySceneStartQueue.length) return false;
+    const now = Date.now();
+    const windowMs = 4000;
+    const next = pendingPlaySceneStartQueue
+      .filter((ts) => Number.isFinite(Number(ts)) && (now - Number(ts)) <= windowMs);
+    if (!next.length) {
+      pendingPlaySceneStartQueue = [];
+      return false;
+    }
+    next.shift();
+    pendingPlaySceneStartQueue = next;
+    return true;
+  }
+
+  function sceneEventKey(payload) {
+    const sceneName = String(payload?.sceneName || "");
+    const language = String(payload?.language || "");
+    const lower = String(payload?.lower || "");
+    const upper = String(payload?.upper || "");
+    return `${sceneName}|${language}|${lower}|${upper}`;
+  }
+
   function refreshRuntimeVars(target) {
     if (!selectedProjectId) return;
     if (target?.type === "Super") {
@@ -6425,6 +6603,7 @@ Sentence:
       recordRuntimeEventForOverproduction(eventName, payload);
       const nodeId = resolveActivityNodeId(payload);
       if (nodeId) {
+        pushRecentActiveNode(nodeId);
         incrementActivityNode(nodeId);
       }
       return;
@@ -6435,7 +6614,16 @@ Sentence:
       recordRuntimeEventForOverproduction(eventName, payload);
       const nodeId = resolveActivityNodeId(payload);
       if (nodeId) {
-        decrementActivityNode(nodeId);
+        pushRecentStoppedNode(nodeId);
+        if (commandActivityHeldNodeIds.has(nodeId)) {
+          // Keep command-driven highlight while long-running command is still active.
+        } else if (consumePendingPlaySceneStart()) {
+          holdCommandActivityNode(nodeId, "playScene");
+        } else if (longRunningCommandKindForNode(nodeId)) {
+          holdCommandActivityNode(nodeId);
+        } else {
+          decrementActivityNode(nodeId);
+        }
         clearTimeoutEdgesForNode(nodeId);
       }
       return;
@@ -6445,6 +6633,14 @@ Sentence:
       if (runtimeStopRequested) return;
       recordRuntimeEventForOverproduction(eventName, payload);
       const edgeType = normalizeProtocolEdgeType(payload.edgeType);
+      const sourceNodeId = resolveActivityNodeId({
+        nodeId: payload.sourceId,
+        parentId: payload.sourceParentId
+      });
+      // Command-driven node highlights should only be force-cleared on interruption.
+      if (sourceNodeId && edgeType === "IEDGE") {
+        releaseCommandActivityNode(sourceNodeId);
+      }
       const edgeId = resolveActivityEdgeId({ ...payload, edgeType });
       if (edgeId) {
         if (edgeType === "TEDGE") {
@@ -6479,6 +6675,23 @@ Sentence:
     }
     if (eventName === "runtime.scene.playing") {
       if (!activityProjectMatches(payload)) return;
+      let boundNodeId = resolveActivityNodeId(payload);
+      if (boundNodeId) {
+        holdCommandActivityNode(boundNodeId, "playScene");
+      } else {
+        boundNodeId = bindPlaySceneToRecentActiveNode();
+        if (!boundNodeId) {
+          boundNodeId = bindPlaySceneToRecentStoppedNode();
+        }
+        if (!boundNodeId) {
+          queuePendingPlaySceneStart();
+        }
+      }
+      if (boundNodeId) {
+        const next = new Map(playSceneHoldBySceneKey);
+        next.set(sceneEventKey(payload), boundNodeId);
+        playSceneHoldBySceneKey = next;
+      }
       activeScenes = [...activeScenes, {
         sceneName: payload.sceneName, language: payload.language,
         lower: payload.lower, upper: payload.upper
@@ -6500,6 +6713,20 @@ Sentence:
     }
     if (eventName === "runtime.scene.done") {
       if (!activityProjectMatches(payload)) return;
+      const doneKey = sceneEventKey(payload);
+      const directNodeId = resolveActivityNodeId(payload);
+      const mappedNodeId = playSceneHoldBySceneKey.get(doneKey);
+      const releaseNodeId = mappedNodeId || directNodeId || "";
+      if (releaseNodeId) {
+        releaseCommandActivityNode(releaseNodeId);
+      } else {
+        releaseNextPlaySceneHeldNode();
+      }
+      if (mappedNodeId) {
+        const next = new Map(playSceneHoldBySceneKey);
+        next.delete(doneKey);
+        playSceneHoldBySceneKey = next;
+      }
       activeScenes = activeScenes.filter(
         s => !(s.lower === payload.lower && s.upper === payload.upper));
       sceneHistory = [...sceneHistory, {

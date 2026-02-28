@@ -29,6 +29,8 @@
       { "name": "clone_ref_text", "type": "string", "default": ".", "description": "Default transcript for clone mode" },
       { "name": "debug_dump_wav_enabled", "type": "string", "default": "true", "description": "Write per-playback WAV debug dumps" },
       { "name": "debug_dump_wav_dir", "type": "filepath", "default": "/tmp/voicetts-dumps", "description": "Directory for WAV debug dumps" },
+      { "name": "portrait_url", "type": "string", "default": "", "description": "Portrait relay WebSocket URL for 2D talking portrait (e.g. ws://127.0.0.1:8000/v1/portrait/stream); leave empty to disable" },
+      { "name": "avatar_sse_port", "type": "string", "default": "0", "description": "Port for the embedded SSE server driving avatar.html (e.g. 9091); 0 to disable. Avoid 9090 — VSM uses that port internally." },
       { "name": "connectedVar", "type": "string", "sceneflowtype": "Bool", "default": "tts_connected", "description": "Set true when websocket session starts" },
       { "name": "speakingVar", "type": "string", "sceneflowtype": "Bool", "default": "tts_speaking", "description": "True while stream is active" },
       { "name": "visemeVar", "type": "string", "sceneflowtype": "String", "default": "tts_viseme", "description": "Latest viseme label" },

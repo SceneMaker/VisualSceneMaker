@@ -33,6 +33,10 @@ class SceneFlowNarrativeExplainerTest {
         assertEquals("SceneFlow", report.optString("sceneFlowId"));
         assertTrue(report.optJSONArray("patterns").length() >= 1);
         assertTrue(report.optJSONArray("summary").length() >= 1);
+        assertTrue(report.optJSONArray("patternInventory").length() >= 1);
+        assertTrue(containsPatternType(report.getJSONArray("patternInventory"), "fork_parallel_branches"));
+        assertTrue(containsPatternType(report.getJSONArray("patternInventory"), "probabilistic_choice"));
+        assertTrue(containsPatternType(report.getJSONArray("patternInventory"), "unconditional_transition"));
 
         JSONObject firstPattern = report.getJSONArray("patterns").getJSONObject(0);
         assertEquals("constrained_activity_wait_for_interrupt", firstPattern.optString("patternType"));
@@ -163,6 +167,45 @@ class SceneFlowNarrativeExplainerTest {
         assertTrue(report.getJSONArray("summary").toString().contains("(N1)"));
     }
 
+    @Test
+    void technicalAudienceIncludesCanonicalEdgeCodes() throws Exception {
+        Path tempSceneFlow = Files.createTempFile("sceneflow-tech-audience", ".xml");
+        Files.writeString(tempSceneFlow, """
+                <?xml version="1.0" encoding="UTF-8"?>
+                <SceneFlow id="SceneFlow" name="SceneFlow" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="" start="S1;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
+                  <Define></Define>
+                  <Declare>
+                    <VariableDefinition type="Event(*, 10)" name ="event"></VariableDefinition>
+                  </Declare>
+                  <Commands></Commands>
+                  <Node id="N1" name="After" history="false">
+                    <Define></Define>
+                    <Declare></Declare>
+                    <Commands></Commands>
+                  </Node>
+                  <SuperNode id="S1" name="WaitSupernode" comment="" hideLocalVar="false" hideGlobalVar="false" start="">
+                    <Define></Define>
+                    <Declare></Declare>
+                    <Commands></Commands>
+                    <TEdge target="S1" start="" timeout="1000"></TEdge>
+                    <IEdge target="N1" start="">
+                      <Eq>
+                        <SimpleVariable name="event"/>
+                        <StringLiteral><![CDATA[OkayButtonPressed]]></StringLiteral>
+                      </Eq>
+                    </IEdge>
+                  </SuperNode>
+                </SceneFlow>
+                """);
+
+        JSONObject report = new SceneFlowNarrativeExplainer()
+                .explain(tempSceneFlow, new SceneFlowNarrativeExplainer.NarrativeStyle(false, "technical"));
+        assertEquals("technical", report.optString("audience"));
+        String summaryText = report.getJSONArray("summary").toString();
+        assertTrue(summaryText.contains("TEDGE"));
+        assertTrue(summaryText.contains("IEDGE"));
+    }
+
     private String joinLines(final JSONArray array) {
         StringBuilder out = new StringBuilder();
         for (int i = 0; i < array.length(); i++) {
@@ -182,5 +225,14 @@ class SceneFlowNarrativeExplainerTest {
             }
             return new String(in.readAllBytes(), StandardCharsets.UTF_8).replace("\r\n", "\n").trim();
         }
+    }
+
+    private boolean containsPatternType(final JSONArray inventory, final String type) {
+        for (int i = 0; i < inventory.length(); i++) {
+            if (type.equals(inventory.getJSONObject(i).optString("patternType"))) {
+                return true;
+            }
+        }
+        return false;
     }
 }

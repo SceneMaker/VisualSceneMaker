@@ -182,8 +182,13 @@ public final class ReactivePlayer extends RunTimePlayer {
         final SceneGroup group = script.getSceneGroup(slang, name);
         final SceneObject scene = group.select();
 
+        final String sceneNodeId = process.getNode() != null ? process.getNode().getId() : "";
+        final String sceneParentId =
+                process.getNode() != null && process.getNode().getParentNode() != null
+                        ? process.getNode().getParentNode().getId()
+                        : "";
         // Fire scene-started event and record history
-        EventDispatcher.getInstance().convey(new SceneExecutedEvent(this, scene));
+        EventDispatcher.getInstance().convey(new SceneExecutedEvent(this, scene, sceneNodeId, sceneParentId));
         mProject.recordScenePlay(scene.getName(), scene.getLanguage(), scene.getLower(), scene.getUpper());
 
         // Create playback task
@@ -286,7 +291,11 @@ public final class ReactivePlayer extends RunTimePlayer {
                     EventDispatcher.getInstance().convey(new TurnDoneEvent(ReactivePlayer.this, turn));
                 }
                 // Fire scene-done event
-                EventDispatcher.getInstance().convey(new SceneDoneEvent(ReactivePlayer.this, scene));
+                EventDispatcher.getInstance().convey(new SceneDoneEvent(
+                        ReactivePlayer.this,
+                        scene,
+                        sceneNodeId,
+                        sceneParentId));
             }
         };
         // Start the playback task

@@ -1948,22 +1948,36 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
             message.put("event", "runtime.timeoutProgress");
 
         } else if (event instanceof SceneExecutedEvent) {
-            SceneObject scene = ((SceneExecutedEvent) event).getScene();
+            SceneExecutedEvent sceneEvent = (SceneExecutedEvent) event;
+            SceneObject scene = sceneEvent.getScene();
             if (scene == null) return;
             payload.put("sceneName", scene.getName());
             payload.put("language", scene.getLanguage());
             payload.put("lower", scene.getLower());
             payload.put("upper", scene.getUpper());
+            if (!sceneEvent.getNodeId().isBlank()) {
+                payload.put("nodeId", sceneEvent.getNodeId());
+            }
+            if (!sceneEvent.getParentId().isBlank()) {
+                payload.put("parentId", sceneEvent.getParentId());
+            }
             message.put("channel", "runtime");
             message.put("event", "runtime.scene.playing");
 
         } else if (event instanceof SceneDoneEvent) {
-            SceneObject scene = ((SceneDoneEvent) event).getScene();
+            SceneDoneEvent sceneEvent = (SceneDoneEvent) event;
+            SceneObject scene = sceneEvent.getScene();
             if (scene == null) return;
             payload.put("sceneName", scene.getName());
             payload.put("language", scene.getLanguage());
             payload.put("lower", scene.getLower());
             payload.put("upper", scene.getUpper());
+            if (!sceneEvent.getNodeId().isBlank()) {
+                payload.put("nodeId", sceneEvent.getNodeId());
+            }
+            if (!sceneEvent.getParentId().isBlank()) {
+                payload.put("parentId", sceneEvent.getParentId());
+            }
             message.put("channel", "runtime");
             message.put("event", "runtime.scene.done");
 

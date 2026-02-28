@@ -4,8 +4,11 @@ import de.dfki.vsm.model.sceneflow.chart.BasicNode;
 import de.dfki.vsm.model.sceneflow.chart.SceneFlow;
 import de.dfki.vsm.model.sceneflow.chart.SuperNode;
 import de.dfki.vsm.model.sceneflow.chart.edge.AbstractEdge;
+import de.dfki.vsm.model.sceneflow.chart.edge.EpsilonEdge;
+import de.dfki.vsm.model.sceneflow.chart.edge.ForkingEdge;
 import de.dfki.vsm.model.sceneflow.chart.edge.GuargedEdge;
 import de.dfki.vsm.model.sceneflow.chart.edge.InterruptEdge;
+import de.dfki.vsm.model.sceneflow.chart.edge.RandomEdge;
 import de.dfki.vsm.model.sceneflow.chart.edge.TimeoutEdge;
 import de.dfki.vsm.model.sceneflow.glue.command.Assignment;
 import de.dfki.vsm.model.sceneflow.glue.command.Command;
@@ -28,11 +31,11 @@ import java.util.Set;
 public final class SceneFlowNarrativeExplainer {
 
     public JSONObject explain(final Path sceneFlowPath) throws SceneFlowIrCompileException {
-        return explain(sceneFlowPath, new NarrativeStyle(false));
+        return explain(sceneFlowPath, new NarrativeStyle(false, "reader-friendly"));
     }
 
     public JSONObject explain(final Path sceneFlowPath, final NarrativeStyle style) throws SceneFlowIrCompileException {
-        final NarrativeStyle effectiveStyle = style == null ? new NarrativeStyle(false) : style;
+        final NarrativeStyle effectiveStyle = style == null ? new NarrativeStyle(false, "reader-friendly") : style;
         final SceneFlow flow = loadSceneFlow(sceneFlowPath);
         final Map<String, BasicNode> nodeById = indexNodes(flow);
         final JSONArray patterns = new JSONArray();
@@ -72,6 +75,18 @@ public final class SceneFlowNarrativeExplainer {
                 summary.put(interruptWaitPattern.optString("description", ""));
             }
 
+            final JSONObject forkPattern = detectForkParallelPattern(node, nodeById, effectiveStyle);
+            if (forkPattern != null) {
+                patterns.put(forkPattern);
+                summary.put(forkPattern.optString("description", ""));
+            }
+
+            final JSONObject probabilisticPattern = detectProbabilisticChoicePattern(node, nodeById, effectiveStyle);
+            if (probabilisticPattern != null) {
+                patterns.put(probabilisticPattern);
+                summary.put(probabilisticPattern.optString("description", ""));
+            }
+
             final JSONObject timeoutRetryPattern = detectTimeoutRetryOrEscalationPattern(node, nodeById, effectiveStyle);
             if (timeoutRetryPattern != null) {
                 patterns.put(timeoutRetryPattern);
@@ -83,6 +98,19 @@ public final class SceneFlowNarrativeExplainer {
             if (guardedWaitPattern != null) {
                 patterns.put(guardedWaitPattern);
                 summary.put(guardedWaitPattern.optString("description", ""));
+                continue;
+            }
+
+            final JSONObject conditionalChoicePattern = detectConditionalChoicePattern(node, nodeById, effectiveStyle);
+            if (conditionalChoicePattern != null) {
+                patterns.put(conditionalChoicePattern);
+                summary.put(conditionalChoicePattern.optString("description", ""));
+            }
+
+            final JSONObject unconditionalTransitionPattern = detectUnconditionalTransitionPattern(node, nodeById, effectiveStyle);
+            if (unconditionalTransitionPattern != null) {
+                patterns.put(unconditionalTransitionPattern);
+                summary.put(unconditionalTransitionPattern.optString("description", ""));
             }
         }
 
@@ -93,6 +121,7 @@ public final class SceneFlowNarrativeExplainer {
         return new JSONObject()
                 .put("generatedAt", Instant.now().toString())
                 .put("sceneFlowPath", sceneFlowPath.toAbsolutePath().toString())
+                .put("audience", effectiveStyle.audience())
                 .put("sceneFlowId", nonBlank(flow.getId(), "SceneFlow"))
                 .put("sceneFlowName", nonBlank(flow.getName(), nonBlank(flow.getId(), "SceneFlow")))
                 .put("globalSummary", new JSONObject()
@@ -109,6 +138,7 @@ public final class SceneFlowNarrativeExplainer {
                 .put("activeFlows", overview.activeFlows())
                 .put("inactiveFlows", overview.inactiveFlows())
                 .put("summary", summary)
+                .put("patternInventory", buildPatternInventory(patterns))
                 .put("patterns", patterns);
     }
 
@@ -158,13 +188,14 @@ public final class SceneFlowNarrativeExplainer {
         }
 
         final String supernodeLabel = label("Supernode", superNode.getName(), superNode.getId(), style);
-        final String firstSentence = supernodeLabel + " waits until " + joinWithOr(exitClauses) + ".";
+        final String firstSentence = supernodeLabel + " waits and exits via "
+                + edgeLabel("IEDGE", style) + " when " + joinWithOr(exitClauses) + ".";
         final String secondSentence = waitLoop.onSuperNodeSelf()
-                ? "The supernode is kept alive by a self " + EdgeLabelMapper.toHumanLabel("TEDGE")
+                ? "The supernode is kept alive by a self " + edgeLabel("TEDGE", style)
                 + " every " + waitLoop.timeoutMs() + " ms."
                 : "The supernode is kept alive by a minimal internal flow consisting of "
                 + label("node", waitLoop.nodeName(), waitLoop.nodeId(), style)
-                + " with a self " + EdgeLabelMapper.toHumanLabel("TEDGE")
+                + " with a self " + edgeLabel("TEDGE", style)
                 + " every " + waitLoop.timeoutMs() + " ms.";
         final String description = firstSentence + " " + secondSentence;
 
@@ -235,9 +266,9 @@ public final class SceneFlowNarrativeExplainer {
         final String parentId = parent == null ? "" : parent.getId();
         final String parentName = parent == null ? "" : parent.getName();
         final String description = label("Node", node.getName(), node.getId(), style)
-                + " waits in a timed loop with a self " + EdgeLabelMapper.toHumanLabel("TEDGE")
+                + " waits in a timed loop with a self " + edgeLabel("TEDGE", style)
                 + " every " + timeoutEdge.getTimeout() + " ms. "
-                + "It reacts via " + EdgeLabelMapper.toHumanLabel("IEDGE")
+                + "It reacts via " + edgeLabel("IEDGE", style)
                 + " when " + joinWithOr(exitClauses) + ".";
 
         return new JSONObject()
@@ -296,7 +327,7 @@ public final class SceneFlowNarrativeExplainer {
 
         final String sourceLabel = label("Node", node.getName(), node.getId(), style, true);
         final String firstSentence = sourceLabel + " is evaluated in a timed loop with a self "
-                + EdgeLabelMapper.toHumanLabel("TEDGE") + " every " + timeoutEdge.getTimeout() + " ms.";
+                + edgeLabel("TEDGE", style) + " every " + timeoutEdge.getTimeout() + " ms.";
         final List<String> clauses = new ArrayList<>();
         for (int i = 0; i < exits.length(); i++) {
             final JSONObject exit = exits.getJSONObject(i);
@@ -331,6 +362,169 @@ public final class SceneFlowNarrativeExplainer {
                                 .put("scope", "node_self")
                                 .put("timeoutMs", timeoutEdge.getTimeout()))
                         .put("guardedExits", exits));
+    }
+
+    private JSONObject detectForkParallelPattern(
+            final BasicNode node,
+            final Map<String, BasicNode> nodeById,
+            final NarrativeStyle style) {
+        if (node == null || node instanceof SuperNode || node.getFEdgeList() == null || node.getFEdgeList().isEmpty()) {
+            return null;
+        }
+        final JSONArray branches = new JSONArray();
+        final List<String> branchTargets = new ArrayList<>();
+        for (ForkingEdge edge : node.getFEdgeList()) {
+            final String targetId = edge.getTargetUnid();
+            if (targetId == null || targetId.isBlank()) {
+                continue;
+            }
+            final BasicNode target = nodeById.get(targetId);
+            final String targetLabel = label("node", target == null ? "" : target.getName(), targetId, style, true);
+            branchTargets.add(targetLabel);
+            branches.put(new JSONObject()
+                    .put("sourceId", node.getId())
+                    .put("targetId", targetId)
+                    .put("targetName", target == null ? "" : target.getName()));
+        }
+        if (branches.isEmpty()) {
+            return null;
+        }
+
+        final String description = label("Node", node.getName(), node.getId(), style)
+                + " starts parallel branches via " + edgeLabel("FEDGE", style)
+                + " to " + joinWithConjunction(branchTargets, "and") + ".";
+        return new JSONObject()
+                .put("patternType", "fork_parallel_branches")
+                .put("description", description)
+                .put("evidence", new JSONObject()
+                        .put("nodeId", node.getId())
+                        .put("nodeName", node.getName())
+                        .put("branches", branches));
+    }
+
+    private JSONObject detectProbabilisticChoicePattern(
+            final BasicNode node,
+            final Map<String, BasicNode> nodeById,
+            final NarrativeStyle style) {
+        if (node == null || node instanceof SuperNode || node.getPEdgeList() == null || node.getPEdgeList().isEmpty()) {
+            return null;
+        }
+        final JSONArray branches = new JSONArray();
+        final List<String> branchDescriptions = new ArrayList<>();
+        for (RandomEdge edge : node.getPEdgeList()) {
+            final String targetId = edge.getTargetUnid();
+            if (targetId == null || targetId.isBlank()) {
+                continue;
+            }
+            final BasicNode target = nodeById.get(targetId);
+            final String targetLabel = label("node", target == null ? "" : target.getName(), targetId, style, true);
+            final int probability = edge.getProbability();
+            branchDescriptions.add(targetLabel + " (" + probability + "%)");
+            branches.put(new JSONObject()
+                    .put("sourceId", node.getId())
+                    .put("targetId", targetId)
+                    .put("targetName", target == null ? "" : target.getName())
+                    .put("probability", probability));
+        }
+        if (branches.isEmpty()) {
+            return null;
+        }
+
+        final String description = label("Node", node.getName(), node.getId(), style)
+                + " selects one branch via " + edgeLabel("PEDGE", style)
+                + ": " + joinWithConjunction(branchDescriptions, "or") + ".";
+        return new JSONObject()
+                .put("patternType", "probabilistic_choice")
+                .put("description", description)
+                .put("evidence", new JSONObject()
+                        .put("nodeId", node.getId())
+                        .put("nodeName", node.getName())
+                        .put("probabilisticBranches", branches));
+    }
+
+    private JSONObject detectConditionalChoicePattern(
+            final BasicNode node,
+            final Map<String, BasicNode> nodeById,
+            final NarrativeStyle style) {
+        if (node == null || node instanceof SuperNode || node.getCEdgeList() == null || node.getCEdgeList().isEmpty()) {
+            return null;
+        }
+
+        final JSONArray branches = new JSONArray();
+        final List<String> conditionClauses = new ArrayList<>();
+        for (GuargedEdge edge : node.getCEdgeList()) {
+            final String targetId = edge.getTargetUnid();
+            if (targetId == null || targetId.isBlank()) {
+                continue;
+            }
+            final String condition = expressionToText(edge.getCondition());
+            final BasicNode target = nodeById.get(targetId);
+            final String targetLabel = label("node", target == null ? "" : target.getName(), targetId, style, true);
+            conditionClauses.add(conditionActivationClause(condition, targetLabel));
+            branches.put(new JSONObject()
+                    .put("sourceId", node.getId())
+                    .put("targetId", targetId)
+                    .put("targetName", target == null ? "" : target.getName())
+                    .put("condition", condition));
+        }
+        if (branches.isEmpty()) {
+            return null;
+        }
+
+        final String sourceLabel = label("Node", node.getName(), node.getId(), style, true);
+        final String actionSummary = summarizeNodeCommands(node);
+        final String intro = actionSummary.isBlank()
+                ? "The conditions of the outgoing " + edgeLabel("CEDGE", style)
+                + "s are " + conditionalEvaluationWindow(node, style) + "."
+                : "After processing the actions of " + sourceLabel + ": "
+                + actionSummary + ", the conditions of the outgoing "
+                + edgeLabel("CEDGE", style) + "s are "
+                + conditionalEvaluationWindow(node, style) + ".";
+        final String checks = joinWithSemicolon(conditionClauses);
+        final String fallback = fallbackTransitionClause(node, nodeById, style, conditionClauses.size());
+        final String description = intro + " " + checks + (fallback.isBlank() ? "" : " " + fallback);
+        return new JSONObject()
+                .put("patternType", "conditional_choice")
+                .put("description", description)
+                .put("evidence", new JSONObject()
+                        .put("nodeId", node.getId())
+                        .put("nodeName", node.getName())
+                        .put("conditionalBranches", branches));
+    }
+
+    private JSONObject detectUnconditionalTransitionPattern(
+            final BasicNode node,
+            final Map<String, BasicNode> nodeById,
+            final NarrativeStyle style) {
+        if (node == null || node instanceof SuperNode) {
+            return null;
+        }
+        if (node.getCEdgeList() != null && !node.getCEdgeList().isEmpty()) {
+            // For guarded branching nodes, the E-edge is the explicit fallback and is narrated there.
+            return null;
+        }
+        final AbstractEdge edge = node.getDedge();
+        if (!(edge instanceof EpsilonEdge epsilonEdge)) {
+            return null;
+        }
+        final String targetId = epsilonEdge.getTargetUnid();
+        if (targetId == null || targetId.isBlank() || targetId.equals(node.getId())) {
+            return null;
+        }
+        final BasicNode target = nodeById.get(targetId);
+        final String targetLabel = label("node", target == null ? "" : target.getName(), targetId, style, true);
+
+        final String description = label("Node", node.getName(), node.getId(), style)
+                + " proceeds via " + edgeLabel("EEDGE", style)
+                + " to " + targetLabel + ".";
+        return new JSONObject()
+                .put("patternType", "unconditional_transition")
+                .put("description", description)
+                .put("evidence", new JSONObject()
+                        .put("nodeId", node.getId())
+                        .put("nodeName", node.getName())
+                        .put("targetId", targetId)
+                        .put("targetName", target == null ? "" : target.getName()));
     }
 
     private JSONObject detectTimeoutRetryOrEscalationPattern(
@@ -381,7 +575,7 @@ public final class SceneFlowNarrativeExplainer {
 
         final String description = label("Node", node.getName(), node.getId(), style)
                 + " implements timeout retry/escalation: it stays active with a self "
-                + EdgeLabelMapper.toHumanLabel("TEDGE") + " every "
+                + edgeLabel("TEDGE", style) + " every "
                 + timeoutEdge.getTimeout() + " ms and exits when "
                 + joinWithOr(thresholdClauses) + ".";
         return new JSONObject()
@@ -594,6 +788,16 @@ public final class SceneFlowNarrativeExplainer {
     }
 
     private String commandSentence(final BasicNode node, final NarrativeStyle style) {
+        final String actionSummary = summarizeNodeCommands(node);
+        if (actionSummary.isBlank()) {
+            return "";
+        }
+        return "Before evaluating the conditional edge, commands of "
+                + label("node", node.getName(), node.getId(), style, true)
+                + " are processed: " + actionSummary + ".";
+    }
+
+    private String summarizeNodeCommands(final BasicNode node) {
         if (node == null || node.getCmdList() == null || node.getCmdList().isEmpty()) {
             return "";
         }
@@ -625,9 +829,95 @@ public final class SceneFlowNarrativeExplainer {
         if (summarized.isEmpty()) {
             return "";
         }
-        return "Before evaluating the conditional edge, commands of "
-                + label("node", node.getName(), node.getId(), style, true)
-                + " are processed: " + String.join(", ", summarized) + ".";
+        return String.join(", ", summarized);
+    }
+
+    private String conditionActivationClause(final String condition, final String targetLabel) {
+        if (condition == null || condition.isBlank()) {
+            return "If an outgoing condition holds, " + targetLabel + " is activated.";
+        }
+        final java.util.regex.Matcher matcher = java.util.regex.Pattern
+                .compile("^\\s*([A-Za-z_][A-Za-z0-9_]*)\\s*==\\s*(.+?)\\s*$")
+                .matcher(condition);
+        if (matcher.matches()) {
+            final String variable = matcher.group(1).trim();
+            String value = matcher.group(2).trim();
+            if (value.startsWith("\"") && value.endsWith("\"") && value.length() >= 2) {
+                value = value.substring(1, value.length() - 1);
+                return "If " + variable + " equals \"" + value + "\", " + targetLabel + " is activated.";
+            }
+            return "If the value of " + variable + " is " + value + ", " + targetLabel + " is activated.";
+        }
+        return "If the condition \"" + condition + "\" is met, " + targetLabel + " is activated.";
+    }
+
+    private String fallbackTransitionClause(
+            final BasicNode node,
+            final Map<String, BasicNode> nodeById,
+            final NarrativeStyle style,
+            final int conditionCount) {
+        final AbstractEdge dedge = node.getDedge();
+        final String conditionRef = conditionCount == 1 ? "this condition" : "these conditions";
+        final String beVerb = conditionCount == 1 ? "is" : "are";
+
+        if (dedge instanceof EpsilonEdge epsilonEdge) {
+            final String targetId = epsilonEdge.getTargetUnid();
+            if (targetId == null || targetId.isBlank() || targetId.equals(node.getId())) {
+                return "";
+            }
+            final BasicNode target = nodeById.get(targetId);
+            final String targetLabel = label("node", target == null ? "" : target.getName(), targetId, style, true);
+            return "If " + conditionRef + " " + beVerb + " not met, " + targetLabel
+                    + " is activated via the " + edgeLabel("EEDGE", style) + ".";
+        }
+
+        if (dedge instanceof TimeoutEdge timeoutEdge) {
+            final String targetId = timeoutEdge.getTargetUnid();
+            if (targetId == null || targetId.isBlank() || targetId.equals(node.getId())) {
+                return "";
+            }
+            final BasicNode target = nodeById.get(targetId);
+            final String targetLabel = label("node", target == null ? "" : target.getName(), targetId, style, true);
+            return "If " + conditionRef + " " + beVerb + " not met within that timeframe, " + targetLabel
+                    + " is activated via the " + edgeLabel("TEDGE", style) + ".";
+        }
+
+        return "";
+    }
+
+    private String conditionalEvaluationWindow(final BasicNode node, final NarrativeStyle style) {
+        final AbstractEdge dedge = node.getDedge();
+        if (dedge instanceof TimeoutEdge timeoutEdge && !node.getId().equals(timeoutEdge.getTargetUnid())) {
+            return "evaluated within the timeframe defined by the outgoing "
+                    + edgeLabel("TEDGE", style) + " (" + timeoutEdge.getTimeout() + " ms)";
+        }
+        return "evaluated immediately";
+    }
+
+    private String fallbackUnconditionalClause(
+            final BasicNode node,
+            final Map<String, BasicNode> nodeById,
+            final NarrativeStyle style) {
+        final AbstractEdge dedge = node.getDedge();
+        if (!(dedge instanceof EpsilonEdge epsilonEdge)) {
+            return "";
+        }
+        final String targetId = epsilonEdge.getTargetUnid();
+        if (targetId == null || targetId.isBlank() || targetId.equals(node.getId())) {
+            return "";
+        }
+        final BasicNode target = nodeById.get(targetId);
+        final String targetLabel = label("node", target == null ? "" : target.getName(), targetId, style, true);
+        return "If none of these conditions is met, " + targetLabel
+                + " is activated via the " + edgeLabel("EEDGE", style) + ".";
+    }
+
+    private String edgeLabel(final String canonicalEdge, final NarrativeStyle style) {
+        final String human = EdgeLabelMapper.toHumanLabel(canonicalEdge);
+        if (style != null && style.isTechnicalAudience()) {
+            return human + " (" + EdgeLabelMapper.canonicalize(canonicalEdge) + ")";
+        }
+        return human;
     }
 
     private String nonBlank(final String value, final String fallback) {
@@ -694,6 +984,72 @@ public final class SceneFlowNarrativeExplainer {
         return String.join(", ", values);
     }
 
+    private String joinWithSemicolon(final List<String> values) {
+        if (values == null || values.isEmpty()) {
+            return "";
+        }
+        return String.join(" ", values);
+    }
+
+    private JSONArray buildPatternInventory(final JSONArray patterns) {
+        final Map<String, Integer> counts = new LinkedHashMap<>();
+        final Map<String, Set<String>> idsByType = new LinkedHashMap<>();
+        for (int i = 0; i < patterns.length(); i++) {
+            final JSONObject pattern = patterns.optJSONObject(i);
+            if (pattern == null) {
+                continue;
+            }
+            final String patternType = pattern.optString("patternType", "").trim();
+            if (patternType.isBlank()) {
+                continue;
+            }
+            counts.put(patternType, counts.getOrDefault(patternType, 0) + 1);
+            final Set<String> ids = idsByType.computeIfAbsent(patternType, key -> new HashSet<>());
+            ids.addAll(extractIdsFromEvidence(pattern.optJSONObject("evidence")));
+        }
+        final List<String> keys = new ArrayList<>(counts.keySet());
+        keys.sort(Comparator.naturalOrder());
+        final JSONArray inventory = new JSONArray();
+        for (String key : keys) {
+            final List<String> ids = new ArrayList<>(idsByType.getOrDefault(key, Set.of()));
+            ids.sort(Comparator.naturalOrder());
+            inventory.put(new JSONObject()
+                    .put("patternType", key)
+                    .put("count", counts.get(key))
+                    .put("ids", new JSONArray(ids)));
+        }
+        return inventory;
+    }
+
+    private Set<String> extractIdsFromEvidence(final JSONObject evidence) {
+        final Set<String> ids = new HashSet<>();
+        if (evidence == null) {
+            return ids;
+        }
+        for (String key : evidence.keySet()) {
+            final Object value = evidence.get(key);
+            if (value instanceof String str) {
+                if (key.endsWith("Id") && !str.isBlank()) {
+                    ids.add(str);
+                }
+                continue;
+            }
+            if (value instanceof JSONObject nested) {
+                ids.addAll(extractIdsFromEvidence(nested));
+                continue;
+            }
+            if (value instanceof JSONArray array) {
+                for (int i = 0; i < array.length(); i++) {
+                    final Object item = array.get(i);
+                    if (item instanceof JSONObject nestedItem) {
+                        ids.addAll(extractIdsFromEvidence(nestedItem));
+                    }
+                }
+            }
+        }
+        return ids;
+    }
+
     private record WaitLoopEvidence(String nodeId, String nodeName, long timeoutMs, boolean onSuperNodeSelf) {
     }
 
@@ -709,6 +1065,19 @@ public final class SceneFlowNarrativeExplainer {
             int inactiveCount) {
     }
 
-    public record NarrativeStyle(boolean includeIds) {
+    public record NarrativeStyle(boolean includeIds, String audience) {
+        public NarrativeStyle(boolean includeIds) {
+            this(includeIds, "reader-friendly");
+        }
+
+        public NarrativeStyle {
+            if (audience == null || audience.isBlank()) {
+                audience = "reader-friendly";
+            }
+        }
+
+        public boolean isTechnicalAudience() {
+            return "technical".equalsIgnoreCase(audience);
+        }
     }
 }

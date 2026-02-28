@@ -157,13 +157,14 @@ Implemented and working:
 - Rule-level observability in generation reports (active/executed/violated + severity)
 - Warning-capable semantic gating (non-blocking warnings, blocking errors)
 - Prompt-resolution traceability with confidence + ambiguity reporting in candidate metadata and pipeline reports
+- Reverse-explanation prototype (`sceneflow.xml` -> deterministic report with pattern evidence IDs)
 
 Partially implemented / planned:
 
 - Attention-aware interruptibility
 - Mixed-initiative prompting policies
 - Social/multimodal constrained activities beyond base fallback
-- Reverse explanation pipeline (SceneFlow -> natural-language explanation with id-level traceability)
+- Broaden reverse explanation coverage beyond constrained-activity wait pattern (branching, retries, policy variants)
 
 ## 10. Recommended Next Steps
 

@@ -152,23 +152,37 @@ public final class AndroidRuntimeEventBridge implements EventListener {
         }
 
         if (event instanceof SceneExecutedEvent) {
-            SceneObject scene = ((SceneExecutedEvent) event).getScene();
+            SceneExecutedEvent sceneEvent = (SceneExecutedEvent) event;
+            SceneObject scene = sceneEvent.getScene();
             if (scene == null) return;
             payload.put("sceneName", scene.getName());
             payload.put("language", scene.getLanguage());
             payload.put("lower", scene.getLower());
             payload.put("upper", scene.getUpper());
+            if (!sceneEvent.getNodeId().isBlank()) {
+                payload.put("nodeId", sceneEvent.getNodeId());
+            }
+            if (!sceneEvent.getParentId().isBlank()) {
+                payload.put("parentId", sceneEvent.getParentId());
+            }
             emitEvent(broadcaster, "runtime", "runtime.scene.playing", payload);
             return;
         }
 
         if (event instanceof SceneDoneEvent) {
-            SceneObject scene = ((SceneDoneEvent) event).getScene();
+            SceneDoneEvent sceneEvent = (SceneDoneEvent) event;
+            SceneObject scene = sceneEvent.getScene();
             if (scene == null) return;
             payload.put("sceneName", scene.getName());
             payload.put("language", scene.getLanguage());
             payload.put("lower", scene.getLower());
             payload.put("upper", scene.getUpper());
+            if (!sceneEvent.getNodeId().isBlank()) {
+                payload.put("nodeId", sceneEvent.getNodeId());
+            }
+            if (!sceneEvent.getParentId().isBlank()) {
+                payload.put("parentId", sceneEvent.getParentId());
+            }
             emitEvent(broadcaster, "runtime", "runtime.scene.done", payload);
             return;
         }

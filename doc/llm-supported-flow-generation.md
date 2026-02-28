@@ -257,6 +257,17 @@ Why this is pragmatic:
 - no direct hallucination-prone XML narration
 - same rule base can validate both generation and explanation consistency
 
+Current implementation status:
+
+- Added deterministic prototype explainer:
+  - Class: `/Users/gebhard/Code/Repo/VisualSceneMaker/src/main/java/de/dfki/vsm/sceneflow/ir/SceneFlowNarrativeExplainer.java`
+  - CLI: `/Users/gebhard/Code/Repo/VisualSceneMaker/src/main/java/de/dfki/vsm/sceneflow/ir/SceneFlowNarrativeExplainerCli.java`
+  - Gradle task: `./gradlew explainSceneFlow -Psceneflow=... -Pout=...`
+- Current detector scope:
+  - constrained-activity wait pattern (`supernode` + internal self `TEDGE` liveness + outgoing `IEDGE` exits)
+- Output:
+  - machine-readable explanation report (`summary`, `patterns`, and id-level evidence)
+
 Catalog artifact:
 
 - `/Users/gebhard/Code/Repo/VisualSceneMaker/doc/interactive-design-pattern-catalog.json`
