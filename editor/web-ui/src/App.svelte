@@ -791,6 +791,9 @@
   let projectConfigPending = false;
   let projectConfigApplyTimer = null;
   let projectConfigSelection = { type: "project" };
+  let projectConfigGeneralExpanded = true;
+  let projectConfigLlmExpanded = true;
+  let projectConfigDevicesExpanded = true;
   let projectConfigNewPlugin = { name: "", className: "", type: "device", load: true };
   let projectConfigNewAgent = { name: "", device: "" };
   let projectConfigNewFeature = { key: "", value: "" };
@@ -4047,6 +4050,9 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
     projectConfigPrevBodyOverflow = document.body.style.overflow || "";
     document.body.style.overflow = "hidden";
     projectConfigSelection = { type: "devices" };
+    projectConfigGeneralExpanded = true;
+    projectConfigLlmExpanded = true;
+    projectConfigDevicesExpanded = true;
     projectConfigError = "";
     projectConfigSaved = null;
     projectConfigPending = false;
@@ -4071,6 +4077,9 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
     projectConfigDialogOpen = false;
     projectConfigError = "";
     projectConfigSelection = { type: "devices" };
+    projectConfigGeneralExpanded = true;
+    projectConfigLlmExpanded = true;
+    projectConfigDevicesExpanded = true;
     projectConfigNewPlugin = { name: "", className: "", type: "device", load: true };
     projectConfigNewAgent = { name: "", device: "" };
     projectConfigNewFeature = { key: "", value: "" };
@@ -4086,6 +4095,23 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
     runtimeVizCalibrationStatus = "";
     document.body.style.overflow = projectConfigPrevBodyOverflow;
     restoreFocus();
+  }
+
+  function projectConfigSectionStyle(section) {
+    const visibleCount =
+      (projectConfigGeneralExpanded ? 1 : 0) +
+      (projectConfigLlmExpanded ? 1 : 0) +
+      (projectConfigDevicesExpanded ? 1 : 0);
+    if (visibleCount <= 1) {
+      return "flex:1 1 0; min-height:0;";
+    }
+    const weights = {
+      general: 3,
+      llm: 2,
+      devices: 5
+    };
+    const weight = weights[section] || 1;
+    return `flex:${weight} 1 0; min-height:0;`;
   }
 
   function selectProjectConfig(selection) {
@@ -15360,6 +15386,35 @@ Sentence:
               <h3 id="project-config-title">Project Settings</h3>
             </div>
           </div>
+          <div class="project-config-header-toggle-group" role="group" aria-label="Project settings sections">
+            <button
+              type="button"
+              class="ghost panel-save project-config-header-toggle"
+              class:active={projectConfigGeneralExpanded}
+              on:click={() => (projectConfigGeneralExpanded = !projectConfigGeneralExpanded)}
+              aria-pressed={projectConfigGeneralExpanded}
+            >
+              General
+            </button>
+            <button
+              type="button"
+              class="ghost panel-save project-config-header-toggle"
+              class:active={projectConfigLlmExpanded}
+              on:click={() => (projectConfigLlmExpanded = !projectConfigLlmExpanded)}
+              aria-pressed={projectConfigLlmExpanded}
+            >
+              Llm
+            </button>
+            <button
+              type="button"
+              class="ghost panel-save project-config-header-toggle"
+              class:active={projectConfigDevicesExpanded}
+              on:click={() => (projectConfigDevicesExpanded = !projectConfigDevicesExpanded)}
+              aria-pressed={projectConfigDevicesExpanded}
+            >
+              Devices
+            </button>
+          </div>
           <button
             type="button"
             class="ghost icon-button project-config-close"
@@ -15371,7 +15426,8 @@ Sentence:
           </button>
         </div>
         <div class="project-config-body">
-          <div class="project-config-overview">
+          {#if projectConfigGeneralExpanded}
+          <div class="project-config-overview" style={projectConfigSectionStyle("general")}>
             <div class="project-config-panel project-config-panel--overview">
               <div class="project-config-overview-grid">
                 <div class="project-config-overview-label">Description</div>
@@ -15505,7 +15561,9 @@ Sentence:
               </div>
             </div>
           </div>
-          <div class="project-config-llm-panel">
+          {/if}
+          {#if projectConfigLlmExpanded}
+          <div class="project-config-llm-panel" style={projectConfigSectionStyle("llm")}>
             <div class="project-config-llm-header">
               <h4>LLM Services ({projectConfigLLMs.length})</h4>
               <div class="project-config-llm-add">
@@ -15630,6 +15688,9 @@ Sentence:
               </div>
             {/if}
           </div>
+          {/if}
+          {#if projectConfigDevicesExpanded}
+          <div class="project-config-devices-row" style={projectConfigSectionStyle("devices")}>
           <aside class="project-config-tree">
             <div class="project-config-tree-section">
               <button
@@ -16209,6 +16270,8 @@ Sentence:
               </div>
             {/if}
           </section>
+          </div>
+          {/if}
         </div>
         {#if projectConfigError}
           <p class="error">{projectConfigError}</p>

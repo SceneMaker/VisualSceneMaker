@@ -85,6 +85,7 @@ dependencies {
     implementation project(":plugins:sockets")
     implementation project(":plugins:voicetts")
     implementation project(":plugins:DriveSimulator")
+    implementation project(":plugins:asr")
     implementation "io.javalin:javalin:4.6.8"
     implementation 'org.jetbrains:annotations:16.0.2'
     // https://mvnrepository.com/artifact/org.slick2d/slick2d-core

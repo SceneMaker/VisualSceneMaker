@@ -2921,7 +2921,9 @@ summary {
   max-height: 90vh;
   height: 90vh;
   overflow: hidden;
-  grid-template-rows: auto minmax(0, 1fr);
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
 }
 
 .modal.monitor-modal {
@@ -3416,10 +3418,10 @@ summary {
 }
 
 .project-config-header {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
-  justify-content: space-between;
-  gap: 0.4rem;
+  gap: 0.6rem;
 }
 
 .project-config-header-actions {
@@ -3428,10 +3430,46 @@ summary {
   gap: 0.5rem;
 }
 
+.project-config-header-toggle-group {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  justify-self: center;
+  grid-column: 2;
+}
+
+.project-config-header-toggle {
+  min-width: 92px;
+  padding: 0 12px;
+  border-radius: var(--radius-sm);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.project-config-header-toggle:hover {
+  color: var(--ink);
+}
+
+.project-config-header-toggle.active {
+  color: var(--accent);
+  background: #ffffff;
+  border-color: var(--stroke);
+}
+
+.project-config-header-toggle.panel-save.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #ffffff;
+}
+
 .project-config-title {
   display: flex;
   align-items: center;
   gap: 0.35rem;
+  min-width: 0;
+  justify-self: start;
 }
 
 .project-config-icon {
@@ -3451,15 +3489,13 @@ summary {
 }
 
 .project-config-body {
-  display: grid;
-  grid-template-columns: 240px minmax(0, 1fr);
-  grid-template-rows: auto auto minmax(0, 1fr);
+  display: flex;
+  flex-direction: column;
   gap: 0.35rem;
+  flex: 1 1 0;
   min-height: 0;
   height: 100%;
   overflow: hidden;
-  align-content: stretch;
-  align-items: stretch;
   border-radius: var(--radius-md);
   padding: 0.35rem 0.35rem 0 0.35rem;
   border: none;
@@ -3469,8 +3505,10 @@ summary {
 }
 
 .project-config-overview {
-  grid-column: 1 / -1;
   display: grid;
+  min-height: 0;
+  height: 100%;
+  overflow: auto;
   margin-bottom: 0;
   padding-bottom: 0;
   background: var(--project-config-overview-bg);
@@ -3531,6 +3569,7 @@ summary {
   font-size: 1.1rem;
   line-height: 1;
   padding: 0;
+  justify-self: end;
 }
 
 .project-config-inline {
@@ -3579,11 +3618,22 @@ summary {
 
 /* LLM panel */
 .project-config-llm-panel {
-  grid-column: 1 / -1;
   border: 1px solid var(--stroke);
   border-radius: var(--radius-md);
   background: var(--project-config-overview-bg);
   padding: 0.5rem 0.65rem;
+  min-height: 0;
+  height: 100%;
+  overflow: auto;
+  align-content: start;
+}
+
+.project-config-devices-row {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+  gap: 0.35rem;
+  min-height: 0;
+  height: 100%;
 }
 
 .project-config-llm-header {
@@ -3753,6 +3803,7 @@ summary {
   background: #e7e1d8;
   display: grid;
   gap: 0.2rem;
+  align-self: stretch;
   min-height: 0;
   height: 100%;
   overflow: auto;
@@ -3799,6 +3850,7 @@ summary {
 .project-config-tree-section {
   display: grid;
   gap: 0.2rem;
+  align-content: start;
 }
 
 .project-config-tree-title {
@@ -3829,11 +3881,12 @@ summary {
 .project-config-main {
   display: grid;
   gap: 0.3rem;
+  align-self: stretch;
   min-width: 0;
   min-height: 0;
   height: 100%;
   overflow: hidden;
-  align-content: start;
+  align-content: stretch;
   background: #e7e1d8;
   border-radius: var(--radius-md);
   padding: 0.2rem;
@@ -3841,8 +3894,14 @@ summary {
 
 .project-config-main-scroll {
   display: grid;
+  grid-template-rows: minmax(0, 1fr);
+  align-content: stretch;
   min-height: 0;
   height: 100%;
+}
+
+.project-config-main-scroll > * {
+  min-height: 0;
 }
 
 .project-config-panel {
@@ -3853,18 +3912,24 @@ summary {
   box-shadow: none;
   display: grid;
   gap: 0.25rem;
+  align-content: start;
+  align-items: start;
 }
 
 .project-config-panel--scroll {
   grid-template-rows: auto minmax(0, 1fr);
   min-height: 0;
+  height: 100%;
   max-height: 100%;
   overflow: hidden;
 }
 
 .project-config-panel--device {
-  min-height: calc(100% + 100px);
-  max-height: calc(100% + 100px);
+  min-height: 0;
+  height: 100%;
+  max-height: 100%;
+  align-content: start;
+  align-items: start;
 }
 
 .project-config-panel--device .project-config-panel-body {
@@ -3880,6 +3945,12 @@ summary {
 .project-config-panel--agent .project-config-panel-body {
   overflow: auto;
   align-content: start;
+}
+
+.project-config-panel--agent {
+  min-height: 0;
+  height: 100%;
+  max-height: 100%;
 }
 
 .project-config-panel--agent .project-config-keylist,
@@ -4693,10 +4764,30 @@ summary {
   }
 
   .project-config-body {
-    grid-template-columns: 1fr;
+    height: 100%;
+  }
+
+  .project-config-header {
+    grid-template-columns: 1fr auto;
+  }
+
+  .project-config-header-toggle-group {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    justify-self: stretch;
+    flex-wrap: wrap;
+  }
+
+  .project-config-close {
+    grid-column: 2;
+    grid-row: 1;
   }
 
   .project-config-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .project-config-devices-row {
     grid-template-columns: 1fr;
   }
 
