@@ -3074,7 +3074,7 @@ summary {
 .missing-agent-header,
 .missing-agent-row {
   display: grid;
-  grid-template-columns: minmax(180px, 0.45fr) minmax(0, 1fr);
+  grid-template-columns: minmax(180px, 0.36fr) minmax(140px, 0.28fr) minmax(0, 1fr);
   gap: 0.5rem;
   align-items: center;
   justify-items: start;
@@ -3094,7 +3094,13 @@ summary {
   color: var(--ink);
 }
 
-.missing-agent-row input {
+.missing-agent-source {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.missing-agent-row input,
+.missing-agent-row select {
   width: 100%;
   justify-self: stretch;
 }

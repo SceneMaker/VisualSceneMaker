@@ -103,6 +103,7 @@ public final class EdgeLayoutService {
     int[] findBestDockPointPair(
             String sourceNodeId, double srcX, double srcY, int srcWidth, int srcHeight, boolean srcIsSuperNode,
             String targetNodeId, double tgtX, double tgtY, int tgtWidth, int tgtHeight, boolean tgtIsSuperNode) {
+        final double distanceEpsilon = 1e-6;
 
         if (sourceNodeId != null && sourceNodeId.equals(targetNodeId)) {
             return findSelfLoopDockPointPair(sourceNodeId, srcWidth, srcHeight, srcIsSuperNode);
@@ -117,11 +118,24 @@ public final class EdgeLayoutService {
         int bestSrcIdx = -1;
         int bestTgtIdx = -1;
         double bestDist = Double.MAX_VALUE;
+        double bestAxisPenalty = Double.MAX_VALUE;
+        double bestBalancePenalty = Double.MAX_VALUE;
 
         double srcCenterX = srcX + srcWidth / 2.0;
         double srcCenterY = srcY + srcHeight / 2.0;
         double tgtCenterX = tgtX + tgtWidth / 2.0;
         double tgtCenterY = tgtY + tgtHeight / 2.0;
+
+        double axisDx = tgtCenterX - srcCenterX;
+        double axisDy = tgtCenterY - srcCenterY;
+        double axisLen = Math.hypot(axisDx, axisDy);
+        if (axisLen < distanceEpsilon) {
+            axisDx = 1.0;
+            axisDy = 0.0;
+            axisLen = 1.0;
+        }
+        double axisNx = -axisDy / axisLen;
+        double axisNy = axisDx / axisLen;
 
         EdgePairSplit split = getPairSplit(sourceNodeId, targetNodeId);
         Integer dirSign = split != null ? split.getDirSign(sourceNodeId, targetNodeId) : null;
@@ -131,6 +145,8 @@ public final class EdgeLayoutService {
             bestDist = Double.MAX_VALUE;
             bestSrcIdx = -1;
             bestTgtIdx = -1;
+            bestAxisPenalty = Double.MAX_VALUE;
+            bestBalancePenalty = Double.MAX_VALUE;
             for (int s = 0; s < 24; s++) {
                 if (srcOccupied.contains(s)) continue;
                 double srcDockAbsX = srcX + srcDockPoints[s][0];
@@ -146,10 +162,22 @@ public final class EdgeLayoutService {
                         continue;
                     }
                     double dist = Math.hypot(tgtDockAbsX - srcDockAbsX, tgtDockAbsY - srcDockAbsY);
-                    if (dist < bestDist) {
+                    double srcAxisOffset = Math.abs((srcDockAbsX - srcCenterX) * axisNx + (srcDockAbsY - srcCenterY) * axisNy);
+                    double tgtAxisOffset = Math.abs((tgtDockAbsX - tgtCenterX) * axisNx + (tgtDockAbsY - tgtCenterY) * axisNy);
+                    double axisPenalty = srcAxisOffset + tgtAxisOffset;
+                    double balancePenalty = Math.abs(srcAxisOffset - tgtAxisOffset);
+                    if (dist < bestDist - distanceEpsilon
+                            || (Math.abs(dist - bestDist) <= distanceEpsilon
+                            && (axisPenalty < bestAxisPenalty - distanceEpsilon
+                            || (Math.abs(axisPenalty - bestAxisPenalty) <= distanceEpsilon
+                            && (balancePenalty < bestBalancePenalty - distanceEpsilon
+                            || (Math.abs(balancePenalty - bestBalancePenalty) <= distanceEpsilon
+                            && isPreferredDockPair(bestSrcIdx, bestTgtIdx, s, t))))))) {
                         bestDist = dist;
                         bestSrcIdx = s;
                         bestTgtIdx = t;
+                        bestAxisPenalty = axisPenalty;
+                        bestBalancePenalty = balancePenalty;
                     }
                 }
             }
@@ -904,6 +932,16 @@ public final class EdgeLayoutService {
 
     private String pairKey(String a, String b) {
         return a.compareTo(b) <= 0 ? a + "|" + b : b + "|" + a;
+    }
+
+    private boolean isPreferredDockPair(int currentSrcIdx, int currentTgtIdx, int candidateSrcIdx, int candidateTgtIdx) {
+        if (currentSrcIdx < 0 || currentTgtIdx < 0) {
+            return true;
+        }
+        if (candidateSrcIdx != currentSrcIdx) {
+            return candidateSrcIdx > currentSrcIdx;
+        }
+        return candidateTgtIdx > currentTgtIdx;
     }
 
     // --- Utility ---

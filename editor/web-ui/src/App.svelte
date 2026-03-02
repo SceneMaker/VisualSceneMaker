@@ -926,8 +926,10 @@ Sentence:
   let scriptSearchQuery = "";
   let scriptSearchInputEl;
   let sceneAgentNames = [];
+  let sceneFlowPlayActionAgentNames = [];
   let deviceAgentNames = [];
   let agentGroups = { input: [], processing: [], output: [] };
+  let missingAgentItems = [];
   let missingAgentNames = [];
   let missingAgentDialogOpen = false;
   let missingAgentDrafts = [];
@@ -2572,9 +2574,21 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
       ? playActionWarnings(cmdHelperAgent, cmdHelperAction, cmdHelperArgs, pluginInterfaceForAgent(cmdHelperAgent))
       : [];
   $: sceneAgentNames = extractSceneAgents(scriptDraft);
+  $: sceneFlowPlayActionAgentNames = extractSceneFlowPlayActionAgents(sceneFlow);
   $: deviceAgentNames = extractDeviceAgents(projectConfigAgents);
-  $: agentGroups = buildAgentGroups(sceneAgentNames, deviceAgentNames, pluginInterfaces, projectConfigView);
-  $: missingAgentNames = extractMissingAgents(sceneAgentNames, projectConfigAgents);
+  $: agentGroups = buildAgentGroups(
+    mergeAgentNames(sceneAgentNames, sceneFlowPlayActionAgentNames),
+    deviceAgentNames,
+    pluginInterfaces,
+    projectConfigView
+  );
+  $: missingAgentItems = extractMissingAgentsDetailed(
+    mergeAgentNames(sceneAgentNames, sceneFlowPlayActionAgentNames),
+    projectConfigAgents,
+    sceneAgentNames,
+    sceneFlowPlayActionAgentNames
+  );
+  $: missingAgentNames = missingAgentItems.map((entry) => entry.name);
   $: missingAgentDeviceOptions = buildMissingAgentDeviceOptions(projectConfigPlugins);
   $: monitorSelectedVar = findMonitorVar(monitorSelectedKey);
   $: prefsPreviewStyle = buildPrefsPreviewStyle(prefsDialogDraft);
@@ -8038,6 +8052,52 @@ Sentence:
     return Array.from(map.values()).sort((a, b) => a.localeCompare(b));
   }
 
+  function commandEntryText(entry) {
+    if (typeof entry === "string") return entry;
+    if (!entry || typeof entry !== "object") return "";
+    return String(entry.cmd || entry.text || entry.syntax || entry.name || entry.type || entry.label || "");
+  }
+
+  function extractSceneFlowPlayActionAgents(flow) {
+    if (!flow || typeof flow !== "object") return [];
+    const map = new Map();
+    const collectFromCommands = (commands) => {
+      if (!Array.isArray(commands)) return;
+      for (const entry of commands) {
+        const parsed = parsePlayActionCommand(commandEntryText(entry));
+        const name = String(parsed?.agent || "").trim();
+        if (!name) continue;
+        const key = name.toLowerCase();
+        if (!map.has(key)) {
+          map.set(key, name);
+        }
+      }
+    };
+    for (const node of Array.isArray(flow.nodes) ? flow.nodes : []) {
+      collectFromCommands(node?.commands);
+    }
+    for (const edge of Array.isArray(flow.edges) ? flow.edges : []) {
+      collectFromCommands(edge?.commands);
+    }
+    return Array.from(map.values()).sort((a, b) => a.localeCompare(b));
+  }
+
+  function mergeAgentNames(...groups) {
+    const map = new Map();
+    for (const group of groups) {
+      if (!Array.isArray(group)) continue;
+      for (const rawName of group) {
+        const name = String(rawName || "").trim();
+        if (!name) continue;
+        const key = name.toLowerCase();
+        if (!map.has(key)) {
+          map.set(key, name);
+        }
+      }
+    }
+    return Array.from(map.values()).sort((a, b) => a.localeCompare(b));
+  }
+
   function extractDeviceAgents(agents) {
     if (!Array.isArray(agents)) return [];
     const map = new Map();
@@ -8050,6 +8110,61 @@ Sentence:
       }
     }
     return Array.from(map.values()).sort((a, b) => a.localeCompare(b));
+  }
+
+  function buildAgentSourceMap(sceneAgents, playActionAgents) {
+    const map = new Map();
+    const markSource = (names, sourceKey) => {
+      if (!Array.isArray(names)) return;
+      for (const rawName of names) {
+        const name = String(rawName || "").trim();
+        if (!name) continue;
+        const key = name.toLowerCase();
+        const entry = map.get(key) || { name, inScript: false, inPlayAction: false };
+        entry.name = entry.name || name;
+        if (sourceKey === "script") entry.inScript = true;
+        if (sourceKey === "playAction") entry.inPlayAction = true;
+        map.set(key, entry);
+      }
+    };
+    markSource(sceneAgents, "script");
+    markSource(playActionAgents, "playAction");
+    return map;
+  }
+
+  function missingAgentSourceLabel(source) {
+    const inScript = source?.inScript === true;
+    const inPlayAction = source?.inPlayAction === true;
+    if (inScript && inPlayAction) return "Scene script and PlayAction";
+    if (inScript) return "Scene script";
+    if (inPlayAction) return "PlayAction";
+    return "Unknown";
+  }
+
+  function extractMissingAgentsDetailed(allUsedAgents, agents, sceneAgents = [], playActionAgents = []) {
+    if (!Array.isArray(allUsedAgents) || !allUsedAgents.length) return [];
+    const configured = new Set();
+    if (Array.isArray(agents)) {
+      for (const agent of agents) {
+        const name = String(agent?.name || "").trim().toLowerCase();
+        if (name) configured.add(name);
+      }
+    }
+    const sourceMap = buildAgentSourceMap(sceneAgents, playActionAgents);
+    return allUsedAgents
+      .filter((name) => {
+        const key = String(name || "").trim().toLowerCase();
+        return key && !configured.has(key);
+      })
+      .map((name) => {
+        const key = String(name || "").trim().toLowerCase();
+        const source = sourceMap.get(key) || { name, inScript: false, inPlayAction: false };
+        return {
+          name,
+          source,
+          sourceLabel: missingAgentSourceLabel(source)
+        };
+      });
   }
 
   function extractMissingAgents(sceneAgents, agents) {
@@ -8197,8 +8312,10 @@ Sentence:
 
   function buildMissingAgentDrafts(names, plugins) {
     const device = defaultMissingAgentDevice(plugins);
-    return (names || []).map((name) => ({
-      name,
+    return (names || []).map((entry) => ({
+      name: entry?.name || "",
+      source: entry?.source || null,
+      sourceLabel: entry?.sourceLabel || "Unknown",
       device,
       host: DEFAULT_AGENT_HOST,
       port: DEFAULT_AGENT_PORT
@@ -8210,7 +8327,7 @@ Sentence:
     rememberFocus();
     missingAgentError = "";
     missingAgentBusy = false;
-    missingAgentDrafts = buildMissingAgentDrafts(missingAgentNames, projectConfigPlugins);
+    missingAgentDrafts = buildMissingAgentDrafts(missingAgentItems, projectConfigPlugins);
     missingAgentDialogOpen = true;
     loadAvailableDevices();
     if (!projectConfigDraft) {
@@ -15061,17 +15178,20 @@ Sentence:
         <h3 id="missing-agent-title">Missing Agent Device Configuration</h3>
         <div class="modal-body">
           <p>
-            The scene script references agents that are not configured in this project. Map each one to a device or run
-            anyway and abort with Stop if needed. If the device is not present, cancel and add the needed device.
+            The project uses agents that are not configured in this project. This can come from scene script speaker
+            labels or from PlayAction commands in the SceneFlow. Map each one to a device or run anyway and abort with
+            Stop if needed. If the device is not present, cancel and add the needed device.
           </p>
           <div class="missing-agent-table">
             <div class="missing-agent-header">
               <span>Agent</span>
+              <span>Detected In</span>
               <span>Device</span>
             </div>
             {#each missingAgentDrafts as draft, index}
               <div class="missing-agent-row">
                 <div class="missing-agent-name">{draft.name}</div>
+                <div class="missing-agent-source">{draft.sourceLabel}</div>
                 <select
                   value={draft.device}
                   on:change={(event) => updateMissingAgentDraft(index, "device", event.target.value)}

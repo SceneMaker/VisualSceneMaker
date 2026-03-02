@@ -5772,6 +5772,7 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
                     obj.put("targetId", e.getTargetUnid());
                     obj.put("type", mapEdgeType(e));
                     obj.put("label", edgeLabel(e));
+                    obj.put("commands", serializeCommands(e.getCmdList()));
                     EdgeGraphics g = e.getGraphics();
                     if (g != null && g.getConnection() != null) {
                         JSONArray points = new JSONArray();
