@@ -2307,6 +2307,8 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         mApp.get(API_PREFIX + "/projects/{pid}/script/elements", this::handleScriptElements);
         mApp.get(API_PREFIX + "/projects/{pid}/semantic", this::handleSemanticGet);
         mApp.put(API_PREFIX + "/projects/{pid}/semantic", this::handleSemanticPut);
+        mApp.get(API_PREFIX + "/projects/{pid}/ui-prefs", this::handleUiPrefsGet);
+        mApp.put(API_PREFIX + "/projects/{pid}/ui-prefs", this::handleUiPrefsPut);
         mApp.post(API_PREFIX + "/projects/{pid}/semantic/syntax", this::handleSemanticSyntaxAnalyze);
         mApp.post(API_PREFIX + "/projects/{pid}/semantic/analyze", this::handleSemanticAnalyze);
         mApp.get(API_PREFIX + "/projects/{pid}/sceneflow", this::handleSceneflow);
@@ -4701,6 +4703,86 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         } catch (Exception exc) {
             ctx.status(400);
             writeJson(ctx, errorResponse("SEMANTIC_INVALID", "Invalid semantic payload: " + exc.getMessage()));
+        }
+    }
+
+    private void handleUiPrefsGet(Context ctx) {
+        String pid = ctx.pathParam("pid");
+        ProjectRef ref = projectStore.get(pid);
+        if (ref == null || ref.runtimeProject == null) {
+            ctx.status(404);
+            writeJson(ctx, errorResponse("PROJECT_NOT_FOUND", "Project not found"));
+            return;
+        }
+        writeJson(ctx, loadUiPrefs(ref));
+    }
+
+    private void handleUiPrefsPut(Context ctx) {
+        String pid = ctx.pathParam("pid");
+        ProjectRef ref = projectStore.get(pid);
+        if (ref == null || ref.runtimeProject == null) {
+            ctx.status(404);
+            writeJson(ctx, errorResponse("PROJECT_NOT_FOUND", "Project not found"));
+            return;
+        }
+        try {
+            JSONObject body = new JSONObject(ctx.body());
+            JSONObject prefs = body.optJSONObject("uiPrefs");
+            if (prefs == null) {
+                prefs = body;
+            }
+            if (!saveUiPrefs(ref, prefs)) {
+                ctx.status(500);
+                writeJson(ctx, errorResponse("UIPREFS_SAVE_FAILED", "Failed to save UI preferences"));
+                return;
+            }
+            writeJson(ctx, prefs);
+        } catch (Exception exc) {
+            ctx.status(400);
+            writeJson(ctx, errorResponse("UIPREFS_INVALID", "Invalid UI preferences payload: " + exc.getMessage()));
+        }
+    }
+
+    private Path uiPrefsPath(ProjectRef ref) {
+        if (ref == null || ref.path == null || ref.path.isBlank()) {
+            return null;
+        }
+        return Paths.get(ref.path, "ui-prefs.json");
+    }
+
+    private JSONObject loadUiPrefs(ProjectRef ref) {
+        Path path = uiPrefsPath(ref);
+        if (path == null || !Files.exists(path)) {
+            return new JSONObject();
+        }
+        try {
+            String raw = Files.readString(path, StandardCharsets.UTF_8);
+            return new JSONObject(raw);
+        } catch (Exception exc) {
+            sLogger.warning("Warning: cannot load ui-prefs.json: " + exc.getMessage());
+            return new JSONObject();
+        }
+    }
+
+    private boolean saveUiPrefs(ProjectRef ref, JSONObject prefs) {
+        Path path = uiPrefsPath(ref);
+        if (path == null) {
+            return false;
+        }
+        try {
+            Files.createDirectories(path.getParent());
+            Files.writeString(
+                    path,
+                    prefs.toString(2),
+                    StandardCharsets.UTF_8,
+                    StandardOpenOption.CREATE,
+                    StandardOpenOption.TRUNCATE_EXISTING,
+                    StandardOpenOption.WRITE
+            );
+            return true;
+        } catch (Exception exc) {
+            sLogger.warning("Warning: cannot save ui-prefs.json: " + exc.getMessage());
+            return false;
         }
     }
 

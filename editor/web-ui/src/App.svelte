@@ -16,6 +16,7 @@
   import IconStop from "./icons/IconStop.svelte";
   import IconTrash from "./icons/IconTrash.svelte";
   import IconMonitor from "./icons/IconMonitor.svelte";
+  import PluginVarBadge from './PluginVarBadge.svelte';
 
   const clientId = (() => {
     const existing = localStorage.getItem("vsm_client_id");
@@ -103,6 +104,14 @@
   const RUNTIME_VIZ_BURST_MAX = 40000;
   const VAR_BADGE_HANDLE_SIZE = 18;
   const VAR_BADGE_HANDLE_PATH = buildVarBadgeHandlePath(VAR_BADGE_HANDLE_SIZE);
+  const PLUGIN_BADGE_STORAGE_KEY_PREFIX = 'vsm_plugin_badges_';
+  const PLUGIN_BADGE_DEFAULT_X = 270;
+  const PLUGIN_BADGE_DEFAULT_Y = 12;
+  const PLUGIN_BADGE_Y_STEP = 40;
+  const PLUGIN_BADGE_DEFAULT_W = 200;
+  const PLUGIN_BADGE_MIN_W = 120;
+  const PLUGIN_BADGE_DEFAULT_H = 120;
+  const PLUGIN_BADGE_MIN_H = 60;
   const RUNTIME_STATE_LABELS = {
     running: "Running",
     paused: "Paused",
@@ -557,6 +566,35 @@
     writeCookie(VAR_BADGE_COOKIE, payload);
   }
 
+  function loadPluginBadgeState(projectId) {
+    if (!projectId) return {};
+    try { return JSON.parse(localStorage.getItem(PLUGIN_BADGE_STORAGE_KEY_PREFIX + projectId) || '{}'); }
+    catch { return {}; }
+  }
+
+  async function fetchPluginBadgeStateFromServer(projectId) {
+    if (!projectId) return null;
+    try {
+      const data = await apiGet(`/api/v1/projects/${projectId}/ui-prefs`);
+      const badges = data?.pluginBadges;
+      if (badges && typeof badges === 'object') return badges;
+      return null;
+    } catch {
+      return null;
+    }
+  }
+
+  function persistPluginBadgeState(projectId, state) {
+    if (!projectId) return;
+    localStorage.setItem(PLUGIN_BADGE_STORAGE_KEY_PREFIX + projectId, JSON.stringify(state));
+    apiPut(`/api/v1/projects/${projectId}/ui-prefs`, { uiPrefs: { pluginBadges: state } }).catch(() => {});
+  }
+
+  function getPluginBadgePos(className, index) {
+    if (pluginBadgeState[className]) return pluginBadgeState[className];
+    return { x: PLUGIN_BADGE_DEFAULT_X, y: PLUGIN_BADGE_DEFAULT_Y + index * PLUGIN_BADGE_Y_STEP, w: PLUGIN_BADGE_DEFAULT_W, h: PLUGIN_BADGE_DEFAULT_H, expanded: true };
+  }
+
   function clampBadgeRect(rect, bounds) {
     if (!bounds) return rect;
     const width = Math.min(Math.max(VAR_BADGE_MIN_WIDTH, rect.w), Math.max(VAR_BADGE_MIN_WIDTH, bounds.width));
@@ -681,6 +719,66 @@
     persistVarBadgeState(varBadgeState);
   }
 
+  function startPluginBadgeDrag(event, className) {
+    if (!isPrimaryPointer(event)) return;
+    event.preventDefault();
+    event.stopPropagation();
+    pluginBadgeDrag = { className, lastClientX: event.clientX, lastClientY: event.clientY };
+  }
+
+  function handlePluginBadgePointerMove(event) {
+    if (!pluginBadgeDrag) return;
+    event.preventDefault();
+    const { className } = pluginBadgeDrag;
+    const cur = pluginBadgeState[className] || getPluginBadgePos(className, 0);
+    const dx = event.clientX - pluginBadgeDrag.lastClientX;
+    const dy = event.clientY - pluginBadgeDrag.lastClientY;
+    pluginBadgeDrag.lastClientX = event.clientX;
+    pluginBadgeDrag.lastClientY = event.clientY;
+    pluginBadgeState = { ...pluginBadgeState, [className]: { ...cur, x: cur.x + dx, y: cur.y + dy } };
+  }
+
+  function handlePluginBadgePointerUp() {
+    if (!pluginBadgeDrag) return;
+    pluginBadgeDrag = null;
+    persistPluginBadgeState(selectedProjectId, pluginBadgeState);
+  }
+
+  function togglePluginBadge(className) {
+    const cur = pluginBadgeState[className] || getPluginBadgePos(className, 0);
+    pluginBadgeState = { ...pluginBadgeState, [className]: { ...cur, expanded: !cur.expanded } };
+    persistPluginBadgeState(selectedProjectId, pluginBadgeState);
+  }
+
+  function startPluginBadgeResize(event, className) {
+    if (!isPrimaryPointer(event)) return;
+    event.preventDefault();
+    event.stopPropagation();
+    pluginBadgeResize = { className, lastClientX: event.clientX, lastClientY: event.clientY };
+  }
+
+  function handlePluginBadgeResizeMove(event) {
+    if (!pluginBadgeResize) return;
+    event.preventDefault();
+    const { className } = pluginBadgeResize;
+    const cur = pluginBadgeState[className] || getPluginBadgePos(className, 0);
+    const dx = event.clientX - pluginBadgeResize.lastClientX;
+    const dy = event.clientY - pluginBadgeResize.lastClientY;
+    pluginBadgeResize.lastClientX = event.clientX;
+    pluginBadgeResize.lastClientY = event.clientY;
+    pluginBadgeState = { ...pluginBadgeState, [className]: {
+      ...cur,
+      w: Math.max(PLUGIN_BADGE_MIN_W, (cur.w || PLUGIN_BADGE_DEFAULT_W) + dx),
+      h: Math.max(PLUGIN_BADGE_MIN_H, (cur.h || PLUGIN_BADGE_DEFAULT_H) + dy)
+    } };
+  }
+
+  function handlePluginBadgeResizeUp() {
+    if (!pluginBadgeResize) return;
+    pluginBadgeResize = null;
+    persistPluginBadgeState(selectedProjectId, pluginBadgeState);
+  }
+
   function badgeKeyFromTarget(target) {
     const badgeEl = target?.closest?.(".sceneflow-var-badge");
     if (!badgeEl) return null;
@@ -706,8 +804,16 @@
 
   onMount(() => {
     const downHandler = (event) => handleVarBadgeDocumentDown(event);
-    const moveHandler = (event) => handleVarBadgePointerMove(event);
-    const upHandler = (event) => handleVarBadgePointerUp(event);
+    const moveHandler = (event) => {
+      handleVarBadgePointerMove(event);
+      handlePluginBadgePointerMove(event);
+      handlePluginBadgeResizeMove(event);
+    };
+    const upHandler = (event) => {
+      handleVarBadgePointerUp(event);
+      handlePluginBadgePointerUp();
+      handlePluginBadgeResizeUp();
+    };
     document.addEventListener("mousedown", downHandler, true);
     document.addEventListener("mousemove", moveHandler, true);
     document.addEventListener("mouseup", upHandler, true);
@@ -1101,6 +1207,9 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
   let timeoutEdgeList = [];
   let varBadgeState = loadVarBadgeState();
   let varBadgeDrag = null;
+  let pluginBadgeState = {};    // { [className]: { x, y, w, h, expanded } }
+  let pluginBadgeDrag = null;   // { className, lastClientX, lastClientY } | null
+  let pluginBadgeResize = null; // { className, lastClientX, lastClientY } | null
   let sceneFlowContainerEl;
   let edgeCreateMode = false;
   let edgeCreateSourceId = "";
@@ -2393,18 +2502,21 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
   $: runtimeLocals = Array.isArray(runtimeInfo?.localVariables) ? runtimeInfo.localVariables : [];
   $: runtimeRootVars = runtimeGlobals.length ? runtimeGlobals : runtimeLocals;
   $: runtimeDisplayGlobals = isSceneFlowRoot ? runtimeRootVars : runtimeGlobals;
+  $: pluginBadgeVarNames = new Set(
+    pluginBadgeDescriptors.flatMap((b) => b.variables.map((v) => v.name))
+  );
   $: displayGlobalVarList = (() => {
     const merged = [];
     const seen = new Set();
     runtimeDisplayGlobals.forEach((def) => {
       const name = (def?.name || "").trim();
-      if (!name) return;
+      if (!name || pluginBadgeVarNames.has(name)) return;
       seen.add(name);
       merged.push(def);
     });
     sceneFlowVarDefs.forEach((def) => {
       const name = (def?.name || "").trim();
-      if (!name || seen.has(name)) return;
+      if (!name || seen.has(name) || pluginBadgeVarNames.has(name)) return;
       merged.push(def);
     });
     return merged;
@@ -2542,6 +2654,17 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
   $: cmdHelperPluginWritesList = cmdHelperPluginWrites;
   $: cmdHelperPluginReadsList = cmdHelperPluginReads;
   $: cmdHelperPluginConfigList = cmdHelperPluginConfig;
+  $: if (selectedProjectId) {
+    pluginBadgeState = loadPluginBadgeState(selectedProjectId);
+    const _pid = selectedProjectId;
+    fetchPluginBadgeStateFromServer(_pid).then((serverState) => {
+      if (serverState && selectedProjectId === _pid) {
+        pluginBadgeState = serverState;
+        localStorage.setItem(PLUGIN_BADGE_STORAGE_KEY_PREFIX + _pid, JSON.stringify(serverState));
+      }
+    });
+  }
+  $: pluginBadgeDescriptors = buildPluginBadgeDescriptors(projectConfigView, pluginInterfaces);
   $: {
     const normalize = (value) => String(value || "").trim().toLowerCase();
     const isUnknown = (value) => !value || normalize(value) === "unknown";
@@ -2952,6 +3075,9 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
     resetProjectLoadState();
     projectLoadAttempted = false;
     projectLoadProjectId = "";
+    pluginBadgeState = {};
+    pluginBadgeDrag = null;
+    pluginBadgeResize = null;
     showEditor = false;
   }
 
@@ -10634,6 +10760,58 @@ Sentence:
     return null;
   }
 
+  function buildPluginBadgeDescriptors(configView, interfaces) {
+    if (!configView?.plugins || !Array.isArray(interfaces)) return [];
+    const normalizeKey = (v) => String(v || "").trim().toLowerCase();
+    const simpleClass = (v) => {
+      const text = String(v || "").trim();
+      if (!text) return "";
+      const parts = text.split(".");
+      return parts[parts.length - 1] || text;
+    };
+
+    function findInterface(className) {
+      if (!className) return null;
+      const classKey = normalizeKey(className);
+      const simpleKey = normalizeKey(simpleClass(className));
+      return interfaces.find((e) => {
+        const p = e?.plugin || {};
+        return [normalizeKey(p.id), normalizeKey(p.name), normalizeKey(p.className)]
+          .some((k) => k && (k === classKey || (simpleKey && k === simpleKey)));
+      }) || null;
+    }
+
+    return configView.plugins
+      .filter((plugin) => plugin.load)
+      .map((plugin) => {
+        const iface = findInterface(plugin.className);
+        if (!iface) return null;
+        const writes = Array.isArray(iface.writes) ? iface.writes : [];
+        const reads  = Array.isArray(iface.reads)  ? iface.reads  : [];
+        const config = Array.isArray(iface.config) ? iface.config : [];
+
+        function resolveVarName(configKey) {
+          return (plugin.features || []).find((f) => f.key === configKey)?.value
+              || config.find((c) => c.key === configKey)?.default
+              || configKey;
+        }
+
+        const seen = new Set();
+        const variables = [
+          ...writes.map((v) => ({ ...v, name: resolveVarName(v.var), source: 'writes' })),
+          ...reads.map((v)  => ({ ...v, name: resolveVarName(v.var), source: 'reads'  }))
+        ].filter((v) => v.name && !seen.has(v.name) && seen.add(v.name));
+
+        return {
+          key: `plugin_${plugin.className}`,
+          className: plugin.className,
+          pluginName: iface.plugin?.name || plugin.name || plugin.className,
+          variables
+        };
+      })
+      .filter(Boolean);
+  }
+
   function mergedCommandsForDescriptor(agentName, descriptor, configView) {
     const staticCmds = Array.isArray(descriptor?.commands) ? descriptor.commands : [];
     const agentSpec = descriptor?.agentSpec;
@@ -13713,6 +13891,33 @@ Sentence:
                   </svg>
                 </div>
               {/if}
+            {/if}
+            {#if selectedProjectId && pluginBadgeDescriptors.length > 0}
+              {#each pluginBadgeDescriptors as badge, i}
+                <PluginVarBadge
+                  pluginName={badge.pluginName}
+                  variables={badge.variables.map((v) => {
+                    const sfDef = sceneFlowVarDefs.find((d) => d.name === v.name);
+                    const expr = normalizeRuntimeValue(sfDef?.expr ?? sfDef?.expression ?? "");
+                    const captured = normalizeRuntimeValue(runtimeInitialValues[v.name]);
+                    return {
+                      name: v.name,
+                      description: v.description,
+                      source: v.source,
+                      value: normalizeRuntimeValue(runtimeValues[v.name]),
+                      defaultVal: captured || expr
+                    };
+                  })}
+                  expanded={pluginBadgeState[badge.className]?.expanded ?? true}
+                  x={pluginBadgeState[badge.className]?.x ?? PLUGIN_BADGE_DEFAULT_X}
+                  y={pluginBadgeState[badge.className]?.y ?? (PLUGIN_BADGE_DEFAULT_Y + i * PLUGIN_BADGE_Y_STEP)}
+                  w={pluginBadgeState[badge.className]?.w ?? PLUGIN_BADGE_DEFAULT_W}
+                  h={pluginBadgeState[badge.className]?.h ?? PLUGIN_BADGE_DEFAULT_H}
+                  onDragStart={(e) => startPluginBadgeDrag(e, badge.className)}
+                  onToggle={() => togglePluginBadge(badge.className)}
+                  onResizeStart={(e) => startPluginBadgeResize(e, badge.className)}
+                />
+              {/each}
             {/if}
             <div class="sceneflow-navigator">
               <div class="sceneflow-zoom-controls">
