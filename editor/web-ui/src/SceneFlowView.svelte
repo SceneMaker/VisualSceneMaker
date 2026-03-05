@@ -286,6 +286,48 @@
     }
   }
 
+  $: {
+    const edgeList = edges || [];
+    const next = new Map(timeoutInlineDrafts);
+    let changed = false;
+    const seen = new Set();
+    for (const edge of edgeList) {
+      if (!edge?.id || edge.type !== "TEDGE") continue;
+      seen.add(edge.id);
+      if (hasTimeoutInterval(edge)) {
+        if (next.delete(edge.id)) changed = true;
+        continue;
+      }
+      if ((edge.timeoutExpr || "").trim()) {
+        if (next.delete(edge.id)) changed = true;
+        continue;
+      }
+      const ms = timeoutLiteralMs(edge);
+      if (!Number.isFinite(ms)) {
+        if (next.delete(edge.id)) changed = true;
+        continue;
+      }
+      const isActiveDrag =
+        dragState?.type === "timeout-slider" &&
+        dragState?.id === edge.id;
+      if (isActiveDrag) continue;
+      const current = next.get(edge.id);
+      if (!Number.isFinite(current) || Math.floor(current) !== Math.floor(ms)) {
+        next.set(edge.id, Math.floor(ms));
+        changed = true;
+      }
+    }
+    for (const key of Array.from(next.keys())) {
+      if (!seen.has(key)) {
+        next.delete(key);
+        changed = true;
+      }
+    }
+    if (changed) {
+      timeoutInlineDrafts = next;
+    }
+  }
+
   $: if (selection) {
     if (selection.type === "node") {
       selectedNodeId = selection.id;
@@ -1937,6 +1979,16 @@
     if (edge.probability !== undefined && edge.probability !== null) {
       return `${edge.probability}%`;
     }
+    const inlineDraftMs = timeoutInlineDrafts.get(edge?.id);
+    if (
+      edge?.type === "TEDGE" &&
+      Number.isFinite(inlineDraftMs) &&
+      inlineDraftMs >= 0 &&
+      !hasTimeoutInterval(edge) &&
+      !(edge.timeoutExpr || "").trim()
+    ) {
+      return `${Math.floor(inlineDraftMs)}ms`;
+    }
     if (hasTimeoutInterval(edge)) {
       return `${edge.timeoutMinMs}-${edge.timeoutMaxMs}ms`;
     }
@@ -2046,8 +2098,14 @@
 
   function hasTimeoutInterval(edge) {
     if (!edge || edge.type !== "TEDGE") return false;
-    const min = Number(edge.timeoutMinMs);
-    const max = Number(edge.timeoutMaxMs);
+    const minRaw = edge.timeoutMinMs;
+    const maxRaw = edge.timeoutMaxMs;
+    if (minRaw === null || minRaw === undefined || maxRaw === null || maxRaw === undefined) return false;
+    const minText = String(minRaw).trim().toLowerCase();
+    const maxText = String(maxRaw).trim().toLowerCase();
+    if (!minText || !maxText || minText === "null" || maxText === "null") return false;
+    const min = Number(minRaw);
+    const max = Number(maxRaw);
     return Number.isFinite(min) && Number.isFinite(max) && min >= 0 && max >= min;
   }
 
@@ -2098,9 +2156,14 @@
   function setTimeoutInlineSliderPosById(edgeId, sliderPos) {
     if (!edgeId || !Number.isFinite(sliderPos)) return;
     const value = timeoutMsFromSliderPos(Math.round(sliderPos));
+    const previous = timeoutInlineDrafts.get(edgeId);
+    if (Number.isFinite(previous) && Math.floor(previous) === Math.floor(value)) {
+      return;
+    }
     const next = new Map(timeoutInlineDrafts);
     next.set(edgeId, value);
     timeoutInlineDrafts = next;
+    commitTimeoutInlineSliderById(edgeId);
   }
 
   function timeoutInlineSliderPosFromPointer(event, sliderX, sliderWidth) {
@@ -2115,7 +2178,7 @@
     const draft = timeoutInlineDrafts.get(edgeId);
     if (!Number.isFinite(draft) || draft < 0) return;
     if (typeof onTimeoutEdgeUpdate === "function") {
-      onTimeoutEdgeUpdate(edgeId, draft);
+      onTimeoutEdgeUpdate(edgeId, Math.floor(draft));
     }
   }
 
@@ -3713,8 +3776,9 @@
       {@const timeoutEntry = timeoutEdgeMap.get(edge.id)}
       {@const timeoutProgress = edge.type === "TEDGE" ? timeoutEdgeProgress(timeoutEntry, timeoutNow) : null}
       {@const isHandleDrag = !!dragState && dragState.id === edge.id && (dragState.type === "edge-control" || dragState.type === "edge-target" || dragState.type === "edge-bend")}
-      {@const controls = isSelected || isHovered ? edgeControlPoints(edge, dragState) : null}
-      {@const showHandles = isSelected || isHovered}
+      {@const isTimeoutSliderDrag = !!dragState && dragState.id === edge.id && dragState.type === "timeout-slider"}
+      {@const controls = (isSelected || isHovered) && !isTimeoutSliderDrag ? edgeControlPoints(edge, dragState) : null}
+      {@const showHandles = (isSelected || isHovered) && !isTimeoutSliderDrag}
       {@const baseHandleRadius = Math.max(5, Math.round(baseNodeSize * 0.08))}
       {@const handleRadius = showHandles ? (isSelected ? baseHandleRadius : Math.max(4, Math.round(baseHandleRadius * 0.8))) : 0}
       {@const handleHitRadius = showHandles ? Math.max(12, handleRadius + 8) : 0}

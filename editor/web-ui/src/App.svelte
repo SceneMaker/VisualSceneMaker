@@ -1239,6 +1239,7 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
   let timeoutSliderSending = false;
   let timeoutSliderMax = 60000;
   let timeoutSliderStep = 1;
+  let timeoutInspectorApplyTimer = null;
   let nodeDirty = false;
   let edgeDirty = false;
   let superNodeDirty = false;
@@ -2843,6 +2844,10 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
   }
   $: if ((selectedEdge?.id || "") !== timeoutSliderEdgeId) {
     timeoutSliderEdgeId = selectedEdge?.id || "";
+    if (timeoutInspectorApplyTimer) {
+      clearTimeout(timeoutInspectorApplyTimer);
+      timeoutInspectorApplyTimer = null;
+    }
     timeoutSliderOpen = false;
     timeoutSliderLastSent = null;
     timeoutSliderQueuedMs = null;
@@ -3337,6 +3342,10 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
   onDestroy(() => {
     clearAutoSaveTimer();
     stopSemanticPreview();
+    if (timeoutInspectorApplyTimer) {
+      clearTimeout(timeoutInspectorApplyTimer);
+      timeoutInspectorApplyTimer = null;
+    }
     if (autoConnectTimer) {
       clearTimeout(autoConnectTimer);
       autoConnectTimer = null;
@@ -7803,8 +7812,14 @@ Sentence:
 
   function hasTimeoutInterval(edge) {
     if (!edge) return false;
-    const min = Number(edge.timeoutMinMs);
-    const max = Number(edge.timeoutMaxMs);
+    const minRaw = edge.timeoutMinMs;
+    const maxRaw = edge.timeoutMaxMs;
+    if (minRaw === null || minRaw === undefined || maxRaw === null || maxRaw === undefined) return false;
+    const minText = String(minRaw).trim().toLowerCase();
+    const maxText = String(maxRaw).trim().toLowerCase();
+    if (!minText || !maxText || minText === "null" || maxText === "null") return false;
+    const min = Number(minRaw);
+    const max = Number(maxRaw);
     return Number.isFinite(min) && Number.isFinite(max) && min >= 0 && max >= min;
   }
 
@@ -7845,9 +7860,48 @@ Sentence:
     timeoutSliderOpen = true;
   }
 
+  function scheduleTimeoutInspectorApply(task, delayMs = 140) {
+    if (timeoutInspectorApplyTimer) {
+      clearTimeout(timeoutInspectorApplyTimer);
+      timeoutInspectorApplyTimer = null;
+    }
+    timeoutInspectorApplyTimer = setTimeout(() => {
+      timeoutInspectorApplyTimer = null;
+      task?.();
+    }, delayMs);
+  }
+
+  function patchTimeoutEdgeInSceneFlow(edgeId, fields) {
+    if (!sceneFlow || !edgeId || !fields) return;
+    const nextEdges = (sceneFlow.edges || []).map((edge) => {
+      if (!edge || edge.id !== edgeId) return edge;
+      const next = { ...edge };
+      if (fields.timeoutMs !== undefined) {
+        next.timeoutMs = fields.timeoutMs;
+        next.timeoutExpr = "";
+        delete next.timeoutMinMs;
+        delete next.timeoutMaxMs;
+      }
+      if (fields.timeoutExpr !== undefined) {
+        next.timeoutExpr = fields.timeoutExpr;
+        delete next.timeoutMinMs;
+        delete next.timeoutMaxMs;
+      }
+      if (fields.timeoutMinMs !== undefined && fields.timeoutMaxMs !== undefined) {
+        next.timeoutMinMs = fields.timeoutMinMs;
+        next.timeoutMaxMs = fields.timeoutMaxMs;
+        next.timeoutExpr = "";
+        next.timeoutMs = fields.timeoutMinMs;
+      }
+      return next;
+    });
+    sceneFlow = { ...sceneFlow, edges: nextEdges };
+  }
+
   async function sendTimeoutSliderValue(timeoutMs, edgeId = selectedEdge?.id) {
     if (!selectedProjectId || !edgeId) return;
     if (!Number.isFinite(timeoutMs) || timeoutMs < 0) return;
+    patchTimeoutEdgeInSceneFlow(edgeId, { timeoutMs });
     if (timeoutSliderSending) {
       timeoutSliderQueuedMs = timeoutMs;
       timeoutSliderQueuedEdgeId = edgeId;
@@ -7884,6 +7938,67 @@ Sentence:
     edgeDraft = { ...edgeDraft, timeoutMode: "fixed", timeoutSpec: String(timeoutMs) };
     edgeEditError = "";
     sendTimeoutSliderValue(timeoutMs, selectedEdge?.id);
+  }
+
+  function applyTimeoutEdgeModeDraft() {
+    if (!selectedEdge || selectedEdge.type !== "TEDGE" || !edgeDraft) return;
+    const mode = edgeDraft.timeoutMode || "fixed";
+    if (mode === "fixed") {
+      const timeoutMs = parseTimeoutMs(edgeDraft.timeoutSpec);
+      if (!Number.isFinite(timeoutMs)) return;
+      edgeEditError = "";
+      sendTimeoutSliderValue(timeoutMs, selectedEdge.id);
+      return;
+    }
+    if (mode === "var") {
+      const raw = String(edgeDraft.timeoutSpec ?? "").trim();
+      if (!raw || !isTimeoutVarName(raw) || !selectedProjectId || sceneFlowBusy) return;
+      edgeEditError = "";
+      runSceneFlowCommand("SceneFlow.Edge.Update", {
+        projectId: selectedProjectId,
+        superNodeId: sceneFlow?.superNodeId,
+        edgeId: selectedEdge.id,
+        fields: { timeoutExpr: raw }
+      });
+      return;
+    }
+    const min = parseTimeoutMs(edgeDraft.timeoutMinSpec);
+    const max = parseTimeoutMs(edgeDraft.timeoutMaxSpec);
+    if (!Number.isFinite(min) || !Number.isFinite(max) || max <= min) return;
+    if (!selectedProjectId || sceneFlowBusy) return;
+    edgeEditError = "";
+    runSceneFlowCommand("SceneFlow.Edge.Update", {
+      projectId: selectedProjectId,
+      superNodeId: sceneFlow?.superNodeId,
+      edgeId: selectedEdge.id,
+      fields: { timeoutMinMs: min, timeoutMaxMs: max }
+    });
+  }
+
+  function handleTimeoutModeInspectorChange() {
+    edgeEditError = "";
+    timeoutSliderOpen = edgeDraft?.timeoutMode === "fixed";
+    scheduleTimeoutInspectorApply(() => applyTimeoutEdgeModeDraft());
+  }
+
+  function handleTimeoutFixedInspectorInput(event) {
+    if (!edgeDraft) return;
+    const raw = String(event?.currentTarget?.value ?? "");
+    edgeDraft = { ...edgeDraft, timeoutMode: "fixed", timeoutSpec: raw };
+    edgeEditError = "";
+    const timeoutMs = parseTimeoutMs(raw);
+    if (!Number.isFinite(timeoutMs)) return;
+    sendTimeoutSliderValue(timeoutMs, selectedEdge?.id);
+  }
+
+  function handleTimeoutVarInspectorInput() {
+    edgeEditError = "";
+    scheduleTimeoutInspectorApply(() => applyTimeoutEdgeModeDraft());
+  }
+
+  function handleTimeoutIntervalInspectorInput() {
+    edgeEditError = "";
+    scheduleTimeoutInspectorApply(() => applyTimeoutEdgeModeDraft());
   }
 
   function handleCanvasTimeoutEdgeUpdate(edgeId, timeoutMs) {
@@ -12499,9 +12614,9 @@ Sentence:
           edgeEditError = "Timeout must be >= 0.";
           return;
         }
-        if (parsed !== (selectedEdge.timeoutMs ?? 0)) {
-          fields.timeoutMs = parsed;
-        }
+        // Always send fixed timeout explicitly so switching modes and
+        // edge-state mismatches cannot skip the timeout assignment.
+        fields.timeoutMs = parsed;
         fields.timeoutExpr = "";
       } else if (mode === "var") {
         const raw = String(edgeDraft.timeoutSpec ?? "").trim();
@@ -14288,10 +14403,7 @@ Sentence:
                   <select
                     id="edge-timeout-mode"
                     bind:value={edgeDraft.timeoutMode}
-                    on:change={() => {
-                      edgeEditError = "";
-                      timeoutSliderOpen = edgeDraft.timeoutMode === "fixed";
-                    }}
+                    on:change={handleTimeoutModeInspectorChange}
                   >
                     <option value="fixed">Fixed milliseconds</option>
                     <option value="var">Integer variable</option>
@@ -14304,29 +14416,8 @@ Sentence:
                       type="text"
                       placeholder="1000"
                       bind:value={edgeDraft.timeoutSpec}
-                      on:focus={openTimeoutSlider}
-                      on:click={openTimeoutSlider}
+                      on:input={handleTimeoutFixedInspectorInput}
                     />
-                    {#if timeoutSliderOpen && isTimeoutNumber(edgeDraft.timeoutSpec)}
-                      {@const slider = timeoutSliderConfig(edgeDraft.timeoutSpec)}
-                      {#if slider}
-                        <div class="edge-timeout-slider-wrap">
-                          <input
-                            class="edge-timeout-slider"
-                            type="range"
-                            min={slider.min}
-                            max={slider.max}
-                            step={slider.step}
-                            value={slider.value}
-                            on:input={handleTimeoutSliderInput}
-                          />
-                          <div class="edge-timeout-slider-scale" aria-hidden="true">
-                            <span>{slider.min} ms</span>
-                            <span>{slider.max} ms</span>
-                          </div>
-                        </div>
-                      {/if}
-                    {/if}
                   {:else if edgeDraft.timeoutMode === "var"}
                     <label for="edge-timeout">Timeout variable (int)</label>
                     <input
@@ -14335,6 +14426,7 @@ Sentence:
                       list="edge-timeout-vars"
                       placeholder="timeout_ms"
                       bind:value={edgeDraft.timeoutSpec}
+                      on:input={handleTimeoutVarInspectorInput}
                     />
                     <datalist id="edge-timeout-vars">
                       {#each sceneFlowIntVarNames as varName}
@@ -14352,6 +14444,7 @@ Sentence:
                         step="1"
                         placeholder="min"
                         bind:value={edgeDraft.timeoutMinSpec}
+                        on:input={handleTimeoutIntervalInspectorInput}
                       />
                       <span>to</span>
                       <input
@@ -14362,6 +14455,7 @@ Sentence:
                         step="1"
                         placeholder="max"
                         bind:value={edgeDraft.timeoutMaxSpec}
+                        on:input={handleTimeoutIntervalInspectorInput}
                       />
                     </div>
                     <p class="muted">Runtime picks one random timeout between min and max when this node becomes active.</p>
@@ -14398,9 +14492,11 @@ Sentence:
                 >
                   Relayout
                 </button>
-                <button type="button" class="primary" on:click={applyEdgeEdits} disabled={!edgeDirty || !wsConnected}>
-                  Apply
-                </button>
+                {#if selectedEdge.type !== "TEDGE"}
+                  <button type="button" class="primary" on:click={applyEdgeEdits} disabled={!wsConnected || sceneFlowBusy}>
+                    Apply
+                  </button>
+                {/if}
                 <button type="button" class="ghost" on:click={resetEdgeDraft} disabled={!edgeDirty}>
                   Reset
                 </button>
