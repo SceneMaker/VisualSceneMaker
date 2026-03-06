@@ -23,6 +23,9 @@ import de.dfki.vsm.model.sceneflow.glue.command.definition.datatype.ListTypeDefi
 import de.dfki.vsm.model.sceneflow.glue.command.definition.datatype.MemberDefinition;
 import de.dfki.vsm.model.sceneflow.glue.command.definition.datatype.StructTypeDefinition;
 import de.dfki.vsm.util.tpl.Tuple;
+import de.dfki.vsm.web.analysis.FlowSemanticNodeResult;
+import de.dfki.vsm.web.analysis.FlowSemanticResult;
+import de.dfki.vsm.web.analysis.SceneFlowFlowSemanticService;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -37,6 +40,7 @@ import java.util.Set;
  * Used by WebUiServer (in both FULL_EDITOR and RUNTIME_ONLY modes) to produce consistent snapshots.
  */
 public final class SceneFlowSnapshotBuilder {
+    private static final SceneFlowFlowSemanticService FLOW_SEMANTIC_SERVICE = new SceneFlowFlowSemanticService();
 
     private SceneFlowSnapshotBuilder() {
     }
@@ -98,9 +102,12 @@ public final class SceneFlowSnapshotBuilder {
         snapshot.put("path", path);
         snapshot.put("pathNodes", pathNodes);
 
+        FlowSemanticResult flowSemanticResult = FLOW_SEMANTIC_SERVICE.analyze(superNode);
+
         // SuperNode data
         Set<String> altStartIds = collectAltStartIds(superNode);
-        JSONObject superNodeData = nodeToJson(superNode, superNode, altStartIds, nodeWidth, nodeHeight);
+        JSONObject superNodeData = nodeToJson(superNode, superNode, altStartIds, nodeWidth, nodeHeight,
+                flowSemanticResult.get(superNode));
         superNodeData.put("isStart", superNode.getParentNode() == null ||
             (superNode.getParentNode() != null && superNode.getParentNode().getStartNodeMap().containsKey(superNode.getId())));
         superNodeData.put("isRoot", superNode.getParentNode() == null);
@@ -109,7 +116,7 @@ public final class SceneFlowSnapshotBuilder {
         // Nodes at current level only
         JSONArray nodes = new JSONArray();
         for (BasicNode node : superNode.getNodeAndSuperNodeList()) {
-            nodes.put(nodeToJson(node, superNode, altStartIds, nodeWidth, nodeHeight));
+            nodes.put(nodeToJson(node, superNode, altStartIds, nodeWidth, nodeHeight, flowSemanticResult.get(node)));
         }
         snapshot.put("nodes", nodes);
 
@@ -137,7 +144,8 @@ public final class SceneFlowSnapshotBuilder {
     // ===== Node serialization =====
 
     public static JSONObject nodeToJson(BasicNode node, SuperNode superNode,
-                                        Set<String> altStartIds, int nodeWidth, int nodeHeight) {
+                                        Set<String> altStartIds, int nodeWidth, int nodeHeight,
+                                        FlowSemanticNodeResult flowSemantic) {
         JSONObject json = new JSONObject();
         json.put("id", node.getId());
         json.put("type", (node instanceof SuperNode) ? "Super" : "Basic");
@@ -173,6 +181,15 @@ public final class SceneFlowSnapshotBuilder {
         json.put("typeDefs", typeDefsToJson(node.getTypeDefList()));
         json.put("varDefs", varDefsToJson(node.getVarDefList()));
         json.put("commands", commandsToJson(node.getCmdList()));
+        if (flowSemantic != null) {
+            json.put("flowSemantic", flowSemantic.getKind().getJsonValue());
+            if (flowSemantic.getReasonCode() != null) {
+                json.put("flowSemanticReason", flowSemantic.getReasonCode());
+            }
+            if (flowSemantic.getReasonText() != null) {
+                json.put("flowSemanticReasonText", flowSemantic.getReasonText());
+            }
+        }
 
         return json;
     }

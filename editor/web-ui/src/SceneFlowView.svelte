@@ -143,6 +143,11 @@
   $: nodeMap = new Map(nodes.map((node) => [node.id, node]));
   $: outgoing = new Set(edges.map((edge) => edge.sourceId).filter(Boolean));
 
+  function nodeFlowSemantic(node) {
+    const value = String(node?.flowSemantic || "").trim().toLowerCase();
+    return value || null;
+  }
+
   $: nodeWidth = readNumber(config?.node_width ?? config?.["node_width"], null);
   $: nodeHeight = readNumber(config?.node_height ?? config?.["node_height"], nodeWidth);
   $: workspaceFontSize = readNumber(
@@ -1653,8 +1658,14 @@
       : Math.max(3, Math.round(edgeStrokeWidth * 2));
     const magnitude = Math.hypot(vector.dx, vector.dy);
     if (!Number.isFinite(magnitude) || magnitude < 0.01) return null;
-    const ux = vector.dx / magnitude;
-    const uy = vector.dy / magnitude;
+    let ux = vector.dx / magnitude;
+    let uy = vector.dy / magnitude;
+    if (selfLoop) {
+      const tilted = rotateVectorClockwise(ux, uy, -5); // was 10 - depends on const outward below
+      const tiltedLen = Math.hypot(tilted.x, tilted.y) || 1;
+      ux = tilted.x / tiltedLen;
+      uy = tilted.y / tiltedLen;
+    }
     const tipOffset = inset - gap;
     const tipX = vector.x + ux * tipOffset;
     const tipY = vector.y + uy * tipOffset;
@@ -1773,7 +1784,7 @@
     const startSide = (start.x - mid.x) * nx + (start.y - mid.y) * ny;
     const sideSign = startSide >= 0 ? 1 : -1;
     const span = Math.hypot(end.x - start.x, end.y - start.y);
-    const outward = Math.max(baseNodeSize * 1.17, axisLen * 1.17);
+    const outward = Math.max(baseNodeSize * 0.95, axisLen * 0.95); //was 1.17 and 1.17
     const lateral = Math.max(baseNodeSize * 0.62, span * 0.95);
     const baseCtrl1 = {
       x: mid.x + ux * outward + nx * lateral * sideSign,
@@ -2170,7 +2181,13 @@
     if (!Number.isFinite(sliderX) || !Number.isFinite(sliderWidth) || sliderWidth <= 0) return null;
     const world = eventToWorld(event);
     const ratio = clamp((world.x - sliderX) / sliderWidth, 0, 1);
-    return Math.round(ratio * TIMEOUT_INLINE_SLIDER_MAX);
+    let sliderPos = Math.round(ratio * TIMEOUT_INLINE_SLIDER_MAX);
+    if (event?.shiftKey) {
+      const ms = timeoutMsFromSliderPos(sliderPos);
+      const quantizedMs = Math.max(0, Math.min(TIMEOUT_INLINE_MAX_MS, Math.round(ms / 100) * 100));
+      sliderPos = timeoutSliderPosFromMs(quantizedMs);
+    }
+    return sliderPos;
   }
 
   function commitTimeoutInlineSliderById(edgeId) {
@@ -3993,7 +4010,9 @@
       {@const fill = nodeFill(node)}
       {@const textColor = nodeTextColor(node)}
       {@const stroke = darkenColor(fill, 0.25)}
-      {@const isEnd = !outgoing.has(node.id)}
+      {@const flowSemantic = nodeFlowSemantic(node)}
+      {@const isEnd = flowSemantic ? flowSemantic === "definite-end" : !outgoing.has(node.id)}
+      {@const isPotentialEnd = flowSemantic === "potential-end"}
       {@const isSelected = selectedNodeIds.has(node.id)}
       {@const isActive = activityNodeSet.has(node.id)}
       {@const sign = startSignMetrics(w)}
@@ -4005,7 +4024,7 @@
       <g
         class={`node node-${node.type === "Super" ? "super" : "basic"} ${node.isStart ? "start" : ""} ${
           node.isAltStart ? "alt-start" : ""
-        } ${node.isHistory ? "history" : ""} ${isEnd ? "end" : ""} ${
+        } ${node.isHistory ? "history" : ""} ${isEnd ? "end" : ""} ${isPotentialEnd ? "end-potential" : ""} ${
           flavour ? `flavour-${flavour}` : ""
         }`}
         transform={`translate(${x}, ${y})`}

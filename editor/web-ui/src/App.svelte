@@ -10895,6 +10895,7 @@ Sentence:
           key: `plugin_${plugin.className}`,
           className: plugin.className,
           pluginName: iface.plugin?.name || plugin.name || plugin.className,
+          category: String(iface.categories?.primary || "").toLowerCase(),
           variables
         };
       })
@@ -13857,16 +13858,6 @@ Sentence:
               <button
                 type="button"
                 class="sceneflow-toggle"
-                class:active={sceneFlowShowVars}
-                on:click={toggleVarBadges}
-                aria-pressed={sceneFlowShowVars}
-                disabled={!sceneFlow}
-              >
-                vars
-              </button>
-              <button
-                type="button"
-                class="sceneflow-toggle"
                 class:active={sceneFlowShowCmdText}
                 on:click={() => (sceneFlowShowCmdText = !sceneFlowShowCmdText)}
                 aria-pressed={sceneFlowShowCmdText}
@@ -13933,6 +13924,7 @@ Sentence:
               {#each pluginBadgeDescriptors as badge, i}
                 <VarBadge
                   title={badge.pluginName}
+                  category={badge.category}
                   variables={badge.variables.map((v) => {
                     const sfDef = sceneFlowVarDefs.find((d) => d.name === v.name);
                     const expr = normalizeRuntimeValue(sfDef?.expr ?? sfDef?.expression ?? "");

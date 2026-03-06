@@ -5141,6 +5141,17 @@ summary {
   stroke: var(--sf-selection-color, #5b8fdc);
 }
 
+.node.end-potential .node-shape {
+  stroke: var(--node-stroke, #5f5f5f);
+  stroke-dasharray: 2 7;
+  stroke-linecap: round;
+}
+
+.node.selected.end-potential .node-shape {
+  stroke: var(--sf-selection-color, #5b8fdc);
+  stroke-dasharray: none;
+}
+
 .node.history .node-shape {
   fill: #ffffff;
 }

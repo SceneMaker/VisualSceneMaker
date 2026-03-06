@@ -4,7 +4,8 @@
 
   export let title = "";
   export let subtitle = "";
-  export let variables = [];    // [{line, description}]
+  export let category = "";         // "input" | "processing" | "output" | ""
+  export let variables = [];        // [{line, description}]
   export let loading = false;
   export let error = "";
   export let expanded = true;
@@ -16,6 +17,14 @@
   export let onDragStart = null;    // callback(event)
   export let onToggle = null;       // callback()
   export let onResizeStart = null;  // callback(event)
+
+  const CATEGORY_ICON_PATHS = {
+    input:      "M8.25 9V5.25A2.25 2.25 0 0 1 10.5 3h6a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 16.5 21h-6a2.25 2.25 0 0 1-2.25-2.25V15M12 9l3 3m0 0-3 3m3-3H2.25",
+    processing: "M19.5 12c0-1.232-.046-2.453-.138-3.662a4.006 4.006 0 0 0-3.7-3.7 48.678 48.678 0 0 0-7.324 0 4.006 4.006 0 0 0-3.7 3.7c-.017.22-.032.441-.046.662M19.5 12l3-3m-3 3-3-3m-12 3c0 1.232.046 2.453.138 3.662a4.006 4.006 0 0 0 3.7 3.7 48.656 48.656 0 0 0 7.324 0 4.006 4.006 0 0 0 3.7-3.7c.017-.22.032-.441.046-.662M4.5 12l3 3m-3-3-3 3",
+    output:     "M8.25 9V5.25A2.25 2.25 0 0 1 10.5 3h6a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 16.5 21h-6a2.25 2.25 0 0 1-2.25-2.25V15M12 9l3 3m0 0-3 3m3-3H2.25"
+  };
+
+  $: categoryIconPath = CATEGORY_ICON_PATHS[category] ?? null;
 
   function handlePointerDown(e) {
     if (e.target.closest('.var-badge-resize') || e.target.closest('.var-badge-content')) return;
@@ -34,6 +43,11 @@
   role="presentation"
 >
   <div class="var-badge-title">
+    {#if categoryIconPath}
+      <svg class="var-badge-category-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d={categoryIconPath} />
+      </svg>
+    {/if}
     <span class="var-badge-title-text">{title}</span>
     {#if subtitle}
       <span class="var-badge-subtitle">{subtitle}</span>
@@ -98,6 +112,13 @@
     font-size: 0.78rem;
     font-weight: 600;
     color: #3d3d3d;
+  }
+
+  .var-badge-category-icon {
+    width: 13px;
+    height: 13px;
+    flex-shrink: 0;
+    color: #6a6a6a;
   }
 
   .var-badge-title-text {
