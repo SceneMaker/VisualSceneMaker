@@ -1,0 +1,15 @@
+plugins { id 'java' }
+
+group 'de.dfki'
+version '1.0.0'
+
+repositories { mavenCentral() }
+
+dependencies {
+    implementation project(":core")
+    implementation group: 'org.json', name: 'json', version: '20171018'
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.compilerArgs += ['-Xlint:deprecation', '-Xlint:unchecked']
+}

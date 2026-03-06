@@ -16,7 +16,7 @@
   import IconStop from "./icons/IconStop.svelte";
   import IconTrash from "./icons/IconTrash.svelte";
   import IconMonitor from "./icons/IconMonitor.svelte";
-  import PluginVarBadge from './PluginVarBadge.svelte';
+  import VarBadge from './VarBadge.svelte';
 
   const clientId = (() => {
     const existing = localStorage.getItem("vsm_client_id");
@@ -76,8 +76,8 @@
   const DEFAULT_AGENT_PORT = "7777";
   const DEFAULT_VAR_BADGE_STATE = {
     visible: true,
-    global: { x: 16, y: 12, w: 240, h: 150 },
-    local: { x: 16, y: 190, w: 240, h: 150 }
+    global: { x: 16, y: 12, w: 240, h: 150, expanded: true },
+    local: { x: 16, y: 190, w: 240, h: 150, expanded: true }
   };
   const DEFAULT_SCENEFLOW_TOGGLES = {
     nodeSnap: true,
@@ -102,8 +102,6 @@
   const RUNTIME_VIZ_BURST_DEFAULT = 3000;
   const RUNTIME_VIZ_BURST_MIN = 200;
   const RUNTIME_VIZ_BURST_MAX = 40000;
-  const VAR_BADGE_HANDLE_SIZE = 18;
-  const VAR_BADGE_HANDLE_PATH = buildVarBadgeHandlePath(VAR_BADGE_HANDLE_SIZE);
   const PLUGIN_BADGE_STORAGE_KEY_PREFIX = 'vsm_plugin_badges_';
   const PLUGIN_BADGE_DEFAULT_X = 270;
   const PLUGIN_BADGE_DEFAULT_Y = 12;
@@ -353,21 +351,6 @@
     return Math.min(SCENEFLOW_ZOOM_MAX, Math.max(SCENEFLOW_ZOOM_MIN, value));
   }
 
-  function buildVarBadgeHandlePath(handleSize) {
-    const outerRadius = Math.max(4, handleSize - 0.5);
-    const thickness = Math.max(2, Math.min(3, outerRadius * 0.22));
-    const innerRadius = outerRadius - thickness * 3;
-    const outerStartX = handleSize;
-    const outerStartY = handleSize - outerRadius;
-    const outerEndX = handleSize - outerRadius;
-    const outerEndY = handleSize;
-    const innerStartX = handleSize - innerRadius;
-    const innerStartY = handleSize;
-    const innerEndX = handleSize;
-    const innerEndY = handleSize - innerRadius;
-    return `M ${outerStartX} ${outerStartY} A ${outerRadius} ${outerRadius} 0 0 1 ${outerEndX} ${outerEndY} L ${innerStartX} ${innerStartY} A ${innerRadius} ${innerRadius} 0 0 0 ${innerEndX} ${innerEndY} Z`;
-  }
-
   function superNodeIconPath(w, h, power = 5, steps = 24) {
     const a = w / 2;
     const b = h / 2;
@@ -531,11 +514,13 @@
     const y = Number.isFinite(rect?.y) ? rect.y : fallback.y;
     const w = Number.isFinite(rect?.w) ? rect.w : fallback.w;
     const h = Number.isFinite(rect?.h) ? rect.h : fallback.h;
+    const expanded = rect?.expanded !== undefined ? !!rect.expanded : (fallback.expanded ?? true);
     return {
       x,
       y,
       w: Math.max(VAR_BADGE_MIN_WIDTH, w),
-      h: Math.max(VAR_BADGE_MIN_HEIGHT, h)
+      h: Math.max(VAR_BADGE_MIN_HEIGHT, h),
+      expanded
     };
   }
 
@@ -631,6 +616,14 @@
     sceneFlowShowVars = !sceneFlowShowVars;
   }
 
+  function toggleVarBadge(key) {
+    const cur = varBadgeState[key];
+    if (!cur) return;
+    const next = { ...varBadgeState, [key]: { ...cur, expanded: !cur.expanded } };
+    varBadgeState = next;
+    persistVarBadgeState(next);
+  }
+
   function startVarBadgeMove(event, key) {
     if (!isPrimaryPointer(event) || !sceneFlowContainerEl) return;
     const badge = varBadgeState[key];
@@ -643,15 +636,6 @@
       lastClientX: event.clientX,
       lastClientY: event.clientY
     };
-  }
-
-  function handleVarBadgePointerDown(event, key) {
-    if (!event) return;
-    if (varBadgeDrag) return;
-    const target = event.target;
-    if (target?.closest?.(".sceneflow-var-content")) return;
-    if (target?.closest?.(".var-resize-handle")) return;
-    startVarBadgeMove(event, key);
   }
 
   function isPrimaryPointer(event) {
@@ -779,31 +763,7 @@
     persistPluginBadgeState(selectedProjectId, pluginBadgeState);
   }
 
-  function badgeKeyFromTarget(target) {
-    const badgeEl = target?.closest?.(".sceneflow-var-badge");
-    if (!badgeEl) return null;
-    const key = badgeEl.dataset?.badge;
-    if (key === "global" || key === "local") {
-      return key;
-    }
-    return null;
-  }
-
-  function handleVarBadgeDocumentDown(event) {
-    if (!sceneFlowShowVars) return;
-    const key = badgeKeyFromTarget(event?.target);
-    if (!key) return;
-    const isHandle = event.target?.closest?.(".var-resize-handle");
-    const isContent = event.target?.closest?.(".sceneflow-var-content");
-    if (isHandle) {
-      startVarBadgeResize(event, key);
-    } else if (!isContent) {
-      startVarBadgeMove(event, key);
-    }
-  }
-
   onMount(() => {
-    const downHandler = (event) => handleVarBadgeDocumentDown(event);
     const moveHandler = (event) => {
       handleVarBadgePointerMove(event);
       handlePluginBadgePointerMove(event);
@@ -814,14 +774,12 @@
       handlePluginBadgePointerUp();
       handlePluginBadgeResizeUp();
     };
-    document.addEventListener("mousedown", downHandler, true);
     document.addEventListener("mousemove", moveHandler, true);
     document.addEventListener("mouseup", upHandler, true);
     document.addEventListener("pointermove", moveHandler, true);
     document.addEventListener("pointerup", upHandler, true);
     document.addEventListener("pointercancel", upHandler, true);
     return () => {
-      document.removeEventListener("mousedown", downHandler, true);
       document.removeEventListener("mousemove", moveHandler, true);
       document.removeEventListener("mouseup", upHandler, true);
       document.removeEventListener("pointermove", moveHandler, true);
@@ -7753,6 +7711,22 @@ Sentence:
     return `${head} = ${expr}`;
   }
 
+  function varBadgeLine(def) {
+    if (!def) return "";
+    const name = (def.name || "").trim();
+    const expr = (def.expr ?? def.expression ?? "").trim();
+    const hasLiveValue = Object.prototype.hasOwnProperty.call(runtimeValues, name);
+    const value = normalizeRuntimeValue(hasLiveValue ? runtimeValues[name] : def.value);
+    const capturedInitial = normalizeRuntimeValue(runtimeInitialValues[name]);
+    const initial = capturedInitial || expr;
+    const showInitial = hasLiveValue && initial !== "" && value !== initial;
+    if (value) {
+      return showInitial ? `${name} = ${value} (${initial})` : `${name} = ${value}`;
+    }
+    if (!expr) return name;
+    return `${name} = ${expr}`;
+  }
+
   function nodeTypeSummary(nodes) {
     if (!Array.isArray(nodes) || !nodes.length) return "";
     let basicCount = 0;
@@ -13921,113 +13895,67 @@ Sentence:
               </button>
             </div>
             {#if sceneFlowShowVars}
-              <div
-                class="sceneflow-var-badge"
-                style:left={`${varBadgeState.global?.x ?? 0}px`}
-                style:top={`${varBadgeState.global?.y ?? 0}px`}
-                style:width={`${varBadgeState.global?.w ?? VAR_BADGE_MIN_WIDTH}px`}
-                style:height={`${varBadgeState.global?.h ?? VAR_BADGE_MIN_HEIGHT}px`}
-                data-badge="global"
-                on:pointerdown|stopPropagation={(event) => handleVarBadgePointerDown(event, "global")}
-                on:mousedown|stopPropagation={(event) => handleVarBadgePointerDown(event, "global")}
-                role="presentation"
-              >
-                <div class="sceneflow-var-title">
-                  <span>Variables</span>
-                </div>
-                <div class="sceneflow-var-content">
-                  <div class="sceneflow-var-list">
-                    {#if runtimeError}
-                      <span class="error">{runtimeError}</span>
-                    {:else if runtimeLoading}
-                      <span class="muted">Loading...</span>
-                    {:else if displayGlobalVarList.length === 0}
-                      <span class="muted">No variables.</span>
-                    {:else}
-                      {#each displayGlobalVarList as variable}
-                        <div class="sceneflow-var-row" title={runtimeVarLine(variable)}>
-                          {runtimeVarLine(variable) || variable?.name || "Variable"}
-                        </div>
-                      {/each}
-                    {/if}
-                  </div>
-                </div>
-                <svg
-                  class="var-resize-handle"
-                  viewBox={`0 0 ${VAR_BADGE_HANDLE_SIZE} ${VAR_BADGE_HANDLE_SIZE}`}
-                  aria-hidden="true"
-                  on:pointerdown|stopPropagation={(event) => startVarBadgeResize(event, "global")}
-                  on:mousedown|stopPropagation={(event) => startVarBadgeResize(event, "global")}
-                >
-                  <path class="var-resize-fill" d={VAR_BADGE_HANDLE_PATH} />
-                </svg>
-              </div>
+              <VarBadge
+                title="Variables"
+                variables={displayGlobalVarList.map((def) => ({ line: varBadgeLine(def), description: varBadgeLine(def) }))}
+                loading={runtimeLoading}
+                error={runtimeError}
+                expanded={varBadgeState.global?.expanded ?? true}
+                x={varBadgeState.global?.x ?? 0}
+                y={varBadgeState.global?.y ?? 0}
+                w={varBadgeState.global?.w ?? VAR_BADGE_MIN_WIDTH}
+                h={varBadgeState.global?.h ?? VAR_BADGE_MIN_HEIGHT}
+                color="#edf1f8"
+                onDragStart={(e) => startVarBadgeMove(e, "global")}
+                onToggle={() => toggleVarBadge("global")}
+                onResizeStart={(e) => startVarBadgeResize(e, "global")}
+              />
               {#if showLocalVarBadge}
-                <div
-                  class="sceneflow-var-badge"
-                  style:left={`${varBadgeState.local?.x ?? 0}px`}
-                  style:top={`${varBadgeState.local?.y ?? 0}px`}
-                  style:width={`${varBadgeState.local?.w ?? VAR_BADGE_MIN_WIDTH}px`}
-                  style:height={`${varBadgeState.local?.h ?? VAR_BADGE_MIN_HEIGHT}px`}
-                  data-badge="local"
-                  on:pointerdown|stopPropagation={(event) => handleVarBadgePointerDown(event, "local")}
-                  on:mousedown|stopPropagation={(event) => handleVarBadgePointerDown(event, "local")}
-                  role="presentation"
-                >
-                  <div class="sceneflow-var-title">
-                    <span>Local variables</span>
-                    <span class="muted">{currentSuperName}</span>
-                  </div>
-                  <div class="sceneflow-var-content">
-                    <div class="sceneflow-var-list">
-                      {#if runtimeError}
-                        <span class="error">{runtimeError}</span>
-                      {:else if runtimeLoading}
-                        <span class="muted">Loading...</span>
-                      {:else if displayLocalVarList.length === 0}
-                        <span class="muted">No local variables.</span>
-                      {:else}
-                        {#each displayLocalVarList as variable}
-                          <div class="sceneflow-var-row" title={runtimeVarLine(variable)}>
-                            {runtimeVarLine(variable) || variable?.name || "Variable"}
-                          </div>
-                        {/each}
-                      {/if}
-                    </div>
-                  </div>
-                  <svg
-                    class="var-resize-handle"
-                    viewBox={`0 0 ${VAR_BADGE_HANDLE_SIZE} ${VAR_BADGE_HANDLE_SIZE}`}
-                    aria-hidden="true"
-                    on:pointerdown|stopPropagation={(event) => startVarBadgeResize(event, "local")}
-                    on:mousedown|stopPropagation={(event) => startVarBadgeResize(event, "local")}
-                  >
-                    <path class="var-resize-fill" d={VAR_BADGE_HANDLE_PATH} />
-                  </svg>
-                </div>
+                <VarBadge
+                  title="Local variables"
+                  subtitle={currentSuperName}
+                  variables={displayLocalVarList.map((def) => ({ line: varBadgeLine(def), description: varBadgeLine(def) }))}
+                  loading={runtimeLoading}
+                  error={runtimeError}
+                  expanded={varBadgeState.local?.expanded ?? true}
+                  x={varBadgeState.local?.x ?? 0}
+                  y={varBadgeState.local?.y ?? 0}
+                  w={varBadgeState.local?.w ?? VAR_BADGE_MIN_WIDTH}
+                  h={varBadgeState.local?.h ?? VAR_BADGE_MIN_HEIGHT}
+                  color="#edf1f8"
+                  onDragStart={(e) => startVarBadgeMove(e, "local")}
+                  onToggle={() => toggleVarBadge("local")}
+                  onResizeStart={(e) => startVarBadgeResize(e, "local")}
+                />
               {/if}
             {/if}
             {#if selectedProjectId && pluginBadgeDescriptors.length > 0}
               {#each pluginBadgeDescriptors as badge, i}
-                <PluginVarBadge
-                  pluginName={badge.pluginName}
+                <VarBadge
+                  title={badge.pluginName}
                   variables={badge.variables.map((v) => {
                     const sfDef = sceneFlowVarDefs.find((d) => d.name === v.name);
                     const expr = normalizeRuntimeValue(sfDef?.expr ?? sfDef?.expression ?? "");
                     const captured = normalizeRuntimeValue(runtimeInitialValues[v.name]);
-                    return {
-                      name: v.name,
-                      description: v.description,
-                      source: v.source,
-                      value: normalizeRuntimeValue(runtimeValues[v.name]),
-                      defaultVal: captured || expr
-                    };
+                    const defaultVal = captured || expr;
+                    const value = normalizeRuntimeValue(runtimeValues[v.name]);
+                    let line;
+                    if (value) {
+                      const showDefault = defaultVal && value !== defaultVal;
+                      line = showDefault ? `${v.name} = ${value} (${defaultVal})` : `${v.name} = ${value}`;
+                    } else if (defaultVal) {
+                      line = `${v.name} = ${defaultVal}`;
+                    } else {
+                      line = v.name;
+                    }
+                    return { line, description: v.description || line };
                   })}
                   expanded={pluginBadgeState[badge.className]?.expanded ?? true}
                   x={pluginBadgeState[badge.className]?.x ?? PLUGIN_BADGE_DEFAULT_X}
                   y={pluginBadgeState[badge.className]?.y ?? (PLUGIN_BADGE_DEFAULT_Y + i * PLUGIN_BADGE_Y_STEP)}
                   w={pluginBadgeState[badge.className]?.w ?? PLUGIN_BADGE_DEFAULT_W}
                   h={pluginBadgeState[badge.className]?.h ?? PLUGIN_BADGE_DEFAULT_H}
+                  color="#f8f6f2"
                   onDragStart={(e) => startPluginBadgeDrag(e, badge.className)}
                   onToggle={() => togglePluginBadge(badge.className)}
                   onResizeStart={(e) => startPluginBadgeResize(e, badge.className)}
