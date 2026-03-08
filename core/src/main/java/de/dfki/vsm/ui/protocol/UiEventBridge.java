@@ -257,6 +257,14 @@ public final class UiEventBridge implements EventListener {
         SuperNode parent = node.getParentNode();
         if (parent != null) {
             payload.put("parentId", parent.getId());
+            List<String> ancestors = new ArrayList<>();
+            SuperNode ancestor = parent;
+            while (ancestor != null) {
+                String aid = ancestor.getId();
+                ancestors.add(aid != null ? aid : "__root__");
+                ancestor = ancestor.getParentNode();
+            }
+            payload.put("ancestorIds", ancestors);
         }
         return payload;
     }
@@ -279,6 +287,14 @@ public final class UiEventBridge implements EventListener {
         }
         if (edge.getSourceNode() != null && edge.getSourceNode().getParentNode() != null) {
             payload.put("sourceParentId", edge.getSourceNode().getParentNode().getId());
+            List<String> sourceAncestors = new ArrayList<>();
+            SuperNode ancestor = edge.getSourceNode().getParentNode();
+            while (ancestor != null) {
+                String aid = ancestor.getId();
+                sourceAncestors.add(aid != null ? aid : "__root__");
+                ancestor = ancestor.getParentNode();
+            }
+            payload.put("sourceAncestorIds", sourceAncestors);
         }
         if (edge.getTargetNode() != null && edge.getTargetNode().getParentNode() != null) {
             payload.put("targetParentId", edge.getTargetNode().getParentNode().getId());

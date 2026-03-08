@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.LinkedHashMap;
 
 /**
  * @author Gregor Mehlmann
@@ -342,6 +343,14 @@ public final class SceneFlow extends SuperNode {
                         mSuperNodeList.add(node);
                         break;
                     }
+                    case "AliasNode": {
+                        AliasNode node = new AliasNode();
+
+                        node.parseXML(element);
+                        node.setParentNode(sceneFlow);
+                        mSuperNodeList.add(node);
+                        break;
+                    }
                     case "Commands":
                         XMLParseAction.processChildNodes(element, new XMLParseAction() {
                             public void run(Element element) throws XMLParseError {
@@ -376,6 +385,41 @@ public final class SceneFlow extends SuperNode {
                 }
             }
         });
+    }
+
+    /**
+     * Resolves all {@link AliasNode} references in the entire SceneFlow tree.
+     * Must be called after {@link #establishStartNodes()} during project load.
+     */
+    public void establishAliases() {
+        Map<String, SuperNode> index = buildTopLevelSuperNodeIndex();
+        resolveAliasesRecursive(this, index);
+    }
+
+    /**
+     * Builds an index of all top-level (direct children of SceneFlow) real SuperNodes,
+     * keyed by ID.  AliasNodes are excluded — they may not serve as canonical targets.
+     */
+    public Map<String, SuperNode> buildTopLevelSuperNodeIndex() {
+        Map<String, SuperNode> index = new LinkedHashMap<>();
+        for (SuperNode sn : mSuperNodeList) {
+            if (!(sn instanceof AliasNode)) {
+                index.put(sn.getId(), sn);
+            }
+        }
+        return index;
+    }
+
+    private static void resolveAliasesRecursive(SuperNode parent, Map<String, SuperNode> index) {
+        // Use the stored mSuperNodeList directly via getSuperNodeList().
+        // AliasNode.getSuperNodeList() returns empty, so we never recurse into aliases.
+        for (SuperNode child : parent.getSuperNodeList()) {
+            if (child instanceof AliasNode) {
+                ((AliasNode) child).resolve(index);
+            } else {
+                resolveAliasesRecursive(child, index);
+            }
+        }
     }
 
     @Override

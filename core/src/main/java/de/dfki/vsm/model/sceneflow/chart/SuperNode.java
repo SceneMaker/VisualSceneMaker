@@ -460,6 +460,14 @@ public class SuperNode extends BasicNode {
                         mSuperNodeList.add(node);
                         break;
                     }
+                    case "AliasNode": {
+                        AliasNode node = new AliasNode();
+
+                        node.parseXML(element);
+                        node.setParentNode(superNode);
+                        mSuperNodeList.add(node);
+                        break;
+                    }
                     case "Graphics":
                         mGraphics = new NodeGraphics();
                         mGraphics.parseXML(element);

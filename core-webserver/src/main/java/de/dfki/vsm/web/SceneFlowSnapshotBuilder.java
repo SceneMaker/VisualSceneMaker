@@ -1,5 +1,6 @@
 package de.dfki.vsm.web;
 
+import de.dfki.vsm.model.sceneflow.chart.AliasNode;
 import de.dfki.vsm.model.sceneflow.chart.BasicNode;
 import de.dfki.vsm.model.sceneflow.chart.SceneFlow;
 import de.dfki.vsm.model.sceneflow.chart.SuperNode;
@@ -138,6 +139,14 @@ public final class SceneFlowSnapshotBuilder {
         }
         snapshot.put("comments", comments);
 
+        // Shared-flow banner: list every alias that references this superNode
+        List<JSONObject> aliasRefs = collectAliasesOf(sceneFlow, superNode.getId());
+        if (!aliasRefs.isEmpty()) {
+            JSONArray arr = new JSONArray();
+            for (JSONObject ref : aliasRefs) arr.put(ref);
+            snapshot.put("usedByAliases", arr);
+        }
+
         return snapshot;
     }
 
@@ -148,7 +157,15 @@ public final class SceneFlowSnapshotBuilder {
                                         FlowSemanticNodeResult flowSemantic) {
         JSONObject json = new JSONObject();
         json.put("id", node.getId());
-        json.put("type", (node instanceof SuperNode) ? "Super" : "Basic");
+        json.put("type", (node instanceof AliasNode) ? "Alias"
+                       : (node instanceof SuperNode) ? "Super"
+                       : "Basic");
+        if (node instanceof AliasNode) {
+            AliasNode alias = (AliasNode) node;
+            json.put("refId", alias.getRefId());
+            SuperNode canonical = alias.getCanonicalNode();
+            json.put("refName", canonical != null ? canonical.getName() : "");
+        }
         json.put("name", node.getName() != null ? node.getName() : "");
         json.put("comment", node.getComment() != null ? node.getComment() : "");
         json.put("flavour", node.getFlavour() != null ? node.getFlavour().name() : "None");
@@ -307,6 +324,44 @@ public final class SceneFlowSnapshotBuilder {
         if (edge instanceof TimeoutEdge) return "timeout";
         if (edge instanceof ForkingEdge) return "fork";
         return "unknown";
+    }
+
+    // ===== Alias collection =====
+
+    /**
+     * Returns metadata for every {@link AliasNode} in the tree whose {@code refId}
+     * matches {@code canonicalId}.  Used to populate the shared-flow banner.
+     */
+    public static List<JSONObject> collectAliasesOf(SuperNode root, String canonicalId) {
+        List<JSONObject> result = new ArrayList<>();
+        if (canonicalId == null || canonicalId.isBlank()) return result;
+        collectAliasesOfRecursive(root, canonicalId, result);
+        return result;
+    }
+
+    private static void collectAliasesOfRecursive(SuperNode parent, String canonicalId,
+                                                   List<JSONObject> result) {
+        // getSuperNodeList() on a real SuperNode returns its stored mSuperNodeList
+        // (which may include AliasNodes).  On AliasNode it returns empty, so we
+        // never accidentally recurse into the canonical's tree.
+        for (SuperNode child : parent.getSuperNodeList()) {
+            if (child instanceof AliasNode) {
+                AliasNode alias = (AliasNode) child;
+                if (canonicalId.equals(alias.getRefId())) {
+                    JSONObject entry = new JSONObject();
+                    entry.put("id", alias.getId());
+                    entry.put("name", alias.getName() != null ? alias.getName() : "");
+                    SuperNode aliasParent = alias.getParentNode();
+                    entry.put("parentId", aliasParent != null ? aliasParent.getId() : "");
+                    entry.put("parentName", (aliasParent != null && aliasParent.getName() != null)
+                            ? aliasParent.getName() : "");
+                    result.add(entry);
+                }
+                // Don't recurse: aliases have no real children of their own
+            } else {
+                collectAliasesOfRecursive(child, canonicalId, result);
+            }
+        }
     }
 
     // ===== SuperNode resolution =====

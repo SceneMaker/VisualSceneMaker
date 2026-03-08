@@ -5,6 +5,8 @@ import de.dfki.vsm.event.EventListener;
 import de.dfki.vsm.event.EventObject;
 import de.dfki.vsm.event.event.*;
 import de.dfki.vsm.model.sceneflow.chart.BasicNode;
+import de.dfki.vsm.model.sceneflow.chart.SuperNode;
+import org.json.JSONArray;
 import de.dfki.vsm.model.sceneflow.chart.edge.AbstractEdge;
 import de.dfki.vsm.model.sceneflow.chart.edge.EpsilonEdge;
 import de.dfki.vsm.model.sceneflow.chart.edge.ForkingEdge;
@@ -77,6 +79,7 @@ public final class AndroidRuntimeEventBridge implements EventListener {
             payload.put("nodeId", node.getId());
             if (node.getParentNode() != null) {
                 payload.put("parentId", node.getParentNode().getId());
+                payload.put("ancestorIds", buildAncestorIds(node.getParentNode()));
             }
             emitEvent(broadcaster, "runtime", "runtime.nodeActive", payload);
             return;
@@ -90,6 +93,7 @@ public final class AndroidRuntimeEventBridge implements EventListener {
             payload.put("nodeId", node.getId());
             if (node.getParentNode() != null) {
                 payload.put("parentId", node.getParentNode().getId());
+                payload.put("ancestorIds", buildAncestorIds(node.getParentNode()));
             }
             emitEvent(broadcaster, "runtime", "runtime.nodeStopped", payload);
             return;
@@ -225,6 +229,17 @@ public final class AndroidRuntimeEventBridge implements EventListener {
         message.put("event", event);
         message.put("payload", payload == null ? new JSONObject() : payload);
         broadcaster.accept(message.toString());
+    }
+
+    private JSONArray buildAncestorIds(SuperNode start) {
+        JSONArray arr = new JSONArray();
+        SuperNode current = start;
+        while (current != null) {
+            String id = current.getId();
+            arr.put(id != null ? id : "__root__");
+            current = current.getParentNode();
+        }
+        return arr;
     }
 
     private String getEdgeTypeCode(final AbstractEdge edge) {

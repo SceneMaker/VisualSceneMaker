@@ -77,6 +77,9 @@ public abstract class AbstractEdge implements ModelObject {
 
     public final void setTargetNode(final BasicNode value) {
         mTargetNode = value;
+        if (value != null) {
+            mTargetUnid = value.getId();
+        }
     }
 
     public final BasicNode getSourceNode() {
@@ -85,6 +88,9 @@ public abstract class AbstractEdge implements ModelObject {
 
     public final void setSourceNode(final BasicNode value) {
         mSourceNode = value;
+        if (value != null) {
+            mSourceUnid = value.getId();
+        }
     }
 
     public final EdgeGraphics getGraphics() {

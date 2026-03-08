@@ -1926,7 +1926,7 @@
     if (!Number.isFinite(dx) || !Number.isFinite(dy) || (!dx && !dy)) {
       return { x: cx, y: cy };
     }
-    if (node.type === "Super") {
+    if (node.type === "Super" || node.type === "Alias") {
       const halfW = w / 2;
       const halfH = h / 2;
       const absDx = Math.abs(dx);
@@ -2289,7 +2289,12 @@
     if (!node) return "";
     const lines = [];
     const name = node.name || "(unnamed)";
-    lines.push(`${node.type === "Super" ? "Super node" : "Node"}: ${name}`);
+    if (node.type === "Alias") {
+      lines.push(`Alias node: ${name}`);
+      if (node.refName) lines.push(`References: ${node.refName}`);
+    } else {
+      lines.push(`${node.type === "Super" ? "Super node" : "Node"}: ${name}`);
+    }
     if (node.flavour) {
       lines.push(`Flavour: ${node.flavour}`);
     }
@@ -2509,6 +2514,13 @@
   function handleNodeDoubleClick(node) {
     if (!node) return;
     selectNode(node.id);
+    if (node.type === "Alias") {
+      // Navigate into the canonical supernode, not the alias placeholder
+      if (typeof onNavigate === "function") {
+        onNavigate(node.refId);
+      }
+      return;
+    }
     if (node.type !== "Super") return;
     if (typeof onNavigate === "function") {
       onNavigate(node.id);
@@ -2530,7 +2542,7 @@
       return;
     }
     selectNode(node.id);
-    if (node.type === "Super" && event.key === "Enter") {
+    if ((node.type === "Super" || node.type === "Alias") && event.key === "Enter") {
       handleNodeDoubleClick(node);
     }
   }
@@ -2787,7 +2799,7 @@
 
   function clampNodePoint(node, point) {
     if (!point) return { x: MIN_WORLD_COORD, y: MIN_WORLD_COORD };
-    if (!node || node.type !== "Super") {
+    if (!node || (node.type !== "Super" && node.type !== "Alias")) {
       return clampWorldPoint(point);
     }
     const offset = nodeVisualOffset(node);
@@ -4022,7 +4034,7 @@
       {@const label = nodeLabelLayout(node, w, h)}
       {@const cmdLayout = showCommandText ? nodeCommandLayout(node, w, h) : nodeCommandDotsLayout(node, w, h)}
       <g
-        class={`node node-${node.type === "Super" ? "super" : "basic"} ${node.isStart ? "start" : ""} ${
+        class={`node node-${node.type === "Super" || node.type === "Alias" ? "super" : "basic"} ${node.type === "Alias" ? "node-alias" : ""} ${node.isStart ? "start" : ""} ${
           node.isAltStart ? "alt-start" : ""
         } ${node.isHistory ? "history" : ""} ${isEnd ? "end" : ""} ${isPotentialEnd ? "end-potential" : ""} ${
           flavour ? `flavour-${flavour}` : ""
@@ -4062,7 +4074,7 @@
             <polygon points={sign.points} style={`stroke-width:${sign.stroke}px`} />
           </g>
         {/if}
-        {#if node.type === "Super"}
+        {#if node.type === "Super" || node.type === "Alias"}
           <path
             class="node-shape node-super-shape"
             d={superNodePath(w, h)}
@@ -4079,7 +4091,7 @@
           />
         {/if}
         {#if isActive}
-          {#if node.type === "Super"}
+          {#if node.type === "Super" || node.type === "Alias"}
             <path class="node-activity" d={superNodePath(w, h)} />
             <path class="node-activity-border" d={superNodePath(w, h)} />
           {:else}
@@ -4098,6 +4110,13 @@
               </tspan>
             {/if}
           </text>
+        {/if}
+        {#if node.type === "Alias"}
+          <g class="node-alias-badge" transform={`translate(${w - 18}, 4)`} style="color:#fff">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="14" height="14">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 8.25V6a2.25 2.25 0 0 0-2.25-2.25H6A2.25 2.25 0 0 0 3.75 6v8.25A2.25 2.25 0 0 0 6 16.5h2.25m8.25-8.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-7.5A2.25 2.25 0 0 1 8.25 18v-1.5m8.25-8.25h-6a2.25 2.25 0 0 0-2.25 2.25v6" />
+            </svg>
+          </g>
         {/if}
           {#if cmdLayout}
           {#if showCommandText}

@@ -5110,6 +5110,48 @@ summary {
   stroke-width: var(--sf-node-stroke, 3px);
 }
 
+/* ===== Alias node styles ===== */
+
+.node-alias {
+  opacity: 0.8;
+}
+
+.node-alias.selected {
+  opacity: 1;
+}
+
+.node-alias-badge {
+  pointer-events: none;
+  opacity: 0.75;
+  color: #ffffff;
+  stroke: #ffffff;
+}
+
+/* Shared-flow info banner — floats over the bottom of the canvas */
+.alias-notice {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  background: var(--sf-alias-notice-bg, rgba(80, 130, 200, 0.88));
+  border-top: 1px solid var(--sf-alias-notice-border, rgba(80, 130, 200, 0.5));
+  color: #fff;
+  font-size: 12px;
+  line-height: 1.4;
+  backdrop-filter: blur(4px);
+}
+
+.alias-notice svg {
+  flex-shrink: 0;
+  width: 14px;
+  height: 14px;
+}
+
 .node.selected .node-shape {
   stroke: var(--sf-selection-color, #5b8fdc);
   stroke-width: var(--sf-selection-stroke, 4px);

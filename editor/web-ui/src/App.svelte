@@ -90,7 +90,7 @@
   const VAR_BADGE_COOKIE = "vsm_var_badges";
   const VAR_BADGE_MIN_WIDTH = 180;
   const VAR_BADGE_MIN_HEIGHT = 90;
-  const ACTIVITY_SUPERNODE_DECAY_MS = 900;
+  const ACTIVITY_SUPERNODE_DECAY_MS = 1500;
   const ACTIVITY_NODE_MIN_HIGHLIGHT_MS = 200;
   const EVENT_OVERPROD_WINDOW_MS = 2000;
   const EVENT_OVERPROD_TOTAL_THRESHOLD = 2500;
@@ -6036,11 +6036,32 @@ Sentence:
   function resolveActivityNodeId(payload) {
     if (!sceneFlow?.nodes) return "";
     const nodeId = (payload?.nodeId || "").trim();
-    const parentId = (payload?.parentId || "").trim();
     const visible = new Set(sceneFlow.nodes.map((node) => node.id));
     if (nodeId && visible.has(nodeId)) return nodeId;
-    if (parentId && visible.has(parentId)) return parentId;
+    // Walk full ancestor chain (ancestorIds: [parentId, grandParentId, ...])
+    const ancestors = Array.isArray(payload?.ancestorIds)
+      ? payload.ancestorIds
+      : (payload?.parentId ? [payload.parentId] : []);
+    for (const aid of ancestors) {
+      if (aid && visible.has(aid)) return aid;
+    }
     return "";
+  }
+
+  // Returns the primary resolved node plus any canonical/alias counterparts visible at this level.
+  function resolveAllActivityNodeIds(payload) {
+    const primary = resolveActivityNodeId(payload);
+    if (!primary || !sceneFlow?.nodes) return primary ? [primary] : [];
+    const result = new Set([primary]);
+    for (const node of sceneFlow.nodes) {
+      if (node.type === "Alias" && node.refId === primary) {
+        result.add(node.id); // primary is canonical → also activate its aliases
+      }
+      if (node.id === primary && node.type === "Alias" && node.refId) {
+        result.add(node.refId); // primary is alias → also activate canonical (if visible)
+      }
+    }
+    return Array.from(result);
   }
 
   function resolveActivityEdgeId(payload) {
@@ -6066,7 +6087,7 @@ Sentence:
   function isSuperNodeId(nodeId) {
     if (!nodeId || !sceneFlow?.nodes) return false;
     const match = sceneFlow.nodes.find((node) => node.id === nodeId);
-    return match?.type === "Super";
+    return match?.type === "Super" || match?.type === "Alias";
   }
 
   function isEpsilonOnlyNode(nodeId) {
@@ -6734,8 +6755,8 @@ Sentence:
       if (!activityProjectMatches(payload)) return;
       if (runtimeStopRequested) return;
       recordRuntimeEventForOverproduction(eventName, payload);
-      const nodeId = resolveActivityNodeId(payload);
-      if (nodeId) {
+      const nodeIds = resolveAllActivityNodeIds(payload);
+      for (const nodeId of nodeIds) {
         pushRecentActiveNode(nodeId);
         incrementActivityNode(nodeId);
       }
@@ -6745,8 +6766,8 @@ Sentence:
       if (!activityProjectMatches(payload)) return;
       if (runtimeStopRequested) return;
       recordRuntimeEventForOverproduction(eventName, payload);
-      const nodeId = resolveActivityNodeId(payload);
-      if (nodeId) {
+      const nodeIds = resolveAllActivityNodeIds(payload);
+      for (const nodeId of nodeIds) {
         pushRecentStoppedNode(nodeId);
         if (commandActivityHeldNodeIds.has(nodeId)) {
           // Keep command-driven highlight while long-running command is still active.
@@ -6768,7 +6789,8 @@ Sentence:
       const edgeType = normalizeProtocolEdgeType(payload.edgeType);
       const sourceNodeId = resolveActivityNodeId({
         nodeId: payload.sourceId,
-        parentId: payload.sourceParentId
+        parentId: payload.sourceParentId,
+        ancestorIds: payload.sourceAncestorIds
       });
       // Command-driven node highlights should only be force-cleared on interruption.
       if (sourceNodeId && edgeType === "IEDGE") {
@@ -6795,7 +6817,8 @@ Sentence:
         : (Number.isFinite(Number(payload.elapsedMs)) ? Date.now() - Number(payload.elapsedMs) : Date.now());
       const sourceNodeId = resolveActivityNodeId({
         nodeId: payload.sourceId,
-        parentId: payload.sourceParentId
+        parentId: payload.sourceParentId,
+        ancestorIds: payload.sourceAncestorIds
       });
       if (sourceNodeId && isSuperNodeId(sourceNodeId) && Number.isFinite(timeoutMs) && timeoutMs > 0) {
         holdActivityNodeUntil(sourceNodeId, startedAt + timeoutMs);
@@ -8955,6 +8978,9 @@ Sentence:
           newSelections.push({ type: "node", id });
         }
       });
+      if (Array.isArray(response.warnings) && response.warnings.length > 0) {
+        statusMessage = response.warnings[0];
+      }
     }
 
     for (const comment of sceneFlowClipboard.comments || []) {
@@ -11932,6 +11958,27 @@ Sentence:
     });
   }
 
+  // A supernode is a valid alias source when exactly one top-level supernode
+  // is selected and the current view is the root level.
+  $: canCreateAlias = (() => {
+    if (selectedNode?.type !== "Super") return false;
+    const sni = sceneFlow?.superNodeId;
+    const atRoot = sni == null || sni === "" || sni === "__root__";
+    return atRoot;
+  })();
+
+  async function createAlias() {
+    if (!canCreateAlias || !selectedNode) return;
+    const offset = 140;
+    await runSceneFlowCommand("SceneFlow.Node.CreateAlias", {
+      projectId: selectedProjectId,
+      superNodeId: sceneFlow?.superNodeId,
+      refId: selectedNode.id,
+      x: (selectedNode.graphics?.x ?? 0) + offset,
+      y: selectedNode.graphics?.y ?? 0,
+    });
+  }
+
   async function straightenAllEdges() {
     if (!selectedProjectId || sceneFlowBusy) return;
     await runSceneFlowCommand("SceneFlow.Edge.StraightenAll", {
@@ -13207,6 +13254,18 @@ Sentence:
               <button
                 type="button"
                 class="ghost icon-button flat"
+                on:click={createAlias}
+                disabled={!wsConnected || sceneFlowBusy || !canCreateAlias}
+                aria-label="Create visual copy"
+                title="Create visual copy of selected supernode"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="icon" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 8.25V6a2.25 2.25 0 0 0-2.25-2.25H6A2.25 2.25 0 0 0 3.75 6v8.25A2.25 2.25 0 0 0 6 16.5h2.25m8.25-8.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-7.5A2.25 2.25 0 0 1 8.25 18v-1.5m8.25-8.25h-6a2.25 2.25 0 0 0-2.25 2.25v6" />
+                </svg>
+              </button>
+              <button
+                type="button"
+                class="ghost icon-button flat"
                 on:click={downloadSceneFlowSnapshot}
                 disabled={!sceneFlowRef || !sceneFlow}
                 aria-label="Download snapshot"
@@ -13844,6 +13903,21 @@ Sentence:
                 onTimeoutEdgeUpdate={handleCanvasTimeoutEdgeUpdate}
               />
             </div>
+            {#if sceneFlow?.usedByAliases?.length > 0}
+              <div class="alias-notice" role="note">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="12" y1="8" x2="12" y2="12" />
+                  <line x1="12" y1="16" x2="12.01" y2="16" />
+                </svg>
+                <span>
+                  Shared flow — <strong>{sceneFlow.superNode?.name || sceneFlow.superNodeId}</strong> is also used as a visual copy in:
+                  {#each sceneFlow.usedByAliases as alias, i}
+                    {alias.parentName || 'root'}{i < sceneFlow.usedByAliases.length - 1 ? ', ' : ''}.
+                  {/each}
+                </span>
+              </div>
+            {/if}
             <div class="sceneflow-toggles">
               <button
                 type="button"
