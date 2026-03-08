@@ -19,6 +19,7 @@ import de.dfki.vsm.model.config.ConfigFeature;
 import de.dfki.vsm.model.scenescript.SceneObject;
 import de.dfki.vsm.model.scenescript.ScriptDiagnostics;
 import de.dfki.vsm.model.scenescript.SceneScript;
+import de.dfki.vsm.model.sceneflow.chart.AliasNode;
 import de.dfki.vsm.model.sceneflow.chart.BasicNode;
 import de.dfki.vsm.model.sceneflow.chart.edge.AbstractEdge;
 import de.dfki.vsm.model.sceneflow.chart.graphics.edge.EdgeGraphics;
@@ -643,7 +644,7 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
 
         @Override
         public BasicNode resolveNodeById(SuperNode root, String nodeId) {
-            return WebUiServer.this.resolveNodeById(root, nodeId);
+            return WebUiServer.this.findNodeRecursive(root, nodeId);
         }
 
         @Override
@@ -738,7 +739,7 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
 
         @Override
         public BasicNode resolveNodeById(SuperNode root, String nodeId) {
-            return WebUiServer.this.resolveNodeById(root, nodeId);
+            return WebUiServer.this.findNodeRecursive(root, nodeId);
         }
 
         @Override
@@ -942,7 +943,7 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
 
         @Override
         public BasicNode resolveNodeById(SuperNode root, String nodeId) {
-            return WebUiServer.this.resolveNodeById(root, nodeId);
+            return WebUiServer.this.findNodeRecursive(root, nodeId);
         }
 
         @Override
@@ -1001,6 +1002,12 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         public List<SelectionCommandService.ClipboardEdgeData> clipboardEdges(String projectId) {
             ProjectRef ref = projectStore.get(projectId);
             return ref != null ? ref.clipboardEdges : new ArrayList<>();
+        }
+
+        @Override
+        public Set<String> clipboardStartNodeIds(String projectId) {
+            ProjectRef ref = projectStore.get(projectId);
+            return ref != null ? ref.clipboardStartNodeIds : new HashSet<>();
         }
     };
     private final UndoRedoCommandService.Context undoRedoCommandContext = new UndoRedoCommandService.Context() {
@@ -1628,6 +1635,8 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
                 "SceneFlow.Get", "SceneFlow.Snapshot");
         registerWsCommands((method, params, broadcaster) -> createNodeForProject(params, broadcaster),
                 "SceneFlow.Node.Add", "SceneFlow.Node.Create");
+        registerWsCommands((method, params, broadcaster) -> createAliasNodeForProject(params, broadcaster),
+                "SceneFlow.Node.CreateAlias");
         registerWsCommands((method, params, broadcaster) -> updateNodeForProject(params, broadcaster),
                 "SceneFlow.Node.Update");
         registerWsCommands((method, params, broadcaster) -> deleteNodeForProject(params, broadcaster),
@@ -1888,6 +1897,7 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
             payload.put("nodeId", node.getId());
             if (node.getParentNode() != null) {
                 payload.put("parentId", node.getParentNode().getId());
+                payload.put("ancestorIds", buildAncestorIds(node.getParentNode()));
             }
             message.put("channel", "runtime");
             message.put("event", "runtime.nodeActive");
@@ -1902,6 +1912,7 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
             payload.put("nodeId", node.getId());
             if (node.getParentNode() != null) {
                 payload.put("parentId", node.getParentNode().getId());
+                payload.put("ancestorIds", buildAncestorIds(node.getParentNode()));
             }
             message.put("channel", "runtime");
             message.put("event", "runtime.nodeStopped");
@@ -1916,6 +1927,7 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
             payload.put("targetId", targetId);
             if (edge.getSourceNode() != null && edge.getSourceNode().getParentNode() != null) {
                 payload.put("sourceParentId", edge.getSourceNode().getParentNode().getId());
+                payload.put("sourceAncestorIds", buildAncestorIds(edge.getSourceNode().getParentNode()));
             }
             if (edge.getTargetNode() != null && edge.getTargetNode().getParentNode() != null) {
                 payload.put("targetParentId", edge.getTargetNode().getParentNode().getId());
@@ -1935,6 +1947,7 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
             payload.put("targetId", targetId);
             if (edge.getSourceNode() != null && edge.getSourceNode().getParentNode() != null) {
                 payload.put("sourceParentId", edge.getSourceNode().getParentNode().getId());
+                payload.put("sourceAncestorIds", buildAncestorIds(edge.getSourceNode().getParentNode()));
             }
             if (edge.getTargetNode() != null && edge.getTargetNode().getParentNode() != null) {
                 payload.put("targetParentId", edge.getTargetNode().getParentNode().getId());
@@ -2131,6 +2144,22 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
      */
     private String getEdgeTypeLowercase(AbstractEdge edge) {
         return SceneFlowSnapshotBuilder.getEdgeTypeLowercase(edge);
+    }
+
+    /**
+     * Builds the full ancestor ID chain starting from the given node, walking up to the root.
+     * Used in runtime.nodeActive/nodeStopped/edgeActive events so the UI can resolve
+     * deeply nested nodes to their visible ancestor at any view level.
+     */
+    private JSONArray buildAncestorIds(SuperNode start) {
+        JSONArray arr = new JSONArray();
+        SuperNode current = start;
+        while (current != null) {
+            String id = current.getId();
+            arr.put(id != null ? id : "__root__");
+            current = current.getParentNode();
+        }
+        return arr;
     }
 
     private String findProjectIdForEvent(EventObject event) {
@@ -5874,6 +5903,10 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
 
     private void collectEdges(SuperNode superNode, List<AbstractEdge> out) {
         if (superNode == null) return;
+        // Collect edges owned by the SuperNode itself (e.g. IEdges on SuperNodes)
+        if (superNode.getEdgeList() != null) {
+            out.addAll(superNode.getEdgeList());
+        }
         if (superNode.getNodeList() != null) {
             for (BasicNode n : superNode.getNodeList()) {
                 if (n.getEdgeList() != null) {
@@ -6469,6 +6502,74 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
                 return resp;
             }
 
+    private JSONObject createAliasNodeForProject(JSONObject params, java.util.function.Consumer<String> broadcaster) {
+        String pid = params.optString("projectId", "");
+        ProjectRef ref = projectStore.get(pid);
+        if (ref == null || ref.runtimeProject == null) {
+            return errorResponse("PROJECT_NOT_FOUND", "Project not found");
+        }
+
+        SceneFlow sceneFlow = ref.runtimeProject.getSceneFlow();
+        String superNodeId = params.optString("superNodeId", null);
+        String refId = params.optString("refId", "").trim();
+
+        if (refId.isBlank()) {
+            return errorResponse("BAD_REQUEST", "Missing refId");
+        }
+
+        // Validate: refId must be a direct child of root SceneFlow, not an AliasNode
+        SuperNode canonical = null;
+        for (SuperNode sn : sceneFlow.getSuperNodeList()) {
+            if (!(sn instanceof AliasNode) && refId.equals(sn.getId())) {
+                canonical = sn;
+                break;
+            }
+        }
+        if (canonical == null) {
+            return errorResponse("BAD_REQUEST",
+                    "refId must be a top-level (root-level) SuperNode: " + refId);
+        }
+
+        SuperNode snapshotTarget = resolveSuperNode(sceneFlow, superNodeId);
+        SuperNode activeSuperNode = snapshotTarget != null ? snapshotTarget : sceneFlow;
+
+        // Allocate a unique ID
+        Set<String> usedIds = new java.util.HashSet<>();
+        List<BasicNode> existingNodes = new ArrayList<>();
+        collectNodes(sceneFlow, existingNodes);
+        for (BasicNode existing : existingNodes) {
+            if (existing != null && existing.getId() != null) usedIds.add(existing.getId());
+        }
+        String aliasId = allocateNodeId(ref, true, usedIds);
+
+        String name = params.optString("name", "").trim();
+        if (name.isBlank()) {
+            name = canonical.getName() != null ? canonical.getName() : "Node";
+        }
+
+        int xPos = safeRound(params.has("x") ? params.optDouble("x") : null,
+                canonical.getGraphics() != null ? canonical.getGraphics().getPosition().getXPos() + 140 : 140);
+        int yPos = safeRound(params.has("y") ? params.optDouble("y") : null,
+                canonical.getGraphics() != null ? canonical.getGraphics().getPosition().getYPos() + 50 : 50);
+
+        AliasNode alias = new AliasNode();
+        alias.setId(aliasId);
+        alias.setName(name);
+        alias.setRefId(refId);
+        alias.setGraphics(new NodeGraphics(xPos, yPos));
+        alias.setParentNode(activeSuperNode);
+        alias.resolve(sceneFlow.buildTopLevelSuperNodeIndex());
+        activeSuperNode.addSuperNode(alias);
+
+        JSONObject snapshot = createSceneFlowSnapshot(ref.runtimeProject, pid, snapshotTarget, sceneFlow);
+        JSONObject resp = buildSceneFlowResponse(snapshot);
+        resp.put("nodeId", aliasId);
+        broadcastSceneFlowSnapshot(broadcaster, pid, snapshot);
+        recordHistory(ref, "SceneFlow.Node.CreateAlias");
+        recordCommand(ref, "SceneFlow.Node.CreateAlias", params);
+        return resp;
+    }
+
     private JSONObject updateNodeForProject(JSONObject params, java.util.function.Consumer<String> broadcaster) {
         String pid = params.optString("projectId", "");
         ProjectRef ref = projectStore.get(pid);
@@ -6546,6 +6647,15 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         }
         if (dataNode.isHistoryNode()) {
             return errorResponse("BAD_REQUEST", "History nodes cannot be deleted.");
+        }
+        // Guard: prevent deletion of a canonical SuperNode that still has aliases
+        if (dataNode instanceof SuperNode && !(dataNode instanceof AliasNode)) {
+            List<JSONObject> aliases = SceneFlowSnapshotBuilder.collectAliasesOf(sceneFlow, nodeId);
+            if (!aliases.isEmpty()) {
+                return errorResponse("ALIAS_CONFLICT",
+                        "Cannot delete \"" + dataNode.getName() + "\": it is referenced by "
+                        + aliases.size() + " alias(es). Remove all aliases first.");
+            }
         }
         SuperNode activeSuperNode = dataNode.getParentNode() != null ? dataNode.getParentNode() : sceneFlow;
         activeSuperNode.removeStartNode(dataNode);
@@ -8458,6 +8568,7 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         // Clipboard for copy/paste operations
         List<BasicNode> clipboard = new ArrayList<>();
         List<SelectionCommandService.ClipboardEdgeData> clipboardEdges = new ArrayList<>();
+        Set<String> clipboardStartNodeIds = new HashSet<>();
 
         ProjectRef(String id, String name, String path) {
             this.id = id;
