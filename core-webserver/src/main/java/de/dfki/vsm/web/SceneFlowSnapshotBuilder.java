@@ -17,8 +17,10 @@ import de.dfki.vsm.model.sceneflow.chart.graphics.comment.CommentGraphics;
 import de.dfki.vsm.model.sceneflow.chart.graphics.edge.EdgeArrow;
 import de.dfki.vsm.model.sceneflow.chart.graphics.edge.EdgeGraphics;
 import de.dfki.vsm.model.sceneflow.chart.graphics.edge.EdgePoint;
+import de.dfki.vsm.model.sceneflow.glue.command.Assignment;
 import de.dfki.vsm.model.sceneflow.glue.command.Command;
 import de.dfki.vsm.model.sceneflow.glue.command.definition.DataTypeDefinition;
+import de.dfki.vsm.model.sceneflow.glue.command.invocation.PlayScenesActivity;
 import de.dfki.vsm.model.sceneflow.glue.command.definition.VariableDefinition;
 import de.dfki.vsm.model.sceneflow.glue.command.definition.datatype.ListTypeDefinition;
 import de.dfki.vsm.model.sceneflow.glue.command.definition.datatype.MemberDefinition;
@@ -445,6 +447,15 @@ public final class SceneFlowSnapshotBuilder {
                 JSONObject json = new JSONObject();
                 json.put("text", cmd.getConcreteSyntax());
                 json.put("syntax", cmd.getConcreteSyntax());
+                String type;
+                if (cmd instanceof Assignment) {
+                    type = "var";
+                } else if (cmd instanceof PlayScenesActivity) {
+                    type = "scene";
+                } else {
+                    type = "action";
+                }
+                json.put("type", type);
                 list.put(json);
             }
         }

@@ -5227,7 +5227,30 @@ summary {
 }
 
 .node-command-dot {
+  /* fill overridden inline per command type */
   fill: rgba(200, 200, 200, 0.9);
+}
+
+.node-type-badge {
+  cursor: pointer;
+}
+
+.node-type-badge-text {
+  fill: #ffffff;
+  font-family: "SansSerif", "Helvetica Neue", Arial, sans-serif;
+  font-weight: 600;
+  pointer-events: none;
+}
+
+.node-cmd-badge {
+  cursor: pointer;
+}
+
+.node-cmd-badge-text {
+  fill: #3f3f3f;
+  font-family: "SansSerif", "Helvetica Neue", Arial, sans-serif;
+  font-weight: 600;
+  pointer-events: none;
 }
 
 .node-id {

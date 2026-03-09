@@ -10483,7 +10483,7 @@ Sentence:
     startVarDefEdit(varDefSelectedIndex);
   }
 
-  async function openCmdDialog(nodeId = null) {
+  async function openCmdDialog(nodeId = null, focusIndex = null) {
     const targetId = nodeId || nodeEditorTarget?.id || "";
     if (!targetId && !nodeEditorTarget) return;
     if (!nodeId && nodeEditorTarget?.isRoot) {
@@ -10500,7 +10500,9 @@ Sentence:
     cmdInlineInputEls = [];
     initCmdHelper();
     syncCmdInlineDrafts();
-    if (cmdInlineDrafts.length > 0) {
+    if (focusIndex != null && focusIndex >= 0 && focusIndex < cmdInlineDrafts.length) {
+      cmdSelectedIndex = focusIndex;
+    } else if (cmdInlineDrafts.length > 0) {
       cmdSelectedIndex = 0;
     }
     focusDialog(cmdDialogEl);
@@ -13263,19 +13265,6 @@ Sentence:
                   <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 8.25V6a2.25 2.25 0 0 0-2.25-2.25H6A2.25 2.25 0 0 0 3.75 6v8.25A2.25 2.25 0 0 0 6 16.5h2.25m8.25-8.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-7.5A2.25 2.25 0 0 1 8.25 18v-1.5m8.25-8.25h-6a2.25 2.25 0 0 0-2.25 2.25v6" />
                 </svg>
               </button>
-              <button
-                type="button"
-                class="ghost icon-button flat"
-                on:click={downloadSceneFlowSnapshot}
-                disabled={!sceneFlowRef || !sceneFlow}
-                aria-label="Download snapshot"
-                title="Download snapshot"
-              >
-                <svg viewBox="0 0 24 24" class="icon" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z" />
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0ZM18.75 10.5h.008v.008h-.008V10.5Z" />
-                </svg>
-              </button>
             </div>
             <div class="sceneflow-nav-cluster">
               <button
@@ -13332,6 +13321,19 @@ Sentence:
                 title="Runtime monitor"
               >
                 <IconMonitor className="icon" />
+              </button>
+              <button
+                type="button"
+                class="sceneflow-gear flat"
+                on:click={downloadSceneFlowSnapshot}
+                disabled={!sceneFlowRef || !sceneFlow}
+                aria-label="Download snapshot"
+                title="Download snapshot"
+              >
+                <svg viewBox="0 0 24 24" class="icon" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0ZM18.75 10.5h.008v.008h-.008V10.5Z" />
+                </svg>
               </button>
             </div>
             <div class="sceneflow-runtime-cluster">

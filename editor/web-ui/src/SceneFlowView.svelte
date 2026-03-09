@@ -42,6 +42,17 @@
   const DEFAULT_NODE_SIZE = 90;
   const DEFAULT_FONT_SIZE = 16;
   const MIN_WORLD_COORD = 1;
+  const CMD_TYPE_COLORS = {
+    var:    "#A85800",
+    scene:  "#99195E",
+    action: "#007B76",
+  };
+  const CMD_TYPE_LABELS = { var: "Var", scene: "Scene", action: "Action" };
+  const CMD_BADGE_TEXT_COLOR = "#3F3F3F";
+  const CMD_BADGE_BG_OPACITY = 0.3;
+  const CMD_VAR_SPAN_OPACITY = 0.35;
+  const CMD_MAX_BADGE_WIDTH_FACTOR = 3.0;
+
   const COLORS = {
     node: "#7a7d81",
     history: "#ffffff",
@@ -188,7 +199,7 @@
   $: commandPaddingX = Math.max(6, Math.round(fontSize * 0.5));
   $: commandPaddingY = Math.max(4, Math.round(fontSize * 0.35));
   $: commandGap = Math.max(4, Math.round(fontSize * 0.5));
-  $: commandCornerRadius = Math.max(4, Math.round(fontSize * 0.6));
+  $: commandCornerRadius = Math.max(2, Math.round(fontSize * 0.3));
   $: commentMinSize = Math.max(50, Math.round(baseNodeSize * 0.5));
   $: showNodeIds = readBoolean(config?.shownodeid ?? config?.["shownodeid"], true);
   $: gridNodeWidth = nodeWidth || baseNodeSize;
@@ -493,12 +504,27 @@
       const { w, h } = nodeSize(node);
       expand(x, y);
       expand(x + w, y + h);
-      const cmdLayout = showText
-        ? nodeCommandLayout(node, w, h)
-        : nodeCommandDotsLayout(node, w, h);
-      if (cmdLayout) {
-        expand(x + cmdLayout.x, y + cmdLayout.y);
-        expand(x + cmdLayout.x + cmdLayout.width, y + cmdLayout.y + cmdLayout.height);
+      if (showText) {
+        const typeBadges = nodeTypeBadgesLayout(node, w);
+        if (typeBadges) {
+          for (const b of typeBadges) {
+            expand(x + b.x, y + b.y);
+            expand(x + b.x + b.width, y + b.y + b.height);
+          }
+        }
+        const cmdBadges = nodeCommandBadgesLayout(node, w, h);
+        if (cmdBadges) {
+          for (const b of cmdBadges) {
+            expand(x + b.x, y + b.y);
+            expand(x + b.x + b.width, y + b.y + b.height);
+          }
+        }
+      } else {
+        const dotsLayout = nodeCommandDotsLayout(node, w, h);
+        if (dotsLayout) {
+          expand(x + dotsLayout.x, y + dotsLayout.y);
+          expand(x + dotsLayout.x + dotsLayout.width, y + dotsLayout.y + dotsLayout.height);
+        }
       }
     });
 
@@ -1419,17 +1445,11 @@
     return lines;
   }
 
-  function nodeCommandLines(node) {
-    const list = Array.isArray(node?.commands) ? node.commands : [];
-    return list
-      .map((cmd) => (cmd?.text ?? cmd?.syntax ?? "").trim())
-      .filter((line) => line.length > 0);
-  }
-
   function nodeCommandDotsLayout(node, w, h) {
     const safeW = toFinite(w, 0);
     const safeH = toFinite(h, 0);
-    const count = nodeCommandLines(node).length;
+    const entries = nodeCommandEntries(node);
+    const count = entries.length;
     if (!count) return null;
     const size = fontSize || 12;
     const radius = Math.max(3, Math.round(size * 0.33)) * 2;
@@ -1438,12 +1458,12 @@
     const startX = (safeW - totalWidth) / 2;
     const rx = Math.max(1, safeW / 2);
     const ry = Math.max(1, safeH / 2);
-    const isSuper = node?.type === "Super";
+    const isSuper = node?.type === "Super" || node?.type === "Alias";
     let minX = Infinity;
     let maxX = -Infinity;
     let minY = Infinity;
     let maxY = -Infinity;
-    const dots = Array.from({ length: count }, (_, idx) => {
+    const dots = entries.map((entry, idx) => {
       const cx = startX + radius + idx * (radius * 2 + gap);
       let cy = h - radius;
       if (!isSuper) {
@@ -1456,7 +1476,7 @@
       maxX = Math.max(maxX, cx + radius);
       minY = Math.min(minY, cy - radius);
       maxY = Math.max(maxY, cy + radius);
-      return { cx, cy, r: radius };
+      return { cx, cy, r: radius, color: CMD_TYPE_COLORS[entry.type] ?? "#7a7d81" };
     });
     if (!Number.isFinite(minX)) {
       return null;
@@ -1515,35 +1535,122 @@
     };
   }
 
-  function nodeCommandLayout(node, w, h) {
+  function nodeTypeBadgesLayout(node, w) {
+    const types = nodeCommandTypes(node);
+    if (!types.length) return null;
+    const safeW = toFinite(w, 0);
+    const size = Math.max(9, Math.round((fontSize || 12) * 0.82));
+    const padX = Math.max(5, Math.round(size * 0.55));
+    const padY = Math.max(3, Math.round(size * 0.28));
+    const gap = Math.max(4, Math.round(size * 0.45));
+    const badges = types.map((type) => {
+      const label = CMD_TYPE_LABELS[type];
+      const m = measureTextMetrics(label, size);
+      return { type, label, width: m.width + padX * 2, height: m.ascent + m.descent + padY * 2, ascent: m.ascent, padX, padY, fontSize: size };
+    });
+    const badgeH = Math.max(...badges.map((b) => b.height));
+    const totalW = badges.reduce((s, b) => s + b.width, 0) + gap * (badges.length - 1);
+    let x = (safeW - totalW) / 2;
+    for (const b of badges) {
+      b.x = x;
+      b.y = -(badgeH + gap);
+      b.height = badgeH;
+      x += b.width + gap;
+    }
+    return badges;
+  }
+
+  function nodeCommandBadgesLayout(node, w, h) {
     const safeW = toFinite(w, 0);
     const safeH = toFinite(h, 0);
-    const lines = nodeCommandLines(node);
-    if (!lines.length) return null;
+    const entries = nodeCommandEntries(node);
+    if (!entries.length) return null;
     const size = fontSize || 12;
-    const padY = commandPaddingY || 4;
     const padX = commandPaddingX || 6;
-    const gap = commandGap || 4;
-    const metrics = lines.map((line) => measureTextMetrics(line, size));
-    const maxTextWidth = metrics.reduce((max, metric) => Math.max(max, metric.width), 0);
-    const maxAscent = metrics.reduce((max, metric) => Math.max(max, metric.ascent), 0);
-    const maxDescent = metrics.reduce((max, metric) => Math.max(max, metric.descent), 0);
-    const lineHeight = Math.max(1, maxAscent + maxDescent);
-    const width = Math.max(1, maxTextWidth + padX * 2);
-    if (!Number.isFinite(width) || !Number.isFinite(lineHeight)) {
-      return null;
+    const padY = commandPaddingY || 4;
+    const gap = Math.max(2, Math.round((commandGap || 4) / 2));
+    const maxRowWidth = safeW * CMD_MAX_BADGE_WIDTH_FACTOR;
+
+    // Pre-compute each item's dimensions (with span support for scene commands)
+    const items = entries.map((entry) => {
+      // Structured span path: scene commands with variable references
+      const hasVarSpans = entry.spans && entry.spans.some(s => s.isVar);
+      if (hasVarSpans) {
+        let totalTextW = 0;
+        let maxAscent = 0, maxDescent = 0;
+        const measured = entry.spans.map(s => {
+          const m = measureTextMetrics(s.text, size);
+          totalTextW += m.width;
+          maxAscent = Math.max(maxAscent, m.ascent);
+          maxDescent = Math.max(maxDescent, m.descent);
+          return { text: s.text, isVar: s.isVar, width: m.width };
+        });
+        if (totalTextW + padX * 2 <= maxRowWidth) {
+          let spanX = 0;
+          for (const s of measured) { s.spanX = spanX; spanX += s.width; }
+          return { text: entry.text, fullText: entry.text, type: entry.type,
+                   index: entry.index, truncated: false, spans: measured,
+                   w: totalTextW + padX * 2, h: maxAscent + maxDescent + padY * 2,
+                   ascent: maxAscent, padX, padY, fontSize: size };
+        }
+        // Too wide: fall through to plain truncation
+      }
+      // Plain text path (non-scene commands or overly wide scene commands)
+      let text = entry.text;
+      let truncated = false;
+      let m = measureTextMetrics(text, size);
+      if (m.width + padX * 2 > maxRowWidth) {
+        while (m.width + padX * 2 > maxRowWidth && text.length > 1) {
+          text = text.slice(0, -1);
+          m = measureTextMetrics(text + "\u2026", size);
+        }
+        text = text + "\u2026";
+        truncated = true;
+        m = measureTextMetrics(text, size);
+      }
+      return { text, fullText: entry.text, type: entry.type, index: entry.index,
+               truncated, spans: null,
+               w: m.width + padX * 2, h: m.ascent + m.descent + padY * 2,
+               ascent: m.ascent, padX, padY, fontSize: size };
+    });
+
+    // Greedy row packing: add item to current row if it fits, else start new row
+    const rows = [];
+    let row = [];
+    let rowW = 0;
+    for (const item of items) {
+      const needed = row.length === 0 ? item.w : item.w + gap;
+      if (row.length > 0 && rowW + needed > maxRowWidth) {
+        rows.push(row);
+        row = [item];
+        rowW = item.w;
+      } else {
+        row.push(item);
+        rowW += needed;
+      }
     }
-    return {
-      lines,
-      x: (safeW - width) / 2,
-      y: safeH + gap,
-      width,
-      height: lines.length * lineHeight + padY * 2,
-      textX: (safeW - width) / 2 + padX,
-      textStartY: padY + maxAscent,
-      lineHeight,
-      fontSize: size
-    };
+    if (row.length > 0) rows.push(row);
+
+    // Assign positions row by row — each row centered under the node midpoint
+    const badges = [];
+    let y = safeH + gap;
+    for (const rowItems of rows) {
+      const rowW = rowItems.reduce((s, it) => s + it.w, 0) + gap * (rowItems.length - 1);
+      const rowH = Math.max(...rowItems.map((it) => it.h));
+      let x = (safeW - rowW) / 2;
+      for (const item of rowItems) {
+        badges.push({
+          text: item.text, fullText: item.fullText, type: item.type,
+          index: item.index, truncated: item.truncated, spans: item.spans,
+          x, y, width: item.w, height: rowH,
+          textX: x + item.padX, textY: y + item.padY + item.ascent,
+          fontSize: item.fontSize,
+        });
+        x += item.w + gap;
+      }
+      y += rowH + gap;
+    }
+    return badges;
   }
 
   function nodeLabelLayout(node, w, h) {
@@ -1599,6 +1706,138 @@
       g: (value >> 8) & 0xff,
       b: value & 0xff
     };
+  }
+
+  function cmdBadgeBg(type) {
+    const hex = CMD_TYPE_COLORS[type] ?? "#A85800";
+    const rgb = hexToRgb(hex);
+    return rgb ? `rgba(${rgb.r},${rgb.g},${rgb.b},${CMD_BADGE_BG_OPACITY})` : "rgba(168,88,0,0.3)";
+  }
+
+  function inferCmdType(cmd) {
+    const raw = (cmd?.text ?? cmd?.syntax ?? "").trim();
+    if (cmd?.type) return cmd.type;
+    if (/^PlayScene\s*\(/.test(raw)) return "scene";
+    if (/^Play\w+\s*\(/.test(raw)) return "action";
+    return "var";
+  }
+
+  // Parse a PlayScene raw string into [{text, isVar}] spans for inline var highlighting
+  function parseSceneSpans(raw) {
+    // Case 1: PlayScene("name", { key = val, key2 = val2, ... })
+    const m1 = raw.match(/^PlayScene\s*\(\s*"(.*?)"\s*,\s*\{([\s\S]*?)\}\s*\)$/);
+    if (m1) {
+      const name = m1[1];
+      const pairs = m1[2].split(',').map(s => s.trim()).filter(Boolean);
+      const spans = [{ text: name + ' (', isVar: false }];
+      pairs.forEach((pair, i) => {
+        if (i > 0) {
+          const last = spans[spans.length - 1];
+          if (!last.isVar) last.text += ', ';
+          else spans.push({ text: ', ', isVar: false });
+        }
+        const eqIdx = pair.indexOf('=');
+        if (eqIdx < 0) {
+          const last = spans[spans.length - 1];
+          if (!last.isVar) last.text += pair;
+          else spans.push({ text: pair, isVar: false });
+        } else {
+          const key = pair.slice(0, eqIdx).trim();
+          const val = pair.slice(eqIdx + 1).trim();
+          const last = spans[spans.length - 1];
+          if (!last.isVar) last.text += key + '=';
+          else spans.push({ text: key + '=', isVar: false });
+          spans.push({ text: val, isVar: true });
+        }
+      });
+      const last = spans[spans.length - 1];
+      if (!last.isVar) last.text += ')';
+      else spans.push({ text: ')', isVar: false });
+      return spans;
+    }
+    // Case 2: PlayScene(expr) — may be a string literal or concatenation with variables
+    const m2 = raw.match(/^PlayScene\s*\(\s*([\s\S]*?)\s*\)$/);
+    if (m2) {
+      const expr = m2[1];
+      const simple = expr.match(/^"(.*?)"$/);
+      if (simple) return [{ text: simple[1], isVar: false }];
+      return tokenizeSceneExpr(expr);
+    }
+    return [{ text: raw, isVar: false }];
+  }
+
+  // Tokenize a concatenation expression like `"Topic_" + topic` into spans
+  function tokenizeSceneExpr(expr) {
+    const tokens = [];
+    let i = 0;
+    while (i < expr.length) {
+      if (/\s/.test(expr[i])) { i++; continue; }
+      if (expr[i] === '+') { tokens.push({ kind: 'op' }); i++; continue; }
+      if (expr[i] === '"') {
+        let j = i + 1;
+        while (j < expr.length && expr[j] !== '"') j++;
+        tokens.push({ kind: 'str', val: expr.slice(i + 1, j) });
+        i = j + 1;
+        continue;
+      }
+      let j = i;
+      while (j < expr.length && /[\w.]/.test(expr[j])) j++;
+      if (j > i) { tokens.push({ kind: 'id', val: expr.slice(i, j) }); i = j; continue; }
+      return [{ text: expr, isVar: false }]; // bail on unrecognised char
+    }
+    const spans = [];
+    let plain = '';
+    for (const t of tokens) {
+      if (t.kind === 'str') { plain += t.val; }
+      else if (t.kind === 'op') { plain += ' + '; }
+      else { // identifier → variable
+        if (plain) { spans.push({ text: plain, isVar: false }); plain = ''; }
+        spans.push({ text: t.val, isVar: true });
+      }
+    }
+    if (plain) spans.push({ text: plain, isVar: false });
+    return spans.length ? spans : [{ text: expr, isVar: false }];
+  }
+
+  function cmdDisplayText(cmd) {
+    const raw = (cmd?.text ?? cmd?.syntax ?? "").trim();
+    const t = inferCmdType(cmd);
+    if (t === "scene") {
+      const m = raw.match(/^PlayScene\s*\(\s*"(.*?)"\s*\)$/);
+      return m ? m[1] : raw;
+    }
+    if (t === "action") {
+      const m = raw.match(/^Play\w+\s*\(\s*"([\s\S]*?)"\s*\)$/);
+      return m ? m[1] : raw;
+    }
+    return raw;
+  }
+
+  function nodeCommandEntries(node) {
+    const list = Array.isArray(node?.commands) ? node.commands : [];
+    const entries = [];
+    for (let i = 0; i < list.length; i++) {
+      const cmd = list[i];
+      const type = inferCmdType(cmd);
+      let text, spans;
+      if (type === 'scene') {
+        const raw = (cmd?.text ?? cmd?.syntax ?? '').trim();
+        spans = parseSceneSpans(raw);
+        text = spans.map(s => s.text).join('');
+      } else {
+        text = cmdDisplayText(cmd).trim();
+        spans = null;
+      }
+      if (text.length > 0) {
+        entries.push({ type, text, spans, index: i });
+      }
+    }
+    return entries;
+  }
+
+  function nodeCommandTypes(node) {
+    const entries = nodeCommandEntries(node);
+    return ["var", "scene", "action"].filter((t) => entries.some((e) => e.type === t));
   }
 
   function startSignMetrics(size) {
@@ -2527,9 +2766,9 @@
     }
   }
 
-  function handleCommandOpen(node) {
+  function handleCommandOpen(node, focusIndex = null) {
     if (!node || typeof onCommandOpen !== "function") return;
-    onCommandOpen(node.id);
+    onCommandOpen(node.id, focusIndex);
   }
 
   function handleNodeKeydown(node, event) {
@@ -4032,7 +4271,9 @@
       {@const signX = -sign.width - sign.stroke * 2 - signGap}
       {@const signY = h / 2 - sign.halfHeight - sign.stroke * 2}
       {@const label = nodeLabelLayout(node, w, h)}
-      {@const cmdLayout = showCommandText ? nodeCommandLayout(node, w, h) : nodeCommandDotsLayout(node, w, h)}
+      {@const typeBadgesLayout = showCommandText ? nodeTypeBadgesLayout(node, w) : null}
+      {@const cmdBadgesLayout = showCommandText ? nodeCommandBadgesLayout(node, w, h) : null}
+      {@const cmdDotsLayout = showCommandText ? null : nodeCommandDotsLayout(node, w, h)}
       <g
         class={`node node-${node.type === "Super" || node.type === "Alias" ? "super" : "basic"} ${node.type === "Alias" ? "node-alias" : ""} ${node.isStart ? "start" : ""} ${
           node.isAltStart ? "alt-start" : ""
@@ -4118,51 +4359,111 @@
             </svg>
           </g>
         {/if}
-          {#if cmdLayout}
-          {#if showCommandText}
-            <g
-              class="node-commands"
-              role="button"
-              tabindex="0"
-              aria-label={`Edit commands for ${node?.name || node?.id || "node"}`}
-              on:dblclick|stopPropagation={() => handleCommandOpen(node)}
-            >
-              <rect
-                class="node-command-box"
-                x={safeSvgNumber(cmdLayout.x)}
-                y={safeSvgNumber(cmdLayout.y)}
-                width={safeSvgNumber(cmdLayout.width)}
-                height={safeSvgNumber(cmdLayout.height)}
-                rx={commandCornerRadius}
-                ry={commandCornerRadius}
-              />
-              <text
-                class="node-command-text"
-                text-anchor="start"
-                dominant-baseline="alphabetic"
-                style={`font-size:${cmdLayout.fontSize}px`}
+          {#if typeBadgesLayout}
+            {#each typeBadgesLayout as badge}
+              <g
+                class="node-type-badge"
+                role="button"
+                tabindex="0"
+                aria-label={`Open ${badge.label} commands`}
+                on:click|stopPropagation={() => {
+                  const entries = nodeCommandEntries(node);
+                  const first = entries.find((e) => e.type === badge.type);
+                  handleCommandOpen(node, first?.index ?? 0);
+                }}
+                on:keydown|stopPropagation={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    const entries = nodeCommandEntries(node);
+                    const first = entries.find((en) => en.type === badge.type);
+                    handleCommandOpen(node, first?.index ?? 0);
+                  }
+                }}
               >
-                {#each cmdLayout.lines as line, idx}
-                  <tspan x={cmdLayout.textX} y={cmdLayout.y + cmdLayout.textStartY + idx * cmdLayout.lineHeight}>
-                    {line}
-                  </tspan>
-                {/each}
-              </text>
-            </g>
-          {:else}
+                <rect
+                  x={safeSvgNumber(badge.x)}
+                  y={safeSvgNumber(badge.y)}
+                  width={safeSvgNumber(badge.width)}
+                  height={safeSvgNumber(badge.height)}
+                  rx={commandCornerRadius}
+                  ry={commandCornerRadius}
+                  fill={CMD_TYPE_COLORS[badge.type]}
+                />
+                <text
+                  class="node-type-badge-text"
+                  x={safeSvgNumber(badge.x + badge.padX)}
+                  y={safeSvgNumber(badge.y + badge.padY + badge.ascent)}
+                  dominant-baseline="alphabetic"
+                  style={`font-size:${badge.fontSize}px`}
+                >{badge.label}</text>
+              </g>
+            {/each}
+          {/if}
+          {#if cmdBadgesLayout}
+            {#each cmdBadgesLayout as badge}
+              <g
+                class="node-cmd-badge"
+                role="button"
+                tabindex="0"
+                aria-label={badge.truncated ? badge.fullText : badge.text}
+                on:click|stopPropagation={() => handleCommandOpen(node, badge.index)}
+                on:keydown|stopPropagation={(e) => { if (e.key === 'Enter' || e.key === ' ') handleCommandOpen(node, badge.index); }}
+              >
+                <rect
+                  x={safeSvgNumber(badge.x)}
+                  y={safeSvgNumber(badge.y)}
+                  width={safeSvgNumber(badge.width)}
+                  height={safeSvgNumber(badge.height)}
+                  rx={commandCornerRadius}
+                  ry={commandCornerRadius}
+                  fill={cmdBadgeBg(badge.type)}
+                />
+                {#if badge.spans}
+                  {#each badge.spans as span}
+                    {#if span.isVar}
+                      <rect
+                        x={safeSvgNumber(badge.textX + span.spanX - 1)}
+                        y={safeSvgNumber(badge.y + 2)}
+                        width={safeSvgNumber(span.width + 2)}
+                        height={safeSvgNumber(badge.height - 4)}
+                        rx={commandCornerRadius}
+                        fill={CMD_TYPE_COLORS.var}
+                        fill-opacity={CMD_VAR_SPAN_OPACITY}
+                      />
+                    {/if}
+                    <text
+                      class="node-cmd-badge-text"
+                      x={safeSvgNumber(badge.textX + span.spanX)}
+                      y={safeSvgNumber(badge.textY)}
+                      dominant-baseline="alphabetic"
+                      style={`font-size:${badge.fontSize}px`}
+                    >{span.text}</text>
+                  {/each}
+                {:else}
+                  <text
+                    class="node-cmd-badge-text"
+                    x={safeSvgNumber(badge.textX)}
+                    y={safeSvgNumber(badge.textY)}
+                    dominant-baseline="alphabetic"
+                    style={`font-size:${badge.fontSize}px`}
+                  >{badge.text}</text>
+                {/if}
+              </g>
+            {/each}
+          {/if}
+          {#if cmdDotsLayout}
             <g
               class="node-command-dots"
               role="button"
               tabindex="0"
               aria-label={`Edit commands for ${node?.name || node?.id || "node"}`}
-              on:dblclick|stopPropagation={() => handleCommandOpen(node)}
+              on:click|stopPropagation={() => handleCommandOpen(node, 0)}
+              on:keydown|stopPropagation={(e) => { if (e.key === 'Enter' || e.key === ' ') handleCommandOpen(node, 0); }}
             >
-              {#each cmdLayout.dots as dot}
-                <circle class="node-command-dot" cx={dot.cx} cy={dot.cy} r={dot.r} />
+              {#each cmdDotsLayout.dots as dot}
+                <circle class="node-command-dot" cx={dot.cx} cy={dot.cy} r={dot.r} fill={dot.color} />
               {/each}
             </g>
           {/if}
-        {/if}
       </g>
     {/each}
   </g>
