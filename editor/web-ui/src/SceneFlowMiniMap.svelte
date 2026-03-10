@@ -30,6 +30,21 @@
     : "0 0 200 200";
   $: viewport = computeViewport(worldBox, viewBox);
 
+  const MINIMAP_WIDTH = 192;
+  const MINIMAP_MIN_HEIGHT = 70;
+  const MINIMAP_MAX_HEIGHT = 192;
+
+  $: minimapHeight = (() => {
+    const w = toFinite(worldBox?.width);
+    const h = toFinite(worldBox?.height);
+    if (w <= 0 || h <= 0) return 160;
+    const derived = Math.round(MINIMAP_WIDTH * (h / w));
+    return Math.min(MINIMAP_MAX_HEIGHT, Math.max(MINIMAP_MIN_HEIGHT, derived));
+  })();
+  $: minimapStyle = `height: ${minimapHeight}px;`;
+
+  let dragging = false;
+
   function toFinite(value, fallback = 0) {
     const num = Number(value);
     return Number.isFinite(num) ? num : fallback;
@@ -37,6 +52,43 @@
 
   function safeSvgNumber(value, fallback = 0) {
     return toFinite(value, fallback);
+  }
+
+  function worldCoordsFromEvent(event, element) {
+    const rect = element.getBoundingClientRect();
+    if (!rect.width || !rect.height || !worldBox) return null;
+    const relX = (event.clientX - rect.left) / rect.width;
+    const relY = (event.clientY - rect.top) / rect.height;
+    return {
+      x: worldBox.x + relX * worldBox.width,
+      y: worldBox.y + relY * worldBox.height
+    };
+  }
+
+  function handlePointerDown(event) {
+    if (!worldBox || typeof onCenter !== "function") return;
+    event.currentTarget.setPointerCapture(event.pointerId);
+    dragging = true;
+    const coords = worldCoordsFromEvent(event, event.currentTarget);
+    if (coords) onCenter(coords.x, coords.y);
+  }
+
+  function handlePointerMove(event) {
+    if (!dragging || !worldBox || typeof onCenter !== "function") return;
+    const coords = worldCoordsFromEvent(event, event.currentTarget);
+    if (coords) onCenter(coords.x, coords.y);
+  }
+
+  function handlePointerUp(event) {
+    dragging = false;
+    try { event.currentTarget.releasePointerCapture(event.pointerId); } catch (_) {}
+  }
+
+  function handleKeydown(event) {
+    if (event.key !== "Enter" && event.key !== " " && event.key !== "Spacebar") return;
+    event.preventDefault();
+    if (!worldBox || typeof onCenter !== "function") return;
+    onCenter(worldBox.x + worldBox.width / 2, worldBox.y + worldBox.height / 2);
   }
 
   function superNodeScale(node) {
@@ -125,32 +177,19 @@
     const height = Math.max(0, y2 - y1);
     return { x: x1, y: y1, width, height };
   }
-
-  function handleClick(event) {
-    if (!worldBox || typeof onCenter !== "function") return;
-    const rect = event.currentTarget.getBoundingClientRect();
-    if (!rect.width || !rect.height) return;
-    const relX = (event.clientX - rect.left) / rect.width;
-    const relY = (event.clientY - rect.top) / rect.height;
-    const x = worldBox.x + relX * worldBox.width;
-    const y = worldBox.y + relY * worldBox.height;
-    onCenter(x, y);
-  }
-
-  function handleKeydown(event) {
-    if (event.key !== "Enter" && event.key !== " " && event.key !== "Spacebar") return;
-    event.preventDefault();
-    if (!worldBox || typeof onCenter !== "function") return;
-    onCenter(worldBox.x + worldBox.width / 2, worldBox.y + worldBox.height / 2);
-  }
 </script>
 
 <div
   class="sceneflow-minimap"
+  class:dragging
   role="button"
   tabindex="0"
   aria-label="SceneFlow minimap"
-  on:click={handleClick}
+  style={minimapStyle}
+  on:pointerdown={handlePointerDown}
+  on:pointermove={handlePointerMove}
+  on:pointerup={handlePointerUp}
+  on:pointercancel={handlePointerUp}
   on:keydown={handleKeydown}
 >
   <svg class="sceneflow-minimap-canvas" viewBox={miniViewBox} aria-hidden="true">

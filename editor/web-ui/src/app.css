@@ -465,6 +465,9 @@ button.ghost.danger:active {
   font-size: 1.05rem;
   flex: 1 1 auto;
   min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .project-list-meta {
@@ -2256,6 +2259,10 @@ summary {
   opacity: 0.6;
   cursor: not-allowed;
   box-shadow: none;
+}
+
+.sceneflow-toggle-icon {
+  padding: 0.25rem 0.4rem;
 }
 
 
@@ -5354,15 +5361,26 @@ summary {
   box-shadow: none;
 }
 
+.sceneflow-zoom-button.active {
+  background: var(--accent, #2e5d3a);
+  color: #fff;
+  border-color: var(--accent, #2e5d3a);
+}
+
 .sceneflow-minimap {
-  width: 220px;
-  height: 160px;
+  width: 192px;
   padding: 6px;
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.92);
   border: 1px solid var(--stroke);
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.12);
-  cursor: pointer;
+  cursor: grab;
+  user-select: none;
+  touch-action: none;
+}
+
+.sceneflow-minimap.dragging {
+  cursor: grabbing;
 }
 
 .sceneflow-minimap:focus {

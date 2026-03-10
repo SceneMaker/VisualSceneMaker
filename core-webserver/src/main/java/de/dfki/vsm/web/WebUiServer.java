@@ -278,7 +278,7 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
 
     private static final LOGDefaultLogger sLogger = LOGDefaultLogger.getInstance();
     private static final String API_PREFIX = "/api/v1";
-    private static final int RECENT_MAX = 8;
+    private static final int RECENT_MAX = 19;
     private static final int SEMANTIC_DOC_VERSION = 2;
     private static final String SEMANTIC_SCHEMA_ID = "vsm.semantic.annotations";
     private static final String SEMANTIC_BASIC_PROVIDER = "ud";

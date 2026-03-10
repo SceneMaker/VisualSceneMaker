@@ -20,7 +20,7 @@
   export let agentDragType = "application/x-vsm-agent";
   export let onBlockDrop = null;
   export let blockDragType = "application/x-vsm-block";
-  export let showCommandText = true;
+  export let showInfo = true;
   export let onCommandOpen = null;
   export let worldBox = null;
   export let viewBoxState = null;
@@ -235,7 +235,7 @@
   let viewportSize = { width: 0, height: 0 };
   let viewportObserver = null;
 
-  $: bounds = computeBounds(nodes, edges, comments, showCommandText);
+  $: bounds = computeBounds(nodes, edges, comments, showInfo);
   $: baseBox = bounds.box;
   $: canvasWidth = Math.max(minCanvasWidth, bounds.width, viewportSize.width || 0);
   $: canvasHeight = Math.max(minCanvasHeight, bounds.height, viewportSize.height || 0);
@@ -3699,18 +3699,12 @@
       if (!offset || (!offset.x && !offset.y)) {
         return pt;
       }
-      const next = {
-        ...pt,
-        x: pt.x + offset.x,
-        y: pt.y + offset.y
-      };
-      if (Number.isFinite(pt.cx)) {
-        next.cx = pt.cx + offset.x;
-      }
-      if (Number.isFinite(pt.cy)) {
-        next.cy = pt.cy + offset.y;
-      }
-      return next;
+      // Only shift the endpoint position (x/y), NOT the bezier control handle (cx/cy).
+      // cx/cy are absolute world-space guide points used by nodeBoundaryPoint to determine
+      // which face of the node to snap to.  Shifting them by the visual offset would tilt
+      // the guide direction and cause the snap to land off-center on the node face.
+      // adjustEdgeEndpoints will update cx/cy by the snap delta to maintain curve shape.
+      return { ...pt, x: pt.x + offset.x, y: pt.y + offset.y };
     });
   }
 
@@ -3722,10 +3716,19 @@
     const lastIndex = points.length - 1;
     const start = points[0];
     const end = points[lastIndex];
+    // applyEdgeOffsets shifts x/y by visualOffset but leaves cx/cy at stored positions.
+    // To keep the bezier handle at the correct offset from the snapped endpoint we must
+    // compute the ctrl delta as (boundary - stored_endpoint), i.e. add back visualOffset:
+    //   dx_ctrl = boundary.x - pt.x + offset.x  (== boundary.x - stored_x)
+    const sourceOffset = nodeVisualOffset(source);
+    const targetOffset = nodeVisualOffset(target);
+
     if (isSelfLoopEdge(edge)) {
       const selfLoopBoundaries = selfLoopDockBoundaries(source, start, end, drag);
       if (selfLoopBoundaries) {
         const { startBoundary, endBoundary } = selfLoopBoundaries;
+        // self-loop: both endpoints belong to source, same visual offset
+        const loopOffset = sourceOffset;
         return points.map((pt, idx) => {
           const boundary = idx === 0 ? startBoundary : idx === lastIndex ? endBoundary : null;
           if (!boundary || !Number.isFinite(boundary.x) || !Number.isFinite(boundary.y)) {
@@ -3738,10 +3741,10 @@
           }
           const next = { ...pt, x: boundary.x, y: boundary.y };
           if (Number.isFinite(pt.cx)) {
-            next.cx = pt.cx + dx;
+            next.cx = pt.cx + dx + loopOffset.x;
           }
           if (Number.isFinite(pt.cy)) {
-            next.cy = pt.cy + dy;
+            next.cy = pt.cy + dy + loopOffset.y;
           }
           return next;
         });
@@ -3765,12 +3768,15 @@
       if (!Number.isFinite(dx) || !Number.isFinite(dy) || (!dx && !dy)) {
         return pt;
       }
+      // Correct for the visual offset that applyEdgeOffsets applied to x/y but not cx/cy,
+      // so cx/cy moves by (boundary - stored_pos) rather than (boundary - shifted_pos).
+      const ptOffset = idx === 0 ? sourceOffset : targetOffset;
       const next = { ...pt, x: boundary.x, y: boundary.y };
       if (Number.isFinite(pt.cx)) {
-        next.cx = pt.cx + dx;
+        next.cx = pt.cx + dx + ptOffset.x;
       }
       if (Number.isFinite(pt.cy)) {
-        next.cy = pt.cy + dy;
+        next.cy = pt.cy + dy + ptOffset.y;
       }
       return next;
     });
@@ -4271,9 +4277,9 @@
       {@const signX = -sign.width - sign.stroke * 2 - signGap}
       {@const signY = h / 2 - sign.halfHeight - sign.stroke * 2}
       {@const label = nodeLabelLayout(node, w, h)}
-      {@const typeBadgesLayout = showCommandText ? nodeTypeBadgesLayout(node, w) : null}
-      {@const cmdBadgesLayout = showCommandText ? nodeCommandBadgesLayout(node, w, h) : null}
-      {@const cmdDotsLayout = showCommandText ? null : nodeCommandDotsLayout(node, w, h)}
+      {@const typeBadgesLayout = showInfo ? nodeTypeBadgesLayout(node, w) : null}
+      {@const cmdBadgesLayout = nodeCommandBadgesLayout(node, w, h)}
+      {@const cmdDotsLayout = null}
       <g
         class={`node node-${node.type === "Super" || node.type === "Alias" ? "super" : "basic"} ${node.type === "Alias" ? "node-alias" : ""} ${node.isStart ? "start" : ""} ${
           node.isAltStart ? "alt-start" : ""

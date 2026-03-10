@@ -24,7 +24,7 @@ public class EditorProjectService {
     private final List<RecentProject> recentProjects = new ArrayList<>();
 
     // Maximum number of recent projects to track
-    private static final int MAX_RECENT_PROJECTS = 10;
+    private static final int MAX_RECENT_PROJECTS = 20;
 
     public EditorProjectService() {
         // Load recent projects from preferences on initialization

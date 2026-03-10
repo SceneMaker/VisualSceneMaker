@@ -60,6 +60,7 @@
   const SCENE_LANGUAGE_ALL = "__all__";
   const SCENEFLOW_ROOT_ID = "__root__";
   const SCENEFLOW_ZOOM_KEY = "vsm_scene_flow_zoom";
+  const SCENEFLOW_MINIMAP_KEY = "vsm_scene_flow_minimap";
   const SCENEFLOW_ZOOM_MIN = 0.3;
   const SCENEFLOW_ZOOM_MAX = 3.5;
   const SCENEFLOW_TOGGLE_COOKIE = "vsm_sceneflow_toggles";
@@ -81,7 +82,7 @@
   };
   const DEFAULT_SCENEFLOW_TOGGLES = {
     nodeSnap: true,
-    showCmds: true,
+    showInfo: true,
     showVars: true,
     showBlocks: true,
     showInspector: true
@@ -476,7 +477,7 @@
   function normalizeSceneFlowToggles(state) {
     return {
       nodeSnap: state?.nodeSnap !== undefined ? !!state.nodeSnap : DEFAULT_SCENEFLOW_TOGGLES.nodeSnap,
-      showCmds: state?.showCmds !== undefined ? !!state.showCmds : DEFAULT_SCENEFLOW_TOGGLES.showCmds,
+      showInfo: state?.showInfo !== undefined ? !!state.showInfo : DEFAULT_SCENEFLOW_TOGGLES.showInfo,
       showVars: state?.showVars !== undefined ? !!state.showVars : DEFAULT_SCENEFLOW_TOGGLES.showVars,
       showBlocks:
         state?.showBlocks !== undefined ? !!state.showBlocks : DEFAULT_SCENEFLOW_TOGGLES.showBlocks,
@@ -1089,6 +1090,8 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
   let lastSceneFlowProjectId = "";
   let sceneFlowRef;
   let sceneFlowZoom = readSceneFlowZoom();
+  let minimapVisible = localStorage.getItem(SCENEFLOW_MINIMAP_KEY) !== "false";
+  $: localStorage.setItem(SCENEFLOW_MINIMAP_KEY, String(minimapVisible));
   let sceneFlowWorldBox = null;
   let sceneFlowViewBox = null;
   let sceneFlowSelection = null;
@@ -1109,7 +1112,7 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
   let sceneFlowIntVarNames = [];
   const sceneFlowToggleState = loadSceneFlowToggles();
   let sceneFlowNodeSnap = sceneFlowToggleState.nodeSnap;
-  let sceneFlowShowCmdText = sceneFlowToggleState.showCmds;
+  let sceneFlowShowInfo = sceneFlowToggleState.showInfo;
   let sceneFlowShowVars = sceneFlowToggleState.showVars;
   let sceneFlowShowBlocks = sceneFlowToggleState.showBlocks;
   let sceneFlowShowInspector = sceneFlowToggleState.showInspector;
@@ -2444,7 +2447,7 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
   }
   $: persistSceneFlowToggles({
     nodeSnap: sceneFlowNodeSnap,
-    showCmds: sceneFlowShowCmdText,
+    showInfo: sceneFlowShowInfo,
     showVars: sceneFlowShowVars,
     showBlocks: sceneFlowShowBlocks,
     showInspector: sceneFlowShowInspector
@@ -13046,7 +13049,7 @@ Sentence:
               >
                 <div class="project-list-info">
                   <div class="project-list-header">
-                    <div class="project-list-name">{project.name}</div>
+                    <div class="project-list-name" title={project.name}>{project.name}</div>
                     {#if project.date}
                       <div class="meta project-list-date">{project.date}</div>
                     {/if}
@@ -13070,6 +13073,7 @@ Sentence:
                         —
                       {/if}
                     </div>
+                    <div class="meta project-list-meta">{project.path || "—"}</div>
                   {/if}
                 </div>
               </button>
@@ -13896,7 +13900,7 @@ Sentence:
                 agentDragType={AGENT_DRAG_TYPE}
                 onBlockDrop={handleBlockDrop}
                 blockDragType={BLOCK_DRAG_TYPE}
-                showCommandText={sceneFlowShowCmdText}
+                showInfo={sceneFlowShowInfo}
                 onCommandOpen={openCmdDialog}
                 onCopySelection={copySceneFlowSelection}
                 onPasteSelection={pasteSceneFlowSelection}
@@ -13933,12 +13937,17 @@ Sentence:
               </button>
               <button
                 type="button"
-                class="sceneflow-toggle"
-                class:active={sceneFlowShowCmdText}
-                on:click={() => (sceneFlowShowCmdText = !sceneFlowShowCmdText)}
-                aria-pressed={sceneFlowShowCmdText}
+                class="sceneflow-toggle sceneflow-toggle-icon"
+                class:active={sceneFlowShowInfo}
+                on:click={() => (sceneFlowShowInfo = !sceneFlowShowInfo)}
+                aria-pressed={sceneFlowShowInfo}
+                aria-label="Toggle info overlays"
+                disabled={!sceneFlow}
+                title="Toggle info overlays"
               >
-                cmds
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="16" height="16" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
+                </svg>
               </button>
               <button
                 type="button"
@@ -14072,13 +14081,28 @@ Sentence:
                     <path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" />
                   </svg>
                 </button>
+                <button
+                  type="button"
+                  class="sceneflow-zoom-button"
+                  class:active={minimapVisible}
+                  on:click={() => (minimapVisible = !minimapVisible)}
+                  aria-label={minimapVisible ? "Hide minimap" : "Show minimap"}
+                  title={minimapVisible ? "Hide minimap" : "Show minimap"}
+                >
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <rect x="3" y="3" width="18" height="18" rx="2" />
+                    <rect x="13" y="13" width="7" height="7" rx="1" />
+                  </svg>
+                </button>
               </div>
-              <SceneFlowMiniMap
-                snapshot={sceneFlow}
-                worldBox={sceneFlowWorldBox}
-                viewBox={sceneFlowViewBox}
-                onCenter={(x, y) => sceneFlowRef?.centerOn(x, y)}
-              />
+              {#if minimapVisible}
+                <SceneFlowMiniMap
+                  snapshot={sceneFlow}
+                  worldBox={sceneFlowWorldBox}
+                  viewBox={sceneFlowViewBox}
+                  onCenter={(x, y) => sceneFlowRef?.centerOn(x, y)}
+                />
+              {/if}
             </div>
           </div>
           {#if sceneFlowShowInspector}
