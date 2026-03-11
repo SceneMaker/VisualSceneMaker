@@ -35,6 +35,16 @@ main {
   animation: rise 0.6s ease;
 }
 
+main:not(.editor-view) {
+  height: calc(100dvh - 1rem - 100px);
+  margin: 1rem auto 100px;
+  padding-top: 0;
+  padding-bottom: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
 main.editor-view {
   --page-pad: 0.75rem;
   margin: 0 auto;
@@ -230,6 +240,45 @@ p {
   display: grid;
   gap: 1.5rem;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  min-height: 0;
+}
+
+main:not(.editor-view) .grid {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
+
+main:not(.editor-view) .landing-panel--start,
+main:not(.editor-view) .landing-panel--recent,
+main:not(.editor-view) .landing-panel--tutorials {
+  min-height: 0;
+}
+
+@media (min-width: 1180px) {
+  main:not(.editor-view) .grid {
+    grid-template-columns: minmax(560px, 1.6fr) minmax(340px, 1fr);
+    grid-template-areas:
+      "recent start"
+      "recent tutorials";
+    grid-template-rows: minmax(220px, 1fr) minmax(220px, 1fr);
+    align-items: stretch;
+  }
+
+  main:not(.editor-view) .landing-panel--start {
+    grid-area: start;
+    min-height: 0;
+  }
+
+  main:not(.editor-view) .landing-panel--recent {
+    grid-area: recent;
+    min-height: 0;
+  }
+
+  main:not(.editor-view) .landing-panel--tutorials {
+    grid-area: tutorials;
+    min-height: 0;
+  }
 }
 
 main.editor-view .grid {
@@ -411,10 +460,26 @@ button.ghost.danger:active {
   margin: 1rem 0;
 }
 
+.recent-toolbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.45rem;
+  margin: 0.2rem 0 0.55rem;
+}
+
+.recent-toolbar .recent-search {
+  min-width: 0;
+}
+
+.recent-toolbar select {
+  width: 150px;
+}
+
 .landing-panel {
-  max-height: 50vh;
   display: flex;
   flex-direction: column;
+  min-height: 0;
+  max-height: none;
 }
 
 .landing-panel .panel-body {
@@ -449,10 +514,73 @@ button.ghost.danger:active {
   gap: 0.5rem;
 }
 
-.project-list--recent button {
+.project-list--recent .recent-open-btn {
   width: 100%;
   padding-right: 0.55rem;
   padding-left: 0.55rem;
+}
+
+.recent-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.45rem;
+}
+
+.recent-open-btn {
+  width: 100%;
+}
+
+.recent-actions {
+  display: grid;
+  gap: 0.3rem;
+  align-content: start;
+  justify-items: center;
+}
+
+.recent-action-btn {
+  display: inline-flex;
+  width: 34px;
+  height: 34px;
+  min-width: 34px;
+  min-height: 34px;
+  padding: 0;
+  justify-content: center;
+  align-items: center;
+  line-height: 0;
+}
+
+.project-list .recent-action-btn {
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.recent-action-btn svg {
+  width: 17px;
+  height: 17px;
+  display: block;
+  margin: 0 auto;
+  transform: none;
+}
+
+.recent-action-pin svg {
+  fill: currentColor;
+}
+
+button.recent-action-pin.active {
+  background: rgb(91, 142, 220);
+  border-color: rgb(91, 142, 220);
+  color: #ffffff;
+}
+
+@media (max-width: 760px) {
+  .recent-item {
+    grid-template-columns: 1fr;
+  }
+
+  .recent-actions {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
 }
 
 .project-list--recent .project-list-info,
@@ -480,6 +608,42 @@ button.ghost.danger:active {
 
 .project-list-plugin-missing {
   color: var(--danger, #c33);
+}
+
+.tutorial-empty-state {
+  display: grid;
+  gap: 0.45rem;
+  padding: 0.7rem 0.8rem;
+  border: 1px dashed var(--stroke);
+  border-radius: 12px;
+  background: var(--panel-soft);
+}
+
+.tutorial-empty-title {
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.tutorial-card {
+  display: grid;
+  gap: 0.18rem;
+}
+
+.tutorial-title {
+  font-weight: 600;
+}
+
+.tutorial-meta {
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+.tutorial-path {
+  font-size: 0.68rem;
+  color: color-mix(in srgb, var(--muted) 80%, #fff 20%);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .missing-var-modal {
@@ -650,12 +814,14 @@ button.ghost.danger:active {
   flex: 1 1 auto;
 }
 
-.project-list button.android-project {
+.project-list button.android-project,
+.recent-item.android-project .recent-open-btn {
   background: linear-gradient(135deg, #4f8a63 0%, #4f7fbf 56%, #5b8edc 100%);
   border-color: #4f7fbf;
 }
 
-.project-list button.android-project.selected {
+.project-list button.android-project.selected,
+.recent-item.android-project .recent-open-btn.selected {
   background: linear-gradient(135deg, #467b58 0%, #466faa 56%, #4f7fbf 100%);
   border-color: #466faa;
 }
@@ -666,8 +832,19 @@ button.ghost.danger:active {
 }
 
 .project-list button.selected {
-  background: var(--accent-soft);
-  border-color: #a7c9a4;
+  background: rgb(91, 142, 220);
+  border-color: rgb(91, 142, 220);
+  color: #ffffff;
+}
+
+.open-project-btn {
+  background: rgb(91, 142, 220);
+  border-color: rgb(91, 142, 220);
+  color: #ffffff;
+}
+
+.open-project-btn:active {
+  filter: brightness(0.92);
 }
 
 .meta {
@@ -692,6 +869,36 @@ summary {
   display: grid;
   gap: 0.5rem;
   margin-top: 1rem;
+}
+
+.base-dir-suggestions {
+  margin-top: 0.15rem;
+}
+
+.base-dir-suggestions summary {
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.base-dir-suggestion-list {
+  display: grid;
+  gap: 0.3rem;
+  margin-top: 0.5rem;
+}
+
+.base-dir-suggestion-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.base-dir-suggestion-path {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .kv-list {
@@ -5311,19 +5518,19 @@ summary {
 .sceneflow-zoom-controls {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.25rem;
 }
 
 .sceneflow-zoom-label {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: 34px;
-  min-width: 52px;
-  font-size: 0.78rem;
+  height: 28px;
+  min-width: 50px;
+  font-size: 0.72rem;
   font-weight: 600;
   color: var(--ink);
-  padding: 0 0.6rem;
+  padding: 0 0.4rem;
   border-radius: var(--radius-sm);
   background: rgba(255, 255, 255, 0.9);
   border: 1px solid var(--stroke);
@@ -5331,8 +5538,8 @@ summary {
 }
 
 .sceneflow-zoom-button {
-  width: 34px;
-  height: 34px;
+  width: 28px;
+  height: 28px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -5346,8 +5553,8 @@ summary {
 }
 
 .sceneflow-zoom-button svg {
-  width: 16px;
-  height: 16px;
+  width: 13px;
+  height: 13px;
   fill: none;
   stroke: currentColor;
   stroke-width: 2;

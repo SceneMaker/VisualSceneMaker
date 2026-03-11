@@ -61,6 +61,9 @@
   const SCENEFLOW_ROOT_ID = "__root__";
   const SCENEFLOW_ZOOM_KEY = "vsm_scene_flow_zoom";
   const SCENEFLOW_MINIMAP_KEY = "vsm_scene_flow_minimap";
+  const NEW_PROJECT_BASE_DIR_KEY = "vsm_new_project_base_dir";
+  const NEW_PROJECT_BASE_DIR_PANEL_KEY = "vsm_new_project_base_suggestions_open";
+  const RECENT_PINNED_PATHS_KEY = "vsm_recent_pinned_paths";
   const SCENEFLOW_ZOOM_MIN = 0.3;
   const SCENEFLOW_ZOOM_MAX = 3.5;
   const SCENEFLOW_TOGGLE_COOKIE = "vsm_sceneflow_toggles";
@@ -805,11 +808,41 @@
   let recentFailureOpen = false;
   let recentFailureProject = null;
   let recentFailureMessage = "";
+  let recentSearchQuery = "";
+  let recentFilterMode = "all";
+  let filteredRecent = [];
+  let recentHeaderCountLabel = "0";
+  function normalizeRecentPath(path) {
+    return String(path || "").trim().replace(/[\\/]+$/, "");
+  }
+  let recentPinnedProjects = (() => {
+    try {
+      const raw = localStorage.getItem(RECENT_PINNED_PATHS_KEY);
+      const parsed = raw ? JSON.parse(raw) : [];
+      if (!Array.isArray(parsed)) return [];
+      const out = [];
+      const seen = new Set();
+      for (const entry of parsed) {
+        const normalizedPath = normalizeRecentPath(typeof entry === "string" ? entry : entry?.path);
+        if (!normalizedPath || seen.has(normalizedPath)) continue;
+        seen.add(normalizedPath);
+        const pinnedAt = Number.isFinite(Number(entry?.pinnedAt)) ? Number(entry.pinnedAt) : 0;
+        out.push({ path: normalizedPath, pinnedAt });
+      }
+      return out;
+    } catch {
+      return [];
+    }
+  })();
   let tutorials = [];
+  let tutorialsLoading = false;
+  let tutorialsError = "";
 
   let openPath = "";
   let newName = "";
-  let newBaseDir = "";
+  let newBaseDir = localStorage.getItem(NEW_PROJECT_BASE_DIR_KEY) || "";
+  let baseDirSuggestionsExpanded = localStorage.getItem(NEW_PROJECT_BASE_DIR_PANEL_KEY) === "true";
+  let suggestedBaseDirs = [];
   let openPathError = "";
   let createProjectError = "";
   let saveAsPath = "";
@@ -1094,6 +1127,11 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
   $: localStorage.setItem(SCENEFLOW_MINIMAP_KEY, String(minimapVisible));
   let sceneFlowWorldBox = null;
   let sceneFlowViewBox = null;
+  // Presence
+  let peerPresence = new Map();
+  let myPresenceUserId = null;
+  let presenceViewportDebounceTimer = null;
+  let lastPresenceProjectId = "";
   let sceneFlowSelection = null;
   let sceneFlowMultiSelection = [];
   let nodeEditorTypeOptions = ["Int", "Bool", "Float", "String", "Event"];
@@ -2965,6 +3003,45 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
     }
   }
 
+  // Presence: subscribe to the selected project whenever it changes
+  $: if (sessionReady && selectedProjectId && selectedProjectId !== lastPresenceProjectId) {
+    lastPresenceProjectId = selectedProjectId;
+    peerPresence = new Map();
+    myPresenceUserId = null;
+    sendCommand("Session.Subscribe", { projectId: selectedProjectId }).then((result) => {
+      myPresenceUserId = result.myUserId || null;
+      const list = result.presence || [];
+      const next = new Map();
+      for (const p of list) {
+        if (p.userId && p.userId !== myPresenceUserId) {
+          next.set(p.userId, p);
+        }
+      }
+      peerPresence = next;
+    }).catch(() => {});
+  }
+  $: if (!selectedProjectId) {
+    lastPresenceProjectId = "";
+    peerPresence = new Map();
+    myPresenceUserId = null;
+  }
+
+  // Presence: send viewport updates when our view changes (debounced 200 ms)
+  $: if (sessionReady && selectedProjectId && sceneFlowViewBox?.width > 0 && sceneFlowViewBox?.height > 0) {
+    if (presenceViewportDebounceTimer) clearTimeout(presenceViewportDebounceTimer);
+    presenceViewportDebounceTimer = setTimeout(() => {
+      sendCommand("Presence.Update", {
+        projectId: selectedProjectId,
+        viewport: {
+          x: sceneFlowViewBox.x,
+          y: sceneFlowViewBox.y,
+          width: sceneFlowViewBox.width,
+          height: sceneFlowViewBox.height
+        }
+      }).catch(() => {});
+    }, 200);
+  }
+
   $: if (!selectedProjectId) {
     lastProjectConfigProjectId = "";
     lastPluginInterfacesProjectId = "";
@@ -3363,6 +3440,24 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
     return Array.isArray(project?.stats?.plugins) && project.stats.plugins.length > 0;
   }
 
+  function isRecentPinned(path) {
+    const value = normalizeRecentPath(path);
+    return !!value && recentPinnedProjects.some((entry) => entry.path === value);
+  }
+
+  function toggleRecentPinned(path) {
+    const value = normalizeRecentPath(path);
+    if (!value) return;
+    if (isRecentPinned(value)) {
+      recentPinnedProjects = recentPinnedProjects.filter((entry) => entry.path !== value);
+    } else {
+      recentPinnedProjects = [
+        { path: value, pinnedAt: Date.now() },
+        ...recentPinnedProjects.filter((entry) => entry.path !== value)
+      ];
+    }
+  }
+
   function formatRecentScenesStats(project) {
     const total = Number(project?.stats?.scenes ?? 0);
     const entries = Array.isArray(project?.stats?.sceneLanguages)
@@ -3384,9 +3479,57 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
     return `Scenes ${total} ・ ${parts.join(" ・ ")}`;
   }
 
+  function formatRecentRelativeDate(dateText) {
+    const raw = String(dateText || "").trim();
+    if (!raw) return "";
+    const parsed = Date.parse(raw);
+    if (!Number.isFinite(parsed)) return raw;
+    const now = Date.now();
+    const diffMs = now - parsed;
+    const future = diffMs < 0;
+    const absMs = Math.abs(diffMs);
+    const minute = 60 * 1000;
+    const hour = 60 * minute;
+    const day = 24 * hour;
+    if (absMs < minute) return future ? "in <1m" : "just now";
+    if (absMs < hour) {
+      const value = Math.floor(absMs / minute);
+      return future ? `in ${value}m` : `${value}m ago`;
+    }
+    if (absMs < day) {
+      const value = Math.floor(absMs / hour);
+      return future ? `in ${value}h` : `${value}h ago`;
+    }
+    if (absMs < 30 * day) {
+      const value = Math.floor(absMs / day);
+      return future ? `in ${value}d` : `${value}d ago`;
+    }
+    return new Date(parsed).toLocaleDateString();
+  }
+
+  function formatTutorialMeta(project) {
+    const level = String(project?.level || project?.difficulty || "").trim();
+    const duration = String(project?.duration || project?.estimatedDuration || "").trim();
+    const tags = Array.isArray(project?.tags) ? project.tags.map((tag) => String(tag || "").trim()).filter(Boolean).slice(0, 3) : [];
+    const parts = [];
+    if (level) parts.push(level);
+    if (duration) parts.push(duration);
+    if (tags.length) parts.push(tags.join(", "));
+    return parts.join(" · ");
+  }
+
   async function loadTutorials() {
-    const data = await apiGet("/api/v1/projects/tutorials");
-    tutorials = data.projects || [];
+    tutorialsLoading = true;
+    tutorialsError = "";
+    try {
+      const data = await apiGet("/api/v1/projects/tutorials");
+      tutorials = data.projects || [];
+    } catch (err) {
+      tutorialsError = err?.message || "Failed to load tutorials.";
+      tutorials = [];
+    } finally {
+      tutorialsLoading = false;
+    }
   }
 
   function rememberFocus() {
@@ -3493,6 +3636,25 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
     loadConfig(projectId);
   }
 
+  function parentDirectory(pathValue) {
+    const raw = String(pathValue || "").trim();
+    if (!raw) return "";
+    const normalized = raw.replace(/[\\/]+$/, "");
+    const lastSeparator = Math.max(normalized.lastIndexOf("/"), normalized.lastIndexOf("\\"));
+    if (lastSeparator < 0) return "";
+    if (/^[A-Za-z]:[\\/]/.test(normalized) && lastSeparator === 2) {
+      return normalized.slice(0, 3);
+    }
+    if (lastSeparator === 0) return normalized.startsWith("/") ? "/" : "";
+    return normalized.slice(0, lastSeparator);
+  }
+
+  function useSuggestedBaseDir(path) {
+    if (!path) return;
+    newBaseDir = path;
+    createProjectError = "";
+  }
+
   async function browseForProjectDir() {
     openPathError = "";
     try {
@@ -3584,6 +3746,77 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
       newProjectNameInput?.focus();
     }
   }
+
+  $: suggestedBaseDirs = (() => {
+    const dirs = [];
+    const seen = new Set();
+    for (const project of recent) {
+      const baseDir = parentDirectory(project?.path);
+      if (!baseDir || seen.has(baseDir)) continue;
+      seen.add(baseDir);
+      dirs.push(baseDir);
+      if (dirs.length >= 8) break;
+    }
+    return dirs;
+  })();
+
+  $: filteredRecent = (() => {
+    const needle = (recentSearchQuery || "").trim().toLowerCase();
+    const pinnedOrder = recentPinnedProjects
+      .slice()
+      .sort((a, b) => (b.pinnedAt || 0) - (a.pinnedAt || 0))
+      .map((entry) => entry.path);
+    const pinnedSet = new Set(pinnedOrder);
+    const matching = recent.filter((project) => {
+      const path = normalizeRecentPath(project?.path);
+      if (recentFilterMode === "android" && !(project?.androidProject === true || project?.stats?.androidProject === true)) {
+        return false;
+      }
+      if (recentFilterMode === "plugins" && !hasRecentPlugins(project)) {
+        return false;
+      }
+      if (recentFilterMode === "pinned" && !isRecentPinned(path)) {
+        return false;
+      }
+      if (!needle) {
+        return true;
+      }
+      const pluginText = hasRecentPlugins(project)
+        ? project.stats.plugins
+            .map((plugin) => `${plugin?.name || ""} ${plugin?.className || ""}`)
+            .join(" ")
+        : "";
+      const haystack = `${project?.name || ""} ${project?.path || ""} ${pluginText}`.toLowerCase();
+      return haystack.includes(needle);
+    });
+    if (recentFilterMode === "pinned") {
+      const byPath = new Map(matching.map((project) => [normalizeRecentPath(project?.path), project]));
+      const orderedPinned = [];
+      for (const path of pinnedOrder) {
+        const project = byPath.get(path);
+        if (project) orderedPinned.push(project);
+      }
+      return orderedPinned;
+    }
+    if (recentFilterMode !== "all") {
+      return matching;
+    }
+    const byPath = new Map(matching.map((project) => [normalizeRecentPath(project?.path), project]));
+    const orderedPinned = [];
+    for (const path of pinnedOrder) {
+      const project = byPath.get(path);
+      if (project) orderedPinned.push(project);
+    }
+    const regular = matching.filter((project) => !pinnedSet.has(normalizeRecentPath(project?.path)));
+    return [...orderedPinned, ...regular];
+  })();
+
+  $: recentHeaderCountLabel =
+    filteredRecent.length === recent.length ? `${recent.length}` : `${filteredRecent.length} / ${recent.length}`;
+
+  $: localStorage.setItem(NEW_PROJECT_BASE_DIR_KEY, newBaseDir || "");
+  $: localStorage.setItem(NEW_PROJECT_BASE_DIR_PANEL_KEY, String(baseDirSuggestionsExpanded));
+  $: localStorage.setItem(RECENT_PINNED_PATHS_KEY, JSON.stringify(recentPinnedProjects));
 
   async function saveProject(projectId, { skipScriptApply = false, saveSemantic = true } = {}) {
     if (!projectId || projectSaving) return false;
@@ -6666,6 +6899,27 @@ Sentence:
     const payload = message.payload || {};
     const eventName = message.event;
     if (!eventName) return;
+
+    // Presence events
+    if (eventName === "presence.joined" || eventName === "presence.update") {
+      const userId = payload.userId;
+      if (userId && userId !== myPresenceUserId) {
+        const next = new Map(peerPresence);
+        next.set(userId, payload);
+        peerPresence = next;
+      }
+      return;
+    }
+    if (eventName === "presence.left") {
+      const userId = payload.userId;
+      if (userId && peerPresence.has(userId)) {
+        const next = new Map(peerPresence);
+        next.delete(userId);
+        peerPresence = next;
+      }
+      return;
+    }
+
     if (eventName === "system.preferences" && payload?.preferences) {
       preferences = payload.preferences;
       prefDraft = { ...preferences };
@@ -7484,6 +7738,8 @@ Sentence:
   async function removeRecentProject(path) {
     if (!path) return;
     await apiPost("/api/v1/projects/recent/remove", { path });
+    const normalizedPath = normalizeRecentPath(path);
+    recentPinnedProjects = recentPinnedProjects.filter((entry) => entry.path !== normalizedPath);
     await loadRecent();
   }
 
@@ -12919,7 +13175,7 @@ Sentence:
 
   <div class="grid">
     {#if !showEditor}
-    <section class="panel landing-panel">
+    <section class="panel landing-panel landing-panel--start">
       <header class="panel-title">
         <h2>Projects</h2>
       </header>
@@ -12986,7 +13242,7 @@ Sentence:
             on:dragover|preventDefault
             on:drop={handleProjectDrop}
           />
-          <button type="submit" disabled={!openPath || !openPath.trim()}>Open</button>
+          <button type="submit" class="open-project-btn" disabled={!openPath || !openPath.trim()}>Open</button>
           <button type="button" class="ghost" on:click={browseForProjectDir}>Browse…</button>
         </div>
         <input
@@ -13020,6 +13276,26 @@ Sentence:
           bind:value={newBaseDir}
           on:input={() => (createProjectError = "")}
         />
+        <details class="base-dir-suggestions" bind:open={baseDirSuggestionsExpanded}>
+          <summary>Suggested base directories</summary>
+          {#if suggestedBaseDirs.length === 0}
+            <p class="muted">No suggestions yet. Open a project first to build suggestions.</p>
+          {:else}
+            <div class="base-dir-suggestion-list">
+              {#each suggestedBaseDirs as baseDir}
+                <button
+                  type="button"
+                  class="ghost base-dir-suggestion-btn"
+                  on:click={() => useSuggestedBaseDir(baseDir)}
+                  title={baseDir}
+                >
+                  <span class="base-dir-suggestion-path">{baseDir}</span>
+                  <span>Use</span>
+                </button>
+              {/each}
+            </div>
+          {/if}
+        </details>
         <button type="submit" disabled={!newName || !newName.trim()}>Create</button>
         {#if createProjectError}
           <p class="error">{createProjectError}</p>
@@ -13028,11 +13304,26 @@ Sentence:
 
     </div>
     </section>
-    <section class="panel landing-panel">
+    <section class="panel landing-panel landing-panel--recent">
         <header class="panel-title">
-          <h2>Recent Projects ({recent.length})</h2>
+          <h2>Recent Projects ({recentHeaderCountLabel})</h2>
         </header>
         <div class="panel-body">
+        <div class="recent-toolbar">
+          <input
+            type="text"
+            class="recent-search"
+            placeholder="Search name, path, plugin…"
+            bind:value={recentSearchQuery}
+            aria-label="Search recent projects"
+          />
+          <select bind:value={recentFilterMode} aria-label="Filter recent projects">
+            <option value="all">All</option>
+            <option value="android">Android</option>
+            <option value="plugins">With plugins</option>
+            <option value="pinned">Pinned</option>
+          </select>
+        </div>
         <div class="project-list project-list--recent">
           {#if recentLoading}
             <p class="muted">Loading recent projects...</p>
@@ -13040,60 +13331,121 @@ Sentence:
             <p class="error">{recentError}</p>
           {:else if recent.length === 0}
             <p class="muted">No recent projects.</p>
+          {:else if filteredRecent.length === 0}
+            <p class="muted">No projects match the current search/filter.</p>
           {:else}
-            {#each recent as project}
-              <button
-                type="button"
+            {#each filteredRecent as project}
+              <div
+                class="recent-item"
                 class:android-project={project.androidProject === true || project?.stats?.androidProject === true}
-                on:click={() => openRecentProject(project)}
               >
-                <div class="project-list-info">
-                  <div class="project-list-header">
-                    <div class="project-list-name" title={project.name}>{project.name}</div>
-                    {#if project.date}
-                      <div class="meta project-list-date">{project.date}</div>
-                    {/if}
-                  </div>
-                  {#if project.stats}
-                    <div class="meta project-list-meta">
-                      Supernodes: {project.stats.superNodes ?? 0} · Nodes: {project.stats.nodes ?? 0} · Commands: {project.stats.commands ?? 0}
-                    </div>
-                    <div class="meta project-list-meta">
-                      {formatRecentScenesStats(project)}
-                    </div>
-                    <div class="meta project-list-meta">
-                      Plugins:
-                      {#if hasRecentPlugins(project)}
-                        {#each project.stats.plugins as plugin, idx}
-                          <span class:project-list-plugin-missing={!plugin.present}>
-                            {plugin.name || plugin.className || "Unknown"}{idx < project.stats.plugins.length - 1 ? ", " : ""}
-                          </span>
-                        {/each}
-                      {:else}
-                        —
+                <button
+                  type="button"
+                  class="recent-open-btn"
+                  on:click={() => openRecentProject(project)}
+                >
+                  <div class="project-list-info">
+                    <div class="project-list-header">
+                      <div class="project-list-name" title={project.name}>{project.name}</div>
+                      {#if project.date}
+                        <div class="meta project-list-date" title={project.date}>{formatRecentRelativeDate(project.date)}</div>
                       {/if}
                     </div>
-                    <div class="meta project-list-meta">{project.path || "—"}</div>
-                  {/if}
+                    {#if project.stats}
+                      <div class="meta project-list-meta">
+                        Supernodes: {project.stats.superNodes ?? 0} · Nodes: {project.stats.nodes ?? 0} · Commands: {project.stats.commands ?? 0}
+                      </div>
+                      <div class="meta project-list-meta">
+                        {formatRecentScenesStats(project)}
+                      </div>
+                      <div class="meta project-list-meta">
+                        Plugins:
+                        {#if hasRecentPlugins(project)}
+                          {#each project.stats.plugins as plugin, idx}
+                            <span class:project-list-plugin-missing={!plugin.present}>
+                              {plugin.name || plugin.className || "Unknown"}{idx < project.stats.plugins.length - 1 ? ", " : ""}
+                            </span>
+                          {/each}
+                        {:else}
+                          —
+                        {/if}
+                      </div>
+                      <div class="meta project-list-meta">{project.path || "—"}</div>
+                    {/if}
+                  </div>
+                </button>
+                <div class="recent-actions">
+                  <button
+                    type="button"
+                    class="ghost recent-action-btn"
+                    on:click|stopPropagation={() => openRecentProject(project)}
+                    aria-label="Open project"
+                    title="Open project"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" />
+                    </svg>
+                  </button>
+                  <button
+                    type="button"
+                    class="ghost recent-action-btn recent-action-pin"
+                    class:active={isRecentPinned(project?.path)}
+                    on:click|stopPropagation={() => toggleRecentPinned(project?.path)}
+                    aria-pressed={isRecentPinned(project?.path)}
+                    aria-label={isRecentPinned(project?.path) ? "Unpin project" : "Pin project"}
+                    title={isRecentPinned(project?.path) ? "Unpin project" : "Pin project"}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" aria-hidden="true">
+                      <path d="M235.32,81.37,174.63,20.69a16,16,0,0,0-22.63,0L98.37,74.49c-10.66-3.34-35-7.37-60.4,13.14a16,16,0,0,0-1.29,23.78L85,159.71,42.34,202.34a8,8,0,0,0,11.32,11.32L96.29,171l48.29,48.29A16,16,0,0,0,155.9,224c.38,0,.75,0,1.13,0a15.93,15.93,0,0,0,11.64-6.33c19.64-26.1,17.75-47.32,13.19-60L235.33,104A16,16,0,0,0,235.32,81.37ZM224,92.69h0l-57.27,57.46a8,8,0,0,0-1.49,9.22c9.46,18.93-1.8,38.59-9.34,48.62L48,100.08c12.08-9.74,23.64-12.31,32.48-12.31A40.13,40.13,0,0,1,96.81,91a8,8,0,0,0,9.25-1.51L163.32,32,224,92.68Z"></path>
+                    </svg>
+                  </button>
+                  <button
+                    type="button"
+                    class="ghost danger recent-action-btn"
+                    on:click|stopPropagation={async () => removeRecentProject(project?.path)}
+                    aria-label="Remove recent project"
+                    title="Remove recent project"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                    </svg>
+                  </button>
                 </div>
-              </button>
+              </div>
             {/each}
           {/if}
         </div>
         </div>
       </section>
-      <section class="panel landing-panel">
+    <section class="panel landing-panel landing-panel--tutorials">
         <header class="panel-title">
           <h2>Tutorials</h2>
         </header>
         <div class="panel-body">
         <div class="project-list">
-          {#if tutorials.length === 0}
-            <p class="muted">No tutorials available.</p>
+          {#if tutorialsLoading}
+            <p class="muted">Loading tutorials...</p>
+          {:else if tutorialsError}
+            <p class="error">{tutorialsError}</p>
+            <button type="button" class="ghost" on:click={loadTutorials}>Reload tutorials</button>
+          {:else if tutorials.length === 0}
+            <div class="tutorial-empty-state">
+              <div class="tutorial-empty-title">No tutorials installed yet</div>
+              <p class="muted">
+                Tutorials will appear here with level and duration. You can already create or open projects from the Start panel.
+              </p>
+              <button type="button" class="ghost" on:click={loadTutorials}>Reload tutorials</button>
+            </div>
           {:else}
             {#each tutorials as project}
-              <button type="button" on:click={() => openProject(project.path)}>
-                <span>{project.name}</span>
+              <button type="button" class="tutorial-card" on:click={() => openProject(project.path)} title={project.path || project.name}>
+                <span class="tutorial-title">{project.name}</span>
+                {#if formatTutorialMeta(project)}
+                  <span class="tutorial-meta">{formatTutorialMeta(project)}</span>
+                {/if}
+                {#if project.path}
+                  <span class="tutorial-path">{project.path}</span>
+                {/if}
               </button>
             {/each}
           {/if}
@@ -14101,6 +14453,7 @@ Sentence:
                   worldBox={sceneFlowWorldBox}
                   viewBox={sceneFlowViewBox}
                   onCenter={(x, y) => sceneFlowRef?.centerOn(x, y)}
+                  peers={[...peerPresence.values()]}
                 />
               {/if}
             </div>
