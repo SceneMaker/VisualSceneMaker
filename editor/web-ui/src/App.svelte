@@ -994,6 +994,8 @@
   let scriptDiagRequestId = 0;
   let scriptAutoApplyTimer = null;
   let scriptAutoApplyInFlight = false;
+  let scriptLiveTimer = null;
+  let scriptLiveLast = "";
   let lastScriptProjectId = "";
   let scriptEditorRef;
   let semanticDoc = null;
@@ -2226,7 +2228,6 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
   $: {
     const canAutoApply =
       showEditor &&
-      autoSaveEnabled &&
       wsConnected &&
       !!selectedProjectId &&
       scriptDirty &&
@@ -2236,6 +2237,9 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
       !scriptLoading &&
       !projectSaving &&
       scriptDiagTimer === null;
+    if (scriptDirty) {
+      console.log("[canAutoApply]", canAutoApply, {showEditor, autoSaveEnabled, wsConnected, scriptDirty, scriptParseOk, scriptError: !!scriptError, diagLen: scriptDiagnostics.length, scriptLoading, projectSaving, scriptDiagTimer: !!scriptDiagTimer});
+    }
     if (canAutoApply) {
       clearScriptAutoApplyTimer();
       scriptAutoApplyTimer = setTimeout(runScriptAutoApply, 650);
@@ -3118,6 +3122,7 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
     semanticError = "";
     semanticSourceText = "";
     semanticDirty = false;
+    scriptLiveLast = "";
     scriptScenes = [];
     scriptScenesError = "";
     scriptScenesLoading = false;
@@ -5275,8 +5280,15 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
       if (projectId !== selectedProjectId) {
         return;
       }
+      const hasDirtyDraft = scriptLoaded && scriptDraft !== scriptText;
       scriptText = data.text || "";
-      scriptDraft = scriptText;
+      if (!hasDirtyDraft) {
+        scriptDraft = scriptText;
+      } else {
+        // Preserve user's in-progress edits; reschedule auto-apply with updated version.
+        clearScriptAutoApplyTimer();
+        scriptAutoApplyTimer = setTimeout(runScriptAutoApply, 200);
+      }
       scriptVersion = data.version ?? null;
       scriptDiagnostics = data.parseErrors || [];
       scriptParseOk = data.parseOk !== false;
@@ -6822,6 +6834,23 @@ Sentence:
     }
   }
 
+  function scheduleScriptLive() {
+    if (!wsConnected || !selectedProjectId) return;
+    if (scriptLiveTimer) clearTimeout(scriptLiveTimer);
+    scriptLiveTimer = setTimeout(() => {
+      scriptLiveTimer = null;
+      if (scriptDraft === scriptLiveLast) return;
+      scriptLiveLast = scriptDraft;
+      if (!ws || ws.readyState !== 1 || !selectedProjectId) return;
+      try {
+        ws.send(JSON.stringify({
+          method: "Script.Live",
+          params: { projectId: selectedProjectId, text: scriptDraft }
+        }));
+      } catch (e) {}
+    }, 100);
+  }
+
   async function runScriptAutoApply() {
     if (!selectedProjectId || scriptAutoApplyInFlight) return;
     scriptAutoApplyInFlight = true;
@@ -7014,6 +7043,16 @@ Sentence:
     if (eventName === "script.snapshot") {
       // Broadcasts put snapshot at top level (no payload wrapper); fall back to message.
       applyScriptSnapshot(message.payload != null ? message.payload : message);
+      return;
+    }
+    if (eventName === "script.live") {
+      const liveProjectId = message.projectId || payload.projectId;
+      if (liveProjectId && liveProjectId !== selectedProjectId) return;
+      // Only update if the local user is not currently editing (no unpublished draft).
+      if (!scriptDirty && message.text !== undefined) {
+        scriptText = message.text;
+        scriptDraft = message.text;
+      }
       return;
     }
     if (eventName === "script.elements") {
@@ -15800,6 +15839,7 @@ Sentence:
                 onChange={(value) => {
                   scriptDraft = value;
                   scheduleScriptDiagnostics();
+                  scheduleScriptLive();
                 }}
               />
             {/if}

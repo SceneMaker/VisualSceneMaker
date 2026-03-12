@@ -1678,6 +1678,17 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
                 "Embeddings.Start");
         registerWsCommands((method, params, broadcaster) -> scriptCommandService.dispatch(params, broadcaster, scriptCommandContext),
                 "Script.Update");
+        registerWsCommands((method, params, broadcaster) -> {
+            if (broadcaster != null) {
+                JSONObject evt = new JSONObject();
+                evt.put("type", "event");
+                evt.put("event", "script.live");
+                evt.put("projectId", params.optString("projectId", ""));
+                evt.put("text", params.optString("text", ""));
+                broadcaster.accept(evt.toString());
+            }
+            return new JSONObject().put("status", "ok");
+        }, "Script.Live");
         registerWsCommands((method, params, broadcaster) -> configCommandService.dispatch(params, broadcaster, configCommandContext),
                 "Config.Update");
         registerWsCommands((method, params, broadcaster) -> pluginCreateCommandService.dispatch(params, pluginCreateCommandContext),
@@ -6734,6 +6745,7 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
      */
     private boolean isEditingCommand(String method) {
         if (method == null) return false;
+        if ("Script.Live".equals(method)) return false; // live draft — not a committed edit
         return method.startsWith("SceneFlow.Node.")
                 || method.startsWith("SceneFlow.Edge.")
                 || method.startsWith("SceneFlow.Comment.")
