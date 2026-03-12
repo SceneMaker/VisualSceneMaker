@@ -6338,7 +6338,10 @@ Sentence:
 
   function activityProjectMatches(payload) {
     const projectId = payload?.projectId;
-    return !projectId || projectId === selectedProjectId;
+    // When both sides have an ID they must match; fall back to accepting
+    // projectId-less events only in single-project / legacy mode.
+    if (selectedProjectId && projectId) return projectId === selectedProjectId;
+    return !projectId;
   }
 
   function resolveActivityNodeId(payload) {
@@ -7017,6 +7020,7 @@ Sentence:
       return;
     }
     if (eventName === "project.dirty") {
+      if (payload?.projectId && payload.projectId !== selectedProjectId) return;
       applyProtocolDirty(payload);
       return;
     }
@@ -7078,12 +7082,14 @@ Sentence:
       return;
     }
     if (eventName === "sceneflow.edgeUpdated") {
+      if (payload?.projectId && payload.projectId !== selectedProjectId) return;
       if (selectedProjectId) {
         loadSceneFlow(selectedProjectId, sceneFlow?.superNodeId || "");
       }
       return;
     }
     if (eventName === "sceneflow.selection") {
+      if (payload?.projectId && payload.projectId !== selectedProjectId) return;
       applyProtocolSelection(payload.selection);
       return;
     }
@@ -7265,6 +7271,7 @@ Sentence:
       return;
     }
     if (eventName === "vars.updated") {
+      if (payload?.projectId && payload.projectId !== selectedProjectId) return;
       const items = Array.isArray(payload.variables) ? payload.variables : [];
       if (items.length) {
         for (const item of items) {
