@@ -30,26 +30,17 @@ export const sceneScriptTheme = EditorView.theme(
     },
     ".cm-line.cm-scene-line": {
       position: "relative",
-      paddingLeft: "0.95rem"
+      paddingLeft: "0.95rem",
+      boxShadow: "inset 3px 0 0 rgba(46, 93, 58, 0.28)"
     },
-    ".cm-line.cm-scene-line::before": {
-      content: "\"\"",
-      position: "absolute",
-      left: "0.2rem",
-      top: "0.14em",
-      bottom: "0.14em",
-      width: "3px",
-      borderRadius: "999px",
-      backgroundColor: "rgba(46, 93, 58, 0.28)"
+    ".cm-line.cm-scene-line-played": {
+      boxShadow: "inset 3px 0 0 rgba(46, 93, 58, 0.28)"
     },
-    ".cm-line.cm-scene-line-played::before": {
-      backgroundColor: "rgba(46, 93, 58, 0.28)"
+    ".cm-line.cm-scene-line-active": {
+      boxShadow: "inset 3px 0 0 rgba(46, 93, 58, 0.62)"
     },
-    ".cm-line.cm-scene-line-active::before": {
-      backgroundColor: "rgba(46, 93, 58, 0.62)"
-    },
-    ".cm-line.cm-scene-line-active-turn::before": {
-      backgroundColor: "rgba(46, 93, 58, 0.95)"
+    ".cm-line.cm-scene-line-active-turn": {
+      boxShadow: "inset 3px 0 0 rgba(46, 93, 58, 0.95)"
     }
   },
   { dark: false }

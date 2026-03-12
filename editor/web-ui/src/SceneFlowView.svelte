@@ -1573,6 +1573,9 @@
 
     // Pre-compute each item's dimensions (with span support for scene commands)
     const items = entries.map((entry) => {
+      const iconMode = entry.iconMode === "nonblocking" ? "nonblocking" : (entry.iconMode === "blocking" ? "blocking" : null);
+      const iconSize = iconMode ? Math.max(10, Math.round(size * 0.95)) : 0;
+      const iconGap = iconMode ? Math.max(4, Math.round(size * 0.35)) : 0;
       // Structured span path: scene commands with variable references
       const hasVarSpans = entry.spans && entry.spans.some(s => s.isVar);
       if (hasVarSpans) {
@@ -1585,13 +1588,14 @@
           maxDescent = Math.max(maxDescent, m.descent);
           return { text: s.text, isVar: s.isVar, width: m.width };
         });
-        if (totalTextW + padX * 2 <= maxRowWidth) {
+        const totalWithIcon = totalTextW + padX * 2 + (iconMode ? iconSize + iconGap : 0);
+        if (totalWithIcon <= maxRowWidth) {
           let spanX = 0;
           for (const s of measured) { s.spanX = spanX; spanX += s.width; }
           return { text: entry.text, fullText: entry.text, type: entry.type,
                    index: entry.index, truncated: false, spans: measured,
-                   w: totalTextW + padX * 2, h: maxAscent + maxDescent + padY * 2,
-                   ascent: maxAscent, padX, padY, fontSize: size };
+                   w: totalWithIcon, h: maxAscent + maxDescent + padY * 2,
+                   ascent: maxAscent, padX, padY, fontSize: size, iconMode, iconSize, iconGap };
         }
         // Too wide: fall through to plain truncation
       }
@@ -1599,8 +1603,9 @@
       let text = entry.text;
       let truncated = false;
       let m = measureTextMetrics(text, size);
-      if (m.width + padX * 2 > maxRowWidth) {
-        while (m.width + padX * 2 > maxRowWidth && text.length > 1) {
+      const reserved = padX * 2 + (iconMode ? iconSize + iconGap : 0);
+      if (m.width + reserved > maxRowWidth) {
+        while (m.width + reserved > maxRowWidth && text.length > 1) {
           text = text.slice(0, -1);
           m = measureTextMetrics(text + "\u2026", size);
         }
@@ -1610,8 +1615,8 @@
       }
       return { text, fullText: entry.text, type: entry.type, index: entry.index,
                truncated, spans: null,
-               w: m.width + padX * 2, h: m.ascent + m.descent + padY * 2,
-               ascent: m.ascent, padX, padY, fontSize: size };
+               w: m.width + reserved, h: m.ascent + m.descent + padY * 2,
+               ascent: m.ascent, padX, padY, fontSize: size, iconMode, iconSize, iconGap };
     });
 
     // Greedy row packing: add item to current row if it fits, else start new row
@@ -1642,8 +1647,13 @@
         badges.push({
           text: item.text, fullText: item.fullText, type: item.type,
           index: item.index, truncated: item.truncated, spans: item.spans,
+          iconMode: item.iconMode,
+          iconSize: item.iconSize,
+          iconX: x + item.padX,
+          iconY: y + (rowH - item.iconSize) / 2,
           x, y, width: item.w, height: rowH,
-          textX: x + item.padX, textY: y + item.padY + item.ascent,
+          textX: x + item.padX + (item.iconMode ? item.iconSize + item.iconGap : 0),
+          textY: y + item.padY + item.ascent,
           fontSize: item.fontSize,
         });
         x += item.w + gap;
@@ -1720,6 +1730,38 @@
     if (/^PlayScene\s*\(/.test(raw)) return "scene";
     if (/^Play\w+\s*\(/.test(raw)) return "action";
     return "var";
+  }
+
+  function parsePlayActionPayload(raw) {
+    if (!raw) return null;
+    const text = String(raw).trim();
+    let payload = "";
+    let mode = "blocking";
+    const defaultMatch = text.match(
+      /^PlayAction\s*\(\s*"([\s\S]*?)"\s*(?:,\s*\{([\s\S]*?)\}\s*)?\)$/
+    );
+    if (defaultMatch) {
+      payload = defaultMatch[1].trim();
+      const modeStruct = defaultMatch[2] || "";
+      if (/__vsm_mode\s*=\s*["']\s*nonblocking\s*["']/i.test(modeStruct)) {
+        mode = "nonblocking";
+      }
+    } else {
+      const concurrentMatch = text.match(/^!=\s*"([\s\S]*?)"\s*\.\s*$/);
+      if (concurrentMatch) {
+        payload = concurrentMatch[1].trim();
+        mode = "nonblocking";
+      } else {
+        const sequentialMatch = text.match(/^!-\s*"([\s\S]*?)"\s*\.\s*$/);
+        if (!sequentialMatch) return null;
+        payload = sequentialMatch[1].trim();
+      }
+    }
+    if (payload.startsWith("[") && payload.endsWith("]")) {
+      payload = payload.slice(1, -1).trim();
+    }
+    if (!payload) return null;
+    return { payload, mode };
   }
 
   // Parse a PlayScene raw string into [{text, isVar}] spans for inline var highlighting
@@ -1807,6 +1849,8 @@
       return m ? m[1] : raw;
     }
     if (t === "action") {
+      const playAction = parsePlayActionPayload(raw);
+      if (playAction) return playAction.payload;
       const m = raw.match(/^Play\w+\s*\(\s*"([\s\S]*?)"\s*\)$/);
       return m ? m[1] : raw;
     }
@@ -1824,12 +1868,24 @@
         const raw = (cmd?.text ?? cmd?.syntax ?? '').trim();
         spans = parseSceneSpans(raw);
         text = spans.map(s => s.text).join('');
+        if (text.length > 0) {
+          entries.push({ type, text, spans, index: i, iconMode: "blocking" });
+        }
+        continue;
       } else {
-        text = cmdDisplayText(cmd).trim();
+        const raw = (cmd?.text ?? cmd?.syntax ?? '').trim();
+        const playAction = type === "action" ? parsePlayActionPayload(raw) : null;
+        if (playAction) {
+          text = `[${playAction.payload}]`;
+        } else {
+          text = cmdDisplayText(cmd).trim();
+        }
         spans = null;
-      }
-      if (text.length > 0) {
-        entries.push({ type, text, spans, index: i });
+        const iconMode = playAction ? (playAction.mode === "nonblocking" ? "nonblocking" : "blocking") : null;
+        if (text.length > 0) {
+          entries.push({ type, text, spans, index: i, iconMode });
+        }
+        continue;
       }
     }
     return entries;
@@ -4423,6 +4479,29 @@
                   ry={commandCornerRadius}
                   fill={cmdBadgeBg(badge.type)}
                 />
+                {#if badge.iconMode === "blocking"}
+                  <g
+                    class="node-cmd-badge-icon"
+                    transform={`translate(${safeSvgNumber(badge.iconX)}, ${safeSvgNumber(badge.iconY)}) scale(${badge.iconSize / 24})`}
+                    aria-hidden="true"
+                  >
+                    <path d="M12 6v6l4 2" />
+                    <path d="M20 12v5" />
+                    <path d="M20 21h.01" />
+                    <path d="M21.25 8.2A10 10 0 1 0 16 21.16" />
+                  </g>
+                {:else if badge.iconMode === "nonblocking"}
+                  <g
+                    class="node-cmd-badge-icon"
+                    transform={`translate(${safeSvgNumber(badge.iconX)}, ${safeSvgNumber(badge.iconY)}) scale(${badge.iconSize / 24})`}
+                    aria-hidden="true"
+                  >
+                    <path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5" />
+                    <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09" />
+                    <path d="M9 12a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.4 22.4 0 0 1-4 2z" />
+                    <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 .05 5 .05" />
+                  </g>
+                {/if}
                 {#if badge.spans}
                   {#each badge.spans as span}
                     {#if span.isVar}

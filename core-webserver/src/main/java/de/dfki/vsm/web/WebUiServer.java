@@ -160,6 +160,7 @@ import de.dfki.vsm.model.visicon.VisiconViseme;
 public final class WebUiServer implements EventListener, RuntimeCommandEndpoint {
 
     private static final Map<String, ExportablePropertyEntry> EXPORTABLE_PROPERTY_PROVIDERS = new HashMap<>();
+    private static final Set<String> RESERVED_META_VARIABLES = Set.of("__vsm_mode");
 
     private static final class ExportablePropertyEntry {
         private final String providerClass;
@@ -301,6 +302,8 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
     private final Map<String, ProjectRef> projectStore = new HashMap<>();
     private final Map<String, WsCommandHandler> wsCommandRegistry = new HashMap<>();
     private final java.util.Set<WsContext> wsSessions = ConcurrentHashMap.newKeySet();
+    /** Maps WS session-id → project-id for clients that joined via Session.Subscribe. */
+    private final ConcurrentHashMap<String, String> wsProjectSubscriptions = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, RuntimeVizRateLimiter> runtimeVizRateLimiters = new ConcurrentHashMap<>();
     private final RuntimeGateway runtimeGateway;
     private final RuntimeCommandService runtimeCommandService = new RuntimeCommandService();
@@ -1750,8 +1753,8 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
             config.enableCorsForAllOrigins();
         }).start(allowExternal ? "0.0.0.0" : "127.0.0.1", port);
         registerRoutes();
-        // Register for runtime events to broadcast to WebSocket clients
-        EventDispatcher.getInstance().register(this);
+        // EventDispatcher registration now happens per-project when projects are added to projectStore.
+        // See onProjectRegistered() / onProjectRemoved().
         sLogger.message("Web UI server started on " + getLocalUrl());
     }
 
@@ -1797,6 +1800,7 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
                     ref.runtimeProject = rtp;
                     ref.runtimeState = "stopped";
                     projectStore.put(pid, ref);
+                    registerProjectDispatcher(pid, ref);
                     broadcastRuntimeState(pid, "stopped");
                     sLogger.message("Loaded project: " + normalizedPath);
                     return true;
@@ -1836,7 +1840,10 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
 
     public void stop() {
         if (mApp != null) {
-            EventDispatcher.getInstance().remove(this);
+            // Deregister from all project dispatchers.
+            for (ProjectRef ref : projectStore.values()) {
+                unregisterProjectDispatcher(ref);
+            }
             mApp.stop();
             mApp = null;
         }
@@ -2215,7 +2222,8 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
     }
 
     private void removeProjectById(String projectId) {
-        projectStore.remove(projectId);
+        ProjectRef ref = projectStore.remove(projectId);
+        unregisterProjectDispatcher(ref);
     }
 
     private JSONObject handleRuntimeVariableSetCommand(String projectId, String name, String valueExpr) {
@@ -2311,6 +2319,209 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         broadcastToAll(message.toString());
     }
 
+    // -------------------------------------------------------------------------
+    // Per-project dispatcher registration / event routing (Component 2)
+    // -------------------------------------------------------------------------
+
+    /**
+     * Creates a per-project {@link EventListener} forwarder, stores it in the
+     * project's {@link CollaborationSession} and registers it on the project's
+     * {@link EventDispatcher}.  Must be called after the project is put into
+     * {@code projectStore}.
+     */
+    private void registerProjectDispatcher(String pid, ProjectRef ref) {
+        if (ref.runtimeProject == null) return;
+        EventListener forwarder = event -> handleProjectEvent(pid, event);
+        ref.collaborationSession.setEventForwarder(forwarder);
+        ref.runtimeProject.getEventDispatcher().register(forwarder);
+    }
+
+    /** Removes the stored per-project forwarder from the project's dispatcher. */
+    private void unregisterProjectDispatcher(ProjectRef ref) {
+        if (ref == null || ref.runtimeProject == null) return;
+        EventListener forwarder = ref.collaborationSession.getEventForwarder();
+        if (forwarder != null) {
+            ref.runtimeProject.getEventDispatcher().remove(forwarder);
+        }
+    }
+
+    /**
+     * Sends {@code message} to the project's collaboration-session subscribers
+     * when at least one is present; falls back to {@link #broadcastToAll} so
+     * that legacy (unsubscribed) clients continue to receive events.
+     */
+    private void broadcastToProjectOrAll(String projectId, String message) {
+        if (projectId != null) {
+            ProjectRef ref = projectStore.get(projectId);
+            if (ref != null && ref.collaborationSession.subscriberCount() > 0) {
+                ref.collaborationSession.broadcast(message);
+                return;
+            }
+        }
+        broadcastToAll(message);
+    }
+
+    /**
+     * Per-project event handler.  Identical logic to {@link #update(EventObject)}
+     * but the {@code projectId} is known precisely (injected by the per-project
+     * forwarder lambda), so no heuristic lookup is needed.
+     */
+    private void handleProjectEvent(String projectId, EventObject event) {
+        if (event == null) return;
+
+        if (event instanceof VariableChangedEvent) {
+            VariableChangedEvent varEvent = (VariableChangedEvent) event;
+            Tuple<String, String> pair = varEvent.getVarValue();
+            if (pair == null || pair.getFirst() == null || pair.getFirst().isBlank()) return;
+            JSONObject message = new JSONObject();
+            message.put("type", "event");
+            message.put("ts", System.currentTimeMillis());
+            message.put("channel", "vars");
+            message.put("event", "vars.updated");
+            JSONObject payload = new JSONObject();
+            payload.put("projectId", projectId);
+            payload.put("name", pair.getFirst());
+            payload.put("value", pair.getSecond() != null ? pair.getSecond() : "");
+            message.put("payload", payload);
+            broadcastToProjectOrAll(projectId, message.toString());
+            return;
+        }
+
+        if (isRuntimeVisualizationEvent(event) && shouldDropRuntimeVisualizationEvent(projectId, event)) return;
+
+        JSONObject message = new JSONObject();
+        message.put("type", "event");
+        message.put("ts", System.currentTimeMillis());
+        JSONObject payload = new JSONObject();
+        payload.put("projectId", projectId);
+
+        if (event instanceof NodeStartedEvent) {
+            BasicNode node = ((NodeStartedEvent) event).getNode();
+            if (node == null) return;
+            payload.put("nodeId", node.getId());
+            if (node.getParentNode() != null) {
+                payload.put("parentId", node.getParentNode().getId());
+                payload.put("ancestorIds", buildAncestorIds(node.getParentNode()));
+            }
+            message.put("channel", "runtime");
+            message.put("event", "runtime.nodeActive");
+
+        } else if (event instanceof NodeExecutedEvent || event instanceof NodeTerminatedEvent) {
+            BasicNode node = event instanceof NodeExecutedEvent
+                    ? ((NodeExecutedEvent) event).getNode()
+                    : ((NodeTerminatedEvent) event).getNode();
+            if (node == null) return;
+            payload.put("nodeId", node.getId());
+            if (node.getParentNode() != null) {
+                payload.put("parentId", node.getParentNode().getId());
+                payload.put("ancestorIds", buildAncestorIds(node.getParentNode()));
+            }
+            message.put("channel", "runtime");
+            message.put("event", "runtime.nodeStopped");
+
+        } else if (event instanceof EdgeExecutedEvent) {
+            AbstractEdge edge = ((EdgeExecutedEvent) event).getEdge();
+            if (edge == null) return;
+            String sourceId = edge.getSourceNode() != null ? edge.getSourceNode().getId() : "";
+            String targetId = edge.getTargetNode() != null ? edge.getTargetNode().getId() : "";
+            payload.put("sourceId", sourceId);
+            payload.put("targetId", targetId);
+            if (edge.getSourceNode() != null && edge.getSourceNode().getParentNode() != null) {
+                payload.put("sourceParentId", edge.getSourceNode().getParentNode().getId());
+                payload.put("sourceAncestorIds", buildAncestorIds(edge.getSourceNode().getParentNode()));
+            }
+            if (edge.getTargetNode() != null && edge.getTargetNode().getParentNode() != null) {
+                payload.put("targetParentId", edge.getTargetNode().getParentNode().getId());
+            }
+            payload.put("edgeType", getEdgeTypeLowercase(edge));
+            message.put("channel", "runtime");
+            message.put("event", "runtime.edgeActive");
+
+        } else if (event instanceof TimeoutEdgeStartedEvent) {
+            TimeoutEdgeStartedEvent te = (TimeoutEdgeStartedEvent) event;
+            TimeoutEdge edge = te.getEdge();
+            if (edge == null) return;
+            String sourceId = edge.getSourceNode() != null ? edge.getSourceNode().getId() : "";
+            String targetId = edge.getTargetNode() != null ? edge.getTargetNode().getId() : "";
+            payload.put("sourceId", sourceId);
+            payload.put("targetId", targetId);
+            if (edge.getSourceNode() != null && edge.getSourceNode().getParentNode() != null) {
+                payload.put("sourceParentId", edge.getSourceNode().getParentNode().getId());
+                payload.put("sourceAncestorIds", buildAncestorIds(edge.getSourceNode().getParentNode()));
+            }
+            if (edge.getTargetNode() != null && edge.getTargetNode().getParentNode() != null) {
+                payload.put("targetParentId", edge.getTargetNode().getParentNode().getId());
+            }
+            payload.put("edgeType", "timeout");
+            payload.put("timeoutMs", te.getTimeoutMs());
+            payload.put("startedAt", te.getStartedAt());
+            payload.put("elapsedMs", 0L);
+            payload.put("ratio", 0.0);
+            message.put("channel", "runtime");
+            message.put("event", "runtime.timeoutProgress");
+
+        } else if (event instanceof SceneExecutedEvent) {
+            SceneExecutedEvent sceneEvent = (SceneExecutedEvent) event;
+            SceneObject scene = sceneEvent.getScene();
+            if (scene == null) return;
+            payload.put("sceneName", scene.getName());
+            payload.put("language", scene.getLanguage());
+            payload.put("lower", scene.getLower());
+            payload.put("upper", scene.getUpper());
+            if (!sceneEvent.getNodeId().isBlank()) payload.put("nodeId", sceneEvent.getNodeId());
+            if (!sceneEvent.getParentId().isBlank()) payload.put("parentId", sceneEvent.getParentId());
+            message.put("channel", "runtime");
+            message.put("event", "runtime.scene.playing");
+
+        } else if (event instanceof SceneDoneEvent) {
+            SceneDoneEvent sceneEvent = (SceneDoneEvent) event;
+            SceneObject scene = sceneEvent.getScene();
+            if (scene == null) return;
+            payload.put("sceneName", scene.getName());
+            payload.put("language", scene.getLanguage());
+            payload.put("lower", scene.getLower());
+            payload.put("upper", scene.getUpper());
+            if (!sceneEvent.getNodeId().isBlank()) payload.put("nodeId", sceneEvent.getNodeId());
+            if (!sceneEvent.getParentId().isBlank()) payload.put("parentId", sceneEvent.getParentId());
+            message.put("channel", "runtime");
+            message.put("event", "runtime.scene.done");
+
+        } else if (event instanceof TurnExecutedEvent) {
+            SceneTurn turn = ((TurnExecutedEvent) event).getTurn();
+            if (turn == null) return;
+            payload.put("speaker", turn.getSpeaker());
+            payload.put("lower", turn.getLower());
+            payload.put("upper", turn.getUpper());
+            message.put("channel", "runtime");
+            message.put("event", "runtime.scene.turn");
+
+        } else if (event instanceof TurnDoneEvent) {
+            SceneTurn turn = ((TurnDoneEvent) event).getTurn();
+            if (turn == null) return;
+            payload.put("speaker", turn.getSpeaker());
+            payload.put("lower", turn.getLower());
+            payload.put("upper", turn.getUpper());
+            message.put("channel", "runtime");
+            message.put("event", "runtime.scene.turnDone");
+
+        } else if (event instanceof SceneStoppedEvent || event instanceof TerminationEvent) {
+            payload.put("status", "stopped");
+            message.put("channel", "runtime");
+            message.put("event", "runtime.state");
+            runtimeVizRateLimiters.remove(projectId);
+            ProjectRef ref = projectStore.get(projectId);
+            if (ref != null) ref.runtimeState = "stopped";
+
+        } else {
+            return;
+        }
+
+        message.put("payload", payload);
+        broadcastToProjectOrAll(projectId, message.toString());
+    }
+
+    // -------------------------------------------------------------------------
+
     public String getLocalUrl() {
         return "http://127.0.0.1:" + mPort;
     }
@@ -2341,7 +2552,11 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         mApp.post(API_PREFIX + "/projects/{pid}/semantic/syntax", this::handleSemanticSyntaxAnalyze);
         mApp.post(API_PREFIX + "/projects/{pid}/semantic/analyze", this::handleSemanticAnalyze);
         mApp.get(API_PREFIX + "/projects/{pid}/sceneflow", this::handleSceneflow);
+        mApp.get(API_PREFIX + "/projects/{pid}/export", this::handleProjectExport);
         mApp.get(API_PREFIX + "/projects/{pid}/runtime", this::handleRuntime);
+        mApp.get(API_PREFIX + "/projects/{pid}/subscribers", this::handleProjectSubscribers);
+        mApp.get(API_PREFIX + "/projects/{pid}/operations", this::handleProjectOperations);
+        mApp.get(API_PREFIX + "/projects/{pid}/presence", this::handleProjectPresence);
         mApp.get(API_PREFIX + "/projects/{pid}/history/commands", this::handleCommandLog);
         mApp.post(API_PREFIX + "/projects/{pid}/sceneflow/navigate", this::handleSceneflowNavigate);
 
@@ -2395,13 +2610,23 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
             });
             ws.onClose(ctx -> {
                 wsSessions.remove(ctx);
+                cleanupWsSubscription(ctx);
             });
             ws.onError(ctx -> {
                 sLogger.warning("WS client error: " + ctx.getSessionId());
                 wsSessions.remove(ctx);
+                cleanupWsSubscription(ctx);
             });
             ws.onMessage(ctx -> {
-                handleWsMessage(ctx.message(), ctx::send, msg -> broadcast(ctx, msg));
+                // Intercept presence/session commands before regular dispatch
+                String raw = ctx.message();
+                if (raw.contains("\"Session.Subscribe\"")) {
+                    handleSessionSubscribe(ctx, raw);
+                } else if (raw.contains("\"Presence.Update\"")) {
+                    handlePresenceUpdate(ctx, raw);
+                } else {
+                    handleWsMessage(ctx, raw, ctx::send, msg -> broadcast(ctx, msg));
+                }
             });
         });
     }
@@ -2640,6 +2865,33 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         info.put("version", version);
         info.put("build", build);
         info.put("mode", mMode.name().toLowerCase());
+        info.put("allowExternal", mAllowExternal);
+        // Expose the server's real hostname and LAN IP so clients can build
+        // share links that work from other machines (not just localhost).
+        try {
+            java.net.InetAddress localHost = java.net.InetAddress.getLocalHost();
+            info.put("hostname", localHost.getHostName());
+            info.put("hostAddress", localHost.getHostAddress());
+        } catch (Exception ignored) { /* leave absent */ }
+        // Prefer a non-loopback LAN address when available
+        try {
+            java.util.Enumeration<java.net.NetworkInterface> ifaces =
+                    java.net.NetworkInterface.getNetworkInterfaces();
+            outer:
+            while (ifaces.hasMoreElements()) {
+                java.net.NetworkInterface iface = ifaces.nextElement();
+                if (!iface.isUp() || iface.isLoopback() || iface.isVirtual()) continue;
+                java.util.Enumeration<java.net.InetAddress> addrs = iface.getInetAddresses();
+                while (addrs.hasMoreElements()) {
+                    java.net.InetAddress addr = addrs.nextElement();
+                    if (addr instanceof java.net.Inet4Address && !addr.isLoopbackAddress()) {
+                        info.put("lanAddress", addr.getHostAddress());
+                        info.put("lanHostname", addr.getCanonicalHostName());
+                        break outer;
+                    }
+                }
+            }
+        } catch (Exception ignored) { /* leave absent */ }
         addRuntimeCapabilities(info);
         writeJson(ctx, info);
     }
@@ -3005,6 +3257,9 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         collectVariableNames(exp, vars);
         for (String var : vars) {
             if (var == null || var.isBlank()) {
+                continue;
+            }
+            if (RESERVED_META_VARIABLES.contains(var)) {
                 continue;
             }
             if (findVariableDefinitionInHierarchy(root, var) == null) {
@@ -3664,14 +3919,30 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         writeJson(ctx, response);
     }
 
+    private void handleProjectExport(Context ctx) {
+        String pid = ctx.pathParam("pid");
+        ProjectRef ref = projectStore.get(pid);
+        if (ref == null || ref.runtimeProject == null) {
+            ctx.status(404).result("Project not found");
+            return;
+        }
+        SceneFlow sf = ref.runtimeProject.getSceneFlow();
+        String xml = sf != null ? serializeSceneFlowXml(sf) : "";
+        String filename = (ref.name != null && !ref.name.isBlank() ? ref.name : "sceneflow")
+                .replaceAll("[^\\w\\-.]", "_") + ".xml";
+        ctx.header("Content-Disposition", "attachment; filename=\"" + filename + "\"");
+        ctx.contentType("application/xml");
+        ctx.result(xml);
+    }
+
     private void handleProjectClose(Context ctx) {
         String pid = ctx.pathParam("pid");
         if (!pid.isEmpty()) {
-            // Phase 8: Clear dock points before removing project
             ProjectRef ref = projectStore.get(pid);
             if (ref != null && ref.runtimeProject != null) {
                 mEdgeLayout.clearDockPointsForProject(ref.runtimeProject.getSceneFlow());
             }
+            unregisterProjectDispatcher(ref);
             projectStore.remove(pid);
         }
         JSONObject response = new JSONObject();
@@ -5600,6 +5871,65 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         writeJson(ctx, response);
     }
 
+    private void handleProjectSubscribers(Context ctx) {
+        String pid = ctx.pathParam("pid");
+        ProjectRef ref = projectStore.get(pid);
+        if (ref == null) {
+            ctx.status(404);
+            writeJson(ctx, errorResponse("PROJECT_NOT_FOUND", "Project not found"));
+            return;
+        }
+        JSONObject response = new JSONObject();
+        response.put("projectId", pid);
+        response.put("subscriberCount", ref.collaborationSession.subscriberCount());
+        JSONArray sessionIds = new JSONArray();
+        for (WsContext sub : ref.collaborationSession.getSubscribers()) {
+            sessionIds.put(sub.getSessionId());
+        }
+        response.put("sessionIds", sessionIds);
+        writeJson(ctx, response);
+    }
+
+    /**
+     * {@code GET /api/v1/projects/{pid}/operations?since={seq}}
+     *
+     * <p>Returns all operations committed after {@code since} (exclusive).
+     * Omitting the {@code since} query parameter (or passing {@code -1}) returns
+     * the full in-memory log.  Used by late-joining clients to catch up on
+     * operations they missed while disconnected.</p>
+     */
+    private void handleProjectOperations(Context ctx) {
+        String pid = ctx.pathParam("pid");
+        ProjectRef ref = projectStore.get(pid);
+        if (ref == null) {
+            ctx.status(404);
+            writeJson(ctx, errorResponse("PROJECT_NOT_FOUND", "Project not found"));
+            return;
+        }
+        long since = -1L;
+        String sinceParam = ctx.queryParam("since");
+        if (sinceParam != null && !sinceParam.isBlank()) {
+            try {
+                since = Long.parseLong(sinceParam.trim());
+            } catch (NumberFormatException ignored) {
+                ctx.status(400);
+                writeJson(ctx, errorResponse("BAD_REQUEST", "'since' must be a long integer"));
+                return;
+            }
+        }
+        OperationLog opLog = ref.collaborationSession.getOperationLog();
+        List<SceneFlowOperation> ops = opLog.since(since);
+        JSONArray arr = new JSONArray();
+        for (SceneFlowOperation op : ops) {
+            arr.put(op.toJson());
+        }
+        JSONObject response = new JSONObject();
+        response.put("projectId", pid);
+        response.put("currentSeq", opLog.currentSeq());
+        response.put("operations", arr);
+        writeJson(ctx, response);
+    }
+
     private void handleCommandLog(Context ctx) {
         String pid = ctx.pathParam("pid");
         ProjectRef ref = projectStore.get(pid);
@@ -6127,13 +6457,227 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
     }
 
     // --- WebSocket handling -------------------------------------------------
-    private void handleWsMessage(String raw, java.util.function.Consumer<String> sender, java.util.function.Consumer<String> broadcaster) {
+
+    /**
+     * Handles the {@code Session.Subscribe} command: registers the client as a
+     * subscriber for a specific project so that project-scoped events are
+     * routed only to that client (and other subscribers of the same project).
+     */
+    private void handleSessionSubscribe(WsContext ctx, String raw) {
+        String requestId = null;
         try {
-            RuntimeWsProtocol.CommandRequest request = RuntimeWsProtocol.parseRequest(raw);
-            String id = request.id();
-            String method = request.method();
-            JSONObject params = request.params();
+            JSONObject req = new JSONObject(raw);
+            requestId = req.optString("id", null);
+            // sendCommand() puts data in "payload"; direct callers may use "params"
+            JSONObject params = req.optJSONObject("params");
+            if (params == null) params = req.optJSONObject("payload");
+            String projectId = params != null ? params.optString("projectId", null) : null;
+            if (projectId == null || projectId.isBlank()) {
+                sendWsError(ctx, requestId, "projectId is required");
+                return;
+            }
+            ProjectRef ref = projectStore.get(projectId);
+            if (ref == null) {
+                sendWsError(ctx, requestId, "Project not found: " + projectId);
+                return;
+            }
+            // Remove from any previous project subscription
+            cleanupWsSubscription(ctx);
+            // Persistent client token (stored in browser localStorage, survives page reloads)
+            String clientToken = params != null ? params.optString("clientToken", null) : null;
+            // First subscriber with a non-blank token becomes the owner; subsequent
+            // subscribers with the same token reclaim ownership after a reconnect.
+            if (clientToken != null && !clientToken.isBlank()) {
+                if (ref.ownerClientToken == null) {
+                    ref.ownerClientToken = clientToken;
+                }
+            }
+            ref.collaborationSession.subscribe(ctx);
+            wsProjectSubscriptions.put(ctx.getSessionId(), projectId);
+
+            // Presence: register user, broadcast presence.joined to others
+            String displayName = params != null ? params.optString("displayName", null) : null;
+            String userId = ctx.getSessionId();
+            UserPresence presence = ref.collaborationSession.getPresenceManager().join(userId, displayName);
+            broadcastPresenceEvent(projectId, "presence.joined", presence, ref, ctx);
+
+            boolean isOwner = clientToken != null && !clientToken.isBlank()
+                    && clientToken.equals(ref.ownerClientToken);
+            JSONObject result = new JSONObject();
+            result.put("projectId", projectId);
+            result.put("myUserId", userId);
+            result.put("isOwner", isOwner);
+            result.put("subscriberCount", ref.collaborationSession.subscriberCount());
+            result.put("presence", presenceListJson(ref));
+            ctx.send(RuntimeWsProtocol.successResponse(requestId, result).toString());
+            sLogger.message("WS client " + ctx.getSessionId() + " subscribed to project " + projectId);
+        } catch (Exception exc) {
+            sLogger.warning("Session.Subscribe failed: " + exc.getMessage());
+            JSONObject err = new JSONObject();
+            if (requestId != null) err.put("id", requestId);
+            err.put("status", "error");
+            err.put("error", exc.getMessage());
+            try { ctx.send(err.toString()); } catch (Exception ignored) {}
+        }
+    }
+
+    /** Removes a WS client from the project it subscribed to (if any). */
+    private void cleanupWsSubscription(WsContext ctx) {
+        String previousProjectId = wsProjectSubscriptions.remove(ctx.getSessionId());
+        if (previousProjectId != null) {
+            ProjectRef ref = projectStore.get(previousProjectId);
+            if (ref != null) {
+                // Presence: remove user, broadcast presence.left before unsubscribing
+                UserPresence left = ref.collaborationSession.getPresenceManager()
+                        .leave(ctx.getSessionId());
+                if (left != null) {
+                    broadcastPresenceEvent(previousProjectId, "presence.left", left, ref, ctx);
+                }
+                ref.collaborationSession.unsubscribe(ctx);
+            }
+        }
+    }
+
+    /**
+     * Handles {@code Presence.Update}: updates the sender's awareness state and
+     * broadcasts {@code presence.update} to the other subscribers of the same project.
+     */
+    private void handlePresenceUpdate(WsContext ctx, String raw) {
+        String requestId = null;
+        try {
+            JSONObject req = new JSONObject(raw);
+            requestId = req.optString("id", null);
+            // sendCommand() puts data in "payload"; direct callers may use "params"
+            JSONObject params = req.optJSONObject("params");
+            if (params == null) params = req.optJSONObject("payload");
+            String projectId = params != null ? params.optString("projectId", null) : null;
+            if (projectId == null || projectId.isBlank()) {
+                sendWsError(ctx, requestId, "projectId is required");
+                return;
+            }
+            ProjectRef ref = projectStore.get(projectId);
+            if (ref == null) {
+                sendWsError(ctx, requestId, "Project not found: " + projectId);
+                return;
+            }
+            String userId = ctx.getSessionId();
+            String activeNodeId = params.optString("activeNodeId", null);
+            if ("".equals(activeNodeId)) activeNodeId = null;
+            JSONObject viewport = params.optJSONObject("viewport");
+
+            UserPresence updated = ref.collaborationSession.getPresenceManager()
+                    .update(userId, activeNodeId, viewport);
+            if (updated == null) {
+                // User not yet present — auto-join so Presence.Update works without prior Subscribe
+                updated = ref.collaborationSession.getPresenceManager().join(userId, null);
+                updated = ref.collaborationSession.getPresenceManager()
+                        .update(userId, activeNodeId, viewport);
+            }
+            // Broadcast to everyone else in the session
+            broadcastPresenceEvent(projectId, "presence.update", updated, ref, ctx);
+
+            ctx.send(RuntimeWsProtocol.successResponse(requestId, new JSONObject()).toString());
+        } catch (Exception exc) {
+            sLogger.warning("Presence.Update failed: " + exc.getMessage());
+            sendWsError(ctx, requestId, exc.getMessage());
+        }
+    }
+
+    /**
+     * Broadcasts a presence event ({@code presence.joined}, {@code presence.update},
+     * {@code presence.left}) to all project subscribers <em>except</em> the originating
+     * client.
+     */
+    private void broadcastPresenceEvent(String projectId, String eventName,
+                                         UserPresence presence, ProjectRef ref,
+                                         WsContext origin) {
+        JSONObject event = new JSONObject();
+        event.put("type", "event");
+        event.put("ts", System.currentTimeMillis());
+        event.put("channel", "presence");
+        event.put("event", eventName);
+        JSONObject payload = presence.toJson();
+        payload.put("projectId", projectId);
+        event.put("payload", payload);
+        String msg = event.toString();
+        // Use broadcastExcept so the sender doesn't receive its own echo.
+        ref.collaborationSession.broadcastExcept(origin, msg);
+    }
+
+    private void handleProjectPresence(Context ctx) {
+        String pid = ctx.pathParam("pid");
+        ProjectRef ref = projectStore.get(pid);
+        if (ref == null) {
+            ctx.status(404).result("Project not found: " + pid);
+            return;
+        }
+        JSONObject resp = new JSONObject();
+        resp.put("projectId", pid);
+        resp.put("presence", presenceListJson(ref));
+        writeJson(ctx, resp);
+    }
+
+    /** Returns a JSON array of all current presence records for a project. */
+    private JSONArray presenceListJson(ProjectRef ref) {
+        JSONArray arr = new JSONArray();
+        for (UserPresence p : ref.collaborationSession.getPresenceManager().getAll()) {
+            arr.put(p.toJson());
+        }
+        return arr;
+    }
+
+    private void sendWsError(WsContext ctx, String requestId, String message) {
+        JSONObject err = RuntimeWsProtocol.errorResponse(message != null ? message : "Unknown error");
+        if (requestId != null) err.put("id", requestId);
+        try { ctx.send(err.toString()); } catch (Exception ignored) {}
+    }
+
+    private void handleWsMessage(WsContext ctx, String raw,
+                                 java.util.function.Consumer<String> sender,
+                                 java.util.function.Consumer<String> broadcaster) {
+        try {
+            // Parse envelope once so we can read top-level fields (e.g. basedOnSeq)
+            // as well as the nested params without double-parsing.
+            JSONObject envelope = new JSONObject(raw);
+            String id = envelope.optString("id", "");
+            String method = envelope.optString("method", "");
+            if (method.isEmpty()) method = envelope.optString("name", "");
+            long basedOnSeq = envelope.optLong("basedOnSeq", -1L);
+
+            JSONObject params = envelope.optJSONObject("params");
+            if (params == null) params = envelope.optJSONObject("payload");
+            if (params == null) params = new JSONObject();
+
+            // ---- OperationLog: conflict check before dispatch ----
+            String projectId = params.optString("projectId", "");
+            ProjectRef ref = !projectId.isEmpty() ? projectStore.get(projectId) : null;
+            if (ref != null && isEditingCommand(method) && mMode != ServerMode.RUNTIME_ONLY) {
+                OperationLog opLog = ref.collaborationSession.getOperationLog();
+                OperationLog.AppendResult check = opLog.checkConflict(method, params, basedOnSeq);
+                if (!check.isAccepted()) {
+                    JSONObject conflict = new JSONObject();
+                    if (!id.isEmpty()) conflict.put("id", id);
+                    conflict.put("status", "conflict");
+                    conflict.put("currentSeq", opLog.currentSeq());
+                    conflict.put("resolution", "rejected");
+                    conflict.put("reason", check.rejectionReason);
+                    sender.accept(conflict.toString());
+                    return;
+                }
+            }
+
+            // ---- Regular dispatch ----
             JSONObject result = runtimeGateway.dispatch(method, params, broadcaster);
+
+            // ---- OperationLog: commit + broadcast after successful dispatch ----
+            if (ref != null && isEditingCommand(method) && mMode != ServerMode.RUNTIME_ONLY) {
+                String userId = ctx != null ? ctx.getSessionId() : "";
+                OperationLog.AppendResult appended =
+                        ref.collaborationSession.getOperationLog().append(method, params, basedOnSeq, userId);
+                broadcastOperationApplied(projectId, appended.seq, userId, method, params,
+                        appended.resolution, ref);
+            }
+
             JSONObject resp = RuntimeWsProtocol.successResponse(id, result);
             sender.accept(resp.toString());
         } catch (Exception exc) {
@@ -6141,6 +6685,31 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
             JSONObject resp = RuntimeWsProtocol.errorResponse(exc.getMessage());
             sender.accept(resp.toString());
         }
+    }
+
+    /**
+     * Broadcasts an {@code operation.applied} event to all subscribers of the project
+     * (or to all clients if none are subscribed), so that collaborators can replay
+     * the operation and advance their local sequence number.
+     */
+    private void broadcastOperationApplied(String projectId, long seq, String userId,
+                                            String method, JSONObject params,
+                                            OperationLog.Resolution resolution,
+                                            ProjectRef ref) {
+        JSONObject event = new JSONObject();
+        event.put("type", "event");
+        event.put("ts", System.currentTimeMillis());
+        event.put("channel", "operations");
+        event.put("event", "operation.applied");
+        JSONObject payload = new JSONObject();
+        payload.put("projectId", projectId);
+        payload.put("seq", seq);
+        payload.put("userId", userId);
+        payload.put("method", method);
+        if (params != null) payload.put("params", params);
+        payload.put("resolution", resolution.name().toLowerCase());
+        event.put("payload", payload);
+        broadcastToProjectOrAll(projectId, event.toString());
     }
 
     private JSONObject dispatchWs(String method, JSONObject params, java.util.function.Consumer<String> broadcaster) {
@@ -6207,6 +6776,7 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         resp.put("snapshot", snapshot);
         if (broadcaster != null) {
             JSONObject evt = new JSONObject();
+            evt.put("type", "event");
             evt.put("event", "sceneflow.snapshot");
             evt.put("projectId", projectId);
             evt.put("snapshot", snapshot);
@@ -6227,6 +6797,7 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
             return;
         }
         JSONObject evt = new JSONObject();
+        evt.put("type", "event");
         evt.put("event", "sceneflow.snapshot");
         evt.put("projectId", projectId);
         evt.put("snapshot", snapshot);
@@ -6899,6 +7470,7 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
             return;
         }
         JSONObject evt = new JSONObject();
+        evt.put("type", "event");
         evt.put("event", "script.snapshot");
         evt.put("projectId", projectId);
         evt.put("snapshot", snapshot);
@@ -7888,6 +8460,7 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         ref.runtimeState = project.isRunning() ? "running" : "stopped";
         initializeProjectRefCaches(ref);
         projectStore.put(id, ref);
+        registerProjectDispatcher(id, ref);
         initializeProjectRefPersistenceState(ref);
         sLogger.message("Registered project: " + name + " (id=" + id + ")");
         return id;
@@ -7947,6 +8520,7 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
                 ref.runtimeState = "stopped";
                 boolean idChanged = initializeProjectRefCaches(ref);
                 projectStore.put(id, ref);
+                registerProjectDispatcher(id, ref);
                 initializeProjectRefPersistenceState(ref);
                 if (idChanged) {
                     rtp.write(new java.io.File(normalizedPath));
@@ -7978,6 +8552,7 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         ref.runtimeState = "stopped";
         initializeProjectRefCaches(ref);
         projectStore.put(id, ref);
+        registerProjectDispatcher(id, ref);
         initializeProjectRefPersistenceState(ref);
         return id;
     }
@@ -8569,6 +9144,14 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         List<BasicNode> clipboard = new ArrayList<>();
         List<SelectionCommandService.ClipboardEdgeData> clipboardEdges = new ArrayList<>();
         Set<String> clipboardStartNodeIds = new HashSet<>();
+        // Per-project collaboration session (subscriber routing + event forwarder)
+        final CollaborationSession collaborationSession;
+        /**
+         * Persistent client token of the session owner.
+         * Set on first {@code Session.Subscribe}; survives owner reconnects because the
+         * token is stored in the browser's localStorage and re-sent on every subscribe.
+         */
+        String ownerClientToken = null;
 
         ProjectRef(String id, String name, String path) {
             this.id = id;
@@ -8578,6 +9161,7 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
             this.scriptText = null;
             this.scriptVersion = 1;
             this.scriptParseOk = true;
+            this.collaborationSession = new CollaborationSession(id);
         }
     }
 

@@ -59,10 +59,12 @@ public class Process extends java.lang.Thread {
 	private final Interruptor mEventObserver;
 	private final TimeoutManager mTimeoutManager;
 	private final Environment mEnvironment;
+	private final EventDispatcher mDispatcher;
 	private final int mLevel;
 	private long mNodeTime;
 	private TimeoutEdge mNodeTimeoutEdge = null;
 	private long mNodeTimeoutMs = Long.MIN_VALUE;
+	private long mNodeTimeoutStartTime = Long.MIN_VALUE;
 	private final Process mParentThread;
 	private static final Random sRandom = new Random();
 	private Interpreter mInterpreter;
@@ -75,6 +77,7 @@ public class Process extends java.lang.Thread {
 		mLevel = level;
 		mParentThread = parent;
 		mInterpreter = interpreter;
+		mDispatcher = interpreter.getDispatcher();
 
 		/**
 		 * Make a new symbol table for the current node
@@ -209,6 +212,7 @@ public class Process extends java.lang.Thread {
 		  Set the new current node start time
 		 */
 		mNodeTime = System.currentTimeMillis();
+		resetNodeTimeoutState();
 
 		/*
 		  Update the configuration by adding the new current node to it
@@ -233,11 +237,6 @@ public class Process extends java.lang.Thread {
 		processVarDefList();
 
 		/*
-		 * Resolve dynamic timeout edge values
-		 */
-		prepareTimeoutEdge();
-
-		/*
 		 * Start the thread
 		 */
 		super.start();
@@ -255,7 +254,7 @@ public class Process extends java.lang.Thread {
 		/*
 		 * Multicast the events for visualization
 		 */
-		EventDispatcher.getInstance().convey(new NodeStartedEvent(this, mCurrentNode));
+		mDispatcher.convey(new NodeStartedEvent(this, mCurrentNode));
 	}
 
 	public void handleTermination() throws InterpreterError {
@@ -306,7 +305,7 @@ public class Process extends java.lang.Thread {
 		/*
 		 * Multicast the events for visualization
 		 */
-		EventDispatcher.getInstance().convey(new NodeTerminatedEvent(this, mCurrentNode));
+		mDispatcher.convey(new NodeTerminatedEvent(this, mCurrentNode));
 	}
 
 	public void handleForkTermination() throws InterpreterError {
@@ -340,7 +339,7 @@ public class Process extends java.lang.Thread {
 		/*
 		 * Multicast the events for visualization
 		 */
-		EventDispatcher.getInstance().convey(new NodeTerminatedEvent(this, mCurrentNode));
+		mDispatcher.convey(new NodeTerminatedEvent(this, mCurrentNode));
 	}
 
 	public void handleInterruption() throws InterpreterError {
@@ -379,6 +378,7 @@ public class Process extends java.lang.Thread {
 		 * Set the new current node start time
 		 */
 		mNodeTime = System.currentTimeMillis();
+		resetNodeTimeoutState();
 
 		/*
 		 * Update the configuration by adding the new current node to it
@@ -403,11 +403,6 @@ public class Process extends java.lang.Thread {
 		processVarDefList();
 
 		/*
-		 * Resolve dynamic timeout edge values
-		 */
-		prepareTimeoutEdge();
-
-		/*
 		 * Process the on exit commands of the new current node
 		 */
 		// processOnExitCommandList();
@@ -423,8 +418,8 @@ public class Process extends java.lang.Thread {
 		/*
 		 * Multicast the events for visualization
 		 */
-		EventDispatcher.getInstance().convey(new EdgeExecutedEvent(this, mIncomingEdge));
-		EventDispatcher.getInstance().convey(new NodeStartedEvent(this, mCurrentNode));
+		mDispatcher.convey(new EdgeExecutedEvent(this, mIncomingEdge));
+		mDispatcher.convey(new NodeStartedEvent(this, mCurrentNode));
 	}
 
 	public void handleContinuation() throws InterpreterError {
@@ -452,7 +447,7 @@ public class Process extends java.lang.Thread {
 		/*
 		 * Multicast the events for visualization
 		 */
-		EventDispatcher.getInstance().convey(new NodeExecutedEvent(this, mCurrentNode));
+		mDispatcher.convey(new NodeExecutedEvent(this, mCurrentNode));
 
 		/*
 		 * Set the new current node to the target node of the incoming edge
@@ -468,6 +463,7 @@ public class Process extends java.lang.Thread {
 		 * Set the new current node start time
 		 */
 		mNodeTime = System.currentTimeMillis();
+		resetNodeTimeoutState();
 
 		/*
 		 * Update the configuration by adding the new current node to it
@@ -492,11 +488,6 @@ public class Process extends java.lang.Thread {
 		processVarDefList();
 
 		/*
-		 * Resolve dynamic timeout edge values
-		 */
-		prepareTimeoutEdge();
-
-		/*
 		 * Process the on exit commands of the new current node
 		 */
 		// processOnExitCommandList();
@@ -512,8 +503,8 @@ public class Process extends java.lang.Thread {
 		/*
 		 * Multicast the events for visualization
 		 */
-		EventDispatcher.getInstance().convey(new EdgeExecutedEvent(this, mIncomingEdge));
-		EventDispatcher.getInstance().convey(new NodeStartedEvent(this, mCurrentNode));
+		mDispatcher.convey(new EdgeExecutedEvent(this, mIncomingEdge));
+		mDispatcher.convey(new NodeStartedEvent(this, mCurrentNode));
 	}
 
 	@Override
@@ -529,7 +520,7 @@ public class Process extends java.lang.Thread {
 			 * Multicast the events for visualization
 			 */
 			// mLogger.message("Interpreter: Aborting execution");
-			EventDispatcher.getInstance().convey(new TerminationEvent(this, e));
+			mDispatcher.convey(new TerminationEvent(this, e));
 
 			/*
 			 * Stop the interpreter
@@ -546,7 +537,7 @@ public class Process extends java.lang.Thread {
 			mLogger.failure("Process " + getName() + " crashed with unexpected exception: "
 					+ e.getClass().getName() + ": " + e.getMessage());
 				try {
-					EventDispatcher.getInstance().convey(new TerminationEvent(this,
+					mDispatcher.convey(new TerminationEvent(this,
 							new InterpreterError(this, "Unexpected error: "
 									+ e.getClass().getName() + ": " + e.getMessage())));
 					mInterpreter.abort();
@@ -619,6 +610,15 @@ public class Process extends java.lang.Thread {
 					executeStartNodeList();
 				}
 
+				/*
+				 * Timeout defaults start after the node's blocking command phase
+				 * has completed (incl. optional start-node execution).
+				 */
+				mInterpreter.lock();
+				checkStatus();
+				prepareTimeoutEdge(System.currentTimeMillis());
+				mInterpreter.unlock();
+
 				/////////////////////////////////////////////////////////////
 				// FIND NEXT EDGE
 				////////////////////////////////////////////////////////////
@@ -659,12 +659,16 @@ public class Process extends java.lang.Thread {
 							long timeoutMs = (mNodeTimeoutEdge == tedge && mNodeTimeoutMs >= 0)
 									? mNodeTimeoutMs
 									: resolveTimeoutMs(tedge);
+							long timeoutStart = (mNodeTimeoutEdge == tedge && mNodeTimeoutStartTime > 0)
+									? mNodeTimeoutStartTime
+									: mNodeTime;
 							if (mNodeTimeoutEdge != tedge) {
 								mNodeTimeoutEdge = tedge;
 								mNodeTimeoutMs = timeoutMs;
+								mNodeTimeoutStartTime = timeoutStart;
 							}
 
-							long elapsed = java.lang.System.currentTimeMillis() - mNodeTime;
+							long elapsed = java.lang.System.currentTimeMillis() - timeoutStart;
 							if (elapsed >= timeoutMs) {
 								nextEdge = tedge;
 								break;
@@ -718,7 +722,7 @@ public class Process extends java.lang.Thread {
 						mParentThread.mAddChildThreadList.add(thread);
 						forkThreadList.add(thread);
 						thread.handleStart();
-						EventDispatcher.getInstance().convey(new EdgeExecutedEvent(this, edge));
+						mDispatcher.convey(new EdgeExecutedEvent(this, edge));
 
 						// Propagate the pause status
 						thread.mIsPauseRequested = mIsPauseRequested;
@@ -1011,9 +1015,14 @@ public class Process extends java.lang.Thread {
 		}
 	}
 
-	private void prepareTimeoutEdge() {
+	private void resetNodeTimeoutState() {
 		mNodeTimeoutEdge = null;
 		mNodeTimeoutMs = Long.MIN_VALUE;
+		mNodeTimeoutStartTime = Long.MIN_VALUE;
+	}
+
+	private void prepareTimeoutEdge(long startTimeMs) {
+		resetNodeTimeoutState();
 
 		AbstractEdge dedge = mCurrentNode != null ? mCurrentNode.getDedge() : null;
 		if (!(dedge instanceof TimeoutEdge)) {
@@ -1023,8 +1032,9 @@ public class Process extends java.lang.Thread {
 		long timeoutMs = resolveTimeoutMs(tedge);
 		mNodeTimeoutEdge = tedge;
 		mNodeTimeoutMs = timeoutMs;
+		mNodeTimeoutStartTime = startTimeMs;
 		if (timeoutMs > 0) {
-			EventDispatcher.getInstance().convey(new TimeoutEdgeStartedEvent(this, tedge, timeoutMs, mNodeTime));
+			mDispatcher.convey(new TimeoutEdgeStartedEvent(this, tedge, timeoutMs, mNodeTimeoutStartTime));
 		}
 	}
 

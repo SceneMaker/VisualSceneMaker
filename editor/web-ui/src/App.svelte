@@ -18,13 +18,16 @@
   import IconMonitor from "./icons/IconMonitor.svelte";
   import VarBadge from './VarBadge.svelte';
 
+  // sessionStorage is tab-specific and survives page reloads (including force-reload)
+  // but NOT tab close+reopen. This ensures each browser tab has a distinct identity,
+  // so sharing a link in the same browser correctly creates a guest (not a second owner).
   const clientId = (() => {
-    const existing = localStorage.getItem("vsm_client_id");
+    const existing = sessionStorage.getItem("vsm_client_id");
     if (existing) return existing;
     const generated =
       (window.crypto && window.crypto.randomUUID && window.crypto.randomUUID()) ||
       `client-${Date.now()}`;
-    localStorage.setItem("vsm_client_id", generated);
+    sessionStorage.setItem("vsm_client_id", generated);
     return generated;
   })();
 
@@ -738,6 +741,44 @@
     persistPluginBadgeState(selectedProjectId, pluginBadgeState);
   }
 
+  let shareCopied = false;
+  let shareNoLan = false;
+  async function shareSession() {
+    if (!selectedProjectId) return;
+    // When on localhost and LAN access is enabled, replace host with the real
+    // LAN address so the link is usable from other machines.
+    // If LAN access is disabled (server bound to 127.0.0.1 only), keep localhost
+    // and show a one-time hint about --allow-lan.
+    let base = window.location.href;
+    const lanEnabled = info?.allowExternal === true;
+    if (isLocalHost() && lanEnabled && info?.lanAddress) {
+      const current = new URL(window.location.href);
+      current.hostname = info.lanAddress;
+      base = current.toString();
+    }
+    const url = new URL(base);
+    url.searchParams.set("session", selectedProjectId);
+    if (isLocalHost() && !lanEnabled) {
+      shareNoLan = true;
+      setTimeout(() => { shareNoLan = false; }, 6000);
+    }
+    try {
+      await navigator.clipboard.writeText(url.toString());
+      shareCopied = true;
+      setTimeout(() => { shareCopied = false; }, 2000);
+    } catch (_) {
+      // Fallback: select a temporary input
+      const inp = document.createElement("input");
+      inp.value = url.toString();
+      document.body.appendChild(inp);
+      inp.select();
+      document.execCommand("copy");
+      document.body.removeChild(inp);
+      shareCopied = true;
+      setTimeout(() => { shareCopied = false; }, 2000);
+    }
+  }
+
   function startPluginBadgeResize(event, className) {
     if (!isPrimaryPointer(event)) return;
     event.preventDefault();
@@ -800,7 +841,10 @@
   }
 
   let projects = [];
-  let selectedProjectId = localStorage.getItem("vsm_project_id") || "";
+  const _urlSessionParam = new URLSearchParams(window.location.search).get("session") || "";
+  let selectedProjectId = _urlSessionParam || localStorage.getItem("vsm_project_id") || "";
+  // Track whether this page load is a URL-based session join (invite link)
+  let joiningViaUrl = !!_urlSessionParam;
   let recent = [];
   let recentLoaded = false;
   let recentLoading = false;
@@ -1285,6 +1329,7 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
   let cmdHelperScene = "";
   let cmdHelperAgent = "";
   let cmdHelperAction = "";
+  let cmdHelperPlayMode = "blocking";
   let cmdHelperArgs = [];
   let cmdHelperAgentCommands = [];
   let cmdHelperPluginCommands = [];
@@ -3004,12 +3049,15 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
   }
 
   // Presence: subscribe to the selected project whenever it changes
+  let isSessionOwner = false;
   $: if (sessionReady && selectedProjectId && selectedProjectId !== lastPresenceProjectId) {
     lastPresenceProjectId = selectedProjectId;
     peerPresence = new Map();
     myPresenceUserId = null;
-    sendCommand("Session.Subscribe", { projectId: selectedProjectId }).then((result) => {
+    isSessionOwner = false;
+    sendCommand("Session.Subscribe", { projectId: selectedProjectId, clientToken: clientId }).then((result) => {
       myPresenceUserId = result.myUserId || null;
+      isSessionOwner = result.isOwner === true;
       const list = result.presence || [];
       const next = new Map();
       for (const p of list) {
@@ -3024,6 +3072,7 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
     lastPresenceProjectId = "";
     peerPresence = new Map();
     myPresenceUserId = null;
+    isSessionOwner = false;
   }
 
   // Presence: send viewport updates when our view changes (debounced 200 ms)
@@ -3143,6 +3192,10 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
       }
       sessionReady = true;
       showTokenSection = false;
+      if (joiningViaUrl) {
+        joiningViaUrl = false;
+        window.history.replaceState({}, "", window.location.pathname);
+      }
       if (selectedProjectId) {
         lastConfigProjectId = selectedProjectId;
         lastScriptProjectId = selectedProjectId;
@@ -5852,7 +5905,9 @@ Sentence:
       if (scriptVersion !== null) {
         payload.version = scriptVersion;
       }
+      console.log("[applyScript] sending version:", payload.version, "textLen:", payload.text?.length);
       const response = await sendCommand("Script.Update", payload);
+      console.log("[applyScript] response:", JSON.stringify(response).slice(0, 200));
       if (response.applied) {
         const nextText = response.text ?? scriptDraft;
         scriptText = nextText;
@@ -5865,8 +5920,13 @@ Sentence:
         return true;
       }
       if (response.reason === "VERSION_MISMATCH") {
+        // Update local version/text to what the server has, then retry
+        if (response.version !== undefined) scriptVersion = response.version;
+        if (response.text !== undefined) scriptText = response.text;
         scriptParseOk = true;
-        scriptStatus = "Script changed on server. Reload to sync.";
+        scriptStatus = "";
+        clearScriptAutoApplyTimer();
+        scriptAutoApplyTimer = setTimeout(runScriptAutoApply, 100);
         return false;
       }
       if (response.reason === "PARSE_FAILED") {
@@ -6545,9 +6605,6 @@ Sentence:
       if (/\bPlayScene\b/i.test(normalized)) {
         return "playScene";
       }
-      if (/\bPlayAction\b/i.test(normalized)) {
-        return "playAction";
-      }
     }
     return null;
   }
@@ -6873,6 +6930,9 @@ Sentence:
     }
     if (message.type === "event") {
       if (message.event) {
+        if (message.event === "script.snapshot" || message.event === "project.dirty") {
+          console.log("[WS recv event]", message.event, JSON.stringify(message).slice(0, 200));
+        }
         handleUiProtocolEvent(message);
       }
       return;
@@ -6896,7 +6956,9 @@ Sentence:
  
 
   function handleUiProtocolEvent(message) {
-    const payload = message.payload || {};
+    // Fall back to the message itself when the server puts data at the top level
+    // (no explicit payload wrapper). Wrapped messages take precedence.
+    const payload = message.payload || message;
     const eventName = message.event;
     if (!eventName) return;
 
@@ -6950,7 +7012,8 @@ Sentence:
       return;
     }
     if (eventName === "script.snapshot") {
-      applyScriptSnapshot(payload);
+      // Broadcasts put snapshot at top level (no payload wrapper); fall back to message.
+      applyScriptSnapshot(message.payload != null ? message.payload : message);
       return;
     }
     if (eventName === "script.elements") {
@@ -6970,7 +7033,9 @@ Sentence:
       return;
     }
     if (eventName === "sceneflow.snapshot") {
-      applySceneFlowSnapshot(payload);
+      // Broadcasts may be flat (snapshot/projectId at top level) or wrapped in payload.
+      // Use payload if present; otherwise fall back to the raw message.
+      applySceneFlowSnapshot(message.payload != null ? message.payload : message);
       return;
     }
     if (eventName === "sceneflow.edgeUpdated") {
@@ -6988,6 +7053,11 @@ Sentence:
         return;
       }
       const status = (payload.status || payload.state || "").toLowerCase();
+      // Immediately reflect new state so play/pause/stop buttons update in all windows
+      // without waiting for the async loadRuntime() REST round-trip.
+      if (status) {
+        runtimeInfo = { ...(runtimeInfo || {}), state: status };
+      }
       if (status === "running") {
         runtimeStopRequested = false;
         activeScenes = [];
@@ -7027,11 +7097,15 @@ Sentence:
       for (const nodeId of nodeIds) {
         pushRecentStoppedNode(nodeId);
         if (commandActivityHeldNodeIds.has(nodeId)) {
-          // Keep command-driven highlight while long-running command is still active.
+          const heldKind = commandActivityKindByNodeId.get(nodeId);
+          if (heldKind === "playScene") {
+            // Keep command-driven highlight while long-running scene playback is still active.
+          } else {
+            // Defensive cleanup: do not keep stale non-scene command holds.
+            releaseCommandActivityNode(nodeId);
+          }
         } else if (consumePendingPlaySceneStart()) {
           holdCommandActivityNode(nodeId, "playScene");
-        } else if (longRunningCommandKindForNode(nodeId)) {
-          holdCommandActivityNode(nodeId);
         } else {
           decrementActivityNode(nodeId);
         }
@@ -7056,6 +7130,9 @@ Sentence:
       const edgeId = resolveActivityEdgeId({ ...payload, edgeType });
       if (edgeId) {
         if (edgeType === "TEDGE") {
+          // Timeout edges may execute without timeout metadata in this event.
+          // Ensure a visible edge pulse at execution time.
+          registerEdgeActivity(edgeId);
           registerTimeoutEdge(edgeId, payload.startedAt, payload.timeoutMs);
         } else {
           registerEdgeActivity(edgeId);
@@ -7238,11 +7315,24 @@ Sentence:
 
   function applyScriptSnapshot(payload) {
     const snapshot = payload?.snapshot || payload;
+    console.log("[applyScriptSnapshot] called, snapshot keys:", snapshot ? Object.keys(snapshot) : null, "text len:", snapshot?.text?.length, "version:", snapshot?.version);
     if (!snapshot) return;
     if (snapshot.projectId && snapshot.projectId !== selectedProjectId) return;
     if (snapshot.text !== undefined) {
-      scriptText = snapshot.text || "";
-      scriptDraft = scriptText;
+      const newText = snapshot.text || "";
+      // Preserve a dirty draft (user has unpublished edits) so their changes
+      // are not overwritten by a concurrent snapshot from another session.
+      // The next auto-apply will pick up the updated scriptVersion and retry.
+      const hasDirtyDraft = scriptLoaded && scriptDraft !== scriptText;
+      scriptText = newText;
+      if (!hasDirtyDraft) {
+        scriptDraft = newText;
+      } else {
+        // Reschedule auto-apply so the pending draft is retried with the
+        // correct (just-updated) version.
+        clearScriptAutoApplyTimer();
+        scriptAutoApplyTimer = setTimeout(runScriptAutoApply, 200);
+      }
     }
     if (snapshot.version !== undefined) {
       scriptVersion = snapshot.version;
@@ -11026,6 +11116,11 @@ Sentence:
     const pluginActionOption = pluginCommandsForAgent(cmdHelperAgent)?.[0] || null;
     const fallbackActionOption = Array.isArray(scriptElements?.acticon) ? scriptElements.acticon[0] : null;
     cmdHelperAction = pluginActionOption?.name || fallbackActionOption?.name || fallbackActionOption?.script || "";
+    // Force reactive prefill for the initially selected action params.
+    // Without resetting this marker, reopening the dialog can keep the previous
+    // action marker and skip arg autoload (e.g., required `time`).
+    lastCmdHelperAction = "";
+    cmdHelperPlayMode = "blocking";
     cmdHelperArgs = [];
     cmdHelperVarName = helperVarCandidates?.[0]?.name || "";
     cmdHelperVarType = helperVarCandidates?.[0]?.type || "Int";
@@ -11336,9 +11431,31 @@ Sentence:
 
   function parsePlayActionCommand(text) {
     if (!text) return null;
-    const match = String(text).match(/PlayAction\s*\(\s*["']([\s\S]+?)["']\s*\)/);
-    if (!match) return null;
-    let payload = match[1].trim();
+    const source = String(text).trim();
+    let mode = "blocking";
+    let payload = "";
+    const defaultMatch = source.match(
+      /PlayAction\s*\(\s*["']([\s\S]+?)["']\s*(?:,\s*\{([\s\S]*?)\}\s*)?\)/
+    );
+    if (defaultMatch) {
+      payload = defaultMatch[1].trim();
+      mode = "blocking";
+      const modeStruct = defaultMatch[2] || "";
+      if (/__vsm_mode\s*=\s*["']\s*nonblocking\s*["']/i.test(modeStruct)) {
+        mode = "nonblocking";
+      }
+    } else {
+      const concurrentMatch = source.match(/!=\s*["']([\s\S]+?)["']\s*\.\s*$/);
+      if (concurrentMatch) {
+        payload = concurrentMatch[1].trim();
+        mode = "nonblocking";
+      } else {
+        const sequentialMatch = source.match(/!-\s*["']([\s\S]+?)["']\s*\.\s*$/);
+        if (!sequentialMatch) return null;
+        payload = sequentialMatch[1].trim();
+        mode = "blocking";
+      }
+    }
     if (payload.startsWith("[") && payload.endsWith("]")) {
       payload = payload.slice(1, -1).trim();
     }
@@ -11354,12 +11471,16 @@ Sentence:
       }
       return { key: token.slice(0, idx), value: token.slice(idx + 1) };
     });
-    return { agent, action, args };
+    return { agent, action, args, mode };
   }
 
   function getCursorTokenContext(inputValue, cursorPos) {
     if (!inputValue) return null;
-    const wrapperMatch = String(inputValue).match(/^(PlayAction\s*\(\s*["']\[?)([\s\S]*?)(\]?["']\s*\))$/);
+    const source = String(inputValue);
+    const wrapperMatch =
+      source.match(/^(PlayAction\s*\(\s*["']\[?)([\s\S]*?)(\]?["'](?:\s*,\s*\{[\s\S]*\})?\s*\))$/) ||
+      source.match(/^(!=\s*["']\[?)([\s\S]*?)(\]?["']\s*\.\s*)$/) ||
+      source.match(/^(!-\s*["']\[?)([\s\S]*?)(\]?["']\s*\.\s*)$/);
     if (!wrapperMatch) return null;
     const prefixLen = wrapperMatch[1].length;
     const payload = wrapperMatch[2];
@@ -11590,7 +11711,10 @@ Sentence:
   function renderCommandTokens(text, agents, interfaces, configView) {
     if (!text) return [{ text: "", type: "plain" }];
     const str = String(text);
-    const actionMatch = str.match(/^(PlayAction\s*\(\s*["']\[?)(.+?)(\]?["']\s*\))$/);
+    const actionMatch =
+      str.match(/^(PlayAction\s*\(\s*["']\[?)(.+?)(\]?["'](?:\s*,\s*\{[\s\S]*\})?\s*\))$/) ||
+      str.match(/^(!=\s*["']\[?)(.+?)(\]?["']\s*\.\s*)$/) ||
+      str.match(/^(!-\s*["']\[?)(.+?)(\]?["']\s*\.\s*)$/);
     if (!actionMatch) return [{ text: str, type: "plain" }];
     const prefix = actionMatch[1];
     const payload = actionMatch[2];
@@ -11666,9 +11790,10 @@ Sentence:
       cmdHelperDetectedTab = detected.tab;
       cmdHelperTab = detected.tab;
       if (detected.tab === "PlayAction") {
-        const { agent, action, args } = detected.data;
+        const { agent, action, args, mode } = detected.data;
         cmdHelperAgent = agent;
         cmdHelperAction = action;
+        cmdHelperPlayMode = mode || "blocking";
         cmdHelperArgs = args || [];
         lastCmdHelperAction = action;
         cmdHelperAgentCommands = pluginCommandsForAgent(agent);
@@ -11722,6 +11847,9 @@ Sentence:
         .filter(Boolean)
         .join(" ");
       const payload = [agent, action, args].filter(Boolean).join(" ");
+      if (cmdHelperPlayMode === "nonblocking") {
+        return `PlayAction("[${payload}]", { __vsm_mode = "nonblocking" })`;
+      }
       return `PlayAction("[${payload}]")`;
     }
     if (cmdHelperTab === "Variable") {
@@ -13498,34 +13626,45 @@ Sentence:
             {#if headerDirty}
               <span class="unsaved-indicator" aria-live="polite">Unsaved</span>
             {/if}
-            {#if projectRequiresSaveAs}
-              <button
-                type="button"
-                class="ghost panel-save"
-                on:click={openSaveAsDialog}
-                disabled={!selectedProject || projectSaving}
+            {#if isSessionOwner}
+              {#if projectRequiresSaveAs}
+                <button
+                  type="button"
+                  class="ghost panel-save"
+                  on:click={openSaveAsDialog}
+                  disabled={!selectedProject || projectSaving}
+                >
+                  Save As
+                </button>
+              {:else}
+                <button
+                  type="button"
+                  class="ghost panel-save autosave-toggle"
+                  class:active={autoSaveEnabled}
+                  on:click={toggleAutoSave}
+                  disabled={!selectedProject || projectSaving || autoSaving}
+                  title={autoSaveEnabled ? "Disable autosave" : "Enable autosave"}
+                >
+                  Autosave
+                </button>
+                <button
+                  type="button"
+                  class="ghost panel-save"
+                  on:click={() => saveProject(selectedProjectId)}
+                  disabled={!selectedProject || projectSaving}
+                >
+                  Save
+                </button>
+              {/if}
+            {:else if selectedProject}
+              <a
+                href={`/api/v1/projects/${selectedProjectId}/export`}
+                download
+                class="ghost panel-save export-link"
+                title="Download a local copy of the SceneFlow"
               >
-                Save As
-              </button>
-            {:else}
-              <button
-                type="button"
-                class="ghost panel-save autosave-toggle"
-                class:active={autoSaveEnabled}
-                on:click={toggleAutoSave}
-                disabled={!selectedProject || projectSaving || autoSaving}
-                title={autoSaveEnabled ? "Disable autosave" : "Enable autosave"}
-              >
-                Autosave
-              </button>
-              <button
-                type="button"
-                class="ghost panel-save"
-                on:click={() => saveProject(selectedProjectId)}
-                disabled={!selectedProject || projectSaving}
-              >
-                Save
-              </button>
+                Export
+              </a>
             {/if}
             <button
               type="button"
@@ -13539,6 +13678,35 @@ Sentence:
                 <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
               </svg>
             </button>
+            <div class="share-button-wrap">
+              <button
+                type="button"
+                class="panel-share"
+                class:share-copied={shareCopied}
+                class:share-no-lan={shareNoLan}
+                on:click={shareSession}
+                disabled={!selectedProject}
+                aria-label="Copy invite link"
+                title={shareCopied ? "Link copied!" : shareNoLan ? "LAN access disabled — see note below button" : "Share session link"}
+              >
+                {#if shareCopied}
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M4.5 12.75l6 6 9-13.5" />
+                  </svg>
+                {:else}
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+                    <line x1="8.59" x2="15.42" y1="13.51" y2="17.49"/><line x1="15.41" x2="8.59" y1="6.51" y2="10.49"/>
+                  </svg>
+                {/if}
+              </button>
+              {#if shareNoLan}
+                <div class="share-no-lan-hint" role="alert">
+                  LAN access is disabled. The copied link only works on this machine.<br>
+                  To share across the network, restart with <code>--allow-lan</code>.
+                </div>
+              {/if}
+            </div>
             <button
               type="button"
               class="panel-close"
@@ -14119,7 +14287,7 @@ Sentence:
               />
               {#if !selectedProject}
                 <p class="muted">Select a project to view scenes.</p>
-              {:else if scriptScenesLoading}
+              {:else if scriptScenesLoading && scriptScenesLive.length === 0}
                 <p class="muted">Loading scenes...</p>
               {:else if scriptScenesError}
                 <p class="error">{scriptScenesError}</p>
@@ -17756,6 +17924,11 @@ Sentence:
                       <option value={action?.name || action?.script}>{action?.name || action?.script}</option>
                     {/each}
                   {/if}
+                </select>
+                <label for="cmd-helper-playmode">Execution</label>
+                <select id="cmd-helper-playmode" bind:value={cmdHelperPlayMode}>
+                  <option value="blocking">Blocking (default)</option>
+                  <option value="nonblocking">Non-blocking</option>
                 </select>
                 <div class="cmd-helper-args">
                   <div class="cmd-helper-args-header">
