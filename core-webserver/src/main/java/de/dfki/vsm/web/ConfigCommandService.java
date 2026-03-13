@@ -96,11 +96,22 @@ public final class ConfigCommandService {
             );
             response.put("snapshot", snapshot);
             if (broadcaster != null) {
-                JSONObject evt = new JSONObject();
-                evt.put("event", "sceneflow.snapshot");
-                evt.put("snapshot", snapshot);
-                broadcaster.accept(evt.toString());
+                JSONObject sfEvt = new JSONObject();
+                sfEvt.put("type", "event");
+                sfEvt.put("event", "sceneflow.snapshot");
+                sfEvt.put("projectId", pid);
+                sfEvt.put("snapshot", snapshot);
+                broadcaster.accept(sfEvt.toString());
             }
+        }
+        // Always broadcast the editor-config change so all windows reload it.
+        if (broadcaster != null) {
+            JSONObject cfgEvt = new JSONObject();
+            cfgEvt.put("type", "event");
+            cfgEvt.put("event", "project.dirty");
+            cfgEvt.put("projectId", pid);
+            cfgEvt.put("areas", new org.json.JSONArray().put("config"));
+            broadcaster.accept(cfgEvt.toString());
         }
         return response;
     }

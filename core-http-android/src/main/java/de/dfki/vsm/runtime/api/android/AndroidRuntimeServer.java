@@ -46,6 +46,7 @@ public final class AndroidRuntimeServer extends NanoWSD {
         this.wsAdapter = new AndroidRuntimeWsAdapter(endpoint);
         this.authToken = authToken == null ? "" : authToken.trim();
         this.eventBridge = new AndroidRuntimeEventBridge(
+                endpoint.runtimeProject().getEventDispatcher(),
                 endpoint::projectId,
                 () -> wsAdapter.sessions().broadcaster()
         );

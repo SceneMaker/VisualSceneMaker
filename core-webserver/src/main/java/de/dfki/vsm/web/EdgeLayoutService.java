@@ -938,10 +938,12 @@ public final class EdgeLayoutService {
         if (currentSrcIdx < 0 || currentTgtIdx < 0) {
             return true;
         }
+        // Among equally-good pairs prefer the lower-indexed dock points so that
+        // fallback docks stay as close as possible to the center connection point.
         if (candidateSrcIdx != currentSrcIdx) {
-            return candidateSrcIdx > currentSrcIdx;
+            return candidateSrcIdx < currentSrcIdx;
         }
-        return candidateTgtIdx > currentTgtIdx;
+        return candidateTgtIdx < currentTgtIdx;
     }
 
     // --- Utility ---

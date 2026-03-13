@@ -419,6 +419,7 @@ button.ghost.active {
   border-color: var(--accent);
 }
 
+
 button.icon-button {
   padding: 0.3rem;
   min-width: 32px;
@@ -1242,6 +1243,13 @@ summary {
   color: var(--ink);
 }
 
+a.export-link {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+  cursor: pointer;
+}
+
 .panel-save.autosave-toggle.active {
   background: var(--accent);
   border-color: var(--accent);
@@ -1309,7 +1317,8 @@ summary {
   text-transform: uppercase;
 }
 
-.panel-close {
+.panel-close,
+.panel-share {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1317,20 +1326,69 @@ summary {
   height: 34px;
   border-radius: var(--radius-sm);
   border: none;
-  background: #e26d5a;
   color: #ffffff;
   cursor: pointer;
   box-shadow: var(--shadow-soft);
   padding: 0;
 }
 
-.panel-close svg {
+.panel-close {
+  background: #e26d5a;
+}
+
+.panel-share {
+  background: #485636;
+}
+
+.panel-share.share-copied {
+  background: #2d6a2d;
+  transition: background 0.2s;
+}
+
+.panel-share.share-no-lan {
+  background: #7a5a20;
+  transition: background 0.2s;
+}
+
+.share-button-wrap {
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.share-no-lan-hint {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  background: #1e1e1e;
+  color: #f0c060;
+  border: 1px solid #7a5a20;
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 12px;
+  line-height: 1.5;
+  white-space: nowrap;
+  z-index: 9999;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+
+.share-no-lan-hint code {
+  background: #333;
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-size: 11px;
+}
+
+.panel-close svg,
+.panel-share svg {
   width: 18px;
   height: 18px;
   stroke: currentColor;
 }
 
-.panel-close:disabled {
+.panel-close:disabled,
+.panel-share:disabled {
   opacity: 0.55;
   cursor: not-allowed;
   box-shadow: none;
@@ -5464,6 +5522,15 @@ summary {
   fill: #3f3f3f;
   font-family: "SansSerif", "Helvetica Neue", Arial, sans-serif;
   font-weight: 600;
+  pointer-events: none;
+}
+
+.node-cmd-badge-icon {
+  fill: none;
+  stroke: #3f3f3f;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
   pointer-events: none;
 }
 

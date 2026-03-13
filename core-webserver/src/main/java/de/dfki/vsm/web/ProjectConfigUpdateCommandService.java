@@ -55,11 +55,14 @@ public final class ProjectConfigUpdateCommandService {
         response.put("saved", false);
         response.put("pending", true);
         if (broadcaster != null) {
-            JSONObject dirtyEvt = new JSONObject();
-            dirtyEvt.put("event", "project.dirty");
-            dirtyEvt.put("projectId", pid);
-            dirtyEvt.put("areas", new JSONArray().put("config"));
-            broadcaster.accept(dirtyEvt.toString());
+            // Broadcast the full updated config so all windows apply it immediately
+            // without needing a REST round-trip.
+            JSONObject evt = new JSONObject();
+            evt.put("type", "event");
+            evt.put("event", "project.config");
+            evt.put("projectId", pid);
+            evt.put("config", context.projectConfigToJson(cfg, context.projectPath(pid)));
+            broadcaster.accept(evt.toString());
         }
         return response;
     }

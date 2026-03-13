@@ -21,6 +21,10 @@ dependencies {
     testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.3.2'
 }
 
+test {
+    useJUnitPlatform()
+}
+
 def webUiSourceDir = rootProject.file("editor/src/main/resources/web-ui")
 def webUiTargetDir = file("src/main/resources/web-ui")
 

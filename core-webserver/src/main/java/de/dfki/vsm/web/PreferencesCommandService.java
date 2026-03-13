@@ -40,6 +40,7 @@ public final class PreferencesCommandService {
         JSONObject prefs = context.preferencesToJson();
         if (broadcaster != null) {
             JSONObject evt = new JSONObject();
+            evt.put("type", "event");
             evt.put("event", "system.preferences");
             evt.put("preferences", prefs);
             broadcaster.accept(evt.toString());

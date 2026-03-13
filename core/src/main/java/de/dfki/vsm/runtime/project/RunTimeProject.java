@@ -1,5 +1,6 @@
 package de.dfki.vsm.runtime.project;
 
+import de.dfki.vsm.event.EventDispatcher;
 import de.dfki.vsm.model.acticon.ActiconConfig;
 import de.dfki.vsm.model.gesticon.GesticonConfig;
 import de.dfki.vsm.model.project.AgentConfig;
@@ -14,6 +15,7 @@ import de.dfki.vsm.runtime.interpreter.value.*;
 import de.dfki.vsm.runtime.player.ReactivePlayer;
 import de.dfki.vsm.runtime.player.RunTimePlayer;
 import de.dfki.vsm.runtime.plugin.RunTimePlugin;
+import de.dfki.vsm.ui.protocol.UiProtocol;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 import de.dfki.vsm.util.xml.XMLUtilities;
 
@@ -32,6 +34,8 @@ public class RunTimeProject {
     // The singelton logger instance
     protected final LOGDefaultLogger mLogger
             = LOGDefaultLogger.getInstance();
+    // Per-project event dispatcher — isolates events from other projects
+    private final EventDispatcher mEventDispatcher = new EventDispatcher();
     // The sceneflow of the project
     private final SceneFlow mSceneFlow = new SceneFlow();
     // The scenescript of the project
@@ -75,15 +79,20 @@ public class RunTimeProject {
 
     // Construct an empty runtime project
     public RunTimeProject() {
-        // Do nothing
+        UiProtocol.ensureBridge(mEventDispatcher);
     }
 
     // Construct a project from a directory
     public RunTimeProject(final File file) {
+        UiProtocol.ensureBridge(mEventDispatcher);
         // Remember Path
         mProjectPath = file.getPath();
         // Call the local parsing method
         parse(mProjectPath);
+    }
+
+    public EventDispatcher getEventDispatcher() {
+        return mEventDispatcher;
     }
 
     public boolean isNewProject() {

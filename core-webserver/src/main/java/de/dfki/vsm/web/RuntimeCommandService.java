@@ -214,10 +214,16 @@ public final class RuntimeCommandService {
         if (broadcaster == null) {
             return;
         }
+        JSONObject payload = new JSONObject();
+        payload.put("state", state);
+        payload.put("status", state);
+        if (projectId != null) {
+            payload.put("projectId", projectId);
+        }
         JSONObject evt = new JSONObject();
+        evt.put("type", "event");
         evt.put("event", "runtime.state");
-        evt.put("state", state);
-        evt.put("projectId", projectId);
+        evt.put("payload", payload);
         broadcaster.accept(evt.toString());
     }
 

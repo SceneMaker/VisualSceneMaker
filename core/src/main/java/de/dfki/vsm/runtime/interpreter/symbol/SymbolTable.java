@@ -1,5 +1,6 @@
 package de.dfki.vsm.runtime.interpreter.symbol;
 
+import de.dfki.vsm.event.EventDispatcher;
 import de.dfki.vsm.runtime.interpreter.error.InterpreterError;
 import de.dfki.vsm.runtime.interpreter.value.AbstractValue;
 import de.dfki.vsm.util.cpy.Copyable;
@@ -25,20 +26,32 @@ public final class SymbolTable implements Copyable {
     // All mutations must call ensureExclusive() first.
     private boolean mShared;
 
+    // The per-project event dispatcher (may be null for legacy/no-dispatcher paths)
+    private final EventDispatcher mDispatcher;
+
     public SymbolTable() {
         mSymbolTable = new HashMap<>();
         mShared = false;
+        mDispatcher = null;
     }
 
     public SymbolTable(final HashMap<String, SymbolEntry> table) {
         mSymbolTable = table;
         mShared = false;
+        mDispatcher = null;
+    }
+
+    public SymbolTable(final EventDispatcher dispatcher) {
+        mSymbolTable = new HashMap<>();
+        mShared = false;
+        mDispatcher = dispatcher;
     }
 
     // COW constructor — shares the backing map
-    private SymbolTable(final HashMap<String, SymbolEntry> table, boolean shared) {
+    private SymbolTable(final HashMap<String, SymbolEntry> table, final EventDispatcher dispatcher, boolean shared) {
         mSymbolTable = table;
         mShared = shared;
+        mDispatcher = dispatcher;
     }
 
     // If the backing map is shared, deep-copy it to make mutations safe.
@@ -72,7 +85,7 @@ public final class SymbolTable implements Copyable {
 
     public final void create(final String symbol, final AbstractValue value) throws InterpreterError {
         ensureExclusive();
-        mSymbolTable.put(symbol, new SymbolEntry(symbol, value));
+        mSymbolTable.put(symbol, new SymbolEntry(symbol, value, mDispatcher));
     }
 
     public final AbstractValue write(final String symbol, final AbstractValue value) throws InterpreterError {
@@ -111,6 +124,6 @@ public final class SymbolTable implements Copyable {
     @Override
     public final SymbolTable getCopy() {
         mShared = true;
-        return new SymbolTable(mSymbolTable, true);
+        return new SymbolTable(mSymbolTable, mDispatcher, true);
     }
 }

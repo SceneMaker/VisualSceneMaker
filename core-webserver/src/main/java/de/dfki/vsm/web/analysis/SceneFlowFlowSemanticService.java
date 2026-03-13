@@ -104,6 +104,7 @@ public final class SceneFlowFlowSemanticService {
             return null;
         }
         FlowSemanticNodeResult potential = null;
+        FlowSemanticNodeResult definite = null;
         for (BasicNode internalNode : reachableNodes) {
             if (internalNode == null || internalNode.isHistoryNode()) {
                 continue;
@@ -113,18 +114,25 @@ public final class SceneFlowFlowSemanticService {
                 continue;
             }
             if (internalResult.getKind() == FlowSemanticKind.DEFINITE_END) {
-                return new FlowSemanticNodeResult(superNode, FlowSemanticKind.DEFINITE_END,
-                        "SUPERNODE_INTERNAL_DEFINITE_END",
-                        "The reachable internal subflow can end at node '" + safeNodeName(internalNode) + "'.");
-            }
-            if (potential == null) {
+                if (definite == null) {
+                    definite = new FlowSemanticNodeResult(superNode, FlowSemanticKind.DEFINITE_END,
+                            "SUPERNODE_INTERNAL_DEFINITE_END",
+                            "The reachable internal subflow can end at node '" + safeNodeName(internalNode) + "'.");
+                }
+            } else if (potential == null) {
                 potential = new FlowSemanticNodeResult(superNode, FlowSemanticKind.POTENTIAL_END,
                         "SUPERNODE_INTERNAL_POTENTIAL_END",
                         "The reachable internal subflow may end at node '" + safeNodeName(internalNode) + "'.");
             }
         }
+        // POTENTIAL_END takes precedence over DEFINITE_END: if any reachable node
+        // is a potential (not guaranteed) dead end, the supernode's classification
+        // cannot be promoted to DEFINITE_END.
         if (potential != null) {
             return potential;
+        }
+        if (definite != null) {
+            return definite;
         }
         return new FlowSemanticNodeResult(superNode, FlowSemanticKind.NOT_END,
                 "SUPERNODE_INTERNAL_CONTINUATION",

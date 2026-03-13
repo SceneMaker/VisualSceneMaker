@@ -1,6 +1,5 @@
 package de.dfki.vsm.runtime.interpreter;
 
-import de.dfki.vsm.event.EventDispatcher;
 import de.dfki.vsm.model.sceneflow.glue.command.Assignment;
 import de.dfki.vsm.model.sceneflow.glue.command.Command;
 import de.dfki.vsm.model.sceneflow.glue.command.Expression;
@@ -37,6 +36,7 @@ import java.util.regex.Pattern;
  * @author Gregor Mehlmann
  */
 public final class Evaluator {
+    private static final String PLAYACTION_MODE_KEY = "__vsm_mode";
 
     // The singelton logger instance
     private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
@@ -139,14 +139,19 @@ public final class Evaluator {
         } else if (cmd instanceof PlayActionActivity) {
             final PlayActionActivity command = (PlayActionActivity) cmd;
             final AbstractValue value = evaluate(command.getCommand(), env);
-            final List<AbstractValue> list = evaluateExpList(command.getArgList(), env);
+            final ArrayList<Expression> argExpressions = removePlayActionMetaArgs(command.getArgList());
+            final List<AbstractValue> list = evaluateExpList(argExpressions, env);
+            final PlayActionActivity.PlayMode mode = resolvePlayActionMode(command.getMode(), command.getArgList());
             // Check the type of the command
             if (value instanceof StringValue) {
                 try {
                     // Unlock the interpreter
                     mInterpreter.unlock();
                     // Execute the activity
-                    mInterpreter.getScenePlayer().playAction(((StringValue) value).getValue(), list);
+                    mInterpreter.getScenePlayer().playAction(
+                            ((StringValue) value).getValue(),
+                            list,
+                            mode);
                 } finally {
                     // Lock interpreter again
                     mInterpreter.lock();
@@ -166,7 +171,7 @@ public final class Evaluator {
                     // Execute the activity
                     mInterpreter.getScenePlayer().playScene(((StringValue) value).getValue(), list);
                 } catch (SceneDoesNotExists missingScene) {
-                    EventDispatcher.getInstance().convey(new TerminationEvent(new Object(), missingScene));
+                    mInterpreter.getDispatcher().convey(new TerminationEvent(new Object(), missingScene));
                 } finally {
                     // Lock interpreter again
                     mInterpreter.lock();
@@ -499,6 +504,87 @@ public final class Evaluator {
         if (val instanceof BooleanValue) return String.valueOf(((BooleanValue) val).booleanValue());
         if (val instanceof LongValue) return String.valueOf(((LongValue) val).longValue());
         return String.valueOf(val.getValue());
+    }
+
+    private static PlayActionActivity.PlayMode resolvePlayActionMode(
+            final PlayActionActivity.PlayMode commandMode,
+            final List<Expression> args) {
+        if (commandMode != PlayActionActivity.PlayMode.Default) {
+            return commandMode;
+        }
+        if (args == null || args.isEmpty()) {
+            return commandMode;
+        }
+        for (Expression expression : args) {
+            final String mode = readPlayActionModeMarker(expression);
+            if (mode == null || mode.isBlank()) {
+                continue;
+            }
+            final String normalized = mode.trim().toLowerCase(Locale.ROOT);
+            if ("nonblocking".equals(normalized) || "parallel".equals(normalized) || "concurrent".equals(normalized)) {
+                return PlayActionActivity.PlayMode.Concurrent;
+            }
+            if ("blocking".equals(normalized) || "sequential".equals(normalized) || "default".equals(normalized)) {
+                return PlayActionActivity.PlayMode.Default;
+            }
+        }
+        return commandMode;
+    }
+
+    private static ArrayList<Expression> removePlayActionMetaArgs(final List<Expression> args) {
+        final ArrayList<Expression> filtered = new ArrayList<>();
+        if (args == null || args.isEmpty()) {
+            return filtered;
+        }
+        for (Expression expression : args) {
+            if (isPurePlayActionModeMarker(expression)) {
+                continue;
+            }
+            filtered.add(expression);
+        }
+        return filtered;
+    }
+
+    private static boolean isPurePlayActionModeMarker(final Expression expression) {
+        if (!(expression instanceof StructExpression)) {
+            return false;
+        }
+        final ArrayList<Assignment> assignments = ((StructExpression) expression).getExpList();
+        if (assignments == null || assignments.isEmpty()) {
+            return false;
+        }
+        for (Assignment assignment : assignments) {
+            if (!(assignment.getLeftExpression() instanceof SimpleVariable)) {
+                return false;
+            }
+            final String key = ((SimpleVariable) assignment.getLeftExpression()).getName();
+            if (!PLAYACTION_MODE_KEY.equals(key)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static String readPlayActionModeMarker(final Expression expression) {
+        if (!(expression instanceof StructExpression)) {
+            return null;
+        }
+        for (Assignment assignment : ((StructExpression) expression).getExpList()) {
+            if (!(assignment.getLeftExpression() instanceof SimpleVariable)) {
+                continue;
+            }
+            final String key = ((SimpleVariable) assignment.getLeftExpression()).getName();
+            if (!PLAYACTION_MODE_KEY.equals(key)) {
+                continue;
+            }
+            if (assignment.getInitExpression() instanceof StringLiteral) {
+                return ((StringLiteral) assignment.getInitExpression()).getValue();
+            }
+            return assignment.getInitExpression() != null
+                    ? assignment.getInitExpression().getConcreteSyntax()
+                    : null;
+        }
+        return null;
     }
 
     // Evaluate arithmetic operators (Sub, Mul, Div) on numeric types

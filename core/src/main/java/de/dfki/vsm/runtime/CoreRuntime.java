@@ -1,6 +1,5 @@
 package de.dfki.vsm.runtime;
 
-import de.dfki.vsm.event.EventDispatcher;
 import de.dfki.vsm.event.EventListener;
 import de.dfki.vsm.event.EventObject;
 import de.dfki.vsm.event.event.ForceShutdownEvent;
@@ -65,7 +64,7 @@ public class CoreRuntime {
         private final AtomicBoolean mIsRunning = new AtomicBoolean(true);
 
         private ProjectTerminationWaiter(final RunTimeProject runTimeProject) {
-            EventDispatcher.getInstance().register(this);
+            runTimeProject.getEventDispatcher().register(this);
             mRunTimeProject = runTimeProject;
         }
 

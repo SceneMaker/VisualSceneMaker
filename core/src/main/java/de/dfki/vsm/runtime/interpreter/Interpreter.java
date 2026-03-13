@@ -23,7 +23,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 public class Interpreter {
 
     private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
-    private final EventDispatcher mDispatcher = EventDispatcher.getInstance();
+    private final EventDispatcher mDispatcher;
     private final SceneFlow mSceneFlow;
     private final Interruptor mEventObserver;
     private final Configuration mConfiguration;
@@ -49,6 +49,7 @@ public class Interpreter {
 
     // Construct an interpreter with a project
     public Interpreter(final RunTimeProject project) {
+        mDispatcher = project.getEventDispatcher();
         // Initialize the runtime project
         // Initialize the sceneflow object
         mSceneFlow = project.getSceneFlow();
@@ -69,6 +70,10 @@ public class Interpreter {
 
     public Lock getLock() {
         return mLock;
+    }
+
+    EventDispatcher getDispatcher() {
+        return mDispatcher;
     }
 
     void lock() {
@@ -236,7 +241,7 @@ public class Interpreter {
         if ((mSceneFlowThread == null) || (!mSceneFlowThread.isAlive())) {
             // Create a new thread
             mSceneFlowThread = new Process(mSceneFlow.getId(), null, // TODO: choose an adquate thread group and check if this group has died before
-                    mSceneFlow, new Environment(), 0, null, this);
+                    mSceneFlow, new Environment(mDispatcher), 0, null, this);
 
             // Lock the interpreter
             try {

@@ -24,16 +24,19 @@ public final class EventDispatcher {
     // The Timer Thread
     private Timer mTimer;
 
-    // Construct The Instance
-    private EventDispatcher() {
-        //
+    // Public constructor — creates an independent per-project dispatcher instance.
+    public EventDispatcher() {
         mTimer = new Timer("EventCasterTimer");
-        //
-        mListenerList
-                = new CopyOnWriteArrayList<>();
+        mListenerList = new CopyOnWriteArrayList<>();
     }
 
-    // Get The Singelton Instance
+    /**
+     * Returns the global singleton dispatcher.
+     *
+     * @deprecated Use per-project instances obtained via {@link de.dfki.vsm.runtime.project.RunTimeProject#getEventDispatcher()}.
+     *             The singleton remains for backward compatibility during the Phase A→B migration.
+     */
+    @Deprecated
     public final static synchronized EventDispatcher getInstance() {
         if (sInstance == null) {
             sInstance = new EventDispatcher();
@@ -66,23 +69,18 @@ public final class EventDispatcher {
 
     // Immediately schedule an event
     public final void convey(final EventObject event) {
-        //schedule(event, 1);
         dispatch(event);
     }
 
     // Schedule dispatching of event
     private void schedule(final EventObject event, final long timeout) {
-
-        // Create a timer task
         final TimerTask task = new TimerTask() {
             @Override
             public void run() {
                 dispatch(event);
             }
         };
-
         try {
-            // Schedule this timer task
             mTimer.schedule(task, timeout);
         } catch (final IllegalStateException exc) {
             mLogger.warning(exc.toString());

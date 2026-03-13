@@ -1,6 +1,7 @@
 package de.dfki.vsm.runtime.player;
 
 import de.dfki.vsm.model.project.PlayerConfig;
+import de.dfki.vsm.model.sceneflow.glue.command.invocation.PlayActionActivity.PlayMode;
 import de.dfki.vsm.model.scenescript.*;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
 import de.dfki.vsm.runtime.activity.ActionActivity;
@@ -12,7 +13,6 @@ import de.dfki.vsm.runtime.interpreter.error.SceneDoesNotExists;
 import de.dfki.vsm.runtime.interpreter.value.AbstractValue;
 import de.dfki.vsm.runtime.interpreter.value.StructValue;
 import de.dfki.vsm.runtime.project.RunTimeProject;
-import de.dfki.vsm.event.EventDispatcher;
 import de.dfki.vsm.event.event.SceneExecutedEvent;
 import de.dfki.vsm.event.event.SceneDoneEvent;
 import de.dfki.vsm.event.event.TurnExecutedEvent;
@@ -76,7 +76,7 @@ public final class ReactivePlayer extends RunTimePlayer {
 
     // Call the play action activity method
     @Override
-    public final void playAction(final String text, final List<AbstractValue> args) {
+    public final void playAction(final String text, final List<AbstractValue> args, final PlayMode mode) {
         // Get the current process
         final Process process = (Process) Thread.currentThread();
         // Make unique worker name
@@ -126,7 +126,10 @@ public final class ReactivePlayer extends RunTimePlayer {
                 }
                 // Schedule the activity without delay but blocking
                 final ActionActivity activity = new ActionActivity(actor, name, text, features, substitutions);
-                activity.setType(AbstractActivity.Type.blocking);
+                final PlayMode effectiveMode = mode != null ? mode : PlayMode.Default;
+                activity.setType(effectiveMode == PlayMode.Concurrent
+                        ? AbstractActivity.Type.parallel
+                        : AbstractActivity.Type.blocking);
                 mScheduler.schedule(0, null, activity, mProject.getAgentDevice(actor));
             }
         };
@@ -188,7 +191,7 @@ public final class ReactivePlayer extends RunTimePlayer {
                         ? process.getNode().getParentNode().getId()
                         : "";
         // Fire scene-started event and record history
-        EventDispatcher.getInstance().convey(new SceneExecutedEvent(this, scene, sceneNodeId, sceneParentId));
+        mProject.getEventDispatcher().convey(new SceneExecutedEvent(this, scene, sceneNodeId, sceneParentId));
         mProject.recordScenePlay(scene.getName(), scene.getLanguage(), scene.getLower(), scene.getUpper());
 
         // Create playback task
@@ -205,7 +208,7 @@ public final class ReactivePlayer extends RunTimePlayer {
                     turn_cnt++;
 
                     // Fire turn-started event
-                    EventDispatcher.getInstance().convey(new TurnExecutedEvent(ReactivePlayer.this, turn));
+                    mProject.getEventDispatcher().convey(new TurnExecutedEvent(ReactivePlayer.this, turn));
 
                     // Get executor for this turn
                     final ActivityExecutor turnActorExecutor = mProject.getAgentDevice(turn.getSpeaker());
@@ -288,10 +291,10 @@ public final class ReactivePlayer extends RunTimePlayer {
                         }
                     }
                     // Fire turn-done event
-                    EventDispatcher.getInstance().convey(new TurnDoneEvent(ReactivePlayer.this, turn));
+                    mProject.getEventDispatcher().convey(new TurnDoneEvent(ReactivePlayer.this, turn));
                 }
                 // Fire scene-done event
-                EventDispatcher.getInstance().convey(new SceneDoneEvent(
+                mProject.getEventDispatcher().convey(new SceneDoneEvent(
                         ReactivePlayer.this,
                         scene,
                         sceneNodeId,

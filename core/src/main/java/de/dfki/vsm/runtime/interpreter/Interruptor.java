@@ -18,8 +18,7 @@ public final class Interruptor {
     private final LOGDefaultLogger mLogger
             = LOGDefaultLogger.getInstance();
     //
-    private final EventDispatcher mDispatcher
-            = EventDispatcher.getInstance();
+    private final EventDispatcher mDispatcher;
     // The interpreter instance
     private final Interpreter mInterpreter;
     // Dirty flag: when false, update() skips the full configuration scan.
@@ -28,6 +27,7 @@ public final class Interruptor {
 
     // Create the interruptor
     public Interruptor(final Interpreter interpreter) {
+        mDispatcher = interpreter.getDispatcher();
         mInterpreter = interpreter;
     }
 

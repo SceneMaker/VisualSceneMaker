@@ -1,6 +1,7 @@
 package de.dfki.vsm.runtime.interpreter.symbol;
 
 import de.dfki.vsm.event.EventDispatcher;
+import de.dfki.vsm.event.EventObject;
 import de.dfki.vsm.event.event.VariableChangedEvent;
 import de.dfki.vsm.runtime.interpreter.error.InterpreterError;
 import de.dfki.vsm.runtime.interpreter.value.AbstractValue;
@@ -16,11 +17,27 @@ public final class SymbolEntry implements Copyable {
     private AbstractValue mValue;
     // The Symbol Of The Entry
     private final String mSymbol;
+    // The per-project event dispatcher (may be null for legacy/no-dispatcher paths)
+    private final EventDispatcher mDispatcher;
 
     //
     public SymbolEntry(final String symbol, final AbstractValue value) {
         mSymbol = symbol;
         mValue = value;
+        mDispatcher = null;
+    }
+
+    //
+    public SymbolEntry(final String symbol, final AbstractValue value, final EventDispatcher dispatcher) {
+        mSymbol = symbol;
+        mValue = value;
+        mDispatcher = dispatcher;
+    }
+
+    private void dispatch(final EventObject event) {
+        if (mDispatcher != null) {
+            mDispatcher.convey(event);
+        }
     }
 
     //
@@ -37,7 +54,7 @@ public final class SymbolEntry implements Copyable {
         // Event variables: enqueue instead of replace
         if (mValue.getType() == AbstractValue.Type.EVENT) {
             ((EventValue) mValue).enqueue(value);
-            EventDispatcher.getInstance().convey(new VariableChangedEvent(this,
+            dispatch(new VariableChangedEvent(this,
                     new Tuple<>(mSymbol, mValue.getFormattedSyntax())));
             return mValue;
         }
@@ -48,7 +65,7 @@ public final class SymbolEntry implements Copyable {
             mValue = value;
 
             // Send event to dispatcher
-            EventDispatcher.getInstance().convey(new VariableChangedEvent(this,
+            dispatch(new VariableChangedEvent(this,
                     new Tuple(mSymbol, mValue.getFormattedSyntax())));
 
             //
@@ -70,7 +87,7 @@ public final class SymbolEntry implements Copyable {
                     ((ListValue) mValue).getValueList().set(index, value);
 
                     //
-                    EventDispatcher.getInstance().convey(new VariableChangedEvent(this,
+                    dispatch(new VariableChangedEvent(this,
                             new Tuple<>(mSymbol /* .getName() */, mValue.getFormattedSyntax())));
 
                     //
@@ -101,7 +118,7 @@ public final class SymbolEntry implements Copyable {
                         ((StructValue) mValue).getValueMap().put(member, value);
 
                         //
-                        EventDispatcher.getInstance().convey(new VariableChangedEvent(this,
+                        dispatch(new VariableChangedEvent(this,
                                 new Tuple<>(mSymbol /* .getName() */, mValue.getFormattedSyntax())));
 
                         //
@@ -172,6 +189,6 @@ public final class SymbolEntry implements Copyable {
     ////////////////////////////////////////////////////////////////////////////
     @Override
     public final SymbolEntry getCopy() {
-        return new SymbolEntry(mSymbol, mValue.getCopy());
+        return new SymbolEntry(mSymbol, mValue.getCopy(), mDispatcher);
     }
 }

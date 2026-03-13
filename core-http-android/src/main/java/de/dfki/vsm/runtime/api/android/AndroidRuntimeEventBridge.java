@@ -29,21 +29,24 @@ import java.util.function.Supplier;
  */
 public final class AndroidRuntimeEventBridge implements EventListener {
 
+    private final EventDispatcher mDispatcher;
     private final Supplier<String> projectIdSupplier;
     private final Supplier<Consumer<String>> broadcasterSupplier;
 
-    public AndroidRuntimeEventBridge(final Supplier<String> projectIdSupplier,
+    public AndroidRuntimeEventBridge(final EventDispatcher dispatcher,
+                                     final Supplier<String> projectIdSupplier,
                                      final Supplier<Consumer<String>> broadcasterSupplier) {
+        this.mDispatcher = Objects.requireNonNull(dispatcher, "dispatcher");
         this.projectIdSupplier = Objects.requireNonNull(projectIdSupplier, "projectIdSupplier");
         this.broadcasterSupplier = Objects.requireNonNull(broadcasterSupplier, "broadcasterSupplier");
     }
 
     public void start() {
-        EventDispatcher.getInstance().register(this);
+        mDispatcher.register(this);
     }
 
     public void stop() {
-        EventDispatcher.getInstance().remove(this);
+        mDispatcher.remove(this);
     }
 
     @Override

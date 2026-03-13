@@ -51,6 +51,14 @@ public final class PlayActionActivity extends Invocation {
         return mCommand;
     }
 
+    public final PlayMode getMode() {
+        return mMode;
+    }
+
+    public final void setMode(final PlayMode mode) {
+        mMode = mode;
+    }
+
     public final void setCommand(final Expression arg) {
         mCommand = arg;
     }

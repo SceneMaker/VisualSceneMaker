@@ -5,7 +5,6 @@
  */
 package de.dfki.vsm.xtension.studymasterWeb;
 
-import de.dfki.vsm.event.EventDispatcher;
 import de.dfki.vsm.event.EventListener;
 import de.dfki.vsm.event.EventObject;
 import de.dfki.vsm.event.event.VariableChangedEvent;
@@ -128,7 +127,7 @@ public class WebStudyMasterExecutor extends ActivityExecutor implements EventLis
     public void launch() {
         mLogger.message("Loading StudyMaster message sender and receiver ...");
 
-        EventDispatcher.getInstance().register(this);
+        mProject.getEventDispatcher().register(this);
 
         // Retrieve property values
         mGUIConnectedVar = mConfig.getProperty(sGUI_CONNECTED_VAR, sGUI_CONNECTED_VAR_DEFAULT);
@@ -156,7 +155,7 @@ public class WebStudyMasterExecutor extends ActivityExecutor implements EventLis
     @Override
     public void unload() {
 
-        EventDispatcher.getInstance().remove(this);
+        mProject.getEventDispatcher().remove(this);
 
         for (WsConnectContext ws : mWebsockets) {
             if (ws.session.isOpen()) {

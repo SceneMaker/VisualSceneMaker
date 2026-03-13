@@ -3,6 +3,8 @@
   export let worldBox = null;
   export let viewBox = null;
   export let onCenter = null;
+  /** Array of peer presence objects { color, viewport: {x,y,width,height} } */
+  export let peers = [];
 
   const COLORS = {
     node: "#7a7d81",
@@ -261,5 +263,22 @@
         rx="8"
       />
     {/if}
+    {#each peers as peer (peer.userId)}
+      {@const pv = peer.viewport ? computeViewport(worldBox, peer.viewport) : null}
+      {#if pv && pv.width > 0 && pv.height > 0}
+        <rect
+          class="mini-peer-viewport"
+          x={safeSvgNumber(pv.x)}
+          y={safeSvgNumber(pv.y)}
+          width={safeSvgNumber(pv.width)}
+          height={safeSvgNumber(pv.height)}
+          rx="8"
+          stroke={peer.color}
+          fill={peer.color}
+          fill-opacity="0.08"
+          stroke-width="2"
+        />
+      {/if}
+    {/each}
   </svg>
 </div>

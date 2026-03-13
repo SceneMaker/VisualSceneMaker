@@ -104,6 +104,7 @@ public final class ScriptCommandService {
         if (broadcaster != null) {
             context.broadcastScriptSnapshot(broadcaster, pid, response);
             JSONObject dirtyEvt = new JSONObject();
+            dirtyEvt.put("type", "event");
             dirtyEvt.put("event", "project.dirty");
             dirtyEvt.put("projectId", pid);
             dirtyEvt.put("areas", new JSONArray().put("script"));

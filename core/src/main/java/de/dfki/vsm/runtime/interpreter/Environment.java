@@ -2,6 +2,7 @@ package de.dfki.vsm.runtime.interpreter;
 
 //~--- non-JDK imports --------------------------------------------------------
 
+import de.dfki.vsm.event.EventDispatcher;
 import de.dfki.vsm.runtime.interpreter.error.InterpreterError;
 import de.dfki.vsm.runtime.interpreter.symbol.SymbolTable;
 import de.dfki.vsm.runtime.interpreter.value.AbstractValue;
@@ -16,13 +17,26 @@ import java.util.LinkedList;
  */
 public class Environment implements Copyable {
     private final LinkedList<SymbolTable> mSymbolTableList;
+    private final EventDispatcher mDispatcher;
 
     public Environment() {
         mSymbolTableList = new LinkedList<>();
+        mDispatcher = null;
     }
 
     public Environment(LinkedList<SymbolTable> symbolTableList) {
         mSymbolTableList = symbolTableList;
+        mDispatcher = null;
+    }
+
+    public Environment(final EventDispatcher dispatcher) {
+        mSymbolTableList = new LinkedList<>();
+        mDispatcher = dispatcher;
+    }
+
+    private Environment(final LinkedList<SymbolTable> symbolTableList, final EventDispatcher dispatcher) {
+        mSymbolTableList = symbolTableList;
+        mDispatcher = dispatcher;
     }
 
     public LinkedList<SymbolTable> getCopyOfSymbolTableList() {
@@ -41,11 +55,11 @@ public class Environment implements Copyable {
     }
 
     public void push() {
-        mSymbolTableList.addFirst(new SymbolTable());
+        mSymbolTableList.addFirst(mDispatcher != null ? new SymbolTable(mDispatcher) : new SymbolTable());
     }
 
     public Environment getCopy() {
-        return new Environment(getCopyOfSymbolTableList());
+        return new Environment(getCopyOfSymbolTableList(), mDispatcher);
     }
 
     public void create(String symbol, AbstractValue value) throws InterpreterError {

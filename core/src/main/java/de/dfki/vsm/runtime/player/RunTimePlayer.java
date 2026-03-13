@@ -1,6 +1,7 @@
 package de.dfki.vsm.runtime.player;
 
 import de.dfki.vsm.model.project.PlayerConfig;
+import de.dfki.vsm.model.sceneflow.glue.command.invocation.PlayActionActivity.PlayMode;
 import de.dfki.vsm.runtime.activity.scheduler.ActivityScheduler;
 import de.dfki.vsm.runtime.interpreter.error.SceneDoesNotExists;
 import de.dfki.vsm.runtime.interpreter.value.AbstractValue;
@@ -74,7 +75,7 @@ public abstract class RunTimePlayer {
     public abstract void unload();
 
     // Play an action
-    public abstract void playAction(final String name, final List<AbstractValue> args);
+    public abstract void playAction(final String name, final List<AbstractValue> args, final PlayMode mode);
 
     // Play a scene
     public abstract void playScene(final String name, final List<AbstractValue> args) throws SceneDoesNotExists;

@@ -143,6 +143,7 @@ public final class UndoRedoCommandService {
         response.put("applied", true);
         if (broadcaster != null) {
             JSONObject dirtyEvt = new JSONObject();
+            dirtyEvt.put("type", "event");
             dirtyEvt.put("event", "project.dirty");
             dirtyEvt.put("projectId", projectId);
             dirtyEvt.put("areas", new JSONArray().put("sceneflow").put("script"));

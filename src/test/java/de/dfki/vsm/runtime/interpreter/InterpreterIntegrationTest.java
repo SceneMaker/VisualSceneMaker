@@ -90,7 +90,7 @@ public class InterpreterIntegrationTest {
                 }
             }
         };
-        EventDispatcher.getInstance().register(listener);
+        project.getEventDispatcher().register(listener);
 
         try {
             assertTrue(project.launch(), "launch() should succeed");
@@ -101,7 +101,7 @@ public class InterpreterIntegrationTest {
             assertEquals(List.of("N1", "N2", "N3"), visited,
                     "Nodes should be visited in epsilon-chain order");
         } finally {
-            EventDispatcher.getInstance().remove(listener);
+            project.getEventDispatcher().remove(listener);
         }
     }
 
@@ -129,7 +129,7 @@ public class InterpreterIntegrationTest {
                 }
             }
         };
-        EventDispatcher.getInstance().register(listener);
+        project.getEventDispatcher().register(listener);
 
         try {
             assertTrue(project.launch());
@@ -139,7 +139,7 @@ public class InterpreterIntegrationTest {
 
             assertEquals(List.of("N1", "N2", "N3"), visited);
         } finally {
-            EventDispatcher.getInstance().remove(listener);
+            project.getEventDispatcher().remove(listener);
         }
     }
 
@@ -169,7 +169,7 @@ public class InterpreterIntegrationTest {
                 }
             }
         };
-        EventDispatcher.getInstance().register(listener);
+        project.getEventDispatcher().register(listener);
 
         try {
             assertTrue(project.launch());
@@ -184,7 +184,7 @@ public class InterpreterIntegrationTest {
             assertTrue(elapsed < 130, "Timeout should fire within 130ms, was " + elapsed + "ms");
             System.out.println("[PERF] Timeout 100ms edge actual latency: " + elapsed + "ms");
         } finally {
-            EventDispatcher.getInstance().remove(listener);
+            project.getEventDispatcher().remove(listener);
         }
     }
 
@@ -210,7 +210,7 @@ public class InterpreterIntegrationTest {
                 selectedTimeout[0] = ((TimeoutEdgeStartedEvent) event).getTimeoutMs();
             }
         };
-        EventDispatcher.getInstance().register(listener);
+        project.getEventDispatcher().register(listener);
 
         try {
             assertTrue(project.launch());
@@ -224,7 +224,7 @@ public class InterpreterIntegrationTest {
             assertTrue(elapsed >= 35, "Interval timeout should wait at least ~35ms, was " + elapsed + "ms");
             assertTrue(elapsed < 160, "Interval timeout should fire well below 160ms, was " + elapsed + "ms");
         } finally {
-            EventDispatcher.getInstance().remove(listener);
+            project.getEventDispatcher().remove(listener);
         }
     }
 
@@ -250,7 +250,7 @@ public class InterpreterIntegrationTest {
                 selectedTimeout[0] = ((TimeoutEdgeStartedEvent) event).getTimeoutMs();
             }
         };
-        EventDispatcher.getInstance().register(listener);
+        project.getEventDispatcher().register(listener);
 
         try {
             assertTrue(project.launch());
@@ -263,7 +263,7 @@ public class InterpreterIntegrationTest {
             assertTrue(elapsed >= 110, "Fallback timeout should wait at least ~110ms, was " + elapsed + "ms");
             assertTrue(elapsed < 220, "Fallback timeout should fire below 220ms, was " + elapsed + "ms");
         } finally {
-            EventDispatcher.getInstance().remove(listener);
+            project.getEventDispatcher().remove(listener);
         }
     }
 
@@ -294,7 +294,7 @@ public class InterpreterIntegrationTest {
                 }
             }
         };
-        EventDispatcher.getInstance().register(listener);
+        project.getEventDispatcher().register(listener);
 
         try {
             assertTrue(project.launch());
@@ -321,7 +321,7 @@ public class InterpreterIntegrationTest {
 
             waitForStop(5000);
         } finally {
-            EventDispatcher.getInstance().remove(listener);
+            project.getEventDispatcher().remove(listener);
         }
     }
 
@@ -351,7 +351,7 @@ public class InterpreterIntegrationTest {
                 }
             }
         };
-        EventDispatcher.getInstance().register(listener);
+        project.getEventDispatcher().register(listener);
 
         try {
             assertTrue(project.launch());
@@ -362,7 +362,7 @@ public class InterpreterIntegrationTest {
             // N1 -> (timeout, && guard fails) -> N2 -> (|| guard succeeds via short-circuit) -> N3
             assertEquals(List.of("N1", "N2", "N3"), visited);
         } finally {
-            EventDispatcher.getInstance().remove(listener);
+            project.getEventDispatcher().remove(listener);
         }
     }
 
@@ -392,7 +392,7 @@ public class InterpreterIntegrationTest {
                 terminationErrors.add(((TerminationEvent) event).getMessage());
             }
         };
-        EventDispatcher.getInstance().register(listener);
+        project.getEventDispatcher().register(listener);
 
         try {
             assertTrue(project.launch());
@@ -423,7 +423,7 @@ public class InterpreterIntegrationTest {
             assertTrue(terminationErrors.isEmpty(),
                     "No interpreter termination expected during event writes, got: " + terminationErrors);
         } finally {
-            EventDispatcher.getInstance().remove(listener);
+            project.getEventDispatcher().remove(listener);
         }
     }
 
@@ -445,7 +445,7 @@ public class InterpreterIntegrationTest {
                 terminationErrors.add(((TerminationEvent) event).getMessage());
             }
         };
-        EventDispatcher.getInstance().register(listener);
+        project.getEventDispatcher().register(listener);
 
         try {
             assertTrue(project.launch());
@@ -460,7 +460,7 @@ public class InterpreterIntegrationTest {
             assertTrue(terminationErrors.isEmpty(),
                     "No termination expected after rejected null event write, got: " + terminationErrors);
         } finally {
-            EventDispatcher.getInstance().remove(listener);
+            project.getEventDispatcher().remove(listener);
         }
     }
 
@@ -485,7 +485,7 @@ public class InterpreterIntegrationTest {
                 terminationErrors.add(((TerminationEvent) event).getMessage());
             }
         };
-        EventDispatcher.getInstance().register(listener);
+        project.getEventDispatcher().register(listener);
 
         try {
             assertTrue(project.launch());
@@ -512,7 +512,7 @@ public class InterpreterIntegrationTest {
             assertTrue(terminationErrors.isEmpty(),
                     "No interpreter termination expected, got: " + terminationErrors);
         } finally {
-            EventDispatcher.getInstance().remove(listener);
+            project.getEventDispatcher().remove(listener);
         }
     }
 
@@ -544,7 +544,7 @@ public class InterpreterIntegrationTest {
                 }
             }
         };
-        EventDispatcher.getInstance().register(listener);
+        project.getEventDispatcher().register(listener);
 
         try {
             assertTrue(project.launch());
@@ -561,7 +561,7 @@ public class InterpreterIntegrationTest {
 
             waitForStop(5000);
         } finally {
-            EventDispatcher.getInstance().remove(listener);
+            project.getEventDispatcher().remove(listener);
         }
     }
 
@@ -588,7 +588,7 @@ public class InterpreterIntegrationTest {
                 }
             }
         };
-        EventDispatcher.getInstance().register(listener);
+        project.getEventDispatcher().register(listener);
 
         try {
             assertTrue(project.launch());
@@ -610,7 +610,7 @@ public class InterpreterIntegrationTest {
 
             waitForStop(5000);
         } finally {
-            EventDispatcher.getInstance().remove(listener);
+            project.getEventDispatcher().remove(listener);
         }
     }
 
