@@ -2816,9 +2816,14 @@
       }
       return;
     }
-    if (node.type !== "Super") return;
-    if (typeof onNavigate === "function") {
-      onNavigate(node.id);
+    if (node.type === "Super") {
+      if (typeof onNavigate === "function") {
+        onNavigate(node.id);
+      }
+      return;
+    }
+    if (typeof onCommandOpen === "function") {
+      onCommandOpen(node.id);
     }
   }
 

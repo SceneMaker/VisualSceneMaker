@@ -2590,21 +2590,29 @@ a.export-link {
   padding: 0.4rem 0.8rem;
 }
 
-.start-toggle {
+button.start-toggle,
+button.ghost.start-toggle {
   width: var(--node-header-height);
   height: var(--node-header-height);
   min-width: var(--node-header-height);
   min-height: var(--node-header-height);
   padding: 0;
   box-sizing: border-box;
+  background: #ffffff;
+  border-color: var(--stroke);
+  color: var(--ink);
 }
 
-.start-toggle.active {
+button.start-toggle.active,
+button.ghost.start-toggle.active {
   background: var(--accent-soft);
   border-color: #a7c9a4;
 }
 
-.start-toggle:disabled {
+button.start-toggle:disabled,
+button.ghost.start-toggle:disabled {
+  background: #ffffff;
+  border-color: var(--stroke);
   transform: none;
   box-shadow: none;
 }
@@ -3057,6 +3065,22 @@ a.export-link {
 
 .modal-backdrop.prefs-backdrop {
   cursor: default;
+}
+
+.modal-backdrop.plugin-dashboard-backdrop {
+  cursor: default;
+}
+
+.modal.plugin-dashboard-modal {
+  width: min(1100px, 96vw);
+  background: var(--panel);
+  padding: 0.6rem;
+  max-height: 90vh;
+  height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
 }
 
 .modal-backdrop.monitor-backdrop {
@@ -4892,6 +4916,45 @@ a.export-link {
   max-height: 160px;
   overflow-y: auto;
   padding: 2px;
+}
+
+.cmd-helper-var-wrap {
+  position: relative;
+}
+
+.cmd-helper-var-dropdown {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 4px);
+  z-index: 40;
+  background: #ffffff;
+  border: 1px solid var(--stroke);
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  max-height: 180px;
+  overflow-y: auto;
+  padding: 2px;
+}
+
+.edge-alt-start-panel {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.edge-alt-start-list {
+  gap: 0.5rem;
+}
+
+.edge-alt-start-row {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.edge-alt-start-panel.muted select:disabled,
+.edge-alt-start-panel select:disabled {
+  background: var(--disabled-bg, #f0ebe4);
+  color: var(--muted);
 }
 
 .cmd-ac-item {

@@ -11,6 +11,8 @@
   import IconDocument from "./icons/IconDocument.svelte";
   import IconSearch from "./icons/IconSearch.svelte";
   import IconPuzzle from "./icons/IconPuzzle.svelte";
+  import IconBlocks from "./icons/IconBlocks.svelte";
+  import PluginDashboard from "./PluginDashboard.svelte";
   import IconPause from "./icons/IconPause.svelte";
   import IconStart from "./icons/IconStart.svelte";
   import IconStop from "./icons/IconStop.svelte";
@@ -97,7 +99,6 @@
   const VAR_BADGE_COOKIE = "vsm_var_badges";
   const VAR_BADGE_MIN_WIDTH = 180;
   const VAR_BADGE_MIN_HEIGHT = 90;
-  const ACTIVITY_SUPERNODE_DECAY_MS = 1500;
   const ACTIVITY_NODE_MIN_HIGHLIGHT_MS = 200;
   const EVENT_OVERPROD_WINDOW_MS = 2000;
   const EVENT_OVERPROD_TOTAL_THRESHOLD = 2500;
@@ -968,6 +969,9 @@
   let exportableKeyError = {};
   let prefsDialogOpen = false;
   let prefsDialogDraft = null;
+
+  let pluginDashboardOpen = false;
+  let pluginDashboardPrevBodyOverflow = "";
   let prefsDialogError = "";
   let prefsDialogBusy = false;
   let prefsDialogApplyTimer = null;
@@ -1346,6 +1350,16 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
   let cmdHelperVarType = "Int";
   let cmdHelperVarExpr = "";
   let cmdHelperVarStep = "1";
+  let cmdHelperVarSuggestOpen = false;
+  let cmdHelperVarSuggestIndex = 0;
+  let cmdHelperVarInputEl;
+  let edgeConditionSuggestOpen = false;
+  let edgeConditionSuggestIndex = 0;
+  let edgeConditionInputEl;
+  let edgeConditionApplyTimer = null;
+  let edgeConditionSending = false;
+  let edgeConditionQueuedDraft = null;
+  let edgeConditionQueuedEdgeId = "";
   let lastCmdHelperAction = "";
   let cmdHelperActionDescriptor = null;
   let cmdHelperDescriptor = null;
@@ -2312,6 +2326,12 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
       ? sceneFlow.nodes.find((node) => node.id === selectedEdge.targetId)
       : null;
   $: edgeAltStartEnabled = selectedEdgeTarget?.type === "Super";
+  $: edgeAltStartChildNodes = Array.isArray(selectedEdgeTarget?.childNodes)
+    ? selectedEdgeTarget.childNodes.filter((node) => node && !node.isHistory)
+    : [];
+  $: edgeAltStartStartNodes = edgeAltStartChildNodes.filter((node) => node.isStart);
+  $: edgeAltStartSelections = edgeDraft?.altStartSelections || {};
+  $: edgeAltStartSelectorMuted = !edgeAltStartEnabled || edgeAltStartChildNodes.length === 0;
   $: selectionList =
     Array.isArray(sceneFlowMultiSelection) && sceneFlowMultiSelection.length
       ? sceneFlowMultiSelection
@@ -2504,9 +2524,39 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
       list.push({ name, type: (def.type || "").trim(), scope });
     };
     (nodeEditorVarDefs || []).forEach((def) => addVar(def, "local"));
-    (sceneFlowVarDefs || []).forEach((def) => addVar(def, "global"));
+    const currentSuperScope = sceneFlow?.superNodeData?.isRoot === true ? "global" : "supernode";
+    (sceneFlowVarDefs || []).forEach((def) => addVar(def, currentSuperScope));
+    const ancestors = Array.isArray(sceneFlowPathNodes) ? sceneFlowPathNodes.slice(0, -1).reverse() : [];
+    ancestors.forEach((node, index) => {
+      const depth = index + 1;
+      const scope = node?.isRoot ? "global" : (depth === 1 ? "parent" : `ancestor-${depth}`);
+      (Array.isArray(node?.varDefs) ? node.varDefs : []).forEach((def) => addVar(def, scope));
+    });
     return list;
   })();
+  $: cmdHelperVarSuggestions = (() => {
+    const prefix = String(cmdHelperVarName || "").trim().toLowerCase();
+    if (!prefix) return [];
+    return helperVarCandidates.filter((entry) => String(entry.name || "").toLowerCase().startsWith(prefix));
+  })();
+  $: edgeConditionToken = edgeConditionCurrentToken(edgeDraft?.condition ?? "", edgeConditionInputEl);
+  $: edgeConditionSuggestions = (() => {
+    const prefix = String(edgeConditionToken || "").trim().toLowerCase();
+    if (!prefix) return [];
+    return helperVarCandidates.filter((entry) => String(entry.name || "").toLowerCase().startsWith(prefix));
+  })();
+  $: if (cmdHelperVarSuggestIndex >= cmdHelperVarSuggestions.length) {
+    cmdHelperVarSuggestIndex = cmdHelperVarSuggestions.length > 0 ? 0 : -1;
+  }
+  $: if (!cmdHelperVarSuggestions.length) {
+    cmdHelperVarSuggestOpen = false;
+  }
+  $: if (edgeConditionSuggestIndex >= edgeConditionSuggestions.length) {
+    edgeConditionSuggestIndex = edgeConditionSuggestions.length > 0 ? 0 : -1;
+  }
+  $: if (!edgeConditionSuggestions.length) {
+    edgeConditionSuggestOpen = false;
+  }
   $: cmdHelperVarExists = (() => {
     const name = (cmdHelperVarName || "").trim();
     if (!name) return false;
@@ -2882,13 +2932,25 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
       timeoutMinSpec: timeoutMode === "interval" ? String(selectedEdge.timeoutMinMs) : "",
       timeoutMaxSpec: timeoutMode === "interval" ? String(selectedEdge.timeoutMaxMs) : "",
       timeoutMode,
-      altStartText: formatAltStartMap(selectedEdge)
+      altStartText: formatAltStartMap(selectedEdge),
+      altStartSelections: altStartSelectionsFromEdge(selectedEdge, selectedEdgeTarget)
     };
     edgeEditError = "";
   } else if (!selectedEdge) {
     edgeDraftId = "";
     edgeDraft = null;
     edgeEditError = "";
+  }
+  $: if ((selectedEdge?.id || "") !== edgeConditionQueuedEdgeId) {
+    edgeConditionQueuedEdgeId = selectedEdge?.id || "";
+    edgeConditionSuggestOpen = false;
+    edgeConditionSuggestIndex = 0;
+    if (edgeConditionApplyTimer) {
+      clearTimeout(edgeConditionApplyTimer);
+      edgeConditionApplyTimer = null;
+    }
+    edgeConditionSending = false;
+    edgeConditionQueuedDraft = null;
   }
   $: if ((selectedEdge?.id || "") !== timeoutSliderEdgeId) {
     timeoutSliderEdgeId = selectedEdge?.id || "";
@@ -2927,7 +2989,8 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
     if (!selectedEdge || !edgeDraft) return false;
     const altDirty =
       edgeAltStartEnabled &&
-      normalizeAltStartText(edgeDraft.altStartText) !== normalizeAltStartText(formatAltStartMap(selectedEdge));
+      JSON.stringify(normalizeAltStartSelections(edgeDraft.altStartSelections, selectedEdgeTarget)) !==
+        JSON.stringify(normalizeAltStartSelections(altStartSelectionsFromEdge(selectedEdge, selectedEdgeTarget), selectedEdgeTarget));
     if (selectedEdge.type === "CEDGE" || selectedEdge.type === "IEDGE") {
       return (edgeDraft.condition ?? "") !== (selectedEdge.condition ?? "") || altDirty;
     }
@@ -5149,6 +5212,20 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
     restoreFocus();
   }
 
+  function openPluginDashboard() {
+    if (!selectedProjectId) return;
+    rememberFocus();
+    pluginDashboardPrevBodyOverflow = document.body.style.overflow || "";
+    document.body.style.overflow = "hidden";
+    pluginDashboardOpen = true;
+  }
+
+  function closePluginDashboard() {
+    pluginDashboardOpen = false;
+    document.body.style.overflow = pluginDashboardPrevBodyOverflow;
+    restoreFocus();
+  }
+
   async function applyPrefsDialog() {
     if (!selectedProjectId || !prefsDialogDraft) return;
     prefsDialogError = "";
@@ -6424,9 +6501,7 @@ Sentence:
     const now = Date.now();
     const holdUntil = Number(activityNodeHoldUntil.get(nodeId) || 0);
     const holdDelay = holdUntil > now ? (holdUntil - now + 20) : 0;
-    const delay = isSuperNodeId(nodeId)
-      ? Math.max(ACTIVITY_SUPERNODE_DECAY_MS, holdDelay)
-      : Math.max(0, holdDelay);
+    const delay = Math.max(0, holdDelay);
     const token = setTimeout(() => {
       const current = activityNodeDecayTokens.get(nodeId);
       if (current === token) {
@@ -6447,10 +6522,6 @@ Sentence:
     const nextTokens = new Map(activityNodeDecayTokens);
     nextTokens.set(nodeId, token);
     activityNodeDecayTokens = nextTokens;
-  }
-
-  function scheduleSuperNodeDecay(nodeId) {
-    scheduleActivityNodeDecay(nodeId);
   }
 
   function holdActivityNodeUntil(nodeId, untilTs) {
@@ -6475,53 +6546,40 @@ Sentence:
     activityNodeCounts = next;
   }
 
+  function forceClearNodeActivity(nodeId) {
+    if (!nodeId) return;
+    clearActivityNodeDecay(nodeId);
+    clearActivityNode(nodeId);
+    const holdNext = new Map(activityNodeHoldUntil);
+    holdNext.delete(nodeId);
+    activityNodeHoldUntil = holdNext;
+    if (commandActivityHeldNodeIds.has(nodeId)) {
+      const held = new Set(commandActivityHeldNodeIds);
+      held.delete(nodeId);
+      commandActivityHeldNodeIds = held;
+    }
+    if (commandActivityKindByNodeId.has(nodeId)) {
+      const kinds = new Map(commandActivityKindByNodeId);
+      kinds.delete(nodeId);
+      commandActivityKindByNodeId = kinds;
+    }
+    if (playSceneHeldNodeQueue.length) {
+      playSceneHeldNodeQueue = playSceneHeldNodeQueue.filter((id) => id !== nodeId);
+    }
+  }
+
   function incrementActivityNode(nodeId) {
     if (!nodeId) return;
     holdActivityNodeUntil(nodeId, Date.now() + ACTIVITY_NODE_MIN_HIGHLIGHT_MS);
     clearActivityNodeDecay(nodeId);
-    if (isSuperNodeId(nodeId)) {
-      const next = new Map(activityNodeCounts);
-      const count = next.get(nodeId) || 0;
-      next.set(nodeId, count + 1);
-      activityNodeCounts = next;
-      scheduleSuperNodeDecay(nodeId);
-      return;
-    }
     const next = new Map(activityNodeCounts);
     const count = next.get(nodeId) || 0;
     next.set(nodeId, count + 1);
     activityNodeCounts = next;
-    if (isEpsilonOnlyNode(nodeId)) {
-      scheduleActivityNodeDecay(nodeId);
-    }
   }
 
   function decrementActivityNode(nodeId) {
     if (!nodeId) return;
-    if (isSuperNodeId(nodeId)) {
-      const next = new Map(activityNodeCounts);
-      const count = next.get(nodeId) || 0;
-      if (count > 1) {
-        next.set(nodeId, count - 1);
-        activityNodeCounts = next;
-        scheduleSuperNodeDecay(nodeId);
-        return;
-      }
-      const holdUntil = Number(activityNodeHoldUntil.get(nodeId) || 0);
-      if (holdUntil > Date.now()) {
-        next.set(nodeId, 1);
-        activityNodeCounts = next;
-        scheduleActivityNodeDecay(nodeId);
-        return;
-      }
-      next.delete(nodeId);
-      activityNodeCounts = next;
-      const holdNext = new Map(activityNodeHoldUntil);
-      holdNext.delete(nodeId);
-      activityNodeHoldUntil = holdNext;
-      clearActivityNodeDecay(nodeId);
-      return;
-    }
     const next = new Map(activityNodeCounts);
     const count = next.get(nodeId);
     if (!count) return;
@@ -7163,14 +7221,16 @@ Sentence:
       if (runtimeStopRequested) return;
       recordRuntimeEventForOverproduction(eventName, payload);
       const edgeType = normalizeProtocolEdgeType(payload.edgeType);
-      const sourceNodeId = resolveActivityNodeId({
+      const sourceNodeIds = resolveAllActivityNodeIds({
         nodeId: payload.sourceId,
         parentId: payload.sourceParentId,
         ancestorIds: payload.sourceAncestorIds
       });
-      // Command-driven node highlights should only be force-cleared on interruption.
-      if (sourceNodeId && edgeType === "IEDGE") {
-        releaseCommandActivityNode(sourceNodeId);
+      // Once an outgoing edge fires, the source node is no longer executing.
+      // Clear any stale min-highlight, timeout, or command-driven holds.
+      for (const sourceNodeId of sourceNodeIds) {
+        forceClearNodeActivity(sourceNodeId);
+        clearTimeoutEdgesForNode(sourceNodeId);
       }
       const edgeId = resolveActivityEdgeId({ ...payload, edgeType });
       if (edgeId) {
@@ -8064,6 +8124,40 @@ Sentence:
       .join("\n");
   }
 
+  function altStartSelectionsFromEdge(edge, targetNode) {
+    const selections = {};
+    const startIds = Array.isArray(targetNode?.startNodeIds)
+      ? targetNode.startNodeIds
+      : Array.isArray(targetNode?.childNodes)
+        ? targetNode.childNodes.filter((node) => node?.isStart && !node?.isHistory).map((node) => node.id)
+        : [];
+    startIds.forEach((startId) => {
+      selections[startId] = "";
+    });
+    for (const entry of edge?.altStartMap || []) {
+      const startId = String(entry?.startId || "").trim();
+      const altStartId = String(entry?.altStartId || "").trim();
+      if (!startId) continue;
+      selections[startId] = altStartId;
+    }
+    return selections;
+  }
+
+  function normalizeAltStartSelections(selections, targetNode) {
+    const validIds = new Set(
+      (Array.isArray(targetNode?.childNodes) ? targetNode.childNodes : [])
+        .filter((node) => node && !node.isHistory)
+        .map((node) => node.id)
+    );
+    return Object.entries(selections || {})
+      .map(([startId, altStartId]) => ({
+        startId: String(startId || "").trim(),
+        altStartId: String(altStartId || "").trim()
+      }))
+      .filter((entry) => entry.startId && entry.altStartId && validIds.has(entry.altStartId))
+      .sort((a, b) => a.startId.localeCompare(b.startId));
+  }
+
   function normalizeAltStartText(value) {
     return (value || "")
       .split(/\r?\n/)
@@ -8565,6 +8659,8 @@ Sentence:
   function allowedEdgeTypesForSource(nodeId, snapshot = sceneFlow) {
     if (!nodeId) return new Set(ALL_EDGE_TYPES);
     const sourceKey = String(nodeId).trim();
+    const sourceNode = (snapshot?.nodes || []).find((node) => String(node?.id || "").trim() === sourceKey) || null;
+    const isSuperNode = sourceNode?.type === "Super";
     const edges = (snapshot?.edges || []).filter((edge) => {
       if (!edge) return false;
       const edgeSource = String(edge.sourceId ?? "").trim();
@@ -8601,14 +8697,14 @@ Sentence:
         allowed.add("EEDGE");
         allowed.add("TEDGE");
       }
-      if (hasSelfLoopT) {
+      if (hasSelfLoopT || isSuperNode) {
         allowed.add("IEDGE");
       }
       return allowed;
     }
     if (hasD) {
       const allowed = new Set(["CEDGE"]);
-      if (hasSelfLoopT) {
+      if (hasSelfLoopT || isSuperNode) {
         allowed.add("IEDGE");
       }
       return allowed;
@@ -10907,9 +11003,10 @@ Sentence:
     if (nodeEditorTarget?.isRoot) return;
     await openCmdDialog();
     cmdError = "";
+    const nextIndex = cmdInlineDrafts.length;
     cmdInlineDrafts = [...cmdInlineDrafts, ""];
-    cmdSelectedIndex = cmdInlineDrafts.length - 1;
-    cmdEditingIndex = cmdSelectedIndex;
+    cmdSelectedIndex = nextIndex;
+    cmdEditingIndex = nextIndex;
   }
 
   async function startCmdEdit(index) {
@@ -11172,6 +11269,8 @@ Sentence:
     cmdHelperVarType = helperVarCandidates?.[0]?.type || "Int";
     cmdHelperVarExpr = "";
     cmdHelperVarStep = "1";
+    cmdHelperVarSuggestOpen = false;
+    cmdHelperVarSuggestIndex = 0;
     cmdHelperSceneBindings = {};
     cmdHelperVarScope = "global";
     cmdHelperVarOp = "Assign";
@@ -11201,6 +11300,246 @@ Sentence:
     }
   }
 
+  function selectCmdHelperVarSuggestion(item) {
+    if (!item) return;
+    cmdHelperVarName = String(item.name || "");
+    if (item.type) {
+      cmdHelperVarType = String(item.type || cmdHelperVarType);
+    }
+    cmdHelperVarSuggestOpen = false;
+    cmdHelperVarSuggestIndex = 0;
+    tick().then(() => {
+      cmdHelperVarInputEl?.focus?.();
+      const len = cmdHelperVarName.length;
+      cmdHelperVarInputEl?.setSelectionRange?.(len, len);
+    });
+  }
+
+  function handleCmdHelperVarInput() {
+    cmdHelperVarSuggestIndex = cmdHelperVarSuggestions.length > 0 ? 0 : -1;
+    cmdHelperVarSuggestOpen = cmdHelperVarSuggestions.length > 0;
+  }
+
+  function handleCmdHelperVarFocus() {
+    cmdHelperVarSuggestOpen = cmdHelperVarSuggestions.length > 0;
+    if (cmdHelperVarSuggestOpen && cmdHelperVarSuggestIndex < 0) {
+      cmdHelperVarSuggestIndex = 0;
+    }
+  }
+
+  function handleCmdHelperVarBlur() {
+    setTimeout(() => {
+      cmdHelperVarSuggestOpen = false;
+    }, 120);
+  }
+
+  function handleCmdHelperVarKeydown(event) {
+    if (!cmdHelperVarSuggestions.length) return;
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      cmdHelperVarSuggestOpen = true;
+      cmdHelperVarSuggestIndex = (cmdHelperVarSuggestIndex + 1 + cmdHelperVarSuggestions.length) % cmdHelperVarSuggestions.length;
+      return;
+    }
+    if (event.key === "ArrowUp") {
+      event.preventDefault();
+      cmdHelperVarSuggestOpen = true;
+      cmdHelperVarSuggestIndex = (cmdHelperVarSuggestIndex - 1 + cmdHelperVarSuggestions.length) % cmdHelperVarSuggestions.length;
+      return;
+    }
+    if (event.key === "Tab" || event.key === "Enter" || event.key === " ") {
+      if (!cmdHelperVarSuggestOpen) return;
+      const item = cmdHelperVarSuggestions[cmdHelperVarSuggestIndex] || cmdHelperVarSuggestions[0];
+      if (!item) return;
+      event.preventDefault();
+      selectCmdHelperVarSuggestion(item);
+    }
+  }
+
+  function edgeConditionCurrentToken(text, input) {
+    const value = String(text ?? "");
+    const pos = Math.max(0, Number(input?.selectionStart ?? value.length));
+    let start = pos;
+    while (start > 0 && /[A-Za-z0-9_]/.test(value[start - 1])) {
+      start -= 1;
+    }
+    let end = pos;
+    while (end < value.length && /[A-Za-z0-9_]/.test(value[end])) {
+      end += 1;
+    }
+    return value.slice(start, pos) || value.slice(start, end);
+  }
+
+  function replaceEdgeConditionToken(text, input, replacement) {
+    const value = String(text ?? "");
+    const cursor = Math.max(0, Number(input?.selectionStart ?? value.length));
+    let start = cursor;
+    while (start > 0 && /[A-Za-z0-9_]/.test(value[start - 1])) {
+      start -= 1;
+    }
+    let end = cursor;
+    while (end < value.length && /[A-Za-z0-9_]/.test(value[end])) {
+      end += 1;
+    }
+    return {
+      value: `${value.slice(0, start)}${replacement}${value.slice(end)}`,
+      caret: start + String(replacement || "").length
+    };
+  }
+
+  function patchConditionEdgeInSceneFlow(edgeId, fields) {
+    if (!sceneFlow || !edgeId || !fields) return;
+    const nextEdges = (sceneFlow.edges || []).map((edge) => {
+      if (!edge || edge.id !== edgeId) return edge;
+      const next = { ...edge };
+      if (fields.condition !== undefined) {
+        next.condition = fields.condition;
+      }
+      if (fields.altStartMap !== undefined) {
+        next.altStartMap = fields.altStartMap;
+      }
+      return next;
+    });
+    sceneFlow = { ...sceneFlow, edges: nextEdges };
+  }
+
+  function selectEdgeConditionSuggestion(item) {
+    if (!item || !edgeDraft) return;
+    const next = replaceEdgeConditionToken(edgeDraft.condition ?? "", edgeConditionInputEl, String(item.name || ""));
+    edgeDraft = { ...edgeDraft, condition: next.value };
+    edgeConditionSuggestOpen = false;
+    edgeConditionSuggestIndex = 0;
+    edgeEditError = "";
+    tick().then(() => {
+      edgeConditionInputEl?.focus?.();
+      edgeConditionInputEl?.setSelectionRange?.(next.caret, next.caret);
+    });
+    scheduleConditionEdgeDraftApply();
+  }
+
+  function handleEdgeConditionInput(event) {
+    if (!edgeDraft) return;
+    const value = String(event?.currentTarget?.value ?? "");
+    edgeDraft = { ...edgeDraft, condition: value };
+    edgeEditError = "";
+    edgeConditionSuggestIndex = edgeConditionSuggestions.length > 0 ? 0 : -1;
+    edgeConditionSuggestOpen = edgeConditionSuggestions.length > 0;
+    scheduleConditionEdgeDraftApply();
+  }
+
+  function handleEdgeConditionFocus() {
+    edgeConditionSuggestOpen = edgeConditionSuggestions.length > 0;
+    if (edgeConditionSuggestOpen && edgeConditionSuggestIndex < 0) {
+      edgeConditionSuggestIndex = 0;
+    }
+  }
+
+  function handleEdgeConditionBlur() {
+    setTimeout(() => {
+      edgeConditionSuggestOpen = false;
+    }, 120);
+  }
+
+  function handleEdgeConditionKeydown(event) {
+    if (!edgeConditionSuggestions.length) return;
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      edgeConditionSuggestOpen = true;
+      edgeConditionSuggestIndex = (edgeConditionSuggestIndex + 1 + edgeConditionSuggestions.length) % edgeConditionSuggestions.length;
+      return;
+    }
+    if (event.key === "ArrowUp") {
+      event.preventDefault();
+      edgeConditionSuggestOpen = true;
+      edgeConditionSuggestIndex = (edgeConditionSuggestIndex - 1 + edgeConditionSuggestions.length) % edgeConditionSuggestions.length;
+      return;
+    }
+    if (event.key === "Tab" || event.key === "Enter" || event.key === " ") {
+      if (!edgeConditionSuggestOpen) return;
+      const item = edgeConditionSuggestions[edgeConditionSuggestIndex] || edgeConditionSuggestions[0];
+      if (!item) return;
+      event.preventDefault();
+      selectEdgeConditionSuggestion(item);
+    }
+  }
+
+  function scheduleConditionEdgeDraftApply() {
+    if (edgeConditionApplyTimer) {
+      clearTimeout(edgeConditionApplyTimer);
+    }
+    edgeConditionApplyTimer = setTimeout(() => {
+      edgeConditionApplyTimer = null;
+      applyConditionEdgeDraft();
+    }, 220);
+  }
+
+  function handleEdgeAltStartSelection(startId, event) {
+    if (!edgeDraft || !startId) return;
+    const altStartId = String(event?.currentTarget?.value ?? "").trim();
+    edgeDraft = {
+      ...edgeDraft,
+      altStartSelections: {
+        ...(edgeDraft.altStartSelections || {}),
+        [startId]: altStartId
+      }
+    };
+    edgeEditError = "";
+    scheduleConditionEdgeDraftApply();
+  }
+
+  async function applyConditionEdgeDraft(draft = edgeDraft, edgeId = selectedEdge?.id) {
+    if (!selectedProjectId || !selectedEdge || !draft || !edgeId) return;
+    if (!(selectedEdge.type === "CEDGE" || selectedEdge.type === "IEDGE")) return;
+    const condition = String(draft.condition ?? "").trim();
+    if (!condition) {
+      edgeEditError = "Condition is required.";
+      return;
+    }
+    const fields = {};
+    if (condition !== String(selectedEdge.condition ?? "")) {
+      fields.condition = condition;
+    }
+    if (edgeAltStartEnabled) {
+      const nextEntries = normalizeAltStartSelections(draft.altStartSelections, selectedEdgeTarget);
+      const currentEntries = normalizeAltStartSelections(
+        altStartSelectionsFromEdge(selectedEdge, selectedEdgeTarget),
+        selectedEdgeTarget
+      );
+      if (JSON.stringify(nextEntries) !== JSON.stringify(currentEntries)) {
+        fields.altStartMap = nextEntries;
+      }
+    }
+    if (!Object.keys(fields).length) {
+      edgeEditError = "";
+      return;
+    }
+    patchConditionEdgeInSceneFlow(edgeId, fields);
+    if (edgeConditionSending) {
+      edgeConditionQueuedDraft = { ...draft };
+      edgeConditionQueuedEdgeId = edgeId;
+      return;
+    }
+    edgeConditionSending = true;
+    edgeEditError = "";
+    try {
+      await runSceneFlowCommand("SceneFlow.Edge.Update", {
+        projectId: selectedProjectId,
+        superNodeId: sceneFlow?.superNodeId,
+        edgeId,
+        fields
+      });
+    } finally {
+      edgeConditionSending = false;
+      if (edgeConditionQueuedDraft && edgeConditionQueuedEdgeId === edgeId) {
+        const queuedDraft = edgeConditionQueuedDraft;
+        edgeConditionQueuedDraft = null;
+        await applyConditionEdgeDraft(queuedDraft, edgeId);
+      } else {
+        edgeConditionQueuedDraft = null;
+      }
+    }
+  }
+
   $: if (cmdDialogOpen && cmdHelperTab === "PlayScene" && !cmdHelperSyncing) {
     const params = helperSceneIndex.get(cmdHelperScene) || [];
     const next = {};
@@ -11217,15 +11556,14 @@ Sentence:
     const actionName = (cmdHelperAction || "").trim();
     if (actionName && actionName !== lastCmdHelperAction) {
       const action = options.find((entry) => entry?.name === actionName);
-      if (action && Array.isArray(action.params) && action.params.length) {
-        const existing = new Map(cmdHelperArgs.map((entry) => [entry?.key, entry?.value]));
-        cmdHelperArgs = action.params
-          .map((param) => ({
-            key: param?.name || "",
-            value: existing.get(param?.name) || ""
-          }))
-          .filter((entry) => entry.key);
-      }
+      const existing = new Map(cmdHelperArgs.map((entry) => [entry?.key, entry?.value]));
+      const params = Array.isArray(action?.params) ? action.params : [];
+      cmdHelperArgs = params
+        .map((param) => ({
+          key: param?.name || "",
+          value: existing.get(param?.name) || ""
+        }))
+        .filter((entry) => entry.key);
       lastCmdHelperAction = actionName;
     }
   }
@@ -11384,6 +11722,28 @@ Sentence:
     return meta.type ? `${meta.type} value` : "value";
   }
 
+  function isQuotedCmdArgValue(value) {
+    const text = String(value || "");
+    return /^'[\s\S]*'$/.test(text) || /^"[\s\S]*"$/.test(text);
+  }
+
+  function formatCmdHelperArgValue(key, rawValue) {
+    const value = String(rawValue ?? "").trim();
+    if (!value) return "";
+    const meta = cmdParamMeta(key);
+    const type = normalizeVarType(meta?.type || "");
+    if (type !== "String") {
+      return value;
+    }
+    if (isQuotedCmdArgValue(value)) {
+      return value;
+    }
+    if (/\s/.test(value)) {
+      return `'${value}'`;
+    }
+    return value;
+  }
+
   function pluginWritesForAgent(agentName) {
     const descriptor = pluginInterfaceForAgent(agentName);
     return Array.isArray(descriptor?.writes) ? descriptor.writes : [];
@@ -11449,14 +11809,14 @@ Sentence:
     for (let i = 0; i < payload.length; i += 1) {
       const ch = payload[i];
       if (quote) {
+        current += ch;
         if (ch === quote) {
           quote = null;
-        } else {
-          current += ch;
         }
         continue;
       }
       if (ch === "'" || ch === '"') {
+        current += ch;
         quote = ch;
         continue;
       }
@@ -11886,7 +12246,7 @@ Sentence:
       const args = cmdHelperArgs
         .map((entry) => {
           const key = (entry?.key || "").trim();
-          const value = (entry?.value || "").trim();
+          const value = formatCmdHelperArgValue(key, entry?.value || "");
           if (!key || !value) return "";
           return `${key}=${value}`;
         })
@@ -11981,8 +12341,9 @@ Sentence:
   function insertHelperCommand(text) {
     if (!text) return;
     if (cmdSelectedIndex === null) {
+      const nextIndex = cmdInlineDrafts.length;
       cmdInlineDrafts = [...cmdInlineDrafts, text];
-      cmdSelectedIndex = cmdInlineDrafts.length - 1;
+      cmdSelectedIndex = nextIndex;
       return;
     }
     const el = cmdInlineInputEls[cmdSelectedIndex];
@@ -12024,8 +12385,9 @@ Sentence:
       updateCmdInlineDraft(cmdSelectedIndex, text);
       cmdEditingIndex = null;
     } else {
+      const nextIndex = cmdInlineDrafts.length;
       cmdInlineDrafts = [...cmdInlineDrafts, text];
-      cmdSelectedIndex = cmdInlineDrafts.length - 1;
+      cmdSelectedIndex = nextIndex;
     }
   }
 
@@ -12965,7 +13327,8 @@ Sentence:
       timeoutMinSpec: timeoutMode === "interval" ? String(selectedEdge.timeoutMinMs) : "",
       timeoutMaxSpec: timeoutMode === "interval" ? String(selectedEdge.timeoutMaxMs) : "",
       timeoutMode,
-      altStartText: formatAltStartMap(selectedEdge)
+      altStartText: formatAltStartMap(selectedEdge),
+      altStartSelections: altStartSelectionsFromEdge(selectedEdge, selectedEdgeTarget)
     };
     edgeEditError = "";
   }
@@ -13443,10 +13806,10 @@ Sentence:
           bind:value={newName}
           on:input={() => (createProjectError = "")}
         />
-        <label for="new-project-base">Base dir (optional)</label>
+        <label for="new-project-base">Base directory (optional)</label>
         <input
           id="new-project-base"
-          placeholder="Base dir (optional)"
+          placeholder="/abs/path/to/parent/folder"
           bind:value={newBaseDir}
           on:input={() => (createProjectError = "")}
         />
@@ -13846,6 +14209,16 @@ Sentence:
                 title="Project modules"
               >
                 <IconPuzzle className="icon" />
+              </button>
+              <button
+                type="button"
+                class="sceneflow-gear flat"
+                on:click={openPluginDashboard}
+                disabled={!selectedProject || !wsConnected}
+                aria-label="Open plugin dashboard"
+                title="Plugin Dashboard"
+              >
+                <IconBlocks className="icon" />
               </button>
               <button
                 type="button"
@@ -14950,7 +15323,36 @@ Sentence:
               <div class="stack">
                 {#if selectedEdge.type === "CEDGE" || selectedEdge.type === "IEDGE"}
                   <label for="edge-condition">Condition</label>
-                  <input id="edge-condition" bind:value={edgeDraft.condition} />
+                  <div class="cmd-helper-var-wrap">
+                    <input
+                      id="edge-condition"
+                      bind:this={edgeConditionInputEl}
+                      bind:value={edgeDraft.condition}
+                      autocomplete="off"
+                      spellcheck="false"
+                      on:input={handleEdgeConditionInput}
+                      on:focus={handleEdgeConditionFocus}
+                      on:blur={handleEdgeConditionBlur}
+                      on:keydown={handleEdgeConditionKeydown}
+                    />
+                    {#if edgeConditionSuggestOpen && edgeConditionSuggestions.length > 0}
+                      <div class="cmd-helper-var-dropdown" role="listbox" aria-label="Condition variable suggestions">
+                        {#each edgeConditionSuggestions as variable, i}
+                          <button
+                            type="button"
+                            class="cmd-ac-item"
+                            class:selected={i === edgeConditionSuggestIndex}
+                            role="option"
+                            aria-selected={i === edgeConditionSuggestIndex}
+                            on:mousedown|preventDefault={() => selectEdgeConditionSuggestion(variable)}
+                          >
+                            <span class="cmd-ac-label">{variable.name}</span>
+                            <span class="cmd-ac-detail">{variable.type || "Var"} • {variable.scope}</span>
+                          </button>
+                        {/each}
+                      </div>
+                    {/if}
+                  </div>
                 {:else if selectedEdge.type === "PEDGE"}
                   <div class="prob-manager">
                     <div class="prob-header">
@@ -15068,17 +15470,44 @@ Sentence:
                 {:else}
                   <p class="muted">No editable fields for this edge type yet.</p>
                 {/if}
-                {#if edgeAltStartEnabled}
-                  <label for="edge-alt-start">Alt start nodes (start/alt per line)</label>
-                  <textarea
-                    id="edge-alt-start"
-                    rows="4"
-                    placeholder="N1/N2"
-                    bind:value={edgeDraft.altStartText}
-                  ></textarea>
-                {:else}
-                  <p class="muted">Alt start nodes require a super node target.</p>
-                {/if}
+                <div class:muted={!edgeAltStartEnabled} class="edge-alt-start-panel">
+                  <p class="muted">
+                    Alternative start nodes require a super node target. Below provide a selector of alternative
+                    startnodes if the edge is point at a supernode.
+                  </p>
+                  {#if edgeAltStartEnabled}
+                    {#if edgeAltStartStartNodes.length > 0}
+                      <div class="stack edge-alt-start-list">
+                        {#each edgeAltStartStartNodes as startNode}
+                          <div class="edge-alt-start-row">
+                            <label for={`edge-alt-start-${startNode.id}`}>{displayNodeName(startNode)}</label>
+                            <select
+                              id={`edge-alt-start-${startNode.id}`}
+                              value={edgeAltStartSelections[startNode.id] || ""}
+                              on:change={(event) => handleEdgeAltStartSelection(startNode.id, event)}
+                              disabled={edgeAltStartSelectorMuted}
+                            >
+                              <option value="">Default start node</option>
+                              {#each edgeAltStartChildNodes as candidate}
+                                <option value={candidate.id}>{displayNodeName(candidate)}</option>
+                              {/each}
+                            </select>
+                          </div>
+                        {/each}
+                      </div>
+                    {:else}
+                      <select disabled>
+                        <option>
+                          {edgeAltStartChildNodes.length === 0 ? "No internal nodes available" : "No start nodes available"}
+                        </option>
+                      </select>
+                    {/if}
+                  {:else}
+                    <select disabled>
+                      <option>Alternative start nodes unavailable</option>
+                    </select>
+                  {/if}
+                </div>
               </div>
               <div class="actions">
                 <button
@@ -15097,14 +15526,16 @@ Sentence:
                 >
                   Relayout
                 </button>
-                {#if selectedEdge.type !== "TEDGE"}
+                {#if selectedEdge.type !== "TEDGE" && selectedEdge.type !== "CEDGE" && selectedEdge.type !== "IEDGE"}
                   <button type="button" class="primary" on:click={applyEdgeEdits} disabled={!wsConnected || sceneFlowBusy}>
                     Apply
                   </button>
                 {/if}
-                <button type="button" class="ghost" on:click={resetEdgeDraft} disabled={!edgeDirty}>
-                  Reset
-                </button>
+                {#if selectedEdge.type !== "CEDGE" && selectedEdge.type !== "IEDGE"}
+                  <button type="button" class="ghost" on:click={resetEdgeDraft} disabled={!edgeDirty}>
+                    Reset
+                  </button>
+                {/if}
               </div>
               {#if edgeEditError}
                 <p class="error">{edgeEditError}</p>
@@ -16015,14 +16446,14 @@ Sentence:
       <div class="modal" bind:this={saveAsDialogEl} role="dialog" aria-modal="true" aria-labelledby="save-as-title" tabindex="-1">
         <h3 id="save-as-title">Save project as</h3>
         <form class="modal-body" on:submit|preventDefault={confirmSaveAs}>
-          <label for="save-as-path">Save to path</label>
+          <label for="save-as-path">Save to directory</label>
           <input
             id="save-as-path"
-            placeholder="/abs/path/to/project"
+            placeholder="/abs/path/to/parent/folder"
             bind:this={saveAsInputEl}
             bind:value={saveAsPath}
           />
-          <p class="muted">Choose a new folder for this project.</p>
+          <p class="muted">Choose the parent directory. The project folder will use the project name.</p>
           {#if saveAsError}
             <p class="error">{saveAsError}</p>
           {/if}
@@ -17816,7 +18247,7 @@ Sentence:
           </div>
         {/if}
         <div class="cmd-modal-header">
-          <h3 id="cmd-dialog-title">Command executions of {nodeEditorTarget?.name || "(unnamed)"}</h3>
+          <h3 id="cmd-dialog-title">Command(s) executed at {nodeEditorTarget?.name || "(unnamed)"}</h3>
           <button
             type="button"
             class="ghost icon-button cmd-modal-close"
@@ -18085,36 +18516,68 @@ Sentence:
                 {/if}
 
               {:else if cmdHelperTab === "Variable"}
-                <div class="cmd-helper-var-ops" role="radiogroup" aria-label="Variable operation">
-                  <label class="cmd-helper-var-op" class:active={cmdHelperVarOp === "Assign"}>
-                    <input type="radio" name="cmdVarOp" value="Assign" bind:group={cmdHelperVarOp} on:change={updateCmdHelperVarOp} />
-                    <span>Assign</span>
-                  </label>
-                  <label class="cmd-helper-var-op" class:active={cmdHelperVarOp === "Inc"}>
-                    <input type="radio" name="cmdVarOp" value="Inc" bind:group={cmdHelperVarOp} on:change={updateCmdHelperVarOp} />
-                    <span>Increment</span>
-                  </label>
-                  <label class="cmd-helper-var-op" class:active={cmdHelperVarOp === "Dec"}>
-                    <input type="radio" name="cmdVarOp" value="Dec" bind:group={cmdHelperVarOp} on:change={updateCmdHelperVarOp} />
-                    <span>Decrement</span>
-                  </label>
+                <div class="cmd-helper-tabs" role="tablist" aria-label="Variable operation">
+                  <button
+                    type="button"
+                    class="cmd-helper-tab"
+                    class:active={cmdHelperVarOp === "Assign"}
+                    on:click={() => { cmdHelperVarOp = "Assign"; updateCmdHelperVarOp(); }}
+                    role="tab"
+                    aria-selected={cmdHelperVarOp === "Assign"}
+                  >Assign</button>
+                  <button
+                    type="button"
+                    class="cmd-helper-tab"
+                    class:active={cmdHelperVarOp === "Inc"}
+                    on:click={() => { cmdHelperVarOp = "Inc"; updateCmdHelperVarOp(); }}
+                    role="tab"
+                    aria-selected={cmdHelperVarOp === "Inc"}
+                  >Increment</button>
+                  <button
+                    type="button"
+                    class="cmd-helper-tab"
+                    class:active={cmdHelperVarOp === "Dec"}
+                    on:click={() => { cmdHelperVarOp = "Dec"; updateCmdHelperVarOp(); }}
+                    role="tab"
+                    aria-selected={cmdHelperVarOp === "Dec"}
+                  >Decrement</button>
                 </div>
                 <label for="cmd-helper-var">Variable</label>
-                <input
-                  id="cmd-helper-var"
-                  bind:value={cmdHelperVarName}
-                  list="cmd-helper-var-list"
-                  placeholder="Variable name"
-                  class:input-warning={!cmdHelperVarExists && cmdHelperVarName.trim().length}
-                />
+                <div class="cmd-helper-var-wrap">
+                  <input
+                    id="cmd-helper-var"
+                    bind:this={cmdHelperVarInputEl}
+                    bind:value={cmdHelperVarName}
+                    placeholder="Variable name"
+                    class:input-warning={!cmdHelperVarExists && cmdHelperVarName.trim().length}
+                    autocomplete="off"
+                    spellcheck="false"
+                    on:input={handleCmdHelperVarInput}
+                    on:focus={handleCmdHelperVarFocus}
+                    on:blur={handleCmdHelperVarBlur}
+                    on:keydown={handleCmdHelperVarKeydown}
+                  />
+                  {#if cmdHelperVarSuggestOpen && cmdHelperVarSuggestions.length > 0}
+                    <div class="cmd-helper-var-dropdown" role="listbox" aria-label="Variable suggestions">
+                      {#each cmdHelperVarSuggestions as variable, i}
+                        <button
+                          type="button"
+                          class="cmd-ac-item"
+                          class:selected={i === cmdHelperVarSuggestIndex}
+                          role="option"
+                          aria-selected={i === cmdHelperVarSuggestIndex}
+                          on:mousedown|preventDefault={() => selectCmdHelperVarSuggestion(variable)}
+                        >
+                          <span class="cmd-ac-label">{variable.name}</span>
+                          <span class="cmd-ac-detail">{variable.type}{variable.scope ? ` · ${variable.scope}` : ""}</span>
+                        </button>
+                      {/each}
+                    </div>
+                  {/if}
+                </div>
                 {#if !cmdHelperVarExists && cmdHelperVarName.trim().length}
                   <p class="muted">Variable not found. It will be created if you apply.</p>
                 {/if}
-                <datalist id="cmd-helper-var-list">
-                  {#each helperVarCandidates as variable}
-                    <option value={variable.name}>{variable.type ? `${variable.name} (${variable.type})` : variable.name}</option>
-                  {/each}
-                </datalist>
                 {#if !cmdHelperVarExists}
                   <label for="cmd-helper-var-scope">Create in</label>
                   <select id="cmd-helper-var-scope" bind:value={cmdHelperVarScope}>
@@ -18251,6 +18714,17 @@ Sentence:
       </div>
     </div>
   {/if}
+
+  <PluginDashboard
+    open={pluginDashboardOpen}
+    projectId={selectedProjectId}
+    projectName={selectedProject?.name || selectedProjectId || ""}
+    wsConnected={wsConnected}
+    serverMode={info?.mode || "FULL_EDITOR"}
+    onClose={closePluginDashboard}
+    {apiGet}
+    {apiPost}
+  />
 
   {#if !showEditor}
     <footer class="landing-footer" aria-label="Credits">

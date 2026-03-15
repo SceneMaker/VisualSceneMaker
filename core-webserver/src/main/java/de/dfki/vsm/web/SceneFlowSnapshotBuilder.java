@@ -100,6 +100,7 @@ public final class SceneFlowSnapshotBuilder {
             pathEntry.put("id", nodeId);
             pathEntry.put("name", nodeName);
             pathEntry.put("isRoot", node.getParentNode() == null);
+            pathEntry.put("varDefs", varDefsToJson(node.getVarDefList()));
             pathNodes.put(pathEntry);
         }
         snapshot.put("path", path);
@@ -177,7 +178,26 @@ public final class SceneFlowSnapshotBuilder {
 
         int childCount = 0;
         if (node instanceof SuperNode) {
-            childCount = ((SuperNode) node).getNodeAndSuperNodeList().size();
+            SuperNode childSuperNode = (SuperNode) node;
+            childCount = childSuperNode.getNodeAndSuperNodeList().size();
+            JSONArray childNodes = new JSONArray();
+            JSONArray startNodeIds = new JSONArray();
+            for (BasicNode child : childSuperNode.getNodeAndSuperNodeList()) {
+                JSONObject childJson = new JSONObject();
+                childJson.put("id", child.getId());
+                childJson.put("name", child.getName() != null ? child.getName() : "");
+                childJson.put("type", (child instanceof AliasNode) ? "Alias"
+                        : (child instanceof SuperNode) ? "Super"
+                        : "Basic");
+                childJson.put("isStart", childSuperNode.getStartNodeMap().containsKey(child.getId()));
+                childJson.put("isHistory", child.isHistoryNode());
+                childNodes.put(childJson);
+                if (!child.isHistoryNode() && childSuperNode.getStartNodeMap().containsKey(child.getId())) {
+                    startNodeIds.put(child.getId());
+                }
+            }
+            json.put("childNodes", childNodes);
+            json.put("startNodeIds", startNodeIds);
         }
         json.put("childCount", childCount);
 
@@ -276,6 +296,25 @@ public final class SceneFlowSnapshotBuilder {
             json.put("timeoutMinMs", te.getTimeoutMin());
             json.put("timeoutMaxMs", te.getTimeoutMax());
         }
+
+        JSONArray altStartMap = new JSONArray();
+        Map<Tuple<String, BasicNode>, Tuple<String, BasicNode>> altMap = edge.getAltMap();
+        if (altMap != null) {
+            for (Map.Entry<Tuple<String, BasicNode>, Tuple<String, BasicNode>> entry : altMap.entrySet()) {
+                Tuple<String, BasicNode> start = entry.getKey();
+                Tuple<String, BasicNode> alt = entry.getValue();
+                String startId = start != null && start.getFirst() != null ? start.getFirst() : "";
+                String altStartId = alt != null && alt.getFirst() != null ? alt.getFirst() : "";
+                if (startId.isBlank() || altStartId.isBlank()) {
+                    continue;
+                }
+                JSONObject mapEntry = new JSONObject();
+                mapEntry.put("startId", startId);
+                mapEntry.put("altStartId", altStartId);
+                altStartMap.put(mapEntry);
+            }
+        }
+        json.put("altStartMap", altStartMap);
 
         return json;
     }

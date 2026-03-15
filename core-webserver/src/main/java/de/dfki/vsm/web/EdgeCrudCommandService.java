@@ -363,6 +363,7 @@ public final class EdgeCrudCommandService {
         boolean hasE = dEdge instanceof EpsilonEdge;
         boolean hasT = dEdge instanceof TimeoutEdge;
         boolean hasD = dEdge != null;
+        boolean isSuperNode = sourceNode instanceof SuperNode;
         boolean hasSelfLoopT = hasT
                 && sourceNode.getId() != null
                 && sourceNode.getId().equals(dEdge.getTargetUnid());
@@ -387,7 +388,7 @@ public final class EdgeCrudCommandService {
             if ("EEDGE".equals(type) || "TEDGE".equals(type)) {
                 return hasD ? "Only one default/timeout edge is allowed on this node" : null;
             }
-            if ("IEDGE".equals(type) && hasSelfLoopT) {
+            if ("IEDGE".equals(type) && (hasSelfLoopT || isSuperNode)) {
                 return null;
             }
             return "Only conditional edges are allowed (plus one epsilon or timeout edge)";
@@ -397,7 +398,7 @@ public final class EdgeCrudCommandService {
             if ("CEDGE".equals(type)) {
                 return null;
             }
-            if ("IEDGE".equals(type) && hasSelfLoopT) {
+            if ("IEDGE".equals(type) && (hasSelfLoopT || isSuperNode)) {
                 return null;
             }
             if (hasE) {
