@@ -1,0 +1,37 @@
+{
+  "schemaVersion": "1.0",
+  "plugin": {
+    "id": "test-processing",
+    "name": "Test Processing",
+    "className": "de.dfki.vsm.runtime.activity.executor.TestProcessingExecutor",
+    "androidCompatible": true,
+    "description": "Built-in dummy processing executor for PlayAction blocking/non-blocking tests.",
+    "tags": ["test", "dummy", "processing", "playaction"]
+  },
+  "categories": {
+    "primary": "processing",
+    "secondary": []
+  },
+  "config": {
+    "required": [],
+    "optional": []
+  },
+  "commands": [
+    {
+      "name": "action",
+      "type": "action",
+      "summary": "Timed test action. Blocking or non-blocking depends on PlayAction execution mode.",
+      "params": [
+        { "name": "time", "type": "string", "required": true, "description": "Sleep duration in milliseconds" }
+      ],
+      "examples": [
+        { "playAction": "PlayAction(\"[dummy action time=500]\")" },
+        { "playAction": "PlayAction(\"[dummy action time=500]\", { __vsm_mode = \"nonblocking\" })" }
+      ]
+    }
+  ],
+  "variables": {
+    "writes": [],
+    "reads": []
+  }
+}
