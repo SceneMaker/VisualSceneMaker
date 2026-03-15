@@ -25,7 +25,9 @@ import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 
 /**
@@ -77,23 +79,24 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
 
         if (mPathToCertificate != null) {
             app = Javalin.create(config -> {
+                config.addStaticFiles(guiFiles, Location.EXTERNAL);
+                config.addStaticFiles(audioFiles, Location.EXTERNAL);
                 config.server(() -> {
                     Server server = new Server();
-                    ServerConnector sslConnector = null;
-                    sslConnector = new ServerConnector(server, getSslContextFactory());
+                    ServerConnector sslConnector = new ServerConnector(server, getSslContextFactory());
                     sslConnector.setPort(wss_port);
                     ServerConnector connector = new ServerConnector(server);
                     connector.setPort(ws_port);
                     ServerConnector htmlConnector = new ServerConnector(server);
                     htmlConnector.setPort(html_port);
                     server.setConnectors(new Connector[]{sslConnector, connector, htmlConnector});
-                    config.addStaticFiles(guiFiles, Location.EXTERNAL);
-                    config.addStaticFiles(audioFiles, Location.EXTERNAL);
                     return server;
                 });
             }).start();
         } else {
             app = Javalin.create(config -> {
+                config.addStaticFiles(guiFiles, Location.EXTERNAL);
+                config.addStaticFiles(audioFiles, Location.EXTERNAL);
                 config.server(() -> {
                     Server server = new Server();
                     ServerConnector connector = new ServerConnector(server);
@@ -101,8 +104,6 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
                     ServerConnector htmlConnector = new ServerConnector(server);
                     htmlConnector.setPort(html_port);
                     server.setConnectors(new Connector[]{connector, htmlConnector});
-                    config.addStaticFiles(guiFiles, Location.EXTERNAL);
-                    config.addStaticFiles(audioFiles, Location.EXTERNAL);
                     return server;
                 });
             }).start();
@@ -136,6 +137,45 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
                 }
             });
             ws.onError(ctx -> mLogger.failure("Error handling ws message exchange"));
+        });
+
+        // --- Schema-driven screens endpoints ---
+
+        // Serve screens.json from the project directory
+        final String screensJsonPath = mProject.getProjectPath() + File.separator + "screens.json";
+        app.get("/screens.json", ctx -> {
+            File screensFile = new File(screensJsonPath);
+            if (screensFile.exists()) {
+                ctx.result(new FileInputStream(screensFile)).contentType("application/json");
+            } else {
+                ctx.status(404).result("{}");
+            }
+        });
+
+        // Serve infrastructure files from the plugin JAR classpath so they are
+        // always up-to-date regardless of what the project's gui/ folder contains.
+        app.get("/index.html", ctx -> {
+            InputStream stream = getClass().getResourceAsStream("/renderer/index.html");
+            if (stream != null) ctx.result(stream).contentType("text/html");
+            else ctx.status(404);
+        });
+
+        app.get("/js/wsclient.js", ctx -> {
+            InputStream stream = getClass().getResourceAsStream("/renderer/wsclient.js");
+            if (stream != null) ctx.result(stream).contentType("application/javascript");
+            else ctx.status(404);
+        });
+
+        app.get("/screens.html", ctx -> {
+            InputStream stream = getClass().getResourceAsStream("/renderer/screens.html");
+            if (stream != null) ctx.result(stream).contentType("text/html");
+            else ctx.status(404);
+        });
+
+        app.get("/vsm-renderer.js", ctx -> {
+            InputStream stream = getClass().getResourceAsStream("/renderer/vsm-renderer.js");
+            if (stream != null) ctx.result(stream).contentType("application/javascript");
+            else ctx.status(404);
         });
 
         // Auto-start browser if configured
@@ -280,7 +320,17 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
         String message = ctx.message();
         mLogger.message("Processing Browser GUI message: >" + message + "<");
 
-        // let sceneflow know that a client has send a message.
+        // varUpdate$<varName>$<value> — write directly to the named SceneFlow variable.
+        // The value may contain '$', so split with limit 3.
+        if (message.startsWith("varUpdate$")) {
+            String[] parts = message.split("\\$", 3);
+            if (parts.length == 3 && mProject.hasVariable(parts[1])) {
+                mProject.setVariable(parts[1], parts[2]);
+            }
+            return; // do not also write to sceneflowInfoVar
+        }
+
+        // Let sceneflow know that a client has sent a message (legacy path).
         if (mProject.hasVariable(mSceneflowInfoVar)) {
             mProject.setVariable(mSceneflowInfoVar, message);
         }
@@ -450,6 +500,15 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
                 broadcast(element + sCmdSeperatorChar + name + svalueSeparatorChar + control_type);
             } else if (name.equalsIgnoreCase("stop")) {
                 app.stop();
+            } else if (name.equalsIgnoreCase("loadScreen")) {
+                String screen = activity.get("screen").replace("'", "");
+                broadcast("loadScreen$" + screen);
+            } else if (name.equalsIgnoreCase("updateVar")) {
+                String varName = activity.get("var").replace("'", "");
+                String value   = activity.get("value").replace("'", "");
+                broadcast("updateVar$" + varName + "$" + value);
+            } else if (name.equalsIgnoreCase("screensToFront")) {
+                broadcast("screensToFront");
             } else if (name.equalsIgnoreCase("guiToFront")) {
                 broadcast(name);
             } else if (name.equalsIgnoreCase("vcToFront")) {

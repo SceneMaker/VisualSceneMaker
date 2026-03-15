@@ -1,3 +1,16 @@
+/**
+ * INFRASTRUCTURE FILE — DO NOT EDIT FOR CONTENT CUSTOMIZATION.
+ *
+ * This file is served directly from the plugin JAR at runtime. Any edits made
+ * here will have no effect because the JAR version always takes precedence.
+ *
+ * To customize what users see:
+ *   - Define screens in your project's screens.json  (schema-driven, recommended)
+ *   - Add custom HTML pages to your project's gui/   (legacy, full flexibility)
+ *
+ * Only change this file if you are modifying the plugin itself.
+ */
+
 // constants
 const WS_PROTOCOL = "ws";
 const WS_HOSTNAME = "localhost";
@@ -62,30 +75,30 @@ function setupAudioOverlay() {
 }
 
 /**
- * Load Web page into gui iframe
+ * Tell the screens iframe to switch to the given screen id.
  */
-function loadPage(page) {
-    console.log("Load page " + page + " into iframe gui")
-    document.getElementById('gui').src = page;
-}
-
-function guiToFront() {
-    document.getElementById('gui').style.zIndex = 1;
-    document.getElementById('sia').style.zIndex = -1;
-}
-
-function vcToFront() {
-    document.getElementById('gui').style.zIndex = -1;
-    document.getElementById('sia').style.zIndex = 1;
+function loadScreen(screenId) {
+    console.log("Load VSM screen: " + screenId);
+    document.getElementById('screens').contentWindow.postMessage(
+        { cmd: 'loadScreen', screen: screenId }, '*'
+    );
 }
 
 /**
- * Set values of gui elements in gui iframe
+ * Push a variable update to the screens iframe so bound components reflect
+ * the new value.
  */
-function setGuiElementValue(msg) {
-    console.log("Assign value to element " + msg)
-    document.getElementById('gui').contentWindow.postMessage(msg, '*');
-};
+function forwardUpdateVar(wsMsg) {
+    // Format: updateVar$<varName>$<value>  (value may itself contain $)
+    const idx1 = wsMsg.indexOf('$');
+    const idx2 = wsMsg.indexOf('$', idx1 + 1);
+    if (idx1 < 0 || idx2 < 0) return;
+    const varName = wsMsg.substring(idx1 + 1, idx2);
+    const value   = wsMsg.substring(idx2 + 1);
+    document.getElementById('screens').contentWindow.postMessage(
+        { cmd: 'updateVar', var: varName, value: value }, '*'
+    );
+}
 
 /**
  * Event handler for clicking on button "Connect"
@@ -128,15 +141,10 @@ function openWSConnection(protocol, hostname, port, endpoint) {
             } else {
                 //document.getElementById("incomingMsgOutput").value += "message: " + wsMsg + "\r\n";
 
-                // if message contains a ":", assume it is a key value pair to set a value of an element
-                if (wsMsg.includes("$")) {
-                    setGuiElementValue(wsMsg);
-                } else if (wsMsg.includes("guiToFront")) {
-                    guiToFront();
-                } else if (wsMsg.includes("vcToFront")) {
-                    vcToFront();
-                } else { // assume it is a web page and load it into the gui iframe
-                    loadPage(wsMsg);
+                if (wsMsg.startsWith("loadScreen$")) {
+                    loadScreen(wsMsg.substring("loadScreen$".length));
+                } else if (wsMsg.startsWith("updateVar$")) {
+                    forwardUpdateVar(wsMsg);
                 }
             }
         };

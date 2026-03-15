@@ -93,14 +93,32 @@
       { "name": "type", "type": "string" }
     ]},
     { "name": "stop", "type": "action", "params": [] },
-    { "name": "guiToFront", "type": "action", "params": [] },
-    { "name": "vcToFront", "type": "action", "params": [] }
+    { "name": "guiToFront", "type": "action", "summary": "Bring legacy GUI iframe to foreground", "params": [] },
+    { "name": "vcToFront", "type": "action", "summary": "Bring video-conferencing iframe to foreground", "params": [] },
+    { "name": "loadScreen", "type": "action",
+      "summary": "Switch to a schema-defined screen (screens.json)",
+      "description": "Tells the Lit renderer to display the named screen from the project's screens.json. Call screensToFront first if the screens iframe is not already visible.",
+      "params": [
+        { "name": "screen", "type": "string", "required": true, "description": "ID of the screen to display, as defined in screens.json" }
+      ]},
+    { "name": "updateVar", "type": "action",
+      "summary": "Push a variable value to a bound screen component",
+      "description": "Sends the new value to any component in the active schema-driven screen whose bindVar matches the given variable name, updating the component's displayed state.",
+      "params": [
+        { "name": "var",   "type": "string", "required": true, "description": "SceneFlow variable name whose bound component should be updated" },
+        { "name": "value", "type": "string", "required": true, "description": "New value to push to the component" }
+      ]},
+    { "name": "screensToFront", "type": "action",
+      "summary": "Bring the schema-driven screens iframe to foreground",
+      "description": "Raises the Lit renderer iframe (z-index 1) and hides the legacy GUI and video-conferencing iframes.",
+      "params": [] }
   ],
   "variables": {
     "writes": [
       { "var": "sceneflowStateVar", "type": "Bool", "description": "Set to true when GUI connects" },
-      { "var": "sceneflowInfoVar", "type": "String", "description": "Receives messages from GUI" }
+      { "var": "sceneflowInfoVar", "type": "String", "description": "Receives all non-binding messages from the legacy GUI (unchanged)" }
     ],
-    "reads": []
+    "reads": [],
+    "note": "Schema-driven screens (screens.json) write directly to whichever SceneFlow variables are named in each component's bindVar or sendsVar field. Declare those variables manually in the SceneFlow as needed."
   }
 }

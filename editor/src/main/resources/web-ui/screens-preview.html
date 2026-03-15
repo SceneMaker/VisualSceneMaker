@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Screen Preview</title>
+
+    <!-- Shoelace component library -->
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.19.1/cdn/themes/light.css">
+    <script type="module"
+            src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.19.1/cdn/shoelace.js"></script>
+
+    <!-- VSM schema-driven renderer -->
+    <script type="module" src="/vsm-renderer.js"></script>
+
+    <style>
+        html, body { margin: 0; padding: 0; width: 100%; height: 100%; }
+    </style>
+
+    <script>
+        // Resolve the schema from the REST API so the renderer works without
+        // the plugin runtime server being active.
+        window.__VSM_PREVIEW_MODE = true;   // suppresses character iframe + audio overlay
+
+        window.__VSM_SCHEMA_READY = (async () => {
+            const params = new URLSearchParams(location.search);
+            const pid    = params.get('project');
+            if (!pid) return null;
+            try {
+                const r = await fetch('/api/v1/projects/' + pid + '/screens');
+                if (!r.ok) return null;
+                return await r.json();
+            } catch (e) {
+                console.error('[screens-preview] Failed to load screens:', e);
+                return null;
+            }
+        })();
+    </script>
+</head>
+<body>
+    <vsm-screen-renderer></vsm-screen-renderer>
+</body>
+</html>

@@ -1,5 +1,6 @@
 <script>
   import IconBlocks from "./icons/IconBlocks.svelte";
+  import ScreenEditor from "./ScreenEditor.svelte";
 
   export let open = false;
   export let projectId = null;
@@ -8,7 +9,14 @@
   export let onClose = () => {};
   export let apiGet;
   export let apiPost;
+  export let apiPut;
   export let projectName = "";
+
+  // ── screen editor state ────────────────────────────────────────────────────
+  let screenEditorPlugin = null;
+
+  function openScreenEditor(plugin) { screenEditorPlugin = plugin; }
+  function closeScreenEditor()      { screenEditorPlugin = null; }
 
   // ── state ──────────────────────────────────────────────────────────────────
   let plugins = [];
@@ -998,6 +1006,16 @@
                       >
                         {selectedPlugin === plugin ? "Cancel edit" : "Edit parameters"}
                       </button>
+                      {#if plugin.meta?.plugin?.id === "htmlgui-ws"}
+                        <button
+                          type="button"
+                          class="pd-action-btn"
+                          disabled={!wsConnected}
+                          on:click={() => openScreenEditor(plugin)}
+                        >
+                          Edit screens
+                        </button>
+                      {/if}
                     </div>
                   {/if}
                 </div>
@@ -1009,6 +1027,16 @@
       </div>
     </div>
   </div>
+{/if}
+
+{#if screenEditorPlugin !== null}
+  <ScreenEditor
+    {projectId}
+    plugin={screenEditorPlugin}
+    {apiGet}
+    {apiPut}
+    onClose={closeScreenEditor}
+  />
 {/if}
 
 <style>

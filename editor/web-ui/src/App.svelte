@@ -11022,6 +11022,23 @@ Sentence:
     cmdInlineDrafts = cmdInlineDrafts.map((entry, idx) => (idx === index ? value : entry));
   }
 
+  function handleCmdInlineBlur(event, index) {
+    dismissAutocomplete();
+    cmdEditingIndex = null;
+    const nextTarget = event?.relatedTarget;
+    const preservingAdd =
+      nextTarget &&
+      typeof nextTarget.closest === "function" &&
+      nextTarget.closest("[data-cmd-add-button='true']");
+    const raw = cmdInlineDrafts[index] ?? "";
+    const text = String(raw).trim();
+    const isExisting = index < nodeEditorCommands.length;
+    if (preservingAdd && !isExisting && !text) {
+      return;
+    }
+    commitCmdInlineDraft(index);
+  }
+
   function buildPlayActionExampleText(agentName, commandEntry) {
     const agent = (agentName || "").trim();
     const command = (commandEntry?.name || "").trim();
@@ -11727,21 +11744,20 @@ Sentence:
     return /^'[\s\S]*'$/.test(text) || /^"[\s\S]*"$/.test(text);
   }
 
-  function formatCmdHelperArgValue(key, rawValue) {
+  function normalizeCmdArgRawValue(rawValue) {
     const value = String(rawValue ?? "").trim();
     if (!value) return "";
-    const meta = cmdParamMeta(key);
-    const type = normalizeVarType(meta?.type || "");
-    if (type !== "String") {
-      return value;
-    }
     if (isQuotedCmdArgValue(value)) {
-      return value;
-    }
-    if (/\s/.test(value)) {
-      return `'${value}'`;
+      return value.slice(1, -1);
     }
     return value;
+  }
+
+  function formatCmdHelperArgValue(key, rawValue) {
+    const normalized = normalizeCmdArgRawValue(rawValue);
+    if (!normalized) return "";
+    const escaped = normalized.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+    return `'${escaped}'`;
   }
 
   function pluginWritesForAgent(agentName) {
@@ -15906,6 +15922,7 @@ Sentence:
                       class="ghost icon-button"
                       on:click={startCmdAdd}
                       disabled={!wsConnected || sceneFlowBusy || rootSceneFlowCommandEditingLocked}
+                      data-cmd-add-button="true"
                       aria-label="Add command"
                       title="Add command"
                     >
@@ -18281,7 +18298,7 @@ Sentence:
                         data-cmd-index={index}
                         on:focus={(event) => (cmdInlineInputEls[index] = event.currentTarget)}
                         on:input={(event) => { updateCmdInlineDraft(index, event.target.value); updateAutocomplete(event.target); }}
-                        on:blur={() => { dismissAutocomplete(); cmdEditingIndex = null; commitCmdInlineDraft(index); }}
+                        on:blur={(event) => handleCmdInlineBlur(event, index)}
                         on:keydown={(event) => handleCmdInlineKeydown(event, index)}
                         disabled={!wsConnected || sceneFlowBusy || rootSceneFlowCommandEditingLocked}
                       />
@@ -18313,6 +18330,7 @@ Sentence:
                   class="ghost icon-button"
                   on:click={startCmdAdd}
                   disabled={!wsConnected || sceneFlowBusy || rootSceneFlowCommandEditingLocked}
+                  data-cmd-add-button="true"
                   aria-label="Add command"
                   title="Add command"
                 >
@@ -18724,6 +18742,7 @@ Sentence:
     onClose={closePluginDashboard}
     {apiGet}
     {apiPost}
+    {apiPut}
   />
 
   {#if !showEditor}

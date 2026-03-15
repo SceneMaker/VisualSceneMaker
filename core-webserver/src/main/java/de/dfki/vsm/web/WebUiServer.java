@@ -2586,6 +2586,9 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         mApp.put(API_PREFIX + "/projects/{pid}/semantic", this::handleSemanticPut);
         mApp.get(API_PREFIX + "/projects/{pid}/ui-prefs", this::handleUiPrefsGet);
         mApp.put(API_PREFIX + "/projects/{pid}/ui-prefs", this::handleUiPrefsPut);
+        mApp.get(API_PREFIX + "/projects/{pid}/variables", this::handleVariables);
+        mApp.get(API_PREFIX + "/projects/{pid}/screens", this::handleScreensGet);
+        mApp.put(API_PREFIX + "/projects/{pid}/screens", this::handleScreensPut);
         mApp.post(API_PREFIX + "/projects/{pid}/semantic/syntax", this::handleSemanticSyntaxAnalyze);
         mApp.post(API_PREFIX + "/projects/{pid}/semantic/analyze", this::handleSemanticAnalyze);
         mApp.get(API_PREFIX + "/projects/{pid}/sceneflow", this::handleSceneflow);
@@ -5373,6 +5376,87 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         } catch (Exception exc) {
             sLogger.warning("Warning: cannot save ui-prefs.json: " + exc.getMessage());
             return false;
+        }
+    }
+
+    // ── Variables ─────────────────────────────────────────────────────────────
+
+    private void handleVariables(Context ctx) {
+        String pid = ctx.pathParam("pid");
+        ProjectRef ref = projectStore.get(pid);
+        if (ref == null || ref.runtimeProject == null) {
+            ctx.status(404);
+            writeJson(ctx, errorResponse("PROJECT_NOT_FOUND", "Project not found"));
+            return;
+        }
+        JSONArray vars = new JSONArray();
+        try {
+            for (VariableDefinition def : ref.runtimeProject.getSceneFlow().getVarDefList()) {
+                JSONObject v = new JSONObject();
+                v.put("name", def.getName());
+                v.put("type", def.getType());
+                vars.put(v);
+            }
+        } catch (Exception e) {
+            sLogger.warning("handleVariables: " + e.getMessage());
+        }
+        JSONObject response = new JSONObject();
+        response.put("variables", vars);
+        writeJson(ctx, response);
+    }
+
+    // ── Screens (screens.json) ────────────────────────────────────────────────
+
+    private Path screensPath(ProjectRef ref) {
+        if (ref == null || ref.path == null || ref.path.isBlank()) return null;
+        return Paths.get(ref.path, "screens.json");
+    }
+
+    private void handleScreensGet(Context ctx) {
+        String pid = ctx.pathParam("pid");
+        ProjectRef ref = projectStore.get(pid);
+        if (ref == null || ref.runtimeProject == null) {
+            ctx.status(404);
+            writeJson(ctx, errorResponse("PROJECT_NOT_FOUND", "Project not found"));
+            return;
+        }
+        Path path = screensPath(ref);
+        if (path == null || !Files.exists(path)) {
+            writeJson(ctx, new JSONObject());
+            return;
+        }
+        try {
+            String raw = Files.readString(path, StandardCharsets.UTF_8);
+            writeJson(ctx, new JSONObject(raw));
+        } catch (Exception e) {
+            ctx.status(500);
+            writeJson(ctx, errorResponse("SCREENS_READ_FAILED", e.getMessage()));
+        }
+    }
+
+    private void handleScreensPut(Context ctx) {
+        String pid = ctx.pathParam("pid");
+        ProjectRef ref = projectStore.get(pid);
+        if (ref == null || ref.runtimeProject == null) {
+            ctx.status(404);
+            writeJson(ctx, errorResponse("PROJECT_NOT_FOUND", "Project not found"));
+            return;
+        }
+        Path path = screensPath(ref);
+        if (path == null) {
+            ctx.status(500);
+            writeJson(ctx, errorResponse("SCREENS_SAVE_FAILED", "Cannot resolve project path"));
+            return;
+        }
+        try {
+            JSONObject body = new JSONObject(ctx.body());
+            Files.createDirectories(path.getParent());
+            Files.writeString(path, body.toString(2), StandardCharsets.UTF_8,
+                    StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
+            writeJson(ctx, body);
+        } catch (Exception e) {
+            ctx.status(400);
+            writeJson(ctx, errorResponse("SCREENS_SAVE_FAILED", e.getMessage()));
         }
     }
 

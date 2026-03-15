@@ -1,0 +1,33 @@
+<!--
+  INFRASTRUCTURE FILE — DO NOT EDIT FOR CONTENT CUSTOMIZATION.
+
+  This file is served directly from the plugin JAR at runtime. Any edits made
+  here will have no effect because the JAR version always takes precedence.
+
+  To customize what users see:
+    - Define screens in your project's screens.json  (schema-driven, recommended)
+    - Add custom HTML pages to your project's gui/   (legacy, full flexibility)
+
+  Only change this file if you are modifying the plugin itself.
+-->
+<!doctype html>
+<html lang="en" class="h-100">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+
+    <!-- Connect to our server -->
+    <script defer type="text/javascript" src="js/wsclient.js"></script>
+
+    <!-- Bootstrap core CSS -->
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/custom.css">
+
+</head>
+<body>
+<!-- Schema-driven screen renderer -->
+<iframe id="screens" name="SCREENS" src="/screens.html" allow="autoplay" frameborder="0"
+        style="position: fixed; left:0px; top:0px; z-index:1; width:100%; height:100%; border:none;"></iframe>
+</body>
+</html>
