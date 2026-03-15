@@ -12,6 +12,7 @@
     "primary": "output",
     "secondary": ["input"]
   },
+  "serviceModel": "self-contained",
   "config": {
     "required": [
       { "name": "wss_port", "type": "int", "default": 4040, "readonly": true, "description": "Secure WebSocket port" },

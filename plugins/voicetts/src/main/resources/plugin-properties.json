@@ -10,7 +10,7 @@
   },
   "categories": {
     "primary": "output",
-    "secondary": ["processing"]
+    "secondary": ["input"]
   },
   "config": {
     "required": [
@@ -40,7 +40,15 @@
       { "name": "debugSeqVar", "type": "string", "sceneflowtype": "String", "default": "tts_debug_seq", "description": "Current speak sequence id" },
       { "name": "debugReqVar", "type": "string", "sceneflowtype": "String", "default": "tts_debug_request_id", "description": "Current TTS request id" },
       { "name": "debugStateVar", "type": "string", "sceneflowtype": "String", "default": "tts_debug_state", "description": "Current internal debug state" }
-    ]
+    ],
+    "agent": {
+      "optional": [
+        { "name": "mode", "type": "string", "description": "Voice synthesis mode for this agent: custom, design, or clone. Overrides the plugin-level default." },
+        { "name": "generation_mode", "type": "string", "description": "Generation mode for this agent: full_utterance or streaming. Overrides the plugin-level default." },
+        { "name": "custom_voice_id", "type": "string", "description": "Voice ID for this agent (e.g. anna_v1). Overrides the plugin-level custom_voice_id." }
+      ],
+      "dynamic": { "enabled": false }
+    }
   },
   "commands": [
     { "name": "stop", "type": "action", "summary": "Cancel current stream session", "params": [] },

@@ -123,6 +123,11 @@ public class RunTimeProject {
         return mProjectConfig.getPluginConfig(name);
     }
 
+    // Get a loaded runtime plugin instance by name (null if not loaded)
+    public final RunTimePlugin getPlugin(final String name) {
+        return mPluginMap.get(name);
+    }
+
     // Get the list of all configured agents in the project configuation (agged PG 8.4.2016)
     public final List<String> getAgentNames() {
         return mProjectConfig.getAgentNames();

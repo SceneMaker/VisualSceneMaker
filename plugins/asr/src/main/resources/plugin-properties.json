@@ -60,6 +60,20 @@
       "params": [
         { "name": "language", "type": "string", "required": true, "description": "Full English name, e.g. \"German\"" }
       ]
+    },
+    {
+      "name": "mute",
+      "type": "action",
+      "summary": "Stop processing microphone audio — use before TTS starts speaking",
+      "description": "Instructs the fast-asr server to discard all incoming audio chunks silently. No VAD/SAD/ASR output is generated while muted. Use this immediately before a TTS utterance to prevent the microphone from picking up speaker output. Always paired with unmute.",
+      "params": []
+    },
+    {
+      "name": "unmute",
+      "type": "action",
+      "summary": "Resume microphone processing — use after TTS finishes speaking",
+      "description": "Instructs the fast-asr server to resume normal audio processing. The server first flushes any audio that accumulated in the capture queue during the muted period, ensuring that TTS bleed does not reach the ASR pipeline. Use this immediately after a TTS utterance completes.",
+      "params": []
     }
   ],
   "variables": {

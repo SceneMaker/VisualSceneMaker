@@ -304,6 +304,10 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
     private final java.util.Set<WsContext> wsSessions = ConcurrentHashMap.newKeySet();
     /** Maps WS session-id → project-id for clients that joined via Session.Subscribe. */
     private final ConcurrentHashMap<String, String> wsProjectSubscriptions = new ConcurrentHashMap<>();
+    /** Tracks runtime lifecycle and exclusive hardware-resource arbitration across all sessions. */
+    private final RuntimeOrchestrator mRuntimeOrchestrator = new RuntimeOrchestrator();
+    /** Named-user token registry; the legacy shared token is registered on server start. */
+    private final SessionGate mSessionGate = new SessionGate();
     private final ConcurrentHashMap<String, RuntimeVizRateLimiter> runtimeVizRateLimiters = new ConcurrentHashMap<>();
     private final RuntimeGateway runtimeGateway;
     private final RuntimeCommandService runtimeCommandService = new RuntimeCommandService();
@@ -1776,6 +1780,11 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
     public void start(int port, String bindHost, String token, ServerMode mode) {
         mMode = mode;
         mAuthToken = (token != null) ? token : generateToken();
+        // Register the shared server token in the SessionGate so it can be used
+        // for per-user token provisioning once Phase F auth is fully enforced.
+        mSessionGate.clear();
+        mSessionGate.provisionWithToken(mAuthToken, "admin", "Admin",
+                Set.of(SessionGate.ROLE_EDITOR, SessionGate.ROLE_RUNTIME_ADMIN, SessionGate.ROLE_VIEWER));
         start(port, "0.0.0.0".equals(bindHost));
     }
 
@@ -2217,6 +2226,17 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         if (ref != null) {
             ref.runtimeState = state;
         }
+        syncOrchestratorState(projectId, state);
+    }
+
+    /** Maps a string runtime state to {@link RuntimeOrchestrator.RuntimeState} and updates the orchestrator. */
+    private void syncOrchestratorState(String projectId, String state) {
+        if (projectId == null || !mRuntimeOrchestrator.contains(projectId)) return;
+        RuntimeOrchestrator.RuntimeState s;
+        if ("running".equals(state))      s = RuntimeOrchestrator.RuntimeState.RUNNING;
+        else if ("paused".equals(state))  s = RuntimeOrchestrator.RuntimeState.PAUSED;
+        else                              s = RuntimeOrchestrator.RuntimeState.STOPPED;
+        mRuntimeOrchestrator.setState(projectId, s);
     }
 
     private String projectPathForId(String projectId) {
@@ -2233,6 +2253,7 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
     }
 
     private void removeProjectById(String projectId) {
+        mRuntimeOrchestrator.unregister(projectId);
         ProjectRef ref = projectStore.remove(projectId);
         unregisterProjectDispatcher(ref);
     }
@@ -2315,6 +2336,7 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
     }
 
     private void broadcastRuntimeState(String projectId, String state) {
+        syncOrchestratorState(projectId, state);
         JSONObject message = new JSONObject();
         message.put("type", "event");
         message.put("ts", System.currentTimeMillis());
@@ -2341,6 +2363,7 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
      * {@code projectStore}.
      */
     private void registerProjectDispatcher(String pid, ProjectRef ref) {
+        mRuntimeOrchestrator.register(pid);
         if (ref.runtimeProject == null) return;
         EventListener forwarder = event -> handleProjectEvent(pid, event);
         ref.collaborationSession.setEventForwarder(forwarder);
@@ -2553,6 +2576,9 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         mApp.get(API_PREFIX + "/projects/{pid}/project-config/keys", this::handleProjectConfigKeys);
         mApp.get(API_PREFIX + "/projects/{pid}/validate/vars", this::handleProjectVariableValidation);
         mApp.get(API_PREFIX + "/projects/{pid}/plugin-interfaces", this::handlePluginInterfaces);
+        mApp.get(API_PREFIX + "/projects/{pid}/plugins/dashboard", this::handlePluginDashboard);
+        mApp.post(API_PREFIX + "/projects/{pid}/plugins/{name}/health", this::handlePluginHealth);
+        mApp.post(API_PREFIX + "/projects/{pid}/plugins/{name}/params", this::handlePluginParams);
         mApp.get(API_PREFIX + "/projects/{pid}/script", this::handleScript);
         mApp.get(API_PREFIX + "/projects/{pid}/script/scenes", this::handleScriptScenes);
         mApp.get(API_PREFIX + "/projects/{pid}/script/elements", this::handleScriptElements);
@@ -2570,6 +2596,15 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         mApp.get(API_PREFIX + "/projects/{pid}/presence", this::handleProjectPresence);
         mApp.get(API_PREFIX + "/projects/{pid}/history/commands", this::handleCommandLog);
         mApp.post(API_PREFIX + "/projects/{pid}/sceneflow/navigate", this::handleSceneflowNavigate);
+
+        // Sessions endpoints (Phase E: session-oriented view on active projects)
+        mApp.get(API_PREFIX + "/sessions", this::handleSessions);
+        mApp.get(API_PREFIX + "/sessions/{id}/presence", this::handleSessionPresence);
+        mApp.get(API_PREFIX + "/sessions/{id}/operations", this::handleSessionOperations);
+
+        // Admin token management (Phase F: named-user provisioning)
+        mApp.get(API_PREFIX + "/admin/tokens", this::handleAdminListTokens);
+        mApp.post(API_PREFIX + "/admin/tokens", this::handleAdminProvisionToken);
 
         // LLM endpoints (authoring tools)
         mApp.post(API_PREFIX + "/llm/models", this::handleLLMModels);
@@ -3851,12 +3886,13 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
     private void handleProjectCreate(Context ctx) {
         JSONObject body = new JSONObject(ctx.body());
         String name = body.optString("name", "Untitled");
-        String baseDir = normalizeProjectPath(body.optString("baseDir", ""));
-        String projectId = ensureProject(baseDir, name, true);
+        String baseDir = body.optString("baseDir", "");
+        String projectPath = resolveProjectDirectory(baseDir, name);
+        String projectId = ensureProject(projectPath, name, true);
         JSONObject response = new JSONObject();
         response.put("projectId", projectId);
         response.put("name", name);
-        response.put("path", baseDir);
+        response.put("path", projectPath);
         writeJson(ctx, response);
     }
 
@@ -3907,11 +3943,16 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
             ctx.status(400).result("Missing path");
             return;
         }
-        ref.path = path;
-        ref.name = fileName(path);
-        ref.runtimeProject.setProjectPath(path);
+        String projectName = ref.runtimeProject.getProjectName();
+        if (projectName == null || projectName.isBlank()) {
+            projectName = ref.name;
+        }
+        String projectPath = resolveProjectDirectory(path, projectName);
+        ref.path = projectPath;
+        ref.name = fileName(projectPath);
+        ref.runtimeProject.setProjectPath(projectPath);
         ref.runtimeProject.setProjectName(ref.name);
-        boolean ok = ref.runtimeProject.write(new java.io.File(path));
+        boolean ok = ref.runtimeProject.write(new java.io.File(projectPath));
         if (!ok) {
             ctx.status(500).result("Failed to save project");
             return;
@@ -3923,10 +3964,10 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
             }
         }
         ref.dirty = false;
-        addRecent(path, ref.name);
+        addRecent(projectPath, ref.name);
         JSONObject response = new JSONObject();
         response.put("status", "ok");
-        response.put("path", path);
+        response.put("path", projectPath);
         writeJson(ctx, response);
     }
 
@@ -3990,6 +4031,244 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         out.put("errors", new JSONArray());
         out.put("source", "classpath");
         writeJson(ctx, out);
+    }
+
+    private void handlePluginDashboard(Context ctx) {
+        String pid = ctx.pathParam("pid");
+        ProjectRef ref = projectStore.get(pid);
+        JSONArray plugins = new JSONArray();
+        if (ref != null && ref.runtimeProject != null) {
+            ProjectConfig cfg = ref.runtimeProject.getProjectConfig();
+            if (cfg != null) {
+                Set<String> seen = new HashSet<>();
+                boolean runtimeActive = ref.runtimeProject.isRunning()
+                        || ref.runtimeProject.isPaused();
+                for (PluginConfig plugin : cfg.getPluginConfigList()) {
+                    String name = plugin.getPluginName() == null ? "" : plugin.getPluginName();
+                    String key = name.trim().toLowerCase();
+                    if (!key.isEmpty() && !seen.add(key)) continue;
+                    JSONObject entry = new JSONObject();
+                    entry.put("instanceName", name);
+                    entry.put("className", plugin.getClassName() == null ? "" : plugin.getClassName());
+                    entry.put("load", plugin.isMarkedtoLoad());
+                    entry.put("type", plugin.getPluginType() == null ? "" : plugin.getPluginType());
+                    entry.put("features", configFeaturesToJson(plugin.getEntryList()));
+                    // Compute meta first so we can use serviceModel to set status correctly.
+                    String className = plugin.getClassName();
+                    ExportablePropertyEntry propEntry = className != null ? resolveExportablePropertyEntry(className) : null;
+                    JSONObject meta;
+                    String serviceModel;
+                    if (propEntry != null) {
+                        meta = propEntry.toInterfaceJson(className);
+                        // Explicit declaration in plugin-properties.json wins over heuristic.
+                        String declared = meta.optString("serviceModel", null);
+                        serviceModel = (declared != null && !declared.isBlank())
+                                ? declared : deriveServiceModel(meta);
+                        meta.put("serviceModel", serviceModel);
+                    } else {
+                        meta = new JSONObject();
+                        serviceModel = deriveServiceModelFromFeatures(configFeaturesToJson(plugin.getEntryList()));
+                        meta.put("serviceModel", serviceModel);
+                    }
+                    entry.put("meta", meta);
+                    // Runtime status:
+                    //   "ok"       – self-contained plugin loaded (loaded = working by definition)
+                    //   "loaded"   – service plugin loaded in JVM but remote service not yet verified
+                    //   "not_loaded" – plugin not present in active runtime (or runtime not started)
+                    if (runtimeActive && ref.runtimeProject.getPlugin(name) != null) {
+                        entry.put("status", "service".equals(serviceModel) ? "loaded" : "ok");
+                    } else {
+                        entry.put("status", "not_loaded");
+                    }
+                    plugins.put(entry);
+                }
+            }
+        }
+        JSONObject response = new JSONObject();
+        response.put("plugins", plugins);
+        writeJson(ctx, response);
+    }
+
+    /** Heuristic: classify a plugin as "service" or "self-contained" based on its config schema. */
+    private String deriveServiceModel(JSONObject interfaceJson) {
+        JSONArray config = interfaceJson.optJSONArray("config");
+        if (config != null) {
+            for (int i = 0; i < config.length(); i++) {
+                JSONObject item = config.optJSONObject(i);
+                if (item == null) continue;
+                String k = item.optString("key", "").toLowerCase();
+                if (k.contains("url") || k.contains("host") || k.contains("port") || k.startsWith("ws")) {
+                    return "service";
+                }
+            }
+        }
+        // Also check tags (nested under "plugin" in toInterfaceJson output)
+        JSONObject pluginMeta = interfaceJson.optJSONObject("plugin");
+        JSONArray tags = pluginMeta != null ? pluginMeta.optJSONArray("tags") : null;
+        if (tags != null) {
+            for (int i = 0; i < tags.length(); i++) {
+                String tag = tags.optString(i, "").toLowerCase();
+                if (tag.equals("asr") || tag.equals("tts") || tag.equals("llm") || tag.equals("dialog")
+                        || tag.equals("logging") || tag.equals("web") || tag.equals("socket")) {
+                    return "service";
+                }
+            }
+        }
+        return "self-contained";
+    }
+
+    /** Fallback heuristic when no static metadata is available: check feature keys. */
+    private String deriveServiceModelFromFeatures(JSONArray features) {
+        if (features == null) return "self-contained";
+        for (int i = 0; i < features.length(); i++) {
+            JSONObject f = features.optJSONObject(i);
+            if (f == null) continue;
+            String k = f.optString("key", "").toLowerCase();
+            if (k.contains("url") || k.contains("host") || k.contains("port") || k.startsWith("ws")) {
+                return "service";
+            }
+        }
+        return "self-contained";
+    }
+
+    private void handlePluginHealth(Context ctx) {
+        String pid = ctx.pathParam("pid");
+        String instanceName = ctx.pathParam("name");
+        ProjectRef ref = projectStore.get(pid);
+        JSONObject health = new JSONObject();
+        health.put("checkedAt", System.currentTimeMillis());
+        if (ref == null || ref.runtimeProject == null) {
+            health.put("status", "not_loaded");
+            health.put("message", "Project not found");
+        } else {
+            RunTimePlugin plugin = ref.runtimeProject.getPlugin(instanceName);
+            if (plugin instanceof de.dfki.vsm.runtime.plugin.PluginHealthCheckable checkable) {
+                de.dfki.vsm.runtime.plugin.PluginHealthCheckable.HealthStatus hs = checkable.healthCheck();
+                health.put("status", hs.healthy() ? "ok" : "error");
+                health.put("message", hs.message() == null ? "" : hs.message());
+            } else if (plugin != null) {
+                // Plugin is loaded. For service plugins also probe TCP so we can report latency;
+                // for self-contained plugins presence alone is sufficient.
+                JSONObject tcpResult = tcpHealthCheck(pid, instanceName, ref);
+                if (tcpResult.has("latency") || tcpResult.has("endpoint")) {
+                    // TCP probe succeeded or found host/port — use its richer result
+                    health = tcpResult;
+                    if (!"error".equals(tcpResult.optString("status"))) {
+                        health.put("status", "ok");
+                    }
+                } else {
+                    health.put("status", "ok");
+                    health.put("message", "Plugin loaded");
+                }
+            } else {
+                // Plugin not loaded; try TCP reachability for service plugins
+                health = tcpHealthCheck(pid, instanceName, ref);
+            }
+        }
+        JSONObject response = new JSONObject();
+        response.put("status", "ok");
+        response.put("health", health);
+        writeJson(ctx, response);
+    }
+
+    private JSONObject tcpHealthCheck(String pid, String instanceName, ProjectRef ref) {
+        JSONObject health = new JSONObject();
+        health.put("checkedAt", System.currentTimeMillis());
+        PluginConfig cfg = ref.runtimeProject.getProjectConfig().getPluginConfig(instanceName);
+        if (cfg == null) {
+            health.put("status", "not_loaded");
+            health.put("message", "Plugin not configured");
+            return health;
+        }
+        // Find host/port or URL in features
+        String host = null;
+        int port = -1;
+        for (de.dfki.vsm.model.config.ConfigFeature f : cfg.getEntryList()) {
+            String k = f.getKey() == null ? "" : f.getKey().toLowerCase();
+            String v = f.getValue() == null ? "" : f.getValue().trim();
+            if (v.isEmpty()) continue;
+            if (k.contains("url") || k.startsWith("ws")) {
+                try {
+                    java.net.URI uri = java.net.URI.create(v);
+                    host = uri.getHost();
+                    port = uri.getPort();
+                    if (port < 0) port = uri.getScheme().startsWith("https") || uri.getScheme().equals("wss") ? 443 : 80;
+                    break;
+                } catch (Exception ignored) {}
+            } else if (k.contains("host")) {
+                host = v;
+            } else if (k.contains("port") && host != null) {
+                try { port = Integer.parseInt(v); } catch (NumberFormatException ignored) {}
+            }
+        }
+        if (host != null && port > 0) {
+            health.put("endpoint", host + ":" + port);
+            long start = System.currentTimeMillis();
+            try (java.net.Socket s = new java.net.Socket()) {
+                s.connect(new java.net.InetSocketAddress(host, port), 1500);
+                health.put("status", "ok");
+                health.put("message", "Reachable at " + host + ":" + port);
+                health.put("latency", System.currentTimeMillis() - start);
+            } catch (Exception e) {
+                health.put("status", "error");
+                health.put("message", "Cannot reach " + host + ":" + port);
+            }
+        } else {
+            health.put("status", "not_loaded");
+            health.put("message", "Runtime not started");
+        }
+        return health;
+    }
+
+    private void handlePluginParams(Context ctx) {
+        if (mMode == ServerMode.RUNTIME_ONLY) {
+            writeJson(ctx, errorResponse("FORBIDDEN", "Editing not allowed in runtime-only mode"));
+            return;
+        }
+        String pid = ctx.pathParam("pid");
+        String instanceName = ctx.pathParam("name");
+        ProjectRef ref = projectStore.get(pid);
+        if (ref == null || ref.runtimeProject == null) {
+            writeJson(ctx, errorResponse("NOT_FOUND", "Project not found"));
+            return;
+        }
+        JSONObject body;
+        try {
+            body = new JSONObject(ctx.body());
+        } catch (Exception e) {
+            writeJson(ctx, errorResponse("BAD_REQUEST", "Invalid JSON body"));
+            return;
+        }
+        JSONArray newFeatures = body.optJSONArray("features");
+        if (newFeatures == null) {
+            writeJson(ctx, errorResponse("BAD_REQUEST", "Missing features array"));
+            return;
+        }
+        ProjectConfig cfg = ref.runtimeProject.getProjectConfig();
+        PluginConfig target = cfg.getPluginConfig(instanceName);
+        if (target == null) {
+            writeJson(ctx, errorResponse("NOT_FOUND", "Plugin not found: " + instanceName));
+            return;
+        }
+        target.getEntryList().clear();
+        for (int i = 0; i < newFeatures.length(); i++) {
+            JSONObject f = newFeatures.optJSONObject(i);
+            if (f == null) continue;
+            String k = f.optString("key", "").trim();
+            String v = f.optString("value", "");
+            if (!k.isEmpty()) {
+                target.getEntryList().add(new ConfigFeature("Feature", k, v));
+            }
+        }
+        ref.dirty = true;
+        // Broadcast updated config so all clients refresh
+        JSONObject evt = new JSONObject();
+        evt.put("type", "event");
+        evt.put("event", "project.config");
+        evt.put("projectId", pid);
+        evt.put("config", projectConfigToJson(cfg, ref.path));
+        broadcastToAll(evt.toString());
+        writeJson(ctx, new JSONObject().put("status", "ok"));
     }
 
     private JSONObject projectConfigToJson(ProjectConfig cfg, String path) {
@@ -6637,6 +6916,165 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         return arr;
     }
 
+    // -------------------------------------------------------------------------
+    // Phase E: /api/v1/sessions endpoints
+    // -------------------------------------------------------------------------
+
+    /**
+     * {@code GET /api/v1/sessions}
+     *
+     * <p>Lists all active project sessions with their runtime state, presence count,
+     * subscriber count, and latest operation sequence number.  Backed by the
+     * existing {@code projectStore} so it stays consistent with
+     * {@code GET /api/v1/projects}.</p>
+     */
+    private void handleSessions(Context ctx) {
+        JSONArray sessions = new JSONArray();
+        for (Map.Entry<String, ProjectRef> entry : projectStore.entrySet()) {
+            String pid = entry.getKey();
+            ProjectRef ref = entry.getValue();
+            JSONObject s = new JSONObject();
+            s.put("projectId", pid);
+            s.put("name", ref.name != null ? ref.name : "");
+            s.put("runtimeState", ref.runtimeState);
+            s.put("subscriberCount", ref.collaborationSession.subscriberCount());
+            s.put("presenceCount", ref.collaborationSession.getPresenceManager().size());
+            s.put("operationSeq", ref.collaborationSession.getOperationLog().currentSeq());
+            RuntimeOrchestrator.RuntimeState orch = mRuntimeOrchestrator.getState(pid);
+            s.put("orchestratorState", orch != null ? orch.name() : "IDLE");
+            sessions.put(s);
+        }
+        JSONObject response = new JSONObject();
+        response.put("sessions", sessions);
+        response.put("count", sessions.length());
+        writeJson(ctx, response);
+    }
+
+    /**
+     * {@code GET /api/v1/sessions/{id}/presence}
+     *
+     * <p>Returns current presence records for the session identified by project-id.
+     * Delegates to the same data as {@code GET /api/v1/projects/{pid}/presence}.</p>
+     */
+    private void handleSessionPresence(Context ctx) {
+        String pid = ctx.pathParam("id");
+        ProjectRef ref = projectStore.get(pid);
+        if (ref == null) {
+            ctx.status(404);
+            writeJson(ctx, errorResponse("SESSION_NOT_FOUND", "No session found for: " + pid));
+            return;
+        }
+        JSONObject resp = new JSONObject();
+        resp.put("projectId", pid);
+        resp.put("presence", presenceListJson(ref));
+        writeJson(ctx, resp);
+    }
+
+    /**
+     * {@code GET /api/v1/sessions/{id}/operations?since={seq}}
+     *
+     * <p>Catch-up operation log query for the session.  Delegates to the same
+     * data as {@code GET /api/v1/projects/{pid}/operations}.</p>
+     */
+    private void handleSessionOperations(Context ctx) {
+        String pid = ctx.pathParam("id");
+        ProjectRef ref = projectStore.get(pid);
+        if (ref == null) {
+            ctx.status(404);
+            writeJson(ctx, errorResponse("SESSION_NOT_FOUND", "No session found for: " + pid));
+            return;
+        }
+        long since = -1L;
+        String sinceParam = ctx.queryParam("since");
+        if (sinceParam != null && !sinceParam.isBlank()) {
+            try {
+                since = Long.parseLong(sinceParam.trim());
+            } catch (NumberFormatException ignored) {
+                ctx.status(400);
+                writeJson(ctx, errorResponse("BAD_REQUEST", "'since' must be a long integer"));
+                return;
+            }
+        }
+        OperationLog opLog = ref.collaborationSession.getOperationLog();
+        List<SceneFlowOperation> ops = opLog.since(since);
+        JSONArray arr = new JSONArray();
+        for (SceneFlowOperation op : ops) {
+            arr.put(op.toJson());
+        }
+        JSONObject response = new JSONObject();
+        response.put("projectId", pid);
+        response.put("currentSeq", opLog.currentSeq());
+        response.put("operations", arr);
+        writeJson(ctx, response);
+    }
+
+    // -------------------------------------------------------------------------
+    // Phase F: /api/v1/admin/tokens endpoints
+    // -------------------------------------------------------------------------
+
+    /**
+     * {@code GET /api/v1/admin/tokens}
+     *
+     * <p>Lists all provisioned named-user tokens (bearer token strings are
+     * omitted for security; only metadata is returned).  Requires the shared
+     * server token to be included in the request {@code ?token=} parameter or
+     * {@code Authorization: Bearer} header for future enforcement.</p>
+     */
+    private void handleAdminListTokens(Context ctx) {
+        JSONArray tokens = new JSONArray();
+        for (UserToken ut : mSessionGate.listTokens()) {
+            tokens.put(ut.toJson());
+        }
+        JSONObject response = new JSONObject();
+        response.put("tokens", tokens);
+        response.put("count", tokens.length());
+        writeJson(ctx, response);
+    }
+
+    /**
+     * {@code POST /api/v1/admin/tokens}
+     *
+     * <p>Provisions a new named-user token.  Request body:
+     * <pre>{ "userId": "alice", "displayName": "Alice", "roles": ["editor"] }</pre>
+     * Response includes the bearer token string (shown once; store securely).
+     * </p>
+     */
+    private void handleAdminProvisionToken(Context ctx) {
+        JSONObject body;
+        try {
+            body = new JSONObject(ctx.body());
+        } catch (Exception e) {
+            ctx.status(400);
+            writeJson(ctx, errorResponse("BAD_REQUEST", "Invalid JSON body"));
+            return;
+        }
+        String userId = body.optString("userId", "").trim();
+        if (userId.isEmpty()) {
+            ctx.status(400);
+            writeJson(ctx, errorResponse("BAD_REQUEST", "userId is required"));
+            return;
+        }
+        String displayName = body.optString("displayName", null);
+        Set<String> roles = new HashSet<>();
+        org.json.JSONArray rolesArr = body.optJSONArray("roles");
+        if (rolesArr != null) {
+            for (int i = 0; i < rolesArr.length(); i++) {
+                roles.add(rolesArr.optString(i, ""));
+            }
+        }
+        if (roles.isEmpty()) {
+            roles.add(SessionGate.ROLE_VIEWER);
+        }
+        try {
+            UserToken ut = mSessionGate.provision(userId, displayName, roles);
+            ctx.status(201);
+            writeJson(ctx, ut.toJsonWithToken());
+        } catch (Exception e) {
+            ctx.status(500);
+            writeJson(ctx, errorResponse("PROVISION_FAILED", e.getMessage()));
+        }
+    }
+
     private void sendWsError(WsContext ctx, String requestId, String message) {
         JSONObject err = RuntimeWsProtocol.errorResponse(message != null ? message : "Unknown error");
         if (requestId != null) err.put("id", requestId);
@@ -8632,7 +9070,7 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         }
     }
 
-    private String normalizeProjectPath(String path) {
+    private static String normalizeProjectPath(String path) {
         if (path == null) {
             return "";
         }
@@ -8654,6 +9092,23 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
             }
         }
         return trimmed;
+    }
+
+    static String resolveProjectDirectory(String path, String projectName) {
+        String normalizedPath = normalizeProjectPath(path);
+        if (normalizedPath.isBlank()) {
+            return "";
+        }
+        String normalizedName = projectName == null ? "" : projectName.trim();
+        if (normalizedName.isBlank()) {
+            return normalizedPath;
+        }
+        Path basePath = Paths.get(normalizedPath).normalize();
+        Path fileName = basePath.getFileName();
+        if (fileName != null && normalizedName.equals(fileName.toString())) {
+            return basePath.toString();
+        }
+        return basePath.resolve(normalizedName).toString();
     }
 
     private void markClean(String pid) {

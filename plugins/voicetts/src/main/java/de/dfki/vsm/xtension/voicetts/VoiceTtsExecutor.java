@@ -1,5 +1,6 @@
 package de.dfki.vsm.xtension.voicetts;
 
+import de.dfki.vsm.model.project.AgentConfig;
 import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.model.scenescript.ActionFeature;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
@@ -127,6 +128,9 @@ public class VoiceTtsExecutor extends ActivityExecutor {
     };
 
     private static final Pattern NEXT_KV_PATTERN = Pattern.compile("\\s+[A-Za-z_][A-Za-z0-9_]*=");
+    /** Detects a tail that starts with a bare key=value (text= was followed immediately by the next
+     *  parameter rather than actual content, e.g. "[tts speak text= mode=custom ...]"). */
+    private static final Pattern BARE_KV_START = Pattern.compile("^[A-Za-z_][A-Za-z0-9_]*=");
 
     private String wsUrl;
     private String defaultMode;
@@ -294,17 +298,21 @@ public class VoiceTtsExecutor extends ActivityExecutor {
             return;
         }
 
-        String normalizedMode = firstNonEmpty(getFeature(activity, "mode"), defaultMode).toLowerCase();
+        final String actor = safe(activity.getActor());
+        String normalizedMode = firstNonEmpty(getFeature(activity, "mode"),
+                firstNonEmpty(agentConfig(actor, "mode"), defaultMode)).toLowerCase();
         if (!"custom".equals(normalizedMode) && !"design".equals(normalizedMode) && !"clone".equals(normalizedMode)) {
             normalizedMode = "custom";
             setStringVar(errorVar, "unsupported mode requested; falling back to custom");
         }
         final String mode = normalizedMode;
-        final String customVoiceId = firstNonEmpty(getFeature(activity, "custom_voice_id"), defaultCustomVoiceId);
+        final String customVoiceId = firstNonEmpty(getFeature(activity, "custom_voice_id"),
+                firstNonEmpty(agentConfig(actor, "custom_voice_id"), defaultCustomVoiceId));
         final String voice = firstNonEmpty(getFeature(activity, "voice"), defaultVoice);
         final String instruct = firstNonEmpty(getFeature(activity, "instruct"), defaultInstruct);
         final String generationMode = sanitizeGenerationMode(
-                firstNonEmpty(getFeature(activity, "generation_mode"), defaultGenerationMode)
+                firstNonEmpty(getFeature(activity, "generation_mode"),
+                        firstNonEmpty(agentConfig(actor, "generation_mode"), defaultGenerationMode))
         );
         final double speed = parseDoubleOrDefault(getFeature(activity, "speed"), 1.0);
         final int chunkMs = parseIntOrDefault(getFeature(activity, "chunk_ms"), defaultChunkMs);
@@ -611,6 +619,17 @@ public class VoiceTtsExecutor extends ActivityExecutor {
         return value;
     }
 
+    /** Returns the agent-specific value for {@code key}, or null if not set.
+     *  Reads from the AgentConfig entity for {@code actor} in the project configuration,
+     *  i.e. the {@code <Agent name="..." device="voicetts">} feature list in project.xml. */
+    private String agentConfig(final String actor, final String key) {
+        if (actor == null || actor.isBlank()) return null;
+        AgentConfig agent = mProject.getAgentConfig(actor);
+        if (agent == null) return null;
+        String value = agent.getProperty(key);
+        return (value == null || value.isBlank()) ? null : value;
+    }
+
     private String safe(final String value) {
         return value == null ? "" : value;
     }
@@ -687,6 +706,12 @@ public class VoiceTtsExecutor extends ActivityExecutor {
                 return tail.substring(1, end).trim();
             }
             return normalizeQuoted(tail);
+        }
+
+        // If the tail already starts with a bare key=value pattern (e.g. "mode=custom ..."),
+        // the text= value was empty and we've fallen into the next parameter — return empty.
+        if (BARE_KV_START.matcher(tail).find()) {
+            return "";
         }
 
         Matcher m = NEXT_KV_PATTERN.matcher(tail);

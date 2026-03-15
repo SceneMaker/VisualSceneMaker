@@ -304,6 +304,12 @@ public class AsrExecutor extends ActivityExecutor {
             case "set_language":
                 sendSetLanguage(getActionFeatureValue("language", activity.getFeatures()));
                 break;
+            case "mute":
+                sendMute();
+                break;
+            case "unmute":
+                sendUnmute();
+                break;
             default:
                 mLogger.warning("[asr] unknown action: " + name);
                 break;
@@ -389,6 +395,26 @@ public class AsrExecutor extends ActivityExecutor {
             if (!trimmed.isEmpty()) arr.put(trimmed);
         }
         return arr;
+    }
+
+    private void sendMute() {
+        try {
+            JSONObject msg = new JSONObject();
+            msg.put("action", "mute");
+            sendText(msg.toString());
+        } catch (Exception ex) {
+            mLogger.warning("[asr] sendMute error: " + ex.getMessage());
+        }
+    }
+
+    private void sendUnmute() {
+        try {
+            JSONObject msg = new JSONObject();
+            msg.put("action", "unmute");
+            sendText(msg.toString());
+        } catch (Exception ex) {
+            mLogger.warning("[asr] sendUnmute error: " + ex.getMessage());
+        }
     }
 
     private void sendClearExpect() {
