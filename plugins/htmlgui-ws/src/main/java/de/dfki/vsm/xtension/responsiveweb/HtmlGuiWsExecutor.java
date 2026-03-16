@@ -141,6 +141,26 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
 
         // --- Schema-driven screens endpoints ---
 
+        // Serve media assets from project/screens-assets/
+        final String assetsDir = mProject.getProjectPath() + File.separator + "screens-assets";
+        app.get("/assets/{filename}", ctx -> {
+            String filename = ctx.pathParam("filename");
+            File dir  = new File(assetsDir);
+            File file = new File(dir, filename);
+            try {
+                if (!file.getCanonicalPath().startsWith(dir.getCanonicalPath())) {
+                    ctx.status(403).result("Forbidden"); return;
+                }
+            } catch (IOException e) {
+                ctx.status(500); return;
+            }
+            if (file.exists() && file.isFile()) {
+                ctx.result(new FileInputStream(file)).contentType(assetContentType(filename));
+            } else {
+                ctx.status(404).result("Asset not found: " + filename);
+            }
+        });
+
         // Serve screens.json from the project directory
         final String screensJsonPath = mProject.getProjectPath() + File.separator + "screens.json";
         app.get("/screens.json", ctx -> {
@@ -370,6 +390,22 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
         for (WsContext ws : websockets) {
             ws.send(msg);
         }
+    }
+
+    private static String assetContentType(String filename) {
+        String f = filename.toLowerCase();
+        if (f.endsWith(".jpg") || f.endsWith(".jpeg")) return "image/jpeg";
+        if (f.endsWith(".png"))  return "image/png";
+        if (f.endsWith(".gif"))  return "image/gif";
+        if (f.endsWith(".webp")) return "image/webp";
+        if (f.endsWith(".svg"))  return "image/svg+xml";
+        if (f.endsWith(".mp4"))  return "video/mp4";
+        if (f.endsWith(".webm")) return "video/webm";
+        if (f.endsWith(".ogv"))  return "video/ogg";
+        if (f.endsWith(".mp3"))  return "audio/mpeg";
+        if (f.endsWith(".wav"))  return "audio/wav";
+        if (f.endsWith(".oga") || f.endsWith(".ogg")) return "audio/ogg";
+        return "application/octet-stream";
     }
 
     @Override

@@ -2589,6 +2589,7 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         mApp.get(API_PREFIX + "/projects/{pid}/variables", this::handleVariables);
         mApp.get(API_PREFIX + "/projects/{pid}/screens", this::handleScreensGet);
         mApp.put(API_PREFIX + "/projects/{pid}/screens", this::handleScreensPut);
+        mApp.get(API_PREFIX + "/projects/{pid}/assets/{filename}", this::handleAssetsGet);
         mApp.post(API_PREFIX + "/projects/{pid}/semantic/syntax", this::handleSemanticSyntaxAnalyze);
         mApp.post(API_PREFIX + "/projects/{pid}/semantic/analyze", this::handleSemanticAnalyze);
         mApp.get(API_PREFIX + "/projects/{pid}/sceneflow", this::handleSceneflow);
@@ -5458,6 +5459,38 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
             ctx.status(400);
             writeJson(ctx, errorResponse("SCREENS_SAVE_FAILED", e.getMessage()));
         }
+    }
+
+    private void handleAssetsGet(Context ctx) {
+        String pid      = ctx.pathParam("pid");
+        String filename = ctx.pathParam("filename");
+        ProjectRef ref  = projectStore.get(pid);
+        if (ref == null || ref.path == null || ref.path.isBlank()) { ctx.status(404); return; }
+        Path assetsDir = Paths.get(ref.path, "screens-assets");
+        Path assetPath = assetsDir.resolve(filename).normalize();
+        if (!assetPath.startsWith(assetsDir)) { ctx.status(403); return; }
+        if (!Files.exists(assetPath) || !Files.isRegularFile(assetPath)) { ctx.status(404); return; }
+        try {
+            ctx.result(Files.newInputStream(assetPath)).contentType(resolveMediaType(filename));
+        } catch (IOException e) {
+            ctx.status(500);
+        }
+    }
+
+    private static String resolveMediaType(String filename) {
+        String f = filename.toLowerCase();
+        if (f.endsWith(".jpg") || f.endsWith(".jpeg")) return "image/jpeg";
+        if (f.endsWith(".png"))  return "image/png";
+        if (f.endsWith(".gif"))  return "image/gif";
+        if (f.endsWith(".webp")) return "image/webp";
+        if (f.endsWith(".svg"))  return "image/svg+xml";
+        if (f.endsWith(".mp4"))  return "video/mp4";
+        if (f.endsWith(".webm")) return "video/webm";
+        if (f.endsWith(".ogv"))  return "video/ogg";
+        if (f.endsWith(".mp3"))  return "audio/mpeg";
+        if (f.endsWith(".wav"))  return "audio/wav";
+        if (f.endsWith(".oga") || f.endsWith(".ogg")) return "audio/ogg";
+        return "application/octet-stream";
     }
 
     private void handleSemanticSyntaxAnalyze(Context ctx) {

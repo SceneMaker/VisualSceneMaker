@@ -11,6 +11,9 @@
     <script type="module"
             src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.19.1/cdn/shoelace.js"></script>
 
+    <!-- Chart.js (UMD build — exposes window.Chart) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.9/dist/chart.umd.min.js"></script>
+
     <!-- VSM schema-driven renderer -->
     <script type="module" src="/vsm-renderer.js"></script>
 
@@ -22,6 +25,10 @@
         // Resolve the schema from the REST API so the renderer works without
         // the plugin runtime server being active.
         window.__VSM_PREVIEW_MODE = true;   // suppresses character iframe + audio overlay
+
+        // Assets base URL: redirects /assets/x to the project-specific REST endpoint.
+        const _pid = new URLSearchParams(location.search).get('project');
+        window.__VSM_ASSETS_BASE = _pid ? `/api/v1/projects/${_pid}/assets` : null;
 
         window.__VSM_SCHEMA_READY = (async () => {
             const params = new URLSearchParams(location.search);

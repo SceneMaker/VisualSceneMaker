@@ -24,11 +24,8 @@ class VsmScreenRenderer extends LitElement {
     };
 
     static styles = css`
-        :host { display: block; width: 100%; min-height: 100vh; }
-        .vsm-screen { box-sizing: border-box; padding: 1rem; }
-        .vsm-layout-column { display: flex; flex-direction: column; gap: 1rem; }
-        .vsm-layout-row    { display: flex; flex-direction: row;    gap: 1rem; flex-wrap: wrap; }
-        .vsm-layout-grid   { display: grid; gap: 1rem; }
+        :host { display: block; width: 100%; height: 100%; }
+        .vsm-screen { box-sizing: border-box; padding: 1rem; min-height: 100vh; }
 
         /* Audio unlock overlay — shown when character is enabled */
         .vsm-audio-overlay {
@@ -51,20 +48,75 @@ class VsmScreenRenderer extends LitElement {
             font-size: 1rem; font-family: inherit;
         }
         .vsm-audio-btn:hover { background: #416aa6; }
+
+        /* Speech bubble */
+        .vsm-bubble-wrap { display: flex; flex-direction: column; gap: 0.35rem; }
+        .vsm-bubble-speaker {
+            font-size: 0.72rem; font-weight: 600; opacity: 0.65;
+            padding: 0 0.5rem;
+        }
+        .vsm-bubble {
+            position: relative;
+            padding: 0.7rem 1rem;
+            border-radius: 1rem;
+            background: var(--bubble-bg, #e8f4fd);
+            max-width: 480px;
+            line-height: 1.5;
+            word-wrap: break-word;
+        }
+        .vsm-bubble.tail-bottom-left::after {
+            content: ''; position: absolute;
+            bottom: -10px; left: 18px;
+            width: 0; height: 0;
+            border-right: 14px solid transparent;
+            border-top: 11px solid var(--bubble-bg, #e8f4fd);
+        }
+        .vsm-bubble.tail-bottom-right::after {
+            content: ''; position: absolute;
+            bottom: -10px; right: 18px;
+            width: 0; height: 0;
+            border-left: 14px solid transparent;
+            border-top: 11px solid var(--bubble-bg, #e8f4fd);
+        }
+        .vsm-bubble.tail-top-left::after {
+            content: ''; position: absolute;
+            top: -10px; left: 18px;
+            width: 0; height: 0;
+            border-right: 14px solid transparent;
+            border-bottom: 11px solid var(--bubble-bg, #e8f4fd);
+        }
+        .vsm-bubble.tail-top-right::after {
+            content: ''; position: absolute;
+            top: -10px; right: 18px;
+            width: 0; height: 0;
+            border-left: 14px solid transparent;
+            border-bottom: 11px solid var(--bubble-bg, #e8f4fd);
+        }
     `;
 
     constructor() {
         super();
-        this._schema        = null;
-        this._activeScreen  = null;
-        this._varValues     = {};
-        this._audioUnlocked = false;
+        this._schema              = null;
+        this._activeScreen        = null;
+        this._varValues           = {};
+        this._audioUnlocked       = false;
+        this._liveSchemaReceived  = false;  // guards against API fetch overwriting live schema
 
         window.addEventListener('message', (e) => {
             const data = e.data;
             if (!data || typeof data !== 'object') return;
 
-            if (data.cmd === 'loadScreen') {
+            if (data.cmd === 'loadSchema') {
+                // Live schema pushed from the editor — update without page reload.
+                this._schema = data.schema;
+                this._liveSchemaReceived = true;
+                // Keep current screen if it still exists; otherwise fall back to first.
+                const screens = data.schema?.screens ?? {};
+                if (this._activeScreen && !screens[this._activeScreen]) {
+                    const keys = Object.keys(screens);
+                    this._activeScreen = keys.length > 0 ? keys[0] : null;
+                }
+            } else if (data.cmd === 'loadScreen') {
                 this._activeScreen = data.screen;
             } else if (data.cmd === 'updateVar') {
                 // Immutable update so Lit detects the change
@@ -89,6 +141,8 @@ class VsmScreenRenderer extends LitElement {
             }
 
             if (!schema) return;
+            // A live loadSchema message may have arrived while we were fetching; don't overwrite it.
+            if (this._liveSchemaReceived) return;
             this._schema = schema;
 
             // Honour ?screen= query param, otherwise fall back to the first screen.
@@ -126,9 +180,22 @@ class VsmScreenRenderer extends LitElement {
     // Rendering helpers
     // ---------------------------------------------------------------------------
 
+    // Resolve /assets/x paths: in preview mode redirect to the project REST endpoint;
+    // at runtime the plugin server serves /assets/x directly.
+    _resolveAsset(src) {
+        if (!src) return src;
+        if (src.startsWith('/assets/') && window.__VSM_ASSETS_BASE) {
+            return window.__VSM_ASSETS_BASE + '/' + src.slice('/assets/'.length);
+        }
+        return src;
+    }
+
     _styleAttr(styleObj) {
         if (!styleObj) return '';
-        return Object.entries(styleObj).map(([k, v]) => `${k}:${v}`).join(';');
+        return Object.entries(styleObj)
+            .filter(([, v]) => v !== '' && v !== null && v !== undefined)
+            .map(([k, v]) => `${k}:${v}`)
+            .join(';');
     }
 
     _renderElement(el) {
@@ -230,6 +297,139 @@ class VsmScreenRenderer extends LitElement {
             case 'wa-image':
                 return html`<img src=${el.src ?? ''} alt=${el.alt ?? ''} style=${style}>`;
 
+            case 'vsm-image': {
+                const imgStyle = [
+                    el.width      ? `width:${el.width}`           : '',
+                    el.height     ? `height:${el.height}`         : '',
+                    el.objectFit  ? `object-fit:${el.objectFit}`  : '',
+                    style,
+                ].filter(Boolean).join(';');
+                return html`<img src=${this._resolveAsset(el.src ?? '')}
+                                 alt=${el.alt ?? ''}
+                                 style=${imgStyle}>`;
+            }
+
+            case 'vsm-video': {
+                const vidStyle = [
+                    el.width  ? `width:${el.width}`   : 'max-width:100%',
+                    el.height ? `height:${el.height}` : '',
+                    style,
+                ].filter(Boolean).join(';');
+                return html`<video
+                    src=${this._resolveAsset(el.src ?? '')}
+                    style=${vidStyle}
+                    ?controls=${el.controls !== false}
+                    ?autoplay=${!!el.autoplay}
+                    ?loop=${!!el.loop}
+                    ?muted=${!!el.muted}
+                    playsinline></video>`;
+            }
+
+            case 'vsm-audio':
+                return html`<audio
+                    src=${this._resolveAsset(el.src ?? '')}
+                    style=${style}
+                    ?controls=${el.controls !== false}
+                    ?autoplay=${!!el.autoplay}
+                    ?loop=${!!el.loop}></audio>`;
+
+            case 'vsm-embed': {
+                const embedStyle = [
+                    `width:${el.width ?? '100%'}`,
+                    `height:${el.height ?? '315px'}`,
+                    'border:none',
+                    style,
+                ].filter(Boolean).join(';');
+                return html`<iframe
+                    src=${el.src ?? ''}
+                    title=${el.title ?? ''}
+                    style=${embedStyle}
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowfullscreen></iframe>`;
+            }
+
+            case 'vsm-filler': {
+                const fillerStyle = el.flexGrow
+                    ? 'flex:1'
+                    : [
+                        el.width  ? `width:${el.width}`   : '',
+                        el.height ? `height:${el.height}` : '',
+                        style,
+                    ].filter(Boolean).join(';');
+                return html`<div style=${fillerStyle}></div>`;
+            }
+
+            case 'vsm-panel': {
+                const panelIsRow = el.layout === 'flex-row';
+                const panelHProp = panelIsRow ? 'justify-content' : 'align-items';
+                const panelVProp = panelIsRow ? 'align-items'     : 'justify-content';
+                const panelStyle = [
+                    'display:flex',
+                    panelIsRow ? 'flex-direction:row;flex-wrap:wrap' : 'flex-direction:column',
+                    `gap:${el.gap ?? '0.5rem'}`,
+                    el.flexGrow       ? 'flex:1'                                  : '',
+                    el.background     ? `background:${el.background}`             : '',
+                    el.padding        ? `padding:${el.padding}`                   : '',
+                    el.alignItems     ? `${panelHProp}:${el.alignItems}`          : '',
+                    el.justifyContent ? `${panelVProp}:${el.justifyContent}`      : '',
+                    style,
+                ].filter(Boolean).join(';');
+                return html`
+                    <div style=${panelStyle}>
+                        ${(el.children ?? []).map(child => this._renderElement(child))}
+                    </div>`;
+            }
+
+            case 'vsm-bubble': {
+                const bg        = el.background ?? '#e8f4fd';
+                const content   = el.bindVar ? (this._varValues[el.bindVar] ?? '') : (el.content ?? '');
+
+                // Derive left/right from align-self; el.tail controls up/down direction.
+                const alignSelf = el.style?.['align-self'] ?? '';
+                const tailDir   = el.tail !== undefined ? el.tail : 'bottom';
+                let tailClass   = '';
+                if (tailDir === 'bottom') {
+                    tailClass = alignSelf === 'flex-end' ? 'tail-bottom-right'
+                              : alignSelf === 'center'   ? ''
+                              : 'tail-bottom-left';
+                } else if (tailDir === 'top') {
+                    tailClass = alignSelf === 'flex-end' ? 'tail-top-right'
+                              : alignSelf === 'center'   ? ''
+                              : 'tail-top-left';
+                }
+
+                // align-self on the wrap; all text/font styles + bg var on the bubble itself.
+                const wrapStyle  = alignSelf ? `align-self:${alignSelf}` : '';
+                const textStyles = { ...el.style };
+                delete textStyles['align-self'];
+                const bubbleStyle = [
+                    this._styleAttr(textStyles),
+                    `--bubble-bg:${bg}`,
+                ].filter(Boolean).join(';');
+
+                return html`
+                    <div class="vsm-bubble-wrap" style=${wrapStyle}>
+                        ${el.speaker ? html`<div class="vsm-bubble-speaker">${el.speaker}</div>` : html``}
+                        <div class=${'vsm-bubble' + (tailClass ? ' ' + tailClass : '')}
+                             style=${bubbleStyle}>${content}</div>
+                    </div>`;
+            }
+
+            case 'vsm-chart': {
+                const chartW = el.width  ?? '100%';
+                const chartH = el.height ?? '300px';
+                const chartStyle = [
+                    `width:${chartW}`,
+                    style,
+                ].filter(Boolean).join(';');
+                return html`<vsm-chart-element
+                    charttype=${el.chartType ?? 'bar'}
+                    .config=${el}
+                    .datavalue=${this._varValues[el.dataVar] ?? ''}
+                    style=${chartStyle}
+                    height=${chartH}></vsm-chart-element>`;
+            }
+
             default:
                 console.warn('[vsm-renderer] Unknown element type:', el.type);
                 return html`<span style="color:red">[unknown: ${el.type}]</span>`;
@@ -244,9 +444,22 @@ class VsmScreenRenderer extends LitElement {
             return html`<p style="color:red">Screen not found: ${this._activeScreen}</p>`;
         }
 
-        const layoutClass = screen.layout === 'flex-row' ? 'vsm-layout-row'
-                          : screen.layout === 'grid'     ? 'vsm-layout-grid'
-                          :                                'vsm-layout-column';
+        // Build flex layout style with direction-aware alignment mapping.
+        // For column (default): H → align-items, V → justify-content.
+        // For row: H → justify-content (main axis), V → align-items (cross axis).
+        // 'grid' treated as flex-column for backward compatibility.
+        const isRow  = screen.layout === 'flex-row';
+        const hProp  = isRow ? 'justify-content' : 'align-items';
+        const vProp  = isRow ? 'align-items'     : 'justify-content';
+
+        const screenStyle = [
+            'display:flex',
+            isRow ? 'flex-direction:row;flex-wrap:wrap' : 'flex-direction:column',
+            'gap:1rem',
+            `background:${screen.background ?? 'transparent'}`,
+            screen.alignItems     ? `${hProp}:${screen.alignItems}`     : '',
+            screen.justifyContent ? `${vProp}:${screen.justifyContent}` : '',
+        ].filter(Boolean).join(';');
 
         // Optional top-level "character" key: a persistent iframe fixed behind all screens.
         // Set "enabled": false to keep the config but skip loading.
@@ -273,11 +486,129 @@ class VsmScreenRenderer extends LitElement {
                 </div>
             </div>` : html``}
 
-            <div class="vsm-screen ${layoutClass}"
-                 style="background:${screen.background ?? 'transparent'}">
+            <div class="vsm-screen" style=${screenStyle}>
                 ${(screen.elements ?? []).map(el => this._renderElement(el))}
             </div>`;
     }
 }
 
 customElements.define('vsm-screen-renderer', VsmScreenRenderer);
+
+// ---------------------------------------------------------------------------
+// vsm-chart-element — Chart.js wrapper (Model 2: full dataset via variable)
+//
+// Attributes (lowercase for HTML attribute binding):
+//   charttype   — 'bar' | 'line'
+//   height      — CSS height string, e.g. '300px'
+// Properties:
+//   .config     — the schema element object (color, label, fill, …)
+//   .datavalue  — JSON string pushed from a bound variable
+//
+// Data formats (the variable value):
+//   Simple:       { "labels": ["A","B"], "data": [10, 25] }
+//   Multi-series: { "labels": ["A","B"], "datasets": [{ "label":"S1", "data":[10,25], "color":"#f00" }] }
+// ---------------------------------------------------------------------------
+
+class VsmChartElement extends LitElement {
+
+    static properties = {
+        charttype: {},
+        height:    {},
+        config:    { type: Object },
+        datavalue: {},
+    };
+
+    static styles = css`
+        :host { display: block; }
+        canvas { display: block; }
+    `;
+
+    constructor() {
+        super();
+        this.charttype = 'bar';
+        this.height    = '300px';
+        this.config    = {};
+        this.datavalue = '';
+        this._chart    = null;
+    }
+
+    firstUpdated() {
+        this._initChart();
+    }
+
+    updated(changed) {
+        if (!this._chart) { this._initChart(); return; }
+        if (changed.has('charttype') || changed.has('config')) {
+            // Full recreation needed when chart type or config changes.
+            this._chart.destroy();
+            this._chart = null;
+            this._initChart();
+        } else if (changed.has('datavalue')) {
+            this._applyData();
+        }
+    }
+
+    disconnectedCallback() {
+        super.disconnectedCallback();
+        if (this._chart) { this._chart.destroy(); this._chart = null; }
+    }
+
+    _parseData() {
+        try { return this.datavalue ? JSON.parse(this.datavalue) : null; }
+        catch { return null; }
+    }
+
+    _buildDatasets(d) {
+        const cfg   = this.config ?? {};
+        const color = cfg.color ?? '#5b8edc';
+        if (d?.datasets) {
+            return d.datasets.map(ds => ({
+                label:           ds.label            ?? cfg.label ?? '',
+                data:            ds.data             ?? [],
+                backgroundColor: ds.color            ?? color,
+                borderColor:     ds.color            ?? color,
+                fill:            cfg.fill            ?? false,
+                tension:         0.3,
+            }));
+        }
+        return [{
+            label:           cfg.label ?? '',
+            data:            d?.data   ?? [],
+            backgroundColor: color,
+            borderColor:     color,
+            fill:            cfg.fill  ?? false,
+            tension:         0.3,
+        }];
+    }
+
+    _initChart() {
+        if (!window.Chart) {
+            console.warn('[vsm-chart] Chart.js not loaded');
+            return;
+        }
+        const canvas = this.renderRoot.querySelector('canvas');
+        if (!canvas) return;
+        const d = this._parseData();
+        this._chart = new window.Chart(canvas, {
+            type:    this.charttype || 'bar',
+            data:    { labels: d?.labels ?? [], datasets: this._buildDatasets(d) },
+            options: { responsive: true, maintainAspectRatio: false },
+        });
+    }
+
+    _applyData() {
+        const d = this._parseData();
+        if (!d || !this._chart) return;
+        this._chart.data.labels   = d.labels ?? [];
+        this._chart.data.datasets = this._buildDatasets(d);
+        this._chart.update();
+    }
+
+    render() {
+        return html`<div style=${'width:100%;height:' + (this.height ?? '300px')}>
+            <canvas></canvas>
+        </div>`;
+    }
+}
+
+customElements.define('vsm-chart-element', VsmChartElement);
