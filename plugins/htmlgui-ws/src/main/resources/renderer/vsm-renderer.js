@@ -391,6 +391,22 @@ class VsmScreenRenderer extends LitElement {
                     style=${feedStyle}></vsm-feed-element>`;
             }
 
+            case 'vsm-animate': {
+                const animStyle = [
+                    el.width  ? `width:${el.width}`   : '',
+                    el.height ? `height:${el.height}` : '',
+                    style,
+                ].filter(Boolean).join(';');
+                return html`<vsm-animate-element
+                    animation=${el.animation ?? 'heartbeat'}
+                    .config=${el}
+                    .ratevalue=${this._varValues[el.rateVar]       ?? ''}
+                    .colorvalue=${this._varValues[el.colorVar]     ?? ''}
+                    .amplitudevalue=${this._varValues[el.amplitudeVar] ?? ''}
+                    .opacityvalue=${this._varValues[el.opacityVar]  ?? ''}
+                    style=${animStyle}></vsm-animate-element>`;
+            }
+
             case 'vsm-bubble': {
                 const bg        = el.background ?? '#e8f4fd';
                 const content   = el.bindVar ? (this._varValues[el.bindVar] ?? '') : (el.content ?? '');
@@ -758,3 +774,226 @@ class VsmFeedElement extends LitElement {
 }
 
 customElements.define('vsm-feed-element', VsmFeedElement);
+
+// ---------------------------------------------------------------------------
+// vsm-animate-element — Variable-driven animated overlays
+//
+// Displays a pre-built looping animation whose parameters are controlled live
+// by VSM variables mapped to CSS custom properties.
+//
+// Supported animations: heartbeat | breathe | pulse | spinner | wave
+//
+// Schema element fields:
+//   animation      — which animation (default: 'heartbeat')
+//   color          — static fallback color (hex or CSS)
+//   width/height   — element size (default: 80px / 80px)
+//   rateVar        — BPM / breaths-per-min / Hz / RPM → --vsm-duration
+//   colorVar       — CSS color string                 → --vsm-color
+//   amplitudeVar   — 0–100 scale                      → --vsm-amplitude
+//   opacityVar     — 0–100                            → --vsm-opacity
+// ---------------------------------------------------------------------------
+
+class VsmAnimateElement extends LitElement {
+
+    static properties = {
+        animation:      {},
+        config:         { type: Object },
+        ratevalue:      {},
+        colorvalue:     {},
+        amplitudevalue: {},
+        opacityvalue:   {},
+    };
+
+    static styles = css`
+        :host {
+            display: inline-block;
+            --vsm-duration:  833ms;
+            --vsm-color:     #e26d5a;
+            --vsm-amplitude: 0.25;
+            --vsm-opacity:   1;
+        }
+
+        /* ── Heartbeat ─────────────────────────────────────────────── */
+        @keyframes vsm-heartbeat {
+            0%   { transform: scale(1);    }
+            14%  { transform: scale(1.22); }
+            28%  { transform: scale(1);    }
+            42%  { transform: scale(1.12); }
+            70%  { transform: scale(1);    }
+            100% { transform: scale(1);    }
+        }
+        .heart-path {
+            transform-box: fill-box; transform-origin: center;
+            fill: var(--vsm-color);
+            animation: vsm-heartbeat var(--vsm-duration) ease-in-out infinite;
+        }
+
+        /* ── Breathe ───────────────────────────────────────────────── */
+        @keyframes vsm-breathe {
+            0%, 100% { transform: scale(1); opacity: 0.65; }
+            50%      { transform: scale(calc(1 + var(--vsm-amplitude))); opacity: 1; }
+        }
+        .breathe-circle {
+            transform-box: fill-box; transform-origin: center;
+            fill: var(--vsm-color); opacity: 0.65;
+            animation: vsm-breathe var(--vsm-duration) ease-in-out infinite;
+        }
+
+        /* ── Pulse ─────────────────────────────────────────────────── */
+        @keyframes vsm-pulse-ring {
+            0%   { transform: scale(1);   opacity: 0.7; }
+            100% { transform: scale(3.5); opacity: 0;   }
+        }
+        .pulse-wrap {
+            position: relative; width: 100%; height: 100%;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .pulse-ring {
+            position: absolute;
+            width: 30%; height: 30%; border-radius: 50%;
+            background: var(--vsm-color);
+            animation: vsm-pulse-ring var(--vsm-duration) ease-out infinite;
+        }
+        .pulse-ring-2 { animation-delay: calc(var(--vsm-duration) * 0.5); }
+        .pulse-dot {
+            width: 30%; height: 30%; border-radius: 50%;
+            background: var(--vsm-color); opacity: var(--vsm-opacity);
+            position: relative; z-index: 1;
+        }
+
+        /* ── Spinner ───────────────────────────────────────────────── */
+        @keyframes vsm-spin {
+            from { transform: rotate(0deg);   }
+            to   { transform: rotate(360deg); }
+        }
+        .spinner-g {
+            transform-box: fill-box; transform-origin: center;
+            animation: vsm-spin var(--vsm-duration) linear infinite;
+        }
+        .spinner-track { stroke: var(--vsm-color); opacity: 0.15; }
+        .spinner-arc   {
+            stroke: var(--vsm-color); stroke-linecap: round;
+            stroke-dasharray: 251; stroke-dashoffset: 188;
+        }
+
+        /* ── Wave ──────────────────────────────────────────────────── */
+        @keyframes vsm-wave-bar {
+            0%, 100% { transform: scaleY(0.2); opacity: 0.45; }
+            50%      { transform: scaleY(1);   opacity: 1;    }
+        }
+        .wave-wrap {
+            display: flex; align-items: flex-end; justify-content: center;
+            gap: 5%; height: 100%; width: 100%;
+            padding: 0 4%; box-sizing: border-box;
+        }
+        .wave-bar {
+            flex: 1; height: 75%; border-radius: 4px;
+            background: var(--vsm-color); transform-origin: bottom;
+            animation: vsm-wave-bar var(--vsm-duration) ease-in-out infinite;
+            opacity: var(--vsm-opacity);
+        }
+        .wave-bar:nth-child(1) { animation-delay: 0ms; }
+        .wave-bar:nth-child(2) { animation-delay: calc(var(--vsm-duration) * 0.15); }
+        .wave-bar:nth-child(3) { animation-delay: calc(var(--vsm-duration) * 0.30); }
+        .wave-bar:nth-child(4) { animation-delay: calc(var(--vsm-duration) * 0.45); }
+        .wave-bar:nth-child(5) { animation-delay: calc(var(--vsm-duration) * 0.60); }
+    `;
+
+    constructor() {
+        super();
+        this.animation      = 'heartbeat';
+        this.config         = {};
+        this.ratevalue      = '';
+        this.colorvalue     = '';
+        this.amplitudevalue = '';
+        this.opacityvalue   = '';
+    }
+
+    updated() { this._updateCssVars(); }
+
+    _updateCssVars() {
+        const anim = this.animation ?? 'heartbeat';
+        const cfg  = this.config    ?? {};
+
+        // Rate → animation duration
+        const rate = parseFloat(this.ratevalue);
+        if (!isNaN(rate) && rate > 0) {
+            const perMinute = anim === 'heartbeat' || anim === 'breathe';
+            const ms = perMinute ? Math.round(60000 / rate) : Math.round(1000 / rate);
+            this.style.setProperty('--vsm-duration', ms + 'ms');
+        }
+
+        // Color: variable value overrides static config color
+        const color = (this.colorvalue !== '') ? this.colorvalue : (cfg.color ?? null);
+        if (color) this.style.setProperty('--vsm-color', color);
+
+        // Amplitude 0–100 → 0.0–1.0
+        const amp = parseFloat(this.amplitudevalue);
+        if (!isNaN(amp)) this.style.setProperty('--vsm-amplitude', (amp / 100).toFixed(3));
+
+        // Opacity 0–100 → 0.0–1.0
+        const op = parseFloat(this.opacityvalue);
+        if (!isNaN(op)) this.style.setProperty('--vsm-opacity', (op / 100).toFixed(3));
+    }
+
+    _renderHeartbeat() {
+        return html`
+            <svg viewBox="0 0 100 100" style="width:100%;height:100%;overflow:visible">
+                <path class="heart-path"
+                      d="M50 35 C50 35 30 18 18 24 C5 30 5 47 17 58 L50 85 L83 58 C95 47 95 30 82 24 C70 18 50 35 50 35Z"/>
+            </svg>`;
+    }
+
+    _renderBreathe() {
+        return html`
+            <svg viewBox="0 0 100 100" style="width:100%;height:100%">
+                <circle class="breathe-circle" cx="50" cy="50" r="35"/>
+            </svg>`;
+    }
+
+    _renderPulse() {
+        return html`
+            <div class="pulse-wrap">
+                <div class="pulse-ring"></div>
+                <div class="pulse-ring pulse-ring-2"></div>
+                <div class="pulse-dot"></div>
+            </div>`;
+    }
+
+    _renderSpinner() {
+        return html`
+            <svg viewBox="0 0 100 100" style="width:100%;height:100%" fill="none">
+                <g class="spinner-g">
+                    <circle class="spinner-track" cx="50" cy="50" r="40" stroke-width="10"/>
+                    <circle class="spinner-arc"   cx="50" cy="50" r="40" stroke-width="10"/>
+                </g>
+            </svg>`;
+    }
+
+    _renderWave() {
+        return html`
+            <div class="wave-wrap">
+                <div class="wave-bar"></div>
+                <div class="wave-bar"></div>
+                <div class="wave-bar"></div>
+                <div class="wave-bar"></div>
+                <div class="wave-bar"></div>
+            </div>`;
+    }
+
+    render() {
+        const anim = this.animation ?? 'heartbeat';
+        const cfg  = this.config    ?? {};
+        return html`
+            <div style=${'width:' + (cfg.width ?? '80px') + ';height:' + (cfg.height ?? '80px') + ';position:relative;display:inline-block'}>
+                ${anim === 'heartbeat' ? this._renderHeartbeat()
+                : anim === 'breathe'   ? this._renderBreathe()
+                : anim === 'pulse'     ? this._renderPulse()
+                : anim === 'spinner'   ? this._renderSpinner()
+                : anim === 'wave'      ? this._renderWave()
+                : html`<div style="color:orange;font-size:.75rem;padding:.25rem">[unknown: ${anim}]</div>`}
+            </div>`;
+    }
+}
+
+customElements.define('vsm-animate-element', VsmAnimateElement);

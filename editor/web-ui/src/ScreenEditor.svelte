@@ -348,6 +348,7 @@
     if (type === "vsm-bubble")      return "💬";
     if (type === "vsm-chart")       return "Ch";
     if (type === "vsm-feed")        return "📜";
+    if (type === "vsm-animate")     return "Anim";
     if (type.includes("textarea"))  return "A";
     if (type.includes("text"))      return "T";
     if (type.includes("button"))    return "B";
@@ -373,7 +374,11 @@
       return `${spk}${txt}` || "Bubble";
     }
     if (el.type === "vsm-chart")  return el.dataVar ? `${el.chartType ?? "bar"} · ${el.dataVar}` : (el.chartType ?? "bar");
-    if (el.type === "vsm-feed")   return el.dataVar ? `Feed · ${el.dataVar}` : "Feed (no variable)";
+    if (el.type === "vsm-feed")    return el.dataVar ? `Feed · ${el.dataVar}` : "Feed (no variable)";
+    if (el.type === "vsm-animate") {
+      const rateLabel = el.rateVar ? ` · rate: ${el.rateVar}` : "";
+      return `${el.animation ?? "heartbeat"}${rateLabel}`;
+    }
     if (el.type === "vsm-filler") {
       if (el.flexGrow) return "Flex spacer (fills remaining space)";
       const parts = [];
@@ -549,6 +554,7 @@
                 <button class="ve-add-btn" on:click={() => addElement({ type:"vsm-bubble", content:"Hello!", tail:"bottom", background:"#e8f4fd" })}>+Bubble</button>
                 <button class="ve-add-btn" on:click={() => addElement({ type:"vsm-chart", chartType:"bar", dataVar:"", label:"", color:"#5b8edc", height:"300px" })}>+Chart</button>
                 <button class="ve-add-btn ve-add-btn-feed" on:click={() => addElement({ type:"vsm-feed", dataVar:"", height:"400px", agentColor:"#e8f4fd", userColor:"#eafbe8", systemColor:"#f5f5f5", agentLabel:"Agent", userLabel:"You" })}>+Feed</button>
+                <button class="ve-add-btn ve-add-btn-animate" on:click={() => addElement({ type:"vsm-animate", animation:"heartbeat", color:"#e26d5a", width:"80px", height:"80px" })}>+Animate</button>
               </div>
             </div>
 
@@ -1039,6 +1045,59 @@
                       Roles: <code>agent</code> (left) · <code>user</code> (right) · <code>system</code> (center, italic)
                     </div>
 
+                  <!-- ── Animate ── -->
+                  {:else if el.type === "vsm-animate"}
+                    {@const rateHints = { heartbeat:"BPM (e.g. 72)", breathe:"breaths/min (e.g. 15)", wave:"Hz (e.g. 4)", pulse:"Hz (e.g. 1)", spinner:"RPM (e.g. 60)" }}
+                    <label class="ve-prop-label">Animation</label>
+                    <select class="ve-select" value={el.animation ?? "heartbeat"}
+                            on:change={e => setProp(i,"animation",e.target.value)}>
+                      <option value="heartbeat">❤ Heartbeat</option>
+                      <option value="breathe">○ Breathe</option>
+                      <option value="pulse">◎ Pulse</option>
+                      <option value="spinner">↻ Spinner</option>
+                      <option value="wave">▋▋▋ Wave</option>
+                    </select>
+                    <div class="ve-row" style="gap:.5rem">
+                      <label class="ve-prop-label">Width</label>
+                      <input class="ve-input ve-input-short" type="text" placeholder="80px"
+                             value={el.width ?? "80px"}
+                             on:input={e => setProp(i,"width",e.target.value || undefined)}>
+                      <label class="ve-prop-label" style="margin-left:.5rem">Height</label>
+                      <input class="ve-input ve-input-short" type="text" placeholder="80px"
+                             value={el.height ?? "80px"}
+                             on:input={e => setProp(i,"height",e.target.value || undefined)}>
+                    </div>
+                    <label class="ve-prop-label">Default color</label>
+                    <input class="ve-color" type="color"
+                           value={parseColorAlpha(el.color ?? '#e26d5a').hex}
+                           on:input={e => setProp(i,"color",e.target.value)}>
+                    <label class="ve-prop-label">Rate variable <span class="ve-hint">{rateHints[el.animation ?? "heartbeat"] ?? ""}</span></label>
+                    <select class="ve-select" value={el.rateVar ?? ""}
+                            on:change={e => setProp(i,"rateVar",e.target.value || undefined)}>
+                      <option value="">— none (use default) —</option>
+                      {#each variables as v}<option value={v.name}>{v.name}</option>{/each}
+                    </select>
+                    <label class="ve-prop-label">Color variable <span class="ve-hint">(overrides default color)</span></label>
+                    <select class="ve-select" value={el.colorVar ?? ""}
+                            on:change={e => setProp(i,"colorVar",e.target.value || undefined)}>
+                      <option value="">— none —</option>
+                      {#each variables as v}<option value={v.name}>{v.name}</option>{/each}
+                    </select>
+                    {#if (el.animation ?? "heartbeat") === "breathe"}
+                    <label class="ve-prop-label">Amplitude variable <span class="ve-hint">(0–100, controls expansion)</span></label>
+                    <select class="ve-select" value={el.amplitudeVar ?? ""}
+                            on:change={e => setProp(i,"amplitudeVar",e.target.value || undefined)}>
+                      <option value="">— none —</option>
+                      {#each variables as v}<option value={v.name}>{v.name}</option>{/each}
+                    </select>
+                    {/if}
+                    <label class="ve-prop-label">Opacity variable <span class="ve-hint">(0–100)</span></label>
+                    <select class="ve-select" value={el.opacityVar ?? ""}
+                            on:change={e => setProp(i,"opacityVar",e.target.value || undefined)}>
+                      <option value="">— none —</option>
+                      {#each variables as v}<option value={v.name}>{v.name}</option>{/each}
+                    </select>
+
                   <!-- ── Panel ── -->
                   {:else if el.type === "vsm-panel"}
                     <div class="ve-row">
@@ -1121,6 +1180,7 @@
                         <button class="ve-add-btn" on:click={() => addChild(i,{type:"vsm-bubble",content:"Hello!",tail:"bottom",background:"#e8f4fd"})}>+Bubble</button>
                         <button class="ve-add-btn" on:click={() => addChild(i,{type:"vsm-chart",chartType:"bar",dataVar:"",label:"",color:"#5b8edc",height:"300px"})}>+Chart</button>
                         <button class="ve-add-btn ve-add-btn-feed" on:click={() => addChild(i,{type:"vsm-feed",dataVar:"",height:"400px",agentColor:"#e8f4fd",userColor:"#eafbe8",systemColor:"#f5f5f5",agentLabel:"Agent",userLabel:"You"})}>+Feed</button>
+                        <button class="ve-add-btn ve-add-btn-animate" on:click={() => addChild(i,{type:"vsm-animate",animation:"heartbeat",color:"#e26d5a",width:"80px",height:"80px"})}>+Animate</button>
                       </div>
                     </div>
 
@@ -1417,6 +1477,43 @@
                                      on:input={e => setChildProp(i,ci,"height",e.target.value || undefined)}>
                             </div>
 
+                          {:else if child.type === "vsm-animate"}
+                            <label class="ve-prop-label">Animation</label>
+                            <select class="ve-select" value={child.animation ?? "heartbeat"}
+                                    on:change={e => setChildProp(i,ci,"animation",e.target.value)}>
+                              <option value="heartbeat">❤ Heartbeat</option>
+                              <option value="breathe">○ Breathe</option>
+                              <option value="pulse">◎ Pulse</option>
+                              <option value="spinner">↻ Spinner</option>
+                              <option value="wave">▋▋▋ Wave</option>
+                            </select>
+                            <div class="ve-row" style="gap:.5rem">
+                              <label class="ve-prop-label">Width</label>
+                              <input class="ve-input ve-input-short" type="text" placeholder="80px"
+                                     value={child.width ?? "80px"}
+                                     on:input={e => setChildProp(i,ci,"width",e.target.value || undefined)}>
+                              <label class="ve-prop-label" style="margin-left:.5rem">Height</label>
+                              <input class="ve-input ve-input-short" type="text" placeholder="80px"
+                                     value={child.height ?? "80px"}
+                                     on:input={e => setChildProp(i,ci,"height",e.target.value || undefined)}>
+                            </div>
+                            <label class="ve-prop-label">Default color</label>
+                            <input class="ve-color" type="color"
+                                   value={parseColorAlpha(child.color ?? '#e26d5a').hex}
+                                   on:input={e => setChildProp(i,ci,"color",e.target.value)}>
+                            <label class="ve-prop-label">Rate variable</label>
+                            <select class="ve-select" value={child.rateVar ?? ""}
+                                    on:change={e => setChildProp(i,ci,"rateVar",e.target.value || undefined)}>
+                              <option value="">— none —</option>
+                              {#each variables as v}<option value={v.name}>{v.name}</option>{/each}
+                            </select>
+                            <label class="ve-prop-label">Color variable</label>
+                            <select class="ve-select" value={child.colorVar ?? ""}
+                                    on:change={e => setChildProp(i,ci,"colorVar",e.target.value || undefined)}>
+                              <option value="">— none —</option>
+                              {#each variables as v}<option value={v.name}>{v.name}</option>{/each}
+                            </select>
+
                           {:else if child.type === "vsm-feed"}
                             <label class="ve-prop-label">Data variable</label>
                             <select class="ve-select" value={child.dataVar ?? ""}
@@ -1660,6 +1757,9 @@
   }
   .ve-add-btn-feed {
     background: #eafbe8; border-color: #5aaa6a; color: #2e6b38; font-weight: 600;
+  }
+  .ve-add-btn-animate {
+    background: #fef0ec; border-color: #e26d5a; color: #a03322; font-weight: 600;
   }
 
   /* Element cards */
