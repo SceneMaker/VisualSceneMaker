@@ -347,6 +347,7 @@
     if (type === "vsm-embed")       return "⊞";
     if (type === "vsm-bubble")      return "💬";
     if (type === "vsm-chart")       return "Ch";
+    if (type === "vsm-feed")        return "📜";
     if (type.includes("textarea"))  return "A";
     if (type.includes("text"))      return "T";
     if (type.includes("button"))    return "B";
@@ -372,6 +373,7 @@
       return `${spk}${txt}` || "Bubble";
     }
     if (el.type === "vsm-chart")  return el.dataVar ? `${el.chartType ?? "bar"} · ${el.dataVar}` : (el.chartType ?? "bar");
+    if (el.type === "vsm-feed")   return el.dataVar ? `Feed · ${el.dataVar}` : "Feed (no variable)";
     if (el.type === "vsm-filler") {
       if (el.flexGrow) return "Flex spacer (fills remaining space)";
       const parts = [];
@@ -544,8 +546,9 @@
                 <button class="ve-add-btn" on:click={() => addElement({ type:"vsm-video", src:"", controls:true })}>+Video</button>
                 <button class="ve-add-btn" on:click={() => addElement({ type:"vsm-audio", src:"", controls:true })}>+Audio</button>
                 <button class="ve-add-btn" on:click={() => addElement({ type:"vsm-embed", src:"", width:"100%", height:"315px" })}>+Embed</button>
-                <button class="ve-add-btn" on:click={() => addElement({ type:"vsm-bubble", content:"Hello!", tail:"bottom-left", background:"#e8f4fd" })}>+Bubble</button>
+                <button class="ve-add-btn" on:click={() => addElement({ type:"vsm-bubble", content:"Hello!", tail:"bottom", background:"#e8f4fd" })}>+Bubble</button>
                 <button class="ve-add-btn" on:click={() => addElement({ type:"vsm-chart", chartType:"bar", dataVar:"", label:"", color:"#5b8edc", height:"300px" })}>+Chart</button>
+                <button class="ve-add-btn ve-add-btn-feed" on:click={() => addElement({ type:"vsm-feed", dataVar:"", height:"400px", agentColor:"#e8f4fd", userColor:"#eafbe8", systemColor:"#f5f5f5", agentLabel:"Agent", userLabel:"You" })}>+Feed</button>
               </div>
             </div>
 
@@ -992,6 +995,50 @@
                       Multi-series: <code>{"{"}"labels":[…],"datasets":[{"{"}"label":"S1","data":[…],"color":"#f00"{"}"}]{"}"}  </code>
                     </div>
 
+                  <!-- ── Feed ── -->
+                  {:else if el.type === "vsm-feed"}
+                    <label class="ve-prop-label">Data variable <span class="ve-hint">(JSON array of messages)</span></label>
+                    <select class="ve-select" value={el.dataVar ?? ""}
+                            on:change={e => setProp(i,"dataVar",e.target.value || undefined)}>
+                      <option value="">— none —</option>
+                      {#each variables as v}<option value={v.name}>{v.name}</option>{/each}
+                    </select>
+                    <label class="ve-prop-label">Height</label>
+                    <input class="ve-input" type="text" placeholder="400px"
+                           value={el.height ?? "400px"}
+                           on:input={e => setProp(i,"height",e.target.value || undefined)}>
+                    <label class="ve-prop-label">Agent label</label>
+                    <input class="ve-input" type="text" placeholder="Agent"
+                           value={el.agentLabel ?? "Agent"}
+                           on:input={e => setProp(i,"agentLabel",e.target.value || undefined)}>
+                    <label class="ve-prop-label">User label</label>
+                    <input class="ve-input" type="text" placeholder="You"
+                           value={el.userLabel ?? "You"}
+                           on:input={e => setProp(i,"userLabel",e.target.value || undefined)}>
+                    <div class="ve-row" style="gap:.5rem;margin-top:.1rem">
+                      <label class="ve-prop-label">Agent color</label>
+                      <input class="ve-color" type="color"
+                             value={parseColorAlpha(el.agentColor ?? '#e8f4fd').hex}
+                             on:input={e => setProp(i,"agentColor",e.target.value)}>
+                      <label class="ve-prop-label" style="margin-left:.5rem">User color</label>
+                      <input class="ve-color" type="color"
+                             value={parseColorAlpha(el.userColor ?? '#eafbe8').hex}
+                             on:input={e => setProp(i,"userColor",e.target.value)}>
+                      <label class="ve-prop-label" style="margin-left:.5rem">System color</label>
+                      <input class="ve-color" type="color"
+                             value={parseColorAlpha(el.systemColor ?? '#f5f5f5').hex}
+                             on:input={e => setProp(i,"systemColor",e.target.value)}>
+                    </div>
+                    <div class="ve-row" style="align-items:center;gap:.5rem;margin-top:.25rem">
+                      <label class="ve-prop-label" style="min-width:0">Show timestamps</label>
+                      <input type="checkbox" checked={!!el.showTimestamps}
+                             on:change={e => setProp(i,"showTimestamps",e.target.checked || undefined)}>
+                    </div>
+                    <div class="ve-media-hint">
+                      Use <code>appendMessage(var='…', role='agent', text='…')</code> PlayAction to add messages at runtime.<br>
+                      Roles: <code>agent</code> (left) · <code>user</code> (right) · <code>system</code> (center, italic)
+                    </div>
+
                   <!-- ── Panel ── -->
                   {:else if el.type === "vsm-panel"}
                     <div class="ve-row">
@@ -1071,8 +1118,9 @@
                         <button class="ve-add-btn" on:click={() => addChild(i,{type:"vsm-video",src:"",controls:true})}>+Video</button>
                         <button class="ve-add-btn" on:click={() => addChild(i,{type:"vsm-audio",src:"",controls:true})}>+Audio</button>
                         <button class="ve-add-btn" on:click={() => addChild(i,{type:"vsm-embed",src:"",width:"100%",height:"315px"})}>+Embed</button>
-                        <button class="ve-add-btn" on:click={() => addChild(i,{type:"vsm-bubble",content:"Hello!",tail:"bottom-left",background:"#e8f4fd"})}>+Bubble</button>
+                        <button class="ve-add-btn" on:click={() => addChild(i,{type:"vsm-bubble",content:"Hello!",tail:"bottom",background:"#e8f4fd"})}>+Bubble</button>
                         <button class="ve-add-btn" on:click={() => addChild(i,{type:"vsm-chart",chartType:"bar",dataVar:"",label:"",color:"#5b8edc",height:"300px"})}>+Chart</button>
+                        <button class="ve-add-btn ve-add-btn-feed" on:click={() => addChild(i,{type:"vsm-feed",dataVar:"",height:"400px",agentColor:"#e8f4fd",userColor:"#eafbe8",systemColor:"#f5f5f5",agentLabel:"Agent",userLabel:"You"})}>+Feed</button>
                       </div>
                     </div>
 
@@ -1369,6 +1417,36 @@
                                      on:input={e => setChildProp(i,ci,"height",e.target.value || undefined)}>
                             </div>
 
+                          {:else if child.type === "vsm-feed"}
+                            <label class="ve-prop-label">Data variable</label>
+                            <select class="ve-select" value={child.dataVar ?? ""}
+                                    on:change={e => setChildProp(i,ci,"dataVar",e.target.value || undefined)}>
+                              <option value="">— none —</option>
+                              {#each variables as v}<option value={v.name}>{v.name}</option>{/each}
+                            </select>
+                            <label class="ve-prop-label">Height</label>
+                            <input class="ve-input" type="text" placeholder="400px"
+                                   value={child.height ?? "400px"}
+                                   on:input={e => setChildProp(i,ci,"height",e.target.value || undefined)}>
+                            <label class="ve-prop-label">Agent label</label>
+                            <input class="ve-input" type="text" placeholder="Agent"
+                                   value={child.agentLabel ?? "Agent"}
+                                   on:input={e => setChildProp(i,ci,"agentLabel",e.target.value || undefined)}>
+                            <label class="ve-prop-label">User label</label>
+                            <input class="ve-input" type="text" placeholder="You"
+                                   value={child.userLabel ?? "You"}
+                                   on:input={e => setChildProp(i,ci,"userLabel",e.target.value || undefined)}>
+                            <div class="ve-row" style="gap:.5rem;margin-top:.1rem">
+                              <label class="ve-prop-label">Agent color</label>
+                              <input class="ve-color" type="color"
+                                     value={parseColorAlpha(child.agentColor ?? '#e8f4fd').hex}
+                                     on:input={e => setChildProp(i,ci,"agentColor",e.target.value)}>
+                              <label class="ve-prop-label" style="margin-left:.5rem">User color</label>
+                              <input class="ve-color" type="color"
+                                     value={parseColorAlpha(child.userColor ?? '#eafbe8').hex}
+                                     on:input={e => setChildProp(i,ci,"userColor",e.target.value)}>
+                            </div>
+
                           {:else}
                             <p class="ve-unknown">Type <code>{child.type}</code> — edit in JSON tab.</p>
                           {/if}
@@ -1579,6 +1657,9 @@
   .ve-add-btn-panel {
     background: var(--accent-soft, #d6e2f6);
     border-color: var(--accent, #5b8edc); color: var(--accent, #5b8edc); font-weight: 600;
+  }
+  .ve-add-btn-feed {
+    background: #eafbe8; border-color: #5aaa6a; color: #2e6b38; font-weight: 600;
   }
 
   /* Element cards */

@@ -36,6 +36,8 @@ import java.util.*;
 public class HtmlGuiWsExecutor extends ActivityExecutor {
     // The map of activity worker
     private final Map<String, ActivityWorker> mActivityWorkerMap = new HashMap<>();
+    // Per-variable conversation logs for vsm-feed (appendMessage / clearFeed)
+    private final Map<String, List<String>> mConvLogs = new HashMap<>();
     // The singleton logger instance
     protected final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
     private final ArrayList<WsConnectContext> websockets = new ArrayList<>();
@@ -392,6 +394,28 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
         }
     }
 
+    /** Builds a JSON array string from a list of already-serialised JSON objects. */
+    private static String buildJsonArray(List<String> items) {
+        if (items == null || items.isEmpty()) return "[]";
+        StringBuilder sb = new StringBuilder("[");
+        for (int i = 0; i < items.size(); i++) {
+            if (i > 0) sb.append(",");
+            sb.append(items.get(i));
+        }
+        sb.append("]");
+        return sb.toString();
+    }
+
+    /** Escapes a string for safe embedding inside a JSON double-quoted value. */
+    private static String escapeJson(String s) {
+        if (s == null) return "";
+        return s.replace("\\", "\\\\")
+                .replace("\"", "\\\"")
+                .replace("\n", "\\n")
+                .replace("\r", "\\r")
+                .replace("\t", "\\t");
+    }
+
     private static String assetContentType(String filename) {
         String f = filename.toLowerCase();
         if (f.endsWith(".jpg") || f.endsWith(".jpeg")) return "image/jpeg";
@@ -543,6 +567,43 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
                 String varName = activity.get("var").replace("'", "");
                 String value   = activity.get("value").replace("'", "");
                 broadcast("updateVar$" + varName + "$" + value);
+            } else if (name.equalsIgnoreCase("appendMessage")) {
+                // appendMessage(var='…', role='agent|user|system', text='…'[, speaker='…'][, timestamp='…'])
+                String varName   = activity.get("var")  != null ? activity.get("var").replace("'", "")  : "";
+                String role      = activity.get("role") != null ? activity.get("role").replace("'", "") : "agent";
+                String text      = activity.get("text") != null ? activity.get("text").replace("'", "") : "";
+                String speaker   = activity.get("speaker");
+                String timestamp = activity.get("timestamp");
+
+                StringBuilder msg = new StringBuilder("{");
+                msg.append("\"role\":\"").append(escapeJson(role)).append("\"");
+                msg.append(",\"text\":\"").append(escapeJson(text)).append("\"");
+                if (speaker != null)
+                    msg.append(",\"speaker\":\"").append(escapeJson(speaker.replace("'", ""))).append("\"");
+                if (timestamp != null)
+                    msg.append(",\"timestamp\":\"").append(escapeJson(timestamp.replace("'", ""))).append("\"");
+                msg.append("}");
+
+                if (!varName.isEmpty()) {
+                    synchronized (mConvLogs) {
+                        mConvLogs.computeIfAbsent(varName, k -> new ArrayList<>()).add(msg.toString());
+                        String jsonArray = buildJsonArray(mConvLogs.get(varName));
+                        if (mProject.hasVariable(varName)) mProject.setVariable(varName, jsonArray);
+                        broadcast("updateVar$" + varName + "$" + jsonArray);
+                    }
+                }
+
+            } else if (name.equalsIgnoreCase("clearFeed")) {
+                // clearFeed(var='…')  — empties the conversation log for a feed variable
+                String varName = activity.get("var") != null ? activity.get("var").replace("'", "") : "";
+                if (!varName.isEmpty()) {
+                    synchronized (mConvLogs) {
+                        mConvLogs.put(varName, new ArrayList<>());
+                        if (mProject.hasVariable(varName)) mProject.setVariable(varName, "[]");
+                        broadcast("updateVar$" + varName + "$[]");
+                    }
+                }
+
             } else if (name.equalsIgnoreCase("screensToFront")) {
                 broadcast("screensToFront");
             } else if (name.equalsIgnoreCase("guiToFront")) {

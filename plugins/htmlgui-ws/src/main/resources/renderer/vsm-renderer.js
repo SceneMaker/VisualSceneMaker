@@ -380,6 +380,17 @@ class VsmScreenRenderer extends LitElement {
                     </div>`;
             }
 
+            case 'vsm-feed': {
+                const feedStyle = [
+                    el.width ? `width:${el.width}` : '',
+                    style,
+                ].filter(Boolean).join(';');
+                return html`<vsm-feed-element
+                    .config=${el}
+                    .datavalue=${this._varValues[el.dataVar] ?? ''}
+                    style=${feedStyle}></vsm-feed-element>`;
+            }
+
             case 'vsm-bubble': {
                 const bg        = el.background ?? '#e8f4fd';
                 const content   = el.bindVar ? (this._varValues[el.bindVar] ?? '') : (el.content ?? '');
@@ -612,3 +623,138 @@ class VsmChartElement extends LitElement {
 }
 
 customElements.define('vsm-chart-element', VsmChartElement);
+
+// ---------------------------------------------------------------------------
+// vsm-feed-element — Live dialogue diary
+//
+// Renders a scrollable, role-aware list of speech bubbles driven by a single
+// VSM variable that holds a JSON array of message objects.
+//
+// Message object format:
+//   { "role": "agent"|"user"|"system", "text": "...", "speaker": "...", "timestamp": "..." }
+//
+// Config (from the schema element):
+//   dataVar, agentColor, userColor, systemColor, agentLabel, userLabel,
+//   showTimestamps, height
+// ---------------------------------------------------------------------------
+
+class VsmFeedElement extends LitElement {
+
+    static properties = {
+        config:    { type: Object },
+        datavalue: {},
+    };
+
+    static styles = css`
+        :host { display: block; }
+
+        .vsm-feed {
+            display: flex; flex-direction: column; gap: 0.55rem;
+            overflow-y: auto; padding: 0.6rem 0.8rem;
+            box-sizing: border-box; scroll-behavior: smooth;
+        }
+
+        /* Bubble wrapper — controls alignment */
+        .vsm-feed-row             { display: flex; flex-direction: column; max-width: 78%; }
+        .vsm-feed-row.role-agent  { align-self: flex-start; }
+        .vsm-feed-row.role-user   { align-self: flex-end; }
+        .vsm-feed-row.role-system { align-self: center; max-width: 90%; }
+
+        .vsm-feed-speaker {
+            font-size: 0.7rem; font-weight: 600; opacity: 0.6;
+            padding: 0 0.5rem; margin-bottom: 0.15rem;
+        }
+        .vsm-feed-row.role-user .vsm-feed-speaker { text-align: right; }
+
+        .vsm-feed-bubble {
+            position: relative;
+            padding: 0.6rem 0.9rem;
+            border-radius: 1rem;
+            background: var(--bubble-bg, #e8f4fd);
+            line-height: 1.5; word-wrap: break-word;
+        }
+
+        /* agent tail — bottom-left */
+        .vsm-feed-row.role-agent .vsm-feed-bubble::after {
+            content: ''; position: absolute;
+            bottom: -9px; left: 16px;
+            border-right: 12px solid transparent;
+            border-top: 10px solid var(--bubble-bg, #e8f4fd);
+        }
+
+        /* user tail — bottom-right */
+        .vsm-feed-row.role-user .vsm-feed-bubble::after {
+            content: ''; position: absolute;
+            bottom: -9px; right: 16px;
+            border-left: 12px solid transparent;
+            border-top: 10px solid var(--bubble-bg, #e8f4fd);
+        }
+
+        /* system — no tail, centered, subdued */
+        .vsm-feed-row.role-system .vsm-feed-bubble {
+            font-style: italic; font-size: 0.85rem;
+            text-align: center; border-radius: 0.6rem; opacity: 0.75;
+        }
+
+        .vsm-feed-timestamp {
+            font-size: 0.68rem; opacity: 0.45;
+            padding: 0.1rem 0.5rem; margin-top: 0.1rem;
+        }
+        .vsm-feed-row.role-user .vsm-feed-timestamp { text-align: right; }
+    `;
+
+    constructor() {
+        super();
+        this.config    = {};
+        this.datavalue = '';
+    }
+
+    updated(changed) {
+        if (changed.has('datavalue')) {
+            this.updateComplete.then(() => {
+                const feed = this.renderRoot.querySelector('.vsm-feed');
+                if (feed) feed.scrollTop = feed.scrollHeight;
+            });
+        }
+    }
+
+    _parseMessages() {
+        try { return this.datavalue ? JSON.parse(this.datavalue) : []; }
+        catch { return []; }
+    }
+
+    _renderMessage(msg, cfg) {
+        const role = msg.role ?? 'agent';
+        const bg   = role === 'user'   ? (cfg.userColor   ?? '#eafbe8')
+                   : role === 'system' ? (cfg.systemColor ?? '#f5f5f5')
+                   :                     (cfg.agentColor  ?? '#e8f4fd');
+
+        // Speaker label: per-message override > config label > omit for system
+        const defaultLabel = role === 'user' ? (cfg.userLabel ?? 'You')
+                           : role === 'agent' ? (cfg.agentLabel ?? 'Agent')
+                           : null;
+        const speaker = msg.speaker !== undefined ? msg.speaker : defaultLabel;
+
+        return html`
+            <div class=${'vsm-feed-row role-' + role}>
+                ${speaker ? html`<div class="vsm-feed-speaker">${speaker}</div>` : html``}
+                <div class="vsm-feed-bubble" style=${'--bubble-bg:' + bg + ';background:' + bg}>
+                    ${msg.text ?? ''}
+                </div>
+                ${msg.timestamp && cfg.showTimestamps
+                    ? html`<div class="vsm-feed-timestamp">${msg.timestamp}</div>`
+                    : html``}
+            </div>`;
+    }
+
+    render() {
+        const cfg  = this.config ?? {};
+        const msgs = this._parseMessages();
+        return html`
+            <div class="vsm-feed" style=${'height:' + (cfg.height ?? '400px')}>
+                ${msgs.map(m => this._renderMessage(m, cfg))}
+            </div>`;
+    }
+}
+
+customElements.define('vsm-feed-element', VsmFeedElement);
