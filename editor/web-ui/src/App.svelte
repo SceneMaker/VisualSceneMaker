@@ -11293,6 +11293,21 @@ Sentence:
     });
   }
 
+  async function moveNodeCommand(nodeId, from, to) {
+    if (!selectedProjectId || !nodeId) return null;
+    if (!Number.isFinite(from) || !Number.isFinite(to) || from < 0 || to < 0 || from === to) {
+      return null;
+    }
+    pinSelectedNodeSelection();
+    return await runSceneFlowCommand("SceneFlow.Node.Cmd.Move", {
+      projectId: selectedProjectId,
+      superNodeId: sceneFlow?.superNodeId,
+      nodeId,
+      from,
+      to
+    });
+  }
+
   async function deleteCmd(index) {
     if (nodeEditorTarget?.isRoot) return;
     if (!selectedProjectId || !nodeEditorTarget) return;
@@ -14975,6 +14990,7 @@ Sentence:
                 blockDragType={BLOCK_DRAG_TYPE}
                 showInfo={sceneFlowShowInfo}
                 onCommandOpen={openCmdDialog}
+                onCommandMove={moveNodeCommand}
                 onCopySelection={copySceneFlowSelection}
                 onPasteSelection={pasteSceneFlowSelection}
                 onCutSelection={cutSceneFlowSelection}
@@ -16578,7 +16594,7 @@ Sentence:
       on:click|self={closeSaveAsDialog}
       role="presentation"
     >
-      <div class="modal" bind:this={saveAsDialogEl} role="dialog" aria-modal="true" aria-labelledby="save-as-title" tabindex="-1">
+      <div class="modal save-as-modal" bind:this={saveAsDialogEl} role="dialog" aria-modal="true" aria-labelledby="save-as-title" tabindex="-1">
         <h3 id="save-as-title">Save project as</h3>
         <form class="modal-body" on:submit|preventDefault={confirmSaveAs}>
           <label for="save-as-name">Project name</label>
@@ -16619,7 +16635,7 @@ Sentence:
           {#if saveAsError}
             <p class="error">{saveAsError}</p>
           {/if}
-          <div class="row">
+          <div class="row row-end">
             <button type="button" class="ghost" on:click={closeSaveAsDialog}>Cancel</button>
             <button
               type="submit"
@@ -18888,6 +18904,7 @@ Sentence:
     {apiGet}
     {apiPost}
     {apiPut}
+    {sendCommand}
   />
 
   {#if !showEditor}

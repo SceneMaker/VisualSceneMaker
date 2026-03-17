@@ -3155,6 +3155,23 @@ button.ghost.start-toggle:disabled {
   background: rgba(255, 255, 255, 0.98);
 }
 
+.modal.save-as-modal {
+  width: min(560px, 94vw);
+}
+
+.save-as-modal .modal-body {
+  width: 100%;
+  min-width: 0;
+}
+
+.save-as-modal .base-dir-suggestions,
+.save-as-modal .base-dir-suggestion-list,
+.save-as-modal .base-dir-suggestion-btn {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
 .modal.missing-agent-modal h3 {
   color: #4b5563;
 }
@@ -5581,6 +5598,14 @@ button.ghost.start-toggle:disabled {
   cursor: pointer;
 }
 
+.node-cmd-badge.drag-source {
+  opacity: 0.38;
+}
+
+.node-cmd-badge-bg {
+  transition: opacity 120ms ease;
+}
+
 .node-cmd-badge-text {
   fill: #3f3f3f;
   font-family: "SansSerif", "Helvetica Neue", Arial, sans-serif;
@@ -5595,6 +5620,13 @@ button.ghost.start-toggle:disabled {
   stroke-linecap: round;
   stroke-linejoin: round;
   pointer-events: none;
+}
+
+.node-cmd-drop-marker {
+  fill: var(--sf-selection-color, #5b8fdc);
+  opacity: 0.95;
+  pointer-events: none;
+  filter: drop-shadow(0 0 6px rgba(91, 143, 220, 0.35));
 }
 
 .node-id {

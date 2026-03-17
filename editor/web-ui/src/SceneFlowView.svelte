@@ -33,6 +33,7 @@
   export let onCutSelection = null;
   export let onDuplicateSelection = null;
   export let onTimeoutEdgeUpdate = null;
+  export let onCommandMove = null;
   export let activityNodes = [];
   export let activityEdges = [];
   export let timeoutEdges = [];
@@ -275,6 +276,7 @@
   let hoveredEdgeId = null;
   let edgeCreateHoverId = null;
   let edgeRetargetHoverId = null;
+  let suppressCommandBadgeClickUntil = 0;
   let edgeCreateCursor = null;
   let dragState = null;
   let timeoutSliderSuppressedEdgeId = "";
@@ -1535,6 +1537,146 @@
     };
   }
 
+  function splitTokenToWidth(token, maxWidth, size) {
+    const parts = [];
+    let rest = String(token || "");
+    while (rest) {
+      let piece = rest;
+      while (piece.length > 1 && measureTextMetrics(piece, size).width > maxWidth) {
+        piece = piece.slice(0, -1);
+      }
+      if (!piece) {
+        break;
+      }
+      parts.push(piece);
+      rest = rest.slice(piece.length);
+      if (piece.length === 0) {
+        break;
+      }
+    }
+    return parts.length ? parts : [token];
+  }
+
+  function wrapTextToWidth(text, maxWidth, size) {
+    const source = String(text || "").trim();
+    if (!source) return [];
+    if (!Number.isFinite(maxWidth) || maxWidth <= 0) return [source];
+    const rawTokens = source.split(/\s+/).filter(Boolean);
+    if (!rawTokens.length) return [source];
+    const tokens = [];
+    for (const token of rawTokens) {
+      if (measureTextMetrics(token, size).width <= maxWidth) {
+        tokens.push(token);
+      } else {
+        tokens.push(...splitTokenToWidth(token, maxWidth, size));
+      }
+    }
+    const lines = [];
+    let current = "";
+    for (const token of tokens) {
+      const candidate = current ? `${current} ${token}` : token;
+      if (!current || measureTextMetrics(candidate, size).width <= maxWidth) {
+        current = candidate;
+      } else {
+        lines.push(current);
+        current = token;
+      }
+    }
+    if (current) {
+      lines.push(current);
+    }
+    return lines;
+  }
+
+  function truncateMiddleToWidth(text, maxWidth, size) {
+    let source = String(text || "").trim();
+    if (!source) return "";
+    if (measureTextMetrics(source, size).width <= maxWidth) {
+      return source;
+    }
+    const ellipsis = "...";
+    let left = source;
+    let right = "";
+    let cutLeft = true;
+    while (left.length + right.length > 1) {
+      const candidate = `${left}${ellipsis}${right}`;
+      if (measureTextMetrics(candidate, size).width <= maxWidth) {
+        return candidate;
+      }
+      if (cutLeft && left.length > 0) {
+        left = left.slice(0, -1);
+      } else if (right.length < source.length) {
+        const keep = source.slice(source.length - (right.length + 1));
+        right = keep;
+      } else if (left.length > 0) {
+        left = left.slice(0, -1);
+      } else {
+        break;
+      }
+      cutLeft = !cutLeft;
+      while (measureTextMetrics(`${left}${ellipsis}${right}`, size).width > maxWidth && left.length > 0) {
+        left = left.slice(0, -1);
+      }
+    }
+    return `${source.slice(0, 1)}${ellipsis}`;
+  }
+
+  function cubicCurveLength(start, ctrl1, ctrl2, end, steps = 12) {
+    let total = 0;
+    let prev = start;
+    const count = Math.max(4, Math.floor(steps));
+    for (let i = 1; i <= count; i += 1) {
+      const point = cubicPointAt(start, ctrl1, ctrl2, end, i / count);
+      total += Math.hypot(point.x - prev.x, point.y - prev.y);
+      prev = point;
+    }
+    return total;
+  }
+
+  function edgeVisualLength(edge, drag) {
+    const pts = edgePoints(edge, drag);
+    if (pts.length >= 2) {
+      const start = pts[0];
+      const end = pts[pts.length - 1];
+      const controls = edgeCurveControls(edge, start, end, drag);
+      return cubicCurveLength(start, controls.ctrl1, controls.ctrl2, end);
+    }
+    const fallback = fallbackEdgeEndpoints(edge, drag);
+    if (fallback) {
+      return Math.hypot(fallback.end.x - fallback.start.x, fallback.end.y - fallback.start.y);
+    }
+    return 0;
+  }
+
+  function edgeLabelLayout(edge, label, drag) {
+    const text = String(label || "").trim();
+    if (!text) return null;
+    if (edge?.type !== "CEDGE" && edge?.type !== "IEDGE") {
+      return {
+        lines: [text],
+        width: measureTextMetrics(text, fontSize).width
+      };
+    }
+    const maxLines = 3;
+    const edgeLength = edgeVisualLength(edge, drag);
+    const maxWidth = Math.max(fontSize * 7.5, Math.min(fontSize * 24, edgeLength * 0.72));
+    let lines = wrapTextToWidth(text, maxWidth, fontSize);
+    if (lines.length > maxLines) {
+      const maxTotalWidth = maxWidth * maxLines;
+      const shortened = truncateMiddleToWidth(text, maxTotalWidth, fontSize);
+      lines = wrapTextToWidth(shortened, maxWidth, fontSize);
+      if (lines.length > maxLines) {
+        const flattened = truncateMiddleToWidth(lines.join(" "), maxTotalWidth, fontSize);
+        lines = wrapTextToWidth(flattened, maxWidth, fontSize).slice(0, maxLines);
+      }
+    }
+    const width = lines.reduce((best, line) => Math.max(best, measureTextMetrics(line, fontSize).width), 0);
+    return {
+      lines,
+      width
+    };
+  }
+
   function nodeTypeBadgesLayout(node, w) {
     const types = nodeCommandTypes(node);
     if (!types.length) return null;
@@ -1894,6 +2036,95 @@
   function nodeCommandTypes(node) {
     const entries = nodeCommandEntries(node);
     return ["var", "scene", "action"].filter((t) => entries.some((e) => e.type === t));
+  }
+
+  function commandBadgesWorld(node, drag) {
+    if (!node) return [];
+    const pos = nodePosition(node, drag);
+    const size = nodeSize(node);
+    const badges = nodeCommandBadgesLayout(node, size.w, size.h) || [];
+    return badges.map((badge) => ({
+      ...badge,
+      worldX: pos.x + badge.x,
+      worldY: pos.y + badge.y,
+      worldTextX: pos.x + badge.textX,
+      worldTextY: pos.y + badge.textY,
+      worldIconX: Number.isFinite(badge.iconX) ? pos.x + badge.iconX : null,
+      worldIconY: Number.isFinite(badge.iconY) ? pos.y + badge.iconY : null
+    }));
+  }
+
+  function commandDropSlotFromPointer(node, point, drag) {
+    const badges = commandBadgesWorld(node, drag);
+    if (!badges.length || !point) return null;
+    for (const badge of badges) {
+      if (
+        point.x >= badge.worldX &&
+        point.x <= badge.worldX + badge.width &&
+        point.y >= badge.worldY &&
+        point.y <= badge.worldY + badge.height
+      ) {
+        return point.x < badge.worldX + badge.width / 2 ? badge.index : badge.index + 1;
+      }
+    }
+    let nearest = null;
+    let best = Number.POSITIVE_INFINITY;
+    for (const badge of badges) {
+      const cx = badge.worldX + badge.width / 2;
+      const cy = badge.worldY + badge.height / 2;
+      const dist = Math.hypot(point.x - cx, point.y - cy);
+      if (dist < best) {
+        best = dist;
+        nearest = badge;
+      }
+    }
+    if (!nearest) return null;
+    const sameRow = point.y >= nearest.worldY && point.y <= nearest.worldY + nearest.height;
+    if (sameRow) {
+      return point.x < nearest.worldX + nearest.width / 2 ? nearest.index : nearest.index + 1;
+    }
+    return point.y < nearest.worldY + nearest.height / 2 ? nearest.index : nearest.index + 1;
+  }
+
+  function commandMoveTargetFromSlot(from, slot, count) {
+    if (!Number.isFinite(from) || !Number.isFinite(slot) || !Number.isFinite(count) || count <= 0) {
+      return null;
+    }
+    const clampedSlot = Math.max(0, Math.min(count, slot));
+    if (clampedSlot === from || clampedSlot === from + 1) {
+      return from;
+    }
+    return clampedSlot > from ? clampedSlot - 1 : clampedSlot;
+  }
+
+  function commandDropMarker(node, drag) {
+    if (!node || drag?.type !== "cmd-badge" || drag.nodeId !== node.id || !drag.moved) return null;
+    const badges = nodeCommandBadgesLayout(node, nodeSize(node).w, nodeSize(node).h) || [];
+    if (!badges.length) return null;
+    const slot = drag.dropSlot;
+    if (!Number.isFinite(slot)) return null;
+    const thickness = Math.max(3, Math.round(fontSize * 0.18));
+    if (slot <= 0) {
+      const first = badges[0];
+      return { x: first.x - thickness / 2, y: first.y, height: first.height, width: thickness };
+    }
+    if (slot >= badges.length) {
+      const last = badges[badges.length - 1];
+      return { x: last.x + last.width - thickness / 2, y: last.y, height: last.height, width: thickness };
+    }
+    const prev = badges[slot - 1];
+    const next = badges[slot];
+    if (!prev || !next) return null;
+    if (Math.abs(prev.y - next.y) <= 1) {
+      const centerX = (prev.x + prev.width + next.x) / 2;
+      return {
+        x: centerX - thickness / 2,
+        y: Math.min(prev.y, next.y),
+        height: Math.max(prev.height, next.height),
+        width: thickness
+      };
+    }
+    return { x: next.x - thickness / 2, y: next.y, height: next.height, width: thickness };
   }
 
   function startSignMetrics(size) {
@@ -2832,6 +3063,37 @@
     onCommandOpen(node.id, focusIndex);
   }
 
+  function startCommandBadgeDrag(event, node, badge) {
+    if (!node || !badge || event.button !== 0) return;
+    event.preventDefault();
+    event.stopPropagation();
+    focusStage();
+    selectNode(node.id);
+    const world = eventToWorld(event);
+    const captureEl = stageEl || svgEl;
+    if (captureEl) {
+      captureEl.setPointerCapture(event.pointerId);
+    }
+    dragState = {
+      type: "cmd-badge",
+      nodeId: node.id,
+      commandIndex: badge.index,
+      dropSlot: badge.index,
+      currentX: world.x,
+      currentY: world.y,
+      startX: world.x,
+      startY: world.y,
+      moved: false,
+      pointerId: event.pointerId
+    };
+  }
+
+  function activateCommandBadge(node, badge) {
+    if (!node || !badge) return;
+    if (Date.now() < suppressCommandBadgeClickUntil) return;
+    handleCommandOpen(node, badge.index);
+  }
+
   function handleNodeKeydown(node, event) {
     if (event.key !== "Enter" && event.key !== " " && event.key !== "Spacebar") {
       return;
@@ -3503,6 +3765,18 @@
       };
       return;
     }
+    if (dragState.type === "cmd-badge") {
+      const sameNode = nodeMap.get(dragState.nodeId);
+      const moved = dragState.moved || Math.hypot(dx, dy) > dragThreshold;
+      dragState = {
+        ...dragState,
+        currentX: world.x,
+        currentY: world.y,
+        moved,
+        dropSlot: moved && sameNode ? commandDropSlotFromPointer(sameNode, world, null) : dragState.dropSlot
+      };
+      return;
+    }
     if (dragState.type === "comment-resize") {
       const nextWidth = Math.max(commentMinSize, (dragState.originWidth ?? 0) + dx);
       const nextHeight = Math.max(commentMinSize, (dragState.originHeight ?? 0) + dy);
@@ -3548,6 +3822,23 @@
     }
     if (finished.type === "timeout-slider") {
       commitTimeoutInlineSliderById(finished.id);
+      return;
+    }
+    if (finished.type === "cmd-badge") {
+      if (!finished.moved) {
+        return;
+      }
+      const node = nodeMap.get(finished.nodeId);
+      const entries = nodeCommandEntries(node);
+      const toIndex = commandMoveTargetFromSlot(finished.commandIndex, finished.dropSlot, entries.length);
+      suppressCommandBadgeClickUntil = Date.now() + 250;
+      if (
+        typeof onCommandMove === "function" &&
+        Number.isFinite(toIndex) &&
+        toIndex !== finished.commandIndex
+      ) {
+        onCommandMove(finished.nodeId, finished.commandIndex, toIndex);
+      }
       return;
     }
     if (!finished.moved) {
@@ -4097,6 +4388,7 @@
   <g class="edges">
     {#each edges as edge (edge.id)}
       {@const label = edgeLabel(edge, runtimeValues, runtimeState)}
+      {@const labelLayout = edgeLabelLayout(edge, label, dragState)}
       {@const tooltip = edgeTooltip(edge, runtimeValues)}
       {@const baseColor = edgeColor(edge)}
       {@const isHovered = hoveredEdgeId === edge.id}
@@ -4241,7 +4533,7 @@
             />
           {/if}
         {/if}
-        {#if label}
+        {#if labelLayout}
           <text
             class="edge-label"
             x={labelPos.x}
@@ -4250,7 +4542,14 @@
             dominant-baseline="middle"
             style={`--edge-color:${labelTextColor}; --edge-outline:${labelOutline};`}
           >
-            {label}
+            {#each labelLayout.lines as line, idx}
+              <tspan
+                x={labelPos.x}
+                dy={idx === 0 ? `${-((labelLayout.lines.length - 1) * labelLineHeight) / 2}px` : `${labelLineHeight}px`}
+              >
+                {line}
+              </tspan>
+            {/each}
           </text>
         {/if}
         {#if timeoutSlider}
@@ -4340,6 +4639,7 @@
       {@const label = nodeLabelLayout(node, w, h)}
       {@const typeBadgesLayout = showInfo ? nodeTypeBadgesLayout(node, w) : null}
       {@const cmdBadgesLayout = nodeCommandBadgesLayout(node, w, h)}
+      {@const cmdDropMarker = commandDropMarker(node, dragState)}
       {@const cmdDotsLayout = null}
       <g
         class={`node node-${node.type === "Super" || node.type === "Alias" ? "super" : "basic"} ${node.type === "Alias" ? "node-alias" : ""} ${node.isStart ? "start" : ""} ${
@@ -4472,10 +4772,13 @@
                 role="button"
                 tabindex="0"
                 aria-label={badge.truncated ? badge.fullText : badge.text}
-                on:click|stopPropagation={() => handleCommandOpen(node, badge.index)}
-                on:keydown|stopPropagation={(e) => { if (e.key === 'Enter' || e.key === ' ') handleCommandOpen(node, badge.index); }}
+                on:pointerdown|stopPropagation={(event) => startCommandBadgeDrag(event, node, badge)}
+                on:click|stopPropagation={() => activateCommandBadge(node, badge)}
+                on:keydown|stopPropagation={(e) => { if (e.key === 'Enter' || e.key === ' ') activateCommandBadge(node, badge); }}
+                class:drag-source={dragState?.type === "cmd-badge" && dragState?.nodeId === node.id && dragState?.commandIndex === badge.index && dragState?.moved}
               >
                 <rect
+                  class="node-cmd-badge-bg"
                   x={safeSvgNumber(badge.x)}
                   y={safeSvgNumber(badge.y)}
                   width={safeSvgNumber(badge.width)}
@@ -4539,6 +4842,17 @@
                 {/if}
               </g>
             {/each}
+            {#if cmdDropMarker}
+              <rect
+                class="node-cmd-drop-marker"
+                x={safeSvgNumber(cmdDropMarker.x)}
+                y={safeSvgNumber(cmdDropMarker.y)}
+                width={safeSvgNumber(cmdDropMarker.width)}
+                height={safeSvgNumber(cmdDropMarker.height)}
+                rx={safeSvgNumber(cmdDropMarker.width / 2)}
+                ry={safeSvgNumber(cmdDropMarker.width / 2)}
+              />
+            {/if}
           {/if}
           {#if cmdDotsLayout}
             <g

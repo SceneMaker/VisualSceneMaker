@@ -170,10 +170,11 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         private final JSONObject categories;      // categories.primary, categories.secondary
         private final JSONArray commands;         // commands array
         private final JSONObject variables;       // variables.writes, variables.reads
+        final String specVersion;                 // from specVersion field in plugin-properties.json
 
         private ExportablePropertyEntry(String providerClass, JSONObject pluginSpec, JSONObject agentSpec,
                                          JSONObject pluginMeta, JSONObject categories,
-                                         JSONArray commands, JSONObject variables) {
+                                         JSONArray commands, JSONObject variables, String specVersion) {
             this.providerClass = providerClass;
             this.pluginSpec = pluginSpec;
             this.agentSpec = agentSpec;
@@ -181,6 +182,7 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
             this.categories = categories;
             this.commands = commands;
             this.variables = variables;
+            this.specVersion = specVersion != null ? specVersion : "";
         }
 
         /**
@@ -246,6 +248,11 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
                 out.put("config", configArray);
             } else {
                 out.put("config", new JSONArray());
+            }
+
+            // Spec version (for plugin update detection)
+            if (!specVersion.isEmpty()) {
+                out.put("specVersion", specVersion);
             }
 
             return out;
@@ -1387,6 +1394,12 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
             ExportablePropertyEntry entry = resolveExportablePropertyEntry(className);
             return entry != null ? entry.variables : null;
         }
+
+        @Override
+        public String specVersion(String className) {
+            ExportablePropertyEntry entry = resolveExportablePropertyEntry(className);
+            return entry != null ? entry.specVersion : "";
+        }
     };
     private final ProjectTemplatesInstallCommandService.Context projectTemplatesInstallCommandContext = new ProjectTemplatesInstallCommandService.Context() {
         @Override
@@ -1697,6 +1710,8 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
                 "Config.Update");
         registerWsCommands((method, params, broadcaster) -> pluginCreateCommandService.dispatch(params, pluginCreateCommandContext),
                 "ProjectConfig.Plugin.Create");
+        registerWsCommands((method, params, broadcaster) -> handlePluginGetUpdate(params),
+                "ProjectConfig.Plugin.GetUpdate");
         registerWsCommands((method, params, broadcaster) -> projectTemplatesInstallCommandService.dispatch(params, projectTemplatesInstallCommandContext),
                 "Project.Templates.Install");
         registerWsCommands((method, params, broadcaster) -> projectConfigUpdateCommandService.dispatch(params, broadcaster, projectConfigUpdateCommandContext),
@@ -4240,6 +4255,80 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         return health;
     }
 
+    /**
+     * WS command: ProjectConfig.Plugin.GetUpdate
+     * <p>
+     * Params: { projectId, className, [knownVarNames: [string]] }
+     * <p>
+     * Returns: { specVersion, newVars: [{name, type}], upToDate: bool }
+     * <p>
+     * Computes the set of SceneFlow variables the current plugin spec would create, then
+     * subtracts the variables already present in the project's SceneFlow (or the caller's
+     * knownVarNames list if provided). The result drives the PluginDashboard "Update
+     * available" badge and the apply-update workflow.
+     */
+    private JSONObject handlePluginGetUpdate(final JSONObject params) {
+        String projectId = params.optString("projectId", "").trim();
+        String className = params.optString("className", "").trim();
+        if (projectId.isEmpty() || className.isEmpty()) {
+            return errorResponse("BAD_REQUEST", "Missing projectId or className");
+        }
+
+        // Compute what variables the current spec would create (dry-run, no side effects)
+        JSONObject createResult = pluginCreateCommandService.dispatch(
+                new JSONObject()
+                        .put("className", className)
+                        .put("name", "_update_check")
+                        .put("type", "device"),
+                pluginCreateCommandContext);
+        if (!"ok".equals(createResult.optString("status"))) {
+            return createResult;
+        }
+        JSONArray specVars = createResult.optJSONArray("sceneflowVars");
+        if (specVars == null) specVars = new JSONArray();
+
+        // Build set of existing variable names from sceneflow OR caller-supplied list
+        Set<String> existing = new HashSet<>();
+        JSONArray knownVarNames = params.optJSONArray("knownVarNames");
+        if (knownVarNames != null) {
+            for (int i = 0; i < knownVarNames.length(); i++) {
+                String n = knownVarNames.optString(i, "").trim();
+                if (!n.isEmpty()) existing.add(n);
+            }
+        } else {
+            ProjectRef ref = projectStore.get(projectId);
+            if (ref != null && ref.runtimeProject != null) {
+                SceneFlow sf = ref.runtimeProject.getSceneFlow();
+                if (sf != null) {
+                    for (VariableDefinition def : sf.getVarDefList()) {
+                        if (def.getName() != null) existing.add(def.getName());
+                    }
+                }
+            }
+        }
+
+        // Find spec vars missing from the project
+        JSONArray newVars = new JSONArray();
+        for (int i = 0; i < specVars.length(); i++) {
+            JSONObject v = specVars.optJSONObject(i);
+            if (v == null) continue;
+            String varName = v.optString("name", "").trim();
+            if (!varName.isEmpty() && !existing.contains(varName)) {
+                newVars.put(v);
+            }
+        }
+
+        ExportablePropertyEntry entry = resolveExportablePropertyEntry(className);
+        String specVersion = entry != null ? entry.specVersion : "";
+
+        JSONObject result = new JSONObject();
+        result.put("specVersion", specVersion);
+        result.put("newVars", newVars);
+        result.put("upToDate", newVars.length() == 0);
+        result.put("status", "ok");
+        return result;
+    }
+
     private void handlePluginParams(Context ctx) {
         if (mMode == ServerMode.RUNTIME_ONLY) {
             writeJson(ctx, errorResponse("FORBIDDEN", "Editing not allowed in runtime-only mode"));
@@ -4973,7 +5062,7 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
                                 EXPORTABLE_PROPERTY_PROVIDERS.put(
                                         key.trim(),
                                         new ExportablePropertyEntry(providerClass, pluginSpec, agentSpec,
-                                                null, null, null, null));
+                                                null, null, null, null, null));
                             }
                         }
                     }
@@ -5034,8 +5123,11 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         // Variables
         JSONObject variables = root.optJSONObject("variables");
 
+        // Spec version for plugin update detection
+        String specVersion = root.optString("specVersion", "");
+
         return new ExportablePropertyEntry(null, pluginSpec, agentSpec,
-                pluginMeta, categories, commands, variables);
+                pluginMeta, categories, commands, variables, specVersion);
     }
 
     private String resolvePluginClassName(ProjectConfig config, String deviceName) {
