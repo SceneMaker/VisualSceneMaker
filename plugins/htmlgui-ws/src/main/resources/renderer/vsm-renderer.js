@@ -665,16 +665,17 @@ class VsmFeedElement extends LitElement {
         :host { display: block; }
 
         .vsm-feed {
-            display: flex; flex-direction: column; gap: 0.55rem;
+            display: flex; flex-direction: column; gap: 0.3rem;
             overflow-y: auto; padding: 0.6rem 0.8rem;
             box-sizing: border-box; scroll-behavior: smooth;
         }
 
-        /* Bubble wrapper — controls alignment */
-        .vsm-feed-row             { display: flex; flex-direction: column; max-width: 78%; }
+        /* Bubble wrapper — controls alignment.
+           padding-bottom gives the tail triangle room without being clipped. */
+        .vsm-feed-row             { display: flex; flex-direction: column; max-width: 78%; padding-bottom: 14px; }
         .vsm-feed-row.role-agent  { align-self: flex-start; }
         .vsm-feed-row.role-user   { align-self: flex-end; }
-        .vsm-feed-row.role-system { align-self: center; max-width: 90%; }
+        .vsm-feed-row.role-system { align-self: center; max-width: 90%; padding-bottom: 4px; }
 
         .vsm-feed-speaker {
             font-size: 0.7rem; font-weight: 600; opacity: 0.6;
@@ -690,20 +691,22 @@ class VsmFeedElement extends LitElement {
             line-height: 1.5; word-wrap: break-word;
         }
 
-        /* agent tail — bottom-left */
+        /* agent tail — downward triangle anchored at bottom-left of bubble */
         .vsm-feed-row.role-agent .vsm-feed-bubble::after {
-            content: ''; position: absolute;
-            bottom: -9px; left: 16px;
-            border-right: 12px solid transparent;
-            border-top: 10px solid var(--bubble-bg, #e8f4fd);
+            content: ''; position: absolute; width: 0; height: 0;
+            bottom: -11px; left: 18px;
+            border-left: 6px solid transparent;
+            border-right: 10px solid transparent;
+            border-top: 12px solid var(--bubble-bg, #e8f4fd);
         }
 
-        /* user tail — bottom-right */
+        /* user tail — downward triangle anchored at bottom-right of bubble */
         .vsm-feed-row.role-user .vsm-feed-bubble::after {
-            content: ''; position: absolute;
-            bottom: -9px; right: 16px;
-            border-left: 12px solid transparent;
-            border-top: 10px solid var(--bubble-bg, #e8f4fd);
+            content: ''; position: absolute; width: 0; height: 0;
+            bottom: -11px; right: 18px;
+            border-left: 10px solid transparent;
+            border-right: 6px solid transparent;
+            border-top: 12px solid var(--bubble-bg, #e8f4fd);
         }
 
         /* system — no tail, centered, subdued */
@@ -740,13 +743,22 @@ class VsmFeedElement extends LitElement {
     }
 
     _renderMessage(msg, cfg) {
-        const role = msg.role ?? 'agent';
-        const bg   = role === 'user'   ? (cfg.userColor   ?? '#eafbe8')
-                   : role === 'system' ? (cfg.systemColor ?? '#f5f5f5')
-                   :                     (cfg.agentColor  ?? '#e8f4fd');
+        const role      = msg.role ?? 'agent';
+        const bg        = role === 'user'   ? (cfg.userColor       ?? '#eafbe8')
+                        : role === 'system' ? (cfg.systemColor     ?? '#f5f5f5')
+                        :                     (cfg.agentColor      ?? '#e8f4fd');
+        const textColor = role === 'user'   ? (cfg.userTextColor   ?? '')
+                        : role === 'system' ? (cfg.systemTextColor ?? '')
+                        :                     (cfg.agentTextColor  ?? '');
+
+        const bubbleStyle = [
+            '--bubble-bg:' + bg,
+            'background:' + bg,
+            textColor ? 'color:' + textColor : '',
+        ].filter(Boolean).join(';');
 
         // Speaker label: per-message override > config label > omit for system
-        const defaultLabel = role === 'user' ? (cfg.userLabel ?? 'You')
+        const defaultLabel = role === 'user'  ? (cfg.userLabel  ?? 'You')
                            : role === 'agent' ? (cfg.agentLabel ?? 'Agent')
                            : null;
         const speaker = msg.speaker !== undefined ? msg.speaker : defaultLabel;
@@ -754,7 +766,7 @@ class VsmFeedElement extends LitElement {
         return html`
             <div class=${'vsm-feed-row role-' + role}>
                 ${speaker ? html`<div class="vsm-feed-speaker">${speaker}</div>` : html``}
-                <div class="vsm-feed-bubble" style=${'--bubble-bg:' + bg + ';background:' + bg}>
+                <div class="vsm-feed-bubble" style=${bubbleStyle}>
                     ${msg.text ?? ''}
                 </div>
                 ${msg.timestamp && cfg.showTimestamps
@@ -766,8 +778,13 @@ class VsmFeedElement extends LitElement {
     render() {
         const cfg  = this.config ?? {};
         const msgs = this._parseMessages();
+        const containerStyle = [
+            'height:' + (cfg.height ?? '400px'),
+            cfg.fontFamily ? 'font-family:' + cfg.fontFamily : '',
+            cfg.fontSize   ? 'font-size:'   + cfg.fontSize   : '',
+        ].filter(Boolean).join(';');
         return html`
-            <div class="vsm-feed" style=${'height:' + (cfg.height ?? '400px')}>
+            <div class="vsm-feed" style=${containerStyle}>
                 ${msgs.map(m => this._renderMessage(m, cfg))}
             </div>`;
     }

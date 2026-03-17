@@ -1,36 +1,63 @@
 {
-  "schemaVersion": "1.0",
-  "plugin": {
-    "id": "fortunecookie",
-    "name": "Fortune Cookie",
-    "className": "de.dfki.vsm.xtension.fortunecookie.FortuneCookieExecutor",
-    "androidCompatible": true,
-    "description": "QR code based fortune cookie generator",
-    "tags": ["gimmick", "fortune cookie", "QR"]
-  },
-  "categories": {
-    "primary": "processing",
-    "secondary": []
-  },
-  "config": {
-    "required": [],
-    "optional": [
-      { "name": "cookies", "type": "string", "description": "Path to cookies file" },
-      { "name": "users", "type": "string", "description": "Path to users file" }
-    ]
-  },
-  "commands": [
-    {
-      "name": "getCookie",
-      "type": "action",
-      "summary": "Get a fortune cookie",
-      "params": []
-    }
-  ],
-  "variables": {
-    "writes": [
-      { "var": "code", "type": "string", "scope": "global", "description": "Fortune cookie code" }
+    "schemaVersion": "1.0",
+    "specVersion": "1.0",
+    "specHash": "43f407cc2129bf3b",
+    "plugin": {
+        "id": "fortunecookie",
+        "name": "Fortune Cookie",
+        "className": "de.dfki.vsm.xtension.fortunecookie.FortuneCookieExecutor",
+        "androidCompatible": true,
+        "description": "QR code based fortune cookie generator",
+        "tags": [
+            "gimmick",
+            "fortune cookie",
+            "QR"
+        ]
+    },
+    "categories": {
+        "primary": "processing",
+        "secondary": [
+            
+        ]
+    },
+    "config": {
+        "required": [
+            
+        ],
+        "optional": [
+            {
+                "name": "cookies",
+                "type": "string",
+                "description": "Path to cookies file"
+            },
+            {
+                "name": "users",
+                "type": "string",
+                "description": "Path to users file"
+            }
+        ]
+    },
+    "commands": [
+        {
+            "name": "getCookie",
+            "type": "action",
+            "summary": "Get a fortune cookie",
+            "params": [
+                
+            ]
+        }
     ],
-    "reads": []
-  }
+    "variables": {
+        "writes": [
+            {
+                "var": "code",
+                "type": "string",
+                "scope": "global",
+                "description": "Fortune cookie code"
+            }
+        ],
+        "reads": [
+            
+        ]
+    }
 }

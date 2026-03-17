@@ -1,36 +1,62 @@
 {
-  "schemaVersion": "1.0",
-  "plugin": {
-    "id": "alma",
-    "name": "ALMA",
-    "className": "de.dfki.vsm.xtension.alma.ALMAExecutor",
-    "androidCompatible": false,
-    "description": "Simulation of emotions, mood based on appraisal and personality values",
-    "tags": ["emotion", "affective computing"]
-  },
-  "categories": {
-    "primary": "processing",
-    "secondary": []
-  },
-  "config": {
-    "required": [],
-    "optional": [
-      { "name": "computation", "type": "string", "description": "Computation mode" },
-      { "name": "definition", "type": "string", "description": "Definition file" }
-    ]
-  },
-  "commands": [
-    {
-      "name": "reset",
-      "type": "action",
-      "summary": "Reset ALMA state",
-      "params": []
-    }
-  ],
-  "variables": {
-    "writes": [
-      { "var": "useremotions", "type": "string", "scope": "global", "description": "User emotion state" }
+    "schemaVersion": "1.0",
+    "specVersion": "1.0",
+    "specHash": "eeb51b074503b952",
+    "plugin": {
+        "id": "alma",
+        "name": "ALMA",
+        "className": "de.dfki.vsm.xtension.alma.ALMAExecutor",
+        "androidCompatible": false,
+        "description": "Simulation of emotions, mood based on appraisal and personality values",
+        "tags": [
+            "emotion",
+            "affective computing"
+        ]
+    },
+    "categories": {
+        "primary": "processing",
+        "secondary": [
+            
+        ]
+    },
+    "config": {
+        "required": [
+            
+        ],
+        "optional": [
+            {
+                "name": "computation",
+                "type": "string",
+                "description": "Computation mode"
+            },
+            {
+                "name": "definition",
+                "type": "string",
+                "description": "Definition file"
+            }
+        ]
+    },
+    "commands": [
+        {
+            "name": "reset",
+            "type": "action",
+            "summary": "Reset ALMA state",
+            "params": [
+                
+            ]
+        }
     ],
-    "reads": []
-  }
+    "variables": {
+        "writes": [
+            {
+                "var": "useremotions",
+                "type": "string",
+                "scope": "global",
+                "description": "User emotion state"
+            }
+        ],
+        "reads": [
+            
+        ]
+    }
 }

@@ -314,6 +314,32 @@ Additional architecture details are in `doc/`:
 - `scenemaker-web-ui-api.md` - REST/WebSocket API documentation
 - `scenemaker-web-ui-parity.md` - Web UI feature parity tracking
 
+## Plugin Spec Versioning
+
+Each `plugin-properties.json` that participates in version tracking carries two fields:
+
+```json
+"specVersion": "1.1",   // human-readable semver — bump MANUALLY
+"specHash":    "abc123" // 16-hex SHA-256 of structural content — updated by Gradle
+```
+
+### When you change a plugin-properties.json
+
+**Structural changes** = anything that affects the generated SceneFlow variables or callable commands:
+adding/removing/renaming config entries, changing `default` or `sceneflowtype`, adding/removing
+`variables.writes` entries, adding/removing commands.
+
+1. Make your structural change in the JSON.
+2. Run `./gradlew updatePluginSpecs` — this rewrites `specHash` to reflect the new content.
+3. **Manually bump `specVersion`** (e.g. `"1.1"` → `"1.2"`). The Gradle task never does this.
+4. Commit both the JSON change and the updated hash together.
+
+`./gradlew check` (and therefore `./gradlew build`) runs `verifyPluginSpecs`, which fails if
+`specHash` is stale — so a forgotten bump will block the build before it reaches CI.
+
+Non-structural changes (descriptions, tags, comments) do not require a version bump; just run
+`updatePluginSpecs` to keep the hash consistent if it changes.
+
 ## Common Development Tasks
 
 ### Adding a New Plugin

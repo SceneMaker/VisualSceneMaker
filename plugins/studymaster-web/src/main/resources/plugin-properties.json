@@ -1,31 +1,49 @@
 {
-  "schemaVersion": "1.0",
-  "plugin": {
-    "id": "studymaster-web",
-    "name": "StudyMaster Web",
-    "className": "de.dfki.vsm.xtension.studymasterweb.WebStudyMasterExecutor",
-    "androidCompatible": false,
-    "description": "Wizard of Oz interface for remote control VSM projects",
-    "tags": ["control", "wizard of oz", "web"]
-  },
-  "categories": {
-    "primary": "input",
-    "secondary": ["output"]
-  },
-  "config": {
-    "required": [],
-    "optional": []
-  },
-  "commands": [
-    {
-      "name": "stop",
-      "type": "action",
-      "summary": "Stop StudyMaster",
-      "params": []
+    "schemaVersion": "1.0",
+    "specVersion": "1.0",
+    "specHash": "d0b95e1e824338c0",
+    "plugin": {
+        "id": "studymaster-web",
+        "name": "StudyMaster Web",
+        "className": "de.dfki.vsm.xtension.studymasterweb.WebStudyMasterExecutor",
+        "androidCompatible": false,
+        "description": "Wizard of Oz interface for remote control VSM projects",
+        "tags": [
+            "control",
+            "wizard of oz",
+            "web"
+        ]
+    },
+    "categories": {
+        "primary": "input",
+        "secondary": [
+            "output"
+        ]
+    },
+    "config": {
+        "required": [
+            
+        ],
+        "optional": [
+            
+        ]
+    },
+    "commands": [
+        {
+            "name": "stop",
+            "type": "action",
+            "summary": "Stop StudyMaster",
+            "params": [
+                
+            ]
+        }
+    ],
+    "variables": {
+        "writes": [
+            
+        ],
+        "reads": [
+            
+        ]
     }
-  ],
-  "variables": {
-    "writes": [],
-    "reads": []
-  }
 }

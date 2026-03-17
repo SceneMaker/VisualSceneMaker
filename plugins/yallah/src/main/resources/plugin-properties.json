@@ -1,38 +1,57 @@
 {
-  "schemaVersion": "1.0",
-  "plugin": {
-    "id": "yallah",
-    "name": "YALLAH",
-    "className": "de.dfki.vsm.xtension.yallah.YallahExecutor",
-    "androidCompatible": false,
-    "description": "Yet another low-level agent handler (YALLAH)",
-    "tags": ["agent", "character"]
-  },
-  "categories": {
-    "primary": "output",
-    "secondary": []
-  },
-  "config": {
-    "required": [
-      {
-        "name": "launchMode",
-        "type": "list",
-        "default": "None",
-        "options": ["None", "App", "WebPage"],
-        "description": "How to launch the Yallah client application"
-      },
-      {
-        "name": "port",
-        "type": "string",
-        "default": "5000",
-        "description": "The port on which to listen the incoming WebSocket connections"
-      }
+    "schemaVersion": "1.0",
+    "specVersion": "1.0",
+    "specHash": "4529271f5a50e814",
+    "plugin": {
+        "id": "yallah",
+        "name": "YALLAH",
+        "className": "de.dfki.vsm.xtension.yallah.YallahExecutor",
+        "androidCompatible": false,
+        "description": "Yet another low-level agent handler (YALLAH)",
+        "tags": [
+            "agent",
+            "character"
+        ]
+    },
+    "categories": {
+        "primary": "output",
+        "secondary": [
+            
+        ]
+    },
+    "config": {
+        "required": [
+            {
+                "name": "launchMode",
+                "type": "list",
+                "default": "None",
+                "options": [
+                    "None",
+                    "App",
+                    "WebPage"
+                ],
+                "description": "How to launch the Yallah client application"
+            },
+            {
+                "name": "port",
+                "type": "string",
+                "default": "5000",
+                "description": "The port on which to listen the incoming WebSocket connections"
+            }
+        ],
+        "optional": [
+            
+        ]
+    },
+    "commands": [
+        
     ],
-    "optional": []
-  },
-  "commands": [],
-  "variables": {
-    "writes": [],
-    "reads": []
-  }
+    "variables": {
+        "writes": [
+            
+        ],
+        "reads": [
+            
+        ]
+    }
 }

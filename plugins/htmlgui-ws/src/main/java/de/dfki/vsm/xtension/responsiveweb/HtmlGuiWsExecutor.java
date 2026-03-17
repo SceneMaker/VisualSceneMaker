@@ -79,10 +79,15 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
         mSceneflowInfoVar = mConfig.getProperty("sceneflowInfoVar");
         mPathToCertificate = mConfig.getProperty("certificate");
 
+        final boolean guiFilesExist   = new File(guiFiles).isDirectory();
+        final boolean audioFilesExist = new File(audioFiles).isDirectory();
+        if (!guiFilesExist)   mLogger.message("No gui/ directory found — legacy HTML files will not be served.");
+        if (!audioFilesExist) mLogger.message("No audio/ directory found — audio files will not be served.");
+
         if (mPathToCertificate != null) {
             app = Javalin.create(config -> {
-                config.addStaticFiles(guiFiles, Location.EXTERNAL);
-                config.addStaticFiles(audioFiles, Location.EXTERNAL);
+                if (guiFilesExist)   config.addStaticFiles(guiFiles,   Location.EXTERNAL);
+                if (audioFilesExist) config.addStaticFiles(audioFiles, Location.EXTERNAL);
                 config.server(() -> {
                     Server server = new Server();
                     ServerConnector sslConnector = new ServerConnector(server, getSslContextFactory());
@@ -97,8 +102,8 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
             }).start();
         } else {
             app = Javalin.create(config -> {
-                config.addStaticFiles(guiFiles, Location.EXTERNAL);
-                config.addStaticFiles(audioFiles, Location.EXTERNAL);
+                if (guiFilesExist)   config.addStaticFiles(guiFiles,   Location.EXTERNAL);
+                if (audioFilesExist) config.addStaticFiles(audioFiles, Location.EXTERNAL);
                 config.server(() -> {
                     Server server = new Server();
                     ServerConnector connector = new ServerConnector(server);

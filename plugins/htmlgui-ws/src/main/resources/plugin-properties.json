@@ -1,124 +1,463 @@
 {
-  "schemaVersion": "1.0",
-  "plugin": {
-    "id": "htmlgui-ws",
-    "name": "HTML GUI /statusWebSocket",
-    "className": "de.dfki.vsm.xtension.responsiveweb.HtmlGuiWsExecutor",
-    "androidCompatible": false,
-    "description": "Versatile HTML GUI with agent-based control via WebSocket",
-    "tags": ["html gui", "web-based interaction controls"]
-  },
-  "categories": {
-    "primary": "output",
-    "secondary": ["input"]
-  },
-  "serviceModel": "self-contained",
-  "config": {
-    "required": [
-      { "name": "wss_port", "type": "int", "default": 4040, "readonly": true, "description": "Secure WebSocket port" },
-      { "name": "ws_port", "type": "int", "default": 4041, "readonly": true, "description": "WebSocket port" },
-      { "name": "html_port", "type": "int", "default": 8080, "description": "HTTP server port" },
-      { "name": "sceneflowStateVar", "type": "string", "sceneflowtype": "Bool", "default": "gui_connected", "description": "SceneFlow variable for connection state" },
-      { "name": "sceneflowInfoVar", "type": "string", "sceneflowtype": "String", "default": "gui_info", "description": "SceneFlow variable for GUI messages" },
-      { "name": "guifiles", "type": "filepath", "default": "gui", "readonly": true, "description": "Directory for GUI files" },
-      { "name": "audiofiles", "type": "filepath", "default": "audio", "readonly": true, "description": "Directory for audio files" }
+    "schemaVersion": "1.0",
+    "specVersion": "1.1",
+    "specHash": "635ace1e87b8e23b",
+    "plugin": {
+        "id": "htmlgui-ws",
+        "name": "HTML GUI /statusWebSocket",
+        "className": "de.dfki.vsm.xtension.responsiveweb.HtmlGuiWsExecutor",
+        "androidCompatible": false,
+        "description": "Versatile HTML GUI with agent-based control via WebSocket",
+        "tags": [
+            "html gui",
+            "web-based interaction controls"
+        ]
+    },
+    "categories": {
+        "primary": "output",
+        "secondary": [
+            "input"
+        ]
+    },
+    "serviceModel": "self-contained",
+    "config": {
+        "required": [
+            {
+                "name": "wss_port",
+                "type": "int",
+                "default": 4040,
+                "readonly": true,
+                "description": "Secure WebSocket port"
+            },
+            {
+                "name": "ws_port",
+                "type": "int",
+                "default": 4041,
+                "readonly": true,
+                "description": "WebSocket port"
+            },
+            {
+                "name": "html_port",
+                "type": "int",
+                "default": 8080,
+                "description": "HTTP server port"
+            },
+            {
+                "name": "sceneflowStateVar",
+                "type": "string",
+                "sceneflowtype": "Bool",
+                "default": "gui_connected",
+                "description": "SceneFlow variable for connection state"
+            },
+            {
+                "name": "sceneflowInfoVar",
+                "type": "string",
+                "sceneflowtype": "String",
+                "default": "gui_info",
+                "description": "SceneFlow variable for GUI messages"
+            },
+            {
+                "name": "guifiles",
+                "type": "filepath",
+                "default": "gui",
+                "readonly": true,
+                "description": "Directory for GUI files"
+            },
+            {
+                "name": "audiofiles",
+                "type": "filepath",
+                "default": "audio",
+                "readonly": true,
+                "description": "Directory for audio files"
+            }
+        ],
+        "optional": [
+            {
+                "name": "certificate",
+                "type": "filepath",
+                "description": "Path to SSL certificate"
+            }
+        ],
+        "pluginSpecific": [
+            {
+                "name": "autostart_browser",
+                "type": "boolean",
+                "default": false,
+                "description": "Auto-start browser on plugin launch"
+            },
+            {
+                "name": "browser_fullscreen",
+                "type": "boolean",
+                "default": false,
+                "description": "Start browser in full-screen mode"
+            },
+            {
+                "name": "browser_ignore_cert_errors",
+                "type": "boolean",
+                "default": true,
+                "description": "Ignore SSL certificate errors"
+            }
+        ],
+        "agent": {
+            "fixed": [
+                
+            ],
+            "dynamic": {
+                "enabled": true,
+                "keyType": "string",
+                "keyDescription": "Action name callable from SceneFlow",
+                "valueType": "filepath",
+                "valueSuffix": ".html",
+                "valueDescription": "Relative path to the HTML page to display",
+                "implicitAction": true,
+                "actionSummary": "Display page: ${value}"
+            }
+        }
+    },
+    "templates": {
+        "resourcePath": "templates/",
+        "targetDirs": [
+            "gui",
+            "audio"
+        ]
+    },
+    "commands": [
+        {
+            "name": "set",
+            "type": "action",
+            "summary": "Set an element value",
+            "params": [
+                {
+                    "name": "element",
+                    "type": "string",
+                    "required": true
+                },
+                {
+                    "name": "value",
+                    "type": "string",
+                    "required": true
+                }
+            ]
+        },
+        {
+            "name": "setMoodGraph",
+            "type": "action",
+            "params": [
+                {
+                    "name": "element",
+                    "type": "string"
+                },
+                {
+                    "name": "day",
+                    "type": "string"
+                },
+                {
+                    "name": "type",
+                    "type": "string"
+                },
+                {
+                    "name": "value",
+                    "type": "string"
+                }
+            ]
+        },
+        {
+            "name": "setWorkHrsGraph",
+            "type": "action",
+            "params": [
+                {
+                    "name": "element",
+                    "type": "string"
+                },
+                {
+                    "name": "day",
+                    "type": "string"
+                },
+                {
+                    "name": "type",
+                    "type": "string"
+                },
+                {
+                    "name": "value",
+                    "type": "string"
+                }
+            ]
+        },
+        {
+            "name": "setSpeechBubble",
+            "type": "action",
+            "params": [
+                {
+                    "name": "element",
+                    "type": "string"
+                },
+                {
+                    "name": "producer",
+                    "type": "string"
+                },
+                {
+                    "name": "value",
+                    "type": "string"
+                }
+            ]
+        },
+        {
+            "name": "setMenuItem",
+            "type": "action",
+            "params": [
+                {
+                    "name": "id",
+                    "type": "string"
+                },
+                {
+                    "name": "value",
+                    "type": "string"
+                },
+                {
+                    "name": "type",
+                    "type": "string"
+                }
+            ]
+        },
+        {
+            "name": "showElement",
+            "type": "action",
+            "params": [
+                {
+                    "name": "id",
+                    "type": "string"
+                }
+            ]
+        },
+        {
+            "name": "hideElement",
+            "type": "action",
+            "params": [
+                {
+                    "name": "id",
+                    "type": "string"
+                }
+            ]
+        },
+        {
+            "name": "setcss",
+            "type": "action",
+            "params": [
+                {
+                    "name": "var",
+                    "type": "string"
+                },
+                {
+                    "name": "value",
+                    "type": "string"
+                }
+            ]
+        },
+        {
+            "name": "muteMic",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "openMic",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "setAudioItem",
+            "type": "action",
+            "params": [
+                {
+                    "name": "element",
+                    "type": "string"
+                },
+                {
+                    "name": "audio",
+                    "type": "string"
+                }
+            ]
+        },
+        {
+            "name": "controlAudio",
+            "type": "action",
+            "params": [
+                {
+                    "name": "element",
+                    "type": "string"
+                },
+                {
+                    "name": "type",
+                    "type": "string"
+                }
+            ]
+        },
+        {
+            "name": "stop",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "guiToFront",
+            "type": "action",
+            "summary": "Bring legacy GUI iframe to foreground",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "vcToFront",
+            "type": "action",
+            "summary": "Bring video-conferencing iframe to foreground",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "loadScreen",
+            "type": "action",
+            "summary": "Switch to a schema-defined screen (screens.json)",
+            "description": "Tells the Lit renderer to display the named screen from the project's screens.json. Call screensToFront first if the screens iframe is not already visible.",
+            "params": [
+                {
+                    "name": "screen",
+                    "type": "string",
+                    "required": true,
+                    "description": "ID of the screen to display, as defined in screens.json"
+                }
+            ]
+        },
+        {
+            "name": "updateVar",
+            "type": "action",
+            "summary": "Push a variable value to a bound screen component",
+            "description": "Sends the new value to any component in the active schema-driven screen whose bindVar matches the given variable name, updating the component's displayed state.",
+            "params": [
+                {
+                    "name": "var",
+                    "type": "string",
+                    "required": true,
+                    "description": "SceneFlow variable name whose bound component should be updated"
+                },
+                {
+                    "name": "value",
+                    "type": "string",
+                    "required": true,
+                    "description": "New value to push to the component"
+                }
+            ]
+        },
+        {
+            "name": "screensToFront",
+            "type": "action",
+            "summary": "Bring the schema-driven screens iframe to foreground",
+            "description": "Raises the Lit renderer iframe (z-index 1) and hides the legacy GUI and video-conferencing iframes.",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "appendMessage",
+            "type": "action",
+            "summary": "Append a message to a vsm-feed variable",
+            "description": "Appends a new role/text message object to the JSON array held in the named SceneFlow variable and broadcasts the update to connected clients.",
+            "params": [
+                {
+                    "name": "var",
+                    "type": "string",
+                    "required": true,
+                    "description": "Name of the SceneFlow String variable holding the conversation JSON array"
+                },
+                {
+                    "name": "role",
+                    "type": "string",
+                    "required": false,
+                    "default": "agent",
+                    "description": "Message role: agent | user | system"
+                },
+                {
+                    "name": "text",
+                    "type": "string",
+                    "required": true,
+                    "description": "Message text"
+                }
+            ]
+        },
+        {
+            "name": "clearFeed",
+            "type": "action",
+            "summary": "Clear a vsm-feed variable",
+            "description": "Resets the named SceneFlow variable to an empty JSON array and broadcasts the update so the feed empties on screen.",
+            "params": [
+                {
+                    "name": "var",
+                    "type": "string",
+                    "required": true,
+                    "description": "Name of the SceneFlow String variable to clear"
+                }
+            ]
+        }
     ],
-    "optional": [
-      { "name": "certificate", "type": "filepath", "description": "Path to SSL certificate" }
-    ],
-    "pluginSpecific": [
-      { "name": "autostart_browser", "type": "boolean", "default": false, "description": "Auto-start browser on plugin launch" },
-      { "name": "browser_fullscreen", "type": "boolean", "default": false, "description": "Start browser in full-screen mode" },
-      { "name": "browser_ignore_cert_errors", "type": "boolean", "default": true, "description": "Ignore SSL certificate errors" }
-    ],
-    "agent": {
-      "fixed": [],
-      "dynamic": {
-        "enabled": true,
-        "keyType": "string",
-        "keyDescription": "Action name callable from SceneFlow",
-        "valueType": "filepath",
-        "valueSuffix": ".html",
-        "valueDescription": "Relative path to the HTML page to display",
-        "implicitAction": true,
-        "actionSummary": "Display page: ${value}"
-      }
+    "variables": {
+        "writes": [
+            {
+                "var": "sceneflowStateVar",
+                "type": "Bool",
+                "description": "Set to true when GUI connects"
+            },
+            {
+                "var": "sceneflowInfoVar",
+                "type": "String",
+                "description": "Receives all non-binding messages from the legacy GUI"
+            },
+            {
+                "var": "gui_choice",
+                "type": "String",
+                "description": "Written by button clicks in choice screens (question-buttons template); value equals the button's sendsValue"
+            },
+            {
+                "var": "conversation_log",
+                "type": "String",
+                "description": "Written by appendMessage / clearFeed; holds the vsm-feed conversation as a JSON array"
+            }
+        ],
+        "reads": [
+            {
+                "var": "conversation_log",
+                "type": "String",
+                "description": "JSON array of messages rendered by vsm-feed elements (dialogue-feed and review-feed templates)"
+            },
+            {
+                "var": "sensor_data",
+                "type": "String",
+                "description": "Chart.js dataset JSON rendered by vsm-chart elements (sensor-chart template)"
+            },
+            {
+                "var": "heart_rate",
+                "type": "Int",
+                "description": "Beats per minute controlling vsm-animate heartbeat rate (heartbeat-overlay template)"
+            },
+            {
+                "var": "heart_color",
+                "type": "String",
+                "description": "CSS colour string controlling vsm-animate heartbeat colour (heartbeat-overlay template)"
+            },
+            {
+                "var": "breath_rate",
+                "type": "Int",
+                "description": "Breaths per minute controlling vsm-animate breathing rate (breathing-overlay template)"
+            },
+            {
+                "var": "breath_color",
+                "type": "String",
+                "description": "CSS colour string controlling vsm-animate breathing colour (breathing-overlay template)"
+            }
+        ],
+        "note": "Variables listed here are the canonical names used by the pre-authored screen templates. Rename bindings in the Visual editor to match your project's variable naming. Schema-driven screens also write to any variable named in a component's bindVar or sendsVar field \u2014 declare those in the SceneFlow as needed."
     }
-  },
-  "templates": {
-    "resourcePath": "templates/",
-    "targetDirs": ["gui", "audio"]
-  },
-  "commands": [
-    { "name": "set", "type": "action", "summary": "Set an element value", "params": [
-      { "name": "element", "type": "string", "required": true },
-      { "name": "value", "type": "string", "required": true }
-    ]},
-    { "name": "setMoodGraph", "type": "action", "params": [
-      { "name": "element", "type": "string" },
-      { "name": "day", "type": "string" },
-      { "name": "type", "type": "string" },
-      { "name": "value", "type": "string" }
-    ]},
-    { "name": "setWorkHrsGraph", "type": "action", "params": [
-      { "name": "element", "type": "string" },
-      { "name": "day", "type": "string" },
-      { "name": "type", "type": "string" },
-      { "name": "value", "type": "string" }
-    ]},
-    { "name": "setSpeechBubble", "type": "action", "params": [
-      { "name": "element", "type": "string" },
-      { "name": "producer", "type": "string" },
-      { "name": "value", "type": "string" }
-    ]},
-    { "name": "setMenuItem", "type": "action", "params": [
-      { "name": "id", "type": "string" },
-      { "name": "value", "type": "string" },
-      { "name": "type", "type": "string" }
-    ]},
-    { "name": "showElement", "type": "action", "params": [{ "name": "id", "type": "string" }]},
-    { "name": "hideElement", "type": "action", "params": [{ "name": "id", "type": "string" }]},
-    { "name": "setcss", "type": "action", "params": [
-      { "name": "var", "type": "string" },
-      { "name": "value", "type": "string" }
-    ]},
-    { "name": "muteMic", "type": "action", "params": [] },
-    { "name": "openMic", "type": "action", "params": [] },
-    { "name": "setAudioItem", "type": "action", "params": [
-      { "name": "element", "type": "string" },
-      { "name": "audio", "type": "string" }
-    ]},
-    { "name": "controlAudio", "type": "action", "params": [
-      { "name": "element", "type": "string" },
-      { "name": "type", "type": "string" }
-    ]},
-    { "name": "stop", "type": "action", "params": [] },
-    { "name": "guiToFront", "type": "action", "summary": "Bring legacy GUI iframe to foreground", "params": [] },
-    { "name": "vcToFront", "type": "action", "summary": "Bring video-conferencing iframe to foreground", "params": [] },
-    { "name": "loadScreen", "type": "action",
-      "summary": "Switch to a schema-defined screen (screens.json)",
-      "description": "Tells the Lit renderer to display the named screen from the project's screens.json. Call screensToFront first if the screens iframe is not already visible.",
-      "params": [
-        { "name": "screen", "type": "string", "required": true, "description": "ID of the screen to display, as defined in screens.json" }
-      ]},
-    { "name": "updateVar", "type": "action",
-      "summary": "Push a variable value to a bound screen component",
-      "description": "Sends the new value to any component in the active schema-driven screen whose bindVar matches the given variable name, updating the component's displayed state.",
-      "params": [
-        { "name": "var",   "type": "string", "required": true, "description": "SceneFlow variable name whose bound component should be updated" },
-        { "name": "value", "type": "string", "required": true, "description": "New value to push to the component" }
-      ]},
-    { "name": "screensToFront", "type": "action",
-      "summary": "Bring the schema-driven screens iframe to foreground",
-      "description": "Raises the Lit renderer iframe (z-index 1) and hides the legacy GUI and video-conferencing iframes.",
-      "params": [] }
-  ],
-  "variables": {
-    "writes": [
-      { "var": "sceneflowStateVar", "type": "Bool", "description": "Set to true when GUI connects" },
-      { "var": "sceneflowInfoVar", "type": "String", "description": "Receives all non-binding messages from the legacy GUI (unchanged)" }
-    ],
-    "reads": [],
-    "note": "Schema-driven screens (screens.json) write directly to whichever SceneFlow variables are named in each component's bindVar or sendsVar field. Declare those variables manually in the SceneFlow as needed."
-  }
 }

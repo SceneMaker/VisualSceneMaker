@@ -1,123 +1,136 @@
 {
-  "schemaVersion": "1.0",
-  "plugin": {
-    "id": "AndroidGui",
-    "name": "Android GUI",
-    "className": "de.dfki.vsm.xtension.androidGui.AndroidGuiExecutor",
-    "androidCompatible": true,
-    "description": "Bridge between SceneFlow actions and native Android widgets",
-    "tags": ["gui", "android", "mobile", "runtime-bridge"]
-  },
-  "categories": {
-    "primary": "processing",
-    "secondary": []
-  },
-  "config": {
-    "required": [],
-    "optional": [
-      {
-        "name": "uiEventVar",
-        "type": "string",
-        "default": "UIEvent",
-        "description": "SceneFlow Event variable that receives UI event names (e.g. submitButton)"
-      }
-    ],
-    "agent": {
-      "required": [],
-      "optional": [
-        {
-          "name": "textFields",
-          "type": "string",
-          "default": "",
-          "description": "Comma-separated label ids controlled by SceneFlow"
-        },
-        {
-          "name": "editFields",
-          "type": "string",
-          "default": "",
-          "description": "Comma-separated input ids (GUI writes values back into variables with same id)"
-        },
-        {
-          "name": "buttons",
-          "type": "string",
-          "default": "",
-          "description": "Comma-separated button ids (click sets variable with same id)"
-        }
-      ]
-    }
-  },
-  "commands": [
-    {
-      "name": "setval",
-      "type": "action",
-      "summary": "Set widget value directly",
-      "params": [
-        {
-          "name": "id",
-          "type": "string",
-          "required": true,
-          "description": "Widget id from textFields/editFields"
-        },
-        {
-          "name": "value",
-          "type": "string",
-          "required": true,
-          "description": "Literal value to display"
-        }
-      ]
+    "schemaVersion": "1.0",
+    "specVersion": "1.0",
+    "specHash": "56e5942f93929c8b",
+    "plugin": {
+        "id": "AndroidGui",
+        "name": "Android GUI",
+        "className": "de.dfki.vsm.xtension.androidGui.AndroidGuiExecutor",
+        "androidCompatible": true,
+        "description": "Bridge between SceneFlow actions and native Android widgets",
+        "tags": [
+            "gui",
+            "android",
+            "mobile",
+            "runtime-bridge"
+        ]
     },
-    {
-      "name": "setvar",
-      "type": "action",
-      "summary": "Set widget value from a SceneFlow variable",
-      "params": [
+    "categories": {
+        "primary": "processing",
+        "secondary": [
+            
+        ]
+    },
+    "config": {
+        "required": [
+            
+        ],
+        "optional": [
+            {
+                "name": "uiEventVar",
+                "type": "string",
+                "default": "UIEvent",
+                "description": "SceneFlow Event variable that receives UI event names (e.g. submitButton)"
+            }
+        ],
+        "agent": {
+            "required": [
+                
+            ],
+            "optional": [
+                {
+                    "name": "textFields",
+                    "type": "string",
+                    "default": "",
+                    "description": "Comma-separated label ids controlled by SceneFlow"
+                },
+                {
+                    "name": "editFields",
+                    "type": "string",
+                    "default": "",
+                    "description": "Comma-separated input ids (GUI writes values back into variables with same id)"
+                },
+                {
+                    "name": "buttons",
+                    "type": "string",
+                    "default": "",
+                    "description": "Comma-separated button ids (click sets variable with same id)"
+                }
+            ]
+        }
+    },
+    "commands": [
         {
-          "name": "id",
-          "type": "string",
-          "required": true,
-          "description": "Widget id from textFields/editFields"
+            "name": "setval",
+            "type": "action",
+            "summary": "Set widget value directly",
+            "params": [
+                {
+                    "name": "id",
+                    "type": "string",
+                    "required": true,
+                    "description": "Widget id from textFields/editFields"
+                },
+                {
+                    "name": "value",
+                    "type": "string",
+                    "required": true,
+                    "description": "Literal value to display"
+                }
+            ]
         },
         {
-          "name": "value",
-          "type": "string",
-          "required": true,
-          "description": "Variable name to read"
-        }
-      ]
-    },
-    {
-      "name": "show",
-      "type": "action",
-      "summary": "Request Android UI to show/focus a named view",
-      "params": [
+            "name": "setvar",
+            "type": "action",
+            "summary": "Set widget value from a SceneFlow variable",
+            "params": [
+                {
+                    "name": "id",
+                    "type": "string",
+                    "required": true,
+                    "description": "Widget id from textFields/editFields"
+                },
+                {
+                    "name": "value",
+                    "type": "string",
+                    "required": true,
+                    "description": "Variable name to read"
+                }
+            ]
+        },
         {
-          "name": "name",
-          "type": "string",
-          "required": false,
-          "description": "Optional target screen/view name"
+            "name": "show",
+            "type": "action",
+            "summary": "Request Android UI to show/focus a named view",
+            "params": [
+                {
+                    "name": "name",
+                    "type": "string",
+                    "required": false,
+                    "description": "Optional target screen/view name"
+                }
+            ]
         }
-      ]
-    }
-  ],
-  "variables": {
-    "writes": [
-      {
-        "var": "<editFieldId>",
-        "type": "String",
-        "description": "Each configured edit field writes user text into a variable of the same name"
-      },
-      {
-        "var": "<buttonId>",
-        "type": "String",
-        "description": "Each configured button click writes its id into a variable of the same name"
-      }
     ],
-    "reads": [
-      {
-        "var": "<value>",
-        "type": "Any",
-        "description": "setvar reads the variable named by parameter value"
-      }
-    ]
-  }
+    "variables": {
+        "writes": [
+            {
+                "var": "<editFieldId>",
+                "type": "String",
+                "description": "Each configured edit field writes user text into a variable of the same name"
+            },
+            {
+                "var": "<buttonId>",
+                "type": "String",
+                "description": "Each configured button click writes its id into a variable of the same name"
+            }
+        ],
+        "reads": [
+            {
+                "var": "<value>",
+                "type": "Any",
+                "description": "setvar reads the variable named by parameter value"
+            }
+        ]
+    }
 }

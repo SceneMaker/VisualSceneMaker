@@ -1,120 +1,655 @@
 {
-  "schemaVersion": "1.0",
-  "plugin": {
-    "id": "charamel-ws",
-    "name": "Charamel WebSocket",
-    "className": "de.dfki.vsm.xtension.charamelWs.charamelWsExecutor",
-    "androidCompatible": false,
-    "description": "Interactive web-based virtual character",
-    "tags": ["SIA", "web", "avatar", "virtual character"]
-  },
-  "categories": {
-    "primary": "output",
-    "secondary": []
-  },
-  "config": {
-    "required": [
-      { "name": "ws_port", "type": "int", "default": 3030, "description": "WebSocket port" },
-      { "name": "wss_port", "type": "int", "default": 3031, "description": "Secure WebSocket port" },
-      { "name": "sceneflowVar", "type": "string", "sceneflowtype": "Bool", "default": "avatar_connected", "description": "Connection state variable" },
-      { "name": "characterSpeaking", "type": "string", "sceneflowtype": "Bool", "default": "avatar_speaking", "description": "Character speaking state variable" },
-      { "name": "sceneflowTurnUtteranceVar", "type": "string", "sceneflowtype": "String", "default": "turn_utterance", "description": "Current utterance variable" }
+    "schemaVersion": "1.0",
+    "specVersion": "1.0",
+    "specHash": "05d556360c200efd",
+    "plugin": {
+        "id": "charamel-ws",
+        "name": "Charamel WebSocket",
+        "className": "de.dfki.vsm.xtension.charamelWs.charamelWsExecutor",
+        "androidCompatible": false,
+        "description": "Interactive web-based virtual character",
+        "tags": [
+            "SIA",
+            "web",
+            "avatar",
+            "virtual character"
+        ]
+    },
+    "categories": {
+        "primary": "output",
+        "secondary": [
+            
+        ]
+    },
+    "config": {
+        "required": [
+            {
+                "name": "ws_port",
+                "type": "int",
+                "default": 3030,
+                "description": "WebSocket port"
+            },
+            {
+                "name": "wss_port",
+                "type": "int",
+                "default": 3031,
+                "description": "Secure WebSocket port"
+            },
+            {
+                "name": "sceneflowVar",
+                "type": "string",
+                "sceneflowtype": "Bool",
+                "default": "avatar_connected",
+                "description": "Connection state variable"
+            },
+            {
+                "name": "characterSpeaking",
+                "type": "string",
+                "sceneflowtype": "Bool",
+                "default": "avatar_speaking",
+                "description": "Character speaking state variable"
+            },
+            {
+                "name": "sceneflowTurnUtteranceVar",
+                "type": "string",
+                "sceneflowtype": "String",
+                "default": "turn_utterance",
+                "description": "Current utterance variable"
+            }
+        ],
+        "optional": [
+            {
+                "name": "certificate",
+                "type": "filepath",
+                "description": "Path to SSL certificate"
+            }
+        ],
+        "agent": {
+            "fixed": [
+                {
+                    "name": "voice",
+                    "type": "string",
+                    "required": true,
+                    "description": "TTS voice name (e.g., 'Marlene')"
+                }
+            ],
+            "dynamic": {
+                "enabled": false
+            }
+        }
+    },
+    "commands": [
+        {
+            "name": "test",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "stop",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "angry",
+            "type": "action",
+            "params": [
+                {
+                    "name": "intensity",
+                    "type": "string"
+                }
+            ]
+        },
+        {
+            "name": "bored",
+            "type": "action",
+            "params": [
+                {
+                    "name": "intensity",
+                    "type": "string"
+                }
+            ]
+        },
+        {
+            "name": "crazy",
+            "type": "action",
+            "params": [
+                {
+                    "name": "intensity",
+                    "type": "string"
+                }
+            ]
+        },
+        {
+            "name": "demanding",
+            "type": "action",
+            "params": [
+                {
+                    "name": "intensity",
+                    "type": "string"
+                }
+            ]
+        },
+        {
+            "name": "disappointed",
+            "type": "action",
+            "params": [
+                {
+                    "name": "intensity",
+                    "type": "string"
+                }
+            ]
+        },
+        {
+            "name": "disgust",
+            "type": "action",
+            "params": [
+                {
+                    "name": "intensity",
+                    "type": "string"
+                }
+            ]
+        },
+        {
+            "name": "happy",
+            "type": "action",
+            "params": [
+                {
+                    "name": "intensity",
+                    "type": "string"
+                },
+                {
+                    "name": "attack",
+                    "type": "string"
+                }
+            ]
+        },
+        {
+            "name": "pensively",
+            "type": "action",
+            "params": [
+                {
+                    "name": "intensity",
+                    "type": "string"
+                }
+            ]
+        },
+        {
+            "name": "sad",
+            "type": "action",
+            "params": [
+                {
+                    "name": "intensity",
+                    "type": "string"
+                }
+            ]
+        },
+        {
+            "name": "smile",
+            "type": "action",
+            "params": [
+                {
+                    "name": "intensity",
+                    "type": "string"
+                },
+                {
+                    "name": "attack",
+                    "type": "string"
+                }
+            ]
+        },
+        {
+            "name": "surprised",
+            "type": "action",
+            "params": [
+                {
+                    "name": "intensity",
+                    "type": "string"
+                }
+            ]
+        },
+        {
+            "name": "blink",
+            "type": "action",
+            "params": [
+                {
+                    "name": "intensity",
+                    "type": "string"
+                }
+            ]
+        },
+        {
+            "name": "blow",
+            "type": "action",
+            "params": [
+                {
+                    "name": "intensity",
+                    "type": "string"
+                }
+            ]
+        },
+        {
+            "name": "wink",
+            "type": "action",
+            "params": [
+                {
+                    "name": "intensity",
+                    "type": "string"
+                }
+            ]
+        },
+        {
+            "name": "camera",
+            "type": "action",
+            "params": [
+                {
+                    "name": "position",
+                    "type": "string"
+                }
+            ]
+        },
+        {
+            "name": "lookat",
+            "type": "action",
+            "params": [
+                {
+                    "name": "x",
+                    "type": "string"
+                },
+                {
+                    "name": "y",
+                    "type": "string"
+                }
+            ]
+        },
+        {
+            "name": "headtilt",
+            "type": "action",
+            "params": [
+                {
+                    "name": "xrot",
+                    "type": "string"
+                },
+                {
+                    "name": "yrot",
+                    "type": "string"
+                },
+                {
+                    "name": "zrot",
+                    "type": "string"
+                }
+            ]
+        },
+        {
+            "name": "armscrossed",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "armbewegungen",
+            "type": "action",
+            "params": [
+                {
+                    "name": "direction",
+                    "type": "string"
+                }
+            ]
+        },
+        {
+            "name": "background",
+            "type": "action",
+            "params": [
+                {
+                    "name": "url",
+                    "type": "string"
+                }
+            ]
+        },
+        {
+            "name": "converse",
+            "type": "action",
+            "params": [
+                {
+                    "name": "direction",
+                    "type": "string"
+                }
+            ]
+        },
+        {
+            "name": "countleft",
+            "type": "action",
+            "params": [
+                {
+                    "name": "number",
+                    "type": "string"
+                }
+            ]
+        },
+        {
+            "name": "emphasis",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "explain",
+            "type": "action",
+            "params": [
+                {
+                    "name": "number",
+                    "type": "string"
+                }
+            ]
+        },
+        {
+            "name": "foldhands",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "hairback",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "handontable",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "handscircle",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "handstogether",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "headshake",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "interogative",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "introduce",
+            "type": "action",
+            "params": [
+                {
+                    "name": "number",
+                    "type": "string"
+                }
+            ]
+        },
+        {
+            "name": "leftfist",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "legscrossed",
+            "type": "action",
+            "params": [
+                {
+                    "name": "direction",
+                    "type": "string"
+                }
+            ]
+        },
+        {
+            "name": "lookatdirection",
+            "type": "action",
+            "params": [
+                {
+                    "name": "clockX",
+                    "type": "string"
+                },
+                {
+                    "name": "clockY",
+                    "type": "string"
+                }
+            ]
+        },
+        {
+            "name": "lookleft",
+            "type": "action",
+            "params": [
+                {
+                    "name": "stepping",
+                    "type": "string"
+                }
+            ]
+        },
+        {
+            "name": "lookright",
+            "type": "action",
+            "params": [
+                {
+                    "name": "stepping",
+                    "type": "string"
+                }
+            ]
+        },
+        {
+            "name": "luemmeln",
+            "type": "action",
+            "params": [
+                {
+                    "name": "variant",
+                    "type": "string"
+                }
+            ]
+        },
+        {
+            "name": "nod",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "openarm",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "openfists",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "pointopenpalm",
+            "type": "action",
+            "params": [
+                {
+                    "name": "direction",
+                    "type": "string"
+                }
+            ]
+        },
+        {
+            "name": "pointovershoulder",
+            "type": "action",
+            "params": [
+                {
+                    "name": "direction",
+                    "type": "string"
+                }
+            ]
+        },
+        {
+            "name": "pointdownleft",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "pointdownright",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "protectassertive",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "protectdefensive",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "shakehead",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "showpalm",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "showpalmdirection",
+            "type": "action",
+            "params": [
+                {
+                    "name": "direction",
+                    "type": "string"
+                }
+            ]
+        },
+        {
+            "name": "sitbrave",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "sit",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "sitnodd",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "sittalk",
+            "type": "action",
+            "params": [
+                {
+                    "name": "step",
+                    "type": "string"
+                }
+            ]
+        },
+        {
+            "name": "supportive",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "think",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "ups",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "wave",
+            "type": "action",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "sequence",
+            "type": "action",
+            "params": [
+                {
+                    "name": "name",
+                    "type": "string"
+                }
+            ]
+        }
     ],
-    "optional": [
-      { "name": "certificate", "type": "filepath", "description": "Path to SSL certificate" }
-    ],
-    "agent": {
-      "fixed": [
-        { "name": "voice", "type": "string", "required": true, "description": "TTS voice name (e.g., 'Marlene')" }
-      ],
-      "dynamic": { "enabled": false }
+    "variables": {
+        "writes": [
+            {
+                "var": "sceneflowVar",
+                "type": "Bool",
+                "description": "Set to true when avatar connects"
+            },
+            {
+                "var": "characterSpeaking",
+                "type": "Bool",
+                "description": "True while character is speaking"
+            },
+            {
+                "var": "sceneflowTurnUtteranceVar",
+                "type": "String",
+                "description": "Current utterance text"
+            }
+        ],
+        "reads": [
+            
+        ]
     }
-  },
-  "commands": [
-    { "name": "test", "type": "action", "params": [] },
-    { "name": "stop", "type": "action", "params": [] },
-    { "name": "angry", "type": "action", "params": [{ "name": "intensity", "type": "string" }] },
-    { "name": "bored", "type": "action", "params": [{ "name": "intensity", "type": "string" }] },
-    { "name": "crazy", "type": "action", "params": [{ "name": "intensity", "type": "string" }] },
-    { "name": "demanding", "type": "action", "params": [{ "name": "intensity", "type": "string" }] },
-    { "name": "disappointed", "type": "action", "params": [{ "name": "intensity", "type": "string" }] },
-    { "name": "disgust", "type": "action", "params": [{ "name": "intensity", "type": "string" }] },
-    { "name": "happy", "type": "action", "params": [
-      { "name": "intensity", "type": "string" },
-      { "name": "attack", "type": "string" }
-    ]},
-    { "name": "pensively", "type": "action", "params": [{ "name": "intensity", "type": "string" }] },
-    { "name": "sad", "type": "action", "params": [{ "name": "intensity", "type": "string" }] },
-    { "name": "smile", "type": "action", "params": [
-      { "name": "intensity", "type": "string" },
-      { "name": "attack", "type": "string" }
-    ]},
-    { "name": "surprised", "type": "action", "params": [{ "name": "intensity", "type": "string" }] },
-    { "name": "blink", "type": "action", "params": [{ "name": "intensity", "type": "string" }] },
-    { "name": "blow", "type": "action", "params": [{ "name": "intensity", "type": "string" }] },
-    { "name": "wink", "type": "action", "params": [{ "name": "intensity", "type": "string" }] },
-    { "name": "camera", "type": "action", "params": [{ "name": "position", "type": "string" }] },
-    { "name": "lookat", "type": "action", "params": [
-      { "name": "x", "type": "string" },
-      { "name": "y", "type": "string" }
-    ]},
-    { "name": "headtilt", "type": "action", "params": [
-      { "name": "xrot", "type": "string" },
-      { "name": "yrot", "type": "string" },
-      { "name": "zrot", "type": "string" }
-    ]},
-    { "name": "armscrossed", "type": "action", "params": [] },
-    { "name": "armbewegungen", "type": "action", "params": [{ "name": "direction", "type": "string" }] },
-    { "name": "background", "type": "action", "params": [{ "name": "url", "type": "string" }] },
-    { "name": "converse", "type": "action", "params": [{ "name": "direction", "type": "string" }] },
-    { "name": "countleft", "type": "action", "params": [{ "name": "number", "type": "string" }] },
-    { "name": "emphasis", "type": "action", "params": [] },
-    { "name": "explain", "type": "action", "params": [{ "name": "number", "type": "string" }] },
-    { "name": "foldhands", "type": "action", "params": [] },
-    { "name": "hairback", "type": "action", "params": [] },
-    { "name": "handontable", "type": "action", "params": [] },
-    { "name": "handscircle", "type": "action", "params": [] },
-    { "name": "handstogether", "type": "action", "params": [] },
-    { "name": "headshake", "type": "action", "params": [] },
-    { "name": "interogative", "type": "action", "params": [] },
-    { "name": "introduce", "type": "action", "params": [{ "name": "number", "type": "string" }] },
-    { "name": "leftfist", "type": "action", "params": [] },
-    { "name": "legscrossed", "type": "action", "params": [{ "name": "direction", "type": "string" }] },
-    { "name": "lookatdirection", "type": "action", "params": [
-      { "name": "clockX", "type": "string" },
-      { "name": "clockY", "type": "string" }
-    ]},
-    { "name": "lookleft", "type": "action", "params": [{ "name": "stepping", "type": "string" }] },
-    { "name": "lookright", "type": "action", "params": [{ "name": "stepping", "type": "string" }] },
-    { "name": "luemmeln", "type": "action", "params": [{ "name": "variant", "type": "string" }] },
-    { "name": "nod", "type": "action", "params": [] },
-    { "name": "openarm", "type": "action", "params": [] },
-    { "name": "openfists", "type": "action", "params": [] },
-    { "name": "pointopenpalm", "type": "action", "params": [{ "name": "direction", "type": "string" }] },
-    { "name": "pointovershoulder", "type": "action", "params": [{ "name": "direction", "type": "string" }] },
-    { "name": "pointdownleft", "type": "action", "params": [] },
-    { "name": "pointdownright", "type": "action", "params": [] },
-    { "name": "protectassertive", "type": "action", "params": [] },
-    { "name": "protectdefensive", "type": "action", "params": [] },
-    { "name": "shakehead", "type": "action", "params": [] },
-    { "name": "showpalm", "type": "action", "params": [] },
-    { "name": "showpalmdirection", "type": "action", "params": [{ "name": "direction", "type": "string" }] },
-    { "name": "sitbrave", "type": "action", "params": [] },
-    { "name": "sit", "type": "action", "params": [] },
-    { "name": "sitnodd", "type": "action", "params": [] },
-    { "name": "sittalk", "type": "action", "params": [{ "name": "step", "type": "string" }] },
-    { "name": "supportive", "type": "action", "params": [] },
-    { "name": "think", "type": "action", "params": [] },
-    { "name": "ups", "type": "action", "params": [] },
-    { "name": "wave", "type": "action", "params": [] },
-    { "name": "sequence", "type": "action", "params": [{ "name": "name", "type": "string" }] }
-  ],
-  "variables": {
-    "writes": [
-      { "var": "sceneflowVar", "type": "Bool", "description": "Set to true when avatar connects" },
-      { "var": "characterSpeaking", "type": "Bool", "description": "True while character is speaking" },
-      { "var": "sceneflowTurnUtteranceVar", "type": "String", "description": "Current utterance text" }
-    ],
-    "reads": []
-  }
 }

@@ -1,24 +1,41 @@
 {
-  "schemaVersion": "1.0",
-  "plugin": {
-    "id": "wizard",
-    "name": "Wizard",
-    "className": "de.dfki.vsm.xtension.wizard.WizardExecutor",
-    "androidCompatible": false,
-    "description": "Wizard of Oz control interface",
-    "tags": ["control", "wizard of oz"]
-  },
-  "categories": {
-    "primary": "input",
-    "secondary": []
-  },
-  "config": {
-    "required": [],
-    "optional": []
-  },
-  "commands": [],
-  "variables": {
-    "writes": [],
-    "reads": []
-  }
+    "schemaVersion": "1.0",
+    "specVersion": "1.0",
+    "specHash": "e3b0c44298fc1c14",
+    "plugin": {
+        "id": "wizard",
+        "name": "Wizard",
+        "className": "de.dfki.vsm.xtension.wizard.WizardExecutor",
+        "androidCompatible": false,
+        "description": "Wizard of Oz control interface",
+        "tags": [
+            "control",
+            "wizard of oz"
+        ]
+    },
+    "categories": {
+        "primary": "input",
+        "secondary": [
+            
+        ]
+    },
+    "config": {
+        "required": [
+            
+        ],
+        "optional": [
+            
+        ]
+    },
+    "commands": [
+        
+    ],
+    "variables": {
+        "writes": [
+            
+        ],
+        "reads": [
+            
+        ]
+    }
 }

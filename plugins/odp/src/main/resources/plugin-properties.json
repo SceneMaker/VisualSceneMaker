@@ -1,80 +1,231 @@
 {
-  "schemaVersion": "1.0",
-  "plugin": {
-    "id": "odp",
-    "name": "ODP",
-    "className": "de.dfki.vsm.xtension.odp.ODPExecutor",
-    "androidCompatible": true,
-    "description": "Open Dialog Platform integration",
-    "tags": ["dialog", "NLU"]
-  },
-  "categories": {
-    "primary": "input",
-    "secondary": []
-  },
-  "config": {
-    "required": [],
-    "optional": []
-  },
-  "commands": [
-    {
-      "name": "stop",
-      "type": "action",
-      "summary": "Stop ODP processing",
-      "params": []
+    "schemaVersion": "1.0",
+    "specVersion": "1.0",
+    "specHash": "db961b069cdfe0ab",
+    "plugin": {
+        "id": "odp",
+        "name": "ODP",
+        "className": "de.dfki.vsm.xtension.odp.ODPExecutor",
+        "androidCompatible": true,
+        "description": "Open Dialog Platform integration",
+        "tags": [
+            "dialog",
+            "NLU"
+        ]
     },
-    {
-      "name": "charspeak",
-      "type": "action",
-      "summary": "Character speech command",
-      "params": [
-        { "name": "state", "type": "string", "required": false }
-      ]
+    "categories": {
+        "primary": "input",
+        "secondary": [
+            
+        ]
     },
-    {
-      "name": "send",
-      "type": "action",
-      "summary": "Send data to ODP",
-      "params": [
-        { "name": "task", "type": "string", "required": false },
-        { "name": "func", "type": "string", "required": false },
-        { "name": "cont", "type": "string", "required": false },
-        { "name": "post", "type": "string", "required": false }
-      ]
-    }
-  ],
-  "variables": {
-    "writes": [
-      { "var": "userUtteranceMainTopic", "type": "string", "scope": "global" },
-      { "var": "userUtterance", "type": "string", "scope": "global" },
-      { "var": "transcriptionSource", "type": "string", "scope": "global" },
-      { "var": "transcriptionID", "type": "string", "scope": "global" },
-      { "var": "debug", "type": "string", "scope": "global" },
-      { "var": "userUtterancePronoun", "type": "float", "scope": "global" },
-      { "var": "userUtteranceMyself", "type": "float", "scope": "global" },
-      { "var": "userUtteranceWe", "type": "float", "scope": "global" },
-      { "var": "userUtteranceSelf", "type": "float", "scope": "global" },
-      { "var": "userUtteranceYou", "type": "float", "scope": "global" },
-      { "var": "userUtteranceOther", "type": "float", "scope": "global" },
-      { "var": "userUtterancePosAffect", "type": "float", "scope": "global" },
-      { "var": "userUtteranceNegAffect", "type": "float", "scope": "global" },
-      { "var": "userUtteranceOptimism", "type": "float", "scope": "global" },
-      { "var": "userUtteranceAnxiety", "type": "float", "scope": "global" },
-      { "var": "userUtteranceDiscrepancy", "type": "float", "scope": "global" },
-      { "var": "userUtteranceInsight", "type": "float", "scope": "global" },
-      { "var": "userUtteranceTentative", "type": "float", "scope": "global" },
-      { "var": "userUtteranceBody", "type": "float", "scope": "global" },
-      { "var": "userUtteranceSex", "type": "float", "scope": "global" },
-      { "var": "userUtteranceEat", "type": "float", "scope": "global" },
-      { "var": "userUtteranceSleep", "type": "float", "scope": "global" },
-      { "var": "userUtteranceSchool", "type": "float", "scope": "global" },
-      { "var": "userUtteranceJob", "type": "float", "scope": "global" },
-      { "var": "userUtteranceAchieve", "type": "float", "scope": "global" },
-      { "var": "userUtteranceTotalWords", "type": "int", "scope": "global" },
-      { "var": "userUtteranceTopics", "type": "string", "scope": "global" },
-      { "var": "odpstate", "type": "string", "scope": "global" },
-      { "var": "user_speaking", "type": "bool", "scope": "global" }
+    "config": {
+        "required": [
+            
+        ],
+        "optional": [
+            
+        ]
+    },
+    "commands": [
+        {
+            "name": "stop",
+            "type": "action",
+            "summary": "Stop ODP processing",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "charspeak",
+            "type": "action",
+            "summary": "Character speech command",
+            "params": [
+                {
+                    "name": "state",
+                    "type": "string",
+                    "required": false
+                }
+            ]
+        },
+        {
+            "name": "send",
+            "type": "action",
+            "summary": "Send data to ODP",
+            "params": [
+                {
+                    "name": "task",
+                    "type": "string",
+                    "required": false
+                },
+                {
+                    "name": "func",
+                    "type": "string",
+                    "required": false
+                },
+                {
+                    "name": "cont",
+                    "type": "string",
+                    "required": false
+                },
+                {
+                    "name": "post",
+                    "type": "string",
+                    "required": false
+                }
+            ]
+        }
     ],
-    "reads": []
-  }
+    "variables": {
+        "writes": [
+            {
+                "var": "userUtteranceMainTopic",
+                "type": "string",
+                "scope": "global"
+            },
+            {
+                "var": "userUtterance",
+                "type": "string",
+                "scope": "global"
+            },
+            {
+                "var": "transcriptionSource",
+                "type": "string",
+                "scope": "global"
+            },
+            {
+                "var": "transcriptionID",
+                "type": "string",
+                "scope": "global"
+            },
+            {
+                "var": "debug",
+                "type": "string",
+                "scope": "global"
+            },
+            {
+                "var": "userUtterancePronoun",
+                "type": "float",
+                "scope": "global"
+            },
+            {
+                "var": "userUtteranceMyself",
+                "type": "float",
+                "scope": "global"
+            },
+            {
+                "var": "userUtteranceWe",
+                "type": "float",
+                "scope": "global"
+            },
+            {
+                "var": "userUtteranceSelf",
+                "type": "float",
+                "scope": "global"
+            },
+            {
+                "var": "userUtteranceYou",
+                "type": "float",
+                "scope": "global"
+            },
+            {
+                "var": "userUtteranceOther",
+                "type": "float",
+                "scope": "global"
+            },
+            {
+                "var": "userUtterancePosAffect",
+                "type": "float",
+                "scope": "global"
+            },
+            {
+                "var": "userUtteranceNegAffect",
+                "type": "float",
+                "scope": "global"
+            },
+            {
+                "var": "userUtteranceOptimism",
+                "type": "float",
+                "scope": "global"
+            },
+            {
+                "var": "userUtteranceAnxiety",
+                "type": "float",
+                "scope": "global"
+            },
+            {
+                "var": "userUtteranceDiscrepancy",
+                "type": "float",
+                "scope": "global"
+            },
+            {
+                "var": "userUtteranceInsight",
+                "type": "float",
+                "scope": "global"
+            },
+            {
+                "var": "userUtteranceTentative",
+                "type": "float",
+                "scope": "global"
+            },
+            {
+                "var": "userUtteranceBody",
+                "type": "float",
+                "scope": "global"
+            },
+            {
+                "var": "userUtteranceSex",
+                "type": "float",
+                "scope": "global"
+            },
+            {
+                "var": "userUtteranceEat",
+                "type": "float",
+                "scope": "global"
+            },
+            {
+                "var": "userUtteranceSleep",
+                "type": "float",
+                "scope": "global"
+            },
+            {
+                "var": "userUtteranceSchool",
+                "type": "float",
+                "scope": "global"
+            },
+            {
+                "var": "userUtteranceJob",
+                "type": "float",
+                "scope": "global"
+            },
+            {
+                "var": "userUtteranceAchieve",
+                "type": "float",
+                "scope": "global"
+            },
+            {
+                "var": "userUtteranceTotalWords",
+                "type": "int",
+                "scope": "global"
+            },
+            {
+                "var": "userUtteranceTopics",
+                "type": "string",
+                "scope": "global"
+            },
+            {
+                "var": "odpstate",
+                "type": "string",
+                "scope": "global"
+            },
+            {
+                "var": "user_speaking",
+                "type": "bool",
+                "scope": "global"
+            }
+        ],
+        "reads": [
+            
+        ]
+    }
 }

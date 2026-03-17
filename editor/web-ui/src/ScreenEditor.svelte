@@ -425,7 +425,52 @@
 
   function handleKeydown(e) {
     if ((e.metaKey || e.ctrlKey) && e.key === "s") { e.preventDefault(); save(); }
-    if (e.key === "Escape") onClose();
+    if (e.key === "Escape") { if (showTemplatePicker) { showTemplatePicker = false; } else { onClose(); } }
+  }
+
+  // ── template picker ───────────────────────────────────────────────────────
+  let showTemplatePicker = false;
+  let templateList       = [];
+  let templateLoading    = false;
+  let templateError      = "";
+
+  async function openTemplatePicker() {
+    showTemplatePicker = true;
+    templateLoading    = true;
+    templateError      = "";
+    try {
+      const r = await fetch('/screen-templates/index.json');
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      templateList = await r.json();
+    } catch (e) {
+      templateError = "Could not load templates: " + (e.message || e);
+    } finally {
+      templateLoading = false;
+    }
+  }
+
+  async function importTemplate(id) {
+    templateError = "";
+    try {
+      const r = await fetch(`/screen-templates/${id}.json`);
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      const tmpl = await r.json();
+      const base = parsedSchema ?? { version: 1, screens: {} };
+      const incoming = tmpl.screens ?? {};
+      let firstKey = null;
+      for (const [name, screen] of Object.entries(incoming)) {
+        let key = name, n = 2;
+        while (base.screens[key]) key = `${name}_${n++}`;
+        base.screens[key] = screen;
+        if (!firstKey) firstKey = key;
+      }
+      parsedSchema = { ...base };
+      if (firstKey) selectedScreen = firstKey;
+      commitParsed();
+      showTemplatePicker = false;
+    } catch (e) {
+      templateError = "Import failed: " + (e.message || e);
+    }
   }
 </script>
 
@@ -451,6 +496,8 @@
       {:else if dirty}
         <span class="se-badge se-badge-warn">Unsaved changes</span>
       {/if}
+      <button class="se-btn se-btn-template" on:click={openTemplatePicker}
+              title="Add a pre-authored screen template">From Template…</button>
       <button class="se-btn se-btn-primary" disabled={saveBusy || !dirty}
               on:click={save} title="Save (Cmd/Ctrl+S)">
         {saveBusy ? "Saving…" : "Save"}
@@ -1022,19 +1069,44 @@
                            value={el.userLabel ?? "You"}
                            on:input={e => setProp(i,"userLabel",e.target.value || undefined)}>
                     <div class="ve-row" style="gap:.5rem;margin-top:.1rem">
-                      <label class="ve-prop-label">Agent color</label>
+                      <label class="ve-prop-label">Agent bg</label>
                       <input class="ve-color" type="color"
                              value={parseColorAlpha(el.agentColor ?? '#e8f4fd').hex}
                              on:input={e => setProp(i,"agentColor",e.target.value)}>
-                      <label class="ve-prop-label" style="margin-left:.5rem">User color</label>
+                      <label class="ve-prop-label" style="margin-left:.5rem">User bg</label>
                       <input class="ve-color" type="color"
                              value={parseColorAlpha(el.userColor ?? '#eafbe8').hex}
                              on:input={e => setProp(i,"userColor",e.target.value)}>
-                      <label class="ve-prop-label" style="margin-left:.5rem">System color</label>
+                      <label class="ve-prop-label" style="margin-left:.5rem">System bg</label>
                       <input class="ve-color" type="color"
                              value={parseColorAlpha(el.systemColor ?? '#f5f5f5').hex}
                              on:input={e => setProp(i,"systemColor",e.target.value)}>
                     </div>
+                    <div class="ve-row" style="gap:.5rem;margin-top:.1rem">
+                      <label class="ve-prop-label">Agent text</label>
+                      <input class="ve-color" type="color"
+                             value={parseColorAlpha(el.agentTextColor ?? '#000000').hex}
+                             on:input={e => setProp(i,"agentTextColor",e.target.value === '#000000' ? undefined : e.target.value)}>
+                      <label class="ve-prop-label" style="margin-left:.5rem">User text</label>
+                      <input class="ve-color" type="color"
+                             value={parseColorAlpha(el.userTextColor ?? '#000000').hex}
+                             on:input={e => setProp(i,"userTextColor",e.target.value === '#000000' ? undefined : e.target.value)}>
+                    </div>
+                    <div class="ve-row" style="gap:.5rem;margin-top:.1rem">
+                      <label class="ve-prop-label">Font size</label>
+                      <input class="ve-input ve-input-short" type="text" placeholder="1rem"
+                             value={el.fontSize ?? ""}
+                             on:input={e => setProp(i,"fontSize",e.target.value || undefined)}>
+                    </div>
+                    <label class="ve-prop-label">Font</label>
+                    <select class="ve-select"
+                            value={fontOpts.some(f => f.v === (el.fontFamily ?? "")) ? (el.fontFamily ?? "") : "__custom__"}
+                            on:change={e => setProp(i,"fontFamily", e.target.value === "__custom__" ? undefined : (e.target.value || undefined))}>
+                      {#each fontOpts as f}<option value={f.v}>{f.label}</option>{/each}
+                      {#if el.fontFamily && !fontOpts.some(f => f.v === el.fontFamily)}
+                        <option value="__custom__">{el.fontFamily}</option>
+                      {/if}
+                    </select>
                     <div class="ve-row" style="align-items:center;gap:.5rem;margin-top:.25rem">
                       <label class="ve-prop-label" style="min-width:0">Show timestamps</label>
                       <input type="checkbox" checked={!!el.showTimestamps}
@@ -1042,7 +1114,7 @@
                     </div>
                     <div class="ve-media-hint">
                       Use <code>appendMessage(var='…', role='agent', text='…')</code> PlayAction to add messages at runtime.<br>
-                      Roles: <code>agent</code> (left) · <code>user</code> (right) · <code>system</code> (center, italic)
+                      Roles: <code>agent</code> (left, tail) · <code>user</code> (right, tail) · <code>system</code> (center, italic)
                     </div>
 
                   <!-- ── Animate ── -->
@@ -1534,15 +1606,44 @@
                                    value={child.userLabel ?? "You"}
                                    on:input={e => setChildProp(i,ci,"userLabel",e.target.value || undefined)}>
                             <div class="ve-row" style="gap:.5rem;margin-top:.1rem">
-                              <label class="ve-prop-label">Agent color</label>
+                              <label class="ve-prop-label">Agent bg</label>
                               <input class="ve-color" type="color"
                                      value={parseColorAlpha(child.agentColor ?? '#e8f4fd').hex}
                                      on:input={e => setChildProp(i,ci,"agentColor",e.target.value)}>
-                              <label class="ve-prop-label" style="margin-left:.5rem">User color</label>
+                              <label class="ve-prop-label" style="margin-left:.5rem">User bg</label>
                               <input class="ve-color" type="color"
                                      value={parseColorAlpha(child.userColor ?? '#eafbe8').hex}
                                      on:input={e => setChildProp(i,ci,"userColor",e.target.value)}>
+                              <label class="ve-prop-label" style="margin-left:.5rem">System bg</label>
+                              <input class="ve-color" type="color"
+                                     value={parseColorAlpha(child.systemColor ?? '#f5f5f5').hex}
+                                     on:input={e => setChildProp(i,ci,"systemColor",e.target.value)}>
                             </div>
+                            <div class="ve-row" style="gap:.5rem;margin-top:.1rem">
+                              <label class="ve-prop-label">Agent text</label>
+                              <input class="ve-color" type="color"
+                                     value={parseColorAlpha(child.agentTextColor ?? '#000000').hex}
+                                     on:input={e => setChildProp(i,ci,"agentTextColor",e.target.value === '#000000' ? undefined : e.target.value)}>
+                              <label class="ve-prop-label" style="margin-left:.5rem">User text</label>
+                              <input class="ve-color" type="color"
+                                     value={parseColorAlpha(child.userTextColor ?? '#000000').hex}
+                                     on:input={e => setChildProp(i,ci,"userTextColor",e.target.value === '#000000' ? undefined : e.target.value)}>
+                            </div>
+                            <div class="ve-row" style="gap:.5rem;margin-top:.1rem">
+                              <label class="ve-prop-label">Font size</label>
+                              <input class="ve-input ve-input-short" type="text" placeholder="1rem"
+                                     value={child.fontSize ?? ""}
+                                     on:input={e => setChildProp(i,ci,"fontSize",e.target.value || undefined)}>
+                            </div>
+                            <label class="ve-prop-label">Font</label>
+                            <select class="ve-select"
+                                    value={fontOpts.some(f => f.v === (child.fontFamily ?? "")) ? (child.fontFamily ?? "") : "__custom__"}
+                                    on:change={e => setChildProp(i,ci,"fontFamily", e.target.value === "__custom__" ? undefined : (e.target.value || undefined))}>
+                              {#each fontOpts as f}<option value={f.v}>{f.label}</option>{/each}
+                              {#if child.fontFamily && !fontOpts.some(f => f.v === child.fontFamily)}
+                                <option value="__custom__">{child.fontFamily}</option>
+                              {/if}
+                            </select>
 
                           {:else}
                             <p class="ve-unknown">Type <code>{child.type}</code> — edit in JSON tab.</p>
@@ -1582,6 +1683,52 @@
         </div>
       {/if}
     </div>
+
+    <!-- Template picker modal -->
+    {#if showTemplatePicker}
+    <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+    <div class="tp-backdrop" role="dialog" aria-modal="true"
+         on:click|self={() => showTemplatePicker = false}
+         on:keydown={e => e.key === "Escape" && (showTemplatePicker = false)}>
+      <div class="tp-modal">
+        <div class="tp-header">
+          <span class="tp-title">Import Screen Template</span>
+          <button class="se-btn se-btn-sm" on:click={() => showTemplatePicker = false}>✕ Close</button>
+        </div>
+        <p class="tp-hint">
+          Select a template to add a pre-built screen to your project.
+          Rename variable bindings in the Visual editor afterwards.
+        </p>
+        {#if templateError}
+          <div class="tp-error">{templateError}</div>
+        {/if}
+        {#if templateLoading}
+          <div class="tp-loading">Loading templates…</div>
+        {:else}
+          <div class="tp-grid">
+            {#each templateList as t}
+              <button class="tp-card" on:click={() => importTemplate(t.id)}>
+                <div class="tp-card-label">{t.label}</div>
+                <div class="tp-card-desc">{t.description}</div>
+                {#if t.variables?.length > 0}
+                  <div class="tp-card-vars">
+                    {#each t.variables as v}
+                      <span class="tp-var-chip" title={v.description}>{v.name}</span>
+                    {/each}
+                  </div>
+                {/if}
+                {#if t.requires?.length > 1}
+                  <div class="tp-card-requires">
+                    requires: {t.requires.join(", ")}
+                  </div>
+                {/if}
+              </button>
+            {/each}
+          </div>
+        {/if}
+      </div>
+    </div>
+    {/if}
 
     <!-- Right: preview -->
     <div class="se-preview-col">
@@ -1902,4 +2049,66 @@
     padding: 2rem; opacity: 0.4; font-size: 0.9rem; text-align: center;
   }
   .se-preview-frame { flex: 1; width: 100%; border: none; background: #fff; }
+
+  /* ── From Template button ── */
+  .se-btn-template {
+    background: #f0f4ff; color: #2c4282;
+    border-color: #c7d3f5; font-weight: 500;
+  }
+  .se-btn-template:hover { background: #dce6ff; }
+
+  /* ── Template picker modal ── */
+  .tp-backdrop {
+    position: absolute; inset: 0; z-index: 10;
+    background: rgba(0,0,0,0.35);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .tp-modal {
+    background: var(--panel, #fff); border-radius: 10px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+    width: 680px; max-width: 94vw; max-height: 80vh;
+    display: flex; flex-direction: column; overflow: hidden;
+  }
+  .tp-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0.75rem 1rem; border-bottom: 1px solid var(--stroke, #e3ddd4);
+    flex-shrink: 0;
+  }
+  .tp-title { font-weight: 700; font-size: 1rem; }
+  .tp-hint {
+    font-size: 0.82rem; color: #6b7280; padding: 0.5rem 1rem 0;
+    margin: 0; flex-shrink: 0;
+  }
+  .tp-loading { padding: 2rem; text-align: center; opacity: 0.5; }
+  .tp-error {
+    margin: 0.5rem 1rem; padding: 0.5rem 0.75rem;
+    background: #fde8e5; color: var(--danger, #e26d5a);
+    border-radius: 6px; font-size: 0.82rem;
+  }
+  .tp-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: 0.6rem; padding: 0.75rem 1rem 1rem;
+    overflow-y: auto;
+  }
+  .tp-card {
+    text-align: left; padding: 0.75rem 0.9rem;
+    border: 1px solid var(--stroke, #e3ddd4); border-radius: 8px;
+    background: var(--panel-soft, #f5f7fb); cursor: pointer;
+    font-family: inherit; transition: border-color .15s, background .15s;
+    display: flex; flex-direction: column; gap: 0.3rem;
+  }
+  .tp-card:hover {
+    border-color: var(--accent, #5b8edc);
+    background: var(--accent-soft, #d6e2f6);
+  }
+  .tp-card-label { font-weight: 600; font-size: 0.9rem; color: var(--ink, #1f2328); }
+  .tp-card-desc  { font-size: 0.78rem; color: #6b7280; line-height: 1.4; }
+  .tp-card-vars  { display: flex; flex-wrap: wrap; gap: 0.25rem; margin-top: 0.15rem; }
+  .tp-var-chip {
+    font-size: 0.7rem; padding: 0.1rem 0.45rem;
+    background: #e8f4fd; color: #2c6e9f;
+    border-radius: 99px; font-family: 'IBM Plex Mono', monospace;
+    cursor: default;
+  }
+  .tp-card-requires { font-size: 0.7rem; color: #9a6c00; margin-top: 0.1rem; }
 </style>

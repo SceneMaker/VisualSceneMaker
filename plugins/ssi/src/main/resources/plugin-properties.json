@@ -1,114 +1,174 @@
 {
-  "schemaVersion": "1.0",
-  "plugin": {
-    "id": "ssi",
-    "name": "SSI",
-    "className": "de.dfki.vsm.xtension.ssi.SSICmdExecutor",
-    "androidCompatible": true,
-    "description": "Social signal analysis",
-    "tags": ["analysis", "social signals"]
-  },
-  "categories": {
-    "primary": "input",
-    "secondary": ["processing"]
-  },
-  "config": {
-    "required": [
-      {
-        "name": "loghost",
-        "type": "string",
-        "default": "127.0.0.1",
-        "description": "Host that runs the SSI. If SSI runs on a different computer, this field should hold the IP address of the computer"
-      },
-      {
-        "name": "logport",
-        "type": "numeric",
-        "default": 8989,
-        "description": "Port to connect to SSI. This field holds the SSI listening port."
-      },
-      {
-        "name": "logvar",
-        "type": "string",
-        "default": "SSIMessages",
-        "description": "A VSM Sceneflow var that gets messages from SSI"
-      },
-      {
-        "name": "pipes",
-        "type": "string",
-        "default": "interview:127.0.0.1:1111",
-        "description": "SSI recognition pipeline description"
-      }
+    "schemaVersion": "1.0",
+    "specVersion": "1.0",
+    "specHash": "69be4355d6d8940f",
+    "plugin": {
+        "id": "ssi",
+        "name": "SSI",
+        "className": "de.dfki.vsm.xtension.ssi.SSICmdExecutor",
+        "androidCompatible": true,
+        "description": "Social signal analysis",
+        "tags": [
+            "analysis",
+            "social signals"
+        ]
+    },
+    "categories": {
+        "primary": "input",
+        "secondary": [
+            "processing"
+        ]
+    },
+    "config": {
+        "required": [
+            {
+                "name": "loghost",
+                "type": "string",
+                "default": "127.0.0.1",
+                "description": "Host that runs the SSI. If SSI runs on a different computer, this field should hold the IP address of the computer"
+            },
+            {
+                "name": "logport",
+                "type": "numeric",
+                "default": 8989,
+                "description": "Port to connect to SSI. This field holds the SSI listening port."
+            },
+            {
+                "name": "logvar",
+                "type": "string",
+                "default": "SSIMessages",
+                "description": "A VSM Sceneflow var that gets messages from SSI"
+            },
+            {
+                "name": "pipes",
+                "type": "string",
+                "default": "interview:127.0.0.1:1111",
+                "description": "SSI recognition pipeline description"
+            }
+        ],
+        "optional": [
+            {
+                "name": "broadcast",
+                "type": "boolean",
+                "default": false,
+                "description": "Broadcast messages in local network. Set to true for StudyMaster remote control"
+            },
+            {
+                "name": "broadcastport",
+                "type": "numeric",
+                "default": 9898,
+                "description": "Port on which messages are broadcasted."
+            },
+            {
+                "name": "listentostudymaster",
+                "type": "boolean",
+                "default": false,
+                "description": "Listen to StudyMaster input. Set to true for StudyMaster remote control"
+            },
+            {
+                "name": "studymasterport",
+                "type": "numeric",
+                "default": 9898,
+                "description": "Port on which StudyMaster receives messages."
+            },
+            {
+                "name": "hlhost",
+                "type": "string",
+                "description": "HL host"
+            },
+            {
+                "name": "hlport",
+                "type": "string",
+                "description": "HL port"
+            },
+            {
+                "name": "slhost",
+                "type": "string",
+                "description": "SL host"
+            },
+            {
+                "name": "slport",
+                "type": "string",
+                "description": "SL port"
+            },
+            {
+                "name": "srhost",
+                "type": "string",
+                "description": "SR host"
+            },
+            {
+                "name": "srport",
+                "type": "string",
+                "description": "SR port"
+            }
+        ]
+    },
+    "commands": [
+        {
+            "name": "start",
+            "type": "action",
+            "summary": "Start SSI pipeline",
+            "params": [
+                {
+                    "name": "pipe",
+                    "type": "string",
+                    "required": false,
+                    "description": "Pipeline name"
+                }
+            ]
+        },
+        {
+            "name": "stop",
+            "type": "action",
+            "summary": "Stop SSI pipeline",
+            "params": [
+                {
+                    "name": "pipe",
+                    "type": "string",
+                    "required": false,
+                    "description": "Pipeline name"
+                }
+            ]
+        },
+        {
+            "name": "request",
+            "type": "action",
+            "summary": "Request SSI data",
+            "params": [
+                {
+                    "name": "var",
+                    "type": "string",
+                    "required": false,
+                    "description": "Variable name"
+                },
+                {
+                    "name": "values",
+                    "type": "string",
+                    "required": false,
+                    "description": "Values"
+                }
+            ]
+        },
+        {
+            "name": "log",
+            "type": "action",
+            "summary": "Log to SSI",
+            "params": [
+                {
+                    "name": "content",
+                    "type": "string",
+                    "required": false,
+                    "description": "Log content"
+                }
+            ]
+        }
     ],
-    "optional": [
-      {
-        "name": "broadcast",
-        "type": "boolean",
-        "default": false,
-        "description": "Broadcast messages in local network. Set to true for StudyMaster remote control"
-      },
-      {
-        "name": "broadcastport",
-        "type": "numeric",
-        "default": 9898,
-        "description": "Port on which messages are broadcasted."
-      },
-      {
-        "name": "listentostudymaster",
-        "type": "boolean",
-        "default": false,
-        "description": "Listen to StudyMaster input. Set to true for StudyMaster remote control"
-      },
-      {
-        "name": "studymasterport",
-        "type": "numeric",
-        "default": 9898,
-        "description": "Port on which StudyMaster receives messages."
-      },
-      { "name": "hlhost", "type": "string", "description": "HL host" },
-      { "name": "hlport", "type": "string", "description": "HL port" },
-      { "name": "slhost", "type": "string", "description": "SL host" },
-      { "name": "slport", "type": "string", "description": "SL port" },
-      { "name": "srhost", "type": "string", "description": "SR host" },
-      { "name": "srport", "type": "string", "description": "SR port" }
-    ]
-  },
-  "commands": [
-    {
-      "name": "start",
-      "type": "action",
-      "summary": "Start SSI pipeline",
-      "params": [
-        { "name": "pipe", "type": "string", "required": false, "description": "Pipeline name" }
-      ]
-    },
-    {
-      "name": "stop",
-      "type": "action",
-      "summary": "Stop SSI pipeline",
-      "params": [
-        { "name": "pipe", "type": "string", "required": false, "description": "Pipeline name" }
-      ]
-    },
-    {
-      "name": "request",
-      "type": "action",
-      "summary": "Request SSI data",
-      "params": [
-        { "name": "var", "type": "string", "required": false, "description": "Variable name" },
-        { "name": "values", "type": "string", "required": false, "description": "Values" }
-      ]
-    },
-    {
-      "name": "log",
-      "type": "action",
-      "summary": "Log to SSI",
-      "params": [
-        { "name": "content", "type": "string", "required": false, "description": "Log content" }
-      ]
+    "variables": {
+        "writes": [
+            
+        ],
+        "reads": [
+            
+        ]
     }
-  ],
-  "variables": {
-    "writes": [],
-    "reads": []
-  }
 }

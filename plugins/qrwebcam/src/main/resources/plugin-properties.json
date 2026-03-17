@@ -1,33 +1,54 @@
 {
-  "schemaVersion": "1.0",
-  "plugin": {
-    "id": "qrwebcam",
-    "name": "QR Webcam",
-    "className": "de.dfki.vsm.xtension.qrwebcam.QRWebCamExecutor",
-    "androidCompatible": false,
-    "description": "QR code scanning via webcam",
-    "tags": ["webcam", "QR code", "input"]
-  },
-  "categories": {
-    "primary": "processing",
-    "secondary": []
-  },
-  "config": {
-    "required": [],
-    "optional": []
-  },
-  "commands": [
-    {
-      "name": "grab",
-      "type": "action",
-      "summary": "Grab a QR code from webcam",
-      "params": []
-    }
-  ],
-  "variables": {
-    "writes": [
-      { "var": "code", "type": "string", "scope": "global", "description": "Scanned QR code value" }
+    "schemaVersion": "1.0",
+    "specVersion": "1.0",
+    "specHash": "3624b91389f78f39",
+    "plugin": {
+        "id": "qrwebcam",
+        "name": "QR Webcam",
+        "className": "de.dfki.vsm.xtension.qrwebcam.QRWebCamExecutor",
+        "androidCompatible": false,
+        "description": "QR code scanning via webcam",
+        "tags": [
+            "webcam",
+            "QR code",
+            "input"
+        ]
+    },
+    "categories": {
+        "primary": "processing",
+        "secondary": [
+            
+        ]
+    },
+    "config": {
+        "required": [
+            
+        ],
+        "optional": [
+            
+        ]
+    },
+    "commands": [
+        {
+            "name": "grab",
+            "type": "action",
+            "summary": "Grab a QR code from webcam",
+            "params": [
+                
+            ]
+        }
     ],
-    "reads": []
-  }
+    "variables": {
+        "writes": [
+            {
+                "var": "code",
+                "type": "string",
+                "scope": "global",
+                "description": "Scanned QR code value"
+            }
+        ],
+        "reads": [
+            
+        ]
+    }
 }

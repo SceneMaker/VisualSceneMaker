@@ -1,37 +1,52 @@
 {
-  "schemaVersion": "1.0",
-  "plugin": {
-    "id": "decad",
-    "name": "DECAD",
-    "className": "de.dfki.vsm.xtension.decad.DecadExecutor",
-    "androidCompatible": false,
-    "description": "DFKI agent handler (beta)",
-    "tags": ["SIA", "agent"]
-  },
-  "categories": {
-    "primary": "output",
-    "secondary": []
-  },
-  "config": {
-    "required": [
-      {
-        "name": "url",
-        "type": "string",
-        "default": "http://localhost",
-        "description": "URL to connect VSM with DECAD"
-      },
-      {
-        "name": "port",
-        "type": "numeric",
-        "default": 5005,
-        "description": "Port to connect VSM with DECAD. This field represents the port of the web server."
-      }
+    "schemaVersion": "1.0",
+    "specVersion": "1.0",
+    "specHash": "45afa03223064b42",
+    "plugin": {
+        "id": "decad",
+        "name": "DECAD",
+        "className": "de.dfki.vsm.xtension.decad.DecadExecutor",
+        "androidCompatible": false,
+        "description": "DFKI agent handler (beta)",
+        "tags": [
+            "SIA",
+            "agent"
+        ]
+    },
+    "categories": {
+        "primary": "output",
+        "secondary": [
+            
+        ]
+    },
+    "config": {
+        "required": [
+            {
+                "name": "url",
+                "type": "string",
+                "default": "http://localhost",
+                "description": "URL to connect VSM with DECAD"
+            },
+            {
+                "name": "port",
+                "type": "numeric",
+                "default": 5005,
+                "description": "Port to connect VSM with DECAD. This field represents the port of the web server."
+            }
+        ],
+        "optional": [
+            
+        ]
+    },
+    "commands": [
+        
     ],
-    "optional": []
-  },
-  "commands": [],
-  "variables": {
-    "writes": [],
-    "reads": []
-  }
+    "variables": {
+        "writes": [
+            
+        ],
+        "reads": [
+            
+        ]
+    }
 }

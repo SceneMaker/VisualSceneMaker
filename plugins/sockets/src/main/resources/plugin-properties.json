@@ -1,24 +1,41 @@
 {
-  "schemaVersion": "1.0",
-  "plugin": {
-    "id": "sockets",
-    "name": "Sockets",
-    "className": "de.dfki.vsm.xtension.sockets.SocketsExecutor",
-    "androidCompatible": true,
-    "description": "Generic socket communication plugin",
-    "tags": ["network", "communication"]
-  },
-  "categories": {
-    "primary": "processing",
-    "secondary": []
-  },
-  "config": {
-    "required": [],
-    "optional": []
-  },
-  "commands": [],
-  "variables": {
-    "writes": [],
-    "reads": []
-  }
+    "schemaVersion": "1.0",
+    "specVersion": "1.0",
+    "specHash": "e3b0c44298fc1c14",
+    "plugin": {
+        "id": "sockets",
+        "name": "Sockets",
+        "className": "de.dfki.vsm.xtension.sockets.SocketsExecutor",
+        "androidCompatible": true,
+        "description": "Generic socket communication plugin",
+        "tags": [
+            "network",
+            "communication"
+        ]
+    },
+    "categories": {
+        "primary": "processing",
+        "secondary": [
+            
+        ]
+    },
+    "config": {
+        "required": [
+            
+        ],
+        "optional": [
+            
+        ]
+    },
+    "commands": [
+        
+    ],
+    "variables": {
+        "writes": [
+            
+        ],
+        "reads": [
+            
+        ]
+    }
 }

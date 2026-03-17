@@ -5,6 +5,117 @@ plugins {
 }
 javadoc { options.encoding = 'UTF-8' }
 
+// =====================================================================
+// Plugin Spec Versioning
+// =====================================================================
+// Each plugin-properties.json carries two top-level fields:
+//   specVersion  – human-readable semver (e.g. "1.1"), bumped MANUALLY
+//   specHash     – SHA-256 prefix of structural content, updated by
+//                  ./gradlew updatePluginSpecs
+//
+// verifyPluginSpecs (hooked into 'check') fails the build when a
+// structural change is detected but specHash (and therefore specVersion)
+// was not updated, catching forgotten version bumps.
+// =====================================================================
+import java.security.MessageDigest
+
+def computePluginSpecHash = { File specFile ->
+    def slurper = new groovy.json.JsonSlurper()
+    def spec = slurper.parse(specFile)
+    def lines = []
+
+    // Config entries from required + optional (skip agent / pluginSpecific)
+    def allConfig = []
+    if (spec.config?.required) allConfig.addAll(spec.config.required as List)
+    if (spec.config?.optional) allConfig.addAll(spec.config.optional as List)
+    allConfig.each { entry ->
+        def name    = entry.name ?: ''
+        def defVal  = (entry['default'] != null) ? entry['default'].toString() : ''
+        def sfType  = entry.sceneflowtype ?: ''
+        lines << (sfType ? "config:${name}:${defVal}:${sfType}" : "config:${name}:${defVal}")
+    }
+
+    // Variables writes
+    (spec.variables?.writes ?: []).each { w ->
+        lines << "write:${w.var ?: ''}:${w.type ?: ''}"
+    }
+
+    // Commands
+    (spec.commands ?: []).each { cmd ->
+        lines << "cmd:${cmd.name}"
+    }
+
+    lines.sort()
+    def input = lines.join('\n')
+    def md = MessageDigest.getInstance('SHA-256')
+    md.update(input.getBytes('UTF-8'))
+    md.digest().encodeHex().toString().substring(0, 16)
+}
+
+def pluginSpecFiles = {
+    fileTree(dir: "${projectDir}/plugins", include: '*/src/main/resources/plugin-properties.json').files
+}
+
+tasks.register('verifyPluginSpecs') {
+    group = 'verification'
+    description = 'Verifies specHash in each plugin-properties.json matches current structural content. ' +
+            'Fails if stale — run ./gradlew updatePluginSpecs then bump specVersion manually.'
+    doLast {
+        def failures = []
+        pluginSpecFiles().each { File f ->
+            def spec = new groovy.json.JsonSlurper().parse(f)
+            def stored = spec.specHash
+            if (stored == null) return   // plugin not yet versioned — skip
+            def computed = computePluginSpecHash(f)
+            if (stored != computed) {
+                failures << "  ${f.path}\n    stored:   ${stored}\n    computed: ${computed}"
+            }
+        }
+        if (!failures.isEmpty()) {
+            throw new GradleException(
+                "Plugin spec hash mismatch — structural changes detected but specVersion was not bumped:\n\n" +
+                failures.join('\n\n') +
+                "\n\nRun:  ./gradlew updatePluginSpecs\n" +
+                "Then: manually bump specVersion in each affected plugin-properties.json"
+            )
+        }
+        logger.lifecycle('All plugin specHash values are current.')
+    }
+}
+
+tasks.named('check') {
+    dependsOn 'verifyPluginSpecs'
+}
+
+tasks.register('updatePluginSpecs') {
+    group = 'verification'
+    description = 'Recomputes specHash for all plugin-properties.json files. ' +
+            'Run after structural changes, then bump specVersion manually.'
+    doLast {
+        pluginSpecFiles().each { File f ->
+            def slurper = new groovy.json.JsonSlurper()
+            def spec = slurper.parse(f) as Map
+            if (!spec.containsKey('specHash')) {
+                logger.lifecycle("Skipping (no specHash field): ${f.path}")
+                return
+            }
+            def newHash = computePluginSpecHash(f)
+            if (spec.specHash == newHash) {
+                logger.lifecycle("Up-to-date: ${f.path}")
+                return
+            }
+            def oldHash = spec.specHash
+            // Rebuild map preserving insertion order, replacing specHash value
+            def updated = [:] as LinkedHashMap
+            spec.each { k, v -> updated[k] = (k == 'specHash') ? newHash : v }
+            f.text = groovy.json.JsonOutput.prettyPrint(
+                    groovy.json.JsonOutput.toJson(updated)) + System.lineSeparator()
+            logger.lifecycle("Updated specHash: ${f.path}\n  old: ${oldHash}\n  new: ${newHash}")
+        }
+        logger.lifecycle('Done. Remember to bump specVersion manually in any changed plugin.')
+    }
+}
+
 group 'de.dfki'
 def resolvedVersionTag = versioning.info.lastTag
 if (resolvedVersionTag == null

@@ -1,46 +1,90 @@
 {
-  "schemaVersion": "1.0",
-  "plugin": {
-    "id": "ssj",
-    "name": "SSJ",
-    "className": "de.dfki.vsm.xtension.ssj.SSJExecutor",
-    "androidCompatible": true,
-    "description": "Mobile social signal analysis",
-    "tags": ["analysis", "social signals", "mobile"]
-  },
-  "categories": {
-    "primary": "input",
-    "secondary": ["processing"]
-  },
-  "config": {
-    "required": [],
-    "optional": [
-      { "name": "vsm_rec_host", "type": "string", "description": "VSM receive host" },
-      { "name": "vsm_rec_port", "type": "string", "description": "VSM receive port" },
-      { "name": "vsm_send_host", "type": "string", "description": "VSM send host" },
-      { "name": "vsm_send_port", "type": "string", "description": "VSM send port" },
-      { "name": "ssj_rec_host", "type": "string", "description": "SSJ receive host" },
-      { "name": "ssj_rec_port", "type": "string", "description": "SSJ receive port" }
-    ]
-  },
-  "commands": [
-    {
-      "name": "send",
-      "type": "action",
-      "summary": "Send text to SSJ",
-      "params": [
-        { "name": "text", "type": "string", "required": false }
-      ]
+    "schemaVersion": "1.0",
+    "specVersion": "1.0",
+    "specHash": "e66318ac9a505bde",
+    "plugin": {
+        "id": "ssj",
+        "name": "SSJ",
+        "className": "de.dfki.vsm.xtension.ssj.SSJExecutor",
+        "androidCompatible": true,
+        "description": "Mobile social signal analysis",
+        "tags": [
+            "analysis",
+            "social signals",
+            "mobile"
+        ]
     },
-    {
-      "name": "event",
-      "type": "action",
-      "summary": "Trigger SSJ event",
-      "params": []
+    "categories": {
+        "primary": "input",
+        "secondary": [
+            "processing"
+        ]
+    },
+    "config": {
+        "required": [
+            
+        ],
+        "optional": [
+            {
+                "name": "vsm_rec_host",
+                "type": "string",
+                "description": "VSM receive host"
+            },
+            {
+                "name": "vsm_rec_port",
+                "type": "string",
+                "description": "VSM receive port"
+            },
+            {
+                "name": "vsm_send_host",
+                "type": "string",
+                "description": "VSM send host"
+            },
+            {
+                "name": "vsm_send_port",
+                "type": "string",
+                "description": "VSM send port"
+            },
+            {
+                "name": "ssj_rec_host",
+                "type": "string",
+                "description": "SSJ receive host"
+            },
+            {
+                "name": "ssj_rec_port",
+                "type": "string",
+                "description": "SSJ receive port"
+            }
+        ]
+    },
+    "commands": [
+        {
+            "name": "send",
+            "type": "action",
+            "summary": "Send text to SSJ",
+            "params": [
+                {
+                    "name": "text",
+                    "type": "string",
+                    "required": false
+                }
+            ]
+        },
+        {
+            "name": "event",
+            "type": "action",
+            "summary": "Trigger SSJ event",
+            "params": [
+                
+            ]
+        }
+    ],
+    "variables": {
+        "writes": [
+            
+        ],
+        "reads": [
+            
+        ]
     }
-  ],
-  "variables": {
-    "writes": [],
-    "reads": []
-  }
 }

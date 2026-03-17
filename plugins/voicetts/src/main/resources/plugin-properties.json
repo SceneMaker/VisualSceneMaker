@@ -1,87 +1,346 @@
 {
-  "schemaVersion": "1.0",
-  "plugin": {
-    "id": "voicetts",
-    "name": "Voice TTS Stream",
-    "className": "de.dfki.vsm.xtension.voicetts.VoiceTtsExecutor",
-    "androidCompatible": false,
-    "description": "Streaming TTS plugin using qwen3 stream-client-core",
-    "tags": ["tts", "streaming", "viseme", "word-timing"]
-  },
-  "categories": {
-    "primary": "output",
-    "secondary": ["input"]
-  },
-  "config": {
-    "required": [
-      { "name": "ws_url", "type": "string", "default": "ws://127.0.0.1:8000/v1/tts/stream", "description": "TTS WebSocket endpoint" }
+    "schemaVersion": "1.0",
+    "specVersion": "1.1",
+    "specHash": "054a585670897521",
+    "plugin": {
+        "id": "voicetts",
+        "name": "Voice TTS Stream",
+        "className": "de.dfki.vsm.xtension.voicetts.VoiceTtsExecutor",
+        "androidCompatible": false,
+        "description": "Streaming TTS plugin using qwen3 stream-client-core",
+        "tags": [
+            "tts",
+            "streaming",
+            "viseme",
+            "word-timing"
+        ]
+    },
+    "categories": {
+        "primary": "output",
+        "secondary": [
+            "input"
+        ]
+    },
+    "config": {
+        "required": [
+            {
+                "name": "ws_url",
+                "type": "string",
+                "default": "ws://127.0.0.1:8000/v1/tts/stream",
+                "description": "TTS WebSocket endpoint"
+            }
+        ],
+        "optional": [
+            {
+                "name": "mode",
+                "type": "string",
+                "default": "custom",
+                "description": "Default mode: custom, design, clone"
+            },
+            {
+                "name": "generation_mode",
+                "type": "string",
+                "default": "full_utterance",
+                "description": "Generation mode: full_utterance (default) or streaming"
+            },
+            {
+                "name": "custom_voice_id",
+                "type": "string",
+                "default": "cv1",
+                "description": "Default generated/user custom voice id"
+            },
+            {
+                "name": "voice",
+                "type": "string",
+                "default": "Vivian",
+                "description": "Voice fallback for generated custom voices"
+            },
+            {
+                "name": "instruct",
+                "type": "string",
+                "default": "Calm and friendly",
+                "description": "Instruction fallback"
+            },
+            {
+                "name": "chunk_ms",
+                "type": "string",
+                "default": "100",
+                "description": "Default audio chunk size in milliseconds"
+            },
+            {
+                "name": "viseme_hop_ms",
+                "type": "string",
+                "default": "10",
+                "description": "Default viseme analysis hop size in milliseconds"
+            },
+            {
+                "name": "generation_streaming_interval_ms",
+                "type": "string",
+                "default": "350",
+                "description": "Default model streaming interval in milliseconds"
+            },
+            {
+                "name": "clone_ref_audio_path",
+                "type": "filepath",
+                "default": "",
+                "description": "Default reference audio file path for clone mode"
+            },
+            {
+                "name": "clone_ref_text",
+                "type": "string",
+                "default": ".",
+                "description": "Default transcript for clone mode"
+            },
+            {
+                "name": "debug_dump_wav_enabled",
+                "type": "string",
+                "default": "true",
+                "description": "Write per-playback WAV debug dumps"
+            },
+            {
+                "name": "debug_dump_wav_dir",
+                "type": "filepath",
+                "default": "/tmp/voicetts-dumps",
+                "description": "Directory for WAV debug dumps"
+            },
+            {
+                "name": "portrait_url",
+                "type": "string",
+                "default": "",
+                "description": "Portrait relay WebSocket URL for 2D talking portrait (e.g. ws://127.0.0.1:8000/v1/portrait/stream); leave empty to disable"
+            },
+            {
+                "name": "avatar_sse_port",
+                "type": "string",
+                "default": "0",
+                "description": "Port for the embedded SSE server driving avatar.html (e.g. 9091); 0 to disable. Avoid 9090 \u2014 VSM uses that port internally."
+            },
+            {
+                "name": "connectedVar",
+                "type": "string",
+                "sceneflowtype": "Bool",
+                "default": "tts_connected",
+                "description": "Set true when websocket session starts"
+            },
+            {
+                "name": "speakingVar",
+                "type": "string",
+                "sceneflowtype": "Bool",
+                "default": "tts_speaking",
+                "description": "True while stream is active"
+            },
+            {
+                "name": "textVar",
+                "type": "string",
+                "sceneflowtype": "String",
+                "default": "tts_text",
+                "description": "Full text of the utterance currently being synthesized"
+            },
+            {
+                "name": "visemeVar",
+                "type": "string",
+                "sceneflowtype": "String",
+                "default": "tts_viseme",
+                "description": "Latest viseme label"
+            },
+            {
+                "name": "wordVar",
+                "type": "string",
+                "sceneflowtype": "String",
+                "default": "tts_word",
+                "description": "Latest word token"
+            },
+            {
+                "name": "wordFinalVar",
+                "type": "string",
+                "sceneflowtype": "Bool",
+                "default": "tts_word_final",
+                "description": "True when latest word is final"
+            },
+            {
+                "name": "errorVar",
+                "type": "string",
+                "sceneflowtype": "String",
+                "default": "tts_error",
+                "description": "Last transport/session error"
+            },
+            {
+                "name": "debugSeqVar",
+                "type": "string",
+                "default": "tts_debug_seq",
+                "description": "Current speak sequence id"
+            },
+            {
+                "name": "debugReqVar",
+                "type": "string",
+                "default": "tts_debug_request_id",
+                "description": "Current TTS request id"
+            },
+            {
+                "name": "debugStateVar",
+                "type": "string",
+                "default": "tts_debug_state",
+                "description": "Current internal debug state"
+            }
+        ],
+        "agent": {
+            "optional": [
+                {
+                    "name": "mode",
+                    "type": "string",
+                    "description": "Voice synthesis mode for this agent: custom, design, or clone. Overrides the plugin-level default."
+                },
+                {
+                    "name": "generation_mode",
+                    "type": "string",
+                    "description": "Generation mode for this agent: full_utterance or streaming. Overrides the plugin-level default."
+                },
+                {
+                    "name": "custom_voice_id",
+                    "type": "string",
+                    "description": "Voice ID for this agent (e.g. anna_v1). Overrides the plugin-level custom_voice_id."
+                }
+            ],
+            "dynamic": {
+                "enabled": false
+            }
+        }
+    },
+    "commands": [
+        {
+            "name": "stop",
+            "type": "action",
+            "summary": "Cancel current stream session",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "speak",
+            "type": "action",
+            "summary": "Speak text via streaming TTS",
+            "params": [
+                {
+                    "name": "text",
+                    "type": "string",
+                    "required": false,
+                    "description": "Text to synthesize (fallback: activity text)"
+                },
+                {
+                    "name": "mode",
+                    "type": "string",
+                    "required": false,
+                    "description": "custom, design, clone"
+                },
+                {
+                    "name": "generation_mode",
+                    "type": "string",
+                    "required": false,
+                    "description": "full_utterance or streaming"
+                },
+                {
+                    "name": "custom_voice_id",
+                    "type": "string",
+                    "required": false,
+                    "description": "cv1, cv2, or created voice id"
+                },
+                {
+                    "name": "voice",
+                    "type": "string",
+                    "required": false,
+                    "description": "Voice fallback"
+                },
+                {
+                    "name": "instruct",
+                    "type": "string",
+                    "required": false,
+                    "description": "Instruction fallback"
+                },
+                {
+                    "name": "speed",
+                    "type": "string",
+                    "required": false,
+                    "description": "Speech speed"
+                },
+                {
+                    "name": "chunk_ms",
+                    "type": "string",
+                    "required": false,
+                    "description": "Audio chunk size in milliseconds"
+                },
+                {
+                    "name": "viseme_hop_ms",
+                    "type": "string",
+                    "required": false,
+                    "description": "Viseme hop size in milliseconds"
+                },
+                {
+                    "name": "generation_streaming_interval_ms",
+                    "type": "string",
+                    "required": false,
+                    "description": "Model streaming interval in milliseconds"
+                },
+                {
+                    "name": "ref_audio_b64",
+                    "type": "string",
+                    "required": false,
+                    "description": "Base64 reference wav for clone mode"
+                },
+                {
+                    "name": "ref_audio_path",
+                    "type": "string",
+                    "required": false,
+                    "description": "Reference wav file path for clone mode"
+                },
+                {
+                    "name": "ref_text",
+                    "type": "string",
+                    "required": false,
+                    "description": "Transcript for clone reference audio"
+                }
+            ]
+        }
     ],
-    "optional": [
-      { "name": "mode", "type": "string", "default": "custom", "description": "Default mode: custom, design, clone" },
-      { "name": "generation_mode", "type": "string", "default": "full_utterance", "description": "Generation mode: full_utterance (default) or streaming" },
-      { "name": "custom_voice_id", "type": "string", "default": "cv1", "description": "Default generated/user custom voice id" },
-      { "name": "voice", "type": "string", "default": "Vivian", "description": "Voice fallback for generated custom voices" },
-      { "name": "instruct", "type": "string", "default": "Calm and friendly", "description": "Instruction fallback" },
-      { "name": "chunk_ms", "type": "string", "default": "100", "description": "Default audio chunk size in milliseconds" },
-      { "name": "viseme_hop_ms", "type": "string", "default": "10", "description": "Default viseme analysis hop size in milliseconds" },
-      { "name": "generation_streaming_interval_ms", "type": "string", "default": "350", "description": "Default model streaming interval in milliseconds" },
-      { "name": "clone_ref_audio_path", "type": "filepath", "default": "", "description": "Default reference audio file path for clone mode" },
-      { "name": "clone_ref_text", "type": "string", "default": ".", "description": "Default transcript for clone mode" },
-      { "name": "debug_dump_wav_enabled", "type": "string", "default": "true", "description": "Write per-playback WAV debug dumps" },
-      { "name": "debug_dump_wav_dir", "type": "filepath", "default": "/tmp/voicetts-dumps", "description": "Directory for WAV debug dumps" },
-      { "name": "portrait_url", "type": "string", "default": "", "description": "Portrait relay WebSocket URL for 2D talking portrait (e.g. ws://127.0.0.1:8000/v1/portrait/stream); leave empty to disable" },
-      { "name": "avatar_sse_port", "type": "string", "default": "0", "description": "Port for the embedded SSE server driving avatar.html (e.g. 9091); 0 to disable. Avoid 9090 — VSM uses that port internally." },
-      { "name": "connectedVar", "type": "string", "sceneflowtype": "Bool", "default": "tts_connected", "description": "Set true when websocket session starts" },
-      { "name": "speakingVar", "type": "string", "sceneflowtype": "Bool", "default": "tts_speaking", "description": "True while stream is active" },
-      { "name": "visemeVar", "type": "string", "sceneflowtype": "String", "default": "tts_viseme", "description": "Latest viseme label" },
-      { "name": "wordVar", "type": "string", "sceneflowtype": "String", "default": "tts_word", "description": "Latest word token" },
-      { "name": "wordFinalVar", "type": "string", "sceneflowtype": "Bool", "default": "tts_word_final", "description": "True when latest word is final" },
-      { "name": "errorVar", "type": "string", "sceneflowtype": "String", "default": "tts_error", "description": "Last transport/session error" },
-      { "name": "debugSeqVar", "type": "string", "sceneflowtype": "String", "default": "tts_debug_seq", "description": "Current speak sequence id" },
-      { "name": "debugReqVar", "type": "string", "sceneflowtype": "String", "default": "tts_debug_request_id", "description": "Current TTS request id" },
-      { "name": "debugStateVar", "type": "string", "sceneflowtype": "String", "default": "tts_debug_state", "description": "Current internal debug state" }
-    ],
-    "agent": {
-      "optional": [
-        { "name": "mode", "type": "string", "description": "Voice synthesis mode for this agent: custom, design, or clone. Overrides the plugin-level default." },
-        { "name": "generation_mode", "type": "string", "description": "Generation mode for this agent: full_utterance or streaming. Overrides the plugin-level default." },
-        { "name": "custom_voice_id", "type": "string", "description": "Voice ID for this agent (e.g. anna_v1). Overrides the plugin-level custom_voice_id." }
-      ],
-      "dynamic": { "enabled": false }
+    "variables": {
+        "writes": [
+            {
+                "var": "connectedVar",
+                "type": "Bool",
+                "description": "Connection/session state"
+            },
+            {
+                "var": "speakingVar",
+                "type": "Bool",
+                "description": "Speech activity state"
+            },
+            {
+                "var": "textVar",
+                "type": "String",
+                "description": "Full text of the utterance currently being synthesized"
+            },
+            {
+                "var": "visemeVar",
+                "type": "String",
+                "description": "Latest viseme"
+            },
+            {
+                "var": "wordVar",
+                "type": "String",
+                "description": "Latest word"
+            },
+            {
+                "var": "wordFinalVar",
+                "type": "Bool",
+                "description": "Whether latest word timing is final"
+            },
+            {
+                "var": "errorVar",
+                "type": "String",
+                "description": "Last error message"
+            }
+        ],
+        "reads": [
+            
+        ]
     }
-  },
-  "commands": [
-    { "name": "stop", "type": "action", "summary": "Cancel current stream session", "params": [] },
-    {
-      "name": "speak",
-      "type": "action",
-      "summary": "Speak text via streaming TTS",
-      "params": [
-        { "name": "text", "type": "string", "required": false, "description": "Text to synthesize (fallback: activity text)" },
-        { "name": "mode", "type": "string", "required": false, "description": "custom, design, clone" },
-        { "name": "generation_mode", "type": "string", "required": false, "description": "full_utterance or streaming" },
-        { "name": "custom_voice_id", "type": "string", "required": false, "description": "cv1, cv2, or created voice id" },
-        { "name": "voice", "type": "string", "required": false, "description": "Voice fallback" },
-        { "name": "instruct", "type": "string", "required": false, "description": "Instruction fallback" },
-        { "name": "speed", "type": "string", "required": false, "description": "Speech speed" },
-        { "name": "chunk_ms", "type": "string", "required": false, "description": "Audio chunk size in milliseconds" },
-        { "name": "viseme_hop_ms", "type": "string", "required": false, "description": "Viseme hop size in milliseconds" },
-        { "name": "generation_streaming_interval_ms", "type": "string", "required": false, "description": "Model streaming interval in milliseconds" },
-        { "name": "ref_audio_b64", "type": "string", "required": false, "description": "Base64 reference wav for clone mode" },
-        { "name": "ref_audio_path", "type": "string", "required": false, "description": "Reference wav file path for clone mode" },
-        { "name": "ref_text", "type": "string", "required": false, "description": "Transcript for clone reference audio" }
-      ]
-    }
-  ],
-  "variables": {
-    "writes": [
-      { "var": "connectedVar", "type": "Bool", "description": "Connection/session state" },
-      { "var": "speakingVar", "type": "Bool", "description": "Speech activity state" },
-      { "var": "visemeVar", "type": "String", "description": "Latest viseme" },
-      { "var": "wordVar", "type": "String", "description": "Latest word" },
-      { "var": "wordFinalVar", "type": "Bool", "description": "Whether latest word timing is final" },
-      { "var": "errorVar", "type": "String", "description": "Last error message" }
-    ],
-    "reads": []
-  }
 }

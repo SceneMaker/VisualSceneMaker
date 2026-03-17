@@ -1,68 +1,108 @@
 {
-  "schemaVersion": "1.0",
-  "plugin": {
-    "id": "reeti",
-    "name": "Reeti",
-    "className": "de.dfki.vsm.xtension.reeti.ReetiExecutor",
-    "androidCompatible": false,
-    "description": "Reeti robot head controller",
-    "tags": ["robot", "head", "physical agent"]
-  },
-  "categories": {
-    "primary": "processing",
-    "secondary": []
-  },
-  "config": {
-    "required": [
-      {
-        "name": "lhost",
-        "type": "string",
-        "default": "127.0.0.1",
-        "description": "The address of the computer running VSM"
-      },
-      {
-        "name": "lport",
-        "type": "numeric",
-        "default": 1421,
-        "description": "The port of the computer running VSM"
-      },
-      {
-        "name": "rhost",
-        "type": "string",
-        "default": "127.0.0.1",
-        "description": "The address of the computer running ReetiV2Engine"
-      },
-      {
-        "name": "rport",
-        "type": "numeric",
-        "default": 1241,
-        "description": "The port of the computer running ReetiV2Engine"
-      }
+    "schemaVersion": "1.0",
+    "specVersion": "1.0",
+    "specHash": "33db502f1548ca71",
+    "plugin": {
+        "id": "reeti",
+        "name": "Reeti",
+        "className": "de.dfki.vsm.xtension.reeti.ReetiExecutor",
+        "androidCompatible": false,
+        "description": "Reeti robot head controller",
+        "tags": [
+            "robot",
+            "head",
+            "physical agent"
+        ]
+    },
+    "categories": {
+        "primary": "processing",
+        "secondary": [
+            
+        ]
+    },
+    "config": {
+        "required": [
+            {
+                "name": "lhost",
+                "type": "string",
+                "default": "127.0.0.1",
+                "description": "The address of the computer running VSM"
+            },
+            {
+                "name": "lport",
+                "type": "numeric",
+                "default": 1421,
+                "description": "The port of the computer running VSM"
+            },
+            {
+                "name": "rhost",
+                "type": "string",
+                "default": "127.0.0.1",
+                "description": "The address of the computer running ReetiV2Engine"
+            },
+            {
+                "name": "rport",
+                "type": "numeric",
+                "default": 1241,
+                "description": "The port of the computer running ReetiV2Engine"
+            }
+        ],
+        "optional": [
+            {
+                "name": "useSSI",
+                "type": "boolean",
+                "default": false,
+                "description": "Whether to communicate with OpenSSI or not"
+            },
+            {
+                "name": "usejpl",
+                "type": "string",
+                "description": "Use JPL"
+            },
+            {
+                "name": "useexe",
+                "type": "string",
+                "description": "Use executable"
+            }
+        ],
+        "agent": {
+            "fixed": [
+                {
+                    "name": "language",
+                    "type": "string",
+                    "required": true,
+                    "description": "TTS language code (e.g., 'en')"
+                },
+                {
+                    "name": "voice",
+                    "type": "string",
+                    "required": true,
+                    "description": "TTS voice name (e.g., 'Simon')"
+                }
+            ],
+            "dynamic": {
+                "enabled": false
+            }
+        }
+    },
+    "commands": [
+        
     ],
-    "optional": [
-      {
-        "name": "useSSI",
-        "type": "boolean",
-        "default": false,
-        "description": "Whether to communicate with OpenSSI or not"
-      },
-      { "name": "usejpl", "type": "string", "description": "Use JPL" },
-      { "name": "useexe", "type": "string", "description": "Use executable" }
-    ],
-    "agent": {
-      "fixed": [
-        { "name": "language", "type": "string", "required": true, "description": "TTS language code (e.g., 'en')" },
-        { "name": "voice", "type": "string", "required": true, "description": "TTS voice name (e.g., 'Simon')" }
-      ],
-      "dynamic": { "enabled": false }
+    "variables": {
+        "writes": [
+            {
+                "var": "UserIsSpeaking",
+                "type": "bool",
+                "scope": "global"
+            },
+            {
+                "var": "UserSaidKeyword",
+                "type": "string",
+                "scope": "global"
+            }
+        ],
+        "reads": [
+            
+        ]
     }
-  },
-  "commands": [],
-  "variables": {
-    "writes": [
-      { "var": "UserIsSpeaking", "type": "bool", "scope": "global" },
-      { "var": "UserSaidKeyword", "type": "string", "scope": "global" }
-    ],
-    "reads": []
-  }
 }

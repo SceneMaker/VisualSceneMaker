@@ -11,6 +11,7 @@
   export let apiPost;
   export let apiPut;
   export let projectName = "";
+  export let sendCommand = null;      // WS command dispatcher from App.svelte
 
   // ── screen editor state ────────────────────────────────────────────────────
   let screenEditorPlugin = null;
@@ -32,6 +33,13 @@
   let editError = "";
   let editBusy = false;
   let expandedChips = new Set(); // instanceName → expanded chips
+
+  // ── plugin update checks ───────────────────────────────────────────────────
+  // className → { newVars: [{name, type}], specVersion: string, checking: bool }
+  let updateChecks = {};
+  let updateDialogPlugin = null;  // plugin whose update dialog is open
+  let updateApplying = false;
+  let updateApplyError = "";
 
   // ── derived ────────────────────────────────────────────────────────────────
   $: displayed = plugins.filter((p) => {
@@ -396,6 +404,8 @@
       if (toAutoCheck.length > 0) {
         Promise.all(toAutoCheck.map((p) => checkHealth(p.instanceName)));
       }
+      // Check for plugin spec updates in the background.
+      checkPluginUpdates();
     } catch (err) {
       loadError = err.message || "Failed to load plugin dashboard.";
     } finally {
@@ -442,9 +452,9 @@
         description: s.description || "",
         value: featureMap[s.key] ?? String(s.default ?? ""),
       })),
-      // Extra keys not in schema (custom / legacy)
+      // Extra keys not in schema (custom / legacy) — skip internal system keys (_*)
       ...(plugin.features || [])
-        .filter((f) => !schemaKeys.has(f.key))
+        .filter((f) => !schemaKeys.has(f.key) && !f.key.startsWith("_"))
         .map((f) => ({
           key: f.key,
           type: "string",
@@ -480,6 +490,60 @@
       editError = err.message || "Failed to save parameters.";
     } finally {
       editBusy = false;
+    }
+  }
+
+  // ── update checks ─────────────────────────────────────────────────────────
+  async function checkPluginUpdates() {
+    if (!sendCommand || !projectId || plugins.length === 0) return;
+    for (const p of plugins) {
+      const className = p.meta?.plugin?.className || p.className;
+      if (!className) continue;
+      updateChecks = { ...updateChecks, [className]: { ...(updateChecks[className] || {}), checking: true } };
+      try {
+        // No knownVarNames: let the server query its own SceneFlow (authoritative source)
+        const result = await sendCommand("ProjectConfig.Plugin.GetUpdate", {
+          projectId,
+          className,
+        });
+        updateChecks = {
+          ...updateChecks,
+          [className]: {
+            checking: false,
+            newVars: result?.newVars || [],
+            specVersion: result?.specVersion || "",
+            upToDate: result?.upToDate ?? true,
+          },
+        };
+      } catch (_) {
+        updateChecks = { ...updateChecks, [className]: { checking: false, newVars: [], upToDate: true } };
+      }
+    }
+  }
+
+  async function applyUpdate() {
+    if (!updateDialogPlugin || !sendCommand || updateApplying) return;
+    const className = updateDialogPlugin.meta?.plugin?.className || updateDialogPlugin.className;
+    const check = updateChecks[className];
+    if (!check?.newVars?.length) return;
+    updateApplying = true;
+    updateApplyError = "";
+    try {
+      for (const v of check.newVars) {
+        await sendCommand("SceneFlow.Node.VarDef.Add", {
+          projectId,
+          nodeId: "",
+          superNodeId: "",
+          varDef: { name: v.name, type: v.type },
+        });
+      }
+      updateDialogPlugin = null;
+      // Re-check after a short delay (server broadcasts snapshot update)
+      setTimeout(() => checkPluginUpdates(), 600);
+    } catch (err) {
+      updateApplyError = err.message || "Failed to apply update.";
+    } finally {
+      updateApplying = false;
     }
   }
 
@@ -843,6 +907,9 @@
                 {@const types = allTypes(meta)}
                 {@const health = healthDot(plugin.instanceName)}
                 {@const checking = healthChecking[plugin.instanceName]}
+                {@const pluginClassName = meta.plugin?.className || plugin.className || ""}
+                {@const updateCheck = updateChecks[pluginClassName]}
+                {@const hasUpdate = (updateCheck?.newVars?.length ?? 0) > 0}
                 <div class="pd-card" class:pd-card-editing={selectedPlugin === plugin}>
                   <div class="pd-card-header">
                     <div class="pd-card-name">
@@ -867,6 +934,14 @@
                       <span class="pd-service-badge {meta.serviceModel || 'self-contained'}">
                         {meta.serviceModel === "service" ? "Service" : "Self-contained"}
                       </span>
+                      {#if hasUpdate}
+                        <button
+                          type="button"
+                          class="pd-update-badge"
+                          title="{updateCheck.newVars.length} new SceneFlow variable{updateCheck.newVars.length !== 1 ? 's' : ''} available — click to review"
+                          on:click={() => { updateDialogPlugin = plugin; updateApplyError = ""; }}
+                        >↑ Update</button>
+                      {/if}
                     </div>
                   </div>
 
@@ -1037,6 +1112,53 @@
     {apiPut}
     onClose={closeScreenEditor}
   />
+{/if}
+
+{#if updateDialogPlugin !== null}
+  {@const udClassName = updateDialogPlugin.meta?.plugin?.className || updateDialogPlugin.className || ""}
+  {@const udCheck = updateChecks[udClassName] || {}}
+  <!-- svelte-ignore a11y-click-events-have-key-events -->
+  <!-- svelte-ignore a11y-no-static-element-interactions -->
+  <div
+    class="modal-backdrop update-dialog-backdrop"
+    role="presentation"
+    on:click={(e) => { if (e.target === e.currentTarget && !updateApplying) updateDialogPlugin = null; }}
+  >
+    <div class="modal update-dialog" role="dialog" aria-modal="true" aria-labelledby="update-dialog-title">
+      <h4 id="update-dialog-title" class="update-dialog-title">
+        Plugin update — {displayName(updateDialogPlugin)}
+      </h4>
+      <p class="update-dialog-sub">
+        The following SceneFlow variables are declared by the plugin spec but not yet in your project.
+        Click <strong>Add variables</strong> to create them at the root SceneFlow level.
+      </p>
+      <ul class="update-new-vars">
+        {#each udCheck.newVars || [] as v}
+          <li>
+            <code class="update-var-name">{v.name}</code>
+            <span class="pd-type-badge">{v.type}</span>
+          </li>
+        {/each}
+      </ul>
+      {#if updateApplyError}
+        <p class="pd-edit-error">{updateApplyError}</p>
+      {/if}
+      <div class="update-dialog-actions">
+        <button
+          type="button"
+          class="primary"
+          disabled={updateApplying || !wsConnected}
+          on:click={applyUpdate}
+        >{updateApplying ? "Applying…" : "Add variables"}</button>
+        <button
+          type="button"
+          class="ghost"
+          disabled={updateApplying}
+          on:click={() => updateDialogPlugin = null}
+        >Cancel</button>
+      </div>
+    </div>
+  </div>
 {/if}
 
 <style>
@@ -1680,6 +1802,78 @@
   }
   .pd-action-btn:hover:not(:disabled) { background: var(--panel-soft); }
   .pd-action-btn:disabled { color: #9ca3af; cursor: default; }
+
+  /* ── Update badge ───────────────────────────────────────────────────────── */
+  .pd-update-badge {
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0.1rem 0.45rem;
+    background: #f59e0b;
+    color: #1a1400;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    white-space: nowrap;
+    line-height: 1.5;
+  }
+  .pd-update-badge:hover { background: #d97706; }
+
+  /* ── Update dialog ──────────────────────────────────────────────────────── */
+  .update-dialog-backdrop {
+    z-index: 1100;
+  }
+
+  .update-dialog {
+    max-width: 440px;
+    width: 95%;
+    padding: 1.25rem 1.5rem 1rem;
+  }
+
+  .update-dialog-title {
+    margin: 0 0 0.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  .update-dialog-sub {
+    margin: 0 0 0.75rem;
+    font-size: 0.88rem;
+    color: var(--ink-muted, #6b7280);
+    line-height: 1.45;
+  }
+
+  .update-new-vars {
+    list-style: none;
+    margin: 0 0 0.75rem;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+
+  .update-new-vars li {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.88rem;
+  }
+
+  .update-var-name {
+    font-family: monospace;
+    font-size: 0.88rem;
+    background: var(--panel-soft, #f3f4f6);
+    padding: 0.1rem 0.35rem;
+    border-radius: 3px;
+    color: var(--ink);
+  }
+
+  .update-dialog-actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-end;
+    margin-top: 0.5rem;
+  }
 
   /* ── Flow view ──────────────────────────────────────────────────────────── */
   .pd-flow-wrap {

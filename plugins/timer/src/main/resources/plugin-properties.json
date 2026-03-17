@@ -1,89 +1,152 @@
 {
-  "schemaVersion": "1.0",
-  "plugin": {
-    "id": "timer",
-    "name": "Timer",
-    "className": "de.dfki.vsm.xtension.timer.TimerExecutor",
-    "androidCompatible": true,
-    "description": "Measuring time. Generating specific time descriptions, e.g., part of day",
-    "tags": ["timer", "time descriptions", "utility"]
-  },
-  "categories": {
-    "primary": "processing",
-    "secondary": []
-  },
-  "config": {
-    "required": [],
-    "optional": []
-  },
-  "commands": [
-    {
-      "name": "clear",
-      "type": "action",
-      "summary": "Clear all timers",
-      "params": []
+    "schemaVersion": "1.0",
+    "specVersion": "1.0",
+    "specHash": "96cc417dced06896",
+    "plugin": {
+        "id": "timer",
+        "name": "Timer",
+        "className": "de.dfki.vsm.xtension.timer.TimerExecutor",
+        "androidCompatible": true,
+        "description": "Measuring time. Generating specific time descriptions, e.g., part of day",
+        "tags": [
+            "timer",
+            "time descriptions",
+            "utility"
+        ]
     },
-    {
-      "name": "init",
-      "type": "action",
-      "summary": "Initialize a timer",
-      "params": [
-        { "name": "id", "type": "string", "required": true, "description": "Timer ID" }
-      ]
+    "categories": {
+        "primary": "processing",
+        "secondary": [
+            
+        ]
     },
-    {
-      "name": "time",
-      "type": "action",
-      "summary": "Get elapsed time",
-      "params": [
-        { "name": "id", "type": "string", "required": true, "description": "Timer ID" },
-        { "name": "var", "type": "string", "required": true, "description": "Variable to store result" }
-      ]
+    "config": {
+        "required": [
+            
+        ],
+        "optional": [
+            
+        ]
     },
-    {
-      "name": "systime",
-      "type": "action",
-      "summary": "Get system time",
-      "params": [
-        { "name": "var", "type": "string", "required": true, "description": "Variable to store result" }
-      ]
-    },
-    {
-      "name": "timediff",
-      "type": "action",
-      "summary": "Calculate time difference",
-      "params": [
-        { "name": "lasttime", "type": "string", "required": true, "description": "Last time value" },
-        { "name": "var", "type": "string", "required": true, "description": "Variable to store result" }
-      ]
-    },
-    {
-      "name": "day",
-      "type": "action",
-      "summary": "Get current day",
-      "params": [
-        { "name": "var", "type": "string", "required": true, "description": "Variable to store result" }
-      ]
-    },
-    {
-      "name": "dayverbose",
-      "type": "action",
-      "summary": "Get current day (verbose)",
-      "params": [
-        { "name": "var", "type": "string", "required": true, "description": "Variable to store result" }
-      ]
-    },
-    {
-      "name": "partofday",
-      "type": "action",
-      "summary": "Get part of day (morning, afternoon, evening, night)",
-      "params": [
-        { "name": "var", "type": "string", "required": true, "description": "Variable to store result" }
-      ]
+    "commands": [
+        {
+            "name": "clear",
+            "type": "action",
+            "summary": "Clear all timers",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "init",
+            "type": "action",
+            "summary": "Initialize a timer",
+            "params": [
+                {
+                    "name": "id",
+                    "type": "string",
+                    "required": true,
+                    "description": "Timer ID"
+                }
+            ]
+        },
+        {
+            "name": "time",
+            "type": "action",
+            "summary": "Get elapsed time",
+            "params": [
+                {
+                    "name": "id",
+                    "type": "string",
+                    "required": true,
+                    "description": "Timer ID"
+                },
+                {
+                    "name": "var",
+                    "type": "string",
+                    "required": true,
+                    "description": "Variable to store result"
+                }
+            ]
+        },
+        {
+            "name": "systime",
+            "type": "action",
+            "summary": "Get system time",
+            "params": [
+                {
+                    "name": "var",
+                    "type": "string",
+                    "required": true,
+                    "description": "Variable to store result"
+                }
+            ]
+        },
+        {
+            "name": "timediff",
+            "type": "action",
+            "summary": "Calculate time difference",
+            "params": [
+                {
+                    "name": "lasttime",
+                    "type": "string",
+                    "required": true,
+                    "description": "Last time value"
+                },
+                {
+                    "name": "var",
+                    "type": "string",
+                    "required": true,
+                    "description": "Variable to store result"
+                }
+            ]
+        },
+        {
+            "name": "day",
+            "type": "action",
+            "summary": "Get current day",
+            "params": [
+                {
+                    "name": "var",
+                    "type": "string",
+                    "required": true,
+                    "description": "Variable to store result"
+                }
+            ]
+        },
+        {
+            "name": "dayverbose",
+            "type": "action",
+            "summary": "Get current day (verbose)",
+            "params": [
+                {
+                    "name": "var",
+                    "type": "string",
+                    "required": true,
+                    "description": "Variable to store result"
+                }
+            ]
+        },
+        {
+            "name": "partofday",
+            "type": "action",
+            "summary": "Get part of day (morning, afternoon, evening, night)",
+            "params": [
+                {
+                    "name": "var",
+                    "type": "string",
+                    "required": true,
+                    "description": "Variable to store result"
+                }
+            ]
+        }
+    ],
+    "variables": {
+        "writes": [
+            
+        ],
+        "reads": [
+            
+        ]
     }
-  ],
-  "variables": {
-    "writes": [],
-    "reads": []
-  }
 }

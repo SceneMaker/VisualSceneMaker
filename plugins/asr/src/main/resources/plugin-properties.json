@@ -1,98 +1,292 @@
 {
-  "schemaVersion": "1.0",
-  "plugin": {
-    "id": "asr",
-    "name": "Speech Recognition",
-    "className": "de.dfki.vsm.xtension.asr.AsrExecutor",
-    "androidCompatible": false,
-    "description": "Real-time ASR plugin bridging fast-asr WebSocket server to VSM scene variables",
-    "tags": ["asr", "vad", "speech", "streaming", "diarization", "turn-end"]
-  },
-  "categories": {
-    "primary": "input",
-    "secondary": ["processing"]
-  },
-  "config": {
-    "required": [
-      { "name": "ws_url", "type": "string", "default": "ws://localhost:8765/stream", "description": "WebSocket URL of fast-asr server" }
+    "schemaVersion": "1.0",
+    "specVersion": "1.1",
+    "specHash": "82765857f820c43f",
+    "plugin": {
+        "id": "asr",
+        "name": "Speech Recognition",
+        "className": "de.dfki.vsm.xtension.asr.AsrExecutor",
+        "androidCompatible": false,
+        "description": "Real-time ASR plugin bridging fast-asr WebSocket server to VSM scene variables",
+        "tags": [
+            "asr",
+            "vad",
+            "speech",
+            "streaming",
+            "diarization",
+            "turn-end"
+        ]
+    },
+    "categories": {
+        "primary": "input",
+        "secondary": [
+            "processing"
+        ]
+    },
+    "config": {
+        "required": [
+            {
+                "name": "ws_url",
+                "type": "string",
+                "default": "ws://localhost:8765/stream",
+                "description": "WebSocket URL of fast-asr server"
+            }
+        ],
+        "optional": [
+            {
+                "name": "reconnect_delay_ms",
+                "type": "string",
+                "default": "2000",
+                "description": "Milliseconds between reconnect attempts"
+            },
+            {
+                "name": "defaultGroups",
+                "type": "string",
+                "default": "",
+                "description": "Word groups active on every connect/reconnect. Same syntax as the expect action: 'CONFIRM:ja,schon,doch | DISCONFIRM:nein,nee,gar nicht'. Leave empty to disable."
+            },
+            {
+                "name": "defaultGroupsTimeout",
+                "type": "string",
+                "default": "3600",
+                "description": "Timeout in seconds for defaultGroups (default 3600 = 1 h). Re-applied on every reconnect."
+            },
+            {
+                "name": "connectedVar",
+                "type": "string",
+                "sceneflowtype": "Bool",
+                "default": "asr_connected",
+                "description": "true while WebSocket is live"
+            },
+            {
+                "name": "vadActiveVar",
+                "type": "string",
+                "sceneflowtype": "Bool",
+                "default": "asr_vad_active",
+                "description": "VAD active (hysteresis-smoothed)"
+            },
+            {
+                "name": "vadSpeechRatioVar",
+                "type": "string",
+                "sceneflowtype": "Float",
+                "default": "asr_vad_ratio",
+                "description": "VAD speech ratio 0.0-1.0 (every 30 ms)"
+            },
+            {
+                "name": "sadActiveVar",
+                "type": "string",
+                "sceneflowtype": "Bool",
+                "default": "asr_sad_active",
+                "description": "SAD active (sound detected)"
+            },
+            {
+                "name": "sadLevelDbVar",
+                "type": "string",
+                "sceneflowtype": "Float",
+                "default": "asr_sad_level_db",
+                "description": "RMS sound level in dB (every 30 ms)"
+            },
+            {
+                "name": "asrActiveVar",
+                "type": "string",
+                "sceneflowtype": "Bool",
+                "default": "asr_active",
+                "description": "true between utterance start and final/cancel"
+            },
+            {
+                "name": "asrPartialVar",
+                "type": "string",
+                "sceneflowtype": "String",
+                "default": "asr_partial",
+                "description": "Accumulated partial text (clears on final)"
+            },
+            {
+                "name": "asrTextVar",
+                "type": "string",
+                "sceneflowtype": "String",
+                "default": "asr_text",
+                "description": "Last non-provisional final transcript"
+            },
+            {
+                "name": "asrLanguageVar",
+                "type": "string",
+                "sceneflowtype": "String",
+                "default": "asr_language",
+                "description": "Detected language of last final"
+            },
+            {
+                "name": "asrSpeakerVar",
+                "type": "string",
+                "sceneflowtype": "String",
+                "default": "asr_speaker",
+                "description": "Speaker profile ID if known, else empty"
+            },
+            {
+                "name": "asrExpectedVar",
+                "type": "string",
+                "sceneflowtype": "Bool",
+                "default": "asr_expected",
+                "description": "true if last final matched an expected word"
+            },
+            {
+                "name": "asrMatchedLabelVar",
+                "type": "string",
+                "sceneflowtype": "Event(String)",
+                "default": "asr_matched_label",
+                "description": "Event fired on each expected-word match; value is the group label (e.g. CONFIRM/DISCONFIRM) or empty string for unlabeled matches. Sceneflow edge: asr_matched_label == \"CONFIRM\""
+            },
+            {
+                "name": "turnEndProbVar",
+                "type": "string",
+                "sceneflowtype": "Float",
+                "default": "asr_turn_end_prob",
+                "description": "SmartTurn turn-end probability 0.0-1.0"
+            },
+            {
+                "name": "diarizationVar",
+                "type": "string",
+                "sceneflowtype": "String",
+                "default": "asr_diarization",
+                "description": "Raw JSON of latest diarization result"
+            }
+        ]
+    },
+    "commands": [
+        {
+            "name": "expect",
+            "type": "action",
+            "summary": "Register words the dialogue agent expects the user to say",
+            "description": "Puts the ASR server into expectation mode. Matched words bypass the noise gate and hallucination filter. The first match fires the asr_matched_label event and clears the expectation. Three word-list formats are supported:\n\n1. Flat list \u2014 words only, no labels:\n   words='ja, nein, doch'\n   \u2192 asr_matched_label fires with empty string value\n\n2. Labeled groups \u2014 pipe-separated, each group prefixed LABEL:words:\n   words='CONFIRM:ja,schon,doch,okay | DISCONFIRM:nein,nee,gar nicht'\n   \u2192 asr_matched_label fires with the matching label (e.g. \"CONFIRM\")\n   \u2192 sceneflow edge: asr_matched_label == \"CONFIRM\"\n\n3. Catch-all group \u2014 bare label with no words, added after other groups:\n   words='CONFIRM:ja,okay | DISCONFIRM:nein | OTHER'\n   \u2192 OTHER fires when the user says something audible that matches none\n     of the named groups; asr_text holds what was actually said\n   \u2192 all three formats clear the expectation on first match",
+            "params": [
+                {
+                    "name": "words",
+                    "type": "string",
+                    "required": true,
+                    "description": "Word list in one of three formats: (1) flat: 'ja, nein, doch' \u2014 (2) labeled groups: 'CONFIRM:ja,okay | DISCONFIRM:nein,nee' \u2014 (3) with catch-all: 'CONFIRM:ja | DISCONFIRM:nein | OTHER'. Pipe | separates groups; colon : separates label from words; bare label with no colon is the catch-all."
+                },
+                {
+                    "name": "timeout",
+                    "type": "string",
+                    "required": false,
+                    "description": "Seconds before the expectation auto-expires on the server (default 30). Use a VSM timeout guard on the same node for the no-response branch."
+                }
+            ]
+        },
+        {
+            "name": "clear_expect",
+            "type": "action",
+            "summary": "Cancel the active expectation immediately",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "set_language",
+            "type": "action",
+            "summary": "Change the ASR recognition language for the next utterance",
+            "params": [
+                {
+                    "name": "language",
+                    "type": "string",
+                    "required": true,
+                    "description": "Full English name, e.g. \"German\""
+                }
+            ]
+        },
+        {
+            "name": "mute",
+            "type": "action",
+            "summary": "Stop processing microphone audio \u2014 use before TTS starts speaking",
+            "description": "Instructs the fast-asr server to discard all incoming audio chunks silently. No VAD/SAD/ASR output is generated while muted. Use this immediately before a TTS utterance to prevent the microphone from picking up speaker output. Always paired with unmute.",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "unmute",
+            "type": "action",
+            "summary": "Resume microphone processing \u2014 use after TTS finishes speaking",
+            "description": "Instructs the fast-asr server to resume normal audio processing. The server first flushes any audio that accumulated in the capture queue during the muted period, ensuring that TTS bleed does not reach the ASR pipeline. Use this immediately after a TTS utterance completes.",
+            "params": [
+                
+            ]
+        }
     ],
-    "optional": [
-      { "name": "reconnect_delay_ms",   "type": "string", "default": "2000", "description": "Milliseconds between reconnect attempts" },
-      { "name": "defaultGroups",        "type": "string", "default": "",     "description": "Word groups active on every connect/reconnect. Same syntax as the expect action: 'CONFIRM:ja,schon,doch | DISCONFIRM:nein,nee,gar nicht'. Leave empty to disable." },
-      { "name": "defaultGroupsTimeout", "type": "string", "default": "3600", "description": "Timeout in seconds for defaultGroups (default 3600 = 1 h). Re-applied on every reconnect." },
-      { "name": "connectedVar",      "type": "string", "sceneflowtype": "Bool",   "default": "asr_connected",      "description": "true while WebSocket is live" },
-      { "name": "vadActiveVar",      "type": "string", "sceneflowtype": "Bool",   "default": "asr_vad_active",     "description": "VAD active (hysteresis-smoothed)" },
-      { "name": "vadSpeechRatioVar", "type": "string", "sceneflowtype": "Float",  "default": "asr_vad_ratio",      "description": "VAD speech ratio 0.0-1.0 (every 30 ms)" },
-      { "name": "sadActiveVar",      "type": "string", "sceneflowtype": "Bool",   "default": "asr_sad_active",     "description": "SAD active (sound detected)" },
-      { "name": "sadLevelDbVar",     "type": "string", "sceneflowtype": "Float",  "default": "asr_sad_level_db",   "description": "RMS sound level in dB (every 30 ms)" },
-      { "name": "asrActiveVar",      "type": "string", "sceneflowtype": "Bool",   "default": "asr_active",         "description": "true between utterance start and final/cancel" },
-      { "name": "asrPartialVar",     "type": "string", "sceneflowtype": "String", "default": "asr_partial",        "description": "Accumulated partial text (clears on final)" },
-      { "name": "asrTextVar",        "type": "string", "sceneflowtype": "String", "default": "asr_text",           "description": "Last non-provisional final transcript" },
-      { "name": "asrLanguageVar",    "type": "string", "sceneflowtype": "String", "default": "asr_language",       "description": "Detected language of last final" },
-      { "name": "asrSpeakerVar",     "type": "string", "sceneflowtype": "String", "default": "asr_speaker",        "description": "Speaker profile ID if known, else empty" },
-      { "name": "asrExpectedVar",     "type": "string", "sceneflowtype": "Bool",   "default": "asr_expected",       "description": "true if last final matched an expected word" },
-      { "name": "asrMatchedLabelVar","type": "string", "sceneflowtype": "Event(String)", "default": "asr_matched_label",  "description": "Event fired on each expected-word match; value is the group label (e.g. CONFIRM/DISCONFIRM) or empty string for unlabeled matches. Sceneflow edge: asr_matched_label == \"CONFIRM\"" },
-      { "name": "turnEndProbVar",    "type": "string", "sceneflowtype": "Float",  "default": "asr_turn_end_prob",  "description": "SmartTurn turn-end probability 0.0-1.0" },
-      { "name": "diarizationVar",    "type": "string", "sceneflowtype": "String", "default": "asr_diarization",    "description": "Raw JSON of latest diarization result" }
-    ]
-  },
-  "commands": [
-    {
-      "name": "expect",
-      "type": "action",
-      "summary": "Register words the dialogue agent expects the user to say",
-      "description": "Puts the ASR server into expectation mode. Matched words bypass the noise gate and hallucination filter. The first match fires the asr_matched_label event and clears the expectation. Three word-list formats are supported:\n\n1. Flat list — words only, no labels:\n   words='ja, nein, doch'\n   → asr_matched_label fires with empty string value\n\n2. Labeled groups — pipe-separated, each group prefixed LABEL:words:\n   words='CONFIRM:ja,schon,doch,okay | DISCONFIRM:nein,nee,gar nicht'\n   → asr_matched_label fires with the matching label (e.g. \"CONFIRM\")\n   → sceneflow edge: asr_matched_label == \"CONFIRM\"\n\n3. Catch-all group — bare label with no words, added after other groups:\n   words='CONFIRM:ja,okay | DISCONFIRM:nein | OTHER'\n   → OTHER fires when the user says something audible that matches none\n     of the named groups; asr_text holds what was actually said\n   → all three formats clear the expectation on first match",
-      "params": [
-        { "name": "words",   "type": "string", "required": true,  "description": "Word list in one of three formats: (1) flat: 'ja, nein, doch' — (2) labeled groups: 'CONFIRM:ja,okay | DISCONFIRM:nein,nee' — (3) with catch-all: 'CONFIRM:ja | DISCONFIRM:nein | OTHER'. Pipe | separates groups; colon : separates label from words; bare label with no colon is the catch-all." },
-        { "name": "timeout", "type": "string", "required": false, "description": "Seconds before the expectation auto-expires on the server (default 30). Use a VSM timeout guard on the same node for the no-response branch." }
-      ]
-    },
-    {
-      "name": "clear_expect",
-      "type": "action",
-      "summary": "Cancel the active expectation immediately",
-      "params": []
-    },
-    {
-      "name": "set_language",
-      "type": "action",
-      "summary": "Change the ASR recognition language for the next utterance",
-      "params": [
-        { "name": "language", "type": "string", "required": true, "description": "Full English name, e.g. \"German\"" }
-      ]
-    },
-    {
-      "name": "mute",
-      "type": "action",
-      "summary": "Stop processing microphone audio — use before TTS starts speaking",
-      "description": "Instructs the fast-asr server to discard all incoming audio chunks silently. No VAD/SAD/ASR output is generated while muted. Use this immediately before a TTS utterance to prevent the microphone from picking up speaker output. Always paired with unmute.",
-      "params": []
-    },
-    {
-      "name": "unmute",
-      "type": "action",
-      "summary": "Resume microphone processing — use after TTS finishes speaking",
-      "description": "Instructs the fast-asr server to resume normal audio processing. The server first flushes any audio that accumulated in the capture queue during the muted period, ensuring that TTS bleed does not reach the ASR pipeline. Use this immediately after a TTS utterance completes.",
-      "params": []
+    "variables": {
+        "writes": [
+            {
+                "var": "connectedVar",
+                "type": "Bool",
+                "description": "WebSocket connection state"
+            },
+            {
+                "var": "vadActiveVar",
+                "type": "Bool",
+                "description": "VAD active state"
+            },
+            {
+                "var": "vadSpeechRatioVar",
+                "type": "Float",
+                "description": "VAD speech ratio"
+            },
+            {
+                "var": "sadActiveVar",
+                "type": "Bool",
+                "description": "SAD active state"
+            },
+            {
+                "var": "sadLevelDbVar",
+                "type": "Float",
+                "description": "RMS level in dB"
+            },
+            {
+                "var": "asrActiveVar",
+                "type": "Bool",
+                "description": "ASR utterance in progress"
+            },
+            {
+                "var": "asrPartialVar",
+                "type": "String",
+                "description": "Partial transcript"
+            },
+            {
+                "var": "asrTextVar",
+                "type": "String",
+                "description": "Final transcript"
+            },
+            {
+                "var": "asrLanguageVar",
+                "type": "String",
+                "description": "Detected language"
+            },
+            {
+                "var": "asrSpeakerVar",
+                "type": "String",
+                "description": "Speaker profile ID"
+            },
+            {
+                "var": "asrExpectedVar",
+                "type": "Bool",
+                "description": "Expected word matched"
+            },
+            {
+                "var": "asrMatchedLabelVar",
+                "type": "Event(String)",
+                "description": "Match event \u2014 enqueued on each expected-word match; consumed by sceneflow guard"
+            },
+            {
+                "var": "turnEndProbVar",
+                "type": "Float",
+                "description": "Turn-end probability"
+            },
+            {
+                "var": "diarizationVar",
+                "type": "String",
+                "description": "Diarization JSON"
+            }
+        ],
+        "reads": [
+            
+        ]
     }
-  ],
-  "variables": {
-    "writes": [
-      { "var": "connectedVar",      "type": "Bool",   "description": "WebSocket connection state" },
-      { "var": "vadActiveVar",      "type": "Bool",   "description": "VAD active state" },
-      { "var": "vadSpeechRatioVar", "type": "Float",  "description": "VAD speech ratio" },
-      { "var": "sadActiveVar",      "type": "Bool",   "description": "SAD active state" },
-      { "var": "sadLevelDbVar",     "type": "Float",  "description": "RMS level in dB" },
-      { "var": "asrActiveVar",      "type": "Bool",   "description": "ASR utterance in progress" },
-      { "var": "asrPartialVar",     "type": "String", "description": "Partial transcript" },
-      { "var": "asrTextVar",        "type": "String", "description": "Final transcript" },
-      { "var": "asrLanguageVar",    "type": "String", "description": "Detected language" },
-      { "var": "asrSpeakerVar",     "type": "String", "description": "Speaker profile ID" },
-      { "var": "asrExpectedVar",      "type": "Bool",   "description": "Expected word matched" },
-      { "var": "asrMatchedLabelVar", "type": "Event(String)", "description": "Match event — enqueued on each expected-word match; consumed by sceneflow guard" },
-      { "var": "turnEndProbVar",     "type": "Float",  "description": "Turn-end probability" },
-      { "var": "diarizationVar",    "type": "String", "description": "Diarization JSON" }
-    ],
-    "reads": []
-  }
 }

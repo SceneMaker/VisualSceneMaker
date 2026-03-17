@@ -19,6 +19,9 @@ public final class PluginCreateCommandService {
         JSONObject pluginSpec(String className);
 
         JSONObject variablesSpec(String className);
+
+        /** Returns the specVersion string from plugin-properties.json, or "" if unknown. */
+        default String specVersion(String className) { return ""; }
     }
 
     public JSONObject dispatch(final JSONObject params, final Context context) {
@@ -85,6 +88,15 @@ public final class PluginCreateCommandService {
             }
         }
 
+        // Append hidden _specVersion feature so project.xml records the version at add-time
+        String sv = context.specVersion(className);
+        if (!sv.isEmpty()) {
+            JSONObject svFeature = new JSONObject();
+            svFeature.put("key", "_specVersion");
+            svFeature.put("value", sv);
+            features.put(svFeature);
+        }
+
         plugin.put("features", features);
         JSONObject templates = pluginSpec != null ? pluginSpec.optJSONObject("templates") : null;
 
@@ -92,6 +104,9 @@ public final class PluginCreateCommandService {
         response.put("status", "ok");
         response.put("plugin", plugin);
         response.put("sceneflowVars", sceneflowVars);
+        if (!sv.isEmpty()) {
+            response.put("specVersion", sv);
+        }
         if (templates != null) {
             response.put("templates", templates);
         }
