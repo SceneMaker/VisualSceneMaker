@@ -891,12 +891,16 @@
   let openPathError = "";
   let createProjectError = "";
   let saveAsPath = "";
+  let saveAsName = "";
   let saveAsDialogOpen = false;
   let saveAsError = "";
+  let saveButtonHovered = false;
+  let shiftDown = false;
 
   let openPathInput;
   let openPathPickerInput;
   let newProjectNameInput;
+  let saveAsNameInputEl;
   let saveAsInputEl;
   let saveAsDialogEl;
   let loadConfirmDialogEl;
@@ -2664,6 +2668,7 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
     }
     return !selectedProject.path || selectedProject.pending === true;
   })();
+  $: saveButtonActsAsSaveAs = !projectRequiresSaveAs && saveButtonHovered && shiftDown;
   $: autoSaveReady =
     autoSaveEnabled &&
     showEditor &&
@@ -3776,6 +3781,12 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
     createProjectError = "";
   }
 
+  function useSuggestedSaveAsBaseDir(path) {
+    if (!path) return;
+    saveAsPath = path;
+    saveAsError = "";
+  }
+
   async function browseForProjectDir() {
     openPathError = "";
     try {
@@ -4045,18 +4056,76 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
     configSaved = response?.saved === true;
   }
 
-  async function saveAsProject(projectId, overridePath) {
+  async function removeProjectFromRuntime(projectId) {
+    if (!projectId) return;
+    await apiPost(`/api/v1/projects/${projectId}/close`, {});
+    projects = projects.filter((project) => project.projectId !== projectId);
+    if (selectedProjectId === projectId) {
+      selectedProjectId = "";
+    }
+  }
+
+  function resetProjectSelectionTracking() {
+    projectLoadAttempted = false;
+    projectLoadProjectId = "";
+    lastConfigProjectId = "";
+    lastProjectConfigProjectId = "";
+    lastScriptProjectId = "";
+    lastSceneFlowProjectId = "";
+    lastRuntimeProjectId = "";
+    lastRuntimeSuperNodeId = "";
+    resetProjectLoadState();
+  }
+
+  async function reopenProjectAfterFirstSave(projectId, projectPath) {
+    if (!projectId || !projectPath) return false;
+    if (selectedProjectId === projectId && runtimeState !== "stopped") {
+      await runRuntimeCommand("Runtime.Stop");
+    }
+    await removeProjectFromRuntime(projectId);
+    resetProjectSelectionTracking();
+    recentLoaded = false;
+    showEditor = false;
+    await tick();
+    const reopened = await openProject(projectPath, { surfaceError: false });
+    if (!reopened?.ok) {
+      saveAsError = reopened?.error || "Project was saved, but reopening failed.";
+      await loadProjects();
+      await loadRecent();
+      return false;
+    }
+    return true;
+  }
+
+  async function saveAsProject(projectId, overridePath, overrideName) {
     const targetPath = (overridePath || saveAsPath || "").trim();
+    const targetName = (overrideName || saveAsName || "").trim();
     if (!projectId || !targetPath || projectSaving) return false;
+    if (!targetName) {
+      saveAsError = "Project name is required.";
+      return false;
+    }
     projectSaving = true;
+    const firstSave = projectRequiresSaveAs;
     try {
       await saveSemanticDraft(projectId);
       await persistSemanticAnalysisSettings();
-      await apiPost(`/api/v1/projects/${projectId}/save-as`, { path: targetPath });
+      const response = await apiPost(`/api/v1/projects/${projectId}/save-as`, {
+        path: targetPath,
+        name: targetName
+      });
       saveAsPath = "";
+      saveAsName = "";
       saveAsError = "";
-      await loadProjects();
-      await loadRecent();
+      if (firstSave) {
+        const reopened = await reopenProjectAfterFirstSave(projectId, response?.path || "");
+        if (!reopened) {
+          return false;
+        }
+      } else {
+        await loadProjects();
+        await loadRecent();
+      }
       return true;
     } catch (err) {
       saveAsError = err?.message || "Failed to save project.";
@@ -7900,35 +7969,66 @@ Sentence:
   }
 
   function openSaveAsDialog() {
-    saveAsPath = "";
+    const currentName = String(selectedProject?.name || "").trim();
+    const currentPath = String(selectedProject?.path || "").trim();
+    saveAsName = currentName;
+    saveAsPath = currentPath ? parentDirectory(currentPath) : "";
     saveAsError = "";
     rememberFocus();
     saveAsDialogOpen = true;
-    focusDialog(saveAsDialogEl, saveAsInputEl);
+    focusDialog(saveAsDialogEl, saveAsNameInputEl || saveAsInputEl);
+  }
+
+  function openDuplicateSaveAsDialog() {
+    const currentName = String(selectedProject?.name || "").trim();
+    const currentPath = String(selectedProject?.path || "").trim();
+    saveAsName = currentName;
+    saveAsPath = currentPath ? parentDirectory(currentPath) : "";
+    saveAsError = "";
+    rememberFocus();
+    saveAsDialogOpen = true;
+    focusDialog(saveAsDialogEl, saveAsNameInputEl || saveAsInputEl);
   }
 
   function closeSaveAsDialog() {
     saveAsDialogOpen = false;
+    saveAsName = "";
     saveAsError = "";
     restoreFocus();
   }
 
   async function confirmSaveAs() {
+    const name = (saveAsName || "").trim();
     const target = (saveAsPath || "").trim();
+    if (!name) {
+      saveAsError = "Project name is required.";
+      await tick();
+      saveAsNameInputEl?.focus();
+      return;
+    }
     if (!target) {
       saveAsError = "Path is required.";
       await tick();
       saveAsInputEl?.focus();
       return;
     }
-    const ok = await saveAsProject(selectedProjectId, target);
+    const ok = await saveAsProject(selectedProjectId, target, name);
     if (ok) {
       saveAsDialogOpen = false;
       restoreFocus();
     } else {
       await tick();
-      saveAsInputEl?.focus();
+      (saveAsError.includes("name") ? saveAsNameInputEl : saveAsInputEl)?.focus();
     }
+  }
+
+  function handlePrimarySaveClick() {
+    if (!selectedProjectId || projectSaving) return;
+    if (saveButtonActsAsSaveAs) {
+      openDuplicateSaveAsDialog();
+      return;
+    }
+    saveProject(selectedProjectId);
   }
 
   async function removeRecentProject(path) {
@@ -13620,6 +13720,9 @@ Sentence:
   function handleGlobalKeydown(event) {
     if (!event) return;
     const key = event.key;
+    if (key === "Shift") {
+      shiftDown = true;
+    }
     if (key === "Escape" && handleDialogEscape()) {
       event.preventDefault();
       return;
@@ -13656,9 +13759,21 @@ Sentence:
       sceneFlowMultiSelection = [];
     }
   }
+
+  function handleGlobalKeyup(event) {
+    if (!event) return;
+    if (event.key === "Shift") {
+      shiftDown = false;
+    }
+  }
+
+  function handleWindowBlur() {
+    shiftDown = false;
+    saveButtonHovered = false;
+  }
 </script>
 
-<svelte:window on:keydown={handleGlobalKeydown} />
+<svelte:window on:keydown={handleGlobalKeydown} on:keyup={handleGlobalKeyup} on:blur={handleWindowBlur} />
 
 <main class:editor-view={showEditor}>
   {#if !showEditor}
@@ -14075,10 +14190,13 @@ Sentence:
                 <button
                   type="button"
                   class="ghost panel-save"
-                  on:click={() => saveProject(selectedProjectId)}
+                  on:click={handlePrimarySaveClick}
+                  on:mouseenter={() => (saveButtonHovered = true)}
+                  on:mouseleave={() => (saveButtonHovered = false)}
                   disabled={!selectedProject || projectSaving}
+                  title={saveButtonActsAsSaveAs ? "Save As (Shift)" : "Save"}
                 >
-                  Save
+                  {saveButtonActsAsSaveAs ? "Save As" : "Save"}
                 </button>
               {/if}
             {:else if selectedProject}
@@ -16463,6 +16581,13 @@ Sentence:
       <div class="modal" bind:this={saveAsDialogEl} role="dialog" aria-modal="true" aria-labelledby="save-as-title" tabindex="-1">
         <h3 id="save-as-title">Save project as</h3>
         <form class="modal-body" on:submit|preventDefault={confirmSaveAs}>
+          <label for="save-as-name">Project name</label>
+          <input
+            id="save-as-name"
+            placeholder="Project name"
+            bind:this={saveAsNameInputEl}
+            bind:value={saveAsName}
+          />
           <label for="save-as-path">Save to directory</label>
           <input
             id="save-as-path"
@@ -16470,7 +16595,27 @@ Sentence:
             bind:this={saveAsInputEl}
             bind:value={saveAsPath}
           />
-          <p class="muted">Choose the parent directory. The project folder will use the project name.</p>
+          <p class="muted">Choose the parent directory. The project folder will use the project name above.</p>
+          <details class="base-dir-suggestions" open>
+            <summary>Suggested base directories</summary>
+            {#if suggestedBaseDirs.length === 0}
+              <p class="muted">No suggestions yet. Open a project first to build suggestions.</p>
+            {:else}
+              <div class="base-dir-suggestion-list">
+                {#each suggestedBaseDirs as baseDir}
+                  <button
+                    type="button"
+                    class="ghost base-dir-suggestion-btn"
+                    on:click={() => useSuggestedSaveAsBaseDir(baseDir)}
+                    title={baseDir}
+                  >
+                    <span class="base-dir-suggestion-path">{baseDir}</span>
+                    <span>Use</span>
+                  </button>
+                {/each}
+              </div>
+            {/if}
+          </details>
           {#if saveAsError}
             <p class="error">{saveAsError}</p>
           {/if}
@@ -16479,7 +16624,7 @@ Sentence:
             <button
               type="submit"
               class="primary"
-              disabled={!saveAsPath || !saveAsPath.trim()}
+              disabled={!saveAsName || !saveAsName.trim() || !saveAsPath || !saveAsPath.trim()}
             >
               Save As
             </button>

@@ -3933,6 +3933,7 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
     private void handleProjectSaveAs(Context ctx) {
         JSONObject body = new JSONObject(ctx.body());
         String path = body.optString("path", "");
+        String requestedName = body.optString("name", "").trim();
         String pid = ctx.pathParam("pid");
         if (pid.isEmpty()) {
             ctx.status(404).result("Project not found");
@@ -3947,11 +3948,25 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
             ctx.status(400).result("Missing path");
             return;
         }
-        String projectName = ref.runtimeProject.getProjectName();
+        String projectName = requestedName;
+        if (projectName == null || projectName.isBlank()) {
+            projectName = ref.runtimeProject.getProjectName();
+        }
         if (projectName == null || projectName.isBlank()) {
             projectName = ref.name;
         }
         String projectPath = resolveProjectDirectory(path, projectName);
+        String normalizedCurrentPath = normalizeProjectPath(ref.path);
+        String normalizedTargetPath = normalizeProjectPath(projectPath);
+        if (!normalizedTargetPath.isBlank()) {
+            Path targetDir = Paths.get(normalizedTargetPath);
+            boolean sameTarget = !normalizedCurrentPath.isBlank()
+                    && normalizedCurrentPath.equals(normalizedTargetPath);
+            if (Files.exists(targetDir) && !sameTarget) {
+                ctx.status(409).result("A project named \"" + projectName + "\" already exists in the selected directory.");
+                return;
+            }
+        }
         ref.path = projectPath;
         ref.name = fileName(projectPath);
         ref.runtimeProject.setProjectPath(projectPath);
@@ -3972,6 +3987,7 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         JSONObject response = new JSONObject();
         response.put("status", "ok");
         response.put("path", projectPath);
+        response.put("name", ref.name);
         writeJson(ctx, response);
     }
 
