@@ -12,6 +12,6 @@ repositories {
 
 dependencies {
     testImplementation group: 'junit', name: 'junit', version: '4.12'
-    implementation "io.javalin:javalin:4.6.8"
+    implementation "io.javalin:javalin:6.7.0"
     implementation project(":core")
 }

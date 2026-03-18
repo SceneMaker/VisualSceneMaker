@@ -9,7 +9,7 @@ repositories {
 }
 
 dependencies {
-    implementation group: 'io.javalin', name: 'javalin', version: '4.6.8'
+    implementation group: 'io.javalin', name: 'javalin', version: '6.7.0'
     implementation group: 'org.json', name: 'json', version: '20240303'
 }
 

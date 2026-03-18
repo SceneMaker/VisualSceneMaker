@@ -20,8 +20,10 @@ import io.javalin.websocket.WsConnectContext;
 import io.javalin.websocket.WsContext;
 import io.javalin.websocket.WsMessageContext;
 import org.eclipse.jetty.server.Connector;
+import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.server.SslConnectionFactory;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 
 import java.io.File;
@@ -86,32 +88,30 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
 
         if (mPathToCertificate != null) {
             app = Javalin.create(config -> {
-                if (guiFilesExist)   config.addStaticFiles(guiFiles,   Location.EXTERNAL);
-                if (audioFilesExist) config.addStaticFiles(audioFiles, Location.EXTERNAL);
-                config.server(() -> {
-                    Server server = new Server();
-                    ServerConnector sslConnector = new ServerConnector(server, getSslContextFactory());
+                if (guiFilesExist)   config.staticFiles.add(guiFiles,   Location.EXTERNAL);
+                if (audioFilesExist) config.staticFiles.add(audioFiles, Location.EXTERNAL);
+                config.jetty.modifyServer(server -> {
+                    ServerConnector sslConnector = new ServerConnector(server,
+                            new SslConnectionFactory(getSslContextFactory(), "http/1.1"),
+                            new HttpConnectionFactory());
                     sslConnector.setPort(wss_port);
                     ServerConnector connector = new ServerConnector(server);
                     connector.setPort(ws_port);
                     ServerConnector htmlConnector = new ServerConnector(server);
                     htmlConnector.setPort(html_port);
                     server.setConnectors(new Connector[]{sslConnector, connector, htmlConnector});
-                    return server;
                 });
             }).start();
         } else {
             app = Javalin.create(config -> {
-                if (guiFilesExist)   config.addStaticFiles(guiFiles,   Location.EXTERNAL);
-                if (audioFilesExist) config.addStaticFiles(audioFiles, Location.EXTERNAL);
-                config.server(() -> {
-                    Server server = new Server();
+                if (guiFilesExist)   config.staticFiles.add(guiFiles,   Location.EXTERNAL);
+                if (audioFilesExist) config.staticFiles.add(audioFiles, Location.EXTERNAL);
+                config.jetty.modifyServer(server -> {
                     ServerConnector connector = new ServerConnector(server);
                     connector.setPort(ws_port);
                     ServerConnector htmlConnector = new ServerConnector(server);
                     htmlConnector.setPort(html_port);
                     server.setConnectors(new Connector[]{connector, htmlConnector});
-                    return server;
                 });
             }).start();
         }
@@ -459,8 +459,8 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
         }
     }
 
-    private SslContextFactory getSslContextFactory() {
-        SslContextFactory sslContextFactory = new SslContextFactory.Server();
+    private SslContextFactory.Server getSslContextFactory() {
+        SslContextFactory.Server sslContextFactory = new SslContextFactory.Server();
         sslContextFactory.setKeyStorePath(this.getClass().getResource(mPathToCertificate).toExternalForm()); //default "/my-release-key.keystore"
         sslContextFactory.setKeyStorePassword("123456");
         return sslContextFactory;

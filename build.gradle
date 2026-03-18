@@ -132,11 +132,9 @@ allprojects {
 subprojects {
     plugins.withId('java') {
         def isJava17Module = project.path == ':core'
-                || project.path == ':core-webserver'
                 || project.path == ':core-http-jdk'
                 || project.path == ':core-http-android'
                 || project.path == ':core-logic-jpl'
-                || project.path == ':runtime-server'
                 || project.path.startsWith(':plugins:')
         if (!isJava17Module) {
             java {
@@ -197,7 +195,7 @@ dependencies {
     implementation project(":plugins:voicetts")
     implementation project(":plugins:DriveSimulator")
     implementation project(":plugins:asr")
-    implementation "io.javalin:javalin:4.6.8"
+    implementation "io.javalin:javalin:6.7.0"
     implementation 'org.jetbrains:annotations:16.0.2'
     // https://mvnrepository.com/artifact/org.slick2d/slick2d-core
     implementation group: 'org.slick2d', name: 'slick2d-core', version: '1.0.2' // needed for documentation
@@ -230,7 +228,8 @@ dependencies {
     // https://mvnrepository.com/artifact/com.google.zxing/javase
     implementation group: 'com.google.zxing', name: 'javase', version: '2.0'
     // https://mvnrepository.com/artifact/org.slf4j/slf4j-api
-    implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.25'
+    implementation group: 'org.slf4j', name: 'slf4j-api', version: '2.0.17'
+    runtimeOnly group: 'org.slf4j', name: 'slf4j-simple', version: '2.0.17'
     // https://mvnrepository.com/artifact/com.nativelibs4java/bridj
     implementation group: 'com.nativelibs4java', name: 'bridj', version: '0.7.0'
 }

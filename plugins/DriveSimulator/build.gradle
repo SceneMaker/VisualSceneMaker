@@ -14,7 +14,9 @@ repositories {
 dependencies {
 
     implementation project(path: ':plugins:sockets')
-    testImplementation group: 'junit', name: 'junit', version: '4.12'
+    testImplementation group: 'junit', name: 'junit', version: '4.13.2'
+    testRuntimeOnly group: 'org.junit.vintage', name: 'junit-vintage-engine', version: '5.10.2'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.10.2'
     implementation project(":core")
     implementation group: 'com.google.code.gson', name: 'gson', version: '2.7'
     implementation 'io.socket:socket.io-client:1.0.0'

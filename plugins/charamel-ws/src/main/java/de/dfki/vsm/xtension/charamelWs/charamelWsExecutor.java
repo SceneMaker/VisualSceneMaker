@@ -23,8 +23,10 @@ import io.javalin.websocket.WsConnectContext;
 import io.javalin.websocket.WsContext;
 import io.javalin.websocket.WsMessageContext;
 import org.eclipse.jetty.server.Connector;
+import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.server.SslConnectionFactory;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.jetbrains.annotations.NotNull;
 
@@ -543,19 +545,18 @@ public class charamelWsExecutor extends ActivityExecutor {
         Javalin app;
         if (mPathToCertificate != null) {
             app = Javalin.create(config -> {
-                config.server(() -> {
-                    Server server = new Server();
-                    ServerConnector sslConnector = null;
-                    sslConnector = new ServerConnector(server, getSslContextFactory());
+                config.jetty.modifyServer(server -> {
+                    ServerConnector sslConnector = new ServerConnector(server,
+                            new SslConnectionFactory(getSslContextFactory(), "http/1.1"),
+                            new HttpConnectionFactory());
                     sslConnector.setPort(wss_port);
                     ServerConnector connector = new ServerConnector(server);
                     connector.setPort(ws_port);
                     server.setConnectors(new Connector[]{sslConnector, connector});
-                    return server;
                 });
             }).start();
         } else {
-            app = Javalin.create(config -> config.enforceSsl = true).start(ws_port);
+            app = Javalin.create().start(ws_port);
         }
         return app;
     }
@@ -660,8 +661,8 @@ public class charamelWsExecutor extends ActivityExecutor {
         mJavaLinInstance.stop();
     }
 
-    private SslContextFactory getSslContextFactory() {
-        SslContextFactory sslContextFactory = new SslContextFactory.Server();
+    private SslContextFactory.Server getSslContextFactory() {
+        SslContextFactory.Server sslContextFactory = new SslContextFactory.Server();
         sslContextFactory.setKeyStorePath(this.getClass().getResource(mPathToCertificate).toExternalForm()); //default "/my-release-key.keystore"
         sslContextFactory.setKeyStorePassword("123456");
         return sslContextFactory;

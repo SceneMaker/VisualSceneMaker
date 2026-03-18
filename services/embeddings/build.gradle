@@ -17,7 +17,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'io.javalin:javalin:4.6.8'
+    implementation 'io.javalin:javalin:6.7.0'
     implementation 'org.json:json:20171018'
     implementation 'org.slf4j:slf4j-simple:1.7.25'
     implementation 'com.microsoft.onnxruntime:onnxruntime:1.18.0'

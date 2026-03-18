@@ -15,8 +15,8 @@ public final class EmbeddingsService {
 
         Javalin app = Javalin.create(config -> {
             config.showJavalinBanner = false;
-            config.defaultContentType = "application/json";
-            config.enableCorsForAllOrigins();
+            config.http.defaultContentType = "application/json";
+            config.bundledPlugins.enableCors(cors -> cors.addRule(it -> it.anyHost()));
         });
 
         app.get("/health", ctx -> {

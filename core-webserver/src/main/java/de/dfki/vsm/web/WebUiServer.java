@@ -113,7 +113,7 @@ import de.dfki.vsm.util.llm.JdkHttpTransport;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 import de.dfki.vsm.util.xml.XMLUtilities;
 import io.javalin.Javalin;
-import io.javalin.core.util.Header;
+import io.javalin.http.Header;
 import io.javalin.http.staticfiles.Location;
 import io.javalin.http.Context;
 import io.javalin.websocket.WsContext;
@@ -1773,14 +1773,14 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
             boolean hasWebUi = getClass().getClassLoader().getResource("web-ui/index.html") != null;
             boolean hasImages = getClass().getClassLoader().getResource("images/") != null;
             if (hasWebUi) {
-                config.addStaticFiles("/web-ui", Location.CLASSPATH);
-                config.addSinglePageRoot("/", "/web-ui/index.html", Location.CLASSPATH);
+                config.staticFiles.add("/web-ui", Location.CLASSPATH);
+                config.spaRoot.addFile("/", "/web-ui/index.html", Location.CLASSPATH);
             }
             if (hasImages) {
-                config.addStaticFiles("images", Location.CLASSPATH);
+                config.staticFiles.add("images", Location.CLASSPATH);
             }
             // Enable CORS for cross-origin requests (Phase 8.4: remote connections)
-            config.enableCorsForAllOrigins();
+            config.bundledPlugins.enableCors(cors -> cors.addRule(it -> it.anyHost()));
         }).start(allowExternal ? "0.0.0.0" : "127.0.0.1", port);
         registerRoutes();
         // EventDispatcher registration now happens per-project when projects are added to projectStore.
@@ -2670,7 +2670,7 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         // WebSocket endpoint: accepts requests and replies with JSON. Broadcasts snapshots/runtime state after mutations.
         mApp.ws("/ws", ws -> {
             ws.onConnect(ctx -> {
-                sLogger.message("WS client connected: " + ctx.getSessionId());
+                sLogger.message("WS client connected: " + ctx.sessionId());
                 wsSessions.add(ctx);
             });
             ws.onClose(ctx -> {
@@ -2678,7 +2678,7 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
                 cleanupWsSubscription(ctx);
             });
             ws.onError(ctx -> {
-                sLogger.warning("WS client error: " + ctx.getSessionId());
+                sLogger.warning("WS client error: " + ctx.sessionId());
                 wsSessions.remove(ctx);
                 cleanupWsSubscription(ctx);
             });
@@ -6399,7 +6399,7 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         response.put("subscriberCount", ref.collaborationSession.subscriberCount());
         JSONArray sessionIds = new JSONArray();
         for (WsContext sub : ref.collaborationSession.getSubscribers()) {
-            sessionIds.put(sub.getSessionId());
+            sessionIds.put(sub.sessionId());
         }
         response.put("sessionIds", sessionIds);
         writeJson(ctx, response);
@@ -7008,11 +7008,11 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
                 }
             }
             ref.collaborationSession.subscribe(ctx);
-            wsProjectSubscriptions.put(ctx.getSessionId(), projectId);
+            wsProjectSubscriptions.put(ctx.sessionId(), projectId);
 
             // Presence: register user, broadcast presence.joined to others
             String displayName = params != null ? params.optString("displayName", null) : null;
-            String userId = ctx.getSessionId();
+            String userId = ctx.sessionId();
             UserPresence presence = ref.collaborationSession.getPresenceManager().join(userId, displayName);
             broadcastPresenceEvent(projectId, "presence.joined", presence, ref, ctx);
 
@@ -7025,7 +7025,7 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
             result.put("subscriberCount", ref.collaborationSession.subscriberCount());
             result.put("presence", presenceListJson(ref));
             ctx.send(RuntimeWsProtocol.successResponse(requestId, result).toString());
-            sLogger.message("WS client " + ctx.getSessionId() + " subscribed to project " + projectId);
+            sLogger.message("WS client " + ctx.sessionId() + " subscribed to project " + projectId);
         } catch (Exception exc) {
             sLogger.warning("Session.Subscribe failed: " + exc.getMessage());
             JSONObject err = new JSONObject();
@@ -7038,13 +7038,13 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
 
     /** Removes a WS client from the project it subscribed to (if any). */
     private void cleanupWsSubscription(WsContext ctx) {
-        String previousProjectId = wsProjectSubscriptions.remove(ctx.getSessionId());
+        String previousProjectId = wsProjectSubscriptions.remove(ctx.sessionId());
         if (previousProjectId != null) {
             ProjectRef ref = projectStore.get(previousProjectId);
             if (ref != null) {
                 // Presence: remove user, broadcast presence.left before unsubscribing
                 UserPresence left = ref.collaborationSession.getPresenceManager()
-                        .leave(ctx.getSessionId());
+                        .leave(ctx.sessionId());
                 if (left != null) {
                     broadcastPresenceEvent(previousProjectId, "presence.left", left, ref, ctx);
                 }
@@ -7075,7 +7075,7 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
                 sendWsError(ctx, requestId, "Project not found: " + projectId);
                 return;
             }
-            String userId = ctx.getSessionId();
+            String userId = ctx.sessionId();
             String activeNodeId = params.optString("activeNodeId", null);
             if ("".equals(activeNodeId)) activeNodeId = null;
             JSONObject viewport = params.optJSONObject("viewport");
@@ -7345,7 +7345,7 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
 
             // ---- OperationLog: commit + broadcast after successful dispatch ----
             if (ref != null && isEditingCommand(method) && mMode != ServerMode.RUNTIME_ONLY) {
-                String userId = ctx != null ? ctx.getSessionId() : "";
+                String userId = ctx != null ? ctx.sessionId() : "";
                 OperationLog.AppendResult appended =
                         ref.collaborationSession.getOperationLog().append(method, params, basedOnSeq, userId);
                 broadcastOperationApplied(projectId, appended.seq, userId, method, params,

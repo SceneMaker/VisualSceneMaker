@@ -20,6 +20,7 @@ import de.dfki.vsm.util.log.LOGConsoleLogger;
 import io.javalin.Javalin;
 import io.javalin.websocket.WsCloseContext;
 import io.javalin.websocket.WsConnectContext;
+import java.time.Duration;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -137,7 +138,7 @@ public class WebStudyMasterExecutor extends ActivityExecutor implements EventLis
 
         // Start the HTTP server
         mHttpServer = Javalin.create(config -> {
-            config.addStaticFiles(staticFiles -> {
+            config.staticFiles.add(staticFiles -> {
                 staticFiles.directory = "/react-studymaster/build";
             });
         }).start(http_port);
@@ -171,7 +172,7 @@ public class WebStudyMasterExecutor extends ActivityExecutor implements EventLis
      * Invoked when a new websocket connection is opened (new web app is loaded).
      */
     private synchronized void addWs(WsConnectContext ws) {
-        ws.session.setIdleTimeout(Long.MAX_VALUE);
+        ws.session.setIdleTimeout(Duration.ofDays(36500));
 
         mLogger.message("New WebSocket connection made.");
         this.mWebsockets.add(ws);
