@@ -2319,7 +2319,23 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
       sessionReady
     });
   }
-  $: selectedNode = sceneFlowSelection?.type === "node" ? sceneFlow?.nodes?.find((node) => node.id === sceneFlowSelection.id) : null;
+  $: selectedNode =
+    sceneFlowSelection?.type === "node"
+      ? sceneFlow?.nodes?.find((node) => node.id === sceneFlowSelection.id)
+      : sceneFlowSelection?.type === "command"
+        ? sceneFlow?.nodes?.find((node) => node.id === sceneFlowSelection.nodeId)
+        : null;
+  $: selectedCommand =
+    sceneFlowSelection?.type === "command"
+      ? (() => {
+          const node = sceneFlow?.nodes?.find((entry) => entry.id === sceneFlowSelection.nodeId);
+          const commands = Array.isArray(node?.commands) ? node.commands : [];
+          const index = Number(sceneFlowSelection.index);
+          return Number.isInteger(index) && index >= 0 && index < commands.length
+            ? { node, command: commands[index], index }
+            : null;
+        })()
+      : null;
   $: selectedEdge = sceneFlowSelection?.type === "edge" ? sceneFlow?.edges?.find((edge) => edge.id === sceneFlowSelection.id) : null;
   $: selectedComment =
     sceneFlowSelection?.type === "comment"
@@ -2436,6 +2452,8 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
   $: nodeEditorTarget =
     sceneFlowSelection?.type === "node"
       ? selectedNode
+      : sceneFlowSelection?.type === "command"
+        ? selectedCommand?.node || null
       : sceneFlowSelection
         ? null
         : sceneFlow?.superNodeData || null;
@@ -2560,6 +2578,12 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
   }
   $: if (!edgeConditionSuggestions.length) {
     edgeConditionSuggestOpen = false;
+  }
+  $: if (cmdHelperVarInputEl && getContentEditableValue(cmdHelperVarInputEl) !== String(cmdHelperVarName || "")) {
+    setContentEditableValue(cmdHelperVarInputEl, cmdHelperVarName || "");
+  }
+  $: if (edgeConditionInputEl && getContentEditableValue(edgeConditionInputEl) !== String(edgeDraft?.condition || "")) {
+    setContentEditableValue(edgeConditionInputEl, edgeDraft?.condition || "");
   }
   $: cmdHelperVarExists = (() => {
     const name = (cmdHelperVarName || "").trim();
@@ -7438,6 +7462,13 @@ Sentence:
           ? snapshot.edges.some((edge) => edge.id === currentSelection.id)
           : currentSelection?.type === "comment"
             ? snapshot.comments?.some((comment) => comment.id === currentSelection.id)
+            : currentSelection?.type === "command"
+              ? snapshot.nodes.some((node) =>
+                  node.id === currentSelection.nodeId &&
+                  Array.isArray(node.commands) &&
+                  currentSelection.index >= 0 &&
+                  currentSelection.index < node.commands.length
+                )
             : false;
     console.log("[SELDBG] sceneflow.snapshot", {
       revision: snapshot?.revision,
@@ -9492,7 +9523,9 @@ Sentence:
   function selectionKey(list) {
     if (!Array.isArray(list) || !list.length) return "";
     return list
-      .map((entry) => `${entry.type}:${entry.id}`)
+      .map((entry) => entry.type === "command"
+        ? `${entry.type}:${entry.nodeId}:${entry.index}`
+        : `${entry.type}:${entry.id}`)
       .sort()
       .join("|");
   }
@@ -9501,6 +9534,22 @@ Sentence:
     if (!sceneFlow || !selectedProjectId) return;
     const selectionList = sceneFlowSelectionList();
     if (!selectionList.length) return;
+    const commandSelection = selectionList.find((item) => item.type === "command");
+    if (commandSelection) {
+      const node = (sceneFlow.nodes || []).find((entry) => entry.id === commandSelection.nodeId);
+      const commands = Array.isArray(node?.commands) ? node.commands : [];
+      const command = commands[commandSelection.index];
+      const text = String(command?.text || "").trim();
+      if (!node || !text) return;
+      sceneFlowClipboard = {
+        kind: "commands",
+        commands: [{ text }],
+        sourceNodeId: node.id,
+        origin: { x: node.graphics?.x ?? 0, y: node.graphics?.y ?? 0 }
+      };
+      sceneFlowPasteIndex = 0;
+      return;
+    }
     const nodeIds = selectionList.filter((item) => item.type === "node").map((item) => item.id);
     const commentIds = selectionList.filter((item) => item.type === "comment").map((item) => item.id);
     if (!nodeIds.length && !commentIds.length) return;
@@ -9533,6 +9582,7 @@ Sentence:
     }
     const copiedNodeIds = nodes.map((node) => node.id);
     sceneFlowClipboard = {
+      kind: "nodes-comments",
       nodeIds: copiedNodeIds,
       comments,
       origin: { x: minX, y: minY }
@@ -9551,6 +9601,44 @@ Sentence:
 
   async function pasteSceneFlowSelectionWithOffset(dx, dy) {
     if (!sceneFlowClipboard || !selectedProjectId) return;
+    if (sceneFlowClipboard.kind === "commands") {
+      const selection = sceneFlowSelection;
+      let targetNodeId = "";
+      let insertIndex = -1;
+      if (selection?.type === "command" && selection.nodeId) {
+        targetNodeId = selection.nodeId;
+        insertIndex = Number.isFinite(selection.index) ? selection.index + 1 : -1;
+      } else if (selection?.type === "node" && selection.id) {
+        targetNodeId = selection.id;
+        const node = (sceneFlow?.nodes || []).find((entry) => entry.id === targetNodeId);
+        insertIndex = Array.isArray(node?.commands) ? node.commands.length : -1;
+      } else {
+        return;
+      }
+      let nextSelection = null;
+      for (let i = 0; i < (sceneFlowClipboard.commands || []).length; i += 1) {
+        const entry = sceneFlowClipboard.commands[i];
+        const response = await runSceneFlowCommand("SceneFlow.Node.Cmd.Add", {
+          projectId: selectedProjectId,
+          superNodeId: sceneFlow?.superNodeId || "",
+          nodeId: targetNodeId,
+          command: { text: entry.text },
+          index: insertIndex < 0 ? undefined : insertIndex + i
+        });
+        if (!response) return;
+        nextSelection = {
+          type: "command",
+          id: `${targetNodeId}:${(insertIndex < 0 ? i : insertIndex + i)}`,
+          nodeId: targetNodeId,
+          index: insertIndex < 0 ? i : insertIndex + i
+        };
+      }
+      if (nextSelection) {
+        sceneFlowSelection = nextSelection;
+        sceneFlowMultiSelection = [nextSelection];
+      }
+      return;
+    }
     const newSelections = [];
 
     if (sceneFlowClipboard.nodeIds?.length) {
@@ -9613,6 +9701,7 @@ Sentence:
     if (!selectedProjectId || sceneFlowBusy) return;
     const selectionList = sceneFlowSelectionList();
     if (!selectionList.length) return;
+    if (selectionList.some((entry) => entry.type === "command")) return;
     await copySceneFlowSelection();
     await deleteSceneFlowSelection();
   }
@@ -9621,6 +9710,7 @@ Sentence:
     if (!selectedProjectId || sceneFlowBusy) return;
     const selectionList = sceneFlowSelectionList();
     if (!selectionList.length) return;
+    if (selectionList.some((entry) => entry.type === "command")) return;
     const hasCopyable = selectionList.some((entry) => entry.type === "node" || entry.type === "comment");
     if (!hasCopyable) return;
     const key = selectionKey(selectionList);
@@ -11443,11 +11533,64 @@ Sentence:
     tick().then(() => {
       cmdHelperVarInputEl?.focus?.();
       const len = cmdHelperVarName.length;
-      cmdHelperVarInputEl?.setSelectionRange?.(len, len);
+      setContentEditableCaret(cmdHelperVarInputEl, len);
     });
   }
 
-  function handleCmdHelperVarInput() {
+  function getContentEditableValue(el) {
+    if (!el) return "";
+    return String(el.textContent || "").replace(/\u00a0/g, " ").replace(/\r/g, "");
+  }
+
+  function setContentEditableValue(el, value) {
+    if (!el) return;
+    const next = String(value || "");
+    if (getContentEditableValue(el) === next) return;
+    el.textContent = next;
+  }
+
+  function getContentEditableCaret(el) {
+    if (!el) return 0;
+    const sel = window.getSelection?.();
+    if (!sel || sel.rangeCount === 0) return getContentEditableValue(el).length;
+    const range = sel.getRangeAt(0);
+    if (!el.contains(range.startContainer)) return getContentEditableValue(el).length;
+    const prefix = range.cloneRange();
+    prefix.selectNodeContents(el);
+    prefix.setEnd(range.startContainer, range.startOffset);
+    return prefix.toString().length;
+  }
+
+  function setContentEditableCaret(el, offset) {
+    if (!el) return;
+    const selection = window.getSelection?.();
+    if (!selection) return;
+    const target = Math.max(0, Math.min(String(getContentEditableValue(el)).length, Number(offset) || 0));
+    const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+    let node = walker.nextNode();
+    let remaining = target;
+    while (node) {
+      const length = node.textContent?.length || 0;
+      if (remaining <= length) {
+        const range = document.createRange();
+        range.setStart(node, remaining);
+        range.collapse(true);
+        selection.removeAllRanges();
+        selection.addRange(range);
+        return;
+      }
+      remaining -= length;
+      node = walker.nextNode();
+    }
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    range.collapse(false);
+    selection.removeAllRanges();
+    selection.addRange(range);
+  }
+
+  function handleCmdHelperVarInput(event) {
+    cmdHelperVarName = getContentEditableValue(event?.currentTarget);
     cmdHelperVarSuggestIndex = cmdHelperVarSuggestions.length > 0 ? 0 : -1;
     cmdHelperVarSuggestOpen = cmdHelperVarSuggestions.length > 0;
   }
@@ -11490,7 +11633,7 @@ Sentence:
 
   function edgeConditionCurrentToken(text, input) {
     const value = String(text ?? "");
-    const pos = Math.max(0, Number(input?.selectionStart ?? value.length));
+    const pos = Math.max(0, getContentEditableCaret(input));
     let start = pos;
     while (start > 0 && /[A-Za-z0-9_]/.test(value[start - 1])) {
       start -= 1;
@@ -11504,7 +11647,7 @@ Sentence:
 
   function replaceEdgeConditionToken(text, input, replacement) {
     const value = String(text ?? "");
-    const cursor = Math.max(0, Number(input?.selectionStart ?? value.length));
+    const cursor = Math.max(0, getContentEditableCaret(input));
     let start = cursor;
     while (start > 0 && /[A-Za-z0-9_]/.test(value[start - 1])) {
       start -= 1;
@@ -11544,14 +11687,14 @@ Sentence:
     edgeEditError = "";
     tick().then(() => {
       edgeConditionInputEl?.focus?.();
-      edgeConditionInputEl?.setSelectionRange?.(next.caret, next.caret);
+      setContentEditableCaret(edgeConditionInputEl, next.caret);
     });
     scheduleConditionEdgeDraftApply();
   }
 
   function handleEdgeConditionInput(event) {
     if (!edgeDraft) return;
-    const value = String(event?.currentTarget?.value ?? "");
+    const value = getContentEditableValue(event?.currentTarget);
     edgeDraft = { ...edgeDraft, condition: value };
     edgeEditError = "";
     edgeConditionSuggestIndex = edgeConditionSuggestions.length > 0 ? 0 : -1;
@@ -11693,7 +11836,7 @@ Sentence:
       cmdHelperArgs = params
         .map((param) => ({
           key: param?.name || "",
-          value: existing.get(param?.name) || ""
+          value: normalizeCmdArgRawValue(existing.get(param?.name) || "")
         }))
         .filter((entry) => entry.key);
       lastCmdHelperAction = actionName;
@@ -11709,7 +11852,8 @@ Sentence:
   }
 
   function updateCmdHelperArg(index, field, value) {
-    cmdHelperArgs = cmdHelperArgs.map((entry, idx) => (idx === index ? { ...entry, [field]: value } : entry));
+    const nextValue = field === "value" ? normalizeCmdArgRawValue(value) : value;
+    cmdHelperArgs = cmdHelperArgs.map((entry, idx) => (idx === index ? { ...entry, [field]: nextValue } : entry));
   }
 
   function pluginInterfaceForAgent(agentName) {
@@ -11856,14 +12000,14 @@ Sentence:
 
   function isQuotedCmdArgValue(value) {
     const text = String(value || "");
-    return /^'[\s\S]*'$/.test(text) || /^"[\s\S]*"$/.test(text);
+    return /^'[\s\S]*'$/.test(text);
   }
 
   function normalizeCmdArgRawValue(rawValue) {
-    const value = String(rawValue ?? "").trim();
+    let value = String(rawValue ?? "").trim();
     if (!value) return "";
-    if (isQuotedCmdArgValue(value)) {
-      return value.slice(1, -1);
+    while (isQuotedCmdArgValue(value) && value.length >= 2) {
+      value = value.slice(1, -1).trim();
     }
     return value;
   }
@@ -12331,7 +12475,10 @@ Sentence:
         cmdHelperAgent = agent;
         cmdHelperAction = action;
         cmdHelperPlayMode = mode || "blocking";
-        cmdHelperArgs = args || [];
+        cmdHelperArgs = (args || []).map((entry) => ({
+          key: entry?.key || "",
+          value: normalizeCmdArgRawValue(entry?.value || "")
+        }));
         lastCmdHelperAction = action;
         cmdHelperAgentCommands = pluginCommandsForAgent(agent);
         cmdHelperDescriptor = pluginInterfaceForAgent(agent);
@@ -13636,30 +13783,17 @@ Sentence:
   }
 
   async function deleteSceneFlowSelection() {
-    console.log("[DELETE] deleteSceneFlowSelection called");
-    console.log("[DELETE] selectedProjectId:", selectedProjectId);
-    console.log("[DELETE] sceneFlowBusy:", sceneFlowBusy);
-    if (!selectedProjectId || sceneFlowBusy) {
-      console.log("[DELETE] Early return: no project or busy");
-      return;
-    }
+    if (!selectedProjectId || sceneFlowBusy) return;
     const selectionList = sceneFlowSelectionList();
-    console.log("[DELETE] selectionList:", JSON.stringify(selectionList));
-    if (!selectionList.length) {
-      console.log("[DELETE] Early return: empty selection");
-      return;
-    }
-    const selection = sceneFlowSelection;
-    console.log("[DELETE] current selection:", JSON.stringify(selection));
+    if (!selectionList.length) return;
+    if (selectionList.some((item) => item.type === "command")) return;
     sceneFlowSelection = null;
     sceneFlowMultiSelection = [];
     const nodeIds = selectionList.filter((item) => item.type === "node").map((item) => item.id);
     const commentIds = selectionList.filter((item) => item.type === "comment").map((item) => item.id);
     const edgeIds = selectionList.filter((item) => item.type === "edge").map((item) => item.id);
-    console.log("[DELETE] nodeIds:", nodeIds, "commentIds:", commentIds, "edgeIds:", edgeIds);
 
     for (const nodeId of nodeIds) {
-      console.log("[DELETE] Sending delete request for node:", nodeId);
       await runSceneFlowCommand("SceneFlow.Node.Delete", { projectId: selectedProjectId, superNodeId: sceneFlow?.superNodeId, nodeId });
     }
     for (const commentId of commentIds) {
@@ -15437,7 +15571,7 @@ Sentence:
                   </div>
                 </div>
               {/if}
-            {:else if sceneFlowSelection?.type === "node" && selectedNode && nodeDraft}
+            {:else if (sceneFlowSelection?.type === "node" || sceneFlowSelection?.type === "command") && selectedNode && nodeDraft}
               <div class="node-header">
                 <input
                   class="node-title-input"
@@ -15465,6 +15599,27 @@ Sentence:
                   <IconStart className="icon" />
                 </button>
               </div>
+              {#if sceneFlowSelection?.type === "command" && selectedCommand}
+                <div class="definition-section">
+                  <header class="definition-header">
+                    <h4>Selected Command</h4>
+                    <span class="muted">#{selectedCommand.index + 1}</span>
+                  </header>
+                  <div class="stack">
+                    <div class="muted mono">{selectedCommand.command?.text || ""}</div>
+                    <div class="actions">
+                      <button
+                        type="button"
+                        class="ghost"
+                        on:click={() => openCmdDialog(selectedCommand.node?.id, selectedCommand.index)}
+                        disabled={!wsConnected || sceneFlowBusy}
+                      >
+                        Edit Commands
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              {/if}
               {#if nodeEditError}
                 <p class="error">{nodeEditError}</p>
               {/if}
@@ -15472,19 +15627,24 @@ Sentence:
               <h3 class="inspector-title">Edge {selectedEdge.sourceId} → {selectedEdge.targetId}</h3>
               <div class="stack">
                 {#if selectedEdge.type === "CEDGE" || selectedEdge.type === "IEDGE"}
-                  <label for="edge-condition">Condition</label>
+                  <div class="cmd-field-label">Condition</div>
                   <div class="cmd-helper-var-wrap">
-                    <input
-                      id="edge-condition"
+                    <div
+                      class="editable-input mono"
+                      class:is-empty={!String(edgeDraft.condition || "").length}
+                      contenteditable="true"
+                      role="textbox"
+                      tabindex="0"
+                      id="vsm-edge-condition-input"
+                      aria-label="SceneFlow edge condition expression"
                       bind:this={edgeConditionInputEl}
-                      bind:value={edgeDraft.condition}
-                      autocomplete="off"
                       spellcheck="false"
+                      data-placeholder=""
                       on:input={handleEdgeConditionInput}
                       on:focus={handleEdgeConditionFocus}
                       on:blur={handleEdgeConditionBlur}
                       on:keydown={handleEdgeConditionKeydown}
-                    />
+                    ></div>
                     {#if edgeConditionSuggestOpen && edgeConditionSuggestions.length > 0}
                       <div class="cmd-helper-var-dropdown" role="listbox" aria-label="Condition variable suggestions">
                         {#each edgeConditionSuggestions as variable, i}
@@ -18455,8 +18615,16 @@ Sentence:
                     {#if cmdEditingIndex === index}
                       <input
                         class="cmd-inline-input"
+                        name={`vsm-cmd-inline-${index}`}
                         value={cmdText}
                         data-cmd-index={index}
+                        autocomplete="new-password"
+                        autocorrect="off"
+                        autocapitalize="off"
+                        spellcheck="false"
+                        data-lpignore="true"
+                        data-1p-ignore="true"
+                        data-form-type="other"
                         on:focus={(event) => (cmdInlineInputEls[index] = event.currentTarget)}
                         on:input={(event) => { updateCmdInlineDraft(index, event.target.value); updateAutocomplete(event.target); }}
                         on:blur={(event) => handleCmdInlineBlur(event, index)}
@@ -18543,6 +18711,7 @@ Sentence:
             </div>
           </div>
           <div class="cmd-helper">
+            <div class="cmd-helper-body">
               <div class="cmd-helper-tabs" role="tablist">
                 <button
                   type="button"
@@ -18578,6 +18747,7 @@ Sentence:
                 <select
                   id="cmd-helper-agent"
                   bind:value={cmdHelperAgent}
+                  autocomplete="off"
                 >
                   <option value="">Select agent...</option>
                   {#each projectConfigAgents as agent}
@@ -18588,6 +18758,7 @@ Sentence:
                 <select
                   id="cmd-helper-action"
                   bind:value={cmdHelperAction}
+                  autocomplete="off"
                 >
                   <option value="">Select action...</option>
                   {#if cmdHelperAgentCommands.length}
@@ -18619,13 +18790,29 @@ Sentence:
                       {@const paramMeta = cmdParamMeta(arg?.key)}
                       <div class="cmd-helper-arg-row">
                         <input
+                          name={`vsm-cmd-arg-key-${argIndex}`}
                           placeholder="key"
                           value={arg.key}
+                          autocomplete="new-password"
+                          autocorrect="off"
+                          autocapitalize="off"
+                          spellcheck="false"
+                          data-lpignore="true"
+                          data-1p-ignore="true"
+                          data-form-type="other"
                           on:input={(event) => updateCmdHelperArg(argIndex, "key", event.target.value)}
                         />
                         <input
+                          name={`vsm-cmd-arg-value-${argIndex}`}
                           placeholder={cmdParamValuePlaceholder(paramMeta)}
                           value={arg.value}
+                          autocomplete="new-password"
+                          autocorrect="off"
+                          autocapitalize="off"
+                          spellcheck="false"
+                          data-lpignore="true"
+                          data-1p-ignore="true"
+                          data-form-type="other"
                           on:input={(event) => updateCmdHelperArg(argIndex, "value", event.target.value)}
                         />
                         <button
@@ -18721,21 +18908,25 @@ Sentence:
                     aria-selected={cmdHelperVarOp === "Dec"}
                   >Decrement</button>
                 </div>
-                <label for="cmd-helper-var">Variable</label>
+                <div class="cmd-field-label">Variable</div>
                 <div class="cmd-helper-var-wrap">
-                  <input
-                    id="cmd-helper-var"
-                    bind:this={cmdHelperVarInputEl}
-                    bind:value={cmdHelperVarName}
-                    placeholder="Variable name"
+                  <div
+                    class="editable-input"
                     class:input-warning={!cmdHelperVarExists && cmdHelperVarName.trim().length}
-                    autocomplete="off"
+                    class:is-empty={!cmdHelperVarName.trim().length}
+                    contenteditable="true"
+                    role="textbox"
+                    tabindex="0"
+                    id="vsm-command-symbol-input"
+                    aria-label="SceneFlow variable identifier"
+                    bind:this={cmdHelperVarInputEl}
                     spellcheck="false"
+                    data-placeholder="Variable name"
                     on:input={handleCmdHelperVarInput}
                     on:focus={handleCmdHelperVarFocus}
                     on:blur={handleCmdHelperVarBlur}
                     on:keydown={handleCmdHelperVarKeydown}
-                  />
+                  ></div>
                   {#if cmdHelperVarSuggestOpen && cmdHelperVarSuggestions.length > 0}
                     <div class="cmd-helper-var-dropdown" role="listbox" aria-label="Variable suggestions">
                       {#each cmdHelperVarSuggestions as variable, i}
@@ -18775,21 +18966,41 @@ Sentence:
                   <label for="cmd-helper-expr">Expression</label>
                   <input
                     id="cmd-helper-expr"
+                    name="vsm-command-expression"
                     bind:value={cmdHelperVarExpr}
                     placeholder={varExpressionHint(cmdHelperVarType)}
+                    autocomplete="new-password"
+                    autocorrect="off"
+                    autocapitalize="off"
+                    spellcheck="false"
+                    data-lpignore="true"
+                    data-1p-ignore="true"
+                    data-form-type="other"
                   />
                 {:else}
                   <label for="cmd-helper-step">Step</label>
-                  <input id="cmd-helper-step" bind:value={cmdHelperVarStep} placeholder="1" />
+                  <input
+                    id="cmd-helper-step"
+                    name="vsm-command-step"
+                    bind:value={cmdHelperVarStep}
+                    placeholder="1"
+                    autocomplete="new-password"
+                    autocorrect="off"
+                    autocapitalize="off"
+                    spellcheck="false"
+                    data-lpignore="true"
+                    data-1p-ignore="true"
+                    data-form-type="other"
+                  />
                 {/if}
               {/if}
-
-              <div class="actions cmd-helper-actions">
-                <button type="button" class="primary" on:click={applyCmdHelperInsert} disabled={rootSceneFlowCommandEditingLocked}>
-                  {cmdSelectedIndex !== null ? "Update" : "Insert"}
-                </button>
-              </div>
             </div>
+            <div class="actions cmd-helper-actions">
+              <button type="button" class="primary" on:click={applyCmdHelperInsert} disabled={rootSceneFlowCommandEditingLocked}>
+                {cmdSelectedIndex !== null ? "Update" : "Insert"}
+              </button>
+            </div>
+          </div>
           {#if cmdError}
             <p class="error">{cmdError}</p>
           {/if}
