@@ -1068,6 +1068,14 @@
                     <input class="ve-input" type="text" placeholder="You"
                            value={el.userLabel ?? "You"}
                            on:input={e => setProp(i,"userLabel",e.target.value || undefined)}>
+                    <div class="ve-row" style="align-items:center;gap:.5rem;margin-top:.25rem">
+                      <label class="ve-prop-label" style="min-width:0">Show agent label</label>
+                      <input type="checkbox" checked={el.showAgentLabel !== false}
+                             on:change={e => setProp(i,"showAgentLabel", e.target.checked ? undefined : false)}>
+                      <label class="ve-prop-label" style="min-width:0;margin-left:.5rem">Show user label</label>
+                      <input type="checkbox" checked={el.showUserLabel !== false}
+                             on:change={e => setProp(i,"showUserLabel", e.target.checked ? undefined : false)}>
+                    </div>
                     <div class="ve-row" style="gap:.5rem;margin-top:.1rem">
                       <label class="ve-prop-label">Agent bg</label>
                       <input class="ve-color" type="color"
@@ -1605,6 +1613,14 @@
                             <input class="ve-input" type="text" placeholder="You"
                                    value={child.userLabel ?? "You"}
                                    on:input={e => setChildProp(i,ci,"userLabel",e.target.value || undefined)}>
+                            <div class="ve-row" style="align-items:center;gap:.5rem;margin-top:.25rem">
+                              <label class="ve-prop-label" style="min-width:0">Show agent label</label>
+                              <input type="checkbox" checked={child.showAgentLabel !== false}
+                                     on:change={e => setChildProp(i,ci,"showAgentLabel", e.target.checked ? undefined : false)}>
+                              <label class="ve-prop-label" style="min-width:0;margin-left:.5rem">Show user label</label>
+                              <input type="checkbox" checked={child.showUserLabel !== false}
+                                     on:change={e => setChildProp(i,ci,"showUserLabel", e.target.checked ? undefined : false)}>
+                            </div>
                             <div class="ve-row" style="gap:.5rem;margin-top:.1rem">
                               <label class="ve-prop-label">Agent bg</label>
                               <input class="ve-color" type="color"

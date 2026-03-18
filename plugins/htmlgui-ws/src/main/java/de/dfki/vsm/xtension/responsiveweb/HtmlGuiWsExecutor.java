@@ -440,6 +440,7 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
     @Override
     public void unload() {
         websockets.clear();
+        synchronized (mConvLogs) { mConvLogs.clear(); }
         app.stop();
         // Terminate browser process if we started one
         if (mBrowserProcess != null) {

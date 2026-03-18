@@ -673,7 +673,7 @@ class VsmFeedElement extends LitElement {
         /* Bubble wrapper — controls alignment.
            padding-bottom gives the tail triangle room without being clipped. */
         .vsm-feed-row             { display: flex; flex-direction: column; max-width: 78%; padding-bottom: 14px; }
-        .vsm-feed-row.role-agent  { align-self: flex-start; }
+        .vsm-feed-row.role-agent  { align-self: flex-start; width: fit-content; }
         .vsm-feed-row.role-user   { align-self: flex-end; }
         .vsm-feed-row.role-system { align-self: center; max-width: 90%; padding-bottom: 4px; }
 
@@ -757,11 +757,14 @@ class VsmFeedElement extends LitElement {
             textColor ? 'color:' + textColor : '',
         ].filter(Boolean).join(';');
 
-        // Speaker label: per-message override > config label > omit for system
+        // Speaker label: per-message override > config label > omit when disabled or system
+        const showLabel = role === 'user'  ? (cfg.showUserLabel  !== false)
+                        : role === 'agent' ? (cfg.showAgentLabel !== false)
+                        : false;
         const defaultLabel = role === 'user'  ? (cfg.userLabel  ?? 'You')
                            : role === 'agent' ? (cfg.agentLabel ?? 'Agent')
                            : null;
-        const speaker = msg.speaker !== undefined ? msg.speaker : defaultLabel;
+        const speaker = showLabel ? (msg.speaker !== undefined ? msg.speaker : defaultLabel) : null;
 
         return html`
             <div class=${'vsm-feed-row role-' + role}>

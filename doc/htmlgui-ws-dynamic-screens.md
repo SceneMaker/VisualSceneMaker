@@ -218,20 +218,33 @@ Variables are mapped to those properties via the element schema:
 
 ## Phase 3 — Save / Review / Annotation Workflow
 
-> **Status: requires further discussion before implementation.**
+**Persistence plugin**: `plugins/user-cue-service` (`UserCueService`).
 
-The save and reload of conversation data involves an existing plugin (to be
-identified). Key open questions:
+### Field mapping
 
-- Which plugin handles persistence, and what is its interface?
-- How does the load event signal the screen that new data is available?
-  (Variable update is the natural answer, but the timing must be clarified.)
-- Should the review screen be a separate VSM project/scene, or a runtime
-  mode of the same project?
-- How are LLM summaries triggered and where do their results land?
-  (Variable? Direct feed append? Streaming?)
-- Should the feed support a read-only / replay mode (no new messages,
-  scroll controls only)?
+| vsm-feed field | user-cue-service field | Notes |
+|---|---|---|
+| `role` | `producer` | Use `"agent"` / `"user"` / `"system"` as producer values |
+| `text` | `entry` | |
+| `timestamp` | `date` | Stored as epoch ms; `loadFeed` formats as `HH:mm` |
+| _(session scope)_ | `context` | Set via `setcontext` before recording |
+
+### Design decisions
+
+- `loadFeed` only writes to the SceneFlow variable; the SceneFlow author broadcasts
+  the variable change separately (`htmlgui-ws:updateVar` or similar). This keeps
+  storage and display concerns independent.
+- Session scoping uses the existing `context` field (`setcontext` action).
+  A new session tag (e.g. `"2026-03-16-morning"`) scopes sub-day sessions.
+- LLM annotation entries are stored with `producer="system"` and retrieved
+  automatically by `loadFeed` — no special handling needed.
+- The review screen can be a separate VSM scene; it calls `loadFeed` on entry
+  and receives the full annotated history in one variable update.
+
+### Open questions
+
+- Should the feed support a read-only / replay mode (no new messages, scroll only)?
+- How are LLM summaries triggered — external LLM plugin, SceneScript, or both?
 
 ---
 
@@ -239,30 +252,58 @@ identified). Key open questions:
 
 ### Phase 1 — `vsm-feed`
 
-- [ ] `VsmFeedElement` LitElement in `vsm-renderer.js`
-  - [ ] Parses JSON array from bound variable
-  - [ ] Renders role-aware bubble list
-  - [ ] Auto-scrolls to newest entry on variable change
-  - [ ] Handles `system` role (centered, italic, no tail)
-  - [ ] Configurable colors and labels per role
-- [ ] `AppendMessage` PlayAction in `HtmlGuiWsExecutor.java`
-  - [ ] Reads current variable value, appends new message object, writes back
-- [ ] ScreenEditor: `+Feed` button, property panel
-- [ ] Sync to `editor/web-ui/public/vsm-renderer.js`
-- [ ] Build and commit
+- [x] `VsmFeedElement` LitElement in `vsm-renderer.js`
+  - [x] Parses JSON array from bound variable
+  - [x] Renders role-aware bubble list
+  - [x] Auto-scrolls to newest entry on variable change
+  - [x] Handles `system` role (centered, italic, no tail)
+  - [x] Configurable colors and labels per role
+- [x] `AppendMessage` PlayAction in `HtmlGuiWsExecutor.java`
+- [x] `ClearFeed` PlayAction in `HtmlGuiWsExecutor.java`
+- [x] ScreenEditor: `+Feed` button, property panel
+- [x] Sync to `editor/web-ui/public/vsm-renderer.js`
+- [x] Build and commit
 
 ### Phase 2 — `vsm-animate`
 
-- [ ] `VsmAnimateElement` LitElement in `vsm-renderer.js`
-  - [ ] Animation registry (name → SVG/CSS template function)
-  - [ ] CSS custom property update on variable change (no re-render)
-  - [ ] Built-in: `heartbeat`, `breathe`, `wave`, `pulse`, `spinner`
-- [ ] ScreenEditor: `+Animate` button, property panel with animation picker
-- [ ] Sync and build and commit
+- [x] `VsmAnimateElement` LitElement in `vsm-renderer.js`
+  - [x] Animation registry (name → SVG/CSS template function)
+  - [x] CSS custom property update on variable change (no re-render)
+  - [x] Built-in: `heartbeat`, `breathe`, `wave`, `pulse`, `spinner`
+- [x] ScreenEditor: `+Animate` button, property panel with animation picker
+- [x] Sync and build and commit
 
-### Phase 3 — deferred (pending discussion)
+### Phase 3 — Save / Review / Annotation
 
-- [ ] Identify persistence plugin interface
-- [ ] Design load → variable → feed pipeline
-- [ ] Define LLM annotation workflow
+- [x] Identify persistence plugin: `plugins/user-cue-service` (`UserCueService`)
+- [x] Add `loadFeed` action to `UserCueService`
+- [ ] Define LLM annotation workflow (store with `producer="system"`, reload via `loadFeed`)
 - [ ] Implement read-only replay mode in `vsm-feed` (if needed)
+
+### Pre-authored Templates
+
+- [x] `dialogue-feed.json` — live conversation feed
+- [x] `review-feed.json` — session review with LLM annotations
+- [x] `sensor-chart.json` — live line chart
+- [x] `heartbeat-overlay.json` — animated heartbeat overlay
+- [x] `breathing-overlay.json` — animated breathing overlay
+- [x] `question-buttons.json` — three-option choice buttons
+- [x] `index.json` manifest with variable requirements
+- [x] ScreenEditor "From Template…" button + modal picker
+- [x] Templates bundled into built web-ui resources
+
+**Recording pattern** (SceneScript calls both plugins independently):
+```xml
+<!-- display in live feed -->
+<playaction ref="htmlgui-ws:appendMessage" var="conv_log" role="agent" text="$utt"/>
+<!-- persist to diary -->
+<playaction ref="user-cue-service:diary" producer="agent" entry="$utt"/>
+```
+
+**Review pattern**:
+```xml
+<!-- set session scope, then load all entries for today into the feed variable -->
+<playaction ref="user-cue-service:setcontext" value="session_1"/>
+<playaction ref="user-cue-service:loadFeed"   var="conv_log" day="0" context="session_1"/>
+<!-- broadcast the variable change to the web client separately -->
+```
