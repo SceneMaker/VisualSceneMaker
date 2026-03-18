@@ -1,1 +1,3 @@
 scripts/gen-sf.sh
+plugins/htmlgui-ws/build/classes/
+plugins/htmlgui-ws/build/libs/
