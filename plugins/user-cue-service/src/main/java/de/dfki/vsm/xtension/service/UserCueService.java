@@ -588,6 +588,52 @@ public class UserCueService extends ActivityExecutor {
                 mLogger.warning("No user specified, diary log entry will not be stored.");
             }
         }
+
+        // loadFeed serialises diary entries for a given day (and optional context) as a
+        // vsm-feed-compatible JSON array and writes it to a SceneFlow variable.
+        //
+        // Usage:
+        //   <playaction ref="user-cue-service:loadFeed" var="conv_log" day="0" context="session_1"/>
+        //
+        // Parameters:
+        //   var     (required) — name of the SceneFlow String variable to write
+        //   day     (optional, default 0) — 0 = today, 1 = yesterday, …
+        //   context (optional) — if present, only entries whose context matches are included
+        //
+        // Each diary entry with a non-empty "entry" field is mapped to a vsm-feed message:
+        //   producer → role,  entry → text,  date → timestamp (HH:mm)
+        if (name.equalsIgnoreCase("loadFeed")) {
+            if (mUser == null) {
+                mLogger.warning("UserCueService: no user loaded, loadFeed skipped.");
+                return;
+            }
+            String varName = activity.get("var");
+            if (varName == null || varName.trim().isEmpty()) {
+                mLogger.failure("UserCueService: loadFeed requires a 'var' parameter.");
+                return;
+            }
+            varName = varName.replace("'", "").trim();
+
+            int dayOffset = 0;
+            if (activity.get("day") != null) {
+                try { dayOffset = Integer.parseInt(activity.get("day").trim()); }
+                catch (NumberFormatException ignored) {}
+            }
+
+            String context = (activity.get("context") != null)
+                    ? activity.get("context").replace("'", "").trim() : null;
+
+            JSONArray feedArray = buildFeedArray(dayOffset, context);
+
+            if (mProject.hasVariable(varName)) {
+                mProject.setVariable(varName, new StringValue(feedArray.toString()));
+                mLogger.message("UserCueService: loadFeed wrote " + feedArray.length()
+                        + " entries to '" + varName + "'.");
+            } else {
+                mLogger.failure("UserCueService: loadFeed target variable '" + varName
+                        + "' not found in project.");
+            }
+        }
     }
 
     // set also overrides previously set values.
@@ -844,6 +890,58 @@ public class UserCueService extends ActivityExecutor {
             }
         }
         return entries;
+    }
+
+    /**
+     * Collects diary entries for {@code dayOffset} days ago (0 = today) and an optional
+     * context tag, then converts them into a vsm-feed-compatible JSON array:
+     * <pre>[ {"role":"agent","text":"…","timestamp":"HH:mm"}, … ]</pre>
+     * Only entries that have a non-empty "entry" field are included.
+     */
+    private JSONArray buildFeedArray(int dayOffset, String context) {
+        JSONArray diary = mUser.getJSONArray("diary");
+        JSONArray feed  = new JSONArray();
+
+        // Compute the target calendar day (midnight-normalised).
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.DATE, -dayOffset);
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        final Date targetDay = cal.getTime();
+
+        final DateFormat timeFmt = new SimpleDateFormat("HH:mm", Locale.GERMANY);
+
+        for (int i = 0; i < diary.length(); i++) {
+            JSONObject item = diary.getJSONObject(i);
+
+            // must have a non-empty "entry" field
+            if (!item.has("entry") || item.getString("entry").isEmpty()) continue;
+
+            // optional context filter
+            if (context != null && !context.isEmpty()) {
+                if (!item.has("context") || !item.getString("context").equalsIgnoreCase(context)) continue;
+            }
+
+            // day filter
+            long dateMillis = item.getLong("date");
+            cal.setTime(new Date(dateMillis));
+            cal.set(Calendar.HOUR_OF_DAY, 0);
+            cal.set(Calendar.MINUTE, 0);
+            cal.set(Calendar.SECOND, 0);
+            cal.set(Calendar.MILLISECOND, 0);
+            if (!cal.getTime().equals(targetDay)) continue;
+
+            // map to vsm-feed message object
+            JSONObject msg = new JSONObject();
+            msg.put("role",      item.getString("producer"));
+            msg.put("text",      item.getString("entry"));
+            msg.put("timestamp", timeFmt.format(new Date(dateMillis)));
+            feed.put(msg);
+        }
+
+        return feed;
     }
 
     private long getLastDiaryEntryNumber() {

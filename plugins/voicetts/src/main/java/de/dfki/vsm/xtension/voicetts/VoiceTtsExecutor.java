@@ -154,6 +154,7 @@ public class VoiceTtsExecutor extends ActivityExecutor {
 
     private String connectedVar;
     private String speakingVar;
+    private String textVar;
     private String visemeVar;
     private String wordVar;
     private String wordFinalVar;
@@ -194,7 +195,8 @@ public class VoiceTtsExecutor extends ActivityExecutor {
         avatarSsePort = parseIntOrDefault(configOrDefault("avatar_sse_port", "0"), 0);
 
         connectedVar = configOrDefault("connectedVar", "tts_connected");
-        speakingVar = configOrDefault("speakingVar", "tts_speaking");
+        speakingVar  = configOrDefault("speakingVar",  "tts_speaking");
+        textVar      = configOrDefault("textVar",      "tts_text");
         visemeVar = configOrDefault("visemeVar", "tts_viseme");
         wordVar = configOrDefault("wordVar", "tts_word");
         wordFinalVar = configOrDefault("wordFinalVar", "tts_word_final");
@@ -203,8 +205,9 @@ public class VoiceTtsExecutor extends ActivityExecutor {
         debugReqVar = configOrDefault("debugReqVar", "tts_debug_request_id");
         debugStateVar = configOrDefault("debugStateVar", "tts_debug_state");
 
-        setBoolVar(connectedVar, false);
-        setBoolVar(speakingVar, false);
+        setBoolVar(connectedVar,  false);
+        setBoolVar(speakingVar,   false);
+        setStringVar(textVar,     "");
         setBoolVar(wordFinalVar, false);
         setStringVar(errorVar, "");
         setStringVar(debugSeqVar, "0");
@@ -390,8 +393,9 @@ public class VoiceTtsExecutor extends ActivityExecutor {
         resetPlaybackTracking();
         lastChunkRequestId = "";
         lastChunkEndSample = -1L;
-        setBoolVar(speakingVar, true);
-        setStringVar(errorVar, "");
+        setBoolVar(speakingVar,  true);
+        setStringVar(textVar,    text);
+        setStringVar(errorVar,   "");
 
         final long generation = streamGeneration.get();
         sessionListener = createSessionListener(generation);
@@ -488,16 +492,40 @@ public class VoiceTtsExecutor extends ActivityExecutor {
             try {
                 TtsStreamClient existing = activeClient.get();
                 if (existing != null && existing.isConnected()) {
+                    // Already connected — still ensure connectedVar reflects reality.
+                    deferredSetBoolVar(connectedVar, true);
                     return;
                 }
                 TtsStreamClient client = new TtsStreamClient(wsUrl, persistentListener);
                 client.connect();
                 activeClient.set(client);
-                setBoolVar(connectedVar, true);
+                // connectOnly() runs during plugin launch, before the interpreter is started.
+                // setVariable fails silently until the interpreter's configuration is active,
+                // so retry with backoff until the write succeeds.
+                deferredSetBoolVar(connectedVar, true);
             } catch (Exception ex) {
                 setStringVar(errorVar, "connect failed: " + ex.getMessage());
             }
         });
+    }
+
+    /**
+     * Retries setting a boolean SceneFlow variable until the interpreter is ready to accept
+     * writes. This is necessary when called from plugin launch() before the interpreter has
+     * been started (interpreter is created after all plugins launch, but started later on
+     * user request — setVariable returns false / throws until the state machine is active).
+     */
+    private void deferredSetBoolVar(final String varName, final boolean value) {
+        for (int attempt = 0; attempt < 10; attempt++) {
+            if (!variableWritesEnabled) return;
+            if (mProject.setVariable(varName, value)) return;
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException ie) {
+                Thread.currentThread().interrupt();
+                return;
+            }
+        }
     }
 
     private void disconnectOnly() {
@@ -753,7 +781,9 @@ public class VoiceTtsExecutor extends ActivityExecutor {
         }
         for (ActionFeature feature : features) {
             if (feature != null && key.equals(feature.getKey())) {
-                return feature.getVal(activity.getSubstitutions());
+                // getVal() returns the raw value including any surrounding quotes (e.g. 'cv1').
+                // normalizeQuoted strips them so callers receive the bare value.
+                return normalizeQuoted(feature.getVal(activity.getSubstitutions()));
             }
         }
         return null;

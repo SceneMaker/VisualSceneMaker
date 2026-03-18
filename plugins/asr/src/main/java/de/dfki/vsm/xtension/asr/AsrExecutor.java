@@ -460,26 +460,48 @@ public class AsrExecutor extends ActivityExecutor {
     // -------------------------------------------------------------------------
 
     private void setStringVar(final String varName, final String value) {
+        setStringVar(varName, value, 20);
+    }
+
+    private void setStringVar(final String varName, final String value, final int retriesLeft) {
         if (!variableWritesEnabled) return;
         if (varName == null || varName.isBlank()) return;
+        final String v = value == null ? "" : value;
         try {
-            mProject.setVariable(varName, value == null ? "" : value);
+            if (!mProject.setVariable(varName, v) && running && retriesLeft > 0 && scheduler != null) {
+                scheduler.schedule(() -> setStringVar(varName, v, retriesLeft - 1),
+                        250, TimeUnit.MILLISECONDS);
+            }
         } catch (Throwable ignore) {}
     }
 
     private void setBoolVar(final String varName, final boolean value) {
+        setBoolVar(varName, value, 20);
+    }
+
+    private void setBoolVar(final String varName, final boolean value, final int retriesLeft) {
         if (!variableWritesEnabled) return;
         if (varName == null || varName.isBlank()) return;
         try {
-            mProject.setVariable(varName, value);
+            if (!mProject.setVariable(varName, value) && running && retriesLeft > 0 && scheduler != null) {
+                scheduler.schedule(() -> setBoolVar(varName, value, retriesLeft - 1),
+                        250, TimeUnit.MILLISECONDS);
+            }
         } catch (Throwable ignore) {}
     }
 
     private void setFloatVar(final String varName, final float value) {
+        setFloatVar(varName, value, 20);
+    }
+
+    private void setFloatVar(final String varName, final float value, final int retriesLeft) {
         if (!variableWritesEnabled) return;
         if (varName == null || varName.isBlank()) return;
         try {
-            mProject.setVariable(varName, value);
+            if (!mProject.setVariable(varName, value) && running && retriesLeft > 0 && scheduler != null) {
+                scheduler.schedule(() -> setFloatVar(varName, value, retriesLeft - 1),
+                        250, TimeUnit.MILLISECONDS);
+            }
         } catch (Throwable ignore) {}
     }
 
@@ -518,6 +540,7 @@ public class AsrExecutor extends ActivityExecutor {
         @Override
         public void onOpen(final WebSocket ws) {
             wsClient = ws;
+            setBoolVar(connectedVar, true);
             mLogger.message("[asr] connected to " + wsUrl);
             ws.request(1);
         }
