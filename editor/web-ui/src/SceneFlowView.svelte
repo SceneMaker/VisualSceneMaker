@@ -256,6 +256,7 @@
   let selectedNodeId = null;
   let selectedEdgeId = null;
   let selectedCommentId = null;
+  let selectedCommandSelection = null;
   let activityNodeSet = new Set();
   let activityEdgeMap = new Map();
   let timeoutEdgeMap = new Map();
@@ -351,19 +352,28 @@
       selectedNodeId = selection.id;
       selectedEdgeId = null;
       selectedCommentId = null;
+      selectedCommandSelection = null;
     } else if (selection.type === "edge") {
       selectedEdgeId = selection.id;
       selectedNodeId = null;
       selectedCommentId = null;
+      selectedCommandSelection = null;
     } else if (selection.type === "comment") {
       selectedCommentId = selection.id;
       selectedNodeId = null;
       selectedEdgeId = null;
+      selectedCommandSelection = null;
+    } else if (selection.type === "command") {
+      selectedNodeId = null;
+      selectedEdgeId = null;
+      selectedCommentId = null;
+      selectedCommandSelection = selection;
     }
   } else if (selection === null) {
     selectedNodeId = null;
     selectedEdgeId = null;
     selectedCommentId = null;
+    selectedCommandSelection = null;
   }
 
   $: {
@@ -479,6 +489,12 @@
           ? edges.some((edge) => edge.id === selection.id)
           : selection.type === "comment"
             ? comments.some((comment) => comment.id === selection.id)
+            : selection.type === "command"
+              ? (() => {
+                  const node = nodes.find((entry) => entry.id === selection.nodeId);
+                  const commands = Array.isArray(node?.commands) ? node.commands : [];
+                  return Number.isInteger(selection.index) && selection.index >= 0 && selection.index < commands.length;
+                })()
             : false;
     if (!exists) {
       clearSelection();
@@ -1218,6 +1234,7 @@
     selectedNodeId = null;
     selectedEdgeId = null;
     selectedCommentId = null;
+    selectedCommandSelection = null;
     selection = null;
     multiSelection = [];
     timeoutSliderSuppressedEdgeId = "";
@@ -1271,7 +1288,22 @@
     selectedCommentId = commentId;
     selectedNodeId = null;
     selectedEdgeId = null;
+    selectedCommandSelection = null;
     updateMultiSelection(new Set(), new Set([commentId]), new Set(), { type: "comment", id: commentId });
+  }
+
+  function selectCommand(nodeId, index) {
+    if (!nodeId || !Number.isFinite(index)) return;
+    if (editingCommentId) {
+      commitCommentEdit();
+    }
+    focusStage();
+    selectedNodeId = null;
+    selectedEdgeId = null;
+    selectedCommentId = null;
+    selectedCommandSelection = { type: "command", id: `${nodeId}:${index}`, nodeId, index };
+    selection = selectedCommandSelection;
+    multiSelection = [selectedCommandSelection];
   }
 
   function edgeColor(edge) {
@@ -3068,7 +3100,6 @@
     event.preventDefault();
     event.stopPropagation();
     focusStage();
-    selectNode(node.id);
     const world = eventToWorld(event);
     const captureEl = stageEl || svgEl;
     if (captureEl) {
@@ -3091,7 +3122,20 @@
   function activateCommandBadge(node, badge) {
     if (!node || !badge) return;
     if (Date.now() < suppressCommandBadgeClickUntil) return;
-    handleCommandOpen(node, badge.index);
+    selectCommand(node.id, badge.index);
+  }
+
+  function handleCommandBadgePointerUp(event, node, badge) {
+    if (!node || !badge) return;
+    event.stopPropagation();
+    if (
+      dragState?.type === "cmd-badge" &&
+      dragState.nodeId === node.id &&
+      dragState.commandIndex === badge.index &&
+      !dragState.moved
+    ) {
+      selectCommand(node.id, badge.index);
+    }
   }
 
   function handleNodeKeydown(node, event) {
@@ -3826,6 +3870,7 @@
     }
     if (finished.type === "cmd-badge") {
       if (!finished.moved) {
+        selectCommand(finished.nodeId, finished.commandIndex);
         return;
       }
       const node = nodeMap.get(finished.nodeId);
@@ -4773,9 +4818,15 @@
                 tabindex="0"
                 aria-label={badge.truncated ? badge.fullText : badge.text}
                 on:pointerdown|stopPropagation={(event) => startCommandBadgeDrag(event, node, badge)}
+                on:pointerup|stopPropagation={(event) => handleCommandBadgePointerUp(event, node, badge)}
                 on:click|stopPropagation={() => activateCommandBadge(node, badge)}
-                on:keydown|stopPropagation={(e) => { if (e.key === 'Enter' || e.key === ' ') activateCommandBadge(node, badge); }}
+                on:dblclick|stopPropagation={() => handleCommandOpen(node, badge.index)}
+                on:keydown|stopPropagation={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') activateCommandBadge(node, badge);
+                  if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) handleCommandOpen(node, badge.index);
+                }}
                 class:drag-source={dragState?.type === "cmd-badge" && dragState?.nodeId === node.id && dragState?.commandIndex === badge.index && dragState?.moved}
+                class:selected={selectedCommandSelection?.nodeId === node.id && selectedCommandSelection?.index === badge.index}
               >
                 <rect
                   class="node-cmd-badge-bg"
