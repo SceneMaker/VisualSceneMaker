@@ -171,6 +171,7 @@ dependencies {
     implementation project(":core-logic-jpl")
     implementation project(":editor")
     implementation fileTree(dir: 'lib', include: "*.jar")
+    implementation project(":plugins:heartflow")
     implementation project(":plugins:alma")
     implementation project(":plugins:AndroidGui")
     implementation project(":plugins:email")

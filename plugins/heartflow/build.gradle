@@ -1,0 +1,10 @@
+plugins { id 'java' }
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation project(":core")
+    implementation group: 'org.json', name: 'json', version: '20171018'
+}
