@@ -419,7 +419,9 @@
       dirty = false; saveOk = true;
       sendSchemaToPreview();
     } catch (e) {
-      saveError = e.message || "Save failed.";
+      let msg = e.message || "Save failed.";
+      try { const p = JSON.parse(msg); if (p?.message) msg = p.message; } catch {}
+      saveError = msg;
     } finally { saveBusy = false; }
   }
 

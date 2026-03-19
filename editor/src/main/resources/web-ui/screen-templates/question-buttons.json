@@ -1,0 +1,80 @@
+{
+  "version": 1,
+  "screens": {
+    "question-choice": {
+      "background": "#ffffff",
+      "layout": "flex-column",
+      "alignItems": "stretch",
+      "justifyContent": "center",
+      "elements": [
+        {
+          "type": "vsm-filler",
+          "flexGrow": true
+        },
+        {
+          "type": "sl-text",
+          "content": "Please choose an answer:",
+          "style": {
+            "font-size": "1.05rem",
+            "font-weight": "500",
+            "padding": "0 16px 16px",
+            "text-align": "center",
+            "color": "#333333"
+          }
+        },
+        {
+          "type": "sl-button",
+          "label": "Option A",
+          "id": "btn_a",
+          "sendsVar": "gui_choice",
+          "sendsValue": "A",
+          "style": {
+            "margin": "4px 16px",
+            "background": "#5b8edc",
+            "color": "#ffffff",
+            "font-size": "1rem",
+            "padding": "10px 0",
+            "border-radius": "8px",
+            "width": "calc(100% - 32px)"
+          }
+        },
+        {
+          "type": "sl-button",
+          "label": "Option B",
+          "id": "btn_b",
+          "sendsVar": "gui_choice",
+          "sendsValue": "B",
+          "style": {
+            "margin": "4px 16px",
+            "background": "#5b8edc",
+            "color": "#ffffff",
+            "font-size": "1rem",
+            "padding": "10px 0",
+            "border-radius": "8px",
+            "width": "calc(100% - 32px)"
+          }
+        },
+        {
+          "type": "sl-button",
+          "label": "Option C",
+          "id": "btn_c",
+          "sendsVar": "gui_choice",
+          "sendsValue": "C",
+          "style": {
+            "margin": "4px 16px",
+            "background": "#5b8edc",
+            "color": "#ffffff",
+            "font-size": "1rem",
+            "padding": "10px 0",
+            "border-radius": "8px",
+            "width": "calc(100% - 32px)"
+          }
+        },
+        {
+          "type": "vsm-filler",
+          "flexGrow": true
+        }
+      ]
+    }
+  }
+}

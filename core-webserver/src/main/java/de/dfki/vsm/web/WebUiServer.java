@@ -5553,8 +5553,9 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         }
         Path path = screensPath(ref);
         if (path == null) {
-            ctx.status(500);
-            writeJson(ctx, errorResponse("SCREENS_SAVE_FAILED", "Cannot resolve project path"));
+            ctx.status(409);
+            writeJson(ctx, errorResponse("SCREENS_SAVE_FAILED",
+                    "Project has not been saved to disk yet. Use File \u2192 Save As to choose a location, then try again."));
             return;
         }
         try {

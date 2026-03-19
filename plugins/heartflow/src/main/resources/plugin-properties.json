@@ -1,7 +1,7 @@
 {
     "schemaVersion": "1.0",
     "specVersion": "1.1",
-    "specHash": "52aba4c5cf7ec525",
+    "specHash": "88f4791ae908dc16",
     "plugin": {
         "id": "heartflow",
         "name": "Heart Flow",
@@ -28,195 +28,208 @@
     },
     "config": {
         "required": [
-            
-        ],
-        "optional": [
             {
-                "key": "ws_url",
-                "type": "String",
-                "default": "ws://localhost:7878",
-                "description": "WebSocket URL of the Heart Flow server"
-            },
-            {
-                "key": "auto_connect",
-                "type": "Boolean",
-                "default": "false",
-                "description": "If true, send auto_connect on launch \u2014 Heart Flow scans and connects to the first Polar H10 found automatically, without browser interaction"
-            },
-            {
-                "key": "reconnect_delay_ms",
-                "type": "Integer",
-                "default": "2000",
-                "description": "Reconnect delay in ms after connection loss"
-            },
-            {
-                "key": "beat_offset_ms",
-                "type": "Integer",
-                "default": "0",
-                "description": "Offset added to predicted beat epoch (ms). Use 0 to fire at the R-peak, +100 to fire at mechanical contraction onset, or negative to compensate for animation render lag."
-            },
-            {
-                "key": "min_confidence",
-                "type": "Float",
-                "default": "0.3",
-                "description": "Minimum heartbeat prediction confidence [0\u20131]. Events below this are suppressed (arrhythmia / irregular rhythm guard)."
-            },
-            {
-                "key": "hf_bpm",
-                "type": "String",
+                "name": "hf_bpm",
+                "type": "string",
+                "sceneflowtype": "Float",
                 "default": "hf_bpm",
                 "description": "SceneFlow variable for heart rate (Float, bpm)"
             },
             {
-                "key": "hf_rmssd",
-                "type": "String",
+                "name": "hf_rmssd",
+                "type": "string",
+                "sceneflowtype": "Float",
                 "default": "hf_rmssd",
                 "description": "SceneFlow variable for RMSSD (Float, ms)"
             },
             {
-                "key": "hf_sdnn",
-                "type": "String",
+                "name": "hf_sdnn",
+                "type": "string",
+                "sceneflowtype": "Float",
                 "default": "hf_sdnn",
                 "description": "SceneFlow variable for SDNN (Float, ms)"
             },
             {
-                "key": "hf_pnn50",
-                "type": "String",
+                "name": "hf_pnn50",
+                "type": "string",
+                "sceneflowtype": "Float",
                 "default": "hf_pnn50",
                 "description": "SceneFlow variable for pNN50 (Float, %)"
             },
             {
-                "key": "hf_sd1",
-                "type": "String",
+                "name": "hf_sd1",
+                "type": "string",
+                "sceneflowtype": "Float",
                 "default": "hf_sd1",
                 "description": "SceneFlow variable for SD1 (Float, ms)"
             },
             {
-                "key": "hf_sd2",
-                "type": "String",
+                "name": "hf_sd2",
+                "type": "string",
+                "sceneflowtype": "Float",
                 "default": "hf_sd2",
                 "description": "SceneFlow variable for SD2 (Float, ms)"
             },
             {
-                "key": "hf_median_rr",
-                "type": "String",
+                "name": "hf_median_rr",
+                "type": "string",
+                "sceneflowtype": "Float",
                 "default": "hf_median_rr",
                 "description": "SceneFlow variable for median RR (Float, ms)"
             },
             {
-                "key": "hf_motion",
-                "type": "String",
+                "name": "hf_motion",
+                "type": "string",
+                "sceneflowtype": "String",
                 "default": "hf_motion",
                 "description": "SceneFlow variable for motion category (String: Still/Slight/Strong)"
             },
             {
-                "key": "hf_motion_score",
-                "type": "String",
+                "name": "hf_motion_score",
+                "type": "string",
+                "sceneflowtype": "Float",
                 "default": "hf_motion_score",
                 "description": "SceneFlow variable for normalised motion score (Float, 0\u20131)"
             },
             {
-                "key": "hf_breathing_phase",
-                "type": "String",
+                "name": "hf_breathing_phase",
+                "type": "string",
+                "sceneflowtype": "String",
                 "default": "hf_breathing_phase",
                 "description": "SceneFlow variable for breathing phase (String: inhale/exhale)"
             },
             {
-                "key": "hf_breathing_rate",
-                "type": "String",
+                "name": "hf_breathing_rate",
+                "type": "string",
+                "sceneflowtype": "Float",
                 "default": "hf_breathing_rate",
                 "description": "SceneFlow variable for breathing rate (Float, breaths/min)"
             },
             {
-                "key": "hf_heartbeat",
-                "type": "String",
+                "name": "hf_heartbeat",
+                "type": "string",
+                "sceneflowtype": "Event(String)",
                 "default": "hf_heartbeat",
                 "description": "SceneFlow variable for predictive heartbeat event (Event(String), value: beat)"
             },
             {
-                "key": "hf_battery",
-                "type": "String",
+                "name": "hf_battery",
+                "type": "string",
+                "sceneflowtype": "Float",
                 "default": "hf_battery",
                 "description": "SceneFlow variable for battery level (Float, %)"
             },
             {
-                "key": "hf_connected",
-                "type": "String",
+                "name": "hf_connected",
+                "type": "string",
+                "sceneflowtype": "Bool",
                 "default": "hf_connected",
                 "description": "SceneFlow variable for connection state (Bool)"
+            }
+        ],
+        "optional": [
+            {
+                "name": "ws_url",
+                "type": "string",
+                "default": "ws://localhost:7878",
+                "description": "WebSocket URL of the Heart Flow server"
+            },
+            {
+                "name": "auto_connect",
+                "type": "string",
+                "default": "false",
+                "description": "If true, send auto_connect on launch \u2014 Heart Flow scans and connects to the first Polar H10 found automatically, without browser interaction"
+            },
+            {
+                "name": "reconnect_delay_ms",
+                "type": "string",
+                "default": "2000",
+                "description": "Reconnect delay in ms after connection loss"
+            },
+            {
+                "name": "beat_offset_ms",
+                "type": "string",
+                "default": "0",
+                "description": "Offset added to predicted beat epoch (ms). Use 0 to fire at the R-peak, +100 to fire at mechanical contraction onset, or negative to compensate for animation render lag."
+            },
+            {
+                "name": "min_confidence",
+                "type": "string",
+                "default": "0.3",
+                "description": "Minimum heartbeat prediction confidence [0\u20131]. Events below this are suppressed (arrhythmia / irregular rhythm guard)."
             }
         ]
     },
     "variables": {
         "writes": [
             {
-                "name": "hf_bpm",
-                "sceneflowtype": "Float",
+                "var": "hf_bpm",
+                "type": "Float",
                 "description": "Heart rate in BPM (from device HR notification)"
             },
             {
-                "name": "hf_rmssd",
-                "sceneflowtype": "Float",
+                "var": "hf_rmssd",
+                "type": "Float",
                 "description": "RMSSD in ms (artifact-rejected, updated per beat)"
             },
             {
-                "name": "hf_sdnn",
-                "sceneflowtype": "Float",
+                "var": "hf_sdnn",
+                "type": "Float",
                 "description": "SDNN in ms"
             },
             {
-                "name": "hf_pnn50",
-                "sceneflowtype": "Float",
+                "var": "hf_pnn50",
+                "type": "Float",
                 "description": "pNN50 in %"
             },
             {
-                "name": "hf_sd1",
-                "sceneflowtype": "Float",
+                "var": "hf_sd1",
+                "type": "Float",
                 "description": "Poincar\u00e9 SD1 in ms (short-term / vagal)"
             },
             {
-                "name": "hf_sd2",
-                "sceneflowtype": "Float",
+                "var": "hf_sd2",
+                "type": "Float",
                 "description": "Poincar\u00e9 SD2 in ms (overall variability)"
             },
             {
-                "name": "hf_median_rr",
-                "sceneflowtype": "Float",
+                "var": "hf_median_rr",
+                "type": "Float",
                 "description": "Median of last 8 RR intervals in ms"
             },
             {
-                "name": "hf_motion",
-                "sceneflowtype": "String",
+                "var": "hf_motion",
+                "type": "String",
                 "description": "Still / Slight / Strong \u2014 updated at 25 Hz"
             },
             {
-                "name": "hf_motion_score",
-                "sceneflowtype": "Float",
+                "var": "hf_motion_score",
+                "type": "Float",
                 "description": "Normalised motion RMS score 0\u20131"
             },
             {
-                "name": "hf_breathing_phase",
-                "sceneflowtype": "String",
+                "var": "hf_breathing_phase",
+                "type": "String",
                 "description": "inhale or exhale \u2014 updated at each zero-crossing"
             },
             {
-                "name": "hf_breathing_rate",
-                "sceneflowtype": "Float",
+                "var": "hf_breathing_rate",
+                "type": "Float",
                 "description": "Breathing rate in breaths/min (0 until first estimate)"
             },
             {
-                "name": "hf_heartbeat",
-                "sceneflowtype": "Event(String)",
+                "var": "hf_heartbeat",
+                "type": "Event(String)",
                 "description": "Pre-emptive heartbeat event. Value: beat. Fires at the predicted R-peak time using absolute epoch scheduling."
             },
             {
-                "name": "hf_battery",
-                "sceneflowtype": "Float",
+                "var": "hf_battery",
+                "type": "Float",
                 "description": "Polar H10 battery level in %"
             },
             {
-                "name": "hf_connected",
-                "sceneflowtype": "Bool",
+                "var": "hf_connected",
+                "type": "Bool",
                 "description": "True while Heart Flow is streaming ECG data"
             }
         ]
