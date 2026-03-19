@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Screen Element Reference — VSM htmlgui-ws</title>
+<style>
+  :root {
+    --bg: #f8f9fb;
+    --surface: #ffffff;
+    --border: #e2e6ee;
+    --text: #1a1f2e;
+    --muted: #6b7280;
+    --accent: #2c4282;
+    --accent-light: #eef1fb;
+    --tag-bg: #e8f0fe;
+    --tag-text: #1a3a8f;
+    --writes-bg: #fef9e7;
+    --writes-text: #7d4d00;
+    --reads-bg: #eafbe8;
+    --reads-text: #1a5c1a;
+    --action-bg: #f0f7ff;
+    --action-text: #004085;
+    --code-bg: #f4f6fa;
+    --code-border: #dde3ef;
+    --section-hue: #2c4282;
+    font-size: 14px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.55;
+  }
+
+  /* ── Layout ── */
+  .page-wrap { display: flex; min-height: 100vh; }
+
+  nav {
+    width: 220px; min-width: 220px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    padding: 1.5rem 0 2rem;
+    position: sticky; top: 0; height: 100vh; overflow-y: auto;
+    flex-shrink: 0;
+  }
+
+  nav .nav-logo {
+    font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--muted);
+    padding: 0 1.2rem 1rem;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 0.75rem;
+  }
+
+  nav a {
+    display: block; padding: 0.28rem 1.2rem;
+    font-size: 0.82rem; color: var(--muted);
+    text-decoration: none; border-left: 2px solid transparent;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  nav a:hover { color: var(--accent); }
+  nav a.active { color: var(--accent); border-left-color: var(--accent); background: var(--accent-light); }
+  nav .nav-group { font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.07em; color: #adb5bd; padding: 0.9rem 1.2rem 0.25rem; }
+
+  main { flex: 1; padding: 2.5rem 2.5rem 4rem; max-width: 960px; }
+
+  h1 { font-size: 1.6rem; font-weight: 700; margin-bottom: 0.4rem; color: var(--accent); }
+  .subtitle { color: var(--muted); margin-bottom: 2.5rem; font-size: 0.9rem; }
+
+  h2 {
+    font-size: 1.05rem; font-weight: 700; margin: 3rem 0 1rem;
+    padding-bottom: 0.4rem; border-bottom: 2px solid var(--border);
+    color: var(--section-hue);
+    scroll-margin-top: 1.5rem;
+  }
+  h2 .section-badge {
+    font-size: 0.68rem; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.06em; background: var(--tag-bg); color: var(--tag-text);
+    padding: 0.15rem 0.5rem; border-radius: 3px; margin-right: 0.5rem;
+    vertical-align: middle;
+  }
+
+  h3 {
+    font-size: 0.92rem; font-weight: 700; margin: 1.8rem 0 0.6rem;
+    scroll-margin-top: 1.5rem;
+  }
+  h3 code { font-size: 0.92rem; background: var(--code-bg); padding: 0.1rem 0.35rem; border-radius: 3px; }
+
+  p { margin-bottom: 0.6rem; font-size: 0.88rem; }
+
+  /* ── Cards ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.1rem 1.3rem;
+    margin-bottom: 1.2rem;
+  }
+
+  /* ── Field tables ── */
+  table { width: 100%; border-collapse: collapse; font-size: 0.83rem; margin-bottom: 0.8rem; }
+  th { text-align: left; padding: 0.35rem 0.6rem; background: var(--code-bg);
+    border-bottom: 2px solid var(--border); color: var(--muted); font-size: 0.75rem;
+    text-transform: uppercase; letter-spacing: 0.05em; }
+  td { padding: 0.32rem 0.6rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  td code { background: var(--code-bg); padding: 0.1rem 0.3rem; border-radius: 3px;
+    font-size: 0.82rem; font-family: "SFMono-Regular", Consolas, monospace; }
+  .req { color: #c0392b; font-size: 0.75rem; font-weight: 700; }
+  .opt { color: #7f8c8d; font-size: 0.75rem; }
+
+  /* ── Badges for read/write ── */
+  .badge { display: inline-block; font-size: 0.7rem; font-weight: 600; padding: 0.1rem 0.4rem;
+    border-radius: 3px; letter-spacing: 0.03em; vertical-align: middle; }
+  .badge-writes { background: var(--writes-bg); color: var(--writes-text); }
+  .badge-reads  { background: var(--reads-bg);  color: var(--reads-text); }
+  .badge-action { background: var(--action-bg); color: var(--action-text); }
+  .badge-type   { background: #f3f0ff; color: #4c2f9e; }
+
+  /* ── Code blocks ── */
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--code-border);
+    border-radius: 6px;
+    padding: 0.85rem 1rem;
+    font-size: 0.8rem;
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    overflow-x: auto;
+    line-height: 1.55;
+    margin: 0.5rem 0 0.8rem;
+  }
+  code { font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; }
+
+  /* ── Notes ── */
+  .note {
+    background: #fffbeb; border: 1px solid #f0d080; border-radius: 6px;
+    padding: 0.6rem 0.9rem; font-size: 0.82rem; margin: 0.6rem 0 0.8rem;
+  }
+  .note strong { color: #7d5a00; }
+
+  /* ── Tag list ── */
+  .tags { display: flex; flex-wrap: wrap; gap: 0.35rem; margin: 0.4rem 0 0.6rem; }
+  .tag { font-size: 0.72rem; padding: 0.15rem 0.45rem; border-radius: 3px;
+    background: var(--tag-bg); color: var(--tag-text); font-family: monospace; }
+
+  /* ── Grid layout for type index ── */
+  .type-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 0.6rem; margin-bottom: 1.2rem;
+  }
+  .type-grid a {
+    display: block; background: var(--surface); border: 1px solid var(--border);
+    border-radius: 6px; padding: 0.55rem 0.8rem;
+    text-decoration: none; color: var(--text); font-size: 0.82rem;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .type-grid a:hover { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-light); }
+  .type-grid a code { font-size: 0.78rem; }
+  .type-grid .tg-cat { font-size: 0.68rem; color: var(--muted); margin-top: 0.1rem; }
+
+  hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
+</style>
+</head>
+<body>
+
+<div class="page-wrap">
+
+<!-- ── Sidebar ── -->
+<nav id="sidebar">
+  <div class="nav-logo">VSM Screen Elements</div>
+
+  <div class="nav-group">Overview</div>
+  <a href="#screens">Screen properties</a>
+  <a href="#common">Common fields</a>
+  <a href="#actions">Plugin actions</a>
+
+  <div class="nav-group">Text &amp; Controls</div>
+  <a href="#sl-text"><code>sl-text</code></a>
+  <a href="#sl-button"><code>sl-button</code></a>
+  <a href="#sl-input"><code>sl-input</code></a>
+  <a href="#sl-textarea"><code>sl-textarea</code></a>
+  <a href="#sl-range"><code>sl-range</code></a>
+  <a href="#sl-checkbox"><code>sl-checkbox</code></a>
+  <a href="#sl-select"><code>sl-select</code></a>
+
+  <div class="nav-group">Display</div>
+  <a href="#sl-badge"><code>sl-badge</code></a>
+  <a href="#sl-card"><code>sl-card</code></a>
+  <a href="#sl-divider"><code>sl-divider</code></a>
+
+  <div class="nav-group">Media</div>
+  <a href="#vsm-image"><code>vsm-image</code></a>
+  <a href="#vsm-video"><code>vsm-video</code></a>
+  <a href="#vsm-audio"><code>vsm-audio</code></a>
+  <a href="#vsm-embed"><code>vsm-embed</code></a>
+
+  <div class="nav-group">Layout</div>
+  <a href="#vsm-panel"><code>vsm-panel</code></a>
+  <a href="#vsm-filler"><code>vsm-filler</code></a>
+
+  <div class="nav-group">Dynamic</div>
+  <a href="#vsm-bubble"><code>vsm-bubble</code></a>
+  <a href="#vsm-chart"><code>vsm-chart</code></a>
+  <a href="#vsm-feed"><code>vsm-feed</code></a>
+  <a href="#vsm-animate"><code>vsm-animate</code></a>
+</nav>
+
+<!-- ── Content ── -->
+<main>
+  <h1>Screen Element Reference</h1>
+  <p class="subtitle">htmlgui-ws plugin — <code>screens.json</code> schema-driven screen system</p>
+
+  <!-- ── Quick index ── -->
+  <div class="type-grid">
+    <a href="#sl-text"><code>sl-text</code><div class="tg-cat">Text paragraph</div></a>
+    <a href="#sl-button"><code>sl-button</code><div class="tg-cat">Clickable button</div></a>
+    <a href="#sl-input"><code>sl-input</code><div class="tg-cat">Text input</div></a>
+    <a href="#sl-textarea"><code>sl-textarea</code><div class="tg-cat">Multi-line input</div></a>
+    <a href="#sl-range"><code>sl-range</code><div class="tg-cat">Slider</div></a>
+    <a href="#sl-checkbox"><code>sl-checkbox</code><div class="tg-cat">Checkbox</div></a>
+    <a href="#sl-select"><code>sl-select</code><div class="tg-cat">Dropdown</div></a>
+    <a href="#sl-badge"><code>sl-badge</code><div class="tg-cat">Badge / pill</div></a>
+    <a href="#sl-card"><code>sl-card</code><div class="tg-cat">Card container</div></a>
+    <a href="#sl-divider"><code>sl-divider</code><div class="tg-cat">Horizontal rule</div></a>
+    <a href="#vsm-image"><code>vsm-image</code><div class="tg-cat">Image</div></a>
+    <a href="#vsm-video"><code>vsm-video</code><div class="tg-cat">Video</div></a>
+    <a href="#vsm-audio"><code>vsm-audio</code><div class="tg-cat">Audio player</div></a>
+    <a href="#vsm-embed"><code>vsm-embed</code><div class="tg-cat">iframe embed</div></a>
+    <a href="#vsm-panel"><code>vsm-panel</code><div class="tg-cat">Flex container</div></a>
+    <a href="#vsm-filler"><code>vsm-filler</code><div class="tg-cat">Flexible spacer</div></a>
+    <a href="#vsm-bubble"><code>vsm-bubble</code><div class="tg-cat">Speech bubble</div></a>
+    <a href="#vsm-chart"><code>vsm-chart</code><div class="tg-cat">Chart.js chart</div></a>
+    <a href="#vsm-feed"><code>vsm-feed</code><div class="tg-cat">Conversation feed</div></a>
+    <a href="#vsm-animate"><code>vsm-animate</code><div class="tg-cat">Animated overlay</div></a>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <h2 id="screens">Screen properties</h2>
+
+  <p>Each key in <code>screens</code> defines one named screen. Properties at this level control the top-level flex container.</p>
+
+  <table>
+    <tr><th>Field</th><th>Type</th><th>Default</th><th>Description</th></tr>
+    <tr><td><code>layout</code></td><td>string</td><td><code>"flex-column"</code></td><td><code>flex-column</code> | <code>flex-row</code> — direction of main axis. Use <code>flex-row</code> for side-by-side elements.</td></tr>
+    <tr><td><code>alignItems</code></td><td>string</td><td>—</td><td>CSS <code>align-items</code> (cross-axis alignment). In <code>flex-column</code>: horizontal. In <code>flex-row</code>: vertical.</td></tr>
+    <tr><td><code>justifyContent</code></td><td>string</td><td>—</td><td>CSS <code>justify-content</code> (main-axis alignment). Reversed meaning relative to <code>alignItems</code> (see above).</td></tr>
+    <tr><td><code>background</code></td><td>string</td><td><code>"transparent"</code></td><td>CSS background color or value.</td></tr>
+    <tr><td><code>elements</code></td><td>array</td><td><span class="req">required</span></td><td>Array of element definition objects rendered top-to-bottom (or left-to-right in <code>flex-row</code>).</td></tr>
+  </table>
+
+  <div class="note"><strong>Axis mapping:</strong> In <code>flex-column</code> (default), <code>alignItems</code> = horizontal, <code>justifyContent</code> = vertical. In <code>flex-row</code> the axes swap: <code>alignItems</code> = vertical, <code>justifyContent</code> = horizontal.</div>
+
+  <pre>{
+  "screens": {
+    "home": {
+      "layout": "flex-column",
+      "alignItems": "center",
+      "justifyContent": "center",
+      "background": "#f0f4ff",
+      "elements": [ ... ]
+    }
+  }
+}</pre>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <h2 id="common">Common fields</h2>
+
+  <p>These fields are available on every element type.</p>
+
+  <table>
+    <tr><th>Field</th><th>Description</th></tr>
+    <tr><td><code>type</code> <span class="req">required</span></td><td>Element type identifier (see sections below).</td></tr>
+    <tr><td><code>style</code></td><td>Object of CSS properties applied directly: <code>{"color":"red","font-size":"1.2rem"}</code></td></tr>
+    <tr><td><code>bindVar</code></td><td><span class="badge badge-reads">reads</span> SceneFlow variable name. The element displays and/or updates this variable. Used by inputs, text, bubble.</td></tr>
+    <tr><td><code>sendsVar</code></td><td><span class="badge badge-writes">writes</span> SceneFlow variable name. Written on user interaction (button click, etc.).</td></tr>
+    <tr><td><code>sendsValue</code></td><td>Value written to <code>sendsVar</code> on interaction. Default: <code>"true"</code>.</td></tr>
+  </table>
+
+  <div class="note"><strong>bindVar vs content:</strong> For <code>sl-text</code> and <code>vsm-bubble</code>, if a static <code>content</code> field is present it takes precedence over <code>bindVar</code>. To make the text dynamically updatable via <code>updateVar</code>, use <code>bindVar</code> only and omit <code>content</code>.</div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <h2 id="actions">Plugin actions (SceneScript)</h2>
+
+  <p>These actions are called from SceneFlow/SceneScript via <code>&lt;playaction ref="htmlgui-ws:…"&gt;</code>.</p>
+
+  <table>
+    <tr><th>Action</th><th>Parameters</th><th>Description</th></tr>
+    <tr>
+      <td><code>loadScreen</code></td>
+      <td><code>screen</code></td>
+      <td>Switch the active screen. <code>screen</code> must match a key in <code>screens</code>.</td>
+    </tr>
+    <tr>
+      <td><code>updateVar</code></td>
+      <td><code>var</code>, <code>value</code></td>
+      <td>Push a new value to every element whose <code>bindVar</code> or variable field matches <code>var</code>. Works for <code>sl-text</code>, <code>vsm-bubble</code>, <code>vsm-animate</code>, <code>vsm-chart</code>, <code>vsm-feed</code>, etc.</td>
+    </tr>
+    <tr>
+      <td><code>screensToFront</code></td>
+      <td>—</td>
+      <td>Raise the schema-driven screens iframe to the foreground.</td>
+    </tr>
+    <tr>
+      <td><code>guiToFront</code></td>
+      <td>—</td>
+      <td>Raise the legacy HTML GUI iframe to the foreground.</td>
+    </tr>
+    <tr>
+      <td><code>vcToFront</code></td>
+      <td>—</td>
+      <td>Raise the video-conferencing iframe to the foreground.</td>
+    </tr>
+    <tr>
+      <td><code>set</code></td>
+      <td><code>element</code>, <code>value</code></td>
+      <td><em>Legacy GUI only.</em> Set an element by DOM ID in the currently displayed HTML file.</td>
+    </tr>
+    <tr>
+      <td><code>appendMessage</code></td>
+      <td><code>var</code>, <code>role</code>, <code>text</code></td>
+      <td>Append a message to a <code>vsm-feed</code> variable. <code>role</code>: <code>agent</code> | <code>user</code> | <code>system</code> (default: <code>agent</code>).</td>
+    </tr>
+    <tr>
+      <td><code>clearFeed</code></td>
+      <td><code>var</code></td>
+      <td>Reset a <code>vsm-feed</code> variable to an empty array.</td>
+    </tr>
+  </table>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <h2><span class="section-badge">Text &amp; Controls</span></h2>
+
+  <!-- sl-text -->
+  <h3 id="sl-text"><code>sl-text</code></h3>
+  <p>Renders a <code>&lt;p&gt;</code> paragraph. Use for labels, descriptions, or any dynamic text display.</p>
+  <table>
+    <tr><th>Field</th><th>Required</th><th>Default</th><th>Description</th></tr>
+    <tr><td><code>content</code></td><td class="opt">opt</td><td>—</td><td>Static text. Takes precedence over <code>bindVar</code> when present.</td></tr>
+    <tr><td><code>bindVar</code></td><td class="opt">opt</td><td>—</td><td><span class="badge badge-reads">reads</span> SceneFlow variable whose value is displayed. Only used when <code>content</code> is absent.</td></tr>
+    <tr><td><code>style</code></td><td class="opt">opt</td><td>—</td><td>CSS properties object.</td></tr>
+  </table>
+  <div class="note"><strong>Dynamic text:</strong> To change the text at runtime with <code>updateVar</code>, omit <code>content</code> and set <code>bindVar</code> instead.</div>
+  <pre>{ "type": "sl-text", "content": "Heart Rate" }
+
+{ "type": "sl-text", "bindVar": "status_label",
+  "style": { "font-size": "1.2rem", "color": "#333" } }</pre>
+
+  <!-- sl-button -->
+  <h3 id="sl-button"><code>sl-button</code></h3>
+  <p>A Shoelace <code>&lt;sl-button&gt;</code>. Writes a value to a SceneFlow variable on click.</p>
+  <table>
+    <tr><th>Field</th><th>Required</th><th>Default</th><th>Description</th></tr>
+    <tr><td><code>label</code></td><td class="opt">opt</td><td><code>""</code></td><td>Button text.</td></tr>
+    <tr><td><code>variant</code></td><td class="opt">opt</td><td><code>"default"</code></td><td><code>default</code> | <code>primary</code> | <code>success</code> | <code>neutral</code> | <code>warning</code> | <code>danger</code> | <code>text</code></td></tr>
+    <tr><td><code>sendsVar</code></td><td class="opt">opt</td><td>—</td><td><span class="badge badge-writes">writes</span> SceneFlow variable written on click.</td></tr>
+    <tr><td><code>sendsValue</code></td><td class="opt">opt</td><td><code>"true"</code></td><td>Value written to <code>sendsVar</code>.</td></tr>
+    <tr><td><code>style</code></td><td class="opt">opt</td><td>—</td><td>CSS properties object.</td></tr>
+  </table>
+  <pre>{ "type": "sl-button", "label": "Start", "variant": "primary",
+  "sendsVar": "gui_choice", "sendsValue": "start" }</pre>
+
+  <!-- sl-input -->
+  <h3 id="sl-input"><code>sl-input</code></h3>
+  <p>Single-line text field. Two-way binding: reads initial value from variable, writes on every keystroke.</p>
+  <table>
+    <tr><th>Field</th><th>Required</th><th>Default</th><th>Description</th></tr>
+    <tr><td><code>label</code></td><td class="opt">opt</td><td><code>""</code></td><td>Field label shown above the input.</td></tr>
+    <tr><td><code>bindVar</code></td><td class="opt">opt</td><td>—</td><td><span class="badge badge-reads">reads</span> <span class="badge badge-writes">writes</span> SceneFlow variable for two-way binding.</td></tr>
+    <tr><td><code>style</code></td><td class="opt">opt</td><td>—</td><td>CSS properties object.</td></tr>
+  </table>
+  <pre>{ "type": "sl-input", "label": "Your name", "bindVar": "user_name" }</pre>
+
+  <!-- sl-textarea -->
+  <h3 id="sl-textarea"><code>sl-textarea</code></h3>
+  <p>Multi-line text field. Two-way binding like <code>sl-input</code>.</p>
+  <table>
+    <tr><th>Field</th><th>Required</th><th>Default</th><th>Description</th></tr>
+    <tr><td><code>label</code></td><td class="opt">opt</td><td><code>""</code></td><td>Field label.</td></tr>
+    <tr><td><code>bindVar</code></td><td class="opt">opt</td><td>—</td><td><span class="badge badge-reads">reads</span> <span class="badge badge-writes">writes</span> SceneFlow variable.</td></tr>
+    <tr><td><code>style</code></td><td class="opt">opt</td><td>—</td><td>CSS properties object.</td></tr>
+  </table>
+  <pre>{ "type": "sl-textarea", "label": "Notes", "bindVar": "session_notes" }</pre>
+
+  <!-- sl-range -->
+  <h3 id="sl-range"><code>sl-range</code></h3>
+  <p>Horizontal slider. Two-way binding; value is a string representation of the numeric position.</p>
+  <table>
+    <tr><th>Field</th><th>Required</th><th>Default</th><th>Description</th></tr>
+    <tr><td><code>label</code></td><td class="opt">opt</td><td><code>""</code></td><td>Field label.</td></tr>
+    <tr><td><code>min</code></td><td class="opt">opt</td><td><code>0</code></td><td>Minimum value.</td></tr>
+    <tr><td><code>max</code></td><td class="opt">opt</td><td><code>100</code></td><td>Maximum value.</td></tr>
+    <tr><td><code>step</code></td><td class="opt">opt</td><td><code>1</code></td><td>Step increment.</td></tr>
+    <tr><td><code>bindVar</code></td><td class="opt">opt</td><td>—</td><td><span class="badge badge-reads">reads</span> <span class="badge badge-writes">writes</span> SceneFlow variable (numeric string).</td></tr>
+    <tr><td><code>style</code></td><td class="opt">opt</td><td>—</td><td>CSS properties object.</td></tr>
+  </table>
+  <pre>{ "type": "sl-range", "label": "Intensity", "min": 1, "max": 10,
+  "step": 1, "bindVar": "intensity_level" }</pre>
+
+  <!-- sl-checkbox -->
+  <h3 id="sl-checkbox"><code>sl-checkbox</code></h3>
+  <p>Checkbox. Reads and writes <code>"true"</code> / <code>"false"</code> strings.</p>
+  <table>
+    <tr><th>Field</th><th>Required</th><th>Default</th><th>Description</th></tr>
+    <tr><td><code>label</code></td><td class="opt">opt</td><td><code>""</code></td><td>Label shown next to the checkbox.</td></tr>
+    <tr><td><code>bindVar</code></td><td class="opt">opt</td><td>—</td><td><span class="badge badge-reads">reads</span> <span class="badge badge-writes">writes</span> SceneFlow variable (<code>"true"</code> / <code>"false"</code>).</td></tr>
+    <tr><td><code>style</code></td><td class="opt">opt</td><td>—</td><td>CSS properties object.</td></tr>
+  </table>
+  <pre>{ "type": "sl-checkbox", "label": "I agree", "bindVar": "consent_given" }</pre>
+
+  <!-- sl-select -->
+  <h3 id="sl-select"><code>sl-select</code></h3>
+  <p>Dropdown selector. Options can be plain strings or value/label objects.</p>
+  <table>
+    <tr><th>Field</th><th>Required</th><th>Default</th><th>Description</th></tr>
+    <tr><td><code>label</code></td><td class="opt">opt</td><td><code>""</code></td><td>Field label.</td></tr>
+    <tr><td><code>options</code></td><td class="opt">opt</td><td><code>[]</code></td><td>Array of strings or <code>{"value":"…","label":"…"}</code> objects.</td></tr>
+    <tr><td><code>bindVar</code></td><td class="opt">opt</td><td>—</td><td><span class="badge badge-reads">reads</span> <span class="badge badge-writes">writes</span> SceneFlow variable (selected value string).</td></tr>
+    <tr><td><code>style</code></td><td class="opt">opt</td><td>—</td><td>CSS properties object.</td></tr>
+  </table>
+  <pre>{ "type": "sl-select", "label": "Mood", "bindVar": "mood_selection",
+  "options": [
+    { "value": "happy",   "label": "Happy 😊" },
+    { "value": "neutral", "label": "Neutral 😐" },
+    { "value": "sad",     "label": "Sad 😢" }
+  ] }</pre>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <h2><span class="section-badge">Display</span></h2>
+
+  <!-- sl-badge -->
+  <h3 id="sl-badge"><code>sl-badge</code></h3>
+  <p>Small colored pill / label. Static or variable-driven text.</p>
+  <table>
+    <tr><th>Field</th><th>Required</th><th>Default</th><th>Description</th></tr>
+    <tr><td><code>label</code></td><td class="opt">opt</td><td>—</td><td>Static text. Overrides <code>bindVar</code>.</td></tr>
+    <tr><td><code>variant</code></td><td class="opt">opt</td><td><code>"neutral"</code></td><td><code>primary</code> | <code>success</code> | <code>neutral</code> | <code>warning</code> | <code>danger</code></td></tr>
+    <tr><td><code>bindVar</code></td><td class="opt">opt</td><td>—</td><td><span class="badge badge-reads">reads</span> SceneFlow variable (used when <code>label</code> is absent).</td></tr>
+    <tr><td><code>style</code></td><td class="opt">opt</td><td>—</td><td>CSS properties object.</td></tr>
+  </table>
+  <pre>{ "type": "sl-badge", "variant": "success", "bindVar": "connection_status" }</pre>
+
+  <!-- sl-card -->
+  <h3 id="sl-card"><code>sl-card</code></h3>
+  <p>Shoelace card container with a shadow and border. Can nest any element types as children.</p>
+  <table>
+    <tr><th>Field</th><th>Required</th><th>Default</th><th>Description</th></tr>
+    <tr><td><code>children</code></td><td class="opt">opt</td><td><code>[]</code></td><td>Array of child element definitions.</td></tr>
+    <tr><td><code>style</code></td><td class="opt">opt</td><td>—</td><td>CSS properties object.</td></tr>
+  </table>
+  <pre>{ "type": "sl-card", "style": { "width": "300px" },
+  "children": [
+    { "type": "sl-text", "content": "Card title" },
+    { "type": "sl-button", "label": "OK", "sendsVar": "gui_choice", "sendsValue": "ok" }
+  ] }</pre>
+
+  <!-- sl-divider -->
+  <h3 id="sl-divider"><code>sl-divider</code></h3>
+  <p>Horizontal rule / separator line. No additional fields.</p>
+  <pre>{ "type": "sl-divider" }</pre>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <h2><span class="section-badge">Media</span></h2>
+
+  <!-- vsm-image -->
+  <h3 id="vsm-image"><code>vsm-image</code></h3>
+  <p>Image. Path is resolved relative to the project's <code>gui</code> directory.</p>
+  <table>
+    <tr><th>Field</th><th>Required</th><th>Default</th><th>Description</th></tr>
+    <tr><td><code>src</code></td><td class="req">req</td><td>—</td><td>Relative path to image file (e.g. <code>"images/logo.png"</code>).</td></tr>
+    <tr><td><code>alt</code></td><td class="opt">opt</td><td><code>""</code></td><td>Alt text for accessibility.</td></tr>
+    <tr><td><code>width</code></td><td class="opt">opt</td><td>—</td><td>CSS width (e.g. <code>"200px"</code>, <code>"50%"</code>).</td></tr>
+    <tr><td><code>height</code></td><td class="opt">opt</td><td>—</td><td>CSS height.</td></tr>
+    <tr><td><code>objectFit</code></td><td class="opt">opt</td><td>—</td><td>CSS <code>object-fit</code>: <code>cover</code> | <code>contain</code> | <code>fill</code> | <code>none</code></td></tr>
+    <tr><td><code>style</code></td><td class="opt">opt</td><td>—</td><td>CSS properties object.</td></tr>
+  </table>
+  <pre>{ "type": "vsm-image", "src": "logo.png", "width": "150px", "objectFit": "contain" }</pre>
+
+  <!-- vsm-video -->
+  <h3 id="vsm-video"><code>vsm-video</code></h3>
+  <p>HTML5 video element. Path resolved relative to the project's <code>gui</code> directory.</p>
+  <table>
+    <tr><th>Field</th><th>Required</th><th>Default</th><th>Description</th></tr>
+    <tr><td><code>src</code></td><td class="req">req</td><td>—</td><td>Relative path to video file.</td></tr>
+    <tr><td><code>width</code></td><td class="opt">opt</td><td><code>"max-width:100%"</code></td><td>CSS width.</td></tr>
+    <tr><td><code>height</code></td><td class="opt">opt</td><td>—</td><td>CSS height.</td></tr>
+    <tr><td><code>controls</code></td><td class="opt">opt</td><td><code>true</code></td><td>Show browser playback controls.</td></tr>
+    <tr><td><code>autoplay</code></td><td class="opt">opt</td><td><code>false</code></td><td>Auto-play on load.</td></tr>
+    <tr><td><code>loop</code></td><td class="opt">opt</td><td><code>false</code></td><td>Loop playback.</td></tr>
+    <tr><td><code>muted</code></td><td class="opt">opt</td><td><code>false</code></td><td>Mute audio.</td></tr>
+    <tr><td><code>style</code></td><td class="opt">opt</td><td>—</td><td>CSS properties object.</td></tr>
+  </table>
+  <pre>{ "type": "vsm-video", "src": "intro.mp4", "width": "100%", "autoplay": true, "muted": true, "loop": true }</pre>
+
+  <!-- vsm-audio -->
+  <h3 id="vsm-audio"><code>vsm-audio</code></h3>
+  <p>HTML5 audio player.</p>
+  <table>
+    <tr><th>Field</th><th>Required</th><th>Default</th><th>Description</th></tr>
+    <tr><td><code>src</code></td><td class="req">req</td><td>—</td><td>Relative path to audio file.</td></tr>
+    <tr><td><code>controls</code></td><td class="opt">opt</td><td><code>true</code></td><td>Show browser playback controls.</td></tr>
+    <tr><td><code>autoplay</code></td><td class="opt">opt</td><td><code>false</code></td><td>Auto-play on load.</td></tr>
+    <tr><td><code>loop</code></td><td class="opt">opt</td><td><code>false</code></td><td>Loop playback.</td></tr>
+    <tr><td><code>style</code></td><td class="opt">opt</td><td>—</td><td>CSS properties object.</td></tr>
+  </table>
+  <pre>{ "type": "vsm-audio", "src": "background.mp3", "autoplay": true, "loop": true, "controls": false }</pre>
+
+  <!-- vsm-embed -->
+  <h3 id="vsm-embed"><code>vsm-embed</code></h3>
+  <p>iframe embed — use for external URLs, YouTube videos, or other web content.</p>
+  <table>
+    <tr><th>Field</th><th>Required</th><th>Default</th><th>Description</th></tr>
+    <tr><td><code>src</code></td><td class="req">req</td><td>—</td><td>URL to embed.</td></tr>
+    <tr><td><code>title</code></td><td class="opt">opt</td><td><code>""</code></td><td>iframe title (accessibility).</td></tr>
+    <tr><td><code>width</code></td><td class="opt">opt</td><td><code>"100%"</code></td><td>CSS width.</td></tr>
+    <tr><td><code>height</code></td><td class="opt">opt</td><td><code>"315px"</code></td><td>CSS height.</td></tr>
+    <tr><td><code>style</code></td><td class="opt">opt</td><td>—</td><td>CSS properties object.</td></tr>
+  </table>
+  <pre>{ "type": "vsm-embed", "src": "https://www.youtube.com/embed/dQw4w9WgXcQ",
+  "width": "560px", "height": "315px", "title": "Introduction" }</pre>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <h2><span class="section-badge">Layout</span></h2>
+
+  <!-- vsm-panel -->
+  <h3 id="vsm-panel"><code>vsm-panel</code></h3>
+  <p>A flex container that can hold other elements. Use to group elements side-by-side (<code>flex-row</code>) or create a card-like block with a background.</p>
+  <table>
+    <tr><th>Field</th><th>Required</th><th>Default</th><th>Description</th></tr>
+    <tr><td><code>layout</code></td><td class="opt">opt</td><td><code>"flex-column"</code></td><td><code>flex-column</code> | <code>flex-row</code> (wraps automatically).</td></tr>
+    <tr><td><code>alignItems</code></td><td class="opt">opt</td><td>—</td><td>CSS alignment on the cross-axis.</td></tr>
+    <tr><td><code>justifyContent</code></td><td class="opt">opt</td><td>—</td><td>CSS alignment on the main axis.</td></tr>
+    <tr><td><code>background</code></td><td class="opt">opt</td><td>—</td><td>CSS background color.</td></tr>
+    <tr><td><code>padding</code></td><td class="opt">opt</td><td>—</td><td>CSS padding (e.g. <code>"1rem"</code>).</td></tr>
+    <tr><td><code>gap</code></td><td class="opt">opt</td><td><code>"0.5rem"</code></td><td>CSS gap between children.</td></tr>
+    <tr><td><code>flexGrow</code></td><td class="opt">opt</td><td><code>false</code></td><td>If <code>true</code>, expands to fill remaining space (<code>flex: 1</code>).</td></tr>
+    <tr><td><code>children</code></td><td class="opt">opt</td><td><code>[]</code></td><td>Array of child element definitions.</td></tr>
+    <tr><td><code>style</code></td><td class="opt">opt</td><td>—</td><td>CSS properties object.</td></tr>
+  </table>
+  <pre>{ "type": "vsm-panel", "layout": "flex-row", "gap": "1rem", "padding": "1rem",
+  "background": "#f5f5f5",
+  "children": [
+    { "type": "sl-button", "label": "Yes", "variant": "success", "sendsVar": "answer", "sendsValue": "yes" },
+    { "type": "sl-button", "label": "No",  "variant": "danger",  "sendsVar": "answer", "sendsValue": "no"  }
+  ] }</pre>
+
+  <!-- vsm-filler -->
+  <h3 id="vsm-filler"><code>vsm-filler</code></h3>
+  <p>Invisible spacer. Use <code>flexGrow: true</code> to push subsequent elements to the opposite edge, or set explicit dimensions for fixed spacing.</p>
+  <table>
+    <tr><th>Field</th><th>Required</th><th>Default</th><th>Description</th></tr>
+    <tr><td><code>flexGrow</code></td><td class="opt">opt</td><td><code>false</code></td><td>If <code>true</code>, fills all remaining space (<code>flex: 1</code>). Ignores <code>width</code>/<code>height</code>.</td></tr>
+    <tr><td><code>width</code></td><td class="opt">opt</td><td>—</td><td>Fixed width (only when <code>flexGrow</code> is false).</td></tr>
+    <tr><td><code>height</code></td><td class="opt">opt</td><td>—</td><td>Fixed height (only when <code>flexGrow</code> is false).</td></tr>
+  </table>
+  <pre>{ "type": "vsm-filler", "height": "2rem" }
+
+{ "type": "vsm-filler", "flexGrow": true }   // pushes next element to bottom/right</pre>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <h2><span class="section-badge">Dynamic</span></h2>
+
+  <!-- vsm-bubble -->
+  <h3 id="vsm-bubble"><code>vsm-bubble</code></h3>
+  <p>Chat-style speech bubble. Position (left/right) is controlled by <code>align-self</code> in <code>style</code>. Tail direction is set separately.</p>
+  <table>
+    <tr><th>Field</th><th>Required</th><th>Default</th><th>Description</th></tr>
+    <tr><td><code>content</code></td><td class="opt">opt</td><td>—</td><td>Static text. Used when <code>bindVar</code> is absent or empty.</td></tr>
+    <tr><td><code>bindVar</code></td><td class="opt">opt</td><td>—</td><td><span class="badge badge-reads">reads</span> SceneFlow variable. Overrides <code>content</code> when the variable has a value.</td></tr>
+    <tr><td><code>background</code></td><td class="opt">opt</td><td><code>"#e8f4fd"</code></td><td>Bubble background color (CSS).</td></tr>
+    <tr><td><code>tail</code></td><td class="opt">opt</td><td><code>"bottom"</code></td><td><code>"bottom"</code> | <code>"top"</code> | <code>"none"</code> — tail direction.</td></tr>
+    <tr><td><code>speaker</code></td><td class="opt">opt</td><td>—</td><td>Speaker name shown above the bubble (e.g. <code>"ARIA"</code>).</td></tr>
+    <tr><td><code>style</code></td><td class="opt">opt</td><td>—</td><td>CSS properties. Use <code>"align-self": "flex-end"</code> for right-aligned (user) bubble; <code>"flex-start"</code> or omit for left-aligned (agent).</td></tr>
+  </table>
+  <div class="note"><strong>Alignment:</strong> In a <code>flex-column</code> screen, <code>align-self</code> controls horizontal position. <code>flex-start</code> = left (agent), <code>flex-end</code> = right (user), <code>center</code> = centered (no tail).</div>
+  <pre>{ "type": "vsm-bubble", "bindVar": "agent_speech",
+  "background": "#e8f4fd", "tail": "bottom", "speaker": "ARIA",
+  "style": { "align-self": "flex-start" } }
+
+{ "type": "vsm-bubble", "bindVar": "user_speech",
+  "background": "#eafbe8", "tail": "bottom",
+  "style": { "align-self": "flex-end" } }</pre>
+
+  <!-- vsm-chart -->
+  <h3 id="vsm-chart"><code>vsm-chart</code></h3>
+  <p>Chart.js chart. The bound variable must hold a JSON string in Chart.js dataset format.</p>
+  <table>
+    <tr><th>Field</th><th>Required</th><th>Default</th><th>Description</th></tr>
+    <tr><td><code>chartType</code></td><td class="opt">opt</td><td><code>"bar"</code></td><td><code>bar</code> | <code>line</code> | <code>pie</code> | <code>doughnut</code></td></tr>
+    <tr><td><code>dataVar</code></td><td class="req">req</td><td>—</td><td><span class="badge badge-reads">reads</span> SceneFlow variable holding Chart.js dataset JSON string.</td></tr>
+    <tr><td><code>label</code></td><td class="opt">opt</td><td><code>""</code></td><td>Default dataset label.</td></tr>
+    <tr><td><code>color</code></td><td class="opt">opt</td><td>—</td><td>Default bar/line color (CSS).</td></tr>
+    <tr><td><code>width</code></td><td class="opt">opt</td><td><code>"100%"</code></td><td>CSS width.</td></tr>
+    <tr><td><code>height</code></td><td class="opt">opt</td><td><code>"300px"</code></td><td>CSS height.</td></tr>
+    <tr><td><code>style</code></td><td class="opt">opt</td><td>—</td><td>CSS properties object.</td></tr>
+  </table>
+  <pre>{ "type": "vsm-chart", "chartType": "line", "dataVar": "sensor_data",
+  "color": "#5b8edc", "height": "250px" }</pre>
+  <p>The variable value should be a Chart.js-compatible JSON string, e.g.:</p>
+  <pre>{ "labels": ["Mon","Tue","Wed"], "datasets": [{ "label": "BPM", "data": [72,68,75] }] }</pre>
+
+  <!-- vsm-feed -->
+  <h3 id="vsm-feed"><code>vsm-feed</code></h3>
+  <p>Scrollable conversation feed displaying a JSON array of role-aware message bubbles. New messages are appended at runtime via <code>appendMessage</code>.</p>
+  <table>
+    <tr><th>Field</th><th>Required</th><th>Default</th><th>Description</th></tr>
+    <tr><td><code>dataVar</code></td><td class="req">req</td><td>—</td><td><span class="badge badge-reads">reads</span> SceneFlow String variable holding a JSON array of message objects.</td></tr>
+    <tr><td><code>agentColor</code></td><td class="opt">opt</td><td><code>"#e8f4fd"</code></td><td>Background color for agent bubbles.</td></tr>
+    <tr><td><code>userColor</code></td><td class="opt">opt</td><td><code>"#eafbe8"</code></td><td>Background color for user bubbles.</td></tr>
+    <tr><td><code>systemColor</code></td><td class="opt">opt</td><td><code>"#f5f5f5"</code></td><td>Background color for system messages.</td></tr>
+    <tr><td><code>agentLabel</code></td><td class="opt">opt</td><td><code>"Agent"</code></td><td>Name shown above agent bubbles.</td></tr>
+    <tr><td><code>userLabel</code></td><td class="opt">opt</td><td><code>"You"</code></td><td>Name shown above user bubbles.</td></tr>
+    <tr><td><code>showTimestamps</code></td><td class="opt">opt</td><td><code>false</code></td><td>Show timestamp field from message objects.</td></tr>
+    <tr><td><code>height</code></td><td class="opt">opt</td><td><code>"400px"</code></td><td>Scroll container height.</td></tr>
+    <tr><td><code>width</code></td><td class="opt">opt</td><td>—</td><td>CSS width.</td></tr>
+  </table>
+
+  <p><strong>Message object format</strong> (array stored in the variable):</p>
+  <table>
+    <tr><th>Field</th><th>Description</th></tr>
+    <tr><td><code>role</code></td><td><code>"agent"</code> (left, agentColor) | <code>"user"</code> (right, userColor) | <code>"system"</code> (centered, italic, no tail)</td></tr>
+    <tr><td><code>text</code></td><td>Message text.</td></tr>
+    <tr><td><code>speaker</code></td><td>Optional override name shown above the bubble.</td></tr>
+    <tr><td><code>timestamp</code></td><td>Optional timestamp string (shown when <code>showTimestamps: true</code>).</td></tr>
+  </table>
+
+  <pre>{ "type": "vsm-feed", "dataVar": "conversation_log",
+  "height": "500px", "agentLabel": "ARIA", "userLabel": "Participant",
+  "agentColor": "#dce8ff", "userColor": "#dcf5dc" }</pre>
+
+  <p>Append from SceneScript:</p>
+  <pre>&lt;playaction ref="htmlgui-ws:appendMessage" var="conversation_log"
+            role="agent" text="$agent_utterance"/&gt;</pre>
+
+  <!-- vsm-animate -->
+  <h3 id="vsm-animate"><code>vsm-animate</code></h3>
+  <p>Pre-built CSS/SVG animation whose parameters (rate, color, amplitude, opacity) are driven live by SceneFlow variables.</p>
+  <table>
+    <tr><th>Field</th><th>Required</th><th>Default</th><th>Description</th></tr>
+    <tr><td><code>animation</code></td><td class="req">req</td><td><code>"heartbeat"</code></td><td><code>heartbeat</code> | <code>breathe</code> | <code>wave</code> | <code>pulse</code> | <code>spinner</code></td></tr>
+    <tr><td><code>rateVar</code></td><td class="opt">opt</td><td>—</td><td><span class="badge badge-reads">reads</span> Numeric variable controlling speed. Semantics are animation-specific: BPM for heartbeat, breaths/min for breathe, Hz for wave.</td></tr>
+    <tr><td><code>colorVar</code></td><td class="opt">opt</td><td>—</td><td><span class="badge badge-reads">reads</span> CSS color string variable.</td></tr>
+    <tr><td><code>amplitudeVar</code></td><td class="opt">opt</td><td>—</td><td><span class="badge badge-reads">reads</span> 0–100 scale variable controlling amplitude.</td></tr>
+    <tr><td><code>opacityVar</code></td><td class="opt">opt</td><td>—</td><td><span class="badge badge-reads">reads</span> 0–100 variable mapped to CSS opacity 0–1.</td></tr>
+    <tr><td><code>color</code></td><td class="opt">opt</td><td>—</td><td>Default color when <code>colorVar</code> is not set or empty.</td></tr>
+    <tr><td><code>width</code></td><td class="opt">opt</td><td>—</td><td>CSS width (e.g. <code>"120px"</code>).</td></tr>
+    <tr><td><code>height</code></td><td class="opt">opt</td><td>—</td><td>CSS height.</td></tr>
+    <tr><td><code>style</code></td><td class="opt">opt</td><td>—</td><td>CSS properties object.</td></tr>
+  </table>
+
+  <table>
+    <tr><th>animation</th><th>rateVar semantics</th><th>Notes</th></tr>
+    <tr><td><code>heartbeat</code></td><td>BPM → animation-duration</td><td>SVG heart that pulses. Typical range 40–180.</td></tr>
+    <tr><td><code>breathe</code></td><td>breaths/min</td><td>Expanding/contracting circle. Typical range 8–25.</td></tr>
+    <tr><td><code>wave</code></td><td>Hz</td><td>Horizontal sine wave. Typical range 0.5–4.</td></tr>
+    <tr><td><code>pulse</code></td><td>rate (generic)</td><td>Radial ripple — use for microphone active state.</td></tr>
+    <tr><td><code>spinner</code></td><td>RPM</td><td>Rotating arc.</td></tr>
+  </table>
+
+  <pre>{ "type": "vsm-animate", "animation": "heartbeat",
+  "rateVar": "hf_bpm", "colorVar": "heart_color",
+  "color": "#e26d5a", "width": "120px", "height": "120px" }</pre>
+
+  <p>Update from SceneScript at runtime:</p>
+  <pre>&lt;playaction ref="htmlgui-ws:updateVar" var="hf_bpm"   value="$hf_bpm"/&gt;
+&lt;playaction ref="htmlgui-ws:updateVar" var="heart_color" value="#cc0000"/&gt;</pre>
+
+  <hr>
+  <p style="color:var(--muted);font-size:0.78rem;text-align:center">
+    VisualSceneMaker · htmlgui-ws plugin · schema-driven screen renderer
+  </p>
+</main>
+</div>
+
+<script>
+  // Highlight active nav link on scroll
+  const headings = document.querySelectorAll('h2[id], h3[id]');
+  const navLinks  = document.querySelectorAll('nav a[href^="#"]');
+  const observer  = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        navLinks.forEach(a => a.classList.remove('active'));
+        const link = document.querySelector(`nav a[href="#${e.target.id}"]`);
+        if (link) link.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+  headings.forEach(h => observer.observe(h));
+</script>
+
+</body>
+</html>
