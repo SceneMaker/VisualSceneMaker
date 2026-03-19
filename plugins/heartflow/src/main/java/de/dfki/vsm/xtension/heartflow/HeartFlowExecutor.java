@@ -63,6 +63,8 @@ public class HeartFlowExecutor extends ActivityExecutor {
 
     // ── Runtime state ─────────────────────────────────────────────────────────
     private volatile WebSocket            webSocket       = null;
+    private HttpClient                    httpClient      = null;
+    private ExecutorService               httpExecutor    = null;
     private final AtomicLong              reconnectGen    = new AtomicLong(0);
     private final ExecutorService         messageExecutor = Executors.newSingleThreadExecutor();
     private final ScheduledExecutorService scheduler      = Executors.newScheduledThreadPool(2);
@@ -97,17 +99,37 @@ public class HeartFlowExecutor extends ActivityExecutor {
         varBattery      = mConfig.getProperty("hf_battery",         "hf_battery");
         varConnected    = mConfig.getProperty("hf_connected",       "hf_connected");
 
+        // Use an owned executor so we can shut down the HttpClient's threads on unload
+        // (HttpClient.close() is Java 21+; explicit executor shutdown works on Java 17).
+        httpExecutor = Executors.newCachedThreadPool();
+        httpClient   = HttpClient.newBuilder().executor(httpExecutor).build();
         connect(reconnectGen.get());
     }
 
     @Override
     public void unload() {
-        reconnectGen.incrementAndGet();       // invalidate any pending reconnects
+        reconnectGen.incrementAndGet();       // stop reconnect loop
+
         WebSocket ws = webSocket;
-        if (ws != null) ws.abort();
+        webSocket = null;
+        if (ws != null) {
+            // Send a proper close frame so the HeartFlow server ends the session cleanly.
+            // abort() is called as fallback after the close completes or fails.
+            ws.sendClose(WebSocket.NORMAL_CLOSURE, "")
+              .whenComplete((v, ex) -> ws.abort());
+        }
+
         messageExecutor.shutdownNow();
         scheduler.shutdownNow();
-        setBoolVar(varConnected, false);
+
+        httpClient = null;
+        if (httpExecutor != null) {
+            httpExecutor.shutdownNow();   // shuts down the HttpClient's owned thread pool
+            httpExecutor = null;
+        }
+
+        // Single best-effort write — no blocking retry during shutdown.
+        mProject.setVariable(varConnected, false);
     }
 
     @Override public String marker(long id) { return "$(" + id + ")"; }
@@ -116,8 +138,8 @@ public class HeartFlowExecutor extends ActivityExecutor {
     // ── Connection management ─────────────────────────────────────────────────
 
     private void connect(long gen) {
-        HttpClient.newHttpClient()
-                  .newWebSocketBuilder()
+        if (reconnectGen.get() != gen || httpClient == null) return;
+        httpClient.newWebSocketBuilder()
                   .buildAsync(URI.create(wsUrl), new HfListener(gen))
                   .exceptionally(ex -> {
                       mLogger.warning("HeartFlow: connect failed — " + ex.getMessage());
@@ -258,7 +280,7 @@ public class HeartFlowExecutor extends ActivityExecutor {
             if (reconnectGen.get() != gen) { ws.abort(); return; }
             webSocket = ws;
             mLogger.message("HeartFlow: connected to " + wsUrl);
-            setBoolVar(varConnected, false);   // true only once "Streaming" status arrives
+            mProject.setVariable(varConnected, false);  // true only once "Streaming" status arrives
 
             if (autoConnect) {
                 // Lazy mode: tell Heart Flow to scan and connect to the first Polar H10.
@@ -285,7 +307,7 @@ public class HeartFlowExecutor extends ActivityExecutor {
         @Override
         public CompletionStage<?> onClose(WebSocket ws, int code, String reason) {
             webSocket = null;
-            setBoolVar(varConnected, false);
+            mProject.setVariable(varConnected, false);
             mLogger.warning("HeartFlow: disconnected (" + code + " " + reason + ")");
             scheduleReconnect(gen);
             return null;
@@ -294,7 +316,7 @@ public class HeartFlowExecutor extends ActivityExecutor {
         @Override
         public void onError(WebSocket ws, Throwable err) {
             webSocket = null;
-            setBoolVar(varConnected, false);
+            mProject.setVariable(varConnected, false);
             mLogger.warning("HeartFlow: WS error — " + err.getMessage());
             scheduleReconnect(gen);
         }
