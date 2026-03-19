@@ -66,8 +66,8 @@ public class HeartFlowExecutor extends ActivityExecutor {
     private HttpClient                    httpClient      = null;
     private ExecutorService               httpExecutor    = null;
     private final AtomicLong              reconnectGen    = new AtomicLong(0);
-    private final ExecutorService         messageExecutor = Executors.newSingleThreadExecutor();
-    private final ScheduledExecutorService scheduler      = Executors.newScheduledThreadPool(2);
+    private ExecutorService               messageExecutor = null;
+    private ScheduledExecutorService      scheduler       = null;
 
     // ── Constructor ───────────────────────────────────────────────────────────
     public HeartFlowExecutor(PluginConfig config, RunTimeProject project) {
@@ -99,6 +99,10 @@ public class HeartFlowExecutor extends ActivityExecutor {
         varBattery      = mConfig.getProperty("hf_battery",         "hf_battery");
         varConnected    = mConfig.getProperty("hf_connected",       "hf_connected");
 
+        // Recreate executors — same plugin instance is reused across stop/start cycles.
+        messageExecutor = Executors.newSingleThreadExecutor();
+        scheduler       = Executors.newScheduledThreadPool(2);
+
         // Use an owned executor so we can shut down the HttpClient's threads on unload
         // (HttpClient.close() is Java 21+; explicit executor shutdown works on Java 17).
         httpExecutor = Executors.newCachedThreadPool();
@@ -128,8 +132,8 @@ public class HeartFlowExecutor extends ActivityExecutor {
             httpExecutor = null;
         }
 
-        // Single best-effort write — no blocking retry during shutdown.
-        mProject.setVariable(varConnected, false);
+        // Best-effort write — interpreter may already be stopped; swallow any error.
+        try { mProject.setVariable(varConnected, false); } catch (Exception ignored) {}
     }
 
     @Override public String marker(long id) { return "$(" + id + ")"; }
