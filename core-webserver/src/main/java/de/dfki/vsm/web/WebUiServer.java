@@ -1781,6 +1781,8 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
             }
             // Enable CORS for cross-origin requests (Phase 8.4: remote connections)
             config.bundledPlugins.enableCors(cors -> cors.addRule(it -> it.anyHost()));
+            // Keep WebSocket sessions alive for 10 minutes of inactivity (Javalin 6 default is ~1 min)
+            config.jetty.wsFactoryConfig(factory -> factory.setIdleTimeout(java.time.Duration.ofMinutes(10)));
         }).start(allowExternal ? "0.0.0.0" : "127.0.0.1", port);
         registerRoutes();
         // EventDispatcher registration now happens per-project when projects are added to projectStore.
