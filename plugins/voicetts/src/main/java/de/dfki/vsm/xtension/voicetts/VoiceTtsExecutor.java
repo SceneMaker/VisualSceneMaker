@@ -137,6 +137,7 @@ public class VoiceTtsExecutor extends ActivityExecutor {
     private String defaultCustomVoiceId;
     private String defaultVoice;
     private String defaultInstruct;
+    private String defaultLanguage;
     private String defaultGenerationMode;
     private int defaultChunkMs;
     private int defaultVisemeHopMs;
@@ -181,6 +182,7 @@ public class VoiceTtsExecutor extends ActivityExecutor {
         defaultCustomVoiceId = configOrDefault("custom_voice_id", "cv1");
         defaultVoice = configOrDefault("voice", "Vivian");
         defaultInstruct = configOrDefault("instruct", "Calm and friendly");
+        defaultLanguage = configOrDefault("language", "auto");
         defaultGenerationMode = sanitizeGenerationMode(configOrDefault("generation_mode", "full_utterance"));
         defaultChunkMs = parseIntOrDefault(configOrDefault("chunk_ms", "100"), 100);
         defaultVisemeHopMs = parseIntOrDefault(configOrDefault("viseme_hop_ms", "10"), 10);
@@ -313,6 +315,8 @@ public class VoiceTtsExecutor extends ActivityExecutor {
                 firstNonEmpty(agentConfig(actor, "custom_voice_id"), defaultCustomVoiceId));
         final String voice = firstNonEmpty(getFeature(activity, "voice"), defaultVoice);
         final String instruct = firstNonEmpty(getFeature(activity, "instruct"), defaultInstruct);
+        final String language = firstNonEmpty(getFeature(activity, "language"),
+                firstNonEmpty(agentConfig(actor, "language"), defaultLanguage));
         final String generationMode = sanitizeGenerationMode(
                 firstNonEmpty(getFeature(activity, "generation_mode"),
                         firstNonEmpty(agentConfig(actor, "generation_mode"), defaultGenerationMode))
@@ -360,7 +364,7 @@ public class VoiceTtsExecutor extends ActivityExecutor {
 
         Runnable runSpeak = () -> runSpeakSession(
                 tag, generationMode,
-                mode, text, customVoiceId, voice, instruct, speed,
+                mode, text, customVoiceId, voice, instruct, language, speed,
                 chunkMs, visemeHopMs, generationStreamingIntervalMs,
                 refAudioB64Inline, refAudioPath, refText
         );
@@ -380,6 +384,7 @@ public class VoiceTtsExecutor extends ActivityExecutor {
             final String customVoiceId,
             final String voice,
             final String instruct,
+            final String language,
             final double speed,
             final int chunkMs,
             final int visemeHopMs,
@@ -454,6 +459,7 @@ public class VoiceTtsExecutor extends ActivityExecutor {
                     // the single authoritative, correctly-timed update).
                     .wordTiming(new WordTimingOptions(false, true));
 
+            requestBuilder = applyLanguageIfSupported(requestBuilder, language);
             requestBuilder = applyGenerationModeIfSupported(requestBuilder, generationMode);
             final TtsStreamRequest request = requestBuilder.build();
 
@@ -1019,6 +1025,22 @@ public class VoiceTtsExecutor extends ActivityExecutor {
                     + "server default generation mode will be used");
         } catch (Exception ex) {
             mLogger.warning("[voicetts] failed to set generation mode '" + generationMode + "': " + ex.getMessage());
+        }
+        return builder;
+    }
+
+    private TtsStreamRequest.Builder applyLanguageIfSupported(
+            final TtsStreamRequest.Builder builder,
+            final String language
+    ) {
+        try {
+            final java.lang.reflect.Method method = builder.getClass().getMethod("language", String.class);
+            method.invoke(builder, language);
+        } catch (NoSuchMethodException ignored) {
+            mLogger.warning("[voicetts] TtsStreamRequest.Builder has no language(String); "
+                    + "client default language will be used");
+        } catch (Exception ex) {
+            mLogger.warning("[voicetts] failed to set language '" + language + "': " + ex.getMessage());
         }
         return builder;
     }

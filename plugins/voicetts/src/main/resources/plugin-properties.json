@@ -1,7 +1,7 @@
 {
     "schemaVersion": "1.0",
-    "specVersion": "1.1",
-    "specHash": "054a585670897521",
+    "specVersion": "1.3",
+    "specHash": "13d1f9fc2dd0fdf0",
     "plugin": {
         "id": "voicetts",
         "name": "Voice TTS Stream",
@@ -60,6 +60,12 @@
                 "type": "string",
                 "default": "Calm and friendly",
                 "description": "Instruction fallback"
+            },
+            {
+                "name": "language",
+                "type": "string",
+                "default": "auto",
+                "description": "Default synthesis language. Use auto for model language detection, or an explicit language such as english, german, french, spanish, italian, portuguese, japanese, korean, chinese, or russian."
             },
             {
                 "name": "chunk_ms",
@@ -199,6 +205,11 @@
                     "name": "custom_voice_id",
                     "type": "string",
                     "description": "Voice ID for this agent (e.g. anna_v1). Overrides the plugin-level custom_voice_id."
+                },
+                {
+                    "name": "language",
+                    "type": "string",
+                    "description": "Language for this agent. Use auto for automatic detection or an explicit language such as english or german. Overrides the plugin-level language."
                 }
             ],
             "dynamic": {
@@ -255,6 +266,12 @@
                     "type": "string",
                     "required": false,
                     "description": "Instruction fallback"
+                },
+                {
+                    "name": "language",
+                    "type": "string",
+                    "required": false,
+                    "description": "Synthesis language. Use auto for automatic detection or an explicit language such as english, german, french, spanish, italian, portuguese, japanese, korean, chinese, or russian."
                 },
                 {
                     "name": "speed",
