@@ -2592,21 +2592,7 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
   })();
   $: sceneFlowFrameColor = superNodeFrameColor(sceneFlow);
   $: sceneFlowFrameStyle = `--sf-frame-color:${sceneFlowFrameColor};`;
-  $: {
-    let columns = "minmax(0, 1fr)";
-    let gap = "0";
-    if (sceneFlowShowBlocks && sceneFlowShowInspector) {
-      columns = "var(--sf-side-width) minmax(0, 1fr) var(--sf-side-width)";
-      gap = "var(--sf-gap)";
-    } else if (sceneFlowShowBlocks && !sceneFlowShowInspector) {
-      columns = "var(--sf-side-width) minmax(0, 1fr)";
-      gap = "var(--sf-gap)";
-    } else if (!sceneFlowShowBlocks && sceneFlowShowInspector) {
-      columns = "minmax(0, 1fr) var(--sf-side-width)";
-      gap = "var(--sf-gap)";
-    }
-    sceneFlowLayoutStyle = `grid-template-columns:${columns};gap:${gap};`;
-  }
+  $: sceneFlowLayoutStyle = "";
   $: if (varBadgeState.visible !== sceneFlowShowVars) {
     varBadgeState = { ...varBadgeState, visible: sceneFlowShowVars };
   }
@@ -14602,10 +14588,15 @@ Sentence:
       {#if !selectedProject}
         <p class="muted">Select a project to view the SceneFlow graph.</p>
       {:else if sceneFlow}
-        <div class="sceneflow-layout" style={sceneFlowLayoutStyle}>
+        <div
+          class="sceneflow-layout"
+          class:left-collapsed={!sceneFlowShowBlocks}
+          class:right-collapsed={!sceneFlowShowInspector}
+          style={sceneFlowLayoutStyle}
+        >
           {#if sceneFlowShowBlocks}
             <aside
-              class="sceneflow-blocks"
+              class="sceneflow-blocks sceneflow-region-left"
               class:agents-collapsed={agentsCollapsed}
               class:scenes-collapsed={scenesCollapsed}
             >
@@ -15085,8 +15076,25 @@ Sentence:
             </div>
             <div class="blocks-filler" aria-hidden="true"></div>
             </aside>
+          {:else}
+            <div class="sceneflow-side-placeholder sceneflow-region-left" aria-hidden="true"></div>
           {/if}
-          <div class="sceneflow-container" style={sceneFlowFrameStyle} bind:this={sceneFlowContainerEl}>
+          <button
+            type="button"
+            class="sceneflow-rail sceneflow-rail-left"
+            class:collapsed={!sceneFlowShowBlocks}
+            on:click={() => (sceneFlowShowBlocks = !sceneFlowShowBlocks)}
+            aria-label={sceneFlowShowBlocks ? "Hide blocks panel" : "Show blocks panel"}
+            aria-pressed={sceneFlowShowBlocks}
+            disabled={!sceneFlow}
+            title={sceneFlowShowBlocks ? "Hide blocks" : "Show blocks"}
+          >
+            <span class="sceneflow-rail-line" aria-hidden="true"></span>
+            <span class="sceneflow-rail-pill" aria-hidden="true">
+              {#if sceneFlowShowBlocks}&#8249;{:else}&#8250;{/if}
+            </span>
+          </button>
+          <div class="sceneflow-container sceneflow-region-center" style={sceneFlowFrameStyle} bind:this={sceneFlowContainerEl}>
             <div class="sceneflow-scroll">
               <SceneFlowView
                 bind:this={sceneFlowRef}
@@ -15189,26 +15197,6 @@ Sentence:
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="16" height="16" aria-hidden="true">
                   <path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
                 </svg>
-              </button>
-              <button
-                type="button"
-                class="sceneflow-toggle"
-                class:active={sceneFlowShowBlocks}
-                on:click={() => (sceneFlowShowBlocks = !sceneFlowShowBlocks)}
-                aria-pressed={sceneFlowShowBlocks}
-                disabled={!sceneFlow}
-              >
-                blocks
-              </button>
-              <button
-                type="button"
-                class="sceneflow-toggle"
-                class:active={sceneFlowShowInspector}
-                on:click={() => (sceneFlowShowInspector = !sceneFlowShowInspector)}
-                aria-pressed={sceneFlowShowInspector}
-                disabled={!sceneFlow}
-              >
-                inspector
               </button>
             </div>
             {#if sceneFlowShowVars}
@@ -15347,8 +15335,23 @@ Sentence:
               {/if}
             </div>
           </div>
+          <button
+            type="button"
+            class="sceneflow-rail sceneflow-rail-right"
+            class:collapsed={!sceneFlowShowInspector}
+            on:click={() => (sceneFlowShowInspector = !sceneFlowShowInspector)}
+            aria-label={sceneFlowShowInspector ? "Hide inspector panel" : "Show inspector panel"}
+            aria-pressed={sceneFlowShowInspector}
+            disabled={!sceneFlow}
+            title={sceneFlowShowInspector ? "Hide inspector" : "Show inspector"}
+          >
+            <span class="sceneflow-rail-line" aria-hidden="true"></span>
+            <span class="sceneflow-rail-pill" aria-hidden="true">
+              {#if sceneFlowShowInspector}&#8250;{:else}&#8249;{/if}
+            </span>
+          </button>
           {#if sceneFlowShowInspector}
-            <aside class="sceneflow-inspector">
+            <aside class="sceneflow-inspector sceneflow-region-right">
             {#if multiSelectionActive}
               <h3 class="inspector-title">Selection ({selectionList.length})</h3>
               <div class="inspector-meta">
@@ -16273,8 +16276,10 @@ Sentence:
                 {/if}
               </div>
               </div>
-            {/if}
+              {/if}
             </aside>
+          {:else}
+            <div class="sceneflow-side-placeholder sceneflow-region-right" aria-hidden="true"></div>
           {/if}
         </div>
       {:else}

@@ -2016,7 +2016,11 @@ a.export-link {
 
 .sceneflow-panel {
   --sf-side-width: 280px;
-  --sf-gap: 1rem;
+  --sf-rail-width: 0px;
+  --sf-rail-hit-width: 18px;
+  --sf-rail-pill-width: 16px;
+  --sf-rail-pill-height: 64px;
+  --sf-gap: 0.5rem;
   --sf-panel-pad: var(--panel-pad);
   --sf-side-margin: 0.75rem;
   --sf-viewport-width: calc(100vw - (2 * var(--sf-side-margin)));
@@ -2292,6 +2296,7 @@ a.export-link {
 }
 
 .sceneflow-layout {
+  position: relative;
   display: grid;
   grid-template-columns: var(--sf-side-width) minmax(0, 1fr) var(--sf-side-width);
   gap: var(--sf-gap);
@@ -2299,9 +2304,38 @@ a.export-link {
   align-items: stretch;
 }
 
+.sceneflow-layout.left-collapsed {
+  grid-template-columns: 0 minmax(0, 1fr) var(--sf-side-width);
+}
+
+.sceneflow-layout.right-collapsed {
+  grid-template-columns: var(--sf-side-width) minmax(0, 1fr) 0;
+}
+
+.sceneflow-layout.left-collapsed.right-collapsed {
+  grid-template-columns: 0 minmax(0, 1fr) 0;
+}
+
 .sceneflow-main {
   display: grid;
   gap: 0.6rem;
+}
+
+.sceneflow-side-placeholder {
+  min-width: 0;
+  min-height: 0;
+}
+
+.sceneflow-region-left {
+  grid-column: 1;
+}
+
+.sceneflow-region-center {
+  grid-column: 2;
+}
+
+.sceneflow-region-right {
+  grid-column: 3;
 }
 
 .sceneflow-blocks {
@@ -2485,6 +2519,112 @@ a.export-link {
   box-sizing: border-box;
   user-select: none;
   -webkit-user-select: none;
+}
+
+.sceneflow-rail {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: var(--sf-rail-pill-width);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  overflow: visible;
+  z-index: 5;
+}
+
+.sceneflow-rail:disabled {
+  cursor: default;
+}
+
+.sceneflow-rail::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(50% - (var(--sf-rail-hit-width) / 2));
+  width: var(--sf-rail-hit-width);
+}
+
+.sceneflow-rail-left {
+  left: calc(var(--sf-side-width) + (var(--sf-gap) / 2) - (var(--sf-rail-pill-width) / 2));
+}
+
+.sceneflow-layout.left-collapsed .sceneflow-rail-left {
+  left: calc((var(--sf-gap) / 2) - (var(--sf-rail-pill-width) / 2));
+}
+
+.sceneflow-rail-right {
+  right: calc(var(--sf-side-width) + (var(--sf-gap) / 2) - (var(--sf-rail-pill-width) / 2));
+}
+
+.sceneflow-layout.right-collapsed .sceneflow-rail-right {
+  right: calc((var(--sf-gap) / 2) - (var(--sf-rail-pill-width) / 2));
+}
+
+.sceneflow-rail-line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 1px;
+  transform: translateX(-50%);
+  background: rgba(120, 120, 120, 0.24);
+  transition: background-color 0.15s ease;
+}
+
+.sceneflow-rail-pill {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: var(--sf-rail-pill-width);
+  min-width: var(--sf-rail-pill-width);
+  max-width: var(--sf-rail-pill-width);
+  height: var(--sf-rail-pill-height);
+  min-height: var(--sf-rail-pill-height);
+  max-height: var(--sf-rail-pill-height);
+  transform: translate(-50%, -50%);
+  border: 1px solid var(--stroke);
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.96);
+  color: var(--muted);
+  box-shadow: var(--shadow-soft);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  line-height: 1;
+  white-space: nowrap;
+  box-sizing: border-box;
+  flex: 0 0 auto;
+  opacity: 0.84;
+  transition:
+    opacity 0.15s ease,
+    color 0.15s ease,
+    transform 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.sceneflow-rail:hover:not(:disabled) .sceneflow-rail-line,
+.sceneflow-rail:focus-visible .sceneflow-rail-line {
+  background: rgba(91, 142, 220, 0.45);
+}
+
+.sceneflow-rail:hover:not(:disabled) .sceneflow-rail-pill,
+.sceneflow-rail:focus-visible .sceneflow-rail-pill {
+  opacity: 1;
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 30%, var(--stroke) 70%);
+  transform: translate(-50%, -50%) scale(1.04);
+}
+
+.sceneflow-rail:focus-visible {
+  outline: none;
+}
+
+.sceneflow-rail.collapsed .sceneflow-rail-pill {
+  opacity: 0.96;
 }
 
 .sceneflow-toggles {
@@ -5079,6 +5219,11 @@ button.ghost.start-toggle:disabled {
 @media (max-width: 980px) {
   .sceneflow-layout {
     grid-template-columns: 1fr;
+  }
+
+  .sceneflow-rail,
+  .sceneflow-side-placeholder {
+    display: none;
   }
 
   .sceneflow-inspector {
