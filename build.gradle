@@ -202,14 +202,15 @@ dependencies {
     implementation group: 'org.slick2d', name: 'slick2d-core', version: '1.0.2' // needed for documentation
     // https://mvnrepository.com/artifact/org.reflections/reflections
     implementation group: 'org.reflections', name: 'reflections', version: '0.9.12'
+    implementation group: 'org.javassist', name: 'javassist', version: '3.30.2-GA'
     // https://mvnrepository.com/artifact/jpl/jpl
     implementation group: 'jpl', name: 'jpl', version: '7.4.0'
     // https://mvnrepository.com/artifact/de.sciss/sphinx4
 //    implementation group: 'de.dfki.mary', name: 'marytts-client', version: '5.1.2'
     // https://mvnrepository.com/artifact/net.java.dev.jna/jna
-    implementation group: 'net.java.dev.jna', name: 'jna', version: '4.2.2'
+    implementation group: 'net.java.dev.jna', name: 'jna', version: '5.17.0'
     // https://mvnrepository.com/artifact/net.java.dev.jna/jna-platform
-    implementation group: 'net.java.dev.jna', name: 'jna-platform', version: '4.2.2'
+    implementation group: 'net.java.dev.jna', name: 'jna-platform', version: '5.17.0'
     // https://mvnrepository.com/artifact/com.1stleg/jnativehook
     implementation group: 'com.1stleg', name: 'jnativehook', version: '2.1.0'
     // https://mvnrepository.com/artifact/com.fifesoft/autocomplete
@@ -219,15 +220,15 @@ dependencies {
     // https://mvnrepository.com/artifact/net.sourceforge.javaflacencoder/java-flac-encoder
     implementation group: 'net.sourceforge.javaflacencoder', name: 'java-flac-encoder', version: '0.3.7'
     // https://mvnrepository.com/artifact/org.json/json
-    implementation group: 'org.json', name: 'json', version: '20171018'
+    implementation group: 'org.json', name: 'json', version: '20240303'
     // https://mvnrepository.com/artifact/javax.xml.bind/jaxb-api
     implementation group: 'javax.xml.bind', name: 'jaxb-api', version: '2.4.0-b180830.0359'
     // https://mvnrepository.com/artifact/com.github.sarxos/webcam-capture
     implementation group: 'com.github.sarxos', name: 'webcam-capture', version: '0.3.12'
     // https://mvnrepository.com/artifact/com.google.zxing/core
-    implementation group: 'com.google.zxing', name: 'core', version: '2.0'
+    implementation group: 'com.google.zxing', name: 'core', version: '3.5.3'
     // https://mvnrepository.com/artifact/com.google.zxing/javase
-    implementation group: 'com.google.zxing', name: 'javase', version: '2.0'
+    implementation group: 'com.google.zxing', name: 'javase', version: '3.5.3'
     // https://mvnrepository.com/artifact/org.slf4j/slf4j-api
     implementation group: 'org.slf4j', name: 'slf4j-api', version: '2.0.17'
     runtimeOnly group: 'org.slf4j', name: 'slf4j-simple', version: '2.0.17'

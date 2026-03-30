@@ -14,6 +14,6 @@ dependencies {
     implementation project(":core")
 
     // https://mvnrepository.com/artifact/org.json/json
-    implementation group: 'org.json', name: 'json', version: '20171018'
+    implementation group: 'org.json', name: 'json', version: '20240303'
     implementation 'org.jetbrains:annotations:16.0.2'
 }

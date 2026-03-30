@@ -24,7 +24,7 @@ dependencies {
     implementation project(':plugins:timer')
 
     // SLF4J for Javalin logging
-    implementation 'org.slf4j:slf4j-simple:2.0.9'
+    implementation 'org.slf4j:slf4j-simple:2.0.17'
 }
 
 application {

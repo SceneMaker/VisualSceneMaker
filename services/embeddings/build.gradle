@@ -18,10 +18,11 @@ repositories {
 
 dependencies {
     implementation 'io.javalin:javalin:6.7.0'
-    implementation 'org.json:json:20171018'
-    implementation 'org.slf4j:slf4j-simple:1.7.25'
+    implementation 'org.json:json:20240303'
+    implementation 'org.slf4j:slf4j-simple:2.0.17'
     implementation 'com.microsoft.onnxruntime:onnxruntime:1.18.0'
     implementation 'ai.djl.huggingface:tokenizers:0.25.0'
+    implementation 'org.apache.commons:commons-compress:1.28.0'
 }
 
 application {
