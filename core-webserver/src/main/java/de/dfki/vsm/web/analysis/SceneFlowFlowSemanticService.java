@@ -99,35 +99,26 @@ public final class SceneFlowFlowSemanticService {
     private FlowSemanticNodeResult classifyReachableInternalFlow(SuperNode superNode,
                                                                  IdentityHashMap<BasicNode, FlowSemanticNodeResult> cache,
                                                                  FlowSemanticResult result) {
-        LinkedHashSet<BasicNode> reachableNodes = collectReachableInternalNodes(superNode);
-        if (reachableNodes.isEmpty()) {
+        List<BasicNode> seeds = collectInternalSeeds(superNode);
+        if (seeds.isEmpty()) {
             return null;
         }
         FlowSemanticNodeResult potential = null;
         FlowSemanticNodeResult definite = null;
-        for (BasicNode internalNode : reachableNodes) {
-            if (internalNode == null || internalNode.isHistoryNode()) {
+        for (BasicNode seed : seeds) {
+            FlowSemanticNodeResult branchResult = classifyInternalBranch(superNode, seed, cache, result);
+            if (branchResult == null) {
                 continue;
             }
-            FlowSemanticNodeResult internalResult = classifyNode(internalNode, cache, result);
-            if (internalResult == null || internalResult.getKind() == FlowSemanticKind.NOT_END) {
-                continue;
+            if (branchResult.getKind() == FlowSemanticKind.NOT_END) {
+                return branchResult;
             }
-            if (internalResult.getKind() == FlowSemanticKind.DEFINITE_END) {
-                if (definite == null) {
-                    definite = new FlowSemanticNodeResult(superNode, FlowSemanticKind.DEFINITE_END,
-                            "SUPERNODE_INTERNAL_DEFINITE_END",
-                            "The reachable internal subflow can end at node '" + safeNodeName(internalNode) + "'.");
-                }
-            } else if (potential == null) {
-                potential = new FlowSemanticNodeResult(superNode, FlowSemanticKind.POTENTIAL_END,
-                        "SUPERNODE_INTERNAL_POTENTIAL_END",
-                        "The reachable internal subflow may end at node '" + safeNodeName(internalNode) + "'.");
+            if (branchResult.getKind() == FlowSemanticKind.POTENTIAL_END) {
+                potential = branchResult;
+            } else if (definite == null) {
+                definite = branchResult;
             }
         }
-        // POTENTIAL_END takes precedence over DEFINITE_END: if any reachable node
-        // is a potential (not guaranteed) dead end, the supernode's classification
-        // cannot be promoted to DEFINITE_END.
         if (potential != null) {
             return potential;
         }
@@ -139,9 +130,47 @@ public final class SceneFlowFlowSemanticService {
                 "The reachable internal subflow has no detected end node.");
     }
 
-    private LinkedHashSet<BasicNode> collectReachableInternalNodes(SuperNode superNode) {
-        LinkedHashSet<BasicNode> visited = new LinkedHashSet<>();
-        ArrayDeque<BasicNode> queue = new ArrayDeque<>();
+    private FlowSemanticNodeResult classifyInternalBranch(SuperNode superNode,
+                                                          BasicNode seed,
+                                                          IdentityHashMap<BasicNode, FlowSemanticNodeResult> cache,
+                                                          FlowSemanticResult result) {
+        LinkedHashSet<BasicNode> reachableNodes = collectReachableInternalNodes(superNode, seed);
+        FlowSemanticNodeResult potential = null;
+        FlowSemanticNodeResult definite = null;
+        for (BasicNode internalNode : reachableNodes) {
+            if (internalNode == null || internalNode.isHistoryNode()) {
+                continue;
+            }
+            FlowSemanticNodeResult internalResult = classifyNode(internalNode, cache, result);
+            if (internalResult == null || internalResult.getKind() == FlowSemanticKind.NOT_END) {
+                continue;
+            }
+            if (internalResult.getKind() == FlowSemanticKind.POTENTIAL_END) {
+                if (potential == null) {
+                    potential = new FlowSemanticNodeResult(superNode, FlowSemanticKind.POTENTIAL_END,
+                            "SUPERNODE_INTERNAL_POTENTIAL_END",
+                            "The start branch at node '" + safeNodeName(seed)
+                                    + "' may end at node '" + safeNodeName(internalNode) + "'.");
+                }
+            } else if (definite == null) {
+                definite = new FlowSemanticNodeResult(superNode, FlowSemanticKind.DEFINITE_END,
+                        "SUPERNODE_INTERNAL_DEFINITE_END",
+                        "The start branch at node '" + safeNodeName(seed)
+                                + "' can end at node '" + safeNodeName(internalNode) + "'.");
+            }
+        }
+        if (potential != null) {
+            return potential;
+        }
+        if (definite != null) {
+            return definite;
+        }
+        return new FlowSemanticNodeResult(superNode, FlowSemanticKind.NOT_END,
+                "SUPERNODE_INTERNAL_CONTINUATION",
+                "The start branch at node '" + safeNodeName(seed) + "' has no detected end node.");
+    }
+
+    private List<BasicNode> collectInternalSeeds(SuperNode superNode) {
         List<BasicNode> seeds = new ArrayList<>();
 
         for (BasicNode startNode : superNode.getStartNodeMap().values()) {
@@ -156,11 +185,15 @@ public final class SceneFlowFlowSemanticService {
                 }
             }
         }
+        return seeds;
+    }
 
-        for (BasicNode seed : seeds) {
-            if (visited.add(seed)) {
-                queue.add(seed);
-            }
+    private LinkedHashSet<BasicNode> collectReachableInternalNodes(SuperNode superNode, BasicNode seed) {
+        LinkedHashSet<BasicNode> visited = new LinkedHashSet<>();
+        ArrayDeque<BasicNode> queue = new ArrayDeque<>();
+
+        if (seed != null && visited.add(seed)) {
+            queue.add(seed);
         }
 
         while (!queue.isEmpty()) {

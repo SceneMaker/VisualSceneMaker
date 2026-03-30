@@ -5,6 +5,7 @@ import de.dfki.vsm.model.sceneflow.chart.SuperNode;
 import de.dfki.vsm.model.sceneflow.chart.edge.EpsilonEdge;
 import de.dfki.vsm.model.sceneflow.chart.edge.GuargedEdge;
 import de.dfki.vsm.model.sceneflow.chart.edge.InterruptEdge;
+import de.dfki.vsm.model.sceneflow.chart.edge.TimeoutEdge;
 import de.dfki.vsm.model.sceneflow.glue.command.Expression;
 import de.dfki.vsm.model.sceneflow.glue.command.expression.BinaryExpression;
 import de.dfki.vsm.model.sceneflow.glue.command.expression.UnaryExpression;
@@ -154,6 +155,24 @@ class SceneFlowFlowSemanticServiceTest {
         assertKind(root, nested, FlowSemanticKind.NOT_END);
     }
 
+    @Test
+    void treatsConcurrentSelfLoopingStartBranchAsPreventingSuperNodeEnd() {
+        SuperNode root = superNode("root");
+        SuperNode nested = superNode("nested");
+        BasicNode afterInterrupt = node("afterInterrupt");
+        attachChild(root, nested, true);
+        attachChild(root, afterInterrupt, false);
+        addInterruptEdge(nested, afterInterrupt, new BoolLiteral(true));
+
+        BasicNode loopingStart = node("loopingStart");
+        BasicNode deadEndStart = node("deadEndStart");
+        attachChild(nested, loopingStart, true);
+        attachChild(nested, deadEndStart, true);
+        addTimeoutEdge(loopingStart, loopingStart, 1000);
+
+        assertKind(root, nested, FlowSemanticKind.NOT_END);
+    }
+
     private void assertKind(SuperNode root, BasicNode node, FlowSemanticKind expectedKind) {
         FlowSemanticNodeResult result = service.analyze(root).get(node);
         assertEquals(expectedKind, result != null ? result.getKind() : null);
@@ -220,6 +239,19 @@ class SceneFlowFlowSemanticServiceTest {
                 new ArrayList<>(),
                 new HashMap<Tuple<String, BasicNode>, Tuple<String, BasicNode>>(),
                 condition
+        ));
+    }
+
+    private void addTimeoutEdge(BasicNode source, BasicNode target, int timeoutMs) {
+        source.setDedge(new TimeoutEdge(
+                target.getId(),
+                source.getId(),
+                target,
+                source,
+                null,
+                new ArrayList<>(),
+                new HashMap<Tuple<String, BasicNode>, Tuple<String, BasicNode>>(),
+                timeoutMs
         ));
     }
 }

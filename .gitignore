@@ -1,2 +1,15 @@
 scripts/gen-sf.sh
 plugins/*/build/
+
+# Local IDE / OS noise
+.DS_Store
+.idea/
+
+# Gradle and Java build outputs
+.gradle/
+build/
+**/build/
+META-INF/
+
+# Frontend dependencies
+editor/web-ui/node_modules/
