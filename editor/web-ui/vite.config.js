@@ -7,8 +7,10 @@ const wsTarget = apiTarget.replace(/^http/, "ws");
 
 export default defineConfig({
   plugins: [svelte()],
-  base: "/",
+  base: "/web-ui/",
   build: {
+    target: "es2019",
+    cssTarget: "chrome80",
     outDir: resolve(__dirname, "../src/main/resources/web-ui"),
     emptyOutDir: true
   },

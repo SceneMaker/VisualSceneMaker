@@ -1767,21 +1767,32 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         mAllowExternal = allowExternal;
         Preferences.load();
         loadExportablePropertyProviders();
+        final boolean hasWebUi = getClass().getClassLoader().getResource("web-ui/index.html") != null;
+        final boolean hasImages = getClass().getClassLoader().getResource("images/") != null;
         mApp = Javalin.create(config -> {
             // Try to add static files if available (editor mode)
             // These may not be present in runtime-only mode
-            boolean hasWebUi = getClass().getClassLoader().getResource("web-ui/index.html") != null;
-            boolean hasImages = getClass().getClassLoader().getResource("images/") != null;
             if (hasWebUi) {
-                config.staticFiles.add("/web-ui", Location.CLASSPATH);
-                config.spaRoot.addFile("/", "/web-ui/index.html", Location.CLASSPATH);
+                config.staticFiles.add(staticFiles -> {
+                    staticFiles.hostedPath = "/web-ui";
+                    staticFiles.directory = "web-ui";
+                    staticFiles.location = Location.CLASSPATH;
+                });
+                config.spaRoot.addFile("/web-ui", "/web-ui/index.html", Location.CLASSPATH);
             }
             if (hasImages) {
-                config.staticFiles.add("images", Location.CLASSPATH);
+                config.staticFiles.add(staticFiles -> {
+                    staticFiles.hostedPath = "/images";
+                    staticFiles.directory = "images";
+                    staticFiles.location = Location.CLASSPATH;
+                });
             }
             // Enable CORS for cross-origin requests (Phase 8.4: remote connections)
             config.bundledPlugins.enableCors(cors -> cors.addRule(it -> it.anyHost()));
         }).start(allowExternal ? "0.0.0.0" : "127.0.0.1", port);
+        if (hasWebUi) {
+            mApp.get("/", ctx -> ctx.redirect("/web-ui/"));
+        }
         registerRoutes();
         // EventDispatcher registration now happens per-project when projects are added to projectStore.
         // See onProjectRegistered() / onProjectRemoved().
