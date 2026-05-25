@@ -533,7 +533,8 @@ public class charamelWsExecutor extends ActivityExecutor {
                 setupWS();
             });
             ws.onError(ctx -> {
-                mLogger.failure("Error handling ws message exchange");
+                Throwable t = ctx.error();
+                mLogger.failure("WebSocket error: " + (t != null ? t.getMessage() : "unknown"));
             });
         });
 
@@ -545,6 +546,10 @@ public class charamelWsExecutor extends ActivityExecutor {
         Javalin app;
         if (mPathToCertificate != null) {
             app = Javalin.create(config -> {
+                config.jetty.modifyWebSocketServletFactory(factory -> factory.setIdleTimeout(java.time.Duration.ofMinutes(10)));
+                config.jetty.modifyServletContextHandler(handler ->
+                    handler.addFilter(new org.eclipse.jetty.servlet.FilterHolder(new PnaFilter()), "/*",
+                        java.util.EnumSet.of(jakarta.servlet.DispatcherType.REQUEST)));
                 config.jetty.modifyServer(server -> {
                     ServerConnector sslConnector = new ServerConnector(server,
                             new SslConnectionFactory(getSslContextFactory(), "http/1.1"),
@@ -556,9 +561,40 @@ public class charamelWsExecutor extends ActivityExecutor {
                 });
             }).start();
         } else {
-            app = Javalin.create().start(ws_port);
+            app = Javalin.create(config -> {
+                config.jetty.modifyWebSocketServletFactory(factory -> factory.setIdleTimeout(java.time.Duration.ofMinutes(10)));
+                config.jetty.modifyServletContextHandler(handler ->
+                    handler.addFilter(new org.eclipse.jetty.servlet.FilterHolder(new PnaFilter()), "/*",
+                        java.util.EnumSet.of(jakarta.servlet.DispatcherType.REQUEST)));
+            }).start(ws_port);
         }
         return app;
+    }
+
+    // Jetty servlet filter: adds PNA/CORS headers to every HTTP response including
+    // WebSocket 101 upgrade responses (Chrome 104+ requires the header on both the
+    // OPTIONS preflight and the actual 101 upgrade before allowing the WS connection).
+    private class PnaFilter implements jakarta.servlet.Filter {
+        @Override
+        public void doFilter(jakarta.servlet.ServletRequest req, jakarta.servlet.ServletResponse res,
+                             jakarta.servlet.FilterChain chain)
+                throws java.io.IOException, jakarta.servlet.ServletException {
+            jakarta.servlet.http.HttpServletRequest  httpReq = (jakarta.servlet.http.HttpServletRequest) req;
+            jakarta.servlet.http.HttpServletResponse httpRes = (jakarta.servlet.http.HttpServletResponse) res;
+            httpRes.setHeader("Access-Control-Allow-Origin", "*");
+            httpRes.setHeader("Access-Control-Allow-Private-Network", "true");
+            if ("OPTIONS".equalsIgnoreCase(httpReq.getMethod())) {
+                mLogger.message("PNA OPTIONS preflight from origin: " + httpReq.getHeader("Origin"));
+                httpRes.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+                httpRes.setHeader("Access-Control-Allow-Headers",
+                    "Upgrade, Connection, Sec-WebSocket-Key, Sec-WebSocket-Version, Sec-WebSocket-Protocol");
+                httpRes.setStatus(jakarta.servlet.http.HttpServletResponse.SC_OK);
+                return;
+            }
+            chain.doFilter(req, res);
+        }
+        @Override public void init(jakarta.servlet.FilterConfig fc) {}
+        @Override public void destroy() {}
     }
 
     private synchronized void handleMessage(WsMessageContext ctx) {

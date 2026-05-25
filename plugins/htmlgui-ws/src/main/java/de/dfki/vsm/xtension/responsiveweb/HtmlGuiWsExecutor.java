@@ -90,6 +90,7 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
             app = Javalin.create(config -> {
                 if (guiFilesExist)   config.staticFiles.add(guiFiles,   Location.EXTERNAL);
                 if (audioFilesExist) config.staticFiles.add(audioFiles, Location.EXTERNAL);
+                config.jetty.modifyWebSocketServletFactory(factory -> factory.setIdleTimeout(java.time.Duration.ofMinutes(10)));
                 config.jetty.modifyServer(server -> {
                     ServerConnector sslConnector = new ServerConnector(server,
                             new SslConnectionFactory(getSslContextFactory(), "http/1.1"),
@@ -106,6 +107,7 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
             app = Javalin.create(config -> {
                 if (guiFilesExist)   config.staticFiles.add(guiFiles,   Location.EXTERNAL);
                 if (audioFilesExist) config.staticFiles.add(audioFiles, Location.EXTERNAL);
+                config.jetty.modifyWebSocketServletFactory(factory -> factory.setIdleTimeout(java.time.Duration.ofMinutes(10)));
                 config.jetty.modifyServer(server -> {
                     ServerConnector connector = new ServerConnector(server);
                     connector.setPort(ws_port);
@@ -143,7 +145,10 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
                     mActivityWorkerMap.notifyAll();
                 }
             });
-            ws.onError(ctx -> mLogger.failure("Error handling ws message exchange"));
+            ws.onError(ctx -> {
+                Throwable t = ctx.error();
+                mLogger.failure("WebSocket error: " + (t != null ? t.getMessage() : "unknown"));
+            });
         });
 
         // --- Schema-driven screens endpoints ---
@@ -179,6 +184,82 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
             }
         });
 
+        // Serve character-config.json — from project file if present, otherwise
+        // synthesised from the charamel-ws plugin config (character_url + ws_port).
+        final String characterConfigPath = mProject.getProjectPath() + File.separator + "character-config.json";
+        app.get("/character-config.json", ctx -> {
+            File f = new File(characterConfigPath);
+            if (f.exists()) {
+                ctx.result(new FileInputStream(f)).contentType("application/json");
+                return;
+            }
+            String synthesised = buildCharacterConfigFromPlugins();
+            if (synthesised != null) {
+                ctx.contentType("application/json").result(synthesised);
+            } else {
+                ctx.status(404);
+            }
+        });
+
+        // Character proxy: fetches the character HTML from an external URL server-side
+        // and re-serves it from localhost.  When Vuppetmaster JS runs with origin
+        // http://localhost it can connect to ws://localhost:3030 without Chrome's
+        // Private Network Access (PNA) restrictions (private→private, no PNA).
+        // Usage: /character-proxy?_src=<encodedBaseUrl>&<otherParams>
+        // Other params (e.g. server=ws://…) are forwarded to the upstream page AND
+        // preserved in the browser's location.search so Vuppetmaster can read them.
+        app.get("/character-proxy", ctx -> {
+            String srcUrl = ctx.queryParam("_src");
+            if (srcUrl == null || srcUrl.isBlank()) {
+                ctx.status(400).result("Missing _src parameter");
+                return;
+            }
+            // Forward all params except _src to the upstream URL (e.g. server=...)
+            StringBuilder upstreamQs = new StringBuilder();
+            ctx.queryParamMap().forEach((k, vals) -> {
+                if (!"_src".equals(k) && !vals.isEmpty()) {
+                    if (upstreamQs.length() > 0) upstreamQs.append('&');
+                    try {
+                        upstreamQs.append(java.net.URLEncoder.encode(k, "UTF-8"))
+                                  .append('=')
+                                  .append(java.net.URLEncoder.encode(vals.get(0), "UTF-8"));
+                    } catch (java.io.UnsupportedEncodingException ignored) {}
+                }
+            });
+            String fetchUrl = srcUrl + (upstreamQs.length() > 0
+                    ? (srcUrl.contains("?") ? "&" : "?") + upstreamQs : "");
+            try {
+                java.net.HttpURLConnection conn =
+                    (java.net.HttpURLConnection) new java.net.URL(fetchUrl).openConnection();
+                conn.setRequestProperty("User-Agent", "Mozilla/5.0 (VSM-character-proxy/1.0)");
+                conn.setConnectTimeout(8000);
+                conn.setReadTimeout(15000);
+                if (conn.getResponseCode() != 200) {
+                    ctx.status(502).result("character-proxy: upstream returned " + conn.getResponseCode());
+                    return;
+                }
+                String ct = conn.getContentType();
+                String charset = (ct != null && ct.contains("charset="))
+                    ? ct.substring(ct.indexOf("charset=") + 8).trim() : "UTF-8";
+                String html = new String(conn.getInputStream().readAllBytes(), charset);
+
+                // Inject <base> as first child of <head> so relative URLs (scripts, CSS)
+                // in the proxied HTML resolve back to the character's original origin.
+                String basePath = srcUrl.contains("/")
+                    ? srcUrl.substring(0, srcUrl.lastIndexOf('/') + 1) : srcUrl + "/";
+                String baseTag = "<base href=\"" + basePath + "\">";
+                if (html.toLowerCase().contains("<head>")) {
+                    html = html.replaceFirst("(?i)<head>", "<head>" + baseTag);
+                } else {
+                    html = baseTag + html;
+                }
+                ctx.contentType("text/html; charset=utf-8").result(html);
+            } catch (Exception e) {
+                mLogger.failure("character-proxy fetch failed (" + fetchUrl + "): " + e.getMessage());
+                ctx.status(502).result("character-proxy error: " + e.getMessage());
+            }
+        });
+
         // Serve infrastructure files from the plugin JAR classpath so they are
         // always up-to-date regardless of what the project's gui/ folder contains.
         app.get("/index.html", ctx -> {
@@ -208,10 +289,26 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
         // Auto-start browser if configured
         boolean autostartBrowser = "true".equalsIgnoreCase(mConfig.getProperty("autostart_browser"));
         if (autostartBrowser) {
-            boolean fullscreen = "true".equalsIgnoreCase(mConfig.getProperty("browser_fullscreen"));
-            boolean ignoreCertErrors = !"false".equalsIgnoreCase(mConfig.getProperty("browser_ignore_cert_errors"));
+            boolean fullscreen        = "true".equalsIgnoreCase(mConfig.getProperty("browser_fullscreen"));
+            boolean disablePna        = "true".equalsIgnoreCase(mConfig.getProperty("browser_disable_pna"));
+            boolean disableWebSec     = "true".equalsIgnoreCase(mConfig.getProperty("browser_disable_web_security"));
             String url = "http://127.0.0.1:" + html_port;
-            launchBrowser(url, fullscreen, ignoreCertErrors);
+
+            List<String> extraFlags = new ArrayList<>();
+            if (disablePna) {
+                // Targeted: disable Chrome's Private Network Access enforcement.
+                // Required when a character iframe from a public origin (e.g. vuppetmaster.de)
+                // needs to connect to a local WebSocket server (e.g. Charamel WS on localhost).
+                extraFlags.add("--disable-features=BlockInsecurePrivateNetworkRequests,PrivateNetworkAccessSendPreflights");
+            }
+            if (disableWebSec) {
+                // Nuclear option: disables all web security (CORS, PNA, mixed-content).
+                // Requires a separate user-data-dir. Use when browser_disable_pna is insufficient.
+                extraFlags.add("--disable-web-security");
+                extraFlags.add("--user-data-dir=" + System.getProperty("java.io.tmpdir")
+                    + java.io.File.separator + "vsm-chrome");
+            }
+            launchBrowser(url, fullscreen, extraFlags);
         }
     }
 
@@ -220,62 +317,40 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
      * Supports macOS, Windows, and Linux.
      * The browser process is stored so it can be terminated when the plugin unloads.
      */
-    private void launchBrowser(String url, boolean fullscreen, boolean ignoreCertErrors) {
+    private void launchBrowser(String url, boolean fullscreen, List<String> extraFlags) {
         String os = System.getProperty("os.name", "").toLowerCase();
         List<String> command = new ArrayList<>();
 
         if (os.contains("mac")) {
-            // macOS: launch Chrome directly to get a killable process
             String chromePath = findMacChrome();
             if (chromePath == null) {
                 mLogger.warning("Chrome not found on macOS. Cannot auto-start browser.");
                 return;
             }
             command.add(chromePath);
-            if (ignoreCertErrors) {
-                command.add("--ignore-certificate-errors");
-            }
-            if (fullscreen) {
-                command.add("--start-fullscreen");
-            }
-            command.add("--new-window");
-            command.add(url);
         } else if (os.contains("win")) {
-            // Windows: launch Chrome directly to get a killable process
             String chromePath = findWindowsChrome();
             if (chromePath == null) {
                 mLogger.warning("Chrome not found on Windows. Cannot auto-start browser.");
                 return;
             }
             command.add(chromePath);
-            if (ignoreCertErrors) {
-                command.add("--ignore-certificate-errors");
-            }
-            if (fullscreen) {
-                command.add("--start-fullscreen");
-            }
-            command.add("--new-window");
-            command.add(url);
         } else if (os.contains("linux")) {
-            // Linux: try google-chrome or chromium-browser
             String browser = findLinuxChrome();
             if (browser == null) {
                 mLogger.warning("Chrome/Chromium not found on Linux. Cannot auto-start browser.");
                 return;
             }
             command.add(browser);
-            if (ignoreCertErrors) {
-                command.add("--ignore-certificate-errors");
-            }
-            if (fullscreen) {
-                command.add("--start-fullscreen");
-            }
-            command.add("--new-window");
-            command.add(url);
         } else {
             mLogger.warning("Unsupported OS for browser auto-start: " + os);
             return;
         }
+
+        if (fullscreen) command.add("--start-fullscreen");
+        command.addAll(extraFlags);
+        command.add("--new-window");
+        command.add(url);
 
         try {
             mLogger.message("Launching browser: " + String.join(" ", command));
@@ -339,6 +414,30 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
                 }
             } catch (Exception ignored) {
             }
+        }
+        return null;
+    }
+
+    /**
+     * Synthesises a character-config.json payload from the charamel-ws plugin config.
+     * Looks for a plugin whose class name contains "charamelWs", reads its
+     * character_url (defaults to the public Vuppetmaster page) and ws_port,
+     * and returns {"url": "<character_url>?server=ws://localhost:<ws_port>/ws"}.
+     * Returns null if no charamel-ws plugin is configured.
+     */
+    private String buildCharacterConfigFromPlugins() {
+        final String CHARAMEL_CLASS_FRAGMENT = "charamelWs";
+        final String DEFAULT_CHARACTER_URL   = "https://vuppetmaster.de/dev/ubidenz/";
+        for (PluginConfig pc : mProject.getProjectConfig().getPluginConfigList()) {
+            if (!pc.getClassName().contains(CHARAMEL_CLASS_FRAGMENT)) continue;
+            String baseUrl = pc.getProperty("character_url");
+            if (baseUrl == null || baseUrl.isBlank()) baseUrl = DEFAULT_CHARACTER_URL;
+            if (!baseUrl.endsWith("/")) baseUrl += "/";
+            String wsPort = pc.getProperty("ws_port");
+            if (wsPort == null || wsPort.isBlank()) wsPort = "3030";
+            String fullUrl = baseUrl + "?server=ws://localhost:" + wsPort + "/ws";
+            mLogger.message("character-config: synthesised from charamel-ws — " + fullUrl);
+            return "{\"url\":\"" + fullUrl + "\"}";
         }
         return null;
     }

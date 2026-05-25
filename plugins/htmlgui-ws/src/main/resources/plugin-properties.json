@@ -1,6 +1,6 @@
 {
     "schemaVersion": "1.0",
-    "specVersion": "1.1",
+    "specVersion": "1.2",
     "specHash": "635ace1e87b8e23b",
     "plugin": {
         "id": "htmlgui-ws",
@@ -90,12 +90,6 @@
                 "type": "boolean",
                 "default": false,
                 "description": "Start browser in full-screen mode"
-            },
-            {
-                "name": "browser_ignore_cert_errors",
-                "type": "boolean",
-                "default": true,
-                "description": "Ignore SSL certificate errors"
             }
         ],
         "agent": {

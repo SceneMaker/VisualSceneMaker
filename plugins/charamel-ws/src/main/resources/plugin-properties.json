@@ -1,7 +1,7 @@
 {
     "schemaVersion": "1.0",
-    "specVersion": "1.0",
-    "specHash": "05d556360c200efd",
+    "specVersion": "1.1",
+    "specHash": "3cdf951bb39f5a4a",
     "plugin": {
         "id": "charamel-ws",
         "name": "Charamel WebSocket",
@@ -62,6 +62,12 @@
                 "name": "certificate",
                 "type": "filepath",
                 "description": "Path to SSL certificate"
+            },
+            {
+                "name": "character_url",
+                "type": "string",
+                "default": "https://vuppetmaster.de/dev/ubidenz/",
+                "description": "Base URL of the character player page. Combined with ws_port by htmlgui-ws to auto-configure the character iframe."
             }
         ],
         "agent": {

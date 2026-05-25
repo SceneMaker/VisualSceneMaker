@@ -2615,6 +2615,8 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         mApp.get(API_PREFIX + "/projects/{pid}/variables", this::handleVariables);
         mApp.get(API_PREFIX + "/projects/{pid}/screens", this::handleScreensGet);
         mApp.put(API_PREFIX + "/projects/{pid}/screens", this::handleScreensPut);
+        mApp.get(API_PREFIX + "/projects/{pid}/character-config", this::handleCharacterConfigGet);
+        mApp.put(API_PREFIX + "/projects/{pid}/character-config", this::handleCharacterConfigPut);
         mApp.get(API_PREFIX + "/projects/{pid}/assets/{filename}", this::handleAssetsGet);
         mApp.post(API_PREFIX + "/projects/{pid}/semantic/syntax", this::handleSemanticSyntaxAnalyze);
         mApp.post(API_PREFIX + "/projects/{pid}/semantic/analyze", this::handleSemanticAnalyze);
@@ -5579,6 +5581,83 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         } catch (Exception e) {
             ctx.status(400);
             writeJson(ctx, errorResponse("SCREENS_SAVE_FAILED", e.getMessage()));
+        }
+    }
+
+    // ── Character config (character-config.json) ──────────────────────────────
+
+    private Path characterConfigPath(ProjectRef ref) {
+        if (ref == null || ref.path == null || ref.path.isBlank()) return null;
+        return Paths.get(ref.path, "character-config.json");
+    }
+
+    private void handleCharacterConfigGet(Context ctx) {
+        String pid = ctx.pathParam("pid");
+        ProjectRef ref = projectStore.get(pid);
+        if (ref == null || ref.runtimeProject == null) {
+            ctx.status(404);
+            writeJson(ctx, errorResponse("PROJECT_NOT_FOUND", "Project not found"));
+            return;
+        }
+        Path path = characterConfigPath(ref);
+        if (path != null && Files.exists(path)) {
+            try {
+                writeJson(ctx, new JSONObject(Files.readString(path, StandardCharsets.UTF_8)));
+            } catch (Exception e) {
+                ctx.status(500);
+                writeJson(ctx, errorResponse("CHARACTER_CONFIG_READ_FAILED", e.getMessage()));
+            }
+            return;
+        }
+        // No file — synthesise from charamel-ws plugin config if present.
+        JSONObject synthesised = synthesiseCharacterConfig(ref.runtimeProject);
+        writeJson(ctx, synthesised != null ? synthesised : new JSONObject());
+    }
+
+    /** Builds {"url":"<character_url>?server=ws://localhost:<ws_port>/ws"} from the
+     *  charamel-ws plugin config, or returns null if no such plugin is configured. */
+    private JSONObject synthesiseCharacterConfig(de.dfki.vsm.runtime.project.RunTimeProject project) {
+        final String CHARAMEL_CLASS   = "charamelWs";
+        final String DEFAULT_CHAR_URL = "https://vuppetmaster.de/dev/ubidenz/";
+        for (de.dfki.vsm.model.project.PluginConfig pc :
+                project.getProjectConfig().getPluginConfigList()) {
+            if (!pc.getClassName().contains(CHARAMEL_CLASS)) continue;
+            String baseUrl = pc.getProperty("character_url");
+            if (baseUrl == null || baseUrl.isBlank()) baseUrl = DEFAULT_CHAR_URL;
+            if (!baseUrl.endsWith("/")) baseUrl += "/";
+            String wsPort = pc.getProperty("ws_port");
+            if (wsPort == null || wsPort.isBlank()) wsPort = "3030";
+            JSONObject cfg = new JSONObject();
+            cfg.put("url", baseUrl + "?server=ws://localhost:" + wsPort + "/ws");
+            return cfg;
+        }
+        return null;
+    }
+
+    private void handleCharacterConfigPut(Context ctx) {
+        String pid = ctx.pathParam("pid");
+        ProjectRef ref = projectStore.get(pid);
+        if (ref == null || ref.runtimeProject == null) {
+            ctx.status(404);
+            writeJson(ctx, errorResponse("PROJECT_NOT_FOUND", "Project not found"));
+            return;
+        }
+        Path path = characterConfigPath(ref);
+        if (path == null) {
+            ctx.status(409);
+            writeJson(ctx, errorResponse("CHARACTER_CONFIG_SAVE_FAILED",
+                    "Project has not been saved to disk yet. Use File → Save As to choose a location, then try again."));
+            return;
+        }
+        try {
+            JSONObject body = new JSONObject(ctx.body());
+            Files.createDirectories(path.getParent());
+            Files.writeString(path, body.toString(2), StandardCharsets.UTF_8,
+                    StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
+            writeJson(ctx, body);
+        } catch (Exception e) {
+            ctx.status(400);
+            writeJson(ctx, errorResponse("CHARACTER_CONFIG_SAVE_FAILED", e.getMessage()));
         }
     }
 
