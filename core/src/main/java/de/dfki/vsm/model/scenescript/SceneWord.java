@@ -5,6 +5,7 @@ import de.dfki.vsm.util.xml.XMLParseError;
 import de.dfki.vsm.util.xml.XMLWriteError;
 import org.w3c.dom.Element;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Gregor Mehlmann
@@ -45,7 +46,12 @@ public class SceneWord extends UttrElement {
     ////////////////////////////////////////////////////////////////////////////
     @Override
     public final String getText(final HashMap<String, String> args) {
-        return mText;
+        if (args == null || args.isEmpty() || mText == null || !mText.contains("$")) return mText;
+        String result = mText;
+        for (Map.Entry<String, String> entry : args.entrySet()) {
+            result = result.replace("$" + entry.getKey(), entry.getValue());
+        }
+        return result;
     }
 
     ////////////////////////////////////////////////////////////////////////////

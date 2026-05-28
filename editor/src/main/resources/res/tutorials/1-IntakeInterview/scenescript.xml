@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SceneScript lower="0" upper="0">
+  <SceneObject lower="0" upper="173" language="en" identifier="greet">
+    <SceneTurn lower="15" upper="173" speaker="alex">
+      <SceneUttr lower="21" upper="27" punct="!">
+        <SceneWord lower="21" upper="26" text="Hello"/>
+      </SceneUttr>
+      <SceneUttr lower="28" upper="37" punct=",">
+        <SceneAbbrev lower="28" upper="31" first="I" second="m"/>
+        <SceneWord lower="32" upper="36" text="Alex"/>
+      </SceneUttr>
+      <SceneUttr lower="38" upper="68" punct=".">
+        <SceneWord lower="38" upper="42" text="your"/>
+        <SceneWord lower="43" upper="50" text="digital"/>
+        <SceneWord lower="51" upper="57" text="intake"/>
+        <SceneWord lower="58" upper="67" text="assistant"/>
+      </SceneUttr>
+      <SceneUttr lower="69" upper="141" punct=".">
+        <SceneAbbrev lower="69" upper="73" first="I" second="ll"/>
+        <SceneWord lower="74" upper="77" text="ask"/>
+        <SceneWord lower="78" upper="81" text="you"/>
+        <SceneWord lower="82" upper="83" text="a"/>
+        <SceneWord lower="84" upper="87" text="few"/>
+        <SceneWord lower="88" upper="93" text="short"/>
+        <SceneWord lower="94" upper="103" text="questions"/>
+        <SceneWord lower="104" upper="106" text="to"/>
+        <SceneWord lower="107" upper="111" text="help"/>
+        <SceneWord lower="112" upper="119" text="prepare"/>
+        <SceneWord lower="120" upper="123" text="for"/>
+        <SceneWord lower="124" upper="128" text="your"/>
+        <SceneWord lower="129" upper="140" text="appointment"/>
+      </SceneUttr>
+      <SceneUttr lower="142" upper="173" punct=".">
+        <SceneWord lower="142" upper="146" text="This"/>
+        <SceneWord lower="147" upper="151" text="will"/>
+        <SceneWord lower="152" upper="156" text="take"/>
+        <SceneWord lower="157" upper="162" text="about"/>
+        <SceneWord lower="163" upper="164" text="2"/>
+        <SceneWord lower="165" upper="172" text="minutes"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="175" upper="223" language="en" identifier="ask_name">
+    <SceneTurn lower="193" upper="223" speaker="alex">
+      <SceneUttr lower="199" upper="223" punct="?">
+        <SceneWord lower="199" upper="203" text="What"/>
+        <SceneWord lower="204" upper="206" text="is"/>
+        <SceneWord lower="207" upper="211" text="your"/>
+        <SceneWord lower="212" upper="217" text="first"/>
+        <SceneWord lower="218" upper="222" text="name"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="225" upper="317" language="en" identifier="ask_concern">
+    <SceneTurn lower="246" upper="317" speaker="alex">
+      <SceneUttr lower="252" upper="262" punct=".">
+        <SceneWord lower="252" upper="257" text="Thank"/>
+        <SceneWord lower="258" upper="261" text="you"/>
+      </SceneUttr>
+      <SceneUttr lower="263" upper="317" punct="?">
+        <SceneWord lower="263" upper="267" text="What"/>
+        <SceneWord lower="268" upper="270" text="is"/>
+        <SceneWord lower="271" upper="274" text="the"/>
+        <SceneWord lower="275" upper="279" text="main"/>
+        <SceneWord lower="280" upper="286" text="reason"/>
+        <SceneWord lower="287" upper="290" text="you"/>
+        <SceneWord lower="291" upper="294" text="are"/>
+        <SceneWord lower="295" upper="302" text="seeking"/>
+        <SceneWord lower="303" upper="310" text="support"/>
+        <SceneWord lower="311" upper="316" text="today"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="319" upper="402" language="en" identifier="ask_duration">
+    <SceneTurn lower="341" upper="402" speaker="alex">
+      <SceneUttr lower="347" upper="360" punct=".">
+        <SceneWord lower="347" upper="348" text="I"/>
+        <SceneWord lower="349" upper="359" text="understand"/>
+      </SceneUttr>
+      <SceneUttr lower="361" upper="402" punct="?">
+        <SceneWord lower="361" upper="364" text="How"/>
+        <SceneWord lower="365" upper="369" text="long"/>
+        <SceneWord lower="370" upper="374" text="have"/>
+        <SceneWord lower="375" upper="378" text="you"/>
+        <SceneWord lower="379" upper="383" text="been"/>
+        <SceneWord lower="384" upper="396" text="experiencing"/>
+        <SceneWord lower="397" upper="401" text="this"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="404" upper="511" language="en" identifier="ask_impact">
+    <SceneTurn lower="424" upper="511" speaker="alex">
+      <SceneUttr lower="430" upper="468" punct=",">
+        <SceneWord lower="430" upper="433" text="How"/>
+        <SceneWord lower="434" upper="436" text="is"/>
+        <SceneWord lower="437" upper="441" text="this"/>
+        <SceneWord lower="442" upper="451" text="affecting"/>
+        <SceneWord lower="452" upper="456" text="your"/>
+        <SceneWord lower="457" upper="462" text="daily"/>
+        <SceneWord lower="463" upper="467" text="life"/>
+      </SceneUttr>
+      <SceneUttr lower="469" upper="487" punct=",">
+        <SceneWord lower="469" upper="472" text="for"/>
+        <SceneWord lower="473" upper="480" text="example"/>
+        <SceneWord lower="481" upper="486" text="sleep"/>
+      </SceneUttr>
+      <SceneUttr lower="488" upper="493" punct=",">
+        <SceneWord lower="488" upper="492" text="work"/>
+      </SceneUttr>
+      <SceneUttr lower="494" upper="511" punct="?">
+        <SceneWord lower="494" upper="496" text="or"/>
+        <SceneWord lower="497" upper="510" text="relationships"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="513" upper="632" language="en" identifier="ask_treatment">
+    <SceneTurn lower="536" upper="632" speaker="alex">
+      <SceneUttr lower="542" upper="601" punct=",">
+        <SceneWord lower="542" upper="546" text="Have"/>
+        <SceneWord lower="547" upper="550" text="you"/>
+        <SceneWord lower="551" upper="559" text="received"/>
+        <SceneWord lower="560" upper="563" text="any"/>
+        <SceneWord lower="564" upper="576" text="professional"/>
+        <SceneWord lower="577" upper="584" text="support"/>
+        <SceneWord lower="585" upper="588" text="for"/>
+        <SceneWord lower="589" upper="593" text="this"/>
+        <SceneWord lower="594" upper="600" text="before"/>
+      </SceneUttr>
+      <SceneUttr lower="602" upper="632" punct="?">
+        <SceneWord lower="602" upper="606" text="such"/>
+        <SceneWord lower="607" upper="609" text="as"/>
+        <SceneWord lower="610" upper="617" text="therapy"/>
+        <SceneWord lower="618" upper="620" text="or"/>
+        <SceneWord lower="621" upper="631" text="medication"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="634" upper="725" language="en" identifier="thinking">
+    <SceneTurn lower="652" upper="725" speaker="alex">
+      <SceneUttr lower="658" upper="680" punct=".">
+        <SceneWord lower="658" upper="663" text="Thank"/>
+        <SceneWord lower="664" upper="667" text="you"/>
+        <SceneWord lower="668" upper="671" text="for"/>
+        <SceneWord lower="672" upper="679" text="sharing"/>
+      </SceneUttr>
+      <SceneUttr lower="681" upper="725" punct=".">
+        <SceneWord lower="681" upper="684" text="Let"/>
+        <SceneWord lower="685" upper="687" text="me"/>
+        <SceneWord lower="688" upper="695" text="prepare"/>
+        <SceneWord lower="696" upper="697" text="a"/>
+        <SceneWord lower="698" upper="703" text="brief"/>
+        <SceneWord lower="704" upper="711" text="summary"/>
+        <SceneWord lower="712" upper="715" text="for"/>
+        <SceneWord lower="716" upper="719" text="the"/>
+        <SceneWord lower="720" upper="724" text="team"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="727" upper="764" language="en" identifier="show_summary">
+    <SceneTurn lower="749" upper="764" speaker="alex">
+      <SceneUttr lower="755" upper="764" punct=".">
+        <SceneParam lower="755" upper="763" name="summary"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="766" upper="865" language="en" identifier="ask_additional">
+    <SceneTurn lower="790" upper="865" speaker="alex">
+      <SceneUttr lower="796" upper="865" punct="?">
+        <SceneWord lower="796" upper="798" text="Is"/>
+        <SceneWord lower="799" upper="804" text="there"/>
+        <SceneWord lower="805" upper="813" text="anything"/>
+        <SceneWord lower="814" upper="818" text="else"/>
+        <SceneWord lower="819" upper="822" text="you"/>
+        <SceneWord lower="823" upper="828" text="would"/>
+        <SceneWord lower="829" upper="833" text="like"/>
+        <SceneWord lower="834" upper="836" text="to"/>
+        <SceneWord lower="837" upper="840" text="add"/>
+        <SceneWord lower="841" upper="847" text="before"/>
+        <SceneWord lower="848" upper="852" text="your"/>
+        <SceneWord lower="853" upper="864" text="appointment"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="867" upper="1000" language="en" identifier="closing">
+    <SceneTurn lower="884" upper="1000" speaker="alex">
+      <SceneUttr lower="890" upper="900" punct=".">
+        <SceneWord lower="890" upper="895" text="Thank"/>
+        <SceneWord lower="896" upper="899" text="you"/>
+      </SceneUttr>
+      <SceneUttr lower="901" upper="971" punct=".">
+        <SceneWord lower="901" upper="905" text="This"/>
+        <SceneWord lower="906" upper="917" text="information"/>
+        <SceneWord lower="918" upper="922" text="will"/>
+        <SceneWord lower="923" upper="925" text="be"/>
+        <SceneWord lower="926" upper="932" text="shared"/>
+        <SceneWord lower="933" upper="937" text="with"/>
+        <SceneWord lower="938" upper="941" text="the"/>
+        <SceneWord lower="942" upper="946" text="team"/>
+        <SceneWord lower="947" upper="953" text="before"/>
+        <SceneWord lower="954" upper="958" text="your"/>
+        <SceneWord lower="959" upper="970" text="appointment"/>
+      </SceneUttr>
+      <SceneUttr lower="972" upper="982" punct=",">
+        <SceneWord lower="972" upper="976" text="Take"/>
+        <SceneWord lower="977" upper="981" text="care"/>
+      </SceneUttr>
+      <SceneUttr lower="983" upper="1000" punct=".">
+        <SceneWord lower="983" upper="986" text="and"/>
+        <SceneWord lower="987" upper="990" text="see"/>
+        <SceneWord lower="991" upper="994" text="you"/>
+        <SceneWord lower="995" upper="999" text="soon"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+</SceneScript>

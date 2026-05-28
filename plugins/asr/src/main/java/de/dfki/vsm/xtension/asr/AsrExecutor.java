@@ -39,6 +39,7 @@ public class AsrExecutor extends ActivityExecutor {
     private String asrSpeakerVar;
     private String asrExpectedVar;
     private String asrMatchedLabelVar;
+    private String asrConfigLanguageVar;
     private String turnEndProbVar;
     private String diarizationVar;
 
@@ -86,9 +87,10 @@ public class AsrExecutor extends ActivityExecutor {
         asrTextVar        = configOrDefault("asrTextVar",        "asr_text");
         asrLanguageVar    = configOrDefault("asrLanguageVar",    "asr_language");
         asrSpeakerVar     = configOrDefault("asrSpeakerVar",     "asr_speaker");
-        asrExpectedVar      = configOrDefault("asrExpectedVar",      "asr_expected");
-        asrMatchedLabelVar  = configOrDefault("asrMatchedLabelVar",  "asr_matched_label");
-        turnEndProbVar      = configOrDefault("turnEndProbVar",      "asr_turn_end_prob");
+        asrExpectedVar        = configOrDefault("asrExpectedVar",        "asr_expected");
+        asrMatchedLabelVar    = configOrDefault("asrMatchedLabelVar",    "asr_matched_label");
+        asrConfigLanguageVar  = configOrDefault("asrConfigLanguageVar",  "asr_config_language");
+        turnEndProbVar        = configOrDefault("turnEndProbVar",        "asr_turn_end_prob");
         diarizationVar      = configOrDefault("diarizationVar",      "asr_diarization");
 
         // Safe defaults
@@ -102,7 +104,8 @@ public class AsrExecutor extends ActivityExecutor {
         setStringVar(asrTextVar,       "");
         setStringVar(asrLanguageVar,   "");
         setStringVar(asrSpeakerVar,    "");
-        setBoolVar(asrExpectedVar,     false);
+        setBoolVar(asrExpectedVar,          false);
+        setStringVar(asrConfigLanguageVar,  "");
         // asrMatchedLabelVar is an Event(String) — do NOT initialize to "" at launch,
         // since writing to an Event variable enqueues (not replaces), and an empty
         // string event would cause spurious sceneflow edge triggers.
@@ -198,10 +201,14 @@ public class AsrExecutor extends ActivityExecutor {
             switch (type) {
                 case "ready":
                     setBoolVar(connectedVar, true);
+                    setStringVar(asrConfigLanguageVar, msg.optString("language", ""));
                     mLogger.message("[asr] server ready, models=" + msg.optString("models", ""));
                     if (!defaultGroups.isBlank()) {
                         sendExpect(defaultGroups, String.valueOf(defaultGroupsTimeout));
                     }
+                    break;
+                case "config":
+                    setStringVar(asrConfigLanguageVar, msg.optString("language", ""));
                     break;
                 case "sad":
                     setBoolVar(sadActiveVar,  msg.optBoolean("active",   false));

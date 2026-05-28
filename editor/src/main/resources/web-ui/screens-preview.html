@@ -15,10 +15,18 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.9/dist/chart.umd.min.js"></script>
 
     <!-- VSM schema-driven renderer -->
-    <script type="module" src="/vsm-renderer.js"></script>
+    <script type="module" src="/web-ui/vsm-renderer.js"></script>
 
     <style>
         html, body { margin: 0; padding: 0; width: 100%; height: 100%; }
+        #preview-character {
+            position: fixed; left: 0; top: 0; z-index: 0;
+            width: 100%; height: 100%; border: none;
+        }
+        vsm-screen-renderer {
+            position: fixed; left: 0; top: 0; z-index: 1;
+            width: 100%; height: 100%; display: block;
+        }
     </style>
 
     <script>
@@ -46,6 +54,19 @@
     </script>
 </head>
 <body>
+    <script>
+        // Inject character iframe behind the renderer when the 'character' query param is set.
+        (function() {
+            var charUrl = new URLSearchParams(location.search).get('character');
+            if (charUrl) {
+                var f = document.createElement('iframe');
+                f.id = 'preview-character';
+                f.src = charUrl;
+                f.allow = 'autoplay';
+                document.currentScript.parentNode.insertBefore(f, document.currentScript);
+            }
+        })();
+    </script>
     <vsm-screen-renderer></vsm-screen-renderer>
 </body>
 </html>

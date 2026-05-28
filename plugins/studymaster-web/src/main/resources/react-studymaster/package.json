@@ -5,6 +5,7 @@
   "dependencies": {
     "@emotion/react": "^11.7.1",
     "@emotion/styled": "^11.6.0",
+    "@vitejs/plugin-react": "^5.0.4",
     "@material-ui/core": "^4.12.3",
     "@material-ui/icons": "^4.11.2",
     "@mui/icons-material": "^5.2.5",
@@ -14,22 +15,17 @@
     "@testing-library/react": "^9.5.0",
     "@testing-library/user-event": "^7.2.1",
     "bootstrap": "^5.1.1",
-    "http-proxy-middleware": "^0.20.0",
-    "npm": "^8.5.1",
-    "react": "^16.14.0",
+    "http-proxy-middleware": "^3.0.5",
+    "react": "^17.0.2",
     "react-bootstrap": "^2.0.0-rc.1",
-    "react-dom": "^16.14.0",
-    "react-scripts": "^4.0.3",
-    "sass": "^1.49.0"
+    "react-dom": "^17.0.2",
+    "sass": "^1.49.0",
+    "vite": "^8.0.3"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
-  },
-  "eslintConfig": {
-    "extends": "react-app"
+    "start": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
   },
   "browserslist": {
     "production": [

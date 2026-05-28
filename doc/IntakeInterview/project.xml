@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Project name="1-IntakeInterview" androidProject="false">
+  <Plugins>
+    <Plugin type="device" name="HtmlGuiWs" class="de.dfki.vsm.xtension.responsiveweb.HtmlGuiWsExecutor" load="true">
+      <Feature key="ws_port" val="4041"/>
+      <Feature key="html_port" val="8080"/>
+      <Feature key="guifiles" val="gui"/>
+      <Feature key="autostart_browser" val="true"/>
+      <Feature key="browser_start_path" val="/chat.html"/>
+    </Plugin>
+    <Plugin type="device" name="Llm" class="de.dfki.vsm.xtension.llm.LlmExecutor" load="true">
+      <Feature key="base_url" val="http://172.16.53.2:8234"/>
+      <Feature key="api_key" val=""/>
+      <Feature key="model" val="qwen3-30b-a3b-mlx"/>
+      <Feature key="temperature" val="0.7"/>
+      <Feature key="timeout_sec" val="60"/>
+    </Plugin>
+  </Plugins>
+  <Agents>
+    <Agent name="alex" device="HtmlGuiWs">
+      <Feature key="var" val="conversation_log"/>
+      <Feature key="role" val="agent"/>
+      <Feature key="speaker" val="Alex"/>
+    </Agent>
+    <Agent name="gui" device="HtmlGuiWs">
+      <Feature key="default" val="chat.html"/>
+    </Agent>
+    <Agent name="llm" device="Llm">
+    </Agent>
+  </Agents>
+  <SemanticServices>
+    <Feature key="analyzeSyntax" val="true"/>
+    <Feature key="analyzeSvo" val="true"/>
+    <Feature key="analyzeDaTr" val="true"/>
+    <Feature key="systemPrompt" val="You are a multilingual discourse annotation engine for dialogue utterances."/>
+    <Feature key="promptTemplate" val="Analyze exactly one utterance sentence and return JSON only (no markdown).     Language can be German or English; handle umlauts correctly (ä/ö/ü and ae/oe/ue variants).     Treat placeholders like $user as normal mentions.     Ignore bracketed stage/action tags (e.g. [wave]).     Classify ONLY this sentence (no cross-sentence inference).      Focus on:     1) dialogueAct.label + dialogueAct.confidence     2) themeRheme.theme + themeRheme.rheme + themeRheme.confidence      Return object fields: version (number), annotations (array with exactly one item).     Annotation fields: id, line, speaker, text, dialogueAct, themeRheme.     Do not output basic subject/verb/object unless explicitly requested by layers.      Dialogue act guideline:     - Use short labels (e.g. greeting, question, inform, request, confirm, reject, thanks, apology, directive, commissive).      Theme-rheme guideline:     - theme = given/topic part (what the sentence is about)     - rheme = new/focus part (what is said about the theme)     - Keep both close to original wording.      Output must be valid JSON.      Layers: {{layers}}     Speaker: {{speaker}}     Line: {{line}}     Sentence:     {{script}}"/>
+    <Feature key="runtimeVizRate" val="100"/>
+    <Feature key="runtimeVizBurst" val="200"/>
+  </SemanticServices>
+  <Player>
+  </Player>
+</Project>

@@ -49,21 +49,17 @@ The WebApp after the request has been issued:
 
 ## How to build the App (react-studymaster in resources)
 
-The web app is based on React and was initialized with [Create React App](https://github.com/facebook/create-react-app).
+The web app is based on React and is built with [Vite](https://vite.dev/).
 
 The JavaScript library React is being used here, you can find more information at <https://reactjs.org/>.
 
-To develop the web app you require [NodeJS](https://nodejs.org/). Tested with version 15.14 
-(On MacOS, can be installed with `brew install node@15.14.0`).
-You also need react-scripts to build the app:
-
-    brew install node@15.14.0  # or download from the website
-    npm install react-scripts
+To develop the web app you require [NodeJS](https://nodejs.org/).
 
 To build the App you need to:
 
 * `cd` into folder `main\resources\react-studymaster`
   * A folder `node_modules` contains several megabytes of NodeJS packages, but it is ignored by gradle and excluded from the resources.
+* Install dependencies with `npm install`
 * Build (or update the app after changing JS/HTML code) with the command `npm run build`
   * This should be executed every time you update the JS or the HTML code of the web app.
 
@@ -75,7 +71,7 @@ If you want to develop and update the web app without the need to re-build VSM a
 * run `npm start`
 * Run the VisualSceneMaker jar
 * In your project use the port 8080 instead of 80
-* The App will now run on localhost:3000 instead of localhost
+* The App will now run on localhost:5173 instead of localhost
 
 (This skips the Javalin webserver)
 

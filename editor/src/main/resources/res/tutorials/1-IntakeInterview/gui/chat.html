@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Intake Interview — Alex</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #f0f2f5;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 780px;
+      height: 100vh;
+      max-height: 700px;
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 18px 24px;
+      background: #fff;
+      border-bottom: 1px solid #e8eaed;
+      flex-shrink: 0;
+    }
+    .avatar-wrap {
+      position: relative;
+      flex-shrink: 0;
+    }
+    .avatar-wrap img {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid #e8eaed;
+    }
+    .status-dot {
+      position: absolute;
+      bottom: 2px;
+      right: 2px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #ccc;
+      border: 2px solid #fff;
+      transition: background 0.4s;
+    }
+    .status-dot.connected { background: #34c759; }
+    .header-info h1 {
+      font-size: 16px;
+      font-weight: 600;
+      color: #1a1a2e;
+    }
+    .header-info p {
+      font-size: 12px;
+      color: #888;
+      margin-top: 2px;
+    }
+
+    /* Chat feed */
+    .feed {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      scroll-behavior: smooth;
+    }
+    .feed::-webkit-scrollbar { width: 4px; }
+    .feed::-webkit-scrollbar-thumb { background: #ddd; border-radius: 2px; }
+
+    .bubble {
+      display: flex;
+      flex-direction: column;
+      max-width: 72%;
+      animation: fadeUp 0.2s ease;
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .bubble.agent { align-self: flex-start; }
+    .bubble.user  { align-self: flex-end; }
+
+    .bubble .name {
+      font-size: 11px;
+      font-weight: 600;
+      color: #888;
+      margin-bottom: 4px;
+      padding: 0 4px;
+    }
+    .bubble.user .name { text-align: right; color: #5a7ab5; }
+
+    .bubble .text {
+      padding: 10px 14px;
+      border-radius: 16px;
+      font-size: 14px;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .bubble.agent .text {
+      background: #f0f2f5;
+      color: #1a1a2e;
+      border-bottom-left-radius: 4px;
+    }
+    .bubble.user .text {
+      background: #4a7cf7;
+      color: #fff;
+      border-bottom-right-radius: 4px;
+    }
+
+    /* Typing indicator */
+    .typing {
+      display: none;
+      align-self: flex-start;
+      background: #f0f2f5;
+      border-radius: 16px;
+      border-bottom-left-radius: 4px;
+      padding: 10px 16px;
+    }
+    .typing.visible { display: flex; gap: 4px; align-items: center; }
+    .typing span {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: #aaa;
+      animation: bounce 1.2s infinite;
+    }
+    .typing span:nth-child(2) { animation-delay: 0.2s; }
+    .typing span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes bounce {
+      0%, 60%, 100% { transform: translateY(0); }
+      30%           { transform: translateY(-5px); }
+    }
+
+    /* Input area */
+    .input-area {
+      display: flex;
+      gap: 10px;
+      padding: 16px 24px;
+      border-top: 1px solid #e8eaed;
+      background: #fff;
+      flex-shrink: 0;
+    }
+    .input-area input {
+      flex: 1;
+      border: 1px solid #e0e0e0;
+      border-radius: 24px;
+      padding: 10px 18px;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+      background: #fafafa;
+    }
+    .input-area input:focus { border-color: #4a7cf7; background: #fff; }
+    .input-area input:disabled { opacity: 0.5; }
+    .input-area button {
+      width: 42px; height: 42px;
+      border: none;
+      border-radius: 50%;
+      background: #4a7cf7;
+      color: #fff;
+      font-size: 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, transform 0.1s;
+      flex-shrink: 0;
+    }
+    .input-area button:hover  { background: #3a6be0; }
+    .input-area button:active { transform: scale(0.93); }
+    .input-area button:disabled { background: #ccc; cursor: default; transform: none; }
+
+    /* Status bar */
+    .status-bar {
+      text-align: center;
+      font-size: 11px;
+      color: #aaa;
+      padding: 6px;
+      background: #fafafa;
+      border-top: 1px solid #f0f0f0;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <div class="avatar-wrap">
+      <img src="alex.png" alt="Alex" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 52 52%22><circle cx=%2226%22 cy=%2226%22 r=%2226%22 fill=%22%23e0e8ff%22/><text x=%2226%22 y=%2232%22 text-anchor=%22middle%22 font-size=%2224%22>🧑‍⚕️</text></svg>'"/>
+      <div class="status-dot" id="dot"></div>
+    </div>
+    <div class="header-info">
+      <h1>Alex</h1>
+      <p>Digital Intake Assistant</p>
+    </div>
+  </div>
+
+  <div class="feed" id="feed">
+    <div class="typing" id="typing">
+      <span></span><span></span><span></span>
+    </div>
+  </div>
+
+  <div class="input-area">
+    <input type="text" id="msg" placeholder="Type your answer and press Enter…" disabled/>
+    <button id="send" disabled title="Send">&#10148;</button>
+  </div>
+
+  <div class="status-bar" id="status">Connecting to VSM…</div>
+
+</div>
+
+<script>
+  const WS_PORT = 4041;
+  const feed    = document.getElementById('feed');
+  const typing  = document.getElementById('typing');
+  const input   = document.getElementById('msg');
+  const sendBtn = document.getElementById('send');
+  const dot     = document.getElementById('dot');
+  const status  = document.getElementById('status');
+
+  // Tracks which messages from the server-managed conversation_log we've already shown.
+  // We diff the array length to avoid duplicating Alex's bubbles on full re-renders.
+  let lastKnownLog = [];
+
+  // Buffer for incoming agent utterances — flushed as one bubble after a short debounce
+  // so that all SceneUttrs from one SceneTurn merge into a single chat bubble.
+  let pendingMsgs = [];
+  let flushTimer  = null;
+
+  // ── WebSocket ────────────────────────────────────────────────────────────────
+
+  let ws;
+  function connect() {
+    ws = new WebSocket(`ws://localhost:${WS_PORT}/ws`);
+
+    ws.onopen = () => {
+      dot.classList.add('connected');
+      status.textContent = 'Connected — waiting for Alex…';
+      // Notify VSM that the GUI is ready (sets gui_connected = true in SceneFlow)
+      ws.send('varUpdate$gui_connected$true');
+    };
+
+    ws.onclose = () => {
+      dot.classList.remove('connected');
+      status.textContent = 'Disconnected. Reconnecting…';
+      input.disabled = true;
+      sendBtn.disabled = true;
+      setTimeout(connect, 2000);
+    };
+
+    ws.onerror = () => {
+      status.textContent = 'Connection error.';
+    };
+
+    ws.onmessage = (event) => {
+      const raw = event.data;
+
+      // updateVar$varName$value — sent by htmlgui-ws when a SceneFlow variable changes
+      if (raw.startsWith('updateVar$')) {
+        const parts   = raw.split('$');
+        const varName = parts[1];
+        const value   = parts.slice(2).join('$'); // value may contain $
+
+        if (varName === 'conversation_log') {
+          syncConversationLog(value);
+        }
+        return;
+      }
+    };
+  }
+
+  // ── Conversation log sync ────────────────────────────────────────────────────
+
+  function syncConversationLog(jsonStr) {
+    let log;
+    try { log = JSON.parse(jsonStr); } catch (e) { return; }
+    if (!Array.isArray(log)) return;
+
+    // Only process newly added messages (server sends full array each time)
+    const newMessages = log.slice(lastKnownLog.length);
+    lastKnownLog = log;
+
+    if (newMessages.length === 0) return;
+
+    hideTyping();
+
+    newMessages.forEach(msg => {
+      if (msg.role === 'agent' || msg.role === 'system') {
+        pendingMsgs.push(msg);
+      }
+      // user messages are echoed locally on send, so we skip role === 'user' here
+    });
+
+    // Debounce: wait for the full SceneTurn to arrive before rendering.
+    // All SceneUttrs from one turn arrive within milliseconds; 150 ms is ample.
+    if (flushTimer) clearTimeout(flushTimer);
+    flushTimer = setTimeout(() => {
+      flushTimer = null;
+      if (pendingMsgs.length === 0) { enableInput(); return; }
+
+      // Group consecutive utterances from the same speaker into one bubble.
+      const groups = [];
+      for (const msg of pendingMsgs) {
+        const spk  = msg.speaker || 'Alex';
+        const last = groups[groups.length - 1];
+        if (last && last.speaker === spk) {
+          last.text += ' ' + (msg.text || '');
+        } else {
+          groups.push({ role: msg.role, speaker: spk, text: msg.text || '' });
+        }
+      }
+      pendingMsgs = [];
+
+      groups.forEach(g => appendBubble('agent', g.speaker, g.text));
+      enableInput();
+    }, 150);
+  }
+
+  // ── Bubble rendering ─────────────────────────────────────────────────────────
+
+  function appendBubble(role, speaker, text) {
+    const wrap = document.createElement('div');
+    wrap.className = `bubble ${role}`;
+
+    const nameEl = document.createElement('div');
+    nameEl.className = 'name';
+    nameEl.textContent = speaker;
+
+    const textEl = document.createElement('div');
+    textEl.className = 'text';
+    textEl.textContent = text;
+
+    wrap.appendChild(nameEl);
+    wrap.appendChild(textEl);
+
+    // Insert before the typing indicator so typing stays at bottom
+    feed.insertBefore(wrap, typing);
+    scrollToBottom();
+  }
+
+  function showTyping() {
+    typing.classList.add('visible');
+    scrollToBottom();
+  }
+
+  function hideTyping() {
+    typing.classList.remove('visible');
+  }
+
+  function scrollToBottom() {
+    feed.scrollTop = feed.scrollHeight;
+  }
+
+  // ── Input handling ────────────────────────────────────────────────────────────
+
+  function enableInput() {
+    input.disabled = false;
+    sendBtn.disabled = false;
+    status.textContent = 'Your turn — type your answer below.';
+    input.focus();
+  }
+
+  function disableInput() {
+    input.disabled = true;
+    sendBtn.disabled = true;
+    status.textContent = 'Alex is typing…';
+  }
+
+  function sendMessage() {
+    const text = input.value.trim();
+    if (!text || input.disabled) return;
+
+    // Echo the user message locally
+    appendBubble('user', 'You', text);
+
+    // Send to VSM — this sets the user_input SceneFlow variable
+    ws.send(`varUpdate$user_input$${text}`);
+
+    input.value = '';
+    disableInput();
+    showTyping();
+  }
+
+  sendBtn.addEventListener('click', sendMessage);
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+  });
+
+  // ── Boot ─────────────────────────────────────────────────────────────────────
+  connect();
+</script>
+</body>
+</html>

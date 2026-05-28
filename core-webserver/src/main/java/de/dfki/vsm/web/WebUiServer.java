@@ -3410,7 +3410,7 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         }
         if (exp instanceof StructExpression) {
             for (Assignment assignment : ((StructExpression) exp).getExpList()) {
-                collectVariableNames(assignment.getLeftExpression(), out);
+                // Left side is a field/parameter name, not a variable reference — skip it
                 collectVariableNames(assignment.getInitExpression(), out);
             }
             return;
@@ -3625,6 +3625,17 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
                             JSONObject entry = new JSONObject();
                             entry.put("name", path.getFileName().toString());
                             entry.put("path", path.toAbsolutePath().toString());
+                            // Merge optional tutorial.json metadata (name, description, level, duration, tags)
+                            Path meta = path.resolve("tutorial.json");
+                            if (Files.exists(meta)) {
+                                try {
+                                    String raw = Files.readString(meta);
+                                    JSONObject m = new JSONObject(raw);
+                                    for (String key : m.keySet()) {
+                                        entry.put(key, m.get(key));
+                                    }
+                                } catch (Exception ignored) {}
+                            }
                             list.put(entry);
                         });
             } catch (Exception exc) {
@@ -10080,12 +10091,22 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
     }
 
     private Path resolveResourcePath(String directory) {
-        // First try the working directory (useful during development).
+        // 1. Relative to CWD (e.g. when running packaged with resources alongside).
         Path fsPath = Paths.get(directory);
         if (Files.exists(fsPath)) {
             return fsPath;
         }
-        // Then try to resolve from the classpath (packaged in the jar).
+        // 2. Development fallback: resources may live in a sibling module (e.g. editor).
+        //    Try common source/build locations relative to the project root (CWD).
+        for (String prefix : new String[]{
+                "editor/build/resources/main",
+                "editor/src/main/resources"}) {
+            Path devPath = Paths.get(prefix).resolve(directory);
+            if (Files.exists(devPath)) {
+                return devPath;
+            }
+        }
+        // 3. Classpath lookup (packaged JAR or Gradle run with all modules on classpath).
         try {
             ClassLoader cl = getClass().getClassLoader();
             URL url = cl.getResource(directory.endsWith("/") ? directory : directory + "/");

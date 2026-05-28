@@ -72,11 +72,16 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
     @Override
     public void launch() {
         mLogger.message("Loading HTML GUI Executor (WebSocket) ...");
-        final int wss_port = Integer.parseInt(Objects.requireNonNull(mConfig.getProperty("wss_port")));
         final int ws_port = Integer.parseInt(Objects.requireNonNull(mConfig.getProperty("ws_port")));
         final int html_port = Integer.parseInt(Objects.requireNonNull(mConfig.getProperty("html_port")));
-        final String guiFiles = (mProject.getProjectPath() + File.separator + mConfig.getProperty("guifiles")).replace("\\", "/");
-        final String audioFiles = (mProject.getProjectPath() + File.separator + mConfig.getProperty("audiofiles")).replace("\\", "/");
+        // wss_port is only required when an SSL certificate is configured
+        final String certProp = mConfig.getProperty("certificate");
+        final int wss_port = (certProp != null && !certProp.isBlank() && mConfig.getProperty("wss_port") != null)
+                ? Integer.parseInt(mConfig.getProperty("wss_port")) : 4040;
+        String guiFilesProp   = mConfig.getProperty("guifiles",   "gui");
+        String audioFilesProp = mConfig.getProperty("audiofiles", "audio");
+        final String guiFiles   = (mProject.getProjectPath() + File.separator + guiFilesProp).replace("\\", "/");
+        final String audioFiles = (mProject.getProjectPath() + File.separator + audioFilesProp).replace("\\", "/");
         final String sceneflowStateVar = mConfig.getProperty("sceneflowStateVar");
         mSceneflowInfoVar = mConfig.getProperty("sceneflowInfoVar");
         mPathToCertificate = mConfig.getProperty("certificate");
@@ -129,7 +134,8 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
                 // test
                 //broadcast("./default_gui.html");
                 // let sceneflow know that a client has connected
-                if (mProject.hasVariable(sceneflowStateVar)) {
+                if (sceneflowStateVar != null && !sceneflowStateVar.isBlank()
+                        && mProject.hasVariable(sceneflowStateVar)) {
                     mProject.setVariable(sceneflowStateVar, true);
                 }
             });
@@ -292,7 +298,9 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
             boolean fullscreen        = "true".equalsIgnoreCase(mConfig.getProperty("browser_fullscreen"));
             boolean disablePna        = "true".equalsIgnoreCase(mConfig.getProperty("browser_disable_pna"));
             boolean disableWebSec     = "true".equalsIgnoreCase(mConfig.getProperty("browser_disable_web_security"));
-            String url = "http://127.0.0.1:" + html_port;
+            String startPath = mConfig.getProperty("browser_start_path", "/");
+            if (!startPath.startsWith("/")) startPath = "/" + startPath;
+            String url = "http://127.0.0.1:" + html_port + startPath;
 
             List<String> extraFlags = new ArrayList<>();
             if (disablePna) {
@@ -450,8 +458,16 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
         // The value may contain '$', so split with limit 3.
         if (message.startsWith("varUpdate$")) {
             String[] parts = message.split("\\$", 3);
-            if (parts.length == 3 && mProject.hasVariable(parts[1])) {
-                mProject.setVariable(parts[1], parts[2]);
+            if (parts.length == 3 && parts[1] != null && !parts[1].isBlank()
+                    && mProject.hasVariable(parts[1])) {
+                String varName = parts[1];
+                String rawValue = parts[2];
+                // Type-coerce "true"/"false" strings to boolean so Bool variables are set correctly.
+                if ("true".equalsIgnoreCase(rawValue) || "false".equalsIgnoreCase(rawValue)) {
+                    mProject.setVariable(varName, Boolean.parseBoolean(rawValue));
+                } else {
+                    mProject.setVariable(varName, rawValue);
+                }
             }
             return; // do not also write to sceneflowInfoVar
         }
@@ -495,6 +511,28 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
     private synchronized void broadcast(String msg) {
         for (WsContext ws : websockets) {
             ws.send(msg);
+        }
+    }
+
+    /** Appends one chat message to a named conversation log and broadcasts the update. */
+    private void appendToConversationLog(String varName, String role, String speaker, String text) {
+        appendToConversationLog(varName, role, speaker, text, null);
+    }
+
+    private void appendToConversationLog(String varName, String role, String speaker, String text, String timestamp) {
+        StringBuilder msg = new StringBuilder("{");
+        msg.append("\"role\":\"").append(escapeJson(role)).append("\"");
+        msg.append(",\"text\":\"").append(escapeJson(text)).append("\"");
+        if (speaker != null)
+            msg.append(",\"speaker\":\"").append(escapeJson(speaker.replace("'", ""))).append("\"");
+        if (timestamp != null)
+            msg.append(",\"timestamp\":\"").append(escapeJson(timestamp.replace("'", ""))).append("\"");
+        msg.append("}");
+        synchronized (mConvLogs) {
+            mConvLogs.computeIfAbsent(varName, k -> new ArrayList<>()).add(msg.toString());
+            String jsonArray = buildJsonArray(mConvLogs.get(varName));
+            if (mProject.hasVariable(varName)) mProject.setVariable(varName, jsonArray);
+            broadcast("updateVar$" + varName + "$" + jsonArray);
         }
     }
 
@@ -574,14 +612,32 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
             String text = sa.getTextOnly("${'").trim();
             LinkedList<String> timemarks = sa.getTimeMarks("${'");
 
-            // If text is empty - assume activity has empty text but has marker activities registered
             if (text.isEmpty()) {
+                // No text — fire any registered marker activities immediately
                 for (String tm : timemarks) {
                     mLogger.warning("Directly executing activity at timemark " + tm);
                     mProject.getRunTimePlayer().getActivityScheduler().handle(tm);
                 }
             } else {
-                mLogger.warning("No gui command with CMD markers send ...");
+                // If the agent has a `var` property, append speech to that conversation log
+                de.dfki.vsm.model.project.AgentConfig agentCfg =
+                        mProject.getAgentConfig(activity_actor);
+                String varName = (agentCfg != null) ? agentCfg.getProperty("var") : null;
+                if (varName != null && !varName.isBlank()) {
+                    // @varName: resolve from a SceneFlow variable at speak time
+                    if (text.startsWith("@")) {
+                        de.dfki.vsm.runtime.interpreter.value.AbstractValue val =
+                                mProject.getValueOf(text.substring(1));
+                        text = (val != null) ? val.toString() : "";
+                    }
+                    String role    = agentCfg.getProperty("role",    "agent");
+                    String speaker = agentCfg.getProperty("speaker");
+                    appendToConversationLog(varName, role, speaker, text);
+                }
+                // Always fire any inline markers so co-located ActionObjects execute
+                for (String tm : timemarks) {
+                    mProject.getRunTimePlayer().getActivityScheduler().handle(tm);
+                }
             }
         } else {
             final String name = activity.getName();
@@ -677,25 +733,15 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
                 String varName   = activity.get("var")  != null ? activity.get("var").replace("'", "")  : "";
                 String role      = activity.get("role") != null ? activity.get("role").replace("'", "") : "agent";
                 String text      = activity.get("text") != null ? activity.get("text").replace("'", "") : "";
+                // @varName: read text from a SceneFlow variable at call time
+                if (text.startsWith("@")) {
+                    de.dfki.vsm.runtime.interpreter.value.AbstractValue val = mProject.getValueOf(text.substring(1));
+                    text = (val != null) ? val.toString() : "";
+                }
                 String speaker   = activity.get("speaker");
                 String timestamp = activity.get("timestamp");
-
-                StringBuilder msg = new StringBuilder("{");
-                msg.append("\"role\":\"").append(escapeJson(role)).append("\"");
-                msg.append(",\"text\":\"").append(escapeJson(text)).append("\"");
-                if (speaker != null)
-                    msg.append(",\"speaker\":\"").append(escapeJson(speaker.replace("'", ""))).append("\"");
-                if (timestamp != null)
-                    msg.append(",\"timestamp\":\"").append(escapeJson(timestamp.replace("'", ""))).append("\"");
-                msg.append("}");
-
                 if (!varName.isEmpty()) {
-                    synchronized (mConvLogs) {
-                        mConvLogs.computeIfAbsent(varName, k -> new ArrayList<>()).add(msg.toString());
-                        String jsonArray = buildJsonArray(mConvLogs.get(varName));
-                        if (mProject.hasVariable(varName)) mProject.setVariable(varName, jsonArray);
-                        broadcast("updateVar$" + varName + "$" + jsonArray);
-                    }
+                    appendToConversationLog(varName, role, speaker, text, timestamp);
                 }
 
             } else if (name.equalsIgnoreCase("clearFeed")) {

@@ -1,0 +1,102 @@
+{
+    "schemaVersion": "1.0",
+    "specVersion": "1.1",
+    "specHash": "1ce68bcb91460006",
+    "plugin": {
+        "id": "llm",
+        "name": "LLM",
+        "className": "de.dfki.vsm.xtension.llm.LlmExecutor",
+        "androidCompatible": false,
+        "description": "Calls an OpenAI-compatible LLM (OpenAI, LM Studio, Ollama) and stores the response in a SceneFlow variable.",
+        "tags": [
+            "llm",
+            "openai",
+            "ai",
+            "language-model",
+            "chat"
+        ]
+    },
+    "categories": {
+        "primary": "processing",
+        "secondary": [
+            "ai",
+            "language-model"
+        ]
+    },
+    "serviceModel": "cloud",
+    "config": {
+        "required": [
+            
+        ],
+        "optional": [
+            {
+                "name": "base_url",
+                "type": "string",
+                "default": "https://api.openai.com/v1/",
+                "description": "OpenAI-compatible API base URL. Use http://localhost:1234/v1/ for LM Studio."
+            },
+            {
+                "name": "api_key",
+                "type": "string",
+                "default": "",
+                "description": "API key (Bearer token). Leave empty for local servers that don't require auth."
+            },
+            {
+                "name": "model",
+                "type": "string",
+                "default": "",
+                "description": "Model ID to use. Leave empty or set to 'auto' to auto-select the first model reported by the server. Use 'gpt-4o-mini' for OpenAI, or the local model path for LM Studio / Ollama."
+            },
+            {
+                "name": "temperature",
+                "type": "string",
+                "default": "0.7",
+                "description": "Sampling temperature (0.0\u20132.0). Lower = more deterministic."
+            },
+            {
+                "name": "timeout_sec",
+                "type": "int",
+                "default": "30",
+                "description": "Request timeout in seconds."
+            }
+        ]
+    },
+    "commands": [
+        {
+            "name": "send",
+            "type": "action",
+            "summary": "Send a prompt to the LLM and store the response in a SceneFlow variable.",
+            "description": "Calls the configured LLM endpoint asynchronously. The SceneFlow should poll the responseVar with a CEdge loop (TEdge 1000ms + CEdge responseVar != '') to wait for the result. Both prompt and system support {varName} interpolation \u2014 placeholders like {patient_name} are replaced with the current SceneFlow variable value at call time.",
+            "params": [
+                {
+                    "name": "prompt",
+                    "type": "string",
+                    "required": true,
+                    "description": "User message. Supports {varName} placeholders."
+                },
+                {
+                    "name": "system",
+                    "type": "string",
+                    "required": false,
+                    "description": "System message (model persona / instructions). Supports {varName} placeholders."
+                },
+                {
+                    "name": "responseVar",
+                    "type": "string",
+                    "required": false,
+                    "default": "llm_response",
+                    "description": "Name of the SceneFlow String variable to write the response into."
+                }
+            ]
+        }
+    ],
+    "variables": {
+        "writes": [
+            {
+                "var": "llm_response",
+                "type": "String",
+                "description": "Default response variable if responseVar is not specified in the action."
+            }
+        ]
+    }
+}

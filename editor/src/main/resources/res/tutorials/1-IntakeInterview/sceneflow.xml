@@ -1,0 +1,633 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SceneFlow id="" name="IntakeInterview" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Tue, 26 May 2026 09:43:09" start="N1;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
+  <Define>
+  </Define>
+  <Declare>
+    <VariableDefinition type="Bool" name ="gui_connected">
+      <BoolLiteral value="false"/>
+    </VariableDefinition>
+    <VariableDefinition type="String" name ="user_input">
+      <StringLiteral><![CDATA[]]></StringLiteral>
+    </VariableDefinition>
+    <VariableDefinition type="String" name ="conversation_log">
+      <StringLiteral><![CDATA[[]]]></StringLiteral>
+    </VariableDefinition>
+    <VariableDefinition type="String" name ="patient_name">
+      <StringLiteral><![CDATA[]]></StringLiteral>
+    </VariableDefinition>
+    <VariableDefinition type="String" name ="main_concern">
+      <StringLiteral><![CDATA[]]></StringLiteral>
+    </VariableDefinition>
+    <VariableDefinition type="String" name ="duration_text">
+      <StringLiteral><![CDATA[]]></StringLiteral>
+    </VariableDefinition>
+    <VariableDefinition type="String" name ="daily_impact">
+      <StringLiteral><![CDATA[]]></StringLiteral>
+    </VariableDefinition>
+    <VariableDefinition type="String" name ="previous_treatment">
+      <StringLiteral><![CDATA[]]></StringLiteral>
+    </VariableDefinition>
+    <VariableDefinition type="String" name ="additional_notes">
+      <StringLiteral><![CDATA[]]></StringLiteral>
+    </VariableDefinition>
+    <VariableDefinition type="String" name ="llm_summary">
+      <StringLiteral><![CDATA[]]></StringLiteral>
+    </VariableDefinition>
+    <VariableDefinition type="String" name ="llm_response">
+      <StringLiteral><![CDATA[]]></StringLiteral>
+    </VariableDefinition>
+    <VariableDefinition type="String" name ="gui_info">
+      <StringLiteral><![CDATA[]]></StringLiteral>
+    </VariableDefinition>
+    <VariableDefinition type="String" name ="gui_choice">
+      <StringLiteral><![CDATA[]]></StringLiteral>
+    </VariableDefinition>
+  </Declare>
+  <Commands>
+  </Commands>
+  <LocalVariableBadge>
+    <Position xPos="10" yPos="10"/>
+  </LocalVariableBadge>
+  <GlobalVariableBadge>
+    <Position xPos="10" yPos="10"/>
+  </GlobalVariableBadge>
+  <Node id="N1" name="WaitForGui" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <CEdge target="N2" start="">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="165" yPos="120" ctrlXPos="165" ctrlYPos="143"/>
+          <ControlPoint xPos="165" yPos="210" ctrlXPos="165" ctrlYPos="188"/>
+        </Connection>
+      </Graphics>
+      <SimpleVariable name="gui_connected"/>
+    </CEdge>
+    <TEdge target="N1" start="" timeout="500">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="197" yPos="43" ctrlXPos="274" ctrlYPos="-25"/>
+          <ControlPoint xPos="133" yPos="43" ctrlXPos="147" ctrlYPos="-35"/>
+        </Connection>
+      </Graphics>
+    </TEdge>
+    <Graphics>
+      <Position xPos="120" yPos="30"/>
+    </Graphics>
+  </Node>
+  <Node id="N2" name="Greet" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <PlayScene>
+        <StringLiteral><![CDATA[greet]]></StringLiteral>
+      </PlayScene>
+    </Commands>
+    <EEdge target="N3" start ="">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="210" yPos="255" ctrlXPos="233" ctrlYPos="255"/>
+        <ControlPoint xPos="300" yPos="255" ctrlXPos="278" ctrlYPos="255"/>
+      </Connection>
+    </Graphics>
+    </EEdge>
+    <Graphics>
+      <Position xPos="120" yPos="210"/>
+    </Graphics>
+  </Node>
+  <Node id="N3" name="AskName" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <PlayScene>
+        <StringLiteral><![CDATA[ask_name]]></StringLiteral>
+      </PlayScene>
+      <Assignment>
+        <SimpleVariable name="user_input"/>
+        <Expression>
+          <StringLiteral><![CDATA[]]></StringLiteral>
+        </Expression>
+      </Assignment>
+    </Commands>
+    <EEdge target="N4" start ="">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="390" yPos="255" ctrlXPos="413" ctrlYPos="255"/>
+        <ControlPoint xPos="480" yPos="255" ctrlXPos="458" ctrlYPos="255"/>
+      </Connection>
+    </Graphics>
+    </EEdge>
+    <Graphics>
+      <Position xPos="300" yPos="210"/>
+    </Graphics>
+  </Node>
+  <Node id="N4" name="WaitName" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <CEdge target="N5" start="">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="570" yPos="255" ctrlXPos="593" ctrlYPos="255"/>
+          <ControlPoint xPos="660" yPos="255" ctrlXPos="638" ctrlYPos="255"/>
+        </Connection>
+      </Graphics>
+      <Neq>
+        <SimpleVariable name="user_input"/>
+        <StringLiteral><![CDATA[]]></StringLiteral>
+      </Neq>
+    </CEdge>
+    <TEdge target="N4" start="" timeout="500">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="557" yPos="223" ctrlXPos="634" ctrlYPos="155"/>
+          <ControlPoint xPos="493" yPos="223" ctrlXPos="507" ctrlYPos="145"/>
+        </Connection>
+      </Graphics>
+    </TEdge>
+    <Graphics>
+      <Position xPos="480" yPos="210"/>
+    </Graphics>
+  </Node>
+  <Node id="N5" name="StoreName" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <Assignment>
+        <SimpleVariable name="patient_name"/>
+        <Expression>
+          <SimpleVariable name="user_input"/>
+        </Expression>
+      </Assignment>
+      <PlayScene>
+        <StringLiteral><![CDATA[ask_concern]]></StringLiteral>
+      </PlayScene>
+      <Assignment>
+        <SimpleVariable name="user_input"/>
+        <Expression>
+          <StringLiteral><![CDATA[]]></StringLiteral>
+        </Expression>
+      </Assignment>
+    </Commands>
+    <EEdge target="N6" start ="">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="750" yPos="255" ctrlXPos="773" ctrlYPos="255"/>
+        <ControlPoint xPos="840" yPos="255" ctrlXPos="818" ctrlYPos="255"/>
+      </Connection>
+    </Graphics>
+    </EEdge>
+    <Graphics>
+      <Position xPos="660" yPos="210"/>
+    </Graphics>
+  </Node>
+  <Node id="N6" name="WaitConcern" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <CEdge target="N7" start="">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="885" yPos="300" ctrlXPos="885" ctrlYPos="323"/>
+          <ControlPoint xPos="885" yPos="390" ctrlXPos="885" ctrlYPos="368"/>
+        </Connection>
+      </Graphics>
+      <Neq>
+        <SimpleVariable name="user_input"/>
+        <StringLiteral><![CDATA[]]></StringLiteral>
+      </Neq>
+    </CEdge>
+    <TEdge target="N6" start="" timeout="500">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="917" yPos="223" ctrlXPos="994" ctrlYPos="155"/>
+          <ControlPoint xPos="853" yPos="223" ctrlXPos="867" ctrlYPos="145"/>
+        </Connection>
+      </Graphics>
+    </TEdge>
+    <Graphics>
+      <Position xPos="840" yPos="210"/>
+    </Graphics>
+  </Node>
+  <Node id="N7" name="StoreConcern" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <Assignment>
+        <SimpleVariable name="main_concern"/>
+        <Expression>
+          <SimpleVariable name="user_input"/>
+        </Expression>
+      </Assignment>
+      <PlayScene>
+        <StringLiteral><![CDATA[ask_duration]]></StringLiteral>
+      </PlayScene>
+      <Assignment>
+        <SimpleVariable name="user_input"/>
+        <Expression>
+          <StringLiteral><![CDATA[]]></StringLiteral>
+        </Expression>
+      </Assignment>
+    </Commands>
+    <EEdge target="N8" start ="">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="840" yPos="435" ctrlXPos="818" ctrlYPos="435"/>
+        <ControlPoint xPos="750" yPos="435" ctrlXPos="773" ctrlYPos="435"/>
+      </Connection>
+    </Graphics>
+    </EEdge>
+    <Graphics>
+      <Position xPos="840" yPos="390"/>
+    </Graphics>
+  </Node>
+  <Node id="N8" name="WaitDuration" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <CEdge target="N9" start="">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="660" yPos="435" ctrlXPos="593" ctrlYPos="435"/>
+          <ControlPoint xPos="480" yPos="435" ctrlXPos="548" ctrlYPos="435"/>
+        </Connection>
+      </Graphics>
+      <Neq>
+        <SimpleVariable name="user_input"/>
+        <StringLiteral><![CDATA[]]></StringLiteral>
+      </Neq>
+    </CEdge>
+    <TEdge target="N8" start="" timeout="500">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="737" yPos="403" ctrlXPos="814" ctrlYPos="335"/>
+          <ControlPoint xPos="673" yPos="403" ctrlXPos="687" ctrlYPos="325"/>
+        </Connection>
+      </Graphics>
+    </TEdge>
+    <Graphics>
+      <Position xPos="660" yPos="390"/>
+    </Graphics>
+  </Node>
+  <Node id="N9" name="StoreDuration" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <Assignment>
+        <SimpleVariable name="duration_text"/>
+        <Expression>
+          <SimpleVariable name="user_input"/>
+        </Expression>
+      </Assignment>
+      <PlayScene>
+        <StringLiteral><![CDATA[ask_impact]]></StringLiteral>
+      </PlayScene>
+      <Assignment>
+        <SimpleVariable name="user_input"/>
+        <Expression>
+          <StringLiteral><![CDATA[]]></StringLiteral>
+        </Expression>
+      </Assignment>
+    </Commands>
+    <EEdge target="N10" start ="">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="390" yPos="435" ctrlXPos="323" ctrlYPos="435"/>
+        <ControlPoint xPos="210" yPos="435" ctrlXPos="278" ctrlYPos="435"/>
+      </Connection>
+    </Graphics>
+    </EEdge>
+    <Graphics>
+      <Position xPos="390" yPos="390"/>
+    </Graphics>
+  </Node>
+  <Node id="N10" name="WaitImpact" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <CEdge target="N11" start="">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="165" yPos="480" ctrlXPos="165" ctrlYPos="503"/>
+          <ControlPoint xPos="165" yPos="570" ctrlXPos="165" ctrlYPos="548"/>
+        </Connection>
+      </Graphics>
+      <Neq>
+        <SimpleVariable name="user_input"/>
+        <StringLiteral><![CDATA[]]></StringLiteral>
+      </Neq>
+    </CEdge>
+    <TEdge target="N10" start="" timeout="500">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="197" yPos="403" ctrlXPos="274" ctrlYPos="335"/>
+          <ControlPoint xPos="133" yPos="403" ctrlXPos="147" ctrlYPos="325"/>
+        </Connection>
+      </Graphics>
+    </TEdge>
+    <Graphics>
+      <Position xPos="120" yPos="390"/>
+    </Graphics>
+  </Node>
+  <Node id="N11" name="StoreImpact" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <Assignment>
+        <SimpleVariable name="daily_impact"/>
+        <Expression>
+          <SimpleVariable name="user_input"/>
+        </Expression>
+      </Assignment>
+      <PlayScene>
+        <StringLiteral><![CDATA[ask_treatment]]></StringLiteral>
+      </PlayScene>
+      <Assignment>
+        <SimpleVariable name="user_input"/>
+        <Expression>
+          <StringLiteral><![CDATA[]]></StringLiteral>
+        </Expression>
+      </Assignment>
+    </Commands>
+    <EEdge target="N12" start ="">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="210" yPos="615" ctrlXPos="233" ctrlYPos="615"/>
+        <ControlPoint xPos="300" yPos="615" ctrlXPos="278" ctrlYPos="615"/>
+      </Connection>
+    </Graphics>
+    </EEdge>
+    <Graphics>
+      <Position xPos="120" yPos="570"/>
+    </Graphics>
+  </Node>
+  <Node id="N12" name="WaitTreatment" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <CEdge target="N13" start="">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="390" yPos="615" ctrlXPos="503" ctrlYPos="615"/>
+          <ControlPoint xPos="660" yPos="615" ctrlXPos="548" ctrlYPos="615"/>
+        </Connection>
+      </Graphics>
+      <Neq>
+        <SimpleVariable name="user_input"/>
+        <StringLiteral><![CDATA[]]></StringLiteral>
+      </Neq>
+    </CEdge>
+    <TEdge target="N12" start="" timeout="500">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="377" yPos="583" ctrlXPos="454" ctrlYPos="515"/>
+          <ControlPoint xPos="313" yPos="583" ctrlXPos="327" ctrlYPos="505"/>
+        </Connection>
+      </Graphics>
+    </TEdge>
+    <Graphics>
+      <Position xPos="300" yPos="570"/>
+    </Graphics>
+  </Node>
+  <Node id="N13" name="StoreTreatment" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <Assignment>
+        <SimpleVariable name="previous_treatment"/>
+        <Expression>
+          <SimpleVariable name="user_input"/>
+        </Expression>
+      </Assignment>
+      <PlayScene>
+        <StringLiteral><![CDATA[thinking]]></StringLiteral>
+      </PlayScene>
+      <Assignment>
+        <SimpleVariable name="llm_summary"/>
+        <Expression>
+          <StringLiteral><![CDATA[]]></StringLiteral>
+        </Expression>
+      </Assignment>
+      <PlayAction mode="Default">
+        <Add>
+          <Add>
+            <Add>
+              <Add>
+                <Add>
+                  <Add>
+                    <Add>
+                      <Add>
+                        <Add>
+                          <Add>
+                            <StringLiteral><![CDATA[[llm send system='You are a clinical assistant. Write a concise, neutral 3-4 sentence intake summary in the third person. Use professional but accessible language. Do not add commentary or recommendations.' prompt='Patient name is ]]></StringLiteral>
+                            <SimpleVariable name="patient_name"/>
+                          </Add>
+                          <StringLiteral><![CDATA[, Main concern is ]]></StringLiteral>
+                        </Add>
+                        <SimpleVariable name="main_concern"/>
+                      </Add>
+                      <StringLiteral><![CDATA[, Duration is ]]></StringLiteral>
+                    </Add>
+                    <SimpleVariable name="duration_text"/>
+                  </Add>
+                  <StringLiteral><![CDATA[, Daily impact is ]]></StringLiteral>
+                </Add>
+                <SimpleVariable name="daily_impact"/>
+              </Add>
+              <StringLiteral><![CDATA[, Previous treatment is ]]></StringLiteral>
+            </Add>
+            <SimpleVariable name="previous_treatment"/>
+          </Add>
+          <StringLiteral><![CDATA[' responseVar='llm_summary']]]></StringLiteral>
+        </Add>
+      </PlayAction>
+    </Commands>
+    <EEdge target="N14" start ="">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="750" yPos="615" ctrlXPos="773" ctrlYPos="615"/>
+        <ControlPoint xPos="840" yPos="615" ctrlXPos="818" ctrlYPos="615"/>
+      </Connection>
+    </Graphics>
+    </EEdge>
+    <Graphics>
+      <Position xPos="660" yPos="570"/>
+    </Graphics>
+  </Node>
+  <Node id="N14" name="WaitLLM" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <CEdge target="N15" start="">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="885" yPos="660" ctrlXPos="885" ctrlYPos="683"/>
+          <ControlPoint xPos="885" yPos="750" ctrlXPos="885" ctrlYPos="728"/>
+        </Connection>
+      </Graphics>
+      <Neq>
+        <SimpleVariable name="llm_summary"/>
+        <StringLiteral><![CDATA[]]></StringLiteral>
+      </Neq>
+    </CEdge>
+    <TEdge target="N14" start="" timeout="1000">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="917" yPos="583" ctrlXPos="994" ctrlYPos="515"/>
+          <ControlPoint xPos="853" yPos="583" ctrlXPos="867" ctrlYPos="505"/>
+        </Connection>
+      </Graphics>
+    </TEdge>
+    <Graphics>
+      <Position xPos="840" yPos="570"/>
+    </Graphics>
+  </Node>
+  <Node id="N15" name="ShowSummary" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <PlayScene>
+        <StringLiteral><![CDATA[show_summary]]></StringLiteral>
+        <StructExpression>
+          <Assignment>
+            <SimpleVariable name="summary"/>
+            <Expression>
+              <SimpleVariable name="llm_summary"/>
+            </Expression>
+          </Assignment>
+        </StructExpression>
+      </PlayScene>
+    </Commands>
+    <EEdge target="N16" start ="">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="840" yPos="795" ctrlXPos="773" ctrlYPos="795"/>
+        <ControlPoint xPos="660" yPos="795" ctrlXPos="728" ctrlYPos="795"/>
+      </Connection>
+    </Graphics>
+    </EEdge>
+    <Graphics>
+      <Position xPos="840" yPos="750"/>
+    </Graphics>
+  </Node>
+  <Node id="N16" name="AskAdditional" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <PlayScene>
+        <StringLiteral><![CDATA[ask_additional]]></StringLiteral>
+      </PlayScene>
+      <Assignment>
+        <SimpleVariable name="user_input"/>
+        <Expression>
+          <StringLiteral><![CDATA[]]></StringLiteral>
+        </Expression>
+      </Assignment>
+    </Commands>
+    <EEdge target="N17" start ="">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="570" yPos="795" ctrlXPos="548" ctrlYPos="795"/>
+        <ControlPoint xPos="480" yPos="795" ctrlXPos="503" ctrlYPos="795"/>
+      </Connection>
+    </Graphics>
+    </EEdge>
+    <Graphics>
+      <Position xPos="570" yPos="750"/>
+    </Graphics>
+  </Node>
+  <Node id="N17" name="WaitAdditional" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <CEdge target="N18" start="">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="390" yPos="795" ctrlXPos="323" ctrlYPos="795"/>
+          <ControlPoint xPos="210" yPos="795" ctrlXPos="278" ctrlYPos="795"/>
+        </Connection>
+      </Graphics>
+      <Neq>
+        <SimpleVariable name="user_input"/>
+        <StringLiteral><![CDATA[]]></StringLiteral>
+      </Neq>
+    </CEdge>
+    <TEdge target="N17" start="" timeout="500">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="467" yPos="763" ctrlXPos="544" ctrlYPos="695"/>
+          <ControlPoint xPos="403" yPos="763" ctrlXPos="417" ctrlYPos="685"/>
+        </Connection>
+      </Graphics>
+    </TEdge>
+    <Graphics>
+      <Position xPos="390" yPos="750"/>
+    </Graphics>
+  </Node>
+  <Node id="N18" name="Closing" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <Assignment>
+        <SimpleVariable name="additional_notes"/>
+        <Expression>
+          <SimpleVariable name="user_input"/>
+        </Expression>
+      </Assignment>
+      <PlayScene>
+        <StringLiteral><![CDATA[closing]]></StringLiteral>
+      </PlayScene>
+    </Commands>
+    <Graphics>
+      <Position xPos="120" yPos="750"/>
+    </Graphics>
+  </Node>
+  <ClassPath>
+  </ClassPath>
+  <InitContext></InitContext>
+</SceneFlow>

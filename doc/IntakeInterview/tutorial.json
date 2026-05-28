@@ -1,0 +1,7 @@
+{
+  "name": "Intake Interview",
+  "description": "Alex, a digital assistant, conducts a short anamnesis interview and uses an LLM to generate a brief clinical summary. Demonstrates nodes, edges, variables, user input, and LLM integration.",
+  "level": "Beginner",
+  "duration": "15 min",
+  "tags": ["LLM", "htmlgui-ws", "intake"]
+}

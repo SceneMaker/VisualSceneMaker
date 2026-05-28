@@ -17385,10 +17385,17 @@ Sentence:
               >
                 {#each projectConfigLLMs as llm, index}
                   <div class="project-config-llm-entry" class:expanded={llmExpandedIndex === index}>
-                    <button
-                      type="button"
+                    <div
+                      role="button"
+                      tabindex="0"
                       class="project-config-llm-row"
                       on:click={() => { llmExpandedIndex = llmExpandedIndex === index ? -1 : index; }}
+                      on:keydown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          llmExpandedIndex = llmExpandedIndex === index ? -1 : index;
+                        }
+                      }}
                     >
                       <span class="project-config-llm-name">{llm.name || "Unnamed"}</span>
                       <span class="project-config-llm-url">{getLLMFeature(llm, "baseUrl", "—")}</span>
@@ -17400,7 +17407,7 @@ Sentence:
                         aria-label="Remove LLM"
                         title="Remove"
                       >×</button>
-                    </button>
+                    </div>
                     {#if llmExpandedIndex === index}
                       <div class="project-config-llm-detail">
                         <div class="project-config-llm-grid">

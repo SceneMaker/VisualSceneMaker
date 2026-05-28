@@ -1,13 +1,13 @@
 {
     "schemaVersion": "1.0",
-    "specVersion": "1.1",
-    "specHash": "82765857f820c43f",
+    "specVersion": "1.2",
+    "specHash": "b5fe94db0375500d",
     "plugin": {
         "id": "asr",
         "name": "Speech Recognition",
         "className": "de.dfki.vsm.xtension.asr.AsrExecutor",
         "androidCompatible": false,
-        "description": "Real-time ASR plugin bridging fast-asr WebSocket server to VSM scene variables",
+        "description": "Real-time ASR plugin bridging fast-asr WebSocket server to VSM variables",
         "tags": [
             "asr",
             "vad",
@@ -134,6 +134,13 @@
                 "sceneflowtype": "Event(String)",
                 "default": "asr_matched_label",
                 "description": "Event fired on each expected-word match; value is the group label (e.g. CONFIRM/DISCONFIRM) or empty string for unlabeled matches. Sceneflow edge: asr_matched_label == \"CONFIRM\""
+            },
+            {
+                "name": "asrConfigLanguageVar",
+                "type": "string",
+                "sceneflowtype": "String",
+                "default": "asr_config_language",
+                "description": "Currently configured ASR language (e.g. \"German\"). Updated on connect (from ready message) and whenever set_language takes effect (from config message)."
             },
             {
                 "name": "turnEndProbVar",
@@ -273,6 +280,11 @@
                 "var": "asrMatchedLabelVar",
                 "type": "Event(String)",
                 "description": "Match event \u2014 enqueued on each expected-word match; consumed by sceneflow guard"
+            },
+            {
+                "var": "asrConfigLanguageVar",
+                "type": "String",
+                "description": "Currently configured ASR language (e.g. \"German\")"
             },
             {
                 "var": "turnEndProbVar",

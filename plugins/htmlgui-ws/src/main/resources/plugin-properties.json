@@ -378,7 +378,7 @@
                     "name": "text",
                     "type": "string",
                     "required": true,
-                    "description": "Message text"
+                    "description": "Message text. Use @varName to read the value from a SceneFlow variable at call time (e.g. text='@llm_summary')."
                 }
             ]
         },
