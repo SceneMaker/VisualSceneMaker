@@ -1,0 +1,122 @@
+name: Release Installers
+
+on:
+  push:
+    tags:
+      - 'web-v*'
+
+permissions:
+  contents: write   # needed to create a GitHub Release and upload assets
+
+jobs:
+  build:
+    name: Build installer (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: macos-latest
+            task: jpackageMac
+            artifact: '*.dmg'
+          - os: windows-latest
+            task: jpackageWindows
+            artifact: '*.msi'
+          - os: ubuntu-latest
+            task: jpackageLinux
+            artifact: '*.deb'
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0    # full history so versioning plugin reads the tag
+
+      - name: Set up Temurin JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: gradle
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      # Linux only: install fakeroot (needed by jpackage --type deb)
+      - name: Install deb tooling
+        if: runner.os == 'Linux'
+        run: sudo apt-get install -y fakeroot binutils
+
+      # Windows only: WiX Toolset is pre-installed on windows-latest runners.
+      # Verify it is on the PATH so jpackage can find it.
+      - name: Verify WiX on PATH (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $wix = Get-Command candle.exe -ErrorAction SilentlyContinue
+          if (-not $wix) {
+            $candidates = @(
+              "${env:WIX}bin",
+              "C:\Program Files (x86)\WiX Toolset v3.11\bin",
+              "C:\Program Files\WiX Toolset v3.14\bin"
+            )
+            foreach ($path in $candidates) {
+              if (Test-Path "$path\candle.exe") {
+                echo "$path" | Out-File -Append $env:GITHUB_PATH
+                Write-Host "WiX found at $path"
+                break
+              }
+            }
+          } else {
+            Write-Host "WiX already on PATH: $($wix.Source)"
+          }
+
+      - name: Build installer
+        run: ./gradlew ${{ matrix.task }} --no-daemon
+
+      - name: Upload installer artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: installer-${{ matrix.os }}
+          path: build/installer/${{ matrix.artifact }}
+          if-no-files-found: error
+
+  release:
+    name: Create GitHub Release
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download all installers
+        uses: actions/download-artifact@v4
+        with:
+          path: installers
+          merge-multiple: true
+
+      - name: List downloaded files
+        run: ls -lh installers/
+
+      - name: Create release and upload assets
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "VSM Web ${{ github.ref_name }}"
+          body: |
+            ## VSM Web ${{ github.ref_name }}
+
+            Native installers for all platforms.
+
+            ### Installation
+
+            | Platform | File |
+            |----------|------|
+            | macOS    | `.dmg` — drag **VSM Web.app** to Applications |
+            | Windows  | `.msi` — run the installer |
+            | Linux    | `.deb` — `sudo dpkg -i vsm-web_*.deb` |
+
+            ### macOS first launch
+
+            VSM Web is free research software and is not code-signed with an Apple Developer certificate.
+            On first launch: **right-click the app → Open → click Open** in the security dialog.
+            You only need to do this once.
+          files: installers/*
+          draft: false
+          prerelease: ${{ contains(github.ref_name, 'alpha') || contains(github.ref_name, 'beta') || contains(github.ref_name, 'rc') }}

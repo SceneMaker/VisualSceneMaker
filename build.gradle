@@ -156,9 +156,18 @@ repositories {
     maven { url "https://repo.spring.io/libs-release" }
 }
 
-def appName = 'VSM Web'
+def appName    = 'VSM Web'
+def appVendor  = 'DFKI GmbH'
+def appDesc    = 'Visual dialogue authoring and runtime platform'
 def appIconPng = file('editor/src/main/resources/images/vsm_logo.png')
-def appIconIcns = layout.buildDirectory.file('jpackage/VSM Web.icns')
+def appIconIcns = layout.buildDirectory.file('jpackage/vsm.icns')
+
+// jpackage requires a numeric x.y.z version; extract it from the git tag.
+def appVersion = { ->
+    def m = (resolvedVersionTag =~ /(\d+)\.(\d+)(?:\.(\d+))?/)
+    if (m.find()) return "${m.group(1)}.${m.group(2)}.${m.group(3) ?: '0'}"
+    return '1.0.0'
+}()
 
 dependencies {
     // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api
@@ -273,38 +282,122 @@ tasks.register('verifyAndroidPortable') {
     dependsOn ':plugins:AndroidGui:compileJava'
 }
 
+// macOS: generate .icns from the PNG logo (requires sips + iconutil, macOS only)
 tasks.register('generateIcns') {
-    dependsOn tasks.jar
+    inputs.file(appIconPng)
     outputs.file(appIconIcns)
     doLast {
-        def iconsetDir = file("$buildDir/jpackage/VSM.iconset")
+        def iconsetDir = file("${buildDir}/jpackage/vsm.iconset")
         iconsetDir.mkdirs()
-        exec { commandLine 'sips', '-z', '16', '16', appIconPng, '--out', "${iconsetDir}/icon_16x16.png" }
-        exec { commandLine 'sips', '-z', '32', '32', appIconPng, '--out', "${iconsetDir}/icon_16x16@2x.png" }
-        exec { commandLine 'sips', '-z', '32', '32', appIconPng, '--out', "${iconsetDir}/icon_32x32.png" }
-        exec { commandLine 'sips', '-z', '64', '64', appIconPng, '--out', "${iconsetDir}/icon_32x32@2x.png" }
-        exec { commandLine 'sips', '-z', '128', '128', appIconPng, '--out', "${iconsetDir}/icon_128x128.png" }
-        exec { commandLine 'sips', '-z', '256', '256', appIconPng, '--out', "${iconsetDir}/icon_128x128@2x.png" }
-        exec { commandLine 'sips', '-z', '256', '256', appIconPng, '--out', "${iconsetDir}/icon_256x256.png" }
-        exec { commandLine 'sips', '-z', '512', '512', appIconPng, '--out', "${iconsetDir}/icon_256x256@2x.png" }
-        exec { commandLine 'sips', '-z', '512', '512', appIconPng, '--out', "${iconsetDir}/icon_512x512.png" }
-        exec { commandLine 'sips', '-z', '1024', '1024', appIconPng, '--out', "${iconsetDir}/icon_512x512@2x.png" }
+        [[16,'icon_16x16'], [32,'icon_16x16@2x'], [32,'icon_32x32'], [64,'icon_32x32@2x'],
+         [128,'icon_128x128'], [256,'icon_128x128@2x'], [256,'icon_256x256'],
+         [512,'icon_256x256@2x'], [512,'icon_512x512'], [1024,'icon_512x512@2x']].each { sz, name ->
+            exec { commandLine 'sips', '-z', sz as String, sz as String, appIconPng, '--out', "${iconsetDir}/${name}.png" }
+        }
         exec { commandLine 'iconutil', '-c', 'icns', iconsetDir, '-o', appIconIcns.get().asFile }
     }
 }
 
-tasks.register('jpackageApp', Exec) {
+// Windows icon — pre-generated and committed to source, no runtime tool required.
+def appIconIco = file('src/main/resources/app-icons/vsm.ico')
+tasks.register('generateIco') {
+    // No-op: icon is already in source control. Task kept so jpackageWindows can depend on it.
+}
+
+// Stage: copy the fat jar to a clean directory, renamed to VisualSceneMaker.jar.
+// jpackage bundles everything in --input as the app classpath.
+def jpackageStagingDir = layout.buildDirectory.dir('jpackage-staging')
+tasks.register('stageForJpackage', Copy) {
     dependsOn tasks.jar
+    from(tasks.jar.archiveFile) { rename { 'VisualSceneMaker.jar' } }
+    into jpackageStagingDir
+}
+
+// ── macOS .dmg ────────────────────────────────────────────────────────────────
+tasks.register('jpackageMac', Exec) {
+    group = 'distribution'
+    description = 'Builds a macOS .dmg installer'
+    dependsOn tasks.named('stageForJpackage')
     dependsOn tasks.named('generateIcns')
-    def jarFile = tasks.jar.archiveFile.get().asFile
+    def destDir = layout.buildDirectory.dir('installer').get().asFile
+    doFirst { destDir.mkdirs() }
     commandLine 'jpackage',
-            '--type', 'app-image',
-            '--name', appName,
-            '--input', layout.buildDirectory.dir('libs').get().asFile.absolutePath,
-            '--main-jar', jarFile.name,
-            '--main-class', 'de.dfki.vsm.SceneMaker4',
-            '--icon', appIconIcns.get().asFile.absolutePath,
-            '--dest', layout.buildDirectory.dir('jpackage').get().asFile.absolutePath
+        '--type', 'dmg',
+        '--name', appName,
+        '--app-version', appVersion,
+        '--vendor', appVendor,
+        '--description', appDesc,
+        '--input', jpackageStagingDir.get().asFile.absolutePath,
+        '--main-jar', 'VisualSceneMaker.jar',
+        '--main-class', 'de.dfki.vsm.SceneMaker4',
+        '--icon', appIconIcns.get().asFile.absolutePath,
+        '--java-options', '-Xmx512m',
+        '--java-options', "-Dapple.awt.application.name=${appName}",
+        '--java-options', "-Xdock:name=${appName}",
+        '--dest', destDir.absolutePath
+}
+
+// ── Windows .msi ──────────────────────────────────────────────────────────────
+tasks.register('jpackageWindows', Exec) {
+    group = 'distribution'
+    description = 'Builds a Windows .msi installer (must run on Windows)'
+    dependsOn tasks.named('stageForJpackage')
+    dependsOn tasks.named('generateIco')
+    def destDir = layout.buildDirectory.dir('installer').get().asFile
+    doFirst { destDir.mkdirs() }
+    commandLine 'jpackage',
+        '--type', 'msi',
+        '--name', appName,
+        '--app-version', appVersion,
+        '--vendor', appVendor,
+        '--description', appDesc,
+        '--input', jpackageStagingDir.get().asFile.absolutePath,
+        '--main-jar', 'VisualSceneMaker.jar',
+        '--main-class', 'de.dfki.vsm.SceneMaker4',
+        '--icon', appIconIco.absolutePath,
+        '--java-options', '-Xmx512m',
+        '--win-menu',
+        '--win-shortcut',
+        '--win-dir-chooser',
+        '--win-upgrade-uuid', 'e3f1a2b3-4c5d-4e7f-8a9b-0c1d2e3f4a5b',
+        '--dest', destDir.absolutePath
+}
+
+// ── Linux .deb ────────────────────────────────────────────────────────────────
+tasks.register('jpackageLinux', Exec) {
+    group = 'distribution'
+    description = 'Builds a Linux .deb package (must run on Linux)'
+    dependsOn tasks.named('stageForJpackage')
+    def destDir = layout.buildDirectory.dir('installer').get().asFile
+    doFirst { destDir.mkdirs() }
+    commandLine 'jpackage',
+        '--type', 'deb',
+        '--name', 'vsm-web',
+        '--app-version', appVersion,
+        '--vendor', appVendor,
+        '--description', appDesc,
+        '--input', jpackageStagingDir.get().asFile.absolutePath,
+        '--main-jar', 'VisualSceneMaker.jar',
+        '--main-class', 'de.dfki.vsm.SceneMaker4',
+        '--icon', appIconPng.absolutePath,
+        '--java-options', '-Xmx512m',
+        '--linux-shortcut',
+        '--linux-menu-group', 'Science',
+        '--dest', destDir.absolutePath
+}
+
+// ── Convenience alias: build the current platform's installer ─────────────────
+tasks.register('packageInstaller') {
+    group = 'distribution'
+    description = 'Builds the native installer for the current platform (dmg / msi / deb)'
+    def os = org.gradle.internal.os.OperatingSystem.current()
+    if (os.isMacOsX()) {
+        dependsOn tasks.named('jpackageMac')
+    } else if (os.isWindows()) {
+        dependsOn tasks.named('jpackageWindows')
+    } else {
+        dependsOn tasks.named('jpackageLinux')
+    }
 }
 
 tasks.withType(Javadoc).configureEach {
