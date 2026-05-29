@@ -33,12 +33,14 @@
                 "name": "base_url",
                 "type": "string",
                 "default": "https://api.openai.com/v1/",
+                "machine_specific": true,
                 "description": "OpenAI-compatible API base URL. Use http://localhost:1234/v1/ for LM Studio."
             },
             {
                 "name": "api_key",
                 "type": "string",
                 "default": "",
+                "machine_specific": true,
                 "description": "API key (Bearer token). Leave empty for local servers that don't require auth."
             },
             {

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Project name="1-IntakeInterview" androidProject="false">
+<Project name="1-IntakeInterview" androidProject="false" uuid="a1b2c3d4-e5f6-7890-abcd-ef1234567890">
   <Plugins>
     <Plugin type="device" name="HtmlGuiWs" class="de.dfki.vsm.xtension.responsiveweb.HtmlGuiWsExecutor" load="true">
       <Feature key="ws_port" val="4041"/>

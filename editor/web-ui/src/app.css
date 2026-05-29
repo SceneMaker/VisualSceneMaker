@@ -3296,6 +3296,47 @@ button.ghost.start-toggle:disabled {
   background: rgba(255, 255, 255, 0.98);
 }
 
+.modal.preflight-modal {
+  width: min(640px, 94vw);
+  background: rgba(255, 255, 255, 0.98);
+}
+
+.preflight-plugin-block {
+  margin: 14px 0 6px;
+  border-left: 3px solid #f0a500;
+  padding-left: 12px;
+}
+
+.preflight-plugin-name {
+  font-weight: 600;
+  font-size: 13px;
+  color: #374151;
+  margin-bottom: 6px;
+}
+
+.preflight-entry {
+  margin: 8px 0;
+  font-size: 13px;
+}
+
+.preflight-entry-name {
+  font-weight: 500;
+  color: #1f2937;
+}
+
+.preflight-entry-desc {
+  color: #6b7280;
+  font-size: 12px;
+  margin: 2px 0;
+}
+
+.preflight-entry-value code {
+  background: #f3f4f6;
+  border-radius: 3px;
+  padding: 1px 5px;
+  font-size: 12px;
+}
+
 .modal.save-as-modal {
   width: min(560px, 94vw);
 }

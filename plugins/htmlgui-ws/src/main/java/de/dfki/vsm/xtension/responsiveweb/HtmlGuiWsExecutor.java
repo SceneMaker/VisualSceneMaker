@@ -321,38 +321,43 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
     }
 
     /**
-     * Launches Chrome browser with the specified URL.
-     * Supports macOS, Windows, and Linux.
-     * The browser process is stored so it can be terminated when the plugin unloads.
+     * Launches a browser with the specified URL.
+     * Browser selection priority: per-plugin "browser" config → global ~/.vsm/global-config.json
+     * "browser.app" → OS default. Chrome-specific flags (fullscreen, disable_pna,
+     * disable_web_security) require Chrome and override the "default" setting.
      */
     private void launchBrowser(String url, boolean fullscreen, List<String> extraFlags) {
-        String os = System.getProperty("os.name", "").toLowerCase();
-        List<String> command = new ArrayList<>();
+        boolean chromeSpecificFlagsRequested = fullscreen || !extraFlags.isEmpty();
+        String browserPref = resolveBrowserPreference();
+        boolean useOsDefault = !chromeSpecificFlagsRequested
+                && (browserPref.isEmpty() || "default".equalsIgnoreCase(browserPref));
 
-        if (os.contains("mac")) {
-            String chromePath = findMacChrome();
-            if (chromePath == null) {
-                mLogger.warning("Chrome not found on macOS. Cannot auto-start browser.");
-                return;
+        if (useOsDefault) {
+            try {
+                if (java.awt.Desktop.isDesktopSupported()
+                        && java.awt.Desktop.getDesktop().isSupported(java.awt.Desktop.Action.BROWSE)) {
+                    java.awt.Desktop.getDesktop().browse(new java.net.URI(url));
+                    mLogger.message("Opened default browser: " + url);
+                    return;
+                }
+            } catch (Exception e) {
+                mLogger.warning("Default browser open failed, falling back to Chrome: " + e.getMessage());
             }
-            command.add(chromePath);
-        } else if (os.contains("win")) {
-            String chromePath = findWindowsChrome();
-            if (chromePath == null) {
-                mLogger.warning("Chrome not found on Windows. Cannot auto-start browser.");
-                return;
-            }
-            command.add(chromePath);
-        } else if (os.contains("linux")) {
-            String browser = findLinuxChrome();
-            if (browser == null) {
-                mLogger.warning("Chrome/Chromium not found on Linux. Cannot auto-start browser.");
-                return;
-            }
-            command.add(browser);
+        }
+
+        // Custom executable path supplied
+        List<String> command = new ArrayList<>();
+        if (!browserPref.isEmpty()
+                && !"default".equalsIgnoreCase(browserPref)
+                && !"chrome".equalsIgnoreCase(browserPref)) {
+            command.add(browserPref);
         } else {
-            mLogger.warning("Unsupported OS for browser auto-start: " + os);
-            return;
+            String chromePath = findChrome();
+            if (chromePath == null) {
+                mLogger.warning("Chrome not found. Cannot auto-start browser.");
+                return;
+            }
+            command.add(chromePath);
         }
 
         if (fullscreen) command.add("--start-fullscreen");
@@ -370,57 +375,63 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
         }
     }
 
-    /**
-     * Finds Chrome executable on macOS.
-     */
-    private String findMacChrome() {
-        String[] candidates = {
-            "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
-            "/Applications/Chromium.app/Contents/MacOS/Chromium",
-            System.getProperty("user.home") + "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
-        };
-        for (String path : candidates) {
-            if (new File(path).exists()) {
-                return path;
-            }
-        }
-        return null;
+    /** Per-plugin config "browser" → global ~/.vsm/global-config.json "browser.app" → "". */
+    private String resolveBrowserPreference() {
+        String pluginPref = mConfig.getProperty("browser", "");
+        if (pluginPref != null && !pluginPref.isBlank()) return pluginPref.trim();
+        return readGlobalBrowserPref();
     }
 
-    /**
-     * Finds Chrome executable on Windows.
-     */
-    private String findWindowsChrome() {
-        String[] candidates = {
-            System.getenv("ProgramFiles") + "\\Google\\Chrome\\Application\\chrome.exe",
-            System.getenv("ProgramFiles(x86)") + "\\Google\\Chrome\\Application\\chrome.exe",
-            System.getenv("LOCALAPPDATA") + "\\Google\\Chrome\\Application\\chrome.exe"
-        };
-        for (String path : candidates) {
-            if (path != null && new File(path).exists()) {
-                return path;
-            }
+    /** Reads "browser.app" from ~/.vsm/global-config.json without pulling in a JSON library. */
+    private String readGlobalBrowserPref() {
+        try {
+            java.nio.file.Path cfg = java.nio.file.Paths.get(
+                    System.getProperty("user.home"), ".vsm", "global-config.json");
+            if (!java.nio.file.Files.exists(cfg)) return "";
+            String content = java.nio.file.Files.readString(cfg);
+            int browserIdx = content.indexOf("\"browser\"");
+            if (browserIdx < 0) return "";
+            int appIdx = content.indexOf("\"app\"", browserIdx);
+            if (appIdx < 0) return "";
+            int colon = content.indexOf(":", appIdx + 5);
+            if (colon < 0) return "";
+            int q1 = content.indexOf("\"", colon + 1);
+            if (q1 < 0) return "";
+            int q2 = content.indexOf("\"", q1 + 1);
+            if (q2 < 0) return "";
+            return content.substring(q1 + 1, q2);
+        } catch (Exception e) {
+            return "";
         }
-        return null;
     }
 
-    /**
-     * Finds Chrome/Chromium executable on Linux.
-     */
-    private String findLinuxChrome() {
-        String[] candidates = {
-            "google-chrome",
-            "google-chrome-stable",
-            "chromium-browser",
-            "chromium"
-        };
-        for (String candidate : candidates) {
-            try {
-                Process p = Runtime.getRuntime().exec(new String[]{"which", candidate});
-                if (p.waitFor() == 0) {
-                    return candidate;
-                }
-            } catch (Exception ignored) {
+    /** Finds Chrome/Chromium executable on the current platform. */
+    private String findChrome() {
+        String os = System.getProperty("os.name", "").toLowerCase();
+        if (os.contains("mac")) {
+            String[] candidates = {
+                "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+                "/Applications/Chromium.app/Contents/MacOS/Chromium",
+                System.getProperty("user.home") + "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+            };
+            for (String path : candidates) {
+                if (new File(path).exists()) return path;
+            }
+        } else if (os.contains("win")) {
+            String[] candidates = {
+                System.getenv("ProgramFiles") + "\\Google\\Chrome\\Application\\chrome.exe",
+                System.getenv("ProgramFiles(x86)") + "\\Google\\Chrome\\Application\\chrome.exe",
+                System.getenv("LOCALAPPDATA") + "\\Google\\Chrome\\Application\\chrome.exe"
+            };
+            for (String path : candidates) {
+                if (path != null && new File(path).exists()) return path;
+            }
+        } else if (os.contains("linux")) {
+            for (String candidate : new String[]{"google-chrome", "google-chrome-stable", "chromium-browser", "chromium"}) {
+                try {
+                    Process p = Runtime.getRuntime().exec(new String[]{"which", candidate});
+                    if (p.waitFor() == 0) return candidate;
+                } catch (Exception ignored) {}
             }
         }
         return null;

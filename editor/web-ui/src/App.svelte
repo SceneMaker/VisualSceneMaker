@@ -1097,6 +1097,9 @@ Sentence:
   let missingVarDialogEl;
   let missingVarDialogOpen = false;
   let missingVarItems = [];
+  let preflightModalOpen = false;
+  let preflightData = null;
+  let pendingPreflightCommand = null;
   let varRenameDialogEl;
   let varRenameDialogOpen = false;
   let varRenameOldName = "";
@@ -6302,6 +6305,42 @@ Sentence:
     return calibrateRuntimeVizGuard({ automated: true });
   }
 
+  async function checkAndShowPreflight(command) {
+    try {
+      const res = await fetch(`/api/v1/projects/${selectedProjectId}/preflight`);
+      if (!res.ok) return true;
+      const data = await res.json();
+      if (data.firstRunOnMachine && data.machineSpecificConfig && data.machineSpecificConfig.length > 0) {
+        preflightData = data;
+        pendingPreflightCommand = command;
+        preflightModalOpen = true;
+        return false;
+      }
+    } catch (e) { /* ignore — let execution proceed */ }
+    return true;
+  }
+
+  async function confirmPreflight() {
+    preflightModalOpen = false;
+    const cmd = pendingPreflightCommand;
+    pendingPreflightCommand = null;
+    preflightData = null;
+    if (cmd) await executeRuntimeCommand(cmd);
+  }
+
+  function cancelPreflight() {
+    preflightModalOpen = false;
+    pendingPreflightCommand = null;
+    preflightData = null;
+  }
+
+  function openPluginDashboardFromPreflight() {
+    preflightModalOpen = false;
+    pendingPreflightCommand = null;
+    preflightData = null;
+    openPluginDashboard();
+  }
+
   async function runRuntimeCommand(command, options = {}) {
     if (!selectedProjectId) return;
     if (command === "Runtime.Stop") {
@@ -6326,6 +6365,8 @@ Sentence:
         runtimeError = runtimeVizError || projectConfigError || "Runtime visualization guard calibration failed.";
         return;
       }
+      const preflightOk = await checkAndShowPreflight(command);
+      if (!preflightOk) return;
     }
     await executeRuntimeCommand(command);
   }
@@ -19186,5 +19227,46 @@ Sentence:
         </span>
       </div>
     </footer>
+  {/if}
+
+  {#if preflightModalOpen && preflightData}
+    <div
+      class="modal-backdrop"
+      on:click|self={cancelPreflight}
+      role="presentation"
+    >
+      <div class="modal preflight-modal" role="dialog" aria-modal="true" aria-labelledby="preflight-title" tabindex="-1">
+        <h3 id="preflight-title">First run on this machine</h3>
+        <div class="modal-body">
+          <p>
+            This project is being run for the first time on this machine.
+            The following plugin settings are marked as machine-specific — please verify
+            they are correct before starting.
+          </p>
+          {#each preflightData.machineSpecificConfig as block}
+            <div class="preflight-plugin-block">
+              <div class="preflight-plugin-name">{block.pluginDisplayName}</div>
+              {#each block.entries as entry}
+                <div class="preflight-entry">
+                  <div class="preflight-entry-name">{entry.name}</div>
+                  <div class="preflight-entry-desc">{entry.description}</div>
+                  <div class="preflight-entry-value">
+                    Current value: <code>{entry.currentValue || "(empty)"}</code>
+                  </div>
+                </div>
+              {/each}
+            </div>
+          {/each}
+        </div>
+        <div class="row row-end">
+          <button type="button" class="ghost" on:click={openPluginDashboardFromPreflight}>
+            Review in Plugin Dashboard
+          </button>
+          <button type="button" class="primary" on:click={confirmPreflight}>
+            Run Anyway
+          </button>
+        </div>
+      </div>
+    </div>
   {/if}
 </main>

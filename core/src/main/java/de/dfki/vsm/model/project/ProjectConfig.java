@@ -13,6 +13,7 @@ import org.w3c.dom.Element;
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -23,8 +24,10 @@ public final class ProjectConfig implements ModelObject {
     // The singelton logger instance
     private final LOGDefaultLogger mLogger
             = LOGDefaultLogger.getInstance();
-    // The name of the project  
+    // The name of the project
     private String mProjectName;
+    // Stable project identity for machine-local execution history tracking
+    private String mProjectUUID;
     //
     private final PlayerConfig mPlayerConfig;
     // The list of plugin configurations
@@ -48,6 +51,8 @@ public final class ProjectConfig implements ModelObject {
     public ProjectConfig() {
         // Initialize The Project Name
         mProjectName = "";
+        // Generate a fresh UUID; overwritten by parseXML if the file already has one
+        mProjectUUID = UUID.randomUUID().toString();
         // Initialize The Plugin List
         mPluginList = new ArrayList<>();
         // Initialize The Agent List
@@ -125,6 +130,14 @@ public final class ProjectConfig implements ModelObject {
                          final PlayerConfig player) {
         this(name, plugins, agents, llms, llmPrompts,
                 new ConfigElement("SceneTitleConcepts", "Concept"), player);
+    }
+
+    public final String getProjectUUID() {
+        return mProjectUUID;
+    }
+
+    public final void setProjectUUID(String uuid) {
+        mProjectUUID = uuid;
     }
 
     // Get the name of the project
@@ -221,7 +234,7 @@ public final class ProjectConfig implements ModelObject {
     // Write the project configuration
     @Override
     public final void writeXML(final IOSIndentWriter stream) throws XMLWriteError {
-        stream.println("<Project name=\"" + mProjectName + "\" androidProject=\"" + mAndroidProject + "\">");
+        stream.println("<Project name=\"" + mProjectName + "\" androidProject=\"" + mAndroidProject + "\" uuid=\"" + mProjectUUID + "\">");
         stream.push();
         // Write the plugin configurations
         stream.println("<Plugins>").push();
@@ -284,6 +297,8 @@ public final class ProjectConfig implements ModelObject {
             // Get The Project Name
             mProjectName = element.getAttribute("name");
             mAndroidProject = Boolean.parseBoolean(element.getAttribute("androidProject"));
+            String uuid = element.getAttribute("uuid");
+            if (uuid != null && !uuid.isBlank()) mProjectUUID = uuid;
             mPluginList.clear();
             mAgentList.clear();
             mLLMList.clear();

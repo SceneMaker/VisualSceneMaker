@@ -86,10 +86,17 @@
                 "description": "Auto-start browser on plugin launch"
             },
             {
+                "name": "browser",
+                "type": "string",
+                "default": "",
+                "machine_specific": true,
+                "description": "Browser to open: empty = OS default (or global VSM preference), 'chrome' = Google Chrome, any other value = path to browser executable"
+            },
+            {
                 "name": "browser_fullscreen",
                 "type": "boolean",
                 "default": false,
-                "description": "Start browser in full-screen mode"
+                "description": "Start browser in full-screen mode (Chrome only)"
             }
         ],
         "agent": {

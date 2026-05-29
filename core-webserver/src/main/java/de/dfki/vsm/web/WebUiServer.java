@@ -99,6 +99,7 @@ import de.dfki.vsm.model.scenescript.SceneTurn;
 import de.dfki.vsm.runtime.logic.LogicEngines;
 import de.dfki.vsm.runtime.interpreter.event.TerminationEvent;
 import de.dfki.vsm.util.tpl.Tuple;
+import de.dfki.vsm.util.VsmExecutionHistory;
 import de.dfki.vsm.runtime.interpreter.value.AbstractValue;
 import de.dfki.vsm.runtime.interpreter.value.EventValue;
 import de.dfki.vsm.runtime.gateway.RuntimeGateway;
@@ -2623,6 +2624,8 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         mApp.get(API_PREFIX + "/projects/{pid}/sceneflow", this::handleSceneflow);
         mApp.get(API_PREFIX + "/projects/{pid}/export", this::handleProjectExport);
         mApp.get(API_PREFIX + "/projects/{pid}/runtime", this::handleRuntime);
+        mApp.get(API_PREFIX + "/projects/{pid}/preflight", this::handlePreflight);
+        mApp.post(API_PREFIX + "/projects/{pid}/execution/record", this::handleExecutionRecord);
         mApp.get(API_PREFIX + "/projects/{pid}/subscribers", this::handleProjectSubscribers);
         mApp.get(API_PREFIX + "/projects/{pid}/operations", this::handleProjectOperations);
         mApp.get(API_PREFIX + "/projects/{pid}/presence", this::handleProjectPresence);
@@ -6486,6 +6489,74 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         }
         response.put("sceneHistory", historyArr);
 
+        writeJson(ctx, response);
+    }
+
+    private void handlePreflight(Context ctx) {
+        String pid = ctx.pathParam("pid");
+        ProjectRef ref = projectStore.get(pid);
+        if (ref == null || ref.runtimeProject == null) {
+            ctx.status(404);
+            writeJson(ctx, errorResponse("PROJECT_NOT_FOUND", "Project not found"));
+            return;
+        }
+        String uuid = ref.runtimeProject.getProjectConfig().getProjectUUID();
+        int count = VsmExecutionHistory.getExecutionCount(uuid);
+
+        JSONArray machineSpecificConfig = new JSONArray();
+        for (de.dfki.vsm.model.project.PluginConfig pc : ref.runtimeProject.getProjectConfig().getPluginConfigList()) {
+            String className = pc.getClassName();
+            ExportablePropertyEntry entry = EXPORTABLE_PROPERTY_PROVIDERS.get(className);
+            if (entry == null || entry.pluginSpec == null) continue;
+
+            JSONArray flaggedEntries = new JSONArray();
+            for (String section : new String[]{"required", "optional", "pluginSpecific"}) {
+                JSONArray arr = entry.pluginSpec.optJSONArray(section);
+                if (arr == null) continue;
+                for (int i = 0; i < arr.length(); i++) {
+                    JSONObject cfgEntry = arr.optJSONObject(i);
+                    if (cfgEntry == null || !cfgEntry.optBoolean("machine_specific", false)) continue;
+                    String name = cfgEntry.optString("name", "");
+                    String currentValue = pc.getProperty(name, "");
+                    JSONObject item = new JSONObject();
+                    item.put("name", name);
+                    item.put("description", cfgEntry.optString("description", ""));
+                    item.put("currentValue", currentValue);
+                    flaggedEntries.put(item);
+                }
+            }
+            if (flaggedEntries.length() > 0) {
+                JSONObject pluginBlock = new JSONObject();
+                pluginBlock.put("pluginName", pc.getPluginName());
+                String displayName = (entry.pluginMeta != null)
+                        ? entry.pluginMeta.optString("name", pc.getPluginName()) : pc.getPluginName();
+                pluginBlock.put("pluginDisplayName", displayName);
+                pluginBlock.put("entries", flaggedEntries);
+                machineSpecificConfig.put(pluginBlock);
+            }
+        }
+
+        JSONObject response = new JSONObject();
+        response.put("projectUUID", uuid);
+        response.put("executionCount", count);
+        response.put("firstRunOnMachine", count == 0);
+        response.put("machineSpecificConfig", machineSpecificConfig);
+        writeJson(ctx, response);
+    }
+
+    private void handleExecutionRecord(Context ctx) {
+        String pid = ctx.pathParam("pid");
+        ProjectRef ref = projectStore.get(pid);
+        if (ref == null || ref.runtimeProject == null) {
+            ctx.status(404);
+            writeJson(ctx, errorResponse("PROJECT_NOT_FOUND", "Project not found"));
+            return;
+        }
+        String uuid = ref.runtimeProject.getProjectConfig().getProjectUUID();
+        VsmExecutionHistory.recordExecution(uuid);
+        JSONObject response = new JSONObject();
+        response.put("status", "ok");
+        response.put("executionCount", VsmExecutionHistory.getExecutionCount(uuid));
         writeJson(ctx, response);
     }
 

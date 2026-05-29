@@ -1,6 +1,7 @@
 package de.dfki.vsm.web;
 
 import de.dfki.vsm.runtime.project.RunTimeProject;
+import de.dfki.vsm.util.VsmExecutionHistory;
 import org.json.JSONObject;
 
 import java.util.function.Consumer;
@@ -167,6 +168,10 @@ public final class RuntimeCommandService {
                 if (launched) {
                     success = project.start();
                     newState = success ? "running" : "stopped";
+                    if (success) {
+                        VsmExecutionHistory.recordExecution(
+                                project.getProjectConfig().getProjectUUID());
+                    }
                 }
             }
         } else if ("Runtime.Resume".equals(method)) {
