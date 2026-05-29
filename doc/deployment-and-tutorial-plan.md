@@ -191,6 +191,23 @@ Shepherd.js overlay integrated into the Svelte web UI. Triggered automatically w
 
 ---
 
+## Future Work
+
+### F1 — Browser-close exits the app
+
+**Problem**: When the user closes the browser tab or window, the VSM server process keeps running invisibly in the background. Non-technical users have no way to notice or quit it — this breaks the expected "closing the app closes the app" contract of a native desktop application.
+
+**Proposed behaviour**:
+- **Default (installer mode)**: when the last WebSocket client disconnects and no project is actively running, start a ~30-second grace period then call `System.exit(0)`.
+- **Server mode (advanced users)**: a `--server` CLI flag suppresses auto-exit, keeping the process alive for headless or remote-access deployments. A toggle on the web landing page should also be able to flip this at runtime.
+
+**Implementation sketch**:
+- `WebUiServer` tracks WebSocket session count; on drop-to-zero, schedule the shutdown timer.
+- `SceneMaker4` / `RuntimeMain` accept a `--server` flag that sets a static `serverMode = true` field which `WebUiServer` checks before scheduling exit.
+- A `POST /api/v1/server-mode` endpoint (or landing-page toggle) lets advanced users switch modes without restarting.
+
+---
+
 ## Dependency Graph
 
 ```
