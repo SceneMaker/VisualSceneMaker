@@ -10090,6 +10090,10 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         }
     }
 
+    // Cache: classpath dir → extracted filesystem path (populated once per process).
+    private final java.util.concurrent.ConcurrentHashMap<String, Path> mExtractedDirs =
+            new java.util.concurrent.ConcurrentHashMap<>();
+
     private Path resolveResourcePath(String directory) {
         // 1. Relative to CWD (e.g. when running packaged with resources alongside).
         Path fsPath = Paths.get(directory);
@@ -10111,13 +10115,54 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
             ClassLoader cl = getClass().getClassLoader();
             URL url = cl.getResource(directory.endsWith("/") ? directory : directory + "/");
             if (url != null) {
-                URI uri = url.toURI();
-                return Paths.get(uri);
+                if ("file".equals(url.getProtocol())) {
+                    return Paths.get(url.toURI());
+                }
+                if ("jar".equals(url.getProtocol())) {
+                    // Inside a fat jar — Paths.get(jar: URI) throws FileSystemNotFoundException.
+                    // Extract the directory to a temp location so real filesystem paths are returned.
+                    return mExtractedDirs.computeIfAbsent(directory, d -> extractClasspathDirToTemp(d, url));
+                }
             }
         } catch (Exception exc) {
             sLogger.warning("Warning: Cannot resolve resource path '" + directory + "': " + exc.getMessage());
         }
         return null;
+    }
+
+    /** Extract a classpath directory from a JAR to a temp directory and return the temp path. */
+    private Path extractClasspathDirToTemp(String directory, URL jarUrl) {
+        try {
+            Path dest = Files.createTempDirectory("vsm-" + directory.replace("/", "-").replace(" ", "_"));
+            String jarUrlStr = jarUrl.getPath();            // file:/some.jar!/res/tutorials/
+            int bang = jarUrlStr.indexOf("!/");
+            if (bang < 0) return null;
+            String jarFilePath = jarUrlStr.substring(5, bang);  // strip leading "file:"
+            String prefix      = jarUrlStr.substring(bang + 2); // strip "!/"
+            try (java.util.jar.JarFile jar = new java.util.jar.JarFile(jarFilePath)) {
+                java.util.Enumeration<java.util.jar.JarEntry> entries = jar.entries();
+                while (entries.hasMoreElements()) {
+                    java.util.jar.JarEntry entry = entries.nextElement();
+                    String name = entry.getName();
+                    if (!name.startsWith(prefix) || name.equals(prefix)) continue;
+                    String relative = name.substring(prefix.length());
+                    Path target = dest.resolve(relative);
+                    if (entry.isDirectory()) {
+                        Files.createDirectories(target);
+                    } else {
+                        Files.createDirectories(target.getParent());
+                        try (InputStream in = jar.getInputStream(entry)) {
+                            Files.copy(in, target, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+                        }
+                    }
+                }
+            }
+            sLogger.message("[vsm] extracted classpath dir '" + directory + "' to " + dest);
+            return dest;
+        } catch (Exception e) {
+            sLogger.warning("Warning: Cannot extract classpath dir '" + directory + "': " + e.getMessage());
+            return null;
+        }
     }
 
 
