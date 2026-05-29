@@ -91,7 +91,7 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
         if (!guiFilesExist)   mLogger.message("No gui/ directory found — legacy HTML files will not be served.");
         if (!audioFilesExist) mLogger.message("No audio/ directory found — audio files will not be served.");
 
-        if (mPathToCertificate != null) {
+        if (mPathToCertificate != null && !mPathToCertificate.isBlank()) {
             app = Javalin.create(config -> {
                 if (guiFilesExist)   config.staticFiles.add(guiFiles,   Location.EXTERNAL);
                 if (audioFilesExist) config.staticFiles.add(audioFiles, Location.EXTERNAL);

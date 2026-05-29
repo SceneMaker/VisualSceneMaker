@@ -7529,7 +7529,9 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
             JSONObject resp = RuntimeWsProtocol.successResponse(id, result);
             sender.accept(resp.toString());
         } catch (Exception exc) {
-            sLogger.failure("WS message handling failed: " + exc.getMessage());
+            java.io.StringWriter sw = new java.io.StringWriter();
+            exc.printStackTrace(new java.io.PrintWriter(sw));
+            sLogger.failure("WS message handling failed: " + exc.getMessage() + "\n" + sw);
             JSONObject resp = RuntimeWsProtocol.errorResponse(exc.getMessage());
             sender.accept(resp.toString());
         }
