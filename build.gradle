@@ -321,6 +321,7 @@ tasks.register('jpackageMac', Exec) {
     dependsOn tasks.named('generateIcns')
     def destDir = layout.buildDirectory.dir('installer').get().asFile
     doFirst { destDir.mkdirs() }
+    def readmeFile = file('src/main/resources/installer/README.html')
     commandLine 'jpackage',
         '--type', 'dmg',
         '--name', appName,
@@ -332,8 +333,7 @@ tasks.register('jpackageMac', Exec) {
         '--main-class', 'de.dfki.vsm.SceneMaker4',
         '--icon', appIconIcns.get().asFile.absolutePath,
         '--java-options', '-Xmx512m',
-        '--java-options', "-Dapple.awt.application.name=${appName}",
-        '--java-options', "-Xdock:name=${appName}",
+        '--mac-dmg-content', readmeFile.absolutePath,
         '--dest', destDir.absolutePath
 }
 

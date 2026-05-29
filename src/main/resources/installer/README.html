@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <title>VSM Web — Installation Notes</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+      max-width: 640px;
+      margin: 48px auto;
+      padding: 0 24px;
+      color: #1a1a1a;
+      background: #fff;
+      line-height: 1.6;
+    }
+    h1 { font-size: 22px; margin-bottom: 4px; }
+    h2 { font-size: 15px; margin-top: 32px; color: #444; text-transform: uppercase; letter-spacing: 0.05em; }
+    .step {
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      margin: 12px 0;
+    }
+    .num {
+      flex-shrink: 0;
+      width: 26px; height: 26px;
+      background: #0071e3;
+      color: #fff;
+      border-radius: 50%;
+      font-size: 13px;
+      font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+    }
+    code {
+      background: #f2f2f7;
+      border-radius: 4px;
+      padding: 2px 6px;
+      font-size: 13px;
+    }
+    .note {
+      background: #fff9e6;
+      border-left: 3px solid #f0a500;
+      padding: 10px 14px;
+      border-radius: 0 6px 6px 0;
+      margin: 20px 0;
+      font-size: 14px;
+    }
+    hr { border: none; border-top: 1px solid #e0e0e0; margin: 32px 0; }
+  </style>
+</head>
+<body>
+
+<h1>VSM Web</h1>
+<p style="color:#666; font-size:14px;">Visual Dialogue Authoring &amp; Runtime Platform — DFKI GmbH</p>
+
+<hr/>
+
+<h2>Installation</h2>
+
+<div class="step">
+  <div class="num">1</div>
+  <div>Drag <strong>VSM Web.app</strong> to the <strong>Applications</strong> folder on the left.</div>
+</div>
+<div class="step">
+  <div class="num">2</div>
+  <div>Open <strong>Finder → Applications</strong> and locate <strong>VSM Web</strong>.</div>
+</div>
+<div class="step">
+  <div class="num">3</div>
+  <div>
+    <strong>Right-click</strong> (or Control-click) the app and choose <strong>Open</strong>.<br/>
+    A security dialog will appear — click <strong>Open</strong> to confirm.<br/>
+    <em>You only need to do this once.</em> After that, double-clicking works normally.
+  </div>
+</div>
+
+<div class="note">
+  <strong>Why the warning?</strong> VSM Web is free research software and is not signed with an
+  Apple Developer certificate. The right-click → Open bypass is the standard workaround for
+  academic and open-source software. It does <em>not</em> change any system-wide security settings.
+</div>
+
+<h2>First launch</h2>
+
+<div class="step">
+  <div class="num">4</div>
+  <div>VSM Web starts a local web server and opens your browser automatically at
+    <code>http://localhost:8090</code>. If the browser does not open, navigate there manually.
+  </div>
+</div>
+<div class="step">
+  <div class="num">5</div>
+  <div>To quit, close the browser tab and use the <strong>VSM Web</strong> menu → <strong>Quit</strong>,
+    or press <strong>⌘Q</strong>.
+  </div>
+</div>
+
+<hr/>
+
+<p style="font-size:12px; color:#999;">
+  VSM Web is developed at the German Research Center for Artificial Intelligence (DFKI), Saarbrücken.
+  Source code and documentation: <a href="https://github.com/DFKI-NLP/VisualSceneMaker" style="color:#0071e3;">github.com/DFKI-NLP/VisualSceneMaker</a>
+</p>
+
+</body>
+</html>
