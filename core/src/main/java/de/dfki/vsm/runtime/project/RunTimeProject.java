@@ -459,6 +459,14 @@ public class RunTimeProject {
             return false;
         }
 
+        // If the project.xml did not contain a uuid attribute, persist the auto-generated
+        // one back to the file so it stays stable across restarts.
+        if (!mProjectConfig.isUUIDFromFile() && file.exists() && file.canWrite()) {
+            writeProjectConfig(file.getParentFile());
+            mLogger.message("Assigned new project UUID '" + mProjectConfig.getProjectUUID()
+                    + "' and saved to '" + file + "'");
+        }
+
         mLogger.success("Loaded project from path '" + path + "':\n" + mProjectConfig);
         // Return success if the project was loaded
         return true;

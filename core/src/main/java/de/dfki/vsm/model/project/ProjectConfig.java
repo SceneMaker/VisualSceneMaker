@@ -28,6 +28,8 @@ public final class ProjectConfig implements ModelObject {
     private String mProjectName;
     // Stable project identity for machine-local execution history tracking
     private String mProjectUUID;
+    // True when UUID was read from the XML file (not auto-generated)
+    private boolean mUUIDFromFile = false;
     //
     private final PlayerConfig mPlayerConfig;
     // The list of plugin configurations
@@ -138,6 +140,11 @@ public final class ProjectConfig implements ModelObject {
 
     public final void setProjectUUID(String uuid) {
         mProjectUUID = uuid;
+    }
+
+    /** True when the UUID was read from project.xml; false when auto-generated. */
+    public final boolean isUUIDFromFile() {
+        return mUUIDFromFile;
     }
 
     // Get the name of the project
@@ -298,7 +305,10 @@ public final class ProjectConfig implements ModelObject {
             mProjectName = element.getAttribute("name");
             mAndroidProject = Boolean.parseBoolean(element.getAttribute("androidProject"));
             String uuid = element.getAttribute("uuid");
-            if (uuid != null && !uuid.isBlank()) mProjectUUID = uuid;
+            if (uuid != null && !uuid.isBlank()) {
+                mProjectUUID = uuid;
+                mUUIDFromFile = true;
+            }
             mPluginList.clear();
             mAgentList.clear();
             mLLMList.clear();
