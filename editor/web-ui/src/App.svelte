@@ -6325,6 +6325,11 @@ Sentence:
     const cmd = pendingPreflightCommand;
     pendingPreflightCommand = null;
     preflightData = null;
+    // Record the acknowledgment immediately so the modal won't re-appear
+    // even if the project fails to start.
+    try {
+      await fetch(`/api/v1/projects/${selectedProjectId}/execution/record`, { method: "POST" });
+    } catch (e) { /* ignore */ }
     if (cmd) await executeRuntimeCommand(cmd);
   }
 
