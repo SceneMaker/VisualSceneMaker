@@ -1,7 +1,7 @@
 {
     "schemaVersion": "1.0",
-    "specVersion": "1.2",
-    "specHash": "635ace1e87b8e23b",
+    "specVersion": "1.3",
+    "specHash": "fa07637b9cb91da3",
     "plugin": {
         "id": "htmlgui-ws",
         "name": "HTML GUI /statusWebSocket",
@@ -76,6 +76,13 @@
                 "name": "certificate",
                 "type": "filepath",
                 "description": "Path to SSL certificate"
+            },
+            {
+                "name": "browser",
+                "type": "string",
+                "default": "",
+                "machine_specific": true,
+                "description": "Browser to open: empty = OS default (or global VSM preference), 'chrome' = Google Chrome, any other value = path to browser executable"
             }
         ],
         "pluginSpecific": [
@@ -84,13 +91,6 @@
                 "type": "boolean",
                 "default": false,
                 "description": "Auto-start browser on plugin launch"
-            },
-            {
-                "name": "browser",
-                "type": "string",
-                "default": "",
-                "machine_specific": true,
-                "description": "Browser to open: empty = OS default (or global VSM preference), 'chrome' = Google Chrome, any other value = path to browser executable"
             },
             {
                 "name": "browser_fullscreen",
