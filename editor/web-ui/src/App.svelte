@@ -6310,12 +6310,14 @@ Sentence:
       const res = await fetch(`/api/v1/projects/${selectedProjectId}/preflight`);
       if (!res.ok) return true;
       const data = await res.json();
-      if (data.firstRunOnMachine && data.machineSpecificConfig && data.machineSpecificConfig.length > 0) {
-        preflightData = data;
-        pendingPreflightCommand = command;
-        preflightModalOpen = true;
-        return false;
-      }
+      if (!data.machineSpecificConfig || data.machineSpecificConfig.length === 0) return true;
+      // Use localStorage to track acknowledgment — reliable, synchronous, machine-local.
+      const ackKey = `vsm_preflight_ack_${data.projectUUID}`;
+      if (localStorage.getItem(ackKey)) return true;
+      preflightData = data;
+      pendingPreflightCommand = command;
+      preflightModalOpen = true;
+      return false;
     } catch (e) { /* ignore — let execution proceed */ }
     return true;
   }
@@ -6323,13 +6325,12 @@ Sentence:
   async function confirmPreflight() {
     preflightModalOpen = false;
     const cmd = pendingPreflightCommand;
+    const uuid = preflightData?.projectUUID;
     pendingPreflightCommand = null;
     preflightData = null;
-    // Record the acknowledgment immediately so the modal won't re-appear
-    // even if the project fails to start.
-    try {
-      await fetch(`/api/v1/projects/${selectedProjectId}/execution/record`, { method: "POST" });
-    } catch (e) { /* ignore */ }
+    // Persist acknowledgment in localStorage before attempting to start,
+    // so the modal won't reappear even if the project fails to start.
+    if (uuid) localStorage.setItem(`vsm_preflight_ack_${uuid}`, '1');
     if (cmd) await executeRuntimeCommand(cmd);
   }
 
