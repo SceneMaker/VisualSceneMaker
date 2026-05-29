@@ -7601,7 +7601,7 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
                 String jarPath = resourceUrl.getPath();
                 int jarSeparator = jarPath.indexOf("!");
                 if (jarSeparator > 0) {
-                    String jarFilePath = jarPath.substring(5, jarSeparator); // Remove "file:"
+                    String jarFilePath = Paths.get(new URI(jarPath.substring(0, jarSeparator))).toString();
                     String resourcePrefix = jarPath.substring(jarSeparator + 2); // Remove "!/"
                     try (java.util.jar.JarFile jar = new java.util.jar.JarFile(jarFilePath)) {
                         Enumeration<java.util.jar.JarEntry> entries = jar.entries();
@@ -10134,10 +10134,11 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
     private Path extractClasspathDirToTemp(String directory, URL jarUrl) {
         try {
             Path dest = Files.createTempDirectory("vsm-" + directory.replace("/", "-").replace(" ", "_"));
-            String jarUrlStr = jarUrl.getPath();            // file:/some.jar!/res/tutorials/
+            String jarUrlStr = jarUrl.getPath();   // file:/path%20with%20space/some.jar!/res/tutorials/
             int bang = jarUrlStr.indexOf("!/");
             if (bang < 0) return null;
-            String jarFilePath = jarUrlStr.substring(5, bang);  // strip leading "file:"
+            // Decode URL-encoded characters (e.g. %20 for spaces in "VSM Web.app")
+            String jarFilePath = Paths.get(new URI(jarUrlStr.substring(0, bang))).toString();
             String prefix      = jarUrlStr.substring(bang + 2); // strip "!/"
             try (java.util.jar.JarFile jar = new java.util.jar.JarFile(jarFilePath)) {
                 java.util.Enumeration<java.util.jar.JarEntry> entries = jar.entries();
