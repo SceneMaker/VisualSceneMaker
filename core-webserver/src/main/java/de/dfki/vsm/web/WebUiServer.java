@@ -3625,11 +3625,15 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
                         .filter(Files::isDirectory)
                         .sorted(Comparator.comparing(path -> path.getFileName().toString().toLowerCase()))
                         .forEach(path -> {
+                            // Copy bundled tutorials to a stable user directory so plugins that
+                            // serve files from the project path (e.g. htmlgui-ws gui/) work
+                            // even when the source was extracted from a JAR into a temp dir.
+                            Path stablePath = ensureTutorialUserCopy(path);
                             JSONObject entry = new JSONObject();
-                            entry.put("name", path.getFileName().toString());
-                            entry.put("path", path.toAbsolutePath().toString());
+                            entry.put("name", stablePath.getFileName().toString());
+                            entry.put("path", stablePath.toAbsolutePath().toString());
                             // Merge optional tutorial.json metadata (name, description, level, duration, tags)
-                            Path meta = path.resolve("tutorial.json");
+                            Path meta = stablePath.resolve("tutorial.json");
                             if (Files.exists(meta)) {
                                 try {
                                     String raw = Files.readString(meta);
@@ -3648,6 +3652,40 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         JSONObject response = new JSONObject();
         response.put("projects", list);
         writeJson(ctx, response);
+    }
+
+    /**
+     * Copies a bundled tutorial to ~/.vsm/tutorials/<name>/ on first access.
+     * Returns the stable user-directory path so that plugins (e.g. htmlgui-ws)
+     * can serve files from the project directory tree at runtime.
+     * If the copy fails the original source path is returned as a fallback.
+     */
+    private Path ensureTutorialUserCopy(Path source) {
+        String name = source.getFileName().toString();
+        Path dest = Paths.get(System.getProperty("user.home"), ".vsm", "tutorials", name);
+        if (Files.exists(dest)) return dest;
+        try {
+            Files.createDirectories(dest);
+            copyDirectoryTreeRecursive(source, dest);
+            sLogger.message("[vsm] copied bundled tutorial '" + name + "' to " + dest);
+            return dest;
+        } catch (Exception e) {
+            sLogger.warning("Warning: could not copy tutorial '" + name + "' to user dir: " + e.getMessage());
+            return source;
+        }
+    }
+
+    private void copyDirectoryTreeRecursive(Path src, Path dst) throws Exception {
+        try (Stream<Path> walk = Files.walk(src)) {
+            for (Path s : (Iterable<Path>) walk::iterator) {
+                Path d = dst.resolve(src.relativize(s));
+                if (Files.isDirectory(s)) {
+                    Files.createDirectories(d);
+                } else {
+                    Files.copy(s, d, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+                }
+            }
+        }
     }
 
     private void handleProjects(Context ctx) {
