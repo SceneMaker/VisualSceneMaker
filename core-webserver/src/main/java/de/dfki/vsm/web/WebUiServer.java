@@ -5145,9 +5145,35 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
 
     private void loadExportablePropertyProviders() {
         EXPORTABLE_PROPERTY_PROVIDERS.clear();
+        // In a fat JAR, duplicatesStrategy=EXCLUDE keeps only one plugin-properties.json.
+        // The build aggregates all plugin descriptors into vsm-plugin-registry.json (JSON array).
+        // Prefer that file; fall back to scanning individual files (dev classpath mode).
+        ClassLoader cl = getClass().getClassLoader();
+        URL registryUrl = cl.getResource("vsm-plugin-registry.json");
+        if (registryUrl != null) {
+            try (InputStream stream = registryUrl.openStream()) {
+                String json = new String(stream.readAllBytes(), StandardCharsets.UTF_8);
+                org.json.JSONArray arr = new org.json.JSONArray(json);
+                for (int i = 0; i < arr.length(); i++) {
+                    JSONObject root = arr.optJSONObject(i);
+                    if (root == null) continue;
+                    JSONObject rootPlugin = root.optJSONObject("plugin");
+                    if (rootPlugin != null && rootPlugin.has("className")) {
+                        String className = rootPlugin.optString("className", "").trim();
+                        if (!className.isEmpty()) {
+                            EXPORTABLE_PROPERTY_PROVIDERS.put(className, parseUnifiedPluginProperties(root, rootPlugin));
+                        }
+                    }
+                }
+                sLogger.message("Loaded plugin registry: " + EXPORTABLE_PROPERTY_PROVIDERS.size()
+                        + " entries from vsm-plugin-registry.json");
+                return;
+            } catch (Exception exc) {
+                sLogger.warning("Warning: failed to load vsm-plugin-registry.json, falling back: " + exc.getMessage());
+            }
+        }
         String resourceName = "plugin-properties.json";
         try {
-            ClassLoader cl = getClass().getClassLoader();
             Enumeration<URL> urls = cl.getResources(resourceName);
             int sourceCount = 0;
             while (urls.hasMoreElements()) {

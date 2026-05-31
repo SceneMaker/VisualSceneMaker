@@ -304,41 +304,13 @@ tasks.register('generateIco') {
     // No-op: icon is already in source control. Task kept so jpackageWindows can depend on it.
 }
 
-// Stage: copy the thin root JAR plus all runtime-classpath JARs into a flat directory.
-// jpackage bundles everything in --input as the app classpath; keeping JARs separate
-// ensures each plugin's plugin-properties.json is reachable via ClassLoader.getResources().
-// A single fat-JAR with duplicatesStrategy=EXCLUDE would silently drop all but one copy.
+// Stage: copy the fat jar to a clean directory, renamed to VisualSceneMaker.jar.
+// jpackage bundles everything in --input as the app classpath.
 def jpackageStagingDir = layout.buildDirectory.dir('jpackage-staging')
-tasks.register('stageForJpackage') {
+tasks.register('stageForJpackage', Copy) {
     dependsOn tasks.jar
-    inputs.files(tasks.jar.archiveFile)
-    outputs.dir(jpackageStagingDir)
-    doLast {
-        def staging = jpackageStagingDir.get().asFile
-        staging.deleteDir()
-        staging.mkdirs()
-        // Root JAR — fixed name so jpackage --main-jar can reference it
-        java.nio.file.Files.copy(
-            tasks.jar.archiveFile.get().asFile.toPath(),
-            new File(staging, 'VisualSceneMaker.jar').toPath(),
-            java.nio.file.StandardCopyOption.REPLACE_EXISTING
-        )
-        // All dependency JARs (libraries + plugin modules), excluding JavaFX.
-        // Evaluated lazily (in doLast) to match the runtimeClasspathForJar filter.
-        project.configurations.runtimeClasspath
-            .filter { f ->
-                if (!f.isFile() || !f.name.endsWith('.jar')) return false
-                def lower = f.name.toLowerCase()
-                return !(lower.startsWith("javafx-") || lower.contains("javafx") || f.name.contains("JFX"))
-            }
-            .each { dep ->
-                java.nio.file.Files.copy(
-                    dep.toPath(),
-                    new File(staging, dep.name).toPath(),
-                    java.nio.file.StandardCopyOption.REPLACE_EXISTING
-                )
-            }
-    }
+    from(tasks.jar.archiveFile) { rename { 'VisualSceneMaker.jar' } }
+    into jpackageStagingDir
 }
 
 // ── macOS .dmg ────────────────────────────────────────────────────────────────
@@ -904,10 +876,52 @@ def runtimeClasspathForJar = {
         return !(lower.startsWith("javafx-") || lower.contains("javafx") || name.contains("JFX"))
     }
 }
+// Build-time registry: reads every plugin-properties.json from the runtime classpath
+// and writes them as a JSON array into vsm-plugin-registry.json. This file is bundled
+// in the fat JAR so the server can load all plugin metadata even though
+// duplicatesStrategy=EXCLUDE keeps only one copy of the individual files.
+tasks.register('generatePluginRegistry') {
+    group = 'build'
+    description = 'Aggregates all plugin-properties.json files into vsm-plugin-registry.json'
+    inputs.files(project.configurations.runtimeClasspath.filter { it.isFile() })
+    def registryFile = layout.buildDirectory.file('generated-resources/vsm-plugin-registry.json')
+    outputs.file(registryFile)
+    doLast {
+        def plugins = []
+        project.configurations.runtimeClasspath
+            .filter { it.isFile() && it.name.endsWith('.jar') }
+            .each { jar ->
+                new java.util.zip.ZipFile(jar).withCloseable { zf ->
+                    def entry = zf.getEntry('plugin-properties.json')
+                    if (entry != null) {
+                        try {
+                            def text = new java.io.InputStreamReader(zf.getInputStream(entry), 'UTF-8').text
+                            plugins << new groovy.json.JsonSlurper().parseText(text)
+                        } catch (Exception e) {
+                            logger.warn("generatePluginRegistry: skipping ${jar.name}: ${e.message}")
+                        }
+                    }
+                }
+            }
+        def out = registryFile.get().asFile
+        out.parentFile.mkdirs()
+        out.text = groovy.json.JsonOutput.toJson(plugins)
+        logger.lifecycle("generatePluginRegistry: wrote ${plugins.size()} plugin entries")
+    }
+}
+
 jar {
-    // Thin JAR: only root-project classes and resources. Runtime dependencies are staged
-    // as separate JARs by stageForJpackage so the ClassLoader can find all instances of
-    // plugin-properties.json (one per plugin) without fat-JAR duplicate collisions.
+    dependsOn generatePluginRegistry
+    duplicatesStrategy = 'exclude'
+    from {
+        runtimeClasspathForJar().collect {
+            it.isDirectory() ? it : zipTree(it)
+        }
+    }
+    // Include the pre-built plugin registry so all plugin metadata survives the fat-JAR merge
+    from(layout.buildDirectory.dir('generated-resources')) {
+        include 'vsm-plugin-registry.json'
+    }
     archiveClassifier.set('plain')
     manifest {
         attributes(
