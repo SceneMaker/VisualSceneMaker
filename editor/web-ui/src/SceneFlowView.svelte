@@ -4943,4 +4943,15 @@
       />
     </div>
   {/if}
+  {#if runtimeState !== "stopped" && Object.keys(runtimeValues).length > 0}
+    <div class="runtime-var-panel">
+      <div class="runtime-var-panel-title">Variables</div>
+      {#each Object.entries(runtimeValues).sort(([a], [b]) => a.localeCompare(b)) as [name, value]}
+        <div class="runtime-var-row">
+          <span class="runtime-var-name">{name}</span>
+          <span class="runtime-var-value">{String(value)}</span>
+        </div>
+      {/each}
+    </div>
+  {/if}
 </div>

@@ -6242,3 +6242,54 @@ button.badge:active {
   fill: none;
   stroke: currentColor;
 }
+
+/* ── Runtime variable panel ──────────────────────────────────────────────── */
+.runtime-var-panel {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 20;
+  background: rgba(20, 20, 30, 0.82);
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  padding: 6px 10px 8px;
+  min-width: 160px;
+  max-width: 280px;
+  max-height: 320px;
+  overflow-y: auto;
+  font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 11px;
+  pointer-events: none;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+}
+.runtime-var-panel-title {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.45);
+  margin-bottom: 5px;
+}
+.runtime-var-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  line-height: 1.6;
+}
+.runtime-var-name {
+  color: rgba(180, 210, 255, 0.9);
+  flex-shrink: 0;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.runtime-var-value {
+  color: rgba(255, 255, 255, 0.85);
+  text-align: right;
+  flex-shrink: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 120px;
+}

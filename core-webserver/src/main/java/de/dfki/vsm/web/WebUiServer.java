@@ -141,6 +141,10 @@ import java.util.Set;
 import java.util.Enumeration;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.lang.reflect.Field;
@@ -310,6 +314,19 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
     private final Map<String, ProjectRef> projectStore = new HashMap<>();
     private final Map<String, WsCommandHandler> wsCommandRegistry = new HashMap<>();
     private final java.util.Set<WsContext> wsSessions = ConcurrentHashMap.newKeySet();
+
+    // Auto-exit: when all browser clients disconnect and no new one reconnects within the
+    // grace period, call System.exit(0). Disabled by --server flag (server/headless use).
+    private boolean mAutoExit = false;
+    private static final int AUTO_EXIT_GRACE_SECONDS = 30;
+    private final ScheduledExecutorService mShutdownScheduler =
+        Executors.newSingleThreadScheduledExecutor(r -> {
+            Thread t = new Thread(r, "vsm-shutdown-timer");
+            t.setDaemon(true);
+            return t;
+        });
+    private volatile ScheduledFuture<?> mShutdownFuture;
+
     /** Maps WS session-id → project-id for clients that joined via Session.Subscribe. */
     private final ConcurrentHashMap<String, String> wsProjectSubscriptions = new ConcurrentHashMap<>();
     /** Tracks runtime lifecycle and exclusive hardware-resource arbitration across all sessions. */
@@ -1754,6 +1771,11 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         mAllowExternal = allow;
     }
 
+    /** Enable auto-exit: process quits 30 s after the last browser tab disconnects. */
+    public void setAutoExit(boolean autoExit) {
+        mAutoExit = autoExit;
+    }
+
     private int mPort = 8090;
 
     public void start() {
@@ -1795,6 +1817,11 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
             mApp.get("/", ctx -> ctx.redirect("/web-ui/"));
         }
         registerRoutes();
+        // Pre-copy bundled tutorials to ~/.vsm.d/tutorials/ so the first tutorial-list
+        // request is always fast (copy can take several seconds from a JAR on first run).
+        Thread preCopy = new Thread(this::preCopyBundledTutorials, "vsm-tutorial-precopy");
+        preCopy.setDaemon(true);
+        preCopy.start();
         // EventDispatcher registration now happens per-project when projects are added to projectStore.
         // See onProjectRegistered() / onProjectRemoved().
         sLogger.message("Web UI server started on " + getLocalUrl());
@@ -1885,7 +1912,28 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         return false;
     }
 
+    private void scheduleShutdownIfEmpty() {
+        if (!mAutoExit || !wsSessions.isEmpty()) return;
+        sLogger.message("All browser clients disconnected — process will exit in "
+                + AUTO_EXIT_GRACE_SECONDS + " s (reconnect to cancel).");
+        mShutdownFuture = mShutdownScheduler.schedule(() -> {
+            if (wsSessions.isEmpty()) {
+                sLogger.message("Auto-exit: no browser clients reconnected, shutting down.");
+                System.exit(0);
+            }
+        }, AUTO_EXIT_GRACE_SECONDS, TimeUnit.SECONDS);
+    }
+
+    private void cancelShutdown() {
+        ScheduledFuture<?> f = mShutdownFuture;
+        if (f != null) {
+            f.cancel(false);
+            mShutdownFuture = null;
+        }
+    }
+
     public void stop() {
+        mShutdownScheduler.shutdownNow();
         if (mApp != null) {
             // Deregister from all project dispatchers.
             for (ProjectRef ref : projectStore.values()) {
@@ -2689,15 +2737,18 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
                 ctx.session.setIdleTimeout(java.time.Duration.ofMinutes(10));
                 sLogger.message("WS client connected: " + ctx.sessionId());
                 wsSessions.add(ctx);
+                cancelShutdown();
             });
             ws.onClose(ctx -> {
                 wsSessions.remove(ctx);
                 cleanupWsSubscription(ctx);
+                scheduleShutdownIfEmpty();
             });
             ws.onError(ctx -> {
                 sLogger.warning("WS client error: " + ctx.sessionId());
                 wsSessions.remove(ctx);
                 cleanupWsSubscription(ctx);
+                scheduleShutdownIfEmpty();
             });
             ws.onMessage(ctx -> {
                 // Intercept presence/session commands before regular dispatch
@@ -3675,15 +3726,29 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         }
     }
 
+    private void preCopyBundledTutorials() {
+        Path base = resolveResourcePath("res/tutorials");
+        if (base == null || !Files.isDirectory(base)) return;
+        try (Stream<Path> children = Files.list(base)) {
+            children.filter(Files::isDirectory).forEach(this::ensureTutorialUserCopy);
+        } catch (Exception e) {
+            sLogger.warning("Warning: pre-copy of bundled tutorials failed: " + e.getMessage());
+        }
+    }
+
     private void copyDirectoryTreeRecursive(Path src, Path dst) throws Exception {
+        // Materialize the walk into a list so the stream is fully consumed before the
+        // try-with-resources closes it (avoids lazy-evaluation surprises on some JVMs).
+        List<Path> paths;
         try (Stream<Path> walk = Files.walk(src)) {
-            for (Path s : (Iterable<Path>) walk::iterator) {
-                Path d = dst.resolve(src.relativize(s));
-                if (Files.isDirectory(s)) {
-                    Files.createDirectories(d);
-                } else {
-                    Files.copy(s, d, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-                }
+            paths = walk.collect(java.util.stream.Collectors.toList());
+        }
+        for (Path s : paths) {
+            Path d = dst.resolve(src.relativize(s));
+            if (Files.isDirectory(s)) {
+                Files.createDirectories(d);
+            } else {
+                Files.copy(s, d, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
             }
         }
     }

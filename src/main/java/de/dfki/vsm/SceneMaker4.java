@@ -28,12 +28,15 @@ public final class SceneMaker4 {
         configureMacApp();
         boolean allowLan = false;
         boolean openBrowser = true;
+        boolean serverMode = false;   // --server: stay alive when browser closes
         List<String> remaining = new ArrayList<>();
         for (String arg : args) {
             if ("--allow-lan".equalsIgnoreCase(arg) || "--allow-external".equalsIgnoreCase(arg)) {
                 allowLan = true;
             } else if ("--no-browser".equalsIgnoreCase(arg)) {
                 openBrowser = false;
+            } else if ("--server".equalsIgnoreCase(arg)) {
+                serverMode = true;
             } else {
                 remaining.add(arg);
             }
@@ -42,6 +45,7 @@ public final class SceneMaker4 {
         try {
             WebUiServer server = WebUiServer.getInstance();
             server.setAllowExternal(allowLan);
+            server.setAutoExit(!serverMode);
             server.start();
             if (openBrowser) {
                 openBrowser(server.getLocalUrl());

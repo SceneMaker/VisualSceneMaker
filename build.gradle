@@ -304,13 +304,41 @@ tasks.register('generateIco') {
     // No-op: icon is already in source control. Task kept so jpackageWindows can depend on it.
 }
 
-// Stage: copy the fat jar to a clean directory, renamed to VisualSceneMaker.jar.
-// jpackage bundles everything in --input as the app classpath.
+// Stage: copy the thin root JAR plus all runtime-classpath JARs into a flat directory.
+// jpackage bundles everything in --input as the app classpath; keeping JARs separate
+// ensures each plugin's plugin-properties.json is reachable via ClassLoader.getResources().
+// A single fat-JAR with duplicatesStrategy=EXCLUDE would silently drop all but one copy.
 def jpackageStagingDir = layout.buildDirectory.dir('jpackage-staging')
-tasks.register('stageForJpackage', Copy) {
+tasks.register('stageForJpackage') {
     dependsOn tasks.jar
-    from(tasks.jar.archiveFile) { rename { 'VisualSceneMaker.jar' } }
-    into jpackageStagingDir
+    inputs.files(tasks.jar.archiveFile)
+    outputs.dir(jpackageStagingDir)
+    doLast {
+        def staging = jpackageStagingDir.get().asFile
+        staging.deleteDir()
+        staging.mkdirs()
+        // Root JAR — fixed name so jpackage --main-jar can reference it
+        java.nio.file.Files.copy(
+            tasks.jar.archiveFile.get().asFile.toPath(),
+            new File(staging, 'VisualSceneMaker.jar').toPath(),
+            java.nio.file.StandardCopyOption.REPLACE_EXISTING
+        )
+        // All dependency JARs (libraries + plugin modules), excluding JavaFX.
+        // Evaluated lazily (in doLast) to match the runtimeClasspathForJar filter.
+        project.configurations.runtimeClasspath
+            .filter { f ->
+                if (!f.isFile() || !f.name.endsWith('.jar')) return false
+                def lower = f.name.toLowerCase()
+                return !(lower.startsWith("javafx-") || lower.contains("javafx") || f.name.contains("JFX"))
+            }
+            .each { dep ->
+                java.nio.file.Files.copy(
+                    dep.toPath(),
+                    new File(staging, dep.name).toPath(),
+                    java.nio.file.StandardCopyOption.REPLACE_EXISTING
+                )
+            }
+    }
 }
 
 // ── macOS .dmg ────────────────────────────────────────────────────────────────
@@ -877,16 +905,12 @@ def runtimeClasspathForJar = {
     }
 }
 jar {
-    duplicatesStrategy = 'exclude'
-    from {
-            runtimeClasspathForJar().collect {
-            it.isDirectory() ? it : zipTree(it)
-        }
-    }
+    // Thin JAR: only root-project classes and resources. Runtime dependencies are staged
+    // as separate JARs by stageForJpackage so the ClassLoader can find all instances of
+    // plugin-properties.json (one per plugin) without fat-JAR duplicate collisions.
     archiveClassifier.set('plain')
     manifest {
         attributes(
-                // Phase 8: Updated to SceneMaker4 (web-only, Swing removed)
                 'Main-Class': 'de.dfki.vsm.SceneMaker4',
                 'build' : versioning.info.build,
                 'Build-Revision': versioning.info.commit,
