@@ -16,7 +16,7 @@ import java.time.Instant;
 public final class VsmExecutionHistory {
 
     private static final Path HISTORY_FILE =
-            Paths.get(System.getProperty("user.home"), ".vsm", "execution-history.json");
+            Paths.get(System.getProperty("user.home"), ".vsm.d", "execution-history.json");
 
     private VsmExecutionHistory() {}
 

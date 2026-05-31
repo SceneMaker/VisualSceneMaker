@@ -382,11 +382,11 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
         return readGlobalBrowserPref();
     }
 
-    /** Reads "browser.app" from ~/.vsm/global-config.json without pulling in a JSON library. */
+    /** Reads "browser.app" from ~/.vsm.d/global-config.json without pulling in a JSON library. */
     private String readGlobalBrowserPref() {
         try {
             java.nio.file.Path cfg = java.nio.file.Paths.get(
-                    System.getProperty("user.home"), ".vsm", "global-config.json");
+                    System.getProperty("user.home"), ".vsm.d", "global-config.json");
             if (!java.nio.file.Files.exists(cfg)) return "";
             String content = java.nio.file.Files.readString(cfg);
             int browserIdx = content.indexOf("\"browser\"");

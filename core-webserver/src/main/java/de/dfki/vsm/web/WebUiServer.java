@@ -3655,14 +3655,14 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
     }
 
     /**
-     * Copies a bundled tutorial to ~/.vsm/tutorials/<name>/ on first access.
+     * Copies a bundled tutorial to ~/.vsm.d/tutorials/<name>/ on first access.
      * Returns the stable user-directory path so that plugins (e.g. htmlgui-ws)
      * can serve files from the project directory tree at runtime.
      * If the copy fails the original source path is returned as a fallback.
      */
     private Path ensureTutorialUserCopy(Path source) {
         String name = source.getFileName().toString();
-        Path dest = Paths.get(System.getProperty("user.home"), ".vsm", "tutorials", name);
+        Path dest = Paths.get(System.getProperty("user.home"), ".vsm.d", "tutorials", name);
         if (Files.exists(dest)) return dest;
         try {
             Files.createDirectories(dest);
