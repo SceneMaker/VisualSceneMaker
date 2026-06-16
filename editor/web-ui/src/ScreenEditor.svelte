@@ -374,6 +374,7 @@
     if (type === "vsm-chart")       return "Ch";
     if (type === "vsm-feed")        return "📜";
     if (type === "vsm-animate")     return "Anim";
+    if (type === "vsm-chat-input")  return "✉";
     if (type.includes("textarea"))  return "A";
     if (type.includes("text"))      return "T";
     if (type.includes("button"))    return "B";
@@ -403,6 +404,9 @@
     if (el.type === "vsm-animate") {
       const rateLabel = el.rateVar ? ` · rate: ${el.rateVar}` : "";
       return `${el.animation ?? "heartbeat"}${rateLabel}`;
+    }
+    if (el.type === "vsm-chat-input") {
+      return el.sendsVar ? `Chat input → ${el.sendsVar}` : "Chat input (no variable)";
     }
     if (el.type === "vsm-filler") {
       if (el.flexGrow) return "Flex spacer (fills remaining space)";
@@ -453,12 +457,26 @@
       { icon: "⊞",   label: "Embed",    create: () => ({ type:"vsm-embed", src:"", width:"100%", height:"315px" }) },
     ]},
     { label: "Data & FX", items: [
-      { icon: "💬",  label: "Bubble",   create: () => ({ type:"vsm-bubble", content:"Hello!", tail:"bottom", background:"#e8f4fd" }) },
-      { icon: "Ch",  label: "Chart",    create: () => ({ type:"vsm-chart", chartType:"bar", dataVar:"", label:"", color:"#5b8edc", height:"300px" }) },
-      { icon: "Fd",  label: "Feed",     create: () => ({ type:"vsm-feed", dataVar:"", height:"400px", agentColor:"#e8f4fd", userColor:"#eafbe8", systemColor:"#f5f5f5", agentLabel:"Agent", userLabel:"You" }) },
-      { icon: "Fx",  label: "Animate",  create: () => ({ type:"vsm-animate", animation:"heartbeat", color:"#e26d5a", width:"80px", height:"80px" }) },
+      { icon: "💬",  label: "Bubble",     create: () => ({ type:"vsm-bubble", content:"Hello!", tail:"bottom", background:"#e8f4fd" }) },
+      { icon: "Ch",  label: "Chart",      create: () => ({ type:"vsm-chart", chartType:"bar", dataVar:"", label:"", color:"#5b8edc", height:"300px" }) },
+      { icon: "Fd",  label: "Feed",       create: () => ({ type:"vsm-feed", dataVar:"", height:"400px", agentColor:"#e8f4fd", userColor:"#eafbe8", systemColor:"#f5f5f5", agentLabel:"Agent", userLabel:"You" }) },
+      { icon: "Fx",  label: "Animate",    create: () => ({ type:"vsm-animate", animation:"heartbeat", color:"#e26d5a", width:"80px", height:"80px" }) },
+      { icon: "✉",   label: "Chat Input", create: () => ({ type:"vsm-chat-input", sendsVar:"", placeholder:"Type your message…", buttonLabel:"Send" }) },
     ]},
   ];
+
+  // ── delete screen ─────────────────────────────────────────────────────────
+  function deleteScreen(name) {
+    if (!parsedSchema?.screens) return;
+    if (screenNames.length <= 1) return; // refuse to delete the last screen
+    delete parsedSchema.screens[name];
+    parsedSchema = { ...parsedSchema };
+    if (selectedScreen === name) {
+      const remaining = Object.keys(parsedSchema.screens ?? {});
+      selectedScreen = remaining.length > 0 ? remaining[0] : null;
+    }
+    commitParsed();
+  }
 
   // ── add new screen ────────────────────────────────────────────────────────
   function addScreen() {
@@ -590,8 +608,13 @@
       <div class="se-left-section">Screens</div>
       <div class="se-screens-list">
         {#each screenNames as name}
-          <button class="se-screen-item" class:se-screen-active={selectedScreen === name}
-                  on:click={() => selectedScreen = name}>{name}</button>
+          <div class="se-screen-row" class:se-screen-active={selectedScreen === name}>
+            <button class="se-screen-item" on:click={() => selectedScreen = name}>{name}</button>
+            {#if screenNames.length > 1}
+              <button class="se-screen-del" title="Delete screen '{name}'"
+                      on:click|stopPropagation={() => deleteScreen(name)}>×</button>
+            {/if}
+          </div>
         {/each}
         {#if screenNames.length === 0}
           <div class="se-screens-empty">No screens yet</div>
@@ -1306,6 +1329,33 @@
                       {#each variables as v}<option value={v.name}>{v.name}</option>{/each}
                     </select>
 
+                  <!-- ── Chat Input ── -->
+                  {:else if el.type === "vsm-chat-input"}
+                    <label class="ve-prop-label">Sends to variable</label>
+                    <select class="ve-select" value={el.sendsVar ?? ""}
+                            on:change={e => setProp(i,"sendsVar",e.target.value)}>
+                      <option value="">— none —</option>
+                      {#each variables as v}<option value={v.name}>{v.name}</option>{/each}
+                    </select>
+                    <label class="ve-prop-label">Placeholder</label>
+                    <input class="ve-input" type="text" placeholder="Type your message…"
+                           value={el.placeholder ?? ""}
+                           on:input={e => setProp(i,"placeholder",e.target.value || undefined)}>
+                    <label class="ve-prop-label">Button label</label>
+                    <input class="ve-input" type="text" placeholder="Send"
+                           value={el.buttonLabel ?? ""}
+                           on:input={e => setProp(i,"buttonLabel",e.target.value || undefined)}>
+                    <label class="ve-prop-label">Disabled variable <span class="ve-hint">(Bool — disables input when true)</span></label>
+                    <select class="ve-select" value={el.disabledVar ?? ""}
+                            on:change={e => setProp(i,"disabledVar",e.target.value || undefined)}>
+                      <option value="">— none —</option>
+                      {#each variables as v}<option value={v.name}>{v.name}</option>{/each}
+                    </select>
+                    <div class="ve-media-hint">
+                      User types a message and presses Enter or clicks the button.<br>
+                      The text is sent to the selected variable and the field is cleared.
+                    </div>
+
                   <!-- ── Panel ── -->
                   {:else if el.type === "vsm-panel"}
                     <div class="ve-row">
@@ -2004,19 +2054,33 @@
     padding: 0 0.4rem; gap: 1px; flex-shrink: 0;
     max-height: 180px; overflow-y: auto;
   }
+  .se-screen-row {
+    display: flex; align-items: center; border-radius: 5px;
+    transition: background 0.1s;
+  }
+  .se-screen-row:hover { background: rgba(0,0,0,0.04); }
+  .se-screen-active {
+    background: var(--ide-glow) !important;
+  }
   .se-screen-item {
-    text-align: left; padding: 0.3rem 0.65rem;
+    flex: 1; text-align: left; padding: 0.3rem 0.65rem;
     border: none; border-radius: 5px; cursor: pointer;
     font-size: 0.8rem; font-family: 'DM Mono', monospace;
     background: none; color: var(--ide-muted);
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    transition: background 0.1s, color 0.1s;
+    transition: color 0.1s;
   }
-  .se-screen-item:hover { background: rgba(0,0,0,0.04); color: var(--ide-text); }
-  .se-screen-active {
-    background: var(--ide-glow) !important;
-    color: var(--ide-accent) !important; font-weight: 600;
+  .se-screen-row:hover .se-screen-item { color: var(--ide-text); }
+  .se-screen-active .se-screen-item { color: var(--ide-accent) !important; font-weight: 600; }
+  .se-screen-del {
+    flex-shrink: 0; padding: 0 0.45rem; height: 100%;
+    border: none; background: none; cursor: pointer;
+    font-size: 0.85rem; color: var(--ide-dim);
+    opacity: 0; transition: opacity 0.1s, color 0.1s;
+    line-height: 1;
   }
+  .se-screen-row:hover .se-screen-del { opacity: 1; }
+  .se-screen-del:hover { color: var(--ide-danger, #dc2626); }
   .se-screens-empty { padding: 0.4rem 0.65rem; font-size: 0.75rem; color: var(--ide-dim); font-style: italic; }
   .se-new-screen-btn {
     margin: 0.4rem 0.6rem; padding: 0.26rem 0.5rem;
@@ -2323,7 +2387,7 @@
     display: flex; flex-direction: column; gap: 0.3rem;
   }
   .tp-card:hover { border-color: var(--ide-accent); background: var(--ide-glow); }
-  .tp-card-label { font-weight: 600; font-size: 0.88rem; }
+  .tp-card-label { font-weight: 600; font-size: 0.88rem; color: var(--ide-text); }
   .tp-card-desc  { font-size: 0.75rem; color: var(--ide-muted); line-height: 1.4; }
   .tp-card-vars  { display: flex; flex-wrap: wrap; gap: 0.25rem; margin-top: 0.15rem; }
   .tp-var-chip { font-size: 0.68rem; padding: 0.1rem 0.4rem; background: var(--ide-glow); color: var(--ide-accent); border-radius: 99px; font-family: 'DM Mono', monospace; }

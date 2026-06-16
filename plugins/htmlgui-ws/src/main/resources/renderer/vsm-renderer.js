@@ -381,12 +381,16 @@ class VsmScreenRenderer extends LitElement {
             }
 
             case 'vsm-feed': {
+                // height:'auto' means "fill flex space" — host gets flex:1, inner feed gets height:100%
+                const feedIsAuto = !el.height || el.height === 'auto';
                 const feedStyle = [
-                    el.width ? `width:${el.width}` : '',
+                    el.width     ? `width:${el.width}` : '',
+                    feedIsAuto   ? 'flex:1;min-height:0;display:flex;flex-direction:column' : '',
                     style,
                 ].filter(Boolean).join(';');
+                const feedConfig = feedIsAuto ? { ...el, height: '100%' } : el;
                 return html`<vsm-feed-element
-                    .config=${el}
+                    .config=${feedConfig}
                     .datavalue=${this._varValues[el.dataVar] ?? ''}
                     style=${feedStyle}></vsm-feed-element>`;
             }
@@ -455,6 +459,17 @@ class VsmScreenRenderer extends LitElement {
                     .datavalue=${this._varValues[el.dataVar] ?? ''}
                     style=${chartStyle}
                     height=${chartH}></vsm-chart-element>`;
+            }
+
+            case 'vsm-chat-input': {
+                const isDisabled = el.disabledVar
+                    ? (this._varValues[el.disabledVar] === 'true' || this._varValues[el.disabledVar] === '1')
+                    : false;
+                return html`<vsm-chat-input-element
+                    .config=${el}
+                    ?disabled=${isDisabled}
+                    @vsm-send=${(e) => el.sendsVar && this._sendToVsm(el.sendsVar, e.detail.value)}
+                    style=${style}></vsm-chat-input-element>`;
             }
 
             default:
@@ -668,6 +683,7 @@ class VsmFeedElement extends LitElement {
             display: flex; flex-direction: column; gap: 0.3rem;
             overflow-y: auto; padding: 0.6rem 0.8rem;
             box-sizing: border-box; scroll-behavior: smooth;
+            flex: 1;
         }
 
         /* Bubble wrapper — controls alignment.
@@ -1017,3 +1033,72 @@ class VsmAnimateElement extends LitElement {
 }
 
 customElements.define('vsm-animate-element', VsmAnimateElement);
+
+// ---------------------------------------------------------------------------
+// vsm-chat-input-element — Chat message input (text field + Send button)
+//
+// Schema element fields:
+//   sendsVar    — SceneFlow variable name to write the submitted text to
+//   placeholder — input field placeholder text (default: 'Type your message…')
+//   buttonLabel — send button label (default: 'Send')
+//   disabledVar — optional SceneFlow Bool variable; disables input when 'true'
+// ---------------------------------------------------------------------------
+
+class VsmChatInputElement extends LitElement {
+
+    static properties = {
+        config:   { type: Object },
+        disabled: { type: Boolean },
+    };
+
+    static styles = css`
+        :host { display: block; width: 100%; }
+        .vsm-chat-row {
+            display: flex; gap: 8px; align-items: flex-end; width: 100%;
+        }
+        sl-input { flex: 1; }
+    `;
+
+    constructor() {
+        super();
+        this.config   = {};
+        this.disabled = false;
+    }
+
+    _submit(inputEl) {
+        if (!inputEl) return;
+        const text = (inputEl.value ?? '').trim();
+        if (!text || this.disabled) return;
+        this.dispatchEvent(new CustomEvent('vsm-send', {
+            detail: { value: text },
+            bubbles: true, composed: true,
+        }));
+        // Clear the Shoelace input imperatively after dispatch
+        inputEl.value = '';
+    }
+
+    render() {
+        const cfg = this.config ?? {};
+        return html`
+            <div class="vsm-chat-row">
+                <sl-input
+                    placeholder=${cfg.placeholder ?? 'Type your message…'}
+                    ?disabled=${this.disabled}
+                    @keydown=${(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            this._submit(e.target);
+                        }
+                    }}>
+                </sl-input>
+                <sl-button
+                    variant="primary"
+                    ?disabled=${this.disabled}
+                    @click=${() => this._submit(this.renderRoot.querySelector('sl-input'))}>
+                    ${cfg.buttonLabel ?? 'Send'}
+                </sl-button>
+            </div>`;
+    }
+}
+
+customElements.define('vsm-chat-input-element', VsmChatInputElement);

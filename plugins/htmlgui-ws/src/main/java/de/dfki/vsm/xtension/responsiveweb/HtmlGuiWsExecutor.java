@@ -50,6 +50,9 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
     private final static String sCmdSeperatorChar = "$";
     // Browser process reference for cleanup
     private Process mBrowserProcess = null;
+    // Retry limit for variable updates that arrive before the interpreter is ready
+    private static final int VAR_RETRY_ATTEMPTS = 20;
+    private static final int VAR_RETRY_DELAY_MS = 250;
 
     public HtmlGuiWsExecutor(PluginConfig config, RunTimeProject project) {
         super(config, project);
@@ -131,12 +134,11 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
             ws.onConnect(ctx -> {
                 this.addWs(ctx);
                 mLogger.message("Connected to Browser");
-                // test
-                //broadcast("./default_gui.html");
-                // let sceneflow know that a client has connected
-                if (sceneflowStateVar != null && !sceneflowStateVar.isBlank()
-                        && mProject.hasVariable(sceneflowStateVar)) {
-                    mProject.setVariable(sceneflowStateVar, true);
+                // Let sceneflow know that a client has connected.
+                // applyVarUpdate handles the race condition where the interpreter
+                // may not be ready yet when the browser connects immediately at launch.
+                if (sceneflowStateVar != null && !sceneflowStateVar.isBlank()) {
+                    applyVarUpdate(sceneflowStateVar, "true");
                 }
             });
             ws.onMessage(this::handleMessage);
@@ -461,6 +463,39 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
         return null;
     }
 
+    /**
+     * Applies a variable update from the browser. If the SceneFlow interpreter is not yet
+     * ready (race condition: browser connected before launch() completed), spawns a daemon
+     * thread to retry for up to VAR_RETRY_ATTEMPTS × VAR_RETRY_DELAY_MS milliseconds.
+     */
+    private void applyVarUpdate(String varName, String rawValue) {
+        if (mProject.hasVariable(varName)) {
+            if ("true".equalsIgnoreCase(rawValue) || "false".equalsIgnoreCase(rawValue)) {
+                mProject.setVariable(varName, Boolean.parseBoolean(rawValue));
+            } else {
+                mProject.setVariable(varName, rawValue);
+            }
+        } else {
+            final String fVar = varName, fVal = rawValue;
+            Thread t = new Thread(() -> {
+                for (int i = 0; i < VAR_RETRY_ATTEMPTS; i++) {
+                    try { Thread.sleep(VAR_RETRY_DELAY_MS); } catch (InterruptedException e) { break; }
+                    if (mProject.hasVariable(fVar)) {
+                        if ("true".equalsIgnoreCase(fVal) || "false".equalsIgnoreCase(fVal)) {
+                            mProject.setVariable(fVar, Boolean.parseBoolean(fVal));
+                        } else {
+                            mProject.setVariable(fVar, fVal);
+                        }
+                        return;
+                    }
+                }
+                mLogger.warning("HtmlGuiWs: variable '" + fVar + "' not available after " + VAR_RETRY_ATTEMPTS + " retries");
+            }, "vsm-varset-retry");
+            t.setDaemon(true);
+            t.start();
+        }
+    }
+
     private synchronized void handleMessage(WsMessageContext ctx) {
         String message = ctx.message();
         mLogger.message("Processing Browser GUI message: >" + message + "<");
@@ -469,16 +504,10 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
         // The value may contain '$', so split with limit 3.
         if (message.startsWith("varUpdate$")) {
             String[] parts = message.split("\\$", 3);
-            if (parts.length == 3 && parts[1] != null && !parts[1].isBlank()
-                    && mProject.hasVariable(parts[1])) {
-                String varName = parts[1];
-                String rawValue = parts[2];
-                // Type-coerce "true"/"false" strings to boolean so Bool variables are set correctly.
-                if ("true".equalsIgnoreCase(rawValue) || "false".equalsIgnoreCase(rawValue)) {
-                    mProject.setVariable(varName, Boolean.parseBoolean(rawValue));
-                } else {
-                    mProject.setVariable(varName, rawValue);
-                }
+            if (parts.length == 3 && parts[1] != null && !parts[1].isBlank()) {
+                // applyVarUpdate handles the race condition where the interpreter may not
+                // be ready yet (e.g. browser connects immediately after plugin launch).
+                applyVarUpdate(parts[1], parts[2]);
             }
             return; // do not also write to sceneflowInfoVar
         }

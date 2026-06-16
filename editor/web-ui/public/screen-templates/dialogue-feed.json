@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "screens": {
+    "dialogue-feed": {
+      "background": "#f8f9fa",
+      "layout": "flex-column",
+      "alignItems": "stretch",
+      "elements": [
+        {
+          "type": "sl-text",
+          "content": "Our Conversation",
+          "style": {
+            "font-size": "1rem",
+            "font-weight": "600",
+            "padding": "12px 16px 8px",
+            "color": "#333333",
+            "border-bottom": "1px solid #e3ddd4"
+          }
+        },
+        {
+          "type": "vsm-feed",
+          "dataVar": "conversation_log",
+          "agentColor": "#e8f4fd",
+          "userColor": "#eafbe8",
+          "systemColor": "#f5f5f5",
+          "agentLabel": "Agent",
+          "userLabel": "You",
+          "showTimestamps": false,
+          "height": "420px",
+          "style": { "flex": "1", "padding": "8px" }
+        }
+      ]
+    }
+  }
+}

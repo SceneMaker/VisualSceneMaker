@@ -1,0 +1,112 @@
+{
+  "version": 1,
+  "screens": {
+    "chat": {
+      "background": "#f0f2f5",
+      "layout": "flex-column",
+      "elements": [
+        {
+          "type": "vsm-panel",
+          "background": "#ffffff",
+          "layout": "flex-column",
+          "gap": "0",
+          "style": {
+            "flex": "1",
+            "height": "calc(100vh - 2rem)",
+            "border-radius": "16px",
+            "box-shadow": "0 8px 32px rgba(0,0,0,0.12)",
+            "overflow": "hidden"
+          },
+          "children": [
+            {
+              "type": "vsm-panel",
+              "background": "#ffffff",
+              "layout": "flex-row",
+              "padding": "18px 24px",
+              "gap": "14px",
+              "style": {
+                "border-bottom": "1px solid #e8eaed",
+                "align-items": "center",
+                "flex-shrink": "0"
+              },
+              "children": [
+                {
+                  "type": "vsm-image",
+                  "src": "/assets/alex.png",
+                  "alt": "Alex",
+                  "width": "52px",
+                  "height": "52px",
+                  "style": {
+                    "border-radius": "50%",
+                    "object-fit": "cover",
+                    "border": "2px solid #e8eaed",
+                    "flex-shrink": "0"
+                  }
+                },
+                {
+                  "type": "vsm-panel",
+                  "background": "transparent",
+                  "layout": "flex-column",
+                  "gap": "2px",
+                  "children": [
+                    {
+                      "type": "sl-text",
+                      "content": "Alex",
+                      "style": {
+                        "font-size": "16px",
+                        "font-weight": "600",
+                        "color": "#1a1a2e",
+                        "margin": "0"
+                      }
+                    },
+                    {
+                      "type": "sl-text",
+                      "content": "Digital Intake Assistant",
+                      "style": {
+                        "font-size": "12px",
+                        "color": "#888",
+                        "margin": "0"
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "vsm-feed",
+              "dataVar": "conversation_log",
+              "height": "auto",
+              "agentColor": "#f0f2f5",
+              "agentTextColor": "#1a1a2e",
+              "userColor": "#4a7cf7",
+              "userTextColor": "#ffffff",
+              "agentLabel": "Alex",
+              "userLabel": "You"
+            },
+            {
+              "type": "vsm-panel",
+              "background": "#ffffff",
+              "layout": "flex-row",
+              "padding": "16px 24px",
+              "gap": "0",
+              "style": {
+                "border-top": "1px solid #e8eaed",
+                "flex-shrink": "0",
+                "align-items": "center"
+              },
+              "children": [
+                {
+                  "type": "vsm-chat-input",
+                  "sendsVar": "user_input",
+                  "placeholder": "Type your answer and press Enter…",
+                  "buttonLabel": "Send",
+                  "style": { "flex": "1" }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

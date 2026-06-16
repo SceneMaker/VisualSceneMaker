@@ -3709,12 +3709,22 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
      * Copies a bundled tutorial to ~/.vsm.d/tutorials/<name>/ on first access.
      * Returns the stable user-directory path so that plugins (e.g. htmlgui-ws)
      * can serve files from the project directory tree at runtime.
-     * If the copy fails the original source path is returned as a fallback.
+     * If the destination already exists, performs an additive merge (new files only,
+     * existing files are preserved to protect user edits). If the copy fails the
+     * original source path is returned as a fallback.
      */
     private Path ensureTutorialUserCopy(Path source) {
         String name = source.getFileName().toString();
         Path dest = Paths.get(System.getProperty("user.home"), ".vsm.d", "tutorials", name);
-        if (Files.exists(dest)) return dest;
+        if (Files.exists(dest)) {
+            // Directory already exists — merge-in any new files without overwriting existing ones.
+            try {
+                mergeTutorialTree(source, dest);
+            } catch (Exception e) {
+                sLogger.warning("Warning: could not merge tutorial '" + name + "': " + e.getMessage());
+            }
+            return dest;
+        }
         try {
             Files.createDirectories(dest);
             copyDirectoryTreeRecursive(source, dest);
@@ -3723,6 +3733,23 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         } catch (Exception e) {
             sLogger.warning("Warning: could not copy tutorial '" + name + "' to user dir: " + e.getMessage());
             return source;
+        }
+    }
+
+    /** Copies files from src into dst, skipping files that already exist in dst. */
+    private void mergeTutorialTree(Path src, Path dst) throws Exception {
+        List<Path> paths;
+        try (Stream<Path> walk = Files.walk(src)) {
+            paths = walk.collect(java.util.stream.Collectors.toList());
+        }
+        for (Path s : paths) {
+            Path d = dst.resolve(src.relativize(s));
+            if (Files.isDirectory(s)) {
+                Files.createDirectories(d);
+            } else if (!Files.exists(d)) {
+                Files.copy(s, d);
+                sLogger.message("[vsm] merged new tutorial file: " + d.getFileName());
+            }
         }
     }
 

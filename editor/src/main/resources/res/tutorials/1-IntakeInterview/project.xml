@@ -5,8 +5,9 @@
       <Feature key="ws_port" val="4041"/>
       <Feature key="html_port" val="8080"/>
       <Feature key="guifiles" val="gui"/>
+      <Feature key="sceneflowStateVar" val="gui_connected"/>
       <Feature key="autostart_browser" val="true"/>
-      <Feature key="browser_start_path" val="/chat.html"/>
+      <Feature key="browser_start_path" val="/"/>
     </Plugin>
     <Plugin type="device" name="Llm" class="de.dfki.vsm.xtension.llm.LlmExecutor" load="true">
       <Feature key="base_url" val="http://172.16.53.2:8234"/>

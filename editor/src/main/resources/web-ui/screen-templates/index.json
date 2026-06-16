@@ -47,6 +47,16 @@
     ]
   },
   {
+    "id": "chat-interview",
+    "label": "Chat Interview",
+    "description": "Full chat UI with avatar header, auto-scrolling conversation feed, and text input. Agent bubbles appear left, user bubbles right. Ideal for intake interviews and dialogue bots.",
+    "requires": ["htmlgui-ws"],
+    "variables": [
+      { "name": "conversation_log", "type": "String", "description": "JSON array of messages appended by appendMessage()" },
+      { "name": "user_input",       "type": "String", "description": "Set to the user's typed text when they press Enter or Send" }
+    ]
+  },
+  {
     "id": "question-buttons",
     "label": "Question Buttons",
     "description": "Three-option choice screen. Each button sends a value to gui_choice. Fully pre-authored — replace labels and sendsValue fields to match your scenario.",
