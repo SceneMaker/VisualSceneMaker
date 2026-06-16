@@ -1,0 +1,78 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+group 'de.dfki.vsm'
+version '1.0.0'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation project(':core')
+}
+
+application {
+    mainClass = 'de.dfki.vsm.benchmark.BenchmarkMain'
+}
+
+jar {
+    manifest {
+        attributes('Main-Class': 'de.dfki.vsm.benchmark.BenchmarkMain')
+    }
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+    duplicatesStrategy = 'exclude'
+}
+
+// ─── Benchmark task ──────────────────────────────────────────────────────────
+// Options (all have defaults):
+//   -PprojectCounts=1,10,50,100  comma-separated project counts to test
+//   -Piterations=100              measurement samples per project per tier
+//   -Ptimeout=200                 loop TEdge timeout in ms (must match sceneflow.xml)
+//   -Pmode=all                    all | memory | latency
+//   -PjvmArgs="-XX:+UseZGC"      extra JVM flags (e.g. for ZGC comparison runs)
+//
+// Examples:
+//   ./gradlew :benchmark:runBenchmark
+//   ./gradlew :benchmark:runBenchmark -Pmode=memory -PprojectCounts=1,10,50,100,200
+//   ./gradlew :benchmark:runBenchmark -Pmode=latency -PprojectCounts=1,10,50 -Piterations=200
+//   ./gradlew :benchmark:runBenchmark -PjvmArgs="-XX:+UseZGC -Xmx8g"
+
+tasks.register('runBenchmark', JavaExec) {
+    group = 'benchmark'
+    description = 'Run VSM runtime benchmark (memory + latency). See build.gradle for options.'
+
+    dependsOn jar
+    classpath = files(jar.archiveFile)
+    mainClass = 'de.dfki.vsm.benchmark.BenchmarkMain'
+
+    def projectCounts = project.findProperty('projectCounts') ?: '1,10,50,100'
+    def iterations    = project.findProperty('iterations') ?: '100'
+    def timeout       = project.findProperty('timeout')    ?: '200'
+    def mode          = project.findProperty('mode')       ?: 'all'
+    def extraJvmArgs  = (project.findProperty('jvmArgs')  ?: '').toString().split(' ').toList()
+
+    args = [
+        "--projects=${projectCounts}",
+        "--iterations=${iterations}",
+        "--timeout=${timeout}",
+        "--mode=${mode}",
+    ]
+
+    jvmArgs = ['-Xmx4g'] + extraJvmArgs.findAll { !it.isBlank() }
+
+    // Write GC log alongside benchmark output for post-run analysis
+    doFirst {
+        def gcLog = new File(project.projectDir, 'gc.log')
+        jvmArgs += ["-Xlog:gc:file=${gcLog.absolutePath}:time,uptime,level,tags:filecount=1"]
+        standardOutput = System.out
+        errorOutput = System.err
+    }
+}
+
+// Convenience alias at root level: ./gradlew runBenchmark
+// (also accessible directly since the task is in this module)

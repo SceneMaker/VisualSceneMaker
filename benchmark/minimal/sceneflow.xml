@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SceneFlow id="" name="MinimalBenchmark" comment="No-plugin interpreter loop for benchmarking"
+           hideLocalVar="false" hideGlobalVar="false"
+           modifDate="Mon, 16 Jun 2026 00:00:00"
+           start="N1;"
+           context="" package=""
+           xmlns="xml.sceneflow.dfki.de"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
+  <Define>
+  </Define>
+  <Declare>
+    <VariableDefinition type="Int" name="tick">
+      <IntLiteral value="0"/>
+    </VariableDefinition>
+  </Declare>
+  <Commands>
+  </Commands>
+  <LocalVariableBadge>
+    <Position xPos="10" yPos="10"/>
+  </LocalVariableBadge>
+  <GlobalVariableBadge>
+    <Position xPos="10" yPos="10"/>
+  </GlobalVariableBadge>
+
+  <!-- N1: immediately epsilon-transitions to the loop node -->
+  <Node id="N1" name="Start" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <EEdge target="N2" start="">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="210" yPos="210" ctrlXPos="368" ctrlYPos="210"/>
+          <ControlPoint xPos="480" yPos="210" ctrlXPos="413" ctrlYPos="210"/>
+        </Connection>
+      </Graphics>
+    </EEdge>
+    <Graphics>
+      <Position xPos="120" yPos="180"/>
+    </Graphics>
+  </Node>
+
+  <!-- N2: increments tick, then loops to itself after the timeout.
+       The benchmark probes NodeStartedEvent on this node to measure timing deviation. -->
+  <Node id="N2" name="Loop" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <Assignment>
+        <SimpleVariable name="tick"/>
+        <Expression>
+          <Add>
+            <SimpleVariable name="tick"/>
+            <IntLiteral value="1"/>
+          </Add>
+        </Expression>
+      </Assignment>
+    </Commands>
+    <TEdge target="N2" start="" timeout="200">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="557" yPos="183" ctrlXPos="557" ctrlYPos="145"/>
+          <ControlPoint xPos="493" yPos="183" ctrlXPos="493" ctrlYPos="145"/>
+        </Connection>
+      </Graphics>
+    </TEdge>
+    <Graphics>
+      <Position xPos="480" yPos="180"/>
+    </Graphics>
+  </Node>
+
+  <ClassPath>
+  </ClassPath>
+  <InitContext></InitContext>
+</SceneFlow>
