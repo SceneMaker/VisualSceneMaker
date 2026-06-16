@@ -20,6 +20,7 @@ Website: [scenemaker.dfki.de](http://scenemaker.dfki.de)
 - Android stub app (`android-stub/`) for end-to-end runtime integration on device/emulator.
 - Portability guard tasks for core + Android-compatible modules.
 - Semantic editor support via optional local embeddings service.
+- Runtime benchmark module (`benchmark/`) for measuring interpreter timing and memory.
 
 ## Requirements
 
@@ -81,6 +82,36 @@ Quick entry points:
 - Core portability checks: `./gradlew verifyPortableCore`
 - Android portability + compile gates: `./gradlew verifyAndroidPortable`
 - Compile all services: `./gradlew compileServices`
+
+## Benchmark
+
+The `benchmark/` module measures pure-interpreter runtime performance (no plugins):
+
+```bash
+# Memory + latency, default tiers: 1 / 10 / 50 / 100 concurrent projects
+./gradlew :benchmark:runBenchmark
+
+# Memory only, extended range
+./gradlew :benchmark:runBenchmark -Pmode=memory -PprojectCounts=1,10,50,100,200
+
+# Latency with ZGC for GC-impact comparison
+./gradlew :benchmark:runBenchmark -Pmode=latency -PjvmArgs="-XX:+UseZGC -Xmx8g"
+```
+
+Options: `-PprojectCounts`, `-Piterations` (default 100), `-Ptimeout` (default 200 ms), `-Pmode` (all/memory/latency), `-PjvmArgs`.
+GC log is written to `benchmark/gc.log` on each run.
+
+First measured results (Apple Silicon, macOS 15, G1GC, 4 GB heap):
+
+| Concurrency | p50 deviation | p99 deviation | Live heap overhead |
+|---|---|---|---|
+| 1 project | 3 ms | 5 ms | ~1 MB |
+| 10 projects | 3 ms | 5 ms | ~1 MB |
+| 50 projects | 3 ms | 6 ms | ~2 MB |
+| 100 projects | 3 ms | 6 ms | ~2 MB |
+
+Latency is flat from 1 to 100 concurrent projects; natural GC pauses stayed below 2.1 ms.
+See `doc/vsm-realtime-capabilities.md` for full analysis and methodology.
 
 ## Embeddings Service (Optional)
 
