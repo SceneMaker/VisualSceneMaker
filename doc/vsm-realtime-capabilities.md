@@ -177,6 +177,27 @@ machine with 8 GB JVM heap. These figures have not yet been validated by benchma
 
 ## 5. Garbage Collection Behaviour
 
+**Background — what GC algorithms are and why they matter here**
+
+Java manages memory automatically: the JVM periodically runs a *garbage collector* (GC)
+to reclaim heap objects that are no longer reachable. During certain phases of collection
+the GC must briefly pause all application threads — a *stop-the-world* (STW) pause. For
+a real-time dialogue system, a long STW pause delays the interpreter thread and causes a
+transition to fire later than scheduled.
+
+Two GC algorithms are relevant to VSM deployments:
+
+| Algorithm | Flag | Default since | Typical STW pause | Trade-off |
+|---|---|---|---|---|
+| **G1GC** (Garbage First) | *(none — default)* | Java 9 | 10–200 ms | Best throughput; pauses grow with heap pressure |
+| **ZGC** (Z Garbage Collector) | `-XX:+UseZGC` | Java 15 (production) | < 1 ms | Sub-ms pauses at any heap size; slightly higher CPU overhead |
+
+G1GC divides the heap into equal-sized regions and preferentially collects the regions
+with the most reclaimable garbage ("Garbage First"). ZGC performs almost all its work
+*concurrently* — while application threads continue running — keeping STW pauses
+below 1 ms regardless of heap size or project count. For time-sensitive VSM deployments
+with many concurrent projects, ZGC is the recommended choice (see §6).
+
 ### 5a. Measured (100 concurrent projects, G1GC, macOS)
 
 All naturally occurring GC events during the benchmark run were Young-generation
@@ -327,18 +348,6 @@ to its own working directory, not the repository root:
 ```
 /Users/yourname/Code/Repo/VisualSceneMaker/benchmark/minimal
 ```
-
-If a relative path such as `benchmark/minimal` is entered instead, the server cannot
-locate `project.xml` and logs:
-
-```
-SEVERE … RunTimeProject.parseProjectConfig … Error: Cannot find project configuration file
-```
-
-This error means `new File(path, "project.xml").exists()` returned false — the path
-did not resolve to a directory containing `project.xml`. It is a path issue, not a
-problem with the project files themselves. Switch to the absolute path to fix it.
-
 ---
 
 *§ Executive Summary and §§ 1, 5, 8 updated with measured data from benchmark run
