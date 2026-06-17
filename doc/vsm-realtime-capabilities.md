@@ -20,7 +20,31 @@ using the `benchmark/minimal` project (no plugins, 2-node self-looping SceneFlow
 | 50 projects | 3 ms | 5 ms | 6 ms | 5 449 |
 | 100 projects | 3 ms | 5 ms | 6 ms | 10 898 |
 
-Deviation is measured as `(actual inter-event interval) − (scheduled timeout)`.
+**How to read the deviation values:**
+The benchmark SceneFlow contains a loop node with a 200 ms timeout edge — meaning the
+interpreter is told to wait exactly 200 ms before re-entering the node. Each time the
+node is entered, the probe records the wall-clock time. The *inter-event interval* is
+simply the elapsed time between two consecutive node entries. The *deviation* is how
+many milliseconds that interval exceeded the scheduled 200 ms.
+
+*Concrete example:*
+
+```
+Node entered at t = 0 ms   → probe records t₀
+Timeout scheduled: 200 ms
+Node entered at t = 203 ms → probe records t₁
+
+Inter-event interval = t₁ − t₀ = 203 ms
+Scheduled timeout    = 200 ms
+Deviation            = 203 − 200 = +3 ms  (fired 3 ms late)
+```
+
+A deviation of 0 would mean the OS woke the interpreter thread at exactly the right
+moment. In practice the OS scheduler always adds a small positive delay.
+**p50 = 3 ms** means half of all transitions fired within 3 ms of their scheduled time;
+**p99 = 6 ms** means 99 % fired within 6 ms. A negative deviation is theoretically
+impossible with a timeout edge and was never observed.
+
 Latency is flat from 1 to 100 concurrent projects — no degradation observed.
 This supersedes the prior estimate of 10–50 ms timing granularity.
 
