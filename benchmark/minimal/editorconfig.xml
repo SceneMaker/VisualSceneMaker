@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+<comment>VSM Editor Config</comment>
+<entry key="visualization">true</entry>
+<entry key="autosave">false</entry>
+<entry key="showsceneelements">false</entry>
+<entry key="command_log_max">5000</entry>
+<entry key="num_magnets">8</entry>
+<entry key="grid_x">1</entry>
+<entry key="scriptfonttype">Monospaced</entry>
+<entry key="node_width">90</entry>
+<entry key="shownodeid">true</entry>
+<entry key="undo_max_depth">500</entry>
+<entry key="node_height">90</entry>
+<entry key="showvariables">true</entry>
+<entry key="scriptfonsize">16</entry>
+<entry key="workspace_fontsize">14</entry>
+<entry key="visualizationtrace">true</entry>
+<entry key="defaultsupernodename">default</entry>
+<entry key="grid">true</entry>
+<entry key="autohidebottombar">true</entry>
+<entry key="grid_y">1</entry>
+</properties>

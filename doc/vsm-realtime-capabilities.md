@@ -97,7 +97,7 @@ timeout expiry.
 
 VSM is well-suited for time-critical multimodal interaction design — cardiac R-peak
 responses, speech VAD crossings, affect-triggered branching — within a 3–10 ms window
-on modern hardware. It is **not** a hard-real-time system in the RTOS sense; timing is
+on modern hardware. It is **not** a hard-real-time system in the Real Time Operation System (RTOS) sense; timing is
 best-effort and subject to OS scheduling jitter and GC pauses.
 
 ---
@@ -315,6 +315,29 @@ The `benchmark/minimal` project uses no plugins and a 2-node self-looping SceneF
 it isolates pure interpreter overhead. A second benchmark project with a representative
 plugin set (Timer, LLM, ASR) would close the gap between the measured and estimated
 figures in §3b and §4b.
+
+### Opening benchmark/minimal in VSM Web
+
+The project can be loaded in the VSM Web editor for visual inspection of the running
+interpreter (active node highlight, variable panel showing `tick` incrementing).
+
+**Use the full absolute path** when opening it — the server resolves the path relative
+to its own working directory, not the repository root:
+
+```
+/Users/yourname/Code/Repo/VisualSceneMaker/benchmark/minimal
+```
+
+If a relative path such as `benchmark/minimal` is entered instead, the server cannot
+locate `project.xml` and logs:
+
+```
+SEVERE … RunTimeProject.parseProjectConfig … Error: Cannot find project configuration file
+```
+
+This error means `new File(path, "project.xml").exists()` returned false — the path
+did not resolve to a directory containing `project.xml`. It is a path issue, not a
+problem with the project files themselves. Switch to the absolute path to fix it.
 
 ---
 
