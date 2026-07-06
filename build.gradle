@@ -201,6 +201,7 @@ dependencies {
     implementation project(":plugins:tricatworld")
     implementation project(":plugins:charamel")
     implementation project(":plugins:charamel-ws")
+    implementation project(":plugins:charamel-embed")
     implementation project(":plugins:sockets")
     implementation project(":plugins:voicetts")
     implementation project(":plugins:DriveSimulator")

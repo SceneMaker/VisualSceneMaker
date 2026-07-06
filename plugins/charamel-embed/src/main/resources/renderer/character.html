@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>VSM Charamel Character</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body { background: #000; overflow: hidden; }
+  #vuppetmaster { width: 100vw; height: 100vh; }
+  #overlay {
+    position: fixed; inset: 0; z-index: 10; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(0,0,0,.85); color: #fff;
+    font-family: system-ui, sans-serif; font-size: 20px;
+  }
+</style>
+</head>
+<body>
+<div id="vuppetmaster"></div>
+<!-- Shows load progress, then becomes the audio-unlock gesture (required before speech). -->
+<div id="overlay">Charakter lädt …</div>
+<script src="/vsm-config.js"></script>
+<script src="/vm-adapter.js"></script>
+</body>
+</html>

@@ -1,0 +1,159 @@
+{
+    "schemaVersion": "1.0",
+    "specVersion": "1.1",
+    "specHash": "6e18532a963b3c74",
+    "plugin": {
+        "id": "charamel-embed",
+        "name": "Charamel Embed (VuppetMaster JS-API)",
+        "className": "de.dfki.vsm.xtension.charamelEmbed.CharamelEmbedExecutor",
+        "androidCompatible": false,
+        "description": "Virtual character driven via the embedded VuppetMaster JavaScript API (vm.speak). Distinct from charamel-ws, which drives a Charamel-hosted page via the timeline-JSON protocol.",
+        "tags": [
+            "SIA",
+            "web",
+            "avatar",
+            "virtual character",
+            "vuppetmaster"
+        ]
+    },
+    "categories": {
+        "primary": "output",
+        "secondary": [
+            
+        ]
+    },
+    "serviceModel": "self-contained",
+    "config": {
+        "required": [
+            {
+                "name": "port",
+                "type": "int",
+                "default": 3040,
+                "description": "HTTP + WebSocket port serving the character page"
+            },
+            {
+                "name": "sceneflowVar",
+                "type": "string",
+                "sceneflowtype": "Bool",
+                "default": "avatar_connected",
+                "description": "SceneFlow variable set true when the character page connects (WebSocket handshake; fires before the 3D model has loaded)"
+            },
+            {
+                "name": "characterReady",
+                "type": "string",
+                "sceneflowtype": "Bool",
+                "default": "avatar_ready",
+                "description": "SceneFlow variable set true when the character model is fully loaded and audio is unlocked (the real 'ready to interact' signal)"
+            },
+            {
+                "name": "characterSpeaking",
+                "type": "string",
+                "sceneflowtype": "Bool",
+                "default": "avatar_speaking",
+                "description": "SceneFlow variable true while the character is speaking"
+            },
+            {
+                "name": "sceneflowTurnUtteranceVar",
+                "type": "string",
+                "sceneflowtype": "String",
+                "default": "turn_utterance",
+                "description": "SceneFlow variable receiving the current utterance text"
+            }
+        ],
+        "optional": [
+            {
+                "name": "certificate",
+                "type": "filepath",
+                "description": "Path to SSL certificate (reserved; plain WS used when absent)"
+            },
+            {
+                "name": "browser",
+                "type": "string",
+                "default": "",
+                "machine_specific": true,
+                "description": "Browser to open: empty = OS default, 'chrome' = Google Chrome, other = path to executable"
+            }
+        ],
+        "pluginSpecific": [
+            {
+                "name": "licenseKey",
+                "type": "string",
+                "default": "",
+                "description": "VuppetMaster license key"
+            },
+            {
+                "name": "appName",
+                "type": "string",
+                "default": "",
+                "description": "VuppetMaster application/character name"
+            },
+            {
+                "name": "engineUrl",
+                "type": "string",
+                "default": "https://engine.vuppetmaster.com/api/engine/vuppetmaster.iife.js",
+                "description": "URL of the VuppetMaster engine bundle"
+            },
+            {
+                "name": "autostart_browser",
+                "type": "boolean",
+                "default": false,
+                "description": "Auto-open the character page in a browser on plugin launch"
+            },
+            {
+                "name": "browser_fullscreen",
+                "type": "boolean",
+                "default": false,
+                "description": "Start browser in full-screen mode (Chrome only)"
+            }
+        ],
+        "agent": {
+            "fixed": [
+                {
+                    "name": "voice",
+                    "type": "string",
+                    "description": "TTS voice name (e.g. de-DE-KatjaNeural)"
+                }
+            ],
+            "dynamic": {
+                "enabled": false
+            }
+        }
+    },
+    "commands": [
+        {
+            "name": "stop",
+            "type": "action",
+            "summary": "Stop the character server",
+            "params": [
+                
+            ]
+        }
+    ],
+    "variables": {
+        "writes": [
+            {
+                "var": "sceneflowVar",
+                "type": "Bool",
+                "description": "Set true when the character page connects (before model load)"
+            },
+            {
+                "var": "characterReady",
+                "type": "Bool",
+                "description": "Set true when the character model is fully loaded and audio unlocked"
+            },
+            {
+                "var": "characterSpeaking",
+                "type": "Bool",
+                "description": "True while the character is speaking"
+            },
+            {
+                "var": "sceneflowTurnUtteranceVar",
+                "type": "String",
+                "description": "Current utterance text"
+            }
+        ],
+        "reads": [
+            
+        ]
+    }
+}
