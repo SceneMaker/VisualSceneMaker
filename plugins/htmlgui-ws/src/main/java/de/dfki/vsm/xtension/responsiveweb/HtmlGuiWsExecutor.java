@@ -447,6 +447,18 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
      * Returns null if no charamel-ws plugin is configured.
      */
     private String buildCharacterConfigFromPlugins() {
+        // Prefer charamel-embed: a self-hosted VuppetMaster JS-API page on its own localhost port.
+        // The page loads directly (no /character-proxy) so the iframe keeps origin localhost:<port>
+        // and its adapter's ws://<host>/ws reaches the charamel-embed server.
+        for (PluginConfig pc : mProject.getProjectConfig().getPluginConfigList()) {
+            if (!pc.getClassName().contains("charamelEmbed")) continue;
+            String port = pc.getProperty("port");
+            if (port == null || port.isBlank()) port = "3040";
+            String fullUrl = "http://localhost:" + port + "/character.html";
+            mLogger.message("character-config: synthesised from charamel-embed — " + fullUrl);
+            return "{\"url\":\"" + fullUrl + "\"}";
+        }
+        // Fall back to charamel-ws: an external Charamel-hosted page reached over its own WS.
         final String CHARAMEL_CLASS_FRAGMENT = "charamelWs";
         final String DEFAULT_CHARACTER_URL   = "https://vuppetmaster.de/dev/ubidenz/";
         for (PluginConfig pc : mProject.getProjectConfig().getPluginConfigList()) {

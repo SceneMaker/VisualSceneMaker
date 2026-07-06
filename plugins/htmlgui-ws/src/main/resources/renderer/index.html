@@ -74,10 +74,19 @@
             var el = document.getElementById('character');
             try {
                 var charUrl = new URL(cfg.url);
-                var params = new URLSearchParams();
-                params.set('_src', charUrl.origin + charUrl.pathname);
-                charUrl.searchParams.forEach(function(v, k) { params.set(k, v); });
-                el.src = '/character-proxy?' + params.toString();
+                var host = charUrl.hostname;
+                if (host === 'localhost' || host === '127.0.0.1' || host === '[::1]') {
+                    // Already a local origin (e.g. charamel-embed's self-hosted page): load directly.
+                    // The proxy is only needed to relocate a PUBLIC character page onto localhost;
+                    // proxying a local page would change the iframe's origin/port and break its
+                    // own WebSocket (which connects via ws://location.host/ws).
+                    el.src = cfg.url;
+                } else {
+                    var params = new URLSearchParams();
+                    params.set('_src', charUrl.origin + charUrl.pathname);
+                    charUrl.searchParams.forEach(function(v, k) { params.set(k, v); });
+                    el.src = '/character-proxy?' + params.toString();
+                }
             } catch (e) {
                 // Fallback: load directly (PNA may still block for public origins)
                 el.src = cfg.url;

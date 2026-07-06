@@ -111,10 +111,16 @@
     document.head.appendChild(s);
   }
 
-  // Overlay = audio-unlock gesture. If no overlay is present (e.g. Android kiosk), audio is
-  // assumed already usable so readiness depends on model load alone.
+  // Overlay = audio-unlock gesture (standalone only). When embedded in htmlgui-ws, the screens
+  // iframe sits on top so the overlay can't be clicked — but the parent grants this iframe
+  // allow="autoplay", so audio plays without a per-iframe gesture. Hide the overlay and treat
+  // audio as ready. If no overlay exists (e.g. Android kiosk), likewise assume audio is usable.
+  var embedded = (window.self !== window.top);
   var overlay = document.getElementById('overlay');
-  if (overlay) {
+  if (embedded) {
+    if (overlay) overlay.style.display = 'none';
+    audioUnlocked = true;
+  } else if (overlay) {
     overlay.addEventListener('click', function () {
       overlay.style.display = 'none';
       audioUnlocked = true;
