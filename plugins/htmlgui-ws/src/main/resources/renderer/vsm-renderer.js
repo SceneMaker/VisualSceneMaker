@@ -524,7 +524,7 @@ class VsmScreenRenderer extends LitElement {
                 style=${charStyle}
                 frameborder="0"></iframe>` : html``}
 
-            ${charEnabled && !this._audioUnlocked ? html`
+            ${charEnabled && char.audioOverlay === true && !this._audioUnlocked ? html`
             <div class="vsm-audio-overlay">
                 <div class="vsm-audio-panel">
                     <h3 id="vsm-audio-title">Enable audio</h3>
