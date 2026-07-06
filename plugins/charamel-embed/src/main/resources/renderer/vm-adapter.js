@@ -17,6 +17,12 @@
  */
 (function () {
   var cfg = window.VSM_CONFIG || {};
+  // URL query params override the server-injected config, so one served page can render different
+  // characters — e.g. character.html?appName=Xenia — selected from a screens.json character.srcVar.
+  var qs = new URLSearchParams(location.search);
+  var licenseKey = qs.get('licenseKey') || cfg.licenseKey;
+  var appName    = qs.get('appName')    || cfg.appName;
+
   var vm = null;
   var ws = null;
 
@@ -71,8 +77,8 @@
     // Second constructor arg carries the load lifecycle callbacks.
     vm = new Vuppetmaster.VuppetMaster({
       windowElement: document.getElementById('vuppetmaster'),
-      licenseKey: cfg.licenseKey,
-      appName: cfg.appName
+      licenseKey: licenseKey,
+      appName: appName
     }, {
       onProgress: function (p) {
         vsmFeedback('vm.progress:' + Math.round(p));

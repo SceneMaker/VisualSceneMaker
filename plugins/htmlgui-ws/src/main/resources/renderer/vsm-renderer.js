@@ -163,6 +163,9 @@ class VsmScreenRenderer extends LitElement {
     // ---------------------------------------------------------------------------
 
     _sendToVsm(varName, value) {
+        // Optimistic local echo so bound components (and character.srcVar) reflect the change
+        // immediately; a plain varUpdate only reaches the SceneFlow, not back to this renderer.
+        this._varValues = { ...this._varValues, [varName]: value };
         parent.postMessage(`varUpdate$${varName}$${value}`, '*');
     }
 
@@ -504,16 +507,19 @@ class VsmScreenRenderer extends LitElement {
         ].filter(Boolean).join(';');
 
         // Optional top-level "character" key: a persistent iframe fixed behind all screens.
+        // The src can be static ("src") or bound to a SceneFlow variable ("srcVar") so a button
+        // can select/enable the character at runtime (empty var → no character shown yet).
         // Set "enabled": false to keep the config but skip loading.
         const char        = this._schema.character;
-        const charEnabled = char && char.enabled !== false && !window.__VSM_PREVIEW_MODE;
+        const charSrc     = char ? (char.srcVar ? (this._varValues[char.srcVar] ?? '') : (char.src ?? '')) : '';
+        const charEnabled = char && char.enabled !== false && !!charSrc && !window.__VSM_PREVIEW_MODE;
         const charStyle   = charEnabled
             ? (this._styleAttr(char.style) || 'position:fixed;left:0;top:0;width:100%;height:100%;z-index:-1;border:none')
             : '';
 
         return html`
             ${charEnabled ? html`<iframe
-                src=${char.src ?? ''}
+                src=${charSrc}
                 allow=${char.allow ?? ''}
                 style=${charStyle}
                 frameborder="0"></iframe>` : html``}
