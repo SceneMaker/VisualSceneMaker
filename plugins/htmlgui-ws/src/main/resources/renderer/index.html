@@ -20,11 +20,13 @@
     <!-- Connect to plugin server (after DOM so audioOverlay element exists) -->
     <script defer type="text/javascript" src="js/wsclient.js"></script>
 
-    <!-- Bootstrap core CSS -->
-    <link rel="stylesheet" href="css/bootstrap.min.css">
-    <link rel="stylesheet" href="css/custom.css">
+    <!-- Suppress the favicon 404; this iframe-hosting shell needs no icon. -->
+    <link rel="icon" href="data:,">
 
+    <!-- Self-contained shell: no external CSS (the schema screens render in their own iframe).
+         Only the built-in audio overlay needs styling, done inline below. -->
     <style>
+        html, body { height: 100%; margin: 0; }
         #audioOverlay {
             position: fixed; inset: 0; z-index: 9999;
             display: flex; align-items: center; justify-content: center;
@@ -39,7 +41,8 @@
         }
         #audioOverlay .panel h3 { margin: 0 0 .5rem 0; font-size: 1.15rem; }
         #audioOverlay .panel p  { margin: 0 0 1rem 0; opacity: 0.85; }
-        #enableAudioBtn { padding: .6rem 1rem; border: 0; border-radius: 10px; cursor: pointer; }
+        #enableAudioBtn { padding: .6rem 1rem; border: 0; border-radius: 10px; cursor: pointer;
+                          background: #2563eb; color: #fff; font-size: 1rem; }
     </style>
 </head>
 <body>
