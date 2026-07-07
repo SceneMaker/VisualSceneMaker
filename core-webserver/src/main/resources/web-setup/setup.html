@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Join VSM session</title>
+  <link rel="icon" href="data:,">
+  <style>
+    :root { color-scheme: light; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
+      background: #f6f3ee; color: #1f2328;
+      font-family: "Space Grotesk", "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+      padding: 24px;
+    }
+    .card {
+      background: #fff; max-width: 640px; width: 100%;
+      border: 1px solid #e3ddd4; border-radius: 16px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+      padding: 28px 30px;
+    }
+    h1 { font-size: 1.3rem; margin: 0 0 4px; display: flex; align-items: center; gap: 10px; }
+    .sub { color: #6b7280; margin: 0 0 20px; font-size: 0.95rem; }
+    .status { display: flex; align-items: center; gap: 12px; font-size: 1rem; margin: 8px 0 4px; }
+    .spinner {
+      width: 20px; height: 20px; border: 3px solid #d6e2f6; border-top-color: #5b8edc;
+      border-radius: 50%; animation: spin 0.8s linear infinite; flex: 0 0 auto;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .hidden { display: none !important; }
+    .steps { margin: 18px 0 0; padding-left: 20px; line-height: 1.6; }
+    .steps li { margin-bottom: 8px; }
+    .osblock { display: none; }
+    .osblock.active { display: block; }
+    .ostabs { display: flex; gap: 6px; margin: 14px 0 6px; flex-wrap: wrap; }
+    .ostab {
+      padding: 5px 12px; border: 1px solid #e3ddd4; border-radius: 999px; background: #f5f7fb;
+      cursor: pointer; font-size: 0.85rem; color: #1f2328;
+    }
+    .ostab.active { background: #d6e2f6; border-color: #5b8edc; }
+    .actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 22px; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px;
+      border-radius: 10px; border: 1px solid transparent; cursor: pointer;
+      font-size: 0.95rem; text-decoration: none; font-family: inherit;
+    }
+    .btn-primary { background: #5b8edc; color: #fff; }
+    .btn-primary:hover { background: #4a7cc7; }
+    .btn-ghost { background: #fff; color: #1f2328; border-color: #e3ddd4; }
+    .btn-ghost:hover { background: #f5f7fb; }
+    .note { font-size: 0.85rem; color: #6b7280; margin-top: 14px; line-height: 1.5; }
+    .err { color: #b4432b; font-size: 0.9rem; margin-top: 10px; }
+    code { background: #f0eee9; padding: 1px 6px; border-radius: 6px; font-size: 0.9em; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1><span aria-hidden="true">🔒</span> Join the VSM session</h1>
+    <p class="sub" id="serverName">Preparing your connection…</p>
+
+    <!-- checking -->
+    <div id="checking" class="status">
+      <div class="spinner"></div>
+      <span>Checking whether this computer already trusts the session certificate…</span>
+    </div>
+
+    <!-- ok -->
+    <div id="ok" class="status hidden">
+      <span aria-hidden="true" style="font-size:1.3rem">✅</span>
+      <span>All set — opening the editor…</span>
+    </div>
+
+    <!-- setup needed -->
+    <div id="setup" class="hidden">
+      <div class="status">
+        <span aria-hidden="true" style="font-size:1.3rem">📄</span>
+        <span><strong>One-time setup.</strong> To see the character, this computer needs to trust the
+          session's security certificate. It takes about a minute.</span>
+      </div>
+
+      <div class="actions">
+        <a class="btn btn-primary" id="dlBtn" href="/api/v1/ca" download>1 · Download certificate</a>
+      </div>
+
+      <div class="ostabs" id="ostabs">
+        <span class="ostab" data-os="mac">macOS</span>
+        <span class="ostab" data-os="win">Windows</span>
+        <span class="ostab" data-os="linux">Linux</span>
+      </div>
+
+      <div class="osblock" data-os="mac">
+        <ol class="steps">
+          <li>Double-click the downloaded <code>vsm-ca.crt</code>. This opens <strong>Keychain Access</strong> and
+            <em>imports</em> the certificate — but it is <strong>not trusted yet</strong> (this step alone is not enough).</li>
+          <li>In Keychain Access, type <code>mkcert</code> in the search box (top-right) and
+            <strong>double-click the “mkcert …” entry</strong> to open its info window.</li>
+          <li>Click the triangle next to <strong>▸ Trust</strong> to expand it, then set
+            <strong>“When using this certificate:” → “Always Trust.”</strong></li>
+          <li><strong>Close the info window</strong> (red dot or ⌘W). macOS will <strong>ask for your login
+            password — enter it.</strong> ⚠️ If you don't get a password prompt, the trust was <em>not</em> saved; reopen
+            the entry and set it again.</li>
+          <li>To confirm it stuck: reopen the entry — it should say <em>“This certificate is marked as trusted.”</em></li>
+          <li><strong>Fully quit and reopen your browser</strong> (⌘Q — not just the tab), then continue below.</li>
+        </ol>
+      </div>
+      <div class="osblock" data-os="win">
+        <ol class="steps">
+          <li>Double-click the downloaded <code>vsm-ca.crt</code> → <strong>Install Certificate</strong>.</li>
+          <li>Choose <strong>Current User</strong> → <strong>Place all certificates in the following store</strong>
+            → <em>Trusted Root Certification Authorities</em> → Finish → confirm.</li>
+          <li><strong>Fully close and reopen your browser.</strong></li>
+        </ol>
+      </div>
+      <div class="osblock" data-os="linux">
+        <ol class="steps">
+          <li>Import <code>vsm-ca.crt</code> into your system trust store (e.g. copy to
+            <code>/usr/local/share/ca-certificates/</code> and run <code>sudo update-ca-certificates</code>).</li>
+          <li>Firefox uses its own store: Settings → Privacy &amp; Security → Certificates → View Certificates →
+            <strong>Authorities</strong> → Import (trust for websites).</li>
+          <li><strong>Fully close and reopen your browser.</strong></li>
+        </ol>
+      </div>
+
+      <p class="note">Why? The character runs in your browser and needs a secure (HTTPS) connection to load.
+        A one-time trusted certificate makes that work with no warnings — for this session and future ones.</p>
+
+      <div class="actions">
+        <button class="btn btn-primary" id="continueBtn">2 · I've installed it — Continue</button>
+        <a class="btn btn-ghost" id="skipBtn" href="#">Skip (character won't work)</a>
+      </div>
+      <div class="err hidden" id="stillFailing">
+        <strong>Still not trusted.</strong> The most common reasons:
+        <ul style="margin:6px 0 0; padding-left:20px; line-height:1.55;">
+          <li>The trust setting wasn't saved — on macOS you must <strong>close the certificate window and
+            enter your password</strong>. Reopen the “mkcert …” entry to check it says <em>“marked as trusted.”</em></li>
+          <li>You only imported the file (double-click) but didn't set <strong>Always Trust</strong>.</li>
+          <li>The browser wasn't <strong>fully quit and reopened</strong> (a tab reload isn't enough).</li>
+        </ul>
+        Fix and press <strong>Continue</strong> again.
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const params = new URLSearchParams(location.search);
+    const session = params.get("session") || "";
+    const editorUrl = "/web-ui/" + (session ? ("?session=" + encodeURIComponent(session)) : "");
+
+    const el = (id) => document.getElementById(id);
+    function show(id) { ["checking", "ok", "setup"].forEach(s => el(s).classList.toggle("hidden", s !== id)); }
+
+    function detectOs() {
+      const p = (navigator.userAgent || "") + " " + (navigator.platform || "");
+      if (/Mac/i.test(p)) return "mac";
+      if (/Win/i.test(p)) return "win";
+      if (/Linux|X11|CrOS/i.test(p)) return "linux";
+      return "mac";
+    }
+    function selectOs(os) {
+      document.querySelectorAll(".ostab").forEach(t => t.classList.toggle("active", t.dataset.os === os));
+      document.querySelectorAll(".osblock").forEach(b => b.classList.toggle("active", b.dataset.os === os));
+    }
+
+    async function getInfo() {
+      try { const r = await fetch("/api/v1/info", { cache: "no-store" }); return await r.json(); }
+      catch (e) { return null; }
+    }
+    async function probe(securePort) {
+      try {
+        const r = await fetch(`https://${location.hostname}:${securePort}/api/v1/info`, { cache: "no-store" });
+        return r.ok;
+      } catch (e) { return false; }
+    }
+
+    let securePort = null;
+
+    async function run() {
+      const info = await getInfo();
+      if (info && info.name) el("serverName").textContent = "Server: " + info.name;
+      // If the server is not in secure mode, no certificate is needed — go straight in.
+      if (!info || !info.secure || !info.securePort) { location.replace(editorUrl); return; }
+      securePort = info.securePort;
+      show("checking");
+      if (await probe(securePort)) {
+        show("ok");
+        setTimeout(() => location.replace(editorUrl), 700);
+      } else {
+        selectOs(detectOs());
+        show("setup");
+      }
+    }
+
+    document.querySelectorAll(".ostab").forEach(t => t.addEventListener("click", () => selectOs(t.dataset.os)));
+    el("continueBtn").addEventListener("click", async () => {
+      el("stillFailing").classList.add("hidden");
+      el("continueBtn").textContent = "Checking…";
+      const ok = await probe(securePort);
+      el("continueBtn").textContent = "2 · I've installed it — Continue";
+      if (ok) { show("ok"); setTimeout(() => location.replace(editorUrl), 700); }
+      else { el("stillFailing").classList.remove("hidden"); }
+    });
+    el("skipBtn").addEventListener("click", (e) => { e.preventDefault(); location.replace(editorUrl); });
+
+    run();
+  </script>
+</body>
+</html>

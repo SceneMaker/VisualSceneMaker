@@ -1,6 +1,6 @@
 {
     "schemaVersion": "1.0",
-    "specVersion": "1.4",
+    "specVersion": "1.5",
     "specHash": "fa07637b9cb91da3",
     "plugin": {
         "id": "htmlgui-ws",
@@ -90,7 +90,13 @@
                 "name": "autostart_browser",
                 "type": "boolean",
                 "default": false,
-                "description": "Auto-start browser on plugin launch"
+                "description": "Auto-open the GUI when the runtime starts. The GUI opens in the browser that pressed Play (follow-the-player), so a remote co-editor sees it on their own machine. Set browser_on_host=true to also open it on the runtime host."
+            },
+            {
+                "name": "browser_on_host",
+                "type": "boolean",
+                "default": false,
+                "description": "When autostart_browser is on, also launch a browser on the runtime host (kiosk / headless-with-local-display). Off by default so the GUI follows the player instead of appearing on the host."
             },
             {
                 "name": "browser_start_path",

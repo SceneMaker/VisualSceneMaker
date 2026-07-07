@@ -114,10 +114,17 @@ import de.dfki.vsm.util.llm.JdkHttpTransport;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 import de.dfki.vsm.util.xml.XMLUtilities;
 import io.javalin.Javalin;
+import io.javalin.config.JavalinConfig;
 import io.javalin.http.Header;
 import io.javalin.http.staticfiles.Location;
 import io.javalin.http.Context;
 import io.javalin.websocket.WsContext;
+import de.dfki.vsm.runtime.tls.TlsRuntimeContext;
+import org.eclipse.jetty.server.Connector;
+import org.eclipse.jetty.server.HttpConnectionFactory;
+import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.server.SslConnectionFactory;
+import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.reflections.Reflections;
@@ -1744,6 +1751,27 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         registerWsCommands((method, params, broadcaster) -> runtimeCommandService.dispatchRuntimeCommand(method, params, broadcaster, runtimeCommandContext),
                 "Runtime.Load", "Runtime.Play", "Runtime.Start", "Runtime.Resume", "Runtime.Pause", "Runtime.Stop",
                 "Runtime.Unload", "Runtime.Variable.Set", "Runtime.Query");
+        registerWsCommands(this::handleRuntimeLanguageSetWsCommand, "Runtime.Language.Set");
+    }
+
+    private JSONObject handleRuntimeLanguageSetWsCommand(String method, JSONObject params, java.util.function.Consumer<String> broadcaster) {
+        String pid  = params.optString("projectId", "");
+        String lang = params.optString("language", "").trim();
+        ProjectRef ref = projectStore.get(pid);
+        if (ref == null || ref.runtimeProject == null) {
+            return errorResponse("NOT_FOUND", "Project not found");
+        }
+        if (!lang.isEmpty()) {
+            java.util.Set<String> available = ref.runtimeProject.getSceneScript().getLangSet();
+            if (!available.contains(lang)) {
+                return errorResponse("BAD_REQUEST", "Language '" + lang + "' not found in scenescript. Available: " + available);
+            }
+        }
+        ref.runtimeProject.setPreferredLanguage(lang.isEmpty() ? null : lang);
+        JSONObject result = new JSONObject();
+        result.put("status", "ok");
+        result.put("preferredLanguage", lang.isEmpty() ? JSONObject.NULL : lang);
+        return result;
     }
 
     public static synchronized WebUiServer getInstance() {
@@ -1777,6 +1805,8 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
     }
 
     private int mPort = 8090;
+    /** HTTPS trust-probe port used in --secure mode (editor itself stays on mPort/HTTP). */
+    private int mSecurePort = 8443;
 
     public void start() {
         start(8090, mAllowExternal);
@@ -1792,27 +1822,34 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         loadExportablePropertyProviders();
         final boolean hasWebUi = getClass().getClassLoader().getResource("web-ui/index.html") != null;
         final boolean hasImages = getClass().getClassLoader().getResource("images/") != null;
-        mApp = Javalin.create(config -> {
-            // Try to add static files if available (editor mode)
-            // These may not be present in runtime-only mode
-            if (hasWebUi) {
-                config.staticFiles.add(staticFiles -> {
-                    staticFiles.hostedPath = "/web-ui";
-                    staticFiles.directory = "web-ui";
-                    staticFiles.location = Location.CLASSPATH;
+        final String bindHost = allowExternal ? "0.0.0.0" : "127.0.0.1";
+        final boolean useTls = TlsRuntimeContext.isEnabled();
+        if (useTls) {
+            // Secure mode: the editor stays on plain HTTP (this port) so a remote client
+            // that has not yet installed the CA can always load the share link — and
+            // download the CA from /api/v1/ca — without hitting a TLS warning. We ALSO
+            // bind a second HTTPS connector (mSecurePort) using the shared mkcert cert;
+            // the web UI silently probes it to auto-detect whether the client trusts the
+            // CA, and only the GUI + character plugins actually require the secure origin.
+            mApp = Javalin.create(config -> {
+                applyWebConfig(config, hasWebUi, hasImages);
+                config.jetty.modifyServer(server -> {
+                    ServerConnector http = new ServerConnector(server);
+                    http.setHost(bindHost);
+                    http.setPort(port);
+                    ServerConnector https = new ServerConnector(server,
+                            new SslConnectionFactory(buildSslContextFactory(), "http/1.1"),
+                            new HttpConnectionFactory());
+                    https.setHost(bindHost);
+                    https.setPort(mSecurePort);
+                    server.setConnectors(new Connector[]{http, https});
                 });
-                config.spaRoot.addFile("/web-ui", "/web-ui/index.html", Location.CLASSPATH);
-            }
-            if (hasImages) {
-                config.staticFiles.add(staticFiles -> {
-                    staticFiles.hostedPath = "/images";
-                    staticFiles.directory = "images";
-                    staticFiles.location = Location.CLASSPATH;
-                });
-            }
-            // Enable CORS for cross-origin requests (Phase 8.4: remote connections)
-            config.bundledPlugins.enableCors(cors -> cors.addRule(it -> it.anyHost()));
-        }).start(allowExternal ? "0.0.0.0" : "127.0.0.1", port);
+            }).start();
+            sLogger.message("--secure: HTTPS trust-probe available on port " + mSecurePort);
+        } else {
+            mApp = Javalin.create(config -> applyWebConfig(config, hasWebUi, hasImages))
+                    .start(bindHost, port);
+        }
         if (hasWebUi) {
             mApp.get("/", ctx -> ctx.redirect("/web-ui/"));
         }
@@ -2632,7 +2669,41 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
     // -------------------------------------------------------------------------
 
     public String getLocalUrl() {
+        // The editor is always reached over HTTP, even in --secure mode (only the GUI
+        // and character plugins use HTTPS). Keeps the entry point warning-free.
         return "http://127.0.0.1:" + mPort;
+    }
+
+    /** Applies static-file hosting and CORS — shared by the HTTP and HTTPS start paths. */
+    private void applyWebConfig(JavalinConfig config, boolean hasWebUi, boolean hasImages) {
+        // Try to add static files if available (editor mode).
+        // These may not be present in runtime-only mode.
+        if (hasWebUi) {
+            config.staticFiles.add(staticFiles -> {
+                staticFiles.hostedPath = "/web-ui";
+                staticFiles.directory = "web-ui";
+                staticFiles.location = Location.CLASSPATH;
+            });
+            config.spaRoot.addFile("/web-ui", "/web-ui/index.html", Location.CLASSPATH);
+        }
+        if (hasImages) {
+            config.staticFiles.add(staticFiles -> {
+                staticFiles.hostedPath = "/images";
+                staticFiles.directory = "images";
+                staticFiles.location = Location.CLASSPATH;
+            });
+        }
+        // Enable CORS for cross-origin requests (Phase 8.4: remote connections).
+        config.bundledPlugins.enableCors(cors -> cors.addRule(it -> it.anyHost()));
+    }
+
+    /** Builds a Jetty SSL context from the shared mkcert keystore ({@code --secure} mode). */
+    private static SslContextFactory.Server buildSslContextFactory() {
+        SslContextFactory.Server factory = new SslContextFactory.Server();
+        factory.setKeyStorePath(TlsRuntimeContext.getKeyStorePath());
+        factory.setKeyStorePassword(TlsRuntimeContext.getKeyStorePassword());
+        factory.setKeyStoreType("PKCS12");
+        return factory;
     }
 
     private void registerRoutes() {
@@ -2640,6 +2711,8 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         mApp.get(API_PREFIX + "/info", this::handleInfo);
         mApp.get(API_PREFIX + "/transport", this::handleTransport);
         mApp.get(API_PREFIX + "/token", this::handleToken);
+        mApp.get(API_PREFIX + "/ca", this::handleCaCertificate);
+        mApp.get("/setup", this::handleSetupPage);
         mApp.get(API_PREFIX + "/projects", this::handleProjects);
         mApp.get(API_PREFIX + "/projects/recent", this::handleRecentProjects);
         mApp.get(API_PREFIX + "/projects/samples", ctx -> handleStaticProjectList(ctx, "res/prj"));
@@ -2999,6 +3072,16 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         info.put("build", build);
         info.put("mode", mMode.name().toLowerCase());
         info.put("allowExternal", mAllowExternal);
+        // Secure mode (mkcert HTTPS/WSS). When true the CA can be downloaded from
+        // /api/v1/ca for collaborators to install once and trust every VSM origin.
+        // securePort is the HTTPS trust-probe port the web UI fetches to auto-detect
+        // whether this client already trusts the CA.
+        info.put("secure", TlsRuntimeContext.isEnabled());
+        info.put("caAvailable", TlsRuntimeContext.isEnabled()
+                && TlsRuntimeContext.getRootCaPath() != null);
+        if (TlsRuntimeContext.isEnabled()) {
+            info.put("securePort", mSecurePort);
+        }
         // Expose the server's real hostname and LAN IP so clients can build
         // share links that work from other machines (not just localhost).
         try {
@@ -3055,6 +3138,52 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         JSONObject token = new JSONObject();
         token.put("token", mAuthToken != null ? mAuthToken : "dev-token");
         writeJson(ctx, token);
+    }
+
+    /**
+     * Serves the standalone certificate-onboarding page (plain HTTP). The share link
+     * points here in --secure mode: it auto-detects whether this client trusts the host
+     * CA (by probing the HTTPS port) and either forwards straight into the editor or
+     * walks a first-time user through installing the CA. Kept framework-free so it loads
+     * instantly and cannot be bypassed the way the in-app banner can.
+     */
+    private void handleSetupPage(Context ctx) {
+        try (java.io.InputStream in = getClass().getClassLoader().getResourceAsStream("web-setup/setup.html")) {
+            if (in == null) {
+                ctx.status(404).result("Setup page not found");
+                return;
+            }
+            ctx.contentType("text/html; charset=utf-8");
+            ctx.result(new String(in.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8));
+        } catch (java.io.IOException e) {
+            ctx.status(500).result("Failed to load setup page: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Serves the mkcert root CA (rootCA.pem) as a download so collaborators can install
+     * it once and have their browser trust every VSM HTTPS origin (editor, GUI, character).
+     * Only available in {@code --secure} mode.
+     */
+    private void handleCaCertificate(Context ctx) {
+        if (!TlsRuntimeContext.isEnabled() || TlsRuntimeContext.getRootCaPath() == null) {
+            ctx.status(404).result("Secure mode is not enabled on this server.");
+            return;
+        }
+        java.io.File pem = new java.io.File(TlsRuntimeContext.getRootCaPath());
+        if (!pem.isFile()) {
+            ctx.status(404).result("CA certificate not found.");
+            return;
+        }
+        try {
+            byte[] bytes = java.nio.file.Files.readAllBytes(pem.toPath());
+            // .crt so a double-click opens the native trust UI on Windows/macOS.
+            ctx.contentType("application/x-x509-ca-cert");
+            ctx.header(Header.CONTENT_DISPOSITION, "attachment; filename=\"vsm-ca.crt\"");
+            ctx.result(bytes);
+        } catch (java.io.IOException e) {
+            ctx.status(500).result("Failed to read CA certificate: " + e.getMessage());
+        }
     }
 
     private void handleRecentProjects(Context ctx) {
@@ -6597,6 +6726,10 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         ProjectRef ref = projectStore.get(pid);
         JSONObject response = new JSONObject();
         response.put("state", ref != null ? ref.runtimeState : "stopped");
+        if (ref != null && ref.runtimeProject != null) {
+            String pl = ref.runtimeProject.getPreferredLanguage();
+            response.put("preferredLanguage", pl != null ? pl : JSONObject.NULL);
+        }
 
         // Match editor's runtimeToJson format: globalVariables and localVariables
         if (ref != null && ref.runtimeProject != null) {

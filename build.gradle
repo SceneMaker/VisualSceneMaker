@@ -971,3 +971,48 @@ task run(type: JavaExec) {
         )
     }
 }
+
+// Run task with LAN access enabled (binds to 0.0.0.0 for remote/co-editing clients).
+// Equivalent to: ./gradlew run --args="--allow-lan"
+task 'run-lan'(type: JavaExec) {
+    group = 'application'
+    description = 'Runs the VisualSceneMaker web editor with LAN access enabled (--allow-lan)'
+    mainClass = 'de.dfki.vsm.SceneMaker4'
+    systemProperty 'vsm.buildDate', new Date().format("yyyy-MM-dd HH:mm:ss")
+    systemProperty 'vsm.buildRevision', versioning.info.commit
+    systemProperty 'vsm.version', resolvedVersionTag
+    systemProperty 'vsm.build', versioning.info.build
+    classpath = sourceSets.main.runtimeClasspath
+    args '--allow-lan'
+    if (org.gradle.internal.os.OperatingSystem.current().isMacOsX()) {
+        jvmArgs(
+                '-Xdock:name=VSM Web',
+                "-Xdock:icon=${projectDir}/src/main/resources/app-icons/vsm-docicon.png",
+                '-Dapple.awt.application.name=VSM Web',
+                '-Dcom.apple.mrj.application.apple.menu.about.name=VSM Web'
+        )
+    }
+}
+
+// Run with LAN access AND HTTPS/WSS via a locally-trusted mkcert certificate.
+// Requires mkcert installed once on the host (e.g. `brew install mkcert nss`).
+// Equivalent to: ./gradlew run --args="--allow-lan --secure"
+task 'run-lan-secure'(type: JavaExec) {
+    group = 'application'
+    description = 'Runs the web editor with LAN access + HTTPS (mkcert) so remote clients get a secure context (--allow-lan --secure)'
+    mainClass = 'de.dfki.vsm.SceneMaker4'
+    systemProperty 'vsm.buildDate', new Date().format("yyyy-MM-dd HH:mm:ss")
+    systemProperty 'vsm.buildRevision', versioning.info.commit
+    systemProperty 'vsm.version', resolvedVersionTag
+    systemProperty 'vsm.build', versioning.info.build
+    classpath = sourceSets.main.runtimeClasspath
+    args '--allow-lan', '--secure'
+    if (org.gradle.internal.os.OperatingSystem.current().isMacOsX()) {
+        jvmArgs(
+                '-Xdock:name=VSM Web',
+                "-Xdock:icon=${projectDir}/src/main/resources/app-icons/vsm-docicon.png",
+                '-Dapple.awt.application.name=VSM Web',
+                '-Dcom.apple.mrj.application.apple.menu.about.name=VSM Web'
+        )
+    }
+}

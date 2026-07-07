@@ -199,6 +199,36 @@ class VsmScreenRenderer extends LitElement {
         return src;
     }
 
+    // Co-editing: when this GUI page is opened from a remote machine, a character
+    // (or iframe) src pointing at localhost/127.0.0.1 refers to the *viewer's* own
+    // machine, not the runtime host. Rewrite the hostname to the host that served
+    // this page so the resource loads from the runtime host over the LAN; the port
+    // and path are preserved. A self-hosted character page (e.g. charamel-embed)
+    // then connects its own WebSocket via ws://location.host/ws back to that host.
+    // No-op when the page is already on localhost (single-machine use).
+    _resolveHost(src) {
+        if (!src || typeof src !== 'string') return src;
+        const loc = (typeof window !== 'undefined') ? window.location : null;
+        if (!loc || !loc.hostname) return src;
+        try {
+            const u = new URL(src, loc.href);
+            const isLocal = u.hostname === 'localhost' || u.hostname === '127.0.0.1'
+                || u.hostname === '::1' || u.hostname === '[::1]';
+            if (!isLocal) return src;   // only touch URLs pointing at "this machine"
+            // Point the resource at the host that served this page (unless we are that host).
+            if (loc.hostname !== 'localhost' && loc.hostname !== '127.0.0.1') {
+                u.hostname = loc.hostname;
+            }
+            // Match the page scheme so a secure (https) GUI embeds a secure iframe — an
+            // http iframe inside an https page is blocked as mixed content (--secure mode).
+            if (loc.protocol === 'https:' && u.protocol === 'http:') {
+                u.protocol = 'https:';
+            }
+            return u.toString();
+        } catch (e) { /* relative or non-URL src — leave unchanged */ }
+        return src;
+    }
+
     _styleAttr(styleObj) {
         if (!styleObj) return '';
         return Object.entries(styleObj)
@@ -350,7 +380,7 @@ class VsmScreenRenderer extends LitElement {
                     style,
                 ].filter(Boolean).join(';');
                 return html`<iframe
-                    src=${el.src ?? ''}
+                    src=${this._resolveHost(el.src ?? '')}
                     title=${el.title ?? ''}
                     style=${embedStyle}
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -534,7 +564,7 @@ class VsmScreenRenderer extends LitElement {
 
         return html`
             ${charEnabled ? html`<iframe
-                src=${charSrc}
+                src=${this._resolveHost(charSrc)}
                 allow=${char.allow ?? ''}
                 style=${charStyle}
                 frameborder="0"></iframe>` : html``}

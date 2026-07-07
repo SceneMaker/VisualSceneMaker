@@ -94,6 +94,12 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
         if (!guiFilesExist)   mLogger.message("No gui/ directory found — legacy HTML files will not be served.");
         if (!audioFilesExist) mLogger.message("No audio/ directory found — audio files will not be served.");
 
+        // Secure mode (host started with --secure): serve the GUI page and its WebSocket
+        // over TLS using the shared mkcert host certificate, so a remote browser loads
+        // both from an https/wss origin (a secure context — required for the character).
+        final boolean secureMode = (mPathToCertificate == null || mPathToCertificate.isBlank())
+                && de.dfki.vsm.runtime.tls.TlsRuntimeContext.isEnabled();
+
         if (mPathToCertificate != null && !mPathToCertificate.isBlank()) {
             app = Javalin.create(config -> {
                 if (guiFilesExist)   config.staticFiles.add(guiFiles,   Location.EXTERNAL);
@@ -109,6 +115,19 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
                     ServerConnector htmlConnector = new ServerConnector(server);
                     htmlConnector.setPort(html_port);
                     server.setConnectors(new Connector[]{sslConnector, connector, htmlConnector});
+                });
+            }).start();
+        } else if (secureMode) {
+            mLogger.message("--secure: serving GUI (https :" + html_port + ") and WebSocket (wss :" + ws_port + ")");
+            app = Javalin.create(config -> {
+                if (guiFilesExist)   config.staticFiles.add(guiFiles,   Location.EXTERNAL);
+                if (audioFilesExist) config.staticFiles.add(audioFiles, Location.EXTERNAL);
+                config.jetty.modifyWebSocketServletFactory(factory -> factory.setIdleTimeout(java.time.Duration.ofMinutes(10)));
+                config.jetty.modifyServer(server -> {
+                    server.setConnectors(new Connector[]{
+                            sharedTlsConnector(server, html_port),
+                            sharedTlsConnector(server, ws_port)
+                    });
                 });
             }).start();
         } else {
@@ -294,9 +313,16 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
             else ctx.status(404);
         });
 
-        // Auto-start browser if configured
+        // Auto-start browser if configured.
+        // With co-editing, the runtime executes on this host but the person who
+        // presses "Play" may be on a *remote* machine. The Web UI now opens the
+        // GUI in the browser that started the runtime (follow-the-player), so we
+        // no longer open a browser on the host unless "browser_on_host" is set
+        // (kiosk / headless-with-local-display setups). autostart_browser stays
+        // as the switch that turns the feature on at all.
         boolean autostartBrowser = "true".equalsIgnoreCase(mConfig.getProperty("autostart_browser"));
-        if (autostartBrowser) {
+        boolean browserOnHost    = "true".equalsIgnoreCase(mConfig.getProperty("browser_on_host"));
+        if (autostartBrowser && browserOnHost) {
             boolean fullscreen        = "true".equalsIgnoreCase(mConfig.getProperty("browser_fullscreen"));
             boolean disablePna        = "true".equalsIgnoreCase(mConfig.getProperty("browser_disable_pna"));
             boolean disableWebSec     = "true".equalsIgnoreCase(mConfig.getProperty("browser_disable_web_security"));
@@ -646,6 +672,19 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
         sslContextFactory.setKeyStorePath(this.getClass().getResource(mPathToCertificate).toExternalForm()); //default "/my-release-key.keystore"
         sslContextFactory.setKeyStorePassword("123456");
         return sslContextFactory;
+    }
+
+    /** TLS connector on the given port using the shared mkcert host keystore (--secure mode). */
+    private static ServerConnector sharedTlsConnector(org.eclipse.jetty.server.Server server, int port) {
+        SslContextFactory.Server factory = new SslContextFactory.Server();
+        factory.setKeyStorePath(de.dfki.vsm.runtime.tls.TlsRuntimeContext.getKeyStorePath());
+        factory.setKeyStorePassword(de.dfki.vsm.runtime.tls.TlsRuntimeContext.getKeyStorePassword());
+        factory.setKeyStoreType("PKCS12");
+        ServerConnector connector = new ServerConnector(server,
+                new SslConnectionFactory(factory, "http/1.1"),
+                new HttpConnectionFactory());
+        connector.setPort(port);
+        return connector;
     }
 
     @Override

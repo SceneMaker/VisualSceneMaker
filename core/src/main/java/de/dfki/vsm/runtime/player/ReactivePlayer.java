@@ -172,14 +172,20 @@ public final class ReactivePlayer extends RunTimePlayer {
         // Get the scene object
         final SceneScript script = mProject.getSceneScript();
         String slang = null;
-        // find the language used by SceneGroup
-        for (String str : script.getLangSet()) {
-            if (script.getSceneGroup(str, name) != null) {
-                slang = str;
-                break;
+        // Prefer the project-level language setting when set and the scene exists in it
+        final String preferred = mProject.getPreferredLanguage();
+        if (preferred != null && script.getSceneGroup(preferred, name) != null) {
+            slang = preferred;
+        } else {
+            // Fall back to first language that has the scene
+            for (String str : script.getLangSet()) {
+                if (script.getSceneGroup(str, name) != null) {
+                    slang = str;
+                    break;
+                }
             }
         }
-        if(slang == null){
+        if (slang == null) {
             throw new SceneDoesNotExists(name);
         }
         final SceneGroup group = script.getSceneGroup(slang, name);

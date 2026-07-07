@@ -1,6 +1,7 @@
 package de.dfki.vsm;
 
 import de.dfki.vsm.util.log.LOGDefaultLogger;
+import de.dfki.vsm.runtime.tls.MkcertProvisioner;
 // Phase 8: Use core WebUiServer (Swing-free)
 import de.dfki.vsm.web.WebUiServer;
 
@@ -29,6 +30,7 @@ public final class SceneMaker4 {
         boolean allowLan = false;
         boolean openBrowser = true;
         boolean serverMode = false;   // --server: stay alive when browser closes
+        boolean secure = false;       // --secure: serve HTTPS/WSS via mkcert host cert
         List<String> remaining = new ArrayList<>();
         for (String arg : args) {
             if ("--allow-lan".equalsIgnoreCase(arg) || "--allow-external".equalsIgnoreCase(arg)) {
@@ -37,11 +39,24 @@ public final class SceneMaker4 {
                 openBrowser = false;
             } else if ("--server".equalsIgnoreCase(arg)) {
                 serverMode = true;
+            } else if ("--secure".equalsIgnoreCase(arg)) {
+                secure = true;
             } else {
                 remaining.add(arg);
             }
         }
         String[] effectiveArgs = remaining.toArray(new String[0]);
+        // Provision the mkcert host certificate before any server starts, so the web
+        // server and the runtime plugins (htmlgui-ws, charamel-embed) all serve HTTPS
+        // with the same trusted certificate. A failure here falls back to HTTP.
+        if (secure) {
+            if (MkcertProvisioner.provision()) {
+                sLogger.message("Secure mode ACTIVE: GUI + character served over HTTPS.");
+            } else {
+                sLogger.warning("Secure mode NOT active — running plain HTTP. "
+                        + "The character will not load on remote machines. See messages above.");
+            }
+        }
         try {
             WebUiServer server = WebUiServer.getInstance();
             server.setAllowExternal(allowLan);

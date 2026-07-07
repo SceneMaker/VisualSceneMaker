@@ -45,10 +45,58 @@ Build and run the main app:
 java -jar build/libs/*-shadow.jar
 ```
 
+Or run directly from Gradle:
+
+```bash
+./gradlew run             # localhost only
+./gradlew run-lan         # bind to 0.0.0.0 for LAN access / remote co-editing
+./gradlew run-lan-secure  # LAN access + HTTPS via a locally-trusted mkcert cert
+```
+
+> Note: `./gradlew run --allow-lan` does **not** work — `--allow-lan` would be
+> parsed as a Gradle option. Use the `run-lan` task, or pass app args explicitly
+> with `./gradlew run --args="--allow-lan"`.
+
 Useful startup flags:
 
 - `--allow-lan` (or `--allow-external`) to bind for external/LAN access
+- `--secure` serve HTTPS/WSS via mkcert (see below)
 - `--no-browser` to skip auto-opening the browser
+
+### Secure mode (`--secure`) — HTTPS for remote collaboration
+
+Remote collaborators over a LAN IP get a browser **insecure context**, which breaks
+features that require Web Crypto (e.g. the charamel character's model loading). Serving
+over HTTPS fixes this. `--secure` provisions a locally-trusted certificate with
+[mkcert](https://github.com/FiloSottile/mkcert) and serves the **htmlgui GUI** and the
+**charamel-embed character** over HTTPS/WSS.
+
+The **editor stays on plain HTTP** on purpose: a remote user who hasn't installed the CA
+yet can always load the share link and download the certificate without hitting a TLS
+warning. The server also opens an HTTPS trust-probe port (`8443`) that the web UI silently
+checks; if the client doesn't yet trust the CA, the editor shows a one-time
+**"install the certificate"** banner (with a download button, per-OS steps, and a
+*Re-check* button) and hides it automatically once trust is detected.
+
+Install mkcert once on the **host** machine:
+
+```bash
+brew install mkcert nss     # macOS (nss = Firefox support)
+# choco install mkcert       # Windows
+# see the mkcert README for Linux
+```
+
+Then run:
+
+```bash
+./gradlew run-lan-secure
+```
+
+Each **collaborator** installs the host's CA once. The banner walks them through it (or grab
+it directly from `GET /api/v1/ca`, served over HTTP as `vsm-ca.crt`); import into the OS trust
+store (and Firefox's own store, if used). After that the character loads with no warnings.
+
+If mkcert is not installed, `--secure` logs an install hint and falls back to plain HTTP.
 
 ## Runtime Server (Headless)
 

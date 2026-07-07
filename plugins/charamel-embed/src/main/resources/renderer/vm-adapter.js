@@ -122,7 +122,10 @@
   }
 
   function connect() {
-    ws = new WebSocket('ws://' + location.host + '/ws');
+    // Match the page scheme: wss when the character page is served over HTTPS
+    // (--secure mode), ws otherwise. Same host/port as the page (self-hosted).
+    var wsProto = (location.protocol === 'https:') ? 'wss' : 'ws';
+    ws = new WebSocket(wsProto + '://' + location.host + '/ws');
     ws.onopen  = function () { console.log('VSM: WebSocket open'); };
     ws.onmessage = function (e) {
       try { vsmDispatch(JSON.parse(e.data)); }

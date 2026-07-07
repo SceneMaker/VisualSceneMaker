@@ -19,9 +19,19 @@ const WS_ENDPOINT = "/ws";
 
 // variables
 var webSocket = null;
-var ws_protocol = WS_PROTOCOL;
-var ws_hostname = WS_HOSTNAME;
-var ws_port = WS_PORT;
+// Derive the connection target from the page origin so this GUI works when it is
+// opened from a *remote* machine (co-editing), not only from the host that runs
+// the runtime. The WebSocket port differs from the HTTP port this page is served
+// on, so the editor appends it as ?wsPort=<ws_port> when it opens this page; we
+// fall back to the built-in constants when the params/location are unavailable
+// (e.g. opened directly on the host with no query string, or via file://).
+var _wsParams = (typeof window !== "undefined" && window.location)
+    ? new URLSearchParams(window.location.search) : null;
+var ws_protocol = (typeof window !== "undefined" && window.location
+    && window.location.protocol === "https:") ? "wss" : WS_PROTOCOL;
+var ws_hostname = (typeof window !== "undefined" && window.location
+    && window.location.hostname) ? window.location.hostname : WS_HOSTNAME;
+var ws_port = (_wsParams && _wsParams.get("wsPort")) ? _wsParams.get("wsPort") : WS_PORT;
 var ws_endpoint = WS_ENDPOINT;
 
 var eventMethod = window.addEventListener

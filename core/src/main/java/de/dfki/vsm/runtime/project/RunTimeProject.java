@@ -60,6 +60,8 @@ public class RunTimeProject {
     // Scene play history (thread-safe for concurrent playback)
     private final List<ScenePlayRecord> mSceneHistory =
             java.util.Collections.synchronizedList(new ArrayList<>());
+    // Preferred language for scene selection (null = first available)
+    private volatile String mPreferredLanguage = null;
 
     public static class ScenePlayRecord {
         public final long timestamp;
@@ -409,6 +411,12 @@ public class RunTimeProject {
             return interp.isPaused();
         }
         return false;
+    }
+
+    public final String getPreferredLanguage() { return mPreferredLanguage; }
+
+    public final void setPreferredLanguage(String language) {
+        mPreferredLanguage = (language == null || language.isBlank()) ? null : language.trim();
     }
 
     public final void recordScenePlay(String sceneName, String language, int lower, int upper) {

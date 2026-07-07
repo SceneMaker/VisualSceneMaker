@@ -304,12 +304,25 @@ public class CharamelEmbedExecutor extends ActivityExecutor {
         mSpeakingVar = mConfig.getProperty("characterSpeaking", "");
         mTurnVar = mConfig.getProperty("sceneflowTurnUtteranceVar", mTurnVar);
 
-        mApp = Javalin.create(config -> {
+        // Secure mode (host started with --secure): serve the character page over TLS
+        // using the shared mkcert host certificate. A remote browser then loads the
+        // character from an https origin — a secure context, which VuppetMaster's engine
+        // requires (crypto.subtle) to load the character model.
+        final boolean secureMode = de.dfki.vsm.runtime.tls.TlsRuntimeContext.isEnabled();
+        Javalin app = Javalin.create(config -> {
             config.jetty.modifyWebSocketServletFactory(f -> f.setIdleTimeout(java.time.Duration.ofMinutes(10)));
             config.jetty.modifyServletContextHandler(handler ->
                 handler.addFilter(new org.eclipse.jetty.servlet.FilterHolder(new PnaFilter()), "/*",
                     java.util.EnumSet.of(jakarta.servlet.DispatcherType.REQUEST)));
-        }).start(mPort);
+            if (secureMode) {
+                config.jetty.modifyServer(server -> server.setConnectors(
+                        new org.eclipse.jetty.server.Connector[]{ sharedTlsConnector(server, mPort) }));
+            }
+        });
+        mApp = secureMode ? app.start() : app.start(mPort);
+        if (secureMode) {
+            mLogger.message("--secure: serving character page over https :" + mPort);
+        }
 
         mApp.get("/", ctx -> ctx.redirect("/character.html"));
         mApp.get("/character.html", ctx -> serveResource(ctx, "/renderer/character.html", "text/html"));
@@ -339,8 +352,24 @@ public class CharamelEmbedExecutor extends ActivityExecutor {
         });
 
         if ("true".equalsIgnoreCase(mConfig.getProperty("autostart_browser"))) {
-            launchBrowser("http://127.0.0.1:" + mPort + "/character.html");
+            String scheme = secureMode ? "https" : "http";
+            launchBrowser(scheme + "://127.0.0.1:" + mPort + "/character.html");
         }
+    }
+
+    /** TLS connector on the given port using the shared mkcert host keystore (--secure mode). */
+    private static org.eclipse.jetty.server.ServerConnector sharedTlsConnector(
+            org.eclipse.jetty.server.Server server, int port) {
+        org.eclipse.jetty.util.ssl.SslContextFactory.Server factory =
+                new org.eclipse.jetty.util.ssl.SslContextFactory.Server();
+        factory.setKeyStorePath(de.dfki.vsm.runtime.tls.TlsRuntimeContext.getKeyStorePath());
+        factory.setKeyStorePassword(de.dfki.vsm.runtime.tls.TlsRuntimeContext.getKeyStorePassword());
+        factory.setKeyStoreType("PKCS12");
+        org.eclipse.jetty.server.ServerConnector connector = new org.eclipse.jetty.server.ServerConnector(server,
+                new org.eclipse.jetty.server.SslConnectionFactory(factory, "http/1.1"),
+                new org.eclipse.jetty.server.HttpConnectionFactory());
+        connector.setPort(port);
+        return connector;
     }
 
     private void onWsClose(WsCloseContext ctx) {

@@ -758,6 +758,13 @@
       base = current.toString();
     }
     const url = new URL(base);
+    // In secure mode, point the shared link at the /setup gate: it auto-checks whether
+    // the recipient trusts the host certificate and either forwards them into the editor
+    // or walks them through the one-time install. In plain mode, share the editor directly.
+    if (info?.secure) {
+      url.pathname = "/setup";
+      url.hash = "";
+    }
     url.searchParams.set("session", selectedProjectId);
     if (isLocalHost() && !lanEnabled) {
       shareNoLan = true;
@@ -895,6 +902,7 @@
   let saveAsDialogOpen = false;
   let saveAsError = "";
   let saveButtonHovered = false;
+  let remoteSaveHovered = false;
   let shiftDown = false;
 
   let openPathInput;
@@ -2663,6 +2671,34 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
   $: runtimeCanStop = wsConnected && !!selectedProjectId && runtimeState !== "stopped";
   $: runtimePlayLabel = runtimeState === "paused" ? "Resume" : "Start";
   $: monitorCanEdit = runtimeState !== "stopped";
+  // Preferred scene language: kept in sync with runtimeInfo (from GET /runtime)
+  let preferredSceneLanguage = "";
+  $: if (runtimeInfo?.preferredLanguage !== undefined) {
+    preferredSceneLanguage = runtimeInfo.preferredLanguage ?? "";
+  }
+  // Available language options for the runtime language picker (exclude "All" sentinel)
+  $: runtimeLanguageOptions = (() => {
+    const src = scriptScenesLive.length ? scriptScenesLive : scriptScenes;
+    if (!Array.isArray(src) || src.length === 0) return [];
+    const seen = new Set();
+    const opts = [];
+    for (const lang of src) {
+      const v = lang?.language ?? "";
+      if (!seen.has(v)) { seen.add(v); opts.push({ value: v, label: sceneLanguageLabel(v) }); }
+    }
+    return opts.length > 1 ? opts : []; // only show picker when >1 language exists
+  })();
+
+  async function setPreferredSceneLanguage(lang) {
+    if (!selectedProjectId) return;
+    try {
+      preferredSceneLanguage = lang;
+      await sendCommand("Runtime.Language.Set", { projectId: selectedProjectId, language: lang });
+    } catch (err) {
+      // revert on failure
+      preferredSceneLanguage = runtimeInfo?.preferredLanguage ?? "";
+    }
+  }
   $: infoRevision = info?.revision || info?.buildRevision || info?.build || info?.version || "unknown";
   $: infoRevisionSlug = revisionSlug(infoRevision);
   $: infoBuildDate = info?.buildDate || info?.buildTime || "unknown";
@@ -2682,6 +2718,7 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
     return !selectedProject.path || selectedProject.pending === true;
   })();
   $: saveButtonActsAsSaveAs = !projectRequiresSaveAs && saveButtonHovered && shiftDown;
+  $: remoteSaveActsAsExport = remoteSaveHovered && shiftDown;
   $: autoSaveReady =
     autoSaveEnabled &&
     showEditor &&
@@ -3487,8 +3524,13 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
     return host === "localhost" || host === "127.0.0.1" || host === "::1";
   }
 
-  async function autoConnectIfLocal() {
-    if (!isLocalHost() || isRemoteConnection || sessionReady || autoConnectInFlight) return;
+  // Auto-connect to the server that served this page (same origin). Works for
+  // both localhost and LAN loads: when someone opens a shared LAN link, the page
+  // origin IS a VSM server, so we connect to it automatically instead of showing
+  // an empty landing page that requires a manual "Connect" click. The Connect
+  // dialog remains for connecting to a *different* (cross-origin) runtime server.
+  async function autoConnect() {
+    if (isRemoteConnection || sessionReady || autoConnectInFlight) return;
     autoConnectAttempted = true;
     if (autoConnectTimer) {
       clearTimeout(autoConnectTimer);
@@ -3513,7 +3555,7 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
 
   onMount(() => {
     autoConnectAttempts = 0;
-    autoConnectIfLocal();
+    autoConnect();
   });
 
   onDestroy(() => {
@@ -3530,14 +3572,14 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
   });
 
   function scheduleAutoConnectRetry(reason) {
-    if (!isLocalHost() || isRemoteConnection || sessionReady) return;
+    if (isRemoteConnection || sessionReady) return;
     if (autoConnectTimer || autoConnectInFlight) return;
     if (autoConnectAttempts >= AUTO_CONNECT_MAX_ATTEMPTS) return;
     const delay = Math.min(AUTO_CONNECT_RETRY_MS * Math.max(autoConnectAttempts, 1), 5000);
     console.log("[AUTO-CONNECT] Scheduling retry", { reason, delay, attempt: autoConnectAttempts });
     autoConnectTimer = setTimeout(() => {
       autoConnectTimer = null;
-      autoConnectIfLocal();
+      autoConnect();
     }, delay);
   }
 
@@ -6377,6 +6419,104 @@ Sentence:
     await executeRuntimeCommand(command);
   }
 
+  // --- Follow-the-player runtime GUI (htmlgui-ws) --------------------------
+  // The htmlgui-ws plugin serves its GUI on its own HTTP port on the runtime
+  // host. We build the URL using the host that served THIS page
+  // (window.location.hostname), so pressing Play opens the GUI in the browser of
+  // whoever pressed it — including a remote co-editor on their own machine. The
+  // GUI's WebSocket runs on a different port than its HTTP page, so we pass it as
+  // ?wsPort= (wsclient.js reads it and connects back to this same host).
+  const HTMLGUI_CLASSNAME = "de.dfki.vsm.xtension.responsiveweb.HtmlGuiWsExecutor";
+  let runtimeGuiWindow = null;
+
+  function findHtmlGuiPlugin() {
+    const plugins = projectConfigView?.plugins || [];
+    return (
+      plugins.find((p) => {
+        const cn = (p?.className || "").toLowerCase();
+        return (
+          cn === HTMLGUI_CLASSNAME.toLowerCase() ||
+          cn.includes("htmlguiws") ||
+          cn.includes("responsiveweb")
+        );
+      }) || null
+    );
+  }
+
+  function pluginFeatureValue(plugin, key) {
+    return (plugin?.features || []).find((f) => f.key === key)?.value;
+  }
+
+  function htmlGuiUrl() {
+    const plugin = findHtmlGuiPlugin();
+    if (!plugin) return null;
+    const htmlPort = pluginFeatureValue(plugin, "html_port");
+    if (!htmlPort) return null;
+    const wsPort = pluginFeatureValue(plugin, "ws_port");
+    const startPathRaw = pluginFeatureValue(plugin, "browser_start_path") || "/";
+    const startPath = startPathRaw.startsWith("/") ? startPathRaw : "/" + startPathRaw;
+    const host = (typeof window !== "undefined" && window.location.hostname) || "localhost";
+    // In --secure mode the editor is HTTP but the GUI/character are HTTPS, so derive the
+    // scheme from the server's secure flag rather than the editor page's own protocol.
+    const proto = (info?.secure || window.location.protocol === "https:") ? "https" : "http";
+    try {
+      const url = new URL(`${proto}://${host}:${htmlPort}${startPath}`);
+      if (wsPort) url.searchParams.set("wsPort", wsPort);
+      return url.toString();
+    } catch (_) {
+      return null;
+    }
+  }
+
+  // --- Secure mode (mkcert) certificate onboarding --------------------------
+  // In --secure mode the editor is HTTP but the GUI/character are HTTPS. A remote
+  // client that hasn't installed the host CA cannot load those origins (and the
+  // character silently fails). We auto-detect trust by probing the server's HTTPS
+  // trust port; if it fails, a banner points the user at the one-time CA install.
+  let secureProbeRan = false;
+  let secureTrustOk = false;
+  let secureSetupExpanded = false;
+  $: caDownloadUrl = `${isRemoteConnection && remoteServerUrl ? remoteServerUrl : ""}/api/v1/ca`;
+  $: showSecureSetup = !!info?.secure && secureProbeRan && !secureTrustOk;
+
+  async function probeSecureTrust() {
+    secureProbeRan = true;
+    if (!info?.secure || !info?.securePort) {
+      secureTrustOk = true;
+      return;
+    }
+    const host = window.location.hostname;
+    try {
+      const r = await fetch(`https://${host}:${info.securePort}/api/v1/info`, { cache: "no-store" });
+      secureTrustOk = r.ok;
+    } catch (_) {
+      // TLS handshake rejected → the client does not (yet) trust the host CA.
+      secureTrustOk = false;
+    }
+  }
+
+  $: if (sessionReady && info?.secure && !secureProbeRan) {
+    probeSecureTrust();
+  }
+
+  function htmlGuiAutostartEnabled() {
+    const v = pluginFeatureValue(findHtmlGuiPlugin(), "autostart_browser");
+    return v === true || v === "true";
+  }
+
+  // Called synchronously from the Play click so the browser does not block the
+  // popup. A named window is reused across Plays, so we never spawn duplicates.
+  function openRuntimeGui({ requireAutostart = false } = {}) {
+    if (requireAutostart && !htmlGuiAutostartEnabled()) return;
+    const url = htmlGuiUrl();
+    if (!url) return;
+    try {
+      runtimeGuiWindow = window.open(url, "vsm-runtime-gui");
+    } catch (_) {
+      /* popup blocked — re-pressing Play will try again */
+    }
+  }
+
   function clearSceneFlowActivity() {
     activityNodeCounts = new Map();
     if (activityNodeDecayTokens.size) {
@@ -8093,6 +8233,30 @@ Sentence:
       return;
     }
     saveProject(selectedProjectId);
+  }
+
+  // Non-owner (co-editor / remote) primary action: save the project back to the
+  // server it is loaded from ("Save Remote"), or download a local copy when Shift
+  // is held ("Export"). The save endpoint writes to the server's own project path,
+  // which is exactly what collaborative editing of a server-hosted project needs.
+  function handleRemoteSaveClick() {
+    if (!selectedProjectId || projectSaving) return;
+    if (remoteSaveActsAsExport) {
+      exportLocalCopy();
+      return;
+    }
+    saveProject(selectedProjectId);
+  }
+
+  function exportLocalCopy() {
+    if (!selectedProjectId) return;
+    const base = isRemoteConnection && remoteServerUrl ? remoteServerUrl : "";
+    const a = document.createElement("a");
+    a.href = `${base}/api/v1/projects/${selectedProjectId}/export`;
+    a.download = "";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
   }
 
   async function removeRecentProject(path) {
@@ -13958,6 +14122,38 @@ Sentence:
 <svelte:window on:keydown={handleGlobalKeydown} on:keyup={handleGlobalKeyup} on:blur={handleWindowBlur} />
 
 <main class:editor-view={showEditor}>
+  {#if showSecureSetup}
+    <div class="secure-setup-banner" role="alert">
+      <div class="secure-setup-main">
+        <span class="secure-setup-icon" aria-hidden="true">🔒</span>
+        <div class="secure-setup-text">
+          <strong>One-time setup to see the character on this machine.</strong>
+          This session uses a security certificate. Install it once so your browser trusts it —
+          otherwise the character won't load.
+          <button type="button" class="linklike" on:click={() => (secureSetupExpanded = !secureSetupExpanded)}>
+            {secureSetupExpanded ? "Hide steps" : "Show steps"}
+          </button>
+        </div>
+      </div>
+      <div class="secure-setup-actions">
+        <a class="ghost" href={caDownloadUrl} download>Download certificate</a>
+        <button type="button" class="ghost" on:click={probeSecureTrust}>Re-check</button>
+      </div>
+      {#if secureSetupExpanded}
+        <ol class="secure-setup-steps">
+          <li><strong>macOS:</strong> double-click the file (this only <em>imports</em> it) → in Keychain Access
+            search “mkcert” → double-click the entry → expand <em>Trust</em> → <em>Always Trust</em> →
+            <strong>close the window and enter your password</strong> (the trust isn't saved until you do) → reopen
+            the entry to confirm it says “trusted.”</li>
+          <li><strong>Windows:</strong> double-click → <em>Install Certificate</em> → <em>Current User</em>
+            → <em>Place all certificates in… Trusted Root Certification Authorities</em> → Finish.</li>
+          <li><strong>Firefox</strong> keeps its own store: Settings → Privacy &amp; Security → Certificates
+            → View Certificates → Authorities → Import. (Chrome/Safari/Edge use the OS store, no extra step.)</li>
+          <li>Then click <strong>Re-check</strong> above — this banner disappears once it’s trusted.</li>
+        </ol>
+      {/if}
+    </div>
+  {/if}
   {#if !showEditor}
     <header class="hero">
       <div class="hero-brand">
@@ -14382,14 +14578,17 @@ Sentence:
                 </button>
               {/if}
             {:else if selectedProject}
-              <a
-                href={`/api/v1/projects/${selectedProjectId}/export`}
-                download
-                class="ghost panel-save export-link"
-                title="Download a local copy of the SceneFlow"
+              <button
+                type="button"
+                class="ghost panel-save"
+                on:click={handleRemoteSaveClick}
+                on:mouseenter={() => (remoteSaveHovered = true)}
+                on:mouseleave={() => (remoteSaveHovered = false)}
+                disabled={!selectedProject || projectSaving}
+                title={remoteSaveActsAsExport ? "Export a local copy (Shift)" : "Save changes back to the server"}
               >
-                Export
-              </a>
+                {remoteSaveActsAsExport ? "Export" : "Save Remote"}
+              </button>
             {/if}
             <button
               type="button"
@@ -14597,10 +14796,24 @@ Sentence:
             </div>
             <div class="sceneflow-runtime-cluster">
               <span class={`runtime-state ${runtimeState}`}>{runtimeStateLabel}</span>
+              {#if runtimeLanguageOptions.length > 0}
+                <select
+                  class="runtime-lang-select"
+                  title="Scene language"
+                  disabled={runtimeState !== "stopped"}
+                  value={preferredSceneLanguage}
+                  on:change={(e) => setPreferredSceneLanguage(e.target.value)}
+                >
+                  <option value="">Any</option>
+                  {#each runtimeLanguageOptions as opt}
+                    <option value={opt.value}>{opt.label}</option>
+                  {/each}
+                </select>
+              {/if}
               <button
                 type="button"
                 class="ghost icon-button"
-                on:click={() => runRuntimeCommand("Runtime.Play")}
+                on:click={() => { openRuntimeGui({ requireAutostart: true }); runRuntimeCommand("Runtime.Play"); }}
                 disabled={!runtimeCanPlay}
                 aria-label={runtimePlayLabel}
                 title={runtimePlayLabel}
