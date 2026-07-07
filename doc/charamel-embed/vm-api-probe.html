@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>VuppetMaster API Probe</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { display:flex; flex-direction:column; height:100vh; font-family:system-ui, sans-serif; }
+  #vuppetmaster { flex:1; min-height:200px; background:#000; }
+  #panel { background:#111; color:#eee; padding:8px; display:flex; flex-direction:column; gap:6px; }
+  .row { display:flex; gap:6px; flex-wrap:wrap; align-items:center; }
+  input, button { padding:6px 10px; border:1px solid #444; border-radius:4px; background:#222; color:#fff; font-size:14px; }
+  input.txt { flex:1; min-width:200px; }
+  button { background:#3557a5; cursor:pointer; border:none; }
+  button:hover { background:#4a70c8; }
+  #log { background:#000; color:#0f0; font-family:ui-monospace, monospace; font-size:12px;
+         height:200px; overflow:auto; padding:6px; white-space:pre-wrap; }
+  .warn { color:#fb0; } .err { color:#f55; } .ok { color:#5f5; } .cb { color:#5cf; }
+  label { font-size:12px; color:#aaa; }
+</style>
+</head>
+<body>
+<div id="vuppetmaster"></div>
+<div id="panel">
+  <div class="row">
+    <label>licenseKey</label><input id="lic" value="" placeholder="YOUR_LICENSE_KEY" size="14">
+    <label>appName</label><input id="app" value="" placeholder="appName (optional)" size="14">
+    <button onclick="boot()">1) Load engine</button>
+    <span id="status" style="color:#fb0">not loaded</span>
+  </div>
+  <div class="row">
+    <input class="txt" id="text" value="Hallo, dies ist ein Test.">
+    <button onclick="doSpeak()">2) speak + callbacks</button>
+    <button onclick="doSpeakMarkers()">3) speak with ${...}$ markers</button>
+    <button onclick="doSpeakMarkersWrapped()">3b) charamel-ws-style ${...}$</button>
+    <button onclick="vmStop()">stop</button>
+    <button onclick="dumpApi()">dump vm methods</button>
+  </div>
+  <div class="row">
+    <label>Emotion</label>
+    <button onclick="doEmotion('happy')">happy</button>
+    <button onclick="doEmotion('sad')">sad</button>
+    <button onclick="doEmotion('angry')">angry</button>
+    <button onclick="doEmotion('surprise')">surprise</button>
+    <button onclick="doEmotion('smile')">smile</button>
+    <button onclick="doEmotion('excited')">excited</button>
+    <button onclick="doEmotion('fear')">fear</button>
+    <button onclick="doEmotion('bored')">bored</button>
+    <button onclick="doEmotion('relaxed')">relaxed</button>
+    <button onclick="doEmotion('disgust')">disgust</button>
+    <button onclick="doEmotion('tear')">tear</button>
+    <button onclick="doClearEmotion()">clearEmotion</button>
+  </div>
+  <div class="row">
+    <label>Background</label>
+    <input class="txt" id="bg" value="midnightblue">
+    <button onclick="doBg(document.getElementById('bg').value)">apply to body + #vuppetmaster</button>
+    <button onclick="doBg('black')">black</button>
+    <button onclick="doBg('teal')">teal</button>
+    <button onclick="inspectDom()">inspect canvas/DOM</button>
+  </div>
+  <div id="log"></div>
+</div>
+<script>
+var vm = null, t0 = 0;
+function log(msg, cls){ var d=document.getElementById('log'); var line=document.createElement('div');
+  if(cls) line.className=cls; var dt=t0?('+'+(performance.now()-t0|0)+'ms '):''; line.textContent=dt+msg;
+  d.appendChild(line); d.scrollTop=d.scrollHeight; console.log(dt+msg); }
+
+function boot(){
+  var lic=document.getElementById('lic').value.trim();
+  var app=document.getElementById('app').value.trim();
+  var s=document.createElement('script');
+  s.src='https://engine.vuppetmaster.com/api/engine/vuppetmaster.iife.js';
+  s.onload=function(){
+    log('engine script loaded; global Vuppetmaster='+typeof Vuppetmaster, 'ok');
+    try {
+      vm = new Vuppetmaster.VuppetMaster({
+        windowElement: document.getElementById('vuppetmaster'),
+        licenseKey: lic, appName: app
+      });
+      document.getElementById('status').textContent='constructed';
+      log('VuppetMaster constructed. typeof vm.speak='+typeof vm.speak
+          +' speakStop='+typeof vm.speakStop+' on='+typeof vm.on, 'ok');
+      // Subscribe to any documented lifecycle events if present
+      if (typeof vm.on === 'function') {
+        ['project.loaded','model.progress','loaded','ready','error'].forEach(function(ev){
+          try { vm.on(ev, function(p){ log('vm.on("'+ev+'") → '+JSON.stringify(p), 'cb'); }); } catch(e){}
+        });
+      }
+    } catch(e){ log('constructor threw: '+e, 'err'); }
+  };
+  s.onerror=function(){ log('FAILED to load engine script (network/CSP?)', 'err'); };
+  document.head.appendChild(s);
+}
+
+function callbacks(tag){
+  return {
+    onStart: function(){ log(tag+' onStart FIRED', 'cb'); },
+    onEnd:   function(success, error){ log(tag+' onEnd FIRED success='+success+' error='+error, 'cb'); },
+    onMarker:function(m){ log(tag+' onMarker FIRED → '+JSON.stringify(m), 'cb'); }
+  };
+}
+
+function doSpeak(){
+  if(!vm){ log('load engine first','warn'); return; }
+  t0=performance.now();
+  var text=document.getElementById('text').value;
+  log('calling vm.speak(string, {onStart,onEnd,onMarker}) …');
+  try { var r=vm.speak(text, callbacks('[plain]')); log('speak() returned: '+r); }
+  catch(e){ log('speak threw: '+e,'err'); }
+}
+function doSpeakMarkers(){
+  if(!vm){ log('load engine first','warn'); return; }
+  t0=performance.now();
+  // VSM-native ${...}$ marker syntax — the engine extracts these itself.
+  var text="${'u1':'start'}$Hallo ${'0'}$Welt ${'u1':'stop'}$";
+  log("calling vm.speak with VSM \\${...}\\$ markers: "+text);
+  try { vm.speak(text, callbacks('[mark]')); } catch(e){ log('threw: '+e,'err'); }
+}
+function doSpeakMarkersWrapped(){
+  if(!vm){ log('load engine first','warn'); return; }
+  t0=performance.now();
+  // charamel-ws-style: bracket the whole utterance, plus one inline timemark
+  var text="${'greet':'start'}$Guten Tag ${'1'}$schönen Tag noch.${'greet':'stop'}$";
+  log("calling vm.speak with charamel-ws-style markers: "+text);
+  try { vm.speak(text, callbacks('[cws]')); } catch(e){ log('threw: '+e,'err'); }
+}
+function doEmotion(type){
+  if(!vm){ log('load engine first','warn'); return; }
+  log('calling vm.setEmotion("'+type+'", {intensity:1, attack:300, hold:2500, decay:600}) …');
+  try { var r = vm.setEmotion(type, {intensity:1, attack:300, hold:2500, decay:600}); log('setEmotion returned: '+r, 'cb'); }
+  catch(e){ log('setEmotion threw: '+e, 'err'); }
+}
+function doClearEmotion(){
+  if(!vm){ log('load engine first','warn'); return; }
+  try { vm.clearEmotion(); log('clearEmotion() called', 'cb'); } catch(e){ log('clearEmotion threw: '+e,'err'); }
+}
+function doBg(color){
+  log('setting background = "'+color+'" on body + #vuppetmaster …');
+  document.body.style.background = color;
+  var w = document.getElementById('vuppetmaster');
+  if (w) w.style.background = color;
+  // Also probe an engine-side setter, if any exists.
+  ['setBackgroundColor','setBackground','background'].forEach(function(m){
+    if (vm && typeof vm[m] === 'function') log('note: vm.'+m+' exists — engine may have its own background API', 'warn');
+  });
+}
+function inspectDom(){
+  var w = document.getElementById('vuppetmaster');
+  if(!w){ log('no #vuppetmaster','warn'); return; }
+  var cv = w.querySelector('canvas');
+  log('#vuppetmaster children: '+w.children.length+', canvas: '+(cv?'yes':'no'));
+  if (cv) {
+    var cs = getComputedStyle(cv);
+    log('canvas bg='+cs.backgroundColor+' opacity='+cs.opacity+' size='+cv.width+'x'+cv.height);
+    // WebGL alpha tells us if the canvas is transparent (backdrop shows through).
+    var gl = cv.getContext('webgl2') || cv.getContext('webgl');
+    if (gl) { var a = gl.getContextAttributes(); log('webgl alpha(transparent)='+(a&&a.alpha)+' premultipliedAlpha='+(a&&a.premultipliedAlpha)); }
+  }
+  log('body computed bg='+getComputedStyle(document.body).backgroundColor);
+}
+function vmStop(){ if(vm){ try{ vm.speakStop(); log('speakStop() called'); }catch(e){ log('speakStop threw: '+e,'err'); } } }
+function dumpApi(){
+  if(!vm){ log('load engine first','warn'); return; }
+  var names=[]; var o=vm;
+  while(o && o!==Object.prototype){ Object.getOwnPropertyNames(o).forEach(function(n){
+    if(typeof vm[n]==='function' && names.indexOf(n)<0 && n!=='constructor') names.push(n); }); o=Object.getPrototypeOf(o); }
+  log('vm methods: '+names.sort().join(', '));
+}
+</script>
+</body>
+</html>

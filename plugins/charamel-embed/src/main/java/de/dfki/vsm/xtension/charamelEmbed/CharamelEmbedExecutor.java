@@ -6,6 +6,7 @@ import de.dfki.vsm.runtime.activity.AbstractActivity;
 import de.dfki.vsm.runtime.activity.SpeechActivity;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
 import de.dfki.vsm.runtime.activity.scheduler.ActivityWorker;
+import de.dfki.vsm.runtime.interpreter.value.AbstractValue;
 import de.dfki.vsm.runtime.interpreter.value.BooleanValue;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
@@ -202,15 +203,40 @@ public class CharamelEmbedExecutor extends ActivityExecutor {
         if (val != null && !val.isBlank()) sb.append(",\"").append(key).append("\":").append(val.trim());
     }
 
-    /** Value of a named action feature, quotes stripped ("" if absent). */
-    protected static String getActionFeatureValue(String name, LinkedList<ActionFeature> features) {
+    /** Value of a named action feature, quotes stripped and SceneFlow variables resolved ("" if absent). */
+    protected String getActionFeatureValue(String name, LinkedList<ActionFeature> features) {
         if (features == null) return "";
-        return features.stream()
+        String raw = features.stream()
                 .filter(af -> af.getKey().equalsIgnoreCase(name))
                 .findFirst()
                 .map(ActionFeature::getVal)
                 .orElse("")
                 .replace("'", "");
+        return resolveValue(raw);
+    }
+
+    /**
+     * Resolves a SceneFlow variable reference to its value. VSM does NOT substitute bare tokens in
+     * action features, so a PlayAction like {@code [Xenia emotion type=emo_type]} passes the literal
+     * "emo_type"; if that names a SceneFlow variable we return its value ("happy"). Same convention as
+     * the androidGui plugin's {@code value=cnt}. An explicit "@name" also resolves. A literal that is
+     * not a variable (e.g. "happy", "teal", "#1a2a6c") is returned unchanged.
+     */
+    private String resolveValue(String raw) {
+        if (raw == null || raw.isEmpty()) return "";
+        String key = raw.startsWith("@") ? raw.substring(1) : raw;
+        if (mProject.hasVariable(key)) {
+            AbstractValue v = mProject.getValueOf(key);
+            if (v != null) {
+                String s = v.toString();
+                if (s.length() >= 2 && ((s.charAt(0) == '"' && s.endsWith("\""))
+                        || (s.charAt(0) == '\'' && s.endsWith("'")))) {
+                    s = s.substring(1, s.length() - 1);
+                }
+                return s;
+            }
+        }
+        return raw.startsWith("@") ? key : raw;
     }
 
     private void broadcastSpeak(String id, String text, String voice) {
