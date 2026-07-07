@@ -54,8 +54,8 @@
     if (!vm) { console.warn('VSM: engine not ready, dropping', env); return; }
     switch (env.cmd) {
       case 'speak':
-        vm.speak({ voice: env.voice, text: env.text }, {
-          onStart: function () { /* onMarker delivers the start bracket; nothing needed here */ },
+        vm.speakCommand({ text: env.text, voice: env.voice }, {
+          onStart: function () { /* onMarker delivers the start bracket */ },
           onEnd: function (success, error) {
             if (!success) console.warn('VSM: speak ended with error', error);
             vsmFeedback(env.id + ':stop');         // safety net (idempotent on the VSM side)
@@ -66,7 +66,30 @@
           }
         });
         break;
-      // Phase 3: 'animation', 'emotion', 'gaze', 'head'
+
+      case 'background': {
+        // The avatar canvas is transparent, so the page backdrop shows behind it.
+        var c = env.color || '';
+        document.body.style.background = c;
+        var w = document.getElementById('vuppetmaster');
+        if (w) w.style.background = c;
+        break;
+      }
+
+      case 'emotion': {
+        var opts = {};
+        if (env.intensity !== undefined) opts.intensity = env.intensity;
+        if (env.attack    !== undefined) opts.attack    = env.attack;
+        if (env.hold      !== undefined) opts.hold      = env.hold;
+        if (env.decay     !== undefined) opts.decay     = env.decay;
+        vm.setEmotion(env.type, opts);
+        break;
+      }
+
+      case 'clearEmotion':
+        vm.clearEmotion();
+        break;
+
       default:
         console.warn('VSM: unknown cmd', env);
     }
@@ -117,19 +140,18 @@
     document.head.appendChild(s);
   }
 
-  // Overlay = audio-unlock gesture (standalone only). When embedded in htmlgui-ws, the screens
-  // iframe sits on top so the overlay can't be clicked — but the parent grants this iframe
-  // allow="autoplay", so audio plays without a per-iframe gesture. Hide the overlay and treat
-  // audio as ready. If no overlay exists (e.g. Android kiosk), likewise assume audio is usable.
+  // Audio MUST be unlocked by a real user gesture in THIS iframe's document — allow="autoplay" does
+  // not resume a covered cross-origin frame's AudioContext (confirmed: state stays "suspended").
+  // The overlay click bubbles to document, where the engine's Howler unlock listener resumes the
+  // context. When embedded, we also tell the parent renderer we're unlocked so it can drop this
+  // iframe behind the screen controls (it was rendered on top so this overlay was reachable).
   var embedded = (window.self !== window.top);
   var overlay = document.getElementById('overlay');
-  if (embedded) {
-    if (overlay) overlay.style.display = 'none';
-    audioUnlocked = true;
-  } else if (overlay) {
+  if (overlay) {
     overlay.addEventListener('click', function () {
       overlay.style.display = 'none';
       audioUnlocked = true;
+      if (embedded) { try { parent.postMessage({ vsmCharacter: 'unlocked' }, '*'); } catch (e) {} }
       maybeReady();
     }, { once: true });
   } else {

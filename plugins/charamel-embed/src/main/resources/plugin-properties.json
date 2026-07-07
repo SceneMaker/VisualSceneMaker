@@ -1,7 +1,7 @@
 {
     "schemaVersion": "1.0",
-    "specVersion": "1.1",
-    "specHash": "6e18532a963b3c74",
+    "specVersion": "1.2",
+    "specHash": "68284fc0f9b0741e",
     "plugin": {
         "id": "charamel-embed",
         "name": "Charamel Embed (VuppetMaster JS-API)",
@@ -124,6 +124,66 @@
             "name": "stop",
             "type": "action",
             "summary": "Stop the character server",
+            "params": [
+                
+            ]
+        },
+        {
+            "name": "background",
+            "type": "action",
+            "summary": "Set the page backdrop shown behind the transparent avatar",
+            "description": "Usable from a SceneFlow PlayAction ([Xenia background color='#1a2a6c']) or inline scene marker. Any CSS color string.",
+            "params": [
+                {
+                    "name": "color",
+                    "type": "string",
+                    "required": true,
+                    "description": "CSS color, e.g. '#1a2a6c' or 'black'"
+                }
+            ]
+        },
+        {
+            "name": "emotion",
+            "type": "action",
+            "summary": "Play a named emotion on the avatar (vm.setEmotion)",
+            "description": "Generic form: [Xenia emotion type='happy' intensity='0.8' hold='1500']. Convenience aliases exist for each type so [Xenia happy] also works. Types: happy, sad, angry, tear, disgust, surprise, smile, excited, fear, bored, relaxed.",
+            "params": [
+                {
+                    "name": "type",
+                    "type": "string",
+                    "required": true,
+                    "description": "Emotion type (IEmotionType): happy | sad | angry | tear | disgust | surprise | smile | excited | fear | bored | relaxed"
+                },
+                {
+                    "name": "intensity",
+                    "type": "float",
+                    "required": false,
+                    "description": "Peak amplitude 0..1 (default 1)"
+                },
+                {
+                    "name": "attack",
+                    "type": "int",
+                    "required": false,
+                    "description": "Fade-in ms (default 500)"
+                },
+                {
+                    "name": "hold",
+                    "type": "int",
+                    "required": false,
+                    "description": "Sustain ms; omit for a sustained pose held until changed/cleared"
+                },
+                {
+                    "name": "decay",
+                    "type": "int",
+                    "required": false,
+                    "description": "Fade-out ms (default 500)"
+                }
+            ]
+        },
+        {
+            "name": "clearemotion",
+            "type": "action",
+            "summary": "Release the current emotion back to the idle base mood",
             "params": [
                 
             ]

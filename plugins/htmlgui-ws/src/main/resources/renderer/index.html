@@ -66,6 +66,16 @@
     </div>
 </div>
 
+<!-- Opt out of the shell audio overlay with ?noAudioOverlay=1 — e.g. when a schema character
+     provides its own click-to-start gesture. Removed before wsclient.js runs, so it falls back
+     to unlocking shell audio lazily on the first interaction (no blocking prompt). -->
+<script>
+    if (new URLSearchParams(location.search).get('noAudioOverlay') === '1') {
+        var _ov = document.getElementById('audioOverlay');
+        if (_ov) _ov.remove();
+    }
+</script>
+
 <script>
     // Load the character through /character-proxy so the Vuppetmaster JS runs with
     // origin http://localhost. That makes ws://localhost:3030 a private→private

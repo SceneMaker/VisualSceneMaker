@@ -1,6 +1,7 @@
 package de.dfki.vsm.xtension.charamelEmbed;
 
 import de.dfki.vsm.model.project.PluginConfig;
+import de.dfki.vsm.model.scenescript.ActionFeature;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
 import de.dfki.vsm.runtime.activity.SpeechActivity;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
@@ -145,12 +146,71 @@ public class CharamelEmbedExecutor extends ActivityExecutor {
                 mProject.setVariable(mSpeakingVar, new BooleanValue(false));
             }
         } else {
-            final String name = activity.getName();
-            if ("stop".equalsIgnoreCase(name)) {
-                if (mApp != null) mApp.stop();
-            }
-            // Phase 2: emotion / animation / gaze / head commands.
+            parseAction(activity.getName(), activity.getFeatures());
         }
+    }
+
+    /**
+     * Non-speech actions, reachable from a SceneFlow PlayAction command ({@code [Xenia happy]}) or an
+     * inline scene marker ({@code [Xenia background color='#1a2a6c']}). Each broadcasts a JSON envelope
+     * that {@code vm-adapter.js} maps to a VuppetMaster JS call. Fire-and-forget (non-blocking).
+     */
+    private void parseAction(String name, LinkedList<ActionFeature> f) {
+        switch (name == null ? "" : name.toLowerCase()) {
+            case "stop":
+                if (mApp != null) mApp.stop();
+                break;
+            case "background": {
+                // Sets the page backdrop shown behind the transparent avatar canvas.
+                String color = getActionFeatureValue("color", f);
+                broadcast("{\"cmd\":\"background\",\"color\":\"" + escapeJson(color) + "\"}");
+                break;
+            }
+            case "clearemotion":
+                broadcast("{\"cmd\":\"clearEmotion\"}");
+                break;
+            // Generic form: [Xenia emotion type='happy' intensity='0.8' ...]
+            case "emotion":
+                broadcastEmotion(getActionFeatureValue("type", f), f);
+                break;
+            // Convenience named emotions (IEmotionType) — [Xenia happy intensity='0.8']
+            case "happy": case "sad": case "angry": case "tear": case "disgust": case "surprise":
+            case "smile": case "excited": case "fear": case "bored": case "relaxed":
+                broadcastEmotion(name.toLowerCase(), f);
+                break;
+            default:
+                mLogger.warning("charamel-embed: unknown action '" + name + "'");
+        }
+    }
+
+    /** Broadcasts an emotion envelope; only features actually provided are included (engine defaults apply). */
+    private void broadcastEmotion(String type, LinkedList<ActionFeature> f) {
+        if (type == null || type.isBlank()) {
+            mLogger.warning("charamel-embed: emotion without a type");
+            return;
+        }
+        StringBuilder sb = new StringBuilder("{\"cmd\":\"emotion\",\"type\":\"").append(escapeJson(type)).append("\"");
+        appendNumber(sb, "intensity", getActionFeatureValue("intensity", f));
+        appendNumber(sb, "attack",    getActionFeatureValue("attack", f));
+        appendNumber(sb, "hold",      getActionFeatureValue("hold", f));
+        appendNumber(sb, "decay",     getActionFeatureValue("decay", f));
+        sb.append("}");
+        broadcast(sb.toString());
+    }
+
+    private static void appendNumber(StringBuilder sb, String key, String val) {
+        if (val != null && !val.isBlank()) sb.append(",\"").append(key).append("\":").append(val.trim());
+    }
+
+    /** Value of a named action feature, quotes stripped ("" if absent). */
+    protected static String getActionFeatureValue(String name, LinkedList<ActionFeature> features) {
+        if (features == null) return "";
+        return features.stream()
+                .filter(af -> af.getKey().equalsIgnoreCase(name))
+                .findFirst()
+                .map(ActionFeature::getVal)
+                .orElse("")
+                .replace("'", "");
     }
 
     private void broadcastSpeak(String id, String text, String voice) {

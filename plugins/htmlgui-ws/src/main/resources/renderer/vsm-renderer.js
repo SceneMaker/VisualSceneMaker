@@ -100,6 +100,7 @@ class VsmScreenRenderer extends LitElement {
         this._activeScreen        = null;
         this._varValues           = {};
         this._audioUnlocked       = false;
+        this._charUnlocked        = false;  // character iframe stays on top until it unlocks its audio
         this._liveSchemaReceived  = false;  // guards against API fetch overwriting live schema
 
         window.addEventListener('message', (e) => {
@@ -121,6 +122,11 @@ class VsmScreenRenderer extends LitElement {
             } else if (data.cmd === 'updateVar') {
                 // Immutable update so Lit detects the change
                 this._varValues = { ...this._varValues, [data.var]: data.value };
+            } else if (data.vsmCharacter === 'unlocked') {
+                // The character iframe unlocked its audio via a click in its own document.
+                // Drop it behind the screen controls (it was on top so the overlay was clickable).
+                this._charUnlocked = true;
+                this.requestUpdate();
             }
         });
     }
@@ -511,11 +517,20 @@ class VsmScreenRenderer extends LitElement {
         // can select/enable the character at runtime (empty var → no character shown yet).
         // Set "enabled": false to keep the config but skip loading.
         const char        = this._schema.character;
-        const charSrc     = char ? (char.srcVar ? (this._varValues[char.srcVar] ?? '') : (char.src ?? '')) : '';
+        // srcVar (once written) overrides the static src, so `src` can auto-load a default character
+        // while buttons can still switch/hide it by writing srcVar (including "" to hide).
+        const charSrc     = char
+            ? ((char.srcVar && this._varValues[char.srcVar] !== undefined)
+                ? this._varValues[char.srcVar]
+                : (char.src ?? ''))
+            : '';
         const charEnabled = char && char.enabled !== false && !!charSrc && !window.__VSM_PREVIEW_MODE;
-        const charStyle   = charEnabled
+        let charStyle     = charEnabled
             ? (this._styleAttr(char.style) || 'position:fixed;left:0;top:0;width:100%;height:100%;z-index:-1;border:none')
             : '';
+        // Until the character has unlocked its audio, keep it on top so its click-to-start overlay
+        // is reachable (the screen controls would otherwise cover it). The trailing z-index wins.
+        if (charEnabled && !this._charUnlocked) charStyle += ';z-index:2147483000';
 
         return html`
             ${charEnabled ? html`<iframe
