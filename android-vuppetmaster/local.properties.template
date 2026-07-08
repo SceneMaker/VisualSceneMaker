@@ -1,0 +1,13 @@
+# Copy this file to `local.properties` and fill in the values.
+# local.properties is git-ignored (machine-specific SDK path + secret license key).
+
+# Android SDK location (Android Studio usually writes this for you on first open).
+sdk.dir=/absolute/path/to/Android/sdk
+
+# VuppetMaster credentials — injected into BuildConfig and used to load the character.
+# Obtain a license key from Charamel; appName selects which character to load.
+vuppetmaster.licenseKey=YOUR_LICENSE_KEY
+vuppetmaster.appName=Xenia
+
+# Optional: override the engine URL (defaults to the public VuppetMaster engine).
+# vuppetmaster.engineUrl=https://engine.vuppetmaster.com/api/engine/vuppetmaster.iife.js

@@ -1,0 +1,17 @@
+.gradle/
+.idea/
+local.properties
+/build/
+**/build/
+
+# Desktop editor scratch inside the bundled project — not needed to build/run.
+**/.history/
+**/ui-prefs.json
+
+# NOTE: this app is self-contained — the VSM thin jars (app/libs/*.jar) and the character
+# page (assets/character.html, assets/vm-adapter.js) are COMMITTED so it builds without the
+# parent repo. Refresh them with `./gradlew refreshVsmArtifacts` (parent repo only).
+#
+# The VuppetMaster license key lives in local.properties (never committed, see
+# local.properties.template) and is injected via BuildConfig. The committed project.xml
+# keeps an empty licenseKey.

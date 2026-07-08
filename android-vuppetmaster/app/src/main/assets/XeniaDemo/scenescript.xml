@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SceneScript lower="0" upper="0">
+  <SceneObject lower="0" upper="68" language="de" identifier="welcome">
+    <SceneTurn lower="17" upper="68" speaker="Xenia">
+      <SceneUttr lower="24" upper="44" punct=".">
+        <SceneWord lower="24" upper="29" text="Hallo"/>
+        <SceneWord lower="30" upper="33" text="ich"/>
+        <SceneWord lower="34" upper="37" text="bin"/>
+        <SceneWord lower="38" upper="43" text="Xenia"/>
+      </SceneUttr>
+      <SceneUttr lower="45" upper="68" punct=".">
+        <SceneWord lower="45" upper="50" text="Schön"/>
+        <SceneWord lower="51" upper="55" text="dass"/>
+        <SceneWord lower="56" upper="59" text="Sie"/>
+        <SceneWord lower="60" upper="62" text="da"/>
+        <SceneWord lower="63" upper="67" text="sind"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="70" upper="158" language="de" identifier="machwas">
+    <SceneTurn lower="87" upper="158" speaker="Xenia">
+      <SceneUttr lower="94" upper="127" punct=",">
+        <SceneWord lower="94" upper="98" text="Lass"/>
+        <SceneWord lower="99" upper="103" text="mich"/>
+        <SceneWord lower="104" upper="109" text="einen"/>
+        <SceneWord lower="110" upper="119" text="Vorschlag"/>
+        <SceneWord lower="120" upper="126" text="machen"/>
+      </SceneUttr>
+      <SceneUttr lower="128" upper="158" punct=".">
+        <SceneWord lower="128" upper="131" text="wie"/>
+        <SceneWord lower="132" upper="135" text="wir"/>
+        <SceneWord lower="136" upper="144" text="zusammen"/>
+        <SceneWord lower="145" upper="157" text="weitermachen"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+</SceneScript>

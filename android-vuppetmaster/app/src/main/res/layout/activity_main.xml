@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!-- Full-screen character page -->
+    <WebView
+        android:id="@+id/characterWebView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <!-- Status line (top) -->
+    <TextView
+        android:id="@+id/statusText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top"
+        android:background="#66000000"
+        android:padding="6dp"
+        android:text="Starting…"
+        android:textColor="#FFFFFF"
+        android:textSize="12sp" />
+
+    <!-- Control panel (bottom overlay) -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:orientation="vertical"
+        android:background="#99000000"
+        android:padding="8dp">
+
+        <!-- Live SceneFlow variable readout (vsm wiring) -->
+        <TextView
+            android:id="@+id/runtimeInfo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingBottom="6dp"
+            android:text="runtime: —"
+            android:textColor="#FFFFFF"
+            android:textSize="12sp" />
+
+        <!-- Runtime controls -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btnStart"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Start" />
+
+            <Button
+                android:id="@+id/btnPause"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Pause" />
+
+            <Button
+                android:id="@+id/btnStop"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Stop" />
+        </LinearLayout>
+
+        <!-- Emotions -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingTop="4dp"
+            android:text="Emotion"
+            android:textColor="#CCFFFFFF"
+            android:textSize="11sp" />
+
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:scrollbars="none">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <Button android:id="@+id/btnHappy" style="?android:attr/buttonStyleSmall"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Happy" />
+                <Button android:id="@+id/btnSad" style="?android:attr/buttonStyleSmall"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Sad" />
+                <Button android:id="@+id/btnAngry" style="?android:attr/buttonStyleSmall"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Angry" />
+                <Button android:id="@+id/btnSurprise" style="?android:attr/buttonStyleSmall"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Surprise" />
+                <Button android:id="@+id/btnSmile" style="?android:attr/buttonStyleSmall"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Smile" />
+            </LinearLayout>
+        </HorizontalScrollView>
+
+        <!-- Background -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingTop="4dp"
+            android:text="Background"
+            android:textColor="#CCFFFFFF"
+            android:textSize="11sp" />
+
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:scrollbars="none">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <Button android:id="@+id/btnBgBlue" style="?android:attr/buttonStyleSmall"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Blue" />
+                <Button android:id="@+id/btnBgRed" style="?android:attr/buttonStyleSmall"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Red" />
+                <Button android:id="@+id/btnBgGreen" style="?android:attr/buttonStyleSmall"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Green" />
+                <Button android:id="@+id/btnBgNone" style="?android:attr/buttonStyleSmall"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="None" />
+            </LinearLayout>
+        </HorizontalScrollView>
+
+        <!-- Scene -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingTop="4dp"
+            android:text="Scene"
+            android:textColor="#CCFFFFFF"
+            android:textSize="11sp" />
+
+        <Button
+            android:id="@+id/btnScene"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Play scene: machwas" />
+
+    </LinearLayout>
+
+</FrameLayout>

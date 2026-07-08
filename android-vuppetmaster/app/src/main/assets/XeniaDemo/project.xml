@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Project name="XeniaDemo" androidProject="true" uuid="7a1c2d34-5e6f-4a8b-9c0d-1e2f3a4b5c6d">
+  <Plugins>
+    <Plugin type="device" name="CharamelEmbed" class="de.dfki.vsm.xtension.charamelEmbed.CharamelEmbedExecutor" load="true">
+      <Feature key="port" val="3040"/>
+      <Feature key="sceneflowVar" val="avatar_connected"/>
+      <Feature key="characterReady" val="avatar_ready"/>
+      <Feature key="characterSpeaking" val="avatar_speaking"/>
+      <Feature key="sceneflowTurnUtteranceVar" val="turn_utterance"/>
+      <Feature key="licenseKey" val=""/>
+      <Feature key="appName" val="Xenia"/>
+      <Feature key="engineUrl" val="https://engine.vuppetmaster.com/api/engine/vuppetmaster.iife.js"/>
+      <Feature key="autostart_browser" val="false"/>
+    </Plugin>
+  </Plugins>
+  <Agents>
+    <Agent name="Xenia" device="CharamelEmbed">
+      <Feature key="voice" val="de-DE-KatjaNeural"/>
+    </Agent>
+  </Agents>
+  <SemanticServices>
+    <Feature key="analyzeSyntax" val="true"/>
+    <Feature key="analyzeSvo" val="true"/>
+    <Feature key="analyzeDaTr" val="true"/>
+    <Feature key="systemPrompt" val="You are a multilingual discourse annotation engine for dialogue utterances."/>
+    <Feature key="promptTemplate" val="Analyze exactly one utterance sentence and return JSON only (no markdown).     Language can be German or English; handle umlauts correctly (ä/ö/ü and ae/oe/ue variants).     Treat placeholders like $user as normal mentions.     Ignore bracketed stage/action tags (e.g. [wave]).     Classify ONLY this sentence (no cross-sentence inference).      Focus on:     1) dialogueAct.label + dialogueAct.confidence     2) themeRheme.theme + themeRheme.rheme + themeRheme.confidence      Return object fields: version (number), annotations (array with exactly one item).     Annotation fields: id, line, speaker, text, dialogueAct, themeRheme.     Do not output basic subject/verb/object unless explicitly requested by layers.      Dialogue act guideline:     - Use short labels (e.g. greeting, question, inform, request, confirm, reject, thanks, apology, directive, commissive).      Theme-rheme guideline:     - theme = given/topic part (what the sentence is about)     - rheme = new/focus part (what is said about the theme)     - Keep both close to original wording.      Output must be valid JSON.      Layers: {{layers}}     Speaker: {{speaker}}     Line: {{line}}     Sentence:     {{script}}"/>
+  </SemanticServices>
+  <Player>
+  </Player>
+</Project>

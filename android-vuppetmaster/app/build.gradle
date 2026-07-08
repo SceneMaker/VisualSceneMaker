@@ -1,0 +1,159 @@
+plugins {
+    id 'com.android.application'
+}
+
+configurations.configureEach {
+    exclude group: 'org.jetbrains', module: 'annotations'
+}
+
+// VuppetMaster license/appName are read from local.properties (never committed) and injected via
+// BuildConfig, so the committed demo project.xml can keep an empty licenseKey. See README.
+def localProps = new Properties()
+def localPropsFile = rootProject.file('local.properties')
+if (localPropsFile.exists()) {
+    localPropsFile.withInputStream { localProps.load(it) }
+}
+def vmLicenseKey = localProps.getProperty('vuppetmaster.licenseKey', '')
+def vmAppName    = localProps.getProperty('vuppetmaster.appName', 'Xenia')
+def vmEngineUrl  = localProps.getProperty('vuppetmaster.engineUrl',
+        'https://engine.vuppetmaster.com/api/engine/vuppetmaster.iife.js')
+
+android {
+    namespace 'de.dfki.vsm.vuppetmaster'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "de.dfki.vsm.vuppetmaster"
+        minSdk 26
+        targetSdk 34
+        versionCode 1
+        versionName "1.0"
+
+        buildConfigField "String", "VM_LICENSE_KEY", "\"${vmLicenseKey}\""
+        buildConfigField "String", "VM_APP_NAME", "\"${vmAppName}\""
+        buildConfigField "String", "VM_ENGINE_URL", "\"${vmEngineUrl}\""
+    }
+
+    buildFeatures {
+        buildConfig true
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    packaging {
+        resources {
+            excludes += ['META-INF/*', 'META-INF/versions/**', 'plugin-properties.json']
+        }
+    }
+}
+
+// --- Self-contained build --------------------------------------------------
+// This app is self-contained: the VSM thin jars (app/libs/*.jar) and the character page
+// (assets/character.html, assets/vm-adapter.js) are committed to the repo, so a developer can
+// build the app in Android Studio WITHOUT the parent VisualSceneMaker repo. They only need to
+// supply local.properties (SDK path + VuppetMaster license key — see local.properties.template).
+//
+// When this folder DOES sit inside the VSM monorepo, a maintainer can refresh those committed
+// artifacts from live source with:  ./gradlew refreshVsmArtifacts
+
+def repoRoot = file("${rootDir}/..")
+def thinJarsDir = file("${repoRoot}/android-thin-jars")
+def appLibsDir = file("${projectDir}/libs")
+def rendererDir = file("${repoRoot}/plugins/charamel-embed/src/main/resources/renderer")
+def assetsDir = file("${projectDir}/src/main/assets")
+def hasParentRepo = file("${repoRoot}/settings.gradle").exists() && rendererDir.exists()
+
+// preBuild only verifies the committed artifacts are present (no dependency on the parent repo).
+tasks.register('verifyVsmArtifacts') {
+    doLast {
+        def required = ['core-android.jar', 'core-http-android.jar', 'charamel-embed.jar']
+        def missing = required.findAll { !new File(appLibsDir, it).exists() }
+        if (!missing.isEmpty()) {
+            throw new GradleException(
+                "Missing vendored VSM jars in app/libs: " + missing.join(', ') +
+                (hasParentRepo
+                    ? "\nRun './gradlew refreshVsmArtifacts' to regenerate them from the parent repo."
+                    : "\nThese are committed artifacts — restore them from version control."))
+        }
+    }
+}
+
+tasks.named('preBuild') {
+    dependsOn tasks.named('verifyVsmArtifacts')
+}
+
+// --- Maintainer-only refresh (requires the parent VSM monorepo) -------------
+if (hasParentRepo) {
+    tasks.register('buildVsmJars', Exec) {
+        workingDir repoRoot
+        commandLine './gradlew', 'assembleAndroidThinJars'
+    }
+
+    tasks.register('syncVsmJars') {
+        dependsOn tasks.named('buildVsmJars')
+        doLast {
+            appLibsDir.mkdirs()
+
+            def coreJar = thinJarsDir.listFiles()?.find {
+                it.name.startsWith('core-') && !it.name.contains('http') && it.name.contains('android-thin') && it.name.endsWith('.jar')
+            }
+            if (coreJar == null) throw new GradleException("No core android-thin jar in ${thinJarsDir}")
+            copy { from coreJar; into appLibsDir; rename { 'core-android.jar' } }
+
+            def httpJar = thinJarsDir.listFiles()?.find {
+                it.name.startsWith('core-http-android') && it.name.contains('android-thin') && it.name.endsWith('.jar')
+            }
+            if (httpJar == null) throw new GradleException("No core-http-android android-thin jar in ${thinJarsDir}")
+            copy { from httpJar; into appLibsDir; rename { 'core-http-android.jar' } }
+
+            def charamelJar = thinJarsDir.listFiles()?.find {
+                it.name.startsWith('charamel-embed') && it.name.contains('android-thin') && it.name.endsWith('.jar')
+            }
+            if (charamelJar == null) throw new GradleException("No charamel-embed android-thin jar in ${thinJarsDir}")
+            copy { from charamelJar; into appLibsDir; rename { 'charamel-embed.jar' } }
+        }
+    }
+
+    tasks.register('syncCharacterAssets', Copy) {
+        from rendererDir
+        into assetsDir
+        include 'character.html'
+        include 'vm-adapter.js'
+    }
+
+    // Regenerate the committed jars + character page from live parent source, then commit them.
+    tasks.register('refreshVsmArtifacts') {
+        group = 'vsm'
+        description = 'Rebuild the vendored VSM thin jars + character page from the parent repo.'
+        dependsOn tasks.named('syncVsmJars'), tasks.named('syncCharacterAssets')
+    }
+}
+
+dependencies {
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'androidx.webkit:webkit:1.11.0'
+
+    // Runtime server for remote Web UI observation (AndroidRuntimeServer extends NanoWSD).
+    implementation 'org.nanohttpd:nanohttpd:2.3.1'
+    implementation 'org.nanohttpd:nanohttpd-websocket:2.3.1'
+
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+
+    // Resolve the kotlin-stdlib duplicate-class clash: transitive deps pull both
+    // kotlin-stdlib 1.8.22 and the older kotlin-stdlib-jdk7/jdk8 1.6.21. Forcing jdk7/jdk8
+    // to 1.8.22 makes them empty stubs that just delegate to kotlin-stdlib (no duplicates).
+    constraints {
+        implementation('org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.22')
+        implementation('org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.22')
+    }
+}

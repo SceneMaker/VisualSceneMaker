@@ -43,6 +43,15 @@ public final class PlatformBootstrap {
         }
     }
 
+    /**
+     * True when running on Android (Dalvik/ART), or when forced via
+     * {@code -Dvsm.platform=android}. Lets platform-portable plugins pick an
+     * Android-safe code path (e.g. a WebView bridge instead of an embedded HTTP server).
+     */
+    public static boolean isAndroid() {
+        return isAndroidEnvironment();
+    }
+
     private static boolean isAndroidEnvironment() {
         String forced = System.getProperty("vsm.platform", "").trim().toLowerCase();
         if ("android".equals(forced)) {
