@@ -105,10 +105,44 @@ public class RuntimeMain {
             Thread.currentThread().join();
 
         } catch (Exception e) {
+            if (isPortInUse(e)) {
+                System.err.println();
+                System.err.println("ERROR: Cannot start — " + bindHost + ":" + port + " is already in use.");
+                System.err.println();
+                System.err.println("Most common causes:");
+                System.err.println("  1. An active 'adb forward tcp:" + port + " tcp:" + port + "' is holding");
+                System.err.println("     this port to tunnel to a device's runtime server on the same port.");
+                System.err.println("     To OBSERVE a device you do NOT run this runtime server. Instead:");
+                System.err.println("       a) keep the adb forward active,");
+                System.err.println("       b) start the desktop editor:  ./gradlew run   (binds 8090),");
+                System.err.println("       c) in its Web UI: 'Connect to Remote' -> 127.0.0.1:" + port + ".");
+                System.err.println("  2. A previous runtime-server instance is still running.");
+                System.err.println();
+                System.err.println("Fix one of:");
+                System.err.println("  - Run on another port:   --port=" + (port + 1));
+                System.err.println("  - Remove the forward:     adb forward --remove tcp:" + port);
+                System.err.println("  - Stop the other process holding the port.");
+                System.err.println();
+                System.exit(2);
+            }
             System.err.println("Failed to start runtime server: " + e.getMessage());
             e.printStackTrace();
             System.exit(1);
         }
+    }
+
+    /** True if the failure is a port-already-bound condition (BindException anywhere in the cause chain). */
+    private static boolean isPortInUse(Throwable t) {
+        for (Throwable c = t; c != null; c = c.getCause()) {
+            if (c instanceof java.net.BindException) {
+                return true;
+            }
+            String msg = c.getMessage();
+            if (msg != null && msg.toLowerCase().contains("port already in use")) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static void printHelp() {

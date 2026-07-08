@@ -29,6 +29,14 @@ application {
     mainClass = 'de.dfki.vsm.services.embeddings.EmbeddingsService'
 }
 
+// Don't let an unqualified `./gradlew run` (which fans out to every subproject's `run`) also
+// start this service. Run it explicitly with `./gradlew :services:embeddings:run`.
+tasks.named('run') {
+    onlyIf {
+        gradle.startParameter.taskNames.any { it == ':services:embeddings:run' || it.endsWith('services:embeddings:run') }
+    }
+}
+
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
 }

@@ -31,6 +31,16 @@ application {
     mainClass = 'de.dfki.vsm.runtime.RuntimeMain'
 }
 
+// The 'application' plugin adds a generic `run` task. An unqualified `./gradlew run` fans out to
+// the `run` task in EVERY subproject, so it would also launch this server — colliding with the
+// editor (root `:run`) or an adb-forwarded device on port 8091. Skip unless the task was requested
+// by its qualified path (`./gradlew :runtime-server:run`).
+tasks.named('run') {
+    onlyIf {
+        gradle.startParameter.taskNames.any { it == ':runtime-server:run' || it.endsWith('runtime-server:run') }
+    }
+}
+
 jar {
     manifest {
         attributes(
