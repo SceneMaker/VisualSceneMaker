@@ -286,8 +286,10 @@ public class CharamelEmbedExecutor extends ActivityExecutor implements CharamelT
     }
 
     private void processTimeMarkMessage(String message) {
+        // vm-adapter.js's onMarker already strips the engine's quoting/bracketing and forwards the
+        // bare id (e.g. "42"); reconstruct the exact literal produced by marker(long) above.
         message = message.replace("\"", "").replace("'", "");
-        message = "$" + message + "$"; // bracketing "$" are not sent back from the page
+        message = "${'" + message + "'}$";
         mLogger.message("Handling time marker >" + message + "<");
         if (mProject.getRunTimePlayer().getActivityScheduler().hasMarker(message)) {
             mProject.getRunTimePlayer().getActivityScheduler().handle(message);
