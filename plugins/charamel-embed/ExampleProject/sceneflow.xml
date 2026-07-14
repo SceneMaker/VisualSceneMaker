@@ -1,0 +1,365 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SceneFlow id="" name="default" comment="" hideLocalVar="false" hideGlobalVar="false" modifDate="Tue, 14 Jul 2026 16:32:05" start="S1;S2;" context="" package="" xmlns="xml.sceneflow.dfki.de" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="xml.sceneflow.dfki.de res/xsd/sceneflow.xsd">
+  <Define>
+  </Define>
+  <Declare>
+    <VariableDefinition type="Bool" name ="avatar_connected">
+      <BoolLiteral value="false"/>
+    </VariableDefinition>
+    <VariableDefinition type="Bool" name ="avatar_ready">
+      <BoolLiteral value="false"/>
+    </VariableDefinition>
+    <VariableDefinition type="Bool" name ="avatar_speaking">
+      <BoolLiteral value="false"/>
+    </VariableDefinition>
+    <VariableDefinition type="String" name ="turn_utterance">
+      <StringLiteral><![CDATA[]]></StringLiteral>
+    </VariableDefinition>
+    <VariableDefinition type="Bool" name ="bob_connected">
+      <BoolLiteral value="false"/>
+    </VariableDefinition>
+    <VariableDefinition type="Bool" name ="bob_ready">
+      <BoolLiteral value="false"/>
+    </VariableDefinition>
+    <VariableDefinition type="Bool" name ="bob_speaking">
+      <BoolLiteral value="false"/>
+    </VariableDefinition>
+    <VariableDefinition type="String" name ="bob_turn_utterance">
+      <StringLiteral><![CDATA[]]></StringLiteral>
+    </VariableDefinition>
+    <VariableDefinition type="Bool" name ="gui_connected">
+      <BoolLiteral value="false"/>
+    </VariableDefinition>
+    <VariableDefinition type="String" name ="gui_info">
+      <StringLiteral><![CDATA[]]></StringLiteral>
+    </VariableDefinition>
+    <VariableDefinition type="String" name ="gui_choice">
+      <StringLiteral><![CDATA[]]></StringLiteral>
+    </VariableDefinition>
+    <VariableDefinition type="String" name ="conversation_log">
+      <StringLiteral><![CDATA[]]></StringLiteral>
+    </VariableDefinition>
+    <VariableDefinition type="String" name ="character_url">
+      <StringLiteral><![CDATA[]]></StringLiteral>
+    </VariableDefinition>
+    <VariableDefinition type="String" name ="emo_type">
+      <StringLiteral><![CDATA[]]></StringLiteral>
+    </VariableDefinition>
+    <VariableDefinition type="String" name ="bg_color">
+      <StringLiteral><![CDATA[]]></StringLiteral>
+    </VariableDefinition>
+    <VariableDefinition type="String" name ="emo_intensity">
+      <StringLiteral><![CDATA[1]]></StringLiteral>
+    </VariableDefinition>
+    <VariableDefinition type="String" name ="emo_attack">
+      <StringLiteral><![CDATA[300]]></StringLiteral>
+    </VariableDefinition>
+    <VariableDefinition type="String" name ="emo_hold">
+      <StringLiteral><![CDATA[2000]]></StringLiteral>
+    </VariableDefinition>
+    <VariableDefinition type="String" name ="emo_decay">
+      <StringLiteral><![CDATA[600]]></StringLiteral>
+    </VariableDefinition>
+    <VariableDefinition type="String" name ="scene">
+      <StringLiteral><![CDATA[]]></StringLiteral>
+    </VariableDefinition>
+  </Declare>
+  <Commands>
+  </Commands>
+  <LocalVariableBadge>
+    <Position xPos="11" yPos="13"/>
+  </LocalVariableBadge>
+  <GlobalVariableBadge>
+    <Position xPos="10" yPos="10"/>
+  </GlobalVariableBadge>
+  <Node id="N1" name="welcome" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <PlayScene>
+        <StringLiteral><![CDATA[welcome]]></StringLiteral>
+      </PlayScene>
+    </Commands>
+    <EEdge target="N2" start ="">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="260" yPos="230" ctrlXPos="305" ctrlYPos="230"/>
+        <ControlPoint xPos="380" yPos="230" ctrlXPos="335" ctrlYPos="230"/>
+      </Connection>
+    </Graphics>
+    </EEdge>
+    <Graphics>
+      <Position xPos="200" yPos="200"/>
+    </Graphics>
+  </Node>
+  <Node id="N2" name="done" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <TEdge target="N2" start="" timeout="1000">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="431" yPos="209" ctrlXPos="482" ctrlYPos="163"/>
+          <ControlPoint xPos="389" yPos="209" ctrlXPos="399" ctrlYPos="157"/>
+        </Connection>
+      </Graphics>
+    </TEdge>
+    <Graphics>
+      <Position xPos="380" yPos="200"/>
+    </Graphics>
+  </Node>
+  <Node id="N11" name="do emotion" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <PlayAction mode="Default">
+        <Add>
+          <Add>
+            <Add>
+              <Add>
+                <Add>
+                  <Add>
+                    <Add>
+                      <Add>
+                        <Add>
+                          <Add>
+                            <StringLiteral><![CDATA[[Xenia emotion type=]]></StringLiteral>
+                            <SimpleVariable name="emo_type"/>
+                          </Add>
+                          <StringLiteral><![CDATA[ intensity=]]></StringLiteral>
+                        </Add>
+                        <SimpleVariable name="emo_intensity"/>
+                      </Add>
+                      <StringLiteral><![CDATA[ attack=]]></StringLiteral>
+                    </Add>
+                    <SimpleVariable name="emo_attack"/>
+                  </Add>
+                  <StringLiteral><![CDATA[ hold=]]></StringLiteral>
+                </Add>
+                <SimpleVariable name="emo_hold"/>
+              </Add>
+              <StringLiteral><![CDATA[ decay=]]></StringLiteral>
+            </Add>
+            <SimpleVariable name="emo_decay"/>
+          </Add>
+          <StringLiteral><![CDATA[]]]></StringLiteral>
+        </Add>
+      </PlayAction>
+      <Assignment>
+        <SimpleVariable name="emo_type"/>
+        <Expression>
+          <StringLiteral><![CDATA[]]></StringLiteral>
+        </Expression>
+      </Assignment>
+    </Commands>
+    <EEdge target="S2" start ="">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="204" yPos="365" ctrlXPos="149" ctrlYPos="397"/>
+        <ControlPoint xPos="80" yPos="440" ctrlXPos="143" ctrlYPos="377"/>
+      </Connection>
+    </Graphics>
+    </EEdge>
+    <Graphics>
+      <Position xPos="200" yPos="320"/>
+    </Graphics>
+  </Node>
+  <Node id="N12" name="do background" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <PlayAction mode="Default">
+        <Add>
+          <Add>
+            <StringLiteral><![CDATA[[Xenia background color=]]></StringLiteral>
+            <SimpleVariable name="bg_color"/>
+          </Add>
+          <StringLiteral><![CDATA[]]]></StringLiteral>
+        </Add>
+      </PlayAction>
+      <Assignment>
+        <SimpleVariable name="bg_color"/>
+        <Expression>
+          <StringLiteral><![CDATA[]]></StringLiteral>
+        </Expression>
+      </Assignment>
+    </Commands>
+    <EEdge target="S2" start ="">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="204" yPos="575" ctrlXPos="149" ctrlYPos="543"/>
+        <ControlPoint xPos="80" yPos="500" ctrlXPos="143" ctrlYPos="563"/>
+      </Connection>
+    </Graphics>
+    </EEdge>
+    <Graphics>
+      <Position xPos="200" yPos="560"/>
+    </Graphics>
+  </Node>
+  <Node id="N15" name="machwas" history="false">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+      <PlayScene>
+        <Add>
+          <Add>
+            <StringLiteral><![CDATA[]]></StringLiteral>
+            <SimpleVariable name="scene"/>
+          </Add>
+          <StringLiteral><![CDATA[]]></StringLiteral>
+        </Add>
+      </PlayScene>
+      <Assignment>
+        <SimpleVariable name="scene"/>
+        <Expression>
+          <StringLiteral><![CDATA[]]></StringLiteral>
+        </Expression>
+      </Assignment>
+    </Commands>
+    <EEdge target="S2" start ="">
+    <Graphics>
+      <Connection>
+        <ControlPoint xPos="260" yPos="470" ctrlXPos="185" ctrlYPos="470"/>
+        <ControlPoint xPos="80" yPos="470" ctrlXPos="155" ctrlYPos="470"/>
+      </Connection>
+    </Graphics>
+    </EEdge>
+    <Graphics>
+      <Position xPos="260" yPos="440"/>
+    </Graphics>
+  </Node>
+  <SuperNode id="S1" name="wait for agent" comment="" hideLocalVar="false" hideGlobalVar="false" start="N10;">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <IEdge target="N1" start="">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="80" yPos="230" ctrlXPos="125" ctrlYPos="230"/>
+          <ControlPoint xPos="200" yPos="230" ctrlXPos="155" ctrlYPos="230"/>
+        </Connection>
+      </Graphics>
+      <AndAnd>
+        <SimpleVariable name="avatar_ready"/>
+        <SimpleVariable name="gui_connected"/>
+      </AndAnd>
+    </IEdge>
+    <Graphics>
+      <Position xPos="20" yPos="200"/>
+    </Graphics>
+    <LocalVariableBadge>
+      <Position xPos="10" yPos="10"/>
+    </LocalVariableBadge>
+    <GlobalVariableBadge>
+      <Position xPos="10" yPos="10"/>
+    </GlobalVariableBadge>
+    <Node id="N10" name="wait" history="false">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+      </Commands>
+      <TEdge target="N10" start="" timeout="1000">
+        <Graphics>
+          <Connection>
+            <ControlPoint xPos="371" yPos="209" ctrlXPos="371" ctrlYPos="209"/>
+            <ControlPoint xPos="329" yPos="209" ctrlXPos="329" ctrlYPos="209"/>
+          </Connection>
+        </Graphics>
+      </TEdge>
+      <Graphics>
+        <Position xPos="320" yPos="200"/>
+      </Graphics>
+    </Node>
+  </SuperNode>
+  <SuperNode id="S2" name="controls" comment="" hideLocalVar="false" hideGlobalVar="false" start="N13;">
+    <Define>
+    </Define>
+    <Declare>
+    </Declare>
+    <Commands>
+    </Commands>
+    <IEdge target="N11" start="">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="80" yPos="453" ctrlXPos="143" ctrlYPos="417"/>
+          <ControlPoint xPos="209" yPos="371" ctrlXPos="165" ctrlYPos="415"/>
+        </Connection>
+      </Graphics>
+      <Neq>
+        <SimpleVariable name="emo_type"/>
+        <StringLiteral><![CDATA[]]></StringLiteral>
+      </Neq>
+    </IEdge>
+    <IEdge target="N12" start="">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="80" yPos="487" ctrlXPos="143" ctrlYPos="523"/>
+          <ControlPoint xPos="209" yPos="569" ctrlXPos="165" ctrlYPos="525"/>
+        </Connection>
+      </Graphics>
+      <Neq>
+        <SimpleVariable name="bg_color"/>
+        <StringLiteral><![CDATA[]]></StringLiteral>
+      </Neq>
+    </IEdge>
+    <IEdge target="N15" start="">
+      <Graphics>
+        <Connection>
+          <ControlPoint xPos="80" yPos="478" ctrlXPos="155" ctrlYPos="498"/>
+          <ControlPoint xPos="261" yPos="478" ctrlXPos="189" ctrlYPos="498"/>
+        </Connection>
+      </Graphics>
+      <Eq>
+        <SimpleVariable name="scene"/>
+        <StringLiteral><![CDATA[machwas]]></StringLiteral>
+      </Eq>
+    </IEdge>
+    <Graphics>
+      <Position xPos="20" yPos="440"/>
+    </Graphics>
+    <LocalVariableBadge>
+      <Position xPos="10" yPos="10"/>
+    </LocalVariableBadge>
+    <GlobalVariableBadge>
+      <Position xPos="10" yPos="10"/>
+    </GlobalVariableBadge>
+    <Node id="N13" name="idle" history="false">
+      <Define>
+      </Define>
+      <Declare>
+      </Declare>
+      <Commands>
+      </Commands>
+      <TEdge target="N13" start="" timeout="500">
+        <Graphics>
+          <Connection>
+            <ControlPoint xPos="71" yPos="269" ctrlXPos="71" ctrlYPos="269"/>
+            <ControlPoint xPos="29" yPos="269" ctrlXPos="29" ctrlYPos="269"/>
+          </Connection>
+        </Graphics>
+      </TEdge>
+      <Graphics>
+        <Position xPos="20" yPos="260"/>
+      </Graphics>
+    </Node>
+  </SuperNode>
+  <ClassPath>
+  </ClassPath>
+  <InitContext></InitContext>
+</SceneFlow>

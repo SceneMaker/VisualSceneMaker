@@ -41,6 +41,30 @@ export const sceneScriptTheme = EditorView.theme(
     },
     ".cm-line.cm-scene-line-active-turn": {
       boxShadow: "inset 3px 0 0 rgba(46, 93, 58, 0.95)"
+    },
+    ".cm-turn-play-btn": {
+      display: "inline-flex",
+      alignItems: "center",
+      justifyContent: "center",
+      width: "16px",
+      height: "16px",
+      marginLeft: "0.35rem",
+      padding: "0",
+      verticalAlign: "middle",
+      border: "1px solid #5b8edc",
+      borderRadius: "4px",
+      background: "rgba(91, 142, 220, 0.15)",
+      color: "#3d5f96",
+      cursor: "pointer"
+    },
+    ".cm-turn-play-btn:hover:not(:disabled)": {
+      background: "rgba(91, 142, 220, 0.32)"
+    },
+    ".cm-turn-play-btn-disabled": {
+      border: "1px solid #c9c4b8",
+      background: "transparent",
+      color: "#b8b2a3",
+      cursor: "default"
     }
   },
   { dark: false }

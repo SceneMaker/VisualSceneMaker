@@ -76,8 +76,19 @@ public final class AndroidBridgeTransport implements CharamelTransport {
     }
 
     @Override
+    public String getPreviewUrl() {
+        // The character page lives inside the host's WebView, not at an HTTP URL.
+        return null;
+    }
+
+    @Override
     public void stop() {
         markDisconnected();
         mEnvelopeSink = null;
+    }
+
+    @Override
+    public void setPreviewMuted(boolean muted) {
+        // The host's WebView is the only possible viewer — nothing to mute against.
     }
 }

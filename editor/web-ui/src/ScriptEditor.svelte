@@ -1,7 +1,7 @@
 <script>
   import { onDestroy, onMount } from "svelte";
   import { EditorState, StateEffect, StateField } from "@codemirror/state";
-  import { EditorView, keymap, Decoration } from "@codemirror/view";
+  import { EditorView, keymap, Decoration, WidgetType } from "@codemirror/view";
   import { indentUnit } from "@codemirror/language";
   import { lintGutter, nextDiagnostic, previousDiagnostic, setDiagnostics } from "@codemirror/lint";
   import { indentWithTab } from "@codemirror/commands";
@@ -16,6 +16,9 @@
   export let diagnostics = [];
   export let sceneHighlights = [];
   export let semanticHighlights = { marks: [], lines: [] };
+  export let playableTurns = []; // [{speaker, text, firstLineEndOffset, instanceName, loaded}] — M10
+  export let onPlayTurn = null;  // callback(turn) — send this turn to its character's preview
+  export let onContextMenu = null; // (charOffset, clientX, clientY) => boolean — M11; true = suppress the native menu
 
   // Scene highlight decoration machinery
   const setSceneHighlightsEffect = StateEffect.define();
@@ -156,6 +159,54 @@
     provide: (f) => EditorView.decorations.from(f)
   });
 
+  // Per-turn Play button decoration machinery (M10) — mirrors the scene/semantic highlight
+  // fields above: a StateEffect carries a fresh Decoration.set, a StateField holds/remaps it.
+  const setPlayButtonsEffect = StateEffect.define();
+
+  class PlayButtonWidget extends WidgetType {
+    constructor(turn, enabled, onPlay) {
+      super();
+      this.turn = turn;
+      this.enabled = enabled;
+      this.onPlay = onPlay;
+    }
+    eq(other) {
+      return other.turn.firstLineEndOffset === this.turn.firstLineEndOffset
+        && other.turn.speaker === this.turn.speaker
+        && other.enabled === this.enabled;
+    }
+    toDOM() {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "cm-turn-play-btn" + (this.enabled ? "" : " cm-turn-play-btn-disabled");
+      btn.disabled = !this.enabled;
+      btn.title = this.enabled
+        ? `Play this turn on ${this.turn.speaker}`
+        : `${this.turn.speaker} preview isn't loaded yet — show it from the script toolbar first`;
+      btn.setAttribute("aria-label", btn.title);
+      btn.innerHTML = '<svg viewBox="0 0 24 24" width="10" height="10" fill="currentColor" aria-hidden="true"><path d="M8 6l10 6-10 6V6z"/></svg>';
+      btn.addEventListener("mousedown", (e) => { e.preventDefault(); e.stopPropagation(); });
+      btn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (this.enabled) this.onPlay?.(this.turn);
+      });
+      return btn;
+    }
+    ignoreEvent() { return true; }
+  }
+
+  const playButtonsField = StateField.define({
+    create() { return Decoration.none; },
+    update(decos, tr) {
+      for (const effect of tr.effects) {
+        if (effect.is(setPlayButtonsEffect)) return effect.value;
+      }
+      return tr.docChanged ? decos.map(tr.changes) : decos;
+    },
+    provide: (f) => EditorView.decorations.from(f)
+  });
+
   let host;
   let view;
   let suppress = false;
@@ -289,6 +340,19 @@
       updateListener,
       sceneHighlightField,
       semanticHighlightField,
+      playButtonsField,
+      EditorView.domEventHandlers({
+        contextmenu(event, cmView) {
+          if (!onContextMenu) return false;
+          const pos = cmView.posAtCoords({ x: event.clientX, y: event.clientY });
+          if (pos == null) return false;
+          if (onContextMenu(pos, event.clientX, event.clientY)) {
+            event.preventDefault();
+            return true;
+          }
+          return false;
+        }
+      }),
       EditorState.readOnly.of(readOnly),
       EditorView.editable.of(!readOnly)
     ];
@@ -351,14 +415,19 @@
     findMatch(currentSearchQuery, -1);
   }
 
-  export function insertText(text) {
+  // pos (optional, M11): insert at this exact character offset instead of the current
+  // selection — needed for the right-click "insert emotion" flow, where the cursor may not
+  // still be at the point the user right-clicked by the time they confirm the modal.
+  export function insertText(text, pos) {
     if (!view || readOnly) return;
     const insert = text == null ? "" : String(text);
     if (!insert) return;
     const selection = view.state.selection.main;
+    const from = Number.isFinite(pos) ? Math.max(0, Math.min(pos, view.state.doc.length)) : selection.from;
+    const to = Number.isFinite(pos) ? from : selection.to;
     view.dispatch({
-      changes: { from: selection.from, to: selection.to, insert },
-      selection: { anchor: selection.from + insert.length }
+      changes: { from, to, insert },
+      selection: { anchor: from + insert.length }
     });
     view.focus();
   }
@@ -528,6 +597,24 @@
 
   $: if (view && semanticHighlights) {
     applySemanticHighlights(semanticHighlights);
+  }
+
+  function applyPlayButtons(turns) {
+    if (!view) return;
+    const doc = view.state.doc;
+    const ranges = [];
+    for (const turn of turns || []) {
+      const offset = Math.floor(turn?.firstLineEndOffset);
+      if (!Number.isFinite(offset) || offset < 0 || offset > doc.length) continue;
+      const widget = new PlayButtonWidget(turn, !!turn.loaded, onPlayTurn);
+      ranges.push(Decoration.widget({ widget, side: 1 }).range(offset));
+    }
+    ranges.sort((a, b) => a.from - b.from || a.to - b.to);
+    view.dispatch({ effects: setPlayButtonsEffect.of(Decoration.set(ranges)) });
+  }
+
+  $: if (view && playableTurns) {
+    applyPlayButtons(playableTurns);
   }
 </script>
 

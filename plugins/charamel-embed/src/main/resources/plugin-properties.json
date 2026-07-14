@@ -23,6 +23,7 @@
         ]
     },
     "serviceModel": "self-contained",
+    "previewCapable": true,
     "config": {
         "required": [
             {

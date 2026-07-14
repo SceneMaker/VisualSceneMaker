@@ -2,18 +2,29 @@ package de.dfki.vsm.xtension.charamelEmbed;
 
 import de.dfki.vsm.model.project.PluginConfig;
 import de.dfki.vsm.model.scenescript.ActionFeature;
+import de.dfki.vsm.model.scenescript.ActionObject;
+import de.dfki.vsm.model.scenescript.SceneObject;
+import de.dfki.vsm.model.scenescript.SceneScript;
+import de.dfki.vsm.model.scenescript.SceneTurn;
+import de.dfki.vsm.model.scenescript.SceneUttr;
+import de.dfki.vsm.model.scenescript.ScriptParser;
+import de.dfki.vsm.model.scenescript.UttrElement;
 import de.dfki.vsm.runtime.activity.AbstractActivity;
+import de.dfki.vsm.runtime.activity.ActionActivity;
 import de.dfki.vsm.runtime.activity.SpeechActivity;
 import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
 import de.dfki.vsm.runtime.activity.scheduler.ActivityWorker;
 import de.dfki.vsm.runtime.bootstrap.PlatformBootstrap;
 import de.dfki.vsm.runtime.interpreter.value.BooleanValue;
+import de.dfki.vsm.runtime.plugin.CharacterPreviewCapable;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Drives a self-hosted VuppetMaster character page through the engine's JavaScript API
@@ -32,12 +43,18 @@ import java.util.Map;
  *
  * @author Patrick Gebhard
  */
-public class CharamelEmbedExecutor extends ActivityExecutor implements CharamelTransport.Listener {
+public class CharamelEmbedExecutor extends ActivityExecutor
+        implements CharamelTransport.Listener, CharacterPreviewCapable {
 
     static long sUtteranceId = 0;
 
     // Activity workers waiting for speech-finished feedback, keyed by utterance id.
     private final Map<String, ActivityWorker> mActivityWorkerMap = new HashMap<>();
+    // Pending actions for markers embedded in a previewTurn() call, keyed by marker string. Resolved
+    // directly here rather than via the interpreter's ActivityScheduler, since preview dispatch runs
+    // on the caller's thread (e.g. an HTTP handler), not an ActivityWorker.
+    private final Map<String, Runnable> mPreviewMarkerMap = new ConcurrentHashMap<>();
+    private final AtomicLong mPreviewMarkerId = new AtomicLong();
     protected final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
 
     private CharamelTransport mTransport;
@@ -68,6 +85,86 @@ public class CharamelEmbedExecutor extends ActivityExecutor implements CharamelT
      */
     public AndroidBridgeTransport getAndroidBridge() {
         return (mTransport instanceof AndroidBridgeTransport) ? (AndroidBridgeTransport) mTransport : null;
+    }
+
+    // ------------------------------------------------------------------ authoring-time preview
+
+    @Override
+    public String getPreviewUrl() {
+        return mTransport != null ? mTransport.getPreviewUrl() : null;
+    }
+
+    @Override
+    public void setPreviewMuted(boolean muted) {
+        if (mTransport != null) mTransport.setPreviewMuted(muted);
+    }
+
+    @Override
+    public void previewAction(String rawActionBody) {
+        final Object parsed = ScriptParser.run(rawActionBody, true, false, true, false, false);
+        if (!(parsed instanceof ActionObject)) {
+            mLogger.failure("charamel-embed preview: failed to parse action '" + rawActionBody + "'");
+            return;
+        }
+        final ActionObject action = (ActionObject) parsed;
+        parseAction(action.getName(), action.getFeatureList());
+    }
+
+    @Override
+    public void previewTurn(String rawTurn) {
+        // Synthetic scene header required by the grammar; "preview" (letters only) is a valid
+        // identifier — a leading underscore, as in "__preview__", is not (IDENTIFIER must start
+        // with a letter per lexxer.jflex).
+        final SceneScript script = new SceneScript();
+        if (!script.parseTXT("scene de preview\n" + rawTurn) || script.getSceneList().isEmpty()) {
+            mLogger.failure("charamel-embed preview: failed to parse turn '" + rawTurn + "'");
+            return;
+        }
+        final SceneObject scene = script.getSceneList().get(0);
+        if (scene.getTurnList().isEmpty()) {
+            mLogger.failure("charamel-embed preview: no turn found in '" + rawTurn + "'");
+            return;
+        }
+        final SceneTurn turn = scene.getTurnList().get(0);
+
+        final StringBuilder text = new StringBuilder();
+        for (final SceneUttr uttr : turn.getUttrList()) {
+            for (final UttrElement element : uttr.getWordList()) {
+                if (element instanceof ActionObject) {
+                    final String markerKey = marker(mPreviewMarkerId.incrementAndGet());
+                    registerPreviewAction(markerKey, (ActionObject) element);
+                    text.append(markerKey);
+                } else {
+                    text.append(element.getText(new HashMap<>()));
+                }
+                text.append(' ');
+            }
+            text.append(uttr.getPunctuationMark()).append(' ');
+        }
+
+        final String vmuid = "preview_" + mPreviewMarkerId.incrementAndGet();
+        final String voice = mProject.getAgentConfig(turn.getSpeaker()) != null
+                ? mProject.getAgentConfig(turn.getSpeaker()).getProperty("voice") : null;
+        broadcastSpeak(vmuid, text.toString().trim(), voice);
+    }
+
+    /** Resolves the action's target device (self, or another agent's, for cross-actor commands like
+     *  {@code [Bob smile]}) and records what to run when its marker fires back from the page. */
+    private void registerPreviewAction(String markerKey, ActionObject action) {
+        final String actionActor = action.getActor();
+        final ActivityExecutor target = (actionActor == null || actionActor.isBlank())
+                ? this
+                : mProject.getAgentDevice(actionActor);
+        if (target == null) {
+            mPreviewMarkerMap.put(markerKey, () -> mLogger.warning(
+                    "charamel-embed preview: no device for actor '" + actionActor + "', dropping ["
+                            + action.getName() + "]"));
+            return;
+        }
+        final ActionActivity activity = new ActionActivity(
+                (actionActor == null || actionActor.isBlank()) ? "" : actionActor,
+                action.getName(), action.getText(new HashMap<>()), action.getFeatureList(), new HashMap<>());
+        mPreviewMarkerMap.put(markerKey, () -> target.execute(activity));
     }
 
     // ------------------------------------------------------------------ execution
@@ -291,7 +388,17 @@ public class CharamelEmbedExecutor extends ActivityExecutor implements CharamelT
         message = message.replace("\"", "").replace("'", "");
         message = "${'" + message + "'}$";
         mLogger.message("Handling time marker >" + message + "<");
-        if (mProject.getRunTimePlayer().getActivityScheduler().hasMarker(message)) {
+
+        // Preview-dispatched markers (previewTurn()) are resolved here directly, not via the
+        // interpreter's ActivityScheduler — there is no ActivityWorker thread in preview mode.
+        final Runnable previewAction = mPreviewMarkerMap.remove(message);
+        if (previewAction != null) {
+            previewAction.run();
+            return;
+        }
+
+        if (mProject.getRunTimePlayer() != null
+                && mProject.getRunTimePlayer().getActivityScheduler().hasMarker(message)) {
             mProject.getRunTimePlayer().getActivityScheduler().handle(message);
         } else {
             mLogger.failure("Marker has already been processed: " + message);

@@ -465,7 +465,6 @@ public class Interpreter {
             mConfiguration.getState(mSceneFlow).getThread().getEnvironment().read(varName);
             return true;
         } catch (InterpreterError e) {
-            e.printStackTrace();
             return false;
         } finally {
             readUnlock();

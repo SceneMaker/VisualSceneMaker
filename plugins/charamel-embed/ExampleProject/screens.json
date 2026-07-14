@@ -1,0 +1,142 @@
+{
+  "character": {
+    "allow": "autoplay; microphone",
+    "srcVar": "character_url",
+    "src": "http://localhost:3040/character.html?appName=Xenia",
+    "style": {
+      "border": "none",
+      "z-index": "-1",
+      "top": "0",
+      "left": "0",
+      "width": "100%",
+      "position": "fixed",
+      "height": "100%"
+    },
+    "enabled": true
+  },
+  "screens": {"start": {
+    "alignItems": "center",
+    "background": "transparent",
+    "elements": [
+      {
+        "style": {
+          "text-shadow": "0 1px 4px rgba(0,0,0,0.8)",
+          "color": "#ffffff",
+          "font-size": "1.4rem",
+          "font-family": "system-ui, sans-serif"
+        },
+        "type": "sl-text",
+        "content": "VSM Charakter-Demo"
+      },
+      {
+        "flexGrow": true,
+        "type": "vsm-filler"
+      },
+      {
+        "layout": "flex-column",
+        "padding": "0.75rem 1rem",
+        "alignItems": "stretch",
+        "children": [
+          {
+            "min": 0,
+            "max": 1,
+            "bindVar": "emo_intensity",
+            "step": 0.1,
+            "label": "Intensität (0\u20131)",
+            "type": "sl-range"
+          },
+          {
+            "min": 0,
+            "max": 2000,
+            "bindVar": "emo_attack",
+            "step": 50,
+            "label": "Attack (ms)",
+            "type": "sl-range"
+          },
+          {
+            "min": 0,
+            "max": 5000,
+            "bindVar": "emo_hold",
+            "step": 100,
+            "label": "Hold (ms)",
+            "type": "sl-range"
+          },
+          {
+            "min": 0,
+            "max": 2000,
+            "bindVar": "emo_decay",
+            "step": 50,
+            "label": "Decay (ms)",
+            "type": "sl-range"
+          }
+        ],
+        "background": "#f5f5f580",
+        "gap": "0.35rem",
+        "style": {
+          "align-self": "flex-start",
+          "border-radius": "10px",
+          "width": "min(90%, 440px)",
+          "margin-bottom": "0.5rem"
+        },
+        "type": "vsm-panel"
+      },
+      {
+        "sendsValue": "happy",
+        "sendsVar": "emo_type",
+        "variant": "success",
+        "style": {"align-self": "flex-start"},
+        "label": "Freuen",
+        "type": "sl-button"
+      },
+      {
+        "sendsValue": "sad",
+        "sendsVar": "emo_type",
+        "variant": "primary",
+        "style": {"align-self": "flex-start"},
+        "label": "Traurig",
+        "type": "sl-button"
+      },
+      {
+        "sendsValue": "surprise",
+        "sendsVar": "emo_type",
+        "variant": "warning",
+        "style": {"align-self": "flex-start"},
+        "label": "Überrascht",
+        "type": "sl-button"
+      },
+      {
+        "sendsValue": "black",
+        "sendsVar": "bg_color",
+        "variant": "neutral",
+        "style": {"align-self": "flex-end"},
+        "label": "Hintergrund dunkel",
+        "type": "sl-button"
+      },
+      {
+        "sendsValue": "midnightblue",
+        "sendsVar": "bg_color",
+        "variant": "neutral",
+        "style": {"align-self": "flex-end"},
+        "label": "Hintergrund blau",
+        "type": "sl-button"
+      },
+      {
+        "sendsValue": "machwas",
+        "sendsVar": "scene",
+        "variant": "danger",
+        "style": {"align-self": "flex-end"},
+        "label": "Scene - Machwas",
+        "type": "sl-button"
+      },
+      {
+        "sendsValue": "",
+        "sendsVar": "character_url",
+        "variant": "default",
+        "style": {"margin-bottom": "1.5rem"},
+        "label": "Charakter ausblenden",
+        "type": "sl-button"
+      }
+    ],
+    "justifyContent": "flex-end"
+  }}
+}

@@ -19,6 +19,8 @@
   import IconTrash from "./icons/IconTrash.svelte";
   import IconMonitor from "./icons/IconMonitor.svelte";
   import VarBadge from './VarBadge.svelte';
+  import CharacterPreviewPanel from './CharacterPreviewPanel.svelte';
+  import EmotionInsertModal from './EmotionInsertModal.svelte';
 
   // sessionStorage is tab-specific and survives page reloads (including force-reload)
   // but NOT tab close+reopen. This ensures each browser tab has a distinct identity,
@@ -118,6 +120,14 @@
   const PLUGIN_BADGE_MIN_W = 120;
   const PLUGIN_BADGE_DEFAULT_H = 120;
   const PLUGIN_BADGE_MIN_H = 60;
+  const PREVIEW_PANEL_STORAGE_KEY_PREFIX = 'vsm_preview_panels_';
+  const PREVIEW_PANEL_DEFAULT_X = 300;
+  const PREVIEW_PANEL_DEFAULT_Y = 60;
+  const PREVIEW_PANEL_CASCADE_STEP = 140; // large enough that a newly opened panel doesn't fully cover the previous one's title bar/controls
+  const PREVIEW_PANEL_DEFAULT_W = 360;
+  const PREVIEW_PANEL_MIN_W = 240;
+  const PREVIEW_PANEL_DEFAULT_H = 320; // display-only now (M11) — no bottom control area to fit
+  const PREVIEW_PANEL_MIN_H = 220;
   const RUNTIME_STATE_LABELS = {
     running: "Running",
     paused: "Paused",
@@ -588,6 +598,132 @@
     return { x: PLUGIN_BADGE_DEFAULT_X, y: PLUGIN_BADGE_DEFAULT_Y + index * PLUGIN_BADGE_Y_STEP, w: PLUGIN_BADGE_DEFAULT_W, h: PLUGIN_BADGE_DEFAULT_H, expanded: true };
   }
 
+  function loadPreviewPanelState(projectId) {
+    if (!projectId) return {};
+    try { return JSON.parse(localStorage.getItem(PREVIEW_PANEL_STORAGE_KEY_PREFIX + projectId) || '{}'); }
+    catch { return {}; }
+  }
+
+  async function fetchPreviewPanelStateFromServer(projectId) {
+    if (!projectId) return null;
+    try {
+      const data = await apiGet(`/api/v1/projects/${projectId}/ui-prefs`);
+      const panels = data?.previewPanels;
+      if (panels && typeof panels === 'object') return panels;
+      return null;
+    } catch {
+      return null;
+    }
+  }
+
+  function persistPreviewPanelState(projectId, state) {
+    if (!projectId) return;
+    localStorage.setItem(PREVIEW_PANEL_STORAGE_KEY_PREFIX + projectId, JSON.stringify(state));
+    apiPut(`/api/v1/projects/${projectId}/ui-prefs`, { uiPrefs: { previewPanels: state } }).catch(() => {});
+  }
+
+  function getPreviewPanelPos(instanceName) {
+    if (previewPanelState[instanceName]) return previewPanelState[instanceName];
+    const index = Object.keys(previewPanelState).length;
+    return {
+      x: PREVIEW_PANEL_DEFAULT_X + index * PREVIEW_PANEL_CASCADE_STEP,
+      y: PREVIEW_PANEL_DEFAULT_Y + index * PREVIEW_PANEL_CASCADE_STEP,
+      w: PREVIEW_PANEL_DEFAULT_W,
+      h: PREVIEW_PANEL_DEFAULT_H,
+      open: false,
+      z: 0
+    };
+  }
+
+  function openPreviewPanel(plugin) {
+    const instanceName = plugin?.instanceName;
+    if (!instanceName) return;
+    const cur = getPreviewPanelPos(instanceName);
+    previewPanelState = { ...previewPanelState, [instanceName]: { ...cur, open: true, z: ++previewPanelZCounter } };
+    persistPreviewPanelState(selectedProjectId, previewPanelState);
+  }
+
+  // Raises a panel above all others (e.g. on drag-start or any click within it), so an
+  // obscured panel becomes reachable without first having to drag the one covering it.
+  function bringPreviewPanelToFront(instanceName) {
+    const cur = previewPanelState[instanceName] || getPreviewPanelPos(instanceName);
+    const nextZ = ++previewPanelZCounter;
+    if (cur.z === nextZ - 1 && previewPanelState[instanceName]) return; // already frontmost, avoid needless persist
+    previewPanelState = { ...previewPanelState, [instanceName]: { ...cur, z: nextZ } };
+    persistPreviewPanelState(selectedProjectId, previewPanelState);
+  }
+
+  function closePreviewPanel(instanceName) {
+    const cur = previewPanelState[instanceName];
+    if (!cur) return;
+    previewPanelState = { ...previewPanelState, [instanceName]: { ...cur, open: false } };
+    persistPreviewPanelState(selectedProjectId, previewPanelState);
+  }
+
+  // Script-toolbar SIA button (M9): first click lazily launches + opens the panel (reusing
+  // openPreviewPanel's existing logic, unchanged); later clicks just toggle visibility — the panel
+  // (and its iframe/WebSocket connection to the character page) stays mounted while hidden, so
+  // loading isn't lost.
+  function toggleSiaPreview(previewCapableAgent) {
+    const instanceName = previewCapableAgent?.instanceName;
+    if (!instanceName) return;
+    if (previewPanelState[instanceName]?.open) {
+      closePreviewPanel(instanceName);
+    } else {
+      openPreviewPanel({ instanceName });
+    }
+  }
+
+  // M10: per-turn Play button — sends exactly that turn's text (same syntax the old Turn tab
+  // used) and reveals the character's panel if it's currently hidden. Cross-actor embedded
+  // actions (e.g. [Bob smile] inside a Xenia turn) need no handling here — previewTurn (M1)
+  // already routes those server-side.
+  async function handlePlayTurn(turn) {
+    if (!turn?.instanceName || !selectedProjectId) return;
+    const text = `${turn.speaker}: ${turn.text}`;
+    try {
+      await apiPost(`/api/v1/projects/${selectedProjectId}/plugins/${turn.instanceName}/preview/turn`, { text });
+      if (!previewPanelState[turn.instanceName]?.open) {
+        openPreviewPanel({ instanceName: turn.instanceName });
+      }
+    } catch (err) {
+      console.error("[handlePlayTurn] failed:", err);
+    }
+  }
+
+  // M11: right-click "Insert emotion" — resolve the turn under the cursor (M9's parser) to a
+  // previewCapable character; if none, let the browser's native context menu show instead.
+  let scriptContextMenu = null;  // { x, y, offset, speaker, instanceName, loaded } | null
+  let emotionModalState = null;  // { offset, speaker, instanceName, loaded } | null
+
+  function handleScriptContextMenu(offset, clientX, clientY) {
+    const turn = turnAtOffset(scriptTurns, offset);
+    if (!turn) return false;
+    const pcAgent = previewCapableAgents.find((a) => a.agentName === turn.speaker);
+    if (!pcAgent) return false;
+    const loaded = (previewLoadProgress[pcAgent.instanceName] ?? 0) >= 100;
+    // Never let the insertion point land inside the "Speaker:" prefix itself (e.g. a right-click
+    // on the speaker's name) — that would split it and break the "Speaker: text" syntax. Floor to
+    // right after the colon; inserting an action there (before any utterance text) is still valid.
+    const textStart = turn.offsetStart + turn.speaker.length + 1;
+    const insertOffset = Math.max(offset, textStart);
+    scriptContextMenu = { x: clientX, y: clientY, offset: insertOffset, speaker: turn.speaker, instanceName: pcAgent.instanceName, loaded };
+    return true;
+  }
+
+  function openEmotionInsertModal() {
+    if (!scriptContextMenu) return;
+    emotionModalState = { ...scriptContextMenu };
+    scriptContextMenu = null;
+  }
+
+  function handleEmotionInsert(bracketText) {
+    if (emotionModalState) {
+      scriptEditorRef?.insertText(bracketText, emotionModalState.offset);
+    }
+    emotionModalState = null;
+  }
+
   function clampBadgeRect(rect, bounds) {
     if (!bounds) return rect;
     const width = Math.min(Math.max(VAR_BADGE_MIN_WIDTH, rect.w), Math.max(VAR_BADGE_MIN_WIDTH, bounds.width));
@@ -816,16 +952,77 @@
     persistPluginBadgeState(selectedProjectId, pluginBadgeState);
   }
 
+  function startPreviewPanelDrag(event, instanceName) {
+    if (!isPrimaryPointer(event)) return;
+    event.preventDefault();
+    event.stopPropagation();
+    bringPreviewPanelToFront(instanceName);
+    previewPanelDrag = { instanceName, lastClientX: event.clientX, lastClientY: event.clientY };
+  }
+
+  function handlePreviewPanelPointerMove(event) {
+    if (!previewPanelDrag) return;
+    event.preventDefault();
+    const { instanceName } = previewPanelDrag;
+    const cur = previewPanelState[instanceName] || getPreviewPanelPos(instanceName);
+    const dx = event.clientX - previewPanelDrag.lastClientX;
+    const dy = event.clientY - previewPanelDrag.lastClientY;
+    previewPanelDrag.lastClientX = event.clientX;
+    previewPanelDrag.lastClientY = event.clientY;
+    const bounds = { width: window.innerWidth, height: window.innerHeight };
+    const next = { ...cur, x: cur.x + dx, y: cur.y + dy };
+    previewPanelState = { ...previewPanelState, [instanceName]: { ...next, ...clampBadgeRect(next, bounds) } };
+  }
+
+  function handlePreviewPanelPointerUp() {
+    if (!previewPanelDrag) return;
+    previewPanelDrag = null;
+    persistPreviewPanelState(selectedProjectId, previewPanelState);
+  }
+
+  function startPreviewPanelResize(event, instanceName) {
+    if (!isPrimaryPointer(event)) return;
+    event.preventDefault();
+    event.stopPropagation();
+    previewPanelResize = { instanceName, lastClientX: event.clientX, lastClientY: event.clientY };
+  }
+
+  function handlePreviewPanelResizeMove(event) {
+    if (!previewPanelResize) return;
+    event.preventDefault();
+    const { instanceName } = previewPanelResize;
+    const cur = previewPanelState[instanceName] || getPreviewPanelPos(instanceName);
+    const dx = event.clientX - previewPanelResize.lastClientX;
+    const dy = event.clientY - previewPanelResize.lastClientY;
+    previewPanelResize.lastClientX = event.clientX;
+    previewPanelResize.lastClientY = event.clientY;
+    previewPanelState = { ...previewPanelState, [instanceName]: {
+      ...cur,
+      w: Math.max(PREVIEW_PANEL_MIN_W, (cur.w || PREVIEW_PANEL_DEFAULT_W) + dx),
+      h: Math.max(PREVIEW_PANEL_MIN_H, (cur.h || PREVIEW_PANEL_DEFAULT_H) + dy)
+    } };
+  }
+
+  function handlePreviewPanelResizeUp() {
+    if (!previewPanelResize) return;
+    previewPanelResize = null;
+    persistPreviewPanelState(selectedProjectId, previewPanelState);
+  }
+
   onMount(() => {
     const moveHandler = (event) => {
       handleVarBadgePointerMove(event);
       handlePluginBadgePointerMove(event);
       handlePluginBadgeResizeMove(event);
+      handlePreviewPanelPointerMove(event);
+      handlePreviewPanelResizeMove(event);
     };
     const upHandler = (event) => {
       handleVarBadgePointerUp(event);
       handlePluginBadgePointerUp();
       handlePluginBadgeResizeUp();
+      handlePreviewPanelPointerUp();
+      handlePreviewPanelResizeUp();
     };
     document.addEventListener("mousemove", moveHandler, true);
     document.addEventListener("mouseup", upHandler, true);
@@ -1274,6 +1471,11 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
   let pluginBadgeState = {};    // { [className]: { x, y, w, h, expanded } }
   let pluginBadgeDrag = null;   // { className, lastClientX, lastClientY } | null
   let pluginBadgeResize = null; // { className, lastClientX, lastClientY } | null
+  let previewPanelState = {};  // { [instanceName]: { x, y, w, h, open, z } }
+  let previewLoadProgress = {}; // { [instanceName]: 0-100 } — from vm.progress postMessage (M9)
+  let previewPanelZCounter = 10;
+  let previewPanelDrag = null;   // { instanceName, lastClientX, lastClientY } | null
+  let previewPanelResize = null; // { instanceName, lastClientX, lastClientY } | null
   let sceneFlowContainerEl;
   let edgeCreateMode = false;
   let edgeCreateSourceId = "";
@@ -2818,7 +3020,31 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
       }
     });
   }
+  $: if (selectedProjectId) {
+    previewPanelState = loadPreviewPanelState(selectedProjectId);
+    const _previewPid = selectedProjectId;
+    fetchPreviewPanelStateFromServer(_previewPid).then((serverState) => {
+      if (serverState && selectedProjectId === _previewPid) {
+        previewPanelState = serverState;
+        localStorage.setItem(PREVIEW_PANEL_STORAGE_KEY_PREFIX + _previewPid, JSON.stringify(serverState));
+      }
+    });
+  }
   $: pluginBadgeDescriptors = buildPluginBadgeDescriptors(projectConfigView, pluginInterfaces);
+  $: previewCapableAgents = buildPreviewCapableAgents(projectConfigView, pluginInterfaces);
+  // M10: per-turn Play buttons. A turn is "playable" only if its speaker resolves to a
+  // previewCapable agent; "loaded" requires the character to have actually finished loading
+  // (progress === 100, not just "a panel exists") so Play doesn't silently no-op against an
+  // engine that hasn't loaded a model yet (see M2's "no model loaded" failure mode).
+  $: scriptTurns = buildTurnBoundariesFromScript(scriptDraft);
+  $: playableTurns = scriptTurns
+    .map((turn) => {
+      const pcAgent = previewCapableAgents.find((a) => a.agentName === turn.speaker);
+      if (!pcAgent) return null;
+      const loaded = (previewLoadProgress[pcAgent.instanceName] ?? 0) >= 100;
+      return { ...turn, instanceName: pcAgent.instanceName, loaded };
+    })
+    .filter(Boolean);
   $: {
     const normalize = (value) => String(value || "").trim().toLowerCase();
     const isUnknown = (value) => !value || normalize(value) === "unknown";
@@ -3293,6 +3519,10 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
     pluginBadgeState = {};
     pluginBadgeDrag = null;
     pluginBadgeResize = null;
+    previewPanelState = {};
+    previewPanelDrag = null;
+    previewPanelResize = null;
+    previewLoadProgress = {};
     showEditor = false;
   }
 
@@ -10094,6 +10324,92 @@ Sentence:
     return map;
   }
 
+  // Turn-boundary parser: unlike buildSceneGroupsFromScript/extractSceneGroupsWithText (which
+  // work at whole-scene granularity), this tracks per-turn speaker + character-offset ranges in
+  // the ORIGINAL text — the shared groundwork the per-turn Play button (M10) and the right-click
+  // "insert emotion" context resolution (M11) both need: "what turn, spoken by whom, is at this
+  // line / this cursor offset?"
+  const TURN_SPEAKER_RE = /^([A-Za-z_][A-Za-z0-9_]*)\s*:\s*(.*)$/;
+
+  function buildTurnBoundariesFromScript(text) {
+    const turns = [];
+    if (!text) return turns;
+    const lines = String(text).split("\n");
+
+    let offset = 0;
+    let sceneLanguage = "";
+    let sceneName = "";
+    let current = null; // { speaker, textParts, lineStart, offsetStart, firstLineEndOffset }
+
+    const flush = (endOffset, endLineIndex) => {
+      if (current) {
+        turns.push({
+          language: sceneLanguage,
+          sceneName,
+          speaker: current.speaker,
+          text: current.textParts.join(" ").trim(),
+          lineStart: current.lineStart,
+          lineEnd: endLineIndex,
+          offsetStart: current.offsetStart,
+          offsetEnd: endOffset,
+          firstLineEndOffset: current.firstLineEndOffset
+        });
+      }
+      current = null;
+    };
+
+    for (let i = 0; i < lines.length; i += 1) {
+      const raw = lines[i];
+      const line = raw.trim();
+      const lineStartOffset = offset;
+      const lineEndOffset = offset + raw.length; // exclusive of the newline
+      offset = lineEndOffset + 1; // account for the '\n' consumed by split
+
+      if (!line || line.startsWith("//") || line.startsWith("#")) {
+        continue;
+      }
+
+      const sceneMatch = line.match(/^scene\s+(\S+)\s+(.+)$/i);
+      if (sceneMatch) {
+        flush(lineStartOffset > 0 ? lineStartOffset - 1 : 0, i - 1);
+        sceneLanguage = sceneMatch[1];
+        sceneName = sceneMatch[2].trim();
+        continue;
+      }
+
+      const speakerMatch = line.match(TURN_SPEAKER_RE);
+      if (speakerMatch) {
+        flush(lineStartOffset > 0 ? lineStartOffset - 1 : 0, i - 1);
+        current = {
+          speaker: speakerMatch[1],
+          textParts: [speakerMatch[2]],
+          lineStart: i,
+          offsetStart: lineStartOffset,
+          firstLineEndOffset: lineEndOffset
+        };
+        continue;
+      }
+
+      // Continuation line of the current turn (no new "Speaker:" prefix, not a scene header).
+      if (current) {
+        current.textParts.push(line);
+      }
+    }
+    flush(offset > 0 ? offset - 1 : 0, lines.length - 1);
+    return turns;
+  }
+
+  // The turn (if any) whose line span contains the given CodeMirror line index.
+  function turnAtLine(turns, lineIndex) {
+    return (turns || []).find((t) => lineIndex >= t.lineStart && lineIndex <= t.lineEnd) || null;
+  }
+
+  // The turn (if any) whose character-offset span contains the given offset — used to resolve
+  // "which turn/speaker is under the cursor" for the right-click context menu (M11).
+  function turnAtOffset(turns, charOffset) {
+    return (turns || []).find((t) => charOffset >= t.offsetStart && charOffset <= t.offsetEnd) || null;
+  }
+
   function keywordsFromText(text, globalCounts = new Map(), globalSceneCount = 1) {
     if (!text) return [];
     const stop = new Set([
@@ -12139,6 +12455,41 @@ Sentence:
         };
       })
       .filter(Boolean);
+  }
+
+  // Agents bound (via device) to a plugin instance that declares previewCapable — drives the
+  // script-toolbar SIA buttons (M9). Labeled by agent name ("Xenia", "Bob"), not the raw plugin
+  // instance name, so authors see the character they think in terms of, not an implementation detail.
+  function buildPreviewCapableAgents(configView, interfaces) {
+    if (!configView?.agents || !Array.isArray(interfaces)) return [];
+    const normalizeKey = (v) => String(v || "").trim().toLowerCase();
+    const simpleClass = (v) => {
+      const text = String(v || "").trim();
+      if (!text) return "";
+      const parts = text.split(".");
+      return parts[parts.length - 1] || text;
+    };
+    function findInterface(className) {
+      if (!className) return null;
+      const classKey = normalizeKey(className);
+      const simpleKey = normalizeKey(simpleClass(className));
+      return interfaces.find((e) => {
+        const p = e?.plugin || {};
+        return [normalizeKey(p.id), normalizeKey(p.name), normalizeKey(p.className)]
+          .some((k) => k && (k === classKey || (simpleKey && k === simpleKey)));
+      }) || null;
+    }
+
+    const result = [];
+    for (const agent of configView.agents) {
+      if (!agent?.name || !agent?.device) continue;
+      const plugin = configView.plugins.find((p) => p.name === agent.device);
+      if (!plugin || !plugin.load) continue;
+      const iface = findInterface(plugin.className);
+      if (!iface?.previewCapable) continue;
+      result.push({ agentName: agent.name, instanceName: plugin.name });
+    }
+    return result;
   }
 
   function mergedCommandsForDescriptor(agentName, descriptor, configView) {
@@ -16604,6 +16955,20 @@ Sentence:
               </button>
             {/if}
             <div class="script-toolbar-spacer"></div>
+            {#each previewCapableAgents as pcAgent (pcAgent.instanceName)}
+              <button
+                type="button"
+                class="ghost sia-toggle-btn"
+                class:sia-toggle-open={previewPanelState[pcAgent.instanceName]?.open}
+                style:--sia-progress="{previewLoadProgress[pcAgent.instanceName] ?? 0}%"
+                on:click={() => toggleSiaPreview(pcAgent)}
+                title={previewPanelState[pcAgent.instanceName]?.open
+                  ? `Hide ${pcAgent.agentName} preview`
+                  : `Show ${pcAgent.agentName} preview`}
+              >
+                {pcAgent.agentName}
+              </button>
+            {/each}
             <button
               type="button"
               class="ghost"
@@ -16868,6 +17233,9 @@ Sentence:
                 diagnostics={scriptDiagnostics}
                 sceneHighlights={sceneHighlights}
                 semanticHighlights={semanticEditorHighlights}
+                playableTurns={playableTurns}
+                onPlayTurn={handlePlayTurn}
+                onContextMenu={handleScriptContextMenu}
                 onChange={(value) => {
                   scriptDraft = value;
                   scheduleScriptDiagnostics();
@@ -19384,11 +19752,63 @@ Sentence:
     wsConnected={wsConnected}
     serverMode={info?.mode || "FULL_EDITOR"}
     onClose={closePluginDashboard}
+    onOpenPreview={openPreviewPanel}
     {apiGet}
     {apiPost}
     {apiPut}
     {sendCommand}
   />
+
+  {#each Object.entries(previewPanelState) as [previewInstanceName, panelState] (previewInstanceName)}
+    <CharacterPreviewPanel
+      instanceName={previewInstanceName}
+      projectId={selectedProjectId}
+      x={panelState.x}
+      y={panelState.y}
+      w={panelState.w}
+      h={panelState.h}
+      z={panelState.z || 0}
+      open={!!panelState.open}
+      {apiGet}
+      onDragStart={(e) => startPreviewPanelDrag(e, previewInstanceName)}
+      onResizeStart={(e) => startPreviewPanelResize(e, previewInstanceName)}
+      onClose={() => closePreviewPanel(previewInstanceName)}
+      onFocus={() => bringPreviewPanelToFront(previewInstanceName)}
+      onProgress={(v) => { previewLoadProgress = { ...previewLoadProgress, [previewInstanceName]: v }; }}
+    />
+  {/each}
+
+  {#if scriptContextMenu}
+    <div
+      class="script-context-menu-backdrop"
+      role="presentation"
+      on:click={() => (scriptContextMenu = null)}
+      on:contextmenu|preventDefault={() => (scriptContextMenu = null)}
+    >
+      <div
+        class="script-context-menu"
+        style:left="{scriptContextMenu.x}px"
+        style:top="{scriptContextMenu.y}px"
+        role="menu"
+      >
+        <button type="button" role="menuitem" on:click={openEmotionInsertModal}>
+          Insert emotion
+        </button>
+      </div>
+    </div>
+  {/if}
+
+  {#if emotionModalState}
+    <EmotionInsertModal
+      speakerName={emotionModalState.speaker}
+      instanceName={emotionModalState.instanceName}
+      loaded={emotionModalState.loaded}
+      projectId={selectedProjectId}
+      {apiPost}
+      onInsert={handleEmotionInsert}
+      onClose={() => (emotionModalState = null)}
+    />
+  {/if}
 
   {#if !showEditor}
     <footer class="landing-footer" aria-label="Credits">

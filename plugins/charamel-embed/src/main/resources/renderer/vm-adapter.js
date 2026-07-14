@@ -42,10 +42,14 @@
   window.vsmDispatch = vsmDispatch;
 
   // "Ready" = the character is both visible (model loaded) and audible (audio unlocked).
+  // The 100% progress report is deferred to here (not onLoad) so the parent page's "loaded"
+  // gate — which enables the authoring-time turn Play buttons — never fires before the engine
+  // can actually synthesize audio (audio unlock requires a real click inside this iframe).
   function maybeReady() {
     if (modelLoaded && audioUnlocked && !readySent) {
       readySent = true;
       vsmFeedback('vm.ready');
+      try { window.parent.postMessage({ vsmPreviewProgress: 100 }, '*'); } catch (e) {}
     }
   }
 
@@ -107,6 +111,12 @@
         vsmFeedback('vm.progress:' + Math.round(p));
         var ov = document.getElementById('overlay');
         if (ov && !modelLoaded) ov.textContent = 'Charakter lädt … ' + Math.round(p) + '%';
+        // Authoring-time preview: the parent page (the floating preview panel) renders this as a
+        // progress fill on its script-toolbar toggle button. Same-tab postMessage — no backend
+        // round-trip needed since the iframe and the toolbar button share one browser tab.
+        // Capped below 100 here — true 100%/ready is only reported once audio is unlocked too
+        // (see maybeReady), so the parent's "loaded" gate can't enable Play before speak() works.
+        try { window.parent.postMessage({ vsmPreviewProgress: Math.min(99, Math.round(p)) }, '*'); } catch (e) {}
       },
       onLoad: function () {
         modelLoaded = true;
@@ -131,7 +141,12 @@
     // Match the page scheme: wss when the character page is served over HTTPS
     // (--secure mode), ws otherwise. Same host/port as the page (self-hosted).
     var wsProto = (location.protocol === 'https:') ? 'wss' : 'ws';
-    ws = new WebSocket(wsProto + '://' + location.host + '/ws');
+    // Forward the page's own ?vsmPreview=1 (set only on the authoring-time SIA preview panel's
+    // iframe src) onto the WS handshake — the query string doesn't travel with the WebSocket
+    // URL on its own, and the server (JettyTransport) needs it there to tag this specific
+    // session so a real SceneFlow run can mute just the preview without muting other viewers.
+    var wsQuery = qs.get('vsmPreview') ? '?vsmPreview=1' : '';
+    ws = new WebSocket(wsProto + '://' + location.host + '/ws' + wsQuery);
     ws.onopen  = function () { console.log('VSM: WebSocket open'); };
     ws.onmessage = function (e) {
       try { vsmDispatch(JSON.parse(e.data)); }

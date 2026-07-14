@@ -12,6 +12,7 @@
   export let apiPut;
   export let projectName = "";
   export let sendCommand = null;      // WS command dispatcher from App.svelte
+  export let onOpenPreview = () => {}; // opens a top-level CharacterPreviewPanel in App.svelte (survives this modal closing)
 
   // ── screen editor state ────────────────────────────────────────────────────
   let screenEditorPlugin = null;
@@ -1091,6 +1092,18 @@
                           Edit screens
                         </button>
                       {/if}
+                    </div>
+                  {/if}
+                  {#if plugin.meta?.previewCapable}
+                    <div class="pd-card-actions">
+                      <button
+                        type="button"
+                        class="pd-action-btn"
+                        disabled={!wsConnected}
+                        on:click={() => onOpenPreview(plugin)}
+                      >
+                        Preview
+                      </button>
                     </div>
                   {/if}
                 </div>

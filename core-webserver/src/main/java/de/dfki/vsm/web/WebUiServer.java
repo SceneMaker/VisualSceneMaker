@@ -183,10 +183,18 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         private final JSONArray commands;         // commands array
         private final JSONObject variables;       // variables.writes, variables.reads
         final String specVersion;                 // from specVersion field in plugin-properties.json
+        private final boolean previewCapable;     // from top-level previewCapable field in plugin-properties.json
 
         private ExportablePropertyEntry(String providerClass, JSONObject pluginSpec, JSONObject agentSpec,
                                          JSONObject pluginMeta, JSONObject categories,
                                          JSONArray commands, JSONObject variables, String specVersion) {
+            this(providerClass, pluginSpec, agentSpec, pluginMeta, categories, commands, variables, specVersion, false);
+        }
+
+        private ExportablePropertyEntry(String providerClass, JSONObject pluginSpec, JSONObject agentSpec,
+                                         JSONObject pluginMeta, JSONObject categories,
+                                         JSONArray commands, JSONObject variables, String specVersion,
+                                         boolean previewCapable) {
             this.providerClass = providerClass;
             this.pluginSpec = pluginSpec;
             this.agentSpec = agentSpec;
@@ -195,6 +203,7 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
             this.commands = commands;
             this.variables = variables;
             this.specVersion = specVersion != null ? specVersion : "";
+            this.previewCapable = previewCapable;
         }
 
         /**
@@ -266,6 +275,10 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
             if (!specVersion.isEmpty()) {
                 out.put("specVersion", specVersion);
             }
+
+            // Authoring-time character preview (CharacterPreviewCapable) — generic discovery flag,
+            // no plugin-id special-casing on the client.
+            out.put("previewCapable", previewCapable);
 
             return out;
         }
@@ -1748,10 +1761,35 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
     }
 
     private void registerRuntimeWsCommands() {
-        registerWsCommands((method, params, broadcaster) -> runtimeCommandService.dispatchRuntimeCommand(method, params, broadcaster, runtimeCommandContext),
-                "Runtime.Load", "Runtime.Play", "Runtime.Start", "Runtime.Resume", "Runtime.Pause", "Runtime.Stop",
+        registerWsCommands((method, params, broadcaster) -> {
+            applyPreviewMuteForRuntimeCommand(method, params);
+            return runtimeCommandService.dispatchRuntimeCommand(method, params, broadcaster, runtimeCommandContext);
+        }, "Runtime.Load", "Runtime.Play", "Runtime.Start", "Runtime.Resume", "Runtime.Pause", "Runtime.Stop",
                 "Runtime.Unload", "Runtime.Variable.Set", "Runtime.Query");
         registerWsCommands(this::handleRuntimeLanguageSetWsCommand, "Runtime.Language.Set");
+    }
+
+    /** Mutes/unmutes each {@code CharacterPreviewCapable} plugin's authoring-time preview page while
+     *  the real Interpreter runs, so a real SceneFlow run doesn't also speak out of an open SIA
+     *  preview panel while an audience-facing "follow the player" page speaks the same line — see
+     *  {@link de.dfki.vsm.runtime.plugin.CharacterPreviewCapable#setPreviewMuted(boolean)}. */
+    private void applyPreviewMuteForRuntimeCommand(String method, JSONObject params) {
+        final boolean mute;
+        if ("Runtime.Play".equals(method) || "Runtime.Start".equals(method) || "Runtime.Resume".equals(method)) {
+            mute = true;
+        } else if ("Runtime.Pause".equals(method) || "Runtime.Stop".equals(method) || "Runtime.Unload".equals(method)) {
+            mute = false;
+        } else {
+            return;
+        }
+        String pid = params.optString("projectId", "");
+        ProjectRef ref = projectStore.get(pid);
+        if (ref == null || ref.runtimeProject == null) return;
+        for (RunTimePlugin plugin : ref.runtimeProject.getPlugins()) {
+            if (plugin instanceof de.dfki.vsm.runtime.plugin.CharacterPreviewCapable capable) {
+                capable.setPreviewMuted(mute);
+            }
+        }
     }
 
     private JSONObject handleRuntimeLanguageSetWsCommand(String method, JSONObject params, java.util.function.Consumer<String> broadcaster) {
@@ -2727,6 +2765,9 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         mApp.get(API_PREFIX + "/projects/{pid}/plugins/dashboard", this::handlePluginDashboard);
         mApp.post(API_PREFIX + "/projects/{pid}/plugins/{name}/health", this::handlePluginHealth);
         mApp.post(API_PREFIX + "/projects/{pid}/plugins/{name}/params", this::handlePluginParams);
+        mApp.get(API_PREFIX + "/projects/{pid}/plugins/{name}/preview", this::handlePluginPreviewInfo);
+        mApp.post(API_PREFIX + "/projects/{pid}/plugins/{name}/preview/turn", this::handlePluginPreviewTurn);
+        mApp.post(API_PREFIX + "/projects/{pid}/plugins/{name}/preview/action", this::handlePluginPreviewAction);
         mApp.get(API_PREFIX + "/projects/{pid}/script", this::handleScript);
         mApp.get(API_PREFIX + "/projects/{pid}/script/scenes", this::handleScriptScenes);
         mApp.get(API_PREFIX + "/projects/{pid}/script/elements", this::handleScriptElements);
@@ -4543,6 +4584,106 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
     }
 
     /**
+     * Authoring-time character preview (see {@link de.dfki.vsm.runtime.plugin.CharacterPreviewCapable}):
+     * reports whether the plugin instance supports preview and its live page URL. Independent of
+     * whether the Interpreter/SceneFlow is running.
+     */
+    private void handlePluginPreviewInfo(Context ctx) {
+        de.dfki.vsm.runtime.plugin.CharacterPreviewCapable capable = resolvePreviewCapablePlugin(ctx);
+        if (capable == null) return;
+        JSONObject response = new JSONObject();
+        response.put("status", "ok");
+        response.put("previewCapable", true);
+        // Tags this specific connection as "the preview page" (see JettyTransport) so a real
+        // SceneFlow run can mute it without also muting other viewers (e.g. a "follow the
+        // player" audience page embedding the same character at a bare, untagged URL).
+        String previewUrl = capable.getPreviewUrl();
+        if (previewUrl != null) {
+            previewUrl += previewUrl.contains("?") ? "&vsmPreview=1" : "?vsmPreview=1";
+        }
+        response.put("previewUrl", previewUrl);
+        writeJson(ctx, response);
+    }
+
+    /** Parses and performs a raw turn (utterance text + inline [...] commands) on the character,
+     *  non-blocking, independent of any running Interpreter. Body: {@code {"text": "..."}}. */
+    private void handlePluginPreviewTurn(Context ctx) {
+        de.dfki.vsm.runtime.plugin.CharacterPreviewCapable capable = resolvePreviewCapablePlugin(ctx);
+        if (capable == null) return;
+        JSONObject body;
+        try {
+            body = new JSONObject(ctx.body());
+        } catch (Exception e) {
+            writeJson(ctx, errorResponse("BAD_REQUEST", "Invalid JSON body"));
+            return;
+        }
+        String text = body.optString("text", "");
+        if (text.isBlank()) {
+            writeJson(ctx, errorResponse("BAD_REQUEST", "Missing text"));
+            return;
+        }
+        capable.previewTurn(text);
+        JSONObject response = new JSONObject();
+        response.put("status", "ok");
+        writeJson(ctx, response);
+    }
+
+    /** Parses and performs a single standalone action command (e.g. emotion/gesture/background),
+     *  non-blocking. Body: {@code {"command": "emotion type='happy' intensity='1.0'"}}. */
+    private void handlePluginPreviewAction(Context ctx) {
+        de.dfki.vsm.runtime.plugin.CharacterPreviewCapable capable = resolvePreviewCapablePlugin(ctx);
+        if (capable == null) return;
+        JSONObject body;
+        try {
+            body = new JSONObject(ctx.body());
+        } catch (Exception e) {
+            writeJson(ctx, errorResponse("BAD_REQUEST", "Invalid JSON body"));
+            return;
+        }
+        String command = body.optString("command", "");
+        if (command.isBlank()) {
+            writeJson(ctx, errorResponse("BAD_REQUEST", "Missing command"));
+            return;
+        }
+        capable.previewAction(command);
+        JSONObject response = new JSONObject();
+        response.put("status", "ok");
+        writeJson(ctx, response);
+    }
+
+    /** Resolves the {@code {pid}/{name}} path params to a preview-capable plugin instance, or writes
+     *  an error response and returns {@code null} if the project/plugin isn't found or doesn't support it.
+     *  Lazily launches the project's plugins (idempotent — see {@code RunTimeProject.launch()}) if this
+     *  is the first touch: opening a project for editing ({@code ensureProject}) only parses it, it does
+     *  NOT launch plugins (that normally waits for the user to press Start) — but preview must work
+     *  independent of the Interpreter/SceneFlow running, so the transport still needs to be up. */
+    private de.dfki.vsm.runtime.plugin.CharacterPreviewCapable resolvePreviewCapablePlugin(Context ctx) {
+        String pid = ctx.pathParam("pid");
+        String instanceName = ctx.pathParam("name");
+        ProjectRef ref = projectStore.get(pid);
+        if (ref == null || ref.runtimeProject == null) {
+            writeJson(ctx, errorResponse("NOT_FOUND", "Project not found"));
+            return null;
+        }
+        // Synchronized: two panels (e.g. restored from persisted ui-prefs) can mount concurrently
+        // and both race into this check on separate request threads — without the lock, both could
+        // see pluginsLaunchedForPreview == false and call launch() concurrently, which is exactly the
+        // double-launch (port rebind) failure this flag exists to prevent.
+        synchronized (ref) {
+            if (!ref.pluginsLaunchedForPreview) {
+                ref.runtimeProject.launch();
+                ref.pluginsLaunchedForPreview = true;
+            }
+        }
+        RunTimePlugin plugin = ref.runtimeProject.getPlugin(instanceName);
+        if (!(plugin instanceof de.dfki.vsm.runtime.plugin.CharacterPreviewCapable capable)) {
+            writeJson(ctx, errorResponse("NOT_SUPPORTED", "Plugin does not support preview: " + instanceName));
+            return null;
+        }
+        return capable;
+    }
+
+    /**
      * WS command: ProjectConfig.Plugin.GetUpdate
      * <p>
      * Params: { projectId, className, [knownVarNames: [string]] }
@@ -5439,8 +5580,11 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         // Spec version for plugin update detection
         String specVersion = root.optString("specVersion", "");
 
+        // Authoring-time character preview capability (non-structural; see plugin-properties.json docs)
+        boolean previewCapable = root.optBoolean("previewCapable", false);
+
         return new ExportablePropertyEntry(null, pluginSpec, agentSpec,
-                pluginMeta, categories, commands, variables, specVersion);
+                pluginMeta, categories, commands, variables, specVersion, previewCapable);
     }
 
     private String resolvePluginClassName(ProjectConfig config, String deviceName) {
@@ -10279,6 +10423,10 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         List<JSONObject> edges = new ArrayList<>();
         List<JSONObject> comments = new ArrayList<>();
         String runtimeState = "stopped";
+        // Guards resolvePreviewCapablePlugin()'s lazy launch() so it fires at most once per
+        // project — some plugins' launch() (e.g. htmlgui-ws) isn't safe to call twice (rebinds
+        // its port unconditionally), unlike charamel-embed's own re-launch guard.
+        boolean pluginsLaunchedForPreview = false;
         int nextNodeIndex = 1;
         int nextSuperNodeIndex = 1;
         String scriptText;

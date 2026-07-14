@@ -27,8 +27,18 @@ public interface CharamelTransport {
     /** True when a character page is attached and can receive envelopes. */
     boolean isConnected();
 
+    /** Base URL of the live character page (e.g. {@code http://localhost:3040/character.html}),
+     *  or {@code null} if there is no such URL (not started yet, or no HTTP page — e.g. Android). */
+    String getPreviewUrl();
+
     /** Tears the transport down (stop server / detach bridge). */
     void stop();
+
+    /** Mutes or unmutes delivery to whichever connected client is the authoring-time preview page
+     *  (see {@link JettyTransport}'s {@code vsmPreview} query-param tagging), so a real SceneFlow
+     *  run doesn't also speak out of the preview panel while an audience-facing viewer speaks the
+     *  same line. No-op where there is only one possible viewer (e.g. Android). */
+    void setPreviewMuted(boolean muted);
 
     /** Callbacks the transport invokes on the executor as the page connects, speaks back, and leaves. */
     interface Listener {

@@ -50,6 +50,12 @@ public class RunTimeProject {
     private final GesticonConfig mGesticonConfig = new GesticonConfig();
     // The runtime plugin map of the project
     private final Map<String, RunTimePlugin> mPluginMap = new HashMap<>();
+    // Guards the plugin-launch loop in launch() against running twice on the same instance —
+    // e.g. an authoring-time preview touch (WebUiServer's lazy preview-launch) followed by a
+    // real Runtime.Play both call launch(); without this, the second pass re-launches every
+    // plugin and any that binds a fixed port (a plugin's own HTTP/WS server) throws a
+    // BindException that aborts the WS command with no reply, hanging the client.
+    private boolean mPluginsLaunched = false;
     protected boolean isNewProject = false;
     // The project Path (added PG 11.4.2016);
     private String mProjectPath = "";
@@ -128,6 +134,11 @@ public class RunTimeProject {
     // Get a loaded runtime plugin instance by name (null if not loaded)
     public final RunTimePlugin getPlugin(final String name) {
         return mPluginMap.get(name);
+    }
+
+    // Get all loaded runtime plugin instances (read-only view)
+    public final java.util.Collection<RunTimePlugin> getPlugins() {
+        return java.util.Collections.unmodifiableCollection(mPluginMap.values());
     }
 
     // Get the list of all configured agents in the project configuation (agged PG 8.4.2016)
@@ -328,9 +339,12 @@ public class RunTimeProject {
         }
         createRuntimePlayerIfNeeded();
         mRunTimePlayer.launch();
-        // Launch all plugins
-        for (RunTimePlugin runTimePlugin : mPluginMap.values()) {
-            runTimePlugin.launch();
+        // Launch all plugins (once — see mPluginsLaunched)
+        if (!mPluginsLaunched) {
+            for (RunTimePlugin runTimePlugin : mPluginMap.values()) {
+                runTimePlugin.launch();
+            }
+            mPluginsLaunched = true;
         }
         // Create an interpreter
         mInterpreter = new Interpreter(this);//GM
@@ -352,6 +366,7 @@ public class RunTimeProject {
         }
         // Unload all plugins
         mPluginMap.values().forEach(RunTimePlugin::unload);
+        mPluginsLaunched = false;
         // Remove the interpreter
         mInterpreter = null;//GM
         // Return true at success

@@ -30,6 +30,11 @@ public final class JettyTransport implements CharamelTransport {
     private final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
     private final Listener mListener;
     private final Set<WsContext> mWebSockets = ConcurrentHashMap.newKeySet();
+    // Sessions whose connecting page loaded the URL with ?vsmPreview=1 — i.e. the authoring-time
+    // SIA preview panel, as opposed to any other viewer (a "follow the player" audience page, a
+    // plain browser tab, …). Filtered out of send() while mPreviewMuted is set.
+    private final Set<WsContext> mPreviewWebSockets = ConcurrentHashMap.newKeySet();
+    private volatile boolean mPreviewMuted = false;
 
     // Desktop-only config, read from the plugin config here so the executor holds no reference
     // to this class (it is created reflectively) and thus stays free of Jetty/Javalin/AWT.
@@ -95,6 +100,7 @@ public final class JettyTransport implements CharamelTransport {
         mApp.ws("/ws", ws -> {
             ws.onConnect(ctx -> {
                 mWebSockets.add(ctx);
+                if ("1".equals(ctx.queryParam("vsmPreview"))) mPreviewWebSockets.add(ctx);
                 if (mListener != null) mListener.onConnected();
             });
             ws.onMessage(this::onWsMessage);
@@ -114,8 +120,14 @@ public final class JettyTransport implements CharamelTransport {
     @Override
     public void send(String json) {
         for (WsContext ws : mWebSockets) {
+            if (mPreviewMuted && mPreviewWebSockets.contains(ws)) continue;
             ws.send(json);
         }
+    }
+
+    @Override
+    public void setPreviewMuted(boolean muted) {
+        mPreviewMuted = muted;
     }
 
     @Override
@@ -124,8 +136,16 @@ public final class JettyTransport implements CharamelTransport {
     }
 
     @Override
+    public String getPreviewUrl() {
+        if (mApp == null) return null;
+        final String scheme = de.dfki.vsm.runtime.tls.TlsRuntimeContext.isEnabled() ? "https" : "http";
+        return scheme + "://localhost:" + mPort + "/character.html";
+    }
+
+    @Override
     public void stop() {
         mWebSockets.clear();
+        mPreviewWebSockets.clear();
         if (mApp != null) {
             mApp.stop();
             mApp = null;
@@ -149,6 +169,7 @@ public final class JettyTransport implements CharamelTransport {
 
     private void onWsClose(WsCloseContext ctx) {
         mWebSockets.remove(ctx);
+        mPreviewWebSockets.remove(ctx);
         if (mListener != null) mListener.onDisconnected();
     }
 
