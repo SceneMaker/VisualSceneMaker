@@ -1415,23 +1415,33 @@ a.export-link {
   margin-left: auto; /* pushes everything after it (issue nav, SIA toggle buttons) to the right */
 }
 
-/* button.ghost.sia-toggle-btn (not just .sia-toggle-btn): button.ghost's `background:
-   transparent` shorthand outspecifies a bare class selector and would reset
-   background-image to none, silently killing the fill. */
-button.ghost.sia-toggle-btn {
+/* Same box/typography as the other script-toolbar buttons (Generate Scenes, Search, …) —
+   .panel-save.sia-toggle-btn (not just .sia-toggle-btn) so the two classes' combined
+   specificity beats .panel-save's own `background` shorthand for the background-image
+   overlay below. */
+.panel-save.sia-toggle-btn {
   position: relative;
   overflow: hidden;
+  gap: 0.4rem;
+  /* Not-yet-loaded portion reads as a disabled button (matches button:disabled's
+     opacity: 0.5 look); the loaded portion reveals the normal enabled background
+     underneath, so the fill sweeps left-to-right as the character loads. */
   background-image: linear-gradient(
     to right,
-    rgba(91, 142, 220, 0.4) 0%,
-    rgba(91, 142, 220, 0.4) var(--sia-progress, 0%),
+    transparent 0%,
     transparent var(--sia-progress, 0%),
-    transparent 100%
+    rgb(243, 240, 236) var(--sia-progress, 0%),
+    rgb(243, 240, 236) 100%
   );
   background-repeat: no-repeat;
 }
 
-button.ghost.sia-toggle-btn.sia-toggle-open {
+.panel-save.sia-toggle-btn .icon {
+  width: 16px;
+  height: 16px;
+}
+
+.panel-save.sia-toggle-btn.sia-toggle-open {
   border-color: var(--accent);
   font-weight: 600;
 }

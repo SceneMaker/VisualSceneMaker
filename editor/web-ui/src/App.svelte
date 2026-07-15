@@ -18,6 +18,7 @@
   import IconStop from "./icons/IconStop.svelte";
   import IconTrash from "./icons/IconTrash.svelte";
   import IconMonitor from "./icons/IconMonitor.svelte";
+  import IconPerson from "./icons/IconPerson.svelte";
   import VarBadge from './VarBadge.svelte';
   import CharacterPreviewPanel from './CharacterPreviewPanel.svelte';
   import EmotionInsertModal from './EmotionInsertModal.svelte';
@@ -701,7 +702,7 @@
     if (!turn) return false;
     const pcAgent = previewCapableAgents.find((a) => a.agentName === turn.speaker);
     if (!pcAgent) return false;
-    const loaded = (previewLoadProgress[pcAgent.instanceName] ?? 0) >= 100;
+    const loaded = (previewLoadProgress[pcAgent.instanceName] ?? 0) >= 100 && !previewAnySpeaking;
     // Never let the insertion point land inside the "Speaker:" prefix itself (e.g. a right-click
     // on the speaker's name) — that would split it and break the "Speaker: text" syntax. Floor to
     // right after the colon; inserting an action there (before any utterance text) is still valid.
@@ -1473,6 +1474,17 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
   let pluginBadgeResize = null; // { className, lastClientX, lastClientY } | null
   let previewPanelState = {};  // { [instanceName]: { x, y, w, h, open, z } }
   let previewLoadProgress = {}; // { [instanceName]: 0-100 } — from vm.progress postMessage (M9)
+  let previewSpeakingInstances = new Set(); // instanceNames currently speaking — gates ALL turn/emotion
+                                             // Play buttons globally so overlapping speech can't be triggered
+  $: previewAnySpeaking = previewSpeakingInstances.size > 0;
+
+  function handlePreviewSpeakingChange(instanceName, speaking) {
+    if (previewSpeakingInstances.has(instanceName) === speaking) return;
+    const next = new Set(previewSpeakingInstances);
+    if (speaking) next.add(instanceName);
+    else next.delete(instanceName);
+    previewSpeakingInstances = next;
+  }
   let previewPanelZCounter = 10;
   let previewPanelDrag = null;   // { instanceName, lastClientX, lastClientY } | null
   let previewPanelResize = null; // { instanceName, lastClientX, lastClientY } | null
@@ -3035,13 +3047,16 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
   // M10: per-turn Play buttons. A turn is "playable" only if its speaker resolves to a
   // previewCapable agent; "loaded" requires the character to have actually finished loading
   // (progress === 100, not just "a panel exists") so Play doesn't silently no-op against an
-  // engine that hasn't loaded a model yet (see M2's "no model loaded" failure mode).
+  // engine that hasn't loaded a model yet (see M2's "no model loaded" failure mode). Also
+  // requires no character to be currently speaking (previewAnySpeaking) — every turn's Play
+  // button disables globally while one is in flight, so a click mid-utterance can't start an
+  // overlapping second speak.
   $: scriptTurns = buildTurnBoundariesFromScript(scriptDraft);
   $: playableTurns = scriptTurns
     .map((turn) => {
       const pcAgent = previewCapableAgents.find((a) => a.agentName === turn.speaker);
       if (!pcAgent) return null;
-      const loaded = (previewLoadProgress[pcAgent.instanceName] ?? 0) >= 100;
+      const loaded = (previewLoadProgress[pcAgent.instanceName] ?? 0) >= 100 && !previewAnySpeaking;
       return { ...turn, instanceName: pcAgent.instanceName, loaded };
     })
     .filter(Boolean);
@@ -3523,6 +3538,7 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
     previewPanelDrag = null;
     previewPanelResize = null;
     previewLoadProgress = {};
+    previewSpeakingInstances = new Set();
     showEditor = false;
   }
 
@@ -16958,7 +16974,7 @@ Sentence:
             {#each previewCapableAgents as pcAgent (pcAgent.instanceName)}
               <button
                 type="button"
-                class="ghost sia-toggle-btn"
+                class="panel-save sia-toggle-btn"
                 class:sia-toggle-open={previewPanelState[pcAgent.instanceName]?.open}
                 style:--sia-progress="{previewLoadProgress[pcAgent.instanceName] ?? 0}%"
                 on:click={() => toggleSiaPreview(pcAgent)}
@@ -16966,6 +16982,7 @@ Sentence:
                   ? `Hide ${pcAgent.agentName} preview`
                   : `Show ${pcAgent.agentName} preview`}
               >
+                <IconPerson className="icon" />
                 {pcAgent.agentName}
               </button>
             {/each}
@@ -19775,6 +19792,7 @@ Sentence:
       onClose={() => closePreviewPanel(previewInstanceName)}
       onFocus={() => bringPreviewPanelToFront(previewInstanceName)}
       onProgress={(v) => { previewLoadProgress = { ...previewLoadProgress, [previewInstanceName]: v }; }}
+      onSpeaking={(v) => handlePreviewSpeakingChange(previewInstanceName, v)}
     />
   {/each}
 

@@ -62,7 +62,7 @@ export const sceneScriptTheme = EditorView.theme(
     },
     ".cm-turn-play-btn-disabled": {
       border: "1px solid #c9c4b8",
-      background: "transparent",
+      background: "rgb(243, 240, 236)",
       color: "#b8b2a3",
       cursor: "default"
     }

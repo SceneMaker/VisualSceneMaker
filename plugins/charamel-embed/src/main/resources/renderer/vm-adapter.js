@@ -58,10 +58,16 @@
     if (!vm) { console.warn('VSM: engine not ready, dropping', env); return; }
     switch (env.cmd) {
       case 'speak':
+        // Authoring-time preview: lets the parent page (script editor) disable every turn's
+        // Play button while this character is actually speaking, so a click mid-utterance can't
+        // start an overlapping second speak — the REST dispatch itself returns immediately and
+        // can't signal true completion on its own.
+        try { window.parent.postMessage({ vsmSpeaking: true }, '*'); } catch (e) {}
         vm.speakCommand({ text: env.text, voice: env.voice }, {
           onStart: function () { /* onMarker delivers the start bracket */ },
           onEnd: function (success, error) {
             if (!success) console.warn('VSM: speak ended with error', error);
+            try { window.parent.postMessage({ vsmSpeaking: false }, '*'); } catch (e) {}
             vsmFeedback(env.id + ':stop');         // safety net (idempotent on the VSM side)
           },
           onMarker: function (name, value) {

@@ -16,6 +16,7 @@
   export let onClose = null;       // callback()
   export let onFocus = null;       // callback() — raise this panel above others
   export let onProgress = null;    // callback(0-100) — character model load progress
+  export let onSpeaking = null;    // callback(boolean) — true while this character is actively speaking
 
   let previewUrl = null;
   let loadError = "";
@@ -24,9 +25,13 @@
 
   function handlePreviewMessage(event) {
     if (!iframeEl || event.source !== iframeEl.contentWindow) return;
-    const value = event.data?.vsmPreviewProgress;
-    if (typeof value === "number") {
-      onProgress?.(value);
+    const progress = event.data?.vsmPreviewProgress;
+    if (typeof progress === "number") {
+      onProgress?.(progress);
+    }
+    const speaking = event.data?.vsmSpeaking;
+    if (typeof speaking === "boolean") {
+      onSpeaking?.(speaking);
     }
   }
 
