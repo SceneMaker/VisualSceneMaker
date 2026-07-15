@@ -9,12 +9,20 @@
   export let speakerName = "";
   export let instanceName = "";
   export let loaded = false;
+  export let x = null; // null = centered (CSS flex); number = dragged to an absolute viewport position
+  export let y = null;
   export let projectId = null;
   export let apiPost;
-  export let onInsert = null; // (bracketText: string) => void — also responsible for closing the modal
-  export let onClose = null;  // () => void — cancel without inserting
+  export let onInsert = null;    // (bracketText: string) => void — also responsible for closing the modal
+  export let onClose = null;     // () => void — cancel without inserting
+  export let onDragStart = null; // (event, rect) => void — rect is the modal's current bounding rect
 
   let currentCommand = "";
+  let modalEl;
+
+  function handleHeaderPointerDown(e) {
+    onDragStart?.(e, modalEl?.getBoundingClientRect());
+  }
 
   async function testAction(command) {
     await apiPost(`/api/v1/projects/${projectId}/plugins/${instanceName}/preview/action`, { command });
@@ -31,11 +39,32 @@
 </script>
 
 <div class="eim-backdrop" role="presentation" on:click={handleBackdropClick}>
-  <div class="eim-modal" role="dialog" aria-label="Insert emotion">
-    <div class="eim-header">
+  <div
+    class="eim-modal"
+    bind:this={modalEl}
+    role="dialog"
+    aria-label="Insert emotion"
+    style:position={x !== null ? "fixed" : null}
+    style:left={x !== null ? `${x}px` : null}
+    style:top={y !== null ? `${y}px` : null}
+    style:margin={x !== null ? "0" : null}
+  >
+    <div
+      class="eim-header"
+      on:pointerdown|stopPropagation={handleHeaderPointerDown}
+      on:mousedown|stopPropagation={handleHeaderPointerDown}
+    >
       <span class="eim-title">Insert emotion — {speakerName}</span>
-      <button type="button" class="eim-close" on:click={() => onClose?.()} title="Cancel" aria-label="Cancel">
-        &#10005;
+      <button
+        type="button"
+        class="ghost icon-button eim-close"
+        on:pointerdown|stopPropagation
+        on:mousedown|stopPropagation
+        on:click|stopPropagation={() => onClose?.()}
+        title="Cancel"
+        aria-label="Cancel"
+      >
+        &times;
       </button>
     </div>
     <div class="eim-body">
@@ -88,6 +117,9 @@
     padding: 0.6rem 0.7rem;
     background: #f8f6f2;
     border-bottom: 1px solid #e2ddd4;
+    cursor: move;
+    touch-action: none;
+    user-select: none;
   }
 
   .eim-title {
@@ -100,20 +132,14 @@
     white-space: nowrap;
   }
 
+  /* Sizing/shape/hover come from the shared .ghost.icon-button classes (app.css) — same
+     convention as the "Add/Edit variable definition" (.def-close) and "Command(s) executed
+     at..." (.cmd-modal-close) windows. This just matches their small font-size tweak. */
   .eim-close {
-    width: 20px;
-    height: 20px;
+    font-size: 1.1rem;
+    line-height: 1;
+    padding: 0;
     flex-shrink: 0;
-    background: transparent;
-    border: 1px solid #c0b8ae;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 0.65rem;
-    color: #5a5a5a;
-  }
-
-  .eim-close:hover {
-    background: #efe9e0;
   }
 
   .eim-body {

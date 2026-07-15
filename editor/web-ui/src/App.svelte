@@ -695,7 +695,10 @@
   // M11: right-click "Insert emotion" — resolve the turn under the cursor (M9's parser) to a
   // previewCapable character; if none, let the browser's native context menu show instead.
   let scriptContextMenu = null;  // { x, y, offset, speaker, instanceName, loaded } | null
-  let emotionModalState = null;  // { offset, speaker, instanceName, loaded } | null
+  // x/y/w/h null until first drag — the modal starts centered (CSS flex) and switches to an
+  // absolute, viewport-relative position (like the SIA preview panel) once the user drags it.
+  let emotionModalState = null;  // { offset, speaker, instanceName, loaded, x, y, w, h } | null
+  let emotionModalDrag = null;   // { lastClientX, lastClientY } | null
 
   function handleScriptContextMenu(offset, clientX, clientY) {
     const turn = turnAtOffset(scriptTurns, offset);
@@ -714,8 +717,36 @@
 
   function openEmotionInsertModal() {
     if (!scriptContextMenu) return;
-    emotionModalState = { ...scriptContextMenu };
+    const { offset, speaker, instanceName, loaded } = scriptContextMenu;
+    emotionModalState = { offset, speaker, instanceName, loaded, x: null, y: null, w: null, h: null };
     scriptContextMenu = null;
+  }
+
+  function startEmotionModalDrag(event, rect) {
+    if (!isPrimaryPointer(event) || !emotionModalState) return;
+    event.preventDefault();
+    event.stopPropagation();
+    if (emotionModalState.x == null && rect) {
+      emotionModalState = { ...emotionModalState, x: rect.left, y: rect.top, w: rect.width, h: rect.height };
+    }
+    emotionModalDrag = { lastClientX: event.clientX, lastClientY: event.clientY };
+  }
+
+  function handleEmotionModalPointerMove(event) {
+    if (!emotionModalDrag || !emotionModalState || emotionModalState.x == null) return;
+    event.preventDefault();
+    const dx = event.clientX - emotionModalDrag.lastClientX;
+    const dy = event.clientY - emotionModalDrag.lastClientY;
+    emotionModalDrag.lastClientX = event.clientX;
+    emotionModalDrag.lastClientY = event.clientY;
+    const bounds = { width: window.innerWidth, height: window.innerHeight };
+    const next = { ...emotionModalState, x: emotionModalState.x + dx, y: emotionModalState.y + dy };
+    const clamped = clampBadgeRect({ x: next.x, y: next.y, w: next.w || 360, h: next.h || 300 }, bounds);
+    emotionModalState = { ...next, x: clamped.x, y: clamped.y };
+  }
+
+  function handleEmotionModalPointerUp() {
+    emotionModalDrag = null;
   }
 
   function handleEmotionInsert(bracketText) {
@@ -1017,6 +1048,7 @@
       handlePluginBadgeResizeMove(event);
       handlePreviewPanelPointerMove(event);
       handlePreviewPanelResizeMove(event);
+      handleEmotionModalPointerMove(event);
     };
     const upHandler = (event) => {
       handleVarBadgePointerUp(event);
@@ -1024,6 +1056,7 @@
       handlePluginBadgeResizeUp();
       handlePreviewPanelPointerUp();
       handlePreviewPanelResizeUp();
+      handleEmotionModalPointerUp();
     };
     document.addEventListener("mousemove", moveHandler, true);
     document.addEventListener("mouseup", upHandler, true);
@@ -19821,10 +19854,13 @@ Sentence:
       speakerName={emotionModalState.speaker}
       instanceName={emotionModalState.instanceName}
       loaded={emotionModalState.loaded}
+      x={emotionModalState.x}
+      y={emotionModalState.y}
       projectId={selectedProjectId}
       {apiPost}
       onInsert={handleEmotionInsert}
       onClose={() => (emotionModalState = null)}
+      onDragStart={startEmotionModalDrag}
     />
   {/if}
 
