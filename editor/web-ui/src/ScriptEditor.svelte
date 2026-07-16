@@ -19,6 +19,8 @@
   export let playableTurns = []; // [{speaker, text, firstLineEndOffset, instanceName, loaded}] — M10
   export let onPlayTurn = null;  // callback(turn) — send this turn to its character's preview
   export let onContextMenu = null; // (charOffset, clientX, clientY) => boolean — M11; true = suppress the native menu
+  export let actionSpans = [];      // [{offsetStart, offsetEnd, actionActor, actionName, features, raw}] — M13b
+  export let compactCommands = false; // M13c: global compact/full view toggle
 
   // Scene highlight decoration machinery
   const setSceneHighlightsEffect = StateEffect.define();
@@ -207,6 +209,48 @@
     provide: (f) => EditorView.decorations.from(f)
   });
 
+  // Compact/full command display (M13c) — a pure view decoration: full mode shows nothing
+  // (the raw stored text as-is), compact mode replaces each action span with a shortened
+  // read-only label. Never edits the document itself.
+  const setActionDisplayEffect = StateEffect.define();
+
+  class ActionCompactWidget extends WidgetType {
+    constructor(span) {
+      super();
+      this.span = span;
+    }
+    eq(other) {
+      return other.span.offsetStart === this.span.offsetStart
+        && other.span.offsetEnd === this.span.offsetEnd
+        && other.span.raw === this.span.raw;
+    }
+    toDOM() {
+      const el = document.createElement("span");
+      el.className = "cm-action-compact";
+      el.textContent = compactLabelForSpan(this.span);
+      el.title = this.span.raw;
+      return el;
+    }
+    ignoreEvent() { return false; }
+  }
+
+  function compactLabelForSpan(span) {
+    const prefix = span.actionActor ? `${span.actionActor}: ` : "";
+    const primary = span.features.length ? ` ${span.features[0].value}` : "";
+    return `[${prefix}${span.actionName}${primary}]`;
+  }
+
+  const actionDisplayField = StateField.define({
+    create() { return Decoration.none; },
+    update(decos, tr) {
+      for (const effect of tr.effects) {
+        if (effect.is(setActionDisplayEffect)) return effect.value;
+      }
+      return tr.docChanged ? decos.map(tr.changes) : decos;
+    },
+    provide: (f) => EditorView.decorations.from(f)
+  });
+
   let host;
   let view;
   let suppress = false;
@@ -341,6 +385,7 @@
       sceneHighlightField,
       semanticHighlightField,
       playButtonsField,
+      actionDisplayField,
       EditorView.domEventHandlers({
         contextmenu(event, cmView) {
           if (!onContextMenu) return false;
@@ -428,6 +473,23 @@
     view.dispatch({
       changes: { from, to, insert },
       selection: { anchor: from + insert.length }
+    });
+    view.focus();
+  }
+
+  // M13d: replaces an exact [from, to) range with text — used for editing an existing action
+  // span in place (preserving its surrounding spacing) and for deleting one (text = ""). A
+  // separate method from insertText rather than overloading its empty-string semantics, since
+  // insertText("") deliberately no-ops even against an active selection.
+  export function replaceRange(text, from, to) {
+    if (!view || readOnly) return;
+    const insert = text == null ? "" : String(text);
+    const doc = view.state.doc;
+    const resolvedFrom = Math.max(0, Math.min(from, doc.length));
+    const resolvedTo = Math.max(resolvedFrom, Math.min(to, doc.length));
+    view.dispatch({
+      changes: { from: resolvedFrom, to: resolvedTo, insert },
+      selection: { anchor: resolvedFrom + insert.length }
     });
     view.focus();
   }
@@ -615,6 +677,27 @@
 
   $: if (view && playableTurns) {
     applyPlayButtons(playableTurns);
+  }
+
+  function applyActionDisplay(spans, compact) {
+    if (!view) return;
+    const doc = view.state.doc;
+    const ranges = [];
+    if (compact) {
+      for (const span of spans || []) {
+        const from = Math.floor(span.offsetStart);
+        const to = Math.floor(span.offsetEnd);
+        if (!Number.isFinite(from) || !Number.isFinite(to) || from < 0 || to > doc.length || to <= from) continue;
+        const widget = new ActionCompactWidget(span);
+        ranges.push(Decoration.replace({ widget }).range(from, to));
+      }
+    }
+    ranges.sort((a, b) => a.from - b.from || a.to - b.to);
+    view.dispatch({ effects: setActionDisplayEffect.of(Decoration.set(ranges)) });
+  }
+
+  $: if (view) {
+    applyActionDisplay(actionSpans, compactCommands);
   }
 </script>
 

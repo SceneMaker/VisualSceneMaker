@@ -21,7 +21,7 @@
   import IconPerson from "./icons/IconPerson.svelte";
   import VarBadge from './VarBadge.svelte';
   import CharacterPreviewPanel from './CharacterPreviewPanel.svelte';
-  import EmotionInsertModal from './EmotionInsertModal.svelte';
+  import ActionCommandModal from './ActionCommandModal.svelte';
 
   // sessionStorage is tab-specific and survives page reloads (including force-reload)
   // but NOT tab close+reopen. This ensures each browser tab has a distinct identity,
@@ -692,68 +692,157 @@
     }
   }
 
-  // M11: right-click "Insert emotion" — resolve the turn under the cursor (M9's parser) to a
-  // previewCapable character; if none, let the browser's native context menu show instead.
-  let scriptContextMenu = null;  // { x, y, offset, speaker, instanceName, loaded } | null
+  // M11/M13d: right-click on turn text -> "Insert emotion"/"Insert background"/"Insert
+  // clearEmotion"; right-click on an existing action span -> "Edit"/"Delete". Resolves the turn
+  // under the cursor (M9) to a previewCapable character; if that fails, let the browser's
+  // native context menu show instead.
+  const SUPPORTED_ACTION_TYPES = ["emotion", "background", "clearEmotion", "pause"];
+
+  let scriptContextMenu = null;  // { x, y, offset, speaker, instanceName, loaded, editableSpan } | null
   // x/y/w/h null until first drag — the modal starts centered (CSS flex) and switches to an
   // absolute, viewport-relative position (like the SIA preview panel) once the user drags it.
-  let emotionModalState = null;  // { offset, speaker, instanceName, loaded, x, y, w, h } | null
-  let emotionModalDrag = null;   // { lastClientX, lastClientY } | null
+  // turnSpeaker is the turn's own nominal speaker — always fixed, used to decide whether the
+  // saved bracket needs an actor prefix at all (only when targetActor differs from it).
+  let actionModalState = null;   // { offset, turnSpeaker, initialTarget, x, y, w, h, actionType, editingSpan } | null
+  let actionModalDrag = null;    // { lastClientX, lastClientY } | null
+
+  // M13e: every previewCapable agent, so the modal's target picker isn't limited to the turn's
+  // own speaker — reactive so a character finishing loading (or starting to speak) updates the
+  // picker's "loaded" state live while the modal is already open.
+  $: actionModalTargetOptions = previewCapableAgents.map((a) => ({
+    agentName: a.agentName,
+    instanceName: a.instanceName,
+    loaded: (previewLoadProgress[a.instanceName] ?? 0) >= 100 && !previewAnySpeaking
+  }));
 
   function handleScriptContextMenu(offset, clientX, clientY) {
     const turn = turnAtOffset(scriptTurns, offset);
     if (!turn) return false;
     const pcAgent = previewCapableAgents.find((a) => a.agentName === turn.speaker);
     if (!pcAgent) return false;
-    const loaded = (previewLoadProgress[pcAgent.instanceName] ?? 0) >= 100 && !previewAnySpeaking;
     // Never let the insertion point land inside the "Speaker:" prefix itself (e.g. a right-click
     // on the speaker's name) — that would split it and break the "Speaker: text" syntax. Floor to
     // right after the colon; inserting an action there (before any utterance text) is still valid.
     const textStart = turn.offsetStart + turn.speaker.length + 1;
     const insertOffset = Math.max(offset, textStart);
-    scriptContextMenu = { x: clientX, y: clientY, offset: insertOffset, speaker: turn.speaker, instanceName: pcAgent.instanceName, loaded };
+    const hitSpan = actionSpanAtOffset(actionSpans, offset);
+    const editableSpan = hitSpan && SUPPORTED_ACTION_TYPES.includes(hitSpan.actionName) ? hitSpan : null;
+    scriptContextMenu = { x: clientX, y: clientY, offset: insertOffset, speaker: turn.speaker, editableSpan };
     return true;
   }
 
-  function openEmotionInsertModal() {
+  function featuresToMap(features) {
+    const map = {};
+    for (const f of features || []) map[f.key] = f.value;
+    return map;
+  }
+
+  // Shape depends on actionType — matches whichever sub-editor ActionCommandModal renders.
+  function initialValuesForSpan(span) {
+    if (!span) return null;
+    const map = featuresToMap(span.features);
+    if (span.actionName === "background") return { color: map.color };
+    if (span.actionName === "clearEmotion") return null; // no parameters at all
+    if (span.actionName === "pause") return { duration: map.duration };
+    return {
+      type: map.type, intensity: map.intensity, attack: map.attack, hold: map.hold, decay: map.decay,
+      blocking: map.blocking // M13e — emotion only
+    };
+  }
+
+  function openInsertModal(actionType) {
     if (!scriptContextMenu) return;
-    const { offset, speaker, instanceName, loaded } = scriptContextMenu;
-    emotionModalState = { offset, speaker, instanceName, loaded, x: null, y: null, w: null, h: null };
+    const { offset, speaker } = scriptContextMenu;
+    actionModalState = {
+      offset, turnSpeaker: speaker, initialTarget: speaker,
+      x: null, y: null, w: null, h: null, actionType, editingSpan: null
+    };
     scriptContextMenu = null;
   }
 
-  function startEmotionModalDrag(event, rect) {
-    if (!isPrimaryPointer(event) || !emotionModalState) return;
+  function openEditModal() {
+    const span = scriptContextMenu?.editableSpan;
+    if (!span) return;
+    actionModalState = {
+      offset: null, turnSpeaker: scriptContextMenu.speaker, initialTarget: span.actionActor || scriptContextMenu.speaker,
+      x: null, y: null, w: null, h: null,
+      actionType: span.actionName, editingSpan: span
+    };
+    scriptContextMenu = null;
+  }
+
+  function deleteActionSpan() {
+    const span = scriptContextMenu?.editableSpan;
+    scriptContextMenu = null;
+    if (!span) return;
+    let from = span.offsetStart;
+    let to = span.offsetEnd;
+    // Collapse a double-space left behind (M13a pads both sides of an inserted bracket).
+    if (scriptDraft[from - 1] === " " && scriptDraft[to] === " ") to += 1;
+    scriptEditorRef?.replaceRange("", from, to);
+  }
+
+  function startActionModalDrag(event, rect) {
+    if (!isPrimaryPointer(event) || !actionModalState) return;
     event.preventDefault();
     event.stopPropagation();
-    if (emotionModalState.x == null && rect) {
-      emotionModalState = { ...emotionModalState, x: rect.left, y: rect.top, w: rect.width, h: rect.height };
+    if (actionModalState.x == null && rect) {
+      actionModalState = { ...actionModalState, x: rect.left, y: rect.top, w: rect.width, h: rect.height };
     }
-    emotionModalDrag = { lastClientX: event.clientX, lastClientY: event.clientY };
+    actionModalDrag = { lastClientX: event.clientX, lastClientY: event.clientY };
   }
 
-  function handleEmotionModalPointerMove(event) {
-    if (!emotionModalDrag || !emotionModalState || emotionModalState.x == null) return;
+  function handleActionModalPointerMove(event) {
+    if (!actionModalDrag || !actionModalState || actionModalState.x == null) return;
     event.preventDefault();
-    const dx = event.clientX - emotionModalDrag.lastClientX;
-    const dy = event.clientY - emotionModalDrag.lastClientY;
-    emotionModalDrag.lastClientX = event.clientX;
-    emotionModalDrag.lastClientY = event.clientY;
+    const dx = event.clientX - actionModalDrag.lastClientX;
+    const dy = event.clientY - actionModalDrag.lastClientY;
+    actionModalDrag.lastClientX = event.clientX;
+    actionModalDrag.lastClientY = event.clientY;
     const bounds = { width: window.innerWidth, height: window.innerHeight };
-    const next = { ...emotionModalState, x: emotionModalState.x + dx, y: emotionModalState.y + dy };
+    const next = { ...actionModalState, x: actionModalState.x + dx, y: actionModalState.y + dy };
     const clamped = clampBadgeRect({ x: next.x, y: next.y, w: next.w || 360, h: next.h || 300 }, bounds);
-    emotionModalState = { ...next, x: clamped.x, y: clamped.y };
+    actionModalState = { ...next, x: clamped.x, y: clamped.y };
   }
 
-  function handleEmotionModalPointerUp() {
-    emotionModalDrag = null;
+  function handleActionModalPointerUp() {
+    actionModalDrag = null;
   }
 
-  function handleEmotionInsert(bracketText) {
-    if (emotionModalState) {
-      scriptEditorRef?.insertText(bracketText, emotionModalState.offset);
+  // A word character right against the insertion point needs a separating space (e.g.
+  // "mich[emotion...]einen" -> "mich [emotion...] einen"); punctuation (".", ":", ",", ...)
+  // does not, so inserting just before a period doesn't leave "[emotion] ." behind.
+  const WORD_CHAR_RE = /[\p{L}\p{N}]/u;
+
+  function padBracketTextForInsertion(bracketText, offset) {
+    const before = scriptDraft[offset - 1] ?? "";
+    const after = scriptDraft[offset] ?? "";
+    const leading = WORD_CHAR_RE.test(before) ? " " : "";
+    const trailing = WORD_CHAR_RE.test(after) ? " " : "";
+    return `${leading}${bracketText}${trailing}`;
+  }
+
+  // commandBody e.g. "emotion type='happy'" — no brackets, no actor prefix; this is the one
+  // place that knows whether we're inserting fresh or replacing an existing span in place, and
+  // (for edits) restores whatever actor prefix the original span had.
+  // targetActor is whatever the modal's target picker had selected when Save/Insert was
+  // clicked (M13e) — only differs from the turn's own speaker for a cross-actor command, in
+  // which case (and only then) an "Actor: " prefix is added/kept.
+  function handleActionModalSave(commandBody, targetActor) {
+    if (!actionModalState) return;
+    // "pause" is a pure timing primitive, not tied to any actor (see core's ActionBlockingUtil) —
+    // never prefix it with a target, even though the modal's target picker is hidden but still
+    // technically has a selectedTargetActor value internally.
+    const actorPrefix = actionModalState.actionType !== "pause" && targetActor && targetActor !== actionModalState.turnSpeaker
+      ? `${targetActor}: ` : "";
+    const editingSpan = actionModalState.editingSpan;
+    if (editingSpan) {
+      scriptEditorRef?.replaceRange(`[${actorPrefix}${commandBody}]`, editingSpan.offsetStart, editingSpan.offsetEnd);
+    } else {
+      const { offset } = actionModalState;
+      scriptEditorRef?.insertText(padBracketTextForInsertion(`[${actorPrefix}${commandBody}]`, offset), offset);
     }
-    emotionModalState = null;
+    actionModalState = null;
   }
 
   function clampBadgeRect(rect, bounds) {
@@ -1048,7 +1137,7 @@
       handlePluginBadgeResizeMove(event);
       handlePreviewPanelPointerMove(event);
       handlePreviewPanelResizeMove(event);
-      handleEmotionModalPointerMove(event);
+      handleActionModalPointerMove(event);
     };
     const upHandler = (event) => {
       handleVarBadgePointerUp(event);
@@ -1056,7 +1145,7 @@
       handlePluginBadgeResizeUp();
       handlePreviewPanelPointerUp();
       handlePreviewPanelResizeUp();
-      handleEmotionModalPointerUp();
+      handleActionModalPointerUp();
     };
     document.addEventListener("mousemove", moveHandler, true);
     document.addEventListener("mouseup", upHandler, true);
@@ -1231,6 +1320,9 @@
   let scriptText = "";
   let scriptDraft = "";
   let scriptVersion = null;
+  // M13c: global compact/full toggle for embedded [...] commands — a pure view decoration
+  // (ScriptEditor), never touches scriptDraft/the saved file.
+  let scriptCommandsCompact = false;
   let scriptStatus = "";
   let scriptError = "";
   let scriptLoading = false;
@@ -3085,6 +3177,9 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
   // button disables globally while one is in flight, so a click mid-utterance can't start an
   // overlapping second speak.
   $: scriptTurns = buildTurnBoundariesFromScript(scriptDraft);
+  // M13b: reactive so decorations (M13c) and right-click hit-testing (M13d) always see
+  // current action spans without re-parsing on every keystroke by hand.
+  $: actionSpans = parseActionSpans(scriptDraft);
   $: playableTurns = scriptTurns
     .map((turn) => {
       const pcAgent = previewCapableAgents.find((a) => a.agentName === turn.speaker);
@@ -10459,6 +10554,58 @@ Sentence:
     return (turns || []).find((t) => charOffset >= t.offsetStart && charOffset <= t.offsetEnd) || null;
   }
 
+  // M13b: parses embedded [...] action commands anywhere in script text (not the whole
+  // SceneScript grammar — just enough for the editing UI: right-click edit/delete (M13d) and
+  // compact/full decorations (M13c)). Mirrors parser.jcup's action_definition rule:
+  //   action_definition ::= action_name feature_list_opt
+  //                       | action_actor action_name feature_list_opt
+  //   action_actor      ::= IDENTIFIER COLONMARK   (e.g. "Bob:" — colon required, "Bob smile"
+  //                                                  alone is NOT valid actor syntax)
+  // feature values are 'quoted strings' (used everywhere in practice) or bare
+  // identifiers/numbers per the grammar; both are supported here.
+  const ACTION_SPAN_RE = /\[([^\[\]]*)\]/g;
+  const ACTION_ACTOR_RE = /^([A-Za-z_]\w*)\s*:\s*/;
+  const ACTION_NAME_RE = /^([A-Za-z_]\w*)/;
+  const ACTION_FEATURE_RE = /([A-Za-z_]\w*)\s*=\s*(?:'([^']*)'|(-?\d+\.?\d*|[A-Za-z_]\w*))/g;
+
+  // Returns every action span found in `text` with ABSOLUTE offsets into that same string —
+  // pass the whole script (e.g. scriptDraft) so offsets line up directly with CodeMirror
+  // positions and ScriptEditor.insertText, with no per-turn translation needed.
+  function parseActionSpans(text) {
+    const spans = [];
+    if (!text) return spans;
+    ACTION_SPAN_RE.lastIndex = 0;
+    let match;
+    while ((match = ACTION_SPAN_RE.exec(text))) {
+      const offsetStart = match.index;
+      const offsetEnd = offsetStart + match[0].length;
+      let rest = match[1];
+      let actionActor = null;
+      const actorMatch = rest.match(ACTION_ACTOR_RE);
+      if (actorMatch) {
+        actionActor = actorMatch[1];
+        rest = rest.slice(actorMatch[0].length);
+      }
+      const nameMatch = rest.match(ACTION_NAME_RE);
+      if (!nameMatch) continue; // not a recognizable action (e.g. stray "[...]" in prose) — skip
+      const actionName = nameMatch[1];
+      rest = rest.slice(nameMatch[0].length);
+      const features = [];
+      ACTION_FEATURE_RE.lastIndex = 0;
+      let fm;
+      while ((fm = ACTION_FEATURE_RE.exec(rest))) {
+        features.push({ key: fm[1], value: fm[2] !== undefined ? fm[2] : fm[3] });
+      }
+      spans.push({ offsetStart, offsetEnd, actionActor, actionName, features, raw: match[0] });
+    }
+    return spans;
+  }
+
+  // The action span (if any) whose bracket range contains the given offset.
+  function actionSpanAtOffset(spans, charOffset) {
+    return (spans || []).find((s) => charOffset >= s.offsetStart && charOffset <= s.offsetEnd) || null;
+  }
+
   function keywordsFromText(text, globalCounts = new Map(), globalSceneCount = 1) {
     if (!text) return [];
     const stop = new Set([
@@ -17035,9 +17182,19 @@ Sentence:
             >
               Next issue
             </button>
-            {#if scriptVersion !== null}
-              <span class="muted">v{scriptVersion}</span>
-            {/if}
+            <button
+              type="button"
+              class="panel-save command-display-toggle"
+              class:active={scriptCommandsCompact}
+              on:click={() => (scriptCommandsCompact = !scriptCommandsCompact)}
+              aria-pressed={scriptCommandsCompact}
+              aria-label={scriptCommandsCompact ? "Show full commands" : "Show compact commands"}
+              title={scriptCommandsCompact ? "Showing compact commands — click for full" : "Showing full commands — click for compact"}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="16" height="16" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
+              </svg>
+            </button>
           {#if scriptDirty}
             <span class="muted">Unsaved edits</span>
           {/if}
@@ -17286,6 +17443,8 @@ Sentence:
                 playableTurns={playableTurns}
                 onPlayTurn={handlePlayTurn}
                 onContextMenu={handleScriptContextMenu}
+                actionSpans={actionSpans}
+                compactCommands={scriptCommandsCompact}
                 onChange={(value) => {
                   scriptDraft = value;
                   scheduleScriptDiagnostics();
@@ -19842,25 +20001,45 @@ Sentence:
         style:top="{scriptContextMenu.y}px"
         role="menu"
       >
-        <button type="button" role="menuitem" on:click={openEmotionInsertModal}>
-          Insert emotion
-        </button>
+        {#if scriptContextMenu.editableSpan}
+          <button type="button" role="menuitem" on:click={openEditModal}>
+            Edit {scriptContextMenu.editableSpan.actionName}
+          </button>
+          <button type="button" role="menuitem" on:click={deleteActionSpan}>
+            Delete
+          </button>
+        {:else}
+          <button type="button" role="menuitem" on:click={() => openInsertModal('emotion')}>
+            Insert emotion
+          </button>
+          <button type="button" role="menuitem" on:click={() => openInsertModal('background')}>
+            Insert background
+          </button>
+          <button type="button" role="menuitem" on:click={() => openInsertModal('clearEmotion')}>
+            Insert clearEmotion
+          </button>
+          <button type="button" role="menuitem" on:click={() => openInsertModal('pause')}>
+            Insert pause
+          </button>
+        {/if}
       </div>
     </div>
   {/if}
 
-  {#if emotionModalState}
-    <EmotionInsertModal
-      speakerName={emotionModalState.speaker}
-      instanceName={emotionModalState.instanceName}
-      loaded={emotionModalState.loaded}
-      x={emotionModalState.x}
-      y={emotionModalState.y}
+  {#if actionModalState}
+    <ActionCommandModal
+      mode={actionModalState.editingSpan ? "edit" : "insert"}
+      actionType={actionModalState.actionType}
+      targetOptions={actionModalTargetOptions}
+      initialTarget={actionModalState.initialTarget}
+      initialValues={initialValuesForSpan(actionModalState.editingSpan)}
+      x={actionModalState.x}
+      y={actionModalState.y}
       projectId={selectedProjectId}
       {apiPost}
-      onInsert={handleEmotionInsert}
-      onClose={() => (emotionModalState = null)}
-      onDragStart={startEmotionModalDrag}
+      onSave={handleActionModalSave}
+      onClose={() => (actionModalState = null)}
+      onDragStart={startActionModalDrag}
     />
   {/if}
 

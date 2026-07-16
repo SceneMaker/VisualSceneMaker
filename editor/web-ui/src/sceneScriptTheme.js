@@ -65,6 +65,16 @@ export const sceneScriptTheme = EditorView.theme(
       background: "rgb(243, 240, 236)",
       color: "#b8b2a3",
       cursor: "default"
+    },
+    ".cm-action-compact": {
+      display: "inline-block",
+      padding: "0 0.1rem",
+      borderRadius: "3px",
+      background: "rgba(91, 142, 220, 0.15)",
+      color: "#3d5f96",
+      fontFamily: "inherit",
+      fontSize: "0.85em",
+      cursor: "default"
     }
   },
   { dark: false }

@@ -1256,6 +1256,16 @@ a.export-link {
   color: #ffffff;
 }
 
+.panel-save.command-display-toggle {
+  padding: 0 0.5rem;
+}
+
+.panel-save.command-display-toggle.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #ffffff;
+}
+
 .autosave-status {
   padding: 0.15rem 0.6rem;
   border-radius: var(--radius-pill);

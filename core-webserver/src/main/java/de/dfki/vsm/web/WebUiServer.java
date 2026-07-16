@@ -1763,10 +1763,33 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
     private void registerRuntimeWsCommands() {
         registerWsCommands((method, params, broadcaster) -> {
             applyPreviewMuteForRuntimeCommand(method, params);
-            return runtimeCommandService.dispatchRuntimeCommand(method, params, broadcaster, runtimeCommandContext);
+            JSONObject result = runtimeCommandService.dispatchRuntimeCommand(method, params, broadcaster, runtimeCommandContext);
+            resetPreviewLaunchGuardOnUnload(method, params);
+            return result;
         }, "Runtime.Load", "Runtime.Play", "Runtime.Start", "Runtime.Resume", "Runtime.Pause", "Runtime.Stop",
                 "Runtime.Unload", "Runtime.Variable.Set", "Runtime.Query");
         registerWsCommands(this::handleRuntimeLanguageSetWsCommand, "Runtime.Language.Set");
+    }
+
+    /** {@code Runtime.Stop} (when the project was running) and {@code Runtime.Unload} both tear
+     *  down every plugin (see {@code RunTimeProject.unload()} — plugins' own {@code unload()} runs,
+     *  e.g. {@code CharamelEmbedExecutor} stops and nulls its transport). Without this,
+     *  {@code resolvePreviewCapablePlugin}'s lazy-launch guard ({@code pluginsLaunchedForPreview})
+     *  stays permanently true from the *first* preview touch, so a later preview touch never
+     *  re-launches the now-torn-down plugins — the SIA preview panel would silently stop working
+     *  (no speech, no emotion) after any real Stop, until the next real Play happened to relaunch
+     *  them independently. Resetting unconditionally on Stop/Unload is safe even when nothing was
+     *  actually running: the next preview touch just re-launches, which is itself a no-op if the
+     *  plugins were never torn down (see {@code RunTimeProject.launch()}'s own idempotency guard). */
+    private void resetPreviewLaunchGuardOnUnload(String method, JSONObject params) {
+        if (!"Runtime.Stop".equals(method) && !"Runtime.Unload".equals(method)) {
+            return;
+        }
+        String pid = params.optString("projectId", "");
+        ProjectRef ref = projectStore.get(pid);
+        if (ref != null) {
+            ref.pluginsLaunchedForPreview = false;
+        }
     }
 
     /** Mutes/unmutes each {@code CharacterPreviewCapable} plugin's authoring-time preview page while

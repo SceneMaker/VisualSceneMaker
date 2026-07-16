@@ -9,12 +9,23 @@
   export let onChange = null;   // (command: string) => void — fires on every parameter change,
                                  // so a host (e.g. the M11 insert modal) can always read the
                                  // current command without duplicating the construction logic
+  export let initialValues = null; // {type, intensity, attack, hold, decay, blocking} — M13d edit
+                                    // mode; read once at creation (this component is recreated
+                                    // fresh per modal open, so no reactive re-sync is needed)
 
-  let type = typeOptions[0] || "";
-  let intensity = 1;
-  let attack = 200;
-  let hold = 20;
-  let decay = 300;
+  const DEFAULTS = { intensity: 1, attack: 200, hold: 20, decay: 300 };
+
+  let type = initialValues?.type ?? typeOptions[0] ?? "";
+  let intensity = initialValues?.intensity !== undefined ? Number(initialValues.intensity) : DEFAULTS.intensity;
+  let attack = initialValues?.attack !== undefined ? Number(initialValues.attack) : DEFAULTS.attack;
+  let hold = initialValues?.hold !== undefined ? Number(initialValues.hold) : DEFAULTS.hold;
+  let decay = initialValues?.decay !== undefined ? Number(initialValues.decay) : DEFAULTS.decay;
+  // M13e: pauses the utterance's speech around this action at runtime instead of firing as a
+  // fire-and-forget inline marker — see ReactivePlayer.isBlockingAction / CharamelEmbedExecutor.
+  // sleepForBlockingEnvelope for the full mechanism (a runtime doc note: this checkbox has no
+  // effect on background/clearEmotion, only emotion — VuppetMaster gives no completion signal
+  // for a transition, so "done" there is *estimated* as attack+hold+decay+50ms, not measured).
+  let blocking = initialValues?.blocking === true || initialValues?.blocking === "true";
 
   let testing = false;
   let testError = "";
@@ -22,8 +33,20 @@
   // Referencing type/intensity/attack/hold/decay directly (not hidden inside a called function)
   // so Svelte's static dependency analysis actually reruns this on every slider/type change —
   // a helper function call alone wouldn't have tracked its internal reads.
+  // M13d: keep the written command minimal — only 'type' plus whatever differs from default —
+  // so the file stays as short as possible; the compact/full toggle (M13c) is what expands it
+  // back out for reading, not the stored text itself. "blocking" follows the same rule: omitted
+  // entirely unless checked, so existing scripts with no blocking key keep today's non-blocking
+  // (fire-and-forget) behavior with zero change.
   $: currentCommand = type.trim()
-    ? `${actionName} type='${type.trim()}' intensity='${intensity}' attack='${attack}' hold='${hold}' decay='${decay}'`
+    ? [
+        `${actionName} type='${type.trim()}'`,
+        Number(intensity) !== DEFAULTS.intensity ? `intensity='${intensity}'` : null,
+        Number(attack) !== DEFAULTS.attack ? `attack='${attack}'` : null,
+        Number(hold) !== DEFAULTS.hold ? `hold='${hold}'` : null,
+        Number(decay) !== DEFAULTS.decay ? `decay='${decay}'` : null,
+        blocking ? `blocking='true'` : null
+      ].filter(Boolean).join(" ")
     : "";
   $: if (currentCommand) onChange?.(currentCommand);
 
@@ -105,6 +128,12 @@
       <span class="pev-value">{decay} ms</span>
     </label>
   </div>
+
+  <label class="pev-blocking-row" title="Pauses the utterance's speech at this point, runs this emotion, then continues speaking — placed mid-sentence, this effectively splits it into two. VuppetMaster has no way to report when the transition actually finishes, so completion is estimated from attack+hold+decay+50ms (a fixed buffer for dispatch/transport delay), not measured.">
+    <input type="checkbox" bind:checked={blocking}
+      on:pointerdown|stopPropagation on:mousedown|stopPropagation />
+    <span class="pev-blocking-text">Blocking (pauses speech until this finishes)</span>
+  </label>
 
   <div class="pev-test-row">
     {#if testError}<span class="pev-error">{testError}</span>{/if}
@@ -191,6 +220,32 @@
     flex-shrink: 0;
     text-align: right;
     font-variant-numeric: tabular-nums;
+  }
+
+  .pev-blocking-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.35rem;
+    font-size: 0.72rem;
+    color: #5a5a5a;
+    cursor: pointer;
+    margin-top: 0.15rem;
+  }
+
+  .pev-blocking-row input[type="checkbox"] {
+    /* Overrides the global `input { width: 100% }` reset (app.css), which otherwise stretches
+       the checkbox itself across the whole row — pushing the label text past the modal's right
+       edge instead of sitting beside the checkbox (reported 2026-07-15). */
+    flex: 0 0 auto;
+    width: auto;
+    margin-top: 0.15rem;
+  }
+
+  /* Without this, the label text has no width constraint of its own and can overflow past the
+     modal's right edge instead of wrapping onto a second line (reported 2026-07-15). */
+  .pev-blocking-text {
+    flex: 1;
+    min-width: 0;
   }
 
   .pev-test-row {
