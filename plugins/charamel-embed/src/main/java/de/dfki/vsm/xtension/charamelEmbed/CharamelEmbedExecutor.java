@@ -75,6 +75,20 @@ public class CharamelEmbedExecutor extends ActivityExecutor
     private final AtomicLong mPreviewMarkerId = new AtomicLong();
     protected final LOGDefaultLogger mLogger = LOGDefaultLogger.getInstance();
 
+    // Serializes every dispatch to this character's own engine instance — execute() (real
+    // playback, an ActivityWorker thread), previewTurn(), and previewAction() (each their own
+    // HTTP-handler thread) all acquire this before touching the transport. Without it, two
+    // independent callers (a real Play plus a concurrent preview test, or — in a collaborative
+    // session — two different people testing the same character at once) can each issue their own
+    // speakCommand()/setEmotion() call to the *same* connected browser's VuppetMaster instance at
+    // the same time; the engine can't tolerate that overlap and the later call fails outright
+    // ("speak ended with error", confirmed 2026-07-16 by firing two previewTurn() calls
+    // concurrently). A plain intrinsic lock is safe here (not a dedicated ReentrantLock) because
+    // the one path that re-enters — previewTurn() dispatching a same-actor blocking action via
+    // runBlockingPreviewAction() -> execute() — does so on the same calling thread, and Java
+    // monitors are reentrant per-thread.
+    private final Object mDispatchLock = new Object();
+
     private CharamelTransport mTransport;
 
     // --- Config (read in launch()). Port/license/appName/engineUrl are transport concerns and are
@@ -108,8 +122,8 @@ public class CharamelEmbedExecutor extends ActivityExecutor
     // ------------------------------------------------------------------ authoring-time preview
 
     @Override
-    public String getPreviewUrl() {
-        return mTransport != null ? mTransport.getPreviewUrl() : null;
+    public int getPreviewPort() {
+        return mTransport != null ? mTransport.getPreviewPort() : -1;
     }
 
     @Override
@@ -125,7 +139,9 @@ public class CharamelEmbedExecutor extends ActivityExecutor
             return;
         }
         final ActionObject action = (ActionObject) parsed;
-        parseAction(action.getName(), action.getFeatureList());
+        synchronized (mDispatchLock) {
+            parseAction(action.getName(), action.getFeatureList());
+        }
     }
 
     @Override
@@ -147,33 +163,40 @@ public class CharamelEmbedExecutor extends ActivityExecutor
         final String voice = mProject.getAgentConfig(turn.getSpeaker()) != null
                 ? mProject.getAgentConfig(turn.getSpeaker()).getProperty("voice") : null;
 
-        // Mirrors ReactivePlayer.playScene()'s real-execution split logic (see
-        // ActionBlockingUtil) so testing a turn in the SIA preview panel behaves the same as a
-        // real run: a split-point action (pause, or blocking='true') genuinely pauses speech
-        // instead of firing as an inline marker while speech keeps playing.
-        for (final SceneUttr uttr : turn.getUttrList()) {
-            StringBuilder segment = new StringBuilder();
-            for (final UttrElement element : uttr.getWordList()) {
-                if (element instanceof ActionObject) {
-                    final ActionObject action = (ActionObject) element;
-                    if (ActionBlockingUtil.requiresUtteranceSplit(action)) {
-                        if (segment.length() > 0) {
-                            previewSpeakAndAwaitStop(segment.toString().trim(), voice);
-                            segment = new StringBuilder();
+        // Holds mDispatchLock for the whole turn — see its declaration for why this is needed
+        // (two independent callers, e.g. two collaborators or a real Play overlapping a preview
+        // test, dispatching to the same character's engine at once breaks it) and why it's safe
+        // (the one internal re-entry, runBlockingPreviewAction -> execute() for a same-actor
+        // blocking action, happens on this same thread).
+        synchronized (mDispatchLock) {
+            // Mirrors ReactivePlayer.playScene()'s real-execution split logic (see
+            // ActionBlockingUtil) so testing a turn in the SIA preview panel behaves the same as a
+            // real run: a split-point action (pause, or blocking='true') genuinely pauses speech
+            // instead of firing as an inline marker while speech keeps playing.
+            for (final SceneUttr uttr : turn.getUttrList()) {
+                StringBuilder segment = new StringBuilder();
+                for (final UttrElement element : uttr.getWordList()) {
+                    if (element instanceof ActionObject) {
+                        final ActionObject action = (ActionObject) element;
+                        if (ActionBlockingUtil.requiresUtteranceSplit(action)) {
+                            if (segment.length() > 0) {
+                                previewSpeakAndAwaitStop(segment.toString().trim(), voice);
+                                segment = new StringBuilder();
+                            }
+                            runBlockingPreviewAction(action, turn.getSpeaker());
+                        } else {
+                            final String markerKey = marker(mPreviewMarkerId.incrementAndGet());
+                            registerPreviewAction(markerKey, action);
+                            segment.append(markerKey).append(' ');
                         }
-                        runBlockingPreviewAction(action, turn.getSpeaker());
                     } else {
-                        final String markerKey = marker(mPreviewMarkerId.incrementAndGet());
-                        registerPreviewAction(markerKey, action);
-                        segment.append(markerKey).append(' ');
+                        segment.append(element.getText(new HashMap<>())).append(' ');
                     }
-                } else {
-                    segment.append(element.getText(new HashMap<>())).append(' ');
                 }
-            }
-            segment.append(uttr.getPunctuationMark());
-            if (!segment.toString().isBlank()) {
-                previewSpeakAndAwaitStop(segment.toString().trim(), voice);
+                segment.append(uttr.getPunctuationMark());
+                if (!segment.toString().isBlank()) {
+                    previewSpeakAndAwaitStop(segment.toString().trim(), voice);
+                }
             }
         }
     }
@@ -236,45 +259,50 @@ public class CharamelEmbedExecutor extends ActivityExecutor
     public void execute(AbstractActivity activity) {
         final String actor = activity.getActor();
 
-        if (activity instanceof SpeechActivity) {
-            SpeechActivity sa = (SpeechActivity) activity;
-            String text = sa.getTextOnly("${'").trim();
-            LinkedList<String> timemarks = sa.getTimeMarks("${'");
+        // See mDispatchLock's declaration: serializes every dispatch to this character (real
+        // playback, previewTurn(), previewAction()) so two independent callers can't issue
+        // overlapping speakCommand()/setEmotion() calls to the same connected browser's engine.
+        synchronized (mDispatchLock) {
+            if (activity instanceof SpeechActivity) {
+                SpeechActivity sa = (SpeechActivity) activity;
+                String text = sa.getTextOnly("${'").trim();
+                LinkedList<String> timemarks = sa.getTimeMarks("${'");
 
-            if (text.isEmpty()) {
-                // No text, but there may be co-located marker activities to fire directly.
-                for (String tm : timemarks) {
-                    mLogger.warning("Directly executing activity at timemark " + tm);
-                    mProject.getRunTimePlayer().getActivityScheduler().handle(tm);
+                if (text.isEmpty()) {
+                    // No text, but there may be co-located marker activities to fire directly.
+                    for (String tm : timemarks) {
+                        mLogger.warning("Directly executing activity at timemark " + tm);
+                        mProject.getRunTimePlayer().getActivityScheduler().handle(tm);
+                    }
+                    return;
                 }
-                return;
-            }
 
-            final String vmuid = actor + "_utterance_" + getVMUtteranceId();
-            final String voice = mProject.getAgentConfig(actor) != null
-                    ? mProject.getAgentConfig(actor).getProperty("voice") : null;
+                final String vmuid = actor + "_utterance_" + getVMUtteranceId();
+                final String voice = mProject.getAgentConfig(actor) != null
+                        ? mProject.getAgentConfig(actor).getProperty("voice") : null;
 
-            activity.setType(AbstractActivity.Type.blocking);
+                activity.setType(AbstractActivity.Type.blocking);
 
-            // Mirror the current turn text into the SceneFlow model (best-effort, as charamel-ws).
-            if (mProject.hasVariable(mTurnVar)) {
-                mProject.setVariable(mTurnVar, text);
-            }
-            if ((sa.getTurnNumber() == 1) && (sa.getUtteranceNumber() == 1)
-                    && mProject.hasVariable(mSpeakingVar)) {
-                mProject.setVariable(mSpeakingVar, new BooleanValue(true));
-            }
+                // Mirror the current turn text into the SceneFlow model (best-effort, as charamel-ws).
+                if (mProject.hasVariable(mTurnVar)) {
+                    mProject.setVariable(mTurnVar, text);
+                }
+                if ((sa.getTurnNumber() == 1) && (sa.getUtteranceNumber() == 1)
+                        && mProject.hasVariable(mSpeakingVar)) {
+                    mProject.setVariable(mSpeakingVar, new BooleanValue(true));
+                }
 
-            broadcastSpeakAndAwaitStop(vmuid, sa.getText(), voice);
+                broadcastSpeakAndAwaitStop(vmuid, sa.getText(), voice);
 
-            if ((sa.getTurnNumber() == sa.getTotalTurns()) && (sa.getUtteranceNumber() == sa.getTotalUtterances())
-                    && mProject.hasVariable(mSpeakingVar)) {
-                mProject.setVariable(mSpeakingVar, new BooleanValue(false));
-            }
-        } else {
-            parseAction(activity.getName(), activity.getFeatures());
-            if (activity.getType() == AbstractActivity.Type.blocking) {
-                sleepForBlockingEnvelope(activity.getName(), activity.getFeatures());
+                if ((sa.getTurnNumber() == sa.getTotalTurns()) && (sa.getUtteranceNumber() == sa.getTotalUtterances())
+                        && mProject.hasVariable(mSpeakingVar)) {
+                    mProject.setVariable(mSpeakingVar, new BooleanValue(false));
+                }
+            } else {
+                parseAction(activity.getName(), activity.getFeatures());
+                if (activity.getType() == AbstractActivity.Type.blocking) {
+                    sleepForBlockingEnvelope(activity.getName(), activity.getFeatures());
+                }
             }
         }
     }
@@ -532,9 +560,16 @@ public class CharamelEmbedExecutor extends ActivityExecutor
 
         // Preview-dispatched markers (previewTurn()) are resolved here directly, not via the
         // interpreter's ActivityScheduler — there is no ActivityWorker thread in preview mode.
+        // Run on a fresh thread, not inline on this synchronized onMessage() call: the Runnable
+        // ends in execute(), which now acquires mDispatchLock — if the *originating* previewTurn()
+        // call is still holding that lock (waiting on this very character's own speech to finish),
+        // running inline here would deadlock (this thread stuck on mDispatchLock while still
+        // holding onMessage()'s monitor, blocking the "stop" feedback that previewTurn() is
+        // waiting for). Real playback's own marker dispatch already avoids this the same way
+        // (ActivityScheduler.handle() -> ActivityWorker.start(), a fresh thread).
         final Runnable previewAction = mPreviewMarkerMap.remove(message);
         if (previewAction != null) {
-            previewAction.run();
+            new Thread(previewAction, "charamel-embed-preview-marker").start();
             return;
         }
 

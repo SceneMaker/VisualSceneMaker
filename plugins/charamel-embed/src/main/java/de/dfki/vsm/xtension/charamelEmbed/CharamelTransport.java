@@ -27,9 +27,11 @@ public interface CharamelTransport {
     /** True when a character page is attached and can receive envelopes. */
     boolean isConnected();
 
-    /** Base URL of the live character page (e.g. {@code http://localhost:3040/character.html}),
-     *  or {@code null} if there is no such URL (not started yet, or no HTTP page — e.g. Android). */
-    String getPreviewUrl();
+    /** Port the live character page's own HTTP+WebSocket server listens on, or {@code -1} if
+     *  there is no such server (not started yet, or no HTTP page at all — e.g. Android). Not a
+     *  full URL: the caller must build one against its own reachable host, not a hardcoded
+     *  "localhost" (which breaks for a remote LAN collaborator — see {@code CharacterPreviewCapable}). */
+    int getPreviewPort();
 
     /** Tears the transport down (stop server / detach bridge). */
     void stop();

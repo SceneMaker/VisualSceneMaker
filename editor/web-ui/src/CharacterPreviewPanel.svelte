@@ -48,7 +48,17 @@
     previewUrl = null;
     try {
       const data = await apiGet(`/api/v1/projects/${projectId}/plugins/${instanceName}/preview`);
-      previewUrl = data?.previewUrl || null;
+      // The server only returns the character page's own port — a "localhost"-based URL would
+      // only work for whoever is running VSM itself, not a remote LAN collaborator (their
+      // browser's own localhost has nothing listening there). Build the final URL against the
+      // host this browser actually used to reach the server, mirroring htmlGuiUrl()'s pattern.
+      if (data?.previewPort) {
+        const host = (typeof window !== "undefined" && window.location.hostname) || "localhost";
+        const scheme = data.previewSecure ? "https" : "http";
+        previewUrl = `${scheme}://${host}:${data.previewPort}${data.previewPath || "/character.html"}`;
+      } else {
+        previewUrl = null;
+      }
     } catch (err) {
       loadError = err?.message || "Failed to load preview";
     } finally {

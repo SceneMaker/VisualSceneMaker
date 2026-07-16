@@ -10,9 +10,14 @@ package de.dfki.vsm.runtime.plugin;
  */
 public interface CharacterPreviewCapable {
 
-    /** Base URL of this character's live preview page (e.g. {@code http://localhost:3040/character.html}),
-     *  or {@code null} if not available yet (e.g. transport not started). */
-    String getPreviewUrl();
+    /** Port of this character's live preview page (its own HTTP+WebSocket server, separate from
+     *  the main VSM server), or {@code -1} if not available (transport not started, or no such
+     *  page — e.g. Android). Only the port, not a full URL: the caller (a remote browser over
+     *  LAN, not necessarily the machine running VSM) must build the final URL against whatever
+     *  host it used to reach the main server, not a server-side guess — see
+     *  {@code CharacterPreviewPanel.svelte}'s use of {@code window.location.hostname}, mirroring
+     *  the same pattern already used for the "follow the player" GUI URL. */
+    int getPreviewPort();
 
     /**
      * Parses and performs a raw turn (the same syntax authored in the Script Editor, e.g.

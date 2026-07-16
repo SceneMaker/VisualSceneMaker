@@ -4608,8 +4608,15 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
 
     /**
      * Authoring-time character preview (see {@link de.dfki.vsm.runtime.plugin.CharacterPreviewCapable}):
-     * reports whether the plugin instance supports preview and its live page URL. Independent of
-     * whether the Interpreter/SceneFlow is running.
+     * reports whether the plugin instance supports preview and where its live page's own
+     * HTTP+WebSocket server listens. Independent of whether the Interpreter/SceneFlow is running.
+     *
+     * <p>Deliberately returns a bare port, not a full URL — a "localhost"-based URL only works for
+     * whoever is running VSM itself, not a remote LAN collaborator (confirmed broken 2026-07-16:
+     * a remote browser's own localhost has nothing listening on that port). The client builds the
+     * final URL against {@code window.location.hostname} — the host it actually used to reach this
+     * server — mirroring the same pattern {@code htmlGuiUrl()} already uses for the "follow the
+     * player" GUI.
      */
     private void handlePluginPreviewInfo(Context ctx) {
         de.dfki.vsm.runtime.plugin.CharacterPreviewCapable capable = resolvePreviewCapablePlugin(ctx);
@@ -4617,14 +4624,17 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         JSONObject response = new JSONObject();
         response.put("status", "ok");
         response.put("previewCapable", true);
-        // Tags this specific connection as "the preview page" (see JettyTransport) so a real
-        // SceneFlow run can mute it without also muting other viewers (e.g. a "follow the
-        // player" audience page embedding the same character at a bare, untagged URL).
-        String previewUrl = capable.getPreviewUrl();
-        if (previewUrl != null) {
-            previewUrl += previewUrl.contains("?") ? "&vsmPreview=1" : "?vsmPreview=1";
+        int port = capable.getPreviewPort();
+        if (port > 0) {
+            response.put("previewPort", port);
+            // Tags this specific connection as "the preview page" (see JettyTransport) so a real
+            // SceneFlow run can mute it without also muting other viewers (e.g. a "follow the
+            // player" audience page embedding the same character at a bare, untagged URL).
+            response.put("previewPath", "/character.html?vsmPreview=1");
+            response.put("previewSecure", de.dfki.vsm.runtime.tls.TlsRuntimeContext.isEnabled());
+        } else {
+            response.put("previewPort", JSONObject.NULL);
         }
-        response.put("previewUrl", previewUrl);
         writeJson(ctx, response);
     }
 

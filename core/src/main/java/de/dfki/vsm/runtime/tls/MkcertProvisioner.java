@@ -121,15 +121,20 @@ public final class MkcertProvisioner {
         names.add("localhost");
         names.add("127.0.0.1");
         names.add("::1");
-        String lan = findLanAddress();
-        if (lan != null) {
-            names.add(lan);
-        }
+        names.addAll(findLanAddresses());
         return new ArrayList<>(names);
     }
 
-    /** First non-loopback site-local IPv4 address (the LAN IP a remote browser connects to). */
-    private static String findLanAddress() {
+    /**
+     * Every non-loopback site-local IPv4 address across every up interface — not just the first
+     * one found. A host with multiple active NICs (e.g. an Ethernet + a VPN/tunnel interface, both
+     * site-local) has more than one address a remote browser might actually connect through; which
+     * one enumerates first is not guaranteed stable across restarts. Certificate-subject-name
+     * mismatch reported 2026-07-16 in a multi-NIC collaborative session, plausibly caused by this —
+     * covering all of them removes the guesswork entirely.
+     */
+    private static List<String> findLanAddresses() {
+        List<String> addresses = new ArrayList<>();
         try {
             for (NetworkInterface nif : java.util.Collections.list(NetworkInterface.getNetworkInterfaces())) {
                 if (!nif.isUp() || nif.isLoopback() || nif.isVirtual()) {
@@ -137,14 +142,14 @@ public final class MkcertProvisioner {
                 }
                 for (InetAddress addr : java.util.Collections.list(nif.getInetAddresses())) {
                     if (addr.isSiteLocalAddress() && addr.getAddress().length == 4) {
-                        return addr.getHostAddress();
+                        addresses.add(addr.getHostAddress());
                     }
                 }
             }
         } catch (Exception ignored) {
             // No LAN address is fine — localhost still works on the host itself.
         }
-        return null;
+        return addresses;
     }
 
     /**

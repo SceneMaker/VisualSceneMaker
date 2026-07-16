@@ -136,10 +136,8 @@ public final class JettyTransport implements CharamelTransport {
     }
 
     @Override
-    public String getPreviewUrl() {
-        if (mApp == null) return null;
-        final String scheme = de.dfki.vsm.runtime.tls.TlsRuntimeContext.isEnabled() ? "https" : "http";
-        return scheme + "://localhost:" + mPort + "/character.html";
+    public int getPreviewPort() {
+        return mApp != null ? mPort : -1;
     }
 
     @Override
