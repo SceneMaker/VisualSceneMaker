@@ -2866,6 +2866,14 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         mApp.post(API_PREFIX + "/llm/test", this::handleLLMTest);
         mApp.post(API_PREFIX + "/llm/generate", this::handleLLMGenerate);
 
+        // Embeddings sidecar proxy (see startEmbeddingsService) — the browser never talks to the
+        // sidecar directly: it's plain HTTP-only, which a --secure (HTTPS) session's mixed-content
+        // policy blocks outright (confirmed 2026-07-17). Same-origin server-to-server HTTP has no
+        // such restriction, so we relay through here instead.
+        mApp.get(API_PREFIX + "/embeddings/health", this::handleEmbeddingsHealth);
+        mApp.post(API_PREFIX + "/embeddings/embed", this::handleEmbeddingsEmbed);
+        mApp.post(API_PREFIX + "/embeddings/similarity", this::handleEmbeddingsSimilarity);
+
         // Editor-only endpoints (not available in RUNTIME_ONLY mode)
         if (mMode == ServerMode.FULL_EDITOR) {
             mApp.post(API_PREFIX + "/projects/open", this::handleProjectOpen);
@@ -9607,6 +9615,47 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
 
     private final Object embeddingsLock = new Object();
     private Process embeddingsProcess = null;
+    private final java.net.http.HttpClient embeddingsHttpClient = java.net.http.HttpClient.newHttpClient();
+
+    private String embeddingsBaseUrl() {
+        String port = System.getenv("EMBEDDINGS_PORT");
+        if (port == null || port.isBlank()) port = "4050";
+        return "http://127.0.0.1:" + port;
+    }
+
+    private void handleEmbeddingsHealth(Context ctx) {
+        proxyEmbeddingsRequest(ctx, "GET", "/health", null);
+    }
+
+    private void handleEmbeddingsEmbed(Context ctx) {
+        proxyEmbeddingsRequest(ctx, "POST", "/embed", ctx.body());
+    }
+
+    private void handleEmbeddingsSimilarity(Context ctx) {
+        proxyEmbeddingsRequest(ctx, "POST", "/similarity", ctx.body());
+    }
+
+    /** Relays a request to the local embeddings sidecar over plain server-to-server HTTP — see the
+     *  route registration comment for why the browser can't do this itself in --secure mode. */
+    private void proxyEmbeddingsRequest(Context ctx, String method, String path, String body) {
+        try {
+            java.net.http.HttpRequest.Builder builder = java.net.http.HttpRequest.newBuilder()
+                    .uri(java.net.URI.create(embeddingsBaseUrl() + path))
+                    .timeout(java.time.Duration.ofSeconds(10));
+            if ("POST".equals(method)) {
+                builder.header("Content-Type", "application/json")
+                        .POST(java.net.http.HttpRequest.BodyPublishers.ofString(body == null ? "" : body));
+            } else {
+                builder.GET();
+            }
+            java.net.http.HttpResponse<String> resp = embeddingsHttpClient.send(builder.build(),
+                    java.net.http.HttpResponse.BodyHandlers.ofString());
+            ctx.status(resp.statusCode()).contentType("application/json").result(resp.body());
+        } catch (Exception exc) {
+            ctx.status(503);
+            writeJson(ctx, errorResponse("EMBEDDINGS_UNAVAILABLE", "Embeddings sidecar unreachable: " + exc.getMessage()));
+        }
+    }
 
     private void pipeEmbeddingsOutput(Process process) {
         if (process == null) return;

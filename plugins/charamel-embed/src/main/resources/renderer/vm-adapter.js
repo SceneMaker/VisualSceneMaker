@@ -11,6 +11,7 @@
  *   "vm.ready"              — model fully loaded AND audio unlocked (a real "character ready" signal)
  *   "vm.progress:<0..100>"  — model loading progress
  *   "vm.error:<msg>"        — load error
+ *   "vm.heartbeat"          — keep-alive, sent periodically to avoid Jetty's WS idle timeout
  *
  * The engine natively extracts VSM's ${...}$ markers from speak text and reports them via
  * onMarker(name, value). onEnd is a safety net so VSM never hangs if a stop marker is dropped.
@@ -137,6 +138,18 @@
     });
   }
 
+  // Jetty closes a WS with no traffic for 10 minutes (see JettyTransport's setIdleTimeout) — a
+  // preview panel left open while the user reads/edits without speaking would otherwise idle out,
+  // forcing vm-adapter.js's reconnect loop below to redial from scratch on the next speak attempt
+  // (observed 2026-07-17: "WebSocket error: Connection Idle Timeout" in the server log, followed by
+  // repeated failed reconnect attempts before the client noticed and recovered). Well under 10
+  // minutes so a single missed beat still leaves margin.
+  var HEARTBEAT_INTERVAL_MS = 120000;
+
+  function startHeartbeat() {
+    setInterval(function () { vsmFeedback('vm.heartbeat'); }, HEARTBEAT_INTERVAL_MS);
+  }
+
   function connect() {
     // Android: the host drives this page through the JS bridge (window.AndroidVSM /
     // window.vsmDispatch), so there is no WebSocket server to connect to — skip it.
@@ -165,7 +178,7 @@
   function loadEngine() {
     var s = document.createElement('script');
     s.src = cfg.engineUrl;
-    s.onload = function () { initEngine(); connect(); };
+    s.onload = function () { initEngine(); connect(); startHeartbeat(); };
     s.onerror = function () { console.error('VSM: failed to load engine', cfg.engineUrl); };
     document.head.appendChild(s);
   }

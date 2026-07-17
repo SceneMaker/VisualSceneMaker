@@ -580,6 +580,8 @@ public class CharamelEmbedExecutor extends ActivityExecutor
             }
         }
         // vm.progress:<n> and vm.error are ignored here (surfaced in the browser console).
+        // vm.heartbeat is a pure keep-alive (see vm-adapter.js) — receiving it is the whole point
+        // (any traffic resets Jetty's WS idle timeout), nothing else to do with it.
     }
 
     private void processTimeMarkMessage(String message) {

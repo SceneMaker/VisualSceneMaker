@@ -1461,7 +1461,10 @@ Sentence:
   let embeddingsReady = false;
   let embeddingsModel = "";
   let embeddingsHealthError = "";
-  const EMBEDDINGS_URL = "http://127.0.0.1:4050";
+  // Proxied through this server (see WebUiServer's /api/v1/embeddings/* routes), not fetched
+  // directly — the sidecar is plain HTTP-only, which a --secure (HTTPS) session's mixed-content
+  // policy blocks outright (confirmed 2026-07-17).
+  const EMBEDDINGS_URL = "/api/v1/embeddings";
   let sceneTitleSuggestions = new Map();
   let sceneTitleSuggestBusy = false;
   let sceneTitleSuggestError = "";
