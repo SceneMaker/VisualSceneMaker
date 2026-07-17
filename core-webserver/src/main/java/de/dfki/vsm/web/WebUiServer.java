@@ -1699,9 +1699,27 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
     }
 
     private void initializeWsCommandRegistry() {
+        registerSessionWsCommands();
         registerSceneFlowWsCommands();
         registerProjectWsCommands();
         registerRuntimeWsCommands();
+    }
+
+    /** Session-level commands, not tied to any particular project. */
+    private void registerSessionWsCommands() {
+        // Client-side heartbeat (App.svelte) — sent periodically on an open WS connection purely
+        // to keep it alive: Jetty's WS idle timeout (see the "/ws" route's setIdleTimeout call)
+        // otherwise closes a connection with no traffic for 10 minutes, which a user who's simply
+        // reading/thinking rather than clicking anything would hit. No side effects; receiving any
+        // message at all already resets Jetty's idle timer, this just gives the client a clean,
+        // registered command (rather than an ad-hoc message the dispatcher would log as unhandled)
+        // and a real round-trip to confirm the connection is genuinely still responsive.
+        registerWsCommands((method, params, broadcaster) -> {
+            JSONObject result = new JSONObject();
+            result.put("status", "ok");
+            result.put("serverTime", System.currentTimeMillis());
+            return result;
+        }, "Session.Heartbeat");
     }
 
     private void registerSceneFlowWsCommands() {
@@ -5951,16 +5969,31 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         }
         try {
             JSONObject body = new JSONObject(ctx.body());
-            JSONObject prefs = body.optJSONObject("uiPrefs");
-            if (prefs == null) {
-                prefs = body;
+            JSONObject incoming = body.optJSONObject("uiPrefs");
+            if (incoming == null) {
+                incoming = body;
             }
-            if (!saveUiPrefs(ref, prefs)) {
-                ctx.status(500);
-                writeJson(ctx, errorResponse("UIPREFS_SAVE_FAILED", "Failed to save UI preferences"));
-                return;
+            // Each UI feature (plugin badges, preview panels, var badges, ...) PUTs only its own
+            // top-level key, expecting the others to be left alone. saveUiPrefs previously wrote
+            // whatever was sent here as the *entire* file — so touching any one feature silently
+            // erased every other feature's last-saved state (reported 2026-07-17: plugin badge
+            // position/expanded state kept resetting across sessions). Merge into what's already
+            // on disk instead of replacing it; synchronized on ref since this is a read-modify-
+            // write against a shared file and two features could plausibly save around the same
+            // time.
+            final JSONObject toWrite = incoming;
+            synchronized (ref) {
+                JSONObject merged = loadUiPrefs(ref);
+                for (String key : toWrite.keySet()) {
+                    merged.put(key, toWrite.get(key));
+                }
+                if (!saveUiPrefs(ref, merged)) {
+                    ctx.status(500);
+                    writeJson(ctx, errorResponse("UIPREFS_SAVE_FAILED", "Failed to save UI preferences"));
+                    return;
+                }
             }
-            writeJson(ctx, prefs);
+            writeJson(ctx, incoming);
         } catch (Exception exc) {
             ctx.status(400);
             writeJson(ctx, errorResponse("UIPREFS_INVALID", "Invalid UI preferences payload: " + exc.getMessage()));

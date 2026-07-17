@@ -594,8 +594,8 @@
     apiPut(`/api/v1/projects/${projectId}/ui-prefs`, { uiPrefs: { pluginBadges: state } }).catch(() => {});
   }
 
-  function getPluginBadgePos(className, index) {
-    if (pluginBadgeState[className]) return pluginBadgeState[className];
+  function getPluginBadgePos(instanceName, index) {
+    if (pluginBadgeState[instanceName]) return pluginBadgeState[instanceName];
     return { x: PLUGIN_BADGE_DEFAULT_X, y: PLUGIN_BADGE_DEFAULT_Y + index * PLUGIN_BADGE_Y_STEP, w: PLUGIN_BADGE_DEFAULT_W, h: PLUGIN_BADGE_DEFAULT_H, expanded: true };
   }
 
@@ -968,23 +968,23 @@
     persistVarBadgeState(varBadgeState);
   }
 
-  function startPluginBadgeDrag(event, className) {
+  function startPluginBadgeDrag(event, instanceName) {
     if (!isPrimaryPointer(event)) return;
     event.preventDefault();
     event.stopPropagation();
-    pluginBadgeDrag = { className, lastClientX: event.clientX, lastClientY: event.clientY };
+    pluginBadgeDrag = { instanceName, lastClientX: event.clientX, lastClientY: event.clientY };
   }
 
   function handlePluginBadgePointerMove(event) {
     if (!pluginBadgeDrag) return;
     event.preventDefault();
-    const { className } = pluginBadgeDrag;
-    const cur = pluginBadgeState[className] || getPluginBadgePos(className, 0);
+    const { instanceName } = pluginBadgeDrag;
+    const cur = pluginBadgeState[instanceName] || getPluginBadgePos(instanceName, 0);
     const dx = event.clientX - pluginBadgeDrag.lastClientX;
     const dy = event.clientY - pluginBadgeDrag.lastClientY;
     pluginBadgeDrag.lastClientX = event.clientX;
     pluginBadgeDrag.lastClientY = event.clientY;
-    pluginBadgeState = { ...pluginBadgeState, [className]: { ...cur, x: cur.x + dx, y: cur.y + dy } };
+    pluginBadgeState = { ...pluginBadgeState, [instanceName]: { ...cur, x: cur.x + dx, y: cur.y + dy } };
   }
 
   function handlePluginBadgePointerUp() {
@@ -993,9 +993,9 @@
     persistPluginBadgeState(selectedProjectId, pluginBadgeState);
   }
 
-  function togglePluginBadge(className) {
-    const cur = pluginBadgeState[className] || getPluginBadgePos(className, 0);
-    pluginBadgeState = { ...pluginBadgeState, [className]: { ...cur, expanded: !cur.expanded } };
+  function togglePluginBadge(instanceName) {
+    const cur = pluginBadgeState[instanceName] || getPluginBadgePos(instanceName, 0);
+    pluginBadgeState = { ...pluginBadgeState, [instanceName]: { ...cur, expanded: !cur.expanded } };
     persistPluginBadgeState(selectedProjectId, pluginBadgeState);
   }
 
@@ -1044,23 +1044,23 @@
     }
   }
 
-  function startPluginBadgeResize(event, className) {
+  function startPluginBadgeResize(event, instanceName) {
     if (!isPrimaryPointer(event)) return;
     event.preventDefault();
     event.stopPropagation();
-    pluginBadgeResize = { className, lastClientX: event.clientX, lastClientY: event.clientY };
+    pluginBadgeResize = { instanceName, lastClientX: event.clientX, lastClientY: event.clientY };
   }
 
   function handlePluginBadgeResizeMove(event) {
     if (!pluginBadgeResize) return;
     event.preventDefault();
-    const { className } = pluginBadgeResize;
-    const cur = pluginBadgeState[className] || getPluginBadgePos(className, 0);
+    const { instanceName } = pluginBadgeResize;
+    const cur = pluginBadgeState[instanceName] || getPluginBadgePos(instanceName, 0);
     const dx = event.clientX - pluginBadgeResize.lastClientX;
     const dy = event.clientY - pluginBadgeResize.lastClientY;
     pluginBadgeResize.lastClientX = event.clientX;
     pluginBadgeResize.lastClientY = event.clientY;
-    pluginBadgeState = { ...pluginBadgeState, [className]: {
+    pluginBadgeState = { ...pluginBadgeState, [instanceName]: {
       ...cur,
       w: Math.max(PLUGIN_BADGE_MIN_W, (cur.w || PLUGIN_BADGE_DEFAULT_W) + dx),
       h: Math.max(PLUGIN_BADGE_MIN_H, (cur.h || PLUGIN_BADGE_DEFAULT_H) + dy)
@@ -1594,9 +1594,12 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
   let timeoutEdgeList = [];
   let varBadgeState = loadVarBadgeState();
   let varBadgeDrag = null;
-  let pluginBadgeState = {};    // { [className]: { x, y, w, h, expanded } }
-  let pluginBadgeDrag = null;   // { className, lastClientX, lastClientY } | null
-  let pluginBadgeResize = null; // { className, lastClientX, lastClientY } | null
+  let pluginBadgeState = {};    // { [instanceName]: { x, y, w, h, expanded } } — keyed by the
+                                // plugin's device/instance name, NOT its class: a project can
+                                // load the same class more than once (e.g. two charamel-embed
+                                // instances), and className alone would collide across them.
+  let pluginBadgeDrag = null;   // { instanceName, lastClientX, lastClientY } | null
+  let pluginBadgeResize = null; // { instanceName, lastClientX, lastClientY } | null
   let previewPanelState = {};  // { [instanceName]: { x, y, w, h, open, z } }
   let previewLoadProgress = {}; // { [instanceName]: 0-100 } — from vm.progress postMessage (M9)
   let previewSpeakingInstances = new Set(); // instanceNames currently speaking — gates ALL turn/emotion
@@ -1758,6 +1761,34 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
   let wsConnected = false;
   let wsError = "";
   let pending = new Map();
+  // Keeps the WS connection alive for as long as this tab is open, independent of whether the
+  // user is actively clicking anything — Jetty's server-side idle timeout (10 minutes, see the
+  // "/ws" route) otherwise closes a connection that's had no traffic for that long, which a user
+  // who's just reading/thinking (not idle in the "closed the tab" sense) would hit. Well under
+  // that timeout so a single missed beat (a slow tick, a backgrounded/throttled tab) still leaves
+  // margin before the server would give up. Cleared on close/reconnect/unmount so a heartbeat
+  // from a stale connection never fires again after a new one replaces it.
+  const WS_HEARTBEAT_INTERVAL_MS = 120_000;
+  let wsHeartbeatTimer = null;
+
+  function startWsHeartbeat() {
+    stopWsHeartbeat();
+    wsHeartbeatTimer = setInterval(() => {
+      if (!ws || ws.readyState !== WebSocket.OPEN) return;
+      sendCommand("Session.Heartbeat", {}).catch((err) => {
+        // A missed/failed heartbeat isn't itself fatal — if the connection is truly gone,
+        // ws.onclose already handles reconnecting; this just logs for visibility.
+        console.warn("[heartbeat] failed:", err?.message || err);
+      });
+    }, WS_HEARTBEAT_INTERVAL_MS);
+  }
+
+  function stopWsHeartbeat() {
+    if (wsHeartbeatTimer) {
+      clearInterval(wsHeartbeatTimer);
+      wsHeartbeatTimer = null;
+    }
+  }
 
   $: selectedProject = projects.find((p) => p.projectId === selectedProjectId) || null;
   $: inspectorDefGridStyle = [
@@ -3935,6 +3966,7 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
   onDestroy(() => {
     clearAutoSaveTimer();
     stopSemanticPreview();
+    stopWsHeartbeat();
     if (timeoutInspectorApplyTimer) {
       clearTimeout(timeoutInspectorApplyTimer);
       timeoutInspectorApplyTimer = null;
@@ -7564,6 +7596,7 @@ Sentence:
 
   function connectWs(serverUrl = null) {
     wsError = "";
+    stopWsHeartbeat();
     if (ws) {
       rejectPendingRequests("WebSocket reconnecting.");
       ws.close();
@@ -7604,6 +7637,7 @@ Sentence:
         wsConnected = true;
         recentLoaded = false;
         recentError = "";
+        startWsHeartbeat();
         if (!showEditor) {
           loadRecent();
         }
@@ -7611,6 +7645,7 @@ Sentence:
       };
       ws.onclose = (event) => {
         wsConnected = false;
+        stopWsHeartbeat();
         rejectPendingRequests("WebSocket closed.");
         const reason = (event?.reason || "").toLowerCase();
         if (event?.code === 1008 || reason.includes("unauthorized")) {
@@ -7628,6 +7663,7 @@ Sentence:
       };
       ws.onerror = () => {
         wsError = "WebSocket connection failed.";
+        stopWsHeartbeat();
         rejectPendingRequests("WebSocket connection failed.");
         scheduleAutoConnectRetry("ws-error");
         finish(false);
@@ -12642,10 +12678,23 @@ Sentence:
           ...reads.map((v)  => ({ ...v, name: resolveVarName(v.var), source: 'reads'  }))
         ].filter((v) => v.name && !seen.has(v.name) && seen.add(v.name));
 
+        // A project can load the same plugin class more than once (e.g. two charamel-embed
+        // instances, one per character) — className alone collides across instances, so it must
+        // not be used as this badge's identity. plugin.name is the device/instance name (unique
+        // per config entry, e.g. "CharamelEmbedXenia" vs "CharamelEmbedBob" — see
+        // buildPreviewCapableAgents just below, which relies on the same field for the same
+        // reason) and is what both the Svelte {#each} key and pluginBadgeState must key on,
+        // or badges silently merge onto one shared position/expanded state (reported 2026-07-17:
+        // dragging or collapsing one badge visibly "disappeared" the other — they'd snapped to
+        // the exact same saved coordinates).
+        const boundAgent = (configView.agents || []).find((a) => a?.device === plugin.name);
+        const genericName = iface.plugin?.name || plugin.className;
+        const instanceLabel = boundAgent?.name || plugin.name;
         return {
-          key: `plugin_${plugin.className}`,
+          key: `plugin_${plugin.name}`,
           className: plugin.className,
-          pluginName: iface.plugin?.name || plugin.name || plugin.className,
+          instanceName: plugin.name,
+          pluginName: instanceLabel ? `${genericName} — ${instanceLabel}` : genericName,
           category: String(iface.categories?.primary || "").toLowerCase(),
           variables
         };
@@ -16042,7 +16091,7 @@ Sentence:
               {/if}
             {/if}
             {#if selectedProjectId && pluginBadgeDescriptors.length > 0}
-              {#each pluginBadgeDescriptors as badge, i}
+              {#each pluginBadgeDescriptors as badge, i (badge.instanceName)}
                 <VarBadge
                   title={badge.pluginName}
                   category={badge.category}
@@ -16063,15 +16112,15 @@ Sentence:
                     }
                     return { line, description: v.description || line };
                   })}
-                  expanded={pluginBadgeState[badge.className]?.expanded ?? true}
-                  x={pluginBadgeState[badge.className]?.x ?? PLUGIN_BADGE_DEFAULT_X}
-                  y={pluginBadgeState[badge.className]?.y ?? (PLUGIN_BADGE_DEFAULT_Y + i * PLUGIN_BADGE_Y_STEP)}
-                  w={pluginBadgeState[badge.className]?.w ?? PLUGIN_BADGE_DEFAULT_W}
-                  h={pluginBadgeState[badge.className]?.h ?? PLUGIN_BADGE_DEFAULT_H}
+                  expanded={pluginBadgeState[badge.instanceName]?.expanded ?? true}
+                  x={pluginBadgeState[badge.instanceName]?.x ?? PLUGIN_BADGE_DEFAULT_X}
+                  y={pluginBadgeState[badge.instanceName]?.y ?? (PLUGIN_BADGE_DEFAULT_Y + i * PLUGIN_BADGE_Y_STEP)}
+                  w={pluginBadgeState[badge.instanceName]?.w ?? PLUGIN_BADGE_DEFAULT_W}
+                  h={pluginBadgeState[badge.instanceName]?.h ?? PLUGIN_BADGE_DEFAULT_H}
                   color="#f8f6f2"
-                  onDragStart={(e) => startPluginBadgeDrag(e, badge.className)}
-                  onToggle={() => togglePluginBadge(badge.className)}
-                  onResizeStart={(e) => startPluginBadgeResize(e, badge.className)}
+                  onDragStart={(e) => startPluginBadgeDrag(e, badge.instanceName)}
+                  onToggle={() => togglePluginBadge(badge.instanceName)}
+                  onResizeStart={(e) => startPluginBadgeResize(e, badge.instanceName)}
                 />
               {/each}
             {/if}
