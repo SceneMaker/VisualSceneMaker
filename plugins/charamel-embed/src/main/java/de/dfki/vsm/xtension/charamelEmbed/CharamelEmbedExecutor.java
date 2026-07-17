@@ -62,11 +62,23 @@ public class CharamelEmbedExecutor extends ActivityExecutor
     private static final long BLOCKING_DEFAULT_DECAY_MS = 300;
     private static final long BLOCKING_TRANSPORT_BUFFER_MS = 50;
 
+    // Upper bound on how long broadcastSpeakAndAwaitStop() will wait for a "<vmuid>:stop" feedback
+    // marker before giving up. Without this, a page reload/relaunch (or transport hiccup) that
+    // orphans a pending id leaves the calling thread parked in mPendingSpeechIds.wait() forever.
+    // Before WebUiServer started dispatching previewTurn()/previewAction() to a background executor
+    // (2026-07-17), that stuck thread *was* the Jetty HTTP-handler thread serving the preview
+    // request, and the browser eventually dropped the still-open, silent connection itself,
+    // reporting a bare "network connection was lost" with nothing logged server-side. The dispatch
+    // fix moved the wait off the request thread, but this timeout stays as the actual fix for the
+    // underlying stuck-wait case, wherever it's called from.
+    private static final long SPEECH_FEEDBACK_TIMEOUT_MS = 20_000;
+
     // Utterance ids whose "stop" feedback hasn't arrived yet. Guards a wait/notify — any thread
     // can wait here, not just an ActivityWorker: real playback waits on an ActivityWorker thread
-    // (via ActivityScheduler's join-on-blocking contract), but authoring-time preview turns
-    // (previewTurn()) run synchronously on the calling HTTP-handler thread and need the exact same
-    // "block until this utterance's speech really finishes" wait.
+    // (via ActivityScheduler's join-on-blocking contract), and authoring-time preview turns
+    // (previewTurn()), dispatched by WebUiServer to a background executor thread, need the exact
+    // same "block until this utterance's speech really finishes" wait (bounded by
+    // SPEECH_FEEDBACK_TIMEOUT_MS above).
     private final java.util.Set<String> mPendingSpeechIds = new java.util.HashSet<>();
     // Pending actions for markers embedded in a previewTurn() call, keyed by marker string. Resolved
     // directly here rather than via the interpreter's ActivityScheduler, since preview dispatch runs
@@ -452,10 +464,12 @@ public class CharamelEmbedExecutor extends ActivityExecutor
      * Brackets {@code rawText} with {@code ${'id':'start'}$}/{@code ${'id':'stop'}$} markers (the
      * engine extracts these itself and echoes them via onMarker, which processStatusMessage turns
      * back into a "stop" feedback for {@code id}), sends it, and blocks the calling thread until
-     * that feedback arrives — or returns immediately if there's no connected page to wait on.
-     * Callable from any thread: real playback calls this from an ActivityWorker (already blocked on
-     * by ActivityScheduler's join-on-{@code Type.blocking} contract); authoring-time preview turns
-     * call it directly from the HTTP-handler thread that's synchronously running previewTurn().
+     * that feedback arrives (bounded by {@link #SPEECH_FEEDBACK_TIMEOUT_MS}) — or returns immediately
+     * if there's no connected page to wait on. Callable from any thread: real playback calls this
+     * from an ActivityWorker (already blocked on by ActivityScheduler's join-on-{@code
+     * Type.blocking} contract); authoring-time preview turns call it directly from previewTurn(),
+     * which WebUiServer dispatches to its own background executor rather than the Jetty request
+     * thread.
      */
     private void broadcastSpeakAndAwaitStop(String vmuid, String rawText, String voice) {
         // Only bracket with a leading start marker — NOT a trailing stop marker. The engine
@@ -478,14 +492,31 @@ public class CharamelEmbedExecutor extends ActivityExecutor
             mPendingSpeechIds.add(vmuid);
             broadcastSpeak(vmuid, cmd, voice);
             mLogger.message("Waiting for feedback on " + vmuid + " ...");
+            final long deadline = System.currentTimeMillis() + SPEECH_FEEDBACK_TIMEOUT_MS;
+            boolean timedOut = false;
             while (mPendingSpeechIds.contains(vmuid)) {
+                final long remaining = deadline - System.currentTimeMillis();
+                if (remaining <= 0) {
+                    timedOut = true;
+                    mPendingSpeechIds.remove(vmuid);
+                    break;
+                }
                 try {
-                    mPendingSpeechIds.wait();
+                    mPendingSpeechIds.wait(remaining);
                 } catch (InterruptedException exc) {
                     mLogger.failure(exc.toString());
+                    Thread.currentThread().interrupt();
+                    mPendingSpeechIds.remove(vmuid);
+                    timedOut = true;
+                    break;
                 }
             }
-            mLogger.message("Proceed - got feedback on " + vmuid + " ...");
+            if (timedOut) {
+                mLogger.warning("Timed out after " + SPEECH_FEEDBACK_TIMEOUT_MS
+                        + "ms waiting for feedback on " + vmuid + " - proceeding anyway.");
+            } else {
+                mLogger.message("Proceed - got feedback on " + vmuid + " ...");
+            }
         }
     }
 

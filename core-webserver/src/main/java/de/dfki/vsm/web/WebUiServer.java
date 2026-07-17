@@ -147,7 +147,9 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.Enumeration;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -346,6 +348,20 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
             return t;
         });
     private volatile ScheduledFuture<?> mShutdownFuture;
+
+    // Authoring-time character preview (previewTurn/previewAction) genuinely blocks the calling
+    // thread until speech/blocking-action feedback arrives (see CharamelEmbedExecutor). Dispatching
+    // it here rather than on the Jetty request thread keeps the HTTP connection itself unaffected by
+    // that wait — the connection only stays open as long as ctx.future()'s CompletableFuture is
+    // pending, which Javalin/Jetty handle without an idle-thread cost, instead of parking a real
+    // request-handling thread (and risking an idle-connection timeout killing the socket, which the
+    // browser then reports as a bare "network connection lost" with nothing logged server-side).
+    private final ExecutorService mPreviewDispatchExecutor =
+        Executors.newCachedThreadPool(r -> {
+            Thread t = new Thread(r, "vsm-preview-dispatch");
+            t.setDaemon(true);
+            return t;
+        });
 
     /** Maps WS session-id → project-id for clients that joined via Session.Subscribe. */
     private final ConcurrentHashMap<String, String> wsProjectSubscriptions = new ConcurrentHashMap<>();
@@ -2032,6 +2048,7 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
 
     public void stop() {
         mShutdownScheduler.shutdownNow();
+        mPreviewDispatchExecutor.shutdownNow();
         if (mApp != null) {
             // Deregister from all project dispatchers.
             for (ProjectRef ref : projectStore.values()) {
@@ -4639,7 +4656,14 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
     }
 
     /** Parses and performs a raw turn (utterance text + inline [...] commands) on the character,
-     *  non-blocking, independent of any running Interpreter. Body: {@code {"text": "..."}}. */
+     *  independent of any running Interpreter. Body: {@code {"text": "..."}}.
+     *
+     *  <p>{@code previewTurn()} itself blocks its calling thread until each speech segment's
+     *  completion feedback arrives (see {@code CharamelEmbedExecutor.broadcastSpeakAndAwaitStop}),
+     *  which can take several seconds for a multi-segment turn. Dispatched via {@link
+     *  #mPreviewDispatchExecutor} so that wait happens off the Jetty request thread — the HTTP
+     *  connection stays open only via Javalin's async context, not a parked worker thread, so an
+     *  idle-timeout on the connector can't kill it out from under a legitimately slow preview. */
     private void handlePluginPreviewTurn(Context ctx) {
         de.dfki.vsm.runtime.plugin.CharacterPreviewCapable capable = resolvePreviewCapablePlugin(ctx);
         if (capable == null) return;
@@ -4655,14 +4679,20 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
             writeJson(ctx, errorResponse("BAD_REQUEST", "Missing text"));
             return;
         }
-        capable.previewTurn(text);
-        JSONObject response = new JSONObject();
-        response.put("status", "ok");
-        writeJson(ctx, response);
+        ctx.future(() -> CompletableFuture.runAsync(() -> capable.previewTurn(text), mPreviewDispatchExecutor)
+                .thenRun(() -> {
+                    JSONObject response = new JSONObject();
+                    response.put("status", "ok");
+                    writeJson(ctx, response);
+                }));
     }
 
-    /** Parses and performs a single standalone action command (e.g. emotion/gesture/background),
-     *  non-blocking. Body: {@code {"command": "emotion type='happy' intensity='1.0'"}}. */
+    /** Parses and performs a single standalone action command (e.g. emotion/gesture/background).
+     *  Body: {@code {"command": "emotion type='happy' intensity='1.0'"}}.
+     *
+     *  <p>Dispatched off the Jetty request thread for the same reason as {@link
+     *  #handlePluginPreviewTurn}: a blocking action (e.g. a blocking emotion) makes {@code
+     *  previewAction()} itself block its calling thread for the action's estimated duration. */
     private void handlePluginPreviewAction(Context ctx) {
         de.dfki.vsm.runtime.plugin.CharacterPreviewCapable capable = resolvePreviewCapablePlugin(ctx);
         if (capable == null) return;
@@ -4678,10 +4708,12 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
             writeJson(ctx, errorResponse("BAD_REQUEST", "Missing command"));
             return;
         }
-        capable.previewAction(command);
-        JSONObject response = new JSONObject();
-        response.put("status", "ok");
-        writeJson(ctx, response);
+        ctx.future(() -> CompletableFuture.runAsync(() -> capable.previewAction(command), mPreviewDispatchExecutor)
+                .thenRun(() -> {
+                    JSONObject response = new JSONObject();
+                    response.put("status", "ok");
+                    writeJson(ctx, response);
+                }));
     }
 
     /** Resolves the {@code {pid}/{name}} path params to a preview-capable plugin instance, or writes
