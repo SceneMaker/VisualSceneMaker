@@ -20026,7 +20026,7 @@ Sentence:
       w={panelState.w}
       h={panelState.h}
       z={panelState.z || 0}
-      open={!!panelState.open}
+      open={showEditor && !!panelState.open}
       {apiGet}
       onDragStart={(e) => startPreviewPanelDrag(e, previewInstanceName)}
       onResizeStart={(e) => startPreviewPanelResize(e, previewInstanceName)}
