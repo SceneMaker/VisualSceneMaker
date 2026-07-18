@@ -250,9 +250,21 @@ public class CharamelEmbedExecutor extends ActivityExecutor
      *  {@code [Bob smile]}) and records what to run when its marker fires back from the page. */
     private void registerPreviewAction(String markerKey, ActionObject action) {
         final String actionActor = action.getActor();
-        final ActivityExecutor target = (actionActor == null || actionActor.isBlank())
-                ? this
-                : mProject.getAgentDevice(actionActor);
+        if (actionActor == null || actionActor.isBlank()) {
+            // Self-actor: dispatch straight through parseAction(), NOT execute() — this callback
+            // runs on processTimeMarkMessage's fresh thread while previewTurn() is still mid-turn,
+            // holding mDispatchLock until the WHOLE turn finishes (see its own declaration). Routing
+            // through execute() would need that same lock, so a leading marker action (e.g. a turn
+            // opening with [background ...]) would queue behind every remaining segment of the turn
+            // instead of firing when its marker actually arrives (confirmed 2026-07-18: the color
+            // change landed only after both utterances had already finished speaking). Non-split
+            // actions reaching this path are always fire-and-forget — a blocking variant is instead
+            // routed through runBlockingPreviewAction, which genuinely needs the lock — so calling
+            // parseAction() directly here, unsynchronized, is safe.
+            mPreviewMarkerMap.put(markerKey, () -> parseAction(action.getName(), action.getFeatureList()));
+            return;
+        }
+        final ActivityExecutor target = mProject.getAgentDevice(actionActor);
         if (target == null) {
             mPreviewMarkerMap.put(markerKey, () -> mLogger.warning(
                     "charamel-embed preview: no device for actor '" + actionActor + "', dropping ["
@@ -260,8 +272,7 @@ public class CharamelEmbedExecutor extends ActivityExecutor
             return;
         }
         final ActionActivity activity = new ActionActivity(
-                (actionActor == null || actionActor.isBlank()) ? "" : actionActor,
-                action.getName(), action.getText(new HashMap<>()), action.getFeatureList(), new HashMap<>());
+                actionActor, action.getName(), action.getText(new HashMap<>()), action.getFeatureList(), new HashMap<>());
         mPreviewMarkerMap.put(markerKey, () -> target.execute(activity));
     }
 

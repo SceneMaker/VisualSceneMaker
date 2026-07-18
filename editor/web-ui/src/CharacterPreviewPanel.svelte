@@ -17,11 +17,21 @@
   export let onFocus = null;       // callback() — raise this panel above others
   export let onProgress = null;    // callback(0-100) — character model load progress
   export let onSpeaking = null;    // callback(boolean) — true while this character is actively speaking
+  // True while a real SceneFlow run is active (see App.svelte's previewSuspendedByRuntime). The
+  // character engine (VuppetMaster) keeps its own persistent connection to its cloud backend for
+  // as long as this iframe exists, entirely independent of our own WS mute mechanism — muting only
+  // stops VSM from sending it speak commands, it does NOT disconnect the engine itself. A real run
+  // opens its own separate audience-facing character page using the same license, and two engine
+  // instances live at once reliably breaks both (confirmed 2026-07-18: every subsequent speak
+  // failed with an opaque engine-side error until the second session was closed). So the iframe is
+  // torn down here for the run's duration and reloaded fresh once it ends, rather than just muted.
+  export let suspended = false;
 
   let previewUrl = null;
   let loadError = "";
   let loading = true;
   let iframeEl;
+  let wasSuspended = false;
 
   function handlePreviewMessage(event) {
     if (!iframeEl || event.source !== iframeEl.contentWindow) return;
@@ -67,8 +77,20 @@
   }
 
   // Reload whenever the panel is (re)pointed at a different project/instance.
-  $: if (projectId && instanceName) {
+  $: if (projectId && instanceName && !suspended) {
     loadPreviewInfo();
+  }
+
+  // Tear the iframe down for the duration of a real run, reload it fresh once the run ends.
+  $: if (suspended !== wasSuspended) {
+    wasSuspended = suspended;
+    if (suspended) {
+      previewUrl = null;
+      loading = false;
+      loadError = "";
+    } else if (projectId && instanceName) {
+      loadPreviewInfo();
+    }
   }
 </script>
 
@@ -103,7 +125,9 @@
   </div>
 
   <div class="preview-panel-body">
-    {#if loadError}
+    {#if suspended}
+      <div class="preview-panel-message">A SceneFlow run is active — preview paused to avoid a duplicate character connection.</div>
+    {:else if loadError}
       <div class="preview-panel-message preview-panel-error">{loadError}</div>
     {:else if loading}
       <div class="preview-panel-message">Loading preview…</div>

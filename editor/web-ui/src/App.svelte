@@ -3043,6 +3043,23 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
   $: runtimeCanPause = wsConnected && !!selectedProjectId && runtimeState === "running";
   $: runtimeCanStop = wsConnected && !!selectedProjectId && runtimeState !== "stopped";
   $: runtimePlayLabel = runtimeState === "paused" ? "Resume" : "Start";
+  // A real run's audience GUI popup (see runtimeGuiWindowOpen above) connects its own independent
+  // engine instance to the same character/license as the SIA preview — checking runtimeState alone
+  // is NOT enough, since that popup opens as soon as Start is clicked regardless of whether the
+  // Interpreter itself ever reaches "running" (e.g. a confirmation dialog can block it indefinitely
+  // while the popup, and the conflict, are already live). Covers running AND paused: pausing the
+  // Interpreter doesn't close that popup, so the conflict is still live until it's genuinely closed.
+  $: previewSuspendedByRuntime = runtimeGuiWindowOpen || runtimeState === "running" || runtimeState === "paused";
+  // Reset the "loaded" gate on suspend — the panel's iframe is torn down (see `suspended` prop),
+  // so the last-reported progress/ready state no longer reflects reality; without this, turn Play
+  // buttons would stay enabled against a preview that no longer has a live engine behind it.
+  let wasPreviewSuspendedByRuntime = false;
+  $: if (previewSuspendedByRuntime !== wasPreviewSuspendedByRuntime) {
+    wasPreviewSuspendedByRuntime = previewSuspendedByRuntime;
+    if (previewSuspendedByRuntime) {
+      previewLoadProgress = {};
+    }
+  }
   $: monitorCanEdit = runtimeState !== "stopped";
   // Preferred scene language: kept in sync with runtimeInfo (from GET /runtime)
   let preferredSceneLanguage = "";
@@ -3964,12 +3981,14 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
   onMount(() => {
     autoConnectAttempts = 0;
     autoConnect();
+    startRuntimeGuiWindowPoll();
   });
 
   onDestroy(() => {
     clearAutoSaveTimer();
     stopSemanticPreview();
     stopWsHeartbeat();
+    stopRuntimeGuiWindowPoll();
     if (timeoutInspectorApplyTimer) {
       clearTimeout(timeoutInspectorApplyTimer);
       timeoutInspectorApplyTimer = null;
@@ -6837,6 +6856,32 @@ Sentence:
   // ?wsPort= (wsclient.js reads it and connects back to this same host).
   const HTMLGUI_CLASSNAME = "de.dfki.vsm.xtension.responsiveweb.HtmlGuiWsExecutor";
   let runtimeGuiWindow = null;
+  // Tracks whether the audience GUI popup (opened below) is currently open. Polled rather than
+  // event-driven — window.open()'s returned reference has no reliable cross-window "closed" event,
+  // only a `.closed` property. This matters beyond just the GUI itself: that popup's "character"
+  // screen connects an independent VuppetMaster engine instance to the same character/license as
+  // any open SIA preview panel, and two simultaneous engine sessions on one license reliably break
+  // both (confirmed 2026-07-18 — every subsequent speak failed with an opaque engine-side error
+  // until the second session was closed). Driving preview suspension off `runtimeState` alone is
+  // NOT sufficient: this popup opens as soon as Start is clicked, independent of whether the
+  // Interpreter itself ever actually reaches "running" (e.g. a confirmation dialog can block that
+  // indefinitely while the popup — and the conflict — is already live). See previewSuspendedByRuntime.
+  let runtimeGuiWindowOpen = false;
+  let runtimeGuiWindowPollTimer = null;
+
+  function startRuntimeGuiWindowPoll() {
+    if (runtimeGuiWindowPollTimer) return;
+    runtimeGuiWindowPollTimer = setInterval(() => {
+      runtimeGuiWindowOpen = !!(runtimeGuiWindow && !runtimeGuiWindow.closed);
+    }, 1000);
+  }
+
+  function stopRuntimeGuiWindowPoll() {
+    if (runtimeGuiWindowPollTimer) {
+      clearInterval(runtimeGuiWindowPollTimer);
+      runtimeGuiWindowPollTimer = null;
+    }
+  }
 
   function findHtmlGuiPlugin() {
     const plugins = projectConfigView?.plugins || [];
@@ -6921,6 +6966,13 @@ Sentence:
     if (!url) return;
     try {
       runtimeGuiWindow = window.open(url, "vsm-runtime-gui");
+      // Set synchronously, not left to the next 1s poll tick (startRuntimeGuiWindowPoll) — the
+      // popup's own character page starts connecting to the VuppetMaster cloud immediately, and a
+      // brief window where it and an already-open SIA preview are both live on the same license
+      // reliably poisons the popup's connection for the rest of the browser session (confirmed
+      // 2026-07-18: preview alone worked fine, but Xenia never rendered in the popup on the very
+      // next Start — only a full browser restart, not just closing the popup, recovered it).
+      if (runtimeGuiWindow) runtimeGuiWindowOpen = true;
     } catch (_) {
       /* popup blocked — re-pressing Play will try again */
     }
@@ -20030,6 +20082,7 @@ Sentence:
       h={panelState.h}
       z={panelState.z || 0}
       open={showEditor && !!panelState.open}
+      suspended={previewSuspendedByRuntime}
       {apiGet}
       onDragStart={(e) => startPreviewPanelDrag(e, previewInstanceName)}
       onResizeStart={(e) => startPreviewPanelResize(e, previewInstanceName)}

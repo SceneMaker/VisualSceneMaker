@@ -174,7 +174,17 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
             });
             ws.onError(ctx -> {
                 Throwable t = ctx.error();
-                mLogger.failure("WebSocket error: " + (t != null ? t.getMessage() : "unknown"));
+                // A closed browser tab/window (rather than a clean WS close handshake) surfaces
+                // here as an EOF-style exception with no message — routine, not a real problem, so
+                // it's logged at info level instead of SEVERE (confirmed 2026-07-18: alarmed a user
+                // who simply closed a browser window mid-session).
+                String message = t != null ? t.getMessage() : null;
+                if (message != null) {
+                    mLogger.failure("WebSocket error: " + message);
+                } else {
+                    mLogger.message("WebSocket closed (client disconnect): "
+                            + (t != null ? t.getClass().getSimpleName() : "unknown"));
+                }
             });
         });
 
