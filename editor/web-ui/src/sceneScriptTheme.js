@@ -73,7 +73,7 @@ export const sceneScriptTheme = EditorView.theme(
       background: "rgba(91, 142, 220, 0.15)",
       color: "#3d5f96",
       fontFamily: "inherit",
-      fontSize: "0.85em",
+      fontSize: "1em",
       cursor: "default"
     }
   },
