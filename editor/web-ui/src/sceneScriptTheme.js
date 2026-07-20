@@ -67,7 +67,9 @@ export const sceneScriptTheme = EditorView.theme(
       cursor: "default"
     },
     ".cm-action-compact": {
-      display: "inline-block",
+      display: "inline-flex",
+      alignItems: "center",
+      gap: "0.2em",
       padding: "0 0.1rem",
       borderRadius: "3px",
       background: "rgba(91, 142, 220, 0.15)",
@@ -75,6 +77,16 @@ export const sceneScriptTheme = EditorView.theme(
       fontFamily: "inherit",
       fontSize: "1em",
       cursor: "default"
+    },
+    ".cm-action-compact-icon": {
+      width: "0.85em",
+      height: "0.85em",
+      flex: "none",
+      fill: "none",
+      stroke: "currentColor",
+      strokeWidth: "2",
+      strokeLinecap: "round",
+      strokeLinejoin: "round"
     }
   },
   { dark: false }

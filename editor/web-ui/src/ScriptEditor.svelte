@@ -214,6 +214,39 @@
   // read-only label. Never edits the document itself.
   const setActionDisplayEffect = StateEffect.define();
 
+  const SVG_NS = "http://www.w3.org/2000/svg";
+  // Same glyphs as the SceneFlow node command badges (SceneFlowView.svelte) — blocking actions
+  // pause the turn until they finish, non-blocking ones fire-and-forget (rocket).
+  const BLOCKING_ICON_PATHS = ["M12 6v6l4 2", "M20 12v5", "M20 21h.01", "M21.25 8.2A10 10 0 1 0 16 21.16"];
+  const NONBLOCKING_ICON_PATHS = [
+    "M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5",
+    "M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09",
+    "M9 12a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.4 22.4 0 0 1-4 2z",
+    "M9 12H4s.55-3.03 2-4c1.62-1.08 5 .05 5 .05"
+  ];
+
+  function isBlockingSpan(span) {
+    // "pause" always halts the utterance by definition — show the clock regardless of any
+    // `blocking` feature, since that's the intuitive read for authors even if the runtime
+    // classifies it differently (core's ActionBlockingUtil).
+    if (span.actionName === "pause") return true;
+    const feature = span.features?.find((f) => f.key === "blocking");
+    return !!feature && String(feature.value) === "true";
+  }
+
+  function buildActionCompactIcon(blocking) {
+    const svg = document.createElementNS(SVG_NS, "svg");
+    svg.setAttribute("class", "cm-action-compact-icon");
+    svg.setAttribute("viewBox", "0 0 24 24");
+    svg.setAttribute("aria-hidden", "true");
+    for (const d of (blocking ? BLOCKING_ICON_PATHS : NONBLOCKING_ICON_PATHS)) {
+      const path = document.createElementNS(SVG_NS, "path");
+      path.setAttribute("d", d);
+      svg.appendChild(path);
+    }
+    return svg;
+  }
+
   class ActionCompactWidget extends WidgetType {
     constructor(span) {
       super();
@@ -227,7 +260,8 @@
     toDOM() {
       const el = document.createElement("span");
       el.className = "cm-action-compact";
-      el.textContent = compactLabelForSpan(this.span);
+      el.appendChild(buildActionCompactIcon(isBlockingSpan(this.span)));
+      el.appendChild(document.createTextNode(compactLabelForSpan(this.span)));
       el.title = this.span.raw;
       return el;
     }
