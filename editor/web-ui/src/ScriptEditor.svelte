@@ -18,7 +18,8 @@
   export let semanticHighlights = { marks: [], lines: [] };
   export let playableTurns = []; // [{speaker, text, firstLineEndOffset, instanceName, loaded}] — M10
   export let onPlayTurn = null;  // callback(turn) — send this turn to its character's preview
-  export let onContextMenu = null; // (charOffset, clientX, clientY) => boolean — M11; true = suppress the native menu
+  export let onCommandMenu = null; // (charOffset, clientX, clientY) => boolean — M11/M13f; opens the insert/edit/delete
+                                    // popup on double-click (no right-click anywhere else in the app); true = handled
   export let actionSpans = [];      // [{offsetStart, offsetEnd, actionActor, actionName, features, raw}] — M13b
   export let compactCommands = false; // M13c: global compact/full view toggle
 
@@ -316,6 +317,16 @@
       el.addEventListener("dragend", () => {
         el.classList.remove("cm-action-compact-dragging");
       });
+      // ignoreEvent() below stops CodeMirror's own dblclick handling (and the domEventHandlers
+      // dblclick, which is gated the same way) from ever seeing events that land on this widget,
+      // so open the menu directly here instead — we already know the exact span, no hit-testing
+      // needed.
+      el.addEventListener("dblclick", (event) => {
+        if (!onCommandMenu) return;
+        event.preventDefault();
+        event.stopPropagation();
+        onCommandMenu(this.span.offsetStart, event.clientX, event.clientY);
+      });
       return el;
     }
     ignoreEvent() { return true; }
@@ -475,12 +486,12 @@
       actionDisplayField,
       dropCursor(),
       EditorView.domEventHandlers({
-        contextmenu(event, cmView) {
-          if (!onContextMenu) return false;
+        dblclick(event, cmView) {
+          if (!onCommandMenu) return false;
           const pos = cmView.posAtCoords({ x: event.clientX, y: event.clientY });
           if (pos == null) return false;
-          if (onContextMenu(pos, event.clientX, event.clientY)) {
-            event.preventDefault();
+          if (onCommandMenu(pos, event.clientX, event.clientY)) {
+            event.preventDefault(); // suppress the browser's default double-click word selection
             return true;
           }
           return false;
@@ -576,8 +587,8 @@
   }
 
   // pos (optional, M11): insert at this exact character offset instead of the current
-  // selection — needed for the right-click "insert emotion" flow, where the cursor may not
-  // still be at the point the user right-clicked by the time they confirm the modal.
+  // selection — needed for the double-click "insert emotion" flow, where the cursor may not
+  // still be at the point the user double-clicked by the time they confirm the modal.
   export function insertText(text, pos) {
     if (!view || readOnly) return;
     const insert = text == null ? "" : String(text);

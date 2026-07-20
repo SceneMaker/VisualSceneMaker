@@ -692,10 +692,11 @@
     }
   }
 
-  // M11/M13d: right-click on turn text -> "Insert emotion"/"Insert background"/"Insert
-  // clearEmotion"; right-click on an existing action span -> "Edit"/"Delete". Resolves the turn
-  // under the cursor (M9) to a previewCapable character; if that fails, let the browser's
-  // native context menu show instead.
+  // M11/M13d/M13f: double-click on turn text -> "Insert emotion"/"Insert background"/"Insert
+  // clearEmotion"; double-click on an existing action span -> "Edit"/"Delete" (no right-click
+  // anywhere else in the app, so this stays double-click rather than a context menu). Resolves
+  // the turn under the cursor (M9) to a previewCapable character; if that fails, let the
+  // browser's default double-click word selection happen instead.
   const SUPPORTED_ACTION_TYPES = ["emotion", "background", "clearEmotion", "pause"];
 
   let scriptContextMenu = null;  // { x, y, offset, speaker, instanceName, loaded, editableSpan } | null
@@ -715,12 +716,12 @@
     loaded: (previewLoadProgress[a.instanceName] ?? 0) >= 100 && !previewAnySpeaking
   }));
 
-  function handleScriptContextMenu(offset, clientX, clientY) {
+  function handleScriptCommandMenu(offset, clientX, clientY) {
     const turn = turnAtOffset(scriptTurns, offset);
     if (!turn) return false;
     const pcAgent = previewCapableAgents.find((a) => a.agentName === turn.speaker);
     if (!pcAgent) return false;
-    // Never let the insertion point land inside the "Speaker:" prefix itself (e.g. a right-click
+    // Never let the insertion point land inside the "Speaker:" prefix itself (e.g. a double-click
     // on the speaker's name) — that would split it and break the "Speaker: text" syntax. Floor to
     // right after the colon; inserting an action there (before any utterance text) is still valid.
     const textStart = turn.offsetStart + turn.speaker.length + 1;
@@ -3229,7 +3230,7 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
   // button disables globally while one is in flight, so a click mid-utterance can't start an
   // overlapping second speak.
   $: scriptTurns = buildTurnBoundariesFromScript(scriptDraft);
-  // M13b: reactive so decorations (M13c) and right-click hit-testing (M13d) always see
+  // M13b: reactive so decorations (M13c) and double-click hit-testing (M13d) always see
   // current action spans without re-parsing on every keystroke by hand.
   $: actionSpans = parseActionSpans(scriptDraft);
   $: playableTurns = scriptTurns
@@ -10562,7 +10563,7 @@ Sentence:
 
   // Turn-boundary parser: unlike buildSceneGroupsFromScript/extractSceneGroupsWithText (which
   // work at whole-scene granularity), this tracks per-turn speaker + character-offset ranges in
-  // the ORIGINAL text — the shared groundwork the per-turn Play button (M10) and the right-click
+  // the ORIGINAL text — the shared groundwork the per-turn Play button (M10) and the double-click
   // "insert emotion" context resolution (M11) both need: "what turn, spoken by whom, is at this
   // line / this cursor offset?"
   const TURN_SPEAKER_RE = /^([A-Za-z_][A-Za-z0-9_]*)\s*:\s*(.*)$/;
@@ -10641,13 +10642,13 @@ Sentence:
   }
 
   // The turn (if any) whose character-offset span contains the given offset — used to resolve
-  // "which turn/speaker is under the cursor" for the right-click context menu (M11).
+  // "which turn/speaker is under the cursor" for the double-click command menu (M11).
   function turnAtOffset(turns, charOffset) {
     return (turns || []).find((t) => charOffset >= t.offsetStart && charOffset <= t.offsetEnd) || null;
   }
 
   // M13b: parses embedded [...] action commands anywhere in script text (not the whole
-  // SceneScript grammar — just enough for the editing UI: right-click edit/delete (M13d) and
+  // SceneScript grammar — just enough for the editing UI: double-click edit/delete (M13d) and
   // compact/full decorations (M13c)). Mirrors parser.jcup's action_definition rule:
   //   action_definition ::= action_name feature_list_opt
   //                       | action_actor action_name feature_list_opt
@@ -17544,7 +17545,7 @@ Sentence:
                 semanticHighlights={semanticEditorHighlights}
                 playableTurns={playableTurns}
                 onPlayTurn={handlePlayTurn}
-                onContextMenu={handleScriptContextMenu}
+                onCommandMenu={handleScriptCommandMenu}
                 actionSpans={actionSpans}
                 compactCommands={scriptCommandsCompact}
                 onChange={(value) => {
