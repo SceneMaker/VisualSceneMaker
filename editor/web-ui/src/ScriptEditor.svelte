@@ -1,7 +1,7 @@
 <script>
   import { onDestroy, onMount } from "svelte";
   import { EditorState, StateEffect, StateField } from "@codemirror/state";
-  import { EditorView, keymap, Decoration, WidgetType } from "@codemirror/view";
+  import { EditorView, keymap, Decoration, WidgetType, dropCursor } from "@codemirror/view";
   import { indentUnit } from "@codemirror/language";
   import { lintGutter, nextDiagnostic, previousDiagnostic, setDiagnostics } from "@codemirror/lint";
   import { indentWithTab } from "@codemirror/commands";
@@ -234,6 +234,46 @@
     return !!feature && String(feature.value) === "true";
   }
 
+  // M13f: drag-reorder inline commands within a turn — only meaningful in compact view, since
+  // full view already lets authors cut/paste the raw [...] text directly.
+  const ACTION_DRAG_MIME = "application/x-vsm-action-span";
+
+  function isSpaceChar(ch) {
+    return ch === " " || ch === "\t";
+  }
+
+  // Builds the two-change transaction that moves an action span from its old offsets to
+  // dropPos, keeping surrounding text sane: collapses the double space left behind at the old
+  // location, and adds a space on either side of the drop point if it would otherwise butt up
+  // against a word. All positions are resolved against `doc` as it stood before either change —
+  // CodeMirror composes a multi-entry `changes` array against that same original document
+  // regardless of array order, so no manual offset-shifting is needed between the two edits.
+  function buildActionMoveChanges(doc, offsetStart, offsetEnd, raw, dropPos) {
+    const docLength = doc.length;
+    if (dropPos == null || dropPos < 0 || dropPos > docLength) return null;
+
+    const before = offsetStart > 0 ? doc.sliceString(offsetStart - 1, offsetStart) : "";
+    const after = offsetEnd < docLength ? doc.sliceString(offsetEnd, offsetEnd + 1) : "";
+    const eatsTrailingSpace = isSpaceChar(before) && isSpaceChar(after);
+    const srcFrom = offsetStart;
+    const srcTo = eatsTrailingSpace ? offsetEnd + 1 : offsetEnd;
+
+    if (dropPos >= srcFrom && dropPos <= srcTo) return null; // dropped onto/next to itself
+
+    const beforeDrop = dropPos > 0 ? doc.sliceString(dropPos - 1, dropPos) : "";
+    const afterDrop = dropPos < docLength ? doc.sliceString(dropPos, dropPos + 1) : "";
+    const needsLeadingSpace = beforeDrop !== "" && !/\s/.test(beforeDrop);
+    const needsTrailingSpace = afterDrop !== "" && !/\s/.test(afterDrop);
+    const insertText = `${needsLeadingSpace ? " " : ""}${raw}${needsTrailingSpace ? " " : ""}`;
+
+    return {
+      changes: [
+        { from: srcFrom, to: srcTo, insert: "" },
+        { from: dropPos, insert: insertText }
+      ]
+    };
+  }
+
   function buildActionCompactIcon(blocking) {
     const svg = document.createElementNS(SVG_NS, "svg");
     svg.setAttribute("class", "cm-action-compact-icon");
@@ -260,12 +300,25 @@
     toDOM() {
       const el = document.createElement("span");
       el.className = "cm-action-compact";
+      el.draggable = true;
       el.appendChild(buildActionCompactIcon(isBlockingSpan(this.span)));
       el.appendChild(document.createTextNode(compactLabelForSpan(this.span)));
       el.title = this.span.raw;
+      el.addEventListener("dragstart", (event) => {
+        event.dataTransfer.effectAllowed = "move";
+        event.dataTransfer.setData(ACTION_DRAG_MIME, JSON.stringify({
+          offsetStart: this.span.offsetStart,
+          offsetEnd: this.span.offsetEnd,
+          raw: this.span.raw
+        }));
+        el.classList.add("cm-action-compact-dragging");
+      });
+      el.addEventListener("dragend", () => {
+        el.classList.remove("cm-action-compact-dragging");
+      });
       return el;
     }
-    ignoreEvent() { return false; }
+    ignoreEvent() { return true; }
   }
 
   function compactLabelForSpan(span) {
@@ -420,6 +473,7 @@
       semanticHighlightField,
       playButtonsField,
       actionDisplayField,
+      dropCursor(),
       EditorView.domEventHandlers({
         contextmenu(event, cmView) {
           if (!onContextMenu) return false;
@@ -430,6 +484,33 @@
             return true;
           }
           return false;
+        },
+        dragover(event) {
+          if (readOnly || !event.dataTransfer?.types?.includes(ACTION_DRAG_MIME)) return false;
+          event.preventDefault();
+          return true;
+        },
+        drop(event, cmView) {
+          if (readOnly) return false;
+          const payloadRaw = event.dataTransfer?.getData(ACTION_DRAG_MIME);
+          if (!payloadRaw) return false;
+          event.preventDefault();
+          let payload;
+          try {
+            payload = JSON.parse(payloadRaw);
+          } catch {
+            return true;
+          }
+          const { offsetStart, offsetEnd, raw } = payload;
+          const dropPos = cmView.posAtCoords({ x: event.clientX, y: event.clientY });
+          const move = buildActionMoveChanges(cmView.state.doc, offsetStart, offsetEnd, raw, dropPos);
+          if (!move) return true;
+          try {
+            cmView.dispatch(move);
+          } catch {
+            // Stale offsets (document changed since dragstart) — ignore the drop.
+          }
+          return true;
         }
       }),
       EditorState.readOnly.of(readOnly),

@@ -1321,8 +1321,9 @@
   let scriptDraft = "";
   let scriptVersion = null;
   // M13c: global compact/full toggle for embedded [...] commands — a pure view decoration
-  // (ScriptEditor), never touches scriptDraft/the saved file.
-  let scriptCommandsCompact = false;
+  // (ScriptEditor), never touches scriptDraft/the saved file. Defaults to compact since that's
+  // the only view where inline commands are drag-reorderable (M13f).
+  let scriptCommandsCompact = true;
   let scriptStatus = "";
   let scriptError = "";
   let scriptLoading = false;

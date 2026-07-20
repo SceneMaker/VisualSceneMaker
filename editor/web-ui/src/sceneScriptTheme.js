@@ -76,7 +76,10 @@ export const sceneScriptTheme = EditorView.theme(
       color: "#3d5f96",
       fontFamily: "inherit",
       fontSize: "1em",
-      cursor: "default"
+      cursor: "grab"
+    },
+    ".cm-action-compact-dragging": {
+      opacity: "0.4"
     },
     ".cm-action-compact-icon": {
       width: "0.85em",
