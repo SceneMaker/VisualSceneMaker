@@ -488,6 +488,8 @@ button.ghost.danger:active {
   min-height: 0;
   overflow-y: auto;
   padding-right: 0.25rem;
+  padding-left: 0.25rem;
+  margin-left: -0.25rem;
 }
 
 .project-row {
@@ -625,7 +627,7 @@ button.recent-action-pin.active {
   color: var(--ink);
 }
 
-.tutorial-card {
+.project-list button.tutorial-card {
   display: grid;
   gap: 0.18rem;
 }
@@ -637,14 +639,6 @@ button.recent-action-pin.active {
 .tutorial-meta {
   font-size: 0.72rem;
   color: var(--muted);
-}
-
-.tutorial-path {
-  font-size: 0.68rem;
-  color: color-mix(in srgb, var(--muted) 80%, #fff 20%);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .missing-var-modal {

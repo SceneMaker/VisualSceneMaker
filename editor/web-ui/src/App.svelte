@@ -15140,9 +15140,6 @@ Sentence:
                 {#if formatTutorialMeta(project)}
                   <span class="tutorial-meta">{formatTutorialMeta(project)}</span>
                 {/if}
-                {#if project.path}
-                  <span class="tutorial-path">{project.path}</span>
-                {/if}
               </button>
             {/each}
           {/if}
