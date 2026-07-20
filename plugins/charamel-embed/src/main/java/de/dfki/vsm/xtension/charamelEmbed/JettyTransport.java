@@ -129,9 +129,25 @@ public final class JettyTransport implements CharamelTransport {
 
     @Override
     public void send(String json) {
+        // A socket whose peer vanished without a clean close handshake (tab force-closed, laptop
+        // slept, network dropped) lingers in mWebSockets until Jetty's own 10-minute idle timeout
+        // notices — onWsClose (the only other place these sets are pruned) never fires for it in
+        // the meantime. Without the try/catch below, that one dead entry's ws.send() throws and
+        // aborts this whole loop, silently starving every *live* socket that iterates after it —
+        // including a preview page reloaded specifically to recover from this exact situation
+        // (confirmed 2026-07-20: the "Reload preview" button alone didn't fix a wedged preview,
+        // because the fresh session it created could still be starved by an older, undetected-dead
+        // one still sitting in this set). Evict on failure so the set self-heals immediately instead
+        // of waiting out the idle timeout.
         for (WsContext ws : mWebSockets) {
             if (mPreviewMuted && mPreviewWebSockets.contains(ws)) continue;
-            ws.send(json);
+            try {
+                ws.send(json);
+            } catch (Exception e) {
+                mLogger.warning("Dropping dead character-page WebSocket session: " + e.getMessage());
+                mWebSockets.remove(ws);
+                mPreviewWebSockets.remove(ws);
+            }
         }
     }
 
