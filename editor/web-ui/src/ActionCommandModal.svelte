@@ -59,9 +59,9 @@
   $: saveLabel = mode === "edit" ? "Save" : "Insert";
 </script>
 
-<div class="eim-backdrop" role="presentation" on:click={handleBackdropClick}>
+<div class="modal-backdrop eim-backdrop" role="presentation" on:click={handleBackdropClick}>
   <div
-    class="eim-modal"
+    class="modal eim-modal"
     bind:this={modalEl}
     role="dialog"
     aria-label={title}
@@ -75,7 +75,7 @@
       on:pointerdown|stopPropagation={handleHeaderPointerDown}
       on:mousedown|stopPropagation={handleHeaderPointerDown}
     >
-      <span class="eim-title">{title}</span>
+      <h3 class="eim-title">{title}</h3>
       <button
         type="button"
         class="ghost icon-button eim-close"
@@ -143,24 +143,17 @@
 </div>
 
 <style>
-  .eim-backdrop {
-    position: fixed;
-    inset: 0;
-    z-index: 800;
-    background: rgba(0, 0, 0, 0.35);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
+  /* Border/radius/shadow/background come from the shared .modal/.modal-backdrop classes
+     (app.css) — same design language as the "Command(s) executed at…" (.cmd-modal) and
+     "Add/Edit variable definition" (.def-modal) windows. Only what's actually specific to this
+     dialog (compact width, draggable header, grid→flex layout for the header/body/footer bands)
+     is overridden here. */
   .eim-modal {
-    width: 360px;
-    background: #fff;
-    border: 1px solid #c0b8ae;
-    border-radius: 10px;
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.28);
+    width: min(360px, 92vw);
     display: flex;
     flex-direction: column;
+    padding: 0;
+    gap: 0;
     overflow: hidden;
   }
 
@@ -168,19 +161,18 @@
     display: flex;
     align-items: center;
     gap: 0.4rem;
-    padding: 0.6rem 0.7rem;
-    background: #f8f6f2;
-    border-bottom: 1px solid #e2ddd4;
+    padding: 0.6rem 0.8rem;
+    background: var(--panel-soft);
+    border-bottom: 1px solid var(--stroke);
     cursor: move;
     touch-action: none;
     user-select: none;
   }
 
+  /* Font-size/color come from the shared ".modal h3" rule (app.css) since .eim-modal now
+     carries the "modal" class — this just constrains the title's own layout. */
   .eim-title {
     flex: 1;
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: #3d3d3d;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -197,86 +189,79 @@
   }
 
   .eim-body {
-    padding: 0.7rem;
+    padding: 0.8rem;
+    display: grid;
+    gap: 0.5rem;
   }
 
   .eim-row {
     display: flex;
     align-items: center;
     gap: 0.4rem;
-    margin-bottom: 0.5rem;
   }
 
   .eim-target-label {
-    font-size: 0.72rem;
-    color: #7a7a7a;
-    width: 3.5rem;
+    font-size: 0.85rem;
+    color: var(--muted);
+    width: 3.8rem;
     flex-shrink: 0;
   }
 
   .eim-target-select {
     flex: 1;
-    font-size: 0.78rem;
-    font-family: inherit;
-    padding: 0.2rem 0.4rem;
-    border: 1px solid #d8d2c8;
-    border-radius: 6px;
-    background: #fff;
-    color: #3d3d3d;
   }
 
   .eim-not-loaded {
-    margin-top: 0.5rem;
-    font-size: 0.72rem;
+    font-size: 0.8rem;
     color: #9a7d2a;
     background: #fbf3de;
     border: 1px solid #ecdcb0;
-    border-radius: 6px;
-    padding: 0.4rem 0.5rem;
+    border-radius: var(--radius-sm);
+    padding: 0.4rem 0.6rem;
   }
 
   .eim-footer {
     display: flex;
     justify-content: flex-end;
     gap: 0.5rem;
-    padding: 0.6rem 0.7rem;
-    border-top: 1px solid #e2ddd4;
-    background: #fbfaf8;
+    padding: 0.6rem 0.8rem;
+    border-top: 1px solid var(--stroke);
+    background: var(--panel-soft);
   }
 
   .eim-cancel,
   .eim-insert {
-    font-size: 0.78rem;
-    padding: 0.35rem 0.9rem;
-    border-radius: 6px;
+    font-size: 0.85rem;
+    padding: 0.45rem 1rem;
+    border-radius: var(--radius-sm);
     cursor: pointer;
   }
 
   .eim-cancel {
-    border: 1px solid #c0b8ae;
-    background: #fff;
-    color: #3d3d3d;
+    border: 1px solid var(--stroke);
+    background: var(--panel);
+    color: var(--ink);
   }
 
   .eim-cancel:hover {
-    background: #f2efe9;
+    background: var(--panel-soft);
   }
 
   .eim-insert {
-    border: 1px solid #5b8edc;
-    background: #5b8edc;
+    border: 1px solid var(--accent);
+    background: var(--accent);
     color: #fff;
     font-weight: 600;
   }
 
   .eim-insert:hover:not(:disabled) {
-    background: #4a7dcb;
+    background: var(--button-pressed);
   }
 
   .eim-insert:disabled {
-    border-color: #c9c4b8;
-    background: #e5e1d8;
-    color: #9ca3af;
+    border-color: var(--stroke);
+    background: var(--panel-soft);
+    color: var(--muted);
     cursor: default;
   }
 </style>

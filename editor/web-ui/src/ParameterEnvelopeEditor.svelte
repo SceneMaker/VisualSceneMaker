@@ -16,6 +16,11 @@
   const DEFAULTS = { intensity: 1, attack: 200, hold: 20, decay: 300 };
 
   let type = initialValues?.type ?? typeOptions[0] ?? "";
+
+  // Keeps the dropdown showing every known type, but never silently drops an existing script's
+  // value even if it's a legacy/custom one no longer in typeOptions (a plain <select> would
+  // otherwise fall back to its first option, quietly changing the saved command on next save).
+  $: selectableTypes = type && !typeOptions.includes(type) ? [type, ...typeOptions] : typeOptions;
   let intensity = initialValues?.intensity !== undefined ? Number(initialValues.intensity) : DEFAULTS.intensity;
   let attack = initialValues?.attack !== undefined ? Number(initialValues.attack) : DEFAULTS.attack;
   let hold = initialValues?.hold !== undefined ? Number(initialValues.hold) : DEFAULTS.hold;
@@ -83,19 +88,17 @@
 <div class="pev">
   <div class="pev-row">
     <label class="pev-type-label" for="pev-type-{actionName}">Type</label>
-    <input
+    <select
       id="pev-type-{actionName}"
-      class="pev-type-input"
-      list="pev-type-list-{actionName}"
+      class="pev-type-select"
       bind:value={type}
       on:pointerdown|stopPropagation
       on:mousedown|stopPropagation
-    />
-    <datalist id="pev-type-list-{actionName}">
-      {#each typeOptions as t}
-        <option value={t}></option>
+    >
+      {#each selectableTypes as t}
+        <option value={t}>{t}</option>
       {/each}
-    </datalist>
+    </select>
   </div>
 
   <svg class="pev-curve" viewBox="0 0 {CURVE_W + CURVE_PAD * 2} {CURVE_H + CURVE_PAD * 2}" preserveAspectRatio="none">
@@ -164,35 +167,28 @@
   }
 
   .pev-type-label {
-    font-size: 0.72rem;
-    color: #7a7a7a;
-    width: 3.5rem;
+    font-size: 0.85rem;
+    color: var(--muted);
+    width: 3.8rem;
     flex-shrink: 0;
   }
 
-  .pev-type-input {
+  .pev-type-select {
     flex: 1;
-    font-size: 0.78rem;
-    font-family: inherit;
-    padding: 0.2rem 0.4rem;
-    border: 1px solid #d8d2c8;
-    border-radius: 6px;
-    background: #fff;
-    color: #3d3d3d;
   }
 
   .pev-curve {
     width: 100%;
     height: 60px;
-    background: #fbfaf8;
-    border: 1px solid #e2ddd4;
-    border-radius: 6px;
+    background: var(--panel-soft);
+    border: 1px solid var(--stroke);
+    border-radius: var(--radius-sm);
   }
 
   .pev-sliders {
     display: flex;
     flex-direction: column;
-    gap: 0.15rem;
+    gap: 0.3rem;
   }
 
   .pev-slider-row {
@@ -202,20 +198,67 @@
   }
 
   .pev-slider-label {
-    font-size: 0.72rem;
-    color: #7a7a7a;
-    width: 3.5rem;
+    font-size: 0.85rem;
+    color: var(--muted);
+    width: 3.8rem;
     flex-shrink: 0;
   }
 
+  /* The global `input { padding/border/box-sizing }` reset (app.css) applies to every <input>
+     including type="range", padding the native track inside a bordered box — so the visible box
+     no longer matches the browser's actual 0%-100% track, and the thumb ends up looking
+     offset from the value it represents (reported 2026-07-20). Reset it back to a bare track and
+     draw our own, same recipe as .edge-timeout-slider (app.css). */
   .pev-slider-row input[type="range"] {
     flex: 1;
     min-width: 0;
+    appearance: none;
+    -webkit-appearance: none;
+    height: 22px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+  }
+
+  .pev-slider-row input[type="range"]::-webkit-slider-runnable-track {
+    height: 6px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--accent) 30%, #ffffff 70%);
+    border: 1px solid color-mix(in srgb, var(--accent) 28%, var(--stroke) 72%);
+  }
+
+  .pev-slider-row input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    margin-top: -6px;
+    border-radius: 50%;
+    border: 2px solid color-mix(in srgb, var(--accent) 72%, var(--ink) 28%);
+    background: #ffffff;
+    box-shadow: 0 1px 2px rgba(17, 24, 39, 0.25);
+  }
+
+  .pev-slider-row input[type="range"]::-moz-range-track {
+    height: 6px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--accent) 30%, #ffffff 70%);
+    border: 1px solid color-mix(in srgb, var(--accent) 28%, var(--stroke) 72%);
+  }
+
+  .pev-slider-row input[type="range"]::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 2px solid color-mix(in srgb, var(--accent) 72%, var(--ink) 28%);
+    background: #ffffff;
+    box-shadow: 0 1px 2px rgba(17, 24, 39, 0.25);
   }
 
   .pev-value {
-    font-size: 0.72rem;
-    color: #3d3d3d;
+    font-size: 0.85rem;
+    color: var(--ink);
     width: 3.8rem;
     flex-shrink: 0;
     text-align: right;
@@ -226,8 +269,8 @@
     display: flex;
     align-items: flex-start;
     gap: 0.35rem;
-    font-size: 0.72rem;
-    color: #5a5a5a;
+    font-size: 0.85rem;
+    color: var(--muted);
     cursor: pointer;
     margin-top: 0.15rem;
   }
@@ -257,8 +300,8 @@
   }
 
   .pev-error {
-    font-size: 0.72rem;
-    color: #c0392b;
+    font-size: 0.8rem;
+    color: var(--danger);
     flex: 1;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -272,19 +315,19 @@
     width: 26px;
     height: 26px;
     padding: 0;
-    border-radius: 6px;
-    border: 1px solid #c0b8ae;
-    background: #f8f6f2;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--stroke);
+    background: var(--panel-soft);
     cursor: pointer;
-    color: #3d3d3d;
+    color: var(--ink);
   }
 
   .pev-play-btn:hover:not(:disabled) {
-    background: #efe9e0;
+    background: var(--accent-soft);
   }
 
   .pev-play-btn:disabled {
-    color: #9ca3af;
+    color: var(--muted);
     cursor: default;
   }
 </style>

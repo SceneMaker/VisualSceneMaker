@@ -35,20 +35,65 @@
   }
 
   .pse-label {
-    font-size: 0.72rem;
-    color: #7a7a7a;
-    width: 3.5rem;
+    font-size: 0.85rem;
+    color: var(--muted);
+    width: 3.8rem;
     flex-shrink: 0;
   }
 
+  /* Same fix as ParameterEnvelopeEditor's sliders — the global `input { padding/border }` reset
+     (app.css) otherwise pads the native track inside a bordered box, so the thumb ends up
+     looking offset from the value it represents (reported 2026-07-20). */
   .pse-row input[type="range"] {
     flex: 1;
     min-width: 0;
+    appearance: none;
+    -webkit-appearance: none;
+    height: 22px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+  }
+
+  .pse-row input[type="range"]::-webkit-slider-runnable-track {
+    height: 6px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--accent) 30%, #ffffff 70%);
+    border: 1px solid color-mix(in srgb, var(--accent) 28%, var(--stroke) 72%);
+  }
+
+  .pse-row input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    margin-top: -6px;
+    border-radius: 50%;
+    border: 2px solid color-mix(in srgb, var(--accent) 72%, var(--ink) 28%);
+    background: #ffffff;
+    box-shadow: 0 1px 2px rgba(17, 24, 39, 0.25);
+  }
+
+  .pse-row input[type="range"]::-moz-range-track {
+    height: 6px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--accent) 30%, #ffffff 70%);
+    border: 1px solid color-mix(in srgb, var(--accent) 28%, var(--stroke) 72%);
+  }
+
+  .pse-row input[type="range"]::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 2px solid color-mix(in srgb, var(--accent) 72%, var(--ink) 28%);
+    background: #ffffff;
+    box-shadow: 0 1px 2px rgba(17, 24, 39, 0.25);
   }
 
   .pse-value {
-    font-size: 0.72rem;
-    color: #3d3d3d;
+    font-size: 0.85rem;
+    color: var(--ink);
     width: 3.8rem;
     flex-shrink: 0;
     text-align: right;
@@ -57,7 +102,7 @@
 
   .pse-hint {
     margin: 0;
-    font-size: 0.72rem;
-    color: #5a5a5a;
+    font-size: 0.8rem;
+    color: var(--muted);
   }
 </style>
