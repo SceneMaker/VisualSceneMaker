@@ -314,6 +314,16 @@
     return svg;
   }
 
+  // A hex code or CSS color name reads less clearly than the actual color at a glance — swap it
+  // for a small patch instead. `background-color` accepts any valid CSS color string (hex or
+  // named) and silently no-ops on an invalid one, so no validation needed here.
+  function buildBackgroundSwatch(colorValue) {
+    const swatch = document.createElement("span");
+    swatch.className = "cm-action-compact-swatch";
+    swatch.style.backgroundColor = colorValue || "transparent";
+    return swatch;
+  }
+
   class ActionCompactWidget extends WidgetType {
     constructor(span, selected) {
       super();
@@ -331,7 +341,20 @@
       el.className = this.selected ? "cm-action-compact cm-action-compact-selected" : "cm-action-compact";
       el.draggable = true;
       el.appendChild(buildActionCompactIcon(isBlockingSpan(this.span)));
-      el.appendChild(document.createTextNode(compactLabelForSpan(this.span)));
+      if (this.span.actionName === "background") {
+        // A single wrapper (rather than appending text/swatch/text as separate flex children of
+        // `el`) keeps `.cm-action-compact`'s own gap from inserting extra space around the
+        // swatch — the swatch's own margin handles that spacing instead.
+        const prefix = this.span.actionActor ? `${this.span.actionActor}: ` : "";
+        const colorFeature = this.span.features?.find((f) => f.key === "color");
+        const label = document.createElement("span");
+        label.appendChild(document.createTextNode(`[${prefix}background`));
+        label.appendChild(buildBackgroundSwatch(colorFeature?.value));
+        label.appendChild(document.createTextNode(`]`));
+        el.appendChild(label);
+      } else {
+        el.appendChild(document.createTextNode(compactLabelForSpan(this.span)));
+      }
       el.title = this.span.raw;
       el.addEventListener("click", (event) => {
         event.preventDefault();
