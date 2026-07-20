@@ -692,14 +692,16 @@
     }
   }
 
-  // M11/M13d/M13f: double-click on turn text -> "Insert emotion"/"Insert background"/"Insert
-  // clearEmotion"; double-click on an existing action span -> "Edit"/"Delete" (no right-click
-  // anywhere else in the app, so this stays double-click rather than a context menu). Resolves
-  // the turn under the cursor (M9) to a previewCapable character; if that fails, let the
-  // browser's default double-click word selection happen instead.
+  // M11/M13d/M13f/M13g: double-click on plain turn text -> "Insert emotion"/"Insert background"/
+  // "Insert clearEmotion"/"Insert pause" popup; double-click on an existing action span jumps
+  // straight into editing it (no right-click anywhere else in the app, so this stays double-click
+  // rather than a context menu, and no intermediate Edit/Delete popup — click-to-mark + Backspace
+  // handles deletion instead, see ScriptEditor.svelte). Resolves the turn under the cursor (M9) to
+  // a previewCapable character; if that fails, let the browser's default double-click word
+  // selection happen instead.
   const SUPPORTED_ACTION_TYPES = ["emotion", "background", "clearEmotion", "pause"];
 
-  let scriptContextMenu = null;  // { x, y, offset, speaker, instanceName, loaded, editableSpan } | null
+  let scriptContextMenu = null;  // { x, y, offset, speaker } | null — only ever the "insert" popup now
   // x/y/w/h null until first drag — the modal starts centered (CSS flex) and switches to an
   // absolute, viewport-relative position (like the SIA preview panel) once the user drags it.
   // turnSpeaker is the turn's own nominal speaker — always fixed, used to decide whether the
@@ -721,14 +723,18 @@
     if (!turn) return false;
     const pcAgent = previewCapableAgents.find((a) => a.agentName === turn.speaker);
     if (!pcAgent) return false;
+    const hitSpan = actionSpanAtOffset(actionSpans, offset);
+    const editableSpan = hitSpan && SUPPORTED_ACTION_TYPES.includes(hitSpan.actionName) ? hitSpan : null;
+    if (editableSpan) {
+      openEditModalForSpan(editableSpan, turn.speaker);
+      return true;
+    }
     // Never let the insertion point land inside the "Speaker:" prefix itself (e.g. a double-click
     // on the speaker's name) — that would split it and break the "Speaker: text" syntax. Floor to
     // right after the colon; inserting an action there (before any utterance text) is still valid.
     const textStart = turn.offsetStart + turn.speaker.length + 1;
     const insertOffset = Math.max(offset, textStart);
-    const hitSpan = actionSpanAtOffset(actionSpans, offset);
-    const editableSpan = hitSpan && SUPPORTED_ACTION_TYPES.includes(hitSpan.actionName) ? hitSpan : null;
-    scriptContextMenu = { x: clientX, y: clientY, offset: insertOffset, speaker: turn.speaker, editableSpan };
+    scriptContextMenu = { x: clientX, y: clientY, offset: insertOffset, speaker: turn.speaker };
     return true;
   }
 
@@ -761,26 +767,12 @@
     scriptContextMenu = null;
   }
 
-  function openEditModal() {
-    const span = scriptContextMenu?.editableSpan;
-    if (!span) return;
+  function openEditModalForSpan(span, speaker) {
     actionModalState = {
-      offset: null, turnSpeaker: scriptContextMenu.speaker, initialTarget: span.actionActor || scriptContextMenu.speaker,
+      offset: null, turnSpeaker: speaker, initialTarget: span.actionActor || speaker,
       x: null, y: null, w: null, h: null,
       actionType: span.actionName, editingSpan: span
     };
-    scriptContextMenu = null;
-  }
-
-  function deleteActionSpan() {
-    const span = scriptContextMenu?.editableSpan;
-    scriptContextMenu = null;
-    if (!span) return;
-    let from = span.offsetStart;
-    let to = span.offsetEnd;
-    // Collapse a double-space left behind (M13a pads both sides of an inserted bracket).
-    if (scriptDraft[from - 1] === " " && scriptDraft[to] === " ") to += 1;
-    scriptEditorRef?.replaceRange("", from, to);
   }
 
   function startActionModalDrag(event, rect) {
@@ -20105,27 +20097,18 @@ Sentence:
         style:top="{scriptContextMenu.y}px"
         role="menu"
       >
-        {#if scriptContextMenu.editableSpan}
-          <button type="button" role="menuitem" on:click={openEditModal}>
-            Edit {scriptContextMenu.editableSpan.actionName}
-          </button>
-          <button type="button" role="menuitem" on:click={deleteActionSpan}>
-            Delete
-          </button>
-        {:else}
-          <button type="button" role="menuitem" on:click={() => openInsertModal('emotion')}>
-            Insert emotion
-          </button>
-          <button type="button" role="menuitem" on:click={() => openInsertModal('background')}>
-            Insert background
-          </button>
-          <button type="button" role="menuitem" on:click={() => openInsertModal('clearEmotion')}>
-            Insert clearEmotion
-          </button>
-          <button type="button" role="menuitem" on:click={() => openInsertModal('pause')}>
-            Insert pause
-          </button>
-        {/if}
+        <button type="button" role="menuitem" on:click={() => openInsertModal('emotion')}>
+          Insert emotion
+        </button>
+        <button type="button" role="menuitem" on:click={() => openInsertModal('background')}>
+          Insert background
+        </button>
+        <button type="button" role="menuitem" on:click={() => openInsertModal('clearEmotion')}>
+          Insert clearEmotion
+        </button>
+        <button type="button" role="menuitem" on:click={() => openInsertModal('pause')}>
+          Insert pause
+        </button>
       </div>
     </div>
   {/if}

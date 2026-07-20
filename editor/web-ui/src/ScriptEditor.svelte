@@ -1,6 +1,6 @@
 <script>
   import { onDestroy, onMount } from "svelte";
-  import { EditorState, StateEffect, StateField } from "@codemirror/state";
+  import { EditorState, StateEffect, StateField, Prec } from "@codemirror/state";
   import { EditorView, keymap, Decoration, WidgetType, dropCursor } from "@codemirror/view";
   import { indentUnit } from "@codemirror/language";
   import { lintGutter, nextDiagnostic, previousDiagnostic, setDiagnostics } from "@codemirror/lint";
@@ -18,8 +18,9 @@
   export let semanticHighlights = { marks: [], lines: [] };
   export let playableTurns = []; // [{speaker, text, firstLineEndOffset, instanceName, loaded}] — M10
   export let onPlayTurn = null;  // callback(turn) — send this turn to its character's preview
-  export let onCommandMenu = null; // (charOffset, clientX, clientY) => boolean — M11/M13f; opens the insert/edit/delete
-                                    // popup on double-click (no right-click anywhere else in the app); true = handled
+  export let onCommandMenu = null; // (charOffset, clientX, clientY) => boolean — M11/M13f; double-click opens the
+                                    // insert popup on plain turn text, or jumps straight into editing an existing
+                                    // command (no right-click anywhere else in the app); true = handled
   export let actionSpans = [];      // [{offsetStart, offsetEnd, actionActor, actionName, features, raw}] — M13b
   export let compactCommands = false; // M13c: global compact/full view toggle
 
@@ -215,6 +216,11 @@
   // read-only label. Never edits the document itself.
   const setActionDisplayEffect = StateEffect.define();
 
+  // M13g: click-to-mark a compact command chip, then Backspace/Delete removes it — identified by
+  // offsets rather than object identity, since parseActionSpans rebuilds fresh span objects on
+  // every reactive recompute (even for spans whose text didn't change).
+  let selectedActionKey = null; // {offsetStart, offsetEnd} | null
+
   const SVG_NS = "http://www.w3.org/2000/svg";
   // Same glyphs as the SceneFlow node command badges (SceneFlowView.svelte) — blocking actions
   // pause the turn until they finish, non-blocking ones fire-and-forget (rocket).
@@ -275,6 +281,26 @@
     };
   }
 
+  // Backspace/Delete removes the currently marked (clicked) command chip instead of the usual
+  // character-before/after-cursor behavior. Registered at Prec.highest so it runs before
+  // basicSetup's default Backspace/Delete bindings, which would otherwise claim the key first.
+  function deleteSelectedActionSpan(cmView) {
+    if (!selectedActionKey) return false;
+    const key = selectedActionKey;
+    selectedActionKey = null;
+    const span = (actionSpans || []).find(
+      (s) => s.offsetStart === key.offsetStart && s.offsetEnd === key.offsetEnd
+    );
+    if (!span) return false;
+    const doc = cmView.state.doc;
+    let { offsetStart: from, offsetEnd: to } = span;
+    const before = from > 0 ? doc.sliceString(from - 1, from) : "";
+    const after = to < doc.length ? doc.sliceString(to, to + 1) : "";
+    if (isSpaceChar(before) && isSpaceChar(after)) to += 1; // collapse the double space left behind
+    cmView.dispatch({ changes: { from, to, insert: "" } });
+    return true;
+  }
+
   function buildActionCompactIcon(blocking) {
     const svg = document.createElementNS(SVG_NS, "svg");
     svg.setAttribute("class", "cm-action-compact-icon");
@@ -289,22 +315,29 @@
   }
 
   class ActionCompactWidget extends WidgetType {
-    constructor(span) {
+    constructor(span, selected) {
       super();
       this.span = span;
+      this.selected = selected;
     }
     eq(other) {
       return other.span.offsetStart === this.span.offsetStart
         && other.span.offsetEnd === this.span.offsetEnd
-        && other.span.raw === this.span.raw;
+        && other.span.raw === this.span.raw
+        && other.selected === this.selected;
     }
     toDOM() {
       const el = document.createElement("span");
-      el.className = "cm-action-compact";
+      el.className = this.selected ? "cm-action-compact cm-action-compact-selected" : "cm-action-compact";
       el.draggable = true;
       el.appendChild(buildActionCompactIcon(isBlockingSpan(this.span)));
       el.appendChild(document.createTextNode(compactLabelForSpan(this.span)));
       el.title = this.span.raw;
+      el.addEventListener("click", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        selectedActionKey = { offsetStart: this.span.offsetStart, offsetEnd: this.span.offsetEnd };
+      });
       el.addEventListener("dragstart", (event) => {
         event.dataTransfer.effectAllowed = "move";
         event.dataTransfer.setData(ACTION_DRAG_MIME, JSON.stringify({
@@ -475,6 +508,10 @@
       sceneScriptTheme,
       sceneScriptHighlighting,
       lintGutter(),
+      Prec.highest(keymap.of([
+        { key: "Backspace", run: deleteSelectedActionSpan },
+        { key: "Delete", run: deleteSelectedActionSpan }
+      ])),
       keymap.of([indentWithTab]),
       indentUnit.of("  "),
       EditorState.tabSize.of(2),
@@ -486,6 +523,13 @@
       actionDisplayField,
       dropCursor(),
       EditorView.domEventHandlers({
+        // Only fires for clicks outside any widget — ActionCompactWidget.ignoreEvent() blocks
+        // this handler entirely for clicks that land on a chip, which set selectedActionKey
+        // themselves instead (see the widget's own "click" listener).
+        click() {
+          if (selectedActionKey) selectedActionKey = null;
+          return false;
+        },
         dblclick(event, cmView) {
           if (!onCommandMenu) return false;
           const pos = cmView.posAtCoords({ x: event.clientX, y: event.clientY });
@@ -805,7 +849,7 @@
     applyPlayButtons(playableTurns);
   }
 
-  function applyActionDisplay(spans, compact) {
+  function applyActionDisplay(spans, compact, selectedKey) {
     if (!view) return;
     const doc = view.state.doc;
     const ranges = [];
@@ -814,7 +858,8 @@
         const from = Math.floor(span.offsetStart);
         const to = Math.floor(span.offsetEnd);
         if (!Number.isFinite(from) || !Number.isFinite(to) || from < 0 || to > doc.length || to <= from) continue;
-        const widget = new ActionCompactWidget(span);
+        const selected = !!selectedKey && selectedKey.offsetStart === span.offsetStart && selectedKey.offsetEnd === span.offsetEnd;
+        const widget = new ActionCompactWidget(span, selected);
         ranges.push(Decoration.replace({ widget }).range(from, to));
       }
     }
@@ -823,7 +868,7 @@
   }
 
   $: if (view) {
-    applyActionDisplay(actionSpans, compactCommands);
+    applyActionDisplay(actionSpans, compactCommands, selectedActionKey);
   }
 </script>
 

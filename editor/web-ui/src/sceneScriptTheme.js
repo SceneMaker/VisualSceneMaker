@@ -81,6 +81,11 @@ export const sceneScriptTheme = EditorView.theme(
     ".cm-action-compact-dragging": {
       opacity: "0.4"
     },
+    // Same accent used for selected command badges in the SceneFlow graph view (SceneFlowView.svelte).
+    ".cm-action-compact-selected": {
+      outline: "2px solid #5b8fdc",
+      outlineOffset: "1px"
+    },
     ".cm-action-compact-icon": {
       width: "0.85em",
       height: "0.85em",
