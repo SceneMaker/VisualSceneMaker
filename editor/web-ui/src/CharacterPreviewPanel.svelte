@@ -1,5 +1,5 @@
 <script>
-  import { onMount, onDestroy } from "svelte";
+  import { onMount, onDestroy, tick } from "svelte";
 
   export let instanceName = "";
   export let displayName = "";
@@ -76,6 +76,22 @@
     }
   }
 
+  // Manual recovery for a stuck engine session (see the suspended-teardown comment above): the
+  // VuppetMaster cloud engine can end up wedged — connected on the VSM side, but every speak call
+  // failing with an opaque engine-side error — with no way to self-heal short of tearing the iframe
+  // down and reconnecting fresh. Previously the only way to trigger that was to start and stop a
+  // real SceneFlow run, which does the same teardown/reload as a side effect (confirmed 2026-07-20).
+  // `tick()` forces the `{#if previewUrl}` block to actually unmount the old iframe before a new one
+  // is created — without it, Svelte can batch the null and the reload into one DOM patch and never
+  // remove the old iframe element, so a same-URL reload would be a no-op.
+  async function reloadPreview() {
+    previewUrl = null;
+    loading = true;
+    loadError = "";
+    await tick();
+    await loadPreviewInfo();
+  }
+
   // Reload whenever the panel is (re)pointed at a different project/instance.
   $: if (projectId && instanceName && !suspended) {
     loadPreviewInfo();
@@ -112,6 +128,17 @@
     on:mousedown|stopPropagation={(e) => onDragStart?.(e)}
   >
     <span class="preview-panel-title-text" title={instanceName}>{displayName || instanceName}</span>
+    <button
+      type="button"
+      class="preview-panel-reload"
+      on:pointerdown|stopPropagation
+      on:click|stopPropagation={() => reloadPreview()}
+      disabled={suspended}
+      title="Reload preview (recovers a stuck character connection)"
+      aria-label="Reload preview"
+    >
+      &#8635;
+    </button>
     <button
       type="button"
       class="preview-panel-close"
@@ -190,6 +217,7 @@
     white-space: nowrap;
   }
 
+  .preview-panel-reload,
   .preview-panel-close {
     width: 18px;
     height: 18px;
@@ -207,8 +235,14 @@
     color: #5a5a5a;
   }
 
+  .preview-panel-reload:hover,
   .preview-panel-close:hover {
     background: #efe9e0;
+  }
+
+  .preview-panel-reload:disabled {
+    opacity: 0.4;
+    cursor: default;
   }
 
   .preview-panel-body {
