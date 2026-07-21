@@ -82,6 +82,18 @@
   let wasSuspended = false;
   let backgroundCommands = {};
   let emotionCommands = {};
+  let mutedFlags = {}; // {[instanceName]: boolean} — client-side only, see vm-adapter.js's mute section
+
+  // The server broadcasts every speak/action command identically to every connected preview
+  // session (JettyTransport.send()), so two browsers previewing the same character at once each
+  // hear the other's tests. Muting here only silences audio in THIS tab via a postMessage into
+  // the iframe (vm-adapter.js) — it doesn't touch dispatch, so the visuals/other viewers are
+  // unaffected. Confirmed 2026-07-21.
+  function toggleMute(instanceName) {
+    const next = !mutedFlags[instanceName];
+    mutedFlags = { ...mutedFlags, [instanceName]: next };
+    iframeEls[instanceName]?.contentWindow?.postMessage({ vsmMute: next }, "*");
+  }
 
   // Root cause of a severe hang (reported 2026-07-20/21): ParameterEnvelopeEditor/
   // BackgroundColorEditor's own `$: if (currentCommand) onChange?.(currentCommand);` treats the
@@ -155,6 +167,13 @@
       if (typeof progress === "number") onProgress?.(instanceName, progress);
       const speaking = event.data?.vsmSpeaking;
       if (typeof speaking === "boolean") onSpeaking?.(instanceName, speaking);
+      // Re-assert on every message from this frame (progress ticks while loading, then speaking
+      // changes) rather than only once on load — postMessage sent right after the iframe mounts
+      // can arrive before vm-adapter.js's own listener is registered and be silently lost, but by
+      // the time IT sends anything back to us, that listener is guaranteed to already be live.
+      if (mutedFlags[instanceName]) {
+        el.contentWindow?.postMessage({ vsmMute: true }, "*");
+      }
       return;
     }
   }
@@ -230,6 +249,16 @@
         <div class="sia-card-header">
           <span class="sia-card-name">{agent.agentName}</span>
           {#if isLoaded}
+            <button
+              type="button"
+              class="sia-card-mute"
+              class:sia-card-mute-active={mutedFlags[agent.instanceName]}
+              on:click={() => toggleMute(agent.instanceName)}
+              title={mutedFlags[agent.instanceName] ? "Unmute audio in this preview" : "Mute audio in this preview"}
+              aria-label={mutedFlags[agent.instanceName] ? "Unmute audio in this preview" : "Mute audio in this preview"}
+            >
+              {mutedFlags[agent.instanceName] ? "🔇" : "🔊"}
+            </button>
             <button
               type="button"
               class="sia-card-unload"
@@ -414,6 +443,7 @@
     white-space: nowrap;
   }
 
+  .sia-card-mute,
   .sia-card-unload {
     width: 18px;
     height: 18px;
@@ -431,8 +461,14 @@
     color: var(--muted);
   }
 
+  .sia-card-mute:hover,
   .sia-card-unload:hover {
     background: var(--panel-soft);
+  }
+
+  .sia-card-mute-active {
+    background: var(--accent-soft);
+    border-color: var(--accent);
   }
 
   .sia-card-body {

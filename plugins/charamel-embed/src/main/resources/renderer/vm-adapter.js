@@ -15,6 +15,14 @@
  *
  * The engine natively extracts VSM's ${...}$ markers from speak text and reports them via
  * onMarker(name, value). onEnd is a safety net so VSM never hangs if a stop marker is dropped.
+ *
+ * A third, separate channel exists alongside vsmDispatch/vsmFeedback: the SIA preview panel
+ * (parent page) can postMessage {vsmMute: true|false} directly into this frame — see the audio
+ * mute section below. Unlike vsmDispatch, this is purely local to this browser tab and never
+ * touches VSM/the WebSocket; it exists because the server broadcasts every speak/action command
+ * identically to every connected preview session (see JettyTransport.send()), so when two
+ * browsers preview the same character at once, each viewer needs to be able to silence audio in
+ * their own tab independently of what the other hears.
  */
 (function () {
   var cfg = window.VSM_CONFIG || {};
@@ -30,6 +38,45 @@
   var modelLoaded = false;
   var audioUnlocked = false;
   var readySent = false;
+
+  // ---- local audio mute (client-side only) ----------------------------------
+  // The engine exposes no documented mute/volume API and doesn't expose Howler.js (its likely
+  // internal audio library) as a page global, so there's no library-specific hook to call. This
+  // instead wraps the standard AudioContext constructor BEFORE the vendor engine script loads
+  // (loadEngine() below), so whatever audio graph the engine builds — regardless of which library
+  // it uses internally — ends up routed through one master GainNode this file controls. Requires
+  // no cooperation from the vendor bundle beyond it using the standard Web Audio API, which any
+  // engine doing real-time lip-synced audio effectively has to.
+  var mMuted = false;
+  var mMasterGains = [];
+  (function patchAudioContext() {
+    var Native = window.AudioContext || window.webkitAudioContext;
+    if (typeof Native !== 'function') return;
+    function Patched(options) {
+      var ctx = (options !== undefined) ? new Native(options) : new Native();
+      var master = ctx.createGain();
+      master.gain.value = mMuted ? 0 : 1;
+      master.connect(ctx.destination);
+      mMasterGains.push(master);
+      try {
+        // Shadow the native (otherwise read-only) .destination getter so anything the engine
+        // connects "to the speakers" lands on our gain node first. Standard Web IDL attributes
+        // are configurable on the instance by default, so this is expected to succeed; if some
+        // browser refuses it, mute simply becomes a no-op for that session rather than an error.
+        Object.defineProperty(ctx, 'destination', { get: function () { return master; }, configurable: true });
+      } catch (e) { /* see comment above */ }
+      return ctx;
+    }
+    Patched.prototype = Native.prototype;
+    window.AudioContext = Patched;
+    if (window.webkitAudioContext) window.webkitAudioContext = Patched;
+  })();
+  window.addEventListener('message', function (e) {
+    if (e.data && typeof e.data.vsmMute === 'boolean') {
+      mMuted = e.data.vsmMute;
+      mMasterGains.forEach(function (g) { g.gain.value = mMuted ? 0 : 1; });
+    }
+  });
 
   // ---- transport exit ------------------------------------------------------
   function vsmFeedback(message) {
