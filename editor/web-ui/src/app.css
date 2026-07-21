@@ -1263,6 +1263,10 @@ a.export-link {
   color: #ffffff;
 }
 
+.panel-save.script-help-toggle {
+  padding: 0 0.5rem;
+}
+
 .autosave-status {
   padding: 0.15rem 0.6rem;
   border-radius: var(--radius-pill);

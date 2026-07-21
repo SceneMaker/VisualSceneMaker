@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SceneScript Guide — Visual SceneMaker</title>
+<style>
+  :root {
+    --bg: #fbfaf7;
+    --surface: #ffffff;
+    --border: #e2ded2;
+    --text: #1c1b15;
+    --muted: #6b6a5f;
+    --accent: #2e5d3a;
+    --accent-light: #eaf3ec;
+    --code-bg: #f4f2ec;
+    --code-border: #e2ded2;
+    --note-bg: #fffbeb;
+    --note-border: #f0d080;
+    --note-text: #7d5a00;
+    font-size: 14px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.55;
+  }
+
+  .page-wrap { display: flex; min-height: 100vh; }
+
+  nav {
+    width: 200px; min-width: 200px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    padding: 1.5rem 0 2rem;
+    position: sticky; top: 0; height: 100vh; overflow-y: auto;
+    flex-shrink: 0;
+  }
+  nav .nav-logo {
+    font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--muted);
+    padding: 0 1.2rem 1rem;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 0.75rem;
+  }
+  nav a {
+    display: block; padding: 0.28rem 1.2rem;
+    font-size: 0.82rem; color: var(--muted);
+    text-decoration: none; border-left: 2px solid transparent;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  nav a:hover { color: var(--accent); }
+  nav .nav-group { font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.07em; color: #a9a690; padding: 0.9rem 1.2rem 0.25rem; }
+
+  main { flex: 1; padding: 2.5rem 2.5rem 4rem; max-width: 860px; }
+
+  h1 { font-size: 1.6rem; font-weight: 700; margin-bottom: 0.4rem; color: var(--accent); }
+  .subtitle { color: var(--muted); margin-bottom: 2.5rem; font-size: 0.9rem; }
+
+  h2 {
+    font-size: 1.05rem; font-weight: 700; margin: 3rem 0 1rem;
+    padding-bottom: 0.4rem; border-bottom: 2px solid var(--border);
+    color: var(--accent);
+    scroll-margin-top: 1.5rem;
+  }
+  h2:first-of-type { margin-top: 0; }
+
+  h3 { font-size: 0.92rem; font-weight: 700; margin: 1.6rem 0 0.5rem; scroll-margin-top: 1.5rem; }
+
+  p, li { font-size: 0.88rem; margin-bottom: 0.6rem; }
+  ul, ol { padding-left: 1.3rem; margin-bottom: 0.8rem; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.1rem 1.3rem;
+    margin-bottom: 1.2rem;
+  }
+
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--code-border);
+    border-radius: 6px;
+    padding: 0.85rem 1rem;
+    font-size: 0.82rem;
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    overflow-x: auto;
+    line-height: 1.6;
+    margin: 0.5rem 0 0.8rem;
+    white-space: pre;
+  }
+  code { font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; }
+  p code, li code, td code { background: var(--code-bg); padding: 0.1rem 0.3rem; border-radius: 3px; font-size: 0.85rem; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 0.83rem; margin-bottom: 0.8rem; }
+  th { text-align: left; padding: 0.35rem 0.6rem; background: var(--code-bg);
+    border-bottom: 2px solid var(--border); color: var(--muted); font-size: 0.75rem;
+    text-transform: uppercase; letter-spacing: 0.05em; }
+  td { padding: 0.4rem 0.6rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+
+  .note {
+    background: var(--note-bg); border: 1px solid var(--note-border); border-radius: 6px;
+    padding: 0.6rem 0.9rem; font-size: 0.82rem; margin: 0.6rem 0 0.8rem;
+  }
+  .note strong { color: var(--note-text); }
+
+  .icon-inline { display: inline-block; width: 1em; height: 1em; vertical-align: -0.15em; margin: 0 0.15em; }
+
+  hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
+
+  footer { color: var(--muted); font-size: 0.78rem; padding-top: 1rem; }
+</style>
+</head>
+<body>
+
+<div class="page-wrap">
+
+<nav id="sidebar">
+  <div class="nav-logo">SceneScript Guide</div>
+
+  <div class="nav-group">Basics</div>
+  <a href="#overview">Overview</a>
+  <a href="#scenes-turns">Scenes &amp; turns</a>
+
+  <div class="nav-group">Inline commands</div>
+  <a href="#inline-commands">Command syntax</a>
+  <a href="#blocking">Blocking vs. fire-and-forget</a>
+
+  <div class="nav-group">Organization</div>
+  <a href="#sections">Sections</a>
+  <a href="#notes">Notes</a>
+
+  <div class="nav-group">Editing</div>
+  <a href="#view-modes">Compact / plain view</a>
+  <a href="#editing-commands">Editing inline commands</a>
+  <a href="#preview">SIA preview panel</a>
+</nav>
+
+<main>
+  <h1>SceneScript Guide</h1>
+  <p class="subtitle">How to write and edit dialogue scripts in Visual SceneMaker</p>
+
+  <h2 id="overview">Overview</h2>
+  <p>
+    A SceneScript is the text file behind every scene in a project — the dialogue itself,
+    grouped into <strong>scenes</strong> and <strong>turns</strong>, plus optional
+    <strong>sections</strong> and <strong>notes</strong> for structuring the document, and
+    inline <strong>commands</strong> for triggering character behavior (backgrounds, emotions,
+    pauses, and more) at a precise point in the dialogue.
+  </p>
+  <div class="note">
+    <strong>Keep this page current.</strong> Whenever script authoring gains a new construct or
+    editing feature, add a section here describing it.
+  </div>
+
+  <h2 id="scenes-turns">Scenes &amp; turns</h2>
+  <p>A scene starts with the <code>scene</code> keyword, a two-letter language code, and a name:</p>
+  <pre>scene en warmup
+Bob: Hello there, how are you doing today?
+Alice: I'm doing well, thanks for asking!</pre>
+  <p>
+    Each turn is one line starting with <code>Speaker:</code> followed by one or more sentences.
+    A new scene always starts with the <code>scene</code> keyword again.
+  </p>
+
+  <h2 id="inline-commands">Inline commands</h2>
+  <p>
+    Commands are written in square brackets inside a turn's dialogue text, and trigger an action
+    at exactly that point in the utterance:
+  </p>
+  <pre>Bob: Let's begin. [background image='park.jpg'] Look around you.
+Bob: I'm so happy right now! [emotion type='joy' intensity='0.8']</pre>
+  <p>
+    A command's own actor defaults to the turn's speaker. To target a <em>different</em>
+    character than the one speaking, prefix the command with that character's name:
+  </p>
+  <pre>Bob: Watch this. [Alice: emotion type='surprise']</pre>
+  <p>Common commands include:</p>
+  <table>
+    <tr><th>Command</th><th>Purpose</th></tr>
+    <tr><td><code>background</code></td><td>Change the scene's background image or color</td></tr>
+    <tr><td><code>emotion</code></td><td>Play an emotional expression on a character</td></tr>
+    <tr><td><code>pause</code></td><td>Hold the turn for a moment before continuing</td></tr>
+  </table>
+
+  <h3 id="blocking">Blocking vs. fire-and-forget</h3>
+  <p>
+    In compact view, every command chip shows a small icon indicating whether it
+    <strong>blocks</strong> the turn until it finishes (a clock icon — this is always the case for
+    <code>pause</code>, and for any command with the feature <code>blocking='true'</code>), or
+    fires <strong>without waiting</strong> (a rocket icon — the default for everything else).
+  </p>
+
+  <h2 id="sections">Sections</h2>
+  <p>
+    Sections are markdown-style headings used to structure a long script into readable parts —
+    they are not dialogue and are never spoken. Use one, two, or three <code>#</code> characters
+    for heading level:
+  </p>
+  <pre># Introduction
+
+## Warm-up
+
+### Task 1</pre>
+  <p>
+    Sections (and notes, below) only work <strong>between scenes</strong> — as their own line,
+    separated from surrounding scene content by a blank line. There is no inline version.
+  </p>
+
+  <h2 id="notes">Notes</h2>
+  <p>
+    Notes are short explanatory remarks for whoever is authoring or reviewing the script —
+    reminders, instructions, or context — written in plain English, not code-style comments:
+  </p>
+  <pre>Note: remember to smile before this line
+
+scene en task
+Bob: Let's begin.</pre>
+  <p>
+    Both sections and notes support <code>**bold**</code> and <code>*italic*</code> /
+    <code>_italic_</code> text.
+  </p>
+
+  <h2 id="view-modes">Compact / plain view</h2>
+  <p>
+    The toolbar button next to the script editor toggles how the script is displayed:
+  </p>
+  <ul>
+    <li>
+      <svg class="icon-inline" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="currentColor" d="m16.95 8.465l1.414-1.415l4.95 4.95l-4.95 4.95l-1.414-1.414L20.485 12zm-9.9 0L3.515 12l3.535 3.536l-1.414 1.414L.686 12l4.95-4.95z"/></svg>
+      <strong>Code-view icon</strong> — showing the raw text exactly as typed, including
+      <code>[...]</code> brackets, <code>#</code> headings and <code>Note:</code> prefixes. This
+      is also the only mode you can type directly into a heading or note.
+    </li>
+    <li>
+      <svg class="icon-inline" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 12h14M5 16h6"/></svg>
+      <strong>Text icon</strong> — a rendered, easier-to-read view: inline commands become
+      compact chips, and headings/notes are styled.
+    </li>
+  </ul>
+
+  <h2 id="editing-commands">Editing inline commands</h2>
+  <p>In compact view, an inline command becomes a chip you can interact with directly:</p>
+  <ul>
+    <li><strong>Click</strong> a chip to select it, then press <strong>Backspace</strong>/<strong>Delete</strong> to remove it.</li>
+    <li><strong>Drag</strong> a chip to move it elsewhere within the same turn.</li>
+    <li><strong>Double-click</strong> a chip to open its edit dialog and change its parameters.</li>
+    <li><strong>Double-click</strong> plain dialogue text to insert a new command at that point.</li>
+  </ul>
+
+  <h2 id="preview">SIA preview panel</h2>
+  <p>
+    The Preview panel lets you load a character and test Background/Emotion commands live before
+    writing them into the script — use each column's "Insert at cursor" action to drop the exact
+    command text at your current position in the script editor.
+  </p>
+
+  <footer>Visual SceneMaker — SceneScript authoring reference</footer>
+</main>
+
+</div>
+</body>
+</html>
