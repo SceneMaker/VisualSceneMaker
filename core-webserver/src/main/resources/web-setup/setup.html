@@ -145,7 +145,22 @@
   <script>
     const params = new URLSearchParams(location.search);
     const session = params.get("session") || "";
-    const editorUrl = "/web-ui/" + (session ? ("?session=" + encodeURIComponent(session)) : "");
+    const editorPath = "/web-ui/" + (session ? ("?session=" + encodeURIComponent(session)) : "");
+    // Once we know the certificate is trusted, forward into the editor over a genuinely
+    // https:// URL — not a scheme-relative path — even if this setup page itself was reached
+    // over plain http (e.g. a share link built from a tab on the local, http-served editor;
+    // see shareSession() in App.svelte). Per the Secure Contexts spec, a document is a secure
+    // context only if EVERY ancestor frame is too, so forwarding into an http-hosted editor
+    // would make the character preview's own https iframe non-secure as well — breaking
+    // crypto.subtle inside it despite the iframe itself using TLS (confirmed 2026-07-21).
+    // The "Skip" path deliberately does NOT force https: the user opted out of trusting the
+    // certificate, so forcing https there would just fail outright.
+    function editorUrl(forceSecure) {
+      if (forceSecure && securePort) {
+        return `https://${location.hostname}:${securePort}${editorPath}`;
+      }
+      return editorPath;
+    }
 
     const el = (id) => document.getElementById(id);
     function show(id) { ["checking", "ok", "setup"].forEach(s => el(s).classList.toggle("hidden", s !== id)); }
@@ -179,12 +194,12 @@
       const info = await getInfo();
       if (info && info.name) el("serverName").textContent = "Server: " + info.name;
       // If the server is not in secure mode, no certificate is needed — go straight in.
-      if (!info || !info.secure || !info.securePort) { location.replace(editorUrl); return; }
+      if (!info || !info.secure || !info.securePort) { location.replace(editorUrl(false)); return; }
       securePort = info.securePort;
       show("checking");
       if (await probe(securePort)) {
         show("ok");
-        setTimeout(() => location.replace(editorUrl), 700);
+        setTimeout(() => location.replace(editorUrl(true)), 700);
       } else {
         selectOs(detectOs());
         show("setup");
@@ -197,10 +212,10 @@
       el("continueBtn").textContent = "Checking…";
       const ok = await probe(securePort);
       el("continueBtn").textContent = "2 · I've installed it — Continue";
-      if (ok) { show("ok"); setTimeout(() => location.replace(editorUrl), 700); }
+      if (ok) { show("ok"); setTimeout(() => location.replace(editorUrl(true)), 700); }
       else { el("stillFailing").classList.remove("hidden"); }
     });
-    el("skipBtn").addEventListener("click", (e) => { e.preventDefault(); location.replace(editorUrl); });
+    el("skipBtn").addEventListener("click", (e) => { e.preventDefault(); location.replace(editorUrl(false)); });
 
     run();
   </script>

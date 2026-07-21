@@ -1071,6 +1071,19 @@
     if (info?.secure) {
       url.pathname = "/setup";
       url.hash = "";
+      // Force https + the secure port, regardless of which scheme *this* tab happens to be
+      // on (getLocalUrl() deliberately serves the local browser over plain http — localhost
+      // is exempt from the secure-context rule, so that's fine for the sharer). But per the
+      // Secure Contexts spec, a document is only a secure context if EVERY ancestor frame is
+      // too — so a remote, non-localhost recipient landing on a plain-http editor page makes
+      // the character preview's own https iframe non-secure as well, even though the iframe
+      // itself uses TLS, silently breaking crypto.subtle inside it (confirmed 2026-07-21: the
+      // exact same character URL worked perfectly opened directly, but failed embedded in an
+      // http-hosted page). The shared link itself must be genuinely https from the start.
+      if (info.securePort) {
+        url.protocol = "https:";
+        url.port = String(info.securePort);
+      }
     }
     url.searchParams.set("session", selectedProjectId);
     if (isLocalHost() && !lanEnabled) {
