@@ -653,6 +653,14 @@
     findMatch(currentSearchQuery, -1);
   }
 
+  // M13h: the SIA panel's "insert at cursor" buttons need the current cursor position to
+  // resolve which turn/speaker it's in (for the actor-prefix decision) before building the
+  // bracket text — insertText() itself already targets the current selection when called with
+  // no explicit pos, so no separate "insert at this offset" path is needed here.
+  export function getCursorOffset() {
+    return view ? view.state.selection.main.from : null;
+  }
+
   // pos (optional, M11): insert at this exact character offset instead of the current
   // selection — needed for the double-click "insert emotion" flow, where the cursor may not
   // still be at the point the user double-clicked by the time they confirm the modal.

@@ -1416,38 +1416,25 @@ a.export-link {
 .script-toolbar-spacer {
   width: 0.6rem;
   height: 1px;
-  margin-left: auto; /* pushes everything after it (issue nav, SIA toggle buttons) to the right */
+  margin-left: auto; /* pushes everything after it (issue nav, Preview toggle) to the right */
 }
 
-/* Same box/typography as the other script-toolbar buttons (Generate Scenes, Search, …) —
-   .panel-save.sia-toggle-btn (not just .sia-toggle-btn) so the two classes' combined
-   specificity beats .panel-save's own `background` shorthand for the background-image
-   overlay below. */
-.panel-save.sia-toggle-btn {
-  position: relative;
-  overflow: hidden;
+/* Single Preview/Hide toggle for the whole SIA panel (M13i) — replaces the old per-agent
+   sia-toggle-btn row; per-agent load progress now shows inside each card instead, where
+   there's room to display it clearly, so this is a plain toggle like command-display-toggle. */
+.panel-save.sia-panel-toggle {
   gap: 0.4rem;
-  /* Not-yet-loaded portion reads as a disabled button (matches button:disabled's
-     opacity: 0.5 look); the loaded portion reveals the normal enabled background
-     underneath, so the fill sweeps left-to-right as the character loads. */
-  background-image: linear-gradient(
-    to right,
-    transparent 0%,
-    transparent var(--sia-progress, 0%),
-    rgb(243, 240, 236) var(--sia-progress, 0%),
-    rgb(243, 240, 236) 100%
-  );
-  background-repeat: no-repeat;
 }
 
-.panel-save.sia-toggle-btn .icon {
+.panel-save.sia-panel-toggle .icon {
   width: 16px;
   height: 16px;
 }
 
-.panel-save.sia-toggle-btn.sia-toggle-open {
+.panel-save.sia-panel-toggle.active {
+  background: var(--accent);
   border-color: var(--accent);
-  font-weight: 600;
+  color: #ffffff;
 }
 
 .script-context-menu-backdrop {
@@ -2315,6 +2302,16 @@ a.export-link {
   gap: 0.65rem;
   box-sizing: border-box;
   margin-top: 0.75rem;
+}
+
+/* M13i: groups the SIA panel + script toolbar as one block above the script editor. Was
+   position:sticky with a bind:clientHeight-driven calc() height on .script-editor, but that
+   combination caused a severe performance issue (reported 2026-07-20 — the page became
+   unresponsive on opening the panel). Reverted to plain flow for now; revisit "stay visible
+   while scrolling" separately, more conservatively (e.g. without a live-measured height). */
+.script-sticky-header {
+  display: grid;
+  gap: 0.65rem;
 }
 
 .sceneflow-status {

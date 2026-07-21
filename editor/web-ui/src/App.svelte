@@ -20,7 +20,7 @@
   import IconMonitor from "./icons/IconMonitor.svelte";
   import IconPerson from "./icons/IconPerson.svelte";
   import VarBadge from './VarBadge.svelte';
-  import CharacterPreviewPanel from './CharacterPreviewPanel.svelte';
+  import SiaPanel from './SiaPanel.svelte';
   import ActionCommandModal from './ActionCommandModal.svelte';
 
   // sessionStorage is tab-specific and survives page reloads (including force-reload)
@@ -121,14 +121,8 @@
   const PLUGIN_BADGE_MIN_W = 120;
   const PLUGIN_BADGE_DEFAULT_H = 120;
   const PLUGIN_BADGE_MIN_H = 60;
-  const PREVIEW_PANEL_STORAGE_KEY_PREFIX = 'vsm_preview_panels_';
-  const PREVIEW_PANEL_DEFAULT_X = 300;
-  const PREVIEW_PANEL_DEFAULT_Y = 60;
-  const PREVIEW_PANEL_CASCADE_STEP = 140; // large enough that a newly opened panel doesn't fully cover the previous one's title bar/controls
-  const PREVIEW_PANEL_DEFAULT_W = 360;
-  const PREVIEW_PANEL_MIN_W = 240;
-  const PREVIEW_PANEL_DEFAULT_H = 320; // display-only now (M11) — no bottom control area to fit
-  const PREVIEW_PANEL_MIN_H = 220;
+  const SIA_PANEL_STORAGE_KEY_PREFIX = 'vsm_sia_panel_';
+  const SIA_PANEL_DEFAULT_HEIGHT = 420;
   const RUNTIME_STATE_LABELS = {
     running: "Running",
     paused: "Paused",
@@ -599,94 +593,82 @@
     return { x: PLUGIN_BADGE_DEFAULT_X, y: PLUGIN_BADGE_DEFAULT_Y + index * PLUGIN_BADGE_Y_STEP, w: PLUGIN_BADGE_DEFAULT_W, h: PLUGIN_BADGE_DEFAULT_H, expanded: true };
   }
 
-  function loadPreviewPanelState(projectId) {
-    if (!projectId) return {};
-    try { return JSON.parse(localStorage.getItem(PREVIEW_PANEL_STORAGE_KEY_PREFIX + projectId) || '{}'); }
-    catch { return {}; }
+  // Only the panel's height persists across sessions — whether an agent is loaded does NOT
+  // (reported 2026-07-21: agents were silently auto-loading on reopen from a prior session's
+  // persisted state; every agent should always start showing "Load" until explicitly clicked,
+  // or after a reset, in the current session).
+  function loadSiaPanelPrefs(projectId) {
+    if (!projectId) return { height: SIA_PANEL_DEFAULT_HEIGHT };
+    try {
+      const parsed = JSON.parse(localStorage.getItem(SIA_PANEL_STORAGE_KEY_PREFIX + projectId) || '{}');
+      return { height: parsed.height || SIA_PANEL_DEFAULT_HEIGHT };
+    } catch {
+      return { height: SIA_PANEL_DEFAULT_HEIGHT };
+    }
   }
 
-  async function fetchPreviewPanelStateFromServer(projectId) {
+  async function fetchSiaPanelPrefsFromServer(projectId) {
     if (!projectId) return null;
     try {
       const data = await apiGet(`/api/v1/projects/${projectId}/ui-prefs`);
-      const panels = data?.previewPanels;
-      if (panels && typeof panels === 'object') return panels;
+      const prefs = data?.siaPanel;
+      if (prefs && typeof prefs === 'object') return prefs;
       return null;
     } catch {
       return null;
     }
   }
 
-  function persistPreviewPanelState(projectId, state) {
+  function persistSiaPanelPrefs(projectId, prefs) {
     if (!projectId) return;
-    localStorage.setItem(PREVIEW_PANEL_STORAGE_KEY_PREFIX + projectId, JSON.stringify(state));
-    apiPut(`/api/v1/projects/${projectId}/ui-prefs`, { uiPrefs: { previewPanels: state } }).catch(() => {});
+    localStorage.setItem(SIA_PANEL_STORAGE_KEY_PREFIX + projectId, JSON.stringify(prefs));
+    apiPut(`/api/v1/projects/${projectId}/ui-prefs`, { uiPrefs: { siaPanel: prefs } }).catch(() => {});
   }
 
-  function getPreviewPanelPos(instanceName) {
-    if (previewPanelState[instanceName]) return previewPanelState[instanceName];
-    const index = Object.keys(previewPanelState).length;
-    return {
-      x: PREVIEW_PANEL_DEFAULT_X + index * PREVIEW_PANEL_CASCADE_STEP,
-      y: PREVIEW_PANEL_DEFAULT_Y + index * PREVIEW_PANEL_CASCADE_STEP,
-      w: PREVIEW_PANEL_DEFAULT_W,
-      h: PREVIEW_PANEL_DEFAULT_H,
-      open: false,
-      z: 0
-    };
+  function persistSiaPanelState() {
+    persistSiaPanelPrefs(selectedProjectId, { height: siaPanelHeight });
   }
 
-  function openPreviewPanel(plugin) {
-    const instanceName = plugin?.instanceName;
+  function loadSiaAgent(instanceName) {
     if (!instanceName) return;
-    const cur = getPreviewPanelPos(instanceName);
-    previewPanelState = { ...previewPanelState, [instanceName]: { ...cur, open: true, z: ++previewPanelZCounter } };
-    persistPreviewPanelState(selectedProjectId, previewPanelState);
+    siaLoaded = { ...siaLoaded, [instanceName]: true };
   }
 
-  // Raises a panel above all others (e.g. on drag-start or any click within it), so an
-  // obscured panel becomes reachable without first having to drag the one covering it.
-  function bringPreviewPanelToFront(instanceName) {
-    const cur = previewPanelState[instanceName] || getPreviewPanelPos(instanceName);
-    const nextZ = ++previewPanelZCounter;
-    if (cur.z === nextZ - 1 && previewPanelState[instanceName]) return; // already frontmost, avoid needless persist
-    previewPanelState = { ...previewPanelState, [instanceName]: { ...cur, z: nextZ } };
-    persistPreviewPanelState(selectedProjectId, previewPanelState);
-  }
-
-  function closePreviewPanel(instanceName) {
-    const cur = previewPanelState[instanceName];
-    if (!cur) return;
-    previewPanelState = { ...previewPanelState, [instanceName]: { ...cur, open: false } };
-    persistPreviewPanelState(selectedProjectId, previewPanelState);
-  }
-
-  // Script-toolbar SIA button (M9): first click lazily launches + opens the panel (reusing
-  // openPreviewPanel's existing logic, unchanged); later clicks just toggle visibility — the panel
-  // (and its iframe/WebSocket connection to the character page) stays mounted while hidden, so
-  // loading isn't lost.
-  function toggleSiaPreview(previewCapableAgent) {
-    const instanceName = previewCapableAgent?.instanceName;
+  // Unlike the old floating window's "close" (hide but keep the iframe/WS alive), this actually
+  // tears the agent's session down — SiaPanel resets its own previewUrls entry to undefined on the
+  // next reactive pass, so a subsequent Load redoes the full connect/asset-load sequence rather
+  // than instantly resuming (the explicit behavior change agreed on for M13i).
+  function unloadSiaAgent(instanceName) {
     if (!instanceName) return;
-    if (previewPanelState[instanceName]?.open) {
-      closePreviewPanel(instanceName);
-    } else {
-      openPreviewPanel({ instanceName });
+    const next = { ...siaLoaded };
+    delete next[instanceName];
+    siaLoaded = next;
+  }
+
+  // Script-toolbar Preview/Hide button (M13i): toggles the whole panel's visibility. Loading an
+  // individual agent is now a separate, per-card action (see loadSiaAgent) — hiding the panel does
+  // NOT unload anything, matching today's "hidden but still connected" philosophy for cheap show/hide.
+  async function toggleSiaPanel() {
+    siaPanelOpen = !siaPanelOpen;
+    if (siaPanelOpen) {
+      await tick();
+      scenescriptEl?.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   }
 
   // M10: per-turn Play button — sends exactly that turn's text (same syntax the old Turn tab
-  // used) and reveals the character's panel if it's currently hidden. Cross-actor embedded
-  // actions (e.g. [Bob smile] inside a Xenia turn) need no handling here — previewTurn (M1)
-  // already routes those server-side.
+  // used) and reveals the character's card if it's currently unloaded/the panel is hidden.
+  // Cross-actor embedded actions (e.g. [Bob smile] inside a Xenia turn) need no handling here —
+  // previewTurn (M1) already routes those server-side.
   async function handlePlayTurn(turn) {
     if (!turn?.instanceName || !selectedProjectId) return;
     const text = `${turn.speaker}: ${turn.text}`;
     try {
       await apiPost(`/api/v1/projects/${selectedProjectId}/plugins/${turn.instanceName}/preview/turn`, { text });
-      if (!previewPanelState[turn.instanceName]?.open) {
-        openPreviewPanel({ instanceName: turn.instanceName });
+      if (!siaLoaded[turn.instanceName]) {
+        loadSiaAgent(turn.instanceName);
       }
+      siaPanelOpen = true;
     } catch (err) {
       console.error("[handlePlayTurn] failed:", err);
     }
@@ -836,6 +818,20 @@
       scriptEditorRef?.insertText(padBracketTextForInsertion(`[${actorPrefix}${commandBody}]`, offset), offset);
     }
     actionModalState = null;
+  }
+
+  // SIA panel's per-column "Insert at cursor" button (M13i) — turn-agnostic equivalent of
+  // handleActionModalSave's insert path above, just triggered from the panel instead of the
+  // modal's Save button and driven by the script's current cursor position rather than a
+  // remembered double-click offset.
+  function handleSiaInsertAtCursor(instanceName, agentName, commandBody) {
+    if (!commandBody) return;
+    const offset = scriptEditorRef?.getCursorOffset();
+    if (!Number.isFinite(offset)) return;
+    const turn = turnAtOffset(scriptTurns, offset);
+    if (!turn) return;
+    const actorPrefix = agentName !== turn.speaker ? `${agentName}: ` : "";
+    scriptEditorRef?.insertText(padBracketTextForInsertion(`[${actorPrefix}${commandBody}]`, offset));
   }
 
   function clampBadgeRect(rect, bounds) {
@@ -1066,61 +1062,27 @@
     persistPluginBadgeState(selectedProjectId, pluginBadgeState);
   }
 
-  function startPreviewPanelDrag(event, instanceName) {
+  // SIA panel resize (M13i): single height-only drag, no per-instance keying — replaces the old
+  // per-floating-window drag+resize (position/z-order concepts no longer apply to fixed cards).
+  function startSiaPanelResize(event) {
     if (!isPrimaryPointer(event)) return;
     event.preventDefault();
     event.stopPropagation();
-    bringPreviewPanelToFront(instanceName);
-    previewPanelDrag = { instanceName, lastClientX: event.clientX, lastClientY: event.clientY };
+    siaPanelResize = { lastClientY: event.clientY };
   }
 
-  function handlePreviewPanelPointerMove(event) {
-    if (!previewPanelDrag) return;
+  function handleSiaPanelResizeMove(event) {
+    if (!siaPanelResize) return;
     event.preventDefault();
-    const { instanceName } = previewPanelDrag;
-    const cur = previewPanelState[instanceName] || getPreviewPanelPos(instanceName);
-    const dx = event.clientX - previewPanelDrag.lastClientX;
-    const dy = event.clientY - previewPanelDrag.lastClientY;
-    previewPanelDrag.lastClientX = event.clientX;
-    previewPanelDrag.lastClientY = event.clientY;
-    const bounds = { width: window.innerWidth, height: window.innerHeight };
-    const next = { ...cur, x: cur.x + dx, y: cur.y + dy };
-    previewPanelState = { ...previewPanelState, [instanceName]: { ...next, ...clampBadgeRect(next, bounds) } };
+    const dy = event.clientY - siaPanelResize.lastClientY;
+    siaPanelResize.lastClientY = event.clientY;
+    siaPanelHeight = Math.max(siaPanelMinHeight, siaPanelHeight + dy);
   }
 
-  function handlePreviewPanelPointerUp() {
-    if (!previewPanelDrag) return;
-    previewPanelDrag = null;
-    persistPreviewPanelState(selectedProjectId, previewPanelState);
-  }
-
-  function startPreviewPanelResize(event, instanceName) {
-    if (!isPrimaryPointer(event)) return;
-    event.preventDefault();
-    event.stopPropagation();
-    previewPanelResize = { instanceName, lastClientX: event.clientX, lastClientY: event.clientY };
-  }
-
-  function handlePreviewPanelResizeMove(event) {
-    if (!previewPanelResize) return;
-    event.preventDefault();
-    const { instanceName } = previewPanelResize;
-    const cur = previewPanelState[instanceName] || getPreviewPanelPos(instanceName);
-    const dx = event.clientX - previewPanelResize.lastClientX;
-    const dy = event.clientY - previewPanelResize.lastClientY;
-    previewPanelResize.lastClientX = event.clientX;
-    previewPanelResize.lastClientY = event.clientY;
-    previewPanelState = { ...previewPanelState, [instanceName]: {
-      ...cur,
-      w: Math.max(PREVIEW_PANEL_MIN_W, (cur.w || PREVIEW_PANEL_DEFAULT_W) + dx),
-      h: Math.max(PREVIEW_PANEL_MIN_H, (cur.h || PREVIEW_PANEL_DEFAULT_H) + dy)
-    } };
-  }
-
-  function handlePreviewPanelResizeUp() {
-    if (!previewPanelResize) return;
-    previewPanelResize = null;
-    persistPreviewPanelState(selectedProjectId, previewPanelState);
+  function handleSiaPanelResizeUp() {
+    if (!siaPanelResize) return;
+    siaPanelResize = null;
+    persistSiaPanelState();
   }
 
   onMount(() => {
@@ -1128,16 +1090,14 @@
       handleVarBadgePointerMove(event);
       handlePluginBadgePointerMove(event);
       handlePluginBadgeResizeMove(event);
-      handlePreviewPanelPointerMove(event);
-      handlePreviewPanelResizeMove(event);
+      handleSiaPanelResizeMove(event);
       handleActionModalPointerMove(event);
     };
     const upHandler = (event) => {
       handleVarBadgePointerUp(event);
       handlePluginBadgePointerUp();
       handlePluginBadgeResizeUp();
-      handlePreviewPanelPointerUp();
-      handlePreviewPanelResizeUp();
+      handleSiaPanelResizeUp();
       handleActionModalPointerUp();
     };
     document.addEventListener("mousemove", moveHandler, true);
@@ -1597,7 +1557,14 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
                                 // instances), and className alone would collide across them.
   let pluginBadgeDrag = null;   // { instanceName, lastClientX, lastClientY } | null
   let pluginBadgeResize = null; // { instanceName, lastClientX, lastClientY } | null
-  let previewPanelState = {};  // { [instanceName]: { x, y, w, h, open, z } }
+  let siaPanelOpen = false;    // whole-panel visibility — replaces per-agent .open (M13i)
+  let siaLoaded = {};          // { [instanceName]: boolean } — whether that agent's iframe/session
+                                // should exist at all; unlike the old per-agent "open" flag, false
+                                // here actually tears the session down (M13i)
+  let siaPanelHeight = SIA_PANEL_DEFAULT_HEIGHT; // single resizable dimension — width is full-row
+  let siaPanelMinHeight = 300; // reported up from SiaPanel's measured tallest control column
+  let scenescriptEl; // scrolled into view when the Preview panel opens
+  let siaPanelResize = null;   // { lastClientY } | null — height-only, no per-instance keying needed
   let previewLoadProgress = {}; // { [instanceName]: 0-100 } — from vm.progress postMessage (M9)
   let previewSpeakingInstances = new Set(); // instanceNames currently speaking — gates ALL turn/emotion
                                              // Play buttons globally so overlapping speech can't be triggered
@@ -1610,9 +1577,6 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
     else next.delete(instanceName);
     previewSpeakingInstances = next;
   }
-  let previewPanelZCounter = 10;
-  let previewPanelDrag = null;   // { instanceName, lastClientX, lastClientY } | null
-  let previewPanelResize = null; // { instanceName, lastClientX, lastClientY } | null
   let sceneFlowContainerEl;
   let edgeCreateMode = false;
   let edgeCreateSourceId = "";
@@ -3203,12 +3167,16 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
     });
   }
   $: if (selectedProjectId) {
-    previewPanelState = loadPreviewPanelState(selectedProjectId);
-    const _previewPid = selectedProjectId;
-    fetchPreviewPanelStateFromServer(_previewPid).then((serverState) => {
-      if (serverState && selectedProjectId === _previewPid) {
-        previewPanelState = serverState;
-        localStorage.setItem(PREVIEW_PANEL_STORAGE_KEY_PREFIX + _previewPid, JSON.stringify(serverState));
+    // siaLoaded intentionally is NOT restored here — every agent always starts unloaded
+    // ("Load" shown) at the start of a session, regardless of what was loaded last time.
+    siaLoaded = {};
+    const initialSiaPrefs = loadSiaPanelPrefs(selectedProjectId);
+    siaPanelHeight = initialSiaPrefs.height;
+    const _siaPid = selectedProjectId;
+    fetchSiaPanelPrefsFromServer(_siaPid).then((serverPrefs) => {
+      if (serverPrefs && selectedProjectId === _siaPid) {
+        siaPanelHeight = serverPrefs.height || SIA_PANEL_DEFAULT_HEIGHT;
+        localStorage.setItem(SIA_PANEL_STORAGE_KEY_PREFIX + _siaPid, JSON.stringify(serverPrefs));
       }
     });
   }
@@ -3707,9 +3675,9 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
     pluginBadgeState = {};
     pluginBadgeDrag = null;
     pluginBadgeResize = null;
-    previewPanelState = {};
-    previewPanelDrag = null;
-    previewPanelResize = null;
+    siaPanelOpen = false;
+    siaLoaded = {};
+    siaPanelResize = null;
     previewLoadProgress = {};
     previewSpeakingInstances = new Set();
     showEditor = false;
@@ -17188,7 +17156,28 @@ Sentence:
         <p class="muted">No SceneFlow data loaded yet.</p>
       {/if}
       {#if selectedProject}
-        <div class="scenescript">
+        <div class="scenescript" bind:this={scenescriptEl}>
+          <div class="script-sticky-header">
+          {#if siaPanelOpen && previewCapableAgents.length > 0}
+            <SiaPanel
+              projectId={selectedProjectId}
+              {apiGet}
+              {apiPost}
+              agents={previewCapableAgents}
+              loaded={siaLoaded}
+              loadProgress={previewLoadProgress}
+              anySpeaking={previewAnySpeaking}
+              suspended={previewSuspendedByRuntime}
+              height={siaPanelHeight}
+              bind:measuredMinHeight={siaPanelMinHeight}
+              onLoad={loadSiaAgent}
+              onUnload={unloadSiaAgent}
+              onProgress={(instanceName, v) => { previewLoadProgress = { ...previewLoadProgress, [instanceName]: v }; }}
+              onSpeaking={handlePreviewSpeakingChange}
+              onResizeStart={startSiaPanelResize}
+              onInsertAtCursor={handleSiaInsertAtCursor}
+            />
+          {/if}
           <div class="script-toolbar">
             <button
               type="button"
@@ -17246,21 +17235,19 @@ Sentence:
               </button>
             {/if}
             <div class="script-toolbar-spacer"></div>
-            {#each previewCapableAgents as pcAgent (pcAgent.instanceName)}
+            {#if previewCapableAgents.length > 0}
               <button
                 type="button"
-                class="panel-save sia-toggle-btn"
-                class:sia-toggle-open={previewPanelState[pcAgent.instanceName]?.open}
-                style:--sia-progress="{previewLoadProgress[pcAgent.instanceName] ?? 0}%"
-                on:click={() => toggleSiaPreview(pcAgent)}
-                title={previewPanelState[pcAgent.instanceName]?.open
-                  ? `Hide ${pcAgent.agentName} preview`
-                  : `Show ${pcAgent.agentName} preview`}
+                class="panel-save sia-panel-toggle"
+                class:active={siaPanelOpen}
+                on:click={toggleSiaPanel}
+                aria-pressed={siaPanelOpen}
+                title={siaPanelOpen ? "Hide SIA preview" : "Show SIA preview"}
               >
                 <IconPerson className="icon" />
-                {pcAgent.agentName}
+                {siaPanelOpen ? "Hide" : "Preview"}
               </button>
-            {/each}
+            {/if}
             <button
               type="button"
               class="ghost"
@@ -17290,7 +17277,8 @@ Sentence:
                 <path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
               </svg>
             </button>
-        </div>
+          </div>
+          </div>
         {#if scriptSearchOpen}
           <div class="script-search-panel">
             <label for="script-search-input">Search</label>
@@ -20056,33 +20044,12 @@ Sentence:
     wsConnected={wsConnected}
     serverMode={info?.mode || "FULL_EDITOR"}
     onClose={closePluginDashboard}
-    onOpenPreview={openPreviewPanel}
+    onOpenPreview={(plugin) => { loadSiaAgent(plugin?.instanceName); siaPanelOpen = true; }}
     {apiGet}
     {apiPost}
     {apiPut}
     {sendCommand}
   />
-
-  {#each Object.entries(previewPanelState) as [previewInstanceName, panelState] (previewInstanceName)}
-    <CharacterPreviewPanel
-      instanceName={previewInstanceName}
-      projectId={selectedProjectId}
-      x={panelState.x}
-      y={panelState.y}
-      w={panelState.w}
-      h={panelState.h}
-      z={panelState.z || 0}
-      open={showEditor && !!panelState.open}
-      suspended={previewSuspendedByRuntime}
-      {apiGet}
-      onDragStart={(e) => startPreviewPanelDrag(e, previewInstanceName)}
-      onResizeStart={(e) => startPreviewPanelResize(e, previewInstanceName)}
-      onClose={() => closePreviewPanel(previewInstanceName)}
-      onFocus={() => bringPreviewPanelToFront(previewInstanceName)}
-      onProgress={(v) => { previewLoadProgress = { ...previewLoadProgress, [previewInstanceName]: v }; }}
-      onSpeaking={(v) => handlePreviewSpeakingChange(previewInstanceName, v)}
-    />
-  {/each}
 
   {#if scriptContextMenu}
     <div

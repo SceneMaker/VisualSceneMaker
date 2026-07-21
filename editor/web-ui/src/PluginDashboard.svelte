@@ -12,7 +12,7 @@
   export let apiPut;
   export let projectName = "";
   export let sendCommand = null;      // WS command dispatcher from App.svelte
-  export let onOpenPreview = () => {}; // opens a top-level CharacterPreviewPanel in App.svelte (survives this modal closing)
+  export let onOpenPreview = () => {}; // loads this plugin's agent into the SIA panel in App.svelte (survives this modal closing)
 
   // ── screen editor state ────────────────────────────────────────────────────
   let screenEditorPlugin = null;

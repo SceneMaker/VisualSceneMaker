@@ -3,11 +3,7 @@
   import BackgroundColorEditor from "./BackgroundColorEditor.svelte";
   import ClearEmotionEditor from "./ClearEmotionEditor.svelte";
   import PauseEditor from "./PauseEditor.svelte";
-
-  const EMOTION_TYPES = [
-    "happy", "sad", "angry", "tear", "disgust", "surprise",
-    "smile", "excited", "fear", "bored", "relaxed"
-  ];
+  import { EMOTION_TYPES } from "./emotionTypes.js";
 
   export let mode = "insert";        // "insert" | "edit" — M13d
   export let actionType = "emotion"; // "emotion" | "background" — M13d generalized beyond emotion
