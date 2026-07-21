@@ -1,4 +1,7 @@
 import { LanguageSupport, StreamLanguage } from "@codemirror/language";
+import { Tag } from "@lezer/highlight";
+
+export const noteTag = Tag.define();
 
 const IDENT = /^[\p{L}@_][\p{L}\p{N}@_]*\b/u;
 const WORD = /^[\p{L}\p{N}@]+/u;
@@ -22,6 +25,7 @@ const MODE = {
 
 const sceneScriptLanguage = StreamLanguage.define({
   name: "scenescript",
+  tokenTable: { note: noteTag },
   startState() {
     return {
       mode: MODE.INITIAL,
@@ -71,6 +75,14 @@ const sceneScriptLanguage = StreamLanguage.define({
         if (stream.match(/^(scene)\b/i)) {
           state.mode = MODE.SCENE_UNDL;
           return "keyword";
+        }
+        if (stream.match(/^#{1,3}(?=[ \t])/)) {
+          stream.skipToEnd();
+          return "header";
+        }
+        if (stream.match(/^(Note:|NOTE:)/)) {
+          stream.skipToEnd();
+          return "note";
         }
         stream.next();
         return "invalid";

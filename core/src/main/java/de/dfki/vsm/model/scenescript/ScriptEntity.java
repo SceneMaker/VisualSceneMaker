@@ -69,4 +69,16 @@ public abstract class ScriptEntity implements ModelObject {
 
     @Override
     public abstract ScriptEntity getCopy();
+
+    // Escape An XML Attribute Value
+    protected static final String escapeXmlAttr(final String value) {
+        if (value == null) {
+            return "";
+        }
+        return value
+                .replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\"", "&quot;");
+    }
 }

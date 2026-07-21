@@ -89,7 +89,8 @@ public final class ScriptDiagnostics {
 
     private static List<Diagnostic> scanLexErrors(String text) {
         List<Diagnostic> diagnostics = new ArrayList<>();
-        ScriptLexxer lexxer = new ScriptLexxer(new StringReader(text), true, false, false);
+        String sanitized = ScriptStructureScanner.scan(text).sanitizedText;
+        ScriptLexxer lexxer = new ScriptLexxer(new StringReader(sanitized), true, false, false);
         try {
             SyntaxDocSymbol symbol;
             while ((symbol = (SyntaxDocSymbol) lexxer.next_token()) != null) {
@@ -105,7 +106,8 @@ public final class ScriptDiagnostics {
     }
 
     private static List<Diagnostic> scanParseErrors(String text) {
-        String normalized = ScriptParser.preprocessInput(text);
+        String sanitized = ScriptStructureScanner.scan(text).sanitizedText;
+        String normalized = ScriptParser.preprocessInput(sanitized);
         ScriptLexxer lexxer = new ScriptLexxer(new StringReader(normalized), true, false, false);
         ParserWithErrors parser = new ParserWithErrors(lexxer);
         try {

@@ -13,26 +13,27 @@ import org.w3c.dom.Element;
 import java.util.HashMap;
 
 /**
- * @author Gregor Mehlmann
+ * A top-level structural heading (markdown ATX header, e.g. "# Introduction"),
+ * stored verbatim including its leading "#" marks.
  */
-public final class SceneComment extends ScriptEntity {
+public final class SceneSection extends ScriptEntity {
 
-    // The Scene Comment
-    private String mComment;
-
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    public SceneComment() {}
+    // The Raw Heading Text (including leading "#" marks)
+    private String mHeading;
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public SceneComment(final int lower, final int upper, final String comment) {
+    public SceneSection() {}
+
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    public SceneSection(final int lower, final int upper, final String heading) {
         super(lower, upper);
 
         // Initialize Members
-        mComment = comment;
+        mHeading = heading;
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -40,7 +41,7 @@ public final class SceneComment extends ScriptEntity {
     ////////////////////////////////////////////////////////////////////////////
     @Override
     public final String getText() {
-        return mComment;
+        return mHeading;
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -48,7 +49,7 @@ public final class SceneComment extends ScriptEntity {
     ////////////////////////////////////////////////////////////////////////////
     @Override
     public final String getText(final HashMap<String, String> args) {
-        return mComment;
+        return mHeading;
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -56,8 +57,8 @@ public final class SceneComment extends ScriptEntity {
     ////////////////////////////////////////////////////////////////////////////
     @Override
     public final void writeXML(final IOSIndentWriter stream) throws XMLWriteError {
-        stream.print("<SceneComment " + "lower=\"" + mLower + "\" " + "upper=\"" + mUpper + "\" " + "comment=\""
-                     + escapeXmlAttr(mComment) + "\"/>");
+        stream.print("<SceneSection " + "lower=\"" + mLower + "\" " + "upper=\"" + mUpper + "\" " + "heading=\""
+                     + escapeXmlAttr(mHeading) + "\"/>");
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -71,14 +72,14 @@ public final class SceneComment extends ScriptEntity {
         mUpper = Integer.parseInt(element.getAttribute("upper"));
 
         // Parse The Text Content
-        mComment = element.getAttribute("comment");
+        mHeading = element.getAttribute("heading");
     }
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     @Override
-    public SceneComment getCopy() {
-        return new SceneComment(mLower, mUpper, mComment);
+    public SceneSection getCopy() {
+        return new SceneSection(mLower, mUpper, mHeading);
     }
 }

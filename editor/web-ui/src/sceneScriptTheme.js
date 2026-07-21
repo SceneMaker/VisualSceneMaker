@@ -1,6 +1,7 @@
 import { EditorView } from "@codemirror/view";
 import { HighlightStyle, syntaxHighlighting } from "@codemirror/language";
 import { tags } from "@lezer/highlight";
+import { noteTag } from "./sceneScriptLanguage";
 
 export const sceneScriptTheme = EditorView.theme(
   {
@@ -104,6 +105,26 @@ export const sceneScriptTheme = EditorView.theme(
       strokeWidth: "2",
       strokeLinecap: "round",
       strokeLinejoin: "round"
+    },
+    ".cm-heading-compact": {
+      fontWeight: "700",
+      color: "#1c1b15"
+    },
+    ".cm-heading-compact-1": { fontSize: "1.3em" },
+    ".cm-heading-compact-2": { fontSize: "1.15em" },
+    ".cm-heading-compact-3": { fontSize: "1.05em" },
+    ".cm-note-compact": {
+      fontStyle: "italic",
+      color: "#1c1b15",
+      background: "rgba(122, 106, 63, 0.1)",
+      borderLeft: "3px solid rgba(122, 106, 63, 0.5)",
+      padding: "0 0.4em"
+    },
+    ".cm-md-bold": {
+      fontWeight: "700"
+    },
+    ".cm-md-italic": {
+      fontStyle: "italic"
     }
   },
   { dark: false }
@@ -123,7 +144,9 @@ const sceneScriptHighlightStyle = HighlightStyle.define([
   { tag: tags.operator, color: "#1c1b15" },
   { tag: tags.punctuation, color: "#1c1b15" },
   { tag: tags.bracket, color: "#1c1b15" },
-  { tag: tags.invalid, color: "#ff0000" }
+  { tag: tags.invalid, color: "#ff0000" },
+  { tag: tags.heading, color: "#1c1b15", fontWeight: "700" },
+  { tag: noteTag, color: "#1c1b15", fontStyle: "italic" }
 ]);
 
 export const sceneScriptHighlighting = syntaxHighlighting(sceneScriptHighlightStyle);

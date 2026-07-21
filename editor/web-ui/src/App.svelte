@@ -3323,6 +3323,7 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
   // M13b: reactive so decorations (M13c) and double-click hit-testing (M13d) always see
   // current action spans without re-parsing on every keystroke by hand.
   $: actionSpans = parseActionSpans(scriptDraft);
+  $: markdownSpans = parseMarkdownSpans(scriptDraft);
   $: playableTurns = scriptTurns
     .map((turn) => {
       const pcAgent = previewCapableAgents.find((a) => a.agentName === turn.speaker);
@@ -10509,7 +10510,7 @@ Sentence:
     for (let i = 0; i < lines.length; i += 1) {
       const raw = lines[i];
       const line = raw.trim();
-      if (!line || line.startsWith("//") || line.startsWith("#")) {
+      if (!line || line.startsWith("//") || line.startsWith("#") || /^(Note:|NOTE:)/.test(line)) {
         continue;
       }
       const match = line.match(/^scene\s+(\S+)\s+(.+)$/i);
@@ -10613,7 +10614,7 @@ Sentence:
     };
     for (const raw of lines) {
       const line = raw.trim();
-      if (!line || line.startsWith("//") || line.startsWith("#")) {
+      if (!line || line.startsWith("//") || line.startsWith("#") || /^(Note:|NOTE:)/.test(line)) {
         continue;
       }
       const match = line.match(/^scene\s+(\S+)\s+(.+)$/i);
@@ -10692,7 +10693,7 @@ Sentence:
       const lineEndOffset = offset + raw.length; // exclusive of the newline
       offset = lineEndOffset + 1; // account for the '\n' consumed by split
 
-      if (!line || line.startsWith("//") || line.startsWith("#")) {
+      if (!line || line.startsWith("//") || line.startsWith("#") || /^(Note:|NOTE:)/.test(line)) {
         continue;
       }
 
@@ -10787,6 +10788,57 @@ Sentence:
   // The action span (if any) whose bracket range contains the given offset.
   function actionSpanAtOffset(spans, charOffset) {
     return (spans || []).find((s) => charOffset >= s.offsetStart && charOffset <= s.offsetEnd) || null;
+  }
+
+  const SECTION_LINE_RE = /^(#{1,3})[ \t]+(\S.*)$/;
+  const NOTE_LINE_RE = /^(Note:|NOTE:)(.*)$/;
+
+  // Finds top-level "# Section" / "Note: ..." lines, mirroring
+  // ScriptStructureScanner.java's reachability rule (SceneScript.java backend): a line only
+  // counts if it's the first line of the document, right after a blank line, or right after
+  // another recognized section/note line.
+  function parseMarkdownSpans(text) {
+    const spans = [];
+    if (!text) return spans;
+    const lines = String(text).split("\n");
+    let offset = 0;
+    let atBoundary = true;
+    for (const raw of lines) {
+      const lineStartOffset = offset;
+      const lineEndOffset = offset + raw.length;
+      offset = lineEndOffset + 1;
+
+      if (!raw.trim()) {
+        atBoundary = true;
+        continue;
+      }
+
+      const sectionMatch = atBoundary && raw.match(SECTION_LINE_RE);
+      const noteMatch = atBoundary && raw.match(NOTE_LINE_RE);
+      if (sectionMatch) {
+        spans.push({
+          offsetStart: lineStartOffset,
+          offsetEnd: lineEndOffset,
+          kind: "section",
+          level: sectionMatch[1].length,
+          body: sectionMatch[2],
+          raw
+        });
+        atBoundary = true;
+      } else if (noteMatch) {
+        spans.push({
+          offsetStart: lineStartOffset,
+          offsetEnd: lineEndOffset,
+          kind: "note",
+          body: noteMatch[2].trim(),
+          raw
+        });
+        atBoundary = true;
+      } else {
+        atBoundary = false;
+      }
+    }
+    return spans;
   }
 
   function keywordsFromText(text, globalCounts = new Map(), globalSceneCount = 1) {
@@ -17666,6 +17718,7 @@ Sentence:
                 onPlayTurn={handlePlayTurn}
                 onCommandMenu={handleScriptCommandMenu}
                 actionSpans={actionSpans}
+                markdownSpans={markdownSpans}
                 compactCommands={scriptCommandsCompact}
                 onChange={(value) => {
                   scriptDraft = value;

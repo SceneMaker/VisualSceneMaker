@@ -22,7 +22,8 @@
                                     // insert popup on plain turn text, or jumps straight into editing an existing
                                     // command (no right-click anywhere else in the app); true = handled
   export let actionSpans = [];      // [{offsetStart, offsetEnd, actionActor, actionName, features, raw}] — M13b
-  export let compactCommands = false; // M13c: global compact/full view toggle
+  export let markdownSpans = [];    // [{offsetStart, offsetEnd, kind: "section"|"note", level, body, raw}]
+  export let compactCommands = false; // M13c: global compact/full view toggle — also drives markdownSpans rendering
 
   // Scene highlight decoration machinery
   const setSceneHighlightsEffect = StateEffect.define();
@@ -405,6 +406,43 @@
     provide: (f) => EditorView.decorations.from(f)
   });
 
+  // Compact rendering for the new top-level "# Section" / "Note: ..." constructs. Plain mode
+  // shows the raw markdown text as typed; compact mode applies styling via Decoration.mark
+  // rather than replacing the text with an opaque widget — marks style real, still-editable
+  // text in place, so clicking into a heading/note to extend it behaves like any other text
+  // (an earlier Decoration.replace-based widget version broke click-to-position-cursor here).
+  const setMarkdownDisplayEffect = StateEffect.define();
+  const INLINE_MARKDOWN_RE = /\*\*([^*]+)\*\*|\*([^*]+)\*|_([^_]+)_/g;
+
+  const headingMarks = [1, 2, 3].map((level) =>
+    Decoration.mark({ class: `cm-heading-compact cm-heading-compact-${level}` })
+  );
+  const noteMark = Decoration.mark({ class: "cm-note-compact" });
+  const mdBoldMark = Decoration.mark({ class: "cm-md-bold" });
+  const mdItalicMark = Decoration.mark({ class: "cm-md-italic" });
+
+  // Adds nested **bold**/*italic*/_italic_ styling within a line's absolute [from, to) range,
+  // keeping the delimiter characters visible (no hidden markup, so no atomic-widget cursor risk).
+  function pushInlineMarkdownRanges(ranges, raw, from) {
+    INLINE_MARKDOWN_RE.lastIndex = 0;
+    let match;
+    while ((match = INLINE_MARKDOWN_RE.exec(raw))) {
+      const mark = match[1] !== undefined ? mdBoldMark : mdItalicMark;
+      ranges.push(mark.range(from + match.index, from + match.index + match[0].length));
+    }
+  }
+
+  const markdownDisplayField = StateField.define({
+    create() { return Decoration.none; },
+    update(decos, tr) {
+      for (const effect of tr.effects) {
+        if (effect.is(setMarkdownDisplayEffect)) return effect.value;
+      }
+      return tr.docChanged ? decos.map(tr.changes) : decos;
+    },
+    provide: (f) => EditorView.decorations.from(f)
+  });
+
   let host;
   let view;
   let suppress = false;
@@ -544,6 +582,7 @@
       semanticHighlightField,
       playButtonsField,
       actionDisplayField,
+      markdownDisplayField,
       dropCursor(),
       EditorView.domEventHandlers({
         // Only fires for clicks outside any widget — ActionCompactWidget.ignoreEvent() blocks
@@ -888,6 +927,28 @@
 
   $: if (view) {
     applyActionDisplay(actionSpans, compactCommands, selectedActionKey);
+  }
+
+  function applyMarkdownDisplay(spans, compact) {
+    if (!view) return;
+    const doc = view.state.doc;
+    const ranges = [];
+    if (compact) {
+      for (const span of spans || []) {
+        const from = Math.floor(span.offsetStart);
+        const to = Math.floor(span.offsetEnd);
+        if (!Number.isFinite(from) || !Number.isFinite(to) || from < 0 || to > doc.length || to <= from) continue;
+        const lineMark = span.kind === "section" ? headingMarks[Math.min(span.level, 3) - 1] : noteMark;
+        ranges.push(lineMark.range(from, to));
+        pushInlineMarkdownRanges(ranges, span.raw, from);
+      }
+    }
+    ranges.sort((a, b) => a.from - b.from || a.to - b.to);
+    view.dispatch({ effects: setMarkdownDisplayEffect.of(Decoration.set(ranges, true)) });
+  }
+
+  $: if (view) {
+    applyMarkdownDisplay(markdownSpans, compactCommands);
   }
 </script>
 

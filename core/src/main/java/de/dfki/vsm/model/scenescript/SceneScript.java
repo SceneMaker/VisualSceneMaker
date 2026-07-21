@@ -59,6 +59,8 @@ public final class SceneScript extends ScriptEntity {
                 mSceneList.add((SceneObject) entity);
             } else if (entity instanceof SceneComment) {
                 mCommentList.add((SceneComment) entity);
+            } else if (entity instanceof SceneSection || entity instanceof SceneNote) {
+                // Structural entities are kept only in mEntityList for now
             } else {
                 throw new IllegalStateException("This should not happen" + entity);
                 // This Should Not Happen
@@ -258,6 +260,20 @@ public final class SceneScript extends ScriptEntity {
                     entity.parseXML(element);
                     // Put The New Style To The Map
                     mEntityList.add(entity);
+                } else if (name.equals("SceneSection")) {
+                    // Create A New Token Style
+                    final SceneSection entity = new SceneSection();
+                    // Parse The New Token Style
+                    entity.parseXML(element);
+                    // Put The New Style To The Map
+                    mEntityList.add(entity);
+                } else if (name.equals("SceneNote")) {
+                    // Create A New Token Style
+                    final SceneNote entity = new SceneNote();
+                    // Parse The New Token Style
+                    entity.parseXML(element);
+                    // Put The New Style To The Map
+                    mEntityList.add(entity);
                 } else {
                     // This Should Not Happen
                 }
@@ -272,13 +288,19 @@ public final class SceneScript extends ScriptEntity {
 
     // Parse the scene script
     public final boolean parseTXT(final String text) {
+        // Extract Top-Level Sections/Notes And Blank Them Out For The Legacy Parser
+        final ScriptStructureScanner.ScanResult scan = ScriptStructureScanner.scan(text);
         // Parse Content Into Scene Script
-        final SceneScript script = (SceneScript)ScriptParser.run(text, false, false, true, false, false);
+        final SceneScript script = (SceneScript)ScriptParser.run(scan.sanitizedText, false, false, true, false, false);
 
         // Copy Content If Successfully
         if (script != null) {
+            // Merge The Structural Entities Back In, Ordered By Their Offset
+            final List<ScriptEntity> merged = new ArrayList<>(script.getEntityList());
+            merged.addAll(scan.structuralEntities);
+            merged.sort(Comparator.comparingInt(ScriptEntity::getLower));
             // Initialize The Scene List
-            mEntityList = script.getEntityList();
+            mEntityList = merged;
             // Initialize The Two Lists
             initObjectLists();
             // Initialize The Group Map

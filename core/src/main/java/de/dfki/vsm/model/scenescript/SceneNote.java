@@ -13,26 +13,27 @@ import org.w3c.dom.Element;
 import java.util.HashMap;
 
 /**
- * @author Gregor Mehlmann
+ * A top-level free-text note (e.g. "Note: remember to smile"), stored verbatim
+ * including its leading "Note:"/"NOTE:" prefix.
  */
-public final class SceneComment extends ScriptEntity {
+public final class SceneNote extends ScriptEntity {
 
-    // The Scene Comment
-    private String mComment;
-
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    public SceneComment() {}
+    // The Raw Note Text (including leading "Note:"/"NOTE:" prefix)
+    private String mNote;
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    public SceneComment(final int lower, final int upper, final String comment) {
+    public SceneNote() {}
+
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    public SceneNote(final int lower, final int upper, final String note) {
         super(lower, upper);
 
         // Initialize Members
-        mComment = comment;
+        mNote = note;
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -40,7 +41,7 @@ public final class SceneComment extends ScriptEntity {
     ////////////////////////////////////////////////////////////////////////////
     @Override
     public final String getText() {
-        return mComment;
+        return mNote;
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -48,7 +49,7 @@ public final class SceneComment extends ScriptEntity {
     ////////////////////////////////////////////////////////////////////////////
     @Override
     public final String getText(final HashMap<String, String> args) {
-        return mComment;
+        return mNote;
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -56,8 +57,8 @@ public final class SceneComment extends ScriptEntity {
     ////////////////////////////////////////////////////////////////////////////
     @Override
     public final void writeXML(final IOSIndentWriter stream) throws XMLWriteError {
-        stream.print("<SceneComment " + "lower=\"" + mLower + "\" " + "upper=\"" + mUpper + "\" " + "comment=\""
-                     + escapeXmlAttr(mComment) + "\"/>");
+        stream.print("<SceneNote " + "lower=\"" + mLower + "\" " + "upper=\"" + mUpper + "\" " + "note=\""
+                     + escapeXmlAttr(mNote) + "\"/>");
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -71,14 +72,14 @@ public final class SceneComment extends ScriptEntity {
         mUpper = Integer.parseInt(element.getAttribute("upper"));
 
         // Parse The Text Content
-        mComment = element.getAttribute("comment");
+        mNote = element.getAttribute("note");
     }
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     @Override
-    public SceneComment getCopy() {
-        return new SceneComment(mLower, mUpper, mComment);
+    public SceneNote getCopy() {
+        return new SceneNote(mLower, mUpper, mNote);
     }
 }
