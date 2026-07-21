@@ -17250,22 +17250,6 @@ Sentence:
             {/if}
             <button
               type="button"
-              class="ghost"
-              on:click={() => scriptEditorRef?.jumpToPreviousDiagnostic()}
-              disabled={!selectedProject || scriptDiagnostics.length === 0}
-            >
-              Prev issue
-            </button>
-            <button
-              type="button"
-              class="ghost"
-              on:click={() => scriptEditorRef?.jumpToNextDiagnostic()}
-              disabled={!selectedProject || scriptDiagnostics.length === 0}
-            >
-              Next issue
-            </button>
-            <button
-              type="button"
               class="panel-save command-display-toggle"
               class:active={scriptCommandsCompact}
               on:click={() => (scriptCommandsCompact = !scriptCommandsCompact)}

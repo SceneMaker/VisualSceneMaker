@@ -3,7 +3,7 @@
   import { EditorState, StateEffect, StateField, Prec } from "@codemirror/state";
   import { EditorView, keymap, Decoration, WidgetType, dropCursor } from "@codemirror/view";
   import { indentUnit } from "@codemirror/language";
-  import { lintGutter, nextDiagnostic, previousDiagnostic, setDiagnostics } from "@codemirror/lint";
+  import { lintGutter, setDiagnostics } from "@codemirror/lint";
   import { indentWithTab } from "@codemirror/commands";
   import { basicSetup } from "codemirror";
   import { sceneScript } from "./sceneScriptLanguage";
@@ -692,18 +692,6 @@
       changes: { from: resolvedFrom, to: resolvedTo, insert },
       selection: { anchor: resolvedFrom + insert.length }
     });
-    view.focus();
-  }
-
-  export function jumpToNextDiagnostic() {
-    if (!view) return;
-    nextDiagnostic(view);
-    view.focus();
-  }
-
-  export function jumpToPreviousDiagnostic() {
-    if (!view) return;
-    previousDiagnostic(view);
     view.focus();
   }
 
