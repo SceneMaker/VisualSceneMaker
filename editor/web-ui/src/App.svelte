@@ -17261,6 +17261,29 @@ Sentence:
                 <path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
               </svg>
             </button>
+            <span
+              class="script-status-icon"
+              class:script-status-error={!!scriptError}
+              class:script-status-dirty={!scriptError && scriptDirty}
+              class:script-status-clean={!scriptError && !scriptDirty}
+              role="img"
+              title={scriptError || (scriptDirty ? "Unsaved edits" : "All changes saved")}
+              aria-label={scriptError || (scriptDirty ? "Unsaved edits" : "All changes saved")}
+            >
+              {#if scriptError}
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="18" height="18" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
+                </svg>
+              {:else if scriptDirty}
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="18" height="18" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM12.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM18.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
+                </svg>
+              {:else}
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="18" height="18" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                </svg>
+              {/if}
+            </span>
           </div>
           </div>
         {#if scriptSearchOpen}
@@ -17517,24 +17540,6 @@ Sentence:
               />
             {/if}
           </div>
-          {#if scriptDirty}
-            <p class="muted">Unsaved edits</p>
-          {/if}
-          {#if scriptStatus}
-            <p class="status">{scriptStatus}</p>
-          {/if}
-          {#if scriptError}
-            <p class="error">{scriptError}</p>
-          {/if}
-          {#if semanticStatus}
-            <p class="status">{semanticStatus}</p>
-          {/if}
-          {#if semanticError}
-            <p class="error">{semanticError}</p>
-          {/if}
-          {#if semanticStale}
-            <p class="muted">Semantic overlays are outdated. Run Semantic Analysis again.</p>
-          {/if}
           {#if semanticDebugEnabled && semanticDebug}
             <details class="semantic-debug" bind:open={semanticDebugOpen}>
               <summary>

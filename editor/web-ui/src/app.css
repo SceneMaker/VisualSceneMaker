@@ -1437,6 +1437,30 @@ a.export-link {
   color: #ffffff;
 }
 
+/* Compact, non-interactive replacement for the old "Unsaved edits"/"Script updated" status-bar
+   text (reported 2026-07-21 as too much notification noise) — a single glyph beside the compact-
+   command-display toggle, with the full message only on hover. */
+.script-status-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.script-status-icon.script-status-clean {
+  color: #2e7d32;
+}
+
+.script-status-icon.script-status-dirty {
+  color: var(--ink);
+}
+
+.script-status-icon.script-status-error {
+  color: var(--danger);
+}
+
 .script-context-menu-backdrop {
   position: fixed;
   inset: 0;
