@@ -187,30 +187,55 @@ public class CharamelEmbedExecutor extends ActivityExecutor
             // instead of firing as an inline marker while speech keeps playing.
             for (final SceneUttr uttr : turn.getUttrList()) {
                 StringBuilder segment = new StringBuilder();
+                // Non-blocking actions since the last real word / segment start, not yet embedded as
+                // a marker — see flushPendingMarkerActions() for why these are batched into a single
+                // marker instead of one each.
+                final java.util.List<Runnable> pending = new java.util.ArrayList<>();
                 for (final UttrElement element : uttr.getWordList()) {
                     if (element instanceof ActionObject) {
                         final ActionObject action = (ActionObject) element;
                         if (ActionBlockingUtil.requiresUtteranceSplit(action)) {
+                            flushPendingMarkerActions(pending, segment);
                             if (segment.length() > 0) {
                                 previewSpeakAndAwaitStop(segment.toString().trim(), voice);
                                 segment = new StringBuilder();
                             }
                             runBlockingPreviewAction(action, turn.getSpeaker());
                         } else {
-                            final String markerKey = marker(mPreviewMarkerId.incrementAndGet());
-                            registerPreviewAction(markerKey, action);
-                            segment.append(markerKey).append(' ');
+                            pending.add(buildPreviewActionRunnable(action));
                         }
                     } else {
+                        flushPendingMarkerActions(pending, segment);
                         segment.append(element.getText(new HashMap<>())).append(' ');
                     }
                 }
+                flushPendingMarkerActions(pending, segment);
                 segment.append(uttr.getPunctuationMark());
                 if (!segment.toString().isBlank()) {
                     previewSpeakAndAwaitStop(segment.toString().trim(), voice);
                 }
             }
         }
+    }
+
+    /**
+     * Embeds one marker for every action accumulated in {@code pending} since the last real word (or
+     * segment start), then clears it. Multiple non-blocking actions can appear back-to-back with
+     * nothing but whitespace between them — e.g. a turn opening with two bracketed commands before
+     * any spoken word, as in {@code [background ...] [Bob: background ...] Hallo}. Embedding each as
+     * its own {@code ${'id'}$} token left two (or more) bare marker tokens adjacent with no real word
+     * between them; the engine only ever echoed back the last one via onMarker, silently dropping
+     * every earlier action in the run (confirmed 2026-07-21). Bundling the whole run into a single
+     * marker — fired as one batch of actions in original order — guarantees the engine only ever
+     * sees one marker token at that position, immediately followed by real spoken content.
+     */
+    private void flushPendingMarkerActions(java.util.List<Runnable> pending, StringBuilder segment) {
+        if (pending.isEmpty()) return;
+        final java.util.List<Runnable> batch = new java.util.ArrayList<>(pending);
+        pending.clear();
+        final String markerKey = marker(mPreviewMarkerId.incrementAndGet());
+        mPreviewMarkerMap.put(markerKey, () -> batch.forEach(Runnable::run));
+        segment.append(markerKey).append(' ');
     }
 
     private void previewSpeakAndAwaitStop(String rawText, String voice) {
@@ -247,8 +272,8 @@ public class CharamelEmbedExecutor extends ActivityExecutor
     }
 
     /** Resolves the action's target device (self, or another agent's, for cross-actor commands like
-     *  {@code [Bob smile]}) and records what to run when its marker fires back from the page. */
-    private void registerPreviewAction(String markerKey, ActionObject action) {
+     *  {@code [Bob smile]}) and returns what to run when its marker fires back from the page. */
+    private Runnable buildPreviewActionRunnable(ActionObject action) {
         final String actionActor = action.getActor();
         if (actionActor == null || actionActor.isBlank()) {
             // Self-actor: dispatch straight through parseAction(), NOT execute() — this callback
@@ -261,19 +286,16 @@ public class CharamelEmbedExecutor extends ActivityExecutor
             // actions reaching this path are always fire-and-forget — a blocking variant is instead
             // routed through runBlockingPreviewAction, which genuinely needs the lock — so calling
             // parseAction() directly here, unsynchronized, is safe.
-            mPreviewMarkerMap.put(markerKey, () -> parseAction(action.getName(), action.getFeatureList()));
-            return;
+            return () -> parseAction(action.getName(), action.getFeatureList());
         }
         final ActivityExecutor target = mProject.getAgentDevice(actionActor);
         if (target == null) {
-            mPreviewMarkerMap.put(markerKey, () -> mLogger.warning(
-                    "charamel-embed preview: no device for actor '" + actionActor + "', dropping ["
-                            + action.getName() + "]"));
-            return;
+            return () -> mLogger.warning("charamel-embed preview: no device for actor '" + actionActor
+                    + "', dropping [" + action.getName() + "]");
         }
         final ActionActivity activity = new ActionActivity(
                 actionActor, action.getName(), action.getText(new HashMap<>()), action.getFeatureList(), new HashMap<>());
-        mPreviewMarkerMap.put(markerKey, () -> target.execute(activity));
+        return () -> target.execute(activity);
     }
 
     // ------------------------------------------------------------------ execution
