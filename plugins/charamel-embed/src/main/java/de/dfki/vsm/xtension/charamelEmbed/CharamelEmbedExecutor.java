@@ -492,7 +492,15 @@ public class CharamelEmbedExecutor extends ActivityExecutor
         // engine can't tolerate, causing the next call to silently fail ("speak ended with error").
         // vm-adapter.js's onEnd unconditionally sends "<vmuid>:stop" itself once the call is truly
         // done (success or failure), so waiting for that alone is both sufficient and correct.
-        final String cmd = "${'" + vmuid + "':'start'}$" + rawText;
+        //
+        // The space after the start marker is required, not cosmetic: every inline action marker
+        // previewTurn() builds into rawText is followed by its own trailing space (see the
+        // segment.append(markerKey).append(' ') call), so two adjacent markers are never glued
+        // together — except this one junction, where rawText can start with another marker (e.g. a
+        // turn opening with an untargeted [background ...] command). Without the space, the engine
+        // fuses the two zero-width marker tokens and only reports the second, silently dropping the
+        // very first inline action of a turn (confirmed 2026-07-20).
+        final String cmd = "${'" + vmuid + "':'start'}$ " + rawText;
         mLogger.message("Utterance with CMD Markers: " + cmd);
         synchronized (mPendingSpeechIds) {
             if (mTransport == null || !mTransport.isConnected()) {
