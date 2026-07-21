@@ -51,7 +51,9 @@ export const sceneScriptTheme = EditorView.theme(
       height: "16px",
       marginLeft: "0.35rem",
       padding: "0",
-      verticalAlign: "middle",
+      verticalAlign: "baseline",
+      position: "relative",
+      top: "-1px",
       border: "1px solid #5b8edc",
       borderRadius: "4px",
       background: "rgba(91, 142, 220, 0.15)",
@@ -89,7 +91,9 @@ export const sceneScriptTheme = EditorView.theme(
       margin: "0 0.2em",
       borderRadius: "2px",
       border: "1px solid rgba(0, 0, 0, 0.35)",
-      verticalAlign: "middle"
+      verticalAlign: "baseline",
+      position: "relative",
+      top: "1px"
     },
     // Same accent used for selected command badges in the SceneFlow graph view (SceneFlowView.svelte).
     ".cm-action-compact-selected": {
