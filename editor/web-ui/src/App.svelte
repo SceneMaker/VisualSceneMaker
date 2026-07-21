@@ -1168,6 +1168,31 @@
     persistScriptEditorHeight(selectedProjectId, scriptEditorHeight);
   }
 
+  // .panel-wide/.sceneflow-panel deliberately break out of <main>'s centered max-width using a
+  // `calc(100vw - margin)` full-bleed trick — but 100vw includes the vertical scrollbar's own
+  // width while the "50%" reference point it's combined with does not, so on any page tall
+  // enough to scroll, the breakout was consistently ~15-17px too wide, causing a spurious
+  // horizontal scrollbar even though nothing visually appears to overflow (reported 2026-07-21).
+  // Measuring the actual scrollbar width and exposing it as --scrollbar-width lets the CSS
+  // subtract exactly that gap instead of assuming it's always 0.
+  function updateScrollbarWidthVar() {
+    const width = Math.max(0, window.innerWidth - document.documentElement.clientWidth);
+    document.documentElement.style.setProperty("--scrollbar-width", `${width}px`);
+  }
+
+  onMount(() => {
+    updateScrollbarWidthVar();
+    window.addEventListener("resize", updateScrollbarWidthVar);
+    return () => window.removeEventListener("resize", updateScrollbarWidthVar);
+  });
+
+  // Recompute after switching between the landing page and the editor view (very different
+  // content heights, so the scrollbar's presence/absence — and thus this gap — can change).
+  $: {
+    void showEditor;
+    tick().then(updateScrollbarWidthVar);
+  }
+
   onMount(() => {
     const moveHandler = (event) => {
       handleVarBadgePointerMove(event);

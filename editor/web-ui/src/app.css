@@ -138,7 +138,10 @@ p {
 
 .panel-wide {
   --wide-side-margin: 0.75rem;
-  width: calc(100vw - (2 * var(--wide-side-margin)));
+  /* margin-left correctly reaches the viewport's left edge regardless of the scrollbar (which
+     only ever sits on the right) — only the width needs to subtract it, since 100vw otherwise
+     overshoots into the scrollbar's own track. */
+  width: calc(100vw - var(--scrollbar-width, 0px) - (2 * var(--wide-side-margin)));
   margin-left: calc(50% - 50vw + var(--wide-side-margin));
   margin-right: calc(50% - 50vw + var(--wide-side-margin));
   grid-column: 1 / -1;
@@ -2140,7 +2143,9 @@ a.export-link {
   --sf-gap: 0.5rem;
   --sf-panel-pad: var(--panel-pad);
   --sf-side-margin: 0.75rem;
-  --sf-viewport-width: calc(100vw - (2 * var(--sf-side-margin)));
+  /* Same scrollbar-width correction as .panel-wide above — margin-left/right (below) don't need
+     it, only the width, since the scrollbar only ever overshoots the right edge. */
+  --sf-viewport-width: calc(100vw - var(--scrollbar-width, 0px) - (2 * var(--sf-side-margin)));
   --sf-canvas-width: calc(var(--sf-viewport-width) - (2 * var(--sf-panel-pad)) - (2 * var(--sf-side-width)) - (2 * var(--sf-gap)));
   --sf-canvas-height: var(--sf-canvas-width);
   grid-column: 1 / -1;
