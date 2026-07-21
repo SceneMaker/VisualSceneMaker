@@ -1919,7 +1919,18 @@ a.export-link {
   color: var(--danger);
 }
 
-.script-editor {
+/* .script-editor-frame is the outer box App.svelte renders; .script-editor (below) is
+   ScriptEditor.svelte's OWN root element, nested directly inside it — the two are deliberately
+   separate classes now. They used to share the same "script-editor" name (harmless back when
+   neither had an explicit height), but once the frame got a resizable, explicit height (M13j),
+   .cm-editor's height:100% (below) needs a definite-height PARENT that's actually bounded to
+   that resized value — sharing one class meant .cm-editor could resolve against either
+   same-named ancestor, and it was resolving against the inner div's own auto/content-driven
+   height instead, so CodeMirror never got a real scroll boundary (reported 2026-07-21: no
+   scrollbar, cursor navigation scrolled the whole page instead, and the resize handle appeared to
+   "move" as a result). */
+.script-editor-frame {
+  position: relative;
   border: 1px solid var(--stroke);
   border-radius: 12px;
   overflow: hidden;
@@ -1927,9 +1938,31 @@ a.export-link {
   min-height: 320px;
 }
 
-.script-editor.has-error {
+.script-editor-frame.has-error {
   border-color: #a32626;
   box-shadow: 0 0 0 2px rgba(163, 38, 38, 0.15);
+}
+
+/* Bottom-right drag handle resizes the script editor's height (M13j), same visual recipe as the
+   SIA panel's own resize handle. */
+.script-editor-resize {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  width: 14px;
+  height: 14px;
+  cursor: ns-resize;
+  touch-action: none;
+  background:
+    linear-gradient(135deg, transparent 45%, #c0b8ae 45%, #c0b8ae 55%, transparent 55%),
+    linear-gradient(135deg, transparent 65%, #c0b8ae 65%, #c0b8ae 75%, transparent 75%),
+    linear-gradient(135deg, transparent 82%, #c0b8ae 82%);
+  border-radius: 0 0 8px 0;
+}
+
+.script-editor {
+  height: 100%;
+  min-height: 0;
 }
 
 .script-editor .cm-editor {

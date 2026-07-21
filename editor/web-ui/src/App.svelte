@@ -123,6 +123,9 @@
   const PLUGIN_BADGE_MIN_H = 60;
   const SIA_PANEL_STORAGE_KEY_PREFIX = 'vsm_sia_panel_';
   const SIA_PANEL_DEFAULT_HEIGHT = 420;
+  const SCRIPT_EDITOR_STORAGE_KEY_PREFIX = 'vsm_script_editor_height_';
+  const SCRIPT_EDITOR_DEFAULT_HEIGHT = 420;
+  const SCRIPT_EDITOR_MIN_HEIGHT = 320; // matches .script-editor's own CSS min-height floor
   const RUNTIME_STATE_LABELS = {
     running: "Running",
     paused: "Paused",
@@ -629,6 +632,31 @@
     persistSiaPanelPrefs(selectedProjectId, { height: siaPanelHeight });
   }
 
+  // Script editor's own resizable height (M13j) — same load/persist shape as the SIA panel's.
+  function loadScriptEditorHeight(projectId) {
+    if (!projectId) return SCRIPT_EDITOR_DEFAULT_HEIGHT;
+    const raw = localStorage.getItem(SCRIPT_EDITOR_STORAGE_KEY_PREFIX + projectId);
+    const parsed = raw ? Number(raw) : NaN;
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : SCRIPT_EDITOR_DEFAULT_HEIGHT;
+  }
+
+  async function fetchScriptEditorHeightFromServer(projectId) {
+    if (!projectId) return null;
+    try {
+      const data = await apiGet(`/api/v1/projects/${projectId}/ui-prefs`);
+      const height = Number(data?.scriptEditorHeight);
+      return Number.isFinite(height) && height > 0 ? height : null;
+    } catch {
+      return null;
+    }
+  }
+
+  function persistScriptEditorHeight(projectId, heightPx) {
+    if (!projectId) return;
+    localStorage.setItem(SCRIPT_EDITOR_STORAGE_KEY_PREFIX + projectId, String(heightPx));
+    apiPut(`/api/v1/projects/${projectId}/ui-prefs`, { uiPrefs: { scriptEditorHeight: heightPx } }).catch(() => {});
+  }
+
   function loadSiaAgent(instanceName) {
     if (!instanceName) return;
     siaLoaded = { ...siaLoaded, [instanceName]: true };
@@ -1085,12 +1113,35 @@
     persistSiaPanelState();
   }
 
+  // Script editor resize (M13j): same height-only drag pattern as the SIA panel's.
+  function startScriptEditorResize(event) {
+    if (!isPrimaryPointer(event)) return;
+    event.preventDefault();
+    event.stopPropagation();
+    scriptEditorResize = { lastClientY: event.clientY };
+  }
+
+  function handleScriptEditorResizeMove(event) {
+    if (!scriptEditorResize) return;
+    event.preventDefault();
+    const dy = event.clientY - scriptEditorResize.lastClientY;
+    scriptEditorResize.lastClientY = event.clientY;
+    scriptEditorHeight = Math.max(SCRIPT_EDITOR_MIN_HEIGHT, scriptEditorHeight + dy);
+  }
+
+  function handleScriptEditorResizeUp() {
+    if (!scriptEditorResize) return;
+    scriptEditorResize = null;
+    persistScriptEditorHeight(selectedProjectId, scriptEditorHeight);
+  }
+
   onMount(() => {
     const moveHandler = (event) => {
       handleVarBadgePointerMove(event);
       handlePluginBadgePointerMove(event);
       handlePluginBadgeResizeMove(event);
       handleSiaPanelResizeMove(event);
+      handleScriptEditorResizeMove(event);
       handleActionModalPointerMove(event);
     };
     const upHandler = (event) => {
@@ -1098,6 +1149,7 @@
       handlePluginBadgePointerUp();
       handlePluginBadgeResizeUp();
       handleSiaPanelResizeUp();
+      handleScriptEditorResizeUp();
       handleActionModalPointerUp();
     };
     document.addEventListener("mousemove", moveHandler, true);
@@ -1565,6 +1617,8 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
   let siaPanelMinHeight = 300; // reported up from SiaPanel's measured tallest control column
   let scenescriptEl; // scrolled into view when the Preview panel opens
   let siaPanelResize = null;   // { lastClientY } | null — height-only, no per-instance keying needed
+  let scriptEditorHeight = SCRIPT_EDITOR_DEFAULT_HEIGHT; // persisted per project (M13j)
+  let scriptEditorResize = null; // { lastClientY } | null
   let previewLoadProgress = {}; // { [instanceName]: 0-100 } — from vm.progress postMessage (M9)
   let previewSpeakingInstances = new Set(); // instanceNames currently speaking — gates ALL turn/emotion
                                              // Play buttons globally so overlapping speech can't be triggered
@@ -3177,6 +3231,14 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
       if (serverPrefs && selectedProjectId === _siaPid) {
         siaPanelHeight = serverPrefs.height || SIA_PANEL_DEFAULT_HEIGHT;
         localStorage.setItem(SIA_PANEL_STORAGE_KEY_PREFIX + _siaPid, JSON.stringify(serverPrefs));
+      }
+    });
+    scriptEditorHeight = loadScriptEditorHeight(selectedProjectId);
+    const _scriptEditorPid = selectedProjectId;
+    fetchScriptEditorHeightFromServer(_scriptEditorPid).then((serverHeight) => {
+      if (serverHeight && selectedProjectId === _scriptEditorPid) {
+        scriptEditorHeight = serverHeight;
+        localStorage.setItem(SCRIPT_EDITOR_STORAGE_KEY_PREFIX + _scriptEditorPid, String(serverHeight));
       }
     });
   }
@@ -17515,7 +17577,7 @@ Sentence:
             </div>
           </div>
         {/if}
-          <div class="script-editor" class:has-error={!scriptParseOk}>
+          <div class="script-editor-frame" class:has-error={!scriptParseOk} style:height="{scriptEditorHeight}px">
             {#if !selectedProject}
               <p class="muted">Select a project to edit the scene script.</p>
             {:else}
@@ -17539,6 +17601,12 @@ Sentence:
                 }}
               />
             {/if}
+            <div
+              class="script-editor-resize"
+              aria-hidden="true"
+              on:pointerdown|stopPropagation={startScriptEditorResize}
+              on:mousedown|stopPropagation={startScriptEditorResize}
+            ></div>
           </div>
           {#if semanticDebugEnabled && semanticDebug}
             <details class="semantic-debug" bind:open={semanticDebugOpen}>
