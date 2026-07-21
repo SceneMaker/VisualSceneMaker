@@ -17670,7 +17670,7 @@ Sentence:
           {/if}
         </div>
       {/if}
-      {#if sceneFlowError || runtimeError || edgeCreateMode || sceneFlowLoading || sceneFlow?.revision}
+      {#if sceneFlowError || runtimeError || edgeCreateMode || sceneFlowLoading}
         <div class="sceneflow-status">
           <div class="sceneflow-status-left">
             {#if sceneFlowError}
@@ -17686,11 +17686,6 @@ Sentence:
             {/if}
             {#if sceneFlowLoading}
               <span class="muted">Loading...</span>
-            {/if}
-          </div>
-          <div class="sceneflow-status-right">
-            {#if sceneFlow?.revision}
-              <span class="muted">rev {sceneFlow.revision}</span>
             {/if}
           </div>
         </div>

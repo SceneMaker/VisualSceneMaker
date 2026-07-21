@@ -2377,7 +2377,6 @@ a.export-link {
 .sceneflow-status {
   margin-top: 0.8rem;
   padding: 0.45rem 0;
-  border-top: 1px solid var(--stroke);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -2392,13 +2391,6 @@ a.export-link {
   gap: 0.6rem;
   flex: 1 1 auto;
   flex-wrap: wrap;
-}
-
-.sceneflow-status-right {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  flex: 0 0 auto;
 }
 
 .sceneflow-status .error {
