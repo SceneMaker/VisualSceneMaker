@@ -1508,19 +1508,22 @@ a.export-link {
   height: 16px;
 }
 
-.script-semantic-mode {
+/* Tight gap (rather than the toolbar's usual 0.6rem between buttons) so it's visually clear the
+   view-mode select belongs to the Semantic Analysis button beside it. */
+.script-semantic-group {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  padding: 0.1rem 0.25rem;
+  gap: 3px;
 }
 
-.script-semantic-mode select {
+.script-semantic-mode-select {
+  height: 34px; /* matches .panel-save's own fixed height */
+  box-sizing: border-box;
   border-radius: 8px;
   border: 1px solid var(--stroke);
   background: #ffffff;
   color: var(--ink);
-  padding: 0.2rem 0.45rem;
+  padding: 0 0.45rem;
   font-size: 0.82rem;
 }
 

@@ -126,6 +126,7 @@
   const SCRIPT_EDITOR_STORAGE_KEY_PREFIX = 'vsm_script_editor_height_';
   const SCRIPT_EDITOR_DEFAULT_HEIGHT = 420;
   const SCRIPT_EDITOR_MIN_HEIGHT = 320; // matches .script-editor's own CSS min-height floor
+  const SEMANTIC_MODE_STORAGE_KEY_PREFIX = 'vsm_semantic_mode_';
   const RUNTIME_STATE_LABELS = {
     running: "Running",
     paused: "Paused",
@@ -655,6 +656,38 @@
     if (!projectId) return;
     localStorage.setItem(SCRIPT_EDITOR_STORAGE_KEY_PREFIX + projectId, String(heightPx));
     apiPut(`/api/v1/projects/${projectId}/ui-prefs`, { uiPrefs: { scriptEditorHeight: heightPx } }).catch(() => {});
+  }
+
+  // Semantic Analysis view mode (M13k) — "off" is the default for a project that's never set one
+  // (no analysis necessarily done yet), but once chosen it's remembered per project.
+  function isSemanticModeValue(v) {
+    return v === "off" || v === "basic" || v === "full";
+  }
+
+  function loadSemanticMode(projectId) {
+    if (!projectId) return "off";
+    const raw = localStorage.getItem(SEMANTIC_MODE_STORAGE_KEY_PREFIX + projectId);
+    return isSemanticModeValue(raw) ? raw : "off";
+  }
+
+  async function fetchSemanticModeFromServer(projectId) {
+    if (!projectId) return null;
+    try {
+      const data = await apiGet(`/api/v1/projects/${projectId}/ui-prefs`);
+      return isSemanticModeValue(data?.semanticMode) ? data.semanticMode : null;
+    } catch {
+      return null;
+    }
+  }
+
+  function persistSemanticMode(projectId, mode) {
+    if (!projectId) return;
+    localStorage.setItem(SEMANTIC_MODE_STORAGE_KEY_PREFIX + projectId, mode);
+    apiPut(`/api/v1/projects/${projectId}/ui-prefs`, { uiPrefs: { semanticMode: mode } }).catch(() => {});
+  }
+
+  function handleSemanticModeChange() {
+    persistSemanticMode(selectedProjectId, semanticMode);
   }
 
   function loadSiaAgent(instanceName) {
@@ -1345,7 +1378,9 @@
   let scriptEditorRef;
   let semanticDoc = null;
   let semanticAnnotations = [];
-  let semanticMode = "full";
+  let semanticMode = "off"; // "off" until a project's persisted choice loads (M13k); no analysis
+                            // has necessarily been run yet, so defaulting to a highlight mode
+                            // would show nothing meaningful anyway.
   let semanticPanelOpen = false;
   let semanticLoading = false;
   let semanticAnalyzeBusy = false;
@@ -3239,6 +3274,14 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
       if (serverHeight && selectedProjectId === _scriptEditorPid) {
         scriptEditorHeight = serverHeight;
         localStorage.setItem(SCRIPT_EDITOR_STORAGE_KEY_PREFIX + _scriptEditorPid, String(serverHeight));
+      }
+    });
+    semanticMode = loadSemanticMode(selectedProjectId);
+    const _semanticModePid = selectedProjectId;
+    fetchSemanticModeFromServer(_semanticModePid).then((serverMode) => {
+      if (serverMode && selectedProjectId === _semanticModePid) {
+        semanticMode = serverMode;
+        localStorage.setItem(SEMANTIC_MODE_STORAGE_KEY_PREFIX + _semanticModePid, serverMode);
       }
     });
   }
@@ -17270,24 +17313,29 @@ Sentence:
               <IconDocument className="icon" />
               Title Generator
             </button>
-            <button
-              type="button"
-              class="panel-save script-semantic"
-              on:click={toggleSemanticPanel}
-              disabled={!selectedProject || semanticAnalyzeBusy || semanticLoading}
-              title="Analyze semantic roles, dialogue acts, and theme-rheme"
-            >
-              <IconPuzzle className="icon" />
-              Semantic Analysis
-            </button>
-            <label class="script-semantic-mode">
-              <span class="muted">View</span>
-              <select bind:value={semanticMode} disabled={!selectedProject || semanticAnalyzeBusy}>
+            <div class="script-semantic-group">
+              <button
+                type="button"
+                class="panel-save script-semantic"
+                on:click={toggleSemanticPanel}
+                disabled={!selectedProject || semanticAnalyzeBusy || semanticLoading}
+                title="Analyze semantic roles, dialogue acts, and theme-rheme"
+              >
+                <IconPuzzle className="icon" />
+                Semantic Analysis
+              </button>
+              <select
+                class="script-semantic-mode-select"
+                bind:value={semanticMode}
+                on:change={handleSemanticModeChange}
+                disabled={!selectedProject || semanticAnalyzeBusy}
+                title="Semantic highlight view"
+              >
                 <option value="off">Off</option>
                 <option value="basic">Basic</option>
                 <option value="full">Full</option>
               </select>
-            </label>
+            </div>
             {#if sceneTitleSuggestions.size > 0}
               <button type="button" class="ghost" on:click={applyAllSceneTitleSuggestions}>
                 Accept all
