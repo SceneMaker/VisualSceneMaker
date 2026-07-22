@@ -69,14 +69,17 @@ export const sceneScriptTheme = EditorView.theme(
       color: "#b8b2a3",
       cursor: "default"
     },
+    // Same teal used for "action" type command badges in the SceneFlow graph view
+    // (SceneFlowView.svelte's CMD_TYPE_COLORS.action = "#007B76") — kept as a literal here since
+    // that file's colors aren't exported as a shared module; update both if it ever changes.
     ".cm-action-compact": {
       display: "inline-flex",
       alignItems: "center",
       gap: "0.2em",
       padding: "0 0.1rem",
       borderRadius: "3px",
-      background: "rgba(91, 142, 220, 0.15)",
-      color: "#3d5f96",
+      background: "rgba(0, 123, 118, 0.15)",
+      color: "#007B76",
       fontFamily: "inherit",
       fontSize: "1em",
       cursor: "grab"

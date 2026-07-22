@@ -2830,6 +2830,17 @@ a.export-link {
   font-size: 1.05rem;
 }
 
+/* Section headers here ("Start nodes", "Types", "Variables", "Commands") inherited the default
+   text color (near-black) since .definition-header/h4 declare no color of their own — match the
+   sceneflow-blocks panel's own section titles (.block-section-title, "Agents"/"Scenes") instead,
+   for visual consistency between the two side panels (reported 2026-07-23). Scoped to
+   .sceneflow-inspector rather than changing .definition-header globally, since that class is
+   reused in unrelated panels elsewhere. text-transform already comes from the parent
+   .definition-header rule (inherited), so only color needs setting here. */
+.sceneflow-inspector .definition-header h4 {
+  color: var(--muted);
+}
+
 .node-header {
   --node-header-height: 40px;
   display: flex;
