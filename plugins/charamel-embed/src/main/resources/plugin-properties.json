@@ -134,10 +134,11 @@
             "type": "action",
             "summary": "Set the page backdrop shown behind the transparent avatar",
             "description": "Usable from a SceneFlow PlayAction ([Xenia background color='#1a2a6c']) or inline scene marker. Any CSS color string.",
+            "uiCategory": "background",
             "params": [
                 {
                     "name": "color",
-                    "type": "string",
+                    "type": "color",
                     "required": true,
                     "description": "CSS color, e.g. '#1a2a6c' or 'black'"
                 }
@@ -148,6 +149,7 @@
             "type": "action",
             "summary": "Play a named emotion on the avatar (vm.setEmotion)",
             "description": "Generic form: [Xenia emotion type='happy' intensity='0.8' hold='1500']. Convenience aliases exist for each type so [Xenia happy] also works. Types: happy, sad, angry, tear, disgust, surprise, smile, excited, fear, bored, relaxed.",
+            "uiCategory": "emotion",
             "params": [
                 {
                     "name": "type",

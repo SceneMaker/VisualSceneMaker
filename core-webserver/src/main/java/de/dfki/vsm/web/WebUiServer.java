@@ -16,6 +16,7 @@ import de.dfki.vsm.model.project.property.ProjectProperty;
 import de.dfki.vsm.model.project.property.value.ProjectValueProperty;
 import de.dfki.vsm.model.project.property.value.ValueTYPE;
 import de.dfki.vsm.model.config.ConfigFeature;
+import de.dfki.vsm.model.plugin.PluginCommand;
 import de.dfki.vsm.model.scenescript.SceneObject;
 import de.dfki.vsm.model.scenescript.ScriptDiagnostics;
 import de.dfki.vsm.model.scenescript.SceneScript;
@@ -183,6 +184,7 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         private final JSONObject pluginMeta;      // plugin.id, plugin.name, plugin.description, plugin.tags
         private final JSONObject categories;      // categories.primary, categories.secondary
         private final JSONArray commands;         // commands array
+        private final List<PluginCommand> parsedCommands; // typed view of the same commands array
         private final JSONObject variables;       // variables.writes, variables.reads
         final String specVersion;                 // from specVersion field in plugin-properties.json
         private final boolean previewCapable;     // from top-level previewCapable field in plugin-properties.json
@@ -203,9 +205,17 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
             this.pluginMeta = pluginMeta;
             this.categories = categories;
             this.commands = commands;
+            this.parsedCommands = PluginCommand.fromJsonArray(commands);
             this.variables = variables;
             this.specVersion = specVersion != null ? specVersion : "";
             this.previewCapable = previewCapable;
+        }
+
+        /** Typed view of {@link #commands}, for consumers that want validated fields instead of
+         *  raw JSON (e.g. a future command-dispatch validator) rather than a wire-format change —
+         *  {@link #toInterfaceJson} still serializes the raw {@link #commands} array untouched. */
+        List<PluginCommand> getParsedCommands() {
+            return parsedCommands;
         }
 
         /**

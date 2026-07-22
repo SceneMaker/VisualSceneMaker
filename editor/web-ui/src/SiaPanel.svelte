@@ -1,13 +1,42 @@
 <script>
   import { onMount, onDestroy } from "svelte";
-  import BackgroundColorEditor from "./BackgroundColorEditor.svelte";
-  import ParameterEnvelopeEditor from "./ParameterEnvelopeEditor.svelte";
-  import { EMOTION_TYPES } from "./emotionTypes.js";
+  import ActionForm from "./ActionForm.svelte";
+
+  // Display title for a command's declared uiCategory (plugin-properties.json).
+  const CATEGORY_LABELS = { background: "Background", emotion: "Emotion", gesture: "Animation", camera: "Camera" };
+  // The SIA preview is a curated character-preview surface, not a general command palette — only
+  // these categories make sense here (bare actions like "stop"/"clearemotion" with no uiCategory
+  // are authored via the PlayAction command helper or Ctrl+I's InsertActionDialog instead, both of
+  // which already show every declared command). Animation/Camera are reserved slots: no plugin
+  // declares uiCategory "gesture" or "camera" yet, so those columns simply won't appear until one
+  // does — no separate "coming soon" placeholder needed. Fixed order (not first-seen) keeps the
+  // layout deterministic regardless of how a plugin lists its commands.
+  const SIA_VISIBLE_CATEGORIES = ["background", "emotion", "gesture", "camera"];
+  function categoryLabel(category) {
+    return CATEGORY_LABELS[category] || (category.charAt(0).toUpperCase() + category.slice(1));
+  }
+
+  // Groups a plugin's declared commands by uiCategory, restricted to SIA_VISIBLE_CATEGORIES and
+  // ordered to match it — this is what replaced the old hardcoded Background/Emotion/Animation
+  // columns: any previewCapable plugin's own commands[] now drives the panel directly, no
+  // per-action-type Svelte component needed.
+  function groupCommandsByCategory(commands) {
+    const groups = {};
+    for (const cmd of commands || []) {
+      const category = cmd?.uiCategory;
+      if (!category || !SIA_VISIBLE_CATEGORIES.includes(category)) continue;
+      if (!groups[category]) groups[category] = [];
+      groups[category].push(cmd);
+    }
+    return SIA_VISIBLE_CATEGORIES
+      .filter((category) => groups[category]?.length)
+      .map((category) => ({ category, commands: groups[category] }));
+  }
 
   export let projectId = null;
   export let apiGet;
   export let apiPost;
-  export let agents = [];        // [{agentName, instanceName}] — previewCapableAgents
+  export let agents = [];        // [{agentName, instanceName, commands}] — previewCapableAgents
   export let loaded = {};        // {[instanceName]: boolean}
   export let loadProgress = {};  // {[instanceName]: 0-100} — from vm.progress postMessage
   export let anySpeaking = false;
@@ -25,35 +54,35 @@
   export let onInsertAtCursor = null; // (instanceName, agentName, commandBody) => void
 
   // Avatar width follows a fixed 2:3 (width:height) ratio, computed from the panel height rather
-  // than CSS aspect-ratio — plain arithmetic, one less moving CSS mechanism to reason about.
-  const CARD_CHROME_HEIGHT = 50; // card header + body padding, approximate
+  // than CSS aspect-ratio — plain arithmetic, one less moving CSS mechanism to reason about. This
+  // is only an ESTIMATE (CARD_CHROME_HEIGHT is approximate) used solely to size the avatar's own
+  // width attractively — it must NOT be used as the "available height" for the column-wrap
+  // decision below, since any drift between this estimate and the real rendered height caused the
+  // JS column-count prediction to diverge from what CSS actually wraps to (reported 2026-07-23:
+  // .sia-columns reserved width for 2 columns while CSS rendered only 1, leaving a blank gap).
+  const CARD_CHROME_HEIGHT = 64; // card header (now with 32px icon buttons) + body padding, approximate
   $: avatarHeight = Math.max(0, height - CARD_CHROME_HEIGHT);
   $: avatarWidth = Math.round(avatarHeight * (2 / 3));
 
-  // .sia-columns wraps Background/Emotion/Animation into new columns (rather than scrolling) once
+  // .sia-columns wraps a plugin's category columns into new columns (rather than scrolling) once
   // they don't fit the avatar's height — CSS flex-wrap handles that placement, but a shrink-to-fit
   // ancestor (.sia-card, sized by flex-basis:auto) doesn't reliably grow to match the wrapped
   // result across browsers (reported 2026-07-21 — the second/third column was clipped by
   // .sia-card's own overflow:hidden instead of growing the card). Computing the same greedy
-  // column-packing in JS and applying it as an explicit width sidesteps that ambiguity entirely.
+  // column-packing in JS and applying it as an explicit width sidesteps that ambiguity entirely —
+  // but only if it packs against the SAME available height CSS itself wraps against, hence
+  // measuredAvatarHeight (real clientHeight, bound below) rather than the CARD_CHROME_HEIGHT
+  // estimate above. Falls back to the estimate for the one frame before the binding settles.
   // Measuring each column's own height is safe here (unlike the earlier sticky-header case) since
   // nothing feeds this measurement back into changing that column's own size.
   const SIA_COLUMN_WIDTH = 220;
   const SIA_COLUMN_GAP = 10; // ~0.6rem
-  let backgroundSectionHeight = 0;
-  let emotionSectionHeight = 0;
-  let animationSectionHeight = 0;
-  $: columnsNeeded = computeColumnsNeeded(
-    [backgroundSectionHeight, emotionSectionHeight, animationSectionHeight],
-    avatarHeight
-  );
-  $: columnsWidth = columnsNeeded * SIA_COLUMN_WIDTH + Math.max(0, columnsNeeded - 1) * SIA_COLUMN_GAP;
-  $: measuredMinHeight = Math.max(
-    CARD_CHROME_HEIGHT,
-    backgroundSectionHeight,
-    emotionSectionHeight,
-    animationSectionHeight
-  );
+  let measuredAvatarHeight = 0;
+  // {[`${instanceName}:${category}`]: heightPx} — one entry per rendered column, replacing the
+  // old three fixed background/emotion/animation variables now that the column list is dynamic
+  // (driven by whatever categories an agent's own commands declare).
+  let columnHeights = {};
+  $: measuredMinHeight = Math.max(CARD_CHROME_HEIGHT, ...Object.values(columnHeights), 0);
 
   function computeColumnsNeeded(sectionHeights, available) {
     if (!(available > 0)) return sectionHeights.length || 1;
@@ -71,6 +100,30 @@
     return columns;
   }
 
+  // Each agent's own columns pack independently — columnHeights is one flat map shared across
+  // every card (keyed "instanceName:category"), so packing against ALL of Object.values(...) at
+  // once summed every OTHER agent's category heights into this agent's own wrap decision, wildly
+  // over-reserving width for cards that only have 1-2 real categories (reported 2026-07-23: a
+  // small panel showed columnsWidth sized for 4 columns when each card only ever has at most 2).
+  // Filtering to this instance's own keys first is what actually scopes the packing per-card.
+  //
+  // This MUST be a `$:` block computing a plain object, not a plain function called from the
+  // template (`{columnsWidthFor(agent.instanceName)}`) — Svelte's reactivity is based on static
+  // analysis of which reactive variables a `$:` statement's OWN source text references; a
+  // template expression that only textually mentions `agent.instanceName` never re-runs when
+  // columnHeights/measuredAvatarHeight change deep inside a separately-defined function's body,
+  // so the width silently froze at whatever it computed on the very first render (before any
+  // column had actually been measured yet) and never updated again (reported 2026-07-23, same
+  // session as the per-agent scoping fix above — a second, independent cause of the same symptom).
+  $: columnsWidthByInstance = Object.fromEntries(agents.map((a) => {
+    const prefix = `${a.instanceName}:`;
+    const heights = Object.entries(columnHeights)
+      .filter(([key]) => key.startsWith(prefix))
+      .map(([, h]) => h);
+    const n = computeColumnsNeeded(heights, measuredAvatarHeight || avatarHeight);
+    return [a.instanceName, n * SIA_COLUMN_WIDTH + Math.max(0, n - 1) * SIA_COLUMN_GAP];
+  }));
+
   // Per-agent avatar state, mirroring what CharacterPreviewPanel used to track per floating
   // window (M9) minus any position/size/z-order — undefined means "never attempted", so unload
   // (which resets an entry back to undefined) makes the next Load redo the full sequence rather
@@ -80,8 +133,15 @@
   let loadingFlags = {};
   let iframeEls = {};
   let wasSuspended = false;
-  let backgroundCommands = {};
-  let emotionCommands = {};
+  // {[`${instanceName}:${category}`]: commandText} — the currently built command for whichever
+  // command is selected in that category's column (selectedCommand below picks which one, for
+  // categories with more than one command, e.g. a future gesture list).
+  let commandTexts = {};
+  // {[`${instanceName}:${category}`]: commandName} — which of a category's commands is active;
+  // undefined means "not chosen yet", defaulted to the category's first command at render time.
+  let selectedCommand = {};
+  let testingCategory = {}; // {[`${instanceName}:${category}`]: boolean}
+  let categoryTestErrors = {}; // {[`${instanceName}:${category}`]: string}
   let mutedFlags = {}; // {[instanceName]: boolean} — client-side only, see vm-adapter.js's mute section
 
   // The server broadcasts every speak/action command identically to every connected preview
@@ -95,58 +155,50 @@
     iframeEls[instanceName]?.contentWindow?.postMessage({ vsmMute: next }, "*");
   }
 
+  function columnKey(instanceName, category) {
+    return `${instanceName}:${category}`;
+  }
+
   // Root cause of a severe hang (reported 2026-07-20/21): ParameterEnvelopeEditor/
-  // BackgroundColorEditor's own `$: if (currentCommand) onChange?.(currentCommand);` treats the
-  // onChange PROP REFERENCE as a dependency, not just currentCommand's value — so an inline
-  // onChange that unconditionally reassigns *Commands recreates a new closure every call, which
-  // re-triggers that reactive statement, which reassigns *Commands again, forever, synchronously,
-  // never yielding back to the browser. Guarding the reassignment so it's a no-op once the value
-  // has actually settled breaks the cycle after one pass instead of looping.
-  function setBackgroundCommand(instanceName, cmd) {
-    if (backgroundCommands[instanceName] === cmd) return;
-    backgroundCommands = { ...backgroundCommands, [instanceName]: cmd };
+  // BackgroundColorEditor's own `$: if (currentCommand) onChange?.(currentCommand);` (now also
+  // in ActionForm) treats the onChange PROP REFERENCE as a dependency, not just currentCommand's
+  // value — so an inline onChange that unconditionally reassigns state recreates a new closure
+  // every call, which re-triggers that reactive statement, which reassigns state again, forever,
+  // synchronously, never yielding back to the browser. Guarding the reassignment so it's a no-op
+  // once the value has actually settled breaks the cycle after one pass instead of looping.
+  function setCommandText(instanceName, category, cmd) {
+    const key = columnKey(instanceName, category);
+    if (commandTexts[key] === cmd) return;
+    commandTexts = { ...commandTexts, [key]: cmd };
   }
 
-  function setEmotionCommand(instanceName, cmd) {
-    if (emotionCommands[instanceName] === cmd) return;
-    emotionCommands = { ...emotionCommands, [instanceName]: cmd };
+  function activeCommandName(instanceName, category, commands) {
+    const key = columnKey(instanceName, category);
+    const selected = selectedCommand[key];
+    return (selected && commands.some((c) => c.name === selected)) ? selected : commands[0]?.name;
   }
 
-  // Play buttons live in the column header (beside "Background"/"Emotion") rather than at the
-  // bottom of each sub-editor, so hide those components' own built-in test row (below, scoped to
-  // .sia-column so ActionCommandModal's own use of the same components is unaffected) and drive
-  // the same testActionFor(...) call from here instead, using the command already captured via
-  // setBackgroundCommand/setEmotionCommand.
-  let testingBackground = {};
-  let testingEmotion = {};
-  let backgroundTestErrors = {};
-  let emotionTestErrors = {};
+  function selectCommand(instanceName, category, name) {
+    selectedCommand = { ...selectedCommand, [columnKey(instanceName, category)]: name };
+  }
 
-  async function playBackground(instanceName) {
-    const cmd = backgroundCommands[instanceName];
-    if (!cmd || testingBackground[instanceName] || isTestDisabled(instanceName)) return;
-    testingBackground = { ...testingBackground, [instanceName]: true };
-    backgroundTestErrors = { ...backgroundTestErrors, [instanceName]: "" };
+  // Play button lives in the column header (beside the category title) rather than at the bottom
+  // of ActionForm's own sub-editor — hides that component's own built-in test row (below, scoped
+  // to .sia-column so InsertActionDialog's own use of ActionForm/ParameterEnvelopeEditor is
+  // unaffected) and drives the same testActionFor(...) call from here instead, using the command
+  // already captured via setCommandText.
+  async function playCategory(instanceName, category) {
+    const key = columnKey(instanceName, category);
+    const cmd = commandTexts[key];
+    if (!cmd || testingCategory[key] || isTestDisabled(instanceName)) return;
+    testingCategory = { ...testingCategory, [key]: true };
+    categoryTestErrors = { ...categoryTestErrors, [key]: "" };
     try {
       await testActionFor(instanceName, cmd);
     } catch (err) {
-      backgroundTestErrors = { ...backgroundTestErrors, [instanceName]: err?.message || "Failed to test" };
+      categoryTestErrors = { ...categoryTestErrors, [key]: err?.message || "Failed to test" };
     } finally {
-      testingBackground = { ...testingBackground, [instanceName]: false };
-    }
-  }
-
-  async function playEmotion(instanceName) {
-    const cmd = emotionCommands[instanceName];
-    if (!cmd || testingEmotion[instanceName] || isTestDisabled(instanceName)) return;
-    testingEmotion = { ...testingEmotion, [instanceName]: true };
-    emotionTestErrors = { ...emotionTestErrors, [instanceName]: "" };
-    try {
-      await testActionFor(instanceName, cmd);
-    } catch (err) {
-      emotionTestErrors = { ...emotionTestErrors, [instanceName]: err?.message || "Failed to test" };
-    } finally {
-      testingEmotion = { ...testingEmotion, [instanceName]: false };
+      testingCategory = { ...testingCategory, [key]: false };
     }
   }
 
@@ -258,11 +310,11 @@
               aria-label={mutedFlags[agent.instanceName] ? "Unmute audio in this preview" : "Mute audio in this preview"}
             >
               {#if mutedFlags[agent.instanceName]}
-                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 9.75 19.5 12m0 0 2.25 2.25M19.5 12l2.25-2.25M19.5 12l-2.25 2.25m-10.5-6 4.72-4.72a.75.75 0 0 1 1.28.53v15.88a.75.75 0 0 1-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.009 9.009 0 0 1 2.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75Z" />
                 </svg>
               {:else}
-                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M19.114 5.636a9 9 0 0 1 0 12.728M16.463 8.288a5.25 5.25 0 0 1 0 7.424M6.75 8.25l4.72-4.72a.75.75 0 0 1 1.28.53v15.88a.75.75 0 0 1-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.009 9.009 0 0 1 2.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75Z" />
                 </svg>
               {/if}
@@ -279,7 +331,7 @@
           {/if}
         </div>
         <div class="sia-card-body">
-          <div class="sia-avatar" style:width="{avatarWidth}px">
+          <div class="sia-avatar" style:width="{avatarWidth}px" bind:clientHeight={measuredAvatarHeight}>
             {#if !isLoaded}
               <div class="sia-avatar-placeholder"></div>
             {:else if suspended}
@@ -300,80 +352,57 @@
               <div class="sia-avatar-message">No preview page available.</div>
             {/if}
           </div>
-          <div class="sia-columns" style:width="{columnsWidth}px">
-            <div class="sia-column" bind:clientHeight={backgroundSectionHeight}>
-              <div class="sia-column-header">
-                <span>Background</span>
+          <div class="sia-columns" style:width="{columnsWidthByInstance[agent.instanceName]}px">
+            {#each groupCommandsByCategory(agent.commands) as group (group.category)}
+              {@const key = columnKey(agent.instanceName, group.category)}
+              {@const activeName = activeCommandName(agent.instanceName, group.category, group.commands)}
+              {@const activeSchema = group.commands.find((c) => c.name === activeName) || group.commands[0]}
+              <div class="sia-column" bind:clientHeight={columnHeights[key]}>
+                <div class="sia-column-header">
+                  <span>{categoryLabel(group.category)}</span>
+                  <button
+                    type="button"
+                    class="sia-column-play"
+                    disabled={!commandTexts[key] || isTestDisabled(agent.instanceName) || testingCategory[key]}
+                    title={isTestDisabled(agent.instanceName) ? "Character isn't loaded yet" : "Play on preview"}
+                    aria-label="Play on preview"
+                    on:click={() => playCategory(agent.instanceName, group.category)}
+                  >
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M8 6l10 6-10 6V6z" /></svg>
+                  </button>
+                </div>
+                {#if group.commands.length > 1}
+                  <select
+                    class="sia-column-command-select"
+                    value={activeName}
+                    on:change={(e) => selectCommand(agent.instanceName, group.category, e.target.value)}
+                  >
+                    {#each group.commands as cmd}
+                      <option value={cmd.name}>{cmd.summary || cmd.name}</option>
+                    {/each}
+                  </select>
+                {/if}
+                {#if activeSchema}
+                  <ActionForm
+                    schema={activeSchema}
+                    disabled={isTestDisabled(agent.instanceName)}
+                    onTest={(cmd) => testActionFor(agent.instanceName, cmd)}
+                    onChange={(cmd) => setCommandText(agent.instanceName, group.category, cmd)}
+                  />
+                {/if}
+                {#if categoryTestErrors[key]}
+                  <span class="sia-column-error">{categoryTestErrors[key]}</span>
+                {/if}
                 <button
                   type="button"
-                  class="sia-column-play"
-                  disabled={!backgroundCommands[agent.instanceName] || isTestDisabled(agent.instanceName) || testingBackground[agent.instanceName]}
-                  title={isTestDisabled(agent.instanceName) ? "Character isn't loaded yet" : "Play on preview"}
-                  aria-label="Play on preview"
-                  on:click={() => playBackground(agent.instanceName)}
+                  class="sia-insert-btn"
+                  disabled={!commandTexts[key]}
+                  on:click={() => onInsertAtCursor?.(agent.instanceName, agent.agentName, commandTexts[key])}
                 >
-                  <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor" aria-hidden="true"><path d="M8 6l10 6-10 6V6z" /></svg>
+                  Insert at cursor
                 </button>
               </div>
-              <BackgroundColorEditor
-                disabled={isTestDisabled(agent.instanceName)}
-                onTest={(cmd) => testActionFor(agent.instanceName, cmd)}
-                onChange={(cmd) => setBackgroundCommand(agent.instanceName, cmd)}
-              />
-              {#if backgroundTestErrors[agent.instanceName]}
-                <span class="sia-column-error">{backgroundTestErrors[agent.instanceName]}</span>
-              {/if}
-              <button
-                type="button"
-                class="sia-insert-btn"
-                disabled={!backgroundCommands[agent.instanceName]}
-                on:click={() => onInsertAtCursor?.(agent.instanceName, agent.agentName, backgroundCommands[agent.instanceName])}
-              >
-                Insert at cursor
-              </button>
-            </div>
-            <div class="sia-column" bind:clientHeight={emotionSectionHeight}>
-              <div class="sia-column-header">
-                <span>Emotion</span>
-                <button
-                  type="button"
-                  class="sia-column-play"
-                  disabled={!emotionCommands[agent.instanceName] || isTestDisabled(agent.instanceName) || testingEmotion[agent.instanceName]}
-                  title={isTestDisabled(agent.instanceName) ? "Character isn't loaded yet" : "Play on preview"}
-                  aria-label="Play on preview"
-                  on:click={() => playEmotion(agent.instanceName)}
-                >
-                  <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor" aria-hidden="true"><path d="M8 6l10 6-10 6V6z" /></svg>
-                </button>
-              </div>
-              <ParameterEnvelopeEditor
-                actionName="emotion"
-                typeOptions={EMOTION_TYPES}
-                disabled={isTestDisabled(agent.instanceName)}
-                onTest={(cmd) => testActionFor(agent.instanceName, cmd)}
-                onChange={(cmd) => setEmotionCommand(agent.instanceName, cmd)}
-              />
-              {#if emotionTestErrors[agent.instanceName]}
-                <span class="sia-column-error">{emotionTestErrors[agent.instanceName]}</span>
-              {/if}
-              <button
-                type="button"
-                class="sia-insert-btn"
-                disabled={!emotionCommands[agent.instanceName]}
-                on:click={() => onInsertAtCursor?.(agent.instanceName, agent.agentName, emotionCommands[agent.instanceName])}
-              >
-                Insert at cursor
-              </button>
-            </div>
-            <div class="sia-column sia-column-disabled" bind:clientHeight={animationSectionHeight}>
-              <div class="sia-column-header">
-                <span>Animation</span>
-                <button type="button" class="sia-column-play" disabled title="Coming soon" aria-label="Coming soon">
-                  <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor" aria-hidden="true"><path d="M8 6l10 6-10 6V6z" /></svg>
-                </button>
-              </div>
-              <div class="sia-column-todo">Coming soon</div>
-            </div>
+            {/each}
           </div>
           {#if !isLoaded}
             <div class="sia-load-overlay">
@@ -403,6 +432,14 @@
     background: #ffffff;
     box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
     overflow: hidden;
+    /* .script-sticky-header (App.svelte) is a CSS grid, whose default justify-items:stretch
+       makes this wrapper fill the whole grid track regardless of how much width its cards
+       actually need — a tall panel (wide 2:3 avatars) then leaves a large empty band to the
+       right of the last card (reported 2026-07-22). Shrink-to-fit the content instead; cap at
+       100% so it still never overflows the row when enough cards ARE present to need the full
+       width — .sia-panel-scroll's own overflow-x:auto takes over beyond that. */
+    width: fit-content;
+    max-width: 100%;
   }
 
   .sia-panel-scroll {
@@ -449,12 +486,17 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
   }
 
   .sia-card-mute,
   .sia-card-unload {
-    width: 18px;
-    height: 18px;
+    width: 32px;
+    height: 32px;
     flex-shrink: 0;
     background: transparent;
     border: 1px solid var(--stroke);
@@ -464,7 +506,7 @@
     align-items: center;
     justify-content: center;
     padding: 0;
-    font-size: 0.68rem;
+    font-size: 1.1rem;
     line-height: 1;
     color: var(--muted);
   }
@@ -562,23 +604,23 @@
     align-items: center;
     justify-content: space-between;
     gap: 0.4rem;
-    font-size: 0.78rem;
-    font-weight: 600;
+    font-size: 0.85rem;
+    font-weight: 700;
     color: var(--muted);
     text-transform: uppercase;
-    letter-spacing: 0.03em;
+    letter-spacing: 0.05em;
   }
 
   /* Play button lives beside the column heading rather than at the bottom of the sub-editor —
      hides that component's own built-in test row (below) and drives testActionFor from here
-     instead, scoped to .sia-column so ActionCommandModal's own use of these components (where the
+     instead, scoped to .sia-column so InsertActionDialog's own use of these components (where the
      bottom placement still makes sense) is unaffected. */
   .sia-column-play {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 20px;
-    height: 20px;
+    width: 32px;
+    height: 32px;
     padding: 0;
     flex-shrink: 0;
     border-radius: var(--radius-sm);
@@ -599,23 +641,18 @@
   }
 
   .sia-column :global(.pev-test-row),
-  .sia-column :global(.bce-test-row) {
+  .sia-column :global(.bce-test-row),
+  .sia-column :global(.af-test-row) {
     display: none;
+  }
+
+  .sia-column-command-select {
+    font-size: 0.8rem;
   }
 
   .sia-column-error {
     font-size: 0.72rem;
     color: var(--danger);
-  }
-
-  .sia-column-disabled {
-    opacity: 0.5;
-  }
-
-  .sia-column-todo {
-    font-size: 0.78rem;
-    color: var(--muted);
-    font-style: italic;
   }
 
   .sia-insert-btn {

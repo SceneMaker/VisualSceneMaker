@@ -21,7 +21,9 @@
   import IconPerson from "./icons/IconPerson.svelte";
   import VarBadge from './VarBadge.svelte';
   import SiaPanel from './SiaPanel.svelte';
-  import ActionCommandModal from './ActionCommandModal.svelte';
+  import InsertActionDialog from './InsertActionDialog.svelte';
+  import ActionParamField from './ActionParamField.svelte';
+  import { EMOTION_TYPES } from './emotionTypes.js';
 
   // sessionStorage is tab-specific and survives page reloads (including force-reload)
   // but NOT tab close+reopen. This ensures each browser tab has a distinct identity,
@@ -735,50 +737,66 @@
     }
   }
 
-  // M11/M13d/M13f/M13g: double-click on plain turn text -> "Insert emotion"/"Insert background"/
-  // "Insert clearEmotion"/"Insert pause" popup; double-click on an existing action span jumps
-  // straight into editing it (no right-click anywhere else in the app, so this stays double-click
-  // rather than a context menu, and no intermediate Edit/Delete popup — click-to-mark + Backspace
-  // handles deletion instead, see ScriptEditor.svelte). Resolves the turn under the cursor (M9) to
-  // a previewCapable character; if that fails, let the browser's default double-click word
-  // selection happen instead.
-  const SUPPORTED_ACTION_TYPES = ["emotion", "background", "clearEmotion", "pause"];
-
-  let scriptContextMenu = null;  // { x, y, offset, speaker } | null — only ever the "insert" popup now
-  // x/y/w/h null until first drag — the modal starts centered (CSS flex) and switches to an
+  // Ctrl+I opens the extended insert dialog at the cursor (any agent, any declared command);
+  // double-click on an existing action span still jumps straight into editing it in place (no
+  // right-click anywhere else in the app, and no intermediate Edit/Delete popup — click-to-mark +
+  // Backspace handles deletion instead, see ScriptEditor.svelte). Double-clicking plain turn text
+  // no longer opens anything — that's Ctrl+I's job now.
+  let insertActionDialogState = null;
+  // { mode, offset, turnSpeaker, agents, initialTarget, initialCommandName, initialValues,
+  //   useRawFallback, initialRawBody, editingSpan, x, y, w, h } | null
+  // x/y/w/h null until first drag — the dialog starts centered (CSS flex) and switches to an
   // absolute, viewport-relative position (like the SIA preview panel) once the user drags it.
-  // turnSpeaker is the turn's own nominal speaker — always fixed, used to decide whether the
-  // saved bracket needs an actor prefix at all (only when targetActor differs from it).
-  let actionModalState = null;   // { offset, turnSpeaker, initialTarget, x, y, w, h, actionType, editingSpan } | null
   let actionModalDrag = null;    // { lastClientX, lastClientY } | null
 
-  // M13e: every previewCapable agent, so the modal's target picker isn't limited to the turn's
-  // own speaker — reactive so a character finishing loading (or starting to speak) updates the
-  // picker's "loaded" state live while the modal is already open.
-  $: actionModalTargetOptions = previewCapableAgents.map((a) => ({
-    agentName: a.agentName,
-    instanceName: a.instanceName,
-    loaded: (previewLoadProgress[a.instanceName] ?? 0) >= 100 && !previewAnySpeaking
-  }));
+  // Every agent in the project, `primaryAgentName` first (the turn's own speaker for insert, the
+  // span's actor for edit) — replaces the old previewCapable-only target list (M13e) now that any
+  // agent's declared commands are insertable, not just SIA characters'.
+  function orderedAgentsFor(primaryAgentName) {
+    const seen = new Set();
+    const result = [];
+    if (primaryAgentName) {
+      result.push({ agentName: primaryAgentName });
+      seen.add(primaryAgentName);
+    }
+    for (const agent of projectConfigView?.agents || []) {
+      if (agent?.name && !seen.has(agent.name)) {
+        result.push({ agentName: agent.name });
+        seen.add(agent.name);
+      }
+    }
+    return result;
+  }
 
-  function handleScriptCommandMenu(offset, clientX, clientY) {
+  function handleScriptCommandMenu(offset) {
     const turn = turnAtOffset(scriptTurns, offset);
     if (!turn) return false;
-    const pcAgent = previewCapableAgents.find((a) => a.agentName === turn.speaker);
-    if (!pcAgent) return false;
     const hitSpan = actionSpanAtOffset(actionSpans, offset);
-    const editableSpan = hitSpan && SUPPORTED_ACTION_TYPES.includes(hitSpan.actionName) ? hitSpan : null;
-    if (editableSpan) {
-      openEditModalForSpan(editableSpan, turn.speaker);
-      return true;
-    }
-    // Never let the insertion point land inside the "Speaker:" prefix itself (e.g. a double-click
-    // on the speaker's name) — that would split it and break the "Speaker: text" syntax. Floor to
-    // right after the colon; inserting an action there (before any utterance text) is still valid.
+    if (!hitSpan) return false; // plain turn text — Ctrl+I handles insertion now, not double-click
+    openEditModalForSpan(hitSpan, turn.speaker);
+    return true;
+  }
+
+  function handleInsertShortcut(offset) {
+    const turn = turnAtOffset(scriptTurns, offset);
+    if (!turn) return;
+    // Never let the insertion point land inside the "Speaker:" prefix itself — floor to right
+    // after the colon; inserting an action there (before any utterance text) is still valid.
     const textStart = turn.offsetStart + turn.speaker.length + 1;
     const insertOffset = Math.max(offset, textStart);
-    scriptContextMenu = { x: clientX, y: clientY, offset: insertOffset, speaker: turn.speaker };
-    return true;
+    insertActionDialogState = {
+      mode: "insert",
+      offset: insertOffset,
+      turnSpeaker: turn.speaker,
+      agents: orderedAgentsFor(turn.speaker),
+      initialTarget: turn.speaker,
+      initialCommandName: null,
+      initialValues: null,
+      useRawFallback: false,
+      initialRawBody: "",
+      editingSpan: null,
+      x: null, y: null, w: null, h: null
+    };
   }
 
   function featuresToMap(features) {
@@ -787,58 +805,61 @@
     return map;
   }
 
-  // Shape depends on actionType — matches whichever sub-editor ActionCommandModal renders.
-  function initialValuesForSpan(span) {
-    if (!span) return null;
-    const map = featuresToMap(span.features);
-    if (span.actionName === "background") return { color: map.color };
-    if (span.actionName === "clearEmotion") return null; // no parameters at all
-    if (span.actionName === "pause") return { duration: map.duration };
-    return {
-      type: map.type, intensity: map.intensity, attack: map.attack, hold: map.hold, decay: map.decay,
-      blocking: map.blocking // M13e — emotion only
-    };
-  }
-
-  function openInsertModal(actionType) {
-    if (!scriptContextMenu) return;
-    const { offset, speaker } = scriptContextMenu;
-    actionModalState = {
-      offset, turnSpeaker: speaker, initialTarget: speaker,
-      x: null, y: null, w: null, h: null, actionType, editingSpan: null
-    };
-    scriptContextMenu = null;
+  // Resolves an existing span's action name against its actor's declared commands (any plugin,
+  // not just charamel-embed) so editing works generically. Falls back to charamel-embed's bare
+  // emotion-name convenience aliases (e.g. "happy" -> "emotion" with type='happy'), and finally to
+  // raw-text editing for anything genuinely unrecognized (a custom/legacy action).
+  function resolveSpanSchema(actor, actionName) {
+    const commands = pluginCommandsForAgent(actor) || [];
+    if (actionName === "pause") return { commandName: "pause", useRawFallback: false };
+    const exact = commands.find((c) => c.name === actionName);
+    if (exact) return { commandName: actionName, useRawFallback: false };
+    if (EMOTION_TYPES.includes(actionName) && commands.some((c) => c.name === "emotion")) {
+      return { commandName: "emotion", useRawFallback: false, aliasType: actionName };
+    }
+    return { commandName: actionName, useRawFallback: true };
   }
 
   function openEditModalForSpan(span, speaker) {
-    actionModalState = {
-      offset: null, turnSpeaker: speaker, initialTarget: span.actionActor || speaker,
-      x: null, y: null, w: null, h: null,
-      actionType: span.actionName, editingSpan: span
+    const actor = span.actionActor || speaker;
+    const { commandName, useRawFallback, aliasType } = resolveSpanSchema(actor, span.actionName);
+    const map = featuresToMap(span.features);
+    insertActionDialogState = {
+      mode: "edit",
+      offset: null,
+      turnSpeaker: speaker,
+      agents: orderedAgentsFor(actor),
+      initialTarget: actor,
+      initialCommandName: commandName,
+      initialValues: aliasType ? { type: aliasType, ...map } : map,
+      useRawFallback,
+      initialRawBody: useRawFallback ? span.raw?.slice(1, -1) ?? "" : "",
+      editingSpan: span,
+      x: null, y: null, w: null, h: null
     };
   }
 
   function startActionModalDrag(event, rect) {
-    if (!isPrimaryPointer(event) || !actionModalState) return;
+    if (!isPrimaryPointer(event) || !insertActionDialogState) return;
     event.preventDefault();
     event.stopPropagation();
-    if (actionModalState.x == null && rect) {
-      actionModalState = { ...actionModalState, x: rect.left, y: rect.top, w: rect.width, h: rect.height };
+    if (insertActionDialogState.x == null && rect) {
+      insertActionDialogState = { ...insertActionDialogState, x: rect.left, y: rect.top, w: rect.width, h: rect.height };
     }
     actionModalDrag = { lastClientX: event.clientX, lastClientY: event.clientY };
   }
 
   function handleActionModalPointerMove(event) {
-    if (!actionModalDrag || !actionModalState || actionModalState.x == null) return;
+    if (!actionModalDrag || !insertActionDialogState || insertActionDialogState.x == null) return;
     event.preventDefault();
     const dx = event.clientX - actionModalDrag.lastClientX;
     const dy = event.clientY - actionModalDrag.lastClientY;
     actionModalDrag.lastClientX = event.clientX;
     actionModalDrag.lastClientY = event.clientY;
     const bounds = { width: window.innerWidth, height: window.innerHeight };
-    const next = { ...actionModalState, x: actionModalState.x + dx, y: actionModalState.y + dy };
+    const next = { ...insertActionDialogState, x: insertActionDialogState.x + dx, y: insertActionDialogState.y + dy };
     const clamped = clampBadgeRect({ x: next.x, y: next.y, w: next.w || 360, h: next.h || 300 }, bounds);
-    actionModalState = { ...next, x: clamped.x, y: clamped.y };
+    insertActionDialogState = { ...next, x: clamped.x, y: clamped.y };
   }
 
   function handleActionModalPointerUp() {
@@ -861,30 +882,29 @@
   // commandBody e.g. "emotion type='happy'" — no brackets, no actor prefix; this is the one
   // place that knows whether we're inserting fresh or replacing an existing span in place, and
   // (for edits) restores whatever actor prefix the original span had.
-  // targetActor is whatever the modal's target picker had selected when Save/Insert was
-  // clicked (M13e) — only differs from the turn's own speaker for a cross-actor command, in
-  // which case (and only then) an "Actor: " prefix is added/kept.
-  function handleActionModalSave(commandBody, targetActor) {
-    if (!actionModalState) return;
-    // "pause" is a pure timing primitive, not tied to any actor (see core's ActionBlockingUtil) —
-    // never prefix it with a target, even though the modal's target picker is hidden but still
-    // technically has a selectedTargetActor value internally.
-    const actorPrefix = actionModalState.actionType !== "pause" && targetActor && targetActor !== actionModalState.turnSpeaker
+  // targetActor is whatever the dialog's target picker had selected when Save/Insert was
+  // clicked — only differs from the turn's own speaker for a cross-actor command, in which case
+  // (and only then) an "Actor: " prefix is added/kept. commandName lets us skip the prefix
+  // entirely for "pause", a pure timing primitive not tied to any actor (see core's
+  // ActionBlockingUtil), regardless of which agent happened to be selected in the picker.
+  function handleInsertActionSave(commandBody, targetActor, commandName) {
+    if (!insertActionDialogState) return;
+    const actorPrefix = commandName !== "pause" && targetActor && targetActor !== insertActionDialogState.turnSpeaker
       ? `${targetActor}: ` : "";
-    const editingSpan = actionModalState.editingSpan;
+    const editingSpan = insertActionDialogState.editingSpan;
     if (editingSpan) {
       scriptEditorRef?.replaceRange(`[${actorPrefix}${commandBody}]`, editingSpan.offsetStart, editingSpan.offsetEnd);
     } else {
-      const { offset } = actionModalState;
+      const { offset } = insertActionDialogState;
       scriptEditorRef?.insertText(padBracketTextForInsertion(`[${actorPrefix}${commandBody}]`, offset), offset);
     }
-    actionModalState = null;
+    insertActionDialogState = null;
   }
 
   // SIA panel's per-column "Insert at cursor" button (M13i) — turn-agnostic equivalent of
-  // handleActionModalSave's insert path above, just triggered from the panel instead of the
-  // modal's Save button and driven by the script's current cursor position rather than a
-  // remembered double-click offset.
+  // handleInsertActionSave's insert path above, just triggered from the panel instead of the
+  // dialog's Save button and driven by the script's current cursor position rather than a
+  // remembered offset.
   function handleSiaInsertAtCursor(instanceName, agentName, commandBody) {
     if (!commandBody) return;
     const offset = scriptEditorRef?.getCursorOffset();
@@ -3325,6 +3345,15 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
   }
   $: pluginBadgeDescriptors = buildPluginBadgeDescriptors(projectConfigView, pluginInterfaces);
   $: previewCapableAgents = buildPreviewCapableAgents(projectConfigView, pluginInterfaces);
+  // InsertActionDialog's "not loaded" banner/Play-gating needs a live loaded status per agent —
+  // previewCapableAgents itself carries no such field (SiaPanel gets loaded/loadProgress as
+  // separate props instead). Reactive so a character finishing loading (or starting to speak)
+  // updates the dialog's banner live while it's already open (mirrors the old
+  // actionModalTargetOptions this replaced — M13e).
+  $: previewCapableAgentsWithLoadStatus = previewCapableAgents.map((a) => ({
+    ...a,
+    loaded: (previewLoadProgress[a.instanceName] ?? 0) >= 100 && !previewAnySpeaking
+  }));
   // M10: per-turn Play buttons. A turn is "playable" only if its speaker resolves to a
   // previewCapable agent; "loaded" requires the character to have actually finished loading
   // (progress === 100, not just "a panel exists") so Play doesn't silently no-op against an
@@ -12955,7 +12984,11 @@ Sentence:
       if (!plugin || !plugin.load) continue;
       const iface = findInterface(plugin.className);
       if (!iface?.previewCapable) continue;
-      result.push({ agentName: agent.name, instanceName: plugin.name });
+      result.push({
+        agentName: agent.name,
+        instanceName: plugin.name,
+        commands: Array.isArray(iface.commands) ? iface.commands : []
+      });
     }
     return result;
   }
@@ -13012,6 +13045,17 @@ Sentence:
       return `one of: ${enumList.slice(0, 3).join(", ")}${enumList.length > 3 ? "…" : ""}`;
     }
     return meta.type ? `${meta.type} value` : "value";
+  }
+
+  // Only swap in the type-aware ActionParamField widget for params whose declared type/enum
+  // actually changes the control (boolean/number/color/enum) — plain "string" (the overwhelming
+  // majority of declared and all undeclared params today) keeps the original bare text input
+  // unchanged, including its autofill-suppression attributes, so this is a pure upgrade with zero
+  // regression risk for the common case.
+  function cmdParamNeedsWidget(meta) {
+    if (!meta) return false;
+    if (Array.isArray(meta.enum) && meta.enum.length) return true;
+    return meta.type === "boolean" || meta.type === "int" || meta.type === "number" || meta.type === "color";
   }
 
   function isQuotedCmdArgValue(value) {
@@ -17760,6 +17804,7 @@ Sentence:
                 playableTurns={playableTurns}
                 onPlayTurn={handlePlayTurn}
                 onCommandMenu={handleScriptCommandMenu}
+                onInsertShortcut={handleInsertShortcut}
                 actionSpans={actionSpans}
                 markdownSpans={markdownSpans}
                 compactCommands={scriptCommandsCompact}
@@ -19955,19 +20000,28 @@ Sentence:
                           data-form-type="other"
                           on:input={(event) => updateCmdHelperArg(argIndex, "key", event.target.value)}
                         />
-                        <input
-                          name={`vsm-cmd-arg-value-${argIndex}`}
-                          placeholder={cmdParamValuePlaceholder(paramMeta)}
-                          value={arg.value}
-                          autocomplete="new-password"
-                          autocorrect="off"
-                          autocapitalize="off"
-                          spellcheck="false"
-                          data-lpignore="true"
-                          data-1p-ignore="true"
-                          data-form-type="other"
-                          on:input={(event) => updateCmdHelperArg(argIndex, "value", event.target.value)}
-                        />
+                        {#if cmdParamNeedsWidget(paramMeta)}
+                          <ActionParamField
+                            param={paramMeta}
+                            value={arg.value}
+                            onChange={(v) => updateCmdHelperArg(argIndex, "value", v)}
+                            placeholder={cmdParamValuePlaceholder(paramMeta)}
+                          />
+                        {:else}
+                          <input
+                            name={`vsm-cmd-arg-value-${argIndex}`}
+                            placeholder={cmdParamValuePlaceholder(paramMeta)}
+                            value={arg.value}
+                            autocomplete="new-password"
+                            autocorrect="off"
+                            autocapitalize="off"
+                            spellcheck="false"
+                            data-lpignore="true"
+                            data-1p-ignore="true"
+                            data-form-type="other"
+                            on:input={(event) => updateCmdHelperArg(argIndex, "value", event.target.value)}
+                          />
+                        {/if}
                         <button
                           type="button"
                           class="ghost icon-button danger"
@@ -20272,48 +20326,23 @@ Sentence:
     {sendCommand}
   />
 
-  {#if scriptContextMenu}
-    <div
-      class="script-context-menu-backdrop"
-      role="presentation"
-      on:click={() => (scriptContextMenu = null)}
-      on:contextmenu|preventDefault={() => (scriptContextMenu = null)}
-    >
-      <div
-        class="script-context-menu"
-        style:left="{scriptContextMenu.x}px"
-        style:top="{scriptContextMenu.y}px"
-        role="menu"
-      >
-        <button type="button" role="menuitem" on:click={() => openInsertModal('emotion')}>
-          Insert emotion
-        </button>
-        <button type="button" role="menuitem" on:click={() => openInsertModal('background')}>
-          Insert background
-        </button>
-        <button type="button" role="menuitem" on:click={() => openInsertModal('clearEmotion')}>
-          Insert clearEmotion
-        </button>
-        <button type="button" role="menuitem" on:click={() => openInsertModal('pause')}>
-          Insert pause
-        </button>
-      </div>
-    </div>
-  {/if}
-
-  {#if actionModalState}
-    <ActionCommandModal
-      mode={actionModalState.editingSpan ? "edit" : "insert"}
-      actionType={actionModalState.actionType}
-      targetOptions={actionModalTargetOptions}
-      initialTarget={actionModalState.initialTarget}
-      initialValues={initialValuesForSpan(actionModalState.editingSpan)}
-      x={actionModalState.x}
-      y={actionModalState.y}
+  {#if insertActionDialogState}
+    <InsertActionDialog
+      mode={insertActionDialogState.mode}
+      agents={insertActionDialogState.agents}
+      initialTarget={insertActionDialogState.initialTarget}
+      initialCommandName={insertActionDialogState.initialCommandName}
+      initialValues={insertActionDialogState.initialValues}
+      useRawFallback={insertActionDialogState.useRawFallback}
+      initialRawBody={insertActionDialogState.initialRawBody}
+      previewCapableAgents={previewCapableAgentsWithLoadStatus}
+      {pluginCommandsForAgent}
+      x={insertActionDialogState.x}
+      y={insertActionDialogState.y}
       projectId={selectedProjectId}
       {apiPost}
-      onSave={handleActionModalSave}
-      onClose={() => (actionModalState = null)}
+      onSave={handleInsertActionSave}
+      onClose={() => (insertActionDialogState = null)}
       onDragStart={startActionModalDrag}
     />
   {/if}

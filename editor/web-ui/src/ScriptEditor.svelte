@@ -18,9 +18,11 @@
   export let semanticHighlights = { marks: [], lines: [] };
   export let playableTurns = []; // [{speaker, text, firstLineEndOffset, instanceName, loaded}] — M10
   export let onPlayTurn = null;  // callback(turn) — send this turn to its character's preview
-  export let onCommandMenu = null; // (charOffset, clientX, clientY) => boolean — M11/M13f; double-click opens the
-                                    // insert popup on plain turn text, or jumps straight into editing an existing
-                                    // command (no right-click anywhere else in the app); true = handled
+  export let onCommandMenu = null; // (charOffset, clientX, clientY) => boolean — double-click on an existing
+                                    // action span jumps straight into editing it (no right-click anywhere else
+                                    // in the app); true = handled. Insertion moved to Ctrl+I (onInsertShortcut).
+  export let onInsertShortcut = null; // (charOffset) => void — Ctrl+I opens the extended insert dialog at the
+                                       // cursor's position (replaces the old double-click-on-plain-text popup)
   export let actionSpans = [];      // [{offsetStart, offsetEnd, actionActor, actionName, features, raw}] — M13b
   export let markdownSpans = [];    // [{offsetStart, offsetEnd, kind: "section"|"note", level, body, raw}]
   export let compactCommands = false; // M13c: global compact/full view toggle — also drives markdownSpans rendering
@@ -571,7 +573,19 @@
       lintGutter(),
       Prec.highest(keymap.of([
         { key: "Backspace", run: deleteSelectedActionSpan },
-        { key: "Delete", run: deleteSelectedActionSpan }
+        { key: "Delete", run: deleteSelectedActionSpan },
+        // Mod-i (Ctrl+I / Cmd+I) opens the extended insert-action dialog at the cursor. Must win
+        // over basicSetup's defaultKeymap, which already binds Mod-i to selectParentSyntax —
+        // Prec.highest is what makes this run first (same reasoning as Backspace/Delete above).
+        {
+          key: "Mod-i",
+          run: (cmView) => {
+            if (!onInsertShortcut) return false;
+            onInsertShortcut(cmView.state.selection.main.from);
+            return true;
+          },
+          preventDefault: true
+        }
       ])),
       keymap.of([indentWithTab]),
       indentUnit.of("  "),

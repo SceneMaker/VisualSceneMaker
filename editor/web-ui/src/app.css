@@ -1468,40 +1468,6 @@ a.export-link {
   color: var(--danger);
 }
 
-.script-context-menu-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 750;
-  background: transparent;
-}
-
-.script-context-menu {
-  position: fixed;
-  min-width: 140px;
-  background: #fff;
-  border: 1px solid #c0b8ae;
-  border-radius: 8px;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
-  padding: 0.25rem;
-  display: flex;
-  flex-direction: column;
-}
-
-.script-context-menu button {
-  text-align: left;
-  padding: 0.4rem 0.6rem;
-  border: none;
-  background: transparent;
-  border-radius: 5px;
-  font-size: 0.8rem;
-  color: #3d3d3d;
-  cursor: pointer;
-}
-
-.script-context-menu button:hover {
-  background: var(--accent-soft);
-}
-
 .script-toolbar .script-generate,
 .script-toolbar .script-search,
 .script-toolbar .script-semantic {
@@ -2380,6 +2346,14 @@ a.export-link {
    while scrolling" separately, more conservatively (e.g. without a live-measured height). */
 .script-sticky-header {
   display: grid;
+  /* Without an explicit track, an implicit grid column defaults to auto-sizing: it grows to fit
+     whichever child wants the most space, even a child whose OWN overflow:auto (SiaPanel's
+     .sia-panel-scroll) was meant to contain that overflow internally — track sizing happens
+     before a child's internal overflow is considered. minmax(0, 1fr) caps the track at the
+     container's actual width (the 0 overrides grid's automatic content-based minimum), so
+     SiaPanel's width:fit-content sizes within that bound instead of pushing the whole page wider
+     than the viewport (reported 2026-07-22, right after SiaPanel started shrink-to-fitting). */
+  grid-template-columns: minmax(0, 1fr);
   gap: 0.65rem;
 }
 

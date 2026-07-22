@@ -53,7 +53,9 @@
         blocking ? `blocking='true'` : null
       ].filter(Boolean).join(" ")
     : "";
-  $: if (currentCommand) onChange?.(currentCommand);
+  // Always report the value, including "" — see ActionForm's identical note; a caller needs to
+  // be told when a previously-valid command becomes invalid again, not just when it's valid.
+  $: onChange?.(currentCommand);
 
   const CURVE_W = 280;
   const CURVE_H = 70;
