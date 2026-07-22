@@ -252,6 +252,18 @@
     return ch === " " || ch === "\t";
   }
 
+  // Adds a leading/trailing space around already-bracketed `text` if it would otherwise land
+  // directly against a non-whitespace character at `pos` — shared by the drag-drop move below
+  // and by paste (see domEventHandlers.paste), both of which insert a raw "[...]" span at an
+  // arbitrary point mid-turn where word-gluing would otherwise result (e.g. "mich[emotion]einen").
+  function padForInsertAt(doc, text, pos) {
+    const before = pos > 0 ? doc.sliceString(pos - 1, pos) : "";
+    const after = pos < doc.length ? doc.sliceString(pos, pos + 1) : "";
+    const needsLeading = before !== "" && !/\s/.test(before);
+    const needsTrailing = after !== "" && !/\s/.test(after);
+    return `${needsLeading ? " " : ""}${text}${needsTrailing ? " " : ""}`;
+  }
+
   // Builds the two-change transaction that moves an action span from its old offsets to
   // dropPos, keeping surrounding text sane: collapses the double space left behind at the old
   // location, and adds a space on either side of the drop point if it would otherwise butt up
@@ -270,11 +282,7 @@
 
     if (dropPos >= srcFrom && dropPos <= srcTo) return null; // dropped onto/next to itself
 
-    const beforeDrop = dropPos > 0 ? doc.sliceString(dropPos - 1, dropPos) : "";
-    const afterDrop = dropPos < docLength ? doc.sliceString(dropPos, dropPos + 1) : "";
-    const needsLeadingSpace = beforeDrop !== "" && !/\s/.test(beforeDrop);
-    const needsTrailingSpace = afterDrop !== "" && !/\s/.test(afterDrop);
-    const insertText = `${needsLeadingSpace ? " " : ""}${raw}${needsTrailingSpace ? " " : ""}`;
+    const insertText = padForInsertAt(doc, raw, dropPos);
 
     return {
       changes: [
@@ -283,6 +291,15 @@
       ]
     };
   }
+
+  // Ctrl/Cmd+C on a selected (clicked) command chip copies its raw "[...]" text to the system
+  // clipboard. ActionCompactWidget's click handler sets a real CodeMirror selection over the
+  // span and focuses the view so the browser's native copy command actually fires; the copy
+  // handler below then overrides the clipboard payload with the clean span.raw text regardless
+  // of what that underlying selection contains. Ctrl/Cmd+V detects a single bracketed action on
+  // the clipboard and inserts it with the same word-boundary padding as drag-drop; anything else
+  // (including a normal multi-word text copy) falls through to CodeMirror's own default paste.
+  const ACTION_LIKE_RE = /^\[[\s\S]*\]$/;
 
   // Backspace/Delete removes the currently marked (clicked) command chip instead of the usual
   // character-before/after-cursor behavior. Registered at Prec.highest so it runs before
@@ -363,6 +380,16 @@
         event.preventDefault();
         event.stopPropagation();
         selectedActionKey = { offsetStart: this.span.offsetStart, offsetEnd: this.span.offsetEnd };
+        // Also set a real CodeMirror selection over the span's (visually replaced) range, and
+        // explicitly focus the editor — selectedActionKey alone is a custom highlight the browser
+        // knows nothing about, so without both a real selection AND focus, the native Ctrl/Cmd+C
+        // copy command never fires at all (browsers only dispatch "copy" targeting whatever
+        // element is currently focused, and only when something is actually selected; this
+        // widget's own preventDefault()/stopPropagation() above suppress the click's default
+        // focus-shift). The domEventHandlers "copy" handler below still overrides what gets
+        // copied with the clean span.raw text regardless of what the real selection contains.
+        view?.dispatch({ selection: { anchor: this.span.offsetStart, head: this.span.offsetEnd } });
+        view?.focus();
       });
       el.addEventListener("dragstart", (event) => {
         event.dataTransfer.effectAllowed = "move";
@@ -641,6 +668,29 @@
           } catch {
             // Stale offsets (document changed since dragstart) — ignore the drop.
           }
+          return true;
+        },
+        copy(event) {
+          if (!selectedActionKey) return false; // no chip selected — let default copy proceed
+          const span = (actionSpans || []).find(
+            (s) => s.offsetStart === selectedActionKey.offsetStart && s.offsetEnd === selectedActionKey.offsetEnd
+          );
+          if (!span) return false;
+          event.clipboardData?.setData("text/plain", span.raw);
+          event.preventDefault();
+          return true;
+        },
+        paste(event, cmView) {
+          if (readOnly) return false;
+          const text = event.clipboardData?.getData("text/plain")?.trim();
+          if (!text || !ACTION_LIKE_RE.test(text)) return false; // not a single bracketed action — default paste
+          event.preventDefault();
+          const { from, to } = cmView.state.selection.main;
+          const insertText = padForInsertAt(cmView.state.doc, text, from);
+          cmView.dispatch({
+            changes: { from, to, insert: insertText },
+            selection: { anchor: from + insertText.length }
+          });
           return true;
         }
       }),

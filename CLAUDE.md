@@ -314,6 +314,12 @@ Additional architecture details are in `doc/`:
 - `scenemaker-web-ui-api.md` - REST/WebSocket API documentation
 - `scenemaker-web-ui-parity.md` - Web UI feature parity tracking
 
+**User-facing in-app guides** (served statically, source in `editor/web-ui/public/`):
+- `scenescript-help.html` - SceneScript authoring guide (scenes/turns/commands/editing). Keep this
+  current whenever script authoring gains a new construct or editing feature, and bump its version
+  pill/footer when it changes.
+- `screen-element-reference.html` - htmlgui-ws screen element reference
+
 ## Plugin Spec Versioning
 
 Each `plugin-properties.json` that participates in version tracking carries two fields:

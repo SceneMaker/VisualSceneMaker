@@ -6,25 +6,33 @@
 <title>SceneScript Guide — Visual SceneMaker</title>
 <style>
   :root {
-    --bg: #fbfaf7;
+    --bg: #f6f3ee;
     --surface: #ffffff;
-    --border: #e2ded2;
-    --text: #1c1b15;
-    --muted: #6b6a5f;
-    --accent: #2e5d3a;
-    --accent-light: #eaf3ec;
-    --code-bg: #f4f2ec;
-    --code-border: #e2ded2;
-    --note-bg: #fffbeb;
-    --note-border: #f0d080;
-    --note-text: #7d5a00;
+    --surface-soft: #f5f7fb;
+    --border: #e3ddd4;
+    --text: #1f2328;
+    --muted: #6b7280;
+    --accent: #5b8edc;
+    --accent-pressed: #416aa6;
+    --accent-light: #d6e2f6;
+    --code-bg: #f5f7fb;
+    --code-border: #e3ddd4;
+    --note-bg: #fbf3de;
+    --note-border: #ecdcb0;
+    --note-text: #9a7d2a;
+    --radius-sm: 8px;
+    --radius-md: 14px;
+    --shadow-soft: 0 8px 18px rgba(0, 0, 0, 0.08);
+    /* Command-chip colors mirror ScriptEditor.svelte's compact view exactly (sceneScriptTheme.js) */
+    --chip-bg: rgba(0, 123, 118, 0.15);
+    --chip-text: #1c1b15;
     font-size: 14px;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
   body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-family: "Space Grotesk", "IBM Plex Sans", "Segoe UI", sans-serif;
     background: var(--bg);
     color: var(--text);
     line-height: 1.55;
@@ -33,19 +41,23 @@
   .page-wrap { display: flex; min-height: 100vh; }
 
   nav {
-    width: 200px; min-width: 200px;
+    width: 210px; min-width: 210px;
     background: var(--surface);
     border-right: 1px solid var(--border);
-    padding: 1.5rem 0 2rem;
+    padding: 1.4rem 0 2rem;
     position: sticky; top: 0; height: 100vh; overflow-y: auto;
     flex-shrink: 0;
   }
-  nav .nav-logo {
-    font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em;
-    text-transform: uppercase; color: var(--muted);
+  nav .nav-brand {
+    display: flex; align-items: center; gap: 0.55rem;
     padding: 0 1.2rem 1rem;
     border-bottom: 1px solid var(--border);
     margin-bottom: 0.75rem;
+  }
+  nav .nav-brand img { width: 26px; height: 26px; flex-shrink: 0; }
+  nav .nav-brand span {
+    font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--muted);
   }
   nav a {
     display: block; padding: 0.28rem 1.2rem;
@@ -59,13 +71,21 @@
 
   main { flex: 1; padding: 2.5rem 2.5rem 4rem; max-width: 860px; }
 
-  h1 { font-size: 1.6rem; font-weight: 700; margin-bottom: 0.4rem; color: var(--accent); }
+  .title-row { display: flex; align-items: center; gap: 0.9rem; margin-bottom: 0.4rem; }
+  .title-row img { width: 44px; height: 44px; flex-shrink: 0; }
+  h1 { font-size: 1.6rem; font-weight: 700; color: var(--text); }
+  .version-pill {
+    display: inline-block; font-size: 0.72rem; font-weight: 600;
+    color: var(--accent-pressed); background: var(--accent-light);
+    padding: 0.15rem 0.55rem; border-radius: 999px; margin-left: 0.6rem;
+    vertical-align: middle;
+  }
   .subtitle { color: var(--muted); margin-bottom: 2.5rem; font-size: 0.9rem; }
 
   h2 {
     font-size: 1.05rem; font-weight: 700; margin: 3rem 0 1rem;
     padding-bottom: 0.4rem; border-bottom: 2px solid var(--border);
-    color: var(--accent);
+    color: var(--text);
     scroll-margin-top: 1.5rem;
   }
   h2:first-of-type { margin-top: 0; }
@@ -78,7 +98,8 @@
   .card {
     background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: 8px;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-soft);
     padding: 1.1rem 1.3rem;
     margin-bottom: 1.2rem;
   }
@@ -86,12 +107,12 @@
   pre {
     background: var(--code-bg);
     border: 1px solid var(--code-border);
-    border-radius: 6px;
+    border-radius: var(--radius-sm);
     padding: 0.85rem 1rem;
     font-size: 0.82rem;
     font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
     overflow-x: auto;
-    line-height: 1.6;
+    line-height: 1.8;
     margin: 0.5rem 0 0.8rem;
     white-space: pre;
   }
@@ -106,12 +127,36 @@
   tr:last-child td { border-bottom: none; }
 
   .note {
-    background: var(--note-bg); border: 1px solid var(--note-border); border-radius: 6px;
+    background: var(--note-bg); border: 1px solid var(--note-border); border-radius: var(--radius-sm);
     padding: 0.6rem 0.9rem; font-size: 0.82rem; margin: 0.6rem 0 0.8rem;
   }
   .note strong { color: var(--note-text); }
 
   .icon-inline { display: inline-block; width: 1em; height: 1em; vertical-align: -0.15em; margin: 0 0.15em; }
+
+  /* Command chip — matches ScriptEditor.svelte's compact-view rendering exactly (same class
+     names/colors as .cm-action-compact in sceneScriptTheme.js) so examples in this guide look
+     identical to what authors see in the real editor. */
+  .script-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2em;
+    padding: 0.05em 0.4em;
+    border-radius: 3px;
+    background: var(--chip-bg);
+    color: var(--chip-text);
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    font-size: 0.85rem;
+    vertical-align: -0.1em;
+  }
+  .script-chip-icon {
+    width: 0.9em; height: 0.9em; flex: none;
+    fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+  }
+  .script-chip-swatch {
+    display: inline-block; width: 0.8em; height: 0.8em; margin: 0 0.15em;
+    border-radius: 2px; border: 1px solid rgba(0, 0, 0, 0.35); vertical-align: -0.05em;
+  }
 
   hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
 
@@ -123,7 +168,10 @@
 <div class="page-wrap">
 
 <nav id="sidebar">
-  <div class="nav-logo">SceneScript Guide</div>
+  <div class="nav-brand">
+    <img src="/images/vsm_logo.svg" alt="">
+    <span>SceneScript Guide</span>
+  </div>
 
   <div class="nav-group">Basics</div>
   <a href="#overview">Overview</a>
@@ -144,7 +192,10 @@
 </nav>
 
 <main>
-  <h1>SceneScript Guide</h1>
+  <div class="title-row">
+    <img src="/images/vsm_logo.svg" alt="Visual SceneMaker">
+    <h1>SceneScript Guide<span class="version-pill">v1.1 · 2026-07-22</span></h1>
+  </div>
   <p class="subtitle">How to write and edit dialogue scripts in Visual SceneMaker</p>
 
   <h2 id="overview">Overview</h2>
@@ -155,10 +206,6 @@
     inline <strong>commands</strong> for triggering character behavior (backgrounds, emotions,
     pauses, and more) at a precise point in the dialogue.
   </p>
-  <div class="note">
-    <strong>Keep this page current.</strong> Whenever script authoring gains a new construct or
-    editing feature, add a section here describing it.
-  </div>
 
   <h2 id="scenes-turns">Scenes &amp; turns</h2>
   <p>A scene starts with the <code>scene</code> keyword, a two-letter language code, and a name:</p>
@@ -173,8 +220,21 @@ Alice: I'm doing well, thanks for asking!</pre>
   <h2 id="inline-commands">Inline commands</h2>
   <p>
     Commands are written in square brackets inside a turn's dialogue text, and trigger an action
-    at exactly that point in the utterance:
+    at exactly that point in the utterance. In the editor's compact view they render as chips
+    like these:
   </p>
+  <p>
+    Bob: Let's begin.
+    <span class="script-chip">
+      <svg class="script-chip-icon" viewBox="0 0 24 24"><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09"/><path d="M9 12a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.4 22.4 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 .05 5 .05"/></svg>[background<span class="script-chip-swatch" style="background-color:#77bb41"></span>]
+    </span>
+    Look around you.
+    Bob: I'm so happy right now!
+    <span class="script-chip">
+      <svg class="script-chip-icon" viewBox="0 0 24 24"><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09"/><path d="M9 12a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.4 22.4 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 .05 5 .05"/></svg>[emotion joy]
+    </span>
+  </p>
+  <p>The raw text behind those two chips looks like this:</p>
   <pre>Bob: Let's begin. [background image='park.jpg'] Look around you.
 Bob: I'm so happy right now! [emotion type='joy' intensity='0.8']</pre>
   <p>
@@ -189,14 +249,36 @@ Bob: I'm so happy right now! [emotion type='joy' intensity='0.8']</pre>
     <tr><td><code>emotion</code></td><td>Play an emotional expression on a character</td></tr>
     <tr><td><code>pause</code></td><td>Hold the turn for a moment before continuing</td></tr>
   </table>
+  <p>
+    Every agent configured in the project can declare its own commands — the
+    <a href="#editing-commands">insert dialog</a> lists whichever commands are actually available,
+    not just these three.
+  </p>
 
   <h3 id="blocking">Blocking vs. fire-and-forget</h3>
   <p>
     In compact view, every command chip shows a small icon indicating whether it
-    <strong>blocks</strong> the turn until it finishes (a clock icon — this is always the case for
-    <code>pause</code>, and for any command with the feature <code>blocking='true'</code>), or
-    fires <strong>without waiting</strong> (a rocket icon — the default for everything else).
+    <strong>blocks</strong> the turn until it finishes, or fires <strong>without waiting</strong>:
   </p>
+  <table>
+    <tr><th>Icon</th><th>Meaning</th></tr>
+    <tr>
+      <td>
+        <span class="script-chip">
+          <svg class="script-chip-icon" viewBox="0 0 24 24"><path d="M12 6v6l4 2"/><path d="M20 12v5"/><path d="M20 21h.01"/><path d="M21.25 8.2A10 10 0 1 0 16 21.16"/></svg>[pause 500]
+        </span>
+      </td>
+      <td><strong>Blocking</strong> — always the case for <code>pause</code>, and for any command with the feature <code>blocking='true'</code>.</td>
+    </tr>
+    <tr>
+      <td>
+        <span class="script-chip">
+          <svg class="script-chip-icon" viewBox="0 0 24 24"><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09"/><path d="M9 12a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.4 22.4 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 .05 5 .05"/></svg>[emotion happy]
+        </span>
+      </td>
+      <td><strong>Fire-and-forget</strong> — the default for everything else.</td>
+    </tr>
+  </table>
 
   <h2 id="sections">Sections</h2>
   <p>
@@ -242,17 +324,18 @@ Bob: Let's begin.</pre>
     <li>
       <svg class="icon-inline" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 12h14M5 16h6"/></svg>
       <strong>Text icon</strong> — a rendered, easier-to-read view: inline commands become
-      compact chips, and headings/notes are styled.
+      compact chips like <span class="script-chip"><svg class="script-chip-icon" viewBox="0 0 24 24"><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09"/><path d="M9 12a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.4 22.4 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 .05 5 .05"/></svg>[emotion happy]</span>, and headings/notes are styled.
     </li>
   </ul>
 
   <h2 id="editing-commands">Editing inline commands</h2>
-  <p>In compact view, an inline command becomes a chip you can interact with directly:</p>
+  <p>In compact view, an inline command is a chip you can work with directly:</p>
   <ul>
+    <li><strong>Ctrl+I</strong> (<strong>Cmd+I</strong> on Mac) with the cursor inside a turn opens the insert dialog — it lists the turn's own speaking agent's commands first, then every other configured agent in the project.</li>
+    <li><strong>Double-click</strong> an existing chip to open the same dialog pre-filled, for editing its parameters or target agent.</li>
     <li><strong>Click</strong> a chip to select it, then press <strong>Backspace</strong>/<strong>Delete</strong> to remove it.</li>
-    <li><strong>Drag</strong> a chip to move it elsewhere within the same turn.</li>
-    <li><strong>Double-click</strong> a chip to open its edit dialog and change its parameters.</li>
-    <li><strong>Double-click</strong> plain dialogue text to insert a new command at that point.</li>
+    <li><strong>Drag</strong> a selected chip to move it elsewhere within the same turn.</li>
+    <li><strong>Ctrl/Cmd+C</strong> copies the selected chip's exact command text; <strong>Ctrl/Cmd+V</strong> pastes it back in at the cursor.</li>
   </ul>
 
   <h2 id="preview">SIA preview panel</h2>
@@ -262,7 +345,7 @@ Bob: Let's begin.</pre>
     command text at your current position in the script editor.
   </p>
 
-  <footer>Visual SceneMaker — SceneScript authoring reference</footer>
+  <footer>Visual SceneMaker — SceneScript authoring reference · v1.1 · 2026-07-22</footer>
 </main>
 
 </div>
