@@ -137,6 +137,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.nio.charset.StandardCharsets;
 import java.util.Comparator;
@@ -4396,6 +4397,7 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
             ctx.status(500).result("Failed to save project");
             return;
         }
+        copySaveAsSidecarFiles(normalizedCurrentPath, projectPath);
         if (ref.editorConfigLoaded && ref.editorConfigDirty) {
             if (!saveEditorConfig(ref)) {
                 ctx.status(500).result("Failed to save editor config");
@@ -4409,6 +4411,36 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         response.put("path", projectPath);
         response.put("name", ref.name);
         writeJson(ctx, response);
+    }
+
+    // Sidecar files that RunTimeProject.write() never touches — copied manually on Save As
+    // so the new location stays runnable (see ui-prefs.json/screens.json/character-config.json
+    // getters below and saveEditorConfig() for how each is normally written).
+    private static final String[] SAVE_AS_SIDECAR_FILES = {
+            "ui-prefs.json", "screens.json", "character-config.json", "editorconfig.xml"
+    };
+
+    private void copySaveAsSidecarFiles(String sourceDirPath, String targetDirPath) {
+        if (sourceDirPath == null || sourceDirPath.isBlank() || targetDirPath == null || targetDirPath.isBlank()) {
+            return;
+        }
+        Path sourceDir = Paths.get(sourceDirPath);
+        Path targetDir = Paths.get(targetDirPath);
+        if (sourceDir.equals(targetDir) || !Files.isDirectory(sourceDir)) {
+            return;
+        }
+        for (String fileName : SAVE_AS_SIDECAR_FILES) {
+            Path source = sourceDir.resolve(fileName);
+            if (!Files.exists(source)) {
+                continue;
+            }
+            try {
+                Files.copy(source, targetDir.resolve(fileName),
+                        StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.COPY_ATTRIBUTES);
+            } catch (Exception exc) {
+                sLogger.warning("Warning: could not copy " + fileName + " during Save As: " + exc.getMessage());
+            }
+        }
     }
 
     private void handleProjectExport(Context ctx) {
