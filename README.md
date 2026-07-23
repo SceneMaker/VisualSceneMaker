@@ -175,7 +175,6 @@ Build and run manually (auto-start is also supported by the editor):
 - `java -jar services/embeddings/build/libs/embeddings-all.jar`
 
 Optional environment overrides:
-
 - `EMBEDDINGS_MODEL_DIR` - path to downloaded model directory
 - `EMBEDDINGS_PORT` - service port (default `4050`)
 - `EMBEDDINGS_JAR` - path to embeddings service jar
