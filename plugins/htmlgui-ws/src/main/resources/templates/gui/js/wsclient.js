@@ -16,9 +16,16 @@ const WS_PROTOCOL = "ws";
 const WS_HOSTNAME = "localhost";
 const WS_PORT = 4041;      // number is nicer than string
 const WS_ENDPOINT = "/ws";
+// Jetty closes a WS with no traffic for 10 minutes (see HtmlGuiWsExecutor.launch()'s
+// setIdleTimeout) — a GUI page left open while the user reads/watches without sending
+// anything would otherwise idle out. Same fix as charamel-embed's vm-adapter.js
+// (HEARTBEAT_INTERVAL_MS there): well under 10 minutes so a single missed beat still
+// leaves margin.
+const HEARTBEAT_INTERVAL_MS = 120000;
 
 // variables
 var webSocket = null;
+var heartbeatTimer = null;
 var ws_protocol = WS_PROTOCOL;
 var ws_hostname = WS_HOSTNAME;
 var ws_port = WS_PORT;
@@ -125,9 +132,11 @@ function openWSConnection(protocol, hostname, port, endpoint) {
         webSocket = new WebSocket(webSocketURL);
         webSocket.onopen = function (openEvent) {
             console.log("WebSocket OPEN: " + JSON.stringify(openEvent, null, 4));
+            startHeartbeat();
         };
         webSocket.onclose = function (closeEvent) {
             console.log("WebSocket CLOSE: " + JSON.stringify(closeEvent, null, 4));
+            stopHeartbeat();
         };
         webSocket.onerror = function (errorEvent) {
             console.log("WebSocket ERROR: " + JSON.stringify(errorEvent, null, 4));
@@ -150,6 +159,26 @@ function openWSConnection(protocol, hostname, port, endpoint) {
         };
     } catch (exception) {
         console.error(exception);
+    }
+}
+
+/**
+ * Keeps the WebSocket connection alive against Jetty's idle timeout — see
+ * HEARTBEAT_INTERVAL_MS's declaration for why.
+ */
+function startHeartbeat() {
+    stopHeartbeat(); // guard against a stray second onopen re-arming a duplicate timer
+    heartbeatTimer = setInterval(function () {
+        if (webSocket && webSocket.readyState === WebSocket.OPEN) {
+            webSocket.send("heartbeat");
+        }
+    }, HEARTBEAT_INTERVAL_MS);
+}
+
+function stopHeartbeat() {
+    if (heartbeatTimer !== null) {
+        clearInterval(heartbeatTimer);
+        heartbeatTimer = null;
     }
 }
 

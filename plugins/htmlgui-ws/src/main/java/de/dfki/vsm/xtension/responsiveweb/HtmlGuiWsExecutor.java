@@ -539,6 +539,18 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
 
     private synchronized void handleMessage(WsMessageContext ctx) {
         String message = ctx.message();
+
+        // Pure keep-alive, sent periodically by wsclient.js — same fix as charamel-embed's
+        // vm.heartbeat (vm-adapter.js): Jetty closes a WS with no traffic for 10 minutes (see
+        // setIdleTimeout in launch()), and a GUI page left open while the user reads/watches
+        // without sending anything would otherwise idle out. Receiving it is the whole point (any
+        // traffic resets the idle timeout); nothing else to do with it, and it must not fall
+        // through to the sceneflowInfoVar write below (that would spam it with "heartbeat" instead
+        // of the last real client message).
+        if (message.equals("heartbeat")) {
+            return;
+        }
+
         mLogger.message("Processing Browser GUI message: >" + message + "<");
 
         // varUpdate$<varName>$<value> — write directly to the named SceneFlow variable.
