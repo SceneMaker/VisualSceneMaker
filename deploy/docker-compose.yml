@@ -1,0 +1,28 @@
+services:
+  vsm-runtime:
+    build:
+      context: ..
+      dockerfile: runtime-server/Dockerfile
+    container_name: vsm-runtime
+    restart: unless-stopped
+    environment:
+      VSM_TOKEN: ${VSM_TOKEN}
+      VSM_PORT: "8091"
+      VSM_PROJECT_PATH: /app/project
+      VSM_AUTOSTART: "true"
+    ports:
+      # Runtime control API + Web UI (monitoring/admin) — project.xml has no plugin for
+      # this one, it's the runtime-server itself. Keep behind proxy auth if exposed publicly.
+      - "8091:8091"
+      # CharamelEmbedXenia — avatar page + WebSocket (project.xml plugin "CharamelEmbedXenia", port 3040)
+      - "3040:3040"
+      # CharamelEmbedBob — avatar page + WebSocket (project.xml plugin "CharamelEmbedBob", port 3041)
+      - "3041:3041"
+      # htmlgui-ws — participant-facing GUI page (project.xml plugin "webpage", html_port 8080)
+      - "8080:8080"
+      # htmlgui-ws — WebSocket channel for the GUI (project.xml plugin "webpage", ws_port 4041)
+      - "4041:4041"
+      # NOTE: project.xml also configures wss_port 4040 for htmlgui-ws, but runtime-server has
+      # no built-in TLS context, so that connector never binds — see deploy/README.md. Not exposed.
+    volumes:
+      - ${VSM_PROJECT_DIR}:/app/project
