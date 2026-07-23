@@ -2836,6 +2836,7 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         mApp.get(API_PREFIX + "/projects/{pid}/plugins/{name}/preview", this::handlePluginPreviewInfo);
         mApp.post(API_PREFIX + "/projects/{pid}/plugins/{name}/preview/turn", this::handlePluginPreviewTurn);
         mApp.post(API_PREFIX + "/projects/{pid}/plugins/{name}/preview/action", this::handlePluginPreviewAction);
+        mApp.post(API_PREFIX + "/projects/{pid}/plugins/{name}/preview/raw-speak", this::handlePluginPreviewRawSpeak);
         mApp.get(API_PREFIX + "/projects/{pid}/script", this::handleScript);
         mApp.get(API_PREFIX + "/projects/{pid}/script/scenes", this::handleScriptScenes);
         mApp.get(API_PREFIX + "/projects/{pid}/script/elements", this::handleScriptElements);
@@ -4745,6 +4746,37 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
             return;
         }
         ctx.future(() -> CompletableFuture.runAsync(() -> capable.previewAction(command), mPreviewDispatchExecutor)
+                .thenRun(() -> {
+                    JSONObject response = new JSONObject();
+                    response.put("status", "ok");
+                    writeJson(ctx, response);
+                }));
+    }
+
+    /** Sends raw text straight to {@code speakCommand()}, bypassing SceneScript parsing entirely.
+     *  Body: {@code {"text": "..."}}. Diagnostic-only escape hatch (see {@code
+     *  CharacterPreviewCapable.previewRawText}'s docs) for markup VSM's own grammar can't represent
+     *  or would fail to parse (e.g. embedded SSML) — not reachable from any authoring UI.
+     *
+     *  <p>Dispatched off the Jetty request thread for the same reason as {@link
+     *  #handlePluginPreviewTurn}: blocks the calling thread until the engine's completion feedback
+     *  arrives. */
+    private void handlePluginPreviewRawSpeak(Context ctx) {
+        de.dfki.vsm.runtime.plugin.CharacterPreviewCapable capable = resolvePreviewCapablePlugin(ctx);
+        if (capable == null) return;
+        JSONObject body;
+        try {
+            body = new JSONObject(ctx.body());
+        } catch (Exception e) {
+            writeJson(ctx, errorResponse("BAD_REQUEST", "Invalid JSON body"));
+            return;
+        }
+        String text = body.optString("text", "");
+        if (text.isBlank()) {
+            writeJson(ctx, errorResponse("BAD_REQUEST", "Missing text"));
+            return;
+        }
+        ctx.future(() -> CompletableFuture.runAsync(() -> capable.previewRawText(text), mPreviewDispatchExecutor)
                 .thenRun(() -> {
                     JSONObject response = new JSONObject();
                     response.put("status", "ok");

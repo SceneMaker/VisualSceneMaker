@@ -17,6 +17,7 @@ import de.dfki.vsm.runtime.activity.executor.ActivityExecutor;
 import de.dfki.vsm.runtime.bootstrap.PlatformBootstrap;
 import de.dfki.vsm.runtime.interpreter.value.BooleanValue;
 import de.dfki.vsm.runtime.plugin.CharacterPreviewCapable;
+import de.dfki.vsm.runtime.plugin.SpeechBreakCapable;
 import de.dfki.vsm.runtime.project.RunTimeProject;
 import de.dfki.vsm.util.log.LOGDefaultLogger;
 
@@ -44,7 +45,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * @author Patrick Gebhard
  */
 public class CharamelEmbedExecutor extends ActivityExecutor
-        implements CharamelTransport.Listener, CharacterPreviewCapable {
+        implements CharamelTransport.Listener, CharacterPreviewCapable, SpeechBreakCapable {
 
     static long sUtteranceId = 0;
 
@@ -119,6 +120,15 @@ public class CharamelEmbedExecutor extends ActivityExecutor
         return "${'" + id + "'}$";
     }
 
+    /** VuppetMaster's TTS backend (Azure) honors standard SSML {@code <break>} tags embedded
+     *  directly in speakCommand()'s text — confirmed 2026-07-23 via a live raw-speak test
+     *  (requested 3000ms measured as almost exactly 3000ms of silence, vs. the ~1000ms+ extra
+     *  tail latency the split-and-sleep fallback incurs per pause). */
+    @Override
+    public String speechBreakMarkup(long durationMs) {
+        return "<break time=\"" + durationMs + "ms\"/>";
+    }
+
     private synchronized Long getVMUtteranceId() {
         return ++sUtteranceId;
     }
@@ -153,6 +163,19 @@ public class CharamelEmbedExecutor extends ActivityExecutor
         final ActionObject action = (ActionObject) parsed;
         synchronized (mDispatchLock) {
             parseAction(action.getName(), action.getFeatureList());
+        }
+    }
+
+    @Override
+    public void previewRawText(String rawText) {
+        // Deliberately skips SceneScript's grammar (SceneScript.parseTXT), marker embedding, and
+        // the actor/word split previewTurn() does — rawText goes to speakCommand() exactly as
+        // given, so markup VSM's own grammar can't represent (e.g. SSML) reaches the engine
+        // unfiltered. No voice override: this is a one-off diagnostic call, not tied to any
+        // SceneFlow agent, so there's no turn speaker to look a configured voice up by.
+        synchronized (mDispatchLock) {
+            final String vmuid = "preview_raw_" + mPreviewMarkerId.incrementAndGet();
+            broadcastSpeakAndAwaitStop(vmuid, rawText, null);
         }
     }
 
@@ -303,6 +326,24 @@ public class CharamelEmbedExecutor extends ActivityExecutor
     @Override
     public void execute(AbstractActivity activity) {
         final String actor = activity.getActor();
+
+        if (!(activity instanceof SpeechActivity) && activity.getType() != AbstractActivity.Type.blocking) {
+            // Non-blocking, non-speech actions (a marker-triggered inline command like
+            // "background" or "emotion" without blocking='true') skip mDispatchLock entirely —
+            // see its declaration: that lock exists to stop two INDEPENDENT dispatch flows (a real
+            // Play plus a concurrent preview test, say) from issuing overlapping
+            // speakCommand()/setEmotion() calls, not to make a same-actor fire-and-forget action
+            // wait for whatever the SAME character's OWN in-progress SpeechActivity is still doing.
+            // previewTurn()'s own dispatch (buildPreviewActionRunnable, above) already established
+            // and validated this exact pattern for the preview path (2026-07-18: routing a
+            // non-blocking self-actor action through this synchronized execute() made it wait for
+            // the WHOLE enclosing turn to finish before firing — confirmed then via a background
+            // color that only visibly changed once both utterances had already finished speaking).
+            // This is the real-playback counterpart of that same fix, confirmed missing and
+            // reproduced 2026-07-23 with both background and emotion delayed until utterance end.
+            parseAction(activity.getName(), activity.getFeatures());
+            return;
+        }
 
         // See mDispatchLock's declaration: serializes every dispatch to this character (real
         // playback, previewTurn(), previewAction()) so two independent callers can't issue

@@ -34,6 +34,15 @@ public interface CharacterPreviewCapable {
     void previewAction(String rawActionBody);
 
     /**
+     * Sends {@code rawText} verbatim to the character's speech engine, bypassing SceneScript
+     * parsing entirely (no scene/turn grammar, no bracket-action splitting, no marker embedding).
+     * A diagnostic escape hatch for testing what the underlying TTS/engine does with markup VSM's
+     * own grammar can't represent or would choke on — e.g. embedded SSML ({@code <break .../>}) to
+     * check whether the engine's TTS backend honors it. Not for authoring use.
+     */
+    void previewRawText(String rawText);
+
+    /**
      * Mutes or unmutes commands to the authoring-time preview page specifically, leaving every
      * other connected viewer (e.g. a "follow the player" audience page embedding the same
      * character) untouched. Without this, a real SceneFlow run broadcasts every speak/emotion

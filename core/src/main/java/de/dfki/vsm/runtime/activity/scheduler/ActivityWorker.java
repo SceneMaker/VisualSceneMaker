@@ -37,6 +37,12 @@ public final class ActivityWorker<T extends AbstractActivity> extends Thread {
         return mDone;
     }
 
+    // The executor this worker's activity will run on — used by ActivityScheduler to key its
+    // per-executor sequential dispatch queue (see handle()'s docs).
+    public final ActivityExecutor getExecutor() {
+        return mExecutor;
+    }
+
     // Construct with a name
     public ActivityWorker(
             final long timeout,
