@@ -1,79 +1,154 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <SceneScript lower="0" upper="0">
-  <SceneObject lower="0" upper="182" language="de" identifier="welcome">
-    <SceneTurn lower="17" upper="182" speaker="Xenia">
-      <SceneUttr lower="24" upper="67" punct=".">
-        <SceneWord lower="24" upper="29" text="Hallo"/>
-        <ActionObject lower="31" upper="36" actor="" name="pause">
-          <ActionFeature lower="37" upper="51" key="duration" val="'100'"/>
+  <SceneSection lower="0" upper="16" heading="# General Scenes"/>
+  <SceneObject lower="18" upper="265" language="de" identifier="welcome">
+    <SceneTurn lower="35" upper="265" speaker="Xenia">
+      <SceneUttr lower="43" upper="168" punct=".">
+        <ActionObject lower="43" upper="53" actor="" name="background">
+          <ActionFeature lower="54" upper="69" key="color" val="'#77bb41'"/>
         </ActionObject>
-        <SceneWord lower="53" upper="56" text="ich"/>
-        <SceneWord lower="57" upper="60" text="bin"/>
-        <SceneWord lower="61" upper="66" text="Xenia"/>
+        <SceneWord lower="71" upper="76" text="Hallo"/>
+        <ActionObject lower="78" upper="88" actor="time" name="init">
+          <ActionFeature lower="89" upper="97" key="id" val="'one'"/>
+        </ActionObject>
+        <ActionObject lower="100" upper="105" actor="" name="pause">
+          <ActionFeature lower="106" upper="119" key="duration" val="'50'"/>
+        </ActionObject>
+        <ActionObject lower="122" upper="132" actor="time" name="time">
+          <ActionFeature lower="133" upper="141" key="id" val="'one'"/>
+          <ActionFeature lower="142" upper="152" key="var" val="'time'"/>
+        </ActionObject>
+        <SceneWord lower="154" upper="157" text="ich"/>
+        <SceneWord lower="158" upper="161" text="bin"/>
+        <SceneWord lower="162" upper="167" text="Xenia"/>
       </SceneUttr>
-      <SceneUttr lower="68" upper="182" punct=".">
-        <SceneWord lower="68" upper="73" text="Schön"/>
-        <ActionObject lower="75" upper="82" actor="" name="emotion">
-          <ActionFeature lower="83" upper="95" key="type" val="'happy'"/>
-          <ActionFeature lower="96" upper="111" key="intensity" val="'0.8'"/>
-          <ActionFeature lower="112" upper="124" key="attack" val="'100'"/>
-          <ActionFeature lower="125" upper="135" key="hold" val="'330'"/>
-          <ActionFeature lower="136" upper="147" key="decay" val="'140'"/>
-          <ActionFeature lower="148" upper="163" key="blocking" val="'true'"/>
+      <SceneUttr lower="169" upper="265" punct=".">
+        <SceneWord lower="169" upper="174" text="Schön"/>
+        <ActionObject lower="176" upper="183" actor="" name="emotion">
+          <ActionFeature lower="184" upper="196" key="type" val="'happy'"/>
+          <ActionFeature lower="197" upper="212" key="intensity" val="'0.8'"/>
+          <ActionFeature lower="213" upper="225" key="attack" val="'100'"/>
+          <ActionFeature lower="226" upper="236" key="hold" val="'110'"/>
+          <ActionFeature lower="237" upper="247" key="decay" val="'90'"/>
         </ActionObject>
-        <SceneWord lower="165" upper="169" text="dass"/>
-        <SceneWord lower="170" upper="173" text="Sie"/>
-        <SceneWord lower="174" upper="176" text="da"/>
-        <SceneWord lower="177" upper="181" text="sind"/>
+        <SceneWord lower="249" upper="253" text="dass"/>
+        <SceneWord lower="254" upper="256" text="Du"/>
+        <SceneWord lower="257" upper="259" text="da"/>
+        <SceneWord lower="260" upper="264" text="bist"/>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>
-  <SceneObject lower="184" upper="569" language="de" identifier="machwas">
-    <SceneTurn lower="201" upper="569" speaker="Xenia">
-      <SceneUttr lower="208" upper="457" punct=".">
-        <SceneWord lower="208" upper="212" text="Lass"/>
-        <SceneWord lower="213" upper="217" text="mich"/>
-        <ActionObject lower="219" upper="226" actor="" name="emotion">
-          <ActionFeature lower="227" upper="239" key="type" val="'happy'"/>
-          <ActionFeature lower="240" upper="255" key="intensity" val="'1.0'"/>
-          <ActionFeature lower="256" upper="268" key="attack" val="'200'"/>
-          <ActionFeature lower="269" upper="279" key="hold" val="'100'"/>
-          <ActionFeature lower="280" upper="291" key="decay" val="'300'"/>
+  <SceneObject lower="267" upper="606" language="de" identifier="machwas">
+    <SceneTurn lower="284" upper="606" speaker="Xenia">
+      <SceneUttr lower="292" upper="494" punct=".">
+        <ActionObject lower="292" upper="302" actor="" name="background">
+          <ActionFeature lower="303" upper="318" key="color" val="'#caf0fe'"/>
         </ActionObject>
-        <SceneWord lower="293" upper="298" text="einen"/>
-        <SceneWord lower="299" upper="308" text="Vorschlag"/>
-        <ActionObject lower="310" upper="320" actor="" name="background">
-          <ActionFeature lower="321" upper="341" key="color" val="'midnightblue'"/>
+        <ActionObject lower="321" upper="336" actor="Bob" name="background">
+          <ActionFeature lower="337" upper="352" key="color" val="'#ffffff'"/>
         </ActionObject>
-        <SceneWord lower="343" upper="349" text="machen"/>
-        <SceneWord lower="350" upper="353" text="wie"/>
-        <SceneWord lower="354" upper="357" text="wir"/>
-        <SceneWord lower="358" upper="366" text="zusammen"/>
-        <ActionObject lower="368" upper="375" actor="" name="emotion">
-          <ActionFeature lower="376" upper="388" key="type" val="'happy'"/>
-          <ActionFeature lower="389" upper="405" key="intensity" val="'1.05'"/>
-          <ActionFeature lower="406" upper="419" key="attack" val="'1000'"/>
-          <ActionFeature lower="420" upper="430" key="hold" val="'550'"/>
-          <ActionFeature lower="431" upper="442" key="decay" val="'300'"/>
+        <SceneWord lower="354" upper="358" text="Lass"/>
+        <SceneWord lower="359" upper="363" text="mich"/>
+        <SceneWord lower="364" upper="369" text="einen"/>
+        <SceneWord lower="370" upper="379" text="Vorschlag"/>
+        <SceneWord lower="380" upper="386" text="machen"/>
+        <SceneWord lower="387" upper="390" text="wie"/>
+        <SceneWord lower="391" upper="394" text="wir"/>
+        <SceneWord lower="395" upper="403" text="zusammen"/>
+        <ActionObject lower="405" upper="412" actor="" name="emotion">
+          <ActionFeature lower="413" upper="425" key="type" val="'happy'"/>
+          <ActionFeature lower="426" upper="442" key="intensity" val="'1.05'"/>
+          <ActionFeature lower="443" upper="456" key="attack" val="'1000'"/>
+          <ActionFeature lower="457" upper="467" key="hold" val="'550'"/>
+          <ActionFeature lower="468" upper="479" key="decay" val="'300'"/>
         </ActionObject>
-        <SceneWord lower="444" upper="456" text="weitermachen"/>
+        <SceneWord lower="481" upper="493" text="weitermachen"/>
       </SceneUttr>
-      <SceneUttr lower="458" upper="468" punct=",">
-        <SceneWord lower="458" upper="463" text="Schau"/>
-        <SceneWord lower="464" upper="467" text="mal"/>
+      <SceneUttr lower="495" upper="505" punct=",">
+        <SceneWord lower="495" upper="500" text="Schau"/>
+        <SceneWord lower="501" upper="504" text="mal"/>
       </SceneUttr>
-      <SceneUttr lower="469" upper="569" punct=".">
-        <SceneWord lower="469" upper="472" text="wie"/>
-        <SceneWord lower="473" upper="476" text="Bob"/>
-        <ActionObject lower="478" upper="490" actor="Bob" name="emotion">
-          <ActionFeature lower="491" upper="502" key="type" val="'fear'"/>
-          <ActionFeature lower="503" upper="519" key="intensity" val="'1.05'"/>
-          <ActionFeature lower="520" upper="533" key="attack" val="'1000'"/>
-          <ActionFeature lower="534" upper="544" key="hold" val="'550'"/>
-          <ActionFeature lower="545" upper="556" key="decay" val="'300'"/>
+      <SceneUttr lower="506" upper="606" punct=".">
+        <SceneWord lower="506" upper="509" text="wie"/>
+        <SceneWord lower="510" upper="513" text="Bob"/>
+        <ActionObject lower="515" upper="527" actor="Bob" name="emotion">
+          <ActionFeature lower="528" upper="539" key="type" val="'fear'"/>
+          <ActionFeature lower="540" upper="556" key="intensity" val="'1.05'"/>
+          <ActionFeature lower="557" upper="570" key="attack" val="'1000'"/>
+          <ActionFeature lower="571" upper="581" key="hold" val="'550'"/>
+          <ActionFeature lower="582" upper="593" key="decay" val="'300'"/>
         </ActionObject>
-        <SceneWord lower="558" upper="561" text="das"/>
-        <SceneWord lower="562" upper="568" text="findet"/>
+        <SceneWord lower="595" upper="598" text="das"/>
+        <SceneWord lower="599" upper="605" text="findet"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="608" upper="753" language="de" identifier="Aufgabe">
+    <SceneTurn lower="625" upper="753" speaker="Xenia">
+      <SceneUttr lower="632" upper="636" punct=",">
+        <SceneWord lower="632" upper="635" text="Hey"/>
+      </SceneUttr>
+      <SceneUttr lower="637" upper="668" punct=".">
+        <SceneWord lower="637" upper="640" text="Ich"/>
+        <SceneWord lower="641" upper="645" text="habe"/>
+        <SceneWord lower="646" upper="650" text="eine"/>
+        <SceneWord lower="651" upper="658" text="Aufgabe"/>
+        <SceneWord lower="659" upper="662" text="für"/>
+        <SceneWord lower="663" upper="667" text="Dich"/>
+      </SceneUttr>
+      <SceneUttr lower="670" upper="753" punct="?">
+        <ActionObject lower="670" upper="677" actor="" name="emotion">
+          <ActionFeature lower="678" upper="693" key="type" val="'surprise'"/>
+          <ActionFeature lower="694" upper="709" key="intensity" val="'0.4'"/>
+          <ActionFeature lower="710" upper="721" key="attack" val="'90'"/>
+          <ActionFeature lower="722" upper="732" key="hold" val="'190'"/>
+          <ActionFeature lower="733" upper="744" key="decay" val="'110'"/>
+        </ActionObject>
+        <SceneWord lower="746" upper="752" text="Bereit"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneSection lower="755" upper="772" heading="# Feedback Scenes"/>
+  <SceneObject lower="774" upper="822" language="de" identifier="positive_feedback">
+    <SceneTurn lower="801" upper="822" speaker="Xenia">
+      <SceneUttr lower="808" upper="822" punct="!">
+        <SceneWord lower="808" upper="813" text="Super"/>
+        <SceneWord lower="814" upper="821" text="gemacht"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="824" upper="871" language="de" identifier="positive_feedback">
+    <SceneTurn lower="851" upper="871" speaker="Xenia">
+      <SceneUttr lower="858" upper="871" punct="!">
+        <SceneWord lower="858" upper="862" text="Toll"/>
+        <SceneWord lower="863" upper="870" text="gemacht"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="873" upper="914" language="de" identifier="positive_feedback">
+    <SceneTurn lower="900" upper="914" speaker="Xenia">
+      <SceneUttr lower="907" upper="914" punct="!">
+        <SceneWord lower="907" upper="913" text="Klasse"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="916" upper="959" language="de" identifier="positive_feedback">
+    <SceneTurn lower="943" upper="959" speaker="Xenia">
+      <SceneUttr lower="950" upper="959" punct="!">
+        <SceneWord lower="950" upper="954" text="Sehr"/>
+        <SceneWord lower="955" upper="958" text="gut"/>
+      </SceneUttr>
+    </SceneTurn>
+  </SceneObject>
+  <SceneObject lower="961" upper="1012" language="de" identifier="positive_feedback">
+    <SceneTurn lower="988" upper="1012" speaker="Xenia">
+      <SceneUttr lower="995" upper="998" punct=",">
+        <SceneWord lower="995" upper="997" text="Ja"/>
+      </SceneUttr>
+      <SceneUttr lower="999" upper="1012" punct="!">
+        <SceneWord lower="999" upper="1003" text="dass"/>
+        <SceneWord lower="1004" upper="1007" text="ist"/>
+        <SceneWord lower="1008" upper="1011" text="gut"/>
       </SceneUttr>
     </SceneTurn>
   </SceneObject>

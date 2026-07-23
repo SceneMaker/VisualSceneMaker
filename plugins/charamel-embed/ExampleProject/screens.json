@@ -129,6 +129,14 @@
         "type": "sl-button"
       },
       {
+        "sendsValue": "welcome",
+        "sendsVar": "scene",
+        "variant": "danger",
+        "style": {"align-self": "flex-end"},
+        "label": "Scene - Welcome",
+        "type": "sl-button"
+      },
+      {
         "sendsValue": "",
         "sendsVar": "character_url",
         "variant": "default",
