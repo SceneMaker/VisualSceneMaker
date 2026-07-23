@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SceneFlow Guide — Visual SceneMaker</title>
+<style>
+  :root {
+    --bg: #f6f3ee;
+    --surface: #ffffff;
+    --surface-soft: #f5f7fb;
+    --border: #e3ddd4;
+    --text: #1f2328;
+    --muted: #6b7280;
+    --accent: #5b8edc;
+    --accent-pressed: #416aa6;
+    --accent-light: #d6e2f6;
+    --code-bg: #f5f7fb;
+    --code-border: #e3ddd4;
+    --note-bg: #fbf3de;
+    --note-border: #ecdcb0;
+    --note-text: #9a7d2a;
+    --radius-sm: 8px;
+    --radius-md: 14px;
+    --shadow-soft: 0 8px 18px rgba(0, 0, 0, 0.08);
+    --cmd-var: #a85800;
+    --cmd-scene: #99195e;
+    --cmd-action: #007b76;
+    font-size: 14px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: "Space Grotesk", "IBM Plex Sans", "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.55;
+  }
+
+  .page-wrap { display: flex; min-height: 100vh; }
+
+  nav {
+    width: 210px; min-width: 210px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    padding: 1.4rem 0 2rem;
+    position: sticky; top: 0; height: 100vh; overflow-y: auto;
+    flex-shrink: 0;
+  }
+  nav .nav-brand {
+    display: flex; align-items: center; gap: 0.55rem;
+    padding: 0 1.2rem 1rem;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 0.75rem;
+  }
+  nav .nav-brand img { width: 26px; height: 26px; flex-shrink: 0; }
+  nav .nav-brand span {
+    font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--muted);
+  }
+  nav a {
+    display: block; padding: 0.28rem 1.2rem;
+    font-size: 0.82rem; color: var(--muted);
+    text-decoration: none; border-left: 2px solid transparent;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  nav a:hover { color: var(--accent); }
+  nav .nav-group { font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.07em; color: #a9a690; padding: 0.9rem 1.2rem 0.25rem; }
+
+  main { flex: 1; padding: 2.5rem 2.5rem 4rem; max-width: 920px; }
+
+  .title-row { display: flex; align-items: center; gap: 0.9rem; margin-bottom: 0.4rem; }
+  .title-row img { width: 44px; height: 44px; flex-shrink: 0; }
+  h1 { font-size: 1.6rem; font-weight: 700; color: var(--text); }
+  .version-pill {
+    display: inline-block; font-size: 0.72rem; font-weight: 600;
+    color: var(--accent-pressed); background: var(--accent-light);
+    padding: 0.15rem 0.55rem; border-radius: 999px; margin-left: 0.6rem;
+    vertical-align: middle;
+  }
+  .subtitle { color: var(--muted); margin-bottom: 2.5rem; font-size: 0.9rem; }
+
+  h2 {
+    font-size: 1.05rem; font-weight: 700; margin: 3rem 0 1rem;
+    padding-bottom: 0.4rem; border-bottom: 2px solid var(--border);
+    color: var(--text);
+    scroll-margin-top: 1.5rem;
+  }
+  h2:first-of-type { margin-top: 0; }
+
+  h3 { font-size: 0.92rem; font-weight: 700; margin: 1.6rem 0 0.5rem; scroll-margin-top: 1.5rem; }
+
+  p, li { font-size: 0.88rem; margin-bottom: 0.6rem; }
+  ul, ol { padding-left: 1.3rem; margin-bottom: 0.8rem; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-soft);
+    padding: 1.1rem 1.3rem;
+    margin-bottom: 1.2rem;
+  }
+
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--code-border);
+    border-radius: var(--radius-sm);
+    padding: 0.85rem 1rem;
+    font-size: 0.82rem;
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    overflow-x: auto;
+    line-height: 1.8;
+    margin: 0.5rem 0 0.8rem;
+    white-space: pre;
+  }
+  code { font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; }
+  p code, li code, td code { background: var(--code-bg); padding: 0.1rem 0.3rem; border-radius: 3px; font-size: 0.85rem; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 0.83rem; margin-bottom: 0.8rem; }
+  th { text-align: left; padding: 0.35rem 0.6rem; background: var(--code-bg);
+    border-bottom: 2px solid var(--border); color: var(--muted); font-size: 0.75rem;
+    text-transform: uppercase; letter-spacing: 0.05em; }
+  td { padding: 0.5rem 0.6rem; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+
+  .note {
+    background: var(--note-bg); border: 1px solid var(--note-border); border-radius: var(--radius-sm);
+    padding: 0.6rem 0.9rem; font-size: 0.82rem; margin: 0.6rem 0 0.8rem;
+  }
+  .note strong { color: var(--note-text); }
+
+  .icon-inline { display: inline-block; width: 1em; height: 1em; vertical-align: -0.15em; margin: 0 0.15em; }
+
+  /* Real screenshots, straight from the running editor — see each caption for which project. */
+  .sf-shot {
+    display: block; max-width: 100%; height: auto;
+    border: 1px solid var(--border); border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-soft);
+    margin: 0.5rem 0 0.3rem;
+  }
+  .sf-caption { color: var(--muted); font-size: 0.78rem; margin: 0 0 1rem; }
+  .sf-shot-row { display: flex; gap: 1rem; flex-wrap: wrap; align-items: flex-start; }
+  .sf-shot-row > div { flex: 1; min-width: 220px; }
+
+  /* Small inline icons cropped directly from the real blocks palette / canvas. */
+  .sf-icon { height: 2.2em; vertical-align: -0.6em; margin: 0 0.3em; border-radius: 4px; }
+  .sf-icon-inline { height: 1.3em; vertical-align: -0.3em; margin: 0 0.1em; }
+  /* Dedicated icon column for the Edges table — bigger still, since the arrow glyph itself is a
+     thin line that doesn't fill its own button (real icon, not redrawn, so some surrounding
+     whitespace is unavoidable — sized up to compensate). */
+  td.sf-icon-cell { width: 96px; text-align: center; }
+  .sf-icon-lg { height: 64px; width: auto; border-radius: 6px; }
+
+  /* Command-type pill — matches CMD_TYPE_COLORS exactly (Var/Scene/Action node badges). */
+  .sf-cmd {
+    display: inline-block; font-size: 0.72rem; font-weight: 700; color: #fff;
+    padding: 0.05em 0.45em; border-radius: 3px; vertical-align: 0.05em;
+  }
+
+  hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
+
+  footer { color: var(--muted); font-size: 0.78rem; padding-top: 1rem; }
+</style>
+</head>
+<body>
+
+<div class="page-wrap">
+
+<nav id="sidebar">
+  <div class="nav-brand">
+    <img src="/images/vsm_logo.svg" alt="">
+    <span>SceneFlow Guide</span>
+  </div>
+
+  <div class="nav-group">Basics</div>
+  <a href="#overview">Overview</a>
+  <a href="#canvas">Canvas &amp; panels</a>
+
+  <div class="nav-group">Building blocks</div>
+  <a href="#nodes">Nodes &amp; supernodes</a>
+  <a href="#edges">Edges</a>
+
+  <div class="nav-group">Terminology</div>
+  <a href="#agents-scenes">Agents &amp; scenes</a>
+  <a href="#variables">Variables</a>
+  <a href="#commands">Commands</a>
+  <a href="#parallel">Parallel sub-flows</a>
+
+  <div class="nav-group">Patterns</div>
+  <a href="#pattern-wait">Waiting</a>
+  <a href="#pattern-branch">Branching</a>
+  <a href="#pattern-parallel">Launching parallel work</a>
+  <a href="#pattern-react">Reacting to events</a>
+</nav>
+
+<main>
+  <div class="title-row">
+    <img src="/images/vsm_logo.svg" alt="Visual SceneMaker">
+    <h1>SceneFlow Guide<span class="version-pill">v1.1 · 2026-07-23</span></h1>
+  </div>
+  <p class="subtitle">How SceneFlow editing is structured, and how to model common interaction patterns</p>
+
+  <h2 id="overview">Overview</h2>
+  <p>
+    A SceneFlow is a hierarchical state machine — the control logic that decides <em>when</em> a
+    scene plays, <em>which</em> branch to take, and <em>how long</em> to wait, react, or run things
+    in parallel. It's built from <strong>nodes</strong> (states) connected by <strong>edges</strong>
+    (transitions), grouped into nested <strong>supernodes</strong> where useful. SceneScript (the
+    dialogue text — see the <a href="/web-ui/scenescript-help.html" target="vsmScriptSyntaxHelp">SceneScript
+    Guide</a>) supplies <em>what gets said</em>; SceneFlow decides <em>when</em>.
+  </p>
+  <div class="note">
+    <strong>Learn by example.</strong> The <code>doc/DesignPatterns</code> project ships with this
+    repository and is a real, loadable VSM project — every pattern screenshot on this page (waiting,
+    branching, parallel launches, reacting to events) is a runnable node group inside it. Open it in
+    the editor and step through each labeled region on the canvas.
+  </div>
+
+  <h2 id="canvas">Canvas &amp; panels</h2>
+  <p>The SceneFlow editor has three regions (screenshots below from the ExampleProject):</p>
+
+  <h3>Blocks (left)</h3>
+  <p>Drag or click to create nodes, supernodes, comments, and edges. Below that: the project's configured <strong>Agents</strong> and available <strong>Scenes</strong>.</p>
+  <img class="sf-shot" src="sceneflow-help-assets/blocks-panel.png" alt="Blocks panel: shapes, edges, agents, and scenes" style="max-width:320px">
+  <p class="sf-caption">ExampleProject — the shapes/edges palette, then its Agents (gui, time, Bob, Xenia) and Scenes lists.</p>
+
+  <h3>Canvas (center)</h3>
+  <p>The graph itself — click a node/edge to select it, drag to reposition, double-click a supernode to step into it (breadcrumbs at the top track your path back out).</p>
+  <img class="sf-shot" src="sceneflow-help-assets/canvas-overview.png" alt="SceneFlow canvas showing nodes, supernodes, and edges">
+  <p class="sf-caption">ExampleProject's root chart: three supernodes (red — each a declared start node, marked by the red triangle), plain nodes (gray/brown), an e-edge, a t-edge self-loop, and several i-edges with their conditions labeled.</p>
+
+  <h3>Inspector (right)</h3>
+  <p>Details for the current selection, or — with nothing selected — the current chart's <strong>start nodes</strong>, <strong>type definitions</strong>, and <strong>variables</strong>, each editable with Apply/Reset.</p>
+  <img class="sf-shot" src="sceneflow-help-assets/inspector-panel.png" alt="Inspector panel: start nodes, types, variables" style="max-width:320px">
+  <p class="sf-caption">ExampleProject — 3 of its 8 declared start nodes, no custom types, and its 21 global variables.</p>
+
+  <p>
+    Canvas toolbar (top of the graph): <strong>Toggle node snap</strong> (magnet icon — snaps
+    dragged nodes to a grid) and <strong>Toggle info overlays</strong> (circled <em>i</em> — shows
+    or hides the small colored command badges on nodes, see <a href="#commands">Commands</a>
+    below). This guide's own button sits right beside them.
+  </p>
+
+  <h2 id="nodes">Nodes &amp; supernodes</h2>
+  <p>Three shapes appear on the canvas and in the blocks palette:</p>
+  <table>
+    <tr><th>Shape</th><th>Meaning</th></tr>
+    <tr>
+      <td><img class="sf-icon" src="sceneflow-help-assets/icon-node.png" alt="Node icon"><strong>Node</strong></td>
+      <td>A basic state. Can carry commands (see <a href="#commands">Commands</a>) and outgoing edges.</td>
+    </tr>
+    <tr>
+      <td><img class="sf-icon" src="sceneflow-help-assets/icon-supernode.png" alt="Supernode icon"><strong>Supernode</strong></td>
+      <td>A node that contains its own nested sub-chart (own nodes, edges, and optionally its own local variables). Double-click to step inside; breadcrumbs at the top of the canvas track the path back to the root.</td>
+    </tr>
+    <tr>
+      <td><img class="sf-icon" src="sceneflow-help-assets/icon-comment.png" alt="Comment icon"><strong>Comment</strong></td>
+      <td>Free-floating annotation text on the canvas — not part of the runtime logic at all. <code>doc/DesignPatterns</code> uses these extensively to label each example region (visible in every pattern screenshot below).</td>
+    </tr>
+  </table>
+
+  <h3>Start nodes &amp; history</h3>
+  <p>
+    Every chart (the root SceneFlow, or any supernode) can declare <strong>one or more start
+    nodes</strong> — every one of them launches the moment that chart becomes active, each as its
+    own independent thread of execution. A start node or supernode is marked with a small red
+    triangle <img class="sf-icon-inline" src="sceneflow-help-assets/icon-start-marker.png" alt="start node triangle marker">
+    at its left edge — visible on <code>wait for agent</code>, <code>controls</code>, and
+    <code>scene controls</code> in the canvas screenshot above.
+  </p>
+  <p>
+    A supernode can also have exactly one <strong>History</strong> node: re-entering the supernode
+    through it resumes whichever child was last active there, instead of running the start nodes
+    again from scratch.
+  </p>
+
+  <h2 id="edges">Edges</h2>
+  <p>
+    An edge is a transition from one node to another. VSM has six edge types, distinguished by
+    color everywhere in the editor (palette, canvas, and this guide):
+  </p>
+  <table>
+    <tr><th>Edge</th><th></th><th>Fires when…</th></tr>
+    <tr>
+      <td class="sf-icon-cell"><img class="sf-icon-lg" src="sceneflow-help-assets/icon-eedge.png" alt="E-edge icon"></td>
+      <td><strong>E</strong></td>
+      <td><strong>Epsilon (unconditional)</strong> — fires immediately, no condition. The default "just go to the next node" edge.</td>
+    </tr>
+    <tr>
+      <td class="sf-icon-cell"><img class="sf-icon-lg" src="sceneflow-help-assets/icon-pedge.png" alt="P-edge icon"></td>
+      <td><strong>P</strong></td>
+      <td><strong>Probabilistic</strong> — fires by chance. Give each outgoing p-edge a probability (e.g. three edges at 33/33/33 for a random three-way split); VSM normalizes them.</td>
+    </tr>
+    <tr>
+      <td class="sf-icon-cell"><img class="sf-icon-lg" src="sceneflow-help-assets/icon-fedge.png" alt="F-edge icon"></td>
+      <td><strong>F</strong></td>
+      <td><strong>Fork</strong> — launches a <em>new, independent, concurrent</em> thread at the target, without stopping the source's own thread. Several f-edges from one node start several parallel branches at once. See <a href="#parallel">Parallel sub-flows</a>.</td>
+    </tr>
+    <tr>
+      <td class="sf-icon-cell"><img class="sf-icon-lg" src="sceneflow-help-assets/icon-cedge.png" alt="C-edge icon"></td>
+      <td><strong>C</strong></td>
+      <td><strong>Conditional</strong> — fires when its boolean expression is true. Checked when the source node is (re-)entered — a <em>deferred</em> check, not a continuous one (see <a href="#pattern-react">Reacting to events</a>).</td>
+    </tr>
+    <tr>
+      <td class="sf-icon-cell"><img class="sf-icon-lg" src="sceneflow-help-assets/icon-tedge.png" alt="T-edge icon"></td>
+      <td><strong>T</strong></td>
+      <td><strong>Timeout</strong> — fires after a delay: a fixed number of ms, a random range (min–max), or a variable holding the ms value. The core building block for "wait, then continue."</td>
+    </tr>
+    <tr>
+      <td class="sf-icon-cell"><img class="sf-icon-lg" src="sceneflow-help-assets/icon-iedge.png" alt="I-edge icon"></td>
+      <td><strong>I</strong></td>
+      <td><strong>Interrupt</strong> — evaluated continuously, not just when a node is (re-)entered. The instant its condition is true, it <em>preemptively aborts</em> whatever is currently running (the action(s) involved must be built to be interruptible) and jumps to the target immediately.</td>
+    </tr>
+  </table>
+  <div class="note">
+    <strong>I-edge vs. c-edge, precisely.</strong> An i-edge is a preemptive abort — it can cut off
+    an in-progress action mid-flight. A c-edge is a deferred check — it waits for the current
+    action to finish naturally, and only then looks at the condition. Same-looking logic, very
+    different responsiveness; see <a href="#pattern-react">Reacting to events</a> for the
+    fixed pattern.
+  </div>
+
+  <h2 id="agents-scenes">Agents &amp; scenes</h2>
+  <p>
+    An <strong>agent</strong> is a name bound to a plugin instance ("device") in the project
+    config — the same name used as a command's actor prefix
+    (<code>[&lt;agent&gt;: command ...]</code> in SceneScript, or as the actor of a PlayAction).
+    <code>doc/DesignPatterns</code> configures one: an agent named <code>timer</code> bound to the
+    Timer plugin's executor, used throughout its waiting/timing examples
+    (<code>[timer init id=one]</code>, <code>[timer time id=one var=time]</code>).
+  </p>
+  <p>
+    A <strong>scene</strong> is a named block of dialogue authored in SceneScript
+    (<code>scene &lt;lang&gt; &lt;name&gt;</code>) and triggered from SceneFlow via a node's
+    PlayScene command. The Blocks panel's <strong>Scenes</strong> list (filterable, grouped by
+    language) shows every scene defined in the project's SceneScript.
+  </p>
+
+  <h2 id="variables">Variables</h2>
+  <p>
+    Declared per chart — the root SceneFlow (<strong>global</strong>, visible everywhere) or a
+    supernode (<strong>local</strong>, visible to it and its own children only). Both scopes are
+    edited the same way, shown on-canvas as small variable badges, and listed in the Inspector's
+    Variables section (see the screenshot under <a href="#canvas">Canvas &amp; panels</a> above).
+    Double-click a variable there (or use the <strong>+</strong> to add a new one) to open its
+    editor:
+  </p>
+  <img class="sf-shot" src="sceneflow-help-assets/variable-editor.png" alt="Add/edit variable definition dialog" style="max-width:480px">
+  <p class="sf-caption">ExampleProject — editing <code>bg_color</code>, a String variable used to carry the requested background color into an inline command (see <a href="#commands">Commands</a> below).</p>
+  <p>
+    Common types: <code>Bool</code>, <code>Int</code>, <code>String</code>, and <code>Event</code>
+    (a typed slot fed by something outside the flow itself — e.g. an incoming signal like a button
+    press — commonly the condition an i-edge watches).
+  </p>
+
+  <h2 id="commands">Commands</h2>
+  <p>
+    A node can carry commands, run once when the node is entered. In compact/info view (the
+    circled-<em>i</em> toggle) each shows as a small colored pill on the node:
+  </p>
+  <table>
+    <tr><th>Badge</th><th>Command</th><th>Does</th></tr>
+    <tr><td><span class="sf-cmd" style="background:var(--cmd-var)">Var</span></td><td>Assignment</td><td>Sets a variable, e.g. <code>cnt = cnt + 1</code>.</td></tr>
+    <tr><td><span class="sf-cmd" style="background:var(--cmd-scene)">Scene</span></td><td>PlayScene</td><td>Plays a SceneScript scene by name — the bridge from SceneFlow to actual dialogue.</td></tr>
+    <tr><td><span class="sf-cmd" style="background:var(--cmd-action)">Action</span></td><td>PlayAction</td><td>Fires a single agent command directly (the same syntax as an inline SceneScript action, e.g. <code>[timer init id=one]</code>), without needing a scene at all.</td></tr>
+  </table>
+  <p>
+    Click a node's command badge (or select the node and use the Inspector's Commands list) to
+    open its editor — schema-driven from the target agent's own declared commands, so every field
+    below is generated from the plugin, not hand-typed:
+  </p>
+  <img class="sf-shot" src="sceneflow-help-assets/command-editor.png" alt="Command editor dialog showing a PlayAction command" style="max-width:600px">
+  <p class="sf-caption">ExampleProject — the <code>do background</code> node's PlayAction command: agent <code>Xenia</code>, action <code>background</code>, with its <code>color</code> argument bound to the <code>bg_color</code> variable (<code>"[Xenia background color=" + bg_color + "]"</code>) — the exact variable edited above.</p>
+
+  <h2 id="parallel">Parallel sub-flows</h2>
+  <p>Two ways a SceneFlow runs more than one thing at once:</p>
+  <ul>
+    <li><strong>Multiple start nodes</strong> on the same chart — every one launches immediately and independently the moment that chart activates. The root SceneFlow can have as many as needed, each its own concurrent branch from the very start.</li>
+    <li><strong>F-edges</strong> mid-flow — one node forks off into several new concurrent branches without stopping its own thread (see <a href="#pattern-parallel">Launching parallel work</a> below).</li>
+  </ul>
+
+  <hr>
+
+  <h2 id="pattern-wait">Pattern: waiting</h2>
+  <p>A t-edge is the simplest "pause, then continue" — fixed duration, a random range, or a duration read from a variable:</p>
+  <img class="sf-shot" src="sceneflow-help-assets/pattern-tedge.png" alt="Waiting pattern examples using timeout edges">
+  <p class="sf-caption">doc/DesignPatterns — fixed 1000ms; a random 200–1000ms range (paired here with the Timer plugin's own init/time commands to measure the actual elapsed wait); and a wait read from the <code>timeout</code> variable.</p>
+
+  <h2 id="pattern-branch">Pattern: branching</h2>
+  <p><strong>By condition (if / then / else):</strong> several c-edges checked in order, with a plain e-edge as the "none matched" fallback — and, when a condition might never become true, a t-edge as a "nothing matched in time" fallback instead:</p>
+  <img class="sf-shot" src="sceneflow-help-assets/pattern-cedge-branch.png" alt="Branching by condition, with and without a timeframe fallback">
+  <p class="sf-caption">doc/DesignPatterns — plain if/then/else (fallback: e-edge to Case3), and the timeframe variant (fallback: t-edge to Case3 after 1000ms).</p>
+  <p><strong>By probability:</strong> p-edges instead of c-edges, each carrying its own share:</p>
+  <img class="sf-shot" src="sceneflow-help-assets/pattern-pedge.png" alt="Branching by probability" style="max-width:600px">
+  <p class="sf-caption">doc/DesignPatterns — three 33% p-edges to three options, plus a fourth 1% p-edge back to itself.</p>
+  <div class="note">
+    <strong>Tip from <code>doc/DesignPatterns</code>.</strong> That extra 1% self-loop is a cheap way
+    to occasionally re-roll instead of only ever landing on exactly one of three fixed options.
+  </div>
+
+  <h2 id="pattern-parallel">Pattern: launching parallel work</h2>
+  <p>One node, several f-edges — each target starts running immediately and independently:</p>
+  <img class="sf-shot" src="sceneflow-help-assets/pattern-fedge.png" alt="Launching parallel work with fork edges" style="max-width:600px">
+  <p class="sf-caption">doc/DesignPatterns — one f-edge per parallel action, all three launched at once.</p>
+
+  <h2 id="pattern-react">Pattern: reacting to events</h2>
+  <p>
+    The same goal — "react once a variable/event changes" — realized three ways, worst to best
+    (all three exist side by side in <code>doc/DesignPatterns</code> for direct comparison):
+  </p>
+  <img class="sf-shot" src="sceneflow-help-assets/pattern-cedge-react.png" alt="BAD and OKAY reacting patterns" style="max-width:640px">
+  <p class="sf-caption">doc/DesignPatterns — <strong>OKAY</strong> (left): a t-edge self-loop (1000ms) plus a c-edge check. <strong>BAD</strong> (right): an e-edge self-loop plus a c-edge check.</p>
+  <div class="card">
+    <strong style="color:#e26d5a">BAD — react directly if a variable changed</strong>
+    <p>The e-edge self-loop re-enters instantly with no delay at all, so the condition is re-evaluated as fast as the interpreter can cycle. Correct, but burns CPU for no benefit.</p>
+  </div>
+  <div class="card">
+    <strong style="color:#a06a4b">OKAY — react realized with a time loop</strong>
+    <p>Far cheaper, but reaction now lags by up to one whole loop interval — a real button press might sit unnoticed for up to a second.</p>
+  </div>
+  <img class="sf-shot" src="sceneflow-help-assets/pattern-iedge.png" alt="GOOD reacting pattern using interrupt edges">
+  <p class="sf-caption">doc/DesignPatterns — <strong>GOOD</strong>, two forms: an i-edge on a supernode itself (left, interrupting whatever is running inside it), and directly on a node (right).</p>
+  <div class="card">
+    <strong style="color:#5bae7a">GOOD — interrupt and react immediately</strong>
+    <p>No polling loop at all. The instant the i-edge's condition (e.g. an incoming <code>Event</code> variable matching a button-press signal) becomes true, it preemptively interrupts whatever's running and reacts right away.</p>
+  </div>
+
+  <footer>Visual SceneMaker — SceneFlow editing reference · v1.1 · 2026-07-23</footer>
+</main>
+
+</div>
+</body>
+</html>

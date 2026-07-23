@@ -318,6 +318,10 @@ Additional architecture details are in `doc/`:
 - `scenescript-help.html` - SceneScript authoring guide (scenes/turns/commands/editing). Keep this
   current whenever script authoring gains a new construct or editing feature, and bump its version
   pill/footer when it changes.
+- `sceneflow-help.html` - SceneFlow editing guide (canvas/panels, node & edge types, terminology,
+  interaction-flow patterns drawn from `doc/DesignPatterns`). Opened via the "?" button next to the
+  SceneFlow canvas's info-overlay toggle. Keep current whenever SceneFlow editing gains a new
+  construct, and keep its pattern examples in sync with `doc/DesignPatterns` if one changes.
 - `screen-element-reference.html` - htmlgui-ws screen element reference
 
 ## Plugin Spec Versioning
