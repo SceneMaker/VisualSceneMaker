@@ -20,8 +20,10 @@ dependencies {
     // Desktop logic adapter (JPL)
     implementation project(':core-logic-jpl')
 
-    // Minimal plugins for runtime (optional, can be configured per deployment)
+    // Plugins for runtime (optional, add/remove per deployment's project needs)
     implementation project(':plugins:timer')
+    implementation project(':plugins:charamel-embed')
+    implementation project(':plugins:htmlgui-ws')
 
     // SLF4J for Javalin logging
     implementation 'org.slf4j:slf4j-simple:2.0.17'
