@@ -360,6 +360,13 @@ public class RunTimeProject {
 
     // Unload the runtime objects of the project
     public final boolean unload() {
+        // Stop the interpreter's SceneFlow thread (and its TimeoutManager timer) even if the
+        // caller never called abort()/Stop first — e.g. a client that closes a still-running
+        // project directly. Safe unconditionally: launch() always constructs a brand new
+        // Interpreter, so this can never affect a subsequent launch on this same instance.
+        if (mInterpreter != null) {
+            mInterpreter.abort();
+        }
         // Unload the scene player
         if (mRunTimePlayer != null) {
             mRunTimePlayer.unload();

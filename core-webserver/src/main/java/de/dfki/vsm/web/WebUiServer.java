@@ -347,7 +347,11 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
     private boolean mAllowExternal = false;
     private ServerMode mMode = ServerMode.FULL_EDITOR;
     private String mAuthToken;
-    private final Map<String, ProjectRef> projectStore = new HashMap<>();
+    // Phase 6 (doc/vsm-workspace-platform-plan.md): mutated from many HTTP/WS handler methods
+    // that run concurrently on Javalin's Jetty thread pool — a plain HashMap here is a real
+    // data race under concurrent project opens, not just a theoretical one (found via the
+    // ~20-concurrent-session load test).
+    private final Map<String, ProjectRef> projectStore = new ConcurrentHashMap<>();
     private final Map<String, WsCommandHandler> wsCommandRegistry = new HashMap<>();
     private final java.util.Set<WsContext> wsSessions = ConcurrentHashMap.newKeySet();
 
@@ -2499,6 +2503,13 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         // real OS port bound forever while the pool believes it's free to hand out again.
         if (ref != null && ref.runtimeProject != null) {
             ref.runtimeProject.unload();
+            // Phase 6 (load/soak test): unload() only stops the Interpreter it currently owns
+            // (safe on every call, including a plain Stop that may relaunch this same instance
+            // later) — but RunTimeProject's own EventDispatcher/Timer is a final field for this
+            // instance's whole lifetime, so it must only be aborted here, at genuine teardown,
+            // never from unload() itself. Confirmed via a real rolling soak test: without this,
+            // ~1 "EventCasterTimer" thread leaked per close+reopen cycle.
+            ref.runtimeProject.getEventDispatcher().abort();
         }
         mPortPoolManager.release(projectId);
     }
@@ -4781,6 +4792,9 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
                 // Phase 4: actually stop the plugins before releasing their ports — see
                 // removeProjectById for why this matters (servers that outlive "close").
                 ref.runtimeProject.unload();
+                // Phase 6: genuine teardown — see removeProjectById's comment on why this is
+                // only safe/correct here, not inside unload() itself.
+                ref.runtimeProject.getEventDispatcher().abort();
             }
             unregisterProjectDispatcher(ref);
             projectStore.remove(pid);
