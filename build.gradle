@@ -1016,3 +1016,64 @@ task 'run-lan-secure'(type: JavaExec) {
         )
     }
 }
+
+// Manual-run-only: refreshes the vsm-server-git ops repo's vsm/ deployment snapshot from this
+// repo's current committed source (doc/vsm-workspace-platform-plan.md Phase 5's "refresh the
+// stale vsm/ snapshot" follow-up). Deliberately NOT wired into build/check/any other task, and
+// not something an agent should invoke on your behalf — this exists so you can run it yourself
+// and review the result before committing in the ops repo.
+//
+// Usage:
+//   ./gradlew syncOpsRepoVsmSnapshot
+//   ./gradlew syncOpsRepoVsmSnapshot -PopsRepoPath=/path/to/vsm-server-git
+//   ./gradlew syncOpsRepoVsmSnapshot -PopsRepoRef=some-other-branch-or-commit
+//
+// What it does: `git archive <ref>` of THIS repo (tracked, committed content only — no
+// untracked working-tree junk, no build artifacts, no secrets, since none of those are
+// git-tracked here anyway) into a staging directory, then mirrors that staging directory onto
+// <opsRepoPath>/vsm using Gradle's Sync (i.e. rsync --delete semantics: files removed upstream
+// are removed from the snapshot too). Only ever touches the vsm/ subdirectory of the ops repo —
+// never .git/, never anything else in that repo — and refuses to run at all unless
+// <opsRepoPath>/.git exists, as a guard against a typo'd path.
+//
+// After running, inspect and commit manually:
+//   cd <opsRepoPath> && git status --short vsm/ && git diff --stat vsm/
+tasks.register('syncOpsRepoVsmSnapshot') {
+    group = 'deployment'
+    description = 'Refreshes the vsm-server-git ops repo\'s vsm/ snapshot from this repo\'s ' +
+            'current committed source. Manual-run-only — see comment above this task in build.gradle.'
+    doLast {
+        def opsRepoPath = project.findProperty('opsRepoPath') ?:
+                "${System.getProperty('user.home')}/Code/Repo/vsm-server-git"
+        if (!file("${opsRepoPath}/.git").exists()) {
+            throw new GradleException(
+                    "No git repo found at ${opsRepoPath} (no .git) — refusing to write there.\n" +
+                    "Pass the correct path with -PopsRepoPath=/path/to/vsm-server-git")
+        }
+        def dest = file("${opsRepoPath}/vsm")
+        if (dest.name != 'vsm') {
+            // Sync deletes anything in `dest` not present in the fresh export — this check
+            // exists purely so a future edit to this task can't silently repoint it somewhere
+            // more dangerous than the one directory it's meant for.
+            throw new GradleException("Refusing to sync into a directory not named 'vsm': ${dest}")
+        }
+        def ref = project.findProperty('opsRepoRef') ?: 'HEAD'
+
+        def stagingDir = file("${buildDir}/tmp/opsRepoSyncStaging")
+        delete stagingDir
+        stagingDir.mkdirs()
+        def archiveFile = file("${buildDir}/tmp/opsRepoSync.tar")
+        exec { commandLine 'git', 'archive', '--format=tar', '-o', archiveFile.absolutePath, ref }
+        exec { commandLine 'tar', '-x', '-f', archiveFile.absolutePath, '-C', stagingDir.absolutePath }
+        delete archiveFile
+
+        project.sync {
+            from(stagingDir)
+            into(dest)
+        }
+        delete stagingDir
+
+        logger.lifecycle("Synced '${ref}' into ${dest}")
+        logger.lifecycle("Review before committing:  cd ${opsRepoPath} && git status --short vsm/ && git diff --stat vsm/")
+    }
+}
