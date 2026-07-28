@@ -5,10 +5,12 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -95,6 +97,74 @@ public class ProjectAssignmentTable {
         }
         UserEntry entry = users.get(userId);
         return entry != null && entry.admin;
+    }
+
+    /**
+     * All known users, for the Phase 3 admin panel. Never {@code null} — an absent/unreadable
+     * file just means an empty {@code "users"} object, since listing is how an admin discovers
+     * there's nothing configured yet (as opposed to {@link #canAccess}/{@link #isAdmin}, where
+     * absent vs. broken must be distinguishable to pick fail-open vs. fail-closed).
+     */
+    public JSONObject listUsersAsJson() {
+        Map<String, UserEntry> users = load();
+        JSONObject root = new JSONObject();
+        root.put("users", usersToJson(users != null ? users : new HashMap<>()));
+        return root;
+    }
+
+    /** Inserts or replaces {@code userId}'s entry, then writes the file (atomically). */
+    public synchronized void setUser(String userId, boolean admin, Set<String> projects) {
+        Map<String, UserEntry> users = load();
+        if (users == null) {
+            users = new HashMap<>();
+        }
+        Set<String> trimmed = new HashSet<>();
+        for (String p : projects) {
+            if (p != null && !p.isBlank()) {
+                trimmed.add(p.trim());
+            }
+        }
+        users.put(userId, new UserEntry(admin, trimmed));
+        writeAll(users);
+    }
+
+    /** No-op if {@code userId} isn't present, or the file doesn't exist yet. */
+    public synchronized void removeUser(String userId) {
+        Map<String, UserEntry> users = load();
+        if (users == null || !users.containsKey(userId)) {
+            return;
+        }
+        users.remove(userId);
+        writeAll(users);
+    }
+
+    private JSONObject usersToJson(Map<String, UserEntry> users) {
+        JSONObject usersJson = new JSONObject();
+        for (Map.Entry<String, UserEntry> e : users.entrySet()) {
+            JSONObject u = new JSONObject();
+            u.put("admin", e.getValue().admin);
+            u.put("projects", new JSONArray(e.getValue().projects));
+            usersJson.put(e.getKey(), u);
+        }
+        return usersJson;
+    }
+
+    /** Write-temp-then-atomic-move so a concurrent read never sees a half-written file. */
+    private void writeAll(Map<String, UserEntry> users) {
+        JSONObject root = new JSONObject();
+        root.put("users", usersToJson(users));
+        try {
+            Path parent = mFile.getParent();
+            if (parent != null) {
+                Files.createDirectories(parent);
+            }
+            Path tmp = mFile.resolveSibling(mFile.getFileName() + ".tmp");
+            Files.writeString(tmp, root.toString(2), StandardCharsets.UTF_8);
+            Files.move(tmp, mFile, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+            mLoggedMissing.set(false); // file now exists — re-arm the "missing" warning if it's ever deleted again
+        } catch (IOException exc) {
+            throw new UncheckedIOException("Failed to write " + mFile, exc);
+        }
     }
 
     /** {@code null} means "not configured — fail open"; a map (possibly empty) means "fail closed for anyone not in it". */

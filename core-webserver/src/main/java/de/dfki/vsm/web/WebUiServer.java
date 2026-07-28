@@ -2842,6 +2842,7 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         mApp.get(API_PREFIX + "/transport", this::handleTransport);
         mApp.get(API_PREFIX + "/token", this::handleToken);
         mApp.get(API_PREFIX + "/ca", this::handleCaCertificate);
+        mApp.get(API_PREFIX + "/me", this::handleMe);
         mApp.get("/setup", this::handleSetupPage);
         mApp.get(API_PREFIX + "/projects", this::handleProjects);
         mApp.get(API_PREFIX + "/projects/recent", this::handleRecentProjects);
@@ -2922,6 +2923,11 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
             mApp.post(API_PREFIX + "/projects/saved", this::handleProjectSaved);
             mApp.post(API_PREFIX + "/projects/{pid}/script/diagnostics", this::handleScriptDiagnostics);
             mApp.get("/images/{file}", this::handleImage);
+            // Phase 3 (doc/vsm-workspace-platform-plan.md): admin-only project assignment
+            // management, so this no longer requires hand-editing the flat file directly.
+            mApp.get(API_PREFIX + "/admin/users", this::handleAdminListUsers);
+            mApp.put(API_PREFIX + "/admin/users/{userId}", this::handleAdminSetUser);
+            mApp.delete(API_PREFIX + "/admin/users/{userId}", this::handleAdminRemoveUser);
         }
 
         // Runtime-only REST endpoints (direct runtime control via REST)
@@ -3264,17 +3270,23 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
      */
     private UserToken resolveUserToken(JWTClaimsSet claims) {
         String subject = claims.getSubject();
+        // Cache is keyed by the stable `sub` (never changes for a given Keycloak account),
+        // but the UserToken's userId — what ProjectAssignmentTable and the admin API key
+        // entries on — is the human-readable username. An admin who needs to pre-assign a
+        // project to someone who has never logged in yet can only reasonably know their
+        // username, never Keycloak's opaque per-account UUID. Falls back to the subject only
+        // if the claim is genuinely missing/malformed.
         return mOidcUserTokensBySubject.computeIfAbsent(subject, key -> {
-            String displayName = key;
+            String userId = key;
             try {
                 String preferredUsername = claims.getStringClaim("preferred_username");
                 if (preferredUsername != null && !preferredUsername.isBlank()) {
-                    displayName = preferredUsername;
+                    userId = preferredUsername;
                 }
             } catch (Exception ignored) {
-                // Keep the subject as the display name if the claim is missing/malformed.
+                // Keep the subject as the userId if the claim is missing/malformed.
             }
-            return mSessionGate.provision(key, displayName, Set.of());
+            return mSessionGate.provision(userId, userId, Set.of());
         });
     }
 
@@ -3313,6 +3325,65 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         }
         UserToken caller = ctx != null ? wsUserTokens.get(ctx.sessionId()) : null;
         return caller != null && mProjectAssignmentTable.canAccess(caller.userId, ref.path);
+    }
+
+    /**
+     * {@code GET /api/v1/me} — lets the frontend discover its own identity/admin status
+     * to decide whether to show the Phase 3 admin panel at all. Note {@code caller} here is
+     * guaranteed non-null whenever OIDC is enabled: {@code jwtAuthFilter} already 401'd
+     * anything without a valid token before this handler ever runs (this route isn't in its
+     * /info-/ca exemption list).
+     */
+    private void handleMe(Context ctx) {
+        JSONObject response = new JSONObject();
+        response.put("oidcEnabled", mJwtAuthenticator.isEnabled());
+        if (mJwtAuthenticator.isEnabled()) {
+            UserToken caller = ctx.attribute("userToken");
+            response.put("userId", caller.userId);
+            response.put("displayName", caller.displayName);
+            response.put("admin", mProjectAssignmentTable.isAdmin(caller.userId));
+        }
+        writeJson(ctx, response);
+    }
+
+    /** Throws {@link ForbiddenResponse} unless the caller is authenticated and an admin. */
+    private UserToken requireAdmin(Context ctx) {
+        UserToken caller = mJwtAuthenticator.isEnabled() ? ctx.<UserToken>attribute("userToken") : null;
+        if (caller == null || !mProjectAssignmentTable.isAdmin(caller.userId)) {
+            throw new ForbiddenResponse("Admin access required");
+        }
+        return caller;
+    }
+
+    private void handleAdminListUsers(Context ctx) {
+        requireAdmin(ctx);
+        writeJson(ctx, mProjectAssignmentTable.listUsersAsJson());
+    }
+
+    /** {@code PUT /api/v1/admin/users/{userId}} body: {@code {"admin": bool, "projects": [...]}} — upserts. */
+    private void handleAdminSetUser(Context ctx) {
+        requireAdmin(ctx);
+        String userId = ctx.pathParam("userId");
+        JSONObject body = new JSONObject(ctx.body());
+        boolean admin = body.optBoolean("admin", false);
+        Set<String> projects = new HashSet<>();
+        JSONArray arr = body.optJSONArray("projects");
+        if (arr != null) {
+            for (int i = 0; i < arr.length(); i++) {
+                String p = arr.optString(i, null);
+                if (p != null && !p.isBlank()) {
+                    projects.add(p);
+                }
+            }
+        }
+        mProjectAssignmentTable.setUser(userId, admin, projects);
+        writeJson(ctx, mProjectAssignmentTable.listUsersAsJson());
+    }
+
+    private void handleAdminRemoveUser(Context ctx) {
+        requireAdmin(ctx);
+        mProjectAssignmentTable.removeUser(ctx.pathParam("userId"));
+        writeJson(ctx, mProjectAssignmentTable.listUsersAsJson());
     }
 
     // ========== Standard REST Endpoints ==========

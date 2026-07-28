@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Comparator;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -98,5 +99,80 @@ class ProjectAssignmentTableTest {
         assertDoesNotThrow(() -> table.canAccess("anyone", "/any/path"));
         assertFalse(table.canAccess("anyone", "/any/path"));
         assertFalse(table.isAdmin("anyone"));
+    }
+
+    @Test
+    void setUserCreatesTheFileWhenAbsent() {
+        Path file = dir.resolve("project-assignments.json");
+        ProjectAssignmentTable table = new ProjectAssignmentTable(file);
+        assertFalse(Files.exists(file));
+
+        table.setUser("alice", false, Set.of("/app/project/X"));
+
+        assertTrue(Files.exists(file));
+        assertTrue(table.canAccess("alice", "/app/project/X"));
+        assertFalse(table.canAccess("bob", "/app/project/X"));
+    }
+
+    @Test
+    void setUserUpdatesExistingEntryWithoutLosingOtherUsers() throws IOException {
+        ProjectAssignmentTable table = writeAndLoad(
+                "{\"users\": {\"alice\": {\"admin\": false, \"projects\": [\"/app/project/X\"]}}}");
+
+        table.setUser("bob", true, Set.of());
+
+        assertTrue(table.canAccess("alice", "/app/project/X")); // untouched
+        assertTrue(table.isAdmin("bob"));
+
+        table.setUser("alice", false, Set.of("/app/project/Y")); // replace, not merge
+
+        assertFalse(table.canAccess("alice", "/app/project/X"));
+        assertTrue(table.canAccess("alice", "/app/project/Y"));
+        assertTrue(table.isAdmin("bob")); // still untouched
+    }
+
+    @Test
+    void removeUserDeletesOnlyThatEntry() throws IOException {
+        ProjectAssignmentTable table = writeAndLoad(
+                "{\"users\": {\"alice\": {\"admin\": false, \"projects\": [\"/app/project/X\"]},"
+                        + "\"bob\": {\"admin\": true, \"projects\": []}}}");
+
+        table.removeUser("alice");
+
+        assertFalse(table.canAccess("alice", "/app/project/X"));
+        assertTrue(table.isAdmin("bob")); // untouched
+    }
+
+    @Test
+    void removeUserOnMissingFileIsANoOp() {
+        ProjectAssignmentTable table = new ProjectAssignmentTable(dir.resolve("does-not-exist.json"));
+
+        assertDoesNotThrow(() -> table.removeUser("alice"));
+        assertFalse(Files.exists(dir.resolve("does-not-exist.json"))); // still doesn't exist
+    }
+
+    @Test
+    void listUsersAsJsonReflectsCurrentState() throws IOException {
+        ProjectAssignmentTable table = writeAndLoad(
+                "{\"users\": {\"alice\": {\"admin\": false, \"projects\": [\"/app/project/X\"]}}}");
+
+        var before = table.listUsersAsJson().getJSONObject("users");
+        assertTrue(before.has("alice"));
+        assertFalse(before.has("bob"));
+
+        table.setUser("bob", true, Set.of());
+
+        var after = table.listUsersAsJson().getJSONObject("users");
+        assertTrue(after.has("alice"));
+        assertTrue(after.has("bob"));
+        assertTrue(after.getJSONObject("bob").getBoolean("admin"));
+    }
+
+    @Test
+    void listUsersAsJsonNeverThrowsEvenWhenUnconfigured() {
+        ProjectAssignmentTable table = new ProjectAssignmentTable(dir.resolve("does-not-exist.json"));
+
+        var users = table.listUsersAsJson().getJSONObject("users");
+        assertEquals(0, users.keySet().size());
     }
 }

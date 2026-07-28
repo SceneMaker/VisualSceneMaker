@@ -21,6 +21,7 @@
   import IconPerson from "./icons/IconPerson.svelte";
   import VarBadge from './VarBadge.svelte';
   import SiaPanel from './SiaPanel.svelte';
+  import AdminPanel from './AdminPanel.svelte';
   import InsertActionDialog from './InsertActionDialog.svelte';
   import ActionParamField from './ActionParamField.svelte';
   import { EMOTION_TYPES } from './emotionTypes.js';
@@ -43,6 +44,10 @@
   // Non-null once ensureKeycloakAuth() has initialized it (info.oidcEnabled === true).
   // Kept as plain state, not reactive — keycloak-js manages its own internal token lifecycle.
   let keycloak = null;
+  // Phase 3 (doc/vsm-workspace-platform-plan.md): set by fetchMe() after login;
+  // stays false whenever OIDC is disabled (no admin concept without an identity).
+  let isAdmin = false;
+  let showAdminPanel = false;
   let autoConnectAttempted = false;
   let autoConnectTimer = null;
   let autoConnectAttempts = 0;
@@ -3872,6 +3877,7 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
       await fetchLocalToken();
       await loadInfo();
       await ensureKeycloakAuth();
+      await fetchMe();
       await Promise.all([loadProjects(), loadPreferences(), loadRecent(), loadTutorials()]);
       const wsOk = await connectWs();
       if (!wsOk) {
@@ -4112,6 +4118,21 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
           keycloak.login();
         });
     };
+  }
+
+  // Phase 3: discovers whether the current user is an admin, to decide whether to show
+  // the admin panel entry point at all. A no-op (isAdmin stays false) when OIDC is off.
+  async function fetchMe() {
+    if (!info?.oidcEnabled) {
+      isAdmin = false;
+      return;
+    }
+    try {
+      const me = await apiGet("/api/v1/me");
+      isAdmin = me?.admin === true;
+    } catch (err) {
+      isAdmin = false;
+    }
   }
 
   function isLocalHost() {
@@ -15143,6 +15164,9 @@ Sentence:
     <section class="panel landing-panel landing-panel--start">
       <header class="panel-title">
         <h2>Projects</h2>
+        {#if isAdmin}
+          <button type="button" on:click={() => (showAdminPanel = true)}>Admin</button>
+        {/if}
       </header>
 
       <div class="panel-body">
@@ -20391,6 +20415,12 @@ Sentence:
     {apiPost}
     {apiPut}
     {sendCommand}
+  />
+
+  <AdminPanel
+    open={showAdminPanel}
+    onClose={() => (showAdminPanel = false)}
+    {apiFetch}
   />
 
   {#if insertActionDialogState}
