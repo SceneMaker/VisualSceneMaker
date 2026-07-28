@@ -119,7 +119,9 @@ import io.javalin.config.JavalinConfig;
 import io.javalin.http.Header;
 import io.javalin.http.staticfiles.Location;
 import io.javalin.http.Context;
+import io.javalin.http.UnauthorizedResponse;
 import io.javalin.websocket.WsContext;
+import com.nimbusds.jwt.JWTClaimsSet;
 import de.dfki.vsm.runtime.tls.TlsRuntimeContext;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.HttpConnectionFactory;
@@ -380,6 +382,15 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
     private final RuntimeOrchestrator mRuntimeOrchestrator = new RuntimeOrchestrator();
     /** Named-user token registry; the legacy shared token is registered on server start. */
     private final SessionGate mSessionGate = new SessionGate();
+    /** No-op unless OIDC_ISSUER_URL is set — see doc/vsm-workspace-platform-plan.md Phase 1. */
+    private final JwtAuthenticator mJwtAuthenticator = new JwtAuthenticator();
+    /** Caches one UserToken per JWT `sub` so we don't re-provision a fresh SessionGate entry on every request. */
+    private final ConcurrentHashMap<String, UserToken> mOidcUserTokensBySubject = new ConcurrentHashMap<>();
+    /** WS session-id → UserToken for connections that completed the first-message auth handshake. */
+    private final ConcurrentHashMap<String, UserToken> wsUserTokens = new ConcurrentHashMap<>();
+    /** WS session-id → pending "authenticate or be disconnected" timeout, cancelled on success/close. */
+    private final ConcurrentHashMap<String, ScheduledFuture<?>> wsAuthTimeouts = new ConcurrentHashMap<>();
+    private static final int WS_AUTH_TIMEOUT_SECONDS = 10;
     private final ConcurrentHashMap<String, RuntimeVizRateLimiter> runtimeVizRateLimiters = new ConcurrentHashMap<>();
     private final RuntimeGateway runtimeGateway;
     private final RuntimeCommandService runtimeCommandService = new RuntimeCommandService();
@@ -2814,6 +2825,11 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
     }
 
     private void registerRoutes() {
+        // No-op unless OIDC_ISSUER_URL is configured. /info and /ca are exempt since the
+        // frontend must be able to fetch them (server capabilities, CA cert) before it has
+        // ever obtained a token — see doc/vsm-workspace-platform-plan.md Phase 1.
+        mApp.before(API_PREFIX + "/*", this::jwtAuthFilter);
+
         // Common endpoints (available in both modes)
         mApp.get(API_PREFIX + "/info", this::handleInfo);
         mApp.get(API_PREFIX + "/transport", this::handleTransport);
@@ -2928,23 +2944,50 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
             ws.onConnect(ctx -> {
                 ctx.session.setIdleTimeout(java.time.Duration.ofMinutes(10));
                 sLogger.message("WS client connected: " + ctx.sessionId());
-                wsSessions.add(ctx);
-                cancelShutdown();
+                if (mJwtAuthenticator.isEnabled()) {
+                    // Decision 13: no token in the URL — the connection opens unauthenticated
+                    // and must send it as its first message, or it's dropped after a timeout.
+                    // Not added to wsSessions (so it never receives broadcasts) until then.
+                    ScheduledFuture<?> timeout = mShutdownScheduler.schedule(() -> {
+                        if (!wsUserTokens.containsKey(ctx.sessionId())) {
+                            sLogger.warning("WS client " + ctx.sessionId() + " did not authenticate in time, closing.");
+                            ctx.closeSession(1008, "Authentication timeout");
+                        }
+                    }, WS_AUTH_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+                    wsAuthTimeouts.put(ctx.sessionId(), timeout);
+                } else {
+                    wsSessions.add(ctx);
+                    cancelShutdown();
+                }
             });
             ws.onClose(ctx -> {
                 wsSessions.remove(ctx);
+                wsUserTokens.remove(ctx.sessionId());
+                ScheduledFuture<?> timeout = wsAuthTimeouts.remove(ctx.sessionId());
+                if (timeout != null) {
+                    timeout.cancel(false);
+                }
                 cleanupWsSubscription(ctx);
                 scheduleShutdownIfEmpty();
             });
             ws.onError(ctx -> {
                 sLogger.warning("WS client error: " + ctx.sessionId());
                 wsSessions.remove(ctx);
+                wsUserTokens.remove(ctx.sessionId());
+                ScheduledFuture<?> timeout = wsAuthTimeouts.remove(ctx.sessionId());
+                if (timeout != null) {
+                    timeout.cancel(false);
+                }
                 cleanupWsSubscription(ctx);
                 scheduleShutdownIfEmpty();
             });
             ws.onMessage(ctx -> {
-                // Intercept presence/session commands before regular dispatch
                 String raw = ctx.message();
+                if (mJwtAuthenticator.isEnabled() && !wsUserTokens.containsKey(ctx.sessionId())) {
+                    handleWsAuthMessage(ctx, raw);
+                    return;
+                }
+                // Intercept presence/session commands before regular dispatch
                 if (raw.contains("\"Session.Subscribe\"")) {
                     handleSessionSubscribe(ctx, raw);
                 } else if (raw.contains("\"Presence.Update\"")) {
@@ -2954,6 +2997,42 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
                 }
             });
         });
+    }
+
+    /**
+     * Handles the first message on a not-yet-authenticated WS connection (Decision 13).
+     * Expects {@code {"type":"auth","token":"<jwt>"}}; on success, joins wsSessions and
+     * cancels the connect-time timeout; on failure, closes the connection.
+     */
+    private void handleWsAuthMessage(WsContext ctx, String raw) {
+        String tokenValue = null;
+        try {
+            JSONObject msg = new JSONObject(raw);
+            tokenValue = msg.optString("token", null);
+        } catch (Exception exc) {
+            // Fall through with tokenValue == null — treated as an invalid auth attempt below.
+        }
+        JWTClaimsSet claims = mJwtAuthenticator.verify(tokenValue);
+        if (claims == null) {
+            sLogger.warning("WS client " + ctx.sessionId() + " sent an invalid auth message, closing.");
+            try {
+                ctx.send(new JSONObject().put("type", "auth").put("status", "error")
+                        .put("message", "Invalid token").toString());
+            } catch (Exception ignored) {
+                // Best-effort — the connection is being closed regardless.
+            }
+            ctx.closeSession(1008, "Invalid token");
+            return;
+        }
+        UserToken userToken = resolveUserToken(claims);
+        wsUserTokens.put(ctx.sessionId(), userToken);
+        ScheduledFuture<?> timeout = wsAuthTimeouts.remove(ctx.sessionId());
+        if (timeout != null) {
+            timeout.cancel(false);
+        }
+        wsSessions.add(ctx);
+        cancelShutdown();
+        ctx.send(new JSONObject().put("type", "auth").put("status", "ok").toString());
     }
 
     // ========== Runtime-Only REST Endpoints ==========
@@ -3143,6 +3222,55 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         writeJson(ctx, snapshot);
     }
 
+    // ========== OIDC authentication (Phase 1, doc/vsm-workspace-platform-plan.md) ==========
+
+    /**
+     * Registered as {@code before(API_PREFIX + "/*")}. No-op unless OIDC is configured
+     * (Decision 3: VSM validates JWTs itself rather than trusting a proxy header). Exempts
+     * /info and /ca since those must be reachable before a client has ever obtained a token.
+     */
+    private void jwtAuthFilter(Context ctx) {
+        if (!mJwtAuthenticator.isEnabled()) {
+            return;
+        }
+        String path = ctx.path();
+        if (path.equals(API_PREFIX + "/info") || path.equals(API_PREFIX + "/ca")) {
+            return;
+        }
+        String authHeader = ctx.header("Authorization");
+        String bearer = (authHeader != null && authHeader.startsWith("Bearer "))
+                ? authHeader.substring("Bearer ".length()).trim()
+                : null;
+        JWTClaimsSet claims = mJwtAuthenticator.verify(bearer);
+        if (claims == null) {
+            throw new UnauthorizedResponse("Missing or invalid token");
+        }
+        ctx.attribute("userToken", resolveUserToken(claims));
+    }
+
+    /**
+     * One UserToken per JWT `sub`, cached for the process lifetime rather than re-provisioning
+     * SessionGate on every request (JWTs are stateless/re-verified each time; SessionGate's
+     * token registry is not). Roles are empty for now — Phase 3 (admin role) will populate
+     * this from Keycloak claims; until then this call only establishes *identity*, not
+     * authorization, matching Phase 1's scope ("nothing is authorized yet, just authenticated").
+     */
+    private UserToken resolveUserToken(JWTClaimsSet claims) {
+        String subject = claims.getSubject();
+        return mOidcUserTokensBySubject.computeIfAbsent(subject, key -> {
+            String displayName = key;
+            try {
+                String preferredUsername = claims.getStringClaim("preferred_username");
+                if (preferredUsername != null && !preferredUsername.isBlank()) {
+                    displayName = preferredUsername;
+                }
+            } catch (Exception ignored) {
+                // Keep the subject as the display name if the claim is missing/malformed.
+            }
+            return mSessionGate.provision(key, displayName, Set.of());
+        });
+    }
+
     // ========== Standard REST Endpoints ==========
 
     private void handleInfo(Context ctx) {
@@ -3198,6 +3326,23 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         info.put("secure", TlsRuntimeContext.isEnabled());
         info.put("caAvailable", TlsRuntimeContext.isEnabled()
                 && TlsRuntimeContext.getRootCaPath() != null);
+        // OIDC discovery — deliberately exposed on this unauthenticated endpoint, since the
+        // frontend needs it *before* it has ever obtained a token, to know where to redirect.
+        info.put("oidcEnabled", mJwtAuthenticator.isEnabled());
+        if (mJwtAuthenticator.isEnabled()) {
+            String issuer = mJwtAuthenticator.getIssuer();
+            info.put("oidcIssuer", issuer);
+            String clientId = System.getenv("OIDC_CLIENT_ID");
+            info.put("oidcClientId", clientId != null ? clientId : "");
+            // keycloak-js's constructor wants {url, realm}, not a combined issuer URL — derive
+            // both from Keycloak's own "{authServerUrl}/realms/{realm}" issuer convention rather
+            // than requiring a second, redundantly-configured env var.
+            int realmsIdx = issuer.indexOf("/realms/");
+            if (realmsIdx >= 0) {
+                info.put("oidcAuthServerUrl", issuer.substring(0, realmsIdx));
+                info.put("oidcRealm", issuer.substring(realmsIdx + "/realms/".length()));
+            }
+        }
         if (TlsRuntimeContext.isEnabled()) {
             info.put("securePort", mSecurePort);
         }

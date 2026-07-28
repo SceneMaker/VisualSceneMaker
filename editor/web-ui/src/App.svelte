@@ -24,6 +24,7 @@
   import InsertActionDialog from './InsertActionDialog.svelte';
   import ActionParamField from './ActionParamField.svelte';
   import { EMOTION_TYPES } from './emotionTypes.js';
+  import Keycloak from 'keycloak-js';
 
   // sessionStorage is tab-specific and survives page reloads (including force-reload)
   // but NOT tab close+reopen. This ensures each browser tab has a distinct identity,
@@ -39,6 +40,9 @@
   })();
 
   let token = localStorage.getItem("vsm_token") || "";
+  // Non-null once ensureKeycloakAuth() has initialized it (info.oidcEnabled === true).
+  // Kept as plain state, not reactive — keycloak-js manages its own internal token lifecycle.
+  let keycloak = null;
   let autoConnectAttempted = false;
   let autoConnectTimer = null;
   let autoConnectAttempts = 0;
@@ -3867,6 +3871,7 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
     try {
       await fetchLocalToken();
       await loadInfo();
+      await ensureKeycloakAuth();
       await Promise.all([loadProjects(), loadPreferences(), loadRecent(), loadTutorials()]);
       const wsOk = await connectWs();
       if (!wsOk) {
@@ -4076,6 +4081,37 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
       return false;
     }
     return false;
+  }
+
+  // Only does anything if the server has OIDC configured (info.oidcEnabled) — deployments
+  // that never set OIDC_ISSUER_URL keep using fetchLocalToken() exactly as before. Must run
+  // after loadInfo() (needs info.oidc*) and before connectWs() (needs `token` populated).
+  async function ensureKeycloakAuth() {
+    if (!info?.oidcEnabled) return;
+    if (keycloak) return; // already initialized this page load
+    keycloak = new Keycloak({
+      url: info.oidcAuthServerUrl,
+      realm: info.oidcRealm,
+      clientId: info.oidcClientId
+    });
+    await keycloak.init({ onLoad: "login-required", pkceMethod: "S256" });
+    token = keycloak.token;
+    localStorage.setItem("vsm_token", token);
+    keycloak.onTokenExpired = () => {
+      keycloak
+        .updateToken(30)
+        .then((refreshed) => {
+          if (refreshed) {
+            token = keycloak.token;
+            localStorage.setItem("vsm_token", token);
+          }
+        })
+        .catch(() => {
+          // Refresh failed (e.g. the Keycloak session itself expired) — only a fresh
+          // login can fix this, same as any other identity provider's session timeout.
+          keycloak.login();
+        });
+    };
   }
 
   function isLocalHost() {
@@ -7842,9 +7878,19 @@ Sentence:
         connectedServerName = location.host;
       }
 
-      const url = token ? `${baseUrl}?token=${encodeURIComponent(token)}` : baseUrl;
+      // Decision 13 (doc/vsm-workspace-platform-plan.md): when OIDC is enabled, the token
+      // is never put in the URL (nginx/browser history/log exposure) — it's sent as the
+      // first message immediately after the socket opens instead. Deployments without OIDC
+      // keep today's query-param behavior unchanged.
+      const useFirstMessageAuth = info?.oidcEnabled === true;
+      const url = (!useFirstMessageAuth && token)
+          ? `${baseUrl}?token=${encodeURIComponent(token)}`
+          : baseUrl;
       ws = new WebSocket(url);
       ws.onopen = () => {
+        if (useFirstMessageAuth && token) {
+          ws.send(JSON.stringify({ type: "auth", token }));
+        }
         wsConnected = true;
         recentLoaded = false;
         recentError = "";

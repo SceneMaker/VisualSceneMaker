@@ -23,6 +23,7 @@ dependencies {
     implementation group: 'org.reflections', name: 'reflections', version: '0.9.12'
     implementation group: 'org.javassist', name: 'javassist', version: '3.30.2-GA'
     implementation group: 'org.json', name: 'json', version: '20240303'
+    implementation group: 'com.nimbusds', name: 'nimbus-jose-jwt', version: '9.40'
 
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.3.2'
     testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.3.2'
