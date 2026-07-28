@@ -120,6 +120,7 @@ import io.javalin.http.Header;
 import io.javalin.http.staticfiles.Location;
 import io.javalin.http.Context;
 import io.javalin.http.UnauthorizedResponse;
+import io.javalin.http.ForbiddenResponse;
 import io.javalin.websocket.WsContext;
 import com.nimbusds.jwt.JWTClaimsSet;
 import de.dfki.vsm.runtime.tls.TlsRuntimeContext;
@@ -391,6 +392,8 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
     /** WS session-id → pending "authenticate or be disconnected" timeout, cancelled on success/close. */
     private final ConcurrentHashMap<String, ScheduledFuture<?>> wsAuthTimeouts = new ConcurrentHashMap<>();
     private static final int WS_AUTH_TIMEOUT_SECONDS = 10;
+    /** No-op unless OIDC is enabled — see doc/vsm-workspace-platform-plan.md Phase 2. */
+    private final ProjectAssignmentTable mProjectAssignmentTable = new ProjectAssignmentTable();
     private final ConcurrentHashMap<String, RuntimeVizRateLimiter> runtimeVizRateLimiters = new ConcurrentHashMap<>();
     private final RuntimeGateway runtimeGateway;
     private final RuntimeCommandService runtimeCommandService = new RuntimeCommandService();
@@ -2829,6 +2832,10 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         // frontend must be able to fetch them (server capabilities, CA cert) before it has
         // ever obtained a token — see doc/vsm-workspace-platform-plan.md Phase 1.
         mApp.before(API_PREFIX + "/*", this::jwtAuthFilter);
+        // Phase 2: gates every /projects/{pid}/* route generically (save, config, dashboard,
+        // etc.) in one place rather than touching each handler individually. Runs after
+        // jwtAuthFilter above, so ctx.attribute("userToken") is already populated.
+        mApp.before(API_PREFIX + "/projects/{pid}/*", this::projectAccessFilter);
 
         // Common endpoints (available in both modes)
         mApp.get(API_PREFIX + "/info", this::handleInfo);
@@ -3269,6 +3276,43 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
             }
             return mSessionGate.provision(key, displayName, Set.of());
         });
+    }
+
+    // ========== Project-level authorization (Phase 2, doc/vsm-workspace-platform-plan.md) ==========
+
+    /**
+     * Registered as {@code before(API_PREFIX + "/projects/{pid}/*")}. No-op unless OIDC is
+     * enabled (Decision 5 only applies once there's an authenticated identity to restrict).
+     * Lets an unresolvable {@code pid} fall through to the actual handler's own 404 rather
+     * than answering for it here.
+     */
+    private void projectAccessFilter(Context ctx) {
+        if (!mJwtAuthenticator.isEnabled()) {
+            return;
+        }
+        ProjectRef ref = projectStore.get(ctx.pathParam("pid"));
+        if (ref == null) {
+            return;
+        }
+        UserToken caller = ctx.attribute("userToken");
+        if (caller == null || !mProjectAssignmentTable.canAccess(caller.userId, ref.path)) {
+            throw new ForbiddenResponse("Not authorized for this project");
+        }
+    }
+
+    /**
+     * WS equivalent of {@link #projectAccessFilter}. There's no Javalin before()-style
+     * per-route filter for WS message dispatch — this is checked explicitly at each of the
+     * handful of entry points that resolve a {@code projectId} to a {@link ProjectRef}
+     * (Runtime.* commands via {@link #handleWsMessage}, {@code Session.Subscribe},
+     * {@code Presence.Update}), rather than one central filter.
+     */
+    private boolean wsCallerCanAccess(WsContext ctx, ProjectRef ref) {
+        if (!mJwtAuthenticator.isEnabled() || ref == null) {
+            return true;
+        }
+        UserToken caller = ctx != null ? wsUserTokens.get(ctx.sessionId()) : null;
+        return caller != null && mProjectAssignmentTable.canAccess(caller.userId, ref.path);
     }
 
     // ========== Standard REST Endpoints ==========
@@ -4174,9 +4218,18 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
     }
 
     private void handleProjects(Context ctx) {
+        // Phase 2: the SHARED projectStore holds every user's open projects — without this,
+        // a non-admin would see (names/paths of) everyone else's open projects too, not just
+        // be blocked from opening them.
+        UserToken caller = mJwtAuthenticator.isEnabled() ? ctx.<UserToken>attribute("userToken") : null;
+        boolean isAdmin = caller != null && mProjectAssignmentTable.isAdmin(caller.userId);
         JSONObject response = new JSONObject();
         JSONArray list = new JSONArray();
         for (ProjectRef ref : projectStore.values()) {
+            if (mJwtAuthenticator.isEnabled() && !isAdmin
+                    && (caller == null || !mProjectAssignmentTable.canAccess(caller.userId, ref.path))) {
+                continue;
+            }
             JSONObject entry = new JSONObject();
             entry.put("projectId", ref.id);
             entry.put("name", ref.name);
@@ -4441,6 +4494,15 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
             ctx.status(400).result("Missing path");
             return;
         }
+        // Phase 2: this is the "open by arbitrary path" entry point Decision 5 explicitly
+        // calls out for lockdown — {pid}-scoped projectAccessFilter doesn't cover this route
+        // at all, since there's no pid yet until after this succeeds.
+        if (mJwtAuthenticator.isEnabled()) {
+            UserToken caller = ctx.attribute("userToken");
+            if (caller == null || !mProjectAssignmentTable.canAccess(caller.userId, normalizedPath)) {
+                throw new ForbiddenResponse("Not authorized to open this project");
+            }
+        }
         String projectId = ensureProject(normalizedPath, fileName(normalizedPath), false);
         if (projectId == null || projectId.isBlank()) {
             ctx.status(400).result("Failed to open project: " + normalizedPath);
@@ -4454,6 +4516,14 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
     }
 
     private void handleProjectCreate(Context ctx) {
+        // Phase 2 / Decision 5: no self-serve project creation for regular users once OIDC
+        // is on — projects are admin-assigned upfront, not spun up freely.
+        if (mJwtAuthenticator.isEnabled()) {
+            UserToken caller = ctx.attribute("userToken");
+            if (caller == null || !mProjectAssignmentTable.isAdmin(caller.userId)) {
+                throw new ForbiddenResponse("Only admins can create new projects");
+            }
+        }
         JSONObject body = new JSONObject(ctx.body());
         String name = body.optString("name", "Untitled");
         String baseDir = body.optString("baseDir", "");
@@ -7928,6 +7998,10 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
                 sendWsError(ctx, requestId, "Project not found: " + projectId);
                 return;
             }
+            if (!wsCallerCanAccess(ctx, ref)) {
+                sendWsError(ctx, requestId, "Not authorized for this project");
+                return;
+            }
             // Remove from any previous project subscription
             cleanupWsSubscription(ctx);
             // Persistent client token (stored in browser localStorage, survives page reloads)
@@ -8005,6 +8079,10 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
             ProjectRef ref = projectStore.get(projectId);
             if (ref == null) {
                 sendWsError(ctx, requestId, "Project not found: " + projectId);
+                return;
+            }
+            if (!wsCallerCanAccess(ctx, ref)) {
+                sendWsError(ctx, requestId, "Not authorized for this project");
                 return;
             }
             String userId = ctx.sessionId();
@@ -8257,6 +8335,18 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
             // ---- OperationLog: conflict check before dispatch ----
             String projectId = params.optString("projectId", "");
             ProjectRef ref = !projectId.isEmpty() ? projectStore.get(projectId) : null;
+
+            // Phase 2: covers every method that carries a resolvable projectId (Runtime.*,
+            // SceneFlow.* edit commands, etc.) in this one place rather than per-method.
+            if (!wsCallerCanAccess(ctx, ref)) {
+                JSONObject forbidden = new JSONObject();
+                if (!id.isEmpty()) forbidden.put("id", id);
+                forbidden.put("status", "error");
+                forbidden.put("message", "Not authorized for this project");
+                sender.accept(forbidden.toString());
+                return;
+            }
+
             if (ref != null && isEditingCommand(method) && mMode != ServerMode.RUNTIME_ONLY) {
                 OperationLog opLog = ref.collaborationSession.getOperationLog();
                 OperationLog.AppendResult check = opLog.checkConflict(method, params, basedOnSeq);
