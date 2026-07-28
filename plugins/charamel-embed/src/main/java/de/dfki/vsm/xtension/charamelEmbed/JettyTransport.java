@@ -42,6 +42,7 @@ public final class JettyTransport implements CharamelTransport {
     private final String mLicenseKey;
     private final String mAppName;
     private final String mEngineUrl;
+    private final String mPathPrefix;
     private final boolean mAutostartBrowser;
     private final String mBrowserPref;
     private final boolean mFullscreen;
@@ -60,6 +61,7 @@ public final class JettyTransport implements CharamelTransport {
         this.mAppName = config.getProperty("appName", "");
         this.mEngineUrl = config.getProperty("engineUrl",
                 "https://engine.vuppetmaster.com/api/engine/vuppetmaster.iife.js");
+        this.mPathPrefix = config.getProperty("_pathPrefix", "");
         this.mAutostartBrowser = "true".equalsIgnoreCase(config.getProperty("autostart_browser"));
         this.mBrowserPref = config.getProperty("browser", "");
         this.mFullscreen = "true".equalsIgnoreCase(config.getProperty("browser_fullscreen"));
@@ -86,16 +88,25 @@ public final class JettyTransport implements CharamelTransport {
             mLogger.message("--secure: serving character page over https :" + mPort);
         }
 
-        mApp.get("/", ctx -> ctx.redirect("/character.html"));
+        // Relative, not "/character.html": a reverse proxy may serve this page under a path
+        // prefix (e.g. VSM's inner-nginx dynamic plugin routing) — an absolute redirect would
+        // escape that prefix and land the browser on a different backend entirely.
+        mApp.get("/", ctx -> ctx.redirect("character.html"));
         mApp.get("/character.html", ctx -> serveResource(ctx, "/renderer/character.html", "text/html"));
         mApp.get("/vm-adapter.js", ctx -> serveResource(ctx, "/renderer/vm-adapter.js", "application/javascript"));
 
-        // Injects license/appName/engine URL into the page without editing the HTML.
+        // Injects license/appName/engine URL into the page without editing the HTML. pathPrefix
+        // is set by core-webserver's PortPoolManager (Option C, doc/vsm-workspace-platform-
+        // plan.md Phase 5 follow-up) only when VSM_PLUGIN_PATH_PREFIX_ENABLED is on — empty in
+        // every other deployment mode. vm-adapter.js uses it to route its WebSocket connection
+        // through the same nginx path prefix this page was itself loaded under, instead of a
+        // raw port it may not be able to reach directly.
         mApp.get("/vsm-config.js", ctx -> ctx.contentType("application/javascript").result(
             "window.VSM_CONFIG=" +
                 "{\"licenseKey\":\"" + escapeJson(mLicenseKey) + "\"," +
                  "\"appName\":\"" + escapeJson(mAppName) + "\"," +
-                 "\"engineUrl\":\"" + escapeJson(mEngineUrl) + "\"};"));
+                 "\"engineUrl\":\"" + escapeJson(mEngineUrl) + "\"," +
+                 "\"pathPrefix\":\"" + escapeJson(mPathPrefix) + "\"};"));
 
         mApp.ws("/ws", ws -> {
             ws.onConnect(ctx -> {

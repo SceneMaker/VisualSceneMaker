@@ -212,7 +212,16 @@
     // URL on its own, and the server (JettyTransport) needs it there to tag this specific
     // session so a real SceneFlow run can mute just the preview without muting other viewers.
     var wsQuery = qs.get('vsmPreview') ? '?vsmPreview=1' : '';
-    ws = new WebSocket(wsProto + '://' + location.host + '/ws' + wsQuery);
+    // Nginx-routed deployments (VSM's inner-nginx dynamic plugin routing, doc/vsm-workspace-
+    // platform-plan.md Phase 5): the browser may not be able to reach this page's raw port
+    // directly, so connect through the SAME path prefix the page was itself loaded under
+    // instead of the absolute /ws path. cfg.pathPrefix is server-injected (see vsm-config.js,
+    // JettyTransport.start()) only when VSM_PLUGIN_PATH_PREFIX_ENABLED is on — empty (falls
+    // through to the pre-existing /ws behavior, untouched) in every other deployment mode.
+    // charamel-embed's WS lives on the same single "port" property as the page itself (unlike
+    // htmlgui-ws's separate html_port/ws_port), so the path segment is always literally "port".
+    var wsPath = cfg.pathPrefix ? (cfg.pathPrefix + 'port/ws') : '/ws';
+    ws = new WebSocket(wsProto + '://' + location.host + wsPath + wsQuery);
     ws.onopen  = function () { console.log('VSM: WebSocket open'); };
     ws.onmessage = function (e) {
       try { vsmDispatch(JSON.parse(e.data)); }

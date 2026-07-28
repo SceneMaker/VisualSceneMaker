@@ -146,8 +146,21 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
         }
 
         app.get("/", ctx -> {
-            ctx.redirect("/index.html");
+            // Relative, not "/index.html": a reverse proxy may serve this page under a path
+            // prefix (e.g. VSM's inner-nginx dynamic plugin routing) — an absolute redirect
+            // would escape that prefix and land the browser on a different backend entirely.
+            ctx.redirect("index.html");
         });
+
+        // "_pathPrefix" is set by core-webserver's PortPoolManager (Option C, doc/vsm-workspace-
+        // platform-plan.md Phase 5 follow-up) only when VSM_PLUGIN_PATH_PREFIX_ENABLED is on —
+        // absent in every other deployment mode. Injected into the page (js/wsclient.js reads
+        // window.VSM_GUI_CONFIG) so the browser's WebSocket connects through the same nginx
+        // path prefix the HTML itself was loaded under, instead of a raw port it may not be
+        // able to reach directly.
+        final String pathPrefix = mConfig.getProperty("_pathPrefix", "");
+        app.get("/vsm-gui-config.js", ctx -> ctx.contentType("application/javascript").result(
+                "window.VSM_GUI_CONFIG={\"pathPrefix\":\"" + escapeJson(pathPrefix) + "\"};"));
 
         app.ws("/ws", ws -> {
             ws.onConnect(ctx -> {

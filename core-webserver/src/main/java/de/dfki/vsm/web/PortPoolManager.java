@@ -13,8 +13,10 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeSet;
 
 /**
@@ -46,9 +48,23 @@ public class PortPoolManager {
 
     private static final LOGDefaultLogger sLogger = LOGDefaultLogger.getInstance();
 
+    /**
+     * Non-port synthetic property PortPoolManager writes onto a PluginConfig alongside its
+     * port overrides — never matches the {@code *port} heuristic (Option C, doc/vsm-workspace-
+     * platform-plan.md follow-up on Phase 5): tells a plugin's own served page (htmlgui-ws,
+     * charamel-embed) the URL path prefix inner-nginx is routing it under, e.g.
+     * {@code /plugin/<projectId>/<pluginInstanceName>/}, so its WebSocket client can connect
+     * through that same prefix (swapping in {@code ws_port}) instead of a raw port the browser
+     * may not even be able to reach directly in this deployment mode. Empty/absent when
+     * path-prefix routing isn't in play — plugins must treat that as "use legacy direct-port
+     * behavior", not assume nginx is present.
+     */
+    static final String PATH_PREFIX_PROPERTY = "_pathPrefix";
+
     private final int mPoolStart;
     private final int mPoolSize;
     private final Path mRegistryFile;
+    private final boolean mPathPrefixEnabled;
 
     /** Every port not currently handed out. */
     private final TreeSet<Integer> mFreePorts = new TreeSet<>();
@@ -58,14 +74,20 @@ public class PortPoolManager {
     private final Map<String, Map<String, Integer>> mAllocationDetails = new LinkedHashMap<>();
 
     public PortPoolManager() {
-        this(intEnv("VSM_PORT_POOL_START", 20000), intEnv("VSM_PORT_POOL_SIZE", 200), resolveDefaultRegistryFile());
+        this(intEnv("VSM_PORT_POOL_START", 20000), intEnv("VSM_PORT_POOL_SIZE", 200), resolveDefaultRegistryFile(),
+                boolEnv("VSM_PLUGIN_PATH_PREFIX_ENABLED", false));
     }
 
     /** Package-private, exercised directly by tests with a small pool and a temp registry file. */
     PortPoolManager(int poolStart, int poolSize, Path registryFile) {
+        this(poolStart, poolSize, registryFile, false);
+    }
+
+    PortPoolManager(int poolStart, int poolSize, Path registryFile, boolean pathPrefixEnabled) {
         mPoolStart = poolStart;
         mPoolSize = poolSize;
         mRegistryFile = registryFile;
+        mPathPrefixEnabled = pathPrefixEnabled;
         for (int i = 0; i < poolSize; i++) {
             mFreePorts.add(poolStart + i);
         }
@@ -82,6 +104,11 @@ public class PortPoolManager {
             sLogger.warning("PortPoolManager: invalid " + name + "=" + raw + ", using default " + defaultValue);
             return defaultValue;
         }
+    }
+
+    private static boolean boolEnv(String name, boolean defaultValue) {
+        String raw = System.getenv(name);
+        return (raw == null || raw.isBlank()) ? defaultValue : Boolean.parseBoolean(raw.trim());
     }
 
     private static Path resolveDefaultRegistryFile() {
@@ -130,11 +157,18 @@ public class PortPoolManager {
         }
         List<Integer> allocated = new ArrayList<>(portRefs.size());
         Map<String, Integer> details = new LinkedHashMap<>();
+        Set<PluginConfig> touchedConfigs = new LinkedHashSet<>();
         for (PortRef ref : portRefs) {
             int port = mFreePorts.pollFirst();
             allocated.add(port);
             ref.pluginConfig.setProperty(ref.key, String.valueOf(port));
             details.put(ref.pluginConfig.getPluginName() + "." + ref.key, port);
+            touchedConfigs.add(ref.pluginConfig);
+        }
+        if (mPathPrefixEnabled) {
+            for (PluginConfig pc : touchedConfigs) {
+                pc.setProperty(PATH_PREFIX_PROPERTY, "/plugin/" + ownerKey + "/" + pc.getPluginName() + "/");
+            }
         }
         mAllocations.put(ownerKey, allocated);
         mAllocationDetails.put(ownerKey, details);

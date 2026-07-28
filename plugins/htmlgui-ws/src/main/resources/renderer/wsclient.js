@@ -41,6 +41,19 @@ var ws_hostname = (typeof window !== "undefined" && window.location
 var ws_port = (_wsParams && _wsParams.get("wsPort")) ? _wsParams.get("wsPort") : WS_PORT;
 var ws_endpoint = WS_ENDPOINT;
 
+// Nginx-routed deployments (VSM's inner-nginx dynamic plugin routing, doc/vsm-workspace-
+// platform-plan.md Phase 5): the browser may not be able to reach ws_port directly at all, so
+// instead of ws_hostname:ws_port, connect through the SAME path prefix this page was itself
+// loaded under, with html_port swapped for ws_port. window.VSM_GUI_CONFIG.pathPrefix is
+// server-injected (see vsm-gui-config.js, HtmlGuiWsExecutor.launch()) only when
+// VSM_PLUGIN_PATH_PREFIX_ENABLED is on — absent (empty string) in every other deployment mode,
+// in which case this falls through to the pre-existing ws_hostname:ws_port behavior untouched.
+var _guiConfig = (typeof window !== "undefined" && window.VSM_GUI_CONFIG) || {};
+var ws_path_prefix = _guiConfig.pathPrefix || "";
+var ws_url = ws_path_prefix
+    ? (ws_protocol + "://" + window.location.host + ws_path_prefix + "ws_port/ws")
+    : (ws_protocol + "://" + ws_hostname + ":" + ws_port + ws_endpoint);
+
 var eventMethod = window.addEventListener
     ? "addEventListener"
     : "attachEvent";
@@ -121,7 +134,7 @@ function forwardUpdateVar(wsMsg) {
  * Event handler for clicking on button "Connect"
  */
 function connect() {
-    openWSConnection(ws_protocol, ws_hostname, ws_port, ws_endpoint);
+    openWSConnection(ws_url);
 }
 
 /**
@@ -132,11 +145,9 @@ function disconnect() {
 }
 
 /**
- * Open a new WebSocket connection using the given parameters
+ * Open a new WebSocket connection to the given URL
  */
-function openWSConnection(protocol, hostname, port, endpoint) {
-    var webSocketURL = null;
-    webSocketURL = protocol + "://" + hostname + ":" + port + endpoint;
+function openWSConnection(webSocketURL) {
     console.log("openWSConnection to: " + webSocketURL);
     try {
         webSocket = new WebSocket(webSocketURL);

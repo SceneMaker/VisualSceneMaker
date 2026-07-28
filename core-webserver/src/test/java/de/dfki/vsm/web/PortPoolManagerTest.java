@@ -165,4 +165,39 @@ class PortPoolManagerTest {
         JSONObject afterRelease = new JSONObject(Files.readString(registry, StandardCharsets.UTF_8));
         assertFalse(afterRelease.has("project-1"));
     }
+
+    @Test
+    void pathPrefixDisabledByDefaultLeavesNoSyntheticProperty() {
+        PortPoolManager pool = new PortPoolManager(20000, 10, dir.resolve("registry.json"));
+        PluginConfig config = charamelEmbedLike("CharamelEmbedXenia");
+
+        pool.ensureAllocated("project-1", List.of(config));
+
+        assertNull(config.getProperty("_pathPrefix"));
+    }
+
+    @Test
+    void pathPrefixEnabledSetsPrefixOnlyOnConfigsThatGotPorts() {
+        PortPoolManager pool = new PortPoolManager(20000, 10, dir.resolve("registry.json"), true);
+        PluginConfig withPorts = charamelEmbedLike("CharamelEmbedXenia");
+        PluginConfig noPorts = new PluginConfig("device", "Timer", "de.dfki.vsm.xtension.timer.TimerExecutor");
+        noPorts.addProperty("_specVersion", "1.0");
+
+        pool.ensureAllocated("project-1", List.of(withPorts, noPorts));
+
+        assertEquals("/plugin/project-1/CharamelEmbedXenia/", withPorts.getProperty("_pathPrefix"));
+        assertNull(noPorts.getProperty("_pathPrefix"));
+    }
+
+    @Test
+    void pathPrefixEnabledIsIdempotentOnSecondEnsureAllocated() {
+        PortPoolManager pool = new PortPoolManager(20000, 10, dir.resolve("registry.json"), true);
+        PluginConfig config = charamelEmbedLike("CharamelEmbedXenia");
+
+        pool.ensureAllocated("project-1", List.of(config));
+        String prefix = config.getProperty("_pathPrefix");
+        pool.ensureAllocated("project-1", List.of(config));
+
+        assertEquals(prefix, config.getProperty("_pathPrefix"));
+    }
 }

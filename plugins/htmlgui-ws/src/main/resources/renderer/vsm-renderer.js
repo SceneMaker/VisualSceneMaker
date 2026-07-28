@@ -141,7 +141,7 @@ class VsmScreenRenderer extends LitElement {
                 schema = await window.__VSM_SCHEMA_READY;
             } else {
                 // Runtime mode: fetch screens.json from the plugin HTTP server.
-                const resp = await fetch('/screens.json');
+                const resp = await fetch('screens.json');
                 if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
                 schema = await resp.json();
             }

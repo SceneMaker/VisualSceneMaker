@@ -17,6 +17,10 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
+    <!-- Server-injected config (path prefix for nginx-routed deployments) — must load and
+         execute before wsclient.js; both deferred scripts run in this document order. -->
+    <script defer type="text/javascript" src="vsm-gui-config.js"></script>
+
     <!-- Connect to plugin server (after DOM so audioOverlay element exists) -->
     <script defer type="text/javascript" src="js/wsclient.js"></script>
 
@@ -53,7 +57,7 @@
         style="display:none; position:fixed; left:0; top:0; z-index:0; width:100%; height:100%; border:none;"></iframe>
 
 <!-- Schema-driven screen renderer (z-index 1, on top of character) -->
-<iframe id="screens" name="SCREENS" src="/screens.html" allow="autoplay" frameborder="0"
+<iframe id="screens" name="SCREENS" src="screens.html" allow="autoplay" frameborder="0"
         allowtransparency="true"
         style="position:fixed; left:0; top:0; z-index:1; width:100%; height:100%; border:none; background:transparent;"></iframe>
 
