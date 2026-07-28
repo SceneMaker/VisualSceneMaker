@@ -29,6 +29,9 @@ public final class RuntimeCommandService {
 
         void removeProject(String projectId);
 
+        /** Phase 4 (doc/vsm-workspace-platform-plan.md) — see PortPoolManager's class docs. */
+        void ensurePortsAllocated(String projectId);
+
         JSONObject errorResponse(String code, String message);
 
         void addRuntimeCapabilities(JSONObject target);
@@ -164,6 +167,9 @@ public final class RuntimeCommandService {
                     newState = "running";
                 }
             } else {
+                // Phase 4: must run before launch() — see PortPoolManager's class docs on why
+                // this is a no-op on any call after the project's very first launch.
+                context.ensurePortsAllocated(pid);
                 boolean launched = project.launch();
                 if (launched) {
                     success = project.start();

@@ -28,6 +28,7 @@ final class WebUiRuntimeCommandContext implements RuntimeCommandService.Context 
     private final Function<String, String> projectPath;
     private final Function<String, String> projectName;
     private final Consumer<String> removeProject;
+    private final Consumer<String> ensurePortsAllocated;
     private final BiFunction<String, String, JSONObject> errorResponse;
     private final Consumer<JSONObject> addRuntimeCapabilities;
     private final Consumer<String> log;
@@ -43,6 +44,7 @@ final class WebUiRuntimeCommandContext implements RuntimeCommandService.Context 
             final Function<String, String> projectPath,
             final Function<String, String> projectName,
             final Consumer<String> removeProject,
+            final Consumer<String> ensurePortsAllocated,
             final BiFunction<String, String, JSONObject> errorResponse,
             final Consumer<JSONObject> addRuntimeCapabilities,
             final Consumer<String> log,
@@ -56,6 +58,7 @@ final class WebUiRuntimeCommandContext implements RuntimeCommandService.Context 
         this.projectPath = Objects.requireNonNull(projectPath, "projectPath");
         this.projectName = Objects.requireNonNull(projectName, "projectName");
         this.removeProject = Objects.requireNonNull(removeProject, "removeProject");
+        this.ensurePortsAllocated = Objects.requireNonNull(ensurePortsAllocated, "ensurePortsAllocated");
         this.errorResponse = Objects.requireNonNull(errorResponse, "errorResponse");
         this.addRuntimeCapabilities = Objects.requireNonNull(addRuntimeCapabilities, "addRuntimeCapabilities");
         this.log = Objects.requireNonNull(log, "log");
@@ -101,6 +104,11 @@ final class WebUiRuntimeCommandContext implements RuntimeCommandService.Context 
     @Override
     public void removeProject(final String projectId) {
         removeProject.accept(projectId);
+    }
+
+    @Override
+    public void ensurePortsAllocated(final String projectId) {
+        ensurePortsAllocated.accept(projectId);
     }
 
     @Override

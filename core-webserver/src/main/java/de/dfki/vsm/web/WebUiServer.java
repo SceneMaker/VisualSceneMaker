@@ -394,6 +394,8 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
     private static final int WS_AUTH_TIMEOUT_SECONDS = 10;
     /** No-op unless OIDC is enabled — see doc/vsm-workspace-platform-plan.md Phase 2. */
     private final ProjectAssignmentTable mProjectAssignmentTable = new ProjectAssignmentTable();
+    /** Phase 4 (doc/vsm-workspace-platform-plan.md): shared pool so concurrent projects don't collide on ports. */
+    private final PortPoolManager mPortPoolManager = new PortPoolManager();
     private final ConcurrentHashMap<String, RuntimeVizRateLimiter> runtimeVizRateLimiters = new ConcurrentHashMap<>();
     private final RuntimeGateway runtimeGateway;
     private final RuntimeCommandService runtimeCommandService = new RuntimeCommandService();
@@ -1708,6 +1710,7 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
                 this::projectPathForId,
                 this::projectNameForId,
                 this::removeProjectById,
+                this::ensurePortsAllocated,
                 this::errorResponse,
                 this::addRuntimeCapabilities,
                 sLogger::message,
@@ -2489,6 +2492,30 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         mRuntimeOrchestrator.unregister(projectId);
         ProjectRef ref = projectStore.remove(projectId);
         unregisterProjectDispatcher(ref);
+        // Phase 4: this is genuine teardown (as opposed to a plain Runtime.Stop, which must
+        // NOT release — see PortPoolManager's class docs), so actually stop the plugins first.
+        // Without this, a plugin whose launch()ed server survives unload() calls that don't
+        // happen (htmlgui-ws's Jetty server, charamel-embed's JettyTransport) would keep the
+        // real OS port bound forever while the pool believes it's free to hand out again.
+        if (ref != null && ref.runtimeProject != null) {
+            ref.runtimeProject.unload();
+        }
+        mPortPoolManager.release(projectId);
+    }
+
+    /**
+     * Phase 4: called right before a project's very first {@code launch()} (from both
+     * Runtime.Start and SIA preview, which funnel into the identical {@code launch()} call —
+     * see PortPoolManager's class docs on why this must be a no-op on any later call for the
+     * same project). No-op if the project or its config can't be resolved; lets
+     * {@link PortPoolManager.PortPoolExhaustedException} propagate to the caller.
+     */
+    private void ensurePortsAllocated(String projectId) {
+        ProjectRef ref = projectStore.get(projectId);
+        if (ref == null || ref.runtimeProject == null || ref.runtimeProject.getProjectConfig() == null) {
+            return;
+        }
+        mPortPoolManager.ensureAllocated(projectId, ref.runtimeProject.getProjectConfig().getPluginConfigList());
     }
 
     private JSONObject handleRuntimeVariableSetCommand(String projectId, String name, String valueExpr) {
@@ -4751,9 +4778,13 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
             ProjectRef ref = projectStore.get(pid);
             if (ref != null && ref.runtimeProject != null) {
                 mEdgeLayout.clearDockPointsForProject(ref.runtimeProject.getSceneFlow());
+                // Phase 4: actually stop the plugins before releasing their ports — see
+                // removeProjectById for why this matters (servers that outlive "close").
+                ref.runtimeProject.unload();
             }
             unregisterProjectDispatcher(ref);
             projectStore.remove(pid);
+            mPortPoolManager.release(pid);
         }
         JSONObject response = new JSONObject();
         response.put("status", "ok");
@@ -5122,6 +5153,11 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         // double-launch (port rebind) failure this flag exists to prevent.
         synchronized (ref) {
             if (!ref.pluginsLaunchedForPreview) {
+                // Phase 4: must run before launch() — see PortPoolManager's class docs. This
+                // is the exact same launch() call Runtime.Start uses, so ensurePortsAllocated's
+                // own once-per-project guard means whichever of the two happens first "wins"
+                // and the other becomes a no-op, which is the correct behavior either way.
+                ensurePortsAllocated(pid);
                 ref.runtimeProject.launch();
                 ref.pluginsLaunchedForPreview = true;
             }
