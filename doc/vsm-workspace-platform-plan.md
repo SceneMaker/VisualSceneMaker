@@ -7,8 +7,10 @@ Layer" server deployment into a general VSM teaching/coursework platform —
 one shared runtime server, each DFKI staff member and each student gets
 their own assigned VSM workspace, authenticated via DFKI's Keycloak SSO.
 
-**Status:** Draft — captures decisions made in discussion so far, plus
-explicitly flagged open questions. Nothing in here is implemented yet.
+**Status:** Decided — all originally-open questions now have answers (see
+Decisions 9, 11, and 13–16). Two low-stakes implementation details remain (exact pool
+size, nginx scripting engine choice — see end of doc) but nothing here is
+blocking; implementation can start. Nothing in here is implemented yet.
 
 ---
 
@@ -20,7 +22,7 @@ explicitly flagged open questions. Nothing in here is implemented yet.
 4. [Target architecture](#target-architecture)
 5. [New components](#new-components)
 6. [Implementation phases](#implementation-phases)
-7. [Open questions](#open-questions)
+7. [Remaining implementation details](#remaining-implementation-details)
 8. [Out of scope](#out-of-scope)
 
 ---
@@ -81,10 +83,14 @@ rather than one process per session.
 | 6 | There **is** a distinct in-app **admin role** that can see all projects/users and manage assignments through VSM itself | Someone needs to do the assigning without shelling into the server |
 | 7 | Public-facing URLs are **path-based, not port-based** (`https://host/projects/{id}/...`, REST-style) | Sysadmin's explicit ask, also just cleaner |
 | 8 | Internally, ports are still used — `htmlgui-ws`/`charamel-embed` keep spinning up their own bound-port servers exactly as today; **nginx** maps path → internal port. Plugin internals are not rewritten. | Rewriting those plugins to be path-mounted sub-routes of the shared Javalin app was considered and explicitly rejected as too much rework/risk for this phase |
-| 9 | Target concurrency: **~20 projects running simultaneously** (i.e. ~20 internal port-sets in the pool). Editing/authoring does not consume a pool slot — only an active runtime (Run, and probably SIA preview — see open questions) does. | From the sysadmin's stated scale |
+| 9 | Target concurrency: **~20 projects running simultaneously** as a baseline, but the pool is **shared between SIA preview and full Run** (not split into separate pools) and sized with **headroom above 20** to absorb both — exact final number is a Phase 4/6 tuning detail, not an architectural one. | From the sysadmin's stated scale; preview and Run are the same kind of resource consumer, so one pool with margin is simpler than two pools with a starvation risk between them |
 | 10 | The path→port mapping is resolved by a **second nginx, fully under our own control**, living in our `docker-compose.yml` alongside `vsm-server` — not by the SCAAI-managed outer nginx. The outer nginx gets one static vhost forwarding everything to one fixed port; all dynamism lives on our side. | Minimizes the ask of the SCAAI sysadmin (a one-time static config, never touched again) and keeps all churn inside infrastructure we can iterate on freely |
-| 11 | That inner nginx resolves the dynamic path→port mapping live (**"fancier"** option — no config-regen/reload cycle), e.g. via `njs`/Lua reading a shared registry or querying VSM directly per new connection | Chosen over the simpler regen-and-reload approach |
+| 11 | That inner nginx resolves the dynamic path→port mapping live (**"fancier"** option — no config-regen/reload cycle) by **reading a shared file/registry on a Docker volume shared with `vsm-server`** (not a subrequest to a VSM lookup endpoint) | Chosen over both the simpler regen-and-reload approach and the lookup-endpoint alternative — no new network hop, no new endpoint to firewall |
 | 12 | **The frontend does the OIDC login dance** (e.g. `keycloak-js` in the Svelte app: redirect to Keycloak, handle callback, hold/refresh the token) — VSM's backend is a pure OAuth2 **resource server** that only ever validates an already-obtained Bearer JWT. No redirect handling, no auth-code exchange, no server-side session cookie in VSM itself. | Standard SPA+API split; keeps backend scope to validation only, matches Keycloak's own client tooling model |
+| 13 | **WS authentication is first-message, not query-param.** Client opens `/ws` with no token in the URL, then sends an auth message immediately after connect; server holds the connection unauthenticated (with a timeout) until that message validates. | Avoids the JWT ever landing in nginx access logs/browser history — same leakage class as the earlier GitLab-token discussion |
+| 14 | **`ProjectAssignmentTable` is a flat file**, not a database. | Simplest option that fits; no DB currently exists in this stack |
+| 15 | **No refresh-token flow in VSM.** On JWT expiry, sessions re-authenticate rather than silently refreshing server-side — the browser's `keycloak-js` handles its own token refresh, and the WS connection detects an expired/rejected token mid-session and re-authenticates (re-sends the first-message auth step with a fresh token). | Keeps the backend stateless; avoids VSM having to manage refresh-token storage/rotation |
+| 16 | **Pool exhaustion (e.g. a 21st concurrent Run/preview request) returns an explicit error** telling the user to wait and retry — no silent queueing, no preempting another user's session. | Predictable behavior over automatic (and potentially surprising) preemption |
 
 ---
 
@@ -112,20 +118,24 @@ nginx — INNER, ours, a service in our own docker-compose.yml
   │                                     project's htmlgui-ws instance
   │    /projects/{id}/avatar/xenia/* → same, for that project's
   │                                     charamel-embed instance
-  │  Resolved via njs/Lua reading a shared registry, or a subrequest to
-  │  a VSM-internal lookup endpoint — see Open Questions.
+  │  Resolved by reading a shared file/registry on a volume shared with
+  │  vsm-server (Decision 11) — scripting engine (njs vs Lua) is the
+  │  one remaining implementation detail, see end of doc.
   ▼
 VSM (single FULL_EDITOR process, "vsm-server")
   ┌─────────────────────────────────────────────────────────────┐
   │  JwtAuthFilter          — pure resource-server validation:   │
   │    verifies the Bearer JWT against Keycloak's JWKS on every   │
-  │    REST + WS request. Never redirects, never talks to        │
-  │    Keycloak's authorization/token endpoints itself.           │
+  │    REST request, and on the WS connection's first message     │
+  │    (Decision 13) rather than a query param.                   │
   │  ProjectAssignmentTable — user → [projectId, ...], + admin   │
-  │    flag                                                       │
-  │  PortPoolManager        — ~20 port-sets; assigns one to a     │
-  │    project's plugins when its runtime/preview starts,        │
-  │    releases on stop; this is what the inner nginx queries     │
+  │    flag; stored as a flat file (Decision 14)                 │
+  │  PortPoolManager        — ~20+ port-sets, shared between Run  │
+  │    and SIA preview with headroom (Decision 9); assigns one to │
+  │    a project's plugins when its runtime/preview starts,       │
+  │    releases on stop; writes the registry file the inner nginx │
+  │    reads; returns an explicit error (not a queue) when         │
+  │    exhausted (Decision 16)                                    │
   │  (existing) projectStore, SessionGate, ProjectRef, etc.       │
   └─────────────────────────────────────────────────────────────┘
 ```
@@ -146,9 +156,11 @@ A Javalin `before()` filter (the thing that's conspicuously absent today —
 see the earlier investigation: zero enforcement exists anywhere in
 `WebUiServer`) that:
 
-- Reads `Authorization: Bearer <jwt>` from REST requests, and the
-  equivalent from the WS handshake (query param or first message — needs
-  deciding, see open questions).
+- Reads `Authorization: Bearer <jwt>` from REST requests. For WS
+  connections, the token isn't in the handshake URL at all — the
+  connection opens unauthenticated and must send it as its first message
+  (Decision 13); the filter holds the connection open-but-inert until that
+  message arrives and validates, with a timeout if it never does.
 - Validates the JWT against Keycloak's JWKS endpoint (signature, `iss`,
   `aud`, `exp`). Likely library: Nimbus JOSE+JWT (mature, widely used for
   exactly this in Java, handles JWKS fetch/caching).
@@ -169,13 +181,18 @@ This is the piece that turns `SessionGate` from "inert data model" into
 
 Lives entirely in `editor/web-ui` (Svelte), not the backend. On load, checks
 for a valid session; if none, redirects the browser to Keycloak; on return,
-`keycloak-js` parses the callback, holds the access/refresh tokens, and
-silently refreshes them. Every REST call from the Svelte app attaches
-`Authorization: Bearer <access_token>`. The WS connection needs the same
-token attached somehow — see Open Questions.
+`keycloak-js` parses the callback, holds the access token, and silently
+refreshes it. Every REST call from the Svelte app attaches
+`Authorization: Bearer <access_token>`. The WS connection sends that same
+token as its first message right after opening, not in the URL
+(Decision 13) — and re-sends a fresh one if the server rejects it as
+expired mid-session (Decision 15; VSM itself does no refresh-token
+handling, `keycloak-js`'s own refresh is what supplies the fresh token to
+resend).
 
-VSM/nginx are never involved in this exchange; by the time a request
-reaches the outer nginx, it already carries a token or it doesn't.
+VSM/nginx are never involved in the browser's Keycloak exchange; by the
+time a request reaches the outer nginx, it already carries a token or it
+doesn't.
 
 ### Component 3 — `ProjectAssignmentTable`
 
@@ -186,22 +203,23 @@ proceeding — non-admins only ever see their own assigned project(s);
 "Open by path"/arbitrary filesystem browsing is removed or admin-gated
 entirely. Admins can see/assign everything.
 
-Storage: plausibly a simple table/file rather than a new database
-dependency, but that's an open question (see below).
+Storage: a flat file (Decision 14) — no new database dependency.
 
 ### Component 4 — `PortPoolManager`
 
-Manages a fixed pool of ~20 port-sets. When a project's runtime (or SIA
-preview) is about to start, it asks the pool for a free set and overrides
-that project's `PluginConfig` port values before plugin `launch()` — instead
-of trusting whatever's literally written in that project's own
-`project.xml`. Releases the set back to the pool on stop/disconnect/idle
-timeout.
+Manages a pool of port-sets — baseline ~20, sized with headroom since the
+pool is shared between full Run and SIA preview rather than split into two
+pools (Decision 9). When a project's runtime (or SIA preview) is about to
+start, it asks the pool for a free set and overrides that project's
+`PluginConfig` port values before plugin `launch()` — instead of trusting
+whatever's literally written in that project's own `project.xml`. Releases
+the set back to the pool on stop/disconnect/idle timeout. If none are free,
+returns an explicit error rather than queueing (Decision 16).
 
-This needs a decision on exactly how many ports "a set" reserves (Confidence
-- SIA Layer needs 4 active ports today: `html_port`, `ws_port`, and two
+The exact final pool size, and exactly how many ports "a set" reserves
+(Confidence - SIA Layer needs 4 today — `html_port`, `ws_port`, two
 `charamel-embed` ports — a different student project could need more or
-fewer plugin instances).
+fewer), is tuned during Phase 4/6 rather than fixed here.
 
 ### Component 5 — Two-tier nginx (outer SCAAI-managed, inner ours)
 
@@ -220,12 +238,13 @@ resolve live rather than via config-regen-and-reload:
   static.
 - `/projects/{id}/gui/*`, `/projects/{id}/avatar/*` → whichever port
   `PortPoolManager` currently has bound for that project's plugin instance.
-  Resolved per new connection via `njs` (or Lua/OpenResty) — either reading
-  a shared registry (e.g. a small file on a volume shared with
-  `vsm-server`, written by `PortPoolManager` on every assignment change) or
-  issuing a subrequest to a VSM-internal-only lookup endpoint. Exact
-  mechanism is still open — see Open Questions — but either way, no
-  `nginx -s reload` cycle is needed; resolution happens per-connection.
+  Resolved per new connection by reading a shared registry file on a volume
+  shared with `vsm-server`, written by `PortPoolManager` on every
+  assignment change (Decision 11) — not a subrequest to a VSM lookup
+  endpoint. No `nginx -s reload` cycle needed; resolution happens
+  per-connection. Scripting engine to read that file (`njs` vs
+  Lua/OpenResty) is the one remaining implementation detail — see end of
+  doc.
 
 Because this nginx is entirely within our own compose stack, we can change
 its config, add modules, or swap the resolution mechanism at any time
@@ -256,41 +275,22 @@ verified by confirming unauthenticated requests now 401.
 
 ---
 
-## Open questions
+## Remaining implementation details
 
-These need answers before (or during) implementation — none are blocking
-*this document*, but each blocks the phase that depends on it.
+Everything that was an open architectural question is now Decisions 13–16
+(and the nginx data-source half of Decision 11). Two non-blocking specifics
+are still just implementation-time choices, not design decisions — pick
+during the phase that needs them:
 
-1. **WS authentication mechanism.** Javalin's WS handshake doesn't carry
-   custom headers as easily as REST — do we pass the JWT as a query param
-   on the `/ws` URL (simple, but JWTs in URLs land in logs/history — same
-   category of concern as the earlier GitLab token discussion), or as the
-   first message after connect (extra protocol step, cleaner)?
-2. **Does SIA preview consume a port-pool slot the same way Run does?**
-   Affects pool sizing — if preview is short-lived and frequent (every
-   student iterating while authoring), it might need separate accounting
-   from full Run sessions so one doesn't starve the other. Still undecided
-   from earlier discussion.
-3. **Port-set size.** How many ports should one pool "slot" reserve — sized
-   for Confidence - SIA Layer's 4, or for some larger worst-case student
-   project? Fixed-size slots are simpler; variable-size slots are more
-   efficient but more bookkeeping.
-4. **`ProjectAssignmentTable` storage.** Flat file, SQLite, or something
-   else? No database currently exists in this stack.
-5. **Session/token lifetime.** JWTs expire — does VSM need refresh-token
-   handling for long editing sessions, or is re-login on expiry acceptable
-   (browser redirects back through Keycloak transparently either way, but
-   the WS connection would need to detect and re-authenticate mid-session)?
-6. **What happens at the 21st concurrent Run request** when the pool is
-   full — queue, explicit error to the user, or preempt an idle session?
-7. **Inner nginx's exact live-resolution mechanism.** Chosen to resolve
-   dynamically (no reload cycle — see Decision 11), but not yet which of:
-   `njs` reading a shared file/registry on a volume shared with
-   `vsm-server`, an OpenResty/Lua equivalent, or a per-connection subrequest
-   to a VSM-internal-only lookup endpoint. Affects whether we need an
-   OpenResty-based image or can stay on stock nginx + the official `njs`
-   module, and whether `PortPoolManager` needs to *push* updates (write a
-   file) or just *answer* them (serve a lookup endpoint on demand).
+1. **Exact port-pool size and per-slot port count.** Decision 9 settled the
+   *shape* (one shared pool, headroom above ~20) but not the final number —
+   tune this during Phase 4 (build) and Phase 6 (load test).
+2. **Inner nginx's scripting engine for reading the registry file** — `njs`
+   (stock nginx + official module, lighter-weight) vs OpenResty/Lua (a
+   separate nginx distribution, richer ecosystem, the more battle-tested
+   choice for this exact "dynamic upstream" pattern). Decision 11 settled
+   *what* it reads (a shared file); this is just *which tool* reads it —
+   pick during Phase 5.
 
 ---
 
