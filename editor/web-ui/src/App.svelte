@@ -7081,6 +7081,10 @@ Sentence:
   // indefinitely while the popup — and the conflict — is already live). See previewSuspendedByRuntime.
   let runtimeGuiWindowOpen = false;
   let runtimeGuiWindowPollTimer = null;
+  // The URL last navigated to in runtimeGuiWindow — lets refreshHtmlGuiUrlAndNavigate() skip a
+  // redundant re-navigation (and the resulting flicker) when a second refresh after Runtime.Play
+  // resolves computes the same URL the first, immediate refresh already used.
+  let runtimeGuiWindowLastUrl = null;
 
   function startRuntimeGuiWindowPoll() {
     if (runtimeGuiWindowPollTimer) return;
@@ -7185,24 +7189,56 @@ Sentence:
     return v === true || v === "true";
   }
 
-  // Called synchronously from the Play click so the browser does not block the
-  // popup. A named window is reused across Plays, so we never spawn duplicates.
-  function openRuntimeGui({ requireAutostart = false } = {}) {
-    if (requireAutostart && !htmlGuiAutostartEnabled()) return;
-    const url = htmlGuiUrl();
-    if (!url) return;
+  // Re-fetches plugin config and navigates an already-open popup to the resulting URL — never
+  // called from a fresh window.open() itself (that must stay synchronous with the click, see
+  // openRuntimeGui below). html_port/_pathPrefix may not reflect PortPoolManager's live
+  // allocation yet if project-config was last fetched before this project's ports were ever
+  // allocated (confirmed broken 2026-07-29: the popup opened at a stale, pre-allocation port
+  // that happened to collide with an unrelated service on the deployment host) — awaiting a
+  // fresh loadProjectConfig() here, off the critical popup-blocker path, fixes that.
+  async function refreshHtmlGuiUrlAndNavigate(win) {
+    if (!selectedProjectId || !win || win.closed) return;
     try {
-      runtimeGuiWindow = window.open(url, "vsm-runtime-gui");
-      // Set synchronously, not left to the next 1s poll tick (startRuntimeGuiWindowPoll) — the
-      // popup's own character page starts connecting to the VuppetMaster cloud immediately, and a
-      // brief window where it and an already-open SIA preview are both live on the same license
-      // reliably poisons the popup's connection for the rest of the browser session (confirmed
-      // 2026-07-18: preview alone worked fine, but Xenia never rendered in the popup on the very
-      // next Start — only a full browser restart, not just closing the popup, recovered it).
-      if (runtimeGuiWindow) runtimeGuiWindowOpen = true;
+      await loadProjectConfig(selectedProjectId);
     } catch (_) {
-      /* popup blocked — re-pressing Play will try again */
+      // Network hiccup — fall through and try with whatever config we already have rather than
+      // leaving the popup on its placeholder forever.
     }
+    const url = htmlGuiUrl();
+    if (url && url !== runtimeGuiWindowLastUrl && !win.closed) {
+      runtimeGuiWindowLastUrl = url;
+      try {
+        win.location.href = url;
+      } catch (_) {
+        /* window may have navigated/closed on its own since we last checked */
+      }
+    }
+  }
+
+  // Called synchronously from the Play click so the browser does not block the popup — opens at
+  // a placeholder immediately, then navigates to the real URL once refreshHtmlGuiUrlAndNavigate
+  // resolves (called by the click handler, both right away and again after Runtime.Play
+  // completes — see its own comment for why both). A named window is reused across Plays, so we
+  // never spawn duplicates.
+  function openRuntimeGui({ requireAutostart = false } = {}) {
+    if (requireAutostart && !htmlGuiAutostartEnabled()) return null;
+    let win;
+    try {
+      win = window.open("about:blank", "vsm-runtime-gui");
+    } catch (_) {
+      return null; // popup blocked — re-pressing Play will try again
+    }
+    if (!win) return null;
+    runtimeGuiWindowLastUrl = null;
+    runtimeGuiWindow = win;
+    // Set synchronously, not left to the next 1s poll tick (startRuntimeGuiWindowPoll) — the
+    // popup's own character page starts connecting to the VuppetMaster cloud immediately, and a
+    // brief window where it and an already-open SIA preview are both live on the same license
+    // reliably poisons the popup's connection for the rest of the browser session (confirmed
+    // 2026-07-18: preview alone worked fine, but Xenia never rendered in the popup on the very
+    // next Start — only a full browser restart, not just closing the popup, recovered it).
+    runtimeGuiWindowOpen = true;
+    return win;
   }
 
   function clearSceneFlowActivity() {
@@ -15767,7 +15803,18 @@ Sentence:
               <button
                 type="button"
                 class="ghost icon-button"
-                on:click={() => { openRuntimeGui({ requireAutostart: true }); runRuntimeCommand("Runtime.Play"); }}
+                on:click={() => {
+                  const win = openRuntimeGui({ requireAutostart: true });
+                  if (win) refreshHtmlGuiUrlAndNavigate(win);
+                  const playPromise = runRuntimeCommand("Runtime.Play");
+                  // Refresh again once Play actually completes server-side — covers a project
+                  // with no preview-capable plugin, where PortPoolManager's first-ever port
+                  // allocation happens only now (a preview-capable plugin, e.g. charamel-embed,
+                  // would have already triggered it earlier via the SIA panel's lazy launch, so
+                  // the immediate refresh above already has fresh data in that case — this
+                  // second call is then a no-op, deduped by runtimeGuiWindowLastUrl).
+                  if (win) playPromise.then(() => refreshHtmlGuiUrlAndNavigate(win));
+                }}
                 disabled={!runtimeCanPlay}
                 aria-label={runtimePlayLabel}
                 title={runtimePlayLabel}
