@@ -14,6 +14,11 @@ get here.
 - Real Keycloak login (`vsm-frontend` client, PKCE S256) end-to-end through
   the outer nginx.
 - Admin bootstrap (`project-assignments.json`) and **Open by path**.
+- Recovering from an expired Keycloak access token during an idle session —
+  previously got permanently stuck retrying the pre-OIDC `fetchLocalToken()`
+  fallback forever ("Missing or invalid token", kicked to the landing page
+  after a few idle minutes); `autoConnect()` now refreshes via
+  `keycloak.updateToken()` instead when OIDC is on.
 - `PortPoolManager` dynamically allocating ports on the real deployment.
 - The "follow the player" GUI popup and the SIA preview panel both correctly
   routing through `inner-nginx`'s `/plugin/{projectId}/{pluginInstanceName}/
