@@ -684,7 +684,15 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
     public void unload() {
         websockets.clear();
         synchronized (mConvLogs) { mConvLogs.clear(); }
-        app.stop();
+        // app is null if this instance was never actually launched (e.g. a project opened but
+        // never Run/previewed) or if unload() is somehow called more than once — confirmed via a
+        // real NPE 2026-07-29: the editor page's own "close" button sends the WS "Project.Close"
+        // command, which is a no-op stub that replies "ok" without unloading anything server-side,
+        // so the *first* real unload() a project sees may not be the first close attempt a user
+        // makes.
+        if (app != null) {
+            app.stop();
+        }
         // Terminate browser process if we started one
         if (mBrowserProcess != null) {
             mLogger.message("Terminating browser process...");
