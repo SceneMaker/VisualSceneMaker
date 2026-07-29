@@ -5049,6 +5049,24 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
             // player" audience page embedding the same character at a bare, untagged URL).
             response.put("previewPath", "/character.html?vsmPreview=1");
             response.put("previewSecure", de.dfki.vsm.runtime.tls.TlsRuntimeContext.isEnabled());
+            // Option C (doc/vsm-workspace-platform-plan.md Phase 5 follow-up): if PortPoolManager
+            // set _pathPrefix on this instance's PluginConfig (VSM_PLUGIN_PATH_PREFIX_ENABLED),
+            // tell the client so it can route the preview iframe through inner-nginx instead of a
+            // raw port it may not be able to reach directly in this deployment mode.
+            String pid = ctx.pathParam("pid");
+            String instanceName = ctx.pathParam("name");
+            ProjectRef ref = projectStore.get(pid);
+            if (ref != null && ref.runtimeProject != null && ref.runtimeProject.getProjectConfig() != null) {
+                for (PluginConfig pc : ref.runtimeProject.getProjectConfig().getPluginConfigList()) {
+                    if (instanceName.equals(pc.getPluginName())) {
+                        String prefix = pc.getProperty("_pathPrefix", "");
+                        if (!prefix.isBlank()) {
+                            response.put("previewPathPrefix", prefix);
+                        }
+                        break;
+                    }
+                }
+            }
         } else {
             response.put("previewPort", JSONObject.NULL);
         }

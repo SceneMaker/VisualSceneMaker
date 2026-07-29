@@ -248,11 +248,24 @@
       // reasoning as CharacterPreviewPanel's original loadPreviewInfo.
       if (data?.previewPort) {
         const host = (typeof window !== "undefined" && window.location.hostname) || "localhost";
-        const scheme = data.previewSecure ? "https" : "http";
-        previewUrls = {
-          ...previewUrls,
-          [instanceName]: `${scheme}://${host}:${data.previewPort}${data.previewPath || "/character.html"}`
-        };
+        const path = data.previewPath || "/character.html";
+        if (data.previewPathPrefix) {
+          // Nginx-routed deployment (PortPoolManager's _pathPrefix, Option C — doc/vsm-
+          // workspace-platform-plan.md Phase 5 follow-up): route through inner-nginx, on this
+          // same origin, instead of a raw port the browser may not be able to reach directly.
+          const rest = path.replace(/^\/+/, "");
+          const scheme = window.location.protocol === "https:" ? "https" : "http";
+          previewUrls = {
+            ...previewUrls,
+            [instanceName]: `${scheme}://${host}${data.previewPathPrefix}port/${rest}`
+          };
+        } else {
+          const scheme = data.previewSecure ? "https" : "http";
+          previewUrls = {
+            ...previewUrls,
+            [instanceName]: `${scheme}://${host}:${data.previewPort}${path}`
+          };
+        }
       } else {
         previewUrls = { ...previewUrls, [instanceName]: null };
       }

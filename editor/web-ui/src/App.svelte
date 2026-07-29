@@ -7119,13 +7119,27 @@ Sentence:
     if (!plugin) return null;
     const htmlPort = pluginFeatureValue(plugin, "html_port");
     if (!htmlPort) return null;
-    const wsPort = pluginFeatureValue(plugin, "ws_port");
     const startPathRaw = pluginFeatureValue(plugin, "browser_start_path") || "/";
-    const startPath = startPathRaw.startsWith("/") ? startPathRaw : "/" + startPathRaw;
     const host = (typeof window !== "undefined" && window.location.hostname) || "localhost";
     // In --secure mode the editor is HTTP but the GUI/character are HTTPS, so derive the
     // scheme from the server's secure flag rather than the editor page's own protocol.
     const proto = (info?.secure || window.location.protocol === "https:") ? "https" : "http";
+    const pathPrefix = pluginFeatureValue(plugin, "_pathPrefix");
+    if (pathPrefix) {
+      // Nginx-routed deployment (PortPoolManager's _pathPrefix, Option C — doc/vsm-workspace-
+      // platform-plan.md Phase 5 follow-up): vsm-server's raw ports aren't published to the
+      // host at all in this deployment mode, so a hostname:port URL can never work — route
+      // through the same path prefix inner-nginx uses instead (confirmed broken 2026-07-29:
+      // a raw port collided with an unrelated service on the shared deployment host).
+      const rest = startPathRaw.replace(/^\/+/, "");
+      try {
+        return new URL(`${proto}://${host}${pathPrefix}html_port/${rest}`).toString();
+      } catch (_) {
+        return null;
+      }
+    }
+    const wsPort = pluginFeatureValue(plugin, "ws_port");
+    const startPath = startPathRaw.startsWith("/") ? startPathRaw : "/" + startPathRaw;
     try {
       const url = new URL(`${proto}://${host}:${htmlPort}${startPath}`);
       if (wsPort) url.searchParams.set("wsPort", wsPort);
