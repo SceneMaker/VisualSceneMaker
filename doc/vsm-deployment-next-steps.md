@@ -102,6 +102,17 @@ without requiring project content itself to change. Needs:
   browser console log from that exact moment before doing anything else —
   we don't have enough to diagnose it from a single non-reproduced
   occurrence.
+- **The editor page's own "close project" button doesn't actually close
+  anything server-side.** It sends the WS `Project.Close` command, which
+  turns out to be a no-op stub (`registerWsCommands(... => {"status":"ok"},
+  "Project.Save", "Project.SaveAs", "Project.Close")`) — no real unload,
+  no port release. The *actual* close only happens via the Projects panel's
+  REST call (confirmed 2026-07-29 alongside the `HtmlGuiWsExecutor.unload()`
+  NPE fix — see that commit). Worth deciding: should the editor's own close
+  button be wired to the real close path, or is the current split
+  (editor-page close = navigate away only, Projects-panel close = the real
+  thing) intentional? Either way, a button that silently does nothing while
+  implying success is worth resolving rather than leaving as-is.
 
 ## 3. Known, deliberately deferred (from earlier in this effort)
 
