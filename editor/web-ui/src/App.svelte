@@ -4156,9 +4156,27 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
     autoConnectAttempts += 1;
     console.log("[AUTO-CONNECT] Attempt", autoConnectAttempts, "token exists:", !!token);
     if (!token) {
-      const fetched = await fetchLocalToken();
-      console.log("[AUTO-CONNECT] Token fetch result:", fetched, "token now:", !!token);
-      // Continue even if token fetch fails - server might not require token
+      if (info?.oidcEnabled && keycloak) {
+        // The main WS connection gets rejected (and token cleared — see ws.onclose) once its
+        // access token expires; fetchLocalToken() is the pre-OIDC fallback and always 401s once
+        // OIDC is on, so retrying it here can never recover — it just loops forever (confirmed
+        // broken 2026-07-29: an idle session got stuck retrying it indefinitely, never reaching
+        // Keycloak again). Refresh from the still-live Keycloak session instead.
+        try {
+          await keycloak.updateToken(-1);
+          token = keycloak.token;
+          localStorage.setItem("vsm_token", token);
+          console.log("[AUTO-CONNECT] Refreshed Keycloak token, token now:", !!token);
+        } catch (err) {
+          console.log("[AUTO-CONNECT] Keycloak token refresh failed, redirecting to login:", err);
+          keycloak.login();
+          return;
+        }
+      } else {
+        const fetched = await fetchLocalToken();
+        console.log("[AUTO-CONNECT] Token fetch result:", fetched, "token now:", !!token);
+        // Continue even if token fetch fails - server might not require token
+      }
     }
     console.log("[AUTO-CONNECT] Calling connectAll()");
     autoConnectInFlight = true;
