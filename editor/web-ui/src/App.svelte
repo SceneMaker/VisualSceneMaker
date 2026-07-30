@@ -8742,7 +8742,30 @@ Sentence:
     });
   }
 
+  // Proactively refresh a near-expiry Keycloak token before attaching it to a request.
+  // keycloak-js's own onTokenExpired timer is throttled in background tabs (Safari
+  // especially), so after an idle stretch a request can otherwise go out with an expired
+  // token and trip apiFetch's drastic 401 handling — full WS teardown + session rebuild
+  // for what should have been a silent refresh (seen in production logs 2026-07-30: one
+  // 401 on /projects/recent after idle, then a whole reconnect cycle).
+  // updateToken(30) is a local expiry check unless <30s remain, so per-request cost is nil.
+  async function ensureFreshToken() {
+    if (!keycloak) return;
+    try {
+      const refreshed = await keycloak.updateToken(30);
+      if (refreshed) {
+        token = keycloak.token;
+        localStorage.setItem("vsm_token", token);
+      }
+    } catch (_) {
+      // Refresh failed (SSO session itself gone) — fall through with the stale token; the
+      // 401 handler below + auto-connect recovery (which ends in keycloak.login() when the
+      // session is truly dead) take it from here.
+    }
+  }
+
   async function apiFetch(path, options) {
+    await ensureFreshToken();
     const headers = {
       ...(options?.headers || {})
     };
