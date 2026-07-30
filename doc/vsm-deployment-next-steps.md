@@ -157,11 +157,15 @@ without requiring project content itself to change. Needs:
 ## 3. Known, deliberately deferred (from earlier in this effort)
 
 - **charamel-embed's real VuppetMaster engine loading under the nginx
-  prefix** — verified at the transport level (a real WebSocket handshake
-  through `/plugin/.../port/ws` succeeds), but never tested with a real
-  license session actually rendering an avatar through nginx end-to-end
-  (deliberately avoided to not risk the single-session-per-license
-  constraint during iteration). Worth a real check once convenient.
+  prefix** — DONE 2026-07-30: full functional verification on the real
+  deployment. Xenia renders AND speaks (real license session, markers
+  firing) in the Run popup through the nginx prefix; GUI controls drive the
+  running SceneFlow; Bob verified in the SIA preview (not currently part of
+  the project's run flow); and a post-fix save leaves project.xml clean (no
+  pool ports, no synthetic properties). With this, the deployment is
+  functionally complete against the original
+  doc/vsm-workspace-platform-plan.md — remaining work is the section-2
+  cleanup list only.
 - **Refreshing `vsm-server-git`'s `vsm/` snapshot** is a solved, repeatable
   process now (`./gradlew syncOpsRepoVsmSnapshot`, run from this repo,
   reviewed and committed in `vsm-server-git` by hand) — just remember to run
