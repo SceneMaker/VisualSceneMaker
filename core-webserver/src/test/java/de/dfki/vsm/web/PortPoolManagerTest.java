@@ -232,6 +232,53 @@ class PortPoolManagerTest {
     }
 
     @Test
+    void withOriginalConfigRestoresAuthoredStateForTheActionThenReappliesAllocation() {
+        PortPoolManager pool = new PortPoolManager(20000, 10, dir.resolve("registry.json"), true);
+        PluginConfig gui = htmlguiWsLike();
+        PluginConfig avatar = charamelEmbedLike("CharamelEmbedXenia");
+        pool.ensureAllocated("project-1", List.of(gui, avatar));
+        String allocatedAvatarPort = avatar.getProperty("port");
+
+        // Inside the action (this is what a project save must see): authored ports, no
+        // synthetic properties — as if PortPoolManager had never touched the config.
+        String seenInside = pool.withOriginalConfig("project-1", () -> {
+            assertEquals("3040", avatar.getProperty("port"));
+            assertEquals("8080", gui.getProperty("html_port"));
+            assertNull(avatar.getProperty("_pathPrefix"));
+            assertNull(avatar.getProperty("_portRewrites"));
+            assertNull(gui.getProperty("_pathPrefix"));
+            return avatar.getProperty("port");
+        });
+        assertEquals("3040", seenInside);
+
+        // After: the live allocation is back, byte for byte.
+        assertEquals(allocatedAvatarPort, avatar.getProperty("port"));
+        assertEquals("/plugin/project-1/CharamelEmbedXenia/", avatar.getProperty("_pathPrefix"));
+        JSONObject rewrites = new JSONObject(avatar.getProperty("_portRewrites"));
+        assertEquals("/plugin/project-1/CharamelEmbedXenia/port/", rewrites.getString("3040"));
+    }
+
+    @Test
+    void withOriginalConfigReappliesAllocationEvenWhenTheActionThrows() {
+        PortPoolManager pool = new PortPoolManager(20000, 10, dir.resolve("registry.json"), true);
+        PluginConfig avatar = charamelEmbedLike("CharamelEmbedXenia");
+        pool.ensureAllocated("project-1", List.of(avatar));
+        String allocatedPort = avatar.getProperty("port");
+
+        assertThrows(IllegalStateException.class, () ->
+                pool.withOriginalConfig("project-1", () -> { throw new IllegalStateException("disk full"); }));
+
+        assertEquals(allocatedPort, avatar.getProperty("port"));
+        assertNotNull(avatar.getProperty("_pathPrefix"));
+    }
+
+    @Test
+    void withOriginalConfigOnUnknownOwnerJustRunsTheAction() {
+        PortPoolManager pool = new PortPoolManager(20000, 10, dir.resolve("registry.json"), true);
+        assertEquals("ran", pool.withOriginalConfig("never-allocated", () -> "ran"));
+    }
+
+    @Test
     void duplicateOriginalPortKeepsFirstMappingRatherThanSilentlyReplacingIt() {
         PortPoolManager pool = new PortPoolManager(20000, 10, dir.resolve("registry.json"), true);
         PluginConfig first = charamelEmbedLike("CharamelEmbedXenia");  // port 3040

@@ -324,6 +324,19 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
 
         // Serve infrastructure files from the plugin JAR classpath so they are
         // always up-to-date regardless of what the project's gui/ folder contains.
+        // no-cache on all of them (and on vsm-gui-config.js above, via the before-handler):
+        // browsers reuse the popup as a named window and navigate (not reload) it, so without
+        // revalidation a returning browser keeps executing the PREVIOUS deployment's JS
+        // indefinitely — a redeployed fix simply never arrives (cost hours of confusion on the
+        // real deployment, 2026-07-30). no-cache still allows conditional revalidation; these
+        // files are tiny, so the extra roundtrip is irrelevant next to the debugging cost.
+        app.before("/index.html", ctx -> ctx.header("Cache-Control", "no-cache"));
+        app.before("/js/wsclient.js", ctx -> ctx.header("Cache-Control", "no-cache"));
+        app.before("/screens.html", ctx -> ctx.header("Cache-Control", "no-cache"));
+        app.before("/vsm-renderer.js", ctx -> ctx.header("Cache-Control", "no-cache"));
+        app.before("/vsm-gui-config.js", ctx -> ctx.header("Cache-Control", "no-cache"));
+        app.before("/screens.json", ctx -> ctx.header("Cache-Control", "no-cache"));
+
         app.get("/index.html", ctx -> {
             InputStream stream = getClass().getResourceAsStream("/renderer/index.html");
             if (stream != null) ctx.result(stream).contentType("text/html");

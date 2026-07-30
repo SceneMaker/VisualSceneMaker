@@ -101,7 +101,8 @@ public final class JettyTransport implements CharamelTransport {
         // every other deployment mode. vm-adapter.js uses it to route its WebSocket connection
         // through the same nginx path prefix this page was itself loaded under, instead of a
         // raw port it may not be able to reach directly.
-        mApp.get("/vsm-config.js", ctx -> ctx.contentType("application/javascript").result(
+        mApp.get("/vsm-config.js", ctx -> ctx.header("Cache-Control", "no-cache")
+            .contentType("application/javascript").result(
             "window.VSM_CONFIG=" +
                 "{\"licenseKey\":\"" + escapeJson(mLicenseKey) + "\"," +
                  "\"appName\":\"" + escapeJson(mAppName) + "\"," +
@@ -210,7 +211,10 @@ public final class JettyTransport implements CharamelTransport {
 
     private void serveResource(io.javalin.http.Context ctx, String path, String contentType) {
         InputStream stream = getClass().getResourceAsStream(path);
-        if (stream != null) ctx.result(stream).contentType(contentType);
+        // no-cache: without revalidation, a browser that visited before a redeploy keeps
+        // executing the previous deployment's JS indefinitely (same reasoning — and the same
+        // hard-won lesson — as HtmlGuiWsExecutor's infrastructure routes).
+        if (stream != null) ctx.header("Cache-Control", "no-cache").result(stream).contentType(contentType);
         else ctx.status(404);
     }
 

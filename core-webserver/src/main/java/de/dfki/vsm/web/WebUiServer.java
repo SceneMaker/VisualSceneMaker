@@ -4657,7 +4657,12 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
             ctx.status(400).result("Save-as required: no project path");
             return;
         }
-        boolean ok = ref.runtimeProject.write(new java.io.File(path));
+        // withOriginalConfig: write() serializes the live in-memory ProjectConfig, which
+        // PortPoolManager has mutated (pool ports, _pathPrefix/_portRewrites) — saving that
+        // verbatim destroys the authored ports in project.xml (see its javadoc for the
+        // real-world corruption this caused).
+        boolean ok = mPortPoolManager.withOriginalConfig(pid,
+                () -> ref.runtimeProject.write(new java.io.File(path)));
         if (!ok) {
             ctx.status(500).result("Failed to save project");
             return;
@@ -4716,7 +4721,10 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         ref.name = fileName(projectPath);
         ref.runtimeProject.setProjectPath(projectPath);
         ref.runtimeProject.setProjectName(ref.name);
-        boolean ok = ref.runtimeProject.write(new java.io.File(projectPath));
+        // withOriginalConfig: same reasoning as handleProjectSave — never persist the
+        // runtime-mutated plugin config (pool ports, synthetic properties).
+        boolean ok = mPortPoolManager.withOriginalConfig(pid,
+                () -> ref.runtimeProject.write(new java.io.File(projectPath)));
         if (!ok) {
             ctx.status(500).result("Failed to save project");
             return;

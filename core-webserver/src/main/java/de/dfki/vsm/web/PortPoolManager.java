@@ -89,6 +89,8 @@ public class PortPoolManager {
     private final Map<String, List<Integer>> mAllocations = new LinkedHashMap<>();
     /** ownerKey -> {"pluginName.key": port}, for the registry file (Phase 5's nginx reads this). */
     private final Map<String, Map<String, Integer>> mAllocationDetails = new LinkedHashMap<>();
+    /** ownerKey -> every (config, key, original, allocated) — see {@link #withOriginalConfig}. */
+    private final Map<String, List<AllocationRecord>> mAllocationRecords = new LinkedHashMap<>();
 
     public PortPoolManager() {
         this(intEnv("VSM_PORT_POOL_START", 20000), intEnv("VSM_PORT_POOL_SIZE", 200), resolveDefaultRegistryFile(),
@@ -175,13 +177,15 @@ public class PortPoolManager {
         List<Integer> allocated = new ArrayList<>(portRefs.size());
         Map<String, Integer> details = new LinkedHashMap<>();
         Set<PluginConfig> touchedConfigs = new LinkedHashSet<>();
+        List<AllocationRecord> records = new ArrayList<>(portRefs.size());
         JSONObject portRewrites = new JSONObject();
         for (PortRef ref : portRefs) {
             int port = mFreePorts.pollFirst();
             allocated.add(port);
             // The original literal project.xml value, read at the only moment it still exists —
             // recorded (per class docs on PORT_REWRITES_PROPERTY) so pages can fix up
-            // project-authored URLs that still reference it.
+            // project-authored URLs that still reference it, and kept in mAllocationRecords so
+            // withOriginalConfig() can restore it around a project save.
             String originalPort = ref.pluginConfig.getProperty(ref.key, "").trim();
             if (!originalPort.isEmpty() && originalPort.chars().allMatch(Character::isDigit)) {
                 String prefix = "/plugin/" + ownerKey + "/" + ref.pluginConfig.getPluginName() + "/" + ref.key + "/";
@@ -198,6 +202,7 @@ public class PortPoolManager {
             ref.pluginConfig.setProperty(ref.key, String.valueOf(port));
             details.put(ref.pluginConfig.getPluginName() + "." + ref.key, port);
             touchedConfigs.add(ref.pluginConfig);
+            records.add(new AllocationRecord(ref.pluginConfig, ref.key, originalPort, String.valueOf(port)));
         }
         if (mPathPrefixEnabled) {
             for (PluginConfig pc : touchedConfigs) {
@@ -207,14 +212,74 @@ public class PortPoolManager {
         }
         mAllocations.put(ownerKey, allocated);
         mAllocationDetails.put(ownerKey, details);
+        mAllocationRecords.put(ownerKey, records);
         sLogger.message("PortPoolManager: allocated " + allocated + " to " + ownerKey);
         writeRegistry();
+    }
+
+    /**
+     * Runs {@code action} (typically {@code RunTimeProject.write()}) with {@code ownerKey}'s
+     * plugin configs temporarily restored to their ORIGINAL authored state — original port
+     * values back in place, this manager's synthetic properties removed — then re-applies the
+     * live allocation before returning, success or not.
+     *
+     * <p>Exists because {@code RunTimeProject.write()} serializes the live in-memory
+     * {@code ProjectConfig} — the very object this manager mutates. Without this, saving a
+     * launched project persists pool ports and {@code _pathPrefix}/{@code _portRewrites} into
+     * {@code project.xml}, destroying the authored ports (confirmed on the real deployment
+     * 2026-07-30: a save from the previous day had baked pool ports into the file, so the next
+     * epoch's "originals" were pool ports and the port-rewrite map was self-referential
+     * garbage). Callers in the save path must wrap every {@code write()} in this.
+     *
+     * <p>Synchronized (like all mutators here), so a save can't interleave with a concurrent
+     * allocation. A plugin launching concurrently could in principle read the briefly-restored
+     * originals, but every launch path calls {@code ensurePortsAllocated} first, whose
+     * once-per-owner guard makes it a no-op here — the live values are re-applied before this
+     * returns, and plugins only read their config during {@code launch()}.
+     */
+    public synchronized <T> T withOriginalConfig(String ownerKey, java.util.function.Supplier<T> action) {
+        List<AllocationRecord> records = mAllocationRecords.get(ownerKey);
+        if (records == null || records.isEmpty()) {
+            return action.get();
+        }
+        Set<PluginConfig> touchedConfigs = new LinkedHashSet<>();
+        Map<PluginConfig, String[]> synthetic = new LinkedHashMap<>();
+        for (AllocationRecord rec : records) {
+            if (touchedConfigs.add(rec.pluginConfig)) {
+                synthetic.put(rec.pluginConfig, new String[]{
+                        rec.pluginConfig.getProperty(PATH_PREFIX_PROPERTY),
+                        rec.pluginConfig.getProperty(PORT_REWRITES_PROPERTY)});
+            }
+        }
+        try {
+            for (AllocationRecord rec : records) {
+                rec.pluginConfig.setProperty(rec.key, rec.originalValue);
+            }
+            for (PluginConfig pc : touchedConfigs) {
+                pc.getEntryList().removeIf(f -> PATH_PREFIX_PROPERTY.equals(f.getKey())
+                        || PORT_REWRITES_PROPERTY.equals(f.getKey()));
+            }
+            return action.get();
+        } finally {
+            for (AllocationRecord rec : records) {
+                rec.pluginConfig.setProperty(rec.key, rec.allocatedValue);
+            }
+            for (Map.Entry<PluginConfig, String[]> e : synthetic.entrySet()) {
+                if (e.getValue()[0] != null) {
+                    e.getKey().setProperty(PATH_PREFIX_PROPERTY, e.getValue()[0]);
+                }
+                if (e.getValue()[1] != null) {
+                    e.getKey().setProperty(PORT_REWRITES_PROPERTY, e.getValue()[1]);
+                }
+            }
+        }
     }
 
     /** No-op if {@code ownerKey} has no allocation. Only call on genuine project teardown — see class docs. */
     public synchronized void release(String ownerKey) {
         List<Integer> ports = mAllocations.remove(ownerKey);
         mAllocationDetails.remove(ownerKey);
+        mAllocationRecords.remove(ownerKey);
         if (ports == null || ports.isEmpty()) {
             return;
         }
@@ -254,6 +319,20 @@ public class PortPoolManager {
         PortRef(PluginConfig pluginConfig, String key) {
             this.pluginConfig = pluginConfig;
             this.key = key;
+        }
+    }
+
+    private static final class AllocationRecord {
+        final PluginConfig pluginConfig;
+        final String key;
+        final String originalValue;
+        final String allocatedValue;
+
+        AllocationRecord(PluginConfig pluginConfig, String key, String originalValue, String allocatedValue) {
+            this.pluginConfig = pluginConfig;
+            this.key = key;
+            this.originalValue = originalValue;
+            this.allocatedValue = allocatedValue;
         }
     }
 
