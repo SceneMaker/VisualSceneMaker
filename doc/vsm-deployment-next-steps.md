@@ -34,6 +34,26 @@ get here.
 
 ## 1. Hardcoded character URL under dynamic port pooling — FIXED 2026-07-30
 
+**Confirmed on the real deployment 2026-07-30**: Xenia loads in the Run
+popup through `/plugin/<pid>/CharamelEmbedXenia/port/character.html`.
+Getting there surfaced two additional root causes stacked on top of the
+missing rewrite mechanism, both fixed the same day:
+
+- **Saving a launched project corrupted project.xml**:
+  `RunTimeProject.write()` serializes the live in-memory `ProjectConfig` —
+  the object `PortPoolManager` mutates — so a save baked pool ports and
+  `_pathPrefix` into the file, destroying the authored ports the rewrite
+  map is derived from. Fixed via
+  `PortPoolManager.withOriginalConfig(...)` around both save handlers
+  (authored state restored for the write, live allocation re-applied
+  after). The deployment's already-corrupted file needed a one-time manual
+  repair (authored ports restored, synthetic properties removed).
+- **Browser-cached plugin JS pinned old behavior**: the Run popup is a
+  reused named window that gets navigated, not reloaded, and the plugins
+  served their infrastructure files with no cache headers — a returning
+  browser kept executing the previous deployment's JS indefinitely. All
+  infrastructure files (both plugins) now answer `Cache-Control: no-cache`.
+
 **Resolution**: the "promising direction" below was implemented essentially
 as sketched. `PortPoolManager` now records, at the only moment the
 correlation exists (right before overwriting each port property), a map of
