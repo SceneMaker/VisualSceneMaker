@@ -32,7 +32,27 @@ get here.
 - `inner-nginx`'s dynamic-route resolver working under Podman (not just
   Docker) via envsubst templating instead of a hardcoded DNS address.
 
-## 1. Hardcoded character URL under dynamic port pooling (high priority)
+## 1. Hardcoded character URL under dynamic port pooling — FIXED 2026-07-30
+
+**Resolution**: the "promising direction" below was implemented essentially
+as sketched. `PortPoolManager` now records, at the only moment the
+correlation exists (right before overwriting each port property), a map of
+original literal port → live nginx path prefix including the port key
+(`_portRewrites`, e.g. `{"3040": "/plugin/<pid>/CharamelEmbedXenia/port/"}`),
+set on every config that got a port (one plugin's page embeds iframes
+pointing at *other* plugins' ports). `HtmlGuiWsExecutor` injects it as
+`window.VSM_GUI_CONFIG.portRewrites` (and `screens.html` now loads
+`vsm-gui-config.js`, which the renderer iframe previously never saw);
+`vsm-renderer.js`'s `_resolveHost()` rewrites any URL whose port matches —
+but only when the URL points at localhost or the page's own hostname, so a
+coincidentally-matching port on a genuinely external host is left alone.
+Applies generally (any authored URL: `character` key, `srcVar` values,
+iframe elements), not just the character case. Verified end-to-end against
+a real server + real inner-nginx container: the exact broken URL from
+2026-07-29 now rewrites to a path that serves charamel-embed's real
+character page. Original analysis kept below for reference.
+
+### Original analysis (2026-07-29)
 
 **Symptom**: on the "Confidence - SIA Layer" project, the schema-driven
 `character` iframe (rendered by `vsm-renderer.js`, from `screens.json`'s

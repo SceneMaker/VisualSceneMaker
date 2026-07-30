@@ -200,4 +200,48 @@ class PortPoolManagerTest {
 
         assertEquals(prefix, config.getProperty("_pathPrefix"));
     }
+
+    @Test
+    void portRewritesMapOriginalPortsToPrefixesAcrossAllPluginsOnEveryTouchedConfig() {
+        PortPoolManager pool = new PortPoolManager(20000, 10, dir.resolve("registry.json"), true);
+        PluginConfig gui = htmlguiWsLike();                          // wss_port 4040, ws_port 4041, html_port 8080
+        PluginConfig avatar = charamelEmbedLike("CharamelEmbedXenia"); // port 3040
+
+        pool.ensureAllocated("project-1", List.of(gui, avatar));
+
+        // Every touched config carries the FULL project-wide map — one plugin's page (htmlgui-ws)
+        // embeds iframes pointing at OTHER plugins' authored ports (the confirmed real-world case:
+        // screens.json's character key referencing charamel-embed's original 3040).
+        for (PluginConfig pc : List.of(gui, avatar)) {
+            JSONObject rewrites = new JSONObject(pc.getProperty("_portRewrites"));
+            assertEquals("/plugin/project-1/CharamelEmbedXenia/port/", rewrites.getString("3040"));
+            assertEquals("/plugin/project-1/webpage/html_port/", rewrites.getString("8080"));
+            assertEquals("/plugin/project-1/webpage/ws_port/", rewrites.getString("4041"));
+            assertEquals("/plugin/project-1/webpage/wss_port/", rewrites.getString("4040"));
+        }
+    }
+
+    @Test
+    void portRewritesAbsentWhenPathPrefixDisabled() {
+        PortPoolManager pool = new PortPoolManager(20000, 10, dir.resolve("registry.json"));
+        PluginConfig config = charamelEmbedLike("CharamelEmbedXenia");
+
+        pool.ensureAllocated("project-1", List.of(config));
+
+        assertNull(config.getProperty("_portRewrites"));
+    }
+
+    @Test
+    void duplicateOriginalPortKeepsFirstMappingRatherThanSilentlyReplacingIt() {
+        PortPoolManager pool = new PortPoolManager(20000, 10, dir.resolve("registry.json"), true);
+        PluginConfig first = charamelEmbedLike("CharamelEmbedXenia");  // port 3040
+        PluginConfig second = charamelEmbedLike("CharamelEmbedBob");   // also authored as 3040
+
+        pool.ensureAllocated("project-1", List.of(first, second));
+
+        JSONObject rewrites = new JSONObject(first.getProperty("_portRewrites"));
+        assertEquals("/plugin/project-1/CharamelEmbedXenia/port/", rewrites.getString("3040"));
+        // Both instances still got distinct live ports, though — only the rewrite map is ambiguous.
+        assertNotEquals(first.getProperty("port"), second.getProperty("port"));
+    }
 }

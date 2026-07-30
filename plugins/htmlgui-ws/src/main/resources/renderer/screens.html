@@ -14,6 +14,12 @@
     <!-- Chart.js (UMD build — exposes window.Chart) -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.9/dist/chart.umd.min.js"></script>
 
+    <!-- Server-injected config (nginx path prefix + port-rewrite map for stale authored URLs) —
+         a plain script so it executes before the renderer module below. In editor-preview mode
+         this file isn't served (the embedding page supplies the schema directly); the renderer
+         treats a missing window.VSM_GUI_CONFIG as "no rewrites", so the 404 is harmless there. -->
+    <script src="vsm-gui-config.js"></script>
+
     <!-- VSM schema-driven renderer (Lit) -->
     <script type="module" src="vsm-renderer.js"></script>
 

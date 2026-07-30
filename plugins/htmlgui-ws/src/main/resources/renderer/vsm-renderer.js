@@ -214,6 +214,22 @@ class VsmScreenRenderer extends LitElement {
             const u = new URL(src, loc.href);
             const isLocal = u.hostname === 'localhost' || u.hostname === '127.0.0.1'
                 || u.hostname === '::1' || u.hostname === '[::1]';
+            // Nginx-routed deployments (VSM_PLUGIN_PATH_PREFIX_ENABLED): project-authored URLs
+            // (screens.json's character key, srcVar values written by the SceneFlow) reference
+            // the literal project.xml port from authoring time, but PortPoolManager reassigns
+            // ports dynamically — the authored port is stale and, behind nginx, not reachable
+            // from the browser at all (confirmed broken 2026-07-29). The server injects a map
+            // of original port → live nginx path prefix (window.VSM_GUI_CONFIG.portRewrites,
+            // see vsm-gui-config.js); a URL whose port matches gets routed through that prefix
+            // on this page's own origin. Only for URLs meant for the runtime host (localhost or
+            // this page's own hostname) — a matching port on a genuinely external host is a
+            // coincidence, not a stale reference.
+            const rewrites = (typeof window !== 'undefined' && window.VSM_GUI_CONFIG
+                && window.VSM_GUI_CONFIG.portRewrites) || null;
+            if (rewrites && u.port && rewrites[u.port] && (isLocal || u.hostname === loc.hostname)) {
+                return loc.protocol + '//' + loc.host + rewrites[u.port]
+                    + u.pathname.replace(/^\/+/, '') + u.search + u.hash;
+            }
             if (!isLocal) return src;   // only touch URLs pointing at "this machine"
             // Point the resource at the host that served this page (unless we are that host).
             if (loc.hostname !== 'localhost' && loc.hostname !== '127.0.0.1') {

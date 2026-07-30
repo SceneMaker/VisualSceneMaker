@@ -152,15 +152,27 @@ public class HtmlGuiWsExecutor extends ActivityExecutor {
             ctx.redirect("index.html");
         });
 
-        // "_pathPrefix" is set by core-webserver's PortPoolManager (Option C, doc/vsm-workspace-
-        // platform-plan.md Phase 5 follow-up) only when VSM_PLUGIN_PATH_PREFIX_ENABLED is on —
-        // absent in every other deployment mode. Injected into the page (js/wsclient.js reads
-        // window.VSM_GUI_CONFIG) so the browser's WebSocket connects through the same nginx
-        // path prefix the HTML itself was loaded under, instead of a raw port it may not be
-        // able to reach directly.
+        // "_pathPrefix"/"_portRewrites" are set by core-webserver's PortPoolManager (Option C,
+        // doc/vsm-workspace-platform-plan.md Phase 5 follow-up) only when
+        // VSM_PLUGIN_PATH_PREFIX_ENABLED is on — absent in every other deployment mode.
+        // Injected into the served pages (window.VSM_GUI_CONFIG): js/wsclient.js uses pathPrefix
+        // so the browser's WebSocket connects through the same nginx path prefix the HTML itself
+        // was loaded under; vsm-renderer.js uses portRewrites (original project.xml port → nginx
+        // path prefix) to fix up project-authored iframe/character URLs that still reference a
+        // literal pre-allocation port the browser can't reach in this deployment mode.
         final String pathPrefix = mConfig.getProperty("_pathPrefix", "");
-        app.get("/vsm-gui-config.js", ctx -> ctx.contentType("application/javascript").result(
-                "window.VSM_GUI_CONFIG={\"pathPrefix\":\"" + escapeJson(pathPrefix) + "\"};"));
+        // Round-trip through JSONObject rather than embedding the raw property value: this is
+        // injected into an executable script, so a malformed/hand-authored value must at worst
+        // degrade to {}, never break (or extend) the script.
+        String portRewritesJson = "{}";
+        try {
+            portRewritesJson = new org.json.JSONObject(mConfig.getProperty("_portRewrites", "{}")).toString();
+        } catch (RuntimeException ignored) {
+            // Not valid JSON — treat as absent.
+        }
+        final String guiConfigJs = "window.VSM_GUI_CONFIG={\"pathPrefix\":\"" + escapeJson(pathPrefix)
+                + "\",\"portRewrites\":" + portRewritesJson + "};";
+        app.get("/vsm-gui-config.js", ctx -> ctx.contentType("application/javascript").result(guiConfigJs));
 
         app.ws("/ws", ws -> {
             ws.onConnect(ctx -> {

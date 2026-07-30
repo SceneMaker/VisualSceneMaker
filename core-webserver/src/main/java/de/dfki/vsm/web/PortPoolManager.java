@@ -61,6 +61,23 @@ public class PortPoolManager {
      */
     static final String PATH_PREFIX_PROPERTY = "_pathPrefix";
 
+    /**
+     * Companion to {@link #PATH_PREFIX_PROPERTY}, for URLs this manager can't rewrite itself:
+     * project-authored content (screens.json's {@code character} key, SceneFlow assignments to
+     * {@code character.srcVar}, ...) may contain literal URLs like
+     * {@code http://localhost:3040/character.html} using the ORIGINAL project.xml port — the
+     * "3040 means CharamelEmbedXenia" correlation only exists here, at allocation time, right
+     * before the port property is overwritten. This property carries that correlation to the
+     * pages that need it: a JSON object mapping each original literal port to the full
+     * inner-nginx path prefix (including the port key) now serving that plugin, e.g.
+     * {@code {"3040": "/plugin/<projectId>/CharamelEmbedXenia/port/"}}. htmlgui-ws injects it
+     * into its served pages (window.VSM_GUI_CONFIG.portRewrites) so vsm-renderer.js can fix up
+     * stale authored URLs at render time (confirmed broken 2026-07-29 without this — see
+     * doc/vsm-deployment-next-steps.md section 1). Set on every config that got a port, since
+     * one plugin's page (htmlgui-ws) embeds iframes pointing at OTHER plugins' ports.
+     */
+    static final String PORT_REWRITES_PROPERTY = "_portRewrites";
+
     private final int mPoolStart;
     private final int mPoolSize;
     private final Path mRegistryFile;
@@ -158,9 +175,26 @@ public class PortPoolManager {
         List<Integer> allocated = new ArrayList<>(portRefs.size());
         Map<String, Integer> details = new LinkedHashMap<>();
         Set<PluginConfig> touchedConfigs = new LinkedHashSet<>();
+        JSONObject portRewrites = new JSONObject();
         for (PortRef ref : portRefs) {
             int port = mFreePorts.pollFirst();
             allocated.add(port);
+            // The original literal project.xml value, read at the only moment it still exists —
+            // recorded (per class docs on PORT_REWRITES_PROPERTY) so pages can fix up
+            // project-authored URLs that still reference it.
+            String originalPort = ref.pluginConfig.getProperty(ref.key, "").trim();
+            if (!originalPort.isEmpty() && originalPort.chars().allMatch(Character::isDigit)) {
+                String prefix = "/plugin/" + ownerKey + "/" + ref.pluginConfig.getPluginName() + "/" + ref.key + "/";
+                if (portRewrites.has(originalPort)) {
+                    // Two plugins authored with the same literal port — ambiguous by construction;
+                    // keep the first and say so rather than silently rewriting to the wrong one.
+                    sLogger.warning("PortPoolManager: original port " + originalPort
+                            + " appears more than once in " + ownerKey + "'s config — port-rewrite"
+                            + " for it stays mapped to the first occurrence, not " + prefix);
+                } else {
+                    portRewrites.put(originalPort, prefix);
+                }
+            }
             ref.pluginConfig.setProperty(ref.key, String.valueOf(port));
             details.put(ref.pluginConfig.getPluginName() + "." + ref.key, port);
             touchedConfigs.add(ref.pluginConfig);
@@ -168,6 +202,7 @@ public class PortPoolManager {
         if (mPathPrefixEnabled) {
             for (PluginConfig pc : touchedConfigs) {
                 pc.setProperty(PATH_PREFIX_PROPERTY, "/plugin/" + ownerKey + "/" + pc.getPluginName() + "/");
+                pc.setProperty(PORT_REWRITES_PROPERTY, portRewrites.toString());
             }
         }
         mAllocations.put(ownerKey, allocated);
