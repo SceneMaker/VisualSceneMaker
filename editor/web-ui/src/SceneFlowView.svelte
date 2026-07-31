@@ -56,7 +56,11 @@
 
   const COLORS = {
     node: "#7a7d81",
-    history: "#ffffff",
+    // A previous #ffffff fill made history nodes indistinguishable from the (also white) canvas
+    // background — visible only as a faint outline (nodeStroke() darkens the fill by 25%, which
+    // on white is a barely-there light gray). A slight gray tone keeps them readable while still
+    // clearly lighter than a regular node's darker gray fill.
+    history: "#dcdcdc",
     text: "#ffffff",
     textHistory: "#000000",
     startSign: "#e84a4f",
@@ -289,6 +293,34 @@
   let commentMinSize = 50;
   const dragThreshold = 3;
   let textMeasureCtx = null;
+
+  // Deferred pointer capture. Chrome >= 122 (PointerEvents spec change) fires the follow-up
+  // click/dblclick at the element that had pointer capture during the gesture — so capturing
+  // on pointerdown (as every start*Drag once did) retargeted node clicks to the stage element:
+  // the click hit handleStageClick (clearing the selection) and dblclick never reached the
+  // node's <g>, so double-clicking a supernode silently did nothing (no navigate request ever
+  // left the browser). Confirmed via scripted repro 2026-07-31. Fix: request capture on
+  // pointerdown but only actually acquire it on the first pointermove — a plain click never
+  // captures, so click/dblclick dispatch to the node normally; a real drag still captures the
+  // instant it starts moving.
+  let pendingPointerCapture = null;
+  function requestPointerCapture(captureEl, pointerId) {
+    pendingPointerCapture =
+      captureEl && Number.isFinite(pointerId) ? { el: captureEl, pointerId } : null;
+  }
+  function acquirePendingPointerCapture(event) {
+    if (pendingPointerCapture && pendingPointerCapture.pointerId === event.pointerId) {
+      try {
+        pendingPointerCapture.el.setPointerCapture(event.pointerId);
+      } catch (_) {
+        /* element gone / invalid pointer — nothing to capture */
+      }
+      pendingPointerCapture = null;
+    }
+  }
+  function clearPendingPointerCapture() {
+    pendingPointerCapture = null;
+  }
   let lastTextMeasureSize = null;
   let timeoutInlineDrafts = new Map();
 
@@ -990,7 +1022,7 @@
     };
     const captureEl = stageEl || svgEl;
     if (captureEl) {
-      captureEl.setPointerCapture(event.pointerId);
+      requestPointerCapture(captureEl, event.pointerId);
     }
   }
 
@@ -1085,11 +1117,12 @@
     panOrigin = { x: panX, y: panY };
     const captureEl = stageEl || svgEl;
     if (captureEl) {
-      captureEl.setPointerCapture(event.pointerId);
+      requestPointerCapture(captureEl, event.pointerId);
     }
   }
 
   function movePan(event) {
+    acquirePendingPointerCapture(event);
     updateEdgeCreateCursor(event);
     if (dragState) {
       updateDrag(event);
@@ -1112,6 +1145,7 @@
   }
 
   function endPan(event) {
+    clearPendingPointerCapture();
     updateEdgeCreateCursor(event);
     if (dragState) {
       endDrag(event);
@@ -2766,7 +2800,7 @@
     const pointerId = event?.pointerId;
     const captureEl = stageEl || svgEl;
     if (Number.isFinite(pointerId) && captureEl?.setPointerCapture) {
-      captureEl?.setPointerCapture(pointerId);
+      requestPointerCapture(captureEl, pointerId);
     }
     const sliderPos = timeoutInlineSliderPosFromPointer(event, sliderX, sliderWidth);
     const safePos = Number.isFinite(sliderPos) ? sliderPos : timeoutSliderPosFromMs(timeoutLiteralMs(edge) || 0);
@@ -3103,7 +3137,7 @@
     const world = eventToWorld(event);
     const captureEl = stageEl || svgEl;
     if (captureEl) {
-      captureEl.setPointerCapture(event.pointerId);
+      requestPointerCapture(captureEl, event.pointerId);
     }
     dragState = {
       type: "cmd-badge",
@@ -3571,7 +3605,7 @@
     };
     const captureEl = stageEl || svgEl;
     if (captureEl) {
-      captureEl.setPointerCapture(event.pointerId);
+      requestPointerCapture(captureEl, event.pointerId);
     }
   }
 
@@ -3602,7 +3636,7 @@
     };
     const captureEl = stageEl || svgEl;
     if (captureEl) {
-      captureEl.setPointerCapture(event.pointerId);
+      requestPointerCapture(captureEl, event.pointerId);
     }
   }
 
@@ -3635,7 +3669,7 @@
     };
     const captureEl = stageEl || svgEl;
     if (captureEl) {
-      captureEl.setPointerCapture(event.pointerId);
+      requestPointerCapture(captureEl, event.pointerId);
     }
   }
 
@@ -3665,7 +3699,7 @@
     };
     const captureEl = stageEl || svgEl;
     if (captureEl) {
-      captureEl.setPointerCapture(event.pointerId);
+      requestPointerCapture(captureEl, event.pointerId);
     }
   }
 
@@ -3694,7 +3728,7 @@
     };
     const captureEl = stageEl || svgEl;
     if (captureEl) {
-      captureEl.setPointerCapture(event.pointerId);
+      requestPointerCapture(captureEl, event.pointerId);
     }
   }
 
@@ -3717,7 +3751,7 @@
     };
     const captureEl = stageEl || svgEl;
     if (captureEl) {
-      captureEl.setPointerCapture(event.pointerId);
+      requestPointerCapture(captureEl, event.pointerId);
     }
   }
 
@@ -3746,7 +3780,7 @@
     };
     const captureEl = stageEl || svgEl;
     if (captureEl) {
-      captureEl.setPointerCapture(event.pointerId);
+      requestPointerCapture(captureEl, event.pointerId);
     }
   }
 
