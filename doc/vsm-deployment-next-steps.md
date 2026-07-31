@@ -208,21 +208,22 @@ and it's worth remembering exactly where the line is:
   admin-panel action is the natural future convenience), and per-path
   assignments in the admin panel.
 
-**Open constraint — VuppetMaster licensing (question sent to Charamel):**
-N viewers of a shared run = N concurrent live engine sessions on one
-`licenseKey`. Observations are inconsistent (two concurrent sessions have
-both silently wedged `speak()` in the past AND worked fine on 2026-07-30).
-Asked of Charamel:
-1. How many concurrent live engine sessions does one licenseKey (per
-   appName/character) permit?
-2. What is the *defined* behavior when the limit is exceeded — refused
-   session, or degraded existing ones?
-3. Is there a per-seat / concurrent-session licensing option for a review
-   team of ~5-10 viewers?
-Their answer decides how far the collaborative review scales — the VSM side
-is already in place. Note the license constraint applies to the per-user-
-copies model too (copies share the same licenseKey), so simultaneous runs
-by different users can still collide at the VuppetMaster end.
+**License constraint — RESOLVED 2026-07-31 (answer from the VuppetMaster
+developer):** the `licenseKey` is validation-only — an id that must be
+present and valid to run the engine, nothing more. VuppetMaster instances
+are **not connected to each other**: N concurrent engine instances on the
+same key do not interfere, there is no session limit. Confirmed empirically
+the same day: two projects running simultaneously, triggered by different
+clients on different machines, zero interference. So **both working models
+scale freely** — team review with many viewers, and per-user copies sharing
+one key.
+
+Nuance kept for the record: the `speak()` wedging observed 2026-07-18
+(SIA preview + Run popup overlapping) was real, but per this answer its
+cause must be client-side (two engine instances in the SAME browser), not a
+license-session limit as assumed at the time. The app's defensive
+preview-suspension during runs stays — it prevents the observed conflict
+regardless of mechanism.
 
 ## Suggested order
 
@@ -230,5 +231,5 @@ by different users can still collide at the VuppetMaster end.
    all are quick once picked up.
 2. When independent per-user work is needed: the per-user-copies layout
    change (section 4).
-3. When Charamel answers the license question: record the answer in
-   section 4 and decide the team-review scaling accordingly.
+3. ~~When Charamel answers the license question~~ — answered 2026-07-31
+   (section 4): no session limit, both models scale freely.
