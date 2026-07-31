@@ -4100,7 +4100,16 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
       realm: info.oidcRealm,
       clientId: info.oidcClientId
     });
-    await keycloak.init({ onLoad: "login-required", pkceMethod: "S256" });
+    // checkLoginIframe: false — the default (true) makes the adapter depend on a hidden
+    // Keycloak iframe for session checks, and cross-site cookie partitioning (Keycloak on
+    // keycloak.scaai.dfki.dev, app on vsm.scaai.dfki.dev) silently breaks that iframe.
+    // With it broken, updateToken()'s promise can hang UNRESOLVED forever, and keycloak-js
+    // queues every later refresh behind the stuck one — from that moment every apiFetch in
+    // the tab hangs silently while WS traffic keeps working (confirmed in production
+    // 2026-07-31: supernode navigation cleared the selection, then its POST never left the
+    // browser). Without the iframe, session-end detection degrades gracefully to "refresh
+    // fails -> keycloak.login()", which is the behavior we want anyway.
+    await keycloak.init({ onLoad: "login-required", pkceMethod: "S256", checkLoginIframe: false });
     token = keycloak.token;
     localStorage.setItem("vsm_token", token);
     keycloak.onTokenExpired = () => {
@@ -4163,7 +4172,7 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
         // broken 2026-07-29: an idle session got stuck retrying it indefinitely, never reaching
         // Keycloak again). Refresh from the still-live Keycloak session instead.
         try {
-          await keycloak.updateToken(-1);
+          await updateTokenBounded(-1, 10000);
           token = keycloak.token;
           localStorage.setItem("vsm_token", token);
           console.log("[AUTO-CONNECT] Refreshed Keycloak token, token now:", !!token);
@@ -8742,6 +8751,21 @@ Sentence:
     });
   }
 
+  // updateToken with a hard time bound. keycloak-js's refresh promise can stall without
+  // ever settling (stuck network; or — before checkLoginIframe was disabled in
+  // ensureKeycloakAuth — a silently broken status iframe), and the adapter queues every
+  // later refresh call behind a stuck one. Nothing may block on it indefinitely: one
+  // wedged refresh otherwise freezes every REST request in the tab forever, with no error
+  // anywhere (confirmed in production 2026-07-31 — supernode navigation's POST never left
+  // the browser).
+  function updateTokenBounded(minValidity, timeoutMs = 5000) {
+    return Promise.race([
+      keycloak.updateToken(minValidity),
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error("Keycloak token refresh timed out")), timeoutMs))
+    ]);
+  }
+
   // Proactively refresh a near-expiry Keycloak token before attaching it to a request.
   // keycloak-js's own onTokenExpired timer is throttled in background tabs (Safari
   // especially), so after an idle stretch a request can otherwise go out with an expired
@@ -8752,14 +8776,14 @@ Sentence:
   async function ensureFreshToken() {
     if (!keycloak) return;
     try {
-      const refreshed = await keycloak.updateToken(30);
+      const refreshed = await updateTokenBounded(30);
       if (refreshed) {
         token = keycloak.token;
         localStorage.setItem("vsm_token", token);
       }
     } catch (_) {
-      // Refresh failed (SSO session itself gone) — fall through with the stale token; the
-      // 401 handler below + auto-connect recovery (which ends in keycloak.login() when the
+      // Refresh failed or timed out — fall through with the current token; the 401
+      // handler below + auto-connect recovery (which ends in keycloak.login() when the
       // session is truly dead) take it from here.
     }
   }
