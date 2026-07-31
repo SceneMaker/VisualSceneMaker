@@ -172,11 +172,63 @@ without requiring project content itself to change. Needs:
   it whenever a change here needs to reach the deployment, as we did several
   times today.
 
+## 4. Multi-user working models (recorded 2026-07-31, after first real two-user test)
+
+Observed with two real users (gebhard + reinwarth) on the live deployment:
+both opened `/app/project/Confidence - SIA Layer`; one pressed Play and
+Xenia spoke on BOTH laptops. This is **by design, not session leakage** —
+and it's worth remembering exactly where the line is:
+
+- **Project instances are keyed by PATH.** Same path = ONE shared instance
+  (same projectId, interpreter, plugin instances, ports) — the collaborative
+  co-editing session. The plugin transports deliberately broadcast every
+  speak/action to ALL connected viewer pages ("follow the player"), so every
+  participant sees/hears the same run. Per-viewer audio mute exists in the
+  preview panel precisely so a room of reviewers doesn't produce N-fold
+  audio.
+- **Different paths = fully isolated instances** (own interpreter, own
+  PortPoolManager allocation, own GUI/avatar servers — the part Phase 6
+  load-tested at ~24 concurrent instances, zero bleed).
+
+**Both models are wanted:**
+
+- *Shared path* is the intended mechanism for the modelling-team review
+  workflow: everyone watches the same SIA perform a sentence, natively
+  rendered on their own machine, and the team agrees on behavior.
+- *Per-user copies* is the intended mechanism for independent work
+  (the platform plan's Decision 5 scenario). Layout for that, when needed:
+  ```
+  /srv/vsm-projects/
+  ├── confidence-sia-layer/               <- master
+  └── <username>/confidence-sia-layer/    <- per-user copy, assigned via admin panel
+  ```
+  Requires: widening the compose bind-mount from the single project dir to
+  the projects ROOT (small docker-compose.yml/.env change), per-user
+  `cp -r` on the server (manual today — an "assign a copy from template"
+  admin-panel action is the natural future convenience), and per-path
+  assignments in the admin panel.
+
+**Open constraint — VuppetMaster licensing (question sent to Charamel):**
+N viewers of a shared run = N concurrent live engine sessions on one
+`licenseKey`. Observations are inconsistent (two concurrent sessions have
+both silently wedged `speak()` in the past AND worked fine on 2026-07-30).
+Asked of Charamel:
+1. How many concurrent live engine sessions does one licenseKey (per
+   appName/character) permit?
+2. What is the *defined* behavior when the limit is exceeded — refused
+   session, or degraded existing ones?
+3. Is there a per-seat / concurrent-session licensing option for a review
+   team of ~5-10 viewers?
+Their answer decides how far the collaborative review scales — the VSM side
+is already in place. Note the license constraint applies to the per-user-
+copies model too (copies share the same licenseKey), so simultaneous runs
+by different users can still collide at the VuppetMaster end.
+
 ## Suggested order
 
-1. Decide whether the hardcoded character URL (section 1 above) is worth
-   fixing now or acceptable to leave for a while — it only affects the
-   schema-driven character iframe specifically, not the GUI, not the SIA
-   preview panel (confirmed working), not the SceneFlow runtime itself.
-2. Batch the cleanup items (section 2) together sometime — none are urgent,
+1. Batch the cleanup items (section 2) together sometime — none are urgent,
    all are quick once picked up.
+2. When independent per-user work is needed: the per-user-copies layout
+   change (section 4).
+3. When Charamel answers the license question: record the answer in
+   section 4 and decide the team-review scaling accordingly.
