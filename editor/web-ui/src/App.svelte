@@ -48,6 +48,9 @@
   // stays false whenever OIDC is disabled (no admin concept without an identity).
   let isAdmin = false;
   let showAdminPanel = false;
+  // Caller's admin-assigned project paths (from /api/v1/me). Durable + per-user, unlike
+  // `recent` (ephemeral server Preferences). Rendered as the landing page's "Your projects".
+  let assignedProjects = [];
   let autoConnectAttempted = false;
   let autoConnectTimer = null;
   let autoConnectAttempts = 0;
@@ -4139,10 +4142,26 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
     try {
       const me = await apiGet("/api/v1/me");
       isAdmin = me?.admin === true;
+      assignedProjects = Array.isArray(me?.projects) ? me.projects : [];
     } catch (err) {
       isAdmin = false;
+      assignedProjects = [];
     }
   }
+
+  // Display name for an assigned project path: the last path segment (same convention as
+  // Open-by-path and the server's fileName()). Tolerates trailing slashes and both separators.
+  function projectNameFromPath(path) {
+    if (!path) return "";
+    const parts = String(path).replace(/[\\/]+$/, "").split(/[\\/]/);
+    return parts[parts.length - 1] || path;
+  }
+
+  // Assigned projects that aren't already shown in the open-projects list above (matched by
+  // path), so "Your projects" complements rather than duplicates it.
+  $: assignedNotOpen = assignedProjects.filter(
+    (p) => !projects.some((op) => op.path && op.path === p)
+  );
 
   function isLocalHost() {
     if (typeof window === "undefined") return false;
@@ -15285,6 +15304,22 @@ Sentence:
       </header>
 
       <div class="panel-body">
+      {#if assignedNotOpen.length}
+        <div class="assigned-projects">
+          <h3 class="assigned-projects-title">Your projects</h3>
+          {#each assignedNotOpen as path}
+            <button
+              type="button"
+              class="assigned-project-row"
+              title={path}
+              on:click={() => openProject(path)}
+            >
+              <span class="assigned-project-name">{projectNameFromPath(path)}</span>
+              <span class="assigned-project-path">{path}</span>
+            </button>
+          {/each}
+        </div>
+      {/if}
       <div class="project-list">
         {#if projects.length === 0}
           <p class="muted">No open projects.</p>

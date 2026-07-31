@@ -288,6 +288,38 @@ main.editor-view .grid {
   gap: 0.75rem;
 }
 
+/* Phones / small tablets: abandon the fixed-viewport "dashboard" model (locked height +
+   overflow:hidden + each panel scrolling internally) — on a small screen that crushes three
+   stacked panels into unreadable slivers. Instead let the landing page flow as a normal
+   scrolling document: full-width stacked panels at natural height, footer inline at the end. */
+@media (max-width: 768px) {
+  main:not(.editor-view) {
+    height: auto;
+    min-height: 0;
+    margin: 1rem auto;
+    overflow: visible;
+  }
+
+  main:not(.editor-view) .grid {
+    grid-template-columns: 1fr;
+    overflow: visible;
+  }
+
+  main:not(.editor-view) .landing-panel .panel-body {
+    overflow-y: visible;   /* let the page scroll, not each panel */
+  }
+
+  .hero {
+    flex-wrap: wrap;       /* logo/title and the connected badge stack instead of overflowing */
+  }
+
+  .landing-footer {
+    position: static;      /* flows after the panels rather than floating over them */
+    transform: none;
+    margin-top: 1.5rem;
+  }
+}
+
 .field label {
   display: block;
   font-weight: 600;
@@ -493,6 +525,42 @@ button.ghost.danger:active {
   padding-right: 0.25rem;
   padding-left: 0.25rem;
   margin-left: -0.25rem;
+}
+
+/* "Your projects": the caller's admin-assigned projects (durable, per-user), shown above the
+   ephemeral open-projects list. */
+.assigned-projects {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-bottom: 1rem;
+}
+
+.assigned-projects-title {
+  margin: 0 0 0.25rem;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted, #6b7280);
+}
+
+.assigned-project-row {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.1rem;
+  text-align: left;
+  width: 100%;
+}
+
+.assigned-project-name {
+  font-weight: 600;
+}
+
+.assigned-project-path {
+  font-size: 0.75rem;
+  opacity: 0.7;
+  word-break: break-all;
 }
 
 .project-row {

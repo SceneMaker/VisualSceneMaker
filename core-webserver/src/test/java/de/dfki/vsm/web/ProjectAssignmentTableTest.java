@@ -59,6 +59,25 @@ class ProjectAssignmentTableTest {
     }
 
     @Test
+    void projectsForReturnsTheUsersExplicitAssignments() throws IOException {
+        ProjectAssignmentTable table = writeAndLoad(
+                "{\"users\": {\"gebhard\": {\"admin\": true, \"projects\": [\"/app/project/Confidence - SIA Layer\"]},"
+                        + " \"reinwarth\": {\"admin\": false, \"projects\": [\"/app/project/A\", \"/app/project/B\"]}}}");
+
+        assertEquals(java.util.Set.of("/app/project/Confidence - SIA Layer"), table.projectsFor("gebhard"));
+        assertEquals(java.util.Set.of("/app/project/A", "/app/project/B"), table.projectsFor("reinwarth"));
+        // Unknown user and (deliberately) an admin's list is only what's explicitly assigned —
+        // NOT "everything an admin can reach".
+        assertTrue(table.projectsFor("mallory").isEmpty());
+    }
+
+    @Test
+    void projectsForIsEmptyWhenFileMissing() {
+        ProjectAssignmentTable table = new ProjectAssignmentTable(dir.resolve("does-not-exist.json"));
+        assertTrue(table.projectsFor("anyone").isEmpty());
+    }
+
+    @Test
     void unknownUserCannotAccessAnything() throws IOException {
         ProjectAssignmentTable table = writeAndLoad(
                 "{\"users\": {\"alice\": {\"admin\": false, \"projects\": [\"/app/project/X\"]}}}");

@@ -3380,6 +3380,13 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
             response.put("userId", caller.userId);
             response.put("displayName", caller.displayName);
             response.put("admin", mProjectAssignmentTable.isAdmin(caller.userId));
+            // The caller's assigned project paths — the landing page's "Your projects" list
+            // renders these (durable + per-user, unlike Recent which is ephemeral Preferences
+            // state wiped on every container recreation). Sorted for a stable display order.
+            JSONArray assigned = new JSONArray();
+            new java.util.TreeSet<>(mProjectAssignmentTable.projectsFor(caller.userId))
+                    .forEach(assigned::put);
+            response.put("projects", assigned);
         }
         writeJson(ctx, response);
     }

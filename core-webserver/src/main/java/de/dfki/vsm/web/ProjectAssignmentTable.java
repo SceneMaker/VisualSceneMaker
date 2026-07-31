@@ -87,6 +87,26 @@ public class ProjectAssignmentTable {
         return entry != null && (entry.admin || entry.projects.contains(projectPath.trim()));
     }
 
+    /**
+     * The explicit project paths assigned to {@code userId}, for the landing page's "Your
+     * projects" list. Only the user's own {@code projects} entries — NOT a synthesis of
+     * "everything an admin can reach" (an admin's list is whatever was explicitly assigned to
+     * them, which may be empty even though {@link #canAccess} lets them open anything). Empty
+     * set when the file is absent/unreadable or the user isn't listed — the landing page just
+     * shows nothing extra, which is the right fail-safe.
+     */
+    public Set<String> projectsFor(String userId) {
+        if (userId == null) {
+            return new HashSet<>();
+        }
+        Map<String, UserEntry> users = load();
+        if (users == null) {
+            return new HashSet<>();
+        }
+        UserEntry entry = users.get(userId);
+        return entry == null ? new HashSet<>() : new HashSet<>(entry.projects);
+    }
+
     public boolean isAdmin(String userId) {
         if (userId == null) {
             return false;
