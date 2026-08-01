@@ -114,6 +114,62 @@ podman exec vsm-server curl -sv --max-time 5 http://host.containers.internal:POR
 
 If that connects, the plugin will too — set the plugin's target to the same address.
 
+## Worked example: internal `fast-tts` → a specific browser's VuppetMaster
+
+A concrete case that combines the pieces: replace VuppetMaster's built-in Azure TTS with an
+internal `fast-tts` server (`audio-processing/fast-tts`, a Qwen3-TTS/MLX service), so the avatar
+speaks with in-house TTS. This is subtle because the audio must end up **inside a specific
+user's browser** (where VuppetMaster runs), not on the server.
+
+**Why it's not just "point the plugin at fast-tts".** VuppetMaster does the TTS *itself* today,
+inside the browser engine (VSM only sends `vm.speak(text)`; the engine calls Azure and gets
+audio + viseme timing back). So swapping the TTS source means feeding the engine externally
+produced audio — which only works because the VuppetMaster maintainer **confirmed the engine can
+be configured to accept streamed audio + streamed visemes in Azure's format** (capability (b) in
+this doc's terms).
+
+**Topology (server-brokered, Topology 2 of §"Direction B").** fast-tts stays internal; the VSM
+server brokers:
+
+1. SceneFlow triggers speech → VSM's (new) tts plugin, server-side.
+2. Server opens a WS to fast-tts (internal address — **B-direct**, the easy reachability case).
+3. fast-tts streams back **audio + visemes + word timings** (see below).
+4. Server **translates to VuppetMaster's expected format** and pushes it to the *specific* user's
+   browser over the existing `/plugin/{projectId}/...` channel (routing to the right browser is
+   free — the server already knows which session/`projectId` owns it).
+5. The browser engine plays the injected audio and lip-syncs from the injected visemes.
+6. `${...}$` markers fire from fast-tts's word timings (see the marker note below).
+
+Location-independent (home users work identically), and fast-tts is never exposed publicly.
+
+**What fast-tts already provides** (documented WS protocol,
+`audio-processing/fast-tts/docs/websocket-interface.md`):
+- `audio.chunk` — PCM s16le @ 24 kHz, with a **sample-clock** (`start_sample`/`sample_rate`) that
+  is the sync source of truth.
+- `viseme.frame` — with a `weights` dict already doing blend-shape morph blending.
+- `word.final`/`word.provisional` — CTC forced-aligned word timings.
+
+So the three needed streams exist; fast-tts was built for character animation.
+
+**The one real gap — viseme *format*.** fast-tts emits **Preston Blair 9-class** visemes
+(`rest, MBP, FV, L, AI, E, O, U, WQ`); VuppetMaster wants **Azure's** taxonomy (22 viseme IDs
+0–21, optionally blend-shape animation frames). A translation layer is required. The
+information-preserving route: fast-tts already computes CTC **phoneme/character spans** in
+`full_utterance` mode, and Azure viseme IDs derive from a published phoneme→viseme table — so
+fast-tts (or the VSM broker) can produce Azure-ID visemes *from the phoneme alignment directly*,
+rather than squashing through the 9-class set. Smaller items: resample/reencode 24 kHz PCM to
+whatever the injection API wants; and prefer `full_utterance` mode for quality visemes
+(`streaming` mode falls back to a crude 4-class RMS heuristic — a latency-vs-lip-sync tradeoff).
+
+**Marker timing survives.** VSM relies on marker timing to fire co-located SceneFlow actions
+mid-utterance; today that comes from the TTS path. fast-tts's `word.final` timings are the
+replacement source — the raw timing exists, it just needs mapping to VSM's `${...}$` markers.
+
+**Still open (one vendor sub-question).** Which Azure flavor does the injection want — **viseme
+IDs** (easy: phoneme table → IDs) or **blend-shape animation JSON** (harder: ~55 per-frame morph
+channels — though fast-tts's `weights` dict and portrait-blendshape tooling give a starting
+point)? That single answer sets the adapter's difficulty. Everything else is settled.
+
 ## The other architectural pole: run the runtime on the client
 
 Tunnelling individual plugins is the *middle* of a spectrum. The other end already exists:
