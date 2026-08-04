@@ -16,6 +16,9 @@ import de.dfki.vsm.model.project.property.ProjectProperty;
 import de.dfki.vsm.model.project.property.value.ProjectValueProperty;
 import de.dfki.vsm.model.project.property.value.ValueTYPE;
 import de.dfki.vsm.model.config.ConfigFeature;
+import de.dfki.vsm.model.behavior.BehaviorDisplayGroup;
+import de.dfki.vsm.model.behavior.BehaviorTaxonomy;
+import de.dfki.vsm.model.behavior.BehaviorTag;
 import de.dfki.vsm.model.plugin.PluginCommand;
 import de.dfki.vsm.model.scenescript.SceneObject;
 import de.dfki.vsm.model.scenescript.ScriptDiagnostics;
@@ -262,8 +265,13 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
                 out.put("categories", defaultCategories);
             }
 
-            // Commands
-            out.put("commands", commands != null ? commands : new JSONArray());
+            // Commands, enriched from the behavior taxonomy (NEUROGES Function, derived display
+            // group, co-speech flag). The taxonomy is the authority for behavior classification —
+            // see doc/behavior-taxonomy-neuroges.md §5 — so uiCategory reaches the UI derived from
+            // it rather than as authored in plugin-properties.json.
+            out.put("commands", enrichCommandsWithTaxonomy(
+                    plugin.optString("id", ""),
+                    commands != null ? commands : new JSONArray()));
 
             // Variables
             if (variables != null) {
@@ -298,6 +306,58 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
             // no plugin-id special-casing on the client.
             out.put("previewCapable", previewCapable);
 
+            return out;
+        }
+
+        /**
+         * Returns a copy of {@code source} with each command annotated from the behavior taxonomy.
+         * Untagged commands (every non-behavior plugin) pass through byte-for-byte, so an authored
+         * {@code uiCategory} is never destroyed — the derived value only fills in where the taxonomy
+         * actually classifies the command and resolves it to a display group.
+         *
+         * <p>Copies rather than mutating: {@code commands} is a long-lived field also exposed via
+         * {@link #getParsedCommands()}, and {@code toInterfaceJson} may run per request.</p>
+         */
+        private JSONArray enrichCommandsWithTaxonomy(String pluginId, JSONArray source) {
+            final BehaviorTaxonomy taxonomy;
+            try {
+                taxonomy = BehaviorTaxonomy.getDefault();
+            } catch (RuntimeException exc) {
+                // A missing or broken taxonomy resource must not take the plugin interface API down.
+                sLogger.warning("Behavior taxonomy unavailable, serving commands unannotated: "
+                        + exc.getMessage());
+                return source;
+            }
+
+            JSONArray out = new JSONArray();
+            for (int i = 0; i < source.length(); i++) {
+                JSONObject entry = source.optJSONObject(i);
+                if (entry == null) {
+                    out.put(source.opt(i));
+                    continue;
+                }
+                BehaviorTag tag = taxonomy.tagFor(pluginId, entry.optString("name", ""));
+                if (tag == null) {
+                    out.put(entry);
+                    continue;
+                }
+                JSONObject copy = new JSONObject(entry.toString());
+                if (tag.getFunction() != null) {
+                    copy.put("neurogesFunction", tag.getFunction());
+                }
+                if (tag.getType() != null) {
+                    copy.put("neurogesType", tag.getType());
+                }
+                copy.put("cospeech", tag.isCoSpeech());
+                BehaviorDisplayGroup group = taxonomy.displayGroupOf(tag);
+                if (group != null) {
+                    copy.put("uiCategory", group.getId());
+                    copy.put("uiCategoryLabel", group.getLabel());
+                    copy.put("uiCategoryOrder", taxonomy.displayOrderOf(group.getId()));
+                    copy.put("uiCategorySiaVisible", group.isSiaVisible());
+                }
+                out.put(copy);
+            }
             return out;
         }
 

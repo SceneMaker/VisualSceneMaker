@@ -2,35 +2,45 @@
   import { onMount, onDestroy } from "svelte";
   import ActionForm from "./ActionForm.svelte";
 
-  // Display title for a command's declared uiCategory (plugin-properties.json).
-  const CATEGORY_LABELS = { background: "Background", emotion: "Emotion", gesture: "Animation", camera: "Camera" };
-  // The SIA preview is a curated character-preview surface, not a general command palette — only
-  // these categories make sense here (bare actions like "stop"/"clearemotion" with no uiCategory
-  // are authored via the PlayAction command helper or Ctrl+I's InsertActionDialog instead, both of
-  // which already show every declared command). Animation/Camera are reserved slots: no plugin
-  // declares uiCategory "gesture" or "camera" yet, so those columns simply won't appear until one
-  // does — no separate "coming soon" placeholder needed. Fixed order (not first-seen) keeps the
-  // layout deterministic regardless of how a plugin lists its commands.
-  const SIA_VISIBLE_CATEGORIES = ["background", "emotion", "gesture", "camera"];
-  function categoryLabel(category) {
-    return CATEGORY_LABELS[category] || (category.charAt(0).toUpperCase() + category.slice(1));
+  // Columns are grouped by NEUROGES Function, via the display-group reduction the server derives
+  // from core/src/main/resources/behavior-taxonomy.json (see doc/behavior-taxonomy-neuroges.md).
+  // The taxonomy is the authority for behavior classification; uiCategory survives only as the
+  // derived display layer, so each command arrives already carrying uiCategory (group id),
+  // uiCategoryLabel, uiCategoryOrder and uiCategorySiaVisible. That replaced the hardcoded
+  // Background/Emotion/Animation/Camera list this component used to keep: the label set and the
+  // column order now change by editing the taxonomy, not this file — which matters because the
+  // reduction of 11 Function values to a handful of headings is a reviewable design decision, not
+  // a UI detail. Commands the taxonomy does not classify (control actions like stop/clearemotion)
+  // carry no group and are omitted; they remain authorable via the PlayAction command helper and
+  // Ctrl+I's InsertActionDialog, which show every declared command.
+  function categoryLabel(group) {
+    if (group?.label) return group.label;
+    const id = String(group?.category || "");
+    return id ? id.charAt(0).toUpperCase() + id.slice(1) : "";
   }
 
-  // Groups a plugin's declared commands by uiCategory, restricted to SIA_VISIBLE_CATEGORIES and
-  // ordered to match it — this is what replaced the old hardcoded Background/Emotion/Animation
-  // columns: any previewCapable plugin's own commands[] now drives the panel directly, no
-  // per-action-type Svelte component needed.
+  // Groups a plugin's commands by their derived display group, keeping the taxonomy's declared
+  // order. Falls back to first-seen order for a command whose uiCategoryOrder the server did not
+  // supply (an older backend, or a plugin the taxonomy does not cover) so the panel degrades to
+  // "show something sensible" rather than dropping columns.
   function groupCommandsByCategory(commands) {
-    const groups = {};
+    const groups = new Map();
+    let fallbackOrder = 1000;
     for (const cmd of commands || []) {
       const category = cmd?.uiCategory;
-      if (!category || !SIA_VISIBLE_CATEGORIES.includes(category)) continue;
-      if (!groups[category]) groups[category] = [];
-      groups[category].push(cmd);
+      if (!category) continue;
+      if (cmd.uiCategorySiaVisible === false) continue;
+      if (!groups.has(category)) {
+        groups.set(category, {
+          category,
+          label: cmd.uiCategoryLabel || null,
+          order: Number.isFinite(cmd.uiCategoryOrder) ? cmd.uiCategoryOrder : fallbackOrder++,
+          commands: []
+        });
+      }
+      groups.get(category).commands.push(cmd);
     }
-    return SIA_VISIBLE_CATEGORIES
-      .filter((category) => groups[category]?.length)
-      .map((category) => ({ category, commands: groups[category] }));
+    return [...groups.values()].sort((a, b) => a.order - b.order);
   }
 
   export let projectId = null;
@@ -372,7 +382,7 @@
               {@const activeSchema = group.commands.find((c) => c.name === activeName) || group.commands[0]}
               <div class="sia-column" bind:clientHeight={columnHeights[key]}>
                 <div class="sia-column-header">
-                  <span>{categoryLabel(group.category)}</span>
+                  <span>{categoryLabel(group)}</span>
                   <button
                     type="button"
                     class="sia-column-play"
