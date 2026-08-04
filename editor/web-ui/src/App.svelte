@@ -9070,15 +9070,45 @@ Sentence:
     saveProject(selectedProjectId);
   }
 
-  function exportLocalCopy() {
-    if (!selectedProjectId) return;
+  // Downloads a server-backed file with the app's Bearer token attached, since a plain
+  // <a href> navigation carries no Authorization header (apiFetch is the only place that
+  // attaches one) — the server's jwtAuthFilter would reject that as 401 before the handler
+  // ever runs, which Chrome then reports as a generic failed/"sign in" download error with
+  // no useful filename (no Content-Disposition on an error response). Fetches the file
+  // ourselves instead, so the real filename and bytes come through correctly.
+  async function downloadAuthenticated(path, fallbackFilename) {
+    await ensureFreshToken();
+    const headers = {};
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
     const base = isRemoteConnection && remoteServerUrl ? remoteServerUrl : "";
+    const response = await fetch(`${base}${path}`, { headers });
+    if (!response.ok) {
+      const text = await response.text().catch(() => "");
+      throw new Error(text || `Download failed (${response.status})`);
+    }
+    const disposition = response.headers.get("Content-Disposition") || "";
+    const match = disposition.match(/filename="?([^";]+)"?/);
+    const filename = match ? match[1] : fallbackFilename;
+    const blob = await response.blob();
+    const blobUrl = URL.createObjectURL(blob);
     const a = document.createElement("a");
-    a.href = `${base}/api/v1/projects/${selectedProjectId}/export`;
-    a.download = "";
+    a.href = blobUrl;
+    a.download = filename;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
+    URL.revokeObjectURL(blobUrl);
+  }
+
+  async function exportLocalCopy() {
+    if (!selectedProjectId) return;
+    try {
+      await downloadAuthenticated(`/api/v1/projects/${selectedProjectId}/export`, "project.zip");
+    } catch (err) {
+      error = `Export failed: ${err.message}`;
+    }
   }
 
   async function removeRecentProject(path) {
@@ -15667,6 +15697,15 @@ Sentence:
                   {saveButtonActsAsSaveAs ? "Save As" : "Save"}
                 </button>
               {/if}
+              <button
+                type="button"
+                class="ghost panel-save"
+                on:click={exportLocalCopy}
+                disabled={!selectedProject || projectSaving}
+                title="Download the whole project as a zip"
+              >
+                Export
+              </button>
             {:else if selectedProject}
               <button
                 type="button"

@@ -172,6 +172,8 @@ import java.io.InputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.time.Duration;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 import de.dfki.vsm.model.visicon.VisiconAgent;
 import de.dfki.vsm.model.visicon.VisiconConfig;
 import de.dfki.vsm.model.visicon.VisiconViseme;
@@ -4782,20 +4784,47 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         }
     }
 
+    /**
+     * Downloads the entire project directory (every file, recursively — project.xml,
+     * sceneflow.xml, scenescript.xml, gui/, audio/, .history/, anything else on disk) as a
+     * single zip, so a user can back up or transfer a project without shell/SFTP access to
+     * the server. Requires the caller to already have access to this project (the standard
+     * jwtAuthFilter + projectAccessFilter chain covers this route like every other
+     * /projects/{pid}/* one) — unlike the desktop app, there's no local filesystem to just
+     * copy from.
+     */
     private void handleProjectExport(Context ctx) {
         String pid = ctx.pathParam("pid");
         ProjectRef ref = projectStore.get(pid);
-        if (ref == null || ref.runtimeProject == null) {
+        if (ref == null || ref.path == null || ref.path.isBlank()) {
             ctx.status(404).result("Project not found");
             return;
         }
-        SceneFlow sf = ref.runtimeProject.getSceneFlow();
-        String xml = sf != null ? serializeSceneFlowXml(sf) : "";
-        String filename = (ref.name != null && !ref.name.isBlank() ? ref.name : "sceneflow")
-                .replaceAll("[^\\w\\-.]", "_") + ".xml";
+        Path projectDir = Paths.get(ref.path);
+        if (!Files.isDirectory(projectDir)) {
+            ctx.status(404).result("Project directory not found on server");
+            return;
+        }
+        String filename = (ref.name != null && !ref.name.isBlank() ? ref.name : "project")
+                .replaceAll("[^\\w\\-.]", "_") + ".zip";
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        try (ZipOutputStream zip = new ZipOutputStream(buffer)) {
+            try (var paths = Files.walk(projectDir)) {
+                for (Path file : paths.filter(Files::isRegularFile).toList()) {
+                    String entryName = projectDir.relativize(file).toString().replace(File.separatorChar, '/');
+                    zip.putNextEntry(new ZipEntry(entryName));
+                    Files.copy(file, zip);
+                    zip.closeEntry();
+                }
+            }
+        } catch (IOException exc) {
+            sLogger.failure("Failed to build export zip for project " + pid + ": " + exc.getMessage());
+            ctx.status(500).result("Failed to build export archive");
+            return;
+        }
         ctx.header("Content-Disposition", "attachment; filename=\"" + filename + "\"");
-        ctx.contentType("application/xml");
-        ctx.result(xml);
+        ctx.contentType("application/zip");
+        ctx.result(buffer.toByteArray());
     }
 
     private void handleProjectClose(Context ctx) {
