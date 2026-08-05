@@ -156,18 +156,27 @@ def print_report(cases, results):
     structural_fail = sum(1 for idx, c in enumerate(cases)
                           if results[idx].get("_structural") and not c.get("knownWeak"))
     weak_total = sum(1 for c in cases if c.get("knownWeak"))
-    weak_changed = sum(1 for idx, c in enumerate(cases)
-                       if c.get("knownWeak") and results[idx].get("_structural"))
+    # knownWeak cases assert the CORRECT reading and are expected to fail with the current default
+    # model. Counting how many now PASS makes a model that fixes one show up as progress, rather than
+    # as a regression against a pinned mistake — which is exactly how a genuine improvement was
+    # first misread. A knownWeak case that passes should graduate to a normal case.
+    weak_passing = sum(1 for idx, c in enumerate(cases)
+                       if c.get("knownWeak") and not results[idx].get("_structural")
+                       and all(results[idx][r]["pred"] == results[idx][r]["gold"] for r in ROLES))
     print("UD mapping evaluation")
     print(f"Cases: {len(cases)}")
-    print(f"Exact-row match (S+V+O): {exact_rows}/{len(cases)}")
+    real = [idx for idx, c in enumerate(cases) if not c.get("knownWeak")]
+    exact_real = sum(1 for idx in real
+                     if not results[idx].get("_structural")
+                     and all(results[idx][r]["pred"] == results[idx][r]["gold"] for r in ROLES))
+    print(f"Exact-row match (S+V+O): {exact_rows}/{len(cases)} all cases, "
+          f"{exact_real}/{len(real)} excluding expected-fail")
     print(f"Structural (clauses/objects/anchors): {structural_cases - structural_fail}"
           f"/{structural_cases} passing")
     if weak_total:
-        # knownWeak cases assert the CURRENT, wrong output of an upstream mis-parse. They pass while
-        # behaviour is unchanged; a change makes them fail loudly rather than drift unnoticed.
-        print(f"Known-weak (pinned mis-parses): {weak_total - weak_changed}/{weak_total} unchanged"
-              + ("  <-- BEHAVIOUR CHANGED, re-check the notes" if weak_changed else ""))
+        print(f"Known-weak (expected-fail, assert the CORRECT reading): {weak_passing}/{weak_total} "
+              f"now passing"
+              + ("  <-- one graduated, promote it to a normal case" if weak_passing else ""))
     print("")
     for role in ROLES:
         m = metrics[role]

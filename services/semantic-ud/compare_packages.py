@@ -9,9 +9,15 @@ distinction reversed a decision that looked obvious.
     python3 compare_packages.py combined_charlm hdt_charlm gsd_charlm
     python3 compare_packages.py combined_charlm combined_german-nlp-electra
 
-Prints, per package: structural checks passing, exact-row S+V+O, known-weak cases unchanged, and
-mean parse latency — latency matters because /analyze/batch runs over a whole corpus and the same
-core targets Android.
+Prints, per package: structural checks passing, exact-row S+V+O (excluding expected-fail cases),
+how many expected-fail cases now PASS, and mean parse latency. Latency matters because
+/analyze/batch runs over a whole corpus and the same core targets Android.
+
+Two reporting details exist because both distorted a real result once:
+  * exact-row excludes `knownWeak` cases. Those assert the CORRECT reading and are expected to fail
+    with the current default, so counting them made a model that FIXED one look worse.
+  * the package override is language-scoped. Handing a German package to the English pipeline broke
+    the English cases and read as the model being worse when the configuration was wrong.
 
 The transformer packages (`*_german-nlp-electra`) additionally need their encoder from HuggingFace
 (`german-nlp-group/electra-base-german-uncased`). If that host is unreachable the script says so
@@ -81,9 +87,9 @@ def run_for_package(package, cases_path):
 
     return {
         "structural": grab(r"Structural \(clauses/objects/anchors\): (\d+/\d+)"),
-        "exact": grab(r"Exact-row match \(S\+V\+O\): (\d+/\d+)"),
-        "weak": grab(r"Known-weak \(pinned mis-parses\): (\d+/\d+)"),
-        "weakChanged": "BEHAVIOUR CHANGED" in text,
+        "exact": grab(r"(\d+/\d+) excluding expected-fail"),
+        "weak": grab(r"CORRECT reading\): (\d+/\d+) now passing"),
+        "weakChanged": "graduated" in text,
         "latencyMs": round(statistics.mean(timings), 1),
         "report": text,
     }
@@ -104,19 +110,21 @@ def main():
 
     width = max(len(label) for label, _ in rows) + 2
     print()
-    print(f"{'package'.ljust(width)}{'structural':>12}{'exact S+V+O':>14}{'known-weak':>13}{'ms/sent':>10}")
+    print(f"{'package'.ljust(width)}{'structural':>12}{'exact S+V+O':>14}{'xfail pass':>12}{'ms/sent':>10}")
     print("-" * (width + 49))
     for label, r in rows:
         if r.get("error"):
             print(f"{label.ljust(width)}  SKIPPED — {r['error']}")
             continue
-        flag = "  <-- weak cases changed, read them" if r["weakChanged"] else ""
-        print(f"{label.ljust(width)}{r['structural']:>12}{r['exact']:>14}{r['weak']:>13}"
+        flag = "  <-- an expected-fail case now passes; promote it" if r["weakChanged"] else ""
+        print(f"{label.ljust(width)}{r['structural']:>12}{r['exact']:>14}{r['weak']:>12}"
               f"{r['latencyMs']:>10}{flag}")
     print()
     print("Adopt a package only if structural does not regress AND exact-row does not regress.")
-    print("A known-weak case that changed is a signal to read it, not a failure: the parse may have")
-    print("become correct, in which case the case should graduate to a real assertion.")
+    print("An expected-fail case that now passes is a genuine improvement: promote it to a normal")
+    print("case at the same time as adopting the package that fixed it.")
+    print("Weigh ms/sent too: a package can be more accurate and still be the wrong default for")
+    print("interactive editing while being the right one for corpus preparation.")
     return 0
 
 

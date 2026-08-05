@@ -215,27 +215,18 @@
     "language": "de",
     "text": "Hallo ich bin Xenia.",
     "knownWeak": true,
-    "why": "Stanza tags 'Hallo' as the root VERB and 'bin' as its ccomp, so 'bin' genuinely is a clause root by any rule. Correct would be one clause with verb 'bin' and predicate 'Xenia', and no verb reading of 'Hallo'. Pinned to notice a model/behaviour change.",
+    "why": "Informal greeting. The default model tags 'Hallo' as the root VERB with 'bin' as its ccomp, inventing a second clause; combined_german-nlp-electra parses it correctly. This case asserts the CORRECT reading, so fixing it shows up as progress instead of as a regression against a pinned mistake.",
     "expected": {
       "subject": "ich",
-      "verb": "Hallo",
-      "object": "Xenia"
+      "verb": "bin",
+      "object": ""
     },
     "expectedClauses": [
       {
         "type": "main",
-        "verb": "Hallo",
+        "verb": "bin",
         "subject": "ich",
-        "objects": [
-          {
-            "kind": "direct",
-            "phrase": "Xenia"
-          }
-        ]
-      },
-      {
-        "type": "subordinate",
-        "verb": "bin"
+        "objects": []
       }
     ]
   },
@@ -244,11 +235,11 @@
     "language": "de",
     "text": "Schau mal, wie Bob das findet.",
     "knownWeak": true,
-    "why": "Stanza makes the adverb 'mal' the sentence root and 'Schau' an advmod, so the main clause has no verb at all. Correct would be an imperative main clause with verb 'Schau'.",
+    "why": "German imperative. Both the default and the transformer make the adverb 'mal' the sentence root, leaving the main clause verbless; the correct reading is an imperative main clause with verb 'Schau'. Asserts the CORRECT reading.",
     "expectedClauses": [
       {
         "type": "main",
-        "verb": "",
+        "verb": "schau",
         "subject": ""
       },
       {
@@ -262,7 +253,12 @@
           }
         ]
       }
-    ]
+    ],
+    "expected": {
+      "subject": "",
+      "verb": "Schau",
+      "object": ""
+    }
   },
   {
     "id": "de-address-01-greeting-comma",

@@ -19,10 +19,29 @@ RESOURCES_DIR = os.environ.get("SEMANTIC_UD_RESOURCES_DIR", os.environ.get("STAN
 AUTO_DOWNLOAD = os.environ.get("SEMANTIC_UD_AUTO_DOWNLOAD", "true").strip().lower() not in ("0", "false", "no")
 # Languages to build at startup rather than on first request, so a missing model is a startup
 # failure instead of a mid-corpus-run surprise. Empty string disables preloading.
-# Treebank/encoder package for pos+depparse, empty meaning Stanza's default. Configurable because
-# the default for German (`combined_charlm`, i.e. GSD+HDT) mis-parses spoken-register dialogue in ways
-# `hdt_charlm` does not — see doc/parser-quality-plan.md step 2.
-UD_PACKAGE = os.environ.get("SEMANTIC_UD_PACKAGE", "").strip()
+# Treebank/encoder package for pos+depparse, empty meaning Stanza's default. See
+# doc/parser-quality-plan.md.
+#
+# Package names are LANGUAGE-SPECIFIC, so this is parsed per language: "de:hdt_charlm,en:gsd_charlm",
+# and a bare value like "hdt_charlm" applies to SEMANTIC_UD_LANG only. Applying it to every language
+# was a real bug — a German package handed to the English pipeline broke the English eval cases, which
+# then read as the model being worse when it was the configuration that was wrong.
+def _parse_package_env(raw, default_lang):
+    out = {}
+    for part in (raw or "").split(","):
+        part = part.strip()
+        if not part:
+            continue
+        if ":" in part:
+            lang, package = part.split(":", 1)
+            if lang.strip() and package.strip():
+                out[lang.strip().lower()] = package.strip()
+        else:
+            out[(default_lang or "de").strip().lower()] = part
+    return out
+
+
+UD_PACKAGES = _parse_package_env(os.environ.get("SEMANTIC_UD_PACKAGE", ""), DEFAULT_LANG)
 
 PRELOAD_LANGS = [
     lang.strip().lower()
@@ -189,9 +208,10 @@ def build_pipeline(language: str):
     }
     if RESOURCES_DIR:
         kwargs["dir"] = RESOURCES_DIR
-    if UD_PACKAGE:
+    package = UD_PACKAGES.get(language)
+    if package:
         # tokenize/mwt/lemma stay on the default: only tagging and parsing differ between treebanks.
-        kwargs["package"] = {"pos": UD_PACKAGE, "depparse": UD_PACKAGE}
+        kwargs["package"] = {"pos": package, "depparse": package}
     try:
         pipe = stanza.Pipeline(**kwargs)
     except Exception:
@@ -1644,7 +1664,7 @@ class Handler(BaseHTTPRequestHandler):
                 "preload": PRELOAD_LANGS,
                 "autoDownload": AUTO_DOWNLOAD,
                 "resourcesDir": RESOURCES_DIR or None,
-                "package": UD_PACKAGE or "(stanza default)",
+                "packages": UD_PACKAGES or "(stanza default)",
             })
             return
         self._json(404, {"error": "not_found"})

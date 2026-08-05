@@ -129,7 +129,55 @@ convention.
 HDT's one remaining structural failure is the `ccomp` sentence, which it genuinely parses differently
 (three clauses, root `Lass`). That is a parse difference, not a mapping bug.
 
-### The transformer is still untested — and this is where you can help
+### The transformer, measured ✅ — it wins, at 3× the latency
+
+Run with the encoder cached locally:
+
+```
+package                        structural   exact S+V+O  xfail pass   ms/sent
+------------------------------------------------------------------------------
+(stanza default)                      8/8          6/12         0/2      33.1
+hdt_charlm                            7/8          5/12         0/2      35.1
+combined_german-nlp-electra           8/8          6/12         1/2     103.4
+```
+
+**`combined_german-nlp-electra` is strictly better on accuracy**: it ties the default on both accuracy
+columns and additionally fixes the informal-greeting mis-parse — `Hallo ich bin Xenia.` comes out as
+one clause with verb `bin`, which is the correct reading. It costs **3.1× the parse latency**.
+
+Getting to that number required correcting two measurement faults, both of which had made the
+transformer look *worse* than it is:
+
+1. **The package override was applied to every language.** A German package handed to the English
+   pipeline broke the English eval cases. `SEMANTIC_UD_PACKAGE` is now language-scoped —
+   `de:hdt_charlm,en:gsd_charlm`, with a bare value applying to `SEMANTIC_UD_LANG` only. This was our
+   bug, and it read as a model regression.
+2. **`knownWeak` cases asserted the *wrong* answer.** They pinned the current mis-parse, so a model
+   that produced the *correct* parse failed them, and the headline exact-row count dropped. They now
+   assert the **correct** reading and are treated as expected failures: the harness reports how many
+   now *pass*, and exact-row excludes them. A fix shows up as progress instead of as a regression.
+
+Both faults pushed in the same direction — against the change — which is worth remembering: a
+comparison that says "no improvement" deserves as much scrutiny as one that says "big win."
+
+### Recommended adoption: split by workload
+
+The package is chosen per process and per language, so this is configuration, not code:
+
+- **Corpus preparation / batch** (`./gradlew analyzeSemantics`, `POST /analyze/batch`): use
+  `SEMANTIC_UD_PACKAGE=de:combined_german-nlp-electra`. Accuracy is what matters and 100 ms/sentence
+  is irrelevant when the run is offline — the whole charamel-embed project is 11 sentences.
+- **Interactive editing** (the editor's semantic panel): keep the default. 33 ms/sentence keeps the
+  panel responsive; a 3× cost is felt on every analysis of a long script.
+- **Android**: keep the default. A transformer's memory footprint is the binding constraint there.
+
+When adopting it for corpus work, **promote `de-weak-01-informal-greeting` out of `knownWeak`** at the
+same time, since it will then be passing.
+
+Not done here, because it is a deployment decision rather than a code one: wiring the batch path to
+set that env var by default. `./gradlew analyzeSemantics` would be the natural place.
+
+### If you need to reproduce this from scratch
 
 `combined_german-nlp-electra` is the genuinely different lever: same treebank, transformer encoder
 instead of a character LM. Its Stanza weights are already downloaded
@@ -158,12 +206,8 @@ python3 compare_packages.py "" combined_german-nlp-electra
 Alternatives if the network is the obstacle rather than the machine: set `HF_ENDPOINT` to an internal
 mirror if DFKI runs one, or copy `~/.cache/huggingface` from a machine that already has the model.
 
-**Adopt it only if `structural` does not regress and `exact S+V+O` does not regress.** Also read the
-`ms/sent` column: a transformer is expected to be slower and hungrier, which matters for
-`POST /analyze/batch` over a whole corpus and for the Android target. If it wins on accuracy but costs
-several times the latency, the sensible outcome may be to use it for corpus preparation and keep the
-charlm model for interactive editing — the package is per-process, so that split is configuration, not
-code.
+The encoder is ~1.3 GB in the HuggingFace cache and the Stanza weights ~200 MB; once both are present
+the run is fully offline (`HF_HUB_OFFLINE=1`).
 
 ## Step 3 — Greeting pre-normalisation, only if step 2 doesn't settle it
 
@@ -210,9 +254,10 @@ That gives a gold set for evaluation immediately, and training data eventually. 
 3. ✅ **`object_kind` made treebank-robust** via `np_case_set()` — case is read across the noun phrase,
    not just off the head word, and drives the direct/indirect decision instead of the relation
    subtype. Improved HDT from 6/8 to 7/8 structural with no change to the default.
-4. **Open, needs a hand:** retry `combined_german-nlp-electra` where HuggingFace is reachable — one
-   repo, `german-nlp-group/electra-base-german-uncased`. Commands above. Judge by
-   `compare_packages.py`, and read the latency column as well as the accuracy columns.
+4. ✅ **Transformer measured.** `combined_german-nlp-electra` is strictly better on accuracy and fixes
+   the informal-greeting mis-parse, at 3.1× latency. **Adopt it for corpus/batch work, keep the
+   default for interactive editing and Android** — see the split above. Two measurement faults had to
+   be fixed first, both of which had hidden the improvement.
 5. **Step 3 (greeting pre-normalisation)** only if the model work leaves the greeting case broken.
 6. **Step 4** — actively avoid the rule cascade.
 7. **Step 5** — build the parse-correction affordance into the Phase 2 annotation loop; treat
@@ -223,10 +268,20 @@ Nothing here blocks Phase 2. The anchor inventory already covers 10 of 10 author
 
 ## What this episode is worth remembering for
 
-Two sentences made a model switch look obviously right. The eval set said otherwise, and the eval set
-was correct: the switch would have broken both defects Phase 1 exists to fix. The pinned `knownWeak`
-cases also did their job — they flipped to failing, which is the signal to *read* them rather than a
-reason to panic.
+It cut both ways, which is the useful part.
 
-Cost of the discipline: one afternoon and a 200 MB download that is currently inert. Cost of skipping
-it: a silent regression in the layer the whole placement plan depends on.
+**Against a change that looked right.** Two sentences made `hdt_charlm` look like an obvious win. The
+eval set disagreed and was correct: it would have broken the `ccomp` defect Phase 1 exists to fix.
+
+**In favour of a change that looked wrong.** The transformer's first measurement said *worse* — and
+that was two faults of our own: a package override leaking across languages, and expected-fail cases
+pinned to the wrong answer so that fixing them scored as a regression. Both errors pushed the same
+way, against the change.
+
+So the rule is not "trust the harness over your intuition". It is **make the harness measure the thing
+you actually mean**, then trust it. A comparison reporting "no improvement" deserves the same scrutiny
+as one reporting a big win — especially when the metric contains cases you deliberately pinned to a
+wrong answer.
+
+Two concrete guardrails came out of it, both now in the tooling: expected-fail cases assert the
+*correct* reading and are counted separately, and package overrides are language-scoped.
