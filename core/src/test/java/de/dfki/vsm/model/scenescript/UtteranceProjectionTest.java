@@ -208,6 +208,31 @@ class UtteranceProjectionTest {
         assertEquals(p.getCleanText().indexOf("Hallo") + 1, p.toCleanOffset(insideWord));
     }
 
+    // ------------------------------------------- anchor slots vs command positions
+
+    @Test
+    void convertsCleanOffsetsToTheSameGapIndexCommandsUse() {
+        // This is what lets a semantic anchor slot be compared with an authored command's position.
+        // The parser and the script model tokenise differently, so the character offset is the only
+        // shared coordinate; both sides must land on the same gap index through it.
+        String text = "scene de a\nXenia: Hallo [pause duration='50'] ich bin da.\n";
+        UtteranceProjection p = sentences(text).get(0);
+        assertEquals("Hallo ich bin da.", p.getCleanText());
+
+        // The command sits after one spoken token.
+        assertEquals(1, p.getCommands().get(0).getTokenIndex());
+
+        String clean = p.getCleanText();
+        assertEquals(0, p.tokenIndexAtCleanOffset(0), "utterance start");
+        assertEquals(1, p.tokenIndexAtCleanOffset(clean.indexOf("Hallo") + "Hallo".length()),
+                "just after 'Hallo' — the same gap the command occupies");
+        assertEquals(1, p.tokenIndexAtCleanOffset(clean.indexOf("ich")),
+                "start of 'ich' is the same boundary");
+        assertEquals(4, p.tokenIndexAtCleanOffset(clean.length()), "all four spoken tokens precede the end");
+        // Punctuation is not a spoken token and must not shift the index.
+        assertEquals(4, p.tokenIndexAtCleanOffset(clean.indexOf('.')));
+    }
+
     // ------------------------------------------------------------ degenerate input
 
     @Test

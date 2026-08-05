@@ -13,3 +13,6 @@ META-INF/
 
 # Frontend dependencies
 editor/web-ui/node_modules/
+
+# Python bytecode from the semantic-ud service
+services/semantic-ud/__pycache__/

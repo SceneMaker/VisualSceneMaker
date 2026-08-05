@@ -390,6 +390,29 @@ public final class UtteranceProjection {
     }
 
     /**
+     * The gap index corresponding to a clean-text offset: the number of spoken tokens that end at or
+     * before it.
+     *
+     * <p>This is what makes a semantic anchor slot comparable with an authored command's
+     * {@link CommandPosition#getTokenIndex()}. The two come from different tokenisations — the parser
+     * splits punctuation and multi-word tokens, the script model does not — so a character offset is
+     * the only common coordinate, and this converts one into the other. Punctuation is not counted,
+     * matching {@link #getTokenCount()}.</p>
+     */
+    public int tokenIndexAtCleanOffset(final int cleanOffset) {
+        int index = 0;
+        for (final Token token : mTokens) {
+            if (token.isPunctuation()) {
+                continue;
+            }
+            if (token.getCleanTo() <= cleanOffset) {
+                index += 1;
+            }
+        }
+        return index;
+    }
+
+    /**
      * Maps a script offset into {@link #getCleanText()}, or -1 when the offset falls inside a
      * command or otherwise outside the spoken text.
      */

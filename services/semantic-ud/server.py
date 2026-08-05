@@ -817,6 +817,463 @@ def sentence_debug_payload(sentence, cfg, subj_word, verb_word, obj_word, addr_w
     }
 
 
+# ---------------------------------------------------------------------------
+# Clause segmentation, multiple objects, phrase spans  (plan Phase 1.1-1.3)
+#
+# Motivation, both verified against the German model before writing any of this:
+#
+#   "Ich gebe dem Kind den roten Ball."  ->  the dative indirect object is `obl:arg`, NOT `iobj`,
+#   and select_object() scans object_exact in order, matches `obj` (Ball) first and returns — so
+#   `dem Kind` was never reported at all. Spans were also head-token-only: `Ball`, not
+#   `den roten Ball`.
+#
+#   "Lass mich einen Vorschlag machen wie wir zusammen den Nachmittag gestalten."  ->  root is
+#   `machen`, and `gestalten` hangs off it as `ccomp` carrying its own nsubj `wir`. With one flat
+#   role set per sentence, `wir` (subordinate) was paired with `machen` (main). Roles have to be
+#   resolved per clause, otherwise there is no constituent for a behavior command to anchor to.
+#
+# The flat `basic` block is deliberately left untouched: `clauses` is added alongside it, so v2
+# consumers keep working while v3 consumers get the fine-grained view.
+# ---------------------------------------------------------------------------
+
+# Relations that can introduce a clause. Prefix-matched, so acl:relcl and csubj:pass-style
+# language-specific subtypes are covered.
+#
+# `csubj` earns its place from the corpus: "Schön dass Du da bist." parses with `Schön` as root and
+# `bist` as its *clausal subject*. Without csubj here, `Du`/`bist` leaked into the main clause — the
+# same cross-clause mixing this segmentation exists to prevent — and `Schön` got no role, so no
+# anchor slot existed where the author had in fact placed a command.
+CLAUSE_DEPREL_PREFIXES = ("conj", "advcl", "ccomp", "xcomp", "acl", "parataxis", "csubj")
+
+# Verb dependents that count as objects, and the kind we report for each.
+OBJECT_DEPRELS = ("obj", "iobj", "obl:arg", "obl", "ccomp", "xcomp")
+
+
+def children_map(words):
+    """head id -> [words], for subtree walks."""
+    out = {}
+    for w in words:
+        head = getattr(w, "head", None)
+        if head is None:
+            continue
+        out.setdefault(int(head), []).append(w)
+    return out
+
+
+def subtree_ids(words, head_word, allowed_ids=None):
+    """Ids of head_word and all its descendants, optionally restricted to allowed_ids."""
+    head_id = word_id_value(head_word)
+    if head_id is None:
+        return set()
+    kids = children_map(words)
+    collected = set()
+    stack = [head_id]
+    while stack:
+        current = stack.pop()
+        if current in collected:
+            continue
+        if allowed_ids is not None and current not in allowed_ids:
+            continue
+        collected.add(current)
+        for child in kids.get(current, []):
+            child_id = word_id_value(child)
+            if child_id is not None and child_id not in collected:
+                stack.append(child_id)
+    return collected
+
+
+def has_child_deprel(words, head_word, deprels):
+    head_id = word_id_value(head_word)
+    if head_id is None:
+        return False
+    for w in words:
+        if getattr(w, "head", None) == head_id:
+            dep = str(getattr(w, "deprel", "") or "")
+            if has_rel(dep, tuple(deprels), tuple(deprels)):
+                return True
+    return False
+
+
+def is_clause_root(words, word):
+    """Whether a word heads its own clause.
+
+    A bare `conj` or `xcomp` is not enough: German coordinates nouns with `conj` too
+    ("Äpfel und Birnen"), and that must not become a clause. Require a verbal head, or a copula, or
+    an own subject.
+    """
+    dep = str(getattr(word, "deprel", "") or "")
+    if dep == "root":
+        return True
+    if not any(dep.startswith(prefix) for prefix in CLAUSE_DEPREL_PREFIXES):
+        return False
+    upos = str(getattr(word, "upos", "") or "")
+    if upos in ("VERB", "AUX"):
+        return True
+    if has_child_deprel(words, word, ("cop",)):
+        return True
+    return has_child_deprel(words, word, ("nsubj", "csubj"))
+
+
+def clause_type_of(word):
+    dep = str(getattr(word, "deprel", "") or "")
+    if dep == "root":
+        return "main"
+    if dep.startswith("acl"):
+        return "relative"
+    if dep.startswith("conj"):
+        return "coordinate"
+    if dep.startswith("parataxis"):
+        return "parataxis"
+    return "subordinate"
+
+
+def segment_clauses(words):
+    """Partitions a sentence's words into clauses.
+
+    Every word belongs to its nearest clause-root ancestor, so a subordinate clause's subject stays
+    out of the main clause. Returns [{'root': word, 'ids': set(int)}] in surface order.
+    """
+    roots = [w for w in words if is_clause_root(words, w)]
+    if not roots:
+        return []
+    root_ids = {word_id_value(w) for w in roots if word_id_value(w) is not None}
+    by_id = {word_id_value(w): w for w in words if word_id_value(w) is not None}
+
+    owner = {}
+    for w in words:
+        wid = word_id_value(w)
+        if wid is None:
+            continue
+        node = w
+        depth = 0
+        # Walk up to the first clause root at or above this word.
+        while node is not None and depth < 24:
+            nid = word_id_value(node)
+            if nid in root_ids:
+                owner[wid] = nid
+                break
+            node = by_id.get(getattr(node, "head", None))
+            depth += 1
+
+    clauses = []
+    for root in sorted(roots, key=lambda w: word_id_value(w) or 0):
+        rid = word_id_value(root)
+        ids = {wid for wid, oid in owner.items() if oid == rid}
+        ids.add(rid)
+        clauses.append({"root": root, "ids": ids})
+    return clauses
+
+
+def clause_verb(words, clause_root, clause_ids, cfg):
+    """The finite/inflected verb of a clause.
+
+    Within a clause there is no `root` deprel to rely on, and a copular clause's root is the
+    predicate noun/adjective with the verb attached as `cop`.
+    """
+    upos = str(getattr(clause_root, "upos", "") or "")
+    if upos in ("VERB", "AUX"):
+        return clause_root
+    root_id = word_id_value(clause_root)
+    for w in words:
+        if word_id_value(w) in clause_ids and getattr(w, "head", None) == root_id:
+            if str(getattr(w, "deprel", "") or "") in ("cop", "aux", "aux:pass"):
+                return w
+    for w in words:
+        if word_id_value(w) in clause_ids and str(getattr(w, "upos", "") or "") in cfg["verb_fallback_upos"]:
+            return w
+    return None
+
+
+def case_child_text(words, head_word, clause_ids):
+    """Text of a `case` dependent (the preposition), if any."""
+    head_id = word_id_value(head_word)
+    for w in words:
+        if getattr(w, "head", None) != head_id:
+            continue
+        if word_id_value(w) not in clause_ids:
+            continue
+        if str(getattr(w, "deprel", "") or "") == "case":
+            return str(getattr(w, "text", "") or "")
+    return None
+
+
+def object_kind(dep, cases, preposition):
+    """Maps a dependency relation to an object kind.
+
+    `obl:arg` + dative is how the German model encodes an indirect object — it does not use `iobj`
+    for "Ich gebe dem Kind …" — which is why the old first-match-wins selector never saw it.
+    """
+    if dep == "obj":
+        return "direct"
+    if dep == "iobj":
+        return "indirect"
+    if dep in ("ccomp", "xcomp"):
+        return "clausal"
+    if dep.startswith("obl"):
+        if preposition:
+            return "prepositional"
+        if "Dat" in cases:
+            return "indirect"
+        return "oblique"
+    return "oblique"
+
+
+def clause_objects(words, clause_ids, verb_word):
+    """All object-ish dependents of the clause verb, in surface order.
+
+    Dependents of a *noun* are excluded by requiring the head to be the clause verb: in
+    "Ich habe eine Aufgabe für Dich", `Dich` is an `nmod` of `Aufgabe`, not an argument of `habe`.
+    """
+    if verb_word is None:
+        return []
+    verb_id = word_id_value(verb_word)
+    found = []
+    for w in words:
+        wid = word_id_value(w)
+        if wid is None or wid not in clause_ids:
+            continue
+        if getattr(w, "head", None) != verb_id:
+            continue
+        dep = str(getattr(w, "deprel", "") or "")
+        if not has_rel(dep, OBJECT_DEPRELS, ("obj", "iobj", "obl")):
+            continue
+        if dep in ("ccomp", "xcomp") and is_clause_root(words, w):
+            # Already reported as a clause of its own; listing it as an object too would double count.
+            continue
+        cases = parse_case_set(w)
+        preposition = case_child_text(words, w, clause_ids)
+        found.append({
+            "word": w,
+            "kind": object_kind(dep, cases, preposition),
+            "deprel": dep,
+            "case": sorted(cases)[0] if cases else None,
+            "preposition": preposition,
+        })
+    return sorted(found, key=lambda entry: word_id_value(entry["word"]) or 0)
+
+
+def chars_to_span(start, end, original_text, index_map, base_offset):
+    """Turns a clean-text char range into a span dict with original-text offsets and surface text."""
+    if start is None or end is None or end <= start:
+        return None
+    orig_start, orig_end = map_span_to_original(start, end, index_map, len(original_text))
+    if orig_start < 0 or orig_end <= orig_start:
+        orig_start, orig_end = start, end
+    return {
+        "text": original_text[orig_start:orig_end],
+        "from": base_offset + orig_start,
+        "to": base_offset + orig_end,
+    }
+
+
+def phrase_span(sentence, words, head_word, clause_ids, original_text, index_map, base_offset):
+    """Full phrase span of a role: the head's subtree, clipped to its clause, trailing punctuation
+    trimmed. `den roten Ball`, where the head span alone gives `Ball`."""
+    ids = subtree_ids(words, head_word, clause_ids)
+    if not ids:
+        return None
+    by_id = {word_id_value(w): w for w in words if word_id_value(w) is not None}
+    # Trim edge punctuation so a phrase never swallows a comma or full stop.
+    ordered = sorted(ids)
+    while ordered and str(getattr(by_id.get(ordered[-1]), "upos", "") or "") == "PUNCT":
+        ordered.pop()
+    while ordered and str(getattr(by_id.get(ordered[0]), "upos", "") or "") == "PUNCT":
+        ordered.pop(0)
+    if not ordered:
+        return None
+    start = None
+    end = None
+    for wid in ordered:
+        span = word_token_char_span(sentence, by_id.get(wid))
+        if span is None:
+            continue
+        start = span[0] if start is None else min(start, span[0])
+        end = span[1] if end is None else max(end, span[1])
+    return chars_to_span(start, end, original_text, index_map, base_offset)
+
+
+def clause_char_span(sentence, words, clause_ids, original_text, index_map, base_offset):
+    """Char span of a clause, edge punctuation trimmed.
+
+    Trimming matters: the sentence-final full stop attaches to the main clause's verb, so without it
+    a main clause containing a subordinate clause reports a span stretching to the end of the
+    sentence. Note that an outer clause's span still legitimately *encloses* an embedded one — that
+    is the structure, not an error — which is why anchor slots are derived from token positions
+    rather than from these spans.
+    """
+    by_id = {word_id_value(w): w for w in words if word_id_value(w) is not None}
+    ordered = sorted(clause_ids)
+    while ordered and str(getattr(by_id.get(ordered[-1]), "upos", "") or "") == "PUNCT":
+        ordered.pop()
+    while ordered and str(getattr(by_id.get(ordered[0]), "upos", "") or "") == "PUNCT":
+        ordered.pop(0)
+    start = None
+    end = None
+    for wid in ordered:
+        span = word_token_char_span(sentence, by_id.get(wid))
+        if span is None:
+            continue
+        start = span[0] if start is None else min(start, span[0])
+        end = span[1] if end is None else max(end, span[1])
+    return chars_to_span(start, end, original_text, index_map, base_offset)
+
+
+def role_entry(sentence, words, head_word, clause_ids, original_text, index_map, base_offset,
+               role, cfg):
+    """A role as {head, phrase, confidence}: the head token span and the full phrase span."""
+    if head_word is None:
+        return None
+    head = word_span(sentence, head_word, base_offset, index_map, len(original_text))
+    if head is None:
+        return None
+    entry = {"head": head}
+    phrase = phrase_span(sentence, words, head_word, clause_ids, original_text, index_map, base_offset)
+    if phrase is not None:
+        entry["phrase"] = phrase
+    entry["confidence"] = role_confidence(role, role_strength(role, head_word, cfg))
+    return entry
+
+
+def build_clauses(sentence, words, cfg, original_text, index_map, base_offset):
+    """Per-clause roles with head and phrase spans, plus all objects. Plan Phase 1.1-1.3."""
+    out = []
+    for index, clause in enumerate(segment_clauses(words)):
+        clause_ids = clause["ids"]
+        clause_root = clause["root"]
+        clause_words = [w for w in words if word_id_value(w) in clause_ids]
+
+        verb_word = clause_verb(words, clause_root, clause_ids, cfg)
+        subject_word = select_subject(clause_words, cfg)
+        predicate_word = select_predicate(clause_words)
+        address_word = select_address(clause_words, cfg)
+
+        # Verbless predicative clause: "Schön" in "Schön dass Du da bist.", where the copula is
+        # absent and the clausal subject carries the verb. Without this the clause has no role at
+        # all, so no anchor slot exists next to it — and this register ("Schön …", "Toll …",
+        # "Klasse!") is exactly where authors do place commands.
+        if verb_word is None and predicate_word is None:
+            if str(getattr(clause_root, "upos", "") or "") in ("ADJ", "NOUN", "PROPN", "ADV"):
+                predicate_word = clause_root
+
+        roles = {}
+        for role, head_word in (("subject", subject_word),
+                                ("verb", verb_word),
+                                ("predicate", predicate_word),
+                                ("address", address_word)):
+            entry = role_entry(sentence, words, head_word, clause_ids, original_text, index_map,
+                               base_offset, role, cfg)
+            if entry is not None:
+                roles[role] = entry
+
+        objects = []
+        for found in clause_objects(words, clause_ids, verb_word):
+            entry = role_entry(sentence, words, found["word"], clause_ids, original_text, index_map,
+                               base_offset, "object", cfg)
+            if entry is None:
+                continue
+            entry["kind"] = found["kind"]
+            entry["deprel"] = found["deprel"]
+            if found["case"]:
+                entry["case"] = found["case"]
+            if found["preposition"]:
+                entry["preposition"] = found["preposition"]
+            objects.append(entry)
+
+        span = clause_char_span(sentence, words, clause_ids, original_text, index_map, base_offset)
+        clause_json = {
+            "id": f"c{index}",
+            "type": clause_type_of(clause_root),
+            "roles": roles,
+            "objects": objects,
+        }
+        if span is not None:
+            clause_json["from"] = span["from"]
+            clause_json["to"] = span["to"]
+            clause_json["text"] = span["text"]
+        out.append(clause_json)
+    return out
+
+
+# ---------------------------------------------------------------------------
+# Anchor-slot inventory  (plan Phase 1.4)
+#
+# The label space the placement model predicts over. A slot is a *boundary*, named structurally
+# ("before the direct object's phrase in clause c0") rather than numerically, because a structural
+# name survives re-wording where a character offset does not — that is what makes ~26 authored
+# examples generalisable at all.
+#
+# Slots carry `from`/`to` set to the same offset: they are positions, not spans. Encoding them that
+# way means the server's generic span remapper rewrites them to script coordinates with no
+# per-field code, and the Java side then adds the token index that makes a slot directly comparable
+# with an authored command's gap index.
+# ---------------------------------------------------------------------------
+
+def anchor(slot, clause_id, at, role=None, kind=None):
+    entry = {"slot": slot, "clauseId": clause_id, "from": at, "to": at}
+    if role:
+        entry["role"] = role
+    if kind:
+        entry["kind"] = kind
+    return entry
+
+
+def build_anchors(clauses, sentence_from, sentence_to, punct_from):
+    """Candidate anchor slots for one sentence, in surface order.
+
+    Derived from clause and phrase boundaries rather than from the clause char spans, since an outer
+    clause's span encloses an embedded one and would give ambiguous boundaries.
+    """
+    out = []
+    out.append(anchor("utterance-initial", None, sentence_from))
+
+    for index, clause in enumerate(clauses):
+        clause_id = clause.get("id")
+        if index > 0 and clause.get("from") is not None:
+            out.append(anchor("clause-initial", clause_id, clause["from"]))
+
+        for role in ("subject", "verb", "predicate", "address"):
+            entry = (clause.get("roles") or {}).get(role)
+            if not entry:
+                continue
+            # The verb heads its clause, so its subtree phrase is the entire clause and
+            # before/after-verb would degenerate to the clause bounds. Anchor the verb on its head
+            # token; nominal roles anchor on the phrase, which is the constituent a command attaches
+            # to ("den roten Ball", not "Ball").
+            span = entry.get("head") if role == "verb" else (entry.get("phrase") or entry.get("head"))
+            if not span:
+                continue
+            # An address is conventionally followed, not preceded, by a behavior command
+            # ("Hallo $user, [emotion] …"), so only its trailing boundary is offered.
+            if role != "address":
+                out.append(anchor(f"before-{role}", clause_id, span["from"], role=role))
+            out.append(anchor(f"after-{role}", clause_id, span["to"], role=role))
+
+        for obj in clause.get("objects") or []:
+            span = obj.get("phrase") or obj.get("head")
+            if not span:
+                continue
+            kind = obj.get("kind")
+            out.append(anchor("before-object", clause_id, span["from"], role="object", kind=kind))
+            out.append(anchor("after-object", clause_id, span["to"], role="object", kind=kind))
+
+    if punct_from is not None:
+        out.append(anchor("before-final-punct", None, punct_from))
+    out.append(anchor("utterance-final", None, sentence_to))
+
+    # Several roles can share a boundary (a one-word clause's subject start is also the clause
+    # start). Keep the first label offered at each offset and drop later duplicates, so the label
+    # space stays a set of distinct positions.
+    deduped = []
+    seen = set()
+    for entry in sorted(out, key=lambda e: (e["from"], e["slot"])):
+        key = (entry["from"], entry["slot"], entry.get("role"), entry.get("kind"))
+        if key in seen:
+            continue
+        seen.add(key)
+        deduped.append(entry)
+    return deduped
+
+
 def sentence_offset(text, sentence_text, used_pos):
     if not sentence_text:
         return -1
@@ -961,6 +1418,31 @@ def build_annotation(sentence, idx, lang, base_text, original_text, index_map, u
         if by_role["address"]:
             basic["addressModifiers"] = (basic.get("addressModifiers", []) + by_role["address"])
 
+    clauses = build_clauses(sentence, words, cfg, original_text, index_map, abs_offset)
+
+    # Sentence bounds for the anchor inventory. Untrimmed, so utterance-final sits after the closing
+    # punctuation while before-final-punct sits in front of it — two distinct, both useful, slots.
+    all_ids = {word_id_value(w) for w in words if word_id_value(w) is not None}
+    sentence_span = None
+    if all_ids:
+        by_id_all = {word_id_value(w): w for w in words if word_id_value(w) is not None}
+        s_start = s_end = None
+        for wid in sorted(all_ids):
+            span = word_token_char_span(sentence, by_id_all.get(wid))
+            if span is None:
+                continue
+            s_start = span[0] if s_start is None else min(s_start, span[0])
+            s_end = span[1] if s_end is None else max(s_end, span[1])
+        sentence_span = chars_to_span(s_start, s_end, original_text, index_map, abs_offset)
+
+    final_punct = None
+    for w in sorted([w for w in words if word_id_value(w) is not None],
+                    key=lambda w: word_id_value(w)):
+        if str(getattr(w, "upos", "") or "") == "PUNCT":
+            final_punct = w
+    punct_span = word_span(sentence, final_punct, abs_offset, index_map, len(original_text)) \
+        if final_punct is not None else None
+
     ann = {
         "id": f"ud-{pick_line(line, idx)}-ann{idx}",
         "line": pick_line(line, idx),
@@ -971,9 +1453,20 @@ def build_annotation(sentence, idx, lang, base_text, original_text, index_map, u
             else sentence_text
         ),
         "basic": basic,
+        # Fine-grained view (schema v3): per-clause roles with head *and* phrase spans, and all
+        # objects rather than the first match. `basic` above is left exactly as it was, so v2
+        # consumers are unaffected — see the section comment above segment_clauses().
+        "clauses": clauses,
+        # The label space a placement model predicts over — see the section comment above anchor().
+        "anchors": build_anchors(
+            clauses,
+            sentence_span["from"] if sentence_span else abs_offset,
+            sentence_span["to"] if sentence_span else abs_offset,
+            punct_span["from"] if punct_span else None,
+        ),
         "provenance": {
             "analyzedAt": now_iso(),
-            "layers": {"basic": "ud"},
+            "layers": {"basic": "ud", "clauses": "ud", "anchors": "ud"},
         },
     }
     debug = sentence_debug_payload(sentence, cfg, subj_word, verb_word, obj_word, addr_word, pred_word) if include_debug else None

@@ -7121,10 +7121,33 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
                             ann.put("scriptTo", projection.getScriptTo());
 
                             if (udAnn != null) {
+                                // remapSpansDeep is a generic walk, so both the v2 flat block and the
+                                // v3 clause tree — with spans nested at several depths — are remapped
+                                // from clean-text to script coordinates without per-field code.
                                 JSONObject basic = udAnn.optJSONObject("basic");
                                 if (basic != null) {
                                     remapSpansDeep(basic, projection);
                                     ann.put("basic", basic);
+                                }
+                                JSONArray clauses = udAnn.optJSONArray("clauses");
+                                if (clauses != null) {
+                                    remapSpansDeep(clauses, projection);
+                                    ann.put("clauses", clauses);
+                                }
+                                JSONArray anchors = udAnn.optJSONArray("anchors");
+                                if (anchors != null) {
+                                    // tokenIndex before remapping: it is derived from the clean-text
+                                    // offset, which is what the parser reported. Doing it after would
+                                    // read a script offset and silently give wrong indices.
+                                    for (int a = 0; a < anchors.length(); a++) {
+                                        JSONObject slot = anchors.optJSONObject(a);
+                                        if (slot != null) {
+                                            slot.put("tokenIndex",
+                                                    projection.tokenIndexAtCleanOffset(slot.optInt("from", 0)));
+                                        }
+                                    }
+                                    remapSpansDeep(anchors, projection);
+                                    ann.put("anchors", anchors);
                                 }
                             }
                             if (llmAnn != null) {
