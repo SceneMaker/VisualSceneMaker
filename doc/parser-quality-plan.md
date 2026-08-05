@@ -79,39 +79,91 @@ default behaves like GSD, so the original instinct was right even though the pre
 But across the whole eval set it is a **net regression**, which is exactly why the rule is to judge by
 the harness and not by the two sentences that annoyed you:
 
-| | `combined_charlm` | `hdt_charlm` |
+Reproduce the whole comparison with the script added for it:
+
+```bash
+cd services/semantic-ud
+python3 compare_packages.py "" hdt_charlm gsd_charlm combined_german-nlp-electra
+```
+
+```
+package                        structural   exact S+V+O   known-weak   ms/sent
+------------------------------------------------------------------------------
+(stanza default)                      8/8          7/14          2/2      35.7
+hdt_charlm                            7/8          4/14          0/2      33.0  <-- weak cases changed
+gsd_charlm                            8/8          6/14          2/2      35.7
+combined_german-nlp-electra    SKIPPED — needs the HuggingFace encoder, unreachable
+```
+
+**Decision: keep the Stanza default (`combined_charlm`).** It leads on both metrics. HDT trades the two
+mis-parses for the `ccomp` sentence that Phase 1 was built to fix, and costs three exact-row matches.
+`SEMANTIC_UD_PACKAGE` stays as a knob so the comparison is repeatable, not as a recommendation.
+
+Latency is effectively identical across the charlm packages, so it is not a differentiator here — but
+it is measured, because it will matter for a transformer.
+
+### Correction: why HDT lost the dative object ✅ now fixed
+
+The first write-up of this said HDT "does not label it `obl:arg`". **That was wrong.** HDT uses the
+*same* `obl:arg` relation. What differs is where the morphological case ends up:
+
+| | `dem` (DET) | `Kind` (NOUN) |
 |---|---|---|
-| Structural checks passing | **8/8** | 6/8 |
-| Exact-row S+V+O | **7/14** | 3/14 |
-| `dem Kind` classified | **`indirect` ✓** | `oblique` ✗ |
-| ccomp clause split | **2 clauses, correct verbs ✓** | 3 clauses, wrong verbs ✗ |
+| `combined_charlm` | `Case=Dat` | `Case=Dat` |
+| `hdt_charlm` | `Case=Dat` | *(no Case — only Gender, Number)* |
 
-HDT breaks both of the cases Phase 1 was built to fix. `dem Kind` degrades because HDT does not label
-it `obl:arg`, so the dative-object path is lost; the `ccomp` sentence is re-analysed entirely.
+German marks case across the whole noun phrase, and treebanks disagree about whether it is propagated
+to the head noun. `object_kind` read the head word's features only, so under HDT the dative was
+invisible and the object degraded to `oblique`.
 
-**Decision: keep `combined_charlm`.** `SEMANTIC_UD_PACKAGE` stays as a knob so the comparison can be
-re-run, not as a recommendation.
+Fixed by `np_case_set()`, which unions the case features of the head **and its `det`/`amod`/`nummod`
+dependents`**, and by rewriting `object_kind` so morphological case — not the relation subtype — is the
+primary signal for direct vs indirect. The relation is now used only for what case cannot express
+(clausal complements) and as the fallback for languages that do not mark case, such as English.
 
-### Two follow-ups this surfaced
+Effect: HDT structural 6/8 → **7/8**, exact-row 3/14 → 4/14, with the default unchanged at 8/8. The
+dative object is now `indirect/obl:arg case=Dat` under *both* packages. This was worth doing on its own
+merits regardless of which package we run — it removes a silent dependence on one treebank's
+convention.
 
-1. **Make `object_kind` treebank-robust.** It currently leans on `obl:arg`, which is a GSD/combined
-   convention. Detecting a dative object from the morphological case alone, independent of the
-   subtype label, would be an improvement *regardless of model* and would remove one of the two HDT
-   regressions. Worth doing on its own merits.
-2. **The transformer variant is still untested.** `combined_german-nlp-electra` is the genuinely
-   different option — same treebank, better encoder — and it is the most promising untried lever. Its
-   Stanza weights download fine (~200 MB, now present in `~/stanza_resources/de/{pos,depparse}/`),
-   but building the pipeline additionally fetches the ELECTRA encoder from HuggingFace, which was not
-   reachable from the machine this was run on:
+HDT's one remaining structural failure is the `ccomp` sentence, which it genuinely parses differently
+(three clauses, root `Lass`). That is a parse difference, not a mapping bug.
 
-   ```
-   OSError: We couldn't connect to 'https://huggingface.co' to load the files
-   ```
+### The transformer is still untested — and this is where you can help
 
-   Retry where HF is reachable, then judge by the harness the same way. Note the downloaded `.pt`
-   files are inert until then, and a transformer parser is slower and needs more memory — measure
-   latency on the example projects before adopting, since it affects `POST /analyze/batch` over a
-   corpus and the Android target.
+`combined_german-nlp-electra` is the genuinely different lever: same treebank, transformer encoder
+instead of a character LM. Its Stanza weights are already downloaded
+(`~/stanza_resources/de/{pos,depparse}/combined_german-nlp-electra.pt`, ~200 MB) but **inert**, because
+building the pipeline also fetches the encoder from HuggingFace:
+
+```
+OSError: We couldn't connect to 'https://huggingface.co' to load the files
+```
+
+The missing piece is exactly one HF repo: **`german-nlp-group/electra-base-german-uncased`**.
+
+On a machine or network where HuggingFace is reachable:
+
+```bash
+# 1. populate the HF cache (~/.cache/huggingface) — a few hundred MB
+python3 -c "from transformers import AutoModel, AutoTokenizer; \
+  n='german-nlp-group/electra-base-german-uncased'; \
+  AutoTokenizer.from_pretrained(n); AutoModel.from_pretrained(n)"
+
+# 2. run the comparison and paste the table back
+cd services/semantic-ud
+python3 compare_packages.py "" combined_german-nlp-electra
+```
+
+Alternatives if the network is the obstacle rather than the machine: set `HF_ENDPOINT` to an internal
+mirror if DFKI runs one, or copy `~/.cache/huggingface` from a machine that already has the model.
+
+**Adopt it only if `structural` does not regress and `exact S+V+O` does not regress.** Also read the
+`ms/sent` column: a transformer is expected to be slower and hungrier, which matters for
+`POST /analyze/batch` over a whole corpus and for the Android target. If it wins on accuracy but costs
+several times the latency, the sensible outcome may be to use it for corpus preparation and keep the
+charlm model for interactive editing — the package is per-process, so that split is configuration, not
+code.
 
 ## Step 3 — Greeting pre-normalisation, only if step 2 doesn't settle it
 
@@ -155,11 +207,12 @@ That gives a gold set for evaluation immediately, and training data eventually. 
 1. ✅ **Step 1** — done. Our bug, fixed and regression-tested.
 2. ✅ **Step 2** — run. `hdt_charlm` fixes the two annoying sentences but is a net regression, so the
    default stays `combined_charlm`. `SEMANTIC_UD_PACKAGE` remains as a knob.
-3. **Next, and cheapest:** make `object_kind` treebank-robust (detect the dative object from
-   morphological case rather than the `obl:arg` subtype). Improves things independently of any model
-   choice.
-4. **Then:** retry `combined_german-nlp-electra` somewhere HuggingFace is reachable; judge by the
-   harness, and measure latency and memory, not only accuracy.
+3. ✅ **`object_kind` made treebank-robust** via `np_case_set()` — case is read across the noun phrase,
+   not just off the head word, and drives the direct/indirect decision instead of the relation
+   subtype. Improved HDT from 6/8 to 7/8 structural with no change to the default.
+4. **Open, needs a hand:** retry `combined_german-nlp-electra` where HuggingFace is reachable — one
+   repo, `german-nlp-group/electra-base-german-uncased`. Commands above. Judge by
+   `compare_packages.py`, and read the latency column as well as the accuracy columns.
 5. **Step 3 (greeting pre-normalisation)** only if the model work leaves the greeting case broken.
 6. **Step 4** — actively avoid the rule cascade.
 7. **Step 5** — build the parse-correction affordance into the Phase 2 annotation loop; treat

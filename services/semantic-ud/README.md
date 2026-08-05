@@ -184,3 +184,17 @@ export SEMANTIC_UD_RESOURCES_DIR="/path/to/stanza_resources"
 ```
 
 The evaluator runs with `SEMANTIC_UD_AUTO_DOWNLOAD=false` to avoid accidental model downloads.
+
+## Comparing parser packages
+
+`compare_packages.py` runs the eval set under several Stanza treebank/encoder packages and prints one
+table, so a package change is judged on the whole set rather than on the sentences that annoyed you:
+
+```bash
+python3 compare_packages.py                      # default vs hdt_charlm
+python3 compare_packages.py "" combined_german-nlp-electra
+```
+
+Reports structural checks, exact-row S+V+O, known-weak cases unchanged, and mean parse latency.
+Adopt a package only if neither accuracy column regresses. Findings so far, and why the default is
+still the right choice, are in `doc/parser-quality-plan.md`.

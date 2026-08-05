@@ -1012,24 +1012,52 @@ def case_child_text(words, head_word, clause_ids):
     return None
 
 
-def object_kind(dep, cases, preposition):
-    """Maps a dependency relation to an object kind.
+def np_case_set(words, head_word, clause_ids=None):
+    """Case features of a noun phrase, read from its head *and its case-marking dependents*.
 
-    `obl:arg` + dative is how the German model encodes an indirect object — it does not use `iobj`
-    for "Ich gebe dem Kind …" — which is why the old first-match-wins selector never saw it.
+    German marks case across the whole NP, and treebanks disagree about where it ends up: for
+    "Ich gebe dem Kind …" the combined model puts `Case=Dat` on both `dem` and `Kind`, while HDT puts
+    it only on the determiner `dem` and leaves the noun with just Gender/Number. Reading the head
+    word alone therefore loses the case on some treebanks — which is what made the dative object
+    degrade to `oblique` under HDT.
     """
-    if dep == "obj":
-        return "direct"
-    if dep == "iobj":
-        return "indirect"
+    cases = set(parse_case_set(head_word))
+    head_id = word_id_value(head_word)
+    if head_id is None:
+        return cases
+    for w in words:
+        if getattr(w, "head", None) != head_id:
+            continue
+        if clause_ids is not None and word_id_value(w) not in clause_ids:
+            continue
+        if str(getattr(w, "deprel", "") or "") in ("det", "det:poss", "amod", "nummod"):
+            cases |= parse_case_set(w)
+    return cases
+
+
+def object_kind(dep, cases, preposition):
+    """Maps a verb dependent to an object kind, treebank-independently.
+
+    Morphological case is the primary signal for the direct/indirect distinction in German —
+    accusative is a direct object, dative an indirect one — because the *subtype label* is not
+    portable: the dative object is `obl:arg` here, and a treebank that spells it differently, or omits
+    the feature from the head noun, must still come out as `indirect`. The relation is used only for
+    what case cannot express (clausal complements) and as the fallback for languages that do not mark
+    case at all, such as English.
+    """
     if dep in ("ccomp", "xcomp"):
         return "clausal"
-    if dep.startswith("obl"):
-        if preposition:
-            return "prepositional"
-        if "Dat" in cases:
-            return "indirect"
-        return "oblique"
+    if preposition:
+        # A `case` dependent (a preposition) makes it prepositional regardless of the noun's case.
+        return "prepositional"
+    if dep == "iobj":
+        return "indirect"
+    if "Dat" in cases:
+        return "indirect"
+    if dep == "obj":
+        return "direct"
+    if "Acc" in cases:
+        return "direct"
     return "oblique"
 
 
@@ -1055,7 +1083,7 @@ def clause_objects(words, clause_ids, verb_word):
         if dep in ("ccomp", "xcomp") and is_clause_root(words, w):
             # Already reported as a clause of its own; listing it as an object too would double count.
             continue
-        cases = parse_case_set(w)
+        cases = np_case_set(words, w, clause_ids)
         preposition = case_child_text(words, w, clause_ids)
         found.append({
             "word": w,
