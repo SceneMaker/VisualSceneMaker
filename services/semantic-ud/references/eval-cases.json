@@ -211,11 +211,10 @@
     ]
   },
   {
-    "id": "de-weak-01-informal-greeting",
+    "id": "de-greeting-01-informal",
     "language": "de",
     "text": "Hallo ich bin Xenia.",
-    "knownWeak": true,
-    "why": "Informal greeting. The default model tags 'Hallo' as the root VERB with 'bin' as its ccomp, inventing a second clause; combined_german-nlp-electra parses it correctly. This case asserts the CORRECT reading, so fixing it shows up as progress instead of as a regression against a pinned mistake.",
+    "why": "Informal greeting. Stanza's charlm default tags 'Hallo' as the root VERB with 'bin' as its ccomp, inventing a second clause; the transformer package the product ships parses it correctly. Promoted from expected-fail once that package became the default, so this is now a plain regression test. A failure here alongside 'Parser package measured: (stanza default)' means the transformer encoder is missing, not that the mapping broke.",
     "expected": {
       "subject": "ich",
       "verb": "bin",

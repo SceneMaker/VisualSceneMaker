@@ -33,9 +33,16 @@ Default endpoint is `http://127.0.0.1:4061`.
 | `SEMANTIC_UD_AUTO_DOWNLOAD` | `true` | When `false`, never reach the network — a missing model is a hard error |
 | `SEMANTIC_UD_PACKAGE` | *(Stanza default)* | **Language-scoped** treebank/encoder package for `pos`+`depparse`: `de:combined_german-nlp-electra,en:gsd_charlm`. A bare value applies to `SEMANTIC_UD_LANG` only — package names are language-specific, and applying a German package to the English pipeline breaks it. |
 
-**Recommended:** `de:combined_german-nlp-electra` for corpus/batch runs (more accurate, fixes the
-informal-greeting mis-parse) and the default for interactive editing and Android (3× faster). Measured
-comparison and rationale: `doc/parser-quality-plan.md`.
+**The product requests `combined_german-nlp-electra` for all script analysis**, editor and headless
+alike — it is more accurate and fixes the informal-greeting mis-parse. The constant lives in
+`WebUiServer.SEMANTIC_UD_PREFERRED_PACKAGE`, so this env var is only needed to set a *service-wide*
+default or to run the eval against a different parser. Measured comparison and rationale:
+`doc/parser-quality-plan.md`.
+
+Note the transformer needs its encoder from HuggingFace
+(`german-nlp-group/electra-base-german-uncased`). If it is missing the service warns and falls back to
+Stanza's default rather than failing, and the document provenance records the package that actually
+ran — so a fallback is visible rather than silent.
 
 ### Offline / pinned-model contract
 

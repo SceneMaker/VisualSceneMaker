@@ -35,9 +35,16 @@ tasks.register('startService', Exec) {
 
 tasks.register('evaluateMapping', Exec) {
     group = 'verification'
-    description = 'Run UD S/V/O mapping evaluation against references/eval-cases.json.'
+    description = 'Run UD mapping evaluation against references/eval-cases.json, using the parser ' +
+            'package the product actually ships.'
     dependsOn 'installRequirements'
     environment 'SEMANTIC_UD_AUTO_DOWNLOAD', 'false'
+    // Measure what we ship. Without this the eval would silently grade a parser the product no
+    // longer uses. If the transformer's encoder is missing the service falls back and the harness
+    // prints "Parser package measured: (stanza default)", which explains any resulting failure.
+    environment 'SEMANTIC_UD_PACKAGE', System.getenv('SEMANTIC_UD_PACKAGE')
+            ?: 'de:combined_german-nlp-electra'
+    environment 'HF_HUB_OFFLINE', System.getenv('HF_HUB_OFFLINE') ?: '1'
     environment 'SEMANTIC_UD_RESOURCES_DIR', System.getenv('SEMANTIC_UD_RESOURCES_DIR') ?: "${System.getProperty('user.home')}/stanza_resources"
     commandLine 'python3', 'eval_harness.py', '--cases', 'references/eval-cases.json'
     workingDir project.projectDir

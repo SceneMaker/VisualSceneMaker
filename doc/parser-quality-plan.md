@@ -148,38 +148,46 @@ transformer look *worse* than it is:
 Both faults pushed in the same direction — against the change — which is worth remembering: a
 comparison that says "no improvement" deserves as much scrutiny as one that says "big win."
 
-### Adopted: split by workload, chosen per request ✅
+### Adopted: the accurate parser everywhere ✅
 
-The parser package is now a **per-request** parameter rather than a per-process one, so one
-`semantic-ud` instance serves both workloads. The service keeps a pipeline per
-`(language, package)` pair.
+The parser package is a **per-request** parameter, so one `semantic-ud` instance can serve several
+packages (a pipeline per `(language, package)` pair). But the decision that mattered turned out to be
+simpler than that mechanism suggests:
 
-- **Corpus / batch** — `./gradlew analyzeSemantics` requests
-  `combined_german-nlp-electra` **by default**. Accuracy is the point and the run is offline; the whole
-  charamel-embed project went from 0.4 s to 1.0 s. Override with `-PudPackage=<name>`, or
-  `-PudPackage=` for the service default.
-- **Interactive editing** — the editor sends no package and keeps the ~33 ms/sentence default, so the
-  semantic panel stays responsive.
-- **Android** — unaffected: the default is unchanged, and nothing requests a transformer there.
-- **Whole-service default** — still available via `SEMANTIC_UD_PACKAGE=de:pkg` if a deployment wants
-  one parser for everything.
+**Every caller gets the transformer.** `WebUiServer.SEMANTIC_UD_PREFERRED_PACKAGE` is the single source
+of truth, so the editor and the headless CLI cannot drift apart; neither hardcodes a package name.
+Override per request with `udPackage`, per run with `-PudPackage=`, or service-wide with
+`SEMANTIC_UD_PACKAGE=de:pkg`; an explicit empty string means "whatever semantic-ud defaults to".
 
-Two hazards found while wiring this up, both fixed:
+**Why not the workload split I first designed.** The split assumed the 3× latency would be felt
+continuously in the editor. It is not: real scripts are 14–24 utterances, so an analyse click goes from
+roughly 0.8 s to 2.4 s — a one-off cost on a manual action. Weighed against the panel showing
+`verb=Hallo` and a phantom second clause on the *first line of the example project*, and against
+having the panel and the corpus disagree about the same sentence, one parser everywhere is the better
+trade. The per-request mechanism stays useful for overrides and comparison, but it is no longer
+load-bearing.
+
+**The eval measures what we ship.** `./gradlew :services:semantic-ud:evaluateMapping` now runs with the
+shipped package and the harness prints `Parser package measured: …`. Without that line an eval failure
+could not be distinguished from grading a parser the product no longer uses.
+
+Two hazards found while wiring this, both fixed:
 
 - **Stanza silently ignores an unknown package name** — it builds a pipeline and says nothing. A typo
-  in `-PudPackage=` would therefore have produced default-quality output while the corpus provenance
-  claimed the transformer. The service now validates the name against its resources index, warns, and
-  reports the **effective** package; provenance records what actually ran, plus
-  `udPackageRequested` and a document-level warning when the two differ. Verified with a deliberate
-  typo.
+  in `-PudPackage=` would have produced default-quality output while the corpus provenance claimed the
+  transformer. The service now validates against its resources index and reports the **effective**
+  package; provenance records what actually ran, adds `udPackageRequested`, and raises a
+  document-level warning when the two differ. Verified with a deliberate typo.
 - **A latent deadlock in the fallback path.** The unavailable-package handler recursed into
   `get_pipeline` while holding the non-reentrant registry lock; it would have hung whenever the
-  fallback pipeline was not already cached. Now calls `build_pipeline` directly.
+  fallback pipeline was not already cached. It calls `build_pipeline` directly now.
 
-`de-weak-01-informal-greeting` still asserts the correct reading and remains an expected failure,
-because the *default* parser still fails it. Under the transformer it passes — visible as
-`xfail pass 1/2` in `compare_packages.py`. Promote it if the transformer ever becomes the global
-default.
+`de-weak-01-informal-greeting` has been **promoted** to a plain regression test (now
+`de-greeting-01-informal`), since the shipped parser passes it. Only the imperative case remains an
+expected failure. A failure of the greeting case alongside `Parser package measured: (stanza default)`
+means the transformer encoder is missing, not that the mapping broke.
+
+Current shipped numbers: **8/8 structural, 7/13 exact-row, 0/1 expected-fail passing.**
 
 ### If you need to reproduce this from scratch
 

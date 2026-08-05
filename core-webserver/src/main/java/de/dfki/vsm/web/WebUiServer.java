@@ -391,6 +391,21 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
     private static final LOGDefaultLogger sLogger = LOGDefaultLogger.getInstance();
     private static final String API_PREFIX = "/api/v1";
     private static final int RECENT_MAX = 19;
+    /**
+     * Parser package requested for script analysis unless a caller overrides it.
+     *
+     * <p>The transformer is more accurate than Stanza's charlm default and fixes the informal-greeting
+     * mis-parse ("Hallo ich bin Xenia." reads as one clause with verb `bin`, not two clauses with verb
+     * `Hallo`). It costs roughly 3x the per-sentence latency, which real scripts make irrelevant:
+     * they run 14-24 utterances, so an analyse click goes from ~0.8s to ~2.4s.</p>
+     *
+     * <p>Kept here rather than in the Web UI or the CLI so there is one source of truth. A caller may
+     * still pass {@code udPackage} explicitly, and an empty string means "use whatever the semantic-ud
+     * service defaults to". If the package is unavailable the service warns and falls back, and the
+     * document's provenance records what actually ran.</p>
+     */
+    private static final String SEMANTIC_UD_PREFERRED_PACKAGE = "combined_german-nlp-electra";
+
     // v3 adds `clauses` and `anchors` to each annotation. The flat `basic` block is unchanged, so a
     // v2 reader still works on a v3 document; nothing validates this number strictly, it is
     // provenance for consumers that want to know whether the fine-grained layers are present.
@@ -7050,9 +7065,10 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
             String defaultLanguage = body.optString("language", "de");
             String basicProvider = body.optString("basicProvider", semanticBasicProvider(ref));
             boolean udForBasic = includeBasic && !"llm".equalsIgnoreCase(basicProvider);
-            // Optional parser package for this whole run. Batch/corpus callers set it to the accurate
-            // transformer; the editor leaves it unset and keeps the responsive default.
-            String udPackage = body.optString("udPackage", "").trim();
+            // Parser package for this run. Defaults to the accurate transformer for every caller —
+            // editor and batch alike — so the panel and the corpus agree on the reading. A caller can
+            // override, and an explicit empty string falls back to the service's own default.
+            String udPackage = body.optString("udPackage", SEMANTIC_UD_PREFERRED_PACKAGE).trim();
             // What the service reports actually having used. Not the same as what we asked for:
             // Stanza silently ignores an unknown package name, so recording the request would let
             // provenance claim a parser that never ran.

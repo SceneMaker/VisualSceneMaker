@@ -90,6 +90,21 @@ def anchor_diffs(annotation, required_slots):
     return [f"missing anchor slot(s): {', '.join(missing)}"] if missing else []
 
 
+def effective_package(payload_language="de"):
+    """Which parser the harness is actually measuring.
+
+    Worth printing: production requests the transformer, while the harness runs whatever the service
+    defaults to, so without this line a reader cannot tell whether a failure reflects the shipped
+    configuration or a different parser. `analyze()` reports the package it used.
+    """
+    try:
+        from server import analyze
+        doc = analyze({"text": "Test.", "language": payload_language, "baseOffset": 0})
+        return (doc.get("provenance") or {}).get("package", "(unknown)")
+    except Exception:
+        return "(unknown)"
+
+
 def evaluate_case(case):
     payload = {
         "text": case.get("text", ""),
@@ -164,6 +179,7 @@ def print_report(cases, results):
                        if c.get("knownWeak") and not results[idx].get("_structural")
                        and all(results[idx][r]["pred"] == results[idx][r]["gold"] for r in ROLES))
     print("UD mapping evaluation")
+    print(f"Parser package measured: {effective_package()}")
     print(f"Cases: {len(cases)}")
     real = [idx for idx, c in enumerate(cases) if not c.get("knownWeak")]
     exact_real = sum(1 for idx in real
