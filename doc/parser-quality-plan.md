@@ -18,9 +18,10 @@ eval cases in `services/semantic-ud/references/eval-cases.json` so a change in b
 | `Schau mal, wie Bob das findet.` | `mal` = root **ADV**, `Schau` = `advmod`, so the main clause has **no verb** | imperative main clause with verb `Schau` |
 | `Hey, Ich habe eine Aufgabe für Dich.` | `Ich` reported as **both** subject and address | no addressee; `Hey` is a discourse marker |
 
-**The third was ours, not the parser's, and is fixed** — see below. The first two remain, marked
-`knownWeak`: the eval cases assert the current, wrong output with a note on the correct answer, so a
-model or heuristic change fails loudly instead of drifting unnoticed.
+**The third was ours, not the parser's, and is fixed** — see below. The first two are pinned as
+`knownWeak` cases that assert the **correct** reading and are treated as expected failures, so a model
+that fixes one shows up as progress rather than as a regression. The transformer parser now fixes the
+greeting case; the imperative case is still open.
 
 ## How much this actually costs us
 
@@ -54,7 +55,7 @@ reported as both subject and address. Here the *address* reading is the right on
 reading is the parse artifact, so suppressing one requires deciding which — a judgement call worth
 making with the eval set in front of us rather than in passing.
 
-## Step 2 — Try a better model ✅ run, and the answer is *do not switch*
+## Step 2 — Try a better model ✅ run: no to HDT, **yes to the transformer** for batch
 
 **Correction to an earlier assumption.** The recommendation originally read "switch from GSD to HDT".
 That premise was wrong: German's default depparse in Stanza is already **`combined_charlm`**, i.e.
@@ -76,31 +77,18 @@ default behaves like GSD, so the original instinct was right even though the pre
 | `Schau mal, wie Bob das findet.` | root `mal`/ADV ✗ | root **`Schau`/VERB ✓** | root `mal`/ADV ✗ |
 | `Hallo ich bin Xenia.` | `bin` as `ccomp` → spurious 2nd clause ✗ | `bin` as **`aux` → one clause ✓** | `bin` as `ccomp` ✗ |
 
-But across the whole eval set it is a **net regression**, which is exactly why the rule is to judge by
-the harness and not by the two sentences that annoyed you:
-
-Reproduce the whole comparison with the script added for it:
+But across the whole eval set HDT is a **net regression** — which is exactly why the rule is to judge
+by the harness and not by the two sentences that annoyed you. Reproduce with the script added for it:
 
 ```bash
 cd services/semantic-ud
 python3 compare_packages.py "" hdt_charlm gsd_charlm combined_german-nlp-electra
 ```
 
-```
-package                        structural   exact S+V+O   known-weak   ms/sent
-------------------------------------------------------------------------------
-(stanza default)                      8/8          7/14          2/2      35.7
-hdt_charlm                            7/8          4/14          0/2      33.0  <-- weak cases changed
-gsd_charlm                            8/8          6/14          2/2      35.7
-combined_german-nlp-electra    SKIPPED — needs the HuggingFace encoder, unreachable
-```
-
-**Decision: keep the Stanza default (`combined_charlm`).** It leads on both metrics. HDT trades the two
-mis-parses for the `ccomp` sentence that Phase 1 was built to fix, and costs three exact-row matches.
-`SEMANTIC_UD_PACKAGE` stays as a knob so the comparison is repeatable, not as a recommendation.
-
-Latency is effectively identical across the charlm packages, so it is not a differentiator here — but
-it is measured, because it will matter for a transformer.
+**Decision on HDT: no.** It trades the two mis-parses for the `ccomp` sentence that Phase 1 was built
+to fix, and loses exact-row matches. The final numbers are in the transformer section below, measured
+after two faults in the comparison itself were corrected — the first run of this table used a metric
+that penalised correct parses, so its figures are not quoted here.
 
 ### Correction: why HDT lost the dative object ✅ now fixed
 
@@ -225,15 +213,19 @@ mirror if DFKI runs one, or copy `~/.cache/huggingface` from a machine that alre
 The encoder is ~1.3 GB in the HuggingFace cache and the Stanza weights ~200 MB; once both are present
 the run is fully offline (`HF_HUB_OFFLINE=1`).
 
-## Step 3 — Greeting pre-normalisation, only if step 2 doesn't settle it
+## Step 3 — Greeting pre-normalisation: no longer needed for batch, still open for interactive
 
 The service already normalises `$user`-style placeholders before parsing and maps offsets back
 afterwards (`preprocess_text` / `map_span_to_original`). The same machinery can strip a leading
 greeting, parse the remaining clause, and re-attach the greeting as a discourse marker.
 
 This is contained and honest — the parser only sees the clause it can handle — and it reuses tested
-offset code rather than adding new heuristics. But it addresses **greetings only**, not imperatives,
-so it is worth doing only if the model change leaves the greeting case broken.
+offset code rather than adding new heuristics. It addresses **greetings only**, not imperatives.
+
+**Status:** the transformer fixes the greeting case, so batch/corpus output no longer needs this. It
+would only matter for the *interactive* path, which keeps the fast default and therefore still
+mis-parses greetings in the semantic panel. Whether that is worth fixing depends on whether authors
+rely on the panel's reading of a greeting line — worth asking them before writing any code.
 
 ## Step 4 — Do not build a rule cascade
 
