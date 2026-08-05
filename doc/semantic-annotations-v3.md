@@ -131,7 +131,10 @@ which asserts the correct reading and is expected to fail until the parser impro
     "from": 354, "to": 386,
     "text": "Lass mich einen Vorschlag machen",
     "roles": {
-      "verb":      { "head": { "text": "machen", "from": 380, "to": 386 }, "confidence": 0.96 },
+      "verb":      { "head":   { "text": "machen", "from": 380, "to": 386 },
+                     "phrase": { "text": "Lass mich einen Vorschlag machen", "from": 354, "to": 386 },
+                     "modifiers": [ { "…": "same shape as the basic *Modifiers spans" } ],
+                     "confidence": 0.96 },
       "subject":   { "head": { "…": "" }, "phrase": { "…": "" }, "confidence": 0.96 },
       "predicate": { "…": "" },
       "address":   { "…": "" }
@@ -152,8 +155,15 @@ which asserts the correct reading and is expected to fail until the parser impro
 
 - `type` — `main` | `subordinate` | `relative` | `coordinate` | `parataxis`
 - `roles.*.head` is the head token span; `roles.*.phrase` is the full subtree span, clipped to the
-  clause, edge punctuation trimmed — `den roten Ball`, not `Ball`. The **verb carries no `phrase`**:
-  it heads its clause, so its subtree is the whole clause.
+  clause, edge punctuation trimmed — `den roten Ball`, not `Ball`.
+- The verb **does** carry a `phrase`, and it is always the clause span itself: the verb heads its
+  clause, so its subtree is the whole clause. `Ich sehe dich.` gives the verb `sehe` the phrase
+  `Ich sehe dich`. It is emitted for uniformity across roles and carries no information beyond the
+  clause's own `from`/`to` — read those instead. Two consumers already act on this: the editor's
+  phrase wash skips the verb, since shading it would tint the whole clause and hide every mark inside
+  it, and `build_anchors` falls back to the verb's **head** token, because a phrase whose boundaries
+  are the clause boundaries offers no interior position to anchor to. The same fallback applies to a
+  verbless predicative root, which heads its clause for the same reason.
 - `objects[].kind` — `direct` | `indirect` | `prepositional` | `clausal` | `oblique`. *All*
   object-like dependents of the clause verb are listed, not just the first. `deprel` and `case` are
   kept so a consumer can second-guess the mapping; note German UD encodes the indirect object as
