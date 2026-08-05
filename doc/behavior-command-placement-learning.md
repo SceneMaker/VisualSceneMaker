@@ -135,6 +135,10 @@ and match browser output modulo the two fixed defects.
 
 ## Phase 1 — Fine-grained sentence and constituent annotation
 
+> **Starting Phase 1? Read `doc/phase1-kickoff.md` first.** It has both defects as runnable curl
+> commands, the file-and-line map of `semantic-ud/server.py`, a suggested order, and the decisions
+> not to re-litigate.
+
 - **1.1 Clause segmentation.** Split each sentence via UD (`root` plus `conj`, `advcl`, `ccomp`,
   `xcomp`, `acl`, `parataxis`): `clauses: [{id, from, to, type: main|subordinate|relative|coordinate, roles:{…}}]`.
 - **1.2 Multiple objects.** Replace the single `object` with
