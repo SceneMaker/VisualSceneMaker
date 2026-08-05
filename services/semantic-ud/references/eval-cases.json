@@ -265,11 +265,10 @@
     ]
   },
   {
-    "id": "de-weak-03-vocative-as-subject",
+    "id": "de-address-01-greeting-comma",
     "language": "de",
     "text": "Hey, Ich habe eine Aufgabe für Dich.",
-    "knownWeak": true,
-    "why": "The same span 'Ich' is reported as both subject and address; the vocative is 'Hey'. Pinned so a fix to the address heuristic is noticed.",
+    "why": "Regression test for a fixed bug of OURS, not the parser's: select_address's trailing-vocative fallback (written for '..., du Bloedmann!') fired on a leading greeting comma and reported the following subject as the addressee, so 'Ich' was both subject and address. With a greeting comma the addressee sits BEFORE it; a greeting with no name after it has no addressee, and reporting none beats reporting the wrong one.",
     "expected": {
       "subject": "Ich",
       "verb": "habe",
@@ -287,6 +286,7 @@
           }
         ]
       }
-    ]
+    ],
+    "expectedNoAddress": true
   }
 ]

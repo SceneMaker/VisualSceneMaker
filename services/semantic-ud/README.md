@@ -31,6 +31,7 @@ Default endpoint is `http://127.0.0.1:4061`.
 | `SEMANTIC_UD_PRELOAD` | value of `SEMANTIC_UD_LANG` | Comma-separated languages built **at startup**. Empty disables preloading. |
 | `SEMANTIC_UD_RESOURCES_DIR` | — | Stanza model directory (`STANZA_RESOURCES_DIR` also honoured) |
 | `SEMANTIC_UD_AUTO_DOWNLOAD` | `true` | When `false`, never reach the network — a missing model is a hard error |
+| `SEMANTIC_UD_PACKAGE` | *(Stanza default)* | Treebank/encoder package for `pos`+`depparse`, e.g. `hdt_charlm`. See `doc/parser-quality-plan.md` — measured, and the default is the right choice; this exists so the comparison stays repeatable, not as a recommendation. |
 
 ### Offline / pinned-model contract
 

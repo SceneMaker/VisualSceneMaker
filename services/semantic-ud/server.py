@@ -19,6 +19,11 @@ RESOURCES_DIR = os.environ.get("SEMANTIC_UD_RESOURCES_DIR", os.environ.get("STAN
 AUTO_DOWNLOAD = os.environ.get("SEMANTIC_UD_AUTO_DOWNLOAD", "true").strip().lower() not in ("0", "false", "no")
 # Languages to build at startup rather than on first request, so a missing model is a startup
 # failure instead of a mid-corpus-run surprise. Empty string disables preloading.
+# Treebank/encoder package for pos+depparse, empty meaning Stanza's default. Configurable because
+# the default for German (`combined_charlm`, i.e. GSD+HDT) mis-parses spoken-register dialogue in ways
+# `hdt_charlm` does not — see doc/parser-quality-plan.md step 2.
+UD_PACKAGE = os.environ.get("SEMANTIC_UD_PACKAGE", "").strip()
+
 PRELOAD_LANGS = [
     lang.strip().lower()
     for lang in os.environ.get("SEMANTIC_UD_PRELOAD", DEFAULT_LANG).split(",")
@@ -184,6 +189,9 @@ def build_pipeline(language: str):
     }
     if RESOURCES_DIR:
         kwargs["dir"] = RESOURCES_DIR
+    if UD_PACKAGE:
+        # tokenize/mwt/lemma stay on the default: only tagging and parsing differ between treebanks.
+        kwargs["package"] = {"pos": UD_PACKAGE, "depparse": UD_PACKAGE}
     try:
         pipe = stanza.Pipeline(**kwargs)
     except Exception:
@@ -385,6 +393,13 @@ def select_address(words, cfg):
     for w in sorted_words:
         wid = word_id_value(w)
         if wid is None or wid <= 1:
+            continue
+        # Never treat the word right after a *greeting* comma as the addressee. In
+        # "Hey, Ich habe eine Aufgabe für Dich." that word is the subject, and this fallback used to
+        # report `Ich` as both subject and address. With a greeting comma the addressee, if any, sits
+        # *before* it (handled by the first branch, "Hallo $user, …"); a greeting with no name after it
+        # simply has no addressee, and reporting none beats reporting the wrong one.
+        if comma_id is not None and wid == comma_id + 1:
             continue
         prev = by_id.get(wid - 1)
         if prev is None or str(getattr(prev, "upos", "") or "") != "PUNCT":
@@ -1601,6 +1616,7 @@ class Handler(BaseHTTPRequestHandler):
                 "preload": PRELOAD_LANGS,
                 "autoDownload": AUTO_DOWNLOAD,
                 "resourcesDir": RESOURCES_DIR or None,
+                "package": UD_PACKAGE or "(stanza default)",
             })
             return
         self._json(404, {"error": "not_found"})

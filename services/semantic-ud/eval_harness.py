@@ -112,6 +112,10 @@ def evaluate_case(case):
         structural += clause_diffs(clause_summary(predicted), case["expectedClauses"])
     if isinstance(case.get("expectedAnchorSlots"), list):
         structural += anchor_diffs(predicted, case["expectedAnchorSlots"])
+    if case.get("expectedNoAddress"):
+        addr = ((predicted.get("basic") or {}).get("address") or {}).get("text", "")
+        if norm_text(addr):
+            structural.append(f"expected no address, got '{norm_text(addr)}'")
     role_result["_structural"] = structural
     return role_result
 
