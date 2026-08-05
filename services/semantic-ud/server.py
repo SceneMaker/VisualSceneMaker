@@ -1264,9 +1264,12 @@ def build_clauses(sentence, words, cfg, original_text, index_map, base_offset):
         # absent and the clausal subject carries the verb. Without this the clause has no role at
         # all, so no anchor slot exists next to it — and this register ("Schön …", "Toll …",
         # "Klasse!") is exactly where authors do place commands.
-        if verb_word is None and predicate_word is None:
-            if str(getattr(clause_root, "upos", "") or "") in ("ADJ", "NOUN", "PROPN", "ADV"):
-                predicate_word = clause_root
+        # A clause with no role at all offers no interior anchor position, so an authored command
+        # inside it matches nothing. A clause always has a head, so name it: this is a safety net
+        # rather than an ever-growing UPOS list, which is what the previous version was becoming — the
+        # transformer parser tags "Hallo you." in a way none of ADJ/NOUN/PROPN/ADV/INTJ covered.
+        if verb_word is None and predicate_word is None and subject_word is None:
+            predicate_word = clause_root
 
         roles = {}
         for role, head_word in (("subject", subject_word),
@@ -1330,7 +1333,7 @@ def anchor(slot, clause_id, at, role=None, kind=None):
     return entry
 
 
-def build_anchors(clauses, sentence_from, sentence_to, punct_from):
+def build_anchors(clauses, sentence_from, sentence_to, punct_from, intermediate_punct=None):
     """Candidate anchor slots for one sentence, in surface order.
 
     Derived from clause and phrase boundaries rather than from the clause char spans, since an outer
@@ -1348,11 +1351,17 @@ def build_anchors(clauses, sentence_from, sentence_to, punct_from):
             entry = (clause.get("roles") or {}).get(role)
             if not entry:
                 continue
-            # The verb heads its clause, so its subtree phrase is the entire clause and
-            # before/after-verb would degenerate to the clause bounds. Anchor the verb on its head
-            # token; nominal roles anchor on the phrase, which is the constituent a command attaches
-            # to ("den roten Ball", not "Ball").
-            span = entry.get("head") if role == "verb" else (entry.get("phrase") or entry.get("head"))
+            # A role that heads its clause has a subtree covering the whole clause, so its phrase
+            # boundaries degenerate to the clause bounds and offer no interior position. That is always
+            # true of the verb, and also of a verbless predicative root — corpus evidence: an author
+            # placed a command between the two tokens of "Hallo you.", where the predicate phrase spans
+            # both. Fall back to the head token whenever the phrase covers the entire clause.
+            head_span = entry.get("head")
+            phrase_span = entry.get("phrase")
+            span = head_span if role == "verb" else (phrase_span or head_span)
+            if (role != "verb" and span is not None and clause.get("from") is not None
+                    and span.get("from") == clause.get("from") and span.get("to") == clause.get("to")):
+                span = head_span or span
             if not span:
                 continue
             # An address is conventionally followed, not preceded, by a behavior command
@@ -1368,6 +1377,12 @@ def build_anchors(clauses, sentence_from, sentence_to, punct_from):
             kind = obj.get("kind")
             out.append(anchor("before-object", clause_id, span["from"], role="object", kind=kind))
             out.append(anchor("after-object", clause_id, span["to"], role="object", kind=kind))
+
+    # Intermediate punctuation (a comma inside the sentence, a semicolon, a colon) is a position
+    # authors demonstrably use — "Herzlich Willkommen, [happy] wie schön, …" — and it need not
+    # coincide with any clause or phrase boundary.
+    for mark in (intermediate_punct or []):
+        out.append(anchor("after-punctuation", None, mark))
 
     if punct_from is not None:
         out.append(anchor("before-final-punct", None, punct_from))
@@ -1548,13 +1563,18 @@ def build_annotation(sentence, idx, lang, base_text, original_text, index_map, u
             s_end = span[1] if s_end is None else max(s_end, span[1])
         sentence_span = chars_to_span(s_start, s_end, original_text, index_map, abs_offset)
 
-    final_punct = None
-    for w in sorted([w for w in words if word_id_value(w) is not None],
-                    key=lambda w: word_id_value(w)):
-        if str(getattr(w, "upos", "") or "") == "PUNCT":
-            final_punct = w
+    ordered_words = sorted([w for w in words if word_id_value(w) is not None],
+                           key=lambda w: word_id_value(w))
+    punct_words = [w for w in ordered_words if str(getattr(w, "upos", "") or "") == "PUNCT"]
+    final_punct = punct_words[-1] if punct_words else None
     punct_span = word_span(sentence, final_punct, abs_offset, index_map, len(original_text)) \
         if final_punct is not None else None
+    # Offsets just *after* each non-final punctuation mark — candidate placement positions.
+    intermediate_punct = []
+    for w in punct_words[:-1] if punct_words else []:
+        span = word_span(sentence, w, abs_offset, index_map, len(original_text))
+        if span is not None:
+            intermediate_punct.append(span["to"])
 
     ann = {
         "id": f"ud-{pick_line(line, idx)}-ann{idx}",
@@ -1576,6 +1596,7 @@ def build_annotation(sentence, idx, lang, base_text, original_text, index_map, u
             sentence_span["from"] if sentence_span else abs_offset,
             sentence_span["to"] if sentence_span else abs_offset,
             punct_span["from"] if punct_span else None,
+            intermediate_punct,
         ),
         "provenance": {
             "analyzedAt": now_iso(),

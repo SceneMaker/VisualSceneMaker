@@ -992,6 +992,34 @@ task analyzeSemantics(type: JavaExec) {
     }
 }
 
+// Extracts the behavior-command placement corpus as JSONL — plan Phase 2.1.
+// Each record carries the whole decision an author faced: every candidate anchor slot (the negative
+// examples) alongside the placements actually made, each resolved to a NEUROGES Function.
+//
+//   ./gradlew extractCorpus -PvsmProject=doc/IntakeInterview -Pout=build/corpus.jsonl -Pannotator=pg
+//
+// Needs the UD service running: ./gradlew :services:semantic-ud:startService
+task extractCorpus(type: JavaExec) {
+    group = 'application'
+    description = 'Extracts the placement corpus to JSONL. -PvsmProject=<dir>[,<dir>…] -Pout=<file> ' +
+            '[-Pannotator=<id>] [-Pscenario=<name>] [-Planguage=de]'
+    mainClass = 'de.dfki.vsm.web.CorpusExtractCli'
+    classpath = sourceSets.main.runtimeClasspath
+    doFirst {
+        if (!project.hasProperty('vsmProject') || !project.hasProperty('out')) {
+            throw new GradleException(
+                    'Missing -PvsmProject=<dir> and/or -Pout=<file.jsonl>. Example:\n' +
+                    '  ./gradlew extractCorpus -PvsmProject=doc/IntakeInterview -Pout=build/corpus.jsonl')
+        }
+        def cliArgs = ["--project=${project.property('vsmProject')}",
+                       "--out=${project.property('out')}"]
+        if (project.hasProperty('annotator')) cliArgs << "--annotator=${project.property('annotator')}"
+        if (project.hasProperty('scenario')) cliArgs << "--scenario=${project.property('scenario')}"
+        if (project.hasProperty('language')) cliArgs << "--language=${project.property('language')}"
+        args = cliArgs
+    }
+}
+
 // Run task to start the editor (SceneMaker4 - web-only)
 task run(type: JavaExec) {
     group = 'application'

@@ -2100,6 +2100,38 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
      * Used primarily in RUNTIME_ONLY mode for single-project loading.
      */
     /**
+     * Plugin id (as used to key the behavior taxonomy) for a plugin implementation class, or
+     * {@code null} if that class declares no plugin-properties.json.
+     *
+     * <p>Needed to classify an authored command: the script records an actor and a command name, but
+     * the taxonomy is keyed by plugin id, and an actor resolves to a plugin only through the project's
+     * agent -> device -> class chain.</p>
+     */
+    /** The {@link RunTimeProject} behind a loaded project id, or {@code null}. For headless tools that
+     *  need the project's own configuration (agents, plugins) alongside the analysis. */
+    public RunTimeProject projectForAnalysis(String pid) {
+        ProjectRef ref = projectStore.get(pid);
+        return ref == null ? null : ref.runtimeProject;
+    }
+
+    public String pluginIdForClassName(String className) {
+        if (className == null || className.isBlank()) {
+            return null;
+        }
+        // The registry is normally filled by start(). Headless tools never start the server, so
+        // without this it stayed empty and every command came back unclassified.
+        if (EXPORTABLE_PROPERTY_PROVIDERS.isEmpty()) {
+            loadExportablePropertyProviders();
+        }
+        ExportablePropertyEntry entry = EXPORTABLE_PROPERTY_PROVIDERS.get(className);
+        if (entry == null || entry.pluginMeta == null) {
+            return null;
+        }
+        String id = entry.pluginMeta.optString("id", "");
+        return id.isBlank() ? null : id;
+    }
+
+    /**
      * Loads a project for <b>analysis only</b> and returns its id, or {@code null} if it cannot be
      * parsed.
      *
@@ -7194,13 +7226,28 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
                             if (i == 0 && !projection.getCommands().isEmpty()) {
                                 JSONArray commands = new JSONArray();
                                 for (UtteranceProjection.CommandPosition command : projection.getCommands()) {
+                                    JSONObject params = new JSONObject();
+                                    if (command.getAction() != null
+                                            && command.getAction().getFeatureList() != null) {
+                                        for (de.dfki.vsm.model.scenescript.ActionFeature feature
+                                                : command.getAction().getFeatureList()) {
+                                            if (feature != null && feature.getKey() != null) {
+                                                // Unquoted: the corpus wants the value, not its script
+                                                // syntax.
+                                                params.put(feature.getKey(),
+                                                        feature.getValNoQuotes() == null
+                                                                ? "" : feature.getValNoQuotes());
+                                            }
+                                        }
+                                    }
                                     commands.put(new JSONObject()
                                             .put("name", command.getName() == null ? "" : command.getName())
                                             .put("actor", command.getActor())
                                             .put("tokenIndex", command.getTokenIndex())
                                             .put("cleanOffset", command.getCleanOffset())
                                             .put("scriptFrom", command.getScriptFrom())
-                                            .put("scriptTo", command.getScriptTo()));
+                                            .put("scriptTo", command.getScriptTo())
+                                            .put("params", params));
                                     commandCount += 1;
                                 }
                                 ann.put("commands", commands);
