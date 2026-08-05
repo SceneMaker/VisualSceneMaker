@@ -952,6 +952,41 @@ shadowJar {
     }
 }
 
+// Headless semantic analysis of one or more projects — the corpus tool's entry point.
+// No browser, no port bound: SemanticAnalyzeCli reuses WebUiServer's project loader and analysis
+// pipeline without starting the server.
+//
+//   ./gradlew analyzeSemantics -PvsmProject=/path/to/ProjectDir
+//   ./gradlew analyzeSemantics -PvsmProject=/a,/b -Ppersist=true -Planguage=en -PdaTr=true
+//
+// The property is deliberately NOT called -Pproject: that name is taken by Gradle's own Project
+// object, so -Pproject= silently resolves to the root project instead of your path.
+//
+// Needs the UD service running for the basic layer:
+//   ./gradlew :services:semantic-ud:startService
+task analyzeSemantics(type: JavaExec) {
+    group = 'application'
+    description = 'Analyses project scripts semantically, headless. -PvsmProject=<dir>[,<dir>…] ' +
+            '[-Ppersist=true] [-PdaTr=true] [-Planguage=de] [-Pdebug=true]'
+    mainClass = 'de.dfki.vsm.web.SemanticAnalyzeCli'
+    classpath = sourceSets.main.runtimeClasspath
+    doFirst {
+        if (!project.hasProperty('vsmProject')) {
+            throw new GradleException(
+                    'Missing -PvsmProject=<projectDir>. Example:\n' +
+                    '  ./gradlew analyzeSemantics -PvsmProject=doc/IntakeInterview\n' +
+                    '(note: -Pproject is reserved by Gradle and cannot be used here)')
+        }
+        def dirs = project.property('vsmProject').toString()
+        def cliArgs = ["--project=${dirs}"]
+        if (project.findProperty('persist')?.toString()?.toLowerCase() == 'true') cliArgs << '--persist'
+        if (project.findProperty('daTr')?.toString()?.toLowerCase() == 'true') cliArgs << '--da-tr'
+        if (project.findProperty('debug')?.toString()?.toLowerCase() == 'true') cliArgs << '--debug'
+        if (project.hasProperty('language')) cliArgs << "--language=${project.property('language')}"
+        args = cliArgs
+    }
+}
+
 // Run task to start the editor (SceneMaker4 - web-only)
 task run(type: JavaExec) {
     group = 'application'

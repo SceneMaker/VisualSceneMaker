@@ -33,24 +33,40 @@ The current semantic workflow supports:
 - UD/Stanza service (`services/semantic-ud/server.py`)
   - endpoint: `POST /analyze`
   - provides grammatical analysis (S/V/O/address + modifiers)
-- Web UI backend (`core/.../WebUiServer.java`)
+- Web UI backend (`core-webserver/.../WebUiServer.java`)
   - exposes project semantic API:
     - `GET /api/v1/projects/{pid}/semantic`
     - `PUT /api/v1/projects/{pid}/semantic`
-    - `POST /api/v1/projects/{pid}/semantic/syntax`
-    - `POST /api/v1/projects/{pid}/semantic/analyze`
+    - `POST /api/v1/projects/{pid}/semantic/syntax` — one sentence, caller-supplied text
+    - `POST /api/v1/projects/{pid}/semantic/analyze` — one text, caller-supplied
+    - `POST /api/v1/projects/{pid}/semantic/analyze-script` — **whole script, server-driven**
   - merges UD and LLM results when needed
+- Headless entry point (`core-webserver/.../SemanticAnalyzeCli.java`, `./gradlew analyzeSemantics`)
+  - analyses one or more projects with no browser and no plugin launch
 - Web UI (`editor/web-ui/src/App.svelte`, `ScriptEditor.svelte`)
   - semantic panel, analysis controls, rendering, debug view
 
 ### 2.2 Data flow (high level)
 
-1. Script is split into utterance sentences (speaker lines only).
-2. For each sentence:
-   - UD call for grammatical layer (if S/V/O enabled).
-   - LLM call for DA/TR (if DA/TR enabled).
-3. Results are merged incrementally and shown in editor.
-4. Semantic data is persisted only on project Save/Autosave.
+Since 2026-08-05 the pipeline is **server-side** (`analyze-script`). Units come from the *parsed*
+`SceneScript`, not from regexes over raw text:
+
+1. Traverse `SceneObject → SceneTurn`, and group each turn's `SceneUttr`s into sentences —
+   consecutive utterances merge until one ends in a sentence-final mark, because the script grammar
+   ends an utterance at *any* punctuation including commas.
+2. Per sentence, build a `UtteranceProjection`: the spoken text with all inline behavior commands
+   removed, plus a bidirectional offset map and each command's gap index.
+3. Send the **clean text** to UD; send it to the LLM for DA/TR if enabled.
+4. Remap returned spans from clean-text coordinates back to script offsets through the projection.
+5. Return one document; persist only when asked (the editor still persists on Save/Autosave).
+
+The browser-side loop it replaced had two defects, both now impossible by construction:
+
+- **Inline commands reached the parser.** The same utterance parsed differently with and without its
+  brackets — fatal for learning where authors place commands, since the label perturbed its own
+  features.
+- **The sentence splitter cut commands in half.** `/[^.!?]+[.!?]+|[^.!?]+$/` split at a parameter's
+  decimal point: `intensity='0.8'` became `…intensity='0.` + `8'] …`.
 
 ## 3. Current UI Capabilities
 

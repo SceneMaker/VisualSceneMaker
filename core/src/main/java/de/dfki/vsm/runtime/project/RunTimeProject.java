@@ -56,6 +56,11 @@ public class RunTimeProject {
     // plugin and any that binds a fixed port (a plugin's own HTTP/WS server) throws a
     // BindException that aborts the WS command with no reply, hanging the client.
     private boolean mPluginsLaunched = false;
+    // Whether a project.xml that carries no uuid gets one written back on load. True for the editor,
+    // where a stable uuid across restarts is the point; false for read-only consumers such as
+    // headless semantic analysis, which must not dirty the projects it reads — a corpus run over
+    // other people's project directories would otherwise leave a modified file in each of them.
+    private boolean mPersistGeneratedUUID = true;
     protected boolean isNewProject = false;
     // The project Path (added PG 11.4.2016);
     private String mProjectPath = "";
@@ -456,6 +461,17 @@ public class RunTimeProject {
     }
 
     //GM
+    /**
+     * Controls whether loading a project.xml without a {@code uuid} writes one back.
+     *
+     * <p>Call with {@code false} <em>before</em> parsing for read-only use such as headless semantic
+     * analysis, so reading a project never modifies it. Default is {@code true}, which is what the
+     * editor wants: a uuid that stays stable across restarts.</p>
+     */
+    public final void setPersistGeneratedUUID(final boolean persist) {
+        mPersistGeneratedUUID = persist;
+    }
+
     public final boolean wasExecuted() {
         Interpreter interp = mInterpreter;
         if (interp != null) {
@@ -490,8 +506,9 @@ public class RunTimeProject {
         }
 
         // If the project.xml did not contain a uuid attribute, persist the auto-generated
-        // one back to the file so it stays stable across restarts.
-        if (!mProjectConfig.isUUIDFromFile() && file.exists() && file.canWrite()) {
+        // one back to the file so it stays stable across restarts — unless this project was loaded
+        // read-only (see mPersistGeneratedUUID).
+        if (mPersistGeneratedUUID && !mProjectConfig.isUUIDFromFile() && file.exists() && file.canWrite()) {
             writeProjectConfig(file.getParentFile());
             mLogger.message("Assigned new project UUID '" + mProjectConfig.getProjectUUID()
                     + "' and saved to '" + file + "'");

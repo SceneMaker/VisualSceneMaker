@@ -2,8 +2,11 @@
 import json
 import os
 import re
+import sys
+import threading
+import time
 from datetime import datetime, timezone
-from http.server import BaseHTTPRequestHandler, HTTPServer
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 import stanza
@@ -14,8 +17,20 @@ PORT = int(os.environ.get("SEMANTIC_UD_PORT", "4061"))
 DEFAULT_LANG = os.environ.get("SEMANTIC_UD_LANG", "de")
 RESOURCES_DIR = os.environ.get("SEMANTIC_UD_RESOURCES_DIR", os.environ.get("STANZA_RESOURCES_DIR", "")).strip()
 AUTO_DOWNLOAD = os.environ.get("SEMANTIC_UD_AUTO_DOWNLOAD", "true").strip().lower() not in ("0", "false", "no")
+# Languages to build at startup rather than on first request, so a missing model is a startup
+# failure instead of a mid-corpus-run surprise. Empty string disables preloading.
+PRELOAD_LANGS = [
+    lang.strip().lower()
+    for lang in os.environ.get("SEMANTIC_UD_PRELOAD", DEFAULT_LANG).split(",")
+    if lang.strip()
+]
 
 _pipelines = {}
+# Stanza pipelines are not safe to call concurrently, so the server is threaded for I/O but each
+# pipeline is serialised behind its own lock: /health and short requests stay responsive during a
+# long parse, and different languages still parse in parallel, without sharing pipeline state.
+_pipeline_locks = {}
+_registry_lock = threading.Lock()
 
 ROLE_CONFIG = {
     "de": {
@@ -128,13 +143,37 @@ def now_iso():
     return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
 
 
-def get_pipeline(lang: str):
+def normalize_lang(lang: str) -> str:
     language = (lang or DEFAULT_LANG or "de").strip().lower()
-    if not language:
-        language = "de"
+    return language or "de"
+
+
+def pipeline_lock(language: str) -> threading.Lock:
+    with _registry_lock:
+        lock = _pipeline_locks.get(language)
+        if lock is None:
+            lock = threading.Lock()
+            _pipeline_locks[language] = lock
+        return lock
+
+
+def get_pipeline(lang: str):
+    language = normalize_lang(lang)
     pipe = _pipelines.get(language)
     if pipe is not None:
         return pipe
+    # Build under the registry lock so two concurrent first-requests for the same language do not
+    # each pay for (and race on) constructing a pipeline.
+    with _registry_lock:
+        pipe = _pipelines.get(language)
+        if pipe is not None:
+            return pipe
+        pipe = build_pipeline(language)
+        _pipelines[language] = pipe
+        return pipe
+
+
+def build_pipeline(language: str):
     kwargs = {
         "lang": language,
         "processors": "tokenize,mwt,pos,lemma,depparse",
@@ -155,8 +194,26 @@ def get_pipeline(lang: str):
         stanza.download(language, processors="tokenize,mwt,pos,lemma,depparse", model_dir=model_dir, verbose=False)
         kwargs["dir"] = model_dir
         pipe = stanza.Pipeline(**kwargs)
-    _pipelines[language] = pipe
     return pipe
+
+
+def preload_pipelines():
+    """Builds the configured pipelines before serving.
+
+    With SEMANTIC_UD_AUTO_DOWNLOAD=false a missing model then fails at startup, which is what a
+    corpus run wants: a clear error before the first sentence rather than an opaque HTTP 500 in the
+    middle of a batch.
+    """
+    for language in PRELOAD_LANGS:
+        started = time.monotonic()
+        try:
+            _pipelines[language] = build_pipeline(language)
+        except Exception as exc:
+            print(f"[semantic-ud] FATAL: cannot load model for '{language}': {exc}", file=sys.stderr)
+            print("[semantic-ud] Set SEMANTIC_UD_RESOURCES_DIR to your stanza_resources directory, "
+                  "or allow downloads with SEMANTIC_UD_AUTO_DOWNLOAD=true.", file=sys.stderr)
+            raise SystemExit(1)
+        print(f"[semantic-ud] loaded '{language}' in {time.monotonic() - started:.1f}s", flush=True)
 
 
 def role_config(lang: str):
@@ -962,7 +1019,11 @@ def analyze(payload):
     base_offset = int(payload.get("baseOffset", 0) or 0)
     include_debug = bool(payload.get("debug", False))
     normalized_text, index_map = preprocess_text(text, lang)
-    doc = get_pipeline(lang)(normalized_text)
+    language = normalize_lang(lang)
+    pipe = get_pipeline(language)
+    # Serialised per language — see the note on _pipeline_locks.
+    with pipeline_lock(language):
+        doc = pipe(normalized_text)
     annotations = []
     debug_sentences = []
     cursor = 0
@@ -995,6 +1056,38 @@ def analyze(payload):
     return result
 
 
+def analyze_batch(payload):
+    """Analyses many sentences in one request.
+
+    A corpus run over a project makes one call per sentence; batching removes that per-sentence HTTP
+    round trip. Each item is analysed independently and a failing item yields an `error` entry rather
+    than failing the whole batch, so one unparseable sentence cannot cost a whole run.
+
+    Request:  {"sentences": [{"text", "language"?, "line"?, "speaker"?, "baseOffset"?}], "language"?, "debug"?}
+    Response: {"version": 2, "count": n, "results": [<same shape as /analyze>, ...]}
+    """
+    sentences = payload.get("sentences")
+    if not isinstance(sentences, list):
+        raise ValueError("'sentences' must be an array")
+    default_lang = payload.get("language", DEFAULT_LANG)
+    include_debug = bool(payload.get("debug", False))
+
+    results = []
+    for idx, item in enumerate(sentences):
+        if not isinstance(item, dict):
+            results.append({"error": "invalid_item", "index": idx})
+            continue
+        request = dict(item)
+        request.setdefault("language", default_lang)
+        if include_debug:
+            request.setdefault("debug", True)
+        try:
+            results.append(analyze(request))
+        except Exception as exc:
+            results.append({"error": "analyze_failed", "index": idx, "message": str(exc)})
+    return {"version": 2, "count": len(results), "results": results}
+
+
 class Handler(BaseHTTPRequestHandler):
     def _json(self, code, payload):
         body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
@@ -1006,20 +1099,32 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         if self.path == "/health":
-            self._json(200, {"status": "ok", "service": "semantic-ud", "port": PORT})
+            self._json(200, {
+                "status": "ok",
+                "service": "semantic-ud",
+                "port": PORT,
+                "loaded": sorted(_pipelines.keys()),
+                "preload": PRELOAD_LANGS,
+                "autoDownload": AUTO_DOWNLOAD,
+                "resourcesDir": RESOURCES_DIR or None,
+            })
             return
         self._json(404, {"error": "not_found"})
 
     def do_POST(self):
-        if self.path != "/analyze":
+        if self.path not in ("/analyze", "/analyze/batch"):
             self._json(404, {"error": "not_found"})
             return
         try:
             length = int(self.headers.get("Content-Length", "0"))
             raw = self.rfile.read(length).decode("utf-8") if length > 0 else "{}"
             payload = json.loads(raw)
-            result = analyze(payload)
-            self._json(200, result)
+            if self.path == "/analyze/batch":
+                self._json(200, analyze_batch(payload))
+            else:
+                self._json(200, analyze(payload))
+        except ValueError as exc:
+            self._json(400, {"error": "bad_request", "message": str(exc)})
         except Exception as exc:
             self._json(500, {"error": "analyze_failed", "message": str(exc)})
 
@@ -1028,9 +1133,21 @@ class Handler(BaseHTTPRequestHandler):
 
 
 def main():
-    server = HTTPServer((HOST, PORT), Handler)
-    print(f"[semantic-ud] listening on http://{HOST}:{PORT}")
-    print("[semantic-ud] endpoint POST /analyze, GET /health")
+    if PRELOAD_LANGS:
+        preload_pipelines()
+    # Threaded: the former single-threaded HTTPServer could not even accept a second connection while
+    # a parse was running, so /health looked dead and concurrent callers timed out on connect.
+    try:
+        server = ThreadingHTTPServer((HOST, PORT), Handler)
+    except OSError as exc:
+        print(f"[semantic-ud] FATAL: cannot bind {HOST}:{PORT}: {exc}", file=sys.stderr)
+        print("[semantic-ud] Another instance is probably already running. Check with "
+              f"`curl -s http://{HOST}:{PORT}/health`, or set SEMANTIC_UD_PORT.", file=sys.stderr)
+        raise SystemExit(1)
+    server.daemon_threads = True
+    print(f"[semantic-ud] listening on http://{HOST}:{PORT}", flush=True)
+    print("[semantic-ud] endpoints: POST /analyze, POST /analyze/batch, GET /health", flush=True)
+    print(f"[semantic-ud] preloaded: {', '.join(PRELOAD_LANGS) if PRELOAD_LANGS else '(none)'}", flush=True)
     server.serve_forever()
 
 

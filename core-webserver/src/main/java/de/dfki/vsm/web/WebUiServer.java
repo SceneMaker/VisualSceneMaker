@@ -23,6 +23,7 @@ import de.dfki.vsm.model.plugin.PluginCommand;
 import de.dfki.vsm.model.scenescript.SceneObject;
 import de.dfki.vsm.model.scenescript.ScriptDiagnostics;
 import de.dfki.vsm.model.scenescript.SceneScript;
+import de.dfki.vsm.model.scenescript.UtteranceProjection;
 import de.dfki.vsm.model.sceneflow.chart.AliasNode;
 import de.dfki.vsm.model.sceneflow.chart.BasicNode;
 import de.dfki.vsm.model.sceneflow.chart.edge.AbstractEdge;
@@ -2080,6 +2081,42 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
      * Loads a project from the filesystem into the project store.
      * Used primarily in RUNTIME_ONLY mode for single-project loading.
      */
+    /**
+     * Loads a project for <b>analysis only</b> and returns its id, or {@code null} if it cannot be
+     * parsed.
+     *
+     * <p>Unlike {@link #loadProject}, this deliberately does <em>not</em> call
+     * {@code RunTimeProject.launch()}, so the project's plugins are never started. That matters for
+     * headless batch work: launching plugins binds their ports (htmlgui-ws on 4041/8080,
+     * charamel-embed on 3040, …), which collides with an editor already running and with the next
+     * project in the batch. Semantic analysis needs only the scene script and the project config,
+     * neither of which requires a launched plugin.</p>
+     */
+    public String loadProjectForAnalysis(String path) {
+        final String normalizedPath = normalizeProjectPath(path);
+        try {
+            RunTimeProject rtp = new RunTimeProject();
+            // Read-only: never write a generated uuid back. A batch over other people's project
+            // directories must not leave a modified project.xml in each of them.
+            rtp.setPersistGeneratedUUID(false);
+            if (!rtp.parse(normalizedPath)) {
+                sLogger.failure("Failed to parse project: " + normalizedPath);
+                return null;
+            }
+            String pid = UUID.randomUUID().toString();
+            String name = rtp.getProjectName() != null
+                    ? rtp.getProjectName() : new File(normalizedPath).getName();
+            ProjectRef ref = new ProjectRef(pid, name, normalizedPath);
+            ref.runtimeProject = rtp;
+            ref.runtimeState = "stopped";
+            projectStore.put(pid, ref);
+            return pid;
+        } catch (Exception exc) {
+            sLogger.failure("Failed to load project for analysis: " + normalizedPath + ": " + exc);
+            return null;
+        }
+    }
+
     public boolean loadProject(String path) {
         final String normalizedPath = normalizeProjectPath(path);
         // Unload any existing project in the store
@@ -2977,6 +3014,7 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         mApp.get(API_PREFIX + "/projects/{pid}/assets/{filename}", this::handleAssetsGet);
         mApp.post(API_PREFIX + "/projects/{pid}/semantic/syntax", this::handleSemanticSyntaxAnalyze);
         mApp.post(API_PREFIX + "/projects/{pid}/semantic/analyze", this::handleSemanticAnalyze);
+        mApp.post(API_PREFIX + "/projects/{pid}/semantic/analyze-script", this::handleSemanticAnalyzeScript);
         mApp.get(API_PREFIX + "/projects/{pid}/sceneflow", this::handleSceneflow);
         mApp.get(API_PREFIX + "/projects/{pid}/export", this::handleProjectExport);
         mApp.get(API_PREFIX + "/projects/{pid}/runtime", this::handleRuntime);
@@ -6907,6 +6945,327 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         } catch (Exception exc) {
             ctx.status(500);
             writeJson(ctx, errorResponse("SEMANTIC_ANALYSIS_FAILED", "Semantic analysis failed: " + exc.getMessage()));
+        }
+    }
+
+    /**
+     * Analyses a whole project script server-side: one request in, one annotation document out.
+     *
+     * <p>This is the pipeline that used to live in the browser (App.svelte's {@code
+     * runSemanticAnalysis}), and moving it here is what makes batch and headless corpus runs possible
+     * at all. It also fixes two defects of the browser version by construction, because units come
+     * from the <em>parsed</em> script rather than from regexes over raw text:</p>
+     *
+     * <ul>
+     *   <li>Inline behavior commands no longer reach the parser — see {@link UtteranceProjection}.
+     *       Spans come back in clean-text coordinates and are remapped to script offsets here.</li>
+     *   <li>A sentence is never split inside a command parameter (the old
+     *       {@code /[^.!?]+[.!?]+|[^.!?]+$/} cut {@code intensity='0.8'} in half).</li>
+     * </ul>
+     *
+     * <p>Body (all optional): {@code text} (analyse an unsaved draft instead of the stored script),
+     * {@code layers}, {@code useLlm}, {@code llmIndex}, {@code systemPrompt}, {@code prompt},
+     * {@code language}, {@code basicProvider}, {@code persist}, {@code debug}.</p>
+     */
+    /** Signals a caller-visible failure of {@link #analyzeScriptSemantics}, with an HTTP-style code. */
+    static final class SemanticAnalysisException extends Exception {
+        final String code;
+        final int status;
+
+        SemanticAnalysisException(int status, String code, String message) {
+            super(message);
+            this.status = status;
+            this.code = code;
+        }
+    }
+
+    private void handleSemanticAnalyzeScript(Context ctx) {
+        try {
+            JSONObject body = ctx.body() == null || ctx.body().isBlank()
+                    ? new JSONObject() : new JSONObject(ctx.body());
+            writeJson(ctx, analyzeScriptSemantics(ctx.pathParam("pid"), body));
+        } catch (SemanticAnalysisException exc) {
+            ctx.status(exc.status);
+            writeJson(ctx, errorResponse(exc.code, exc.getMessage()));
+        } catch (Exception exc) {
+            ctx.status(500);
+            writeJson(ctx, errorResponse("SEMANTIC_ANALYSIS_FAILED",
+                    "Script semantic analysis failed: " + exc.getMessage()));
+        }
+    }
+
+    /**
+     * Analyses a whole project script and returns the annotation document. Public and free of any
+     * HTTP types so a headless corpus run can call it directly — see {@code SemanticAnalyzeCli}.
+     *
+     * @param pid  project id, already open in the project store
+     * @param body the same options object the REST endpoint accepts
+     */
+    public JSONObject analyzeScriptSemantics(String pid, JSONObject body)
+            throws SemanticAnalysisException {
+        ProjectRef ref = projectStore.get(pid);
+        if (ref == null || ref.runtimeProject == null) {
+            throw new SemanticAnalysisException(404, "PROJECT_NOT_FOUND", "Project not found");
+        }
+        ensureScriptLoaded(ref);
+        if (body == null) {
+            body = new JSONObject();
+        }
+
+        {
+            // The editor analyses what is on screen, which may be an unsaved draft. Parsing the
+            // supplied text keeps element offsets consistent with the text the caller means.
+            final String scriptText;
+            final SceneScript script;
+            if (body.has("text")) {
+                scriptText = body.optString("text", "");
+                script = new SceneScript();
+                if (!scriptText.isBlank() && !script.parseTXT(scriptText)) {
+                    throw new SemanticAnalysisException(422, "SCRIPT_PARSE_FAILED",
+                            "The script does not parse, so it cannot be analysed. Fix the reported "
+                                    + "script errors first.");
+                }
+            } else {
+                scriptText = ref.scriptText == null ? "" : ref.scriptText;
+                script = ref.runtimeProject.getSceneScript();
+                if (script == null || (!ref.scriptParseOk && script.getSceneListSize() == 0)) {
+                    throw new SemanticAnalysisException(422, "SCRIPT_PARSE_FAILED",
+                            "The stored script does not parse, so it cannot be analysed.");
+                }
+            }
+
+            JSONObject layers = body.optJSONObject("layers");
+            boolean includeBasic = layers == null || layers.optBoolean("basic", true);
+            boolean includeDa = layers != null && layers.optBoolean("dialogueAct", false);
+            boolean includeTr = layers != null && layers.optBoolean("themeRheme", false);
+            boolean useLlm = body.optBoolean("useLlm", includeDa || includeTr);
+            boolean persist = body.optBoolean("persist", false);
+            boolean debug = body.optBoolean("debug", false);
+            int llmIndex = body.optInt("llmIndex", 0);
+            String systemPrompt = body.optString("systemPrompt", "");
+            String promptTemplate = body.optString("prompt", "");
+            String defaultLanguage = body.optString("language", "de");
+            String basicProvider = body.optString("basicProvider", semanticBasicProvider(ref));
+            boolean udForBasic = includeBasic && !"llm".equalsIgnoreCase(basicProvider);
+
+            JSONObject udLayers = new JSONObject()
+                    .put("basic", true).put("dialogueAct", false).put("themeRheme", false);
+            JSONObject llmLayers = new JSONObject()
+                    .put("basic", includeBasic && "llm".equalsIgnoreCase(basicProvider))
+                    .put("dialogueAct", includeDa)
+                    .put("themeRheme", includeTr);
+
+            int[] lineStarts = lineStartOffsets(scriptText);
+            JSONArray annotations = new JSONArray();
+            JSONArray debugTraces = new JSONArray();
+            JSONArray warnings = new JSONArray();
+            int sentenceCount = 0;
+            int commandCount = 0;
+
+            for (SceneObject scene : script.getSceneList()) {
+                String language = (scene.getLanguage() == null || scene.getLanguage().isBlank())
+                        ? defaultLanguage : scene.getLanguage().trim().toLowerCase();
+                for (SceneTurn turn : scene.getTurnList()) {
+                    String speaker = turn.getSpeaker() == null ? "" : turn.getSpeaker();
+                    for (UtteranceProjection projection : UtteranceProjection.sentencesOf(turn)) {
+                        sentenceCount += 1;
+                        int line = lineOfOffset(lineStarts, projection.getScriptFrom());
+                        String clean = projection.getCleanText();
+
+                        JSONArray udAnns = null;
+                        if (udForBasic) {
+                            // baseOffset 0: spans come back in clean-text coordinates, then get
+                            // remapped here. The projection's map is not affine, so the service
+                            // cannot do this itself.
+                            JSONObject udDoc = analyzeSemanticWithUd(
+                                    ref, clean, udLayers, language, line, speaker, 0, debug);
+                            if (udDoc != null) {
+                                udAnns = udDoc.optJSONArray("annotations");
+                                if (debug && udDoc.optJSONObject("debug") != null) {
+                                    debugTraces.put(new JSONObject()
+                                            .put("line", line)
+                                            .put("sentence", clean)
+                                            .put("language", language)
+                                            .put("trace", udDoc.optJSONObject("debug")));
+                                }
+                            } else {
+                                warnings.put("line " + line + ": UD analysis unavailable");
+                            }
+                        }
+
+                        JSONObject llmAnn = null;
+                        if (useLlm && (includeDa || includeTr || llmLayers.optBoolean("basic"))) {
+                            String prompt = promptTemplate.isBlank() ? "" : promptTemplate
+                                    .replace("{{line}}", String.valueOf(line))
+                                    .replace("{{speaker}}", speaker);
+                            JSONObject llmDoc = analyzeSemanticWithLlm(
+                                    ref, clean, llmLayers, llmIndex, systemPrompt, prompt);
+                            JSONArray llmAnns = llmDoc == null ? null : llmDoc.optJSONArray("annotations");
+                            if (llmAnns != null && llmAnns.length() > 0) {
+                                llmAnn = llmAnns.optJSONObject(0);
+                            } else if (llmDoc == null) {
+                                warnings.put("line " + line + ": LLM analysis unavailable");
+                            }
+                        }
+
+                        int emitted = (udAnns == null || udAnns.length() == 0) ? 1 : udAnns.length();
+                        for (int i = 0; i < emitted; i++) {
+                            JSONObject udAnn = (udAnns == null) ? null : udAnns.optJSONObject(i);
+                            JSONObject ann = new JSONObject();
+                            ann.put("id", "s" + sentenceCount + (emitted > 1 ? ("_" + i) : ""));
+                            ann.put("line", line);
+                            ann.put("speaker", speaker);
+                            ann.put("text", clean);
+                            ann.put("sentence", sentenceCount);
+                            ann.put("scriptFrom", projection.getScriptFrom());
+                            ann.put("scriptTo", projection.getScriptTo());
+
+                            if (udAnn != null) {
+                                JSONObject basic = udAnn.optJSONObject("basic");
+                                if (basic != null) {
+                                    remapSpansDeep(basic, projection);
+                                    ann.put("basic", basic);
+                                }
+                            }
+                            if (llmAnn != null) {
+                                if (includeDa && llmAnn.optJSONObject("dialogueAct") != null) {
+                                    ann.put("dialogueAct", llmAnn.optJSONObject("dialogueAct"));
+                                }
+                                if (includeTr && llmAnn.optJSONObject("themeRheme") != null) {
+                                    ann.put("themeRheme", llmAnn.optJSONObject("themeRheme"));
+                                }
+                            }
+
+                            // Commands belong to the sentence, not to each of several UD splits, so
+                            // they are attached once. `sentence` above lets a consumer regroup.
+                            if (i == 0 && !projection.getCommands().isEmpty()) {
+                                JSONArray commands = new JSONArray();
+                                for (UtteranceProjection.CommandPosition command : projection.getCommands()) {
+                                    commands.put(new JSONObject()
+                                            .put("name", command.getName() == null ? "" : command.getName())
+                                            .put("actor", command.getActor())
+                                            .put("tokenIndex", command.getTokenIndex())
+                                            .put("cleanOffset", command.getCleanOffset())
+                                            .put("scriptFrom", command.getScriptFrom())
+                                            .put("scriptTo", command.getScriptTo()));
+                                    commandCount += 1;
+                                }
+                                ann.put("commands", commands);
+                            }
+
+                            JSONObject provenance = new JSONObject().put("analyzedAt",
+                                    java.time.Instant.now().toString());
+                            JSONObject annLayers = new JSONObject();
+                            if (ann.has("basic")) {
+                                annLayers.put("basic", udForBasic ? "ud" : "llm");
+                            }
+                            if (ann.has("dialogueAct")) {
+                                annLayers.put("dialogueAct", "llm");
+                            }
+                            if (ann.has("themeRheme")) {
+                                annLayers.put("themeRheme", "llm");
+                            }
+                            provenance.put("layers", annLayers);
+                            ann.put("provenance", provenance);
+
+                            annotations.put(ann);
+                        }
+                    }
+                }
+            }
+
+            JSONObject doc = defaultSemanticDocument(ref);
+            doc.put("scriptHash", sha256(scriptText));
+            doc.put("annotations", annotations);
+            JSONObject docProvenance = doc.optJSONObject("provenance");
+            if (docProvenance != null) {
+                docProvenance.put("source", "server-analyze-script");
+                docProvenance.put("service", udForBasic ? "semantic-ud" : "llm");
+                JSONObject docLayers = docProvenance.optJSONObject("layers");
+                if (docLayers != null) {
+                    docLayers.put("basic", includeBasic ? (udForBasic ? "ud" : "llm") : "unknown");
+                    docLayers.put("dialogueAct", includeDa ? "llm" : "unknown");
+                    docLayers.put("themeRheme", includeTr ? "llm" : "unknown");
+                }
+            }
+            JSONObject stats = new JSONObject()
+                    .put("sentences", sentenceCount)
+                    .put("annotations", annotations.length())
+                    .put("commands", commandCount);
+            doc.put("stats", stats);
+            if (warnings.length() > 0) {
+                doc.put("warnings", warnings);
+            }
+            if (debug && debugTraces.length() > 0) {
+                doc.put("debug", new JSONObject().put("sentences", debugTraces));
+            }
+
+            if (persist && !saveSemanticDocument(ref, doc)) {
+                throw new SemanticAnalysisException(500, "SEMANTIC_SAVE_FAILED",
+                        "Failed to save semantic analysis");
+            }
+            return doc;
+        }
+    }
+
+    /** Start offset of every line in {@code text}, for turning a character offset into a line number. */
+    private static int[] lineStartOffsets(String text) {
+        if (text == null || text.isEmpty()) {
+            return new int[]{0};
+        }
+        List<Integer> starts = new ArrayList<>();
+        starts.add(0);
+        for (int i = 0; i < text.length(); i++) {
+            if (text.charAt(i) == '\n') {
+                starts.add(i + 1);
+            }
+        }
+        int[] out = new int[starts.size()];
+        for (int i = 0; i < out.length; i++) {
+            out[i] = starts.get(i);
+        }
+        return out;
+    }
+
+    /** 1-based line number containing {@code offset}. */
+    private static int lineOfOffset(int[] lineStarts, int offset) {
+        int low = 0;
+        int high = lineStarts.length - 1;
+        while (low < high) {
+            int mid = (low + high + 1) >>> 1;
+            if (lineStarts[mid] <= offset) {
+                low = mid;
+            } else {
+                high = mid - 1;
+            }
+        }
+        return low + 1;
+    }
+
+    /**
+     * Rewrites every {@code {from, to}} pair in a semantic payload from clean-text coordinates to
+     * script offsets. Walks the whole tree because spans appear at several depths — role spans,
+     * modifier arrays, address-phrase parts — and the set grows as the schema does.
+     */
+    private static void remapSpansDeep(Object node, UtteranceProjection projection) {
+        if (node instanceof JSONObject) {
+            JSONObject obj = (JSONObject) node;
+            Object from = obj.opt("from");
+            Object to = obj.opt("to");
+            if (from instanceof Number && to instanceof Number) {
+                int[] span = projection.toScriptSpan(
+                        ((Number) from).intValue(), ((Number) to).intValue());
+                obj.put("from", span[0]);
+                obj.put("to", span[1]);
+            }
+            for (String key : new ArrayList<>(obj.keySet())) {
+                remapSpansDeep(obj.opt(key), projection);
+            }
+        } else if (node instanceof JSONArray) {
+            JSONArray arr = (JSONArray) node;
+            for (int i = 0; i < arr.length(); i++) {
+                remapSpansDeep(arr.opt(i), projection);
+            }
         }
     }
 
