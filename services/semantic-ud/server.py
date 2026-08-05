@@ -482,8 +482,26 @@ def select_address(words, cfg):
             continue
         if dep not in ("nsubj", "appos", "dislocated", "parataxis"):
             continue
+        # An addressee pronoun is second person. Without this the comma fallback fired on any
+        # post-comma nsubj pronoun, so "Ja, das ist gut!" reported `das` as the addressee while also
+        # reporting it as the subject. Names and nouns still pass — the guard only rejects pronouns
+        # that cannot denote the person spoken to.
+        if upos == "PRON" and not is_second_person_pronoun(w):
+            continue
         return w
     return None
+
+
+# Unambiguous second-person forms only. German formal "Sie"/"Ihnen" is deliberately absent: it is
+# syncretic with third-person plural and Stanza tags it Person=3, so admitting it would reintroduce
+# exactly the false positives this guard exists to stop.
+SECOND_PERSON_PRONOUNS = {"du", "dich", "dir", "ihr", "euch", "you", "yourself", "yourselves"}
+
+
+def is_second_person_pronoun(word):
+    if "Person=2" in str(getattr(word, "feats", "") or ""):
+        return True
+    return str(getattr(word, "text", "") or "").strip().lower() in SECOND_PERSON_PRONOUNS
 
 
 def select_predicate(words):
@@ -496,6 +514,16 @@ def select_predicate(words):
         upos = str(getattr(w, "upos", "") or "")
         if upos in ("NOUN", "PROPN", "ADJ"):
             return w
+    # Verbless predicative fragment — "Sehr gut!", "Klasse!". There is no copula to find because
+    # there is no verb at all, so the loop above returns nothing and `basic` used to come back empty
+    # for the single most common shape of positive feedback. The clause layer already reports these
+    # as a predicate; this makes the flat layer agree, which is what the editor draws from.
+    if not any(str(getattr(w, "upos", "") or "") in ("VERB", "AUX") for w in words):
+        for w in words:
+            if str(getattr(w, "deprel", "") or "") != "root":
+                continue
+            if str(getattr(w, "upos", "") or "") in ("NOUN", "PROPN", "ADJ"):
+                return w
     return None
 
 
@@ -515,8 +543,44 @@ def select_role_modifiers(words, role_word):
         if dep.startswith("amod"):
             out.append((w, "adjective"))
             continue
-        if dep == "advmod" and upos in ("ADV", "ADJ"):
-            out.append((w, "adverb"))
+        # `dep` is UD's unspecified relation. Stanza labels "Super gemacht" advmod but "Toll gemacht"
+        # dep — same word class, same function, different relation — so filtering on advmod alone
+        # marked one and dropped the other. Restricted to ADJ/ADV children, `dep` is unambiguous here.
+        if dep in ("advmod", "dep") and upos in ("ADV", "ADJ"):
+            # Labelled by word class, not by slot: "Super" in "Super gemacht" is an adjective used
+            # adverbially, and calling it an adverb hides the adjective the author actually wrote.
+            # The adverbial function is recorded separately as `usage` in modifier_spans().
+            out.append((w, "adjective" if upos == "ADJ" else "adverb"))
+    out.extend(degree_modifiers(words, out))
+    return out
+
+
+def degree_modifiers(words, selected):
+    """Adverbs modifying an already-selected modifier — the "sehr" of "sehr gut gemacht".
+
+    UD attaches the degree adverb to the adjective, not to the role head, so a direct-children scan
+    finds "gut" and stops. Without this, half of a two-word modifier goes unmarked.
+    """
+    out = []
+    seen = {word_id_value(w) for (w, _kind) in selected}
+    for (word, _kind) in list(selected):
+        if str(getattr(word, "upos", "") or "") not in ("ADJ", "ADV"):
+            continue
+        parent_id = word_id_value(word)
+        if parent_id is None:
+            continue
+        for child in words:
+            if getattr(child, "head", None) != parent_id:
+                continue
+            if str(getattr(child, "deprel", "") or "") not in ("advmod", "dep"):
+                continue
+            if str(getattr(child, "upos", "") or "") not in ("ADV", "ADJ"):
+                continue
+            child_id = word_id_value(child)
+            if child_id in seen:
+                continue
+            seen.add(child_id)
+            out.append((child, "adverb"))
     return out
 
 
@@ -531,43 +595,6 @@ def has_copula_child(words, head_word):
         if dep in ("cop", "aux", "aux:pass"):
             return True
     return False
-
-
-def add_predicative_modifiers(words, role_word, modifiers):
-    if role_word is None:
-        return modifiers
-    role_id = word_id_value(role_word)
-    if role_id is None:
-        return modifiers
-    out = list(modifiers)
-    seen = {(word_id_value(w), kind) for (w, kind) in out}
-    for w in words:
-        dep = str(getattr(w, "deprel", "") or "")
-        upos = str(getattr(w, "upos", "") or "")
-        if dep != "root" or upos != "ADJ":
-            continue
-        # Copular predicate adjective (e.g. "Gesicht ist billig").
-        if not has_copula_child(words, w):
-            continue
-        # Ensure subject links to the same predicate head.
-        if getattr(role_word, "head", None) != word_id_value(w):
-            continue
-        key = (word_id_value(w), "adjective")
-        if key not in seen:
-            seen.add(key)
-            out.append((w, "adjective"))
-        pred_id = word_id_value(w)
-        for child in words:
-            if getattr(child, "head", None) != pred_id:
-                continue
-            cdep = str(getattr(child, "deprel", "") or "")
-            cupos = str(getattr(child, "upos", "") or "")
-            if cdep == "advmod" and cupos in ("ADV", "ADJ"):
-                ckey = (word_id_value(child), "adverb")
-                if ckey not in seen:
-                    seen.add(ckey)
-                    out.append((child, "adverb"))
-    return out
 
 
 def word_by_id(words, target_id):
@@ -640,9 +667,12 @@ def build_address_phrase(sentence, words, addr_word, base_offset, index_map, ori
 def modifier_spans(sentence, words, role_word, role_name, base_offset, index_map, original_text_len):
     spans = []
     seen = set()
+    # No predicative special case for the subject any more. add_predicative_modifiers() attached the
+    # copular root adjective to the *subject* ("das ist gut" -> gut as a modifier of das), but
+    # select_predicate() returns that very same word as the `predicate` role, so every such adjective
+    # was reported twice and drawn twice in the editor, in two different role colours. Its adverbial
+    # children are already collected by the predicate's own modifier pass.
     role_modifiers = select_role_modifiers(words, role_word)
-    if role_name == "subject":
-        role_modifiers = add_predicative_modifiers(words, role_word, role_modifiers)
     for modifier_word, pos_kind in role_modifiers:
         span = word_span(sentence, modifier_word, base_offset, index_map, original_text_len)
         if span is None:
@@ -654,6 +684,11 @@ def modifier_spans(sentence, words, role_word, role_name, base_offset, index_map
         mod = dict(span)
         mod["role"] = role_name
         mod["pos"] = pos_kind
+        # How the word is used, kept separate from what it is: "Super" is pos=adjective,
+        # usage=adverbial. Consumers that only care about the word class can ignore this.
+        mod["usage"] = ("adverbial"
+                        if str(getattr(modifier_word, "deprel", "") or "") in ("advmod", "dep")
+                        else "attributive")
         mod["confidence"] = 0.78
         spans.append(mod)
     return spans
@@ -1447,6 +1482,12 @@ def build_annotation(sentence, idx, lang, base_text, original_text, index_map, u
     subj_word = select_subject(words, cfg)
     verb_word = select_verb(words, cfg)
     obj_word = select_object(words, cfg)
+    if obj_word is not None and verb_word is not None \
+            and word_id_value(obj_word) == word_id_value(verb_word):
+        # "schön dass Du da bist" resolved the object to `bist`, the verb itself. That is never a
+        # real object, and because both roles then shared one head every modifier of the verb was
+        # also emitted as a modifier of the object — the same word drawn twice in two colours.
+        obj_word = None
     addr_word = select_address(words, cfg)
     pred_word = select_predicate(words)
 
@@ -1480,6 +1521,13 @@ def build_annotation(sentence, idx, lang, base_text, original_text, index_map, u
     )
     subject_modifiers = modifier_spans(
         sentence, words, subj_word, "subject", abs_offset, index_map, len(original_text)
+    )
+    # Adverbials of the verb itself. Missing this dropped the whole modifier of short evaluative
+    # utterances — "Super gemacht!", "Toll gemacht!" — where UD tags the adjective ADJD/advmod on the
+    # participle. Those are exactly the turns that carry the most behavior commands, so the clause
+    # looked structureless where it is in fact densest.
+    verb_modifiers = modifier_spans(
+        sentence, words, verb_word, "verb", abs_offset, index_map, len(original_text)
     )
     object_modifiers = modifier_spans(
         sentence, words, obj_word, "object", abs_offset, index_map, len(original_text)
@@ -1525,6 +1573,8 @@ def build_annotation(sentence, idx, lang, base_text, original_text, index_map, u
         basic["addressPhrase"] = address_phrase
     if subject_modifiers:
         basic["subjectModifiers"] = subject_modifiers
+    if verb_modifiers:
+        basic["verbModifiers"] = verb_modifiers
     if object_modifiers:
         basic["objectModifiers"] = object_modifiers
     if address_modifiers:

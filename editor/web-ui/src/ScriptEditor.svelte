@@ -82,6 +82,24 @@
       style: "background: rgba(132,98,42,0.16); border-bottom: 3px solid rgba(132,98,42,0.95); border-radius: 2px;"
     }
   });
+  const semanticVerbAdjMark = Decoration.mark({
+    class: "cm-semantic-verb-adjective",
+    attributes: {
+      style: "background: rgba(183,86,28,0.10); border-bottom: 2px dashed rgba(183,86,28,0.95); border-radius: 2px;"
+    }
+  });
+  const semanticVerbAdvMark = Decoration.mark({
+    class: "cm-semantic-verb-adverb",
+    attributes: {
+      style: "background: rgba(183,86,28,0.08); border-bottom: 2px dotted rgba(183,86,28,0.95); border-radius: 2px;"
+    }
+  });
+  const semanticVerbCompMark = Decoration.mark({
+    class: "cm-semantic-verb-comparison",
+    attributes: {
+      style: "background: rgba(183,86,28,0.08); border-bottom: 3px double rgba(183,86,28,0.95); border-radius: 2px;"
+    }
+  });
   const semanticSubjectAdjMark = Decoration.mark({
     class: "cm-semantic-subject-adjective",
     attributes: {
@@ -961,6 +979,9 @@
       else if (kind === "predicate") deco = semanticPredicateMark;
       else if (kind === "address") deco = semanticAddressMark;
       else if (kind === "address-head") deco = semanticAddressHeadMark;
+      else if (kind === "verb-adjective") deco = semanticVerbAdjMark;
+      else if (kind === "verb-adverb") deco = semanticVerbAdvMark;
+      else if (kind === "verb-comparison") deco = semanticVerbCompMark;
       else if (kind === "subject-adjective") deco = semanticSubjectAdjMark;
       else if (kind === "subject-adverb") deco = semanticSubjectAdvMark;
       else if (kind === "subject-comparison") deco = semanticSubjectCompMark;

@@ -1610,11 +1610,64 @@ a.export-link {
 }
 
 .semantic-legend {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.15rem;
+  margin-left: auto;
+  max-width: 100%;
+}
+
+.semantic-legend-row {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
   flex-wrap: wrap;
-  margin-left: auto;
+}
+
+/* The row label ("Roles", "Modifiers", …) is fixed-width so the swatches line up in a column. */
+.semantic-legend-row > .semantic-legend-title {
+  min-width: 4.6rem;
+}
+
+/* Line-style keys for the modifier marks: same three borders the editor draws, shown neutral grey
+   here because in the editor they take the colour of whichever role they modify. */
+.semantic-legend-line {
+  width: 16px;
+  height: 0;
+  display: inline-block;
+  border-bottom-width: 2px;
+  border-bottom-color: rgba(90, 90, 100, 0.95);
+}
+
+.semantic-legend-line.dashed {
+  border-bottom-style: dashed;
+}
+
+.semantic-legend-line.dotted {
+  border-bottom-style: dotted;
+}
+
+.semantic-legend-line.double {
+  border-bottom-width: 3px;
+  border-bottom-style: double;
+}
+
+/* Clause bracket: the pair of vertical rules the editor puts at a clause's edges. */
+.semantic-legend-bracket {
+  width: 10px;
+  height: 11px;
+  display: inline-block;
+  border-left: 2px solid rgba(120, 120, 140, 0.75);
+  border-right: 2px solid rgba(120, 120, 140, 0.75);
+}
+
+/* Anchor: a single dotted tick at a candidate command position. */
+.semantic-legend-tick {
+  width: 0;
+  height: 11px;
+  display: inline-block;
+  border-left: 2px dotted rgba(28, 110, 164, 0.85);
 }
 
 .semantic-legend-title {
@@ -1673,6 +1726,23 @@ a.export-link {
 
 .semantic-legend-swatch.address {
   background: rgba(132, 98, 42, 0.35);
+}
+
+/* Object kinds and the v3 phrase wash — same colours the editor decorations use. */
+.semantic-legend-swatch.object-direct {
+  background: rgba(70, 132, 54, 0.35);
+}
+
+.semantic-legend-swatch.object-indirect {
+  background: rgba(150, 110, 30, 0.35);
+}
+
+.semantic-legend-swatch.object-prep {
+  background: rgba(120, 80, 150, 0.35);
+}
+
+.semantic-legend-swatch.phrase {
+  background: rgba(70, 132, 54, 0.14);
 }
 
 .semantic-debug-toggle {
@@ -2144,6 +2214,9 @@ a.export-link {
 .script-editor .cm-semantic-subject-adjective,
 .script-editor .cm-semantic-subject-adverb,
 .script-editor .cm-semantic-subject-comparison,
+.script-editor .cm-semantic-verb-adjective,
+.script-editor .cm-semantic-verb-adverb,
+.script-editor .cm-semantic-verb-comparison,
 .script-editor .cm-semantic-object-adjective,
 .script-editor .cm-semantic-object-adverb,
 .script-editor .cm-semantic-object-comparison,

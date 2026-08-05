@@ -77,12 +77,49 @@ One per sentence (see *Sentence units* below).
 `text` is the **clean text**: the utterance with all inline behavior commands removed. That is what
 the parser saw, and every offset below is a script offset remapped back from it.
 
-### `basic` — unchanged from v2
+### `basic` — v2 shape, two additive changes
 
 Flat, one role set per sentence: `subject`, `verb`, `object`, `predicate`, `address`,
 `addressPhrase`, and the `*Modifiers` arrays. Head-token spans only, one object only. Retained
 verbatim so existing consumers and renderers keep working; **prefer `clauses` for new work**, since
 `basic` mixes roles across clauses and reports only the first object.
+
+Two additions, both backward compatible (new key, new field — nothing renamed or removed):
+
+**`verbModifiers`.** Modifiers used to be collected for `subject`, `object`, `address` and
+`predicate` only, so an adverbial of the verb was dropped entirely. That silently erased the entire
+content of the shortest evaluative utterances — `Super gemacht!`, `Toll gemacht!` — where UD puts the
+adjective on the participle and the verb is the only other word. Those are precisely the turns that
+carry the most behavior commands, so the clause read as structureless exactly where it is densest.
+
+**`usage` on every modifier span**, `"adverbial"` or `"attributive"`, beside the existing `pos`. The
+two are deliberately separate: `pos` is the word class, `usage` is the slot it fills. `Super` in
+`Super gemacht` is `pos: "adjective"`, `usage: "adverbial"` — German ADJD. Labelling such a word
+`adverb`, as the code previously would have, hides the adjective the author actually wrote.
+
+Three mis-attributions in `basic` were fixed at the same time:
+
+| Input | Was | Now |
+|---|---|---|
+| `Ja, das ist gut!` | `gut` reported as both `predicate` **and** `subjectModifiers` | `predicate` only |
+| `Ja, das ist gut!` | `address: das`, which is the subject | no address |
+| `Hallo Bob, schön dass Du da bist.` | `object: bist` — the verb itself, so every verb modifier was re-emitted as an object modifier | no object |
+
+The first came from a predicative special case that attached the copular root adjective to the
+subject; `select_predicate()` already returns that same word, so it was always a duplicate, drawn
+twice in two different role colours. The second came from a comma fallback that accepted any
+post-comma `nsubj` pronoun; it now requires a second-person pronoun, since an addressee cannot be
+`das`. Names and nouns still pass.
+
+Also, `predicate` is now reported for **verbless predicative fragments** (`Sehr gut!`, `Klasse!`).
+There is no copula in these, so the copula-driven lookup found nothing and `basic` came back empty
+for the most common shape of positive feedback — while `clauses` reported a predicate, leaving the
+two layers disagreeing.
+
+Known upstream limitation, not a defect here: in `Das hast Du sehr gut gemacht.` Stanza assigns
+`Das`=`nsubj` and `Du`=`obj`, which is semantically reversed for this fronted-object order. The
+extraction faithfully mirrors the parse. Tracked as an expected-fail eval case (`de-modverb-03`),
+which asserts the correct reading and is expected to fail until the parser improves.
 
 ### `clauses` — new in v3
 

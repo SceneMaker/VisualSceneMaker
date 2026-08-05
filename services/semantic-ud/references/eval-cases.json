@@ -283,5 +283,76 @@
       }
     ],
     "expectedNoAddress": true
+  },
+  {
+    "id": "de-modverb-01",
+    "language": "de",
+    "text": "Super gemacht!",
+    "expected": {
+      "verb": "gemacht",
+      "verbModifiers": [
+        "Super"
+      ]
+    },
+    "note": "ADJ/ADJD advmod on the participle. The adverbially-used adjective is the whole content of the utterance."
+  },
+  {
+    "id": "de-modverb-02",
+    "language": "de",
+    "text": "Toll gemacht!",
+    "expected": {
+      "verb": "gemacht",
+      "verbModifiers": [
+        "Toll"
+      ]
+    },
+    "note": "Same shape as de-modverb-01 but Stanza labels it `dep`, not `advmod` — treebank robustness."
+  },
+  {
+    "id": "de-modverb-03",
+    "language": "de",
+    "text": "Das hast Du sehr gut gemacht.",
+    "expected": {
+      "verb": "gemacht",
+      "verbModifiers": [
+        "sehr",
+        "gut"
+      ]
+    },
+    "knownWeak": true,
+    "note": "Degree adverb nests under the adjective, so both words must be marked. Roles are knownWeak: Stanza assigns Das=nsubj and Du=obj, which is semantically reversed for this fronted-object order."
+  },
+  {
+    "id": "de-predfrag-01",
+    "language": "de",
+    "text": "Sehr gut!",
+    "expected": {
+      "predicate": "gut",
+      "predicateModifiers": [
+        "Sehr"
+      ]
+    },
+    "note": "Verbless predicative fragment: no copula exists, so the predicate has to be taken from the root."
+  },
+  {
+    "id": "de-predfrag-02",
+    "language": "de",
+    "text": "Klasse!",
+    "expected": {
+      "predicate": "Klasse"
+    },
+    "note": "One-word positive feedback. Common in feedback scenes and previously unannotated."
+  },
+  {
+    "id": "de-noaddr-01",
+    "language": "de",
+    "text": "Ja, das ist gut!",
+    "expected": {
+      "subject": "das",
+      "verb": "ist",
+      "predicate": "gut"
+    },
+    "expectedNoAddress": true,
+    "note": "`das` is the subject, not an addressee. The comma fallback used to claim it, and the predicate adjective used to be reported twice — once as predicate, once as a subject modifier."
   }
 ]

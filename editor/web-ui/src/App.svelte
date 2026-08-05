@@ -2145,6 +2145,7 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
     const addressAliases = ["address", "vocative", "voc", "addressee"];
     const addressPhraseAliases = ["addressPhrase", "address_phrase"];
     const subjectModifiersAliases = ["subjectModifiers", "subject_modifiers", "subjectMods"];
+    const verbModifiersAliases = ["verbModifiers", "verb_modifiers", "verbMods"];
     const objectModifiersAliases = ["objectModifiers", "object_modifiers", "objectMods"];
     const predicateModifiersAliases = ["predicateModifiers", "predicate_modifiers", "predicateMods"];
     const addressModifiersAliases = ["addressModifiers", "address_modifiers", "addressMods"];
@@ -2158,6 +2159,7 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
         address: semanticRoleFromArray(basic, addressAliases),
         addressHead: null,
         subjectModifiers: [],
+        verbModifiers: [],
         objectModifiers: [],
         predicateModifiers: [],
         addressModifiers: []
@@ -2178,6 +2180,7 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
         address: semanticGetByAliases(basic, addressAliases) || phraseAnchor,
         addressHead: phraseHead,
         subjectModifiers: semanticArrayByAliases(basic, subjectModifiersAliases),
+        verbModifiers: semanticArrayByAliases(basic, verbModifiersAliases),
         objectModifiers: semanticArrayByAliases(basic, objectModifiersAliases),
         predicateModifiers: semanticArrayByAliases(basic, predicateModifiersAliases),
         addressModifiers: [...phraseModifiers, ...explicitAddressModifiers]
@@ -2191,6 +2194,7 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
       address: null,
       addressHead: null,
       subjectModifiers: [],
+      verbModifiers: [],
       objectModifiers: [],
       predicateModifiers: [],
       addressModifiers: []
@@ -2451,6 +2455,7 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
         );
         const modifierGroups = [
           { role: "subject", spans: basic.subjectModifiers || [] },
+          { role: "verb", spans: basic.verbModifiers || [] },
           { role: "object", spans: basic.objectModifiers || [] },
           { role: "predicate", spans: basic.predicateModifiers || [] },
           { role: "address", spans: basic.addressModifiers || [] }
@@ -17914,13 +17919,38 @@ Sentence:
                   <span class="muted semantic-run-status">{semanticStatus}</span>
                 {/if}
                 <div class="semantic-legend">
-                  <span class="semantic-legend-title">Legend</span>
-                  <span class="semantic-legend-item"><span class="semantic-legend-swatch subject"></span>Subject</span>
-                  <span class="semantic-legend-item"><span class="semantic-legend-swatch verb"></span>Verb</span>
-                  <span class="semantic-legend-item"><span class="semantic-legend-swatch object"></span>Object</span>
-                  <span class="semantic-legend-item"><span class="semantic-legend-swatch predicate"></span>Predicate</span>
-                  <span class="semantic-legend-item"><span class="semantic-legend-swatch address"></span>Address</span>
-                  <span class="semantic-legend-note">Address head solid, Adj dashed, Adv dotted, Comp double (same role color)</span>
+                  <div class="semantic-legend-row">
+                    <span class="semantic-legend-title">Roles</span>
+                    <span class="semantic-legend-item"><span class="semantic-legend-swatch subject"></span>Subject</span>
+                    <span class="semantic-legend-item"><span class="semantic-legend-swatch verb"></span>Verb</span>
+                    <span class="semantic-legend-item"><span class="semantic-legend-swatch object"></span>Object</span>
+                    <span class="semantic-legend-item"><span class="semantic-legend-swatch predicate"></span>Predicate</span>
+                    <span class="semantic-legend-item"><span class="semantic-legend-swatch address"></span>Address</span>
+                    <span class="semantic-legend-note">solid underline = role head</span>
+                  </div>
+                  <div class="semantic-legend-row">
+                    <span class="semantic-legend-title">Modifiers</span>
+                    <span class="semantic-legend-item"><span class="semantic-legend-line dashed"></span>Adjective</span>
+                    <span class="semantic-legend-item"><span class="semantic-legend-line dotted"></span>Adverb</span>
+                    <span class="semantic-legend-item"><span class="semantic-legend-line double"></span>Comparison</span>
+                    <span class="semantic-legend-note">in the colour of the role they modify, verb included &mdash; an adjective used
+                      adverbially ("<em>Super</em> gemacht") stays dashed, because it is still an adjective</span>
+                  </div>
+                  <div class="semantic-legend-row">
+                    <span class="semantic-legend-title">Objects</span>
+                    <span class="semantic-legend-item"><span class="semantic-legend-swatch object-direct"></span>Direct</span>
+                    <span class="semantic-legend-item"><span class="semantic-legend-swatch object-indirect"></span>Indirect</span>
+                    <span class="semantic-legend-item"><span class="semantic-legend-swatch object-prep"></span>Prepositional</span>
+                    <span class="semantic-legend-note">one clause may carry several</span>
+                  </div>
+                  <div class="semantic-legend-row">
+                    <span class="semantic-legend-title">Structure</span>
+                    <span class="semantic-legend-item"><span class="semantic-legend-bracket"></span>Clause</span>
+                    <span class="semantic-legend-item"><span class="semantic-legend-swatch phrase"></span>Phrase</span>
+                    <span class="semantic-legend-item"><span class="semantic-legend-tick"></span>Anchor</span>
+                    <span class="semantic-legend-note">clause brackets appear only when a sentence has more than one clause;
+                      anchors mark the positions where a behavior command can sit</span>
+                  </div>
                 </div>
               </div>
               {#if semanticError}

@@ -127,6 +127,26 @@ def evaluate_case(case):
         structural += clause_diffs(clause_summary(predicted), case["expectedClauses"])
     if isinstance(case.get("expectedAnchorSlots"), list):
         structural += anchor_diffs(predicted, case["expectedAnchorSlots"])
+    # ROLES covers only subject/verb/object for the historical precision/recall table. A case may
+    # still assert predicate or address, so check those here rather than letting them pass silently.
+    for role in ("predicate", "address"):
+        if role not in expected:
+            continue
+        got = norm_text(((predicted.get("basic") or {}).get(role) or {}).get("text", ""))
+        want = norm_text(expected[role])
+        if got != want:
+            structural.append(f"{role}: expected '{want}', got '{got}'")
+    # Modifier expectations, e.g. {"verbModifiers": ["Super"]}. Compared as sets of surface forms:
+    # token order holds in practice but is not part of the contract worth asserting.
+    for key in ("subjectModifiers", "verbModifiers", "objectModifiers",
+                "predicateModifiers", "addressModifiers"):
+        if not isinstance(expected.get(key), list):
+            continue
+        got = sorted(norm_text(m.get("text", ""))
+                     for m in ((predicted.get("basic") or {}).get(key) or []))
+        want = sorted(norm_text(t) for t in expected[key])
+        if got != want:
+            structural.append(f"{key}: expected {want}, got {got}")
     if case.get("expectedNoAddress"):
         addr = ((predicted.get("basic") or {}).get("address") or {}).get("text", "")
         if norm_text(addr):
