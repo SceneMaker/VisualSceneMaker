@@ -67,6 +67,20 @@ surfacing as an opaque HTTP 500 in the middle of a batch:
 `GET /health` reports the effective configuration and which pipelines are actually loaded, so an
 orchestrator can verify the contract instead of assuming it.
 
+### Preload the package your callers request
+
+`SEMANTIC_UD_PRELOAD` builds pipelines for the **configured** package. If callers request a different
+one per request (the product requests the transformer), that pipeline is built lazily on first use —
+about 6 s — which can exceed the client's timeout and make the first sentence of a run come back with
+no structure. For corpus runs, start the service with the package the analysis will ask for:
+
+```bash
+SEMANTIC_UD_PACKAGE=de:combined_german-nlp-electra ./gradlew :services:semantic-ud:startService
+```
+
+`extractCorpus` fails with an explicit warning if any record came back structureless, rather than
+writing a silently incomplete corpus.
+
 ### Concurrency
 
 The server is a `ThreadingHTTPServer`, but Stanza pipelines are **not** safe to call concurrently, so

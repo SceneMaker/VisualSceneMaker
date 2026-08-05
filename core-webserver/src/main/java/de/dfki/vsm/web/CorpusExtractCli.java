@@ -131,6 +131,7 @@ public final class CorpusExtractCli {
         int placements = 0;
         int unresolvedPlugin = 0;
         int unmatchedAnchor = 0;
+        int noStructure = 0;
         int failed = 0;
 
         try (BufferedWriter writer = Files.newBufferedWriter(Path.of(out), StandardCharsets.UTF_8,
@@ -189,6 +190,16 @@ public final class CorpusExtractCli {
                         if (anchors != null) {
                             record.put("anchors", anchors);
                         }
+                        // A record with no anchor inventory has no negatives and no slot for any
+                        // placement, so it is useless for learning and actively misleading in the
+                        // stats. Seen for real: the first request of a run pays the parser's pipeline
+                        // build (~6s for the transformer) and can exceed the UD client timeout, so the
+                        // first sentence came back structureless and silently entered the corpus.
+                        if (anchors == null || anchors.isEmpty()) {
+                            noStructure += 1;
+                            System.err.printf("   WARNING line %d: no structure returned for %s%n",
+                                    ann.optInt("line", 0), ann.optString("text", ""));
+                        }
 
                         JSONArray placementsJson = new JSONArray();
                         JSONArray commands = ann.optJSONArray("commands");
@@ -243,7 +254,16 @@ public final class CorpusExtractCli {
             System.out.printf("  %d placement(s) sit at no structural anchor — inspect these%n",
                     unmatchedAnchor);
         }
-        System.exit(failed == 0 ? 0 : 2);
+        if (noStructure > 0) {
+            System.out.printf("  %d record(s) carry NO structure at all — the corpus is incomplete.%n",
+                    noStructure);
+            System.out.println("  Usually the UD service was still building its parser pipeline. Start it");
+            System.out.println("  with the package the analysis requests so preloading covers it:");
+            System.out.println("    SEMANTIC_UD_PACKAGE=de:combined_german-nlp-electra "
+                    + "./gradlew :services:semantic-ud:startService");
+            System.out.println("  then re-run. Do not use a corpus produced with this warning.");
+        }
+        System.exit(failed == 0 && noStructure == 0 ? 0 : 2);
     }
 
     /**
@@ -274,9 +294,17 @@ public final class CorpusExtractCli {
         return out;
     }
 
-    /** Plugin ids configured in the project, in declaration order. */
+    /**
+     * Synthetic provider for commands the VSM runtime handles itself. `pause` belongs to no plugin —
+     * it is pure timing, never dispatched to an executor — but authors write it inline constantly, so
+     * it must be resolvable or every pause lands in the corpus unclassified.
+     */
+    private static final String RUNTIME_PROVIDER = "runtime";
+
+    /** Plugin ids available to a project: its configured plugins, plus the runtime's own built-ins. */
     private static List<String> projectPluginIds(WebUiServer server, RunTimeProject project) {
         List<String> out = new ArrayList<>();
+        out.add(RUNTIME_PROVIDER);
         if (project == null || project.getProjectConfig() == null) {
             return out;
         }

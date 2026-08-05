@@ -203,6 +203,8 @@
       "note": "Scene/environment effects (backdrop, camera). Not nonverbal behavior at all." },
     { "name": "control",      "bodyPart": null,          "inNeurogesScope": false,
       "note": "Plugin/server control commands." },
+    { "name": "timing",       "bodyPart": null,          "inNeurogesScope": false,
+      "note": "Pure timing, no movement and no target device. Outside NEUROGES — which codes body movement — yet placed relative to speech structure, so still a placement candidate." },
     { "name": "unknown",      "bodyPart": null,          "inNeurogesScope": null,
       "note": "Body involvement not yet determined. Reserved for repertoire assets whose channel can only be settled by video coding (see doc section 3). Distinct from an out-of-scope channel: an `unknown` command may well turn out to be a codable limb movement." }
   ],
@@ -244,7 +246,15 @@
     "confidence": "0..1, the annotator's confidence in this tag given the evidence level."
   },
 
+  "providersNote": "`plugin` is normally a plugin id from plugin-properties.json. `runtime` is a synthetic provider for commands the VSM runtime handles itself, which belong to no plugin and are always available in every project.",
+
   "commands": [
+    { "plugin": "runtime", "command": "pause", "channel": "timing",
+      "neuroges": null,
+      "vsm": { "cospeech": true, "affiliate": "clause" },
+      "evidence": "declared-by-vendor", "confidence": 1.0,
+      "note": "Runtime built-in, not a plugin command: pure timing, no visual effect, no target device, never dispatched to an ActivityExecutor (see ActionBlockingUtil). It has no NEUROGES unit because NEUROGES codes body movement. But cospeech is true, per that field's own definition — 'speech-accompanying and therefore a candidate for utterance-position placement' — and a pause is the most structurally regular inline element authors use, typically at a clause boundary. Excluding it would discard the clearest placement signal in the corpus." },
+
     { "plugin": "charamel-ws", "command": "angry", "channel": "unknown",
       "neuroges": { "function": "emotion/attitude", "type": null },
       "vsm": { "cospeech": true, "affiliate": "rheme" },

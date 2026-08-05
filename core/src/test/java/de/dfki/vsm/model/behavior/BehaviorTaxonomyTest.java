@@ -36,6 +36,10 @@ class BehaviorTaxonomyTest {
     /** Plugins whose commands are behavior and must therefore be fully classified. */
     private static final String[] BEHAVIOR_PLUGINS = {"charamel-ws", "charamel-embed"};
 
+    /** Synthetic provider for runtime built-ins, which have no plugin-properties.json to cross-check
+     *  against — `pause` is handled by the runtime itself and belongs to no plugin. */
+    private static final String RUNTIME_PROVIDER = "runtime";
+
     private static final Set<String> AFFILIATES = Set.of(
             "referent", "rheme", "accented-word", "clause", "whole-utterance", "none");
 
@@ -214,6 +218,9 @@ class BehaviorTaxonomyTest {
         }
         Set<String> stale = new TreeSet<>();
         for (BehaviorTag tag : taxonomy().getTags()) {
+            if (RUNTIME_PROVIDER.equals(tag.getPlugin())) {
+                continue;
+            }
             for (String plugin : BEHAVIOR_PLUGINS) {
                 if (plugin.equals(tag.getPlugin()) && !declared.contains(tag.getKey())) {
                     stale.add(tag.getKey());
@@ -332,6 +339,20 @@ class BehaviorTaxonomyTest {
     }
 
     // ------------------------------------------------------- derived VSM views
+
+    @Test
+    void classifiesRuntimeBuiltInsThatBelongToNoPlugin() {
+        // `pause` is handled by the runtime, never dispatched to a plugin, so it has no
+        // plugin-properties.json to be declared in — yet authors write it inline constantly. Without a
+        // synthetic provider every pause landed in the corpus unclassified.
+        BehaviorTag pause = taxonomy().tagFor(RUNTIME_PROVIDER, "pause");
+        assertNotNull(pause, "the runtime's built-in pause must be classified");
+        assertEquals("timing", pause.getChannel());
+        assertFalse(pause.hasNeurogesUnit(), "pure timing is not a body movement, so no NEUROGES unit");
+        // Still co-speech by that field's own definition: placed relative to speech structure.
+        assertTrue(pause.isCoSpeech());
+        assertEquals("clause", pause.getAffiliate());
+    }
 
     @Test
     void coSpeechGateExcludesPosturesStageAndControl() {
