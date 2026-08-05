@@ -17,6 +17,52 @@ Phase 2 deliverables: the NEUROGES®-based taxonomy with a typed loader and 19 g
 `./gradlew extractCorpus` producing the JSONL corpus (2.1); `./gradlew corpusStats` (2.4) and
 `./gradlew corpusAgreement` (2.3, gates Phase 3).
 
+### Corpus can be grown from existing projects ✅ (2026-08-05)
+
+`/Users/gebhard/Code/Temp/EmmaAgent` (older charamel-ws-based project, 271 utterances, 30 placements)
+extracts cleanly and **more than quadruples the co-speech corpus**: combined with the three in-repo
+example projects it gives **308 sentences, 44 placements, 38 co-speech, 2 annotators, 4 scenarios**.
+29 of its 30 commands classify against the existing taxonomy — the plugin class is the same
+`charamelWs.charamelWsExecutor` we already tagged. The one that does not is `event`, an SSJ sensor
+command, which is correctly not a behavior. Four of its plugins are absent from this repo and log
+`ClassNotFoundException` during parse; harmless, since analysis never launches plugins.
+
+**Do this before Phase 3.** Any older VSM project using a tagged plugin is usable corpus input at
+essentially no cost, and the first real signal only appeared at this size:
+
+| Function | anchor slot | n |
+|---|---|---|
+| emblem/social convention | after-subject | 10 |
+| emotion/attitude | after-predicate | 4 |
+| emotion/attitude | before-predicate | 4 |
+| emotion/attitude | after-subject | 3 |
+
+Emblems (`wave`, `nod`) cluster sharply at `after-subject`; emotions spread. That is the kind of
+regularity Phase 3 is meant to learn, and it was invisible at 9 placements.
+
+### Finding that changes a Phase 3 assumption: placements are not always boundary-aligned
+
+**7 of EmmaAgent's 30 placements (23%) sit at no anchor slot at all** — not because the inventory is
+incomplete at the boundaries, but because the command sits *inside* a phrase. Examples:
+
+- `Ich wünsche ihnen eine gute Nacht!` — command at token 5, i.e. within the object phrase
+  `eine gute Nacht` (tokens 3–5). Slots exist at 0,1,2,3,6.
+- `Wunderbar [smile] Vielen Dank!` — token 1, inside a two-word fragment.
+
+The anchor inventory offers **constituent boundaries** by design, which is what makes a slot label
+generalisable. Authors evidently also place commands mid-phrase, plausibly on the accented word.
+Phase 3 must decide explicitly, and this is a modelling decision rather than a bug:
+
+1. predict boundaries only and **snap** a mid-phrase placement to the nearest slot when training
+   (loses information, keeps the label space small);
+2. add intra-phrase positions to the inventory (much larger label space, thinner counts);
+3. treat mid-phrase placements as a separate `accented-word` affiliate, which the taxonomy already
+   names for `emphasis-baton`, and predict them from prosodic prominence rather than syntax.
+
+Option 3 is the most faithful and needs a prominence model we do not have; option 1 is the pragmatic
+start. Either way the corpus records the true token index, so the choice is revisable without
+re-extracting. **Do not silently drop these 23%.**
+
 **What the corpus says today, and it decides Phase 3's design:** 37 sentences, 14 placements, of which
 **8 co-speech**, spread over a single Function value (`emotion/attitude`), with only 3.7% of 377
 offered anchor slots used. That is far too little to fit a distribution, so Phase 3.2 must lead with
