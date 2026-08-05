@@ -1635,6 +1635,18 @@ a.export-link {
   color: var(--muted);
 }
 
+/* Run feedback for the semantic panel. Both were computed and discarded before: the panel had no
+   element for either, so a failed analysis was indistinguishable from one that found nothing. */
+.semantic-run-status {
+  font-size: 0.75rem;
+}
+
+.semantic-run-error {
+  white-space: pre-line; /* the UD-unavailable message is multi-line and names the command to run */
+  font-size: 0.78rem;
+  margin: 0.4rem 0 0;
+}
+
 .semantic-legend-swatch {
   width: 14px;
   height: 8px;

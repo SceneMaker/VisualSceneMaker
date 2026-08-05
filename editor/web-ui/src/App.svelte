@@ -6562,7 +6562,10 @@ Sentence:
       semanticAnnotations = [];
       semanticDoc = null;
       semanticSourceText = scriptDraft || "";
-      semanticDirty = true;
+      // NOT dirty yet: nothing has been produced to save. Marking it here made every failed or
+      // skipped run claim "Unsaved semantic results" for a null document, and dragged the whole
+      // project into headerDirty with nothing to write.
+      semanticDirty = false;
       semanticUdDebug = [];
       if (!includeSvo && !includeDaTr) {
         semanticStatus = "Enable at least one analysis layer (Syntax or DA/TR).";
@@ -6606,7 +6609,20 @@ Sentence:
           + `${clauseCount} clauses, ${stats.commands ?? 0} commands`
           + (warnings.length ? `, ${warnings.length} warnings` : "") + ").";
       }
-      semanticError = warnings.length ? `Analysis warnings:\n${warnings.slice(0, 5).join("\n")}` : "";
+      // The server warns per sentence, so an unreachable parser yields one warning per line — 271 of
+      // them on a large script. Collapse that into the one thing the author can act on: the service
+      // is not answering. Anything else is listed as-is.
+      const udDown = warnings.filter((w) => /UD analysis unavailable/.test(w));
+      if (udDown.length && udDown.length === warnings.length) {
+        const udUrl = projectConfigView?.semanticServices?.udUrl || "http://127.0.0.1:4061/analyze";
+        semanticError = `The syntax parser did not answer for any of the ${udDown.length} sentences, `
+          + `so no syntax annotations were produced.\n`
+          + `Check that the semantic-ud service is running at ${udUrl} — start it with\n`
+          + `  ./gradlew :services:semantic-ud:startService`;
+      } else {
+        semanticError = warnings.length ? `Analysis warnings:\n${warnings.slice(0, 5).join("\n")}`
+          + (warnings.length > 5 ? `\n… and ${warnings.length - 5} more` : "") : "";
+      }
     } catch (err) {
       stopSemanticPreview();
       // The server refuses to analyse a script it cannot parse rather than falling back to the old
@@ -17894,6 +17910,9 @@ Sentence:
                 {#if semanticDirty}
                   <span class="muted semantic-unsaved-note">Unsaved semantic results</span>
                 {/if}
+                {#if semanticStatus}
+                  <span class="muted semantic-run-status">{semanticStatus}</span>
+                {/if}
                 <div class="semantic-legend">
                   <span class="semantic-legend-title">Legend</span>
                   <span class="semantic-legend-item"><span class="semantic-legend-swatch subject"></span>Subject</span>
@@ -17904,6 +17923,9 @@ Sentence:
                   <span class="semantic-legend-note">Address head solid, Adj dashed, Adv dotted, Comp double (same role color)</span>
                 </div>
               </div>
+              {#if semanticError}
+                <p class="error semantic-run-error">{semanticError}</p>
+              {/if}
             </div>
           </div>
         {/if}
