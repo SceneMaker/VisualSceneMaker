@@ -10,16 +10,23 @@ Related documents:
 - `doc/semantic-annotations-v3.md` — the stored annotation format (Phase 1.5 raises it to v3)
 - `~/Code/Repo/xenia-animation/` — figure-specific animation specs (German, for Charamel)
 
-Status at a glance (2026-08-05): **Phase 0 complete**; **Phase 1.1–1.6 complete**; **1.7 half done**
-(the Web UI now calls `analyze-script`; rendering the new layers is the only Phase 1 work left);
-Phase 2.2 and 2.2a complete; Phases 2.1/2.3/2.4, 3 and 4 not started.
+Status at a glance (2026-08-05): **Phases 0, 1 and 2 complete.** Phase 3 (placement service) and
+Phase 4 (authoring UX) not started.
 
-**Remaining in 1.7 — semantic-panel rendering.** The panel still renders only the flat `basic` block,
-which is why it keeps working unchanged. To add: clause bracketing, per-object-kind colours
-(direct/indirect/prepositional), and a head-vs-phrase distinction. The data is already in
-`semanticAnnotations[].clauses` and `.anchors` with script offsets; `ScriptEditor.svelte`'s existing
-role-highlight machinery is the place to extend. Showing anchor slots as faint markers would also
-preview what Phase 4.1's ghost suggestions will look like.
+Phase 2 deliverables: the NEUROGES®-based taxonomy with a typed loader and 19 guard tests (2.2/2.2a);
+`./gradlew extractCorpus` producing the JSONL corpus (2.1); `./gradlew corpusStats` (2.4) and
+`./gradlew corpusAgreement` (2.3, gates Phase 3).
+
+**What the corpus says today, and it decides Phase 3's design:** 37 sentences, 14 placements, of which
+**8 co-speech**, spread over a single Function value (`emotion/attitude`), with only 3.7% of 377
+offered anchor slots used. That is far too little to fit a distribution, so Phase 3.2 must lead with
+the hand-written prior and NEUROGES axis back-off, and any accuracy number measured on this corpus is
+a smoke test rather than a result. The agreement report is built and verified but has nothing to
+compare until a second annotator exists — which is the real blocker on Phase 3, not code.
+
+Also open, and worth settling before annotation starts: the taxonomy does not cover **core runtime
+commands**. `[pause duration='50']` is the one placement the extractor cannot classify, and authors
+use built-ins inline constantly.
 
 Phase 1 deliverables: per-clause roles with head *and* phrase spans; all objects per clause with
 kind/case/preposition; the anchor-slot inventory that is the label space Phase 3 predicts over;
