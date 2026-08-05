@@ -181,23 +181,72 @@ def pipeline_lock(language: str) -> threading.Lock:
         return lock
 
 
-def get_pipeline(lang: str):
+def available_packages(language: str, processor: str = "depparse"):
+    """Package names Stanza knows for (language, processor), from its resources index."""
+    root = RESOURCES_DIR or os.path.join(os.path.expanduser("~"), "stanza_resources")
+    try:
+        with open(os.path.join(root, "resources.json"), "r", encoding="utf-8") as fh:
+            index = json.load(fh)
+        return set((index.get(language) or {}).get(processor, {}).keys())
+    except Exception:
+        return set()
+
+
+def resolve_package(language: str, requested=None):
+    """Effective package for a language: an explicit per-request value wins, else the configured
+    default, else None for Stanza's own default.
+
+    Validated against the resources index because **Stanza silently ignores an unknown package name**
+    rather than raising. A typo would otherwise yield default-quality output while the caller — and the
+    corpus provenance — believed a different parser had been used. Verified: a bogus package builds a
+    pipeline without complaint.
+    """
+    candidate = str(requested).strip() if requested else UD_PACKAGES.get(language)
+    if not candidate:
+        return None
+    known = available_packages(language)
+    if known and candidate not in known:
+        print(f"[semantic-ud] WARNING: package '{candidate}' is not available for '{language}' "
+              f"(known: {', '.join(sorted(known)) or 'none'}); using the default parser",
+              file=sys.stderr, flush=True)
+        return None
+    return candidate
+
+
+def get_pipeline(lang: str, package=None):
+    """Pipeline for (language, package). Keyed by both so the accurate-but-slow transformer can serve
+    corpus runs while the editor keeps the fast default, from one service process."""
     language = normalize_lang(lang)
-    pipe = _pipelines.get(language)
+    resolved = resolve_package(language, package)
+    key = (language, resolved or "")
+    pipe = _pipelines.get(key)
     if pipe is not None:
         return pipe
-    # Build under the registry lock so two concurrent first-requests for the same language do not
-    # each pay for (and race on) constructing a pipeline.
+    # Build under the registry lock so two concurrent first-requests for the same key do not each pay
+    # for (and race on) constructing a pipeline.
     with _registry_lock:
-        pipe = _pipelines.get(language)
+        pipe = _pipelines.get(key)
         if pipe is not None:
             return pipe
-        pipe = build_pipeline(language)
-        _pipelines[language] = pipe
+        try:
+            pipe = build_pipeline(language, resolved)
+        except Exception as exc:
+            if not resolved:
+                raise
+            # A corpus run must not die because a preferred package is unavailable (missing weights,
+            # or an encoder that needs a network fetch). Fall back to the default and say so once.
+            print(f"[semantic-ud] WARNING: package '{resolved}' unavailable for '{language}' "
+                  f"({exc}); falling back to the default parser", file=sys.stderr, flush=True)
+            # build_pipeline, not get_pipeline: _registry_lock is not reentrant, so recursing here
+            # would deadlock whenever the fallback pipeline was not already cached.
+            resolved = None
+            key = (language, "")
+            pipe = _pipelines.get(key) or build_pipeline(language, None)
+        _pipelines[key] = pipe
         return pipe
 
 
-def build_pipeline(language: str):
+def build_pipeline(language: str, package=None):
     kwargs = {
         "lang": language,
         "processors": "tokenize,mwt,pos,lemma,depparse",
@@ -208,7 +257,8 @@ def build_pipeline(language: str):
     }
     if RESOURCES_DIR:
         kwargs["dir"] = RESOURCES_DIR
-    package = UD_PACKAGES.get(language)
+    if package is None:
+        package = UD_PACKAGES.get(language)
     if package:
         # tokenize/mwt/lemma stay on the default: only tagging and parsing differ between treebanks.
         kwargs["package"] = {"pos": package, "depparse": package}
@@ -235,7 +285,7 @@ def preload_pipelines():
     for language in PRELOAD_LANGS:
         started = time.monotonic()
         try:
-            _pipelines[language] = build_pipeline(language)
+            _pipelines[(language, UD_PACKAGES.get(language) or "")] = build_pipeline(language)
         except Exception as exc:
             print(f"[semantic-ud] FATAL: cannot load model for '{language}': {exc}", file=sys.stderr)
             print("[semantic-ud] Set SEMANTIC_UD_RESOURCES_DIR to your stanza_resources directory, "
@@ -1576,7 +1626,10 @@ def analyze(payload):
     include_debug = bool(payload.get("debug", False))
     normalized_text, index_map = preprocess_text(text, lang)
     language = normalize_lang(lang)
-    pipe = get_pipeline(language)
+    # Per-request parser choice: batch/corpus callers ask for the more accurate package, interactive
+    # callers omit it and get the faster default. See doc/parser-quality-plan.md.
+    effective_package = resolve_package(language, payload.get("package"))
+    pipe = get_pipeline(language, payload.get("package"))
     # Serialised per language — see the note on _pipeline_locks.
     with pipeline_lock(language):
         doc = pipe(normalized_text)
@@ -1603,6 +1656,7 @@ def analyze(payload):
             "source": "semantic-ud",
             "service": "stanza-depparse",
             "model": lang,
+            "package": effective_package or "(stanza default)",
             "analyzedAt": now,
             "layers": {"basic": "ud", "dialogueAct": "unknown", "themeRheme": "unknown"},
         },
@@ -1627,6 +1681,7 @@ def analyze_batch(payload):
     if not isinstance(sentences, list):
         raise ValueError("'sentences' must be an array")
     default_lang = payload.get("language", DEFAULT_LANG)
+    default_package = payload.get("package")
     include_debug = bool(payload.get("debug", False))
 
     results = []
@@ -1636,6 +1691,8 @@ def analyze_batch(payload):
             continue
         request = dict(item)
         request.setdefault("language", default_lang)
+        if default_package and "package" not in request:
+            request["package"] = default_package
         if include_debug:
             request.setdefault("debug", True)
         try:
@@ -1660,7 +1717,7 @@ class Handler(BaseHTTPRequestHandler):
                 "status": "ok",
                 "service": "semantic-ud",
                 "port": PORT,
-                "loaded": sorted(_pipelines.keys()),
+                "loaded": sorted(f"{lang}:{pkg or '(default)'}" for lang, pkg in _pipelines.keys()),
                 "preload": PRELOAD_LANGS,
                 "autoDownload": AUTO_DOWNLOAD,
                 "resourcesDir": RESOURCES_DIR or None,

@@ -7050,6 +7050,13 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
             String defaultLanguage = body.optString("language", "de");
             String basicProvider = body.optString("basicProvider", semanticBasicProvider(ref));
             boolean udForBasic = includeBasic && !"llm".equalsIgnoreCase(basicProvider);
+            // Optional parser package for this whole run. Batch/corpus callers set it to the accurate
+            // transformer; the editor leaves it unset and keeps the responsive default.
+            String udPackage = body.optString("udPackage", "").trim();
+            // What the service reports actually having used. Not the same as what we asked for:
+            // Stanza silently ignores an unknown package name, so recording the request would let
+            // provenance claim a parser that never ran.
+            String effectiveUdPackage = null;
 
             JSONObject udLayers = new JSONObject()
                     .put("basic", true).put("dialogueAct", false).put("themeRheme", false);
@@ -7081,9 +7088,13 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
                             // remapped here. The projection's map is not affine, so the service
                             // cannot do this itself.
                             JSONObject udDoc = analyzeSemanticWithUd(
-                                    ref, clean, udLayers, language, line, speaker, 0, debug);
+                                    ref, clean, udLayers, language, line, speaker, 0, debug, udPackage);
                             if (udDoc != null) {
                                 udAnns = udDoc.optJSONArray("annotations");
+                                JSONObject udProv = udDoc.optJSONObject("provenance");
+                                if (udProv != null && udProv.has("package")) {
+                                    effectiveUdPackage = udProv.optString("package");
+                                }
                                 if (debug && udDoc.optJSONObject("debug") != null) {
                                     debugTraces.put(new JSONObject()
                                             .put("line", line)
@@ -7207,6 +7218,14 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
             if (docProvenance != null) {
                 docProvenance.put("source", "server-analyze-script");
                 docProvenance.put("service", udForBasic ? "semantic-ud" : "llm");
+                if (effectiveUdPackage != null) {
+                    docProvenance.put("udPackage", effectiveUdPackage);
+                    if (!udPackage.isEmpty() && !udPackage.equals(effectiveUdPackage)) {
+                        docProvenance.put("udPackageRequested", udPackage);
+                        warnings.put("requested parser package '" + udPackage
+                                + "' was not used; the service used '" + effectiveUdPackage + "'");
+                    }
+                }
                 JSONObject docLayers = docProvenance.optJSONObject("layers");
                 if (docLayers != null) {
                     docLayers.put("basic", includeBasic ? (udForBasic ? "ud" : "llm") : "unknown");
@@ -7476,6 +7495,18 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
 
     private JSONObject analyzeSemanticWithUd(ProjectRef ref, String text, JSONObject layers, String language,
                                              Integer line, String speaker, Integer baseOffset, boolean debug) {
+        return analyzeSemanticWithUd(ref, text, layers, language, line, speaker, baseOffset, debug, null);
+    }
+
+    /**
+     * @param udPackage optional Stanza treebank/encoder package for this request. Corpus and batch
+     *        callers ask for the more accurate transformer; the editor omits it and gets the faster
+     *        default. The service keeps one pipeline per (language, package), so both are served from
+     *        one process — see {@code doc/parser-quality-plan.md}.
+     */
+    private JSONObject analyzeSemanticWithUd(ProjectRef ref, String text, JSONObject layers, String language,
+                                             Integer line, String speaker, Integer baseOffset, boolean debug,
+                                             String udPackage) {
         if (ref == null || text == null || text.isBlank()) {
             return null;
         }
@@ -7499,6 +7530,9 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
             }
             if (debug) {
                 payload.put("debug", true);
+            }
+            if (udPackage != null && !udPackage.isBlank()) {
+                payload.put("package", udPackage.trim());
             }
             HttpTransport transport = new JdkHttpTransport();
             HttpTransport.HttpResponseData resp = transport.postJson(

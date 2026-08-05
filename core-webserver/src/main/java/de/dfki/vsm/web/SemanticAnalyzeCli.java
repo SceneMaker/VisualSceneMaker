@@ -33,6 +33,18 @@ import java.util.List;
  */
 public final class SemanticAnalyzeCli {
 
+    /**
+     * Parser package requested by default for headless corpus runs: the transformer, which is more
+     * accurate than Stanza's default and fixes the informal-greeting mis-parse, at roughly 3x the
+     * per-sentence latency. That trade is right here and wrong in the editor — a corpus run is offline
+     * and accuracy is the whole point, while the editor needs to stay responsive. Override with
+     * {@code --ud-package=<name>}, or {@code --ud-package=} (empty) for the service default.
+     *
+     * <p>If the package cannot be built (missing weights, or an encoder needing a network fetch) the
+     * service logs a warning and falls back to its default rather than failing the run.</p>
+     */
+    private static final String DEFAULT_UD_PACKAGE = "combined_german-nlp-electra";
+
     private SemanticAnalyzeCli() {
     }
 
@@ -42,6 +54,7 @@ public final class SemanticAnalyzeCli {
         boolean debug = false;
         String language = "de";
         boolean wantDaTr = false;
+        String udPackage = DEFAULT_UD_PACKAGE;
 
         for (String arg : args) {
             if (arg.startsWith("--project=")) {
@@ -58,6 +71,8 @@ public final class SemanticAnalyzeCli {
                 wantDaTr = true;
             } else if (arg.startsWith("--language=")) {
                 language = arg.substring("--language=".length()).trim();
+            } else if (arg.startsWith("--ud-package=")) {
+                udPackage = arg.substring("--ud-package=".length()).trim();
             } else {
                 System.err.println("Unknown argument: " + arg);
                 usage();
@@ -77,10 +92,13 @@ public final class SemanticAnalyzeCli {
                 .put("useLlm", wantDaTr)
                 .put("language", language)
                 .put("persist", persist)
-                .put("debug", debug);
+                .put("debug", debug)
+                .put("udPackage", udPackage);
 
         // Singleton, but never started: we only want its project loader and analysis pipeline, so no
         // port is bound and no browser is opened.
+        System.out.println("parser package: "
+                + (udPackage.isEmpty() ? "(semantic-ud default)" : udPackage));
         WebUiServer server = WebUiServer.getInstance();
         int failed = 0;
 
@@ -145,5 +163,7 @@ public final class SemanticAnalyzeCli {
         System.err.println("  --da-tr       also run the LLM dialogue-act / theme-rheme layers");
         System.err.println("  --language    fallback language for scenes that declare none");
         System.err.println("  --debug       include UD parse traces in the document");
+        System.err.println("  --ud-package  parser package; default " + DEFAULT_UD_PACKAGE
+                + ", empty for the service default");
     }
 }

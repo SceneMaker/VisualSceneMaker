@@ -160,22 +160,38 @@ transformer look *worse* than it is:
 Both faults pushed in the same direction — against the change — which is worth remembering: a
 comparison that says "no improvement" deserves as much scrutiny as one that says "big win."
 
-### Recommended adoption: split by workload
+### Adopted: split by workload, chosen per request ✅
 
-The package is chosen per process and per language, so this is configuration, not code:
+The parser package is now a **per-request** parameter rather than a per-process one, so one
+`semantic-ud` instance serves both workloads. The service keeps a pipeline per
+`(language, package)` pair.
 
-- **Corpus preparation / batch** (`./gradlew analyzeSemantics`, `POST /analyze/batch`): use
-  `SEMANTIC_UD_PACKAGE=de:combined_german-nlp-electra`. Accuracy is what matters and 100 ms/sentence
-  is irrelevant when the run is offline — the whole charamel-embed project is 11 sentences.
-- **Interactive editing** (the editor's semantic panel): keep the default. 33 ms/sentence keeps the
-  panel responsive; a 3× cost is felt on every analysis of a long script.
-- **Android**: keep the default. A transformer's memory footprint is the binding constraint there.
+- **Corpus / batch** — `./gradlew analyzeSemantics` requests
+  `combined_german-nlp-electra` **by default**. Accuracy is the point and the run is offline; the whole
+  charamel-embed project went from 0.4 s to 1.0 s. Override with `-PudPackage=<name>`, or
+  `-PudPackage=` for the service default.
+- **Interactive editing** — the editor sends no package and keeps the ~33 ms/sentence default, so the
+  semantic panel stays responsive.
+- **Android** — unaffected: the default is unchanged, and nothing requests a transformer there.
+- **Whole-service default** — still available via `SEMANTIC_UD_PACKAGE=de:pkg` if a deployment wants
+  one parser for everything.
 
-When adopting it for corpus work, **promote `de-weak-01-informal-greeting` out of `knownWeak`** at the
-same time, since it will then be passing.
+Two hazards found while wiring this up, both fixed:
 
-Not done here, because it is a deployment decision rather than a code one: wiring the batch path to
-set that env var by default. `./gradlew analyzeSemantics` would be the natural place.
+- **Stanza silently ignores an unknown package name** — it builds a pipeline and says nothing. A typo
+  in `-PudPackage=` would therefore have produced default-quality output while the corpus provenance
+  claimed the transformer. The service now validates the name against its resources index, warns, and
+  reports the **effective** package; provenance records what actually ran, plus
+  `udPackageRequested` and a document-level warning when the two differ. Verified with a deliberate
+  typo.
+- **A latent deadlock in the fallback path.** The unavailable-package handler recursed into
+  `get_pipeline` while holding the non-reentrant registry lock; it would have hung whenever the
+  fallback pipeline was not already cached. Now calls `build_pipeline` directly.
+
+`de-weak-01-informal-greeting` still asserts the correct reading and remains an expected failure,
+because the *default* parser still fails it. Under the transformer it passes — visible as
+`xfail pass 1/2` in `compare_packages.py`. Promote it if the transformer ever becomes the global
+default.
 
 ### If you need to reproduce this from scratch
 

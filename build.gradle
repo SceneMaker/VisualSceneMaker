@@ -959,6 +959,10 @@ shadowJar {
 //   ./gradlew analyzeSemantics -PvsmProject=/path/to/ProjectDir
 //   ./gradlew analyzeSemantics -PvsmProject=/a,/b -Ppersist=true -Planguage=en -PdaTr=true
 //
+// Uses the accurate transformer parser by default (see doc/parser-quality-plan.md): a corpus run is
+// offline, so ~3x the per-sentence latency buys a better corpus. Override with
+// -PudPackage=<name>, or -PudPackage= (empty) for the semantic-ud default.
+//
 // The property is deliberately NOT called -Pproject: that name is taken by Gradle's own Project
 // object, so -Pproject= silently resolves to the root project instead of your path.
 //
@@ -967,7 +971,7 @@ shadowJar {
 task analyzeSemantics(type: JavaExec) {
     group = 'application'
     description = 'Analyses project scripts semantically, headless. -PvsmProject=<dir>[,<dir>…] ' +
-            '[-Ppersist=true] [-PdaTr=true] [-Planguage=de] [-Pdebug=true]'
+            '[-Ppersist=true] [-PdaTr=true] [-Planguage=de] [-Pdebug=true] [-PudPackage=<name>]'
     mainClass = 'de.dfki.vsm.web.SemanticAnalyzeCli'
     classpath = sourceSets.main.runtimeClasspath
     doFirst {
@@ -983,6 +987,7 @@ task analyzeSemantics(type: JavaExec) {
         if (project.findProperty('daTr')?.toString()?.toLowerCase() == 'true') cliArgs << '--da-tr'
         if (project.findProperty('debug')?.toString()?.toLowerCase() == 'true') cliArgs << '--debug'
         if (project.hasProperty('language')) cliArgs << "--language=${project.property('language')}"
+        if (project.hasProperty('udPackage')) cliArgs << "--ud-package=${project.property('udPackage')}"
         args = cliArgs
     }
 }
