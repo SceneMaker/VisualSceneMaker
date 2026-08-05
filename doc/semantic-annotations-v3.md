@@ -1,0 +1,195 @@
+# Semantic Annotations Schema v3
+
+The JSON stored in `semantic-annotations.json` in a project root.
+
+**v3 (2026-08-05) adds `clauses`, `anchors` and `commands` to each annotation.** The flat `basic`
+block is unchanged and still emitted, so a v2 reader keeps working against a v3 document. Nothing
+validates the version number strictly — it is provenance telling a consumer whether the fine-grained
+layers are present.
+
+## Goals
+
+- Keep annotations in a separate project file.
+- Preserve backward compatibility with v1 and v2 payloads.
+- Explicit provenance per layer for hybrid processing:
+  - `basic`, `clauses`, `anchors` via the UD parser
+  - `dialogueAct`, `themeRheme` via LLM
+- Give behavior-command placement a structural label space (`anchors`).
+
+## Top-level document
+
+```json
+{
+  "version": 3,
+  "schema": { "id": "vsm.semantic.annotations", "version": 3 },
+  "scriptHash": "sha256:...",
+  "generatedAt": "2026-08-05T10:27:16.987Z",
+  "updatedAt": "2026-08-05T10:27:16.987Z",
+  "provenance": {
+    "source": "server-analyze-script|editor-web-ui|semantic-ud",
+    "service": "semantic-ud|llm|hybrid",
+    "model": "stanza-de|gpt-5.2|...",
+    "analyzedAt": "2026-08-05T10:27:16.987Z",
+    "layers": {
+      "basic": "ud|llm|heuristic|unknown",
+      "dialogueAct": "llm|heuristic|unknown",
+      "themeRheme": "llm|heuristic|unknown"
+    }
+  },
+  "stats": { "sentences": 11, "annotations": 11, "commands": 10 },
+  "warnings": ["line 4: UD analysis unavailable"],
+  "annotations": []
+}
+```
+
+`stats` and `warnings` are written by `POST /api/v1/projects/{pid}/semantic/analyze-script`; both are
+optional. `stats.commands` is a useful invariant — it must match the number of `ActionObject`s in the
+stored script.
+
+## Annotation object
+
+One per sentence (see *Sentence units* below).
+
+```json
+{
+  "id": "s1",
+  "sentence": 1,
+  "line": 4,
+  "speaker": "Xenia",
+  "text": "Hallo ich bin Xenia.",
+  "scriptFrom": 43,
+  "scriptTo": 168,
+
+  "basic":       { "…": "v2-compatible flat role set — unchanged" },
+  "clauses":     [ "…" ],
+  "anchors":     [ "…" ],
+  "commands":    [ "…" ],
+  "dialogueAct": { "label": "greeting", "scheme": "dailydialog-v1", "confidence": 0.93 },
+  "themeRheme":  { "theme": "Hallo", "rheme": "", "confidence": 0.62 },
+
+  "provenance": {
+    "analyzedAt": "2026-08-05T10:27:16.987Z",
+    "layers": { "basic": "ud", "clauses": "ud", "anchors": "ud" }
+  }
+}
+```
+
+`text` is the **clean text**: the utterance with all inline behavior commands removed. That is what
+the parser saw, and every offset below is a script offset remapped back from it.
+
+### `basic` — unchanged from v2
+
+Flat, one role set per sentence: `subject`, `verb`, `object`, `predicate`, `address`,
+`addressPhrase`, and the `*Modifiers` arrays. Head-token spans only, one object only. Retained
+verbatim so existing consumers and renderers keep working; **prefer `clauses` for new work**, since
+`basic` mixes roles across clauses and reports only the first object.
+
+### `clauses` — new in v3
+
+```json
+"clauses": [
+  {
+    "id": "c0",
+    "type": "main",
+    "from": 354, "to": 386,
+    "text": "Lass mich einen Vorschlag machen",
+    "roles": {
+      "verb":      { "head": { "text": "machen", "from": 380, "to": 386 }, "confidence": 0.96 },
+      "subject":   { "head": { "…": "" }, "phrase": { "…": "" }, "confidence": 0.96 },
+      "predicate": { "…": "" },
+      "address":   { "…": "" }
+    },
+    "objects": [
+      { "kind": "direct", "deprel": "obj", "case": "Acc",
+        "head":   { "text": "Ball", "from": 28, "to": 32 },
+        "phrase": { "text": "den roten Ball", "from": 18, "to": 32 },
+        "confidence": 0.95 },
+      { "kind": "indirect", "deprel": "obl:arg", "case": "Dat",
+        "head": { "…": "" }, "phrase": { "…": "" } },
+      { "kind": "prepositional", "deprel": "obl", "preposition": "nach",
+        "head": { "…": "" }, "phrase": { "…": "" } }
+    ]
+  }
+]
+```
+
+- `type` — `main` | `subordinate` | `relative` | `coordinate` | `parataxis`
+- `roles.*.head` is the head token span; `roles.*.phrase` is the full subtree span, clipped to the
+  clause, edge punctuation trimmed — `den roten Ball`, not `Ball`. The **verb carries no `phrase`**:
+  it heads its clause, so its subtree is the whole clause.
+- `objects[].kind` — `direct` | `indirect` | `prepositional` | `clausal` | `oblique`. *All*
+  object-like dependents of the clause verb are listed, not just the first. `deprel` and `case` are
+  kept so a consumer can second-guess the mapping; note German UD encodes the indirect object as
+  `obl:arg` with `Case=Dat`, **not** `iobj`.
+- A clause's `from`/`to` **encloses any clause embedded in it** — that is the structure, not an
+  error. Derive positions from `anchors`, never from clause spans.
+- Clause roles are resolved by assigning each word to its nearest clause-root ancestor, which is what
+  stops a subordinate clause's subject being reported against the main clause's verb.
+
+### `anchors` — new in v3
+
+The candidate positions for placing a behavior command: the label space a placement model predicts
+over. Named structurally, not numerically, because a structural name survives re-wording where a
+character offset does not.
+
+```json
+"anchors": [
+  { "slot": "utterance-initial", "clauseId": null, "tokenIndex": 0, "from": 71, "to": 71 },
+  { "slot": "before-object", "clauseId": "c0", "role": "object", "kind": "direct",
+    "tokenIndex": 3, "from": 18, "to": 18 },
+  { "slot": "before-final-punct", "clauseId": null, "tokenIndex": 4, "from": 164, "to": 164 },
+  { "slot": "utterance-final", "clauseId": null, "tokenIndex": 4, "from": 165, "to": 165 }
+]
+```
+
+Slots: `utterance-initial`, `clause-initial`, `before-`/`after-subject`, `before-`/`after-verb`,
+`before-`/`after-predicate`, `after-address`, `before-`/`after-object`, `before-final-punct`,
+`utterance-final`.
+
+- `from` == `to`: an anchor is a **position**, not a span. Encoding it as a degenerate span lets the
+  server's generic span remapper rewrite it to script coordinates with no special-casing.
+- `tokenIndex` — the number of spoken tokens preceding the anchor, added server-side. **This is what
+  makes an anchor comparable with `commands[].tokenIndex`**: the parser and the script model tokenise
+  differently, so the character offset is the only shared coordinate.
+- Several slots can share a position (a clause-initial boundary is also its subject's start). Both
+  labels are offered; they carry different structural meaning, and the model predicts a label.
+- Only the *trailing* boundary of an address is offered: a command conventionally follows a vocative
+  (`Hallo $user, [emotion] …`), it does not precede it.
+- The verb anchors on its head token rather than its phrase, since the phrase would be the clause.
+
+Measured coverage: on `plugins/charamel-embed/ExampleProject`, **10 of 10 authored commands sit at a
+position the inventory offers**.
+
+### `commands` — new in v3
+
+The inline behavior commands removed from `text`, attached to the first annotation of the sentence
+(`sentence` groups them).
+
+```json
+"commands": [
+  { "name": "emotion", "actor": "Bob", "tokenIndex": 4,
+    "cleanOffset": 15, "scriptFrom": 515, "scriptTo": 527 }
+]
+```
+
+- `tokenIndex` — spoken tokens preceding the command; `0` is utterance-initial. **Adjacent commands
+  share one index**, which is correct: the position is a boundary, not a character offset.
+- `scriptFrom`/`scriptTo` span the command's **actor-qualified name** (`time: init`), not the whole
+  bracket — that is all `ActionObject` records in `lower`/`upper`.
+
+## Sentence units
+
+One annotation per **sentence**, not per `SceneUttr`. The script grammar ends an utterance at *any*
+punctuation, commas included, so `Hallo $user, wie geht's Dir?` parses as two `SceneUttr`s;
+`UtteranceProjection.sentencesOf(turn)` merges consecutive utterances until one ends in a
+sentence-final mark. Handing a parser the fragment `Hallo $user,` would also defeat the UD service's
+own greeting guardrail.
+
+## Compatibility and migration
+
+- v1 (no `schema`/`provenance`) and v2 (no `clauses`/`anchors`) documents are valid input.
+- On load, missing metadata is normalized with defaults; unknown keys are preserved, so a v3
+  document survives a save/load round trip unchanged.
+- `basic` renderer logic needs no change for v3.
+- **Known caveat, pre-existing:** on load, `scriptHash` is overwritten with the *current* script's
+  hash rather than preserved, so it cannot currently be used to detect a stale annotation file.

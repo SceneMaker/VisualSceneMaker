@@ -35,6 +35,61 @@ def first_annotation(payload):
     return annotations[0] if isinstance(annotations[0], dict) else {}
 
 
+def clause_summary(annotation):
+    """Compact per-clause view for comparison: type, verb, subject, and object kind/phrase pairs."""
+    out = []
+    for clause in (annotation.get("clauses") or []):
+        roles = clause.get("roles") or {}
+
+        def head_of(role):
+            entry = roles.get(role) or {}
+            return norm_text((entry.get("head") or {}).get("text", ""))
+
+        out.append({
+            "type": str(clause.get("type") or ""),
+            "verb": head_of("verb"),
+            "subject": head_of("subject"),
+            "predicate": head_of("predicate"),
+            "objects": [
+                {
+                    "kind": str(obj.get("kind") or ""),
+                    "phrase": norm_text((obj.get("phrase") or obj.get("head") or {}).get("text", "")),
+                }
+                for obj in (clause.get("objects") or [])
+            ],
+        })
+    return out
+
+
+def clause_diffs(predicted, expected):
+    """Human-readable differences between predicted and expected clause summaries."""
+    diffs = []
+    if len(predicted) != len(expected):
+        diffs.append(f"clause count {len(predicted)} != expected {len(expected)}")
+    for idx, want in enumerate(expected):
+        if idx >= len(predicted):
+            diffs.append(f"c{idx}: missing")
+            continue
+        got = predicted[idx]
+        for field in ("type", "verb", "subject", "predicate"):
+            if field not in want:
+                continue
+            if norm_text(want[field]) != got.get(field, ""):
+                diffs.append(f"c{idx}.{field}: '{got.get(field, '')}' != '{norm_text(want[field])}'")
+        if "objects" in want:
+            want_objs = [(norm_text(o.get("kind", "")), norm_text(o.get("phrase", ""))) for o in want["objects"]]
+            got_objs = [(o["kind"], o["phrase"]) for o in got.get("objects", [])]
+            if want_objs != got_objs:
+                diffs.append(f"c{idx}.objects: {got_objs} != {want_objs}")
+    return diffs
+
+
+def anchor_diffs(annotation, required_slots):
+    present = {str(a.get("slot") or "") for a in (annotation.get("anchors") or [])}
+    missing = [slot for slot in required_slots if slot not in present]
+    return [f"missing anchor slot(s): {', '.join(missing)}"] if missing else []
+
+
 def evaluate_case(case):
     payload = {
         "text": case.get("text", ""),
@@ -50,6 +105,14 @@ def evaluate_case(case):
         pred = span_text(predicted, role)
         gold = norm_text(expected.get(role, ""))
         role_result[role] = {"pred": pred, "gold": gold}
+
+    # v3 layers. Both checks are opt-in per case, so v2-era cases keep evaluating exactly as before.
+    structural = []
+    if isinstance(case.get("expectedClauses"), list):
+        structural += clause_diffs(clause_summary(predicted), case["expectedClauses"])
+    if isinstance(case.get("expectedAnchorSlots"), list):
+        structural += anchor_diffs(predicted, case["expectedAnchorSlots"])
+    role_result["_structural"] = structural
     return role_result
 
 
@@ -57,7 +120,7 @@ def accumulate_metrics(all_results):
     metrics = {r: {"tp": 0, "pred": 0, "gold": 0} for r in ROLES}
     exact_rows = 0
     for row in all_results:
-        all_ok = True
+        all_ok = not row.get("_structural")
         for role in ROLES:
             pred = row[role]["pred"]
             gold = row[role]["gold"]
@@ -83,9 +146,24 @@ def prf(tp, pred, gold):
 
 def print_report(cases, results):
     metrics, exact_rows = accumulate_metrics(results)
+    structural_cases = sum(1 for c in cases
+                           if isinstance(c.get("expectedClauses"), list)
+                           or isinstance(c.get("expectedAnchorSlots"), list))
+    structural_fail = sum(1 for idx, c in enumerate(cases)
+                          if results[idx].get("_structural") and not c.get("knownWeak"))
+    weak_total = sum(1 for c in cases if c.get("knownWeak"))
+    weak_changed = sum(1 for idx, c in enumerate(cases)
+                       if c.get("knownWeak") and results[idx].get("_structural"))
     print("UD mapping evaluation")
     print(f"Cases: {len(cases)}")
     print(f"Exact-row match (S+V+O): {exact_rows}/{len(cases)}")
+    print(f"Structural (clauses/objects/anchors): {structural_cases - structural_fail}"
+          f"/{structural_cases} passing")
+    if weak_total:
+        # knownWeak cases assert the CURRENT, wrong output of an upstream mis-parse. They pass while
+        # behaviour is unchanged; a change makes them fail loudly rather than drift unnoticed.
+        print(f"Known-weak (pinned mis-parses): {weak_total - weak_changed}/{weak_total} unchanged"
+              + ("  <-- BEHAVIOUR CHANGED, re-check the notes" if weak_changed else ""))
     print("")
     for role in ROLES:
         m = metrics[role]
@@ -105,6 +183,10 @@ def print_report(cases, results):
             gold = result[role]["gold"] or "∅"
             marker = "OK" if pred == gold else "DIFF"
             print(f"  {role:>7}: pred='{pred}' gold='{gold}' [{marker}]")
+        if case.get("knownWeak"):
+            print(f"     note: KNOWN WEAK — {case.get('why', 'upstream mis-parse')}")
+        for diff in result.get("_structural", []):
+            print(f"     structural DIFF: {diff}")
 
 
 def load_cases(path):

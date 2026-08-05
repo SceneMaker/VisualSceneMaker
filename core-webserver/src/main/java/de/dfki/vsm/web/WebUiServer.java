@@ -391,7 +391,10 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
     private static final LOGDefaultLogger sLogger = LOGDefaultLogger.getInstance();
     private static final String API_PREFIX = "/api/v1";
     private static final int RECENT_MAX = 19;
-    private static final int SEMANTIC_DOC_VERSION = 2;
+    // v3 adds `clauses` and `anchors` to each annotation. The flat `basic` block is unchanged, so a
+    // v2 reader still works on a v3 document; nothing validates this number strictly, it is
+    // provenance for consumers that want to know whether the fine-grained layers are present.
+    private static final int SEMANTIC_DOC_VERSION = 3;
     private static final String SEMANTIC_SCHEMA_ID = "vsm.semantic.annotations";
     private static final String SEMANTIC_BASIC_PROVIDER = "ud";
     private static final String SEMANTIC_UD_URL_DEFAULT = "http://127.0.0.1:4061/analyze";

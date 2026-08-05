@@ -1531,8 +1531,9 @@ def analyze(payload):
             debug_sentences.append(debug)
     now = now_iso()
     result = {
-        "version": 2,
-        "schema": {"id": "vsm.semantic.annotations", "version": 2},
+        # v3: annotations carry `clauses` and `anchors` beside the v2-compatible flat `basic`.
+        "version": 3,
+        "schema": {"id": "vsm.semantic.annotations", "version": 3},
         "generatedAt": now,
         "updatedAt": now,
         "provenance": {

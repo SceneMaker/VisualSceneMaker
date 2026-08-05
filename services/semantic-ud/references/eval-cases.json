@@ -58,5 +58,235 @@
       "verb": "Welcome",
       "object": ""
     }
+  },
+  {
+    "id": "de-clause-01-multi-object",
+    "language": "de",
+    "text": "Ich gebe dem Kind den roten Ball.",
+    "why": "Phase 1.2: the dative indirect object is obl:arg, not iobj, and used to be dropped entirely because select_object returned the first match. Phrase spans must give 'den roten Ball', not the head token 'Ball'.",
+    "expected": {
+      "subject": "Ich",
+      "verb": "gebe",
+      "object": "Ball"
+    },
+    "expectedClauses": [
+      {
+        "type": "main",
+        "verb": "gebe",
+        "subject": "Ich",
+        "objects": [
+          {
+            "kind": "indirect",
+            "phrase": "dem Kind"
+          },
+          {
+            "kind": "direct",
+            "phrase": "den roten Ball"
+          }
+        ]
+      }
+    ],
+    "expectedAnchorSlots": [
+      "utterance-initial",
+      "before-object",
+      "after-object",
+      "before-final-punct",
+      "utterance-final"
+    ]
+  },
+  {
+    "id": "de-clause-02-ccomp",
+    "language": "de",
+    "text": "Lass mich einen Vorschlag machen wie wir zusammen den Nachmittag gestalten.",
+    "why": "Phase 1.1: the ccomp's subject 'wir' used to be reported against the main clause's verb 'machen'. Roles must resolve per clause.",
+    "expected": {
+      "subject": "wir",
+      "verb": "machen",
+      "object": "mich"
+    },
+    "expectedClauses": [
+      {
+        "type": "main",
+        "verb": "machen",
+        "subject": "",
+        "objects": [
+          {
+            "kind": "direct",
+            "phrase": "mich"
+          },
+          {
+            "kind": "direct",
+            "phrase": "einen Vorschlag"
+          }
+        ]
+      },
+      {
+        "type": "subordinate",
+        "verb": "gestalten",
+        "subject": "wir",
+        "objects": [
+          {
+            "kind": "direct",
+            "phrase": "den Nachmittag"
+          }
+        ]
+      }
+    ],
+    "expectedAnchorSlots": [
+      "utterance-initial",
+      "clause-initial",
+      "before-subject",
+      "after-verb"
+    ]
+  },
+  {
+    "id": "de-clause-03-relative",
+    "language": "de",
+    "text": "Der Mann, der dort steht, ist mein Vater.",
+    "why": "Relative clause plus a copular main clause, where the verb is attached as cop.",
+    "expected": {
+      "subject": "Mann",
+      "verb": "ist",
+      "object": ""
+    },
+    "expectedClauses": [
+      {
+        "type": "relative",
+        "verb": "steht",
+        "subject": "der"
+      },
+      {
+        "type": "main",
+        "verb": "ist",
+        "subject": "Mann",
+        "predicate": "Vater"
+      }
+    ]
+  },
+  {
+    "id": "de-clause-04-coordinate",
+    "language": "de",
+    "text": "Ich gehe nach Hause und du bleibst hier.",
+    "why": "Coordination must yield two clauses, and 'nach Hause' a prepositional object.",
+    "expectedClauses": [
+      {
+        "type": "main",
+        "verb": "gehe",
+        "subject": "Ich",
+        "objects": [
+          {
+            "kind": "prepositional",
+            "phrase": "nach Hause"
+          }
+        ]
+      },
+      {
+        "type": "coordinate",
+        "verb": "bleibst",
+        "subject": "du"
+      }
+    ]
+  },
+  {
+    "id": "de-clause-05-csubj-predicative",
+    "language": "de",
+    "text": "Schön dass Du da bist.",
+    "why": "csubj had to be treated as clause-introducing: 'bist' is the clausal SUBJECT of 'Schön'. Without it 'Du'/'bist' leaked into the main clause and 'Schön' got no role, so no anchor slot existed where an author had in fact placed a command. The verbless predicative clause root is reported as predicate.",
+    "expectedClauses": [
+      {
+        "type": "main",
+        "verb": "",
+        "predicate": "Schön"
+      },
+      {
+        "type": "subordinate",
+        "verb": "bist",
+        "subject": "Du"
+      }
+    ],
+    "expectedAnchorSlots": [
+      "utterance-initial",
+      "after-predicate",
+      "clause-initial"
+    ]
+  },
+  {
+    "id": "de-weak-01-informal-greeting",
+    "language": "de",
+    "text": "Hallo ich bin Xenia.",
+    "knownWeak": true,
+    "why": "Stanza tags 'Hallo' as the root VERB and 'bin' as its ccomp, so 'bin' genuinely is a clause root by any rule. Correct would be one clause with verb 'bin' and predicate 'Xenia', and no verb reading of 'Hallo'. Pinned to notice a model/behaviour change.",
+    "expected": {
+      "subject": "ich",
+      "verb": "Hallo",
+      "object": "Xenia"
+    },
+    "expectedClauses": [
+      {
+        "type": "main",
+        "verb": "Hallo",
+        "subject": "ich",
+        "objects": [
+          {
+            "kind": "direct",
+            "phrase": "Xenia"
+          }
+        ]
+      },
+      {
+        "type": "subordinate",
+        "verb": "bin"
+      }
+    ]
+  },
+  {
+    "id": "de-weak-02-imperative-root",
+    "language": "de",
+    "text": "Schau mal, wie Bob das findet.",
+    "knownWeak": true,
+    "why": "Stanza makes the adverb 'mal' the sentence root and 'Schau' an advmod, so the main clause has no verb at all. Correct would be an imperative main clause with verb 'Schau'.",
+    "expectedClauses": [
+      {
+        "type": "main",
+        "verb": "",
+        "subject": ""
+      },
+      {
+        "type": "subordinate",
+        "verb": "findet",
+        "subject": "Bob",
+        "objects": [
+          {
+            "kind": "direct",
+            "phrase": "das"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "de-weak-03-vocative-as-subject",
+    "language": "de",
+    "text": "Hey, Ich habe eine Aufgabe für Dich.",
+    "knownWeak": true,
+    "why": "The same span 'Ich' is reported as both subject and address; the vocative is 'Hey'. Pinned so a fix to the address heuristic is noticed.",
+    "expected": {
+      "subject": "Ich",
+      "verb": "habe",
+      "object": "Aufgabe"
+    },
+    "expectedClauses": [
+      {
+        "type": "main",
+        "verb": "habe",
+        "subject": "Ich",
+        "objects": [
+          {
+            "kind": "direct",
+            "phrase": "eine Aufgabe für Dich"
+          }
+        ]
+      }
+    ]
   }
 ]

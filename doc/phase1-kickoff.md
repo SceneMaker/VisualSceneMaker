@@ -108,7 +108,7 @@ Suggested order, each independently verifiable with the curl commands above:
 Then:
 
 5. **Schema v3 (1.5).** `clauses` + `objects` added; keep the flat `basic` block as a v2 projection so
-   nothing downstream breaks at once. Update `doc/semantic-annotations-v2.md` (→ v3) and
+   nothing downstream breaks at once. Update `doc/semantic-annotations-v3.md` and
    `doc/semantic-analysis-current.md`.
 6. **Eval cases (1.6).** Extend `services/semantic-ud/references/eval-cases.json`; run with
    `./gradlew :services:semantic-ud:evaluateMapping`. Include both defect sentences above, the two

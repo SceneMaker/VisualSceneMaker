@@ -7,11 +7,18 @@ Related documents:
 
 - `doc/behavior-taxonomy-neuroges.md` — the NEUROGES®-based behavior taxonomy (Phase 2.2, done)
 - `doc/semantic-analysis-current.md` — what the semantic analysis does today
-- `doc/semantic-annotations-v2.md` — the stored annotation format (Phase 1.5 raises it to v3)
+- `doc/semantic-annotations-v3.md` — the stored annotation format (Phase 1.5 raises it to v3)
 - `~/Code/Repo/xenia-animation/` — figure-specific animation specs (German, for Charamel)
 
-Status at a glance (2026-08-05): **Phase 0 complete**; Phase 2.2 and 2.2a complete; Phase 1 not yet
-started; Phases 2.1/2.3/2.4, 3 and 4 not started.
+Status at a glance (2026-08-05): **Phase 0 complete**; **Phase 1.1–1.6 complete**; Phase 2.2 and
+2.2a complete; Phase 1.7 (rendering + Web UI switch) and Phases 2.1/2.3/2.4, 3 and 4 not started.
+
+Phase 1 deliverables: per-clause roles with head *and* phrase spans; all objects per clause with
+kind/case/preposition; the anchor-slot inventory that is the label space Phase 3 predicts over;
+schema v3 (`doc/semantic-annotations-v3.md`); eval cases covering both fixed defects, four clause
+types, and three *pinned* upstream mis-parses. Measured: **10 of 10 authored commands in
+`plugins/charamel-embed/ExampleProject` land exactly on a structural slot**, and the eval harness
+reports 8/8 structural checks passing.
 
 Phase 0 deliverables, all verified against the real example projects:
 `UtteranceProjection` (core, 14 tests) · `POST …/semantic/analyze-script` ·
@@ -149,7 +156,7 @@ and match browser output modulo the two fixed defects.
 - **1.4 Anchor-slot inventory.** Derive, per utterance, the list of candidate anchor slots (the
   label space of Phase 3) from clause and phrase boundaries.
 - **1.5 Schema v3.** `clauses` + `objects` added; the flat `basic` block retained as a v2
-  projection for backward compatibility. Update `doc/semantic-annotations-v2.md` → v3 and
+  projection for backward compatibility. Update `doc/semantic-annotations-v3.md` and
   `doc/semantic-analysis-current.md`.
 - **1.6 Eval cases.** Extend `services/semantic-ud/references/eval-cases.json` with clause and
   multi-object DE/EN gold cases, including the two sentences that fail today.
