@@ -10,8 +10,16 @@ Related documents:
 - `doc/semantic-annotations-v3.md` — the stored annotation format (Phase 1.5 raises it to v3)
 - `~/Code/Repo/xenia-animation/` — figure-specific animation specs (German, for Charamel)
 
-Status at a glance (2026-08-05): **Phase 0 complete**; **Phase 1.1–1.6 complete**; Phase 2.2 and
-2.2a complete; Phase 1.7 (rendering + Web UI switch) and Phases 2.1/2.3/2.4, 3 and 4 not started.
+Status at a glance (2026-08-05): **Phase 0 complete**; **Phase 1.1–1.6 complete**; **1.7 half done**
+(the Web UI now calls `analyze-script`; rendering the new layers is the only Phase 1 work left);
+Phase 2.2 and 2.2a complete; Phases 2.1/2.3/2.4, 3 and 4 not started.
+
+**Remaining in 1.7 — semantic-panel rendering.** The panel still renders only the flat `basic` block,
+which is why it keeps working unchanged. To add: clause bracketing, per-object-kind colours
+(direct/indirect/prepositional), and a head-vs-phrase distinction. The data is already in
+`semanticAnnotations[].clauses` and `.anchors` with script offsets; `ScriptEditor.svelte`'s existing
+role-highlight machinery is the place to extend. Showing anchor slots as faint markers would also
+preview what Phase 4.1's ghost suggestions will look like.
 
 Phase 1 deliverables: per-clause roles with head *and* phrase spans; all objects per clause with
 kind/case/preposition; the anchor-slot inventory that is the label space Phase 3 predicts over;
