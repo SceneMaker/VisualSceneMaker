@@ -2337,159 +2337,6 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
     return annotations;
   }
 
-  function isSemanticSpeakerCandidate(rawTag) {
-    const tag = String(rawTag || "").trim();
-    if (!tag) return false;
-    const lower = tag.toLowerCase();
-    if (lower === "scene" || lower === "title" || lower.startsWith("scene ") || lower.startsWith("#")) {
-      return false;
-    }
-    if (
-      tag.includes("(") || tag.includes(")") ||
-      tag.includes("[") || tag.includes("]") ||
-      tag.includes("{") || tag.includes("}") ||
-      tag.includes("=")
-    ) {
-      return false;
-    }
-    if (tag.length > 40) return false;
-    return true;
-  }
-
-  function extractSemanticSentenceUnits(script) {
-    const text = String(script || "");
-    const lineStarts = semanticLineOffsets(text);
-    const lines = text.split("\n");
-    const units = [];
-    const sentencePattern = /[^.!?]+[.!?]+|[^.!?]+$/g;
-    const sceneHeaderPattern = /^\s*scene\s+([A-Za-z][A-Za-z0-9_-]*)\b/i;
-    let currentSceneLanguage = "";
-    for (let idx = 0; idx < lines.length; idx += 1) {
-      const line = lines[idx] || "";
-      const sceneMatch = line.match(sceneHeaderPattern);
-      if (sceneMatch) {
-        currentSceneLanguage = String(sceneMatch[1] || "").trim().toLowerCase();
-      }
-      const colon = line.indexOf(":");
-      if (colon <= 0 || colon >= line.length - 1) continue;
-      const speaker = line.slice(0, colon).trim();
-      if (!isSemanticSpeakerCandidate(speaker)) continue;
-      const utteranceRaw = line.slice(colon + 1);
-      const utterance = utteranceRaw.trim();
-      if (!speaker || !utterance) continue;
-      let lead = utteranceRaw.indexOf(utterance);
-      if (lead < 0) lead = 0;
-      const utteranceStart = (lineStarts[idx] ?? 0) + colon + 1 + lead;
-      sentencePattern.lastIndex = 0;
-      let match = sentencePattern.exec(utterance);
-      while (match) {
-        const segmentRaw = match[0] || "";
-        const sentence = segmentRaw.trim();
-        if (sentence) {
-          let segLead = segmentRaw.indexOf(sentence);
-          if (segLead < 0) segLead = 0;
-          units.push({
-            line: idx + 1,
-            speaker,
-            text: sentence,
-            startOffset: utteranceStart + match.index + segLead,
-            language: currentSceneLanguage
-          });
-        }
-        match = sentencePattern.exec(utterance);
-      }
-    }
-    return units;
-  }
-
-  function shiftOffsetsDeep(value, delta) {
-    if (Array.isArray(value)) {
-      return value.map((entry) => shiftOffsetsDeep(entry, delta));
-    }
-    if (!value || typeof value !== "object") {
-      return value;
-    }
-    const out = {};
-    for (const [key, entry] of Object.entries(value)) {
-      out[key] = shiftOffsetsDeep(entry, delta);
-    }
-    if (Number.isFinite(out.from)) {
-      out.from = Number(out.from) + delta;
-    }
-    if (Number.isFinite(out.to)) {
-      out.to = Number(out.to) + delta;
-    }
-    return out;
-  }
-
-  function normalizeSentenceAnnotations(annotations, unit) {
-    if (!Array.isArray(annotations)) return [];
-    return annotations.map((ann, idx) => {
-      const source = ann && typeof ann === "object" ? ann : {};
-      const mapped = {
-        ...source,
-        id: source.id || `ann-${unit.line}-${idx}`,
-        line: unit.line,
-        speaker: source.speaker || unit.speaker,
-        text: source.text || unit.text
-      };
-      if (source.basic != null) {
-        mapped.basic = shiftOffsetsDeep(source.basic, unit.startOffset);
-      }
-      return mapped;
-    });
-  }
-
-  function mergeSentenceAnnotationLayers(syntaxAnnotations, metaAnnotations, unit) {
-    const syntax = Array.isArray(syntaxAnnotations) ? syntaxAnnotations : [];
-    const meta = Array.isArray(metaAnnotations) ? metaAnnotations : [];
-    const count = Math.max(syntax.length, meta.length);
-    const out = [];
-    for (let idx = 0; idx < count; idx += 1) {
-      const syn = syntax[idx] && typeof syntax[idx] === "object" ? syntax[idx] : {};
-      const prag = meta[idx] && typeof meta[idx] === "object" ? meta[idx] : {};
-      const merged = {
-        ...syn,
-        ...prag,
-        id: prag.id || syn.id || `ann-${unit.line}-${idx}`,
-        line: unit.line,
-        speaker: prag.speaker || syn.speaker || unit.speaker || "",
-        text: prag.text || syn.text || unit.text || ""
-      };
-      if (syn.basic != null) {
-        merged.basic = syn.basic;
-      } else if (prag.basic != null) {
-        merged.basic = prag.basic;
-      }
-      if (prag.dialogueAct != null) {
-        merged.dialogueAct = prag.dialogueAct;
-      } else if (syn.dialogueAct != null) {
-        merged.dialogueAct = syn.dialogueAct;
-      }
-      if (prag.themeRheme != null) {
-        merged.themeRheme = prag.themeRheme;
-      } else if (syn.themeRheme != null) {
-        merged.themeRheme = syn.themeRheme;
-      }
-      const synProv = syn?.provenance && typeof syn.provenance === "object" ? syn.provenance : null;
-      const pragProv = prag?.provenance && typeof prag.provenance === "object" ? prag.provenance : null;
-      if (synProv || pragProv) {
-        const synLayers = synProv?.layers && typeof synProv.layers === "object" ? synProv.layers : {};
-        const pragLayers = pragProv?.layers && typeof pragProv.layers === "object" ? pragProv.layers : {};
-        merged.provenance = {
-          ...(synProv || {}),
-          ...(pragProv || {}),
-          layers: {
-            ...synLayers,
-            ...pragLayers
-          }
-        };
-      }
-      out.push(merged);
-    }
-    return out;
-  }
-
   function stopSemanticPreview() {
     semanticPreviewRunId += 1;
     if (semanticPreviewTimer) {
@@ -6661,6 +6508,11 @@ Sentence:
     applyLLMPromptsConfig();
   }
 
+  // Server-side semantic analysis (Phase 0/1). One request analyses the whole script: the server
+  // walks the *parsed* SceneScript, strips inline behavior commands before the parser sees them, and
+  // remaps every span back to script offsets. That replaced a per-sentence loop in this file which
+  // had two defects — it fed command brackets to the parser, and its regex splitter cut a command in
+  // half at a parameter's decimal point ("intensity='0.8'"). See doc/semantic-analysis-current.md.
   async function runSemanticAnalysis() {
     if (!selectedProjectId || semanticAnalyzeBusy) return;
     semanticAnalyzeBusy = true;
@@ -6670,9 +6522,6 @@ Sentence:
     try {
       const includeSvo = !!semanticAnalyzeSvo;
       const includeDaTr = !!semanticAnalyzeDaTr;
-      const llmLayersText = `basic:false, dialogueAct:${includeDaTr}, themeRheme:${includeDaTr}`;
-      const language = semanticPreferredLanguage();
-      const units = extractSemanticSentenceUnits(scriptDraft || "");
       semanticAnnotations = [];
       semanticDoc = null;
       semanticSourceText = scriptDraft || "";
@@ -6682,112 +6531,53 @@ Sentence:
         semanticStatus = "Enable at least one analysis layer (Syntax or DA/TR).";
         return;
       }
-      if (!units.length) {
-        semanticStatus = "No utterance sentences found for semantic analysis.";
-        return;
-      }
-      let failures = 0;
-      const failureMessages = [];
-      const merged = [];
-      for (let i = 0; i < units.length; i += 1) {
-        const unit = units[i];
-        semanticStatus = `Analyzing sentence ${i + 1}/${units.length}...`;
-        const unitLanguage = String(unit.language || language || "de").trim().toLowerCase() || "de";
-        let syntaxNormalized = [];
-        let metaNormalized = [];
-        if (includeSvo) {
-          try {
-            const syntaxResponse = await apiPost(`/api/v1/projects/${selectedProjectId}/semantic/syntax`, {
-              text: unit.text,
-              persist: false,
-              language: unitLanguage,
-              debug: semanticDebugEnabled
-            });
-            syntaxNormalized = normalizeSentenceAnnotations(syntaxResponse?.annotations, unit);
-            if (semanticDebugEnabled && syntaxResponse?.debug) {
-              semanticUdDebug = [
-                ...semanticUdDebug,
-                {
-                  line: unit.line,
-                  sentence: unit.text,
-                  language: unitLanguage,
-                  trace: syntaxResponse.debug
-                }
-              ];
-            }
-          } catch (err) {
-            failures += 1;
-            if (failureMessages.length < 5) {
-              const message = err?.message ? String(err.message) : "syntax analysis call failed";
-              failureMessages.push(`line ${unit.line}: ${message}`);
-            }
-          }
-        }
-        if (includeDaTr) {
-          const prompt = String(semanticPromptTemplate || "")
-            .replace(/\{\{layers\}\}/g, llmLayersText)
-            .replace(/\{\{script\}\}/g, unit.text)
-            .replace(/\{\{line\}\}/g, String(unit.line))
-            .replace(/\{\{speaker\}\}/g, unit.speaker || "");
-          try {
-            const response = await apiPost(`/api/v1/projects/${selectedProjectId}/semantic/analyze`, {
-              text: unit.text,
-              useLlm: true,
-              persist: false,
-              basicProvider: "ud",
-              language: unitLanguage,
-              llmIndex: semanticLLMIndex,
-              systemPrompt: semanticSystemPrompt || "",
-              prompt,
-              layers: {
-                basic: false,
-                dialogueAct: includeDaTr,
-                themeRheme: includeDaTr
-              }
-            });
-            metaNormalized = normalizeSentenceAnnotations(response?.annotations, unit);
-          } catch (err) {
-            failures += 1;
-            if (failureMessages.length < 5) {
-              const message = err?.message ? String(err.message) : "dialogue/thema analysis call failed";
-              failureMessages.push(`line ${unit.line}: ${message}`);
-            }
-          }
-        }
-        const sentenceAnnotations = mergeSentenceAnnotationLayers(syntaxNormalized, metaNormalized, unit);
-        if (sentenceAnnotations.length) {
-          merged.push(...sentenceAnnotations);
-          semanticAnnotations = [...merged];
-          semanticSourceText = scriptDraft || "";
-        } else {
-          failures += 1;
-          if (failureMessages.length < 5) {
-            failureMessages.push(`line ${unit.line}: no annotations returned`);
-          }
-        }
-      }
-      stopSemanticPreview();
-      const finalDoc = {
-        version: 2,
-        schema: {
-          id: "vsm.semantic.annotations",
-          version: 2
-        },
-        annotations: merged
-      };
-      semanticDoc = finalDoc;
-      semanticAnnotations = merged;
+
+      semanticStatus = "Analyzing script...";
+      const llmLayersText = `basic:false, dialogueAct:${includeDaTr}, themeRheme:${includeDaTr}`;
+      // {{script}} is substituted per sentence by the server; {{line}}/{{speaker}} too.
+      const prompt = String(semanticPromptTemplate || "").replace(/\{\{layers\}\}/g, llmLayersText);
+
+      const doc = await apiPost(`/api/v1/projects/${selectedProjectId}/semantic/analyze-script`, {
+        // Analyse what is on screen, not the last saved script.
+        text: scriptDraft || "",
+        layers: { basic: includeSvo, dialogueAct: includeDaTr, themeRheme: includeDaTr },
+        useLlm: includeDaTr,
+        persist: false,
+        language: semanticPreferredLanguage(),
+        llmIndex: semanticLLMIndex,
+        systemPrompt: semanticSystemPrompt || "",
+        prompt,
+        debug: semanticDebugEnabled
+      });
+
+      const annotations = Array.isArray(doc?.annotations) ? doc.annotations : [];
+      semanticDoc = doc;
+      semanticAnnotations = annotations;
       semanticSourceText = scriptDraft || "";
       semanticDirty = true;
-      semanticStatus = failures > 0
-        ? `Semantic analysis updated (${merged.length} annotations, ${failures} sentence errors).`
-        : `Semantic analysis updated (${merged.length} annotations).`;
-      semanticError = failures > 0
-        ? `Sentence analysis errors:\n${failureMessages.join("\n")}`
-        : "";
+      if (semanticDebugEnabled && Array.isArray(doc?.debug?.sentences)) {
+        semanticUdDebug = doc.debug.sentences;
+      }
+
+      const stats = doc?.stats || {};
+      const warnings = Array.isArray(doc?.warnings) ? doc.warnings : [];
+      if (!annotations.length) {
+        semanticStatus = "No utterance sentences found for semantic analysis.";
+      } else {
+        const clauseCount = annotations.reduce((n, a) => n + (a?.clauses?.length || 0), 0);
+        semanticStatus = `Semantic analysis updated (${annotations.length} sentences, `
+          + `${clauseCount} clauses, ${stats.commands ?? 0} commands`
+          + (warnings.length ? `, ${warnings.length} warnings` : "") + ").";
+      }
+      semanticError = warnings.length ? `Analysis warnings:\n${warnings.slice(0, 5).join("\n")}` : "";
     } catch (err) {
       stopSemanticPreview();
-      semanticError = err.message || "Semantic analysis failed.";
+      // The server refuses to analyse a script it cannot parse rather than falling back to the old
+      // splitter, so surface that as the actionable message it is.
+      const message = err?.message ? String(err.message) : "Semantic analysis failed.";
+      semanticError = message.includes("SCRIPT_PARSE_FAILED") || message.includes("does not parse")
+        ? "The script does not parse, so it cannot be analysed. Fix the reported script errors first."
+        : message;
     } finally {
       semanticAnalyzeBusy = false;
     }
