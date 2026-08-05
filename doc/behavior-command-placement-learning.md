@@ -175,7 +175,10 @@ and match browser output modulo the two fixed defects.
 
 Built for several annotators × several scenarios from the start.
 
-- **2.1 Placement-corpus extractor** → JSONL, one record per utterance:
+- **2.1 Placement-corpus extractor. ✅ DONE (2026-08-05).** `CorpusExtractCli` /
+  `./gradlew extractCorpus`. Records carry the full anchor inventory (the negatives) alongside the
+  placements actually made. Running it surfaced four defects — see the commit. Original spec:
+  JSONL, one record per utterance:
   `{project, scenario, annotator, scene, turn, speaker, language, cleanText, structure, commands: [{name, actor, params, category, anchor:{clauseId, slot, role, side, tokenIndex, charOffset}}], analysisVersion}`.
   Deterministic and versioned so records can be re-derived when the analysis changes.
 - **2.2 Behavior taxonomy — NEUROGES®-based. ✅ FIRST PASS DONE (2026-08-04).**
@@ -198,13 +201,24 @@ Built for several annotators × several scenarios from the start.
   coverage against every declared plugin command in both directions, validates Type-under-Function,
   and asserts no tag claims video-coded evidence yet — that last one flips deliberately when the
   first Xenia clips land.
-- **2.3 Multi-annotator agreement report.** Same scenario authored by several people → agreement
+- **2.3 Multi-annotator agreement report. ✅ BUILT, awaiting data (2026-08-05).**
+  `./gradlew corpusAgreement -Pcorpus=<jsonl>[,<jsonl>]`. With one annotator it says so plainly
+  instead of inventing a number. Verified against a synthetic second annotator: it reports per-pair
+  observed agreement, Cohen's κ, exact-set match, and **Jaccard over slots anyone used** — the figure
+  to lead with, because κ across all offered slots is dominated by the ~96% nobody touches and so
+  measures blank space rather than agreement. Original spec: same scenario authored by several people
+  → agreement
   on (category, anchor slot). Calibrate expectations against NEUROGES's own trained-rater figures
   (modified κ 0.34–0.62 on Module I; Function is the harder layer) — see
   `doc/behavior-taxonomy-neuroges.md` §7. **This gates Phase 3**: if two authors disagree systematically,
   placement is a style model, not a shared model, and the per-project design is confirmed
   (or the categories need revising).
-- **2.4 Corpus stats CLI.** Counts per category × anchor slot, coverage, sparsity report.
+- **2.4 Corpus stats CLI. ✅ DONE (2026-08-05).** `./gradlew corpusStats -Pcorpus=<jsonl>`.
+  Function × anchor-slot cross-tab (the distribution a model would fit), base rate, sparsity, and a
+  verdict. Current corpus: 37 sentences, 14 placements, **8 co-speech**, base rate 3.7% of offered
+  slots used, one Function value populated (`emotion/attitude`). Verdict: far too few to fit a
+  distribution — use the hand-written prior with axis back-off, and treat anything measured on this
+  corpus as a smoke test.
 
 ## Phase 3 — Placement service (per-project adaptive)
 

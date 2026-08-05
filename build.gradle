@@ -1020,6 +1020,35 @@ task extractCorpus(type: JavaExec) {
     }
 }
 
+// Reports over the extracted placement corpus — plan 2.4 (stats) and 2.3 (agreement).
+// Pure JSONL analysis, so no services need to be running.
+//
+//   ./gradlew corpusStats     -Pcorpus=build/corpus.jsonl
+//   ./gradlew corpusAgreement -Pcorpus=build/a.jsonl,build/b.jsonl
+task corpusStats(type: Exec) {
+    group = 'verification'
+    description = 'Corpus statistics: Function x anchor-slot distribution and sparsity. -Pcorpus=<files>'
+    doFirst {
+        if (!project.hasProperty('corpus')) {
+            throw new GradleException('Missing -Pcorpus=<file.jsonl>[,<file.jsonl>]')
+        }
+        commandLine(['python3', 'services/corpus/corpus_report.py', 'stats']
+                + project.property('corpus').toString().split(',').toList())
+    }
+}
+
+task corpusAgreement(type: Exec) {
+    group = 'verification'
+    description = 'Inter-annotator agreement on placement. GATES Phase 3. -Pcorpus=<files>'
+    doFirst {
+        if (!project.hasProperty('corpus')) {
+            throw new GradleException('Missing -Pcorpus=<file.jsonl>[,<file.jsonl>]')
+        }
+        commandLine(['python3', 'services/corpus/corpus_report.py', 'agreement']
+                + project.property('corpus').toString().split(',').toList())
+    }
+}
+
 // Run task to start the editor (SceneMaker4 - web-only)
 task run(type: JavaExec) {
     group = 'application'
