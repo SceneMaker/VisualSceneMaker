@@ -1745,6 +1745,11 @@ a.export-link {
   background: rgba(70, 132, 54, 0.14);
 }
 
+/* Clause linker — outside the role palette on purpose: it belongs to no role. */
+.semantic-legend-swatch.linker {
+  background: rgba(32, 116, 116, 0.35);
+}
+
 .semantic-debug-toggle {
   display: inline-flex;
   align-items: center;
@@ -2214,6 +2219,7 @@ a.export-link {
 .script-editor .cm-semantic-subject-adjective,
 .script-editor .cm-semantic-subject-adverb,
 .script-editor .cm-semantic-subject-comparison,
+.script-editor .cm-semantic-linker,
 .script-editor .cm-semantic-verb-adjective,
 .script-editor .cm-semantic-verb-adverb,
 .script-editor .cm-semantic-verb-comparison,

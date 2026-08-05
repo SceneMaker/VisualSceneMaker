@@ -2474,9 +2474,20 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
           ? clampSemanticSpanToRange({ from: span.from, to: span.to }, utteranceRange, scriptText, docLength)
           : null;
 
+        // Clause roles supersede the flat layer whenever they exist. `basic` carries a single role
+        // set for the whole sentence and fills each slot from whichever clause matched first, so on
+        // "Lass mich einen Vorschlag machen wie wir zusammen weitermachen." it paired subject "wir"
+        // (subordinate clause) with verb "machen" (main clause) and drew them as one subject-verb
+        // pair. They belong to different clauses. It also has no second verb slot, so the subordinate
+        // verb "weitermachen" could never be marked at all, nor its adverbial "zusammen".
+        const clauseList = (includeBasic && Array.isArray(ann.clauses))
+          ? ann.clauses.filter((c) => c && typeof c === "object")
+          : [];
+        const clauseRolesAvailable = clauseList.some(
+          (c) => c.roles && typeof c.roles === "object" && Object.keys(c.roles).length > 0
+        );
         if (includeBasic && Array.isArray(ann.clauses)) {
-          for (const clause of ann.clauses) {
-            if (!clause || typeof clause !== "object") continue;
+          for (const clause of clauseList) {
             // Only bracket a clause when the sentence has more than one — a single clause spanning
             // the whole utterance is noise, not information.
             if (ann.clauses.length > 1) {
@@ -2494,16 +2505,45 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
               const span = v3Span(obj?.phrase || obj?.head);
               if (span) out.marks.push({ ...span, kind: `object-${obj.kind || "direct"}` });
             }
+            // Role heads and their modifiers, per clause. Pushed after the phrase wash of the same
+            // clause so the head stays legible above it.
+            for (const roleName of ["subject", "verb", "predicate", "address"]) {
+              const role = clause?.roles?.[roleName];
+              if (!role) continue;
+              const headSpan = v3Span(role.head);
+              if (headSpan) out.marks.push({ ...headSpan, kind: roleName });
+              for (const mod of Array.isArray(role.modifiers) ? role.modifiers : []) {
+                const modSpan = v3Span(mod);
+                if (!modSpan) continue;
+                const pos = String(mod?.pos || "").toLowerCase();
+                out.marks.push({
+                  ...modSpan,
+                  kind: pos.includes("compar") ? `${roleName}-comparison`
+                    : pos.includes("adv") ? `${roleName}-adverb`
+                      : `${roleName}-adjective`
+                });
+              }
+            }
+            // The conjunction joining this clause to its parent — "wie", "dass", "weil". Not a
+            // modifier of anything, so it gets its own mark rather than being forced into a role.
+            const linkerSpan = v3Span(clause?.linker);
+            if (linkerSpan) out.marks.push({ ...linkerSpan, kind: "linker" });
           }
         }
 
-        if (subject) out.marks.push({ ...subject, kind: "subject" });
-        if (verb) out.marks.push({ ...verb, kind: "verb" });
-        if (object) out.marks.push({ ...object, kind: "object" });
-        if (predicate) out.marks.push({ ...predicate, kind: "predicate" });
-        if (address) out.marks.push({ ...address, kind: "address" });
+        // Fall back to the flat layer only when the clause layer produced no roles at all, so the
+        // same token never gets a clause mark and a basic mark on top of each other.
+        if (!clauseRolesAvailable) {
+          if (subject) out.marks.push({ ...subject, kind: "subject" });
+          if (verb) out.marks.push({ ...verb, kind: "verb" });
+          if (object) out.marks.push({ ...object, kind: "object" });
+          if (predicate) out.marks.push({ ...predicate, kind: "predicate" });
+          if (address) out.marks.push({ ...address, kind: "address" });
+        }
+        // Always drawn: the clause layer has an `address` role but no separate head-of-address-phrase
+        // notion, so this mark has no clause-level equivalent to be superseded by.
         if (addressHead) out.marks.push({ ...addressHead, kind: "address-head" });
-        for (const group of modifierGroups) {
+        for (const group of (clauseRolesAvailable ? [] : modifierGroups)) {
           const spans = Array.isArray(group.spans) ? group.spans : [];
           for (const raw of spans) {
             const normalized = clampSemanticSpanToRange(
@@ -17948,8 +17988,10 @@ Sentence:
                     <span class="semantic-legend-item"><span class="semantic-legend-bracket"></span>Clause</span>
                     <span class="semantic-legend-item"><span class="semantic-legend-swatch phrase"></span>Phrase</span>
                     <span class="semantic-legend-item"><span class="semantic-legend-tick"></span>Anchor</span>
+                    <span class="semantic-legend-item"><span class="semantic-legend-swatch linker"></span>Linker</span>
                     <span class="semantic-legend-note">clause brackets appear only when a sentence has more than one clause;
-                      anchors mark the positions where a behavior command can sit</span>
+                      anchors mark the positions where a behavior command can sit; a linker ("wie", "dass") joins two
+                      clauses and belongs to no role, so roles and modifiers are shown per clause</span>
                   </div>
                 </div>
               </div>

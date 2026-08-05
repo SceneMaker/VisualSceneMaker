@@ -163,6 +163,37 @@ which asserts the correct reading and is expected to fail until the parser impro
 - Clause roles are resolved by assigning each word to its nearest clause-root ancestor, which is what
   stops a subordinate clause's subject being reported against the main clause's verb.
 
+#### Per-role `modifiers`, and the clause `linker`
+
+Each role entry carries its own `modifiers` array, in the same shape as the `basic` ones (`pos`,
+`usage`, span). Restricted to words inside the clause, so a role never collects a neighbour's
+modifier.
+
+Each clause may also carry a `linker`: the conjunction or interrogative adverb that joins it to its
+parent — `wie`, `dass`, `weil`. It is deliberately **not** a modifier. Stanza tags the `wie` of
+`wie wir zusammen weitermachen` as `SCONJ`/`KOUS` carrying an `advmod` relation, but it modifies
+nothing; it marks the seam between two clauses, which is itself a position where a behavior command
+can sit. Forcing it into a role would misdescribe it, and dropping it lost the boundary.
+
+#### Why the editor now draws roles per clause, not from `basic`
+
+`basic` has one slot per role for the whole sentence and fills each from whichever clause matched
+first. On
+
+    Lass mich einen Vorschlag machen wie wir zusammen weitermachen.
+
+it returns `subject: wir` and `verb: machen` — **from different clauses**. `wir` is the subject of
+`weitermachen`; `machen` is the main clause's verb. Drawn together they read as a subject-verb pair
+that does not exist. And with only one verb slot, `weitermachen` could never be marked at all, nor
+its adverbial `zusammen`, which modifies it rather than `machen`.
+
+The editor therefore takes role heads and modifiers from `clauses` whenever any clause has roles, and
+falls back to `basic` only when none does. `basic` is still emitted unchanged for other consumers.
+The one mark still taken from `basic` is `addressHead`, which has no clause-level equivalent.
+
+Consequence worth knowing: a multi-clause sentence now shows several subject/verb marks rather than
+one. That is denser, and correct — the previous single set was not merely incomplete but wrong.
+
 ### `anchors` — new in v3
 
 The candidate positions for placing a behavior command: the label space a placement model predicts

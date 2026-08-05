@@ -664,7 +664,8 @@ def build_address_phrase(sentence, words, addr_word, base_offset, index_map, ori
     }
 
 
-def modifier_spans(sentence, words, role_word, role_name, base_offset, index_map, original_text_len):
+def modifier_spans(sentence, words, role_word, role_name, base_offset, index_map, original_text_len,
+                   allowed_ids=None):
     spans = []
     seen = set()
     # No predicative special case for the subject any more. add_predicative_modifiers() attached the
@@ -674,6 +675,8 @@ def modifier_spans(sentence, words, role_word, role_name, base_offset, index_map
     # children are already collected by the predicate's own modifier pass.
     role_modifiers = select_role_modifiers(words, role_word)
     for modifier_word, pos_kind in role_modifiers:
+        if allowed_ids is not None and word_id_value(modifier_word) not in allowed_ids:
+            continue
         span = word_span(sentence, modifier_word, base_offset, index_map, original_text_len)
         if span is None:
             continue
@@ -1278,8 +1281,40 @@ def role_entry(sentence, words, head_word, clause_ids, original_text, index_map,
     phrase = phrase_span(sentence, words, head_word, clause_ids, original_text, index_map, base_offset)
     if phrase is not None:
         entry["phrase"] = phrase
+    # Each clause role carries its own modifiers. Without these the flat `basic` layer was the only
+    # source of modifier marks, and it holds one role set for the whole sentence — so "zusammen" in
+    # "wie wir zusammen weitermachen" was dropped, being an adverbial of the *subordinate* verb while
+    # basic.verb is the main clause's "machen".
+    modifiers = modifier_spans(sentence, words, head_word, role, base_offset, index_map,
+                               len(original_text), allowed_ids=clause_ids)
+    if modifiers:
+        entry["modifiers"] = modifiers
     entry["confidence"] = role_confidence(role, role_strength(role, head_word, cfg))
     return entry
+
+
+def clause_linker(clause_words):
+    """The conjunction or interrogative adverb introducing a clause — "wie", "dass", "weil".
+
+    Stanza tags the "wie" of "wie wir zusammen weitermachen" as SCONJ/KOUS carrying an `advmod`
+    relation. It is not a modifier of any role: it joins clauses. Reporting it as an adverb of the
+    verb would misdescribe it, and dropping it lost the clause boundary entirely — which is precisely
+    a position where a behavior command can sit, so it gets a field of its own.
+
+    Leftmost candidate wins; a clause introduced by more than one marker is vanishingly rare and the
+    first is the boundary.
+    """
+    candidates = []
+    for w in clause_words:
+        dep = str(getattr(w, "deprel", "") or "")
+        upos = str(getattr(w, "upos", "") or "")
+        if dep == "mark" or upos == "SCONJ":
+            wid = word_id_value(w)
+            if wid is not None:
+                candidates.append((wid, w))
+    if not candidates:
+        return None
+    return min(candidates, key=lambda kv: kv[0])[1]
 
 
 def build_clauses(sentence, words, cfg, original_text, index_map, base_offset):
@@ -1337,6 +1372,10 @@ def build_clauses(sentence, words, cfg, original_text, index_map, base_offset):
             "roles": roles,
             "objects": objects,
         }
+        linker = word_span(sentence, clause_linker(clause_words), base_offset, index_map,
+                           len(original_text))
+        if linker is not None:
+            clause_json["linker"] = linker
         if span is not None:
             clause_json["from"] = span["from"]
             clause_json["to"] = span["to"]

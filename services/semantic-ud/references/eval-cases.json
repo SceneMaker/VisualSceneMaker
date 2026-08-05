@@ -354,5 +354,55 @@
     },
     "expectedNoAddress": true,
     "note": "`das` is the subject, not an addressee. The comma fallback used to claim it, and the predicate adjective used to be reported twice — once as predicate, once as a subject modifier."
+  },
+  {
+    "id": "de-clause-linker-01",
+    "language": "de",
+    "text": "Lass mich einen Vorschlag machen wie wir zusammen weitermachen.",
+    "expected": {
+      "verb": "machen"
+    },
+    "expectedClauses": [
+      {
+        "type": "main",
+        "verb": "machen",
+        "linker": ""
+      },
+      {
+        "type": "subordinate",
+        "verb": "weitermachen",
+        "subject": "wir",
+        "linker": "wie",
+        "verbModifiers": [
+          "zusammen"
+        ]
+      }
+    ],
+    "note": "Two clauses. The subordinate verb and its adverbial exist only in the clause layer: basic has one verb slot, filled by the main clause. `wie` is SCONJ/KOUS, so it is a linker rather than a modifier."
+  },
+  {
+    "id": "de-clause-linker-02",
+    "language": "de",
+    "text": "Schau mal, wie Bob das findet.",
+    "expectedClauses": [
+      {
+        "type": "main",
+        "linker": ""
+      },
+      {
+        "type": "subordinate",
+        "verb": "findet",
+        "subject": "Bob",
+        "linker": "wie",
+        "objects": [
+          {
+            "kind": "direct",
+            "phrase": "das"
+          }
+        ]
+      }
+    ],
+    "knownWeak": true,
+    "note": "knownWeak for the main clause only: Stanza tags the imperative 'Schau' INTJ and makes the adverb 'mal' the root, so the main clause comes back verbless. The subordinate clause and the linker are asserted as correct."
   }
 ]

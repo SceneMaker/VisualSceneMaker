@@ -45,11 +45,19 @@ def clause_summary(annotation):
             entry = roles.get(role) or {}
             return norm_text((entry.get("head") or {}).get("text", ""))
 
+        def mods_of(role):
+            entry = roles.get(role) or {}
+            return sorted(norm_text(m.get("text", "")) for m in (entry.get("modifiers") or []))
+
         out.append({
             "type": str(clause.get("type") or ""),
             "verb": head_of("verb"),
             "subject": head_of("subject"),
             "predicate": head_of("predicate"),
+            "linker": norm_text((clause.get("linker") or {}).get("text", "")),
+            "verbModifiers": mods_of("verb"),
+            "subjectModifiers": mods_of("subject"),
+            "predicateModifiers": mods_of("predicate"),
             "objects": [
                 {
                     "kind": str(obj.get("kind") or ""),
@@ -71,11 +79,17 @@ def clause_diffs(predicted, expected):
             diffs.append(f"c{idx}: missing")
             continue
         got = predicted[idx]
-        for field in ("type", "verb", "subject", "predicate"):
+        for field in ("type", "verb", "subject", "predicate", "linker"):
             if field not in want:
                 continue
             if norm_text(want[field]) != got.get(field, ""):
                 diffs.append(f"c{idx}.{field}: '{got.get(field, '')}' != '{norm_text(want[field])}'")
+        for field in ("verbModifiers", "subjectModifiers", "predicateModifiers"):
+            if field not in want:
+                continue
+            want_mods = sorted(norm_text(t) for t in want[field])
+            if want_mods != got.get(field, []):
+                diffs.append(f"c{idx}.{field}: {got.get(field, [])} != {want_mods}")
         if "objects" in want:
             want_objs = [(norm_text(o.get("kind", "")), norm_text(o.get("phrase", ""))) for o in want["objects"]]
             got_objs = [(o["kind"], o["phrase"]) for o in got.get("objects", [])]

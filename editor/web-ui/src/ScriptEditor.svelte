@@ -82,6 +82,14 @@
       style: "background: rgba(132,98,42,0.16); border-bottom: 3px solid rgba(132,98,42,0.95); border-radius: 2px;"
     }
   });
+  // Clause linker ("wie", "dass", "weil"): teal, deliberately outside every role colour, because it
+  // belongs to no role — it marks the seam between two clauses.
+  const semanticLinkerMark = Decoration.mark({
+    class: "cm-semantic-linker",
+    attributes: {
+      style: "background: rgba(32,116,116,0.12); border-bottom: 2px solid rgba(32,116,116,0.85); border-radius: 2px;"
+    }
+  });
   const semanticVerbAdjMark = Decoration.mark({
     class: "cm-semantic-verb-adjective",
     attributes: {
@@ -979,6 +987,7 @@
       else if (kind === "predicate") deco = semanticPredicateMark;
       else if (kind === "address") deco = semanticAddressMark;
       else if (kind === "address-head") deco = semanticAddressHeadMark;
+      else if (kind === "linker") deco = semanticLinkerMark;
       else if (kind === "verb-adjective") deco = semanticVerbAdjMark;
       else if (kind === "verb-adverb") deco = semanticVerbAdvMark;
       else if (kind === "verb-comparison") deco = semanticVerbCompMark;
