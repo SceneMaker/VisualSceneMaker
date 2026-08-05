@@ -155,6 +155,50 @@
     }
   });
 
+  // --- Schema v3 marks (clauses, object kinds, phrase spans) -----------------------------------
+  // The v2 marks above colour a single head token per role. v3 adds three distinctions the flat
+  // block cannot express, and they are drawn so as not to fight the existing role colours:
+  //   * clause  — a bracket, drawn only at the edges, so nesting stays readable
+  //   * phrase  — a faint wash behind the whole constituent ("den roten Ball"), with the role's own
+  //               head mark still on top of its head token
+  //   * objects — direct / indirect / prepositional get distinct hues, because which object a
+  //               command attaches to is exactly what placement learning is about
+  const semanticClauseMark = Decoration.mark({
+    class: "cm-semantic-clause",
+    attributes: {
+      style: "border-left: 2px solid rgba(120,120,140,0.45); border-right: 2px solid rgba(120,120,140,0.45); "
+           + "border-radius: 3px; padding: 0 1px;"
+    }
+  });
+  const semanticPhraseMark = Decoration.mark({
+    class: "cm-semantic-phrase",
+    attributes: { style: "background: rgba(70,132,54,0.08); border-radius: 2px;" }
+  });
+  const semanticObjectDirectMark = Decoration.mark({
+    class: "cm-semantic-object-direct",
+    attributes: {
+      style: "background: rgba(70,132,54,0.14); border-bottom: 2px dashed rgba(70,132,54,0.85); border-radius: 2px;"
+    }
+  });
+  const semanticObjectIndirectMark = Decoration.mark({
+    class: "cm-semantic-object-indirect",
+    attributes: {
+      style: "background: rgba(150,110,30,0.14); border-bottom: 2px dashed rgba(150,110,30,0.9); border-radius: 2px;"
+    }
+  });
+  const semanticObjectPrepMark = Decoration.mark({
+    class: "cm-semantic-object-prepositional",
+    attributes: {
+      style: "background: rgba(120,80,150,0.14); border-bottom: 2px dotted rgba(120,80,150,0.9); border-radius: 2px;"
+    }
+  });
+  // Anchor slots: where a behavior command could go. Zero-width, so drawn as a thin marker between
+  // characters — a preview of what Phase 4's ghost suggestions will occupy.
+  const semanticAnchorMark = Decoration.mark({
+    class: "cm-semantic-anchor",
+    attributes: { style: "border-left: 2px dotted rgba(28,110,164,0.55); margin-left: -1px;" }
+  });
+
   const semanticHighlightField = StateField.define({
     create() { return Decoration.none; },
     update(decos, tr) {
@@ -929,6 +973,13 @@
       else if (kind === "address-adjective") deco = semanticAddressAdjMark;
       else if (kind === "address-adverb") deco = semanticAddressAdvMark;
       else if (kind === "address-comparison") deco = semanticAddressCompMark;
+      else if (kind === "clause") deco = semanticClauseMark;
+      else if (kind === "phrase") deco = semanticPhraseMark;
+      else if (kind === "object-direct") deco = semanticObjectDirectMark;
+      else if (kind === "object-indirect") deco = semanticObjectIndirectMark;
+      else if (kind === "object-prepositional") deco = semanticObjectPrepMark;
+      else if (kind === "object-clausal" || kind === "object-oblique") deco = semanticObjectDirectMark;
+      else if (kind === "anchor") deco = semanticAnchorMark;
       ranges.push(deco.range(from, to));
     }
 

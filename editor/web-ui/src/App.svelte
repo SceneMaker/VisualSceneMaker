@@ -2455,6 +2455,43 @@ Generate only the scene text. Do not include explanations, markdown formatting, 
           { role: "predicate", spans: basic.predicateModifiers || [] },
           { role: "address", spans: basic.addressModifiers || [] }
         ];
+        // Schema v3 layers, drawn beneath the flat role marks so the existing colouring still reads.
+        // Pushed first because CodeMirror paints later decorations on top: the faint phrase wash and
+        // clause bracket go underneath, the head marks stay legible above them.
+        //
+        // Offsets are used verbatim, with the span's `text` deliberately dropped. v3 spans come from
+        // the server, which already remapped them through the clean-text projection, and a clause or
+        // phrase span legitimately *straddles a removed command* — script[71:167] for
+        // "Hallo ich bin Xenia." contains "[time: init …] [pause …]" in the middle. Passing `text`
+        // would make normalizeSemanticSpan's slice-vs-text check fail on exactly those spans and fall
+        // back to a guess.
+        const v3Span = (span) => (span && Number.isFinite(span.from) && Number.isFinite(span.to))
+          ? clampSemanticSpanToRange({ from: span.from, to: span.to }, utteranceRange, scriptText, docLength)
+          : null;
+
+        if (includeBasic && Array.isArray(ann.clauses)) {
+          for (const clause of ann.clauses) {
+            if (!clause || typeof clause !== "object") continue;
+            // Only bracket a clause when the sentence has more than one — a single clause spanning
+            // the whole utterance is noise, not information.
+            if (ann.clauses.length > 1) {
+              const clauseSpan = v3Span(clause);
+              if (clauseSpan) out.marks.push({ ...clauseSpan, kind: "clause" });
+            }
+            // Phrase spans of nominal roles: the constituent a command attaches to.
+            for (const role of ["subject", "predicate", "address"]) {
+              const span = v3Span(clause?.roles?.[role]?.phrase);
+              if (span) out.marks.push({ ...span, kind: "phrase" });
+            }
+            // Objects by kind — the distinction the flat block cannot make at all: it reported one
+            // object, and never the indirect one.
+            for (const obj of Array.isArray(clause.objects) ? clause.objects : []) {
+              const span = v3Span(obj?.phrase || obj?.head);
+              if (span) out.marks.push({ ...span, kind: `object-${obj.kind || "direct"}` });
+            }
+          }
+        }
+
         if (subject) out.marks.push({ ...subject, kind: "subject" });
         if (verb) out.marks.push({ ...verb, kind: "verb" });
         if (object) out.marks.push({ ...object, kind: "object" });
