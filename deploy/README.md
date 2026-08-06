@@ -1,5 +1,9 @@
 # VSM Runtime Server — Docker Deployment
 
+> **Not the semantic parser.** For deploying `semantic-ud` (the UD parser behind Semantic Analysis)
+> as a systemd service, see **[`services/semantic-ud/deploy/README.md`](../services/semantic-ud/deploy/README.md)**.
+> That is a separate service with its own install steps and shares nothing with this package.
+
 Deploys VisualSceneMaker's standalone `runtime-server` (headless, `RUNTIME_ONLY`
 mode — this is not the full editor: project editing is disabled, only
 runtime start/stop/monitoring) in a Docker container, pre-loaded with a single

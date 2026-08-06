@@ -1,5 +1,9 @@
 # Deploying semantic-ud on Ubuntu
 
+> Scope: **only** the UD parser that backs Semantic Analysis. It is not the VSM editor, not
+> `runtime-server`, and unrelated to the Docker package in the repository's top-level
+> [`deploy/`](../../../deploy/README.md).
+
 VSM's Java server calls this parser over loopback; browsers never do. So it binds `127.0.0.1`, needs
 no TLS, no auth and no firewall rule — and **must not be exposed**, because it has none of those.
 
