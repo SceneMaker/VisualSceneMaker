@@ -7545,6 +7545,123 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
         return ref;
     }
 
+    /**
+     * Ask the configured LLM to choose a slot — plan 3.4, and strictly a *second* opinion.
+     *
+     * <p>Only ever consulted for contexts the frequency model has never seen, which is exactly where
+     * a count model has nothing to say and falls back to a generic prior. It is never consulted to
+     * overrule evidence: an author's own past placements are better evidence about that author than
+     * anything a language model can infer.
+     *
+     * <p>The output space is closed. The model is given the slot names this sentence offers and must
+     * return one of them; anything else — a slot that does not exist, prose, a refusal — is rejected
+     * rather than repaired. A free-text position would have to be parsed back into a structural
+     * label, which is the very inference this whole service exists to make.
+     *
+     * @return a provenance-tagged choice, or null when unavailable, unparsable or out of inventory.
+     */
+    private JSONObject placementSecondOpinion(
+            ProjectRef ref, int llmIndex, PlacementContext context, List<String> offered,
+            String sentence, String commandName) {
+        if (ref == null || ref.runtimeProject == null || offered == null || offered.isEmpty()) {
+            return null;
+        }
+        ProjectConfig cfg = ref.runtimeProject.getProjectConfig();
+        if (cfg == null || cfg.getLLMConfigList() == null || cfg.getLLMConfigList().isEmpty()) {
+            return null;
+        }
+        int selectedIndex = Math.max(0, llmIndex);
+        if (selectedIndex >= cfg.getLLMConfigList().size()) {
+            selectedIndex = 0;
+        }
+        LLMConfig llmConfig = cfg.getLLMConfigList().get(selectedIndex);
+        try {
+            LLMSupport llm = createLLMSupport(llmConfig);
+            if (llm.getSelectedModel() == null) {
+                return null;
+            }
+            StringBuilder slotList = new StringBuilder();
+            for (String slot : offered) {
+                slotList.append("- ").append(slot).append('\n');
+            }
+            String descriptor = commandName
+                    + (context.getFunction() == null ? "" : " (" + context.getFunction() + ")")
+                    + (context.getAffiliate() == null ? ""
+                            : ", attaches to the " + context.getAffiliate());
+            String prompt = """
+                    You place nonverbal behavior commands inside spoken utterances.
+
+                    Utterance: "%s"
+                    Behavior to place: %s
+
+                    Choose exactly one position from this list. These are structural positions in the
+                    sentence, not character offsets:
+                    %s
+                    Reply with JSON only, no markdown, no commentary:
+                    {"slot": "<exactly one name from the list above>", "reason": "<at most 12 words>"}
+                    """.formatted(sentence == null ? "" : sentence, descriptor, slotList.toString());
+
+            LLMSupport.LLMCompletion completion = llm.sendPrompt(prompt);
+            JSONObject out = parseSecondOpinion(completion.content(), offered);
+            if (out == null) {
+                return null;
+            }
+            return out.put("model", String.valueOf(llm.getSelectedModel()));
+        } catch (Exception exc) {
+            sLogger.warning("Placement second opinion unavailable: " + exc.getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Parse and validate a second-opinion reply. Package-private so the rejection rules can be
+     * tested without a configured LLM — they are the part that matters, since everything else about
+     * this feature degrades to "no suggestion" but a bad slot would corrupt a real one.
+     *
+     * @return {@code {slot, source, reason?}}, or null if the reply is unusable for any reason.
+     */
+    static JSONObject parseSecondOpinion(String raw, List<String> offered) {
+        if (raw == null || offered == null || offered.isEmpty()) {
+            return null;
+        }
+        String content = raw.trim();
+        if (content.startsWith("```")) {
+            int nl = content.indexOf('\n');
+            if (nl >= 0) {
+                content = content.substring(nl + 1);
+            }
+            if (content.endsWith("```")) {
+                content = content.substring(0, content.length() - 3);
+            }
+            content = content.trim();
+        }
+        if (content.isEmpty() || content.charAt(0) != '{') {
+            return null;
+        }
+        final JSONObject parsed;
+        try {
+            parsed = new JSONObject(content);
+        } catch (Exception exc) {
+            return null;
+        }
+        String slot = parsed.optString("slot", "").trim();
+        if (!offered.contains(slot)) {
+            // Out of inventory: a slot that does not exist in this sentence, or prose where a name
+            // was asked for. Rejected outright rather than repaired — guessing which real slot was
+            // meant is the inference this service exists to make, and doing it here from a
+            // malformed reply would be the least reliable place to make it.
+            sLogger.warning("Placement second opinion rejected: '" + slot
+                    + "' is not among the slots offered for this sentence.");
+            return null;
+        }
+        JSONObject out = new JSONObject().put("slot", slot).put("source", "llm");
+        String reason = parsed.optString("reason", "").trim();
+        if (!reason.isEmpty()) {
+            out.put("reason", reason);
+        }
+        return out;
+    }
+
     private void handlePlacementModel(Context ctx) {
         ProjectRef ref = placementProject(ctx);
         if (ref == null) {
@@ -7597,9 +7714,22 @@ public final class WebUiServer implements EventListener, RuntimeCommandEndpoint 
             for (PlacementSuggestion suggestion : suggestions) {
                 out.put(suggestion.toJson());
             }
-            writeJson(ctx, new JSONObject()
+            JSONObject response = new JSONObject()
                     .put("suggestions", out)
-                    .put("observations", observations)
+                    .put("observations", observations);
+            // A second opinion is offered only when the frequency model had no evidence for this
+            // context, and is returned beside the ranking rather than merged into it. Blending an
+            // LLM guess into scores derived from counts would make the numbers mean two different
+            // things at once, and would erase the distinction the `basis` field exists to preserve.
+            if (body.optBoolean("useLlm", false)
+                    && !suggestions.isEmpty() && suggestions.get(0).isPriorOnly()) {
+                JSONObject secondOpinion = placementSecondOpinion(ref, body.optInt("llmIndex", 0),
+                        context, offered, body.optString("text", ""), command);
+                if (secondOpinion != null) {
+                    response.put("secondOpinion", secondOpinion);
+                }
+            }
+            writeJson(ctx, response
                     .put("context", new JSONObject()
                             .put("function", context.getFunction())
                             .put("affiliate", context.getAffiliate())

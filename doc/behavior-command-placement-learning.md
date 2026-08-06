@@ -275,7 +275,7 @@ Built for several annotators × several scenarios from the start.
 
 ## Phase 3 — Placement service (per-project adaptive)
 
-**Status (2026-08-06): 3.1, 3.2, 3.3 and 3.5 implemented; 3.4 not started.** Two deviations from
+**Status (2026-08-06): Phase 3 complete — 3.1 through 3.5.** Two deviations from
 what is written below, both deliberate:
 
 - **Not a `services/` module.** The text asks for a standalone Javalin service that also "runs
@@ -292,6 +292,14 @@ what is written below, both deliberate:
 
 Endpoints (all under `/api/v1/projects/{pid}/placement/`): `GET model`, `POST suggest`,
 `POST observe`, `POST sync`. State is `behavior-placement.json` in the project root.
+
+3.4 is opt-in per request (`useLlm: true`) and is consulted **only** when the frequency model had no
+evidence for the context, never to overrule it — an author's own past placements are better evidence
+about that author than anything a language model infers. The output space is closed: the model
+receives the slot names this sentence offers and must return one of them, and anything else is
+rejected rather than repaired. The choice comes back in a separate `secondOpinion` field rather than
+merged into the ranking, so scores keep meaning one thing and provenance survives. **No UI exposes
+it yet** — that belongs with the Phase 4 ghost markers.
 
 3.3 is driven from the analysis rather than from individual editor events: the analysis is what
 knows each command's anchor slot, and `sync` resolves slots through the *same* code the corpus
