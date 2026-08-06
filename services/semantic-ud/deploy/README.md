@@ -291,6 +291,22 @@ sudo systemctl restart semantic-ud
 curl -s http://127.0.0.1:4061/health
 ```
 
+## Before deploying a parser change
+
+```bash
+./gradlew verifySemanticUdContainer      # or: sh services/semantic-ud/deploy/verify-container.sh
+```
+
+Builds the image with `--no-cache`, warms a throwaway volume from empty, starts the service with the
+image's own offline defaults, and parses one sentence — then deletes both. About 7 minutes and 1-2 GB.
+
+Worth the wait before touching `server.py`, `requirements.txt` or the `Dockerfile`: every failure this
+service has had on deployment was a clean-state case that a development machine hides. `transformers`
+missing from requirements while installed locally from other work; a model the download fallback never
+fetched but which was already cached; a shell string closed early by an apostrophe in a comment so a
+step silently did nothing. All three are invisible without building the image and starting from an
+empty volume.
+
 ## Checking it end to end
 
 Run a semantic analysis from the web UI and confirm the parser that actually ran:

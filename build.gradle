@@ -1020,6 +1020,23 @@ task extractCorpus(type: JavaExec) {
     }
 }
 
+// Builds the semantic-ud image and warms a throwaway volume from empty, then asserts the service
+// loads offline and parses. Manual-run-only and NOT part of `check`: it builds a torch image and
+// downloads 1-2 GB, so it belongs in a deliberate run before deploying a parser change.
+//
+// Every deployment failure this service has had was a clean-state case a development machine hides
+// — transformers missing from requirements but installed locally from other work, a model the
+// fallback never downloaded but which was already cached, a shell string closed early by an
+// apostrophe in a comment. This is the check that would have caught all three.
+//
+//   ./gradlew verifySemanticUdContainer
+task verifySemanticUdContainer(type: Exec) {
+    group = 'verification'
+    description = 'Builds the semantic-ud image, warms a fresh volume and verifies an offline parse. ' +
+            'Needs docker or podman; downloads 1-2 GB. Not part of check.'
+    commandLine 'sh', 'services/semantic-ud/deploy/verify-container.sh'
+}
+
 // Leave-one-out evaluation of the placement model over a corpus — plan 3.5.
 // Pure JSONL analysis, so no services need to be running.
 //

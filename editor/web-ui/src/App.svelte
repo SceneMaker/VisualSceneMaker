@@ -18215,8 +18215,11 @@ Sentence:
                 <span class="muted">Stored selections (project.xml):</span>
                 <code>generate="{projectConfigView?.llmSelections?.generate || ""}"</code>
                 <code>semantic="{projectConfigView?.llmSelections?.semantic || ""}"</code>
-                <code>syntax="{(projectConfigView?.semanticServices?.basicProvider || "ud") === "ud" ? "ud (stanza)" : (projectConfigView?.semanticServices?.basicProvider || "llm")}"</code>
-                <code>udUrl="{projectConfigView?.semanticServices?.udUrl || "http://127.0.0.1:4061/analyze"}"</code>
+                <!-- Marked when a value is NOT in project.xml. These read as stored settings under
+                     the "Stored selections" heading, so an unmarked fallback is actively misleading:
+                     it sent us looking for a udUrl in project.xml that was never there. -->
+                <code>syntax="{projectConfigView?.semanticServices?.basicProvider === "ud" ? "ud (stanza)" : (projectConfigView?.semanticServices?.basicProvider || "ud (stanza) — default, not stored")}"</code>
+                <code>udUrl="{projectConfigView?.semanticServices?.udUrl || "— not stored; the server decides (default http://127.0.0.1:4061/analyze)"}"</code>
               </div>
               <div class="generate-row">
                 <label class="generate-full">
